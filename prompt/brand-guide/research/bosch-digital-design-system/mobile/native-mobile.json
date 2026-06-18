@@ -1,0 +1,376 @@
+{
+  "schema_version": "1.0",
+  "source_file": "native-mobile-apps.html",
+  "source_page": {
+    "title": "Mobile Accessibility",
+    "document_title": "Mobile Apps",
+    "brand_system": "Bosch Digital Design System",
+    "language": "en",
+    "topic": "mobile_accessibility",
+    "url_hint": "https://brandguide.bosch.com/document/222/en#/touchpoint/mobile-accessibility"
+  },
+  "summary": "Guidelines for creating mobile applications and websites that are inclusive and accessible to all people, regardless of ability or current usage context.",
+  "audience": [
+    "UX designers",
+    "UI designers",
+    "product designers",
+    "mobile app developers",
+    "content designers",
+    "accessibility reviewers"
+  ],
+  "core_intent": [
+    "Reduce cognitive effort across platforms through consistency.",
+    "Support customization and assistive technologies.",
+    "Ensure visual information is perceivable under different abilities and contexts.",
+    "Make content understandable, navigable and screen-reader friendly.",
+    "Design interactions that are clear, reachable and usable with alternative inputs."
+  ],
+  "sections": [
+    {
+      "id": "best_practices",
+      "title": "Best Practices",
+      "guidelines": [
+        {
+          "id": "consistent_experience_across_platforms",
+          "title": "Ensure a consistent experience across platforms",
+          "rationale": "A consistent experience requires less cognitive effort when switching between multiple platforms or products.",
+          "requirements": [
+            "Use consistent components and navigation across multiple platforms and devices.",
+            "Use components that fit the app's context."
+          ],
+          "ai_interpretation": "When evaluating or generating mobile UI, preserve interaction models, component behavior and navigation patterns across related products unless platform conventions or context require adaptation.",
+          "references": [
+            {
+              "label": "W3: Consistent layout",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#consistent-layout"
+            }
+          ]
+        },
+        {
+          "id": "support_customization",
+          "title": "Support customization",
+          "rationale": "Users have different visual, auditory, cognitive and motor needs, so a single solution often does not fit all.",
+          "requirements": [
+            "Offer customization options such as languages, font sizes, contrast settings, notification settings and alternative input methods.",
+            "Support assistive technologies such as screen readers, large text and zoom features.",
+            "Retain accessibility settings across platforms."
+          ],
+          "ai_interpretation": "A mobile experience should expose user-adjustable settings and avoid breaking when system-level accessibility settings are enabled.",
+          "references": [
+            {
+              "label": "Google Material Design: Assistive technologies",
+              "url": "https://m3.material.io/foundations/overview/assistive-technology#ec6f3e84-a51c-4dc0-a353-6844f5bde698"
+            },
+            {
+              "label": "Apple: Accessibility best practices",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Best-practices"
+            }
+          ]
+        },
+        {
+          "id": "test_during_development",
+          "title": "Test accessibility during development",
+          "type": "tip",
+          "requirements": [
+            "Test mobile apps by changing font sizes and color spaces.",
+            "Activate VoiceOver on iOS and TalkBack on Android to verify that important information and interactive elements are perceivable."
+          ],
+          "ai_interpretation": "Accessibility validation should happen during design and implementation, not only after release.",
+          "references": [
+            {
+              "label": "Android: Simulate color space",
+              "url": "https://developer.android.com/studio/debug/dev-options#hardware"
+            },
+            {
+              "label": "Apple: VoiceOver",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#VoiceOver"
+            },
+            {
+              "label": "Android: TalkBack",
+              "url": "https://support.google.com/accessibility/android/answer/6283677?hl=en"
+            }
+          ]
+        }
+      ],
+      "visual_examples": [
+        {
+          "type": "do",
+          "description": "Provide customization options, for example muting notifications.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/UBAXCzKXWJJtfAh1Jfyz.png?width=800"
+        },
+        {
+          "type": "do",
+          "description": "Support assistive technologies such as large text and scaling, and ensure usability.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/nHcAuuZZWb6A6ygyfe7d.png?width=800"
+        }
+      ]
+    },
+    {
+      "id": "visuals",
+      "title": "Visuals",
+      "guidelines": [
+        {
+          "id": "high_color_contrast",
+          "title": "Use high color contrast",
+          "rationale": "High color contrast makes important information visible to users with different levels of sight and under varying conditions, such as bright or low light.",
+          "requirements": [
+            "Ensure sufficient contrast for important visual information.",
+            "Use dark mode carefully: dark mode may reduce eye strain for some users, but low-contrast dark themes can reduce readability or focus for others.",
+            "Provide customizable contrast options where relevant."
+          ],
+          "references": [
+            {
+              "label": "Google Material Design: Color & Contrast",
+              "url": "https://m3.material.io/foundations/designing/color-contrast#56eeca19-30cc-4944-9c8f-a35fafe687b9"
+            },
+            {
+              "label": "Apple: Color and effects",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Color-and-effects"
+            },
+            {
+              "label": "W3: Contrast",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#contrast"
+            }
+          ]
+        },
+        {
+          "id": "do_not_rely_on_color_only",
+          "title": "Avoid highlighting crucial information solely with color",
+          "rationale": "People with impaired color perception may not perceive color-only distinctions.",
+          "requirements": [
+            "Use additional symbols, labels, shapes or patterns when highlighting important information.",
+            "Use Android's Simulate color space tool to test color perception scenarios."
+          ],
+          "references": [
+            {
+              "label": "Android: Simulate color space",
+              "url": "https://developer.android.com/studio/debug/dev-options#hardware"
+            }
+          ]
+        }
+      ],
+      "visual_examples": [
+        {
+          "type": "do",
+          "description": "Use more than color alone to communicate meaning.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/K9ejbpU5LKfn79Xx5phz.png?width=800"
+        },
+        {
+          "type": "dont",
+          "description": "Do not encode crucial information only through color.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9jZVwvMTI0MTkzXC82NmVlMmYzNTc4ZDQzNTZkMTdlOTViNmIxNGVlOTMxNy0xNjAzODA3MjU5LnBuZyJ9:bosch:_vpuyuWFoTc0NZDU5jgRrZ7oosW2PIcayBfnFjCbh1I?width=800"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "title": "Content",
+      "guidelines": [
+        {
+          "id": "perceivable_content",
+          "title": "Ensure that content is perceivable",
+          "rationale": "Users may rely on assistive technologies such as screen readers, zoom or large text.",
+          "requirements": [
+            "Use accessibility labels for interactive elements such as form fields and buttons, especially icon-only elements.",
+            "Provide descriptive alt text and captions for images that convey meaning.",
+            "Do not integrate text into images; place text below images or use real text.",
+            "Provide feedback through multiple modalities, such as visual and haptic feedback."
+          ],
+          "references": [
+            {
+              "label": "Google Material Design: Labeling elements",
+              "url": "https://m3.material.io/foundations/designing/elements#db9a0efd-8045-4c5f-8a4d-c80f9fb08c68"
+            },
+            {
+              "label": "Google Material Design: Accessibility text",
+              "url": "https://m3.material.io/foundations/writing/best-practices#57f644fb-befb-40a7-a629-31a677233dbb"
+            },
+            {
+              "label": "Apple: Content descriptions",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Content-descriptions"
+            },
+            {
+              "label": "Apple: Navigation",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Navigation"
+            },
+            {
+              "label": "Apple: Text display",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Text-display"
+            },
+            {
+              "label": "W3: Support the characteristic properties of the platform",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#support-the-characteristic-properties-of-the-platform"
+            },
+            {
+              "label": "W3: Zoom & magnification",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#zoom-magnification"
+            }
+          ]
+        },
+        {
+          "id": "simple_helpful_navigable_content",
+          "title": "Ensure that content is simple, helpful and easy to navigate",
+          "rationale": "The small screen size on mobile devices makes clear information hierarchy and scannable content especially important.",
+          "requirements": [
+            "Reduce content to the most essential information.",
+            "Start with the most important information and place it before the page scroll where possible.",
+            "Show details only when needed to reduce information density.",
+            "Group related information together and present it in a logical order.",
+            "Support both portrait and landscape orientation with a consistent layout.",
+            "Keep text clear, accurate and brief.",
+            "Avoid complicated sentences, technical terms and foreign words."
+          ],
+          "references": [
+            {
+              "label": "Google Material Design: Hierarchy",
+              "url": "https://m3.material.io/foundations/designing/structure#0e3092ee-ccd5-4881-9fe8-5ccf97c91b82"
+            },
+            {
+              "label": "Apple: Accessibility best practices",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/designing-for-ios#Best-practices"
+            },
+            {
+              "label": "W3: Understandability",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#mobile-accessibility-considerations-related-primarily-to-principle-3-understandable"
+            },
+            {
+              "label": "NNGroup: Chunking",
+              "url": "https://www.nngroup.com/articles/chunking/"
+            },
+            {
+              "label": "Bosch Brandguide: Writing in digital contexts",
+              "url": "https://brandguide.bosch.com/document/353/en#/basics/writing-in-digital-contexts"
+            }
+          ]
+        }
+      ],
+      "visual_examples": [
+        {
+          "type": "do",
+          "description": "Use accessibility labels so elements can be understood by screen reader users.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/rxd8tCoJC4wvMunZFphV.png?width=800"
+        },
+        {
+          "type": "dont",
+          "description": "Do not leave out accessibility labels.",
+          "image_url": "https://media.ffycdn.net/eu/bosch/reqjE6kazAwR4ykHgNNq.png?width=800"
+        }
+      ]
+    },
+    {
+      "id": "interactions",
+      "title": "Interactions",
+      "guidelines": [
+        {
+          "id": "understandable_interactions",
+          "title": "Make sure users understand interactions",
+          "rationale": "Users should intuit or easily learn how to interact with the device so they can focus on their tasks.",
+          "requirements": [
+            "Clearly distinguish interactive elements such as buttons and form fields.",
+            "Use BDDS components or native app components when appropriate because they are already optimized for usability.",
+            "Provide in-app training and instructions for gestures and device manipulation."
+          ],
+          "references": [
+            {
+              "label": "W3: Provide clear indication that elements are actionable",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#provide-clear-indication-that-elements-are-actionable"
+            },
+            {
+              "label": "W3: Provide instructions for custom touchscreens and device manipulation gestures",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#provide-instructions-for-custom-touchscreen-and-device-manipulation-gestures"
+            }
+          ]
+        },
+        {
+          "id": "hand_grip_size_physical_limitations",
+          "title": "Consider hand grip, size and physical limitations",
+          "rationale": "Users have varying hand sizes, phone-holding patterns and hand movement abilities.",
+          "requirements": [
+            "Ensure that touch targets are appropriately spaced.",
+            "Use BDDS icon button spacing of 3x3 rem where applicable.",
+            "Provide easy and established touchscreen gestures and device manipulation options.",
+            "Provide alternatives for gestures and device manipulation when used for core functionality."
+          ],
+          "references": [
+            {
+              "label": "Google Material Design: Target sizes",
+              "url": "https://m3.material.io/foundations/designing/structure#dab862b1-e042-4c40-b680-b484b9f077f6"
+            },
+            {
+              "label": "Apple: Interactions",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#Interactions"
+            }
+          ]
+        },
+        {
+          "id": "user_friendly_input",
+          "title": "Ensure user-friendly input",
+          "rationale": "Users may input information through voice, keyboard or switch input.",
+          "requirements": [
+            "Make apps usable with alternative forms of input.",
+            "Support keyboard control for touchscreen devices where relevant.",
+            "Provide easy methods for data entry."
+          ],
+          "references": [
+            {
+              "label": "Google Material Design: Common forms of assistive technologies",
+              "url": "https://m3.material.io/foundations/overview/assistive-technology#ec6f3e84-a51c-4dc0-a353-6844f5bde698"
+            },
+            {
+              "label": "Apple: User input",
+              "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility#User-input"
+            },
+            {
+              "label": "W3: Keyboard control for touchscreen devices",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#keyboard-control-for-touchscreen-devices"
+            },
+            {
+              "label": "W3: Provide easy methods for data entry",
+              "url": "https://www.w3.org/TR/mobile-accessibility-mapping/#provide-easy-methods-for-data-entry"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "quality_checks_for_ai_review": [
+    "Are navigation and components consistent across related platforms?",
+    "Does the UI support system accessibility settings such as screen reader, zoom and large text?",
+    "Is important information visible with sufficient contrast?",
+    "Is crucial information not dependent on color alone?",
+    "Do all meaningful images have descriptive alt text or captions?",
+    "Are icon-only controls labeled for assistive technologies?",
+    "Is text real text rather than embedded in images?",
+    "Is content concise, logically grouped and prioritized for mobile screens?",
+    "Are interactive elements visually distinguishable?",
+    "Are touch targets spaced appropriately?",
+    "Are alternatives provided for complex gestures or device manipulation?",
+    "Can users enter information through alternative input methods?"
+  ],
+  "general_references": [
+    {
+      "label": "Bosch UI Kit: Accessibility",
+      "url": "https://brandguide.bosch.com/r/cv0dWiT5tZkK9ZqgC6Q2uuOTrdneCqwATAzadxWYqSI"
+    },
+    {
+      "label": "Apple: Accessibility",
+      "url": "https://www.apple.com/accessibility/"
+    },
+    {
+      "label": "Google Design: Accessibility Research",
+      "url": "https://design.google/library/designers-guide-accessibility-research"
+    },
+    {
+      "label": "TEDx: How the blind see the world",
+      "url": "https://www.youtube.com/watch?v=0EQOZRIA-nA"
+    },
+    {
+      "label": "TEDx: Disability Technology",
+      "url": "https://www.youtube.com/watch?v=eFkhFxJZvho"
+    }
+  ],
+  "contact": {
+    "feedback_email": "support.design@bosch.com",
+    "feature_requests_and_bug_reports": "Submit feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira."
+  }
+}

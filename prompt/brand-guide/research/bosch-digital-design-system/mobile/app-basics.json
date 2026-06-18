@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "document_type": "ai_readable_site_research",
+  "source": {
+    "uploaded_file": "app-basics.html",
+    "source_url_from_file": "https://brandguide.bosch.com/document/222/en#/touchpoint/mobile-app-basics",
+    "page_title": "Mobile app basics - Mobile apps - Bosch Digital Design System",
+    "extraction_basis": "Uploaded HTML page content",
+    "language": "en"
+  },
+  "topic": {
+    "name": "Mobile app basics",
+    "category": "Digital touchpoints / Mobile apps",
+    "system_context": "Bosch Digital Design System",
+    "purpose": "Guidance for designing and programming Bosch mobile apps using the correct mobile app library and usage rules."
+  },
+  "summary": {
+    "short_description": "The Mobile app basics page explains how Bosch mobile app design extends the Bosch UI Kit, distinguishes between the Bosch-branded App Library and the Native App Library, and defines when to use each library.",
+    "core_message": "Choose one mobile app library based on the app context and do not mix Bosch-branded and native elements, because the elements are coordinated only within their respective library."
+  },
+  "libraries": [
+    {
+      "id": "bosch_branded_app_library",
+      "name": "Bosch-branded App Library",
+      "description": "A mobile app design library that uses only Bosch UI Kit elements in combination with Mobile Foundations.",
+      "recommended_when": [
+        "The app can be used on all types of mobile devices.",
+        "The app is part of a cross-platform solution, for example alongside websites or eShops."
+      ],
+      "design_goal": "Ensure a consistent user experience across web and mobile platforms.",
+      "source_link": "https://brandguide.bosch.com/r/_c_y8wGASruPV7kf5Nb71-9lOfv8npNwhUk04Gs4gcE"
+    },
+    {
+      "id": "native_app_library",
+      "name": "Native App Library",
+      "description": "A mobile app design library based on native mobile elements adapted according to the Bosch Styleguide.",
+      "recommended_when": [
+        "The app uses native functionalities and components such as address book or internal memory.",
+        "The app uses the full computing power of the device.",
+        "The app uses hardware functions such as camera, GPS, or touch sensors."
+      ],
+      "design_goal": "Ensure that the app works optimally and fully exploits device functions.",
+      "source_link": "https://brandguide.bosch.com/r/YtRi6H_lpuJe9CpeAvf41lE5BGRp52s3ik7MJJdKzdU"
+    }
+  ],
+  "decision_rules": [
+    {
+      "rule_id": "choose_bosch_branded_for_cross_platform_consistency",
+      "if": [
+        "App should work broadly across mobile device types.",
+        "App belongs to a broader cross-platform ecosystem."
+      ],
+      "then": "Use Bosch-branded App Library.",
+      "rationale": "It aligns the mobile experience with Bosch UI Kit and web touchpoints."
+    },
+    {
+      "rule_id": "choose_native_for_device_capability_usage",
+      "if": [
+        "App depends on native components or device APIs.",
+        "App needs strong device performance or hardware access."
+      ],
+      "then": "Use Native App Library.",
+      "rationale": "It better supports native behavior and full device capability usage."
+    },
+    {
+      "rule_id": "do_not_mix_libraries",
+      "if": [
+        "A mobile app design uses components from Bosch-branded App Library and Native App Library together."
+      ],
+      "then": "Avoid this combination and select only one library.",
+      "rationale": "Elements are coordinated only within their respective library, so mixing them can reduce consistency."
+    }
+  ],
+  "correct_usage": {
+    "principles": [
+      "Use either the Bosch-branded App Library or the Native App Library.",
+      "Do not mix elements from Bosch-branded apps and native apps.",
+      "Maintain consistency by staying within the chosen library."
+    ],
+    "recommended": [
+      {
+        "label": "Do",
+        "description": "Use elements from one mobile app library only."
+      }
+    ],
+    "not_recommended": [
+      {
+        "label": "Don't",
+        "description": "Only using native elements when Bosch library guidance is required."
+      },
+      {
+        "label": "Don't",
+        "description": "Mixing Bosch elements with native elements."
+      }
+    ]
+  },
+  "visual_assets": [
+    {
+      "title": "Bosch-branded mobile apps",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/AbsfnrL4AFgVLtNgSzs9.png?width=800",
+      "associated_library": "bosch_branded_app_library"
+    },
+    {
+      "title": "Native mobile apps",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/EYhz74gtMvnAopKZapwN.png?width=800",
+      "associated_library": "native_app_library"
+    },
+    {
+      "title": "Using elements from one mobile app library only",
+      "type": "do_example_image",
+      "url": "https://media.ffycdn.net/eu/bosch/kweoVRt2zuV3ZyZ3vYcr.png"
+    },
+    {
+      "title": "Only using native elements",
+      "type": "dont_example_image",
+      "url": "https://media.ffycdn.net/eu/bosch/DFWFNFXm1pzzGdjqzJpy.png"
+    },
+    {
+      "title": "Mixing Bosch elements with native elements",
+      "type": "dont_example_image",
+      "url": "https://media.ffycdn.net/eu/bosch/ABYtQo9VbScKTZwoC51U.png"
+    }
+  ],
+  "support": {
+    "feature_requests_and_bug_reports": {
+      "channel": "Jira",
+      "target_team": "digital expert team",
+      "process_link": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    "design_feedback_and_questions": {
+      "email": "support.design@bosch.com",
+      "scope": "Feedback or questions about designing digital touchpoints, including design draft checks."
+    }
+  },
+  "navigation_context": {
+    "active_page": "Mobile app basics",
+    "parent_category": "Touchpoint",
+    "sibling_pages_visible_in_file": [
+      "Bosch-branded Mobile Apps",
+      "Native Mobile Apps",
+      "Mobile Accessibility",
+      "App publishing service",
+      "Resources"
+    ],
+    "sections": [
+      "Which App Guideline to use?",
+      "Correct usage",
+      "Examples of use"
+    ]
+  },
+  "machine_readable_tags": [
+    "bosch-digital-design-system",
+    "mobile-apps",
+    "mobile-app-basics",
+    "bosch-ui-kit",
+    "native-app-library",
+    "bosch-branded-app-library",
+    "mobile-foundations",
+    "digital-touchpoints",
+    "app-design-guidelines"
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "metadata": {
+    "file_name": "accessibility-site-research.json",
+    "source_file": "Accessibility.html",
+    "source_reference_id": "turn1search2",
+    "source_page_title_detected": "Resources",
+    "source_context_detected": "Bosch Digital Design System - Mobile Apps - Digital touchpoints",
+    "topic_inferred_from_uploaded_filename": "Accessibility",
+    "content_scope_note": "The uploaded file is named Accessibility.html, but the visible page content extracted from the HTML is the Resources page for Mobile Apps. The JSON preserves the actual page content and flags the filename-topic mismatch for downstream AI interpretation.",
+    "language": "en",
+    "format_version": "1.0.0",
+    "intended_use": [
+      "AI-readable knowledge extraction",
+      "Design system research",
+      "Resource cataloging",
+      "Documentation retrieval"
+    ]
+  },
+  "page": {
+    "title": "Resources",
+    "description": "All the necessary resources to design and develop mobile apps are collected here.",
+    "domain": "Bosch Digital Design System",
+    "touchpoint": "Mobile apps",
+    "taxonomy": {
+      "primary_navigation": "Digital touchpoints",
+      "document_category": "Touchpoint",
+      "document_title": "Mobile Apps",
+      "current_page": "Resources",
+      "related_pages_visible_in_sidebar": [
+        "Mobile app basics",
+        "Bosch-branded Mobile Apps",
+        "Native Mobile Apps",
+        "Mobile Accessibility",
+        "App publishing service",
+        "Resources"
+      ],
+      "resource_subsections_visible_in_sidebar": [
+        "Figma Libraries",
+        "App Icon Templates",
+        "Development demo for iOS",
+        "Mobile App Kit Archive",
+        "Colors",
+        "Fonts",
+        "Symbol/logotype",
+        "Supergraphic"
+      ]
+    }
+  },
+  "content_model": {
+    "section_types": [
+      "resource_collection",
+      "external_reference",
+      "template_download",
+      "development_demo",
+      "archive_notice",
+      "brand_asset_guidance",
+      "support_channel"
+    ],
+    "resource_object_fields": [
+      "name",
+      "type",
+      "description",
+      "url",
+      "access_restrictions",
+      "status",
+      "notes"
+    ],
+    "ai_usage_guidance": "Use section titles as retrieval anchors. Treat links marked as Bosch employee-only or Bosch internal as restricted-access references. Treat archived resources as deprecated and non-warranted."
+  },
+  "sections": [
+    {
+      "id": "figma_libraries",
+      "title": "Figma Libraries",
+      "type": "resource_collection",
+      "summary": "Libraries and resources for designing Bosch-branded and native mobile apps in Figma.",
+      "subsections": [
+        {
+          "title": "Using Figma at Bosch",
+          "rules": [
+            "Using Figma at Bosch as an editor requires a license ordered through Bosch Digital.",
+            "The license requirement also applies to DEV mode.",
+            "Details and Figma administration information are documented on the Bosch Docupedia page titled Figma."
+          ],
+          "access_restrictions": "Access only for Bosch employees.",
+          "links": [
+            {
+              "label": "Figma docupedia page",
+              "url": "https://inside-docupedia.bosch.com/confluence2/pages/viewpage.action?pageId=441342958",
+              "type": "internal_documentation",
+              "access_restrictions": "Bosch employees only"
+            }
+          ]
+        },
+        {
+          "title": "Libraries for Bosch-branded Mobile Apps",
+          "resources": [
+            {
+              "name": "Bosch UI Kit - Components",
+              "type": "Figma library",
+              "theme": "Light mode",
+              "version": "v1.6.2",
+              "preview_image": "https://media.ffycdn.net/eu/bosch/yCWaJBZFjnnReF9sjKfg.png?width=490",
+              "figma_link": "https://www.figma.com/design/hO1lBu73St0DeLraVFOo0C/BDDS-Components---%E2%98%BC-Light-Mode---v1.6.2?m=auto"
+            },
+            {
+              "name": "Mobile App extension - Light mode",
+              "type": "Figma library",
+              "theme": "Light mode",
+              "version": "v1.2.0",
+              "preview_image": "https://media.ffycdn.net/eu/bosch/xC1QPnRdHQowTTUpVTJx.png?width=490",
+              "figma_link": "https://www.figma.com/design/lDGfgb36L2IZLrbmmjjmph/BDDS-Mobile-App---%E2%98%BC-Light-Mode---v1.2.0?m=auto"
+            },
+            {
+              "name": "Mobile App extension - Dark mode",
+              "type": "Figma library",
+              "theme": "Dark mode",
+              "version": "v1.2.0",
+              "preview_image": "https://media.ffycdn.net/eu/bosch/ACgsp1AitR4vzG226o2L.png?width=490",
+              "figma_link": "https://www.figma.com/design/yOweca8b9VTm4JuZ90ohXy/BDDS-Mobile-App---%E2%98%BE-Dark-Mode---v1.2.0?m=auto"
+            }
+          ]
+        },
+        {
+          "title": "Libraries for Native Mobile Apps",
+          "resources": [
+            {
+              "name": "Native Mobile App - Light mode",
+              "type": "Figma library",
+              "theme": "Light mode",
+              "version": "v1.0.0",
+              "preview_image": "https://media.ffycdn.net/eu/bosch/Ut2JYHgRnohxGhVfiXcp.png?width=490",
+              "figma_link": "https://www.figma.com/design/tFAiFUECuhaRBc0xfjef5e/BDDS-Native-Mobile-App---%E2%98%BC-Light-Mode---v1.0.0?node-id=452-13930&p=f"
+            },
+            {
+              "name": "Native Mobile App - Dark mode",
+              "type": "Figma library",
+              "theme": "Dark mode",
+              "version": "v1.0.0",
+              "preview_image": "https://media.ffycdn.net/eu/bosch/Zqy2M6s9jUBhHiM1HW6N.png?width=490",
+              "figma_link": "https://www.figma.com/design/wmKBzhyBvadhSLJhnGsr1H/BDDS-Native-Mobile-App---%E2%98%BE-Dark-Mode---v1.0.0?node-id=2449-103&t=QXk4UwbYKhS28i7G-0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "app_icon_templates",
+      "title": "App Icon Templates",
+      "type": "template_download",
+      "summary": "Templates for mobile app icons.",
+      "resources": [
+        {
+          "name": "Mobile app templates",
+          "type": "template_collection",
+          "url": "https://brandguide.bosch.com/r/kxcZm-Vj8rKGkcswa3RSChrokG_odbZNSYsz-k6twt8"
+        }
+      ]
+    },
+    {
+      "id": "development_demo_ios",
+      "title": "Development demo for iOS",
+      "type": "development_demo",
+      "summary": "An iOS demo is available as an implementation reference for Bosch theming and native app design resources.",
+      "implementation_details": [
+        {
+          "category": "Colors",
+          "statements": [
+            "Colors are defined by Bosch Color Tokens.",
+            "Accent Color is set with Bosch Blue 50."
+          ]
+        },
+        {
+          "category": "Font",
+          "statements": [
+            "Bosch Sans is defined as the font for iOS font styles.",
+            "Top Navigation adopts Bosch Sans as the font."
+          ]
+        },
+        {
+          "category": "Supergraphic",
+          "statements": [
+            "The Bosch Supergraphic is provided as an image."
+          ]
+        }
+      ],
+      "requirements_and_notes": [
+        {
+          "topic": "Accessibility",
+          "instruction": "Accessibility guidelines must be adhered to.",
+          "url": "https://brandguide.bosch.com/r/TJ46PrIetkJkNpbISjTnIOJzEINlK-IsEJVqssa216I"
+        },
+        {
+          "topic": "System icons",
+          "instruction": "System icons must be replaced by Bosch icons.",
+          "url": "https://brandguide.bosch.com/document/748/en"
+        }
+      ],
+      "resources": [
+        {
+          "name": "Code Repository in Github",
+          "type": "code_repository",
+          "url": "https://github.boschdevcloud.com/login?return_to=https%3A%2F%2Fgithub.boschdevcloud.com%2Frb-ui%2Fbdds.ios.bosch-theme",
+          "access_restrictions": "Bosch internal GitHub access may be required"
+        },
+        {
+          "name": "License",
+          "type": "license_document",
+          "url": "https://github.boschdevcloud.com/rb-ui/bdds.ios.bosch-theme/blob/main/License.md",
+          "access_restrictions": "Bosch internal GitHub access may be required"
+        }
+      ]
+    },
+    {
+      "id": "mobile_app_kit_archive",
+      "title": "Mobile App Kit Archive",
+      "type": "archive_notice",
+      "summary": "The Mobile App Kit is the predecessor of the newer mobile app resources and is archived.",
+      "status": "deprecated",
+      "deprecation_notice": "Active development of the Mobile App Kit was discontinued in 2023. It is still available without warranty.",
+      "resources": [
+        {
+          "name": "Mobile App Kit Archive",
+          "type": "archive_link",
+          "url": "https://brandguide.bosch.com/r/1ZMv8um1fglclQeC2lH3U5GDl2loytQhfStNFUyvwcw"
+        }
+      ]
+    },
+    {
+      "id": "colors",
+      "title": "Colors",
+      "type": "brand_asset_guidance",
+      "summary": "Mobile app design follows BDDS rules, using predefined color schemes based on Bosch Color Tokens.",
+      "principles": [
+        "Use predefined color schemes.",
+        "Base mobile app color usage on Bosch Color Tokens.",
+        "Follow BDDS rules for mobile app design."
+      ],
+      "resources": [
+        {
+          "name": "Colors details",
+          "type": "guideline_link",
+          "url": "https://brandguide.bosch.com/r/vwhy_tY7dh9MmgbiNArN5oUs7qX42t7krkszFjwLIO8"
+        }
+      ]
+    },
+    {
+      "id": "fonts",
+      "title": "Fonts",
+      "type": "brand_asset_guidance",
+      "summary": "Bosch Sans is used for Bosch-branded and native apps at all font levels.",
+      "rules": [
+        "Use Bosch Sans for Bosch-branded apps.",
+        "Use Bosch Sans for native apps.",
+        "Apply Bosch Sans across all font levels."
+      ],
+      "resources": [
+        {
+          "name": "Font and Typography",
+          "type": "guideline_link",
+          "url": "https://brandguide.bosch.com/document/219#/grundlagen/schrift-und-typografie"
+        },
+        {
+          "name": "Download Bosch Sans",
+          "type": "font_download_link",
+          "url": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie"
+        }
+      ]
+    },
+    {
+      "id": "symbol_logotype",
+      "title": "Symbol/logotype",
+      "type": "brand_asset_guidance",
+      "summary": "The Bosch symbol/logotype represents the Bosch company and consists of the Bosch anchor and Bosch lettering in a defined size ratio and distance.",
+      "rules": [
+        "Use the Bosch anchor and Bosch lettering together as defined.",
+        "Maintain the defined size ratio between anchor and lettering.",
+        "Maintain the defined distance between anchor and lettering.",
+        "Use downloadable color versions with or without slogan as appropriate."
+      ],
+      "resources": [
+        {
+          "name": "Symbol/logotype guidelines",
+          "type": "guideline_link",
+          "url": "https://brandguide.bosch.com/document/2268#/-/bild-wortmarke"
+        },
+        {
+          "name": "Symbol/logotype download",
+          "type": "download_link",
+          "url": "https://brandguide.bosch.com/document/494"
+        }
+      ]
+    },
+    {
+      "id": "supergraphic",
+      "title": "Supergraphic",
+      "type": "brand_asset_guidance",
+      "summary": "The masterbrand Supergraphic is one of the most important Bosch design elements, alongside the symbol/logotype, and acts as a seal of quality for the brand.",
+      "rules": [
+        "Use the Supergraphic as a key Bosch brand design element.",
+        "Size the Supergraphic based on the size of the symbol/logotype across all formats.",
+        "Use 1/4 of the 'H' in the Bosch logotype as the standard Supergraphic height."
+      ],
+      "resources": [
+        {
+          "name": "Supergraphic guidelines",
+          "type": "guideline_link",
+          "url": "https://brandguide.bosch.com/document/2270#/-/supergraphic"
+        }
+      ]
+    }
+  ],
+  "support": {
+    "feature_requests_and_bug_reports": {
+      "description": "Submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira.",
+      "url": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    "contact": {
+      "email": "support.design@bosch.com",
+      "use_cases": [
+        "Feedback about designing digital touchpoints",
+        "Questions about designing digital touchpoints",
+        "Design draft checks by the team"
+      ]
+    }
+  },
+  "retrieval_keywords": [
+    "Bosch Digital Design System",
+    "BDDS",
+    "mobile apps",
+    "resources",
+    "Figma libraries",
+    "Bosch UI Kit",
+    "Mobile App extension",
+    "Native Mobile App",
+    "app icon templates",
+    "iOS development demo",
+    "Bosch Color Tokens",
+    "Bosch Blue 50",
+    "Bosch Sans",
+    "symbol logotype",
+    "supergraphic",
+    "Mobile App Kit Archive",
+    "accessibility guidelines"
+  ]
+}

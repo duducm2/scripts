@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "source_file": "mobile-apps.html",
+    "source_page_title": "Bosch-branded Mobile Apps - Mobile apps - Bosch Digital Design System",
+    "topic": "Bosch-branded Mobile Apps",
+    "document_family": "Bosch Digital Design System",
+    "language": "en",
+    "extraction_type": "ai_readable_site_research",
+    "generated_from": "uploaded HTML page",
+    "last_modified_from_page": "2025-11-26T10:34:00Z"
+  },
+  "topic_summary": {
+    "one_sentence": "Bosch-branded mobile apps are mobile apps built only with Bosch UI Kit elements, Mobile Foundations, and Patterns, deliberately avoiding native UI elements to create a coherent Bosch brand experience.",
+    "purpose": "Define what qualifies as a Bosch-branded mobile app and when this approach should be used.",
+    "core_principle": "Use Bosch design-system resources consistently and avoid native UI elements when the goal is a clear, cross-platform Bosch-branded experience."
+  },
+  "definition": {
+    "name": "Bosch-branded mobile app",
+    "description": "A mobile app that uses only elements from the Bosch UI Kit in combination with Mobile Foundations and Patterns.",
+    "required_design_sources": [
+      "Bosch UI Kit",
+      "Mobile Foundations",
+      "Patterns"
+    ],
+    "exclusion_rule": {
+      "native_ui_elements_allowed": false,
+      "rationale": "Excluding native UI elements helps Bosch-branded apps present a clear and coherent design that puts the Bosch brand at the forefront."
+    }
+  },
+  "usage_guidance": {
+    "recommended_when": [
+      "The app can be used on all types of devices.",
+      "The app is part of a cross-platform solution.",
+      "The app exists alongside other digital touchpoints such as websites or eShops.",
+      "A consistent user experience across platforms is a key goal."
+    ],
+    "not_primary_choice_when": [
+      "The app needs to use native mobile elements as a design or platform requirement."
+    ],
+    "alternative_guidance": {
+      "topic": "Native mobile apps",
+      "reason_to_use": "Use this guidance for mobile apps that use native elements.",
+      "url": "https://brandguide.bosch.com/r/YtRi6H_lpuJe9CpeAvf41lE5BGRp52s3ik7MJJdKzdU"
+    }
+  },
+  "design_dependencies": [
+    {
+      "name": "Bosch UI Kit",
+      "role": "Primary component and UI element source for Bosch-branded mobile apps.",
+      "url": "https://brandguide.bosch.com/r/WKWAKv12JRVY3w6wV7ouLCHcENT_JERWtaBONBHYdJM"
+    },
+    {
+      "name": "Mobile Foundations",
+      "role": "Foundation-level mobile design guidance used together with the Bosch UI Kit.",
+      "url": "https://brandguide.bosch.com/r/-NllzQHrwDyszdkxaASndfuVyyd_KFANPSJoGw7db-Y"
+    },
+    {
+      "name": "Patterns",
+      "role": "Mandatory or reusable interaction and layout patterns used in Bosch-branded mobile apps.",
+      "url": "https://brandguide.bosch.com/r/CAC92g1_SA5itsA3dSaIPiDtzR3I_0N2rC5FxLpPM5w"
+    }
+  ],
+  "linked_resources": [
+    {
+      "title": "Foundations",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/6myGjgwjjFEEkdLxtcy9.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/-NllzQHrwDyszdkxaASndfuVyyd_KFANPSJoGw7db-Y"
+    },
+    {
+      "title": "Mandatory patterns",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/Zpo6Rggd2zYjYZofxUDR.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/CAC92g1_SA5itsA3dSaIPiDtzR3I_0N2rC5FxLpPM5w"
+    },
+    {
+      "title": "Components",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/HMKifL7Va3BFqGHDtX3x.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/FWa3IiUO4R8YAaQGhwdBwzvSTSZ5xVgpH8g3IbW9DLo"
+    },
+    {
+      "title": "App icons",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/PfHBWjmZDaBUkyDHvo6V.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/g3c87LlRrlK_KXQ0kCvYen83HNS9j-P8wVOYTeX2Mfw"
+    },
+    {
+      "title": "Google Home & Alexa Icons",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/Mbvo8tpqBBP7XBv4TVBq.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/skHpvT1zCWXosXJndsSrVG-ot2Z5K8Ahgg2gcQJvT10"
+    },
+    {
+      "title": "Figma libraries",
+      "resource_type": "visual_link_card",
+      "image_url": "https://media.ffycdn.net/eu/bosch/YcVhZzkmdv2QvWD7xB4c.png?width=800",
+      "target_url": "https://brandguide.bosch.com/r/K66gSE3LitVVG7Fv9AXcIEkF6-hTaKtFkwwkOk17AYQ"
+    }
+  ],
+  "support_and_feedback": {
+    "feature_requests_and_bug_reports": {
+      "description": "Submit feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira.",
+      "url": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    "general_feedback": {
+      "description": "For feedback or questions about designing digital touchpoints, contact the support team. The team can also check design drafts.",
+      "email": "support.design@bosch.com"
+    }
+  },
+  "ai_usage_notes": {
+    "classification_tags": [
+      "mobile-apps",
+      "bosch-branded-apps",
+      "digital-touchpoints",
+      "bosch-ui-kit",
+      "mobile-foundations",
+      "patterns",
+      "cross-platform-design",
+      "no-native-ui"
+    ],
+    "decision_rule": "If an app must maximize Bosch brand coherence across devices and platforms, classify it as a candidate for the Bosch-branded mobile app approach. If native UI elements are required, route to Native mobile apps guidance.",
+    "compliance_checks": [
+      "Uses Bosch UI Kit elements only.",
+      "Uses Mobile Foundations.",
+      "Uses mandatory/relevant Patterns.",
+      "Avoids native UI elements.",
+      "Supports consistent user experience across cross-platform touchpoints."
+    ]
+  }
+}
