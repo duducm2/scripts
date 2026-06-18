@@ -1,0 +1,1284 @@
+{
+  "document_metadata": {
+    "source_file": "Design principles - Software - Bosch Digital Design System.html",
+    "generated_file": "design-principles-software-site-research.json",
+    "page_title": "Design principles - Software - Bosch Digital Design System",
+    "source_url_saved_from": "https://brandguide.bosch.com/document/221/en#/basics/design",
+    "language": "en",
+    "product_area": "Software",
+    "design_system": "Bosch Digital Design System",
+    "main_topic": "Design principles",
+    "document_id": "221",
+    "project_id": "166",
+    "document_title_attribute": "Software"
+  },
+  "summary": {
+    "purpose": "Help teams develop software in Bosch Corporate Design.",
+    "core_requirement": "Teams need a basic understanding of Core and the general design principles of the Digital Design System to fully implement the designs.",
+    "covered_topics": [
+      "Responsive layout grid",
+      "Spacings",
+      "Page structure",
+      "Message types",
+      "References"
+    ]
+  },
+  "information_architecture": {
+    "navigation_labels_observed": [
+      "Home",
+      "Foundations",
+      "Bosch UI Kit",
+      "Digital touchpoints",
+      "Resources",
+      "Support",
+      "Back to Brandguide",
+      "Admin",
+      "Archiv",
+      "Software Basics",
+      "Design principles",
+      "Figma UI library",
+      "Components",
+      "Interactions"
+    ],
+    "intro_content": [
+      "This section helps develop software in Bosch Corporate Design . To fully implement the designs, a basic understanding of the Core and the general design principles of the Digital Design System is required: See general design principles"
+    ],
+    "page_sections": [
+      {
+        "title": "Responsive layout grid",
+        "content": [
+          "The responsive layout grid is a guide for the placement of components and elements within software . The grid adapts to the screen sizes and their alignment, ensuring a consistent appearance across differing layouts: View basic design principles"
+        ],
+        "subsections": [
+          {
+            "title": "Structure",
+            "items": [
+              "Baseline grid: All components are aligned along a square 0.5 rem (8 px) baseline grid for mobile devices, tables and desktops. This allows for easy definition of spacing between individual rows and individual sections.",
+              "Column grid: The even spacing to screen margins and between columns(gutter) must be at least 1 rem (16 px) wide. Other possible spacings can be 1.5 or 2 rem.",
+              "Column amount: The easily divisible 12-column grid allows a variation of twelve, six, four, three, two, or one evenly spaced column. Instead of using twelve columns, an amount of columns of choice can be used as design aid (i.e. five columns).",
+              "Info: As an example, the views in the components under \"Responsive behaviour\" are implemented in 12 columns for desktop and tablet and in four columns for mobile. In this way, the display remains consistent throughout the entire digital design system.Alternative column numbers for implementation are available in the Sketch file. The component definitions are based on the 12 column grid."
+            ]
+          },
+          {
+            "title": "Break points",
+            "items": [
+              "Break points help display components correctly on every device and in any size. As a result, the width of a container is defined by the active break point.",
+              "Touchpoint",
+              "Viewport",
+              "Break point",
+              "Columns",
+              "Margin / Gutters*",
+              "Mobile",
+              "20 rem (320 px)",
+              "< 48 rem (768 px)",
+              "1 rem / 1 rem (16 px / 16 px)",
+              "Tablet",
+              "48 rem (768 px)",
+              "≥ 48 rem (768 px)",
+              "1 rem / 1 rem (16 px / 16 px)",
+              "Small Desktop",
+              "90 rem (1280 px)",
+              "≥ 74,625 rem (1194 px)",
+              "2 rem / 2 rem (left 80, right 32 px** / 32 px)",
+              "Large Desktop",
+              "120 rem (1920 px)",
+              "≥ 120 rem (1920 px)",
+              "2 rem / 2 rem (left 80, right 32 px** / 32 px)",
+              "*Margin and gutters are flexible in size and can equal 1, 1.5 or 2 rem.",
+              "**The Side Navigation is offset to the baseline grid. The left margin equals 80 px when the Side Navigation is closed, and 288 px when opened."
+            ]
+          },
+          {
+            "title": "Text sizes and line spacing",
+            "items": [
+              "The font sizes and line spacing are generally defined in rem and are predefined in Core ."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Spacings",
+        "content": [
+          "The Bosch Digital Design System offers predefined spacing within the components and – for the layout process – between the components:",
+          "More on general spacing"
+        ],
+        "subsections": [
+          {
+            "title": "Spacing within a component",
+            "items": [
+              "Vertical spacing: 3 rem (48 px)",
+              "Horizontal spacing: 5 rem (80 px)",
+              "Vertical spacing: 3 rem (48 px)",
+              "Horizontal spacing: 2 rem (32 px)"
+            ]
+          },
+          {
+            "title": "Spacing between two components",
+            "items": [
+              "Vertical spacing: 2 rem (32 px)",
+              "Vertical spacing: 2 rem (32 px)",
+              "Horizontal spacing: 2 rem (32 px)"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Page structure",
+        "content": [
+          "Pages can be structured through use of Dividers or different background colors. The type of structure depends on the amount and structure of the content.",
+          "Simple structure on a Primary Background:",
+          "The content is placed on a Primary Background .",
+          "The Primary Background is generally used for simple content.",
+          "Dividers can be used on long pages as structural element. However, Dividers may not be combined with tables on a page.",
+          "Strong structuring based on surfaces with differing colors This design principle is done using the Card component .",
+          "The content can be placed on the Card as well as the (grey) Secondary Background . The allocation of content must be reasonable and logical.",
+          "This is used on long pages with complex content, i.e. when multiple tables or forms are consecutive."
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Message types",
+        "content": [
+          "Feedback can be provided via messages. These have three different priorities:",
+          "Low priority:",
+          "Toast",
+          "A Toast is shown temporarily, and fades away independently and without needing user interaction.",
+          "It does not contain a Close Button.",
+          "The content can, for example, inform users of a successful interaction (i.e. data was saved).",
+          "Medium priority: Notification (Core)",
+          "A Notification informs users of successful actions taken.",
+          "Can display further information via Text Links .",
+          "It can contain a Close Button.",
+          "The content can, for example, inform users of correct or incorrect input.",
+          "High priority: Dialog (Core)",
+          "The Dialog requires user input via CTA.",
+          "Can contain a Close Button.",
+          "The content can, for example, trigger the process of an interaction via confirmation (i.e. delete)."
+        ],
+        "subsections": []
+      },
+      {
+        "title": "References",
+        "content": [
+          "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here .",
+          "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts.",
+          "Last modified on Thu, 28. Aug 2025 12:18"
+        ],
+        "subsections": []
+      }
+    ]
+  },
+  "structured_design_guidance": {
+    "responsive_layout_grid": {
+      "definition": "Guide for placing components and elements within software; adapts to screen sizes and alignments to keep layouts consistent.",
+      "structure_rules": [
+        "Baseline grid: align all components to a square 0.5 rem / 8 px baseline grid across mobile, tablet, and desktop.",
+        "Column grid: keep spacing to screen margins and between columns/gutters at least 1 rem / 16 px; other possible spacings are 1.5 rem or 2 rem.",
+        "Column amount: use the divisible 12-column grid for 12, 6, 4, 3, 2, or 1 evenly spaced columns; another column count may be used as a design aid."
+      ],
+      "breakpoints": [
+        {
+          "touchpoint": "Mobile",
+          "viewport": "20 rem / 320 px",
+          "breakpoint": "< 48 rem / 768 px",
+          "columns": null,
+          "margin_gutters": "1 rem / 1 rem (16 px / 16 px)"
+        },
+        {
+          "touchpoint": "Tablet",
+          "viewport": "48 rem / 768 px",
+          "breakpoint": "≥ 48 rem / 768 px",
+          "columns": null,
+          "margin_gutters": "1 rem / 1 rem (16 px / 16 px)"
+        },
+        {
+          "touchpoint": "Small Desktop",
+          "viewport": "90 rem / 1280 px",
+          "breakpoint": "≥ 74.625 rem / 1194 px",
+          "columns": null,
+          "margin_gutters": "2 rem / 2 rem; left 80 px and right 32 px when side navigation is closed"
+        },
+        {
+          "touchpoint": "Large Desktop",
+          "viewport": "120 rem / 1920 px",
+          "breakpoint": "≥ 120 rem / 1920 px",
+          "columns": null,
+          "margin_gutters": "2 rem / 2 rem; left 80 px and right 32 px when side navigation is closed"
+        }
+      ],
+      "notes": [
+        "Margins and gutters are flexible and can equal 1, 1.5, or 2 rem.",
+        "The side navigation is offset to the baseline grid; left margin equals 80 px when closed and 288 px when opened.",
+        "Font sizes and line spacing are generally defined in rem and predefined in Core."
+      ]
+    },
+    "spacings": {
+      "definition": "Bosch Digital Design System provides predefined spacing within components and between components.",
+      "within_component_examples": [
+        {
+          "axis": "vertical",
+          "spacing": "3 rem / 48 px"
+        },
+        {
+          "axis": "horizontal",
+          "spacing": "5 rem / 80 px"
+        },
+        {
+          "axis": "horizontal",
+          "spacing": "2 rem / 32 px"
+        }
+      ],
+      "between_component_examples": [
+        {
+          "axis": "vertical",
+          "spacing": "2 rem / 32 px"
+        },
+        {
+          "axis": "horizontal",
+          "spacing": "2 rem / 32 px"
+        }
+      ]
+    },
+    "page_structure": {
+      "definition": "Pages can be structured with dividers or differing background colors, depending on content amount and structure.",
+      "simple_structure_primary_background": [
+        "Place content on a Primary Background.",
+        "Use Primary Background generally for simple content.",
+        "Use Dividers on long pages as structural elements, but do not combine Dividers with tables on the same page."
+      ],
+      "strong_structure_surfaces": [
+        "Use the Card component for strong structuring with differing surface colors.",
+        "Content can be placed on the Card and on the grey Secondary Background; allocation must be reasonable and logical.",
+        "Use for long pages with complex content, for example when multiple tables or forms are consecutive."
+      ]
+    },
+    "message_types": {
+      "definition": "Feedback can be provided through messages with three priorities.",
+      "priorities": [
+        {
+          "priority": "low",
+          "type": "Toast",
+          "rules": [
+            "Shown temporarily and fades away independently without user interaction.",
+            "Does not contain a Close Button.",
+            "Can inform users of a successful interaction, such as data being saved."
+          ]
+        },
+        {
+          "priority": "medium",
+          "type": "Notification (Core)",
+          "rules": [
+            "Informs users of successful actions taken.",
+            "Can display further information via Text Links.",
+            "Can contain a Close Button.",
+            "Can inform users of correct or incorrect input."
+          ]
+        },
+        {
+          "priority": "high",
+          "type": "Dialog (Core)",
+          "rules": [
+            "Requires user input via CTA.",
+            "Can contain a Close Button.",
+            "Can trigger an interaction process via confirmation, such as delete."
+          ]
+        }
+      ]
+    },
+    "references": {
+      "jira_process": "Feature requests and bug reports relating to the Digital Design System or Frontend Kit should be submitted directly to the digital expert team via Jira.",
+      "support_contact": "support.design@bosch.com",
+      "design_review_note": "The support team can also check design drafts.",
+      "last_modified": "Thu, 28 Aug 2025 12:18"
+    }
+  },
+  "raw_text_sequence": [
+    {
+      "element": "h1",
+      "text": "Design principles"
+    },
+    {
+      "element": "p",
+      "text": "This section helps develop software in Bosch Corporate Design . To fully implement the designs, a basic understanding of the Core and the general design principles of the Digital Design System is required: See general design principles"
+    },
+    {
+      "element": "h2",
+      "text": "Responsive layout grid"
+    },
+    {
+      "element": "p",
+      "text": "The responsive layout grid is a guide for the placement of components and elements within software . The grid adapts to the screen sizes and their alignment, ensuring a consistent appearance across differing layouts: View basic design principles"
+    },
+    {
+      "element": "h4",
+      "text": "Structure"
+    },
+    {
+      "element": "li",
+      "text": "Baseline grid: All components are aligned along a square 0.5 rem (8 px) baseline grid for mobile devices, tables and desktops. This allows for easy definition of spacing between individual rows and individual sections."
+    },
+    {
+      "element": "li",
+      "text": "Column grid: The even spacing to screen margins and between columns(gutter) must be at least 1 rem (16 px) wide. Other possible spacings can be 1.5 or 2 rem."
+    },
+    {
+      "element": "li",
+      "text": "Column amount: The easily divisible 12-column grid allows a variation of twelve, six, four, three, two, or one evenly spaced column. Instead of using twelve columns, an amount of columns of choice can be used as design aid (i.e. five columns)."
+    },
+    {
+      "element": "p",
+      "text": "Info: As an example, the views in the components under \"Responsive behaviour\" are implemented in 12 columns for desktop and tablet and in four columns for mobile. In this way, the display remains consistent throughout the entire digital design system.Alternative column numbers for implementation are available in the Sketch file. The component definitions are based on the 12 column grid."
+    },
+    {
+      "element": "h4",
+      "text": "Break points"
+    },
+    {
+      "element": "p",
+      "text": "Break points help display components correctly on every device and in any size. As a result, the width of a container is defined by the active break point."
+    },
+    {
+      "element": "p",
+      "text": "Touchpoint"
+    },
+    {
+      "element": "p",
+      "text": "Viewport"
+    },
+    {
+      "element": "p",
+      "text": "Break point"
+    },
+    {
+      "element": "p",
+      "text": "Columns"
+    },
+    {
+      "element": "p",
+      "text": "Margin / Gutters*"
+    },
+    {
+      "element": "p",
+      "text": "Mobile"
+    },
+    {
+      "element": "p",
+      "text": "20 rem (320 px)"
+    },
+    {
+      "element": "p",
+      "text": "< 48 rem (768 px)"
+    },
+    {
+      "element": "p",
+      "text": "1 rem / 1 rem (16 px / 16 px)"
+    },
+    {
+      "element": "p",
+      "text": "Tablet"
+    },
+    {
+      "element": "p",
+      "text": "48 rem (768 px)"
+    },
+    {
+      "element": "p",
+      "text": "≥ 48 rem (768 px)"
+    },
+    {
+      "element": "p",
+      "text": "1 rem / 1 rem (16 px / 16 px)"
+    },
+    {
+      "element": "p",
+      "text": "Small Desktop"
+    },
+    {
+      "element": "p",
+      "text": "90 rem (1280 px)"
+    },
+    {
+      "element": "p",
+      "text": "≥ 74,625 rem (1194 px)"
+    },
+    {
+      "element": "p",
+      "text": "2 rem / 2 rem (left 80, right 32 px** / 32 px)"
+    },
+    {
+      "element": "p",
+      "text": "Large Desktop"
+    },
+    {
+      "element": "p",
+      "text": "120 rem (1920 px)"
+    },
+    {
+      "element": "p",
+      "text": "≥ 120 rem (1920 px)"
+    },
+    {
+      "element": "p",
+      "text": "2 rem / 2 rem (left 80, right 32 px** / 32 px)"
+    },
+    {
+      "element": "p",
+      "text": "*Margin and gutters are flexible in size and can equal 1, 1.5 or 2 rem."
+    },
+    {
+      "element": "p",
+      "text": "**The Side Navigation is offset to the baseline grid. The left margin equals 80 px when the Side Navigation is closed, and 288 px when opened."
+    },
+    {
+      "element": "h4",
+      "text": "Text sizes and line spacing"
+    },
+    {
+      "element": "p",
+      "text": "The font sizes and line spacing are generally defined in rem and are predefined in Core ."
+    },
+    {
+      "element": "h2",
+      "text": "Spacings"
+    },
+    {
+      "element": "p",
+      "text": "The Bosch Digital Design System offers predefined spacing within the components and – for the layout process – between the components:"
+    },
+    {
+      "element": "p",
+      "text": "More on general spacing"
+    },
+    {
+      "element": "h4",
+      "text": "Spacing within a component"
+    },
+    {
+      "element": "p",
+      "text": "Vertical spacing: 3 rem (48 px)"
+    },
+    {
+      "element": "p",
+      "text": "Horizontal spacing: 5 rem (80 px)"
+    },
+    {
+      "element": "p",
+      "text": "Vertical spacing: 3 rem (48 px)"
+    },
+    {
+      "element": "p",
+      "text": "Horizontal spacing: 2 rem (32 px)"
+    },
+    {
+      "element": "h4",
+      "text": "Spacing between two components"
+    },
+    {
+      "element": "p",
+      "text": "Vertical spacing: 2 rem (32 px)"
+    },
+    {
+      "element": "p",
+      "text": "Vertical spacing: 2 rem (32 px)"
+    },
+    {
+      "element": "p",
+      "text": "Horizontal spacing: 2 rem (32 px)"
+    },
+    {
+      "element": "h2",
+      "text": "Page structure"
+    },
+    {
+      "element": "p",
+      "text": "Pages can be structured through use of Dividers or different background colors. The type of structure depends on the amount and structure of the content."
+    },
+    {
+      "element": "p",
+      "text": "Simple structure on a Primary Background:"
+    },
+    {
+      "element": "li",
+      "text": "The content is placed on a Primary Background ."
+    },
+    {
+      "element": "li",
+      "text": "The Primary Background is generally used for simple content."
+    },
+    {
+      "element": "li",
+      "text": "Dividers can be used on long pages as structural element. However, Dividers may not be combined with tables on a page."
+    },
+    {
+      "element": "p",
+      "text": "Strong structuring based on surfaces with differing colors This design principle is done using the Card component ."
+    },
+    {
+      "element": "li",
+      "text": "The content can be placed on the Card as well as the (grey) Secondary Background . The allocation of content must be reasonable and logical."
+    },
+    {
+      "element": "li",
+      "text": "This is used on long pages with complex content, i.e. when multiple tables or forms are consecutive."
+    },
+    {
+      "element": "h2",
+      "text": "Message types"
+    },
+    {
+      "element": "p",
+      "text": "Feedback can be provided via messages. These have three different priorities:"
+    },
+    {
+      "element": "p",
+      "text": "Low priority:"
+    },
+    {
+      "element": "p",
+      "text": "Toast"
+    },
+    {
+      "element": "li",
+      "text": "A Toast is shown temporarily, and fades away independently and without needing user interaction."
+    },
+    {
+      "element": "li",
+      "text": "It does not contain a Close Button."
+    },
+    {
+      "element": "li",
+      "text": "The content can, for example, inform users of a successful interaction (i.e. data was saved)."
+    },
+    {
+      "element": "p",
+      "text": "Medium priority: Notification (Core)"
+    },
+    {
+      "element": "li",
+      "text": "A Notification informs users of successful actions taken."
+    },
+    {
+      "element": "li",
+      "text": "Can display further information via Text Links ."
+    },
+    {
+      "element": "li",
+      "text": "It can contain a Close Button."
+    },
+    {
+      "element": "li",
+      "text": "The content can, for example, inform users of correct or incorrect input."
+    },
+    {
+      "element": "p",
+      "text": "High priority: Dialog (Core)"
+    },
+    {
+      "element": "li",
+      "text": "The Dialog requires user input via CTA."
+    },
+    {
+      "element": "li",
+      "text": "Can contain a Close Button."
+    },
+    {
+      "element": "li",
+      "text": "The content can, for example, trigger the process of an interaction via confirmation (i.e. delete)."
+    },
+    {
+      "element": "h2",
+      "text": "References"
+    },
+    {
+      "element": "p",
+      "text": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here ."
+    },
+    {
+      "element": "p",
+      "text": "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts."
+    },
+    {
+      "element": "p",
+      "text": "Last modified on Thu, 28. Aug 2025 12:18"
+    }
+  ],
+  "related_resources": {
+    "links": [
+      {
+        "label": "Skip to main content",
+        "href": "https://brandguide.bosch.com/document/221/en#main",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/dashboard",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/gfrIcqjIdpopmNWI1xgujY2fXDf3XidnDUrpyVXe54Q",
+        "target": "_self"
+      },
+      {
+        "label": "Home",
+        "href": "https://brandguide.bosch.com/document/8832/en",
+        "target": null
+      },
+      {
+        "label": "Bosch UI Kit",
+        "href": "https://brandguide.bosch.com/document/219/en",
+        "target": null
+      },
+      {
+        "label": "Support",
+        "href": "https://brandguide.bosch.com/document/374/en",
+        "target": null
+      },
+      {
+        "label": "Back to Brandguide external link opens in a new tab",
+        "href": "https://brandguide.bosch.com/hub/78",
+        "target": "_blank"
+      },
+      {
+        "label": "Software Basics",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/software-basics",
+        "target": null
+      },
+      {
+        "label": "Current page: Design principles",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles",
+        "target": null
+      },
+      {
+        "label": "Responsive layout grid (active)",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles/responsive-layout-grid-1-1606983778",
+        "target": null
+      },
+      {
+        "label": "Spacings",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles/spacings",
+        "target": null
+      },
+      {
+        "label": "Page structure",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles/page-structure",
+        "target": null
+      },
+      {
+        "label": "Message types",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles/message-types",
+        "target": null
+      },
+      {
+        "label": "References",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/design-principles/references-1606983778",
+        "target": null
+      },
+      {
+        "label": "Figma UI library",
+        "href": "https://brandguide.bosch.com/r/rVWH2RvKJUC-opFbVtlTLCWQSVgYMVVKg1nnaurS7y4",
+        "target": null
+      },
+      {
+        "label": "See general design principles",
+        "href": "https://brandguide.bosch.com/r/4DfORjTaJqUnXhe6y3bNMG4M5I5t0KnXObvYvGAfc2Q",
+        "target": "_blank"
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/mNJpR2Pwp0bAUaClpYXoLI1RyCTYzpoE-NgM1GQfayk",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/AfEa5aPk9p0cky3HWBOkPk_DESrsmSlSiyDsOAJyRfc",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/f5JkjHY9fWi0jOCQj90KnNPOuBlJUXLDV2U0wlCFrUU",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/Xr751N_q_4PIq4IwNpTdeLeDV177X2cLmxG8hG2Hyes",
+        "target": null
+      },
+      {
+        "label": "View basic design principles",
+        "href": "https://brandguide.bosch.com/r/4DfORjTaJqUnXhe6y3bNMG4M5I5t0KnXObvYvGAfc2Q",
+        "target": "_blank"
+      },
+      {
+        "label": "Core",
+        "href": "https://brandguide.bosch.com/r/WKWAKv12JRVY3w6wV7ouLCHcENT_JERWtaBONBHYdJM",
+        "target": "_blank"
+      },
+      {
+        "label": "More on general spacing",
+        "href": "https://brandguide.bosch.com/r/u-JND0smmW24ashwVJHQd_PZES_OEAUD39qKsRzymcs",
+        "target": "_blank"
+      },
+      {
+        "label": "Primary Background",
+        "href": "https://brandguide.bosch.com/r/iIoN3qABOt34-8xp5Wxx_1wgRj4wSO42Qoq5GQGQFhk",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "javascript:;",
+        "target": null
+      },
+      {
+        "label": "Card component",
+        "href": "https://brandguide.bosch.com/r/DUGZmZtnCdIeSU9819KYTKPcVVHd79aNivG9bZpth4E",
+        "target": null
+      },
+      {
+        "label": "Secondary Background",
+        "href": "https://brandguide.bosch.com/r/iIoN3qABOt34-8xp5Wxx_1wgRj4wSO42Qoq5GQGQFhk",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/M3p5ub8Ty6k3vJxtoHLiEfgEpcFcE6LPMn83i1WEZYM",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/64ylGpjFSlSa0djl2wykM46xhPsi0KZ6x4-uLjHukZk",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/rt5dMN2jXehwf-4z7tgI3aiGrdS0YTJ4r7dy9wpWIj0",
+        "target": null
+      },
+      {
+        "label": "Toast",
+        "href": "https://brandguide.bosch.com/r/M3p5ub8Ty6k3vJxtoHLiEfgEpcFcE6LPMn83i1WEZYM",
+        "target": null
+      },
+      {
+        "label": "Notification",
+        "href": "https://brandguide.bosch.com/r/64ylGpjFSlSa0djl2wykM46xhPsi0KZ6x4-uLjHukZk",
+        "target": null
+      },
+      {
+        "label": "Text Links",
+        "href": "https://brandguide.bosch.com/r/YrCRbrKxYeivEkTGTGTVnRmqW7AXw9nYUlzuXwrD6PE",
+        "target": null
+      },
+      {
+        "label": "Dialog (Core)",
+        "href": "https://brandguide.bosch.com/r/rt5dMN2jXehwf-4z7tgI3aiGrdS0YTJ4r7dy9wpWIj0",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/UeF0IYswz49bKT9CqMzON6e69rQt1QXiRW013BJBgFQ",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/b2upu2V7cAY73l5XPJ_oPc54tfjXUPFlZe63bpdLxX4",
+        "target": null
+      },
+      {
+        "label": null,
+        "href": "https://brandguide.bosch.com/r/TJ46PrIetkJkNpbISjTnIOJzEINlK-IsEJVqssa216I",
+        "target": null
+      },
+      {
+        "label": "here",
+        "href": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc",
+        "target": "_self"
+      },
+      {
+        "label": "support.design@bosch.com",
+        "href": "mailto:support.design@bosch.com",
+        "target": "_self"
+      },
+      {
+        "label": "Basics Software Basics",
+        "href": "https://brandguide.bosch.com/document/221/en#/basics/software-basics",
+        "target": null
+      },
+      {
+        "label": "Components Overview",
+        "href": "https://brandguide.bosch.com/document/221/en#/components/overview",
+        "target": null
+      },
+      {
+        "label": "Corporate Information",
+        "href": "https://www.bosch.com/static/frontify/impressum.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Legal notice",
+        "href": "https://www.bosch.com/static/frontify/rechtliches.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Data protection policy",
+        "href": "https://www.bosch.com/static/frontify/datenschutzhinweise.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Terms of use",
+        "href": "https://www.bosch.com/static/frontify/nutzungsbedingungen.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Corporate information",
+        "href": "https://www.bosch.com/static/frontify/corporate-information.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Legal notice",
+        "href": "https://www.bosch.com/static/frontify/legal.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Data protection policy",
+        "href": "https://www.bosch.com/static/frontify/data-protection-policy.html",
+        "target": "_blank"
+      },
+      {
+        "label": "Terms of use",
+        "href": "https://www.bosch.com/static/frontify/terms-of-use.html",
+        "target": "_blank"
+      }
+    ],
+    "visual_assets": [
+      {
+        "title": "Responsive layout grid",
+        "description": null,
+        "alt_text": "Responsive layout grid",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82OFwvMTIzNzM4XC82MjUwZjQyNjZkOGYwNjFlMzE5MzBkZTcyNmU5ZjcxMy0xNjAzNDYzMDU2LnBuZyJ9_bosch",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 123738,
+        "filename": "Responsive Layout Grid.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-23 14:24:16",
+        "modified": "2020-10-23 14:24:16",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82OFwvMTIzNzM4XC82MjUwZjQyNjZkOGYwNjFlMzE5MzBkZTcyNmU5ZjcxMy0xNjAzNDYzMDU2LnBuZyJ9:bosch:swdi5gNcQ6ycF8rbV9kbUSfaWQxlpz4ZHdfZwM0zreM?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82OFwvMTIzNzM4XC82MjUwZjQyNjZkOGYwNjFlMzE5MzBkZTcyNmU5ZjcxMy0xNjAzNDYzMDU2LnBuZyJ9:bosch:swdi5gNcQ6ycF8rbV9kbUSfaWQxlpz4ZHdfZwM0zreM?width={width}"
+      },
+      {
+        "title": "Spacings",
+        "description": null,
+        "alt_text": "Spacings",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82MlwvMTIyNzk2XC9jODRlYmEzMTYzZDlmMTUzNDRmNTNkN2NjODQ5NjU2Ny0xNjA1NjkyOTI1LnBuZyJ9_bosch",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 122796,
+        "filename": "Spacings.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-19 07:25:57",
+        "modified": "2020-11-18 09:48:45",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82MlwvMTIyNzk2XC9jODRlYmEzMTYzZDlmMTUzNDRmNTNkN2NjODQ5NjU2Ny0xNjA1NjkyOTI1LnBuZyJ9:bosch:B68ufcJAQPqsXR0MHV-ToYzLPxwyAsSX5ULXUzt1BbE?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC82MlwvMTIyNzk2XC9jODRlYmEzMTYzZDlmMTUzNDRmNTNkN2NjODQ5NjU2Ny0xNjA1NjkyOTI1LnBuZyJ9:bosch:B68ufcJAQPqsXR0MHV-ToYzLPxwyAsSX5ULXUzt1BbE?width={width}"
+      },
+      {
+        "title": "Favicon",
+        "description": null,
+        "alt_text": "Favicon",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wMlwvMTMwNTk3XC9lMDdlYTljYWUzY2M1MWY1OGU1MTIwZjgwZGQyMTNjMy0xNjA5Njg3OTMwLnBuZyJ9_bosch",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 130597,
+        "filename": "Benachrichtigungstypen.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2021-01-03 10:23:08",
+        "modified": "2021-01-03 15:32:10",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wMlwvMTMwNTk3XC9lMDdlYTljYWUzY2M1MWY1OGU1MTIwZjgwZGQyMTNjMy0xNjA5Njg3OTMwLnBuZyJ9:bosch:o-I_zwFChOeMFbcYCFbxZ-OAg4gcF6ynZFsc5jdbSgg?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wMlwvMTMwNTk3XC9lMDdlYTljYWUzY2M1MWY1OGU1MTIwZjgwZGQyMTNjMy0xNjA5Njg3OTMwLnBuZyJ9:bosch:o-I_zwFChOeMFbcYCFbxZ-OAg4gcF6ynZFsc5jdbSgg?width={width}"
+      },
+      {
+        "title": "Page structure",
+        "description": null,
+        "alt_text": "Page structure<br />",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9kY1wvMTMwNTk4XC9mZDkzY2Q1NmE3ZmNlZmJlNTQ1NDAzN2FiYmViOGQxMy0xNjA5Njg3OTMyLnBuZyJ9_bosch",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 130598,
+        "filename": "Seitengliederung.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2021-01-03 10:23:10",
+        "modified": "2021-01-03 15:32:12",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9kY1wvMTMwNTk4XC9mZDkzY2Q1NmE3ZmNlZmJlNTQ1NDAzN2FiYmViOGQxMy0xNjA5Njg3OTMyLnBuZyJ9:bosch:v0bOQhvyN_3MtlU_v4bRl_8ZFD4WdeimwbaM8dfp740?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9kY1wvMTMwNTk4XC9mZDkzY2Q1NmE3ZmNlZmJlNTQ1NDAzN2FiYmViOGQxMy0xNjA5Njg3OTMyLnBuZyJ9:bosch:v0bOQhvyN_3MtlU_v4bRl_8ZFD4WdeimwbaM8dfp740?width={width}"
+      },
+      {
+        "title": "<br />",
+        "description": null,
+        "alt_text": "<br />",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9mMVwvMTMxMzk2XC9hZmI5MjU4N2NhZmI2YjJjMzZhYjQ4MmM4MDEyYTcwNS0xNjEwNDQzNTM5LnBuZyJ9_bosch",
+        "original_width": "2880",
+        "original_height": "2088",
+        "asset_id": 131396,
+        "filename": "Primary.png",
+        "asset_width": 2880,
+        "asset_height": 2088,
+        "created": "2021-01-12 09:25:39",
+        "modified": "2021-01-12 09:25:39",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9mMVwvMTMxMzk2XC9hZmI5MjU4N2NhZmI2YjJjMzZhYjQ4MmM4MDEyYTcwNS0xNjEwNDQzNTM5LnBuZyJ9:bosch:vlEUN0CUxh9gAYL_W0irB41er-JoeCETu338654KDO0?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9mMVwvMTMxMzk2XC9hZmI5MjU4N2NhZmI2YjJjMzZhYjQ4MmM4MDEyYTcwNS0xNjEwNDQzNTM5LnBuZyJ9:bosch:vlEUN0CUxh9gAYL_W0irB41er-JoeCETu338654KDO0?width={width}"
+      },
+      {
+        "title": "Primary Table",
+        "description": null,
+        "alt_text": "Primary Table",
+        "local_src": "./Design principles - Software - Bosch Digital Design System_files/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wOVwvMTMxMzk1XC9jYWZjYjYzNWRlYzE0YzM5ZDQxMmNhOTYyYWJjNGM4Ni0xNjEwNDQzNjUwLnBuZyJ9_bosch",
+        "original_width": "2880",
+        "original_height": "2088",
+        "asset_id": 131395,
+        "filename": "Primary Table.png",
+        "asset_width": 2880,
+        "asset_height": 2088,
+        "created": "2021-01-12 09:25:30",
+        "modified": "2021-01-12 09:27:30",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wOVwvMTMxMzk1XC9jYWZjYjYzNWRlYzE0YzM5ZDQxMmNhOTYyYWJjNGM4Ni0xNjEwNDQzNjUwLnBuZyJ9:bosch:iYyXzdYvTWzDhl6X2mI6HTiNQdgA0hNAN-tMoAqjda0?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wOVwvMTMxMzk1XC9jYWZjYjYzNWRlYzE0YzM5ZDQxMmNhOTYyYWJjNGM4Ni0xNjEwNDQzNjUwLnBuZyJ9:bosch:iYyXzdYvTWzDhl6X2mI6HTiNQdgA0hNAN-tMoAqjda0?width={width}"
+      },
+      {
+        "title": "Secondary",
+        "description": null,
+        "alt_text": "Secondary",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 2880 2088\"%3E%3C/svg%3E",
+        "original_width": "2880",
+        "original_height": "2088",
+        "asset_id": 131394,
+        "filename": "Secondary.png",
+        "asset_width": 2880,
+        "asset_height": 2088,
+        "created": "2021-01-12 09:25:20",
+        "modified": "2021-01-12 09:25:20",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9jOFwvMTMxMzk0XC82MGQyNmYzZGVjMWNhYzI5YzM4NjIyY2YwMzI2YzE1ZC0xNjEwNDQzNTIwLnBuZyJ9:bosch:tyTy8nRAoDt9VFX729bOtGytWoM7Pgrz8PO2KOyu3G0?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9jOFwvMTMxMzk0XC82MGQyNmYzZGVjMWNhYzI5YzM4NjIyY2YwMzI2YzE1ZC0xNjEwNDQzNTIwLnBuZyJ9:bosch:tyTy8nRAoDt9VFX729bOtGytWoM7Pgrz8PO2KOyu3G0?width={width}"
+      },
+      {
+        "title": "Secondary Table",
+        "description": null,
+        "alt_text": "Secondary Table",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 2880 2088\"%3E%3C/svg%3E",
+        "original_width": "2880",
+        "original_height": "2088",
+        "asset_id": 131393,
+        "filename": "Secondary Table.png",
+        "asset_width": 2880,
+        "asset_height": 2088,
+        "created": "2021-01-12 09:23:43",
+        "modified": "2021-01-12 09:32:26",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9lY1wvMTMxMzkzXC8wMTgyMmEyNDBjODNlYmY5OGU0MmM4NjliY2E2YzA2Yy0xNjEwNDQzOTQ2LnBuZyJ9:bosch:lfPe0mTKvauzV44rFxAbUp6FLfcByadwT6aaJZ2ogpQ?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9lY1wvMTMxMzkzXC8wMTgyMmEyNDBjODNlYmY5OGU0MmM4NjliY2E2YzA2Yy0xNjEwNDQzOTQ2LnBuZyJ9:bosch:lfPe0mTKvauzV44rFxAbUp6FLfcByadwT6aaJZ2ogpQ?width={width}"
+      },
+      {
+        "title": "Toast",
+        "description": null,
+        "alt_text": "Toast",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 130605,
+        "filename": "Toast.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2021-01-03 14:50:45",
+        "modified": "2021-01-11 10:53:48",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wZlwvMTMwNjA1XC84MTg4YjIyYjMzMTdiMTgwMzdhYWFlYWY1ODJiYjZkYS0xNjEwMzYyNDI4LnBuZyJ9:bosch:7Dd0DnEPaluZnaA-LAm5E1-jMyobTyWyLefdwarqPEM?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8wZlwvMTMwNjA1XC84MTg4YjIyYjMzMTdiMTgwMzdhYWFlYWY1ODJiYjZkYS0xNjEwMzYyNDI4LnBuZyJ9:bosch:7Dd0DnEPaluZnaA-LAm5E1-jMyobTyWyLefdwarqPEM?width={width}"
+      },
+      {
+        "title": "Notification",
+        "description": null,
+        "alt_text": "Notification",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 123698,
+        "filename": "Notification.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-23 09:15:30",
+        "modified": "2020-10-26 17:43:42",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC83OVwvMTIzNjk4XC8yYTZlMzlhYTE0M2YyZGQ2MThiOTU1Y2E0OWM1NjBlOC0xNjAzNzM0MjIyLnBuZyJ9:bosch:dqqHG1qiGx16Ch7WfNA7n13vs_YFDTK5TszMIF8ac5A?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC83OVwvMTIzNjk4XC8yYTZlMzlhYTE0M2YyZGQ2MThiOTU1Y2E0OWM1NjBlOC0xNjAzNzM0MjIyLnBuZyJ9:bosch:dqqHG1qiGx16Ch7WfNA7n13vs_YFDTK5TszMIF8ac5A?width={width}"
+      },
+      {
+        "title": "Dialog",
+        "description": null,
+        "alt_text": "Dialog",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 123704,
+        "filename": "Dialog.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-23 09:15:39",
+        "modified": "2020-10-26 17:27:07",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9lNVwvMTIzNzA0XC9hYjA0NjFhMDA5MjU0ZjIwMTc3MzA2NGI3Zjg3N2U1Mi0xNjAzNzMzMjI3LnBuZyJ9:bosch:8hK75NkhYh1rvKDZ60c9bpYISELdA0RTLj98j5JvQK8?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC9lNVwvMTIzNzA0XC9hYjA0NjFhMDA5MjU0ZjIwMTc3MzA2NGI3Zjg3N2U1Mi0xNjAzNzMzMjI3LnBuZyJ9:bosch:8hK75NkhYh1rvKDZ60c9bpYISELdA0RTLj98j5JvQK8?width={width}"
+      },
+      {
+        "title": "Download",
+        "description": null,
+        "alt_text": "Download",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 122585,
+        "filename": "Downloads.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-15 11:11:24",
+        "modified": "2020-11-27 13:12:24",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC85NFwvMTIyNTg1XC9lZDFmMTIyODRiNWYxNjc1YmQ3NzRmNjU4MWE1YjRjMC0xNjA2NDgyNzQ0LnBuZyJ9:bosch:vzKG-tPxod_CJV_FHhM9eIi5X1apX8XQf6il0WCN34w?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC85NFwvMTIyNTg1XC9lZDFmMTIyODRiNWYxNjc1YmQ3NzRmNjU4MWE1YjRjMC0xNjA2NDgyNzQ0LnBuZyJ9:bosch:vzKG-tPxod_CJV_FHhM9eIi5X1apX8XQf6il0WCN34w?width={width}"
+      },
+      {
+        "title": "Designing in Sketch",
+        "description": null,
+        "alt_text": "Designing in Sketch",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 122587,
+        "filename": "Gestalten-mit-Sketch.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-15 11:11:31",
+        "modified": "2020-11-27 13:12:30",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC81NlwvMTIyNTg3XC9iZjI3YjBhYjE0MmFhM2JkODNiYTkwYTE4NjViNmYxNy0xNjA2NDgyNzUwLnBuZyJ9:bosch:S6OB4FIT97_F7qRhmeS0xQNQEJqbmS8iJTFsCyYIQiM?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC81NlwvMTIyNTg3XC9iZjI3YjBhYjE0MmFhM2JkODNiYTkwYTE4NjViNmYxNy0xNjA2NDgyNzUwLnBuZyJ9:bosch:S6OB4FIT97_F7qRhmeS0xQNQEJqbmS8iJTFsCyYIQiM?width={width}"
+      },
+      {
+        "title": "Accessibility",
+        "description": null,
+        "alt_text": "Accessibility",
+        "local_src": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 1200\"%3E%3C/svg%3E",
+        "original_width": "1200",
+        "original_height": "1200",
+        "asset_id": 123727,
+        "filename": "Accessibility.png",
+        "asset_width": 1200,
+        "asset_height": 1200,
+        "created": "2020-10-23 13:55:37",
+        "modified": "2020-11-04 16:45:06",
+        "object_type": "CANVAS",
+        "status": "FINISHED",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8yMFwvMTIzNzI3XC9hN2Q3MjYxYzQxOTI0MmFkMzFkZjVjMmY5ZjJlMTExNi0xNjA0NTA4MzA2LnBuZyJ9:bosch:8QM412PrGyeihhAItfJNmKXkrm9EH2-TGlX0h2Rp9QU?width=800",
+        "generic_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzI3M1wvYXNzZXRzXC8yMFwvMTIzNzI3XC9hN2Q3MjYxYzQxOTI0MmFkMzFkZjVjMmY5ZjJlMTExNi0xNjA0NTA4MzA2LnBuZyJ9:bosch:8QM412PrGyeihhAItfJNmKXkrm9EH2-TGlX0h2Rp9QU?width={width}"
+      }
+    ]
+  },
+  "style_tokens_observed_in_html": {
+    "main_font_family": "Bosch Sans",
+    "body": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "Bosch Sans",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0",
+      "margin-bottom": "0"
+    },
+    "headings": {
+      "h1": {
+        "font-size": "2.5rem",
+        "line-height": "1.3",
+        "text-decoration": "none",
+        "font-style": "normal",
+        "text-transform": "none",
+        "letter-spacing": "normal",
+        "font-weight": "700",
+        "font-family": "Bosch Sans",
+        "color": "rgb(0, 0, 0)",
+        "margin-top": "0px",
+        "margin-bottom": "10px"
+      },
+      "h2": {
+        "font-size": "2rem",
+        "line-height": "1.3",
+        "text-decoration": "none",
+        "font-style": "normal",
+        "text-transform": "none",
+        "letter-spacing": "normal",
+        "font-weight": "700",
+        "font-family": "Bosch Sans",
+        "color": "rgb(0, 0, 0)",
+        "margin-top": "0px",
+        "margin-bottom": "8px"
+      },
+      "h3": {
+        "font-size": "1.5rem",
+        "line-height": "1.4",
+        "text-decoration": "none",
+        "font-style": "normal",
+        "text-transform": "none",
+        "letter-spacing": "normal",
+        "font-weight": "700",
+        "font-family": "Bosch Sans",
+        "color": "rgb(0, 0, 0)",
+        "margin-top": "0px",
+        "margin-bottom": "0px"
+      },
+      "h4": {
+        "font-size": "18px",
+        "line-height": "1.5",
+        "text-decoration": "none",
+        "font-style": "normal",
+        "text-transform": "none",
+        "letter-spacing": "normal",
+        "font-weight": "700",
+        "font-family": "Bosch Sans",
+        "color": "rgb(0, 0, 0)",
+        "margin-top": "0px",
+        "margin-bottom": "0px"
+      }
+    },
+    "link": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "underline",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "Bosch Sans",
+      "color": "rgb(0, 123, 192)"
+    },
+    "accent_colors": {
+      "info-color": "rgba(0, 98, 154, 1)",
+      "note-color": "rgba(205, 166, 0, 1)",
+      "tip-color": "rgb(0, 108, 58)",
+      "warning-color": "rgb(190, 0, 4)"
+    },
+    "buttons": {
+      "primary": {
+        "font-family": "Bosch Sans",
+        "font-size": "1rem",
+        "line-height": "1.5",
+        "font-weight": "400",
+        "font-style": "normal",
+        "text-transform": "none",
+        "padding-top": "0.8rem",
+        "padding-right": "1rem",
+        "padding-bottom": "0.7rem",
+        "padding-left": "1rem",
+        "border-radius": "0px",
+        "border-width": "0px",
+        "background-color": "rgb(0, 123, 192)",
+        "border-color": "rgba(0, 123, 192, 1)",
+        "color": "rgb(255, 255, 255)",
+        "background-color-hover": "rgb(0, 98, 154)",
+        "border-color-hover": "rgba(171, 0, 0, 0)",
+        "color-hover": "rgb(255, 255, 255)"
+      },
+      "secondary": {
+        "font-family": "Bosch Sans",
+        "font-size": "1rem",
+        "line-height": "1.5",
+        "font-weight": "400",
+        "font-style": "normal",
+        "text-transform": "none",
+        "padding-top": "0.8rem",
+        "padding-right": "1rem",
+        "padding-bottom": "0.7rem",
+        "padding-left": "1rem",
+        "border-radius": "0px",
+        "border-width": "1px",
+        "background-color": "rgba(255, 255, 255, 0)",
+        "border-color": "rgb(0, 123, 192)",
+        "color": "rgb(0, 123, 192)",
+        "background-color-hover": "rgb(209, 228, 255)",
+        "border-color-hover": "rgb(0, 98, 154)",
+        "color-hover": "rgb(0, 98, 154)"
+      },
+      "tertiary": {
+        "font-family": "Bosch Sans",
+        "font-size": "1rem",
+        "line-height": "1.5",
+        "font-weight": "400",
+        "font-style": "normal",
+        "text-transform": "none",
+        "padding-top": "0.8rem",
+        "padding-right": "1rem",
+        "padding-bottom": "0.7rem",
+        "padding-left": "1rem",
+        "border-radius": "0px",
+        "border-width": "0px",
+        "background-color": "rgba(255, 255, 255, 0)",
+        "border-color": "rgba(255, 255, 255, 0)",
+        "color": "rgb(0, 123, 192)",
+        "background-color-hover": "rgba(255, 255, 255, 0)",
+        "border-color-hover": "rgba(255, 255, 255, 0)",
+        "color-hover": "rgb(0, 98, 154)"
+      }
+    },
+    "background_color": "rgba(255, 255, 255, 1)",
+    "list_styles": {
+      "bullet1-color": "currentColor",
+      "bullet1-shape": "'■'",
+      "bullet1-size": "1em",
+      "bullet2-color": "currentColor",
+      "bullet2-shape": "'–'",
+      "bullet2-size": "auto",
+      "bullet3-color": "currentColor",
+      "bullet3-shape": "'–'",
+      "bullet3-size": "auto",
+      "numbered1-color": "currentColor",
+      "numbered1-counter-type": "decimal",
+      "numbered2-color": "currentColor",
+      "numbered2-counter-type": "lower-alpha",
+      "numbered3-color": "currentColor",
+      "numbered3-counter-type": "lower-roman"
+    }
+  },
+  "ai_readability_notes": {
+    "recommended_use": "Use this file as structured research for AI agents that need to generate or evaluate Bosch-aligned software UI, design QA, documentation, and prompts.",
+    "traceability": "Structured guidance is derived from accessible text, page section navigation, and asset metadata in the supplied HTML file.",
+    "limitations": [
+      "Visual details embedded inside images were not OCR-extracted.",
+      "Some Frontify dynamic content may not be fully represented in the static saved HTML.",
+      "Columns values in the breakpoint visual/table were not available as explicit accessible text in the parsed HTML."
+    ]
+  }
+}
