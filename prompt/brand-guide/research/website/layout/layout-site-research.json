@@ -1,0 +1,488 @@
+{
+  "schema_version": "1.0",
+  "file_name": "layout-site-research.json",
+  "created_from": {
+    "uploaded_file": "1.html",
+    "source_page_title": "Layout principle - Layout principle - Bosch Brand Guide",
+    "source_url_from_html_comment": "https://brandguide.bosch.com/document/2276/en#/-/layout-principle-1",
+    "brand_guide_section": "Bosch Brand Guide > Layout > Layout principle",
+    "language": "en",
+    "extraction_method": "HTML text and metadata extraction from uploaded local file; noisy navigation and placeholder text removed."
+  },
+  "topic": {
+    "name": "Bosch Layout",
+    "page": "Layout principle",
+    "purpose": "Define how Bosch communication media should be structured using a flexible relationship between brand area and experience area.",
+    "ai_readable_summary": "Bosch layouts are built from two adjustable levels: the brand area and the experience area. These levels together define the media format, can be arranged above, below, or next to each other, and can vary in size like a roller shutter. The system creates a clear structure that is easy to grasp and usable across media."
+  },
+  "source_evidence": [
+    {
+      "id": "E01",
+      "type": "principle",
+      "text": "The Bosch layout principle is based on the brand level and the experience level. Together they form the format of the media, can be flexibly arranged above and next to each other and are freely variable in size, like a roller shutter."
+    },
+    {
+      "id": "E02",
+      "type": "principle",
+      "text": "The layout principle creates a visual structure that makes content easy to grasp and is simple and flexible to use on all media."
+    },
+    {
+      "id": "E03",
+      "type": "tool_reference",
+      "text": "The Layout Creator can be used to create professional, high-quality communication materials with brand-compliant templates."
+    },
+    {
+      "id": "E04",
+      "type": "area_definition",
+      "text": "The brand area provides space for the Bosch brand and contains only the following basic elements: Supergraphic, symbol/logotype and, if applicable, the slogan."
+    },
+    {
+      "id": "E05",
+      "type": "area_definition",
+      "text": "The experience area contains text, images or illustrations and can be used to fill the entire format."
+    },
+    {
+      "id": "E06",
+      "type": "flexible_layout",
+      "text": "The brand area can expand from top to bottom in portrait format or from bottom to top."
+    },
+    {
+      "id": "E07",
+      "type": "flexible_layout",
+      "text": "In landscape format, the brand area can expand from the right or from the left."
+    },
+    {
+      "id": "E08",
+      "type": "text_placement",
+      "text": "Texts can be placed on both levels. If the text is on the experience area, it can be placed directly on the background image or in a box. Text boxes are only used if the experience area takes up a large part of the media format and the box can stand freely without cluttering the layout."
+    },
+    {
+      "id": "E09",
+      "type": "text_placement",
+      "text": "If the text is placed on the brand area, there should be enough space, at least 1H and preferably 2H, between it and the symbol/logotype."
+    },
+    {
+      "id": "E10",
+      "type": "readability_warning",
+      "text": "If the image is busy or does not have enough contrast to the text, the text should be placed in a box."
+    },
+    {
+      "id": "E11",
+      "type": "responsive_edge_case",
+      "text": "Even with very narrow or portrait-format media, the layout principle ensures a clear and flexible division of the brand and experience area."
+    },
+    {
+      "id": "E12",
+      "type": "dos_and_donts",
+      "text": "Do: Text is only in the text box on the experience area. No further text in the white brand area."
+    },
+    {
+      "id": "E13",
+      "type": "dos_and_donts",
+      "text": "Do: Text is in the text box on the experience area. No additional text in the transparent brand area."
+    },
+    {
+      "id": "E14",
+      "type": "dos_and_donts",
+      "text": "Don't: Text cannot be placed on both the brand and experience areas at the same time."
+    },
+    {
+      "id": "E15",
+      "type": "identifier",
+      "text": "An identifier like e.g. Bosch Home Comfort can be placed in a layout above and below the headline or as a binder below the text. This element is never separately designed as a logo, but just as text written in Bosch Sans Bold."
+    },
+    {
+      "id": "E16",
+      "type": "identifier",
+      "text": "In exceptional cases, there is a possibility to place the identifier in the brand area. If this is used, it takes the place of the slogan and the slogan is moved below the symbol/logotype."
+    },
+    {
+      "id": "E17",
+      "type": "identifier",
+      "text": "The additional name is set in Bosch Sans Bold. Like the slogan, the font size is based on the symbol/logotype and corresponds to a maximum of 1/2 the height of the logotype."
+    },
+    {
+      "id": "E18",
+      "type": "identifier",
+      "text": "The element should not exceed the width of the symbol/logotype. If required it can also be displayed in two lines."
+    }
+  ],
+  "layout_model": {
+    "areas": [
+      {
+        "id": "brand_area",
+        "display_name": "Brand area",
+        "visual_reference_in_guide": "Shown as white in the example images.",
+        "role": "Reserved for Bosch brand presence.",
+        "allowed_elements": [
+          "Supergraphic",
+          "symbol/logotype",
+          "slogan, if applicable"
+        ],
+        "content_restrictions": [
+          "Keep brand area focused on brand elements.",
+          "Avoid additional text in the brand area when text is already used in the experience area.",
+          "If text is placed in the brand area, maintain at least 1H, preferably 2H, distance from the symbol/logotype."
+        ],
+        "evidence_ids": [
+          "E04",
+          "E09",
+          "E12",
+          "E13",
+          "E14"
+        ]
+      },
+      {
+        "id": "experience_area",
+        "display_name": "Experience area",
+        "visual_reference_in_guide": "Shown as gray in the example images.",
+        "role": "Carries communication content and experience-building material.",
+        "allowed_elements": [
+          "text",
+          "images",
+          "illustrations"
+        ],
+        "usage_notes": [
+          "May fill the entire media format.",
+          "Text can sit directly on the background image when readability is sufficient.",
+          "Text can sit inside a box when contrast or image complexity requires it."
+        ],
+        "evidence_ids": [
+          "E05",
+          "E08",
+          "E10"
+        ]
+      }
+    ],
+    "composition_behavior": {
+      "arrangement_modes": [
+        "brand area above experience area",
+        "brand area below experience area",
+        "brand area next to experience area",
+        "experience area can occupy the full format"
+      ],
+      "size_behavior": "Areas are freely variable in size, described in the guide as similar to a roller shutter.",
+      "goal": "Create a clear, graspable visual structure that works flexibly across media.",
+      "evidence_ids": [
+        "E01",
+        "E02",
+        "E05"
+      ]
+    }
+  },
+  "flexible_layout_rules": {
+    "portrait_format": {
+      "brand_area_expansion": [
+        "top_to_bottom",
+        "bottom_to_top"
+      ],
+      "note": "The brand area can expand vertically in either direction in portrait formats.",
+      "evidence_ids": [
+        "E06"
+      ]
+    },
+    "landscape_format": {
+      "brand_area_expansion": [
+        "from_right",
+        "from_left"
+      ],
+      "note": "The brand area can expand horizontally from either side in landscape formats.",
+      "evidence_ids": [
+        "E07"
+      ]
+    },
+    "narrow_or_portrait_media": {
+      "rule": "Maintain a clear and flexible division between brand and experience areas even in very narrow or portrait-format media.",
+      "evidence_ids": [
+        "E11"
+      ]
+    }
+  },
+  "text_placement_rules": {
+    "general_rule": "Text may be placed on the brand area or on the experience area, but not on both at the same time within the same layout.",
+    "experience_area_text": {
+      "allowed_placements": [
+        "directly_on_background_image",
+        "inside_text_box"
+      ],
+      "text_box_conditions": [
+        "Use a text box when the experience area takes up a large part of the media format.",
+        "Use a text box only when it can stand freely without cluttering the layout.",
+        "Use a text box when the background image is busy or does not provide enough contrast."
+      ],
+      "evidence_ids": [
+        "E08",
+        "E10",
+        "E12",
+        "E13"
+      ]
+    },
+    "brand_area_text": {
+      "spacing_rule": "Maintain at least 1H, preferably 2H, between brand-area text and the symbol/logotype.",
+      "evidence_ids": [
+        "E09"
+      ]
+    },
+    "do_not": [
+      {
+        "rule": "Do not place text on both the brand and experience areas at the same time.",
+        "evidence_ids": [
+          "E14"
+        ]
+      }
+    ]
+  },
+  "identifier_rules": {
+    "definition": "An identifier is an additional textual name, such as Bosch Home Comfort, used in layout to qualify the brand or communication context.",
+    "allowed_positions": [
+      "above_headline",
+      "below_headline",
+      "as_binder_below_text"
+    ],
+    "design_treatment": {
+      "font": "Bosch Sans Bold",
+      "not_a_logo": true,
+      "maximum_font_size": "Up to 1/2 the height of the logotype, based on symbol/logotype size.",
+      "maximum_width": "Should not exceed the width of the symbol/logotype.",
+      "line_breaks": "Can be displayed in two lines if required."
+    },
+    "exceptional_brand_area_use": {
+      "allowed": true,
+      "condition": "Exceptional cases only.",
+      "effect": "Identifier takes the place of the slogan; the slogan moves below the symbol/logotype."
+    },
+    "evidence_ids": [
+      "E15",
+      "E16",
+      "E17",
+      "E18"
+    ]
+  },
+  "dos_and_donts": {
+    "do": [
+      {
+        "rule": "Place text only in the text box on the experience area when that approach is chosen.",
+        "avoid": "No further text in the white brand area.",
+        "evidence_ids": [
+          "E12"
+        ]
+      },
+      {
+        "rule": "Use a text box on the experience area when the brand area is transparent or should remain free of extra copy.",
+        "avoid": "No additional text in the transparent brand area.",
+        "evidence_ids": [
+          "E13"
+        ]
+      }
+    ],
+    "dont": [
+      {
+        "rule": "Do not split text placement across brand and experience areas simultaneously.",
+        "evidence_ids": [
+          "E14"
+        ]
+      }
+    ]
+  },
+  "related_elements_and_pages": {
+    "mentioned_related_elements": [
+      "symbol/logotype",
+      "supergraphic",
+      "slogan",
+      "imagery style"
+    ],
+    "note": "The guide references corresponding pages for deeper rules about these elements."
+  },
+  "tools": [
+    {
+      "name": "Layout Creator",
+      "role": "Creates professional, high-quality Bosch communication materials using brand-compliant templates.",
+      "evidence_ids": [
+        "E03"
+      ]
+    }
+  ],
+  "implementation_guidance_for_ai_generation": {
+    "layout_generation_steps": [
+      "Choose media orientation and format.",
+      "Define brand area and experience area as the two primary zones.",
+      "Place only allowed brand elements in the brand area: supergraphic, symbol/logotype, and slogan if applicable.",
+      "Place communication content, images, or illustrations in the experience area.",
+      "Adjust brand-area expansion direction based on orientation: vertical for portrait, horizontal for landscape.",
+      "Choose a single text placement strategy: brand area or experience area, not both.",
+      "If text sits on imagery, test readability; use a text box when image complexity or contrast requires it.",
+      "If using an identifier, typeset it as Bosch Sans Bold text rather than as a separate logo."
+    ],
+    "validation_checklist": [
+      "Are brand and experience areas clearly distinguishable?",
+      "Does the brand area contain only permitted brand elements?",
+      "Is text placed in only one area type?",
+      "If text is in the brand area, is spacing from symbol/logotype at least 1H, preferably 2H?",
+      "If text is over an image, is contrast sufficient? If not, is a text box used?",
+      "If an identifier is used, is it Bosch Sans Bold and within symbol/logotype width and size limits?"
+    ]
+  },
+  "visual_assets_extracted_from_html": [
+    {
+      "asset_id": 771660,
+      "filename": "layout_markenebene_en.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 989,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/2mzwNor2N76qrM4ZQTAx.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/2mzwNor2N76qrM4ZQTAx.png?width={width}",
+      "created": "2024-01-12 08:13:57",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 771661,
+      "filename": "layout_erlebnisebene_en.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 988,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/7TbmzXvWFxyunz216Ztc.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/7TbmzXvWFxyunz216Ztc.png?width={width}",
+      "created": "2024-01-12 08:14:06",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 593543,
+      "filename": "layout_flex-layout_hochkant1.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/TBgtgC8A1xnTJxFbmUnP.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/TBgtgC8A1xnTJxFbmUnP.png?width={width}",
+      "created": "2023-09-20 12:17:54",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583812,
+      "filename": "layoutprinzip_hochkant_2.png",
+      "type": "IMAGE",
+      "width_px": 800,
+      "height_px": 1072,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/wkzJXNKUzc7odaMWgJTU.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/wkzJXNKUzc7odaMWgJTU.png?width={width}",
+      "created": "2023-09-07 13:16:40",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583813,
+      "filename": "layoutprinzip_hochkant_3.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/XBYv5C53UEnubKHS85SB.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/XBYv5C53UEnubKHS85SB.png?width={width}",
+      "created": "2023-09-07 13:16:41",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583814,
+      "filename": "layoutprinzip_hochkant_4.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/UXzaVQ2XJ5bf32v5nHNW.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/UXzaVQ2XJ5bf32v5nHNW.png?width={width}",
+      "created": "2023-09-07 13:16:41",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 599031,
+      "filename": "layout_markenebene_quer1.png",
+      "type": "IMAGE",
+      "width_px": 503,
+      "height_px": 359,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/o5ijmQEZQMdLt6n32u6u.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/o5ijmQEZQMdLt6n32u6u.png?width={width}",
+      "created": "2023-09-27 11:33:40",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 599032,
+      "filename": "layout_markenebene_quer2.png",
+      "type": "IMAGE",
+      "width_px": 503,
+      "height_px": 359,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/onac6FFrt8GNRPB924JF.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/onac6FFrt8GNRPB924JF.png?width={width}",
+      "created": "2023-09-27 11:33:53",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 599034,
+      "filename": "layout_markenebene_quer3.png",
+      "type": "IMAGE",
+      "width_px": 503,
+      "height_px": 359,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/SGFd5a6Se276T5xE1Eoj.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/SGFd5a6Se276T5xE1Eoj.png?width={width}",
+      "created": "2023-09-27 11:34:10",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583823,
+      "filename": "layout_text-bild4.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/ycffCKtWpRpas6Zhf1oi.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/ycffCKtWpRpas6Zhf1oi.png?width={width}",
+      "created": "2023-09-07 13:19:48",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583825,
+      "filename": "layout_text-bild2.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/nTaaSYGsqvLpFWQAcejM.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/nTaaSYGsqvLpFWQAcejM.png?width={width}",
+      "created": "2023-09-07 13:23:58",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 583822,
+      "filename": "layout_text-bild3.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/Uqn2ohSy51UQXVbr7S9t.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/Uqn2ohSy51UQXVbr7S9t.png?width={width}",
+      "created": "2023-09-07 13:19:48",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    },
+    {
+      "asset_id": 593711,
+      "filename": "layout_text-bild1.png",
+      "type": "IMAGE",
+      "width_px": 1600,
+      "height_px": 2144,
+      "extension": "png",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/Kc3vzGJzD3nupRQxntSh.png?width=800",
+      "generic_url_template": "https://media.ffycdn.net/eu/bosch/Kc3vzGJzD3nupRQxntSh.png?width={width}",
+      "created": "2023-09-21 07:47:07",
+      "purpose_in_page": "Illustrates Bosch layout principle, area behavior, text placement, dos-and-donts, or identifier usage."
+    }
+  ],
+  "quality_notes": [
+    "Placeholder lorem ipsum and editor error strings were ignored.",
+    "Image content itself was not semantically interpreted beyond filenames and surrounding text because the uploaded HTML references image files rather than exposing their full visual content as text.",
+    "This JSON is optimized for downstream AI usage, traceability, and rule-based layout generation."
+  ]
+}

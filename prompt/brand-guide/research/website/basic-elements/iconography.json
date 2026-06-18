@@ -1,0 +1,190 @@
+{
+  "file_name": "iconography-site-research.json",
+  "source": {
+    "input_file": "1.html",
+    "saved_from_url": "https://brandguide.bosch.com/document/2275/en#/-/overview-icons",
+    "html_language": "en",
+    "page_title": "Overview icons - Icons - Bosch Brand Guide",
+    "document_title": "Icons",
+    "document_id": "2275",
+    "project_id": "229",
+    "last_modified": "Thu, 28 Aug 2025 12:19",
+    "extraction_date": "2026-06-18",
+    "source_type": "Bosch Brand Guide Frontify HTML export"
+  },
+  "topic": {
+    "name": "Bosch iconography",
+    "brand_guide_area": "Basic elements > Icons",
+    "current_page": "Overview icons",
+    "related_pages": [
+      {
+        "label": "Overview icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/overview-icons"
+      },
+      {
+        "label": "Icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/icons"
+      },
+      {
+        "label": "Animated Icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/animated-icons"
+      }
+    ],
+    "scope": "Static and animated icons used to communicate the Bosch brand and support user experience across touchpoints."
+  },
+  "core_guidance": {
+    "summary": "Icons are essential for communicating our brand in all areas. Both static and animated, they help convey information and enhance the user experience.",
+    "principles": [
+      {
+        "principle": "Use icons as essential brand communication elements",
+        "meaning_for_ai": "Treat icons as part of Bosch brand expression, not merely decorative UI elements.",
+        "evidence": "The page states that icons are essential for communicating the brand in all areas."
+      },
+      {
+        "principle": "Support information transfer and UX clarity",
+        "meaning_for_ai": "Select or generate icons to clarify meaning, improve orientation, and reduce cognitive load for users.",
+        "evidence": "The page states that static and animated icons help convey information and enhance user experience."
+      },
+      {
+        "principle": "Differentiate static and animated icon applications",
+        "meaning_for_ai": "When creating or selecting assets, distinguish between static icon use cases and animated icon use cases instead of treating them as one asset type.",
+        "evidence": "The topic overview separates Icons and Animated icons as two linked sections."
+      }
+    ]
+  },
+  "information_architecture": {
+    "site_navigation_context": [
+      "Home",
+      "Brand",
+      "Basic elements",
+      "Layout",
+      "Touchpoints",
+      "Downloads",
+      "Tools",
+      "Support",
+      "Division guides",
+      "Archiv",
+      "More"
+    ],
+    "sidebar_pages": [
+      {
+        "label": "Overview icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/overview-icons"
+      },
+      {
+        "label": "Icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/icons"
+      },
+      {
+        "label": "Animated Icons",
+        "href": "https://brandguide.bosch.com/document/2275/en#/-/animated-icons"
+      }
+    ],
+    "topic_overview_heading": "Topic overview:",
+    "pagination_next_page": {
+      "category": "Icons",
+      "title": "Icons",
+      "href": "https://brandguide.bosch.com/document/2275/en#/-/icons"
+    }
+  },
+  "assets_identified": [
+    {
+      "asset_id": "598155",
+      "title": "Icons",
+      "filename": "Icons.png",
+      "object_type": "IMAGE",
+      "format": "png",
+      "dimensions_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/uRDPMDeVPdokLH8L2VSV.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/uRDPMDeVPdokLH8L2VSV.png?width={width}",
+      "download_url": "https://brandguide.bosch.com/api/screen/download/eyJpZCI6NTk4MTU1LCJzY29wZSI6ImFzc2V0OnZpZXciLCJ0aW1lc3RhbXAiOiIxNzgxNzk1NjYxIn0:bosch:JFzjOgDGMxzaVpmhEvwyUOfws5n8sntzgle56qqqlIc",
+      "alt_text": "Icons",
+      "created": "2023-09-26 07:16:03",
+      "modified": "2023-09-26 07:16:03"
+    },
+    {
+      "asset_id": "598154",
+      "title": "Animated icons",
+      "filename": "Animierte Icons.png",
+      "object_type": "IMAGE",
+      "format": "png",
+      "dimensions_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/7qUiGgTW422hK7e6fyRK.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/7qUiGgTW422hK7e6fyRK.png?width={width}",
+      "download_url": "https://brandguide.bosch.com/api/screen/download/eyJpZCI6NTk4MTU0LCJzY29wZSI6ImFzc2V0OnZpZXciLCJ0aW1lc3RhbXAiOiIxNzgxNzk1NjYxIn0:bosch:cR1NXrfAyPD0blknQflD1SOKZnnDxu1IcC9bWLF3OBY",
+      "alt_text": "Animated icons",
+      "created": "2023-09-26 07:16:03",
+      "modified": "2023-09-26 07:16:03"
+    }
+  ],
+  "visual_style_inferred_from_page_assets": {
+    "icon_asset_set_types": [
+      "static icons",
+      "animated icons"
+    ],
+    "asset_preview_format": "PNG previews in a square 1600 x 1600 presentation format",
+    "likely_usage": [
+      "navigation support",
+      "information explanation",
+      "user interface affordances",
+      "brand-consistent communication across touchpoints"
+    ],
+    "limitations": "The HTML contains preview assets and high-level guidance, but detailed icon construction rules, stroke width, grid, corner radius, or animation timing are not exposed in the captured page text."
+  },
+  "design_system_mapping": {
+    "token_relevance": [
+      "icon.size",
+      "icon.color",
+      "icon.stroke_width",
+      "icon.motion.duration",
+      "icon.motion.easing",
+      "icon.accessibility.label"
+    ],
+    "recommended_ai_fields_for_future_icon_generation": {
+      "icon_name": "Human-readable semantic name",
+      "icon_type": "static | animated",
+      "semantic_intent": "The user meaning the icon should communicate",
+      "context_of_use": "UI, presentation, campaign, product communication, documentation, etc.",
+      "style_constraints": "Bosch brand-consistent, simple, clear, functional, not ornamental",
+      "accessibility_label": "Text alternative or aria-label when used in UI",
+      "format": "SVG preferred for production icons; PNG may be used for previews or presentations",
+      "motion_specification": "For animated icons, define loop behavior, duration, easing, and trigger condition"
+    }
+  },
+  "ai_readability_notes": {
+    "how_to_use_this_json": "Use this file as a compact research summary of the Bosch Brand Guide iconography page. It is intended to inform AI prompts, design-system documentation, and asset-selection decisions.",
+    "do_not_overinfer": [
+      "Do not assume exact Bosch icon grid, stroke width, or animation timing from this page alone.",
+      "Do not recreate proprietary icon assets directly unless the user has permission and provides the needed source assets.",
+      "Do not treat the preview PNGs as complete production specifications."
+    ],
+    "safe_generation_direction": "Generate icon concepts that are simple, functional, brand-aligned, and optimized for clarity; validate final assets against the official Bosch icon library before production use."
+  },
+  "extracted_text_snippets": [
+    {
+      "type": "page_title",
+      "text": "Overview icons"
+    },
+    {
+      "type": "intro_paragraph",
+      "text": "Icons are essential for communicating our brand in all areas. Both static and animated, they help convey information and enhance the user experience."
+    },
+    {
+      "type": "section_heading",
+      "text": "Topic overview:"
+    },
+    {
+      "type": "asset_titles",
+      "text": [
+        "Icons",
+        "Animated icons"
+      ]
+    }
+  ]
+}

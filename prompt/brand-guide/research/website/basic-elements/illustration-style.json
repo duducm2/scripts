@@ -1,0 +1,226 @@
+{
+  "file_name": "illustration-style-site-research.json",
+  "source": {
+    "source_file": "1.html",
+    "captured_page_title": "Illustration style - Bosch Brand Guide",
+    "captured_url": "https://brandguide.bosch.com/document/2274/en#/-/illustration-style-1",
+    "language": "en",
+    "content_type": "brand_guide_page_research",
+    "research_scope": "Bosch Brand Guide illustration style page and visible linked resources/context inside the provided HTML"
+  },
+  "brand": {
+    "name": "Bosch",
+    "guide_area": "Basic elements",
+    "topic": "Illustration style"
+  },
+  "summary": {
+    "purpose": "Illustrations simplify abstract and complex facts and convey statements in a comprehensible way. They help present product value-adds vividly, lively, and engagingly, leaving a lasting impact.",
+    "style_definition": "The Bosch illustration style is clear, modern, and 2.5D.",
+    "system_principle": "The illustration system works like a modular construction kit. Fully editable illustrations can be integrated into a wide range of formats and media."
+  },
+  "core_principles": [
+    {
+      "principle": "clarity",
+      "description": "Illustrations should make complex or abstract facts easier to understand."
+    },
+    {
+      "principle": "modernity",
+      "description": "The style should feel contemporary, clean, and aligned with Bosch's current corporate design language."
+    },
+    {
+      "principle": "2.5D construction",
+      "description": "The visual style uses a 2.5D approach, creating depth while remaining simplified and controlled."
+    },
+    {
+      "principle": "modularity",
+      "description": "Illustrations are assembled from reusable elements and building blocks."
+    },
+    {
+      "principle": "editability",
+      "description": "Illustrations are intended to be fully editable so they can be adapted to different communication needs."
+    },
+    {
+      "principle": "cross-media integration",
+      "description": "Illustrations should work across many formats and media."
+    }
+  ],
+  "visual_language": {
+    "general_form_language": {
+      "description": "The visual language is based on clear geometric construction, reduced shapes, and controlled detailing.",
+      "shape_preferences": [
+        "basic geometric shapes",
+        "clear edges",
+        "soft curves where needed",
+        "flat and reduced visual elements"
+      ],
+      "avoid": [
+        "organic basic forms as primary construction logic",
+        "unnecessary details",
+        "visual effects that make the style less clean"
+      ]
+    },
+    "people": {
+      "construction": "People are based on simple, stylized, modular bodies and clothing variations.",
+      "diversity": "Diversity may be expressed through variation in skin colors, hairstyles, clothing, and accessories. The guide indicates that classic natural skin colors are not the default approach. Brand colors or gray palettes may be used instead.",
+      "faces": {
+        "default": "Faces are generally simplified or omitted.",
+        "exception": "Facial expressions may be added in close-up or special contexts when needed to convey emotion, for example training situations.",
+        "expression_categories": [
+          "neutral or listening",
+          "positive or cheerful",
+          "questioning or thoughtful",
+          "disappointed or sad"
+        ],
+        "views": [
+          "2.5D",
+          "frontal"
+        ]
+      }
+    },
+    "objects": {
+      "role": "Objects support the scene by explaining functions, contexts, or product-related situations.",
+      "construction": "Objects can be constructed from or derived from Bosch icon logic, then adapted with colors and details.",
+      "relationship_to_icons": "Bosch icons can become the formal basis for more illustrative object representations."
+    }
+  },
+  "color_usage": {
+    "high_level_rule": "Illustrations are designed within a defined color scheme based on Bosch brand color gradations.",
+    "accent_strategy": "Color should be used selectively to highlight the most important elements.",
+    "secondary_elements": "Additional or supporting elements should use gray gradations or subtle variations from the selected color scheme.",
+    "depth_strategy": "Shades of gray are used to add depth and separate foreground, middle ground, and background elements.",
+    "themes": [
+      {
+        "name": "light_theme",
+        "background": "white or light background",
+        "usage": "Use color accents and gray gradations to preserve clarity."
+      },
+      {
+        "name": "dark_theme",
+        "background": "dark background",
+        "usage": "Ensure contrast and maintain the same controlled Bosch illustration language."
+      }
+    ],
+    "avoid": [
+      "too many colors in one illustration",
+      "non-Bosch-specific color choices",
+      "gradients or effects as dominant stylistic devices"
+    ]
+  },
+  "composition_and_structure": {
+    "foreground": "Main elements should be placed prominently, usually centered or clearly emphasized.",
+    "middle_ground": "Supporting elements may surround the main element and provide context.",
+    "background": "Background elements are subtle and act as a stage, adding depth without distraction.",
+    "motif_construction": "Several elements can be assembled into a motif. The motif should tell a clear story and be characterized by a color theme.",
+    "storytelling_role": "The final composition should communicate the message or product value-add in a simple, comprehensible way."
+  },
+  "icons_in_illustrations": {
+    "integration_rule": "Bosch icons can be harmoniously integrated into illustrations, especially when describing products or functions.",
+    "visibility_rule": "Icons should be combined with supporting elements so they remain visible and visually integrated.",
+    "color_rule": "Icons may be color-matched to the selected illustration color scheme.",
+    "object_derivation": "Illustrative objects can be developed from icons by adapting the basic icon form and adding appropriate color and detail."
+  },
+  "animation": {
+    "animated_illustrations_supported": true,
+    "description": "Illustrations can be animated. The guide references a set of people illustrations designed for easier limb animation.",
+    "downloadable_asset": {
+      "file_name": "Bosch-Illustrations-Body-Parts-for-animation.zip",
+      "asset_type": "zip",
+      "purpose": "Body parts for animated people illustrations",
+      "url": "https://brandguide.bosch.com/api/attachment/download/eyJibG9ja19yZWZlcmVuY2UiOm51bGwsImlkIjo4MjUxN30:bosch:1T3-qIOcSL-Fc30r5cu3G2hIhvU6_rQDVxoFMbPgVgI"
+    }
+  },
+  "workflow": {
+    "objective": "Ensure consistency and avoid duplicate illustration work.",
+    "library_first_approach": "Before creating new illustrations, check existing released illustrations and building blocks in the Illustration Library and Illustration Creator.",
+    "reuse_principle": "Use existing illustrations and modules as the basis for new visuals whenever possible.",
+    "creation_principle": "If a new illustration is required, follow the defined style rules to maintain system consistency."
+  },
+  "resources": {
+    "illustration_creator": {
+      "description": "Offers ready-made Bosch illustrations on various topics that can be edited online.",
+      "url": "https://brandguide.bosch.com/r/MEbW2tq8xRRdSE-gY-qO4u9Af27479WaN0yRJJ9Ebe4"
+    },
+    "illustration_library": {
+      "description": "Contains a large collection of illustrations and building blocks that can be used as the basis for creating visuals.",
+      "url": "https://brandguide.bosch.com/r/6lapBGQcrHf5sxOg8Ymz8sRW5_0AM6kPrXYOnPqs0oE"
+    },
+    "icons_guide": {
+      "description": "Related Bosch icon guidance referenced by the illustration system.",
+      "url": "https://brandguide.bosch.com/document/2275/en#/-/overview-icons"
+    },
+    "blog_article": {
+      "description": "A linked article that provides a broader look at the Bosch illustration subject.",
+      "url": "https://brandguide.bosch.com/r/qLeP6NuHYRJ8Hg444dY6MYKQkU9kxy6KkE2xbyZlTf8"
+    },
+    "intro_video": {
+      "description": "A visible video asset related to Bosch illustration style guidance.",
+      "file_name": "simpleshow_[EN-US]_RobertBosch_Styleguide-01-Neutral_201218-1920x1080.mp4"
+    }
+  },
+  "dos_and_donts": {
+    "do": [
+      "Use basic geometric shapes.",
+      "Use flat design.",
+      "Reduce elements to essentials.",
+      "Focus on one main color.",
+      "Use shades of gray for secondary or supporting elements.",
+      "Use existing illustration modules and library assets when possible.",
+      "Keep the composition clear and story-driven."
+    ],
+    "dont": [
+      "Do not use basic organic forms as the main construction principle.",
+      "Do not use gradients or visual effects as part of the illustration style.",
+      "Do not use too many colors.",
+      "Do not use colors that are not Bosch-specific.",
+      "Do not add unnecessary complexity or decorative clutter.",
+      "Do not create duplicate visuals when existing library assets can be adapted."
+    ]
+  },
+  "ai_generation_guidance": {
+    "prompt_keywords": [
+      "Bosch brand illustration style",
+      "clear modern 2.5D illustration",
+      "modular geometric construction",
+      "flat design",
+      "Bosch color palette",
+      "single accent color with gray gradations",
+      "simple foreground subject with supporting middle-ground elements",
+      "subtle background stage",
+      "corporate technical clarity"
+    ],
+    "positive_prompt_template": "Create a clear, modern Bosch-style 2.5D illustration using modular geometric shapes, flat design, minimal essential details, one main Bosch brand accent color, and gray gradations for supporting elements. Place the main subject prominently in the foreground, add contextual elements in the middle ground, and use a subtle background stage for depth. Keep the composition clean, comprehensible, and suitable for corporate communication.",
+    "negative_prompt_template": "Avoid organic freeform shapes, gradients, decorative effects, excessive colors, non-Bosch color palettes, cluttered composition, photorealism, hand-drawn sketch texture, and unnecessary details."
+  },
+  "machine_readable_constraints": {
+    "must_use": [
+      "clear communication",
+      "modern 2.5D look",
+      "modular construction",
+      "geometric base shapes",
+      "flat design",
+      "controlled Bosch color scheme",
+      "gray gradations for depth"
+    ],
+    "must_avoid": [
+      "organic main shapes",
+      "gradients",
+      "effects",
+      "too many colors",
+      "non-Bosch colors",
+      "visual clutter"
+    ],
+    "recommended_output_use_cases": [
+      "presentation visuals",
+      "explainer graphics",
+      "product value-add communication",
+      "training illustrations",
+      "corporate web and media assets",
+      "animated explainer components"
+    ]
+  },
+  "support": {
+    "contact": "support.design@bosch.com",
+    "response_time": "2-5 business days",
+    "scope": "General Bosch Corporate Design questions and review/approval of design drafts."
+  }
+}

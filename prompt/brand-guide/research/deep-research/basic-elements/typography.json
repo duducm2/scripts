@@ -1,0 +1,752 @@
+{
+  "research_id": "bosch-typography-fonts-research-001",
+  "title": "Bosch Digital Design System and Bosch Brand Guide - Typography and Fonts Research",
+  "file_role": "Foundational AI-readable internal knowledge artifact",
+  "version": "1.0",
+  "created_on": "2026-06-18",
+  "filename": "bosch-typography-fonts-research-v1.json",
+  "language": "en",
+  "intent": "Long-form research translated into an AI-readable JSON structure about Bosch typography and fonts across the Bosch Brand Guide, Bosch Digital Design System, Figma, FROK, office usage, digital products, accessibility, governance, and AI implications.",
+  "recommended_audiences": [
+    "UX/UI designers",
+    "frontend developers",
+    "design system contributors",
+    "brand governance teams",
+    "AI prompt authors",
+    "product teams creating Bosch-compliant digital outputs",
+    "researchers building reusable AI grounding files"
+  ],
+  "scope": {
+    "covered_topics": [
+      "Relationship between BDDS and Bosch Brand Guide",
+      "Authoritative typography sources",
+      "Bosch corporate font families",
+      "Digital, office, print, UI, and product-interface usage distinctions",
+      "Font hierarchy, size, and weight principles",
+      "Accessibility and legal considerations",
+      "Figma and Bosch UI Kit implementation",
+      "FROK, CSS, token, and web implementation implications",
+      "Fallback fonts and performance constraints",
+      "Governance and updates",
+      "Practical do and don't rules",
+      "Decision logic for font choice",
+      "AI-generated design and code implications"
+    ],
+    "excluded_topics": [
+      "Complete downloadable font package inventory",
+      "Exact internal license text for Bosch font files",
+      "Full component-by-component BDDS typography extraction",
+      "Native application implementation details beyond high-level guidance",
+      "Final legal approval for font distribution or webfont embedding"
+    ],
+    "research_style": "Synthesized internal research translated into structured JSON, optimized for reuse by AI agents and low-context downstream tasks."
+  },
+  "executive_summary": {
+    "short_definition": "Bosch typography is governed by the Bosch Brand Guide and operationalized in digital products through the Bosch Digital Design System. The primary corporate font for Bosch digital interfaces is Bosch Sans, with specialized font families or variants used only for specific contexts such as non-Latin scripts, Microsoft Office documents, icons, engraving, or pixel displays.",
+    "main_conclusion": "The Bosch Brand Guide is the upstream authority for typography, while BDDS translates those brand rules into digital design and implementation artifacts such as Figma libraries, reusable components, CSS logic, and design-system guidance. New Bosch digital products should default to Bosch Sans Regular and Bold, avoid unapproved typefaces, preserve accessibility constraints, and use BDDS/FROK-compatible typography patterns.",
+    "key_practical_reading": [
+      "For Bosch-branded digital UI, use Bosch Sans as the default typeface across headlines, body text, labels, navigation, buttons, and components.",
+      "For new digital work, keep typography simple: Bosch Sans Regular and Bosch Sans Bold are the main supported design framework; deprecated or additional weights should not be introduced without approval.",
+      "For non-Latin scripts, use Bosch Sans Global or localized script subsets when necessary, but avoid loading the full global font as a webfont because of performance concerns.",
+      "For Microsoft Office documents, use Bosch Office Sans via official templates rather than forcing standard Bosch Sans or unrelated fonts.",
+      "For AI-generated outputs, instruct the AI to use Bosch Sans, BDDS typography hierarchy, accessible text sizing, and official token/component logic rather than arbitrary visual styles."
+    ]
+  },
+  "authoritative_sources": [
+    {
+      "source_id": "source-01",
+      "source_name": "Bosch Brand Guide - Font and Typography",
+      "authority_level": "primary",
+      "location_hint": "Brand Guide / Frontify page: Font and typography",
+      "why_it_is_authoritative": "It defines Bosch font families, the role of Bosch Sans, Bosch Sans Global, Bosch Office Sans, special technical variants, and usage constraints.",
+      "key_takeaways": [
+        "The Bosch font system is a set of all-purpose and specialized fonts.",
+        "Bosch Sans is used across all type levels, from headlines to body copy.",
+        "Bosch Sans Regular and Bosch Sans Bold provide the main design framework.",
+        "Additional Bosch Sans weights such as Light, Medium, and Black are no longer developed and are restricted to already approved existing media or design concepts.",
+        "Bosch Sans Global supports non-Latin scripts but should not be used as a heavy generic webfont when localized subsets are possible.",
+        "Bosch Office Sans is designed for Microsoft Office applications and should only be used there.",
+        "Special variants exist for engraving, OCR, and pixel displays."
+      ],
+      "reference_ids": [
+        "5003"
+      ]
+    },
+    {
+      "source_id": "source-02",
+      "source_name": "BDDS Basics - Fonts and Typography",
+      "authority_level": "primary",
+      "location_hint": "Internal BDDS Basics documentation",
+      "why_it_is_authoritative": "It translates Bosch Brand Guide typography into digital-design-system usage, including the use of Bosch Sans Regular and Bold and the digital typography basis.",
+      "key_takeaways": [
+        "In the Digital Design System, Bosch Sans is available in Regular and Bold styles.",
+        "Bosch Sans is used in all font levels, from headlines to body text.",
+        "Digital typography uses a 1rem basis that usually corresponds to 16 px, dp, or pt, while product interfaces may require individual sizing.",
+        "The guidance points back to the Bosch Brand Guide as the detailed authority."
+      ],
+      "reference_ids": [
+        "5007"
+      ]
+    },
+    {
+      "source_id": "source-03",
+      "source_name": "Previous BDDS General Research",
+      "authority_level": "secondary_synthesis",
+      "location_hint": "Uploaded file geeral.json / prior foundational BDDS research",
+      "why_it_is_authoritative": "It synthesizes the role of BDDS as the digital extension of Bosch Brand Guide and maps the BDDS ecosystem around Brand Guide, Figma, FROK, tokens, accessibility, and governance.",
+      "key_takeaways": [
+        "BDDS is the official digital extension of Bosch Brand Guide.",
+        "BDDS should be understood as an ecosystem: Brand Guide, BDDS documentation, Bosch UI Kit in Figma, FROK, token documentation, and accessibility guidance.",
+        "Accessibility is embedded into typography, color, layout, and component logic.",
+        "BDDS is moving toward tokenized, headless, reusable architecture."
+      ],
+      "reference_ids": [
+        "5000",
+        "5012"
+      ]
+    },
+    {
+      "source_id": "source-04",
+      "source_name": "Internal font licensing and FOSS Fonts discussion",
+      "authority_level": "supporting_governance",
+      "location_hint": "Topic Team C18 - FOSS Fonts",
+      "why_it_is_authoritative": "It captures internal concerns about font files, font licensing, webfont distribution, proprietary font risks, and guidance around Bosch fonts and OSS fonts.",
+      "key_takeaways": [
+        "Font files include .ttf, .otf, .eot, .woff, .woff2, and sometimes .svg.",
+        "Websites and apps may distribute font files to users' devices when fonts are loaded by the browser.",
+        "Bosch must consider IP protection and licensing risks for fonts.",
+        "For branding purposes, custom Bosch fonts are preferred; for non-brand-critical cases, OSS fonts may be considered with proper license review.",
+        "The Bosch Brand Guide remains the first reference point for font decisions."
+      ],
+      "reference_ids": [
+        "5013"
+      ]
+    },
+    {
+      "source_id": "source-05",
+      "source_name": "Internal UI guidelines example for an OutSystems app",
+      "authority_level": "supporting_project_example",
+      "location_hint": "UI Guidelines for OutSystems App Development",
+      "why_it_is_authoritative": "It gives a concrete example of how Bosch Sans may be enforced in a project-level UI specification, including component mappings, sizes, colors, and do/don't rules.",
+      "key_takeaways": [
+        "Bosch Sans is treated as the primary font for all UI text in the project example.",
+        "Project-level UI specifications may map font sizes and weights to components such as headers, navigation, filter labels, tables, badges, KPI cards, buttons, and footers.",
+        "The example explicitly discourages introducing new typefaces or arbitrary system fonts."
+      ],
+      "reference_ids": [
+        "5008"
+      ]
+    }
+  ],
+  "main_results": {
+    "relationship_between_bdds_and_brand_guide": {
+      "statement": "The Bosch Brand Guide defines corporate typography, while BDDS operationalizes those brand rules for digital interfaces and implementation.",
+      "practical_implications": [
+        "If there is conflict or uncertainty, start from the Brand Guide and then apply BDDS-specific digital interpretation.",
+        "BDDS does not create a separate typography language; it translates Bosch brand typography into components, text styles, accessibility rules, and implementation patterns.",
+        "Figma libraries and FROK should be seen as operational layers, not as disconnected style systems."
+      ],
+      "reference_ids": [
+        "5000",
+        "5012",
+        "5007"
+      ]
+    },
+    "default_font_policy_for_digital_products": {
+      "statement": "Bosch Sans is the default corporate typeface for Bosch-branded digital products and should be used across all digital typography levels.",
+      "preferred_weights": [
+        {
+          "name": "Bosch Sans Regular",
+          "css_weight": 400,
+          "role": "Body text, labels, navigation, most UI copy"
+        },
+        {
+          "name": "Bosch Sans Bold",
+          "css_weight": 700,
+          "role": "Headlines, emphasis, section titles, important labels"
+        }
+      ],
+      "restricted_or_legacy_weights": [
+        {
+          "name": "Bosch Sans Light",
+          "status": "restricted_legacy",
+          "usage_guidance": "No longer developed for the future; only use for existing media and design concepts already approved by Corporate Design."
+        },
+        {
+          "name": "Bosch Sans Medium",
+          "status": "restricted_legacy_or_project_specific",
+          "usage_guidance": "Avoid in new BDDS-aligned work unless explicitly approved or inherited from a validated project specification."
+        },
+        {
+          "name": "Bosch Sans Black",
+          "status": "restricted_or_selected_applications",
+          "usage_guidance": "Avoid in standard new UI work unless approved or required for selected applications."
+        }
+      ],
+      "reference_ids": [
+        "5003",
+        "5007",
+        "5008"
+      ]
+    },
+    "font_family_inventory": [
+      {
+        "font_family": "Bosch Sans",
+        "category": "primary_corporate_sans_serif",
+        "description": "The main all-purpose corporate typeface for Bosch. It is used from headlines to body text and is optimized for readability in multiple sizes.",
+        "primary_use_cases": [
+          "Digital UI",
+          "Web",
+          "Print",
+          "Marketing materials",
+          "General Bosch-branded communication"
+        ],
+        "avoid_or_restrict": [
+          "Do not replace with arbitrary fonts",
+          "Avoid unsupported or deprecated weights in new digital products"
+        ],
+        "notes_for_ai": "Default to Bosch Sans for any Bosch-branded output. Use Regular for normal text and Bold for hierarchy or emphasis.",
+        "reference_ids": [
+          "5003",
+          "5007"
+        ]
+      },
+      {
+        "font_family": "Bosch Sans Global",
+        "category": "multiscript_global_variant",
+        "description": "A Bosch Sans variant developed for languages not based on the Latin alphabet. It supports a broader set of scripts but has fewer styles and larger file sizes.",
+        "primary_use_cases": [
+          "Non-Latin scripts",
+          "Multilingual content requiring scripts such as Chinese, Japanese, Korean, Arabic, Thai, Khmer, Myanmar, or similar localized subsets"
+        ],
+        "avoid_or_restrict": [
+          "Do not use full Bosch Sans Global as a generic webfont when localized subsets are available",
+          "Do not use Bosch Sans Global for Latin-based texts where standard Bosch Sans is sufficient"
+        ],
+        "notes_for_ai": "Use only when the language/script requires it. Prefer localized subsets for performance.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      {
+        "font_family": "Bosch Office Sans / Bosch Sans Office",
+        "category": "office_document_variant",
+        "description": "A Microsoft Office-oriented Bosch font variant based on Arial metrics to ensure correct rendering in Office documents and external sharing contexts.",
+        "primary_use_cases": [
+          "Microsoft Word",
+          "Microsoft Excel",
+          "Microsoft PowerPoint",
+          "Official Office templates",
+          "External letters or fax templates"
+        ],
+        "avoid_or_restrict": [
+          "Do not use as the primary UI font",
+          "Do not use outside Microsoft Office applications unless explicitly approved"
+        ],
+        "notes_for_ai": "For generated Office documents or PowerPoint content, prefer official Bosch templates and Bosch Office Sans logic. For UI mockups, use Bosch Sans instead.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      {
+        "font_family": "Bosch Serif",
+        "category": "corporate_serif",
+        "description": "A serif corporate typeface available as part of the Bosch type system, but less central to digital UI usage than Bosch Sans.",
+        "primary_use_cases": [
+          "Special print or editorial applications where a serif style is explicitly appropriate"
+        ],
+        "avoid_or_restrict": [
+          "Avoid in standard digital UI",
+          "Do not use as a replacement for Bosch Sans in software interfaces"
+        ],
+        "notes_for_ai": "Only use when the user explicitly requests a serif Bosch-branded print/editorial treatment and context allows it.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      {
+        "font_family": "Bosch Script",
+        "category": "decorative_or_heritage_script",
+        "description": "A script font introduced in 2019, based on the handwriting of Robert Bosch.",
+        "primary_use_cases": [
+          "Founder-related contexts",
+          "Signature-like accent",
+          "Heritage or special campaign usage"
+        ],
+        "avoid_or_restrict": [
+          "Do not use for body copy",
+          "Do not use in standard UI",
+          "Do not use for functional labels or navigation"
+        ],
+        "notes_for_ai": "Use very sparingly and only as a decorative accent when explicitly requested and brand-appropriate.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      {
+        "font_family": "Bosch Icon font",
+        "category": "iconography_font",
+        "description": "A font containing Bosch official icons as glyphs, regularly updated and used to insert scalable icons.",
+        "primary_use_cases": [
+          "Icons in office documents",
+          "Icons in digital UI where icon-font implementation is used",
+          "Consistent Bosch pictograms"
+        ],
+        "avoid_or_restrict": [
+          "Do not use icons without accessible labels when they convey meaning",
+          "Do not substitute random third-party icons when Bosch icon library has an appropriate icon"
+        ],
+        "notes_for_ai": "For icon generation or UI prompts, specify Bosch icon style and include labels or ARIA logic for accessibility.",
+        "reference_ids": [
+          "5003",
+          "5007"
+        ]
+      },
+      {
+        "font_family": "Bosch Sans Mono SemiCondensed",
+        "category": "technical_monospaced_variant",
+        "description": "A fixed-width Bosch Sans variant for technical and engraving applications. It replaces older Bosch Mono Engraving and Bosch Sans Engraving variants.",
+        "primary_use_cases": [
+          "Laser or mechanical engraving",
+          "Product markings",
+          "Nameplates",
+          "Technical applications",
+          "OCR-oriented technical text"
+        ],
+        "avoid_or_restrict": [
+          "Do not use for regular UI body text",
+          "Do not use for marketing typography unless required by technical context"
+        ],
+        "notes_for_ai": "Only use for product marking, engraving, OCR, or monospaced technical labeling contexts.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      {
+        "font_family": "Bosch Sans Pixel",
+        "category": "pixel_display_variant",
+        "description": "A Bosch Sans variant optimized for specific pixel-height displays rather than scalable path-based rendering.",
+        "primary_use_cases": [
+          "Pixel displays",
+          "Embedded product UIs",
+          "Low-resolution product interface design in tools such as Photoshop, Illustrator, or Figma"
+        ],
+        "avoid_or_restrict": [
+          "Do not scale arbitrarily",
+          "Do not use for normal responsive web or app typography"
+        ],
+        "notes_for_ai": "Only mention or use when designing constrained pixel-display product interfaces.",
+        "reference_ids": [
+          "5003"
+        ]
+      }
+    ],
+    "touchpoint_usage_matrix": {
+      "digital_ui_web_apps": {
+        "default_font": "Bosch Sans",
+        "allowed_or_preferred_weights": [
+          "Regular",
+          "Bold"
+        ],
+        "implementation_layer": [
+          "BDDS",
+          "Figma Bosch UI Kit",
+          "FROK",
+          "CSS variables or typography styles"
+        ],
+        "notes": "Use Bosch Sans for all UI copy unless a script/language requirement demands Bosch Sans Global subsets.",
+        "reference_ids": [
+          "5007",
+          "5008"
+        ]
+      },
+      "office_documents": {
+        "default_font": "Bosch Office Sans / Bosch Sans Office",
+        "allowed_or_preferred_weights": [
+          "Template-defined weights"
+        ],
+        "implementation_layer": [
+          "Word templates",
+          "PowerPoint templates",
+          "Excel templates"
+        ],
+        "notes": "Bosch Office Sans exists to ensure correct representation for recipients and external agencies in MS Office contexts.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      "print_and_marketing": {
+        "default_font": "Bosch Sans",
+        "optional_fonts": [
+          "Bosch Serif",
+          "Bosch Script in special cases"
+        ],
+        "implementation_layer": [
+          "Brand Guide",
+          "Corporate Design approval",
+          "Brand assets and templates"
+        ],
+        "notes": "Use Bosch Sans as the safe default. Use Bosch Serif or Bosch Script only where contextually appropriate and compliant.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      "multilingual_non_latin": {
+        "default_font": "Bosch Sans Global or localized Bosch Sans Global subset",
+        "implementation_layer": [
+          "Brand Guide font downloads",
+          "Localized subset font files",
+          "Design tool font selection",
+          "Webfont strategy if applicable"
+        ],
+        "notes": "Use localized subsets where possible because full Bosch Sans Global is heavy and not recommended as a webfont.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      "product_markings_and_engraving": {
+        "default_font": "Bosch Sans Mono SemiCondensed",
+        "implementation_layer": [
+          "Engraving process",
+          "Laser machine formats",
+          "OCR-oriented technical requirements"
+        ],
+        "notes": "Use for fixed-width, technical, engraved, or machine-readable applications.",
+        "reference_ids": [
+          "5003"
+        ]
+      },
+      "pixel_display_product_ui": {
+        "default_font": "Bosch Sans Pixel",
+        "implementation_layer": [
+          "Embedded display design",
+          "Professional graphics/design tools"
+        ],
+        "notes": "Use only for specific pixel-display heights and do not scale arbitrarily.",
+        "reference_ids": [
+          "5003"
+        ]
+      }
+    },
+    "digital_typography_principles": {
+      "core_rules": [
+        "Use Bosch Sans for digital text across all levels, from headings to body copy.",
+        "Use Regular and Bold as the main design framework for new digital products.",
+        "Use relative sizing logic such as rem where possible; 1rem usually corresponds to 16px, dp, or pt in digital contexts.",
+        "Do not assume product user interfaces with constrained displays can use the same sizes as web; product interfaces may require individual sizing decisions.",
+        "Use typography to establish hierarchy, not arbitrary colors or decorative font changes.",
+        "Preserve readability with sufficient contrast, line height, spacing, and scalable text behavior."
+      ],
+      "base_size": {
+        "value": "1rem",
+        "typical_equivalent": "16px / dp / pt",
+        "meaning": "Digital readability basis, not necessarily physical screen pixels.",
+        "reference_ids": [
+          "5007",
+          "5012"
+        ]
+      },
+      "frontify_observed_style_values": {
+        "note": "The Brand Guide/Frontify page itself exposes CSS settings that reflect Bosch Sans usage and a heading/body hierarchy. These are useful as observed implementation signals, not necessarily the full BDDS UI token specification.",
+        "examples": [
+          {
+            "style": "Heading 1",
+            "font_family": "Bosch Sans",
+            "size": "2.5rem",
+            "line_height": 1.3,
+            "weight": 700
+          },
+          {
+            "style": "Heading 2",
+            "font_family": "Bosch Sans",
+            "size": "2rem",
+            "line_height": 1.3,
+            "weight": 700
+          },
+          {
+            "style": "Heading 3",
+            "font_family": "Bosch Sans",
+            "size": "1.5rem",
+            "line_height": 1.4,
+            "weight": 700
+          },
+          {
+            "style": "Body",
+            "font_family": "Bosch Sans",
+            "size": "18px",
+            "line_height": 1.5,
+            "weight": 400
+          }
+        ],
+        "reference_ids": [
+          "5003"
+        ]
+      }
+    },
+    "figma_implementation": {
+      "statement": "The Bosch UI Kit in Figma operationalizes BDDS typography by giving designers standardized text styles and component-level typography choices aligned with the Bosch Brand Guide.",
+      "expected_behavior": [
+        "Use official Bosch UI Kit text styles rather than manually recreating typography.",
+        "Use component instances without local font overrides unless there is a documented need.",
+        "Keep Figma libraries updated because BDDS evolves through releases and migration guidance.",
+        "When Figma variables or design tokens are available, use them instead of hardcoded manual values."
+      ],
+      "risks": [
+        "Detached components or locally overridden text styles may drift from BDDS.",
+        "Unupdated Figma libraries may use old typography or old component states.",
+        "Using non-Bosch fonts in mockups can create false implementation expectations for developers."
+      ],
+      "reference_ids": [
+        "5012",
+        "5009"
+      ]
+    },
+    "frok_and_code_implementation": {
+      "statement": "FROK is the implementation layer for Bosch web projects and should carry Bosch Sans typography and BDDS-compatible component behavior into production code.",
+      "expected_behavior": [
+        "Use FROK components and default typography where possible.",
+        "Avoid replacing font families directly in component CSS.",
+        "Use systemized CSS variables or design-token logic for typography and colors rather than arbitrary hardcoded values.",
+        "Use fallback font stacks only as technical fallback, not as a design choice replacing Bosch Sans."
+      ],
+      "webfont_loading_notes": [
+        "Loading webfonts means browsers may download font files, so licensing and distribution must be considered.",
+        "Use localized subsets for heavy multiscript fonts where possible.",
+        "Use font-display and performance-conscious loading strategies where appropriate."
+      ],
+      "reference_ids": [
+        "5012",
+        "5013",
+        "5003"
+      ]
+    },
+    "accessibility_model": {
+      "statement": "Typography is treated as an accessibility foundation in BDDS, not merely a visual brand element.",
+      "rules": [
+        "Use legible Bosch corporate fonts.",
+        "Keep body text around a 16px readability basis unless a context-specific product interface requires otherwise.",
+        "Use sufficient color contrast between text and background.",
+        "Avoid embedding essential text inside images without text alternatives.",
+        "Use labels, ARIA labels, and text alternatives for icon-only content.",
+        "Use clear hierarchy so users and assistive technologies can understand structure.",
+        "Support responsive and scalable text behavior."
+      ],
+      "legal_context": [
+        "WCAG is a relevant international accessibility standard.",
+        "European Accessibility Act implications make accessibility a compliance concern as well as a UX concern.",
+        "Typography, color, layout, focus, captions, alt text, and ARIA concerns should be systemized rather than treated as afterthoughts."
+      ],
+      "reference_ids": [
+        "5012",
+        "5003",
+        "5007"
+      ]
+    },
+    "legal_and_licensing_model": {
+      "statement": "Bosch corporate fonts are proprietary brand assets and must be used in a way that respects licensing, distribution, and IP considerations.",
+      "important_points": [
+        "Bosch fonts are house fonts designed exclusively for Bosch and are the property of Robert Bosch GmbH.",
+        "Font files are software-like assets and may include formats such as .ttf, .otf, .eot, .woff, .woff2, and .svg.",
+        "Webfont use can distribute font files to user devices via browser download, so licensing and exposure must be considered.",
+        "For brand-defining use, custom Bosch fonts are preferred.",
+        "For non-brand-critical use cases, OSS fonts may be considered only with proper license review and internal process alignment.",
+        "Customer-provided proprietary fonts require customer-side licensing clarity; Bosch should not assume licensing responsibility without agreement."
+      ],
+      "risk_reading": "Font choices are not only design decisions. They can introduce licensing risk, performance impact, accessibility issues, and brand inconsistency.",
+      "reference_ids": [
+        "5003",
+        "5013"
+      ]
+    },
+    "governance_and_update_model": {
+      "statement": "Typography governance is centralized through Bosch Brand Guide and Corporate Design, while BDDS maintainers translate the guidance into reusable digital assets and implementation layers.",
+      "governance_roles": [
+        {
+          "actor": "Bosch Brand Guide / Corporate Design",
+          "role": "Defines official font families, brand rules, downloads, and approval constraints."
+        },
+        {
+          "actor": "BDDS team",
+          "role": "Translates brand typography into digital guidelines, components, Figma libraries, FROK behavior, and release/migration guidance."
+        },
+        {
+          "actor": "Designers",
+          "role": "Use official UI Kit styles, avoid arbitrary font overrides, maintain accessibility and brand consistency."
+        },
+        {
+          "actor": "Developers",
+          "role": "Use FROK-compatible typography, load fonts properly, avoid unauthorized fonts, preserve accessibility semantics."
+        },
+        {
+          "actor": "Legal / OSS / license stakeholders",
+          "role": "Support font licensing decisions, third-party font review, and webfont distribution risk handling."
+        }
+      ],
+      "update_signals": [
+        "The Brand Guide/Frontify platform acts as a living documentation platform.",
+        "BDDS releases and UI Roundtables communicate changes such as typography updates, Figma fixes, and design token changes.",
+        "Design-system changes should be propagated into Figma and FROK rather than handled locally by each team."
+      ],
+      "reference_ids": [
+        "5003",
+        "5009",
+        "5012"
+      ]
+    }
+  },
+  "decision_logic": {
+    "font_selection_flow": [
+      {
+        "condition": "Is the output a Bosch-branded digital UI, website, dashboard, app, or web component?",
+        "decision": "Use Bosch Sans via BDDS/Figma/FROK. Prefer Regular and Bold."
+      },
+      {
+        "condition": "Is the output a Microsoft Office document or presentation?",
+        "decision": "Use Bosch Office Sans through official Bosch Office templates."
+      },
+      {
+        "condition": "Does the language require non-Latin scripts not sufficiently covered by standard Bosch Sans?",
+        "decision": "Use Bosch Sans Global or the appropriate localized subset. Avoid full global webfont loading where possible."
+      },
+      {
+        "condition": "Is the output a product marking, engraving, nameplate, or OCR-oriented technical label?",
+        "decision": "Use Bosch Sans Mono SemiCondensed or the relevant technical variant."
+      },
+      {
+        "condition": "Is the output a constrained pixel-display product UI?",
+        "decision": "Consider Bosch Sans Pixel at the intended pixel height and do not scale arbitrarily."
+      },
+      {
+        "condition": "Is the output a heritage/signature/decorative application explicitly linked to Robert Bosch or a campaign accent?",
+        "decision": "Consider Bosch Script sparingly and only as decoration, not functional UI text."
+      },
+      {
+        "condition": "Is a third-party or customer font requested?",
+        "decision": "Do not use automatically. Check brand ownership, customer licensing, OSS/licensing process, and Corporate Design approval."
+      }
+    ],
+    "default_fallback_rule": "If Bosch Sans cannot technically load, use a neutral sans-serif fallback stack only as a technical fallback, not as a deliberate brand replacement."
+  },
+  "do_and_dont_rules": {
+    "do": [
+      "Use Bosch Sans for Bosch-branded digital products.",
+      "Use Bosch Sans Regular and Bold as the default digital design framework.",
+      "Use Bosch Office Sans for Microsoft Office outputs through official templates.",
+      "Use Bosch Sans Global only when script/language coverage requires it.",
+      "Use localized font subsets for non-Latin scripts to reduce performance cost.",
+      "Use official Figma libraries and BDDS text styles instead of manual styles.",
+      "Use FROK-compatible implementation patterns where possible.",
+      "Maintain readable text sizes, sufficient line height, and adequate contrast.",
+      "Provide accessible names or labels for icon-font usage.",
+      "Check the live Brand Guide and BDDS documentation for final decisions."
+    ],
+    "dont": [
+      "Do not introduce arbitrary fonts into Bosch digital UIs.",
+      "Do not use Arial, Helvetica, Segoe UI, or other system fonts as intentional Bosch UI replacements unless a specific approved exception exists.",
+      "Do not use deprecated Bosch Sans weights in new digital products without approval.",
+      "Do not use Bosch Office Sans as a general UI font.",
+      "Do not use Bosch Script for body text, navigation, controls, or functional labels.",
+      "Do not load the full Bosch Sans Global as a webfont if a smaller localized subset is sufficient.",
+      "Do not embed essential text in images without accessible alternatives.",
+      "Do not ignore font licensing when distributing font files through websites, apps, or customer deliverables.",
+      "Do not detach or locally override Figma text styles without a documented reason."
+    ]
+  },
+  "ai_relevance": {
+    "why_this_research_matters_for_ai": [
+      "Typography rules can be encoded as reusable AI prompts, design constraints, and audit criteria.",
+      "The Bosch font system is sufficiently structured to guide AI-generated UI, PowerPoint, reports, icons, and code outputs.",
+      "Clear font-family and hierarchy rules reduce off-brand AI generation.",
+      "Accessibility rules can be turned into systematic AI checks for text size, contrast, hierarchy, and alternatives for icon-only content.",
+      "Tokenized design systems make typography easier for AI agents to consume than purely visual style guides."
+    ],
+    "minimum_rules_for_ai_generated_design": [
+      "Treat Bosch Brand Guide and BDDS as the root authority.",
+      "Use Bosch Sans for digital UI unless the task is specifically Office, non-Latin, engraving, pixel-display, or decorative heritage usage.",
+      "Use Regular and Bold by default.",
+      "Keep body text at or above the 16px readability basis unless a constrained interface has documented reasons.",
+      "Use official Bosch UI Kit and FROK-compatible component logic.",
+      "Avoid arbitrary font substitutions and decorative fonts.",
+      "Preserve accessibility with scalable text, sufficient line height, contrast, and labels for icons.",
+      "If generating code, express typography via tokens, variables, or official component classes where possible."
+    ],
+    "prompt_snippet_for_ui_generation": "Create a Bosch-compliant digital interface using Bosch Sans as the only UI typeface. Use Bosch Sans Regular for body text, labels, navigation, and inputs; use Bosch Sans Bold for headings and emphasis. Follow BDDS typography hierarchy, accessible text sizing around a 16px base, sufficient contrast, and official component logic. Do not introduce arbitrary fonts, decorative typefaces, or unsupported weights.",
+    "prompt_snippet_for_code_generation": "Implement typography according to BDDS/FROK logic. Use Bosch Sans as the primary font-family with a neutral sans-serif fallback stack only for technical fallback. Use tokenized or reusable CSS variables for font sizes, line heights, and weights. Preserve accessibility, scalable text, and semantic HTML structure."
+  },
+  "known_ambiguities_and_open_questions": [
+    {
+      "topic": "Exact current BDDS typography token schema",
+      "why_it_matters": "The research identifies principles and observed style values, but a future extraction should capture the current official token names for typography if available in a token repository."
+    },
+    {
+      "topic": "Precise approval workflow for deprecated Bosch Sans weights",
+      "why_it_matters": "Brand Guide states additional weights are restricted to approved existing media and design concepts, but project teams may need a concrete approval path."
+    },
+    {
+      "topic": "Bosch Serif practical usage boundaries",
+      "why_it_matters": "The Brand Guide identifies Bosch Serif as part of the corporate type system, but the available research has less detail on when it should be used compared with Bosch Sans."
+    },
+    {
+      "topic": "Full legal rules for webfont distribution",
+      "why_it_matters": "Internal discussion identifies licensing concerns, but final project decisions need legal review and current licensing documentation."
+    },
+    {
+      "topic": "Native mobile and embedded HMI typography variations",
+      "why_it_matters": "Product UIs may require individually defined sizes due to display constraints; a future study should separate mobile app, web app, dashboard, HMI, and pixel-display rules."
+    }
+  ],
+  "recommended_use_of_this_json": {
+    "good_for": [
+      "Grounding AI agents before Bosch typography-related tasks",
+      "Creating prompt packs for Bosch-compliant UI and presentation generation",
+      "Design QA checklists for typography",
+      "Onboarding UX/UI designers and frontend developers",
+      "Auditing whether a digital output respects Bosch typography rules",
+      "Turning typography principles into reusable Figma/code generation constraints"
+    ],
+    "not_enough_for": [
+      "Final legal approval of font distribution",
+      "Exact current font package downloads or license files",
+      "Full implementation without checking live BDDS/FROK documentation",
+      "Precise token repository extraction without opening the live token source",
+      "Final accessibility certification without testing contrast, scaling, screen reader behavior, and user settings"
+    ]
+  },
+  "source_index": [
+    {
+      "reference_id": "5003",
+      "label": "Bosch Brand Guide - Font and typography",
+      "type": "Brand Guide / Frontify HTML extract"
+    },
+    {
+      "reference_id": "5007",
+      "label": "BDDS Basics - Fonts and Typography",
+      "type": "Internal Docupedia snippet"
+    },
+    {
+      "reference_id": "5000",
+      "label": "Uploaded previous BDDS research",
+      "type": "User uploaded JSON"
+    },
+    {
+      "reference_id": "5012",
+      "label": "Previous BDDS general research opened view",
+      "type": "Uploaded JSON opened content"
+    },
+    {
+      "reference_id": "5013",
+      "label": "Topic Team C18 - FOSS Fonts",
+      "type": "Internal Docupedia snippet"
+    },
+    {
+      "reference_id": "5008",
+      "label": "UI Guidelines for OutSystems App Development",
+      "type": "Internal project UI guideline example"
+    },
+    {
+      "reference_id": "5009",
+      "label": "Search results mentioning Figma, tokens, typography update, and BDDS release context",
+      "type": "Enterprise search results"
+    }
+  ]
+}

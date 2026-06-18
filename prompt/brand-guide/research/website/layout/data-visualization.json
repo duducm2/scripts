@@ -1,0 +1,155 @@
+{
+  "document_metadata": {
+    "title": "Overview data visualization",
+    "topic": "Data Visualization",
+    "source_file": "1.html",
+    "source_page_url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/overview-data-visualization",
+    "brand_context": "Bosch Brand Guide",
+    "language": "en",
+    "purpose": "Organize Bosch Brand Guide data visualization guidance into an AI-readable structure."
+  },
+  "summary": {
+    "short_description": "This style guide offers assistance with the creation of data visualizations in line with Bosch corporate design.",
+    "scope": "Guidance for creating Bosch-aligned data visualization outputs, including static information graphics, dynamic information graphics, and reporting.",
+    "primary_use_cases": [
+      "Create Bosch corporate-design-compliant data visualizations",
+      "Select the correct visualization guidance section based on output type",
+      "Connect data visualization work with related brand topics such as colors, print, and accessibility",
+      "Find design support for review and approval of visualization drafts"
+    ]
+  },
+  "navigation_structure": {
+    "category": "Data visualization",
+    "pages": [
+      {
+        "title": "Overview data visualization",
+        "slug": "overview-data-visualization",
+        "url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/overview-data-visualization",
+        "role": "Entry point and high-level orientation for data visualization guidance."
+      },
+      {
+        "title": "Static information graphics",
+        "slug": "static-information-graphics-1",
+        "url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/static-information-graphics-1",
+        "role": "Guidance area for fixed, non-interactive information graphics."
+      },
+      {
+        "title": "Dynamic information graphics",
+        "slug": "dynamic-information-graphics",
+        "url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/dynamic-information-graphics",
+        "role": "Guidance area for interactive or changing information graphics."
+      },
+      {
+        "title": "Reporting",
+        "slug": "reporting",
+        "url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/reporting",
+        "role": "Guidance area for report-oriented data visualization contexts."
+      }
+    ]
+  },
+  "visualization_categories": [
+    {
+      "id": "static_information_graphics",
+      "name": "Static information graphics",
+      "type": "static",
+      "description": "A main data visualization guidance category for static visual outputs.",
+      "page_url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/static-information-graphics-1",
+      "representative_asset": {
+        "title": "Static information graphics",
+        "filename": "statische_infografiken-thumbnail-gray.png",
+        "object_type": "IMAGE",
+        "width": 1600,
+        "height": 1600,
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzIyOVwvYXNzZXRzXC81NVwvMTMzMTAwXC9lMGNkYWM0ZGYxNjMwZjBkODBjMDIwN2I5ODU0NmY1NS0xNjEyNDQxMDc5LnBuZyJ9:bosch:wpdnDeKSr4eqT3bOloiKvwDaHmfER4I2QqDkWy52CRs?width=800"
+      }
+    },
+    {
+      "id": "dynamic_information_graphics",
+      "name": "Dynamic information graphics",
+      "type": "dynamic",
+      "description": "A main data visualization guidance category for dynamic or interactive visual outputs.",
+      "page_url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/dynamic-information-graphics",
+      "representative_asset": {
+        "title": "Dynamic information graphics",
+        "filename": "thumbnail-dynamische-informationsgrafiken.png",
+        "object_type": "IMAGE",
+        "width": 600,
+        "height": 600,
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzIyOVwvYXNzZXRzXC82M1wvMTIyMjI0XC8wN2JlY2JlYmM3Mjg4NTUyNWNmYmVkODg0NjZkNTY4Ni0xNjAyNTE1NTU0LnBuZyJ9:bosch:d1zxO6zjsDttKwc-GfJeSHtLRugbK4swsJWaFNvxJ8U?width=800"
+      }
+    },
+    {
+      "id": "reporting",
+      "name": "Reporting",
+      "type": "reporting",
+      "description": "A main data visualization guidance category for reporting and dashboard/report contexts.",
+      "page_url": "https://brandguide.bosch.com/document/2285/en#/data-visualization/reporting",
+      "representative_asset": {
+        "title": "Reporting",
+        "filename": "BDVM_Manual_Diagrammtypen_100920_Treemap Kopie.png",
+        "object_type": "IMAGE",
+        "width": 1600,
+        "height": 1600,
+        "preview_url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzIyOVwvYXNzZXRzXC85YlwvMTIxMDE2XC8yMDQwNDgxMTVhN2NhN2ZhYjVmZDU4YWI2OTdmZmM3My0xNjAxNjQ3MzIxLnBuZyJ9:bosch:iq2pwqSIB1h_13wg3OewutW9lakEr9xxqaCLEJYzam8?width=800"
+      }
+    }
+  ],
+  "design_system_context": {
+    "corporate_design_alignment": true,
+    "main_font_family_detected": "Bosch Sans",
+    "interface_language": "English",
+    "header_branding": {
+      "logo_alt_text": "Bosch Brand Guide logo",
+      "supergraphic_present": true
+    },
+    "theme_colors_observed": {
+      "link_blue_rgb": "rgb(0, 123, 192)",
+      "body_text_rgb": "rgb(0, 0, 0)",
+      "background_rgb": "rgb(255, 255, 255)",
+      "sidebar_background_rgb": "rgb(239, 242, 241)"
+    }
+  },
+  "support": {
+    "available": true,
+    "description": "Bosch Design Support can help with general questions about Bosch Corporate Design and with reviewing and approving design drafts.",
+    "response_time": "2-5 business days",
+    "email": "support.design@bosch.com"
+  },
+  "related_topics": [
+    {
+      "name": "Colors",
+      "url": "https://brandguide.bosch.com/document/2271/en#/-/colors-1",
+      "relationship": "Relevant for color usage in data visualizations."
+    },
+    {
+      "name": "Print",
+      "url": "https://brandguide.bosch.com/document/585/en#/print/overview-print",
+      "relationship": "Relevant when visualizations are used in printed materials."
+    },
+    {
+      "name": "Accessibility",
+      "url": "https://brandguide.bosch.com/document/219/en#/accessibility/accessibility-basics-1606671531",
+      "relationship": "Relevant for making data visualizations accessible and understandable."
+    }
+  ],
+  "ai_usage_guidance": {
+    "recommended_interpretation": "Treat this page as a navigation and orientation layer for Bosch data visualization guidance rather than as a full rulebook for every chart type.",
+    "when_to_use_static_information_graphics": "Use for fixed information graphics where content does not change through interaction or live data updates.",
+    "when_to_use_dynamic_information_graphics": "Use for interactive, adaptive, or changing information graphics.",
+    "when_to_use_reporting": "Use for reports, dashboards, recurring business reporting, and analytical summaries.",
+    "cross_check_before_design": [
+      "Check Bosch Colors guidance before assigning chart colors.",
+      "Check Accessibility guidance before relying on color-only meaning or low-contrast elements.",
+      "Check Print guidance if the visualization will be exported or printed.",
+      "Contact Design Support for review or approval when needed."
+    ]
+  },
+  "extraction_notes": {
+    "source_type": "Saved HTML page from Bosch Brand Guide",
+    "content_depth": "Overview page plus navigation, asset metadata, support block, and related links",
+    "limitations": [
+      "The uploaded page primarily shows the overview page, not the full detailed contents of each subpage.",
+      "Detailed rules for static graphics, dynamic graphics, and reporting may exist on linked subpages and should be extracted separately if needed."
+    ]
+  }
+}
