@@ -1,0 +1,2750 @@
+{
+  "metadata": {
+    "source_file": "Font and typography.html",
+    "source_url": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419",
+    "html_title": "Font and typography - Design principles - Bosch Digital Design System",
+    "page_title": "Font and typography",
+    "site_or_system": "Bosch Digital Design System",
+    "document_area": "Design principles / Foundations",
+    "language": "en",
+    "extraction_method": "Local HTML parsing with structured table extraction and CSS token extraction",
+    "created_at_utc": "2026-06-18T17:29:14Z"
+  },
+  "topic": {
+    "name": "Font and typography",
+    "slug": "font-and-typography",
+    "purpose": "Defines the typography foundation for Bosch digital interfaces, including font family, font weights, size scale, semantic styles, and icon-to-text alignment rules."
+  },
+  "navigation_context": {
+    "current_page_subsections": [
+      {
+        "label": "Digital typography",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419/digital-typography"
+      },
+      {
+        "label": "Font sizes and styles",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419/font-sizes-and-styles"
+      },
+      {
+        "label": "Font styles and semantics",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419/font-styles-and-semantics"
+      },
+      {
+        "label": "Icons and typography",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419/icons-and-typography"
+      }
+    ],
+    "related_foundation_pages": [
+      {
+        "label": "Digital touchpoints in Bosch design",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-touchpoints-in-bosch-design"
+      },
+      {
+        "label": "Design guidelines",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/design-guidelines"
+      },
+      {
+        "label": "Design Tokens",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/design-tokens"
+      },
+      {
+        "label": "Digital Color System",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system"
+      },
+      {
+        "label": "Font and typography",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419"
+      },
+      {
+        "label": "Writing in digital contexts",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/writing-in-digital-contexts"
+      },
+      {
+        "label": "Measurement & spacing",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/measurement-spacing"
+      },
+      {
+        "label": "Layers and spatial order",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/layers-and-spatial-order"
+      },
+      {
+        "label": "States",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/states"
+      },
+      {
+        "label": "Design for touch screen devices",
+        "href": "https://brandguide.bosch.com/document/8130/en#/-/design-for-touch-screen-devices"
+      }
+    ]
+  },
+  "ai_summary": {
+    "primary_font_family": "Bosch Sans",
+    "dds_available_font_styles": [
+      "Regular",
+      "Bold"
+    ],
+    "default_typography": {
+      "font_family": "Bosch Sans",
+      "font_style": "Normal",
+      "font_weight": "Regular (400)",
+      "font_size": "M (1rem)",
+      "text_decoration": "none",
+      "line_height": "1.5"
+    },
+    "size_scale_names": [
+      "S",
+      "SM",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "3XL",
+      "4XL",
+      "5XL",
+      "6XL"
+    ],
+    "semantic_heading_mapping_available": true,
+    "icon_typography_rules_available": true
+  },
+  "typography_properties": [
+    {
+      "property": "Font family",
+      "allowed_values_raw": "Bosch Sans",
+      "default_or_recommended_values": [
+        "Bosch Sans"
+      ],
+      "links": [
+        {
+          "label": "Bosch Sans",
+          "href": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie",
+          "target": "_blank"
+        }
+      ]
+    },
+    {
+      "property": "Font style",
+      "allowed_values_raw": "Normal, Italic",
+      "default_or_recommended_values": [
+        "Normal"
+      ],
+      "links": []
+    },
+    {
+      "property": "Font weight",
+      "allowed_values_raw": "Regular (400), Bold (700)",
+      "default_or_recommended_values": [
+        "Regular (400)"
+      ],
+      "links": []
+    },
+    {
+      "property": "Font size",
+      "allowed_values_raw": "S, SM, M (1rem), L, XL, 2XL, 3XL, 4XL, 5XL, 6XL",
+      "default_or_recommended_values": [
+        "M (1rem)"
+      ],
+      "links": []
+    },
+    {
+      "property": "Text decoration",
+      "allowed_values_raw": "none, underlined, strikethrough",
+      "default_or_recommended_values": [
+        "none"
+      ],
+      "links": []
+    },
+    {
+      "property": "Line height",
+      "allowed_values_raw": "1.5 (from XL and larger the line height is reduced)",
+      "default_or_recommended_values": [
+        "1.5"
+      ],
+      "links": []
+    }
+  ],
+  "font_size_scale": [
+    {
+      "style": "Text",
+      "size_name": "S",
+      "font_size": {
+        "raw": "0.75rem (12px)",
+        "rem": 0.75,
+        "px": 12.0
+      },
+      "line_height": {
+        "raw": "1.5 (18px)",
+        "ratio": 1.5,
+        "px": 18.0
+      },
+      "application_examples": [
+        "captions",
+        "labels"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "SM",
+      "font_size": {
+        "raw": "0.875rem (14px)",
+        "rem": 0.875,
+        "px": 14.0
+      },
+      "line_height": {
+        "raw": "1.571 (22px)",
+        "ratio": 1.571,
+        "px": 22.0
+      },
+      "application_examples": [
+        "texts on small mobile devices",
+        "captions",
+        "labels"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "M",
+      "font_size": {
+        "raw": "1rem (16px)",
+        "rem": 1.0,
+        "px": 16.0
+      },
+      "line_height": {
+        "raw": "1.5 (24px)",
+        "ratio": 1.5,
+        "px": 24.0
+      },
+      "application_examples": [
+        "texts",
+        "labels",
+        "messages"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "L",
+      "font_size": {
+        "raw": "1.25rem (20px)",
+        "rem": 1.25,
+        "px": 20.0
+      },
+      "line_height": {
+        "raw": "1.5 (30px)",
+        "ratio": 1.5,
+        "px": 30.0
+      },
+      "application_examples": [
+        "headings",
+        "highlighting",
+        "texts"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "XL",
+      "font_size": {
+        "raw": "1.5rem (24px)",
+        "rem": 1.5,
+        "px": 24.0
+      },
+      "line_height": {
+        "raw": "1.4 (34px)",
+        "ratio": 1.4,
+        "px": 34.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "2XL",
+      "font_size": {
+        "raw": "2rem (32px)",
+        "rem": 2.0,
+        "px": 32.0
+      },
+      "line_height": {
+        "raw": "1.35 (43px)",
+        "ratio": 1.35,
+        "px": 43.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "3XL",
+      "font_size": {
+        "raw": "2.5rem (40px)",
+        "rem": 2.5,
+        "px": 40.0
+      },
+      "line_height": {
+        "raw": "1.3 (52px)",
+        "ratio": 1.3,
+        "px": 52.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "4XL",
+      "font_size": {
+        "raw": "3rem (48px)",
+        "rem": 3.0,
+        "px": 48.0
+      },
+      "line_height": {
+        "raw": "1.25 (60px)",
+        "ratio": 1.25,
+        "px": 60.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "5XL",
+      "font_size": {
+        "raw": "4rem (64px)",
+        "rem": 4.0,
+        "px": 64.0
+      },
+      "line_height": {
+        "raw": "1.2 (77px)",
+        "ratio": 1.2,
+        "px": 77.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    },
+    {
+      "style": "Text",
+      "size_name": "6XL",
+      "font_size": {
+        "raw": "5rem (80px)",
+        "rem": 5.0,
+        "px": 80.0
+      },
+      "line_height": {
+        "raw": "1.15 (92px)",
+        "ratio": 1.15,
+        "px": 92.0
+      },
+      "application_examples": [
+        "headings",
+        "highlights"
+      ]
+    }
+  ],
+  "class_property_options": {
+    "Font weight": [
+      "normal / 400",
+      "bold / 700"
+    ],
+    "Font style": [
+      "normal",
+      "italic"
+    ],
+    "Text decoration": [
+      "none",
+      "strikethrough",
+      "underline"
+    ]
+  },
+  "semantic_text_styles": [
+    {
+      "type": "Headline 1",
+      "font_style": "Text 4XL Bold"
+    },
+    {
+      "type": "Headline 2",
+      "font_style": "Text 3XL Bold"
+    },
+    {
+      "type": "Headline 3",
+      "font_style": "Text 2XL Bold"
+    },
+    {
+      "type": "Headline 4",
+      "font_style": "Text XL Bold"
+    },
+    {
+      "type": "Headline 4",
+      "font_style": "Text L Bold"
+    },
+    {
+      "type": "Paragraph",
+      "font_style": "Text M Regular"
+    }
+  ],
+  "icon_typography": {
+    "scale": [
+      {
+        "text_style": "Text S",
+        "icon_size": {
+          "raw": "1.125rem (18px)",
+          "rem": 1.125,
+          "px": 18.0
+        },
+        "icon_distance": {
+          "raw": "0.38rem (6px)",
+          "rem": 0.38,
+          "px": 6.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text SM",
+        "icon_size": {
+          "raw": "1.375rem (22px)",
+          "rem": 1.375,
+          "px": 22.0
+        },
+        "icon_distance": {
+          "raw": "0.4583rem (7px)",
+          "rem": 0.4583,
+          "px": 7.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text M",
+        "icon_size": {
+          "raw": "1.5rem (24px)",
+          "rem": 1.5,
+          "px": 24.0
+        },
+        "icon_distance": {
+          "raw": "0.5rem (8px)",
+          "rem": 0.5,
+          "px": 8.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text L",
+        "icon_size": {
+          "raw": "1.875rem (30px)",
+          "rem": 1.875,
+          "px": 30.0
+        },
+        "icon_distance": {
+          "raw": "0.63rem (10px)",
+          "rem": 0.63,
+          "px": 10.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text XL",
+        "icon_size": {
+          "raw": "2.1rem (34px)",
+          "rem": 2.1,
+          "px": 34.0
+        },
+        "icon_distance": {
+          "raw": "0.7rem (11px)",
+          "rem": 0.7,
+          "px": 11.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text 2XL",
+        "icon_size": {
+          "raw": "2.7rem (43px)",
+          "rem": 2.7,
+          "px": 43.0
+        },
+        "icon_distance": {
+          "raw": "0.9rem (11px)",
+          "rem": 0.9,
+          "px": 11.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text 3XL",
+        "icon_size": {
+          "raw": "3.25rem (52px)",
+          "rem": 3.25,
+          "px": 52.0
+        },
+        "icon_distance": {
+          "raw": "1.08rem (17px)",
+          "rem": 1.08,
+          "px": 17.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text 4XL",
+        "icon_size": {
+          "raw": "3.75rem (60px)",
+          "rem": 3.75,
+          "px": 60.0
+        },
+        "icon_distance": {
+          "raw": "1.25rem (20px)",
+          "rem": 1.25,
+          "px": 20.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text 5XL",
+        "icon_size": {
+          "raw": "4.8rem (77px)",
+          "rem": 4.8,
+          "px": 77.0
+        },
+        "icon_distance": {
+          "raw": "1.6rem (25px)",
+          "rem": 1.6,
+          "px": 25.0
+        },
+        "icon_line_height": "1"
+      },
+      {
+        "text_style": "Text 6XL",
+        "icon_size": {
+          "raw": "5.75rem (92px)",
+          "rem": 5.75,
+          "px": 92.0
+        },
+        "icon_distance": {
+          "raw": "1.92rem (30px)",
+          "rem": 1.92,
+          "px": 30.0
+        },
+        "icon_line_height": "1"
+      }
+    ],
+    "examples": [
+      {
+        "example": "Example 1",
+        "calculation": "Size: 1rem * 1.5 = 1.5rem Distance: (1rem * 1.5)/3 = 0.5rem",
+        "explanation": "The icon is 1.5rem (24px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem."
+      },
+      {
+        "example": "Example 2",
+        "calculation": "Size: 1.5rem * 1.4 = 2.1rem Distance: (1.5rem * 1.4)/3 = 0.7rem",
+        "explanation": "The icon is 2.1rem (34px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem."
+      },
+      {
+        "example": "Example 3",
+        "calculation": "Size: 5rem * 1.15 = 5,75rem. Distance: (1.5rem * 1.4)/3 = 1.92rem",
+        "explanation": "The icon is 5.75rem (92px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem."
+      }
+    ],
+    "derived_formula_hint": {
+      "icon_size": "font_size * line_height",
+      "icon_distance": "(font_size * line_height) / 3",
+      "line_height": "1"
+    }
+  },
+  "rules_and_exceptions": [
+    {
+      "rule_id": "FONT_FAMILY_PRIMARY",
+      "statement": "Use Bosch Sans as the primary font family for all font levels, from headlines to body text.",
+      "source_section": "Overview"
+    },
+    {
+      "rule_id": "DDS_AVAILABLE_STYLES",
+      "statement": "In the Digital Design System, Bosch Sans is available in Regular and Bold font styles.",
+      "source_section": "Overview"
+    },
+    {
+      "rule_id": "DEFAULT_DIGITAL_TYPE",
+      "statement": "Default digital type settings are Bosch Sans, normal style, regular 400 weight, M / 1rem size, no text decoration, and 1.5 line height.",
+      "source_section": "Digital typography"
+    },
+    {
+      "rule_id": "LARGE_TEXT_LINE_HEIGHT",
+      "statement": "From XL and larger, the line height is reduced.",
+      "source_section": "Digital typography"
+    },
+    {
+      "rule_id": "REM_EQUIVALENCE_INFO",
+      "statement": "1rem usually corresponds to 16px / dp / pt, but product user interfaces may require individually defined sizes because virtual pixels do not automatically correspond to physical screen pixels.",
+      "source_section": "Digital typography"
+    },
+    {
+      "rule_id": "EXCEPTIONS_ALLOWED",
+      "statement": "Exceptions may use Bosch Sans Italic for quotations within paragraphs and a monospaced font for code snippets.",
+      "source_section": "Digital typography"
+    },
+    {
+      "rule_id": "DEVIATION_RESPONSIBILITY",
+      "statement": "When deviating because of hardware influences or legal regulations, the project is responsible for compliance with official regulations, including accessibility rules.",
+      "source_section": "Digital typography"
+    }
+  ],
+  "links": [
+    {
+      "label": "Bosch Sans at Bosch Brand Guide",
+      "href": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie",
+      "target": "_blank",
+      "classes": [
+        "btn",
+        "btn-primary"
+      ]
+    },
+    {
+      "label": "Bosch Sans",
+      "href": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie",
+      "target": "_blank",
+      "classes": [
+        "link"
+      ]
+    },
+    {
+      "label": "here",
+      "href": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc",
+      "target": "_self",
+      "classes": [
+        "tw-break-words"
+      ]
+    },
+    {
+      "label": "support.design@bosch.com",
+      "href": "mailto:support.design@bosch.com",
+      "target": "_self",
+      "classes": [
+        "tw-break-words"
+      ]
+    },
+    {
+      "label": "Design principles Digital Color System",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system",
+      "target": null,
+      "classes": [
+        "tw-flex",
+        "tw-gap-5",
+        "tw-overflow-hidden",
+        "tw-outline-none",
+        "tw-justify-end",
+        "tw-items-start",
+        "tw-py-2.5",
+        "focus-visible:tw-ring-focus",
+        "tw-flex-row",
+        "tw-pr-5"
+      ]
+    },
+    {
+      "label": "Design principles Writing in digital contexts",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/writing-in-digital-contexts",
+      "target": null,
+      "classes": [
+        "tw-flex",
+        "tw-gap-5",
+        "tw-overflow-hidden",
+        "tw-outline-none",
+        "tw-justify-end",
+        "tw-items-start",
+        "tw-py-2.5",
+        "focus-visible:tw-ring-focus",
+        "tw-flex-row-reverse",
+        "tw-pl-5"
+      ]
+    }
+  ],
+  "sections_raw_structured": [
+    {
+      "title": "Overview",
+      "paragraphs": [
+        "In the Digital Design System, Bosch Sans is available in Regular and Bold font styles. Bosch Sans is used in all font levels, from headlines to body text. The fine gradations of the font ensure easy-to-read texts in all font sizes.",
+        "Detailed information on Bosch Sans and the font families for download can be found in the Bosch Brand Guide: Bosch Sans at Bosch Brand Guide"
+      ],
+      "tables": [],
+      "images": [
+        {
+          "src": "./Font and typography_files/QvypUFXnMuHDNbuQtULq.png",
+          "alt": "",
+          "width": "3200",
+          "height": "1600"
+        }
+      ]
+    },
+    {
+      "title": "Digital typography",
+      "paragraphs": [
+        "The following properties are currently defined in the DDS for the digital use of type. The default definition (highlighted in bold below) is based on accessibility standards for digital interfaces.",
+        "Info! 1rem usually corresponds to 16px / dp / pt.",
+        "This does not apply to product user interfaces, since the sizes for the respective display must be defined individually. Px / dp / pt are virtual pixels and do not automatically correspond to the physical pixels on screens.",
+        "Exceptions and deviations",
+        "Certain use cases require a break from the standard rules. For example, it is permissible to use Bosch Sans Italic for quotations within paragraphs, a monospaced font for displaying code snippets.",
+        "Furthermore, influences of hardware and legal regulations may require deviations from the standards defined here.",
+        "In case of any deviations, the respective project is responsible for complying with the corresponding official regulations (e.g. accessibility rules)."
+      ],
+      "tables": [
+        {
+          "headers": [
+            "Property",
+            "Values"
+          ],
+          "rows": [
+            {
+              "Property": {
+                "text": "Font family",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "Bosch Sans",
+                "emphasized_or_default_values": [
+                  "Bosch Sans"
+                ],
+                "links": [
+                  {
+                    "label": "Bosch Sans",
+                    "href": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie",
+                    "target": "_blank"
+                  }
+                ]
+              }
+            },
+            {
+              "Property": {
+                "text": "Font style",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "Normal, Italic",
+                "emphasized_or_default_values": [
+                  "Normal"
+                ],
+                "links": []
+              }
+            },
+            {
+              "Property": {
+                "text": "Font weight",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "Regular (400), Bold (700)",
+                "emphasized_or_default_values": [
+                  "Regular (400)"
+                ],
+                "links": []
+              }
+            },
+            {
+              "Property": {
+                "text": "Font size",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "S, SM, M (1rem), L, XL, 2XL, 3XL, 4XL, 5XL, 6XL",
+                "emphasized_or_default_values": [
+                  "M (1rem)"
+                ],
+                "links": []
+              }
+            },
+            {
+              "Property": {
+                "text": "Text decoration",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "none, underlined, strikethrough",
+                "emphasized_or_default_values": [
+                  "none"
+                ],
+                "links": []
+              }
+            },
+            {
+              "Property": {
+                "text": "Line height",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Values": {
+                "text": "1.5 (from XL and larger the line height is reduced)",
+                "emphasized_or_default_values": [
+                  "1.5"
+                ],
+                "links": []
+              }
+            }
+          ]
+        }
+      ],
+      "images": []
+    },
+    {
+      "title": "Font sizes and styles",
+      "paragraphs": [
+        "Different properties are possible for the different classes:"
+      ],
+      "tables": [
+        {
+          "headers": [
+            "Style",
+            "Size",
+            "Font size",
+            "Line height",
+            "Application examples"
+          ],
+          "rows": [
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "S",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "0.75rem (12px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.5 (18px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "captions, labels",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "SM",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "0.875rem (14px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.571 (22px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "texts on small mobile devices, captions, labels",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "M",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "1rem (16px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.5 (24px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "texts, labels, messages",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "L",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "1.25rem (20px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.5 (30px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlighting, texts",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "1.5rem (24px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.4 (34px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "2XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "2rem (32px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.35 (43px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "3XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "2.5rem (40px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.3 (52px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "4XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "3rem (48px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.25 (60px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "5XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "4rem (64px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.2 (77px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Style": {
+                "text": "Text",
+                "emphasized_or_default_values": [
+                  "Text"
+                ],
+                "links": []
+              },
+              "Size": {
+                "text": "6XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font size": {
+                "text": "5rem (80px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Line height": {
+                "text": "1.15 (92px)",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Application examples": {
+                "text": "headings, highlights",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            }
+          ]
+        },
+        {
+          "headers": [
+            "Font weight",
+            "Font style",
+            "Text decoration"
+          ],
+          "rows": [
+            {
+              "Font weight": {
+                "text": "normal / 400",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font style": {
+                "text": "normal",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Text decoration": {
+                "text": "none",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Font weight": {
+                "text": "bold / 700",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font style": {
+                "text": "italic",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Text decoration": {
+                "text": "strikethrough",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Font weight": {
+                "text": "",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Font style": {
+                "text": "",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Text decoration": {
+                "text": "underline",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "src": "./Font and typography_files/RWp8ZbZ4jKV7icmc1Lxb.png",
+          "alt": "",
+          "width": "3200",
+          "height": "1776"
+        },
+        {
+          "src": "./Font and typography_files/LX66weZbxMwBJw7extcj.png",
+          "alt": "",
+          "width": "3570",
+          "height": "1064"
+        }
+      ]
+    },
+    {
+      "title": "Font styles and semantics",
+      "paragraphs": [
+        "Font styles are detached from function and semantics. Therefore, there are no explicit instructions that, for example, a 1st order headline must always have a certain size. For example, a 1st order headline can have the style \"Text 4XL Bold\" or \"Text L Regular\", this decision must be made in each project. The technically semantically correct order does not always correspond to the intended visual hierarchy of a page.",
+        "Info! If no other styles are set, these standards apply like the following. Deviations are permitted if they are accessible and conform to the Bosch brand identity."
+      ],
+      "tables": [
+        {
+          "headers": [
+            "Type",
+            "Font style"
+          ],
+          "rows": [
+            {
+              "Type": {
+                "text": "Headline 1",
+                "emphasized_or_default_values": [
+                  "Headline 1"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text 4XL Bold",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Type": {
+                "text": "Headline 2",
+                "emphasized_or_default_values": [
+                  "Headline 2"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text 3XL Bold",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Type": {
+                "text": "Headline 3",
+                "emphasized_or_default_values": [
+                  "Headline 3"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text 2XL Bold",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Type": {
+                "text": "Headline 4",
+                "emphasized_or_default_values": [
+                  "Headline 4"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text XL Bold",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Type": {
+                "text": "Headline 4",
+                "emphasized_or_default_values": [
+                  "Headline 4"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text L Bold",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Type": {
+                "text": "Paragraph",
+                "emphasized_or_default_values": [
+                  "Paragraph"
+                ],
+                "links": []
+              },
+              "Font style": {
+                "text": "Text M Regular",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            }
+          ]
+        }
+      ],
+      "images": []
+    },
+    {
+      "title": "Icons and typography",
+      "paragraphs": [
+        "Icons that appear in combination with text or whose sizes should be harmoniously adapted to the typography are calculated according to a special formula. This makes it possible for icons to resize proportionally and correctly as font sizes vary. Icons may be placed to the right or left of the text.",
+        "The icon formula:",
+        "Formula icon size: font-size * line-height = icon-size",
+        "icon-line-height = 1",
+        "Formula icon–label distance: (font-size * line-height)/3 = icon-distance",
+        "Calculation examples for icon sizes:",
+        "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here .",
+        "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts."
+      ],
+      "tables": [
+        {
+          "headers": [
+            "Text style",
+            "Icon size",
+            "Icon distance",
+            "Icon line height"
+          ],
+          "rows": [
+            {
+              "Text style": {
+                "text": "Text S",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "1.125rem (18px)",
+                "emphasized_or_default_values": [
+                  "1.125rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.38rem (6px)",
+                "emphasized_or_default_values": [
+                  "0.38rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text SM",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "1.375rem (22px)",
+                "emphasized_or_default_values": [
+                  "1.375rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.4583rem (7px)",
+                "emphasized_or_default_values": [
+                  "0.4583rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text M",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "1.5rem (24px)",
+                "emphasized_or_default_values": [
+                  "1.5rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.5rem (8px)",
+                "emphasized_or_default_values": [
+                  "0.5rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text L",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "1.875rem (30px)",
+                "emphasized_or_default_values": [
+                  "1.875rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.63rem (10px)",
+                "emphasized_or_default_values": [
+                  "0.63rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "2.1rem (34px)",
+                "emphasized_or_default_values": [
+                  "2.1rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.7rem (11px)",
+                "emphasized_or_default_values": [
+                  "0.7rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text 2XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "2.7rem (43px)",
+                "emphasized_or_default_values": [
+                  "2.7rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "0.9rem (11px)",
+                "emphasized_or_default_values": [
+                  "0.9rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text 3XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "3.25rem (52px)",
+                "emphasized_or_default_values": [
+                  "3.25rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "1.08rem (17px)",
+                "emphasized_or_default_values": [
+                  "1.08rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text 4XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "3.75rem (60px)",
+                "emphasized_or_default_values": [
+                  "3.75rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "1.25rem (20px)",
+                "emphasized_or_default_values": [
+                  "1.25rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text 5XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "4.8rem (77px)",
+                "emphasized_or_default_values": [
+                  "4.8rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "1.6rem (25px)",
+                "emphasized_or_default_values": [
+                  "1.6rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Text style": {
+                "text": "Text 6XL",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Icon size": {
+                "text": "5.75rem (92px)",
+                "emphasized_or_default_values": [
+                  "5.75rem"
+                ],
+                "links": []
+              },
+              "Icon distance": {
+                "text": "1.92rem (30px)",
+                "emphasized_or_default_values": [
+                  "1.92rem"
+                ],
+                "links": []
+              },
+              "Icon line height": {
+                "text": "1",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            }
+          ]
+        },
+        {
+          "headers": [
+            "Example 1",
+            "Example 2",
+            "Example 3"
+          ],
+          "rows": [
+            {
+              "Example 1": {
+                "text": "Size: 1rem * 1.5 = 1.5rem Distance: (1rem * 1.5)/3 = 0.5rem",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Example 2": {
+                "text": "Size: 1.5rem * 1.4 = 2.1rem Distance: (1.5rem * 1.4)/3 = 0.7rem",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Example 3": {
+                "text": "Size: 5rem * 1.15 = 5,75rem. Distance: (1.5rem * 1.4)/3 = 1.92rem",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            },
+            {
+              "Example 1": {
+                "text": "The icon is 1.5rem (24px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Example 2": {
+                "text": "The icon is 2.1rem (34px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+                "emphasized_or_default_values": [],
+                "links": []
+              },
+              "Example 3": {
+                "text": "The icon is 5.75rem (92px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+                "emphasized_or_default_values": [],
+                "links": []
+              }
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "src": "./Font and typography_files/xBjDp6VWhDPTJGLoJhXU.png",
+          "alt": "",
+          "width": "800",
+          "height": "448"
+        },
+        {
+          "src": "./Font and typography_files/H7mucaWqKWwha7uf622G.png",
+          "alt": "",
+          "width": "2400",
+          "height": "723"
+        }
+      ]
+    }
+  ],
+  "theme_typography_tokens_from_css": {
+    "heading1": {
+      "font-size": "2.5rem",
+      "line-height": "1.3",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "700",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "10px"
+    },
+    "heading2": {
+      "font-size": "2rem",
+      "line-height": "1.3",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "700",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "8px"
+    },
+    "heading3": {
+      "font-size": "1.5rem",
+      "line-height": "1.4",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "700",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "0px"
+    },
+    "heading4": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "700",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "0px"
+    },
+    "custom1": {
+      "font-size": "14px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "10px"
+    },
+    "custom2": {
+      "font-size": "16px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "200",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "10px"
+    },
+    "custom3": {
+      "font-size": "2.5rem",
+      "line-height": "1.3",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0px",
+      "margin-bottom": "10px"
+    },
+    "body": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0",
+      "margin-bottom": "0"
+    },
+    "link": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "underline",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 123, 192)"
+    },
+    "quote": {
+      "font-size": "3.5rem",
+      "line-height": "1",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "600",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0",
+      "margin-bottom": "10px"
+    },
+    "image-title": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0",
+      "margin-bottom": "5px"
+    },
+    "image-caption": {
+      "font-size": "18px",
+      "line-height": "1.5",
+      "text-decoration": "none",
+      "font-style": "normal",
+      "text-transform": "none",
+      "letter-spacing": "normal",
+      "font-weight": "400",
+      "font-family": "\"Bosch Sans\"",
+      "color": "rgb(0, 0, 0)",
+      "margin-top": "0",
+      "margin-bottom": "0"
+    },
+    "main-font": {
+      "font-family": "\"Bosch Sans\""
+    },
+    "button-primary": {
+      "font-family": "\"Bosch Sans\"",
+      "font-size": "1rem",
+      "line-height": "1.5",
+      "font-weight": "400",
+      "font-style": "normal",
+      "text-transform": "none",
+      "padding-top": "0.8rem",
+      "padding-right": "1rem",
+      "padding-bottom": "0.7rem",
+      "padding-left": "1rem",
+      "border-radius": "0px",
+      "border-width": "0px",
+      "background-color": "rgb(0, 123, 192)",
+      "border-color": "rgba(0, 123, 192, 1)",
+      "color": "rgb(255, 255, 255)",
+      "background-color-hover": "rgb(0, 98, 154)",
+      "border-color-hover": "rgba(171, 0, 0, 0)",
+      "color-hover": "rgb(255, 255, 255)"
+    },
+    "button-secondary": {
+      "font-family": "\"Bosch Sans\"",
+      "font-size": "1rem",
+      "line-height": "1.5",
+      "font-weight": "400",
+      "font-style": "normal",
+      "text-transform": "none",
+      "padding-top": "0.8rem",
+      "padding-right": "1rem",
+      "padding-bottom": "0.7rem",
+      "padding-left": "1rem",
+      "border-radius": "0px",
+      "border-width": "1px",
+      "background-color": "rgba(255, 255, 255, 0)",
+      "border-color": "rgb(0, 123, 192)",
+      "color": "rgb(0, 123, 192)",
+      "background-color-hover": "rgb(209, 228, 255)",
+      "border-color-hover": "rgb(0, 98, 154)",
+      "color-hover": "rgb(0, 98, 154)"
+    },
+    "button-tertiary": {
+      "font-family": "\"Bosch Sans\"",
+      "font-size": "1rem",
+      "line-height": "1.5",
+      "font-weight": "400",
+      "font-style": "normal",
+      "text-transform": "none",
+      "padding-top": "0.8rem",
+      "padding-right": "1rem",
+      "padding-bottom": "0.7rem",
+      "padding-left": "1rem",
+      "border-radius": "0px",
+      "border-width": "0px",
+      "background-color": "rgba(255, 255, 255, 0)",
+      "border-color": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 123, 192)",
+      "background-color-hover": "rgba(255, 255, 255, 0)",
+      "border-color-hover": "rgba(255, 255, 255, 0)",
+      "color-hover": "rgb(0, 98, 154)"
+    }
+  },
+  "font_face_declarations_summary_from_css": {
+    "Bosch Sans": {
+      "weights": [
+        "200",
+        "300",
+        "400",
+        "500",
+        "700",
+        "800",
+        "900",
+        "bold",
+        "normal"
+      ],
+      "styles": [
+        "italic",
+        "normal"
+      ],
+      "formats": [
+        "truetype",
+        "woff",
+        "woff2"
+      ],
+      "unique_declaration_count": 18
+    },
+    "Boschsans": {
+      "weights": [
+        "300",
+        "700"
+      ],
+      "styles": [
+        "normal"
+      ],
+      "formats": [
+        "woff",
+        "woff2"
+      ],
+      "unique_declaration_count": 2
+    }
+  },
+  "all_extracted_tables_raw": [
+    {
+      "headers": [
+        "Property",
+        "Values"
+      ],
+      "rows": [
+        {
+          "Property": {
+            "text": "Font family",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "Bosch Sans",
+            "emphasized_or_default_values": [
+              "Bosch Sans"
+            ],
+            "links": [
+              {
+                "label": "Bosch Sans",
+                "href": "https://brandguide.bosch.com/document/2272#/schrift-und-typografie",
+                "target": "_blank"
+              }
+            ]
+          }
+        },
+        {
+          "Property": {
+            "text": "Font style",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "Normal, Italic",
+            "emphasized_or_default_values": [
+              "Normal"
+            ],
+            "links": []
+          }
+        },
+        {
+          "Property": {
+            "text": "Font weight",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "Regular (400), Bold (700)",
+            "emphasized_or_default_values": [
+              "Regular (400)"
+            ],
+            "links": []
+          }
+        },
+        {
+          "Property": {
+            "text": "Font size",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "S, SM, M (1rem), L, XL, 2XL, 3XL, 4XL, 5XL, 6XL",
+            "emphasized_or_default_values": [
+              "M (1rem)"
+            ],
+            "links": []
+          }
+        },
+        {
+          "Property": {
+            "text": "Text decoration",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "none, underlined, strikethrough",
+            "emphasized_or_default_values": [
+              "none"
+            ],
+            "links": []
+          }
+        },
+        {
+          "Property": {
+            "text": "Line height",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Values": {
+            "text": "1.5 (from XL and larger the line height is reduced)",
+            "emphasized_or_default_values": [
+              "1.5"
+            ],
+            "links": []
+          }
+        }
+      ]
+    },
+    {
+      "headers": [
+        "Style",
+        "Size",
+        "Font size",
+        "Line height",
+        "Application examples"
+      ],
+      "rows": [
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "S",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "0.75rem (12px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.5 (18px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "captions, labels",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "SM",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "0.875rem (14px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.571 (22px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "texts on small mobile devices, captions, labels",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "M",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "1rem (16px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.5 (24px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "texts, labels, messages",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "L",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "1.25rem (20px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.5 (30px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlighting, texts",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "1.5rem (24px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.4 (34px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "2XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "2rem (32px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.35 (43px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "3XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "2.5rem (40px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.3 (52px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "4XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "3rem (48px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.25 (60px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "5XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "4rem (64px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.2 (77px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Style": {
+            "text": "Text",
+            "emphasized_or_default_values": [
+              "Text"
+            ],
+            "links": []
+          },
+          "Size": {
+            "text": "6XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font size": {
+            "text": "5rem (80px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Line height": {
+            "text": "1.15 (92px)",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Application examples": {
+            "text": "headings, highlights",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        }
+      ]
+    },
+    {
+      "headers": [
+        "Font weight",
+        "Font style",
+        "Text decoration"
+      ],
+      "rows": [
+        {
+          "Font weight": {
+            "text": "normal / 400",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font style": {
+            "text": "normal",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Text decoration": {
+            "text": "none",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Font weight": {
+            "text": "bold / 700",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font style": {
+            "text": "italic",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Text decoration": {
+            "text": "strikethrough",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Font weight": {
+            "text": "",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Font style": {
+            "text": "",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Text decoration": {
+            "text": "underline",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        }
+      ]
+    },
+    {
+      "headers": [
+        "Type",
+        "Font style"
+      ],
+      "rows": [
+        {
+          "Type": {
+            "text": "Headline 1",
+            "emphasized_or_default_values": [
+              "Headline 1"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text 4XL Bold",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Type": {
+            "text": "Headline 2",
+            "emphasized_or_default_values": [
+              "Headline 2"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text 3XL Bold",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Type": {
+            "text": "Headline 3",
+            "emphasized_or_default_values": [
+              "Headline 3"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text 2XL Bold",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Type": {
+            "text": "Headline 4",
+            "emphasized_or_default_values": [
+              "Headline 4"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text XL Bold",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Type": {
+            "text": "Headline 4",
+            "emphasized_or_default_values": [
+              "Headline 4"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text L Bold",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Type": {
+            "text": "Paragraph",
+            "emphasized_or_default_values": [
+              "Paragraph"
+            ],
+            "links": []
+          },
+          "Font style": {
+            "text": "Text M Regular",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        }
+      ]
+    },
+    {
+      "headers": [
+        "Text style",
+        "Icon size",
+        "Icon distance",
+        "Icon line height"
+      ],
+      "rows": [
+        {
+          "Text style": {
+            "text": "Text S",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "1.125rem (18px)",
+            "emphasized_or_default_values": [
+              "1.125rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.38rem (6px)",
+            "emphasized_or_default_values": [
+              "0.38rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text SM",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "1.375rem (22px)",
+            "emphasized_or_default_values": [
+              "1.375rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.4583rem (7px)",
+            "emphasized_or_default_values": [
+              "0.4583rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text M",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "1.5rem (24px)",
+            "emphasized_or_default_values": [
+              "1.5rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.5rem (8px)",
+            "emphasized_or_default_values": [
+              "0.5rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text L",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "1.875rem (30px)",
+            "emphasized_or_default_values": [
+              "1.875rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.63rem (10px)",
+            "emphasized_or_default_values": [
+              "0.63rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "2.1rem (34px)",
+            "emphasized_or_default_values": [
+              "2.1rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.7rem (11px)",
+            "emphasized_or_default_values": [
+              "0.7rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text 2XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "2.7rem (43px)",
+            "emphasized_or_default_values": [
+              "2.7rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "0.9rem (11px)",
+            "emphasized_or_default_values": [
+              "0.9rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text 3XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "3.25rem (52px)",
+            "emphasized_or_default_values": [
+              "3.25rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "1.08rem (17px)",
+            "emphasized_or_default_values": [
+              "1.08rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text 4XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "3.75rem (60px)",
+            "emphasized_or_default_values": [
+              "3.75rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "1.25rem (20px)",
+            "emphasized_or_default_values": [
+              "1.25rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text 5XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "4.8rem (77px)",
+            "emphasized_or_default_values": [
+              "4.8rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "1.6rem (25px)",
+            "emphasized_or_default_values": [
+              "1.6rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Text style": {
+            "text": "Text 6XL",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Icon size": {
+            "text": "5.75rem (92px)",
+            "emphasized_or_default_values": [
+              "5.75rem"
+            ],
+            "links": []
+          },
+          "Icon distance": {
+            "text": "1.92rem (30px)",
+            "emphasized_or_default_values": [
+              "1.92rem"
+            ],
+            "links": []
+          },
+          "Icon line height": {
+            "text": "1",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        }
+      ]
+    },
+    {
+      "headers": [
+        "Example 1",
+        "Example 2",
+        "Example 3"
+      ],
+      "rows": [
+        {
+          "Example 1": {
+            "text": "Size: 1rem * 1.5 = 1.5rem Distance: (1rem * 1.5)/3 = 0.5rem",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Example 2": {
+            "text": "Size: 1.5rem * 1.4 = 2.1rem Distance: (1.5rem * 1.4)/3 = 0.7rem",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Example 3": {
+            "text": "Size: 5rem * 1.15 = 5,75rem. Distance: (1.5rem * 1.4)/3 = 1.92rem",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        },
+        {
+          "Example 1": {
+            "text": "The icon is 1.5rem (24px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Example 2": {
+            "text": "The icon is 2.1rem (34px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+            "emphasized_or_default_values": [],
+            "links": []
+          },
+          "Example 3": {
+            "text": "The icon is 5.75rem (92px) in size with a line-height of 1 and a distance in-between label and icon of 0.5rem.",
+            "emphasized_or_default_values": [],
+            "links": []
+          }
+        }
+      ]
+    }
+  ],
+  "machine_reading_notes": [
+    "Bold text inside source tables was interpreted as default or emphasized values when the page explicitly says defaults are highlighted in bold.",
+    "The source HTML includes many @font-face declarations and duplicated CSS definitions; the content guidance remains that DDS makes Bosch Sans available as Regular and Bold for digital typography.",
+    "Image contents were not OCR-extracted; image references and dimensions were preserved when available."
+  ]
+}

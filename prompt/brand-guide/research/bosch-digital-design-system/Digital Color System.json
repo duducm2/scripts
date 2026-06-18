@@ -1,0 +1,2993 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-06-18T17:26:02.289562+00:00",
+  "source": {
+    "input_file": "Digital Color System.html",
+    "source_url_from_html_comment": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system",
+    "html_title": "Digital Color System - Design principles - Bosch Digital Design System",
+    "page_name": "Digital Color System",
+    "language": "en",
+    "content_origin": "Uploaded local HTML snapshot of Bosch Digital Design System page"
+  },
+  "topic": {
+    "name": "Digital Color System",
+    "domain": "Bosch Digital Design System / Design principles / Foundations",
+    "intent": "AI-readable organization of unstructured webpage guidance for design-system reuse, retrieval, and downstream reasoning."
+  },
+  "conceptual_model": {
+    "purpose": "Guarantee a uniform, accessible WCAG-oriented and Bosch brand-compliant color experience across Bosch digital products.",
+    "foundation": {
+      "base": "Neutral grayscale foundation.",
+      "accent": "Expressive blue shades complement the neutral base."
+    },
+    "integration_points": [
+      "Bosch UI Kit",
+      "FROK / Frontend Kit",
+      "Design tokens",
+      "JSON files",
+      "GitHub repository",
+      "npm package",
+      "Figma UI Kit libraries"
+    ],
+    "mode_support": [
+      "Light mode",
+      "Dark mode"
+    ],
+    "background_types": [
+      "Primary",
+      "Secondary",
+      "Contrast"
+    ],
+    "core_scheme_groups": [
+      "Base",
+      "Accent",
+      "Plain",
+      "Integrated",
+      "Emphasis",
+      "Signal"
+    ],
+    "hierarchy_types": [
+      "Major",
+      "Minor",
+      "Pure"
+    ],
+    "states": {
+      "role": [
+        "Enabled",
+        "Disabled"
+      ],
+      "interaction_state": [
+        "Default",
+        "Hovered",
+        "Pressed"
+      ]
+    },
+    "layers": [
+      "Front foreground layer",
+      "Fill base layer"
+    ],
+    "capabilities": [
+      "Consistency across platforms",
+      "Accessibility and WCAG compliance checks",
+      "Semantic and systematic organization",
+      "Collaboration between designers and developers",
+      "Brand guide compliance",
+      "Multibrand scalability",
+      "Nested variants for interactive elements"
+    ]
+  },
+  "navigation_outline": [
+    {
+      "label": "Digital touchpoints in Bosch design",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-touchpoints-in-bosch-design"
+    },
+    {
+      "label": "Design guidelines",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/design-guidelines"
+    },
+    {
+      "label": "Design Tokens",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/design-tokens"
+    },
+    {
+      "label": "Digital Color System",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system"
+    },
+    {
+      "label": "Benefits and features",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/benefits-and-features"
+    },
+    {
+      "label": "Structure and organization",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/structure-and-organization"
+    },
+    {
+      "label": "Visual hierarchy",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/visual-hierarchy"
+    },
+    {
+      "label": "Accessibility",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/accessibility"
+    },
+    {
+      "label": "Default color schemes",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/default-color-schemes"
+    },
+    {
+      "label": "Nested color schemes",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/nested-color-schemes"
+    },
+    {
+      "label": "Application",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/application"
+    },
+    {
+      "label": "Do's and Don'ts",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/do-s-and-don-ts"
+    },
+    {
+      "label": "Customizations of the Digital Color System",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/customizations-of-the-digital-color-system"
+    },
+    {
+      "label": "Resources and tools",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/digital-color-system/resources-and-tools"
+    },
+    {
+      "label": "Font and typography",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/font-and-typography-1681985419"
+    },
+    {
+      "label": "Writing in digital contexts",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/writing-in-digital-contexts"
+    },
+    {
+      "label": "Measurement & spacing",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/measurement-spacing"
+    },
+    {
+      "label": "Layers and spatial order",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/layers-and-spatial-order"
+    },
+    {
+      "label": "States",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/states"
+    },
+    {
+      "label": "Design for touch screen devices",
+      "href": "https://brandguide.bosch.com/document/8130/en#/-/design-for-touch-screen-devices"
+    }
+  ],
+  "content_sections": [
+    {
+      "id": "intro",
+      "heading": "Introduction",
+      "level": 1,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The BDDS Color System guarantees a uniform, accessible (WCAG) and brand-compliant design for all Bosch products. The foundation is a neutral grayscale (Base), complemented by expressive shades of blue (Accent). With six clearly defined color scheme groups (Base, Accent, Plain, Integrated, Emphasis, Signal) for light and dark modes and various background types, it provides designers and developers with an efficient tool. Integration into the Bosch UI Kit and FROK, as well as the use of design tokens, simplifies application and ensures consistent results."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Explore the Digital Color System in the \"Color Picker Tool.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Tip! A helpful \"Cheat Sheet\" on the topic is available in the \" Resources and Tools \" section."
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "heading": "Content",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "image_grid_caption",
+          "title": "Benefits and features",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Structure and organization",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Visual hierarchy",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Accessibility",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Default color schemes",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Nested color schemes",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Do's and Don'ts",
+          "description": null
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Resources and tools",
+          "description": null
+        }
+      ]
+    },
+    {
+      "id": "benefits-and-features",
+      "heading": "Benefits and features",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "image_grid_caption",
+          "title": "Immediate start",
+          "description": "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Consistency across platforms",
+          "description": "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Color scheme for every use case",
+          "description": "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Systematic organization",
+          "description": "The color schemes are semantically and systematically structured to meet relationships and standards."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color schemes are semantically and systematically structured to meet relationships and standards."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Tool integration",
+          "description": "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK)."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Accessibility",
+          "description": "WCAG compliance is ensured through regular checks and optimizations."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "WCAG compliance is ensured through regular checks and optimizations."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Design tokens",
+          "description": "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package)."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Collaboration",
+          "description": "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Corporate design compliance",
+          "description": "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Light & Dark mode",
+          "description": "Designs using the color system can effortlessly switch between light and dark modes."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Designs using the color system can effortlessly switch between light and dark modes."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Multibrand capability",
+          "description": "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands."
+        }
+      ]
+    },
+    {
+      "id": "structure-and-organization",
+      "heading": "Structure and organization",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Schematic structure of the Digital Color System. For better understanding, the attributes \"Role (disabled)\" and \"Interaction state (hovered, pressed)\" are not shown here."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Various attribute types define the specific appearance of a color. This overview shows all available attributes of the color system."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Info! In the following interactive tool, you can explore the Digital Color System by changing individual attributes."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The attribute groups of the Digital Color System are based on a systematic semantic structure:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Modes and Backgrounds Light and dark modes are available by default. There are three types of backgrounds (Primary, Secondary, and Contrast)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Schemes Six color groups form the core of the system (Base, Accent, Plain, Integrated, Emphasis, and Signal)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Nesting Nested variants are available to represent interactive elements within a color scheme."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Types Types (Major, Minor and Pure) are used to control the visual hierarchy within a color scheme."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "States (Role and Interaction State) Attributes Role (Enabled/Disabled) and Interaction State (Default, Hovered, Pressed) are available to define specific interface states."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Layer: Each color scheme consists of two layers: a foreground layer (Front) and a base layer (Fill)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The combination of all attributes results in a specific color definition."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "These components are explained in individual sections below."
+        }
+      ]
+    },
+    {
+      "id": "1-modes-and-backgrounds",
+      "heading": "1. Modes and Backgrounds",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Bosch Color System is provided by default in two modes: Light Mode and Dark Mode , which are structurally identical. In both, for example, the color variable Accent – Major – Enabled Default Front exists; due to the same structure, it is possible to switch a user interface from light to dark mode without changing or rebuilding the components. Only the colors change in optimal contrast ratio – nothing else."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Important: A user interface can only be displayed in either light or dark mode. A combination or mixing of both modes is not allowed."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Similarly, backgrounds, which are hierarchically one level below the modes, behave the same way. There are three backgrounds (Primary, Secondary, and Contrast) . The subordinate structures are also identical for backgrounds. Our example variable Accent – Major – Enabled Default Front exists for each background variation. This ensures that each component is always displayed in the correct contrast ratio on the respective background."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The different backgrounds help with the structure of user interfaces, especially when spacing (white space) is no longer sensible. However, backgrounds should be used sparingly and thoughtfully to avoid violating the fundamental principles of UI design."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Illustration of modes and backgrounds using common UI elements. Used color scheme: Texts and labels (Plain Pure), hyperlinks (Accent Pure), switches and buttons (Accent Major)."
+        }
+      ]
+    },
+    {
+      "id": "2-schemes",
+      "heading": "2. Schemes",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Our color schemes represent a semantic and systematic arrangement of color groups. Different schemes are available for various applications and specific visual expressions."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The core of the system consists of four color groups that form the color schemes: Base, Accent, Plain, and Integrated . These are complemented by the extended designation groups Emphasis and Signal."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "All color schemes are available in both a Default and a Nested variant. The following sections will explain these in detail:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Default Color Schemes Nested Color Schemes"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Default color schemes: The graphic shows the base colors of the six fundamental color scheme groups."
+        }
+      ]
+    },
+    {
+      "id": "3-nesting",
+      "heading": "3. Nesting",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Each color scheme has a so-called nested variant. This allows for the use of other components within a Major Fill color of the color scheme without causing WCAG contrast conflicts."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Further explanations and application examples can be found in the  section \"Nested Color Schemes.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The application example shows the color difference between a normal component (on Secondary Background) and a nested component (on Emphasis 03)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Caution! Nesting must never dominate the user interface and should always be used sparingly! See Do's and Dont's ."
+        }
+      ]
+    },
+    {
+      "id": "4-types",
+      "heading": "4. Types",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Each color scheme has three types: Major, Minor, and Pure . Each of the three types follows the same basic rules across different color schemes."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Major is the most prominent type and is used to highlight elements."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Examples: Primary Button, Checkbox, Radio Button"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Minor is more subtle than Major but also is used to highlight."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Examples: Text Input Fields, Notifications, Dropdowns"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Pure is the most understated type and is rarely used for discrete highlights."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Examples: Plain Text, Links, Secondary and Tertiary Buttons"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Special features of the Types:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Major and Minor always require Fill and Front (see section \"6. Layer\"). Otherwise, color contrasts according to WCAG cannot be guaranteed."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Pure can also be used without Fill , as in the case of links and text."
+        }
+      ]
+    },
+    {
+      "id": "5-states-role-and-interaction-state",
+      "heading": "5. States (Role and Interaction State)",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Color-differentiated states are crucial for an effective user interface, as they help users recognize different interactions and statuses. In the Digital Color System, these states are clearly defined by the attributes Role (Enabled/Disabled) and Interaction State (Default, Hovered, Pressed) . This ensures that users immediately understand whether an element is active or inactive and how it responds to their inputs."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Visual Example of All States Using the Accent Major Color Scheme:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Role:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Enabled: The element is active and allows user interaction."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Disabled: The element is inactive and cannot be selected or used."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Interaction States:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Default: The normal state of the element when it is not interacted with."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Hovered: The state when the mouse pointer hovers over the element, often providing visual feedback."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Pressed: The state when the element is pressed to indicate interaction."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The states Tab-Focus and Read-Only are not defined by standalone attributes in the color system. Further explanations can be found in the foundational chapter on States ."
+        }
+      ]
+    },
+    {
+      "id": "6-layer",
+      "heading": "6. Layer",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Typically, three layers determine the coloring of components. The layer model comes from the combination of one of the three available backgrounds and a color scheme (which brings a definition for Fill and Front )."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The choice of background directly influences the final color of the color scheme. Each color scheme includes a variant for each background, ensuring that color contrasts in every permissible combination are high enough."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "For text, labels, icons, borders, or outlines, a Front color variable is usually always used. This guarantees readability according to WCAG when applied correctly."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The following example shows the standard variations of the color schemes Accent-Major, Accent-Minor, and Accent-Pure on the Primary Background."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Front (color scheme)"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Fill (color scheme)"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Background"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "This example illustrates the behavior of the color schemes on the three available background types. Used color scheme: Accent in Light Mode."
+        }
+      ]
+    },
+    {
+      "id": "visual-hierarchy",
+      "heading": "Visual hierarchy",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "By deliberately selecting and combining different color schemes and types, various visual hierarchies can be created."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Visual hierarchy for color schemes"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Visual hierarchy for types"
+        }
+      ]
+    },
+    {
+      "id": "accessibility",
+      "heading": "Accessibility",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Our Bosch Color System ensures accessibility according to WCAG (https://www.w3.org/WAI/standards-guidelines/wcag/) . Regular audits check, optimize, and adapt the color system to current guidelines. Since the color system is integrated into all Bosch UI Kit components, Figma libraries, and FROK components, it can be ensured with minimal effort that the guidelines are followed in the final product."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Please note that the Bosch Color System does not guarantee accessibility. It is crucial to examine the specific accessibility requirements in every project and continuously assess them. We recommend regularly gathering feedback and considering optimization suggestions to improve the user experience for everyone. Every contribution counts to ensure that our solutions are inclusive and accessible."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Our types (Major, Minor, Pure) are designed to meet the WCAG contrast requirements for various use cases."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "https://www.w3.org/WAI/WCAG22/quickref/?versions=2.1#contrast-minimum"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "This graphic illustrates the various possible layer combinations within the types (Major, Minor, Pure).   Explanations for the disallowed layer combinations:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "For the Major type, the Front layer must not be placed directly on the background. In this example, white would be placed on white — resulting in no contrast."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Minor and Pure exclude the combination of Background and Fill. In this case, light blue or white would be placed on a white background, which would also violate the WCAG contrast requirements."
+        }
+      ]
+    },
+    {
+      "id": "default-color-schemes",
+      "heading": "Default color schemes",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The default color schemes include the schemes Base, Accent, Plain, Integrated, Emphasis, and Signal ."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "base",
+      "heading": "Base",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "This color scheme is used in almost all neutral variations of components and is based on the base color \"Bosch Gray 50.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Quiet, reserved, subtle, fundamental, neutral"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application examples:  Inactive Checkbox, Inactive Radio Button, Inactive Switch, Text Inputs, Value Modificator, Meta-Text, …"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "accent",
+      "heading": "Accent",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "As the name suggests, this color scheme emphasizes certain elements in the user interface and ensures that they stand out and draw attention. It is based on the base color \"Bosch Blue 50.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Guiding, striking, loud"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application examples: Call-to-Action, Button, Link"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "plain",
+      "heading": "Plain",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Plain color scheme is characterized by optimal readability and maximum contrast. It is ideal for elements where clarity and functionality are paramount. Plain is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Unobtrusive, neutral, readable, high-contrast"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application Examples: Body Text, Headings, Labels"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "integrated",
+      "heading": "Integrated",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Integrated color scheme resembles Plain at first glance and also offers optimal readability and maximum contrast. It represents a blend of Plain and Accent and is particularly suitable for interactive elements that should be important but not intrusive. Integrated is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode. In the Hovered and Pressed states, it uses the accent color \"Bosch Blue.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Unobtrusive, neutral, high-contrast, interactive"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Info! The characteristic of the Integrated is that with Hovered/Pressed there is a color change to the accent color."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application Examples:  Close Button, Breadcrumb, Integrated Button, Integrated Link"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "signal",
+      "heading": "Signal",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Signal is exclusively used to highlight messages from the software/website directed at the user. In addition to the classic traffic light colors, special information is displayed in blue, while neutral and less important information is shown in gray/black"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Signal may only be used for messages!"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Warning, striking, loud, expressive"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The \"Signal Success\" color scheme is shown here as an example for all Signal color schemes. All Signal schemes can be explored in the Color Tool."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application examples: Validation in a form, error messages, warnings, notifications"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "emphasis",
+      "heading": "Emphasis",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "To highlight special content that requires high attention, Emphasis schemes can be used. They are also suitable for designing complex data visualizations. All Bosch base colors are used as a basis."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Emphasis schemes must never dominate the interface and should always be used sparingly!"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Properties: Emphasizing, loud, highlighting, disruptive"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The \"Emphasis 03\" color scheme is shown here as an example for all Emphasis color schemes. All Emphasis schemes can be explored in the Color Tool."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Application examples: Sale Stickers, Badges, Highlights for Campaign"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "nested-color-schemes",
+      "heading": "Nested color schemes",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "In the Digital Color System, nested color schemes can also be used to place interactive components in fully colored containers."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Complex components that require multiple color schemes should not be nested, as this can lead to color contrast issues and jeopardize accessibility according to WCAG."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Nesting is an expressive alternative to the three background variants and can be used to draw users' attention, for example, to special campaigns. However, a maximum of one nested component per viewport should be used."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Nesting should never dominate the interface and should always be used sparingly!"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The combination of differently colored nested UI components within a UI pattern (e.g., differently colored teasers in a row) is not allowed."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Example \"Emphasis 03 Nested\":"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The \"Emphasis 03 Nested\" color scheme is shown here as an example for all Nested color schemes. All Nested schemes can be explored in the Color Tool."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Create a nested component Show color scheme in the Color Picker Tool"
+        }
+      ]
+    },
+    {
+      "id": "application",
+      "heading": "Application",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Tip! If you are unsure about the application and have questions, feel free to reach out to us directly in our internal MS Teams channel."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Teams > Bosch Digital Design System (BDDS) > Exchange and Questions"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The application is straightforward, as the color system is integrated into all components and patterns of the Bosch UI Kit. When using originals, many concerns are alleviated. However, it is important to ensure that the correct variant is used depending on the background type (Primary, Secondary, Contrast). Mixing Light and Dark Mode components/patterns is not allowed, as this can lead to accessibility issues."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "For frontend development, it is much easier, as the components in the Frontend Kit (FROK) operate independently and adopt the correct colors, provided the classes are set correctly."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Summary for the Application of Components/Patterns from the Bosch UI Kit:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The color system is fully integrated."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Pay attention to choosing the correct variant for the respective background (Primary, Secondary, Contrast)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Info! At least the base libraries of the Bosch UI Kit must be activated in any Figma document (BDDS Tokens, BDDS Icons, BDDS UI Icons, BDDS Components)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "This example shows, using a component from our Figma, that the color scheme (the color system) is correctly integrated into all components by default."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "When using official components from our Figma library, the only requirement is to ensure that the correct attribute for the appropriate background variant is selected. In this example, the pattern has a Contrast Background; therefore, the Background attribute must be set to \"Contrast\" for all components."
+        }
+      ]
+    },
+    {
+      "id": "applying-the-color-system-to-individual-components",
+      "heading": "Applying the Color System to Individual Components",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "When individual components need to be created, it is important to decide which color scheme from the color system will be used. You should know and understand the documentation of the Digital Color System (upper part). Then, check the existing components in the Bosch UI Kit to see if your components may relate to an existing one. If so, it is advisable to use the same color scheme as the related components ."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "When deciding on the right color scheme, our design principles (Flat Design, Simplicity, High Quality) must be considered."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "It is also important to note: Within an element/state of the component, color schemes must never be mixed! Fill and Front must always come from the same color scheme."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "This example shows the color assignment for an individual component \"Drop Zone for Upload.\" The Drop Zone is related to input elements like the text field, which is why the Pure/Minor color scheme was also chosen, as it is used in most input elements."
+        }
+      ]
+    },
+    {
+      "id": "nesting",
+      "heading": "Nesting",
+      "level": 3,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The possibility of nesting allows for countless variations of components. Therefore, most components are not provided in a \"nested\" variant. However, creating a nested UI pattern is not complicated:"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Construct your pattern from our regular components."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Then simply swap the colors in Figma for the respective nested equivalents (e.g., base/minor/enabled front default to emphasis 03/minor/enabled front default)."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The following video demonstrates the procedure."
+        }
+      ]
+    },
+    {
+      "id": "do-s-and-don-ts",
+      "heading": "Do's and Don'ts",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "Use the correct Background attribute for all components."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Ensure buttons use the official color schemes."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Correctly apply the Digital Color System."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Ensure that our design principles are observed."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Assign all components to the correct nested color scheme."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Don't forget to set the Background attribute to \"Contrast.\""
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Don't allow buttons to use colors outside the official color schemes."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Don't let the Emphasis color scheme to dominate the UI! A color theme for an entire UI is not permitted!"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Don't let personal taste influence color choices. A color theme for an entire UI is not permitted!"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Don't overlook assigning all components to the correct nested color scheme."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Drop 'do' images here or click to upload"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Drop 'don't' images here or click to upload"
+        }
+      ]
+    },
+    {
+      "id": "customizations-of-the-digital-color-system",
+      "heading": "Customizations of the Digital Color System",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Digital Color System allows for customization to the color worlds of various brands within the Bosch Group. In combination with the adaptation of other foundations, the Bosch Digital Design System (BDDS) can be modified and further developed alongside the Bosch UI Kit and the Frontend Kit (FROK) for different representations."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "For individual customization requests, the Bosch Digital Design System team (BDDS) is happy to assist."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Teams Channel \"Bosch Digital Design System (BDDS)\"  Bosch internal link"
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "We manage our digital color world with various specialized tools."
+        }
+      ]
+    },
+    {
+      "id": "resources-and-tools",
+      "heading": "Resources and tools",
+      "level": 2,
+      "content_blocks": [
+        {
+          "type": "image_grid_caption",
+          "title": "Color Picker Tool",
+          "description": "The helpful Color Picker Tool allows for a visual exploration of the color system."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The helpful Color Picker Tool allows for a visual exploration of the color system."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "Cheat Sheet (Figma)",
+          "description": "The Cheat Sheet provides basic information for working with the color system in Figma."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The Cheat Sheet provides basic information for working with the color system in Figma."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "WCAG 2.1 Contrast",
+          "description": "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts."
+        },
+        {
+          "type": "image_grid_caption",
+          "title": "BDDS Design Token Repository",
+          "description": "The official source for our design tokens. The color system is available here in JSON format."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "The official source for our design tokens. The color system is available here in JSON format."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here ."
+        },
+        {
+          "type": "paragraph_or_callout",
+          "text": "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts."
+        }
+      ]
+    }
+  ],
+  "knowledge_units": [
+    {
+      "section": "Introduction",
+      "statement": "The BDDS Color System guarantees a uniform, accessible (WCAG) and brand-compliant design for all Bosch products. The foundation is a neutral grayscale (Base), complemented by expressive shades of blue (Accent). With six clearly defined color scheme groups (Base, Accent, Plain, Integrated, Emphasis, Signal) for light and dark modes and various background types, it provides designers and developers with an efficient tool. Integration into the Bosch UI Kit and FROK, as well as the use of design tokens, simplifies application and ensures consistent results.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Introduction",
+      "statement": "Explore the Digital Color System in the \"Color Picker Tool.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Introduction",
+      "statement": "Tip! A helpful \"Cheat Sheet\" on the topic is available in the \" Resources and Tools \" section.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Content",
+      "label": "Benefits and features",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Structure and organization",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Visual hierarchy",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Accessibility",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Default color schemes",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Nested color schemes",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Do's and Don'ts",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Content",
+      "label": "Resources and tools",
+      "description": null,
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Immediate start",
+      "description": "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Consistency across platforms",
+      "description": "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Color scheme for every use case",
+      "description": "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Systematic organization",
+      "description": "The color schemes are semantically and systematically structured to meet relationships and standards.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The color schemes are semantically and systematically structured to meet relationships and standards.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Tool integration",
+      "description": "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK).",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Accessibility",
+      "description": "WCAG compliance is ensured through regular checks and optimizations.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "WCAG compliance is ensured through regular checks and optimizations.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Design tokens",
+      "description": "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package).",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Collaboration",
+      "description": "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Corporate design compliance",
+      "description": "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Light & Dark mode",
+      "description": "Designs using the color system can effortlessly switch between light and dark modes.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "Designs using the color system can effortlessly switch between light and dark modes.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Benefits and features",
+      "label": "Multibrand capability",
+      "description": "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Benefits and features",
+      "statement": "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Schematic structure of the Digital Color System. For better understanding, the attributes \"Role (disabled)\" and \"Interaction state (hovered, pressed)\" are not shown here.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Various attribute types define the specific appearance of a color. This overview shows all available attributes of the color system.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Info! In the following interactive tool, you can explore the Digital Color System by changing individual attributes.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "The attribute groups of the Digital Color System are based on a systematic semantic structure:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Modes and Backgrounds Light and dark modes are available by default. There are three types of backgrounds (Primary, Secondary, and Contrast).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Schemes Six color groups form the core of the system (Base, Accent, Plain, Integrated, Emphasis, and Signal).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Nesting Nested variants are available to represent interactive elements within a color scheme.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Types Types (Major, Minor and Pure) are used to control the visual hierarchy within a color scheme.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "States (Role and Interaction State) Attributes Role (Enabled/Disabled) and Interaction State (Default, Hovered, Pressed) are available to define specific interface states.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "Layer: Each color scheme consists of two layers: a foreground layer (Front) and a base layer (Fill).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "The combination of all attributes results in a specific color definition.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Structure and organization",
+      "statement": "These components are explained in individual sections below.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "1. Modes and Backgrounds",
+      "statement": "The Bosch Color System is provided by default in two modes: Light Mode and Dark Mode , which are structurally identical. In both, for example, the color variable Accent – Major – Enabled Default Front exists; due to the same structure, it is possible to switch a user interface from light to dark mode without changing or rebuilding the components. Only the colors change in optimal contrast ratio – nothing else.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "1. Modes and Backgrounds",
+      "statement": "Important: A user interface can only be displayed in either light or dark mode. A combination or mixing of both modes is not allowed.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "1. Modes and Backgrounds",
+      "statement": "Similarly, backgrounds, which are hierarchically one level below the modes, behave the same way. There are three backgrounds (Primary, Secondary, and Contrast) . The subordinate structures are also identical for backgrounds. Our example variable Accent – Major – Enabled Default Front exists for each background variation. This ensures that each component is always displayed in the correct contrast ratio on the respective background.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "1. Modes and Backgrounds",
+      "statement": "The different backgrounds help with the structure of user interfaces, especially when spacing (white space) is no longer sensible. However, backgrounds should be used sparingly and thoughtfully to avoid violating the fundamental principles of UI design.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "1. Modes and Backgrounds",
+      "statement": "Illustration of modes and backgrounds using common UI elements. Used color scheme: Texts and labels (Plain Pure), hyperlinks (Accent Pure), switches and buttons (Accent Major).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "2. Schemes",
+      "statement": "Our color schemes represent a semantic and systematic arrangement of color groups. Different schemes are available for various applications and specific visual expressions.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "2. Schemes",
+      "statement": "The core of the system consists of four color groups that form the color schemes: Base, Accent, Plain, and Integrated . These are complemented by the extended designation groups Emphasis and Signal.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "2. Schemes",
+      "statement": "All color schemes are available in both a Default and a Nested variant. The following sections will explain these in detail:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "2. Schemes",
+      "statement": "Default Color Schemes Nested Color Schemes",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "2. Schemes",
+      "statement": "Default color schemes: The graphic shows the base colors of the six fundamental color scheme groups.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "3. Nesting",
+      "statement": "Each color scheme has a so-called nested variant. This allows for the use of other components within a Major Fill color of the color scheme without causing WCAG contrast conflicts.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "3. Nesting",
+      "statement": "Further explanations and application examples can be found in the  section \"Nested Color Schemes.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "3. Nesting",
+      "statement": "The application example shows the color difference between a normal component (on Secondary Background) and a nested component (on Emphasis 03).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "3. Nesting",
+      "statement": "Caution! Nesting must never dominate the user interface and should always be used sparingly! See Do's and Dont's .",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Each color scheme has three types: Major, Minor, and Pure . Each of the three types follows the same basic rules across different color schemes.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Major is the most prominent type and is used to highlight elements.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Examples: Primary Button, Checkbox, Radio Button",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Minor is more subtle than Major but also is used to highlight.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Examples: Text Input Fields, Notifications, Dropdowns",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Pure is the most understated type and is rarely used for discrete highlights.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Examples: Plain Text, Links, Secondary and Tertiary Buttons",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Special features of the Types:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Major and Minor always require Fill and Front (see section \"6. Layer\"). Otherwise, color contrasts according to WCAG cannot be guaranteed.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "4. Types",
+      "statement": "Pure can also be used without Fill , as in the case of links and text.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Color-differentiated states are crucial for an effective user interface, as they help users recognize different interactions and statuses. In the Digital Color System, these states are clearly defined by the attributes Role (Enabled/Disabled) and Interaction State (Default, Hovered, Pressed) . This ensures that users immediately understand whether an element is active or inactive and how it responds to their inputs.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Visual Example of All States Using the Accent Major Color Scheme:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Enabled: The element is active and allows user interaction.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Disabled: The element is inactive and cannot be selected or used.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Default: The normal state of the element when it is not interacted with.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Hovered: The state when the mouse pointer hovers over the element, often providing visual feedback.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "Pressed: The state when the element is pressed to indicate interaction.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "5. States (Role and Interaction State)",
+      "statement": "The states Tab-Focus and Read-Only are not defined by standalone attributes in the color system. Further explanations can be found in the foundational chapter on States .",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "6. Layer",
+      "statement": "Typically, three layers determine the coloring of components. The layer model comes from the combination of one of the three available backgrounds and a color scheme (which brings a definition for Fill and Front ).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "6. Layer",
+      "statement": "The choice of background directly influences the final color of the color scheme. Each color scheme includes a variant for each background, ensuring that color contrasts in every permissible combination are high enough.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "6. Layer",
+      "statement": "For text, labels, icons, borders, or outlines, a Front color variable is usually always used. This guarantees readability according to WCAG when applied correctly.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "6. Layer",
+      "statement": "The following example shows the standard variations of the color schemes Accent-Major, Accent-Minor, and Accent-Pure on the Primary Background.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "6. Layer",
+      "statement": "This example illustrates the behavior of the color schemes on the three available background types. Used color scheme: Accent in Light Mode.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Visual hierarchy",
+      "statement": "By deliberately selecting and combining different color schemes and types, various visual hierarchies can be created.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Visual hierarchy",
+      "statement": "Visual hierarchy for color schemes",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Visual hierarchy",
+      "statement": "Visual hierarchy for types",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "Our Bosch Color System ensures accessibility according to WCAG (https://www.w3.org/WAI/standards-guidelines/wcag/) . Regular audits check, optimize, and adapt the color system to current guidelines. Since the color system is integrated into all Bosch UI Kit components, Figma libraries, and FROK components, it can be ensured with minimal effort that the guidelines are followed in the final product.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "Please note that the Bosch Color System does not guarantee accessibility. It is crucial to examine the specific accessibility requirements in every project and continuously assess them. We recommend regularly gathering feedback and considering optimization suggestions to improve the user experience for everyone. Every contribution counts to ensure that our solutions are inclusive and accessible.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "Our types (Major, Minor, Pure) are designed to meet the WCAG contrast requirements for various use cases.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "https://www.w3.org/WAI/WCAG22/quickref/?versions=2.1#contrast-minimum",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "This graphic illustrates the various possible layer combinations within the types (Major, Minor, Pure).   Explanations for the disallowed layer combinations:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "For the Major type, the Front layer must not be placed directly on the background. In this example, white would be placed on white — resulting in no contrast.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accessibility",
+      "statement": "Minor and Pure exclude the combination of Background and Fill. In this case, light blue or white would be placed on a white background, which would also violate the WCAG contrast requirements.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Default color schemes",
+      "statement": "The default color schemes include the schemes Base, Accent, Plain, Integrated, Emphasis, and Signal .",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Default color schemes",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Base",
+      "statement": "This color scheme is used in almost all neutral variations of components and is based on the base color \"Bosch Gray 50.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Base",
+      "statement": "Properties: Quiet, reserved, subtle, fundamental, neutral",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Base",
+      "statement": "Application examples:  Inactive Checkbox, Inactive Radio Button, Inactive Switch, Text Inputs, Value Modificator, Meta-Text, …",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Base",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accent",
+      "statement": "As the name suggests, this color scheme emphasizes certain elements in the user interface and ensures that they stand out and draw attention. It is based on the base color \"Bosch Blue 50.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accent",
+      "statement": "Properties: Guiding, striking, loud",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accent",
+      "statement": "Application examples: Call-to-Action, Button, Link",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Accent",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Plain",
+      "statement": "The Plain color scheme is characterized by optimal readability and maximum contrast. It is ideal for elements where clarity and functionality are paramount. Plain is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Plain",
+      "statement": "Properties: Unobtrusive, neutral, readable, high-contrast",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Plain",
+      "statement": "Application Examples: Body Text, Headings, Labels",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Plain",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Integrated",
+      "statement": "The Integrated color scheme resembles Plain at first glance and also offers optimal readability and maximum contrast. It represents a blend of Plain and Accent and is particularly suitable for interactive elements that should be important but not intrusive. Integrated is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode. In the Hovered and Pressed states, it uses the accent color \"Bosch Blue.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Integrated",
+      "statement": "Properties: Unobtrusive, neutral, high-contrast, interactive",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Integrated",
+      "statement": "Info! The characteristic of the Integrated is that with Hovered/Pressed there is a color change to the accent color.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Integrated",
+      "statement": "Application Examples:  Close Button, Breadcrumb, Integrated Button, Integrated Link",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Integrated",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "Signal is exclusively used to highlight messages from the software/website directed at the user. In addition to the classic traffic light colors, special information is displayed in blue, while neutral and less important information is shown in gray/black",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "Signal may only be used for messages!",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "Properties: Warning, striking, loud, expressive",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "The \"Signal Success\" color scheme is shown here as an example for all Signal color schemes. All Signal schemes can be explored in the Color Tool.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "Application examples: Validation in a form, error messages, warnings, notifications",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Signal",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "To highlight special content that requires high attention, Emphasis schemes can be used. They are also suitable for designing complex data visualizations. All Bosch base colors are used as a basis.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "Emphasis schemes must never dominate the interface and should always be used sparingly!",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "Properties: Emphasizing, loud, highlighting, disruptive",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "The \"Emphasis 03\" color scheme is shown here as an example for all Emphasis color schemes. All Emphasis schemes can be explored in the Color Tool.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "Application examples: Sale Stickers, Badges, Highlights for Campaign",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Emphasis",
+      "statement": "Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "In the Digital Color System, nested color schemes can also be used to place interactive components in fully colored containers.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "Complex components that require multiple color schemes should not be nested, as this can lead to color contrast issues and jeopardize accessibility according to WCAG.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "Nesting is an expressive alternative to the three background variants and can be used to draw users' attention, for example, to special campaigns. However, a maximum of one nested component per viewport should be used.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "Nesting should never dominate the interface and should always be used sparingly!",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "The combination of differently colored nested UI components within a UI pattern (e.g., differently colored teasers in a row) is not allowed.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "Example \"Emphasis 03 Nested\":",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "The \"Emphasis 03 Nested\" color scheme is shown here as an example for all Nested color schemes. All Nested schemes can be explored in the Color Tool.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nested color schemes",
+      "statement": "Create a nested component Show color scheme in the Color Picker Tool",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "Tip! If you are unsure about the application and have questions, feel free to reach out to us directly in our internal MS Teams channel.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "Teams > Bosch Digital Design System (BDDS) > Exchange and Questions",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "The application is straightforward, as the color system is integrated into all components and patterns of the Bosch UI Kit. When using originals, many concerns are alleviated. However, it is important to ensure that the correct variant is used depending on the background type (Primary, Secondary, Contrast). Mixing Light and Dark Mode components/patterns is not allowed, as this can lead to accessibility issues.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "For frontend development, it is much easier, as the components in the Frontend Kit (FROK) operate independently and adopt the correct colors, provided the classes are set correctly.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "Summary for the Application of Components/Patterns from the Bosch UI Kit:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "The color system is fully integrated.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "Pay attention to choosing the correct variant for the respective background (Primary, Secondary, Contrast).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "Info! At least the base libraries of the Bosch UI Kit must be activated in any Figma document (BDDS Tokens, BDDS Icons, BDDS UI Icons, BDDS Components).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "This example shows, using a component from our Figma, that the color scheme (the color system) is correctly integrated into all components by default.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Application",
+      "statement": "When using official components from our Figma library, the only requirement is to ensure that the correct attribute for the appropriate background variant is selected. In this example, the pattern has a Contrast Background; therefore, the Background attribute must be set to \"Contrast\" for all components.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Applying the Color System to Individual Components",
+      "statement": "When individual components need to be created, it is important to decide which color scheme from the color system will be used. You should know and understand the documentation of the Digital Color System (upper part). Then, check the existing components in the Bosch UI Kit to see if your components may relate to an existing one. If so, it is advisable to use the same color scheme as the related components .",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Applying the Color System to Individual Components",
+      "statement": "When deciding on the right color scheme, our design principles (Flat Design, Simplicity, High Quality) must be considered.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Applying the Color System to Individual Components",
+      "statement": "It is also important to note: Within an element/state of the component, color schemes must never be mixed! Fill and Front must always come from the same color scheme.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Applying the Color System to Individual Components",
+      "statement": "This example shows the color assignment for an individual component \"Drop Zone for Upload.\" The Drop Zone is related to input elements like the text field, which is why the Pure/Minor color scheme was also chosen, as it is used in most input elements.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nesting",
+      "statement": "The possibility of nesting allows for countless variations of components. Therefore, most components are not provided in a \"nested\" variant. However, creating a nested UI pattern is not complicated:",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nesting",
+      "statement": "Construct your pattern from our regular components.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nesting",
+      "statement": "Then simply swap the colors in Figma for the respective nested equivalents (e.g., base/minor/enabled front default to emphasis 03/minor/enabled front default).",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Nesting",
+      "statement": "The following video demonstrates the procedure.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Use the correct Background attribute for all components.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Ensure buttons use the official color schemes.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Correctly apply the Digital Color System.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Ensure that our design principles are observed.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Assign all components to the correct nested color scheme.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Don't forget to set the Background attribute to \"Contrast.\"",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Don't allow buttons to use colors outside the official color schemes.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Don't let the Emphasis color scheme to dominate the UI! A color theme for an entire UI is not permitted!",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Don't let personal taste influence color choices. A color theme for an entire UI is not permitted!",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Don't overlook assigning all components to the correct nested color scheme.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Drop 'do' images here or click to upload",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Do's and Don'ts",
+      "statement": "Drop 'don't' images here or click to upload",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Customizations of the Digital Color System",
+      "statement": "The Digital Color System allows for customization to the color worlds of various brands within the Bosch Group. In combination with the adaptation of other foundations, the Bosch Digital Design System (BDDS) can be modified and further developed alongside the Bosch UI Kit and the Frontend Kit (FROK) for different representations.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Customizations of the Digital Color System",
+      "statement": "For individual customization requests, the Bosch Digital Design System team (BDDS) is happy to assist.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Customizations of the Digital Color System",
+      "statement": "Teams Channel \"Bosch Digital Design System (BDDS)\"  Bosch internal link",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Customizations of the Digital Color System",
+      "statement": "We manage our digital color world with various specialized tools.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "label": "Color Picker Tool",
+      "description": "The helpful Color Picker Tool allows for a visual exploration of the color system.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "The helpful Color Picker Tool allows for a visual exploration of the color system.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "label": "Cheat Sheet (Figma)",
+      "description": "The Cheat Sheet provides basic information for working with the color system in Figma.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "The Cheat Sheet provides basic information for working with the color system in Figma.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "label": "WCAG 2.1 Contrast",
+      "description": "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "label": "BDDS Design Token Repository",
+      "description": "The official source for our design tokens. The color system is available here in JSON format.",
+      "source_block_type": "image_grid_caption"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "The official source for our design tokens. The color system is available here in JSON format.",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here .",
+      "source_block_type": "paragraph_or_callout"
+    },
+    {
+      "section": "Resources and tools",
+      "statement": "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts.",
+      "source_block_type": "paragraph_or_callout"
+    }
+  ],
+  "assets": {
+    "links": [
+      {
+        "label": "Explore the Digital Color System in the \"Color Picker Tool.\"",
+        "href": "https://dds-color-picker.ui.bosch.tech/",
+        "target": "_blank",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Resources and Tools",
+        "href": "https://brandguide.bosch.com/r/fM5u6dGBlVv4DUri_XxzH-xYyZBNPrHhblLgVmMbRfc",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "fundamental principles",
+        "href": "https://brandguide.bosch.com/r/9RO57xV0KEpxCPss3V2VYtb2x2iKmPhOvW6v_sQOm1U",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Default Color Schemes",
+        "href": "https://brandguide.bosch.com/r/zPft18KAUaqXra1F7wggnT1tHL_DgOHSsPrYd23ri6o",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Nested Color Schemes",
+        "href": "https://brandguide.bosch.com/r/7Xxq9qbx3ovXlHAAn2hYDcmxWi8buz_fP7_a7MkES_U",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Further explanations and application examples can be found in the  section \"Nested Color Schemes.\"",
+        "href": "https://brandguide.bosch.com/r/7Xxq9qbx3ovXlHAAn2hYDcmxWi8buz_fP7_a7MkES_U",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "See Do's and Dont's",
+        "href": "https://brandguide.bosch.com/r/3VH3E2qZs3qsalPgJPziDp21nZzw0u9Lte9gkBvHxz8",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "States",
+        "href": "https://brandguide.bosch.com/r/PiIV5IhD1tEiOadOYfutj6eIZ_VnrB3v7CgUCgHDlY4",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "WCAG (https://www.w3.org/WAI/standards-guidelines/wcag/)",
+        "href": "https://www.w3.org/WAI/standards-guidelines/wcag/",
+        "target": "_blank",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "https://www.w3.org/WAI/WCAG22/quickref/?versions=2.1#contrast-minimum",
+        "href": "https://www.w3.org/WAI/WCAG22/quickref/?versions=2.1#contrast-minimum",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Show color scheme in the Color Picker Tool",
+        "href": "https://dds-color-picker.ui.bosch.tech/",
+        "target": "_blank",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Create a nested component",
+        "href": "https://brandguide.bosch.com/r/8TwDIp1lDBO_wZd3HYpLjaZF_oLIOn6ktZTGMDHMDbI",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Teams > Bosch Digital Design System (BDDS) > Exchange and Questions",
+        "href": "https://teams.microsoft.com/l/team/19%3A1e925d38875b4a46b6c7bd38fd1c84a9%40thread.skype/conversations?groupId=70e11a2c-a8ee-41d6-8dfc-0e5b4949c77b&tenantId=0ae51e19-07c8-4e4b-bb6d-648ee58410f4",
+        "target": "_blank",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "base libraries of the Bosch UI Kit",
+        "href": "https://brandguide.bosch.com/r/rVWH2RvKJUC-opFbVtlTLCWQSVgYMVVKg1nnaurS7y4",
+        "target": "_blank",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "design principles (Flat Design, Simplicity, High Quality)",
+        "href": "https://brandguide.bosch.com/r/a4CHNvuj60373jO5-CUzZsp1tzaQNKf7q7T72LKdJE0",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "Teams Channel \"Bosch Digital Design System (BDDS)\"",
+        "href": "https://teams.microsoft.com/l/team/19%3A1e925d38875b4a46b6c7bd38fd1c84a9%40thread.skype/conversations?groupId=70e11a2c-a8ee-41d6-8dfc-0e5b4949c77b&tenantId=0ae51e19-07c8-4e4b-bb6d-648ee58410f4",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "here",
+        "href": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc",
+        "target": "_self",
+        "relationship": "resource_link"
+      },
+      {
+        "label": "support.design@bosch.com",
+        "href": "mailto:support.design@bosch.com",
+        "target": "_self",
+        "relationship": "resource_link"
+      }
+    ],
+    "images": [
+      {
+        "alt_text": "002 - Foundations - DCS - Content - Benefits",
+        "title": "Benefits and features",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/ecS7RbPW39YAtiovtn1j.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/ecS7RbPW39YAtiovtn1j.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - Structure",
+        "title": "Structure and organization",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/LkWUqURrog43VLtGHcJV.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/LkWUqURrog43VLtGHcJV.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - Hirachy",
+        "title": "Visual hierarchy",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/gEfjrPjvCLacUu2abPbf.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/gEfjrPjvCLacUu2abPbf.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - A11Y",
+        "title": "Accessibility",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/2LG1jRYt44YtfFMS2Mc7.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/2LG1jRYt44YtfFMS2Mc7.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "Default color schemes",
+        "title": "Default color schemes",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/Pgrk2CxBdB2SAzHk5w8J.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/Pgrk2CxBdB2SAzHk5w8J.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - Schemes nested",
+        "title": "Nested color schemes",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/JMY9papbREoUHBwcvoQH.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/JMY9papbREoUHBwcvoQH.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - do dont",
+        "title": "Do's and Don'ts",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/5vRGREsRxRJSamRVdJkv.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/5vRGREsRxRJSamRVdJkv.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Content - Tools",
+        "title": "Resources and tools",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/y3fwZNVqKxXezwNCX3ZU.png",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/y3fwZNVqKxXezwNCX3ZU.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - start",
+        "title": "Immediate start",
+        "caption": "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/Xm5FfH71CjegckACoPj1.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - consitent",
+        "title": "Consistency across platforms",
+        "caption": "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/Eyg6HkpZtLZYJPdGEgF1.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - usecase",
+        "title": "Color scheme for every use case",
+        "caption": "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/NPZtVPRjr3ynNoc2nBzf.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - system",
+        "title": "Systematic organization",
+        "caption": "The color schemes are semantically and systematically structured to meet relationships and standards.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/5E7mJhy5VJQtuULVkxxe.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - integration",
+        "title": "Tool integration",
+        "caption": "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK).",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/jq1uCSvJt1WGwnP1wEvE.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - a11y",
+        "title": "Accessibility",
+        "caption": "WCAG compliance is ensured through regular checks and optimizations.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/Lk3QXJyH2tkJKbpWnwKg.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - tokens",
+        "title": "Design tokens",
+        "caption": "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package).",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/nJLCuungmAWg5ixtmVCU.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - collab",
+        "title": "Collaboration",
+        "caption": "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/qTaGKbF6jzXUY2NGWgXz.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - compliant",
+        "title": "Corporate design compliance",
+        "caption": "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/2vgpmDuLbzTuj6dACPv8.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - modes",
+        "title": "Light & Dark mode",
+        "caption": "Designs using the color system can effortlessly switch between light and dark modes.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/R1g7911XLfxkDA4A1xhr.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - benefit - multibrand",
+        "title": "Multibrand capability",
+        "caption": "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/9XURtyszbXgez3PPjgjT.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/fim5tnFB1iYWYe1JNK7Y.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "color-system-structure",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/ie4aCKfJHWX7nSe3ZF5s.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "modes-backgrounds_@2x",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/q1rWj4t8fbzJ8A5jSq9W.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/Q6X5RW5tYn6A3bNtsk6d.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "nesting example",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/NcMxpj4eut1dHXN9m7Jy.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "color type model",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/H1jHT678yK3oqzfWZWJL.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/arQVpEYktABcqoYMzVLt.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - color-layer-system",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1600 344\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/EjBn4tTEuUW82ha7N7UP.png?width=800",
+        "original_width": "1600",
+        "original_height": "344"
+      },
+      {
+        "alt_text": "color-layer-example",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/EtE9zhxppxcNhaqdeTAg.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/UUNcc34CMihi8CNUphae.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/eezTZc7VeFDj9yipLe6u.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/qzY4vtHVTzP6qt9odsjR.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "color-system-default-schemes",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/kXwiwk83CbHbxKUxdvBR.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "scheme base",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/ZqGYQgXGRw3nzsKWjLm2.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "scheme accent",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/GRT1vELirMCnfVMN38m1.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/VW9TMxJY5YtLSCdNP1eU.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "scheme integrated",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/JDwJiv6T8DM4FqitcK3x.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/Rhqn9zEBRMuoACu3nWD9.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/gya2XBXPLe6YAAs3RXF8.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "scheme emphasis",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/9u9VjBgf8ABSMN3BzvxQ.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/odDZ8GbaYW1iZ1rSnWKe.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/Pknrx6CWpVdquGYkDbDt.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "application - color schemes are integrated",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/qKhJQR1NFKQE1ymmYkds.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "application - use correct background attribute",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/z9JjvNQs6a4RTz1s4ncx.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/ho35Y3vLpShTaM8LE3Sq.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/1s4rsDdHvYdThB7ErwWF.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/CmrHiU3SKsP2crjpFJfa.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/eMWwfFAfFgxENWZFd2Mx.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/nKhZc3Qia4RLrmhZhCeN.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/6KdFFP6tHTjgA2bmqLKv.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/Mu5L3yFMrgwvcoR82wuf.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/7zKYtyC32Nvh8JQbf3Nw.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/YQvsXk9ZVyXSmLFZ6En8.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/xyXkGSU6t26KeuTNAC4c.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/hzTF3dbkHzBfKLJH4Z2r.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/uv85tjvM2LLDfN63CU7C.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Resource Tools - Color Picker Tool",
+        "title": "Color Picker Tool",
+        "caption": "The helpful Color Picker Tool allows for a visual exploration of the color system.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/5vGMayKKLchyHktPSEue.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Resource Tools - Cheat Sheet",
+        "title": "Cheat Sheet (Figma)",
+        "caption": "The Cheat Sheet provides basic information for working with the color system in Figma.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/7Bp96KENCZiHZgFisWDf.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Resource Tools - wcag",
+        "title": "WCAG 2.1 Contrast",
+        "caption": "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/jqQVsD9uDjrxpkumZmC7.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "002 - Foundations - DCS - Resource Tools - Repo",
+        "title": "BDDS Design Token Repository",
+        "caption": "The official source for our design tokens. The color system is available here in JSON format.",
+        "src_or_local_path": "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 370 370\"%3E%3C/svg%3E",
+        "preview_url": "https://media.ffycdn.net/eu/bosch/tHNJT8pXSWba6mEEM3d4.png?width=800",
+        "original_width": "370",
+        "original_height": "370"
+      },
+      {
+        "alt_text": "",
+        "title": "",
+        "caption": "",
+        "src_or_local_path": "./Digital Color System_files/H7mucaWqKWwha7uf622G.png",
+        "preview_url": null,
+        "original_width": null,
+        "original_height": null
+      }
+    ],
+    "videos": [
+      {
+        "aria_label": "color-title3.mov",
+        "src": "https://media.ffycdn.net/eu/bosch/DmzDZCReCkoLuprDS19c.mov?width={width}&format=mp4",
+        "poster": "https://media.ffycdn.net/eu/bosch/DmzDZCReCkoLuprDS19c.mov?width=800",
+        "autoplay": true,
+        "loop": true,
+        "muted": true,
+        "controls": true
+      },
+      {
+        "aria_label": "how-to-style-individual-component.mov",
+        "src": "https://media.ffycdn.net/eu/bosch/f1tGqWZoT4TRvrVnFcYA.mov?width={width}&format=mp4",
+        "poster": "https://media.ffycdn.net/eu/bosch/f1tGqWZoT4TRvrVnFcYA.mov?width=800",
+        "autoplay": false,
+        "loop": false,
+        "muted": false,
+        "controls": true
+      },
+      {
+        "aria_label": "switch-to-nested-2hd.mov",
+        "src": "https://media.ffycdn.net/eu/bosch/PJbpRARhxmyq7r7dhUPT.mov?width={width}&format=mp4",
+        "poster": "https://media.ffycdn.net/eu/bosch/PJbpRARhxmyq7r7dhUPT.mov?width=800",
+        "autoplay": false,
+        "loop": false,
+        "muted": false,
+        "controls": true
+      }
+    ]
+  },
+  "raw_extracted_visible_text": [
+    "The BDDS Color System guarantees a uniform, accessible (WCAG) and brand-compliant design for all Bosch products.",
+    "The foundation is a neutral grayscale (Base), complemented by expressive shades of blue (Accent). With six clearly defined color scheme groups (Base, Accent, Plain, Integrated, Emphasis, Signal) for light and dark modes and various background types, it provides designers and developers with an efficient tool. Integration into the Bosch UI Kit and FROK, as well as the use of design tokens, simplifies application and ensures consistent results.",
+    "Explore the Digital Color System in the \"Color Picker Tool.\"",
+    "Tip!",
+    "A helpful \"Cheat Sheet\" on the topic is available in the \"",
+    "Resources and Tools",
+    "\" section.",
+    "Content",
+    "Benefits and features",
+    "Structure and organization",
+    "Visual hierarchy",
+    "Accessibility",
+    "Default color schemes",
+    "Nested color schemes",
+    "Do's and Don'ts",
+    "Resources and tools",
+    "Immediate start",
+    "The color system is integrated into all components of the Bosch UI Kit, allowing users to work immediately with the available components without worrying about color definitions.",
+    "Consistency across platforms",
+    "The color system ensures that the user experience remains consistent across different devices and platforms (Web, Mobile, etc.), strengthening brand identity.",
+    "Color scheme for every use case",
+    "The color schemes are tailored to specific use cases such as directing attention, errors, warnings, and special highlights.",
+    "Systematic organization",
+    "The color schemes are semantically and systematically structured to meet relationships and standards.",
+    "Tool integration",
+    "Integrated by default into all Bosch UI Kit libraries (available in Figma) and the Frontend Kit (FROK).",
+    "WCAG compliance is ensured through regular checks and optimizations.",
+    "Design tokens",
+    "Color definitions are available as design tokens in JSON files (via GitHub repository and as an npm package).",
+    "Collaboration",
+    "A common language is created between designers and developers, facilitating collaboration and the implementation of designs into code.",
+    "Corporate design compliance",
+    "The color system fully complies with the Bosch Brand Guide, ensuring a consistent brand experience.",
+    "Light & Dark mode",
+    "Designs using the color system can effortlessly switch between light and dark modes.",
+    "Multibrand capability",
+    "The Digital Color System is scalable and allows for seamless integration of color worlds from other brands.",
+    "Schematic structure of the Digital Color System. For better understanding, the attributes \"Role (disabled)\" and \"Interaction state (hovered, pressed)\" are not shown here.",
+    "Various attribute types define the specific appearance of a color. This overview shows all available attributes of the color system.",
+    "Info!",
+    "In the following interactive tool, you can explore the Digital Color System by changing individual attributes.",
+    "The attribute groups of the Digital Color System are based on a systematic semantic structure:",
+    "Modes and Backgrounds",
+    "Light and dark modes are available by default. There are three types of backgrounds (Primary, Secondary, and Contrast).",
+    "Schemes",
+    "Six color groups form the core of the system (Base, Accent, Plain, Integrated, Emphasis, and Signal).",
+    "Nesting",
+    "Nested variants are available to represent interactive elements within a color scheme.",
+    "Types",
+    "Types (Major, Minor and Pure) are used to control the visual hierarchy within a color scheme.",
+    "States (Role and Interaction State)",
+    "Attributes Role (Enabled/Disabled) and Interaction State (Default, Hovered, Pressed) are available to define specific interface states.",
+    "Layer:",
+    "Each color scheme consists of two layers:",
+    "a foreground layer (Front)",
+    "and",
+    "a base layer (Fill).",
+    "The combination of all attributes results in a specific color definition.",
+    "These components are explained in individual sections below.",
+    "1. Modes and Backgrounds",
+    "The Bosch Color System is provided by default in",
+    "two modes: Light Mode and Dark Mode",
+    ", which are structurally identical. In both, for example, the color variable",
+    "Accent – Major – Enabled Default Front",
+    "exists; due to the same structure, it is possible to switch a user interface from light to dark mode without changing or rebuilding the components. Only the colors change in optimal contrast ratio – nothing else.",
+    "Important: A user interface can only be displayed in either light or dark mode. A combination or mixing of both modes is not allowed.",
+    "Similarly, backgrounds, which are hierarchically one level below the modes, behave the same way. There are",
+    "three backgrounds (Primary, Secondary, and Contrast)",
+    ". The subordinate structures are also identical for backgrounds. Our example variable",
+    "exists for each background variation. This ensures that each component is always displayed in the correct contrast ratio on the respective background.",
+    "The different backgrounds help with the structure of user interfaces, especially when spacing (white space) is no longer sensible. However, backgrounds should be used sparingly and thoughtfully to avoid violating the",
+    "fundamental principles",
+    "of UI design.",
+    "Illustration of modes and backgrounds using common UI elements. Used color scheme: Texts and labels (Plain Pure), hyperlinks (Accent Pure), switches and buttons (Accent Major).",
+    "2.",
+    "Our color schemes represent a semantic and systematic arrangement of color groups. Different schemes are available for various applications and specific visual expressions.",
+    "The core of the system consists of four color groups that form the color schemes:",
+    "Base, Accent, Plain, and Integrated",
+    ". These are complemented by the extended designation groups Emphasis and Signal.",
+    "All color schemes are available in both a",
+    "Default",
+    "and a",
+    "Nested",
+    "variant. The following sections will explain these in detail:",
+    "Default Color Schemes",
+    "Nested Color Schemes",
+    "Default color schemes:",
+    "The graphic shows the base colors of the six fundamental color scheme groups.",
+    "3.",
+    "Each color scheme has a so-called nested variant. This allows for the use of other components within a Major Fill color of the color scheme without causing WCAG contrast conflicts.",
+    "Further explanations and application examples can be found in the",
+    "section \"Nested Color Schemes.\"",
+    "The application example shows the color difference between a normal component (on Secondary Background) and a nested component (on Emphasis 03).",
+    "Caution!",
+    "Nesting must never dominate the user interface and should always be used sparingly!",
+    "See Do's and Dont's",
+    ".",
+    "4.",
+    "Each color scheme has",
+    "three types: Major, Minor, and Pure",
+    ". Each of the three types follows the same basic rules across different color schemes.",
+    "Major",
+    "is the most prominent type and is used to highlight elements.",
+    "Examples: Primary Button, Checkbox, Radio Button",
+    "Minor",
+    "is more subtle than Major but also is used to highlight.",
+    "Examples: Text Input Fields, Notifications, Dropdowns",
+    "Pure",
+    "is the most understated type and is rarely used for discrete highlights.",
+    "Examples: Plain Text, Links, Secondary and Tertiary Buttons",
+    "Special features of the Types:",
+    "Major and Minor always require Fill and Front",
+    "(see section \"6. Layer\"). Otherwise, color contrasts according to WCAG cannot be guaranteed.",
+    "Pure can also be used without Fill",
+    ", as in the case of links and text.",
+    "5. States (Role and Interaction State)",
+    "Color-differentiated states are crucial for an effective user interface, as they help users recognize different interactions and statuses. In the Digital Color System, these states are clearly defined by the attributes",
+    "Role (Enabled/Disabled)",
+    "Interaction State (Default, Hovered, Pressed)",
+    ". This ensures that users immediately understand whether an element is active or inactive and how it responds to their inputs.",
+    "Visual Example of All States Using the Accent Major Color Scheme:",
+    "Role:",
+    "Enabled:",
+    "The element is active and allows user interaction.",
+    "Disabled:",
+    "The element is inactive and cannot be selected or used.",
+    "Interaction States:",
+    "Default:",
+    "The normal state of the element when it is not interacted with.",
+    "Hovered:",
+    "The state when the mouse pointer hovers over the element, often providing visual feedback.",
+    "Pressed:",
+    "The state when the element is pressed to indicate interaction.",
+    "The states",
+    "Tab-Focus and Read-Only",
+    "are not defined by standalone attributes in the color system. Further explanations can be found in the foundational chapter on",
+    "States",
+    "6. Layer",
+    "Typically, three layers determine the coloring of components. The layer model comes from the combination of one of the three available",
+    "backgrounds",
+    "and a color scheme (which brings a definition for",
+    "Fill",
+    "Front",
+    ").",
+    "The choice of background directly influences the final color of the color scheme. Each color scheme includes a variant for each background, ensuring that color contrasts in every permissible combination are high enough.",
+    "For text, labels, icons, borders, or outlines, a Front color variable is usually always used. This guarantees readability according to WCAG when applied correctly.",
+    "The following example shows the standard variations of the color schemes",
+    "Accent-Major, Accent-Minor,",
+    "Accent-Pure",
+    "on the",
+    "Primary",
+    "Background.",
+    "1",
+    "2",
+    "3",
+    "Add annotation...",
+    "(color scheme)",
+    "Background",
+    "Hold",
+    "ALT",
+    "⌥",
+    "While dragging an annotation point to duplicate it",
+    "This example illustrates the behavior of the color schemes on the three available background types. Used color scheme: Accent in Light Mode.",
+    "By deliberately selecting and combining different color schemes and types, various visual hierarchies can be created.",
+    "Visual hierarchy for color schemes",
+    "Visual hierarchy for types",
+    "Our Bosch Color System ensures",
+    "accessibility",
+    "according to",
+    "WCAG",
+    "(https://www.w3.org/WAI/standards-guidelines/wcag/)",
+    ". Regular audits check, optimize, and adapt the color system to current guidelines. Since the color system is integrated into all",
+    "Bosch UI Kit",
+    "components,",
+    "Figma",
+    "libraries, and",
+    "FROK",
+    "components, it can be ensured with minimal effort that the guidelines are followed in the final product.",
+    "Please note that the Bosch Color System does not guarantee accessibility.",
+    "It is crucial to examine the specific accessibility requirements in every project and continuously assess them. We recommend regularly gathering feedback and considering optimization suggestions to improve the user experience for everyone. Every contribution counts to ensure that our solutions are inclusive and accessible.",
+    "Our types (Major, Minor, Pure) are designed to meet the WCAG contrast requirements for various use cases.",
+    "https://www.w3.org/WAI/WCAG22/quickref/?versions=2.1#contrast-minimum",
+    "This graphic illustrates the various possible layer combinations within the types (Major, Minor, Pure).",
+    "Explanations for the disallowed layer combinations:",
+    "For the Major type, the Front layer must not be placed directly on the background. In this example, white would be placed on white — resulting in no contrast.",
+    "Minor and Pure exclude the combination of Background and Fill. In this case, light blue or white would be placed on a white background, which would also violate the WCAG contrast requirements.",
+    "The default color schemes include the schemes",
+    "Base, Accent, Plain, Integrated, Emphasis, and Signal",
+    "Show color scheme in the Color Picker Tool",
+    "Base",
+    "This color scheme is used in almost all neutral variations of components and is based on the base color \"Bosch Gray 50.\"",
+    "Properties:",
+    "Quiet, reserved, subtle, fundamental, neutral",
+    "Application examples:",
+    "Inactive Checkbox, Inactive Radio Button, Inactive Switch, Text Inputs, Value Modificator, Meta-Text, …",
+    "Accent",
+    "As the name suggests, this color scheme emphasizes certain elements in the user interface and ensures that they stand out and draw attention. It is based on the base color \"Bosch Blue 50.\"",
+    "Guiding, striking, loud",
+    "Call-to-Action, Button, Link",
+    "Plain",
+    "The Plain color scheme is characterized by optimal readability and maximum contrast. It is ideal for elements where clarity and functionality are paramount. Plain is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode.",
+    "Unobtrusive, neutral, readable, high-contrast",
+    "Application Examples:",
+    "Body Text, Headings, Labels",
+    "Integrated",
+    "The Integrated color scheme resembles Plain at first glance and also offers optimal readability and maximum contrast. It represents",
+    "a blend of Plain and Accent",
+    "and is particularly suitable",
+    "for interactive elements",
+    "that should be important but not intrusive. Integrated is based on the base color \"Bosch Gray 0\" (Black) in Light Mode and \"Bosch Gray 100\" (White) in Dark Mode. In the Hovered and Pressed states, it uses the accent color \"Bosch Blue.\"",
+    "Unobtrusive, neutral, high-contrast, interactive",
+    "The characteristic of the Integrated is that with Hovered/Pressed there is a color change to the accent color.",
+    "Close Button, Breadcrumb, Integrated Button, Integrated Link",
+    "Signal",
+    "Signal is exclusively used to highlight messages from the software/website directed at the user. In addition to the classic traffic light colors, special information is displayed in blue, while neutral and less important information is shown in gray/black",
+    "Signal may only be used for messages!",
+    "Warning, striking, loud, expressive",
+    "The \"Signal Success\" color scheme is shown here as an example for all Signal color schemes. All Signal schemes can be explored in the Color Tool.",
+    "Validation in a form, error messages, warnings, notifications",
+    "Emphasis",
+    "To highlight special content that requires high attention, Emphasis schemes can be used. They are also suitable for designing complex data visualizations. All Bosch base colors are used as a basis.",
+    "Emphasis schemes must never dominate the interface and should always be used sparingly!",
+    "Emphasizing, loud, highlighting, disruptive",
+    "The \"Emphasis 03\" color scheme is shown here as an example for all Emphasis color schemes. All Emphasis schemes can be explored in the Color Tool.",
+    "Sale Stickers, Badges, Highlights for Campaign",
+    "In the Digital Color System, nested color schemes can also be used to place interactive components in fully colored containers.",
+    "Complex components that require multiple color schemes should not be nested, as this can lead to color contrast issues and jeopardize accessibility according to WCAG.",
+    "Nesting is an expressive alternative to the three background variants",
+    "and can be used to draw users' attention, for example, to special campaigns. However, a maximum of one nested component per viewport should be used.",
+    "Nesting should never dominate the interface and should always be used sparingly!",
+    "The combination of differently colored nested UI components within a UI pattern (e.g., differently colored teasers in a row) is not allowed.",
+    "Example \"Emphasis 03 Nested\":",
+    "The \"Emphasis 03 Nested\" color scheme is shown here as an example for all Nested color schemes. All Nested schemes can be explored in the Color Tool.",
+    "Create a nested component",
+    "Application",
+    "If you are unsure about the application and have questions, feel free to reach out to us directly in our internal MS Teams channel.",
+    "Teams > Bosch Digital Design System (BDDS) > Exchange and Questions",
+    "The application is straightforward, as the color system is integrated into all components and patterns of the Bosch UI Kit. When using originals, many concerns are alleviated. However, it is important to ensure that the correct variant is used depending on the background type (Primary, Secondary, Contrast). Mixing Light and Dark Mode components/patterns is not allowed, as this can lead to accessibility issues.",
+    "For frontend development, it is much easier, as the components in the Frontend Kit (FROK) operate independently and adopt the correct colors, provided the classes are set correctly.",
+    "Summary for the Application of Components/Patterns from the Bosch UI Kit:",
+    "The color system is fully integrated.",
+    "Pay attention to choosing the correct variant for the respective background (Primary, Secondary, Contrast).",
+    "At least",
+    "the",
+    "base libraries of the Bosch UI Kit",
+    "must be activated in any Figma document (BDDS Tokens, BDDS Icons, BDDS UI Icons, BDDS Components).",
+    "This example shows, using a component from our Figma, that the color scheme (the color system) is correctly integrated into all components by default.",
+    "When using official components from our Figma library, the only requirement is to ensure that the correct attribute for the appropriate background variant is selected. In this example, the pattern has a Contrast Background; therefore, the Background attribute must be set to \"Contrast\" for all components.",
+    "Applying the Color System to Individual Components",
+    "When individual components need to be created, it is important to decide which color scheme from the color system will be used. You should",
+    "know and understand the documentation of the Digital Color System",
+    "(upper part). Then,",
+    "check the existing components in the Bosch UI Kit",
+    "to see if your components may relate to an existing one. If so,",
+    "it is advisable to use the same color scheme as the related components",
+    "When deciding on the right color scheme, our",
+    "design principles (Flat Design, Simplicity, High Quality)",
+    "must be considered.",
+    "It is also important to note: Within an element/state of the component, color schemes must never be mixed!",
+    "Fill and Front must always come from the same color scheme.",
+    "This example shows the color assignment for an individual component \"Drop Zone for Upload.\" The Drop Zone is related to input elements like the text field, which is why the Pure/Minor color scheme was also chosen, as it is used in most input elements.",
+    "The possibility of nesting allows for countless variations of components. Therefore, most components are not provided in a \"nested\" variant. However, creating a nested UI pattern is not complicated:",
+    "Construct your pattern from our regular components.",
+    "Then simply swap the colors in Figma for the respective nested equivalents (e.g., base/minor/enabled front default to emphasis 03/minor/enabled front default).",
+    "The following video demonstrates the procedure.",
+    "Do",
+    "Use the correct Background attribute for all components.",
+    "Ensure buttons use the official color schemes.",
+    "Correctly apply the Digital Color System.",
+    "Ensure that our design principles are observed.",
+    "Assign all components to the correct nested color scheme.",
+    "Don't",
+    "Don't forget to set the Background attribute to \"Contrast.\"",
+    "Don't allow buttons to use colors outside the official color schemes.",
+    "Don't let the Emphasis color scheme to dominate the UI! A color theme for an entire UI is not permitted!",
+    "Don't let personal taste influence color choices. A color theme for an entire UI is not permitted!",
+    "Don't overlook assigning all components to the correct nested color scheme.",
+    "Drop 'do' images here or click to upload",
+    "Choose existing 'do' image",
+    "Drop 'don't' images here or click to upload",
+    "Choose existing 'don't' image",
+    "Customizations of the Digital Color System",
+    "The Digital Color System allows for customization to the color worlds of various brands within the Bosch Group. In combination with the adaptation of other foundations, the Bosch Digital Design System (BDDS) can be modified and further developed alongside the Bosch UI Kit and the Frontend Kit (FROK) for different representations.",
+    "For individual customization requests, the Bosch Digital Design System team (BDDS) is happy to assist.",
+    "Teams Channel \"Bosch Digital Design System (BDDS)\"",
+    "Bosch internal link",
+    "We manage our digital color world with various specialized tools.",
+    "Color Picker Tool",
+    "The helpful Color Picker Tool allows for a visual exploration of the color system.",
+    "Cheat Sheet (Figma)",
+    "The Cheat Sheet provides basic information for working with the color system in Figma.",
+    "WCAG 2.1 Contrast",
+    "The official documentation of WCAG 2.1 contains guidelines for applicable color contrasts.",
+    "BDDS Design Token Repository",
+    "The official source for our design tokens. The color system is available here in JSON format.",
+    "Please submit all",
+    "feature requests",
+    "bug reports",
+    "relating to the",
+    "Digital Design System",
+    "or the",
+    "Frontend Kit",
+    "directly to the digital expert team via Jira. You can learn more about how the process works,",
+    "here",
+    "If you have any feedback or questions about designing digital touchpoints, feel free to send them to",
+    "support.design@bosch.com",
+    ". We’re also happy to check design drafts."
+  ],
+  "ai_usage_guidance": {
+    "recommended_use": [
+      "Use conceptual_model for fast reasoning about the color system architecture.",
+      "Use content_sections for section-aware retrieval and summarization.",
+      "Use knowledge_units for semantic search, RAG chunking, or prompt grounding.",
+      "Use assets.links for external tools and resources referenced by the page."
+    ],
+    "limitations": [
+      "Visual information embedded inside images or videos was not OCR-transcribed; only HTML text, captions, alt text, and asset metadata were extracted.",
+      "The source is a local HTML snapshot, so dynamic interactive widgets may not expose all internal state values in static HTML.",
+      "The JSON preserves source wording where available and adds a normalized conceptual_model for AI reasoning."
+    ]
+  }
+}
