@@ -1,0 +1,336 @@
+{
+  "file_name": "font-site-research.json",
+  "research_subject": "Bosch Fonts",
+  "source": {
+    "name": "Bosch Brand Guide - Font and typography",
+    "source_file": "1.html",
+    "saved_from_url": "https://brandguide.bosch.com/document/2272/en#/-/font-and-typography",
+    "language": "en",
+    "last_modified_observed_in_source": "2025-08-29"
+  },
+  "ai_readable_summary": {
+    "purpose": "Organizes Bosch font and typography guidance into structured data for downstream AI, UX, design-system, and brand-compliance workflows.",
+    "core_message": "Bosch uses a proprietary font ecosystem designed to maintain brand consistency worldwide. Bosch Sans is the general-purpose corporate typeface, complemented by specialized families for serif typography, global scripts, script/accent use, iconography, office environments, technical marking, and pixel displays.",
+    "ownership_and_scope": "The Bosch font families are house fonts designed exclusively for Bosch and are the property of Robert Bosch GmbH. They are to be used worldwide under the Bosch brand to guarantee uniformity across applications."
+  },
+  "primary_font_categories": [
+    {
+      "id": "bosch_sans",
+      "name": "Bosch Sans",
+      "category": "Corporate sans-serif",
+      "role": "Primary all-purpose corporate typeface for Western typesetting",
+      "recommended_usage": [
+        "Headlines",
+        "Body copy",
+        "General applications",
+        "Digital applications",
+        "Western typesetting"
+      ],
+      "language_support": [
+        "Western European languages",
+        "Central European languages",
+        "Baltic languages",
+        "Turkish",
+        "Greek",
+        "Cyrillic"
+      ],
+      "design_framework_weights": [
+        "Bosch Sans Regular",
+        "Bosch Sans Bold"
+      ],
+      "additional_weights": {
+        "weights": [
+          "Light",
+          "Medium",
+          "Black"
+        ],
+        "status": "No longer further developed",
+        "usage_condition": "May only be used for existing media and design concepts already approved by C/CGB-CD"
+      },
+      "accessibility": {
+        "digital_font_smoothing_optimized": true,
+        "standard_reference": "W3C WCAG 2.1 Level AA"
+      }
+    },
+    {
+      "id": "bosch_serif",
+      "name": "Bosch Serif",
+      "category": "Corporate serif",
+      "role": "Specialized serif font for representative long-form reading",
+      "recommended_usage": [
+        "Long coherent reading texts",
+        "Representative publications"
+      ]
+    },
+    {
+      "id": "bosch_sans_global",
+      "name": "Bosch Sans Global",
+      "category": "Global script sans-serif",
+      "role": "Typeface for languages and scripts not fully covered by Latin-based Bosch Sans",
+      "recommended_usage": [
+        "Non-Latin scripts",
+        "International communication",
+        "Localized typography"
+      ],
+      "available_styles": [
+        "Regular",
+        "Bold",
+        "Black for selected applications"
+      ],
+      "subsets": [
+        "Simplified Chinese (CHS)",
+        "Traditional Chinese (CHT)",
+        "Japanese",
+        "Korean",
+        "Khmer",
+        "Thai",
+        "Myanmar",
+        "Arabic"
+      ],
+      "implementation_notes": [
+        "Global font files are large",
+        "Not recommended as webfonts in full form",
+        "Localized subsets should be used when smaller file sizes are needed"
+      ]
+    },
+    {
+      "id": "bosch_script",
+      "name": "Bosch Script",
+      "category": "Script font",
+      "role": "Expressive accent typeface based on Robert Bosch's handwriting",
+      "introduced": "2019",
+      "recommended_usage": [
+        "Individual emphasis",
+        "Quotations",
+        "Advertising accents"
+      ],
+      "constraints": [
+        "Does not replace Bosch Sans",
+        "Should be used as an accentuation font only"
+      ]
+    },
+    {
+      "id": "bosch_icons",
+      "name": "Bosch Icons",
+      "category": "Icon font",
+      "role": "Font containing Bosch icons, regularly updated",
+      "recommended_usage": [
+        "Icon insertion in MS Office",
+        "Brand iconography",
+        "Functional symbols"
+      ],
+      "notes": [
+        "Installed on Bosch computers by default",
+        "Icons can be inserted and colored in MS Office programs"
+      ],
+      "formats": [
+        "OTF",
+        "TTF",
+        "WOFF",
+        "WOFF2",
+        "SVG"
+      ]
+    }
+  ],
+  "further_fonts": [
+    {
+      "id": "bosch_sans_office",
+      "name": "Bosch Sans Office",
+      "role": "Office application font based on Arial",
+      "usage": "Embedded in MS Office templates and presentations and installed as a system font on all workstations.",
+      "constraints": [
+        "Only to be used in Microsoft Office applications"
+      ]
+    },
+    {
+      "id": "bosch_sans_condensed",
+      "name": "Bosch Sans Condensed",
+      "role": "Space-saving sans-serif variant",
+      "usage": "For special applications with limited space, such as catalogs, instructions, packaging, and tables."
+    },
+    {
+      "id": "bosch_sans_lining_figures",
+      "name": "Bosch Sans Lining Figures",
+      "role": "Product identification number style",
+      "usage": "For product identification only.",
+      "visual_characteristics": [
+        "Narrower numbers",
+        "Smaller numbers",
+        "The number 1 has no foot"
+      ]
+    },
+    {
+      "id": "bosch_sans_mono_semicondensed",
+      "name": "Bosch Sans Mono SemiCondensed",
+      "role": "Technical marking and nameplate font",
+      "usage": "Replaces Bosch Mono Engraving and Bosch Sans Engraving. Used for product markings and nameplates in engraving, print, and preview contexts.",
+      "characteristics": [
+        "All characters are monospaced"
+      ],
+      "styles": [
+        {
+          "name": "Lined 1L",
+          "usage": "Engraving"
+        },
+        {
+          "name": "Preview 1L",
+          "usage": "Screen representation"
+        },
+        {
+          "name": "Print",
+          "usage": "Printed or screen-printed markings"
+        }
+      ]
+    },
+    {
+      "id": "bosch_sans_mono_semicondensed_lined_trumpf",
+      "name": "Bosch Sans Mono SemiCondensed Lined (Trumpf)",
+      "role": "Single-line engraving font",
+      "usage": "Optimized for technical applications and OCR. Provided in .lfn format for laser machines such as Trumpf."
+    },
+    {
+      "id": "bosch_sans_pixel",
+      "name": "Bosch Sans Pixel",
+      "role": "Pixel display font",
+      "usage": "For pixel displays, mainly in product user interfaces.",
+      "constraints": [
+        "Optimized for specific pixel heights",
+        "Not intended for scaling"
+      ]
+    }
+  ],
+  "typography_guidelines": {
+    "typesetting": {
+      "alignment": "Left-aligned flush typesetting",
+      "case": "Use mixed case for headings and body text whenever possible",
+      "hierarchy_rule": "Heading size should be at least 1.5 times the size of body text",
+      "tracking_rule": "Headings and body text above 28 pt are slightly undercut; the larger the headline, the more the tracking is undercut"
+    },
+    "color_usage": {
+      "default_pairings": [
+        "Black on white",
+        "White on black"
+      ],
+      "accent_color_roles": {
+        "bosch_blue": "Hyperlinks and functional elements",
+        "bosch_green": "Selective orientation or emphasis",
+        "bosch_turquoise": "Selective orientation or emphasis",
+        "bosch_purple": "Selective orientation or emphasis"
+      },
+      "emphasis_recommendation": "Use colored type selectively. Bosch Sans Bold is recommended for colored markups."
+    },
+    "bullet_points": {
+      "first_level": {
+        "list_shape": "Square",
+        "enumeration_shape": "Numbers",
+        "default_color": "Black",
+        "special_case_color": "Accent colors may be used in special cases"
+      },
+      "second_level": {
+        "usage": "Used for both lists and enumerations",
+        "color": "Black"
+      }
+    },
+    "accessibility": {
+      "principle": "Font size and contrast must ensure readability for all users",
+      "minimum_contrast_ratio_for_continuous_text": "4.5:1",
+      "contrast_reference": "AAA for continuous text as captured in the source summary",
+      "text_on_images": "Ensure text clearly stands out from the background"
+    }
+  },
+  "application_examples": [
+    {
+      "context": "Advertising or communication layout",
+      "rules": [
+        "Headlines are set in Bosch Sans Bold",
+        "Colors are largely avoided",
+        "Colored type is used only for orientation or intentional emphasis"
+      ],
+      "elements": [
+        "Image-text combination",
+        "Symbol/logotype",
+        "Slogan",
+        "Supergraphic",
+        "Highlighted text"
+      ]
+    },
+    {
+      "context": "Screen design",
+      "rules": [
+        "Use headline, description, and buttons in a clear hierarchy",
+        "Use functional color intentionally"
+      ]
+    },
+    {
+      "context": "Navigation in negative contrast or dark mode",
+      "rules": [
+        "Use Bosch gray gradations",
+        "Use icons where functional",
+        "Use color intentionally for orientation"
+      ]
+    }
+  ],
+  "font_formats": {
+    "note": "Not all font formats are intended for all usage. Usage should follow the provided format table in the source.",
+    "formats_identified": [
+      "OTF",
+      "TTF",
+      "WOFF",
+      "WOFF2",
+      "SVG"
+    ],
+    "webfont_formats_identified_in_css": [
+      "WOFF",
+      "WOFF2",
+      "TTF"
+    ],
+    "css_font_family_identified": "Bosch Sans",
+    "css_weights_identified": [
+      "200",
+      "300",
+      "400",
+      "500",
+      "700",
+      "800",
+      "900",
+      "normal",
+      "bold"
+    ],
+    "css_styles_identified": [
+      "normal",
+      "italic"
+    ]
+  },
+  "links": {
+    "font_and_typography_page": "https://brandguide.bosch.com/document/2272/en#/-/font-and-typography",
+    "download_area": "https://brandguide.bosch.com/r/4Z0m0lvhrPx1_ptYvrIGa_PUmg99BY31wlphI4Y_Ork",
+    "icon_library": "https://brandguide.bosch.com/r/ra5gAvyDI4jwOd9VoSLOPMHatKDltvcQtcPXOsFIzfo",
+    "colors_section": "https://brandguide.bosch.com/r/hPcdAWYNKOzInBtYRBZStUj1TuGkmfhuJy6VW23UVWc",
+    "accessibility_basics": "https://brandguide.bosch.com/document/219/en#/accessibility/accessibility-basics-1606671531",
+    "wcag_2_1_text_spacing": "https://www.w3.org/TR/WCAG21/#text-spacing",
+    "support_email": "support.design@bosch.com"
+  },
+  "design_system_mapping": {
+    "tokens_to_create_or_validate": [
+      "font.family.primary = Bosch Sans",
+      "font.family.serif = Bosch Serif",
+      "font.family.global = Bosch Sans Global",
+      "font.family.script = Bosch Script",
+      "font.family.icon = Bosch Icons",
+      "font.weight.regular = 400",
+      "font.weight.bold = 700",
+      "typography.heading.font_family = Bosch Sans",
+      "typography.body.font_family = Bosch Sans",
+      "typography.link.color = Bosch Blue",
+      "typography.list.level_1.marker = square",
+      "typography.list.level_2.marker = dash or nested marker",
+      "accessibility.text.minimum_contrast_ratio = 4.5"
+    ],
+    "implementation_cautions": [
+      "Do not use deprecated additional Bosch Sans weights for new media unless already approved",
+      "Avoid full Bosch Sans Global as a webfont due to large file size; prefer localized subsets",
+      "Use Bosch Script only as an accent, not as a replacement for Bosch Sans",
+      "Use Bosch Sans Office only inside Microsoft Office applications"
+    ]
+  }
+}

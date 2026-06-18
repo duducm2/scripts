@@ -1,0 +1,562 @@
+{
+  "research_id": "bosch-iconography-standards-research-001",
+  "title": "Bosch Iconography Standards - BDDS and Brand Guide Research",
+  "file_role": "AI-readable foundational research artifact",
+  "version": "1.0",
+  "created_on": "2026-06-18",
+  "filename": "bosch-iconography-standards-research-v1.json",
+  "language": "en",
+  "intent": "Structure the findings from a long-form research report about Bosch iconography standards across the Bosch Brand Guide, Bosch Digital Design System, and related implementation ecosystems into an AI-readable JSON artifact.",
+  "recommended_audiences": [
+    "UX/UI designers",
+    "frontend developers",
+    "design system contributors",
+    "brand design contributors",
+    "PowerPoint and communication designers",
+    "AI prompt authors",
+    "AI icon generation workflow owners",
+    "product teams needing Bosch-compliant iconography"
+  ],
+  "scope": {
+    "covered_topics": [
+      "Bosch iconography governance",
+      "relationship between Bosch Brand Guide and BDDS for icons",
+      "digital UI icon usage",
+      "corporate and brand-wide pictogram usage",
+      "PowerPoint and communication icon usage",
+      "FROK and UI implementation considerations",
+      "icon library sourcing and reuse",
+      "new icon creation and review logic",
+      "visual principles for Bosch icon style",
+      "accessibility and compliance considerations",
+      "AI-assisted icon generation implications"
+    ],
+    "covered_contexts": [
+      "Web UI",
+      "Mobile UI",
+      "Software UI",
+      "Corporate websites",
+      "PowerPoint presentations",
+      "Marketing and communication materials",
+      "Internal documentation",
+      "Design-system and code implementation"
+    ],
+    "excluded_topics": [
+      "Complete icon-by-icon inventory",
+      "Final legal certification of icon accessibility",
+      "Full SVG path specifications for individual Bosch icons",
+      "Detailed FROK API documentation beyond icon-related implications"
+    ],
+    "research_style": "Foundational synthesis plus operational rules for design, implementation, and AI usage"
+  },
+  "executive_summary": {
+    "short_definition": "Bosch iconography is the standardized visual-symbol system used to represent actions, objects, states, concepts, and brand-relevant ideas across Bosch digital products and corporate communications.",
+    "main_conclusion": "Bosch iconography should be treated as a governed ecosystem. The Bosch Brand Guide is the upstream corporate authority for icon style and meaning, while the Bosch Digital Design System operationalizes those principles for digital interfaces through UI libraries, FROK-compatible implementation patterns, and accessibility-oriented usage rules.",
+    "practical_reading": [
+      "For digital products, designers and developers should default to BDDS and official Bosch UI icon resources.",
+      "For corporate communication, presentations, and marketing, users should default to the Bosch Brand Guide icon library and approved PowerPoint design resources.",
+      "Reuse is preferred over custom icon creation. If a new icon is needed, it should follow Bosch visual rules and be reviewed or aligned with design support or design-system governance.",
+      "Icons should be simple, stroke-based when used as UI icons, geometrically consistent, scalable, accessible, and semantically clear.",
+      "AI-generated icons should never bypass the official icon library lookup, brand review, accessibility review, or human approval process."
+    ]
+  },
+  "authority_model": {
+    "governance_hierarchy": [
+      {
+        "rank": 1,
+        "authority": "Bosch Brand Guide / Bosch Brand Platform",
+        "role": "Upstream corporate design authority for Bosch icon style, visual identity, pictograms, approved icon assets, brand colors, and brand-wide usage.",
+        "use_when": [
+          "Creating or selecting icons for corporate communication",
+          "Creating PowerPoint or marketing materials",
+          "Checking whether an icon belongs to the Bosch visual language",
+          "Resolving brand-style questions"
+        ]
+      },
+      {
+        "rank": 2,
+        "authority": "Bosch Digital Design System (BDDS)",
+        "role": "Digital implementation authority that adapts Brand Guide principles for user interfaces, digital components, interaction states, web/app usage, accessibility, and design-development alignment.",
+        "use_when": [
+          "Designing web, app, dashboard, or software UI icons",
+          "Integrating icons into BDDS components",
+          "Using Bosch UI Kit, FROK, or digital UI libraries",
+          "Making accessibility and responsive UI decisions"
+        ]
+      },
+      {
+        "rank": 3,
+        "authority": "Bosch UI Kit / Figma libraries / FROK / frontend implementation resources",
+        "role": "Operational design and development layer that supplies reusable icon assets, UI components, icon fonts, class names, SVGs, and implementation patterns.",
+        "use_when": [
+          "Building or prototyping digital touchpoints",
+          "Referencing implemented icon names or glyphs",
+          "Ensuring design-code consistency"
+        ]
+      },
+      {
+        "rank": 4,
+        "authority": "Local or product-specific guidelines",
+        "role": "Contextual layer for product teams. These may define product-specific icon usage but should not contradict Brand Guide or BDDS unless explicitly approved.",
+        "use_when": [
+          "A product needs a specialized icon set or domain-specific symbol",
+          "A business unit has additional implementation constraints",
+          "A local design system maps Bosch icons to a specific technology stack"
+        ]
+      }
+    ],
+    "conflict_resolution": {
+      "default_rule": "Use the Bosch Brand Guide as the upstream source for icon identity and BDDS as the downstream digital implementation authority.",
+      "if_brand_guide_and_bdds_conflict": "Treat BDDS as authoritative for digital interaction and component implementation, but escalate brand-style conflicts to corporate design or design-system governance.",
+      "if_icon_missing": "Search the official Bosch icon library first. If no suitable icon exists, create or request a new icon using Bosch style rules and submit it for review before broad reuse.",
+      "if_local_guideline_conflicts": "Local or product-specific icon rules should be revised unless there is a formally approved exception."
+    }
+  },
+  "source_map": [
+    {
+      "source_id": "source-01",
+      "name": "Bosch Digital Design System foundational research",
+      "type": "uploaded JSON research artifact",
+      "authority_level": "primary contextual baseline",
+      "key_takeaways": [
+        "BDDS is the official Bosch digital extension of the Bosch Brand Guide.",
+        "BDDS standardizes digital touchpoints for consistency, accessibility, quality, and brand compliance.",
+        "BDDS is an ecosystem that includes Brand Guide documentation, Bosch UI Kit, FROK, DOCK, Frontify, Figma, accessibility guidance, and update communications.",
+        "BDDS emphasizes reuse, design-development alignment, accessibility, and token-driven implementation."
+      ],
+      "source_reference": "bosch-digital-design-system-research-v1.json"
+    },
+    {
+      "source_id": "source-02",
+      "name": "Bosch Brand Guide / Brand Platform",
+      "type": "brand guideline and asset platform",
+      "authority_level": "primary",
+      "key_takeaways": [
+        "The Brand Guide is the root source for Bosch corporate design and visual identity.",
+        "The Brand Guide includes official icons and pictograms for Bosch-compliant communication and design.",
+        "The Brand Guide should be used before creating or sourcing custom icons."
+      ]
+    },
+    {
+      "source_id": "source-03",
+      "name": "Bosch Icon Library",
+      "type": "official asset library",
+      "authority_level": "primary for icon assets",
+      "key_takeaways": [
+        "Official Bosch icons should be reused before custom icons are created.",
+        "Digital offers should source icons centrally from the Bosch Icon Library or BDDS icon resources.",
+        "Icons are commonly delivered in scalable formats such as SVG or icon font resources."
+      ]
+    },
+    {
+      "source_id": "source-04",
+      "name": "Bosch Digital Design System icon guidance",
+      "type": "digital design-system documentation",
+      "authority_level": "primary for digital icon usage",
+      "key_takeaways": [
+        "Digital icons need to be compatible with BDDS components and digital accessibility requirements.",
+        "BDDS icon usage is tied to consistent UX and recognizable Bosch digital touchpoints.",
+        "FROK and UI libraries operationalize icon implementation for web projects."
+      ]
+    },
+    {
+      "source_id": "source-05",
+      "name": "PowerPoint Design Kit / Office icon usage",
+      "type": "corporate communication tooling",
+      "authority_level": "operational for presentations",
+      "key_takeaways": [
+        "PowerPoint workflows provide Bosch icons and illustrations directly or through approved libraries.",
+        "Presentation authors should use official Bosch graphic elements instead of unrelated external icon sets.",
+        "The same brand consistency logic applies to presentation and communication assets."
+      ]
+    },
+    {
+      "source_id": "source-06",
+      "name": "FROK / frontend implementation notes",
+      "type": "frontend implementation layer",
+      "authority_level": "operational for web implementation",
+      "key_takeaways": [
+        "FROK implements Bosch Brand Guide and BDDS-compatible assets for web projects.",
+        "Icon font and SVG delivery may both appear in implementation contexts, depending on the library and project.",
+        "Developers should rely on FROK-compatible icon assets or official BDDS icons instead of arbitrary icon libraries."
+      ]
+    }
+  ],
+  "core_iconography_principles": [
+    {
+      "principle": "Reuse before creation",
+      "definition": "Use existing official Bosch icons before designing or generating a new icon.",
+      "rationale": "Reuse protects brand consistency, reduces duplication, supports cross-product recognition, and lowers implementation effort.",
+      "ai_rule": "Always search or reference the official Bosch icon library first before generating a new icon."
+    },
+    {
+      "principle": "Simplicity",
+      "definition": "Icons should represent one concept with minimal shapes and no unnecessary decorative detail.",
+      "rationale": "Simple icons remain legible at small sizes and reduce cognitive load.",
+      "ai_rule": "Generate icons with one clear metaphor and avoid decorative textures, complex scenes, or multi-object compositions."
+    },
+    {
+      "principle": "Stroke-based construction for UI icons",
+      "definition": "Digital UI icons should generally use stroke/outline construction rather than heavy filled pictorial treatment.",
+      "rationale": "Stroke-based icons support lightweight UI appearance, scalability, and visual consistency across controls.",
+      "ai_rule": "Use a clean outline style with a consistent stroke width unless a specific approved filled icon style is required."
+    },
+    {
+      "principle": "Consistent geometry",
+      "definition": "Icons should be built on a consistent square grid and should maintain comparable visual weight across the icon set.",
+      "rationale": "A grid ensures alignment, balanced proportions, consistent optical size, and predictable scaling.",
+      "ai_rule": "Describe icon construction on a square grid and require centered, optically balanced geometry."
+    },
+    {
+      "principle": "Protective area",
+      "definition": "Icons should maintain internal spacing or a protection area so strokes and shapes do not touch the icon boundary.",
+      "rationale": "Protective spacing prevents icons from appearing cramped and improves visual clarity in layouts.",
+      "ai_rule": "Include clear margin around the icon; avoid edge-to-edge symbols unless explicitly required by the official icon pattern."
+    },
+    {
+      "principle": "Scalability",
+      "definition": "Icons should be vector-based and should remain legible at common UI and communication sizes.",
+      "rationale": "Icons are reused across many touchpoints and must preserve clarity when resized.",
+      "ai_rule": "Avoid fine detail that disappears at small sizes; prefer bold, clear, vector-like forms."
+    },
+    {
+      "principle": "Semantic clarity",
+      "definition": "Icons must visually communicate the intended action, object, state, or concept with a recognizable metaphor.",
+      "rationale": "Users should not need to decode ambiguous or overly clever symbols.",
+      "ai_rule": "Use common, internationally understandable metaphors and avoid culturally ambiguous symbols unless reviewed."
+    },
+    {
+      "principle": "Brand color discipline",
+      "definition": "Icons should use Bosch-approved colors and should not introduce arbitrary colors.",
+      "rationale": "Color discipline keeps icon usage consistent with the Brand Guide and accessibility rules.",
+      "ai_rule": "Use monochrome or Bosch-approved colors only; do not use gradients, neon colors, or unapproved palettes."
+    },
+    {
+      "principle": "Accessibility by default",
+      "definition": "Icons must support contrast, text alternatives, and meaning that does not rely solely on color.",
+      "rationale": "Icons often communicate actions or states and must be usable by people with different visual or cognitive abilities.",
+      "ai_rule": "Pair meaningful icons with accessible labels or instructions; never rely only on color to communicate state."
+    }
+  ],
+  "visual_specifications": {
+    "confirmed_from_research": {
+      "icon_style": "Primarily stroke-based for UI usage",
+      "common_icon_canvas_sizes_px": [
+        48,
+        64,
+        72,
+        84,
+        96,
+        108
+      ],
+      "protective_area_px_range": "4 to 12 px depending on icon size",
+      "stroke_width_px_examples": [
+        1,
+        1.25,
+        1.5,
+        1.75,
+        2
+      ],
+      "default_background_for_icon_creation": "white or transparent depending on output need; white is practical for review, transparent is practical for final icon assets",
+      "preferred_asset_type": "vector where possible, especially SVG for digital use"
+    },
+    "interpreted_practical_rules": {
+      "base_grid_recommendation": "Use a square grid. A 48x48 px grid is a practical baseline for AI prompt creation and design review.",
+      "default_stroke_recommendation": "Use around 1.5 px stroke for 48x48 px base-grid icon mockups unless another official size/stroke mapping is specified.",
+      "corner_style": "Keep corners and joins visually consistent across the icon set; avoid mixing sharp, rounded, and irregular corners without reason.",
+      "detail_level": "Use low detail for UI icons and moderate detail only when the icon is used at larger communication sizes.",
+      "color_logic": "Prefer monochrome icons in UI contexts; use brand-approved colors sparingly in corporate communication contexts."
+    },
+    "forbidden_treatments": [
+      "Unapproved third-party icon styles",
+      "Mixed icon styles in the same interface or slide",
+      "3D icons for standard UI actions",
+      "Photorealistic icons for UI controls",
+      "Excessive internal detail",
+      "Decorative shadows for functional UI icons",
+      "Gradients unless explicitly approved",
+      "Icons that depend only on color to communicate meaning",
+      "Distorted, stretched, or non-proportional icons",
+      "Text embedded inside icons unless the official icon requires it"
+    ]
+  },
+  "digital_iconography": {
+    "definition": "Digital Bosch iconography refers to icons used in web, app, dashboard, software, and other interactive digital touchpoints governed by BDDS and implemented through UI libraries such as Bosch UI Kit and FROK.",
+    "primary_sources": [
+      "BDDS documentation",
+      "Bosch UI Kit / Figma library",
+      "FROK preview and implementation library",
+      "Bosch Icon Library for approved icon assets",
+      "Digital accessibility guidance"
+    ],
+    "usage_rules": [
+      "Use BDDS-compatible icons for digital products.",
+      "Use icons from official UI libraries rather than importing external icon packs.",
+      "Use icon names or component APIs supplied by the implementation library when coding.",
+      "Keep icons visually and semantically consistent with the component they belong to.",
+      "Pair icon-only controls with accessible labels.",
+      "Do not override icon size, stroke, or color in ways that break BDDS consistency."
+    ],
+    "implementation_notes": {
+      "design_side": "Use Bosch UI Kit or BDDS design libraries in design tools. Keep icons as reusable components rather than pasted static art where possible.",
+      "code_side": "Use FROK, BDDS-compatible icon fonts, SVG assets, or component libraries as the implementation source. Avoid manual recreation of icons in code.",
+      "delivery_formats": [
+        "SVG",
+        "Icon font glyphs",
+        "CSS classes or variables",
+        "Design-library components",
+        "Framework wrappers when available"
+      ],
+      "state_handling": "Icon colors and states should follow BDDS color tokens and component states such as enabled, hover, active, disabled, error, warning, or success."
+    }
+  },
+  "corporate_iconography": {
+    "definition": "Corporate Bosch iconography refers to brand-wide icons and pictograms used in presentations, marketing, internal communications, corporate websites, print, signage, templates, and other non-product or semi-product communication contexts.",
+    "primary_sources": [
+      "Bosch Brand Guide",
+      "Bosch Icon Library",
+      "PowerPoint Design Kit",
+      "Layout Creator or approved corporate templates",
+      "Corporate Design Support"
+    ],
+    "usage_rules": [
+      "Use the official Bosch Icon Library as the default source.",
+      "Use PowerPoint Design Kit icons or official icon font resources for presentations.",
+      "Keep icon style consistent within one communication artifact.",
+      "Avoid external icon libraries unless explicitly approved and visually adapted.",
+      "Use Bosch-approved colors and typography around icons.",
+      "For new or uncertain icon designs, seek review from Design Support or the appropriate brand-design function."
+    ],
+    "implementation_notes": {
+      "presentation_side": "Use official PowerPoint resources, icon fonts, and Brand Guide assets instead of copied web icons.",
+      "marketing_side": "Use vector assets from the Brand Guide or approved asset management systems.",
+      "delivery_formats": [
+        "SVG",
+        "EPS or vector formats where needed",
+        "PNG for non-editable or low-complexity use",
+        "Office-compatible icon font or graphics"
+      ]
+    }
+  },
+  "digital_vs_corporate_comparison": [
+    {
+      "dimension": "Primary authority",
+      "digital_ui": "BDDS, supported by Brand Guide",
+      "corporate_brand": "Bosch Brand Guide"
+    },
+    {
+      "dimension": "Main objective",
+      "digital_ui": "Usability, recognizability, interaction clarity, accessibility, implementation consistency",
+      "corporate_brand": "Brand consistency, communication clarity, visual identity, presentation quality"
+    },
+    {
+      "dimension": "Typical style",
+      "digital_ui": "Stroke-based, monochrome, component-integrated",
+      "corporate_brand": "Stroke-based or approved pictogram style, sometimes more expressive depending on communication context"
+    },
+    {
+      "dimension": "Color usage",
+      "digital_ui": "Token-driven, state-aware, usually monochrome or semantic colors",
+      "corporate_brand": "Brand-color-driven, often monochrome, with controlled use of accent colors"
+    },
+    {
+      "dimension": "Implementation format",
+      "digital_ui": "SVG, icon font, CSS class, framework component, UI Kit component",
+      "corporate_brand": "SVG, EPS, PNG, Office icon font, template-integrated asset"
+    },
+    {
+      "dimension": "Accessibility focus",
+      "digital_ui": "ARIA labels, contrast, keyboard/focus behavior around icon controls, state visibility",
+      "corporate_brand": "Contrast, recognizability, not relying on color only, readable layout context"
+    },
+    {
+      "dimension": "Creation governance",
+      "digital_ui": "Design-system review and alignment with BDDS implementation patterns",
+      "corporate_brand": "Brand-design review and alignment with Brand Guide icon style"
+    }
+  ],
+  "operational_workflow": {
+    "recommended_steps_for_icon_use": [
+      {
+        "step": 1,
+        "name": "Define the icon purpose",
+        "instruction": "Clarify whether the icon communicates an action, navigation item, object, status, category, or concept."
+      },
+      {
+        "step": 2,
+        "name": "Choose the correct source",
+        "instruction": "Use BDDS or UI libraries for digital products. Use Brand Guide Icon Library or PowerPoint Design Kit for corporate communication."
+      },
+      {
+        "step": 3,
+        "name": "Search before creating",
+        "instruction": "Search official icon libraries before creating a new symbol."
+      },
+      {
+        "step": 4,
+        "name": "Evaluate semantic fit",
+        "instruction": "Check whether the selected icon clearly represents the intended meaning in context."
+      },
+      {
+        "step": 5,
+        "name": "Apply context rules",
+        "instruction": "Use correct size, color, token, state, accessible label, and spacing for the target medium."
+      },
+      {
+        "step": 6,
+        "name": "Review accessibility",
+        "instruction": "Check contrast, recognizability, assistive technology labels, and color-independent meaning."
+      },
+      {
+        "step": 7,
+        "name": "Escalate missing or uncertain icons",
+        "instruction": "If no suitable icon exists, draft a new one using Bosch rules and request review before broad reuse."
+      }
+    ],
+    "new_icon_creation_process": [
+      "Confirm that no official icon exists for the same meaning.",
+      "Define the semantic concept in one sentence.",
+      "Sketch the simplest recognizable metaphor.",
+      "Draw on the approved square grid using consistent stroke width and protective area.",
+      "Check visual weight against neighboring official icons.",
+      "Test at small UI sizes and larger presentation sizes if applicable.",
+      "Check contrast and accessibility context.",
+      "Submit for design-system or brand-design review.",
+      "Add the approved icon to the shared library with name, tags, usage notes, and file formats."
+    ]
+  },
+  "dos_and_donts": {
+    "do": [
+      "Use official Bosch icon libraries first.",
+      "Use BDDS icons for digital UI work.",
+      "Use Brand Guide icons for corporate communication and presentation work.",
+      "Keep icons simple, stroke-based, and geometrically consistent.",
+      "Use consistent icon size and visual weight in one interface or slide.",
+      "Use Bosch-approved colors and digital color tokens.",
+      "Provide accessible labels for icon-only controls.",
+      "Use SVG or official icon font resources when implementing icons.",
+      "Review new icon concepts before broad reuse.",
+      "Document icon names, meanings, and usage context."
+    ],
+    "dont": [
+      "Do not import random third-party icon packs into Bosch products or presentations.",
+      "Do not mix stroke, filled, 3D, realistic, and decorative icon styles in one system.",
+      "Do not stretch, distort, or manually redraw official icons.",
+      "Do not use unapproved colors, gradients, shadows, or textures for standard UI icons.",
+      "Do not rely only on color to communicate status or meaning.",
+      "Do not use text-heavy icons unless officially approved.",
+      "Do not generate icons with AI and publish them without human review.",
+      "Do not create local duplicate icons for concepts already covered by the official library.",
+      "Do not override component icon styles in a way that breaks BDDS implementation consistency."
+    ]
+  },
+  "accessibility_model": {
+    "core_statement": "Icons are meaningful non-text visual elements. In digital contexts, they must be accessible to assistive technologies and recognizable without relying solely on visual styling.",
+    "rules": [
+      {
+        "rule": "Provide text alternatives for meaningful icons",
+        "application": "Icon-only buttons and controls should have accessible names such as aria-label, title, visible label, or equivalent framework support."
+      },
+      {
+        "rule": "Maintain contrast",
+        "application": "Icon strokes and fills should have sufficient contrast against the background, especially when the icon communicates state, action, or warning."
+      },
+      {
+        "rule": "Do not rely on color alone",
+        "application": "Use different shapes, labels, or icon metaphors in addition to color for status communication."
+      },
+      {
+        "rule": "Preserve recognizability at small sizes",
+        "application": "Avoid fine details and ensure icons are legible in their final UI size."
+      },
+      {
+        "rule": "Use culturally robust metaphors",
+        "application": "Avoid culturally ambiguous or sensitive symbols unless reviewed for the target context."
+      },
+      {
+        "rule": "Avoid text embedded in icons",
+        "application": "Text inside images or icons is not reliably machine-readable and may not scale or translate well."
+      }
+    ],
+    "accessibility_checks": [
+      "Can the icon be understood without color?",
+      "Does the icon have an accessible label when used as a control?",
+      "Is the icon contrast sufficient in all states?",
+      "Is the icon recognizable at its smallest rendered size?",
+      "Is the icon meaning reinforced by text when the concept is not universal?",
+      "Does the icon avoid culturally risky or ambiguous symbolism?"
+    ]
+  },
+  "ai_relevance": {
+    "why_this_research_matters_for_ai": [
+      "Iconography has enough structured rules to become a promptable and auditable AI-generation domain.",
+      "AI can help draft missing icons, but only if constrained by official Bosch icon rules and human review.",
+      "The existence of BDDS, Brand Guide, icon libraries, and implementation formats makes a retrieval-first AI workflow possible.",
+      "AI workflows should prefer reuse and search over generation to reduce inconsistency and duplicated symbols."
+    ],
+    "minimum_rules_an_ai_system_should_follow": [
+      "Treat the Bosch Brand Guide as upstream authority for icon style and BDDS as the digital implementation authority.",
+      "Search or reference official Bosch icon libraries before generating a new icon.",
+      "Generate only simple, stroke-based, vector-like icons for UI unless another approved style is specified.",
+      "Use a square grid, consistent visual weight, protective margin, and clear silhouette.",
+      "Use monochrome or approved Bosch colors only.",
+      "Avoid decorative, 3D, photorealistic, gradient, or overly detailed icons.",
+      "Ensure the icon meaning is clear and not dependent on color alone.",
+      "Require human review before treating any generated icon as Bosch-compliant.",
+      "Output implementation-ready metadata such as name, semantic meaning, intended context, tags, and accessibility label recommendation."
+    ],
+    "ai_prompt_template": {
+      "purpose": "Reusable prompt structure for generating or evaluating Bosch-style icons.",
+      "template": "Create a Bosch-compliant icon for [concept/action/state]. Use a simple stroke-based vector style, square grid, consistent line weight, protective margin, monochrome Bosch-compatible color, no gradients, no shadows, no 3D, no decorative texture. The icon must be recognizable at small UI sizes, semantically clear, and not rely on color alone. Output should include icon name, meaning, suggested accessible label, use case, and SVG-oriented description. If an official Bosch icon already exists for this concept, prefer reuse instead of generating a new icon."
+    },
+    "ai_audit_checklist": [
+      "Does the generated icon look like a Bosch icon family member?",
+      "Is the icon stroke-based and visually simple?",
+      "Does the icon fit a square grid with protective spacing?",
+      "Is the icon free from unapproved colors, gradients, shadows, or 3D effects?",
+      "Is the metaphor understandable?",
+      "Can the icon work in monochrome?",
+      "Does the proposed usage include accessible labeling?",
+      "Was the official Bosch icon library checked before generation?"
+    ]
+  },
+  "recommended_use_of_this_json": {
+    "good_for": [
+      "RAG grounding for AI icon generation workflows",
+      "Prompt engineering for Bosch-compliant icon creation",
+      "Design-system onboarding",
+      "UX/UI icon usage guidance",
+      "Audit checklist creation",
+      "Documentation for reusable research artifacts",
+      "Separating icon rules by digital vs corporate contexts"
+    ],
+    "not_enough_for": [
+      "Final production icon approval without consulting live Bosch Brand Guide or BDDS documentation",
+      "Exact SVG path construction for official icons",
+      "Legal or accessibility certification",
+      "Replacing corporate design support or design-system governance"
+    ]
+  },
+  "open_questions_and_next_research_targets": [
+    {
+      "topic": "Full official Bosch icon taxonomy",
+      "why_it_matters": "A future artifact should extract icon names, categories, tags, meanings, and source formats from the live official icon library."
+    },
+    {
+      "topic": "Exact icon geometry rules",
+      "why_it_matters": "A future artifact should verify the definitive grid, stroke, corner radius, optical correction, and file-export rules from the live Brand Guide icon page."
+    },
+    {
+      "topic": "Digital implementation mapping",
+      "why_it_matters": "A future artifact should map icon names to FROK classes, SVG files, icon-font glyphs, and Figma component names."
+    },
+    {
+      "topic": "Accessibility examples",
+      "why_it_matters": "A future artifact should include code examples for accessible icon-only buttons, status icons, navigation icons, and decorative icons."
+    },
+    {
+      "topic": "AI icon-generation workflow validation",
+      "why_it_matters": "A future artifact should define how to validate AI-generated icons against official Bosch icon rules and when to reject output."
+    }
+  ]
+}
