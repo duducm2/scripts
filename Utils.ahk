@@ -467,9 +467,9 @@ WM_WindowIsF11FullscreenRejectReason(hwnd) {
             return "no_rect"
         tol := 24
         fillsMonitor := (Abs(left - ml) <= tol && Abs(top - mt) <= tol && Abs(right - mr) <= tol && Abs(bottom - mb) <=
-        tol)
+            tol)
         fillsWorkArea := (Abs(left - wl) <= tol && Abs(top - wt) <= tol && Abs(right - wr) <= tol && Abs(bottom - wb) <=
-        tol)
+            tol)
         extendsPastWorkArea := (bottom > wb + tol || right > wr + tol || left < wl - tol || top < wt - tol)
         style := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
         hasCaption := !!(style & 0x00C00000)
@@ -1314,7 +1314,7 @@ Chrome_DetachGetActiveTab(session) {
     if Chrome_IsValidTabElement(cached) {
         try {
             if (cached.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-            && cached.SelectionItemPattern.IsSelected)
+                && cached.SelectionItemPattern.IsSelected)
                 return cached
         } catch {
         }
@@ -1355,7 +1355,7 @@ Chrome_DetachGetActiveTab(session) {
         for t in uia.GetAllTabs() {
             try {
                 if (t.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                && t.SelectionItemPattern.IsSelected) {
+                    && t.SelectionItemPattern.IsSelected) {
                     if Chrome_IsValidTabElement(t) {
                         method := "selection"
                         session.activeTab := t
@@ -1479,7 +1479,7 @@ Chrome_FocusedElementIsSelectedTab(session) {
         if (focused.Type = UIA.Type.TabItem) {
             try {
                 if (focused.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                && focused.SelectionItemPattern.IsSelected)
+                    && focused.SelectionItemPattern.IsSelected)
                     return true
             } catch {
             }
@@ -2872,7 +2872,7 @@ GeminiCollectModelMenuItemState(mi) {
     if (!isSelected) {
         try {
             if (InStr(className, "is-selected") || InStr(className, "selected") || InStr(className, "active") ||
-            InStr(className, "mdc-selected"))
+                InStr(className, "mdc-selected"))
                 isSelected := true
         } catch {
         }
@@ -3244,7 +3244,7 @@ InitHotstringsCheatSheet() {
     ; Prompts (4 items) - First category
     try {
         RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
-        "✏️ Grammar & Spelling Corrector")
+            "✏️ Grammar & Spelling Corrector")
     } catch {
         RegisterHotstring(":o:cgrammar",
             "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
@@ -4777,7 +4777,7 @@ CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
         if (rest = "")
             return ""
         if (SubStr(rest, 1, 1) = "-" || SubStr(rest, 1, 1) = "|" || SubStr(rest, 1, 1) = ":" || SubStr(rest, 1, 1) =
-        "-")
+            "-")
             rest := Trim(SubStr(rest, 2))
         rest := Trim(LTrim(rest, "- "))
         return (rest != "") ? rest : title
@@ -6324,7 +6324,7 @@ Handy_ClickAiModel(hwnd, modelName) {
                 try btnClass := btn.ClassName
                 ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
                 if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") ||
-                InStr(btnClass, "flex items-center gap-2")) {
+                    InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
@@ -6661,8 +6661,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
         borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
         borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
         borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
-        " h" .
-        (gh + 2 * borderWidth))
+            " h" .
+            (gh + 2 * borderWidth))
         g_StandardLoadingBarBorderGui := borderGui
     } else {
         try {
@@ -7135,7 +7135,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
         g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int",
             0x1B) &
-        0x8000)
+            0x8000)
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
         g_StandardLoadingBarKeysEscapeActive := true
     }
@@ -7157,7 +7157,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     if (timeoutMs > 0) {
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
-        timeoutMs)
+            timeoutMs)
     }
 
     StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
@@ -9256,7 +9256,7 @@ global g_Projects := [
                                         category: "Work" }, { name: "Piloto PT B2B", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                             category: "Work" }, { name: "Python ScripTs", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
                                                 category: "Work", char: "t" }, { name: "",
-                                                path: "", workPath: "", category: "Work" }
+                                                    path: "", workPath: "", category: "Work" }
 ]
 
 ; Extract matching segments from project path for window title matching
@@ -12023,7 +12023,7 @@ StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
     if !IsObject(uia)
         return
     if !ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
-    && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+        && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
         return
     if chromeHwnd {
         try {
@@ -15725,8 +15725,8 @@ ShowHotstringSelector() {
         "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
         . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
     try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6,
-    "Consolas",
-    "CDD6F4", "1E1E2E")
+        "Consolas",
+        "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
     global g_UtilitySelectorFooterCtrl
     g_UtilitySelectorFooterCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center",
