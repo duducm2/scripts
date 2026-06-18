@@ -480,11 +480,8 @@ CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) 
     Sleep 150
     if (optionalPromptText != "")
         InsertText(optionalPromptText)
-    else {
-        Send "!v"
-        Sleep 50
-        Send "^!b"
-    }
+    else
+        ClipAngel_SendTopListItem(copilotHwnd)
     Sleep 250
     CopilotWeb_PlayFocusedChime()
     if (autoSubmit) {

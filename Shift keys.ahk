@@ -1607,7 +1607,7 @@ GetCheatSheetText() {
         if (hwnd) {
             try {
                 if (CopilotWeb_IsCopilotHwnd(hwnd, "fast") || CopilotWeb_IsCopilotHwnd(hwnd, "full")
-                    || CopilotWeb_TryUiaFingerprint(hwnd))
+                || CopilotWeb_TryUiaFingerprint(hwnd))
                     siteKey := "Copilot Web"
             } catch {
             }
@@ -2113,11 +2113,7 @@ ShowGlobalShortcutsHelp() {
 ; =============================================================================
 #!+1::
 {
-    ; Win+Alt+Shift+1 leaves modifiers logically down — release before synthetic Ctrl+Alt+B.
-    ; Note: only ^!b is sent (not !v) to avoid flashing the Clip Angel window.
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "^!b"
+    ClipAngel_SendTopListItem()
 }
 
 ; =============================================================================
@@ -2201,8 +2197,8 @@ FastCopyMode_ClipboardHasImage() {
     ; CF_DIB=8, CF_DIBV5=17, CF_BITMAP=2
     try {
         return !!(DllCall("IsClipboardFormatAvailable", "UInt", 8, "Int")
-            || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
-            || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
+        || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
+        || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
     } catch {
         return false
     }
@@ -2519,7 +2515,7 @@ Gemini_WaitForUploadIdleWithRefocus(uia, timeoutMs := 0, minNoIndicatorMs := 500
     return "timeout"
 }
 
-; One Clip Angel item per iteration: !v/^!b then ^!b with 300ms gaps; upload wait between images.
+; One Clip Angel item per iteration: open once, ^!b with gaps; upload wait between images.
 Gemini_PasteFromClipAngelSequential(count, uia := "") {
     if (!IsInteger(count))
         return
@@ -2531,6 +2527,12 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
         if (!IsObject(uia))
             return
     }
+    if !ClipAngel_TryAcquireAutomationLock()
+        return
+    priorHwnd := 0
+    try priorHwnd := WinGetID("A")
+    catch {
+    }
     try {
         StandardLoadingBar_Show("⏳ Pasting clips in Gemini…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
             centerOnHwnd: 0,
@@ -2538,19 +2540,23 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
     } catch {
     }
     try {
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
         loop n {
             try StandardLoadingBar_Update("⏳ Pasting clip " A_Index " / " n " …")
             catch {
             }
             Gemini_FocusPromptSameAsOpenHotkey(uia, false)
             if (A_Index = 1) {
-                Send "!v"
-                Sleep 50
-                Send "^!b"
+                if !ClipAngel_EnsureOpenAndReady(true) {
+                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
+                    return
+                }
             } else {
-                Sleep 300
-                Send "^!b"
+                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
             }
+            ClipAngel_ReleaseChordModifiersForSend()
+            SendInput "^!b"
             ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon: bounded
             ; wait vs fixed 2.6s). minNoIndicatorMs 2600 preserves ~legacy tail when no upload indicator.
             Sleep 400
@@ -2559,6 +2565,9 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             try FastCopyMode_FocusGeminiPromptField(uia)
         }
     } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
         try StandardLoadingBar_Hide(0)
         try {
             if (FastCopyMode_IsGeminiForeground()) {
@@ -2759,27 +2768,40 @@ ExecuteSequentialPaste(actionCount) {
     n := Integer(actionCount)
     if (n < 1)
         return
+    global gFastCopyPasteTargetHwnd
+    if !ClipAngel_TryAcquireAutomationLock()
+        return
+    priorHwnd := gFastCopyPasteTargetHwnd
+    if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
+        priorHwnd := ClipAngel_ResolvePriorHwnd(0)
     try {
         StandardLoadingBar_Show("⏳ Pasting from clipboard…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0,
             fontSize: 17 })
     } catch {
     }
     try {
-        try StandardLoadingBar_Update("⏳ Pasting clip 1 / " n " …")
-        catch {
-        }
-        Send "!v"
-        Sleep 50
-        Send "^!b"
-        remaining := n - 1
-        loop remaining {
-            try StandardLoadingBar_Update("⏳ Pasting clip " (A_Index + 1) " / " n " …")
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        loop n {
+            try StandardLoadingBar_Update("⏳ Pasting clip " A_Index " / " n " …")
             catch {
             }
-            Sleep 300
-            Send "^!b"
+            if (A_Index = 1) {
+                if !ClipAngel_EnsureOpenAndReady(true) {
+                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
+                    return
+                }
+            } else {
+                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+            }
+            ClipAngel_ReleaseChordModifiersForSend()
+            SendInput "^!b"
+            Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
     } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
         try StandardLoadingBar_Hide(0)
     }
 }
@@ -3944,7 +3966,7 @@ WaitForButton(root, pattern, timeout := 5000) {
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
 #HotIf (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe")) && RegExMatch(WinGetTitle("A"),
-    "i)Reminders?") && !IsFileDialogActive()
+"i)Reminders?") && !IsFileDialogActive()
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
@@ -4518,7 +4540,7 @@ Reminders_PickKey(key) {
     ; This prevents the selection modal from disappearing due to unrelated Win-key chords.
     try {
         if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
-            || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
+        || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
                 "key", key,
@@ -5166,8 +5188,8 @@ Reminders_ExecuteItemAction(action) {
             ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(),
-                "DZ0",
-                "pre-fix")
+            "DZ0",
+            "pre-fix")
             ; #endregion
             ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
             if ok {
@@ -5175,14 +5197,14 @@ Reminders_ExecuteItemAction(action) {
                 Sleep Reminders_DelayValue("post_select_ms", 60)
                 ; #region agent log
                 try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1",
-                    "pre-fix")
+                "pre-fix")
                 ; #endregion
                 return true
             }
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(),
-                "DZ2",
-                "pre-fix")
+            "DZ2",
+            "pre-fix")
             ; #endregion
             return false
         }
@@ -5215,14 +5237,14 @@ Reminders_ExecuteItemAction(action) {
             ok := false
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(),
-                "C",
-                "pre-fix")
+            "C",
+            "pre-fix")
             ; #endregion
             ok := Reminders_TryInvokeJoinOnlineMenuItem()
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map(
                 "ok", ok), "C",
-                "pre-fix")
+            "pre-fix")
             ; #endregion
             if ok
                 return true
@@ -5230,8 +5252,8 @@ Reminders_ExecuteItemAction(action) {
             ; Fallback 1: first-letter navigation (if supported)
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(),
-                "D",
-                "pre-fix")
+            "D",
+            "pre-fix")
             ; #endregion
             Send "j"
             Sleep 60
@@ -6290,9 +6312,9 @@ RestorePreviousWikipediaScrollPosition() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:3415","message":"Got normalized URL in restore","data":{"url":"' . url .
-                '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n',
-                DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:3415","message":"Got normalized URL in restore","data":{"url":"' . url .
+            '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -9861,8 +9883,8 @@ IsNewOutlookActive() {
     try title := WinGetTitle("A")
     try exe := WinGetProcessName("A")
     return InStr(cls, "Outlook Host")
-        || InStr(title, " - Outlook")
-        || RegExMatch(title, "i)^(New event|Reminders?)")
+    || InStr(title, " - Outlook")
+    || RegExMatch(title, "i)^(New event|Reminders?)")
 }
 
 OutlookFindFirst(criteriaList) {
@@ -10029,9 +10051,9 @@ OutlookClickFirst(criteriaList) {
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
-            { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
-                matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
-                    matchmode: "Substring" }
+        { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
+            matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
+                matchmode: "Substring" }
         ]) {
             Sleep 120
             Outlook_FocusMailMessageList(true)
@@ -10053,9 +10075,9 @@ OutlookClickFirst(criteriaList) {
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
-            { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
-                matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
-                    matchmode: "Substring", ControlType: "RadioButton" }
+        { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
+            matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
+                matchmode: "Substring", ControlType: "RadioButton" }
         ]) {
             Sleep 120
             Outlook_FocusMailMessageList(true)
@@ -10162,7 +10184,7 @@ OutlookClickFirst(criteriaList) {
             hwnd := WinExist("A")
             t := WinGetTitle("A")
             OC_STLog("compose_gate_passed", '{"hwnd":' hwnd ',"title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}',
-                "OC_ST_A")
+            "OC_ST_A")
         } catch {
         }
 
@@ -10403,7 +10425,7 @@ SelectExplorerSidebarFirstPinned() {
                             firstChar = "d" || firstChar = "D") {
                             ; Additional check: must be Desktop-related (not just any item starting with a/d)
                             if (InStr(itemName, "Desktop", false) || InStr(itemName, "Área de Trabalho", false) ||
-                                InStr(itemName, "Trabalho", false)) {
+                            InStr(itemName, "Trabalho", false)) {
                                 firstPinnedItem := item
                                 break
                             }
@@ -11288,7 +11310,7 @@ Outlook_ClickEndTime_1200PM() {
             ? (Appt_PopoverInvokeFirst([{ Name: "Start date", ControlType: "ComboBox" }, { Name: "Start date", Type: 50003 }, { Name: "Start date",
                 ControlType: "Button" }, { Name: "Start date", Type: 50000 }, { AutomationId: "DatePicker", matchmode: "Substring" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start date not found", 1400, BANNER_ACCENT_ERROR), false))
-        : (Outlook_ClickStartDate(), true)
+            : (Outlook_ClickStartDate(), true)
     ))
 }
 
@@ -11298,19 +11320,19 @@ Outlook_ClickEndTime_1200PM() {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("Private", (*) => (
             (choice := Appt_SelectFromModal("Appointment privacy", [{ k: "1", label: "Private" }, { k: "2", label: "Not private" }],
-                "[1-2] Select  [Esc] Cancel"))
+            "[1-2] Select  [Esc] Cancel"))
                 ? (
                     (choice = "1")
                         ? Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
                             ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
                                 matchmode: "Substring", ControlType: "Button" }
                         ], "Private")
-                    : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
-                        ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
-                            matchmode: "Substring", ControlType: "Button" }
-                    ], "Not private")
+                        : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+                                matchmode: "Substring", ControlType: "Button" }
+                        ], "Not private")
                 )
-            : false
+                : false
         ))
         return
     }
@@ -11324,7 +11346,7 @@ Outlook_ClickEndTime_1200PM() {
             ? (Appt_PopoverFocusFirst([{ Name: "Start time", ControlType: "ComboBox" }, { Name: "Start time", Type: 50003 }, { AutomationId: "ComboBox",
                 matchmode: "Substring" }]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start time not found", 1400,
                     BANNER_ACCENT_ERROR), false))
-        : (Outlook_ClickStartTime(), true)
+            : (Outlook_ClickStartTime(), true)
     ))
 }
 
@@ -11333,8 +11355,8 @@ Outlook_ClickEndTime_1200PM() {
     Appt_RunWithLoading("End time", (*) => (
         IsNewOutlookActive()
             ? (Appt_PopoverFocusFirst([{ Name: "End time", ControlType: "ComboBox" }, { Name: "End time", Type: 50003 }]) ||
-                (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
-        : (Outlook_ClickEndDate(), true)
+            (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
+            : (Outlook_ClickEndDate(), true)
     ))
 }
 
@@ -11356,10 +11378,10 @@ Outlook_ClickEndTime_1200PM() {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("All day", (*) => (
             Appt_PopoverToggleFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 },
-                ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
-                { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" }, { AutomationId: "Toggle",
-                    matchmode: "Substring", Type: 50000 }, { Name: "All day", ControlType: "Button" }, { Name: "All day",
-                        Type: 50000 }
+            ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
+            { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" }, { AutomationId: "Toggle",
+                matchmode: "Substring", Type: 50000 }, { Name: "All day", ControlType: "Button" }, { Name: "All day",
+                    Type: 50000 }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: All day not found", 1400, BANNER_ACCENT_ERROR), false)
         ))
         return
@@ -11468,11 +11490,11 @@ Appt_ClickDayNav(isNext) {
                 matchmode: "Substring", ControlType: "Button" }, { Name: "Next day", matchmode: "Substring",
                     ControlType: "Button" }
         ]
-        : [{ Name: "Go to previous", matchmode: "Substring", ControlType: "Button" }, { Name: "go to previous",
-            matchmode: "Substring", ControlType: "Button" }, { Name: "Previous", matchmode: "Substring",
-                ControlType: "Button" }, { Name: "Back", matchmode: "Substring", ControlType: "Button" }, { Name: "Previous day",
-                    matchmode: "Substring", ControlType: "Button" }
-        ]
+            : [{ Name: "Go to previous", matchmode: "Substring", ControlType: "Button" }, { Name: "go to previous",
+                matchmode: "Substring", ControlType: "Button" }, { Name: "Previous", matchmode: "Substring",
+                    ControlType: "Button" }, { Name: "Back", matchmode: "Substring", ControlType: "Button" }, { Name: "Previous day",
+                        matchmode: "Substring", ControlType: "Button" }
+            ]
     for crit in candidates {
         try {
             btn := root.FindFirst(crit)
@@ -11491,14 +11513,14 @@ Appt_ClickDayNav(isNext) {
 
 Appt_SchedulerClickBack() {
     return Appt_ClickInCommandBar([{ Name: "Back", ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
+    || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
 }
 
 Appt_SchedulerClickOptions() {
     return Appt_ClickInCommandBar([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
         ControlType: "Button" }])
-        || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
-            ControlType: "Button" }])
+    || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
+        ControlType: "Button" }])
 }
 
 Appt_SchedulerClickAddAttendee(isOptional) {
@@ -11652,7 +11674,7 @@ Appt_ToggleOrClickAny(criteriaList) {
         IsNewOutlookActive()
             ? (Appt_FocusBodyField_NewOutlook() || (ShowCenteredOverlay_Utils("❌ Appointment: Body not found", 1400,
                 BANNER_ACCENT_ERROR), false))
-        : (true)
+            : (true)
     ))
     if IsNewOutlookActive()
         return
@@ -11686,7 +11708,7 @@ Appt_ToggleOrClickAny(criteriaList) {
             ? (Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
                 matchmode: "Substring", ControlType: "Button" }]) || (ShowCenteredOverlay_Utils(
                     "❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
-        : (false)
+            : (false)
     ))
     if IsNewOutlookActive()
         return
@@ -11715,7 +11737,7 @@ Appt_ToggleOrClickAny(criteriaList) {
             matchmode: "Substring", ControlType: "Button" }]) || Appt_ClickAny([{ Name: "Teams meeting", matchmode: "Substring",
                 ControlType: "Button" }, { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Teams meeting not found", 1400, BANNER_ACCENT_ERROR),
-                false)
+            false)
     ))
 }
 
@@ -11743,16 +11765,16 @@ Appt_ToggleOrClickAny(criteriaList) {
             ? (
                 (target := (choice = "1") ? "Free"
                     : (choice = "2") ? "Working elsewhere"
-                    : (choice = "3") ? "Tentative"
-                    : (choice = "4") ? "Busy"
-                    : "Out of office"),
+                        : (choice = "3") ? "Tentative"
+                            : (choice = "4") ? "Busy"
+                                : "Out of office"),
                 Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy", ControlType: "Button" }, { Name: "Tentative",
                     ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
                         ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
                             matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
-        : false
+            : false
     ))
 }
 
@@ -11775,10 +11797,10 @@ RemQ_Run() {
 
     target := (choice = "1") ? "Don't remind me"
         : (choice = "2") ? "15 minutes before"
-        : (choice = "3") ? "1 hour before"
-        : (choice = "4") ? "12 hours before"
-        : (choice = "5") ? "1 day before"
-        : "1 week before"
+            : (choice = "3") ? "1 hour before"
+                : (choice = "4") ? "12 hours before"
+                    : (choice = "5") ? "1 day before"
+                        : "1 week before"
 
     RemQ_VisualizeSelection("Reminder", target)
     return Appt_OpenMenuAndPick([{ Name: "Don't remind me", ControlType: "Button" }, { Name: "15 minutes before",
@@ -11809,13 +11831,13 @@ RemQ_VisualizeSelection(label, target) {
             ? (
                 (target := (choice = "1") ? "Aniversário"
                     : (choice = "2") ? "Importante"
-                    : "Pessoal"),
+                        : "Pessoal"),
                 Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante", ControlType: "Button" }, { Name: "Pessoal",
                     ControlType: "Button" }, { Name: "Category", matchmode: "Substring", ControlType: "Button" }, { Name: "Categories",
                         matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
-        : false
+            : false
     ))
 }
 
@@ -11825,7 +11847,7 @@ RemQ_VisualizeSelection(label, target) {
         IsNewOutlookActive()
             ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
-        : (false)
+            : (false)
     ))
 }
 
@@ -11834,7 +11856,7 @@ RemQ_VisualizeSelection(label, target) {
         IsNewOutlookActive()
             ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
-        : (false)
+            : (false)
     ))
 }
 
@@ -11967,7 +11989,7 @@ ShowOutlookAppointmentPalette() {
 
                 ; Calculate letter index in the flat array
                 letterIndex := ((statusIndex - 1) * rowsPerStatus * colsPerStatus) +
-                    ((rowIndex - 1) * colsPerStatus) + colIndex
+                ((rowIndex - 1) * colsPerStatus) + colIndex
 
                 if (letterIndex > g_OutlookPaletteLetters.Length) {
                     continue
@@ -12285,7 +12307,7 @@ RunOutlookAppointmentWizard() {
 
     ; STEP 2/5 – Privacy
     c2 := Appt_SelectFromModal("Wizard 2/5: privacy", [{ k: "1", label: "🔓 Not private" }, { k: "2", label: "🔒 Private" }],
-        "[1-2] Select  [Esc] Cancel")
+    "[1-2] Select  [Esc] Cancel")
     if (c2 = "")
         return
     privacy := (c2 = "2") ? "Private" : "Not private"
@@ -12307,14 +12329,14 @@ RunOutlookAppointmentWizard() {
         return
     reminder := (c5 = "1") ? "Don't remind me"
         : (c5 = "2") ? "15 minutes before"
-        : (c5 = "3") ? "1 hour before"
-        : (c5 = "4") ? "12 hours before"
-        : (c5 = "5") ? "1 day before"
-        : "1 week before"
+            : (c5 = "3") ? "1 hour before"
+                : (c5 = "4") ? "12 hours before"
+                    : (c5 = "5") ? "1 day before"
+                        : "1 week before"
 
     ; STEP 5/5 – All-day (final)
     c3 := Appt_SelectFromModal("Wizard 5/5: all-day", [{ k: "1", label: "⏰ Timed (All-day OFF)" }, { k: "2", label: "📅 All-day ON" }],
-        "[1-2] Select  [Esc] Cancel")
+    "[1-2] Select  [Esc] Cancel")
     if (c3 = "")
         return
     allDayOn := (c3 = "2")
@@ -12526,7 +12548,7 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
         ; Match both EN/PT variants.
         if (name != "") {
             if InStr(name, "Add title", false) || InStr(name, "Title", false) || InStr(name, "Adicionar título", false) ||
-                InStr(name, "Adicionar titulo", false) {
+            InStr(name, "Adicionar titulo", false) {
                 ; Ensure caret by clicking focused element if possible.
                 try fe.Click()
                 catch {
@@ -12766,13 +12788,13 @@ RenameChatGPTWindowToChatGPT() {
         for name in conversationOptionNames {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
-                    UIA.TreeScope.Descendants)
+                UIA.TreeScope.Descendants)
                 if (openConversationButton)
                     break
             } catch {
                 try {
                     openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
-                        UIA.TreeScope.Descendants)
+                    UIA.TreeScope.Descendants)
                     if (openConversationButton)
                         break
                 } catch {
@@ -12784,7 +12806,7 @@ RenameChatGPTWindowToChatGPT() {
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, AutomationId: "radix-_r_b6_" }, UIA
-                    .TreeScope.Descendants)
+                .TreeScope.Descendants)
             } catch {
             }
         }
@@ -12793,7 +12815,7 @@ RenameChatGPTWindowToChatGPT() {
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, ClassName: "__menu-item-trailing-btn" },
-                    UIA.TreeScope.Descendants)
+                UIA.TreeScope.Descendants)
             } catch {
             }
         }
@@ -13060,7 +13082,7 @@ SubmitChatGPTMessage() {
     ShowSmallLoadingIndicator_ChatGPT("AI is respondingâ€¦")
     ; Use infinite timeout so the banner persists for long responses
     WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is respondingâ€¦",
-        0)
+    0)
 }
 
 #HotIf
@@ -13186,7 +13208,7 @@ SelectExplorerSidebarFirstPinned_EX() {
             ? explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
             : explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
                 ? explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
-            : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+                : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
 
         ; Fallback to entire window if we still did not find a dedicated list
         listRoot := itemsView ? itemsView : explorerEl
@@ -13664,7 +13686,7 @@ OneDriveShare_IsLimitedLinkSettings(root) {
     } catch {
     }
     if !OneDriveShare_HasRadioByNameContains(root, "People in Bosch Group")
-        && OneDriveShare_HasRadioByNameContains(root, "existing access")
+    && OneDriveShare_HasRadioByNameContains(root, "existing access")
         return true
     return false
 }
@@ -15199,7 +15221,7 @@ Excel_RemoveRows(iterations := 8) {
 
         msg := closed
             ? Format("Closed {} drawer{}", closed, closed = 1 ? "" : "s")
-            : "No drawers needed closing"
+                : "No drawers needed closing"
 
         if already
             msg .= Format(" | {} already closed", already)
@@ -15245,7 +15267,7 @@ Excel_RemoveRows(iterations := 8) {
 
         msg := opened
             ? Format("Opened {} drawer{}", opened, opened = 1 ? "" : "s")
-            : "No drawers needed opening"
+                : "No drawers needed opening"
 
         if already
             msg .= Format(" | {} already open", already)
@@ -15854,8 +15876,8 @@ Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename := "") {
             return { ok: false, path: "" }
         verifyBasename := expectedBasename != "" ? expectedBasename : Editor_GetBasenameFromEditorTitle(editorHwnd)
         if !(Editor_SetClipboardFiles([pathText])
-            && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
-            && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
+        && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
+        && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
             return { ok: false, path: "" }
         copyOk := true
         return { ok: true, path: pathText }
@@ -15870,8 +15892,8 @@ Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, clipWaitMs := 300) 
     if !Editor_PathIsExistingFile(fullPath)
         return false
     return Editor_SetClipboardFiles([fullPath])
-        && Editor_WaitForClipboardFileDrop(clipWaitMs)
-        && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)
+    && Editor_WaitForClipboardFileDrop(clipWaitMs)
+    && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)
 }
 
 Editor_SmartNavLoadingUpdate(state, editorHwnd := 0) {
@@ -16344,7 +16366,7 @@ Editor_GatherRevealContext(explorerHwnd, expectedBasename := "") {
     expectedNorm := Editor_NormalizeRevealBasename(expectedBasename)
     selectedNorm := ctx["selectedName"]
     if (expectedNorm != "" && Editor_IsPlausibleRevealBasename(expectedNorm)
-        && (selectedNorm = "" || selectedNorm != expectedNorm))
+    && (selectedNorm = "" || selectedNorm != expectedNorm))
         verifyBasename := expectedNorm
     else if (selectedNorm != "")
         verifyBasename := selectedNorm
@@ -16539,9 +16561,9 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
         A_Clipboard := ""
         Send "^c"
         if !(Editor_WaitForClipboardFileDrop(EDITOR_COPY_CLIP_WAIT_MS)
-            && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)) {
+        && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)) {
             if (Editor_PathIsExistingFile(fullPath)
-                && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+            && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
                 ; direct set succeeded after keyboard miss
             } else {
                 recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
@@ -16552,7 +16574,7 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
                         Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
                 }
                 if (Editor_PathIsExistingFile(fullPath)
-                    && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+                && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
                     ; recovered via find/select or direct path
                 } else {
                     Editor_SmartNavRevealShowExplorerTimeout("Copy")
@@ -18068,9 +18090,9 @@ ClickHidePanelButton() {
                 ; Likely a dialog: standard dialog class, or a Chromium modal whose TITLE indicates Save/Export.
                 ; IMPORTANT: Do NOT treat any Chrome_WidgetWin as dialog (Cursor itself is Chrome_WidgetWin_1).
                 isTitleDialogish := InStr(currTitle, "Save") || InStr(currTitle, "Save As")
-                    || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
-                    || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
-                    || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
+                || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
+                || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
+                || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
                 if InStr(currClass, "32770") || (InStr(currClass, "Chrome_WidgetWin") && isTitleDialogish) {
                     saveDialogHwnd := curr
                     break
@@ -18115,7 +18137,7 @@ ClickHidePanelButton() {
 
                     ; If this Edit looks like the File name field (based on name/id and .pdf suffix), capture it
                     if (suffix != "" && InStr(StrLower(suffix), ".pdf")
-                        && (el.AutomationId = "1001" || el.Name = "File name:")) {
+                    && (el.AutomationId = "1001" || el.Name = "File name:")) {
                         filePath := val
                         SplitPath filePath, , , &ext, &nameNoExt
                         fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : suffix
@@ -18212,7 +18234,7 @@ ClickHidePanelButton() {
             if replaceHwnd {
                 title := WinGetTitle("ahk_id " replaceHwnd)
                 if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
-                    || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
+                || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                     try {
                         WinActivate("ahk_id " replaceHwnd)
                     } catch {
@@ -18946,47 +18968,47 @@ ExecuteAIModelSelection(choice) {
         ; Handle different behaviors based on choice
         switch choice {
             case 1:
-                {
-                    ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
-                    Send "^;"
-                    Sleep 300
-                    SendText "auto"
-                    Sleep 500
-                    Send "{Enter}"
-                    Sleep 300
-                    SendEscape()
-                }
+            {
+                ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
+                Send "^;"
+                Sleep 300
+                SendText "auto"
+                Sleep 500
+                Send "{Enter}"
+                Sleep 300
+                SendEscape()
+            }
             case 2:
-                {
-                    ; For other options: simulate Ctrl + ., wait, type model string, no Enter
-                    Send "^;"
-                    Sleep 500
-                    SendText "CLAUD"
-                }
+            {
+                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                Send "^;"
+                Sleep 500
+                SendText "CLAUD"
+            }
             case 3:
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "GPT"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "GPT"
+            }
             case 4:
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "O"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "O"
+            }
             case 5:
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "DeepSeek"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "DeepSeek"
+            }
             case 6:
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "Cursor"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "Cursor"
+            }
         }
 
         Sleep 100
@@ -20548,47 +20570,47 @@ SwitchAIModel() {
         ; Handle different behaviors based on choice
         switch userChoice.Value {
             case "1":
-                {
-                    ; For auto option: simulate ;, wait for model context menu, then send â†" , Enter
-                    Send "^;"
-                    Sleep 300
-                    SendText "auto"
-                    Sleep 500
-                    Send "{Enter}"
-                    Sleep 300
-                    SendEscape()
-                }
+            {
+                ; For auto option: simulate ;, wait for model context menu, then send â†" , Enter
+                Send "^;"
+                Sleep 300
+                SendText "auto"
+                Sleep 500
+                Send "{Enter}"
+                Sleep 300
+                SendEscape()
+            }
             case "2":
-                {
-                    ; For other options: simulate Ctrl + ., wait, type model string, no Enter
-                    Send "^;"
-                    Sleep 500
-                    SendText "CLAUD"
-                }
+            {
+                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                Send "^;"
+                Sleep 500
+                SendText "CLAUD"
+            }
             case "3":
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "GPT"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "GPT"
+            }
             case "4":
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "O"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "O"
+            }
             case "5":
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "DeepSeek"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "DeepSeek"
+            }
             case "6":
-                {
-                    Send "^;"
-                    Sleep 500
-                    SendText "Cursor"
-                }
+            {
+                Send "^;"
+                Sleep 500
+                SendText "Cursor"
+            }
             default:
                 MsgBox "Invalid selection. Please choose 1-6.", "AI Model Selection", "IconX"
                 return
@@ -21668,8 +21690,8 @@ Mobills_ShowRunningBanner(dir) {
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
-        " h" . (gh +
-            2 * borderWidth))
+    " h" . (gh +
+        2 * borderWidth))
     g_MobillsRunningBannerBorderGui := borderGui
 
     ov.Show("x" . cx . " y" . cy . " NA")
@@ -21805,7 +21827,7 @@ Mobills_Navigate(dir) {
         }
 
         MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") .
-            " page/month control (verified missing).", "Mobills Navigation", "IconX"
+        " page/month control (verified missing).", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     } finally {
@@ -22270,8 +22292,8 @@ TryAttachBrowser() {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-            DEBUG_LOG_PATH
+        ',"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+        DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22283,10 +22305,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-                    (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                    DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22299,9 +22321,9 @@ TryAttachBrowser() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
+            (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22311,8 +22333,8 @@ TryAttachBrowser() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"' .
-                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"' .
+            A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22326,10 +22348,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9829","message":"TryAttachBrowser success","data":{"browser":"edge","result":' .
-                    (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                    DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9829","message":"TryAttachBrowser success","data":{"browser":"edge","result":' .
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22339,10 +22361,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"' .
-                    A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                    DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"' .
+                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22355,8 +22377,8 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9848","message":"FindMonthGroup entry","data":{"uia":' . (uia ? 1 : 0) .
-            '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+        ',"location":"Shift keys.ahk:9848","message":"FindMonthGroup entry","data":{"uia":' . (uia ? 1 : 0) .
+        '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22365,8 +22387,8 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9855","message":"FindMonthGroup Strategy 1 attempt","data":{"className":"sc-kAyceB"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-                DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9855","message":"FindMonthGroup Strategy 1 attempt","data":{"className":"sc-kAyceB"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22375,9 +22397,9 @@ FindMonthGroup(uia) {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 success","data":{"found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-                    DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 success","data":{"found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22386,8 +22408,8 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 no result","data":{"found":false},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-                DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 no result","data":{"found":false},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+            DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22396,9 +22418,9 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' .
-                e.Message .
-                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' .
+            e.Message .
+            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22407,8 +22429,8 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-            DEBUG_LOG_PATH
+        ',"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+        DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22425,9 +22447,9 @@ FindMonthGroup(uia) {
                 ; #region agent log
                 try {
                     FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                        A_TickCount .
-                        ',"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"' .
-                        m . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"' .
+                    m . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
                 } catch {
                 }
                 ; #endregion
@@ -22436,10 +22458,10 @@ FindMonthGroup(uia) {
                     ; #region agent log
                     try {
                         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                            A_TickCount .
-                            ',"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"' .
-                            m . '","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-                            DEBUG_LOG_PATH
+                        A_TickCount .
+                        ',"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"' .
+                        m . '","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                        DEBUG_LOG_PATH
                     } catch {
                     }
                     ; #endregion
@@ -22453,9 +22475,9 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9912","message":"FindMonthGroup Strategy 2 failed","data":{"foundMonths":' .
-            foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-            DEBUG_LOG_PATH
+        ',"location":"Shift keys.ahk:9912","message":"FindMonthGroup Strategy 2 failed","data":{"foundMonths":' .
+        foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+        DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22466,8 +22488,8 @@ FindMonthGroup(uia) {
             allGroups := uia.FindAll({ Type: "Group" })
             groupCount := allGroups.Length
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic","data":{"totalGroups":' .
-                groupCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic","data":{"totalGroups":' .
+            groupCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
             ; Inspect first few Groups for className and name
             sampleCount := groupCount < 5 ? groupCount : 5
             loop sampleCount {
@@ -22478,10 +22500,10 @@ FindMonthGroup(uia) {
                     try className := grp.GetPropertyValue(UIA.Property.ClassName)
                     try name := grp.GetPropertyValue(UIA.Property.Name)
                     FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                        A_TickCount .
-                        ',"location":"Shift keys.ahk:9920","message":"FindMonthGroup Group sample","data":{"index":' .
-                        A_Index . ',"className":"' . className . '","name":"' . name .
-                        '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9920","message":"FindMonthGroup Group sample","data":{"index":' .
+                    A_Index . ',"className":"' . className . '","name":"' . name .
+                    '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
                 } catch {
                 }
             }
@@ -22492,10 +22514,10 @@ FindMonthGroup(uia) {
                     paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
                 }
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9930","message":"FindMonthGroup pagination check","data":{"foundPagination":' .
-                    (paginationBtns.Length > 0 ? 1 : 0) . ',"count":' . paginationBtns.Length .
-                    '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9930","message":"FindMonthGroup pagination check","data":{"foundPagination":' .
+                (paginationBtns.Length > 0 ? 1 : 0) . ',"count":' . paginationBtns.Length .
+                '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
             } catch {
             }
             ; Try to find any text elements that might contain dates/months
@@ -22503,10 +22525,10 @@ FindMonthGroup(uia) {
                 allTexts := uia.FindAll({ Type: "Text" })
                 textCount := allTexts.Length
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9935","message":"FindMonthGroup text elements","data":{"totalTexts":' .
-                    textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
-                    DEBUG_LOG_PATH
+                A_TickCount .
+                ',"location":"Shift keys.ahk:9935","message":"FindMonthGroup text elements","data":{"totalTexts":' .
+                textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                DEBUG_LOG_PATH
                 ; Sample first 10 text elements
                 sampleTextCount := textCount < 10 ? textCount : 10
                 loop sampleTextCount {
@@ -22516,12 +22538,12 @@ FindMonthGroup(uia) {
                         try txtName := txt.GetPropertyValue(UIA.Property.Name)
                         if txtName && StrLen(txtName) > 0 {
                             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) .
-                                '","timestamp":' .
-                                A_TickCount .
-                                ',"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":' .
-                                A_Index . ',"text":"' . txtName .
-                                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
-                                DEBUG_LOG_PATH
+                            '","timestamp":' .
+                            A_TickCount .
+                            ',"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":' .
+                            A_Index . ',"text":"' . txtName .
+                            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                            DEBUG_LOG_PATH
                         }
                     } catch {
                     }
@@ -22530,9 +22552,9 @@ FindMonthGroup(uia) {
             }
         } catch Error as e2 {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-                ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' .
-                e2.Message .
-                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' .
+            e2.Message .
+            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
         }
     } catch {
     }
@@ -23207,7 +23229,7 @@ Gemini_FindToolsButton(uia) {
         for button in allButtons {
             nm := button.Name
             if (InStr(nm, "tools", false) || InStr(nm, "ferramentas", false))
-                && (InStr(nm, "Upload", false) || InStr(nm, "Enviar", false) || nm = "Tools")
+            && (InStr(nm, "Upload", false) || InStr(nm, "Enviar", false) || nm = "Tools")
                 return button
         }
 
@@ -23353,8 +23375,8 @@ Gemini_FindMoreToolsButton(uia) {
             cls := btn.ClassName
             nm := btn.Name
             if InStr(cls, "more-tools-button", false)
-                || (InStr(cls, "toolbox-drawer-menu-item", false) && (InStr(nm, "More tools", false) || InStr(nm,
-                    "Mais ferramentas", false)))
+            || (InStr(cls, "toolbox-drawer-menu-item", false) && (InStr(nm, "More tools", false) || InStr(nm,
+                "Mais ferramentas", false)))
                 return btn
         }
     } catch {
@@ -24340,7 +24362,7 @@ $^Enter:: {
 ; Google Search Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google") && !InStr(WinGetTitle("A"),
-    "Google Maps")
+"Google Maps")
 
 ; Shift + S : Focus Google search box
 +s:: {
@@ -26110,8 +26132,8 @@ M365CopilotContinue_ShowBanner() {
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
-        " h" . (gh +
-            2 * borderWidth))
+    " h" . (gh +
+        2 * borderWidth))
     g_M365CopilotContinueBannerBorderGui := borderGui
     ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
@@ -26193,7 +26215,7 @@ M365CopilotContinue_Timer() {
         }
         global g_M365CopilotContinueSubmitTick
         if (!g_M365CopilotContinueSawStop && (A_TickCount - g_M365CopilotContinueSubmitTick) >=
-            M365COPILOT_CONTINUE_IDLE_MS) {
+        M365COPILOT_CONTINUE_IDLE_MS) {
             SetTimer(M365CopilotContinue_DoSubmit, -1)
             return
         }

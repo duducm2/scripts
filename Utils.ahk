@@ -3958,30 +3958,35 @@ ParseRTFToPlainText(rtf) {
 ; =============================================================================
 ; Alt+V: Activate Clip Angel and ensure focus is on "Row 0" (fixes bug where focus
 ; defaults to upper tabs). Uses UIA: Type 50025, Name "Row 0" per clipangel-tree.txt.
-ActivateClipAngelWithFocusCorrection() {
+ActivateClipAngelWithFocusCorrection(silent := false) {
     needBanner := false
     if WinExist("ClipAngel") {
         try {
             WinActivate("ClipAngel")
         } catch {
-            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
+            if !silent
+                ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
+            return false
         }
         WinWaitActive("ClipAngel", , 2)
     } else {
-        needBanner := true
-        ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
+        needBanner := !silent
+        if needBanner
+            ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
         Send "!v"
         if !WinWait("ClipAngel", , 10) {
-            ClipAngelBanner_Hide()
-            return
+            if needBanner
+                ClipAngelBanner_Hide()
+            return false
         }
         try {
             WinActivate("ClipAngel")
         } catch {
-            ClipAngelBanner_Hide()
-            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
+            if needBanner
+                ClipAngelBanner_Hide()
+            if !silent
+                ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
+            return false
         }
         WinWaitActive("ClipAngel", , 2)
     }
@@ -3991,33 +3996,34 @@ ActivateClipAngelWithFocusCorrection() {
     if !hwnd {
         if needBanner
             ClipAngelBanner_Hide()
-        return
+        return false
     }
     el := UIA.ElementFromHandle(hwnd)
     if !el {
         if needBanner
             ClipAngelBanner_Hide()
-        return
+        return false
     }
     try {
         dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
         if !dataGrid {
             if needBanner
                 ClipAngelBanner_Hide()
-            return
+            return false
         }
         row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
         if !row0 {
             if needBanner
                 ClipAngelBanner_Hide()
-            return
+            return false
         }
         hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
         isSelected := hasSel && row0.SelectionItemPattern.IsSelected
         if (!isSelected) {
-            if !needBanner
+            if !silent && !needBanner
                 ClipAngelBanner_Show("🎯 Focusing Row 0...", BANNER_ACCENT_INTERMEDIATE)
-            needBanner := true
+            if (!silent)
+                needBanner := true
             try {
                 if hasSel
                     row0.SelectionItemPattern.Select()
@@ -4030,12 +4036,13 @@ ActivateClipAngelWithFocusCorrection() {
     } catch {
         if needBanner
             ClipAngelBanner_Hide()
-        return
+        return false
     }
     if needBanner {
         ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
         SetTimer(ClipAngelBanner_Hide, -500)
     }
+    return true
 }
 
 ; =============================================================================
@@ -4045,6 +4052,9 @@ ActivateClipAngelWithFocusCorrection() {
 CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS := 400
 ; Settle after row focus, before Alt+Q (all favorite paths).
 CLIPANGEL_FAVORITE_UI_SETTLE_MS := 50
+CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS := 250
+CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS := 300
+global g_ClipAngelAutomationBusy := false
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
 ; UIA-v2 FindFirst throws TargetError when nothing matches - never chain with if !c without try.
@@ -4138,6 +4148,144 @@ ClipAngel_WaitChordModifiersReleased() {
     KeyWait "Shift", tw
     KeyWait "LWin", tw
     KeyWait "RWin", tw
+}
+
+ClipAngel_IsListReady(&outHwnd := 0) {
+    outHwnd := ClipAngel_MainHwnd()
+    if !outHwnd
+        return false
+    el := UIA.ElementFromHandle(outHwnd)
+    if !el
+        return false
+    dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+    if !dataGrid
+        return false
+    row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
+    return row0 ? true : false
+}
+
+ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
+    if (priorHwnd && WinExist("ahk_id " priorHwnd))
+        return priorHwnd
+    try {
+        activeHwnd := WinGetID("A")
+        if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe"))
+            return activeHwnd
+    } catch {
+    }
+    return 0
+}
+
+ClipAngel_RestorePriorFocus(priorHwnd) {
+    if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
+        return
+    if WinActive("ahk_exe ClipAngel.exe")
+        return
+    try {
+        WinActivate("ahk_id " priorHwnd)
+        WinWaitActive("ahk_id " priorHwnd, , 2)
+    } catch {
+    }
+}
+
+ClipAngel_TryAcquireAutomationLock() {
+    global g_ClipAngelAutomationBusy
+    if (g_ClipAngelAutomationBusy) {
+        ShowCenteredOverlay_Utils("⏳ Clip Angel busy.", 1200, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    g_ClipAngelAutomationBusy := true
+    return true
+}
+
+ClipAngel_ReleaseAutomationLock() {
+    global g_ClipAngelAutomationBusy
+    g_ClipAngelAutomationBusy := false
+}
+
+ClipAngel_EnsureOpenAndReady(silent := true) {
+    if !ActivateClipAngelWithFocusCorrection(silent)
+        return false
+    return ClipAngel_IsListReady()
+}
+
+ClipAngel_SendIncrementalPaste() {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "^!b"
+    Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
+}
+
+ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
+    EnsureClipAngelClosed()
+    ClipAngel_RestorePriorFocus(priorHwnd)
+}
+
+; Send top list item via Clip Angel incremental paste (^!b). Opens with Alt+V, closes after paste.
+ClipAngel_SendTopListItem(priorHwnd := 0) {
+    if !ClipAngel_TryAcquireAutomationLock()
+        return false
+    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+    ok := false
+    try {
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        if !ClipAngel_EnsureOpenAndReady(true) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        ClipAngel_SendIncrementalPaste()
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+        ok := true
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
+    }
+    return ok
+}
+
+; Paste N top-list items in order. Opens once, incremental paste between items, closes at end.
+ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
+    if (!IsInteger(count))
+        return false
+    n := Integer(count)
+    if (n < 1)
+        return false
+    if !ClipAngel_TryAcquireAutomationLock()
+        return false
+    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+    ok := false
+    try {
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        loop n {
+            if (A_Index = 1) {
+                if !ClipAngel_EnsureOpenAndReady(true) {
+                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
+                    return false
+                }
+            } else {
+                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+            }
+            ClipAngel_ReleaseChordModifiersForSend()
+            SendInput "^!b"
+            Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
+        }
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+        ok := true
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
+    }
+    return ok
 }
 
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
@@ -14746,9 +14894,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
         InsertText(optionalPromptText)
     } else {
         ; Paste first clipboard snippet (same as Win+Alt+Shift+1: order called snippets)
-        Send "!v"
-        Sleep 50
-        Send "^!b"
+        ClipAngel_SendTopListItem(geminiHwnd)
     }
     ; Brief delay so paste is received and UI/character limits register before any submit or focus change
     Sleep 250
