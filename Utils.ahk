@@ -13,6 +13,37 @@ global g_StudyLinkSubmenuGui := ""
 ; UIA ControlType constants (Button=50000). Shared with Gemini.ahk focus helpers.
 global UIA_ControlType_Button := 50000
 
+; -----------------------------------------------------------------------------
+; Timing and window utilities for performance measurement and lightweight checks
+; -----------------------------------------------------------------------------
+; StartTimer() -> returns a timer object { start: A_TickCount }
+StartTimer() {
+    return { start: A_TickCount }
+}
+
+; EndTimer(timer, message := "") -> returns elapsed ms; optional message is appended to chrome_detach.log
+EndTimer(timer, message := "") {
+    elapsed := A_TickCount - timer.start
+    if (message != "") {
+        try {
+            FileAppend(message . ": " . elapsed . " ms`n", A_ScriptDir . "\chrome_detach.log")
+        } catch {
+            ; swallow logging errors
+        }
+    }
+    return elapsed
+}
+
+; WindowExists(windowTitle) - Checks if window exists without waiting
+; Returns: True if window exists, false otherwise
+WindowExists(windowTitle) {
+    prev := A_TitleMatchMode
+    SetTitleMatchMode(2)
+    exists := !!WinExist(windowTitle)
+    SetTitleMatchMode(prev)
+    return exists
+}
+
 ; =============================================================================
 ; Semantic banner accents (must be defined early)
 ; Some startup/update helpers call ShowCenteredOverlay_Utils / StandardLoadingBar_Show
@@ -542,6 +573,7 @@ global CHROME_DETACH_USE_UIA_SINGLE_SHOT := true
 global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK := false
 global CHROME_DETACH_LEGACY_KEYS := false
 global CHROME_DETACH_DEBUG_LOG_ENABLED := false
+global CHROME_DETACH_PERF_LOG_ENABLED := false
 global CHROME_DETACH_DEEP_FALLBACK := false
 global CHROME_DETACH_F6_FALLBACK := true
 global CHROME_DETACH_EXTENSION_TIMEOUT_MS := 1400
@@ -549,27 +581,27 @@ global CHROME_DETACH_TOTAL_TIMEOUT_MS := 4500
 global CHROME_DETACH_VERIFY_TIMEOUT_MS := 800
 global CHROME_DETACH_EXTENSION_VERIFY_MS := 1400
 global CHROME_DETACH_F11_SETTLE_MS := 1500
-global CHROME_DETACH_MENU_POPUP_MS := 350
-global CHROME_DETACH_MENU_CHILD_MS := 50
-global CHROME_DETACH_MENU_DISMISS_MS := 50
-global CHROME_DETACH_A11Y_MS := 50
-global CHROME_DETACH_A11Y_MS_FOREGROUND := 50
-global CHROME_DETACH_MENU_POLL_MS := 20
+global CHROME_DETACH_MENU_POPUP_MS := 280          ; ↓ from 350 — Chrome renders menu quickly; UIA detection reliable
+global CHROME_DETACH_MENU_CHILD_MS := 40            ; ↓ from 50
+global CHROME_DETACH_MENU_DISMISS_MS := 30          ; ↓ from 50
+global CHROME_DETACH_A11Y_MS := 40                  ; ↓ from 50
+global CHROME_DETACH_A11Y_MS_FOREGROUND := 40       ; ↓ from 50
+global CHROME_DETACH_MENU_POLL_MS := 10             ; ↓ from 20 — faster polling loop response
 global CHROME_DETACH_SUCCESS_HIDE_MS := 400
 global CHROME_DETACH_SEQUENCE_ATTEMPTS := 1
 global CHROME_DETACH_HOVER_ATTEMPTS := 2
 global CHROME_DETACH_F6_FOCUS_MAX := 3
-global CHROME_DETACH_F6_STEP_MS := 160
-global CHROME_DETACH_F6_FOCUS_POLL_MS := 200
-global CHROME_DETACH_F6_REFOCUS_MS := 80
-global CHROME_DETACH_TAB_FOCUS_WAIT_MS := 500
-global CHROME_DETACH_TAB_FOCUS_STABLE_MS := 120
-global CHROME_DETACH_HOVER_SETTLE_MS := 120
-global CHROME_DETACH_APPSKEY_AFTER_MS := 50
+global CHROME_DETACH_F6_STEP_MS := 80               ; ↓ from 160 — F6 is instant in Chrome, half the delay is safe
+global CHROME_DETACH_F6_FOCUS_POLL_MS := 120        ; ↓ from 200 — poll faster for UIA focus confirmation
+global CHROME_DETACH_F6_REFOCUS_MS := 50            ; ↓ from 80
+global CHROME_DETACH_TAB_FOCUS_WAIT_MS := 300       ; ↓ from 500 — poll is fast, no need for long initial wait
+global CHROME_DETACH_TAB_FOCUS_STABLE_MS := 80      ; ↓ from 120
+global CHROME_DETACH_HOVER_SETTLE_MS := 80          ; ↓ from 120
+global CHROME_DETACH_APPSKEY_AFTER_MS := 40         ; ↓ from 50
 ; Hover settle before AppsKey — Chrome hit-tests cursor; too low opens page menu.
-global CHROME_DETACH_HOVER_APPSKEY_SETTLE_MS := 420
-global CHROME_DETACH_HOVER_APPSKEY_RETRY_EXTRA_MS := 140
-global CHROME_DETACH_APPSKEY_SETTLE_MS := 80
+global CHROME_DETACH_HOVER_APPSKEY_SETTLE_MS := 340 ; ↓ from 420 — reduced settle; banner appears within ~200ms
+global CHROME_DETACH_HOVER_APPSKEY_RETRY_EXTRA_MS := 100 ; ↓ from 140
+global CHROME_DETACH_APPSKEY_SETTLE_MS := 60        ; ↓ from 80
 global g_ChromeDetachBusy := false
 global g_ChromeDetachDebugLogPath := ""
 
@@ -1585,9 +1617,10 @@ Chrome_WaitForTabStripFocus(session, timeoutMs := 0) {
 
 ; Official keyboard path: F6 until tab strip focus, then AppsKey (no hover hit-test).
 Chrome_TryF6KeyboardTabMenu(session) {
+    ; Modifiers already released by Chrome_Detach_PreSendSanitizeModifiers — short safety check only.
     ClipAngel_ReleaseChordModifiersForSend()
     Send "{Escape}"
-    deadline := A_TickCount + 80
+    deadline := A_TickCount + 30
     while (A_TickCount < deadline) {
         if !GetKeyState("Shift", "P") && !GetKeyState("Ctrl", "P") && !GetKeyState("Alt", "P")
             break
@@ -2220,6 +2253,9 @@ Chrome_DetachActiveTabToNewWindow_ExtensionFallback(baseline) {
 
 ; One F6 pass (max 3 steps) + menu invoke — phased state gates, no blind advance.
 Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset, verifyTimeoutMs := 0) {
+    ; #region perf
+    t0 := A_TickCount
+    ; #endregion
     wasF11 := false
     if !Chrome_PrepareWindowForTabDetach(hwnd, &wasF11)
         return 0
@@ -2231,12 +2267,21 @@ Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset
     tabCount := Chrome_DetachCountTabs(session)
     if (tabCount = 1)
         return 0
+    ; #region perf
+    t1 := A_TickCount
+    ; #endregion
     if !Chrome_OpenActiveTabContextMenu(session)
         return 0
+    ; #region perf
+    t2 := A_TickCount
+    ; #endregion
     if !session.menuConfirmed && !Chrome_WaitForTabContextMenu(session, CHROME_DETACH_MENU_POPUP_MS) {
         Chrome_ContextMenuDismiss()
         return 0
     }
+    ; #region perf
+    t3 := A_TickCount
+    ; #endregion
     hookState := {}
     if CHROME_DETACH_USE_WIN_EVENT_HOOK
         Chrome_DetachArmWindowCreateHook(&hookState)
@@ -2245,8 +2290,19 @@ Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline := unset
             Chrome_ContextMenuDismiss()
             return 0
         }
+        ; #region perf
+        t4 := A_TickCount
+        ; #endregion
         verifyMs := verifyTimeoutMs > 0 ? verifyTimeoutMs : CHROME_DETACH_VERIFY_TIMEOUT_MS
-        return Chrome_WaitForDetachNewWindow(baseline.existingSet, verifyMs, baseline.tabTitle, hookState)
+        result := Chrome_WaitForDetachNewWindow(baseline.existingSet, verifyMs, baseline.tabTitle, hookState)
+        ; #region perf
+        t5 := A_TickCount
+        if (CHROME_DETACH_PERF_LOG_ENABLED) {
+            try FileAppend Format("detach: prep={} menuOpen={} menuWait={} menuAct={} newWin={} total={}`n",
+                t1 - t0, t2 - t1, t3 - t2, t4 - t3, t5 - t4, t5 - t0), A_ScriptDir "\.cursor\chrome_detach_perf.log"
+        }
+        ; #endregion
+        return result
     } finally {
         Chrome_DetachDisarmWindowCreateHook(hookState)
     }
@@ -2389,7 +2445,7 @@ Chrome_RunDetachMenuSequence(session) {
 Chrome_DetachActiveTabToNewWindow() {
     global g_ChromeDetachBusy, CHROME_DETACH_USE_EXTENSION, CHROME_DETACH_USE_UIA_SINGLE_SHOT
     global CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK, CHROME_DETACH_USE_UIA, CHROME_DETACH_PREFLIGHT_TAB_COUNT
-    global CHROME_DETACH_TOTAL_TIMEOUT_MS
+    global CHROME_DETACH_TOTAL_TIMEOUT_MS, CHROME_DETACH_PERF_LOG_ENABLED
     if (g_ChromeDetachBusy)
         return false
     g_ChromeDetachBusy := true
@@ -2400,6 +2456,7 @@ Chrome_DetachActiveTabToNewWindow() {
     wasF11 := false
     success := false
     baseline := unset
+    pathTaken := ""
 
     StandardLoadingBar_Show("⏳ Detaching tab to new window…", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     try {
@@ -2436,6 +2493,7 @@ Chrome_DetachActiveTabToNewWindow() {
             if (extBudget >= 300)
                 newHwnd := Chrome_DetachActiveTabToNewWindow_ExtensionFast(baseline, extBudget)
             if newHwnd {
+                pathTaken := "extension"
                 success := true
                 return true
             }
@@ -2447,6 +2505,7 @@ Chrome_DetachActiveTabToNewWindow() {
             uiaVerifyMs := Min(remaining, CHROME_DETACH_VERIFY_TIMEOUT_MS)
             newHwnd := Chrome_DetachActiveTabToNewWindow_UiaSingleShot(hwnd, &wasF11, baseline, uiaVerifyMs)
             if newHwnd {
+                pathTaken := "UIA single-shot"
                 success := true
                 return true
             }
@@ -2466,11 +2525,19 @@ Chrome_DetachActiveTabToNewWindow() {
 
         try StandardLoadingBar_Update("⏳ Detaching tab (UIA debug)…", BANNER_ACCENT_INTERMEDIATE)
         if Chrome_DetachActiveTabToNewWindow_UiaLegacyPath(hwnd, &newHwnd, &wasF11) {
+            pathTaken := "UIA legacy"
             success := true
             return true
         }
         return false
     } finally {
+        ; #region perf
+        if (CHROME_DETACH_PERF_LOG_ENABLED) {
+            totalMs := A_TickCount - opStart
+            try FileAppend Format("main: path={} success={} totalMs={} at={}`n",
+                pathTaken, success ? 1 : 0, totalMs, A_Now), A_ScriptDir "\.cursor\chrome_detach_perf.log"
+        }
+        ; #endregion
         if (wasF11) {
             try StandardLoadingBar_Update("🔄 Restoring F11 fullscreen…", BANNER_ACCENT_INTERMEDIATE)
             Chrome_FinishTabDetach(hwnd, success ? newHwnd : 0, wasF11)
