@@ -9,6 +9,7 @@ global g_StudyLinkSubmenuGui := ""
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\lib\Media.ahk
 #include %A_ScriptDir%\SpotifyWASAPI.ahk
+#include %A_ScriptDir%\aux\ClipboardFiles.ahk
 
 ; UIA ControlType constants (Button=50000). Shared with Gemini.ahk focus helpers.
 global UIA_ControlType_Button := 50000
@@ -3066,6 +3067,49 @@ InsertText(text) {
     } finally {
         Sleep 150  ; Wait longer for paste to complete before restoring clipboard
         A_Clipboard := saved
+    }
+}
+
+; Paste file(s) via CF_HDROP (file attachment), not path text. Returns true on success.
+InsertFiles(paths) {
+    global g_lastExpansion
+    if (A_TickCount - g_lastExpansion) < 250
+        return false
+    if (!paths || paths.Length = 0)
+        return false
+    for path in paths {
+        if !Clipboard_PathIsExistingFile(path)
+            return false
+    }
+
+    g_lastExpansion := A_TickCount
+    saved := ClipboardAll()
+    ok := false
+    try {
+        if !Clipboard_SetFiles(paths)
+            return false
+        if !Clipboard_WaitForFileDrop(800)
+            return false
+        Sleep 50
+        Send "^v"
+        ok := true
+        ; Brief settle so browser upload handlers receive the paste before clipboard restore.
+        Sleep 400
+    } finally {
+        try A_Clipboard := saved
+    }
+    return ok
+}
+
+InsertFiles_IsAiChatForeground() {
+    try {
+        title := WinGetTitle("A")
+        if (title = "")
+            return false
+        lower := StrLower(title)
+        return InStr(lower, "gemini") || InStr(lower, "copilot")
+    } catch {
+        return false
     }
 }
 
@@ -14176,7 +14220,13 @@ ContextBrowser_ActivateEntry(entry) {
     }
     CleanupContextBrowser()
     Sleep 50
-    InsertText(pastePath)
+    if !InsertFiles([pastePath]) {
+        ShowCenteredOverlay_Utils("⚠ Could not attach file — pasting path as text", 2800, BANNER_ACCENT_ERROR)
+        InsertText(pastePath)
+        return
+    }
+    if InsertFiles_IsAiChatForeground()
+        Sleep 300
 }
 
 ContextBrowser_OnSelectRow(rowNum) {
@@ -14229,7 +14279,7 @@ ContextBrowser_RefreshView() {
     lv.Opt("-Redraw")
     lv.Delete()
     for entry in g_ContextBrowserEntries
-        lv.Add("", ContextBrowser_FormatEntryLabel(entry), ContextBrowser_EntryKindLabel(entry))
+        lv.Add("", ContextBrowser_EntryKindLabel(entry), ContextBrowser_FormatEntryLabel(entry))
     lv.Opt("+Redraw")
     if (g_ContextBrowserEntries.Length) {
         lv.Modify(1, "Select Focus Vis")
@@ -14246,7 +14296,9 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize420x320", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
     g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w520", "")
-    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w520 h380 Grid -Multi", ["Name", "Kind"])
+    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w520 h380 Grid -Multi", ["Kind", "Name"])
+    g_ContextBrowserListView.ModifyCol(1, 72)
+    g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · Enter select · Backspace up · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)

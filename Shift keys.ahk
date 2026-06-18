@@ -13277,36 +13277,19 @@ Explorer_GetItemsViewSelection(itemsView) {
 }
 
 Editor_ClipboardHasFileDrop() {
-    try {
-        return !!DllCall("IsClipboardFormatAvailable", "UInt", 15, "Int") ; CF_HDROP
-    } catch {
-        return false
-    }
+    return Clipboard_HasFileDrop()
 }
 
 Editor_WaitForClipboardFileDrop(timeoutMs := 800) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        if (Editor_ClipboardHasFileDrop())
-            return true
-        Sleep 50
-    }
-    return Editor_ClipboardHasFileDrop()
+    return Clipboard_WaitForFileDrop(timeoutMs)
 }
 
 Editor_NormalizeFileDropPath(path) {
-    if (path = "")
-        return ""
-    normalized := Trim(Trim(path), Chr(34))
-    normalized := StrReplace(normalized, "/", "\")
-    return StrLower(RTrim(normalized, "\"))
+    return Clipboard_NormalizeFilePath(path)
 }
 
 Editor_PathIsExistingFile(path) {
-    if (path = "")
-        return false
-    attr := FileExist(path)
-    return (attr && !InStr(attr, "D"))
+    return Clipboard_PathIsExistingFile(path)
 }
 
 Editor_IsPlausibleRevealBasename(raw) {
@@ -13340,97 +13323,15 @@ Editor_GetBasenameFromEditorTitle(editorHwnd) {
 }
 
 Editor_GetClipboardFilePaths() {
-    paths := []
-    opened := false
-    try {
-        if !DllCall("OpenClipboard", "Ptr", 0, "Int")
-            return paths
-        opened := true
-        hDrop := DllCall("GetClipboardData", "UInt", 15, "Ptr") ; CF_HDROP
-        if (!hDrop)
-            return paths
-        count := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", 0xFFFFFFFF, "Ptr", 0, "UInt", 0, "UInt")
-        loop count {
-            idx := A_Index - 1
-            chars := DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", 0, "UInt", 0, "UInt")
-            if (chars <= 0)
-                continue
-            buf := Buffer((chars + 1) * 2, 0)
-            if DllCall("shell32\DragQueryFileW", "Ptr", hDrop, "UInt", idx, "Ptr", buf, "UInt", chars + 1, "UInt")
-                paths.Push(StrGet(buf, "UTF-16"))
-        }
-    } catch {
-    } finally {
-        if (opened) {
-            try DllCall("CloseClipboard")
-        }
-    }
-    return paths
+    return Clipboard_GetFilePaths()
 }
 
 Editor_ClipboardContainsFilePath(expectedPath) {
-    expected := Editor_NormalizeFileDropPath(expectedPath)
-    if (expected = "")
-        return false
-    for path in Editor_GetClipboardFilePaths() {
-        if (Editor_NormalizeFileDropPath(path) = expected)
-            return true
-    }
-    return false
+    return Clipboard_ContainsFilePath(expectedPath)
 }
 
 Editor_SetClipboardFiles(paths) {
-    if (!paths || paths.Length = 0)
-        return false
-
-    dropFilesOffset := 20
-    totalChars := 1 ; final extra NUL after the NUL-terminated file list.
-    for path in paths {
-        if (path = "")
-            return false
-        totalChars += StrLen(path) + 1
-    }
-
-    hMem := 0
-    opened := false
-    transferred := false
-    try {
-        hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UPtr", dropFilesOffset + (totalChars * 2), "Ptr")
-        if (!hMem)
-            return false
-        pMem := DllCall("GlobalLock", "Ptr", hMem, "Ptr")
-        if (!pMem)
-            return false
-
-        NumPut("UInt", dropFilesOffset, pMem, 0) ; DROPFILES.pFiles
-        NumPut("Int", 1, pMem, 16) ; DROPFILES.fWide
-        charOffset := 0
-        for path in paths {
-            StrPut(path, pMem + dropFilesOffset + (charOffset * 2), StrLen(path) + 1, "UTF-16")
-            charOffset += StrLen(path) + 1
-        }
-        DllCall("GlobalUnlock", "Ptr", hMem)
-
-        if !DllCall("OpenClipboard", "Ptr", 0, "Int")
-            return false
-        opened := true
-        if !DllCall("EmptyClipboard", "Int")
-            return false
-        if !DllCall("SetClipboardData", "UInt", 15, "Ptr", hMem, "Ptr")
-            return false
-        transferred := true
-        hMem := 0
-        return true
-    } catch {
-        return false
-    } finally {
-        if (opened) {
-            try DllCall("CloseClipboard")
-        }
-        if (hMem && !transferred) {
-            try DllCall("GlobalFree", "Ptr", hMem)
-        }
-    }
+    return Clipboard_SetFiles(paths)
 }
 
 Explorer_RestoreItemsViewSelection(itemsView, selected) {
