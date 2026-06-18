@@ -1730,7 +1730,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
     
     === CURSOR ===
-    [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
+    [Win+Alt+Shift+N] > (available)
     
     [Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
     
