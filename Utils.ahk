@@ -3227,6 +3227,11 @@ GetPromptText(key) {
     InsertText(GetPromptText("slide-creation-with-ref"))
 }
 
+:o:boschimg::
+{
+    InsertText(GetPromptText("bosch-brand-image"))
+}
+
 :o:csvfill::
 {
     InsertText(GetPromptText("unstructured-to-csv"))
@@ -3354,6 +3359,14 @@ InitHotstringsCheatSheet() {
         RegisterHotstring(":o:pptslideref",
             "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n", "Prompts",
             "📊 Create PowerPoint slide (reference)")
+    }
+    try {
+        RegisterHotstring(":o:boschimg", FileRead(promptDir "\bosch-brand-image.txt"), "Prompts",
+            "🎨 Bosch brand-compliant image")
+    } catch {
+        RegisterHotstring(":o:boschimg",
+            "Generate one Bosch Brand Guide and BDDS compliant image.`n", "Prompts",
+            "🎨 Bosch brand-compliant image")
     }
     try {
         RegisterHotstring(":o:csvfill", FileRead(promptDir "\unstructured-to-csv.txt"), "Prompts",

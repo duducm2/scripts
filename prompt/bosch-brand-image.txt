@@ -1,0 +1,207 @@
+Generate one Bosch Brand Guide and Bosch Digital Design System (BDDS) compliant image.
+
+Strict compliance is mandatory. At Bosch, corporate design rules are binding — do not improvise styles, colors, or components that conflict with the brand guide or BDDS. Deviations are not acceptable unless the user explicitly overrides them at the end of this prompt.
+
+Before generating, read all attached JSON context files and reference images. Use them as the primary source of truth.
+
+Source-of-truth priority:
+1. Attached JSON context files (brand guide and BDDS research)
+2. Attached reference images (Bosch website, PowerPoint examples, DDS components, charts)
+3. The embedded summary in this prompt
+
+---
+
+Bosch brand overview (embedded summary)
+
+Brand intent:
+- Create a uniform Bosch identity across touchpoints: "Many fibres. One rope. Many units. One brand."
+- Reflect quality, clarity, functionality, and trustworthiness.
+- Support the "Invented for life" promise: technology serving people.
+
+Design principles (Brand Guide):
+- Flat design: minimalistic, reduced to essentials; clear and open surfaces; rectangular shapes and clear edges.
+- Less is more: use color and visual emphasis only where functionally needed; avoid clutter.
+- High quality: precise alignment, high readability, deliberate layouts, no low-resolution assets.
+
+BDDS scope:
+- BDDS is the mandatory default for Bosch-branded digital touchpoints.
+- Reuse official patterns and components; do not invent custom UI styles when BDDS patterns exist.
+- Accessibility is baseline, not optional.
+
+Geometry and surfaces:
+- Prefer rectangular shapes and clear edges.
+- Do not use decorative drop shadows.
+- Do not use rounded corners as the dominant visual language (BDDS buttons use 0px border radius).
+- Keep compositions open, functional, and easy to scan.
+
+Typography:
+- Use Bosch Sans (Regular for body, Bold for headings).
+- Maintain high readability, precise alignment, and consistent hierarchy.
+- Links: Bosch Blue (#007BC0), underlined.
+
+Layout and spacing (digital):
+- Use clear structure, functional hierarchy, and consistent spacing.
+- Digital touchpoints follow rem-based spacing (1 rem = 16 px).
+- Software layouts typically use a 12-column responsive grid with at least 1 rem margins and gutters.
+
+---
+
+Standard color starter guide
+
+Foundation:
+- White (#FFFFFF) — default background and neutral surfaces
+- Black (#000000) — primary text
+- Bosch Gray 50 (#71767C) — neutral UI, extended chapter color
+
+Primary digital accent:
+- Bosch Blue 50 (#007BC0) — links, buttons, navigation, information accents
+
+Supergraphic accent colors (use one accent family per composition):
+- Bosch Purple 40 (#9E2896)
+- Bosch Turquoise 50 (#18837E)
+- Bosch Green 50 (#00884A)
+
+Restricted colors:
+- Bosch Red 50 (#ED0007) — Bosch logotype and error states only; never as decorative accent
+
+Functional / notification colors (states only, not decoration):
+- Yellow (#FFCF00) — important notifications, warnings
+- Green (#00884A) — positive feedback, success, tips
+- Red (#ED0007) — errors
+- Blue (#007BC0 / #00629A) — information, interactive accents
+
+Color rules:
+- Build on white, black, and gray; use color sparingly and purposefully.
+- Use one accent color family at a time per composition.
+- Do not use gradients. Use flat fills or discrete gradation steps from attached JSON when needed.
+- Reserve warning and notification colors for their functional roles only.
+- For exact gradation steps and diagram palettes, follow attached JSON context files.
+
+---
+
+Basic elements (generalized)
+
+Icons:
+- Functional, consistent Bosch icon language.
+- Icons clarify meaning; they are not decoration.
+- No warped, bent, melted, or inconsistent icon glyphs.
+
+Illustrations:
+- Clear, modern, 2.5D style; modular and reduced detail.
+- Geometric construction with clear edges; avoid unnecessary ornament.
+
+Imagery (when photos or lifelike scenes are needed):
+- Authentic, human-centric, lifelike; not over-staged.
+- Natural light and vivid but purposeful color.
+
+Typography:
+- Bosch Sans throughout; preserve hierarchy and legibility.
+
+---
+
+Image-type adapters
+
+Apply the rules for the image type specified below. For detailed rules, defer to the attached JSON files listed under "Recommended JSON attachments."
+
+PowerPoint slide:
+- Use 16:9 widescreen aspect ratio.
+- One accent color per presentation or chapter unless chapter-based color coding is required.
+- CD-compliant hierarchy: consistent typeface, uniform design language, clear structure.
+- Bosch Red reserved for logotype only; use sparingly for accentuation.
+- Recommended JSON: powerpoint/design-elements.json, powerpoint/slide-types.json
+
+Chart / data visualization:
+- Use Bosch diagram color scheme for complex charts (contrast, readability, accessibility).
+- Use accent color and its gradations first; add further brand colors only if needed.
+- No decorative color noise; every color must communicate data or hierarchy.
+- Recommended JSON: layout/data-visualization.json, basic-elements/colors.json
+
+Software / web UI:
+- Flatten-column grid, flat components, rem-based spacing.
+- Primary button: Bosch Blue 50 background, white text, 0px border radius.
+- Secondary button: transparent background, Bosch Blue border and text.
+- Clear hover/active states per attached JSON.
+- Recommended JSON: bosch-digital-design-system/general.json, bosch-digital-design-system/software/design-principles-software.json, bosch-digital-design-system/measurement-spacing.json, bosch-digital-design-system/states.json
+
+Product UI / prototype screen:
+- Adapt layout to the product context and viewing distance.
+- Follow BDDS product UI patterns; hardware-appropriate sizing.
+- Recommended JSON: bosch-digital-design-system/product/product-ui-basics.json, bosch-digital-design-system/product/display-types.json
+
+Illustration / icon:
+- Follow Bosch illustration style (2.5D, modular, clear) or Bosch iconography rules.
+- Recommended JSON: basic-elements/illustration-style.json, basic-elements/iconography.json
+
+---
+
+White background rule (default)
+
+1. Default: use a pure white (#FFFFFF) background for the entire image.
+2. If the subject cannot be full-bleed white (e.g. a UI screen mockup), surround it with a clear, thick white border or margin so the image pastes cleanly onto any white document, slide, or report.
+3. Apply overrides only if the user provides explicit instructions at the end of this prompt.
+
+---
+
+Recommended JSON attachments
+
+Core (attach for most image types):
+- context/brand-guide/research/general/general.json
+- context/brand-guide/research/basic-elements/colors.json
+- context/brand-guide/research/basic-elements/typography.json
+- context/brand-guide/research/bosch-digital-design-system/general.json
+
+Type-specific (attach as needed):
+- PowerPoint: context/brand-guide/research/powerpoint/design-elements.json
+- Charts: context/brand-guide/research/layout/data-visualization.json
+- Software UI: context/brand-guide/research/bosch-digital-design-system/software/design-principles-software.json
+- Product UI: context/brand-guide/research/bosch-digital-design-system/product/product-ui-basics.json
+- Illustrations: context/brand-guide/research/basic-elements/illustration-style.json
+- Icons: context/brand-guide/research/basic-elements/iconography.json
+- Imagery: context/brand-guide/research/basic-elements/imagery-style.json
+
+Reference images (attach as needed):
+- context/brand-guide/image-references/powerpoint/general.png
+- context/brand-guide/image-references/bosch-digital-design-system/ (buttons, accordions, loading indicators, etc.)
+- context/brand-guide/image-references/graphics/ (timelines, diagrams)
+- context/brand-guide/image-references/illustration/ (people, light vs dark examples)
+- Screenshots of official Bosch websites or products that exemplify the target style
+
+(Mirrored copies may also exist under prompt/brand-guide/.)
+
+---
+
+Final quality double-check
+
+Before delivering the image, verify every item below. If any check fails, revise before output:
+
+1. The result looks professionally designed and aesthetically pleasant — not generic or obviously AI-generated.
+2. No blur, smear, noise, compression artifacts, or visual glitches.
+3. No bent, melted, warped, or inconsistent icons or symbols.
+4. All text is readable, correctly spelled, well-aligned, and uses Bosch Sans styling.
+5. Colors match the Bosch palette above and attached JSON — no decorative red, no random gradients, no off-brand hues.
+6. Shapes are mostly rectangular with clear edges; no shadow-heavy or rounded-corner-heavy aesthetic unless type-specific JSON allows it.
+7. Layout is clean, aligned, and easy to crop or paste onto a white background.
+8. The output matches the specified image type, user content, attached JSON rules, and reference imagery.
+
+---
+
+User fill-in sections
+
+Image type:
+[PowerPoint slide | chart | software UI | product UI | prototype | illustration | icon | other]
+
+Content and requirements:
+[Insert what the image should show, including text, data, layout intent, and any specific Bosch context]
+
+Optional overrides:
+[Insert any exceptions to the defaults above, including non-white backgrounds if explicitly required]
+
+---
+
+Human reminders (for the person sending this prompt):
+
+📄 Attach brand-guide JSON context files (core + type-specific from context/brand-guide/research/)
+🖼️ Attach reference images (Bosch website, PowerPoint example, DDS components, charts)
+🎯 Specify image type in the fill-in section above
+📝 Describe content and requirements in the fill-in section above
+⚪ Keep white background or thick white border unless you override explicitly
