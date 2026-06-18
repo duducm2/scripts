@@ -22,3 +22,5 @@ step_id,phase,activity,detailed_instruction,input_artifacts,output_artifacts,too
 We need to add references when necessary on the prompt. And I need a human emoji at the end of each prompt to remember me about that with some references so the AI can be more accurate. 
 
 We can also add some reference links to our prompts and also reference images. 
+
+In the first modal window, we can see prompts, information snippets, and references. 
