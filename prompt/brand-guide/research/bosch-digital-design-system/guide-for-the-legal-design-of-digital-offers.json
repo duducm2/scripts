@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "source_file": "Guide for the legal design of Digital Offers.html",
+    "source_page_title": "Guide for the legal design of Digital Offers",
+    "document_title": "Legal",
+    "source_url": "https://brandguide.bosch.com/document/8133/en#/-/guide-for-the-legal-design-of-digital-offers",
+    "language": "en",
+    "generated_for": "AI-readable structured extraction",
+    "last_modified_mentioned_in_source": "2026-02-02T19:27:00Z"
+  },
+  "topic": {
+    "name": "Guide for the legal design of Digital Offers",
+    "category": "Legal requirements for Digital Offers",
+    "summary": "Overview of mandatory legal requirements that must be observed when designing Bosch Digital Offers in the front end."
+  },
+  "scope": {
+    "definition_of_digital_offer": "Any website, community, platform, mobile app, web shop, marketplace, etc., aimed at users.",
+    "covered_offer_types": [
+      "website",
+      "community",
+      "platform",
+      "mobile app",
+      "web shop",
+      "marketplace",
+      "other user-facing digital offer"
+    ],
+    "related_app_guide": {
+      "purpose": "Legal requirements for development and distribution of apps via Apple and Google stores.",
+      "availability": "German only",
+      "url": "https://connect.bosch.com/blogs/dc69f949-9682-4ea5-a0a9-0532990a5538/entry/Leitfaden_App_Entwicklung_und_Vertrieb?lang=de_de"
+    }
+  },
+  "legal_context": {
+    "primary_jurisdiction": "Germany",
+    "basis": "German law",
+    "eu_relevance": "Most obligations are based on EU directives and therefore apply throughout the European Union.",
+    "internationalization_requirement": "A planned internationalization requires separate legal review; this guide is not a substitute for that review."
+  },
+  "usage_rules": {
+    "adaptation_required": true,
+    "coordination_required_with": [
+      "C/LS",
+      "C/ISP"
+    ],
+    "not_a_substitute_for_legal_advice": true,
+    "individual_case_review_required": true,
+    "applies_to": {
+      "b2b": {
+        "definition": "Digital Offer exclusively addressed to commercial customers.",
+        "requirements": "Observe B2B requirements."
+      },
+      "b2c": {
+        "definition": "Digital Offer addressed to consumers, meaning persons who want to use the Digital Offer mainly for private purposes.",
+        "requirements": "Observe B2C requirements."
+      },
+      "mixed_b2b_b2c": {
+        "definition": "Digital Offer addressed to both commercial customers and consumers.",
+        "requirements": "Observe both B2B and B2C requirements."
+      }
+    },
+    "sub_service_providers": {
+      "examples": [
+        "on24 for events"
+      ],
+      "requirement": "If a Digital Offer is provided on behalf of Bosch, sub-service providers must also comply with the mandatory information described in the guide."
+    }
+  },
+  "responsibility_at_bosch": {
+    "legal_design_implementation": {
+      "responsible_function": "C/LS",
+      "finder_tool": {
+        "name": "Find your Lawyer Tool",
+        "description": "Tool for finding the appropriate C/LS lawyer for questions about implementing legal design.",
+        "url": "https://connect.bosch.com/communities/service/html/communitystart?communityUuid=77cbe1b0-ebab-4159-a9c7-ae8b956d57f4"
+      }
+    },
+    "contacts": [
+      {
+        "name": "Anika Friedrichs",
+        "role": "Contact guide",
+        "department": "C/LSD-NP",
+        "email": "Anika.Friedrichs@de.bosch.com"
+      },
+      {
+        "name": "Nils Steffen",
+        "role": "Contact for the data protection section of the guide",
+        "department": "C/ISP",
+        "email": "SvenNils.Steffen@de.bosch.com"
+      }
+    ]
+  },
+  "page_navigation": {
+    "current_page": {
+      "title": "Guide for the legal design of Digital Offers",
+      "sections": [
+        "Basics",
+        "Responsibility at Bosch",
+        "References"
+      ]
+    },
+    "related_pages": [
+      "Overview of legal requirements for Digital Offers",
+      "Digital Offers Compliance",
+      "Web applications",
+      "Mobile app",
+      "E-mails"
+    ]
+  },
+  "visual_references": [
+    {
+      "title": "Overview of legal requirements for Digital Offers",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzE2NlwvYXNzZXRzXC9kNlwvMTU0MjIzXC8wZDJhMDJmOGEyOGJjODk5ZDNkMTdmZDhlZDhhM2U0Mi0xNjI2MTc3NDIzLnBuZyJ9:bosch:v9ew3KQEeAkP18bda3QajSi9wy-u06EII9yLMbWZXlc?width=800"
+    },
+    {
+      "title": "Digital Offer Compliance",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzE2NlwvYXNzZXRzXC80MlwvMTU0MjIyXC81ZTZhYjYxYTVhNDgyMTZlODQwYWM4OTcwZGYxZWJlNS0xNjI2MTc3NDA5LnBuZyJ9:bosch:lskfqSznEQZ6PgcwCbxbEA1AP-j0meEgZKWR9nZNd-E?width=800"
+    },
+    {
+      "title": "Web applications",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzE2NlwvYXNzZXRzXC8wOVwvMTU0MjI0XC82NDE4MTVhOTczZjAwOTM1MzIzZTA1MTM5ODI4M2E0MC0xNjI2MTc3NDM0LnBuZyJ9:bosch:3gKXUjY9uf-zk21xUkCP4xjYx0CU-3MMw8v7Iuoz0yE?width=800"
+    },
+    {
+      "title": "Mobile App",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzE2NlwvYXNzZXRzXC8zM1wvMTU0MjI1XC9iYTJlNjNjZDBjMjM5ZjRkYTY3MDI3MTU1MWRhMmZiZi0xNjI2MTc3NDM5LnBuZyJ9:bosch:2ISjp7Gwk2J55bVBzH7rVHmN_Z2xUgghwagN-pC77_k?width=800"
+    },
+    {
+      "title": "E-Mails",
+      "type": "image",
+      "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzE2NlwvYXNzZXRzXC8yNFwvMTU0MjI2XC85MTQ5MzBjNDgyMTNlNWE2ZTQ5OTg2ZDU0ZWNiMjZiOC0xNjI2MTc3NDQ1LnBuZyJ9:bosch:GmjGWgy0EuPYobOPesnnJVPWj7BV7GUwBHBrLN9p1tg?width=800"
+    }
+  ],
+  "feedback_and_support": {
+    "feature_requests_and_bugs": {
+      "scope": "Digital Design System or Frontend Kit",
+      "submission_channel": "Jira",
+      "process_info_url": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    "design_feedback": {
+      "email": "support.design@bosch.com",
+      "usage": "Questions about designing digital touchpoints and review of design drafts."
+    }
+  },
+  "ai_usage_notes": {
+    "recommended_use": [
+      "Use as a compliance-oriented reference structure for Digital Offer design workflows.",
+      "Route legal questions to C/LS and data protection questions to C/ISP.",
+      "Treat the content as guidance, not legal advice.",
+      "Apply B2B, B2C, or mixed-offer logic before deriving requirements."
+    ],
+    "risk_flags": [
+      "Requires individual legal review.",
+      "German-law basis may not be sufficient for international offers.",
+      "Sub-service providers must be checked when acting on behalf of Bosch."
+    ]
+  }
+}

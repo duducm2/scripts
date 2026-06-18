@@ -1,0 +1,266 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "page_name": "Human-centered design process",
+    "topic": "Human-centered design process",
+    "source_file": "Human-centered design process.html",
+    "source_url_observed": "https://brandguide.bosch.com/document/8131/en#/-/human-centered-design-process",
+    "site_area": "Bosch Digital Design System",
+    "section_path": [
+      "Foundations",
+      "User-centered design",
+      "Human-centered design process"
+    ],
+    "language": "en",
+    "last_modified_observed": "2026-02-04T13:24:00Z"
+  },
+  "purpose": {
+    "summary": "By applying the human-centered design process, also referred to as the Double Diamond, and its associated methods, digital touchpoints can be created that are tailored to users' needs and requirements, delivering the best possible user experience.",
+    "strategic_importance": "User-centricity is described as a key success driver for Bosch.",
+    "internal_reference": {
+      "label": "UX Hub",
+      "url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/",
+      "access_note": "Bosch internal only"
+    }
+  },
+  "process_model": {
+    "name": "Human-centered design process",
+    "alternate_name": "Double Diamond",
+    "goal": "Create digital touchpoints aligned with user needs and requirements.",
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_id": "plan_ux_activities",
+        "name": "Plan UX activities",
+        "description": "The mission and scope for human-centered design in a project should be defined, UX activities planned, a schedule created, and resources allocated.",
+        "primary_outputs": [
+          "Defined UX mission",
+          "Defined project scope",
+          "Planned UX activities",
+          "Schedule",
+          "Allocated resources"
+        ],
+        "learn_more_url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/#_plan",
+        "methods": [
+          {
+            "name": "Question zero",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/question-zero/"
+          },
+          {
+            "name": "Stakeholder map",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/stakeholder-map/"
+          },
+          {
+            "name": "Problem definition",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/problem-definition/"
+          },
+          {
+            "name": "Impact/effort scale",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/impacteffort-scale/"
+          },
+          {
+            "name": "Roadmap",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/roadmap/"
+          },
+          {
+            "name": "Target group map",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/target-group-map/"
+          }
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_id": "understand_context_of_use",
+        "name": "Understand context of use",
+        "description": "User insights must be gained and the needs of users in their work or life context must be understood.",
+        "primary_outputs": [
+          "User insights",
+          "Understanding of needs",
+          "Context-of-use knowledge"
+        ],
+        "learn_more_url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/#_understand",
+        "methods": [
+          {
+            "name": "Ecosystem map",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/ecosystem-map/"
+          },
+          {
+            "name": "Current customer/user journey map",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/current-customer-journey-map/"
+          },
+          {
+            "name": "Interviews",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/interviews/"
+          },
+          {
+            "name": "Observation",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/observation/"
+          },
+          {
+            "name": "User boards",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/user-boards/"
+          },
+          {
+            "name": "Keep-improve-start-stop (KISS)",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/kiss/"
+          }
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_id": "synthesize_insights",
+        "name": "Synthesize insights",
+        "description": "The insights gained about users must be classified, the user research results summarized, and potential opportunities for the project identified.",
+        "primary_outputs": [
+          "Classified insights",
+          "Summarized user research",
+          "Identified opportunities"
+        ],
+        "learn_more_url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/#_synthesize",
+        "methods": [
+          {
+            "name": "Business model canvas",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/business-model-canvas/"
+          },
+          {
+            "name": "How might we & opportunity areas",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/how-might-we-and-opportunity-areas/"
+          },
+          {
+            "name": "Persona & persona canvas",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/personas/"
+          },
+          {
+            "name": "User scenario",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/user-scenario/"
+          },
+          {
+            "name": "Top findings",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/top-findings/"
+          }
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_id": "ideate_and_realize",
+        "name": "Ideate & realize",
+        "description": "Ideas are generated and concepts for possible solutions are developed and designed.",
+        "primary_outputs": [
+          "Generated ideas",
+          "Solution concepts",
+          "Designed concepts",
+          "Prototypes or design artifacts"
+        ],
+        "learn_more_url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/#_ideate",
+        "methods": [
+          {
+            "name": "Low fidelity prototypes",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/low-fidelity-prototypes/"
+          },
+          {
+            "name": "Card sorting",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/card-sorting/"
+          },
+          {
+            "name": "Adaption",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/adaption/"
+          },
+          {
+            "name": "High fidelity prototypes",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/high-fidelity-prototypes/"
+          },
+          {
+            "name": "Idea generation workshop",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/idea-generation-workshops/"
+          },
+          {
+            "name": "Idea selection in workshops",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/idea-selection-in-workshops/"
+          },
+          {
+            "name": "Ideal customer/user journey map",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/ideal-customer-journey-map/"
+          },
+          {
+            "name": "Information/navigation architecture",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/informationnavigation-architecture/"
+          },
+          {
+            "name": "Provocation",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/provocation/"
+          },
+          {
+            "name": "Storyboarding",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/storyboarding/"
+          },
+          {
+            "name": "Service blueprint",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/service-blueprint/"
+          },
+          {
+            "name": "Value proposition canvas",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/value-proposition-canvas/"
+          }
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_id": "test_and_gather_feedback",
+        "name": "Test & gather feedback",
+        "description": "Concepts are tested with real users and optimized based on feedback.",
+        "primary_outputs": [
+          "User feedback",
+          "Test findings",
+          "Optimized concepts"
+        ],
+        "learn_more_url": "https://hub.bosch-ux.com/ux-in-operative-work/human-centered-design-process/#_test",
+        "methods": [
+          {
+            "name": "User test",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/user-test/"
+          },
+          {
+            "name": "Wizard of Oz test",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/wizard-of-oz-test/"
+          },
+          {
+            "name": "Expert-based evaluation",
+            "url": "https://hub.bosch-ux.com/ux-in-operative-work/ux-methods/expert-based-evaluation/"
+          }
+        ]
+      }
+    ]
+  },
+  "related_topics": [
+    {
+      "name": "Digital Touchpoint Compass",
+      "url": "https://brandguide.bosch.com/r/nnQLlPs8QYafcBYHvNX-4kukbtirN9rxqbZXu29HIQk"
+    },
+    {
+      "name": "Accessibility",
+      "url": "https://brandguide.bosch.com/r/cv0dWiT5tZkK9ZqgC6Q2uuOTrdneCqwATAzadxWYqSI"
+    }
+  ],
+  "support": {
+    "feature_requests_and_bugs": {
+      "description": "Submit feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira.",
+      "process_url": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    "design_feedback": {
+      "description": "For feedback or questions about designing digital touchpoints, contact the support team. The team can also check design drafts.",
+      "email": "support.design@bosch.com"
+    }
+  },
+  "ai_usage_notes": {
+    "recommended_use_cases": [
+      "Map project activities to human-centered design phases",
+      "Suggest UX methods by project phase",
+      "Create UX planning checklists",
+      "Index Bosch Digital Design System guidance for retrieval-augmented generation"
+    ],
+    "normalization_notes": [
+      "Some original links contained double slashes after the domain path; URLs were normalized where obvious.",
+      "Method names were standardized by trimming extra spaces and preserving the page wording."
+    ]
+  }
+}
