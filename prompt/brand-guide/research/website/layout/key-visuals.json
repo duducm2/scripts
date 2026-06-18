@@ -1,0 +1,234 @@
+{
+  "document_metadata": {
+    "topic": "Bosch Brand Guide - Key Visuals",
+    "source_file": "Key visuals - Key visuals - Bosch Brand Guide.html",
+    "source_url_from_file": "https://brandguide.bosch.com/document/2284/en#/-/key-visuals-p14594",
+    "language": "en",
+    "output_purpose": "AI-readable extraction of unstructured Bosch Key Visual guidelines"
+  },
+  "key_visual": {
+    "definition": {
+      "description": "A key visual is a central image that represents a topic or subject area and has a high recognition value.",
+      "allowed_media_types": [
+        "photo",
+        "3D rendering",
+        "illustration"
+      ],
+      "text_combination": "Often combined with text.",
+      "intended_lifespan": "Long-term use.",
+      "intended_role": "A striking cover image across various media formats.",
+      "mandatory_style_basis": [
+        "Bosch image style",
+        "Bosch illustration style"
+      ]
+    },
+    "rights_and_usage": {
+      "requirement": "Only use motifs for which image rights or usage rights are available.",
+      "risk_flag": "legal_usage_rights_required"
+    },
+    "core_principles": [
+      "Use a central, recognizable visual motif.",
+      "Design for long-term recognition rather than short-lived decorative use.",
+      "Ensure the visual can work as a cover or hero image in multiple media formats.",
+      "Follow Bosch image style or Bosch illustration style.",
+      "Use Bosch Sans when typography is included."
+    ],
+    "design_elements": [
+      {
+        "element": "main_motif",
+        "human_label": "Main motif",
+        "rule": "A photograph or illustration serves as the main motif.",
+        "status": "required"
+      },
+      {
+        "element": "accent_color_text_box",
+        "human_label": "Accent color text box",
+        "rule": "A Bosch accent color can be selected for an additional text box.",
+        "status": "optional"
+      },
+      {
+        "element": "typography",
+        "human_label": "Typography",
+        "rule": "Text is always set in Bosch Sans Bold or Regular.",
+        "status": "conditional_if_text_is_used"
+      },
+      {
+        "element": "signet",
+        "human_label": "Signet",
+        "rule": "A signet can be placed additionally if required.",
+        "status": "optional"
+      }
+    ],
+    "style_guidelines": {
+      "imagery": {
+        "rule": "Use the Bosch image style.",
+        "characteristics": [
+          "saturated colors",
+          "lively atmosphere"
+        ],
+        "reference": {
+          "label": "Bosch image style",
+          "url": "https://brandguide.bosch.com/document/2273/en#/imagery-style-1"
+        }
+      },
+      "illustration": {
+        "rule": "Use the Bosch illustration style when the key visual is illustration-based.",
+        "reference": {
+          "label": "Bosch illustration style",
+          "url": "https://brandguide.bosch.com/document/2274/en#/-/illustration-style-1"
+        }
+      },
+      "typography": {
+        "font_family": "Bosch Sans",
+        "allowed_weights": [
+          "Regular",
+          "Bold"
+        ],
+        "reference": {
+          "label": "Font & Typography",
+          "url": "https://brandguide.bosch.com/document/2272/en"
+        }
+      }
+    },
+    "applications": [
+      "PowerPoint title slides",
+      "PowerPoint closing slides",
+      "Newsletter headers",
+      "Brochure titles",
+      "Brochure covers",
+      "Print ads",
+      "Digital teaser formats",
+      "Community teasers",
+      "Blog teasers",
+      "Social media teasers"
+    ],
+    "requirements": {
+      "mandatory": [
+        "Key visuals must correspond to Bosch image style or Bosch illustration style.",
+        "If text is used, it must be set in Bosch Sans Regular or Bosch Sans Bold.",
+        "Image or usage rights must be available for the motif."
+      ],
+      "not_fixed_components": [
+        "icons",
+        "signets",
+        "other graphic elements"
+      ],
+      "prohibited": [
+        "Pure product illustrations as key visuals.",
+        "Gradients and small graphics used as key visual style elements.",
+        "People as cutouts.",
+        "Abstract or graphic motifs that do not correspond to Bosch style.",
+        "Icon and signet type solutions that do not correspond to Bosch style.",
+        "Clipping style mixes.",
+        "Collage style mixes.",
+        "Gradients in collage or style-mix contexts."
+      ]
+    },
+    "before_and_after_examples": {
+      "section_purpose": "Shows already created key visuals that are not Bosch-compliant, alongside optimized Bosch-compliant versions for comparison.",
+      "examples": [
+        {
+          "theme": "Combination graphic and person",
+          "do": "Use a thematically appealing motif in Bosch image style with integrated text in Bosch Sans Regular and Bosch Sans Bold.",
+          "dont": "Do not use gradients and small graphics, and people as cutouts."
+        },
+        {
+          "theme": "Events",
+          "do": "Use a striking solution with Bosch icons, typography, accent colors, and individual signet creation from parts of Bosch Sans Regular and Bosch Sans Bold.",
+          "dont": "Do not use abstract and graphic motifs, colors, icon solutions, or signet type solutions that do not correspond to the Bosch style."
+        },
+        {
+          "theme": "Collage & Style Mix",
+          "do": "Use a free design with Bosch typography in mixed font, icon, and accent color. Single images can be included in circles.",
+          "dont": "Do not use clipping and collage style mixes and gradients."
+        }
+      ]
+    },
+    "framing": {
+      "guideline": "A key visual should be designed with its main message in mind so that it can function flexibly in different media formats, such as print and web, and in landscape and portrait formats.",
+      "format_flexibility": [
+        "print",
+        "web",
+        "landscape",
+        "portrait"
+      ],
+      "design_intent": "Prioritize the main message and adaptability across formats."
+    },
+    "technical_requirements": {
+      "image_production": "For image production, basic technical requirements for data creation and delivery must be met.",
+      "image_and_film_production": "For image and film productions, basic technical requirements for data creation and delivery must be met.",
+      "attachment": {
+        "file_name": "Technical Requirements.pdf",
+        "file_size": "94 KB",
+        "file_type": "pdf",
+        "download_url": "https://brandguide.bosch.com/api/attachment/download/eyJibG9ja19yZWZlcmVuY2UiOm51bGwsImlkIjo3NDA1Mn0:bosch:c37syDW457dBZ0ZbkEU0i4-9Jo6_NOHs2DqYpwg1_3w"
+      }
+    },
+    "media_assets": {
+      "intro_image": {
+        "url": "https://media.ffycdn.net/eu/bosch/RySYhaBMUWkAUaXTjfDu.png?width=800",
+        "role": "Introductory visual example"
+      },
+      "design_elements_annotation_image": {
+        "file_name": "Keyvisuals_Design_elements.png",
+        "url": "https://media.ffycdn.net/eu/bosch/sL3A6hgHjbuhPW5vgpFv.png?width=800",
+        "role": "Annotated design-elements example"
+      },
+      "application_examples": [
+        {
+          "title": "Application example: Photography key visual in layout",
+          "url": "https://media.ffycdn.net/eu/bosch/7566vDkF3rZMWzBDqJL5.png?width=800"
+        },
+        {
+          "title": "Application example: Illustration key visual in layout",
+          "url": "https://media.ffycdn.net/eu/bosch/pYkesFTpDS46HkwyHKAR.png?width=800"
+        }
+      ],
+      "instructional_video": {
+        "description": "Video explaining the correct use of key visuals. Audio should be turned on.",
+        "file_name": "231122_Bosch_HowTo_Keyvisuals.mp4",
+        "url": "https://media.ffycdn.net/eu/bosch/e1WPJFFG5zdgbiigsD1w.mp4?width={width}&format=mp4"
+      }
+    },
+    "related_topics": [
+      {
+        "label": "Imagery style",
+        "url": "https://brandguide.bosch.com/document/2273/en#/-/imagery-style-1"
+      },
+      {
+        "label": "Illustration style",
+        "url": "https://brandguide.bosch.com/document/2274/en#/-/illustration-style-1"
+      },
+      {
+        "label": "Font & Typography",
+        "url": "https://brandguide.bosch.com/document/2272/en"
+      },
+      {
+        "label": "Signets",
+        "url": "https://brandguide.bosch.com/document/2296/en#/-/signets-p14595"
+      }
+    ],
+    "ai_generation_constraints": {
+      "must_include_when_creating_key_visual": [
+        "Central motif with high recognition value",
+        "Bosch image or illustration style",
+        "Saturated, lively visual atmosphere when photo-based",
+        "Bosch Sans Regular or Bold for text",
+        "Adaptability to landscape and portrait formats"
+      ],
+      "should_avoid_when_creating_key_visual": [
+        "Pure product-only illustration",
+        "Non-Bosch abstract graphic style",
+        "Non-Bosch colors or graphic motifs",
+        "Cutout people",
+        "Gradient-heavy compositions",
+        "Clipping or collage style mixes"
+      ],
+      "optional_elements": [
+        "Bosch accent color text box",
+        "Bosch icons",
+        "Signet, if required"
+      ]
+    }
+  }
+}
