@@ -1,0 +1,394 @@
+{
+  "schema_version": "1.0",
+  "topic": "Web banner basics",
+  "source": {
+    "source_type": "uploaded_html_snapshot",
+    "file_name": "Web banner basics - Web banner - Bosch Digital Design System.html",
+    "page_title": "Web banner basics",
+    "document_title": "Webbanner",
+    "document_id": "351",
+    "project_id": "166",
+    "source_url_from_html": "https://brandguide.bosch.com/document/351/en#/basics/web-banner-basics",
+    "language": "en",
+    "last_modified_on_page": "",
+    "extracted_at": "2026-06-18T19:44:38.007914+00:00",
+    "file_reference_id": "turn1search1"
+  },
+  "purpose": {
+    "summary": "Guidance for the design and programming of Bosch web banners, extending the Bosch UI Kit and supporting consistent web banner style across digital channels.",
+    "scope": [
+      "Web banner design",
+      "Web banner programming",
+      "Digital touchpoint consistency",
+      "Use of templates, libraries, and related design principles"
+    ],
+    "audience": [
+      "Product owners",
+      "UX/UI designers",
+      "Frontend developers",
+      "Teams producing Bosch web banners"
+    ]
+  },
+  "core_guidance": [
+    {
+      "id": "web_banner_guidance_001",
+      "type": "definition",
+      "rule": "Treat this page as an extension of the Bosch UI Kit for the design and programming of web banners.",
+      "rationale": "The guide exists to ensure a consistent style and appearance of web banners across digital channels.",
+      "evidence_quote": "This is an extension of the Bosch UI Kit on the design and programming of web banners. The following style guide ensures a consistent style and appearance of web banners across all digital channels."
+    },
+    {
+      "id": "web_banner_guidance_002",
+      "type": "legal_compliance",
+      "rule": "Each product owner is responsible for checking legal and data-protection requirements in the relevant market.",
+      "required_parties": [
+        "Responsible legal department",
+        "Responsible data protection officer"
+      ],
+      "evidence_quote": "Each product owner is responsible for compliance with legal requirements in the respective market. These must be checked with the responsible legal department and the responsible data protection officer."
+    },
+    {
+      "id": "web_banner_guidance_003",
+      "type": "tooling",
+      "rule": "Use Sketch for efficient Bosch web banner design when following this guide.",
+      "evidence_quote": "To achieve an efficient design in web banners for Bosch, using Sketch is advised."
+    },
+    {
+      "id": "web_banner_guidance_004",
+      "type": "template_and_library_setup",
+      "rule": "Install and use the Web banner design template alongside the Core and Icon Overrides Library.",
+      "required_assets_or_libraries": [
+        "Web banner design template",
+        "Core library",
+        "Icon Overrides Library"
+      ],
+      "evidence_quote": "the Sketch document Web banner design template is installed and used alongside the Core and Icon Overrides Library."
+    },
+    {
+      "id": "web_banner_guidance_005",
+      "type": "maintenance",
+      "rule": "Check for updates regularly to keep files current.",
+      "evidence_quote": "updates are checked for on a regular basis to keep the files up to date."
+    },
+    {
+      "id": "web_banner_guidance_006",
+      "type": "onboarding_reference",
+      "rule": "Refer to installation and library/template usage guidance under Start Designing.",
+      "evidence_quote": "further information on the installation and use of libraries/templates is referred to. This can be found under Start Designing."
+    },
+    {
+      "id": "web_banner_guidance_007",
+      "type": "support_and_feedback",
+      "rule": "Send feature requests and bug reports for the Digital Design System or Frontend Kit to the digital expert team via Jira; send design feedback/questions to support.design@bosch.com.",
+      "contacts": [
+        "Jira process link",
+        "support.design@bosch.com"
+      ],
+      "evidence_quote": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Introduction",
+      "content_type": "overview",
+      "summary": "Positions web banner basics as an extension of the Bosch UI Kit for design and programming, with the goal of consistent banner appearance across digital channels."
+    },
+    {
+      "title": "Legal and data-protection responsibility",
+      "content_type": "info_callout",
+      "summary": "Product owners must check market-specific legal requirements with legal and data-protection contacts before implementation."
+    },
+    {
+      "title": "Essentials at a glance",
+      "content_type": "asset_link_grid",
+      "summary": "Provides quick access to downloadable resources, design principles, templates, and animation principles.",
+      "linked_assets": [
+        "Download",
+        "Design principles",
+        "Templates",
+        "Animation principles"
+      ]
+    },
+    {
+      "title": "Additional instructions",
+      "content_type": "implementation_notes",
+      "summary": "Recommends Sketch and specifies required libraries/templates, update hygiene, and references for Start Designing guidance."
+    },
+    {
+      "title": "Support and feedback",
+      "content_type": "contact_guidance",
+      "summary": "Routes feature requests and bugs through Jira and provides the design support email for feedback, questions, and draft checks."
+    }
+  ],
+  "assets_and_resources": [
+    {
+      "title": "Download",
+      "asset_id": 121398,
+      "filename": "Downloads.png",
+      "extension": "png",
+      "object_type": "IMAGE",
+      "dimensions_px": {
+        "width": 1200,
+        "height": 1200
+      },
+      "alt_text": "Download",
+      "link": "https://brandguide.bosch.com/r/Ihd20pnMWKp5Ceu2vYGwFyTO1weOlDx_xXwqyy5PpCw",
+      "role_in_page": "Essentials at a glance card/link"
+    },
+    {
+      "title": "Design principles",
+      "asset_id": 121397,
+      "filename": "Designprinzipien.png",
+      "extension": "artboard",
+      "object_type": "CANVAS",
+      "dimensions_px": {
+        "width": 1200,
+        "height": 1200
+      },
+      "alt_text": "Design principles<br>",
+      "link": "https://brandguide.bosch.com/r/6DIzUdFwZV412XoN8Pkc_y0lnpjE9mtTFPLrqG498rw",
+      "role_in_page": "Essentials at a glance card/link"
+    },
+    {
+      "title": "Templates",
+      "asset_id": 121338,
+      "filename": "Bannertypen.png",
+      "extension": "artboard",
+      "object_type": "CANVAS",
+      "dimensions_px": {
+        "width": 1200,
+        "height": 1200
+      },
+      "alt_text": "Templates",
+      "link": "https://brandguide.bosch.com/r/ei-n25AAS-74kEKD3hdKwM-OSWbvc0TczmgvYxq33q4",
+      "role_in_page": "Essentials at a glance card/link"
+    },
+    {
+      "title": "Animation principles",
+      "asset_id": 121396,
+      "filename": "Animation.png",
+      "extension": "artboard",
+      "object_type": "CANVAS",
+      "dimensions_px": {
+        "width": 1200,
+        "height": 1200
+      },
+      "alt_text": "Animation principles",
+      "link": "https://brandguide.bosch.com/r/id7vtPxt4OiXrF2SCiOd82aDm6jYfhUzkW995-cK1_g",
+      "role_in_page": "Essentials at a glance card/link"
+    }
+  ],
+  "links": [
+    {
+      "label": "Bosch UI Kit",
+      "href": "https://brandguide.bosch.com/r/WKWAKv12JRVY3w6wV7ouLCHcENT_JERWtaBONBHYdJM"
+    },
+    {
+      "label": "Find Your Lawyer",
+      "href": "https://connect.bosch.com/communities/service/html/communitystart?communityUuid=77cbe1b0-ebab-4159-a9c7-ae8b956d57f4"
+    },
+    {
+      "label": "Bosch Portal",
+      "href": "https://inside.bosch.com/irj/portal/?NavigationTarget=HLPFS://wcms_corpfunc_Bosch_20GlobalNet/wcms_corpfunc_02_20Organization/wcms_corpfunc_corporate_functions/wcms_corpfunc_c_cm/wcms_corpfunc_organization_256/wcms_corpfunc_c_isp_1/wcms_corpfunc_organization_62/wcms_corpfunc_gb_dso___toge_dso"
+    },
+    {
+      "label": null,
+      "href": "https://brandguide.bosch.com/r/Ihd20pnMWKp5Ceu2vYGwFyTO1weOlDx_xXwqyy5PpCw"
+    },
+    {
+      "label": null,
+      "href": "https://brandguide.bosch.com/r/6DIzUdFwZV412XoN8Pkc_y0lnpjE9mtTFPLrqG498rw"
+    },
+    {
+      "label": null,
+      "href": "https://brandguide.bosch.com/r/ei-n25AAS-74kEKD3hdKwM-OSWbvc0TczmgvYxq33q4"
+    },
+    {
+      "label": null,
+      "href": "https://brandguide.bosch.com/r/id7vtPxt4OiXrF2SCiOd82aDm6jYfhUzkW995-cK1_g"
+    },
+    {
+      "label": "Sketch",
+      "href": null
+    },
+    {
+      "label": "Web banner design template",
+      "href": null
+    },
+    {
+      "label": "Core",
+      "href": null
+    },
+    {
+      "label": "Start Designing",
+      "href": null
+    },
+    {
+      "label": "here",
+      "href": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+    },
+    {
+      "label": "support.design@bosch.com",
+      "href": "mailto:support.design@bosch.com"
+    },
+    {
+      "label": "Basics Design principles",
+      "href": "https://brandguide.bosch.com/document/351/en#/basics/design-principles-1668672730"
+    }
+  ],
+  "navigation_context": {
+    "main_category": "Digital touchpoints",
+    "document": "Webbanner",
+    "sidebar_category": "Basics",
+    "current_page": "Web banner basics",
+    "sibling_pages": [
+      "Design principles",
+      "Animation principles"
+    ],
+    "template_category_present": true,
+    "sidebar_items": [
+      {
+        "label": "Web banner basics",
+        "href": "https://brandguide.bosch.com/document/351/en#/basics/web-banner-basics"
+      },
+      {
+        "label": "Design principles",
+        "href": "https://brandguide.bosch.com/document/351/en#/basics/design-principles-1668672730"
+      },
+      {
+        "label": "Animation principles",
+        "href": "https://brandguide.bosch.com/document/351/en#/basics/animation-principles-1668680893"
+      }
+    ]
+  },
+  "implementation_checklist": [
+    {
+      "step": 1,
+      "action": "Confirm whether the banner uses the Bosch UI Kit and this web banner extension.",
+      "owner": "Designer or frontend developer"
+    },
+    {
+      "step": 2,
+      "action": "Check market-specific legal and data-protection requirements.",
+      "owner": "Product owner"
+    },
+    {
+      "step": 3,
+      "action": "Use Sketch for banner design when following the guide.",
+      "owner": "Designer"
+    },
+    {
+      "step": 4,
+      "action": "Install and use the Web banner design template with Core and Icon Overrides Library.",
+      "owner": "Designer"
+    },
+    {
+      "step": 5,
+      "action": "Check for template and library updates regularly.",
+      "owner": "Designer or design system user"
+    },
+    {
+      "step": 6,
+      "action": "Refer to Start Designing for installation and usage details.",
+      "owner": "Designer or design system user"
+    },
+    {
+      "step": 7,
+      "action": "Route DDS or Frontend Kit feature requests and bugs via Jira.",
+      "owner": "Any contributor"
+    },
+    {
+      "step": 8,
+      "action": "Send design questions or draft checks to support.design@bosch.com.",
+      "owner": "Any contributor"
+    }
+  ],
+  "machine_readable_tags": [
+    "bosch",
+    "digital_design_system",
+    "web_banner",
+    "webbanner",
+    "bosch_ui_kit",
+    "sketch",
+    "templates",
+    "animation_principles",
+    "legal_compliance",
+    "data_protection",
+    "frontend_kit",
+    "jira"
+  ],
+  "extracted_visible_text_blocks": [
+    {
+      "tag": "h1",
+      "text": "Web banner basics"
+    },
+    {
+      "tag": "p",
+      "text": "This is an extension of the Bosch UI Kit on the design and programming of web banners. The following style guide ensures a consistent style and appearance of web banners across all digital channels."
+    },
+    {
+      "tag": "p",
+      "text": "Info! Each product owner is responsible for compliance with legal requirements in the respective market. These must be checked with the responsible legal department and the responsible data protection officer. Contacts for legal topics can be found via Find Your Lawyer , contacts for data protection via the Bosch Portal ."
+    },
+    {
+      "tag": "h2",
+      "text": "Essentials at a glance"
+    },
+    {
+      "tag": "li",
+      "text": "Download"
+    },
+    {
+      "tag": "li",
+      "text": "Design principles"
+    },
+    {
+      "tag": "li",
+      "text": "Templates"
+    },
+    {
+      "tag": "li",
+      "text": "Animation principles"
+    },
+    {
+      "tag": "h2",
+      "text": "Additional instructions"
+    },
+    {
+      "tag": "p",
+      "text": "To achieve an efficient design in web banners for Bosch, using Sketch is advised. For this purpose, Sketch libraries are utilized. When using these supplied libraries, please ensure that"
+    },
+    {
+      "tag": "li",
+      "text": "the Sketch document Web banner design template is installed and used alongside the Core and Icon Overrides Library."
+    },
+    {
+      "tag": "li",
+      "text": "updates are checked for on a regular basis to keep the files up to date."
+    },
+    {
+      "tag": "li",
+      "text": "further information on the installation and use of libraries/templates is referred to. This can be found under Start Designing ."
+    },
+    {
+      "tag": "p",
+      "text": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here ."
+    },
+    {
+      "tag": "p",
+      "text": "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts."
+    },
+    {
+      "tag": "p",
+      "text": "Last modified on Thu, 28. Aug 2025 12:18"
+    }
+  ],
+  "quality_notes": {
+    "extraction_basis": "Visible text and structured metadata from uploaded HTML snapshot. Image-internal content was not OCR-extracted because the HTML snapshot provides only image assets and captions.",
+    "known_limitations": [
+      "Some internal Bosch links are available as redirect URLs or empty-label asset links in the HTML.",
+      "Content inside linked resources or downloadable files was not fetched unless visible in the uploaded HTML.",
+      "The page references Sketch, Start Designing, Core, and Icon Overrides Library, but some related anchors have no href in the HTML snapshot."
+    ]
+  }
+}

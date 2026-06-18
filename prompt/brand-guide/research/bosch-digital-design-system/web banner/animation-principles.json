@@ -1,0 +1,273 @@
+{
+  "document_metadata": {
+    "topic": "Animation principles",
+    "page_title": "Animation principles - Web banner - Bosch Digital Design System",
+    "brand": "Bosch",
+    "system": "Bosch Digital Design System",
+    "document_area": "Web banner",
+    "language": "en",
+    "source_file": "Animation principles - Web banner - Bosch Digital Design System.html",
+    "source_url_in_html": "https://brandguide.bosch.com/document/351/en#/basics/animation-principles-1668680893",
+    "output_purpose": "AI-readable structured extraction of unstructured guideline content",
+    "extraction_scope": [
+      "overview",
+      "animation aspects",
+      "sound guidance",
+      "behavior recommendations",
+      "animation variants",
+      "step-by-step scene structure",
+      "animation example",
+      "references",
+      "support/contact information"
+    ]
+  },
+  "content": {
+    "overview": {
+      "summary": "Bosch web banners can be animated when the animation remains brand-compliant, purposeful, and performance-aware.",
+      "guideline_context": "The guideline addresses aspects relevant for brand-compliant animation in Bosch web banners.",
+      "covered_animation_aspects": [
+        {
+          "aspect": "transitions",
+          "description": "Create transitions such as fade-out, slide-in, bounce-in, and scale effects."
+        },
+        {
+          "aspect": "speed_control",
+          "description": "Control the speed of elements that appear within the banner."
+        },
+        {
+          "aspect": "sound_integration",
+          "description": "Integrate sound only when it strongly supports the general concept."
+        }
+      ],
+      "sound_guidance": {
+        "recommendation_level": "not_recommended_for_display_campaigns",
+        "reason": "Sound would need to be activated by the user first.",
+        "rule": "Avoid sound in display campaigns unless it is essential and user activation is planned."
+      }
+    },
+    "behavior": {
+      "principle": "Animation and motion within a banner can increase user engagement when used subtly and purposefully.",
+      "benefits": [
+        "Subtle transitions and motion effects draw attention.",
+        "Motion can increase interaction."
+      ],
+      "risks": [
+        "Excessive animation can lead to a loss of user focus.",
+        "Animations increase file size and can limit performance."
+      ],
+      "recommendations": [
+        {
+          "id": "behavior_recommendation_01",
+          "rule": "Limit duration to a non-looped 10-20 seconds.",
+          "rationale": "Animations increase file size and can limit performance."
+        },
+        {
+          "id": "behavior_recommendation_02",
+          "rule": "Use animation to support the call-to-action (CTA).",
+          "rationale": "The animation should clearly state what to do next."
+        },
+        {
+          "id": "behavior_recommendation_03",
+          "rule": "Avoid linear motion.",
+          "rationale": "Non-linear motion creates a more natural look."
+        }
+      ]
+    },
+    "variants": [
+      {
+        "variant_id": "variant_1",
+        "name": "Variant 1",
+        "animation_principle": "Rolling shutter principle with top-to-bottom fade-in effects.",
+        "recommended_sequence_intro": "The advised order for an animated banner ad follows a staged reveal from base brand elements to image, headline, subline, and CTA.",
+        "steps": [
+          {
+            "step_number": 1,
+            "scene_name": "First scene",
+            "visual_state": "Supergraphic, symbol/logotype and slogan are visible. Base layer fills the entire format.",
+            "motion_or_transition": "Initial static brand-compliant state.",
+            "media_asset": {
+              "filename": "Animation_Scene1_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/K7pGV6oegwH8rASXH9z1.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 2,
+            "scene_name": "Transition",
+            "visual_state": "Image appears beneath the base layer and moves from bottom to top into the Experience Area.",
+            "motion_or_transition": "Rolling shutter principle.",
+            "media_asset": {
+              "filename": "Animation_Scene2_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/FNXXceMq5vgSzvr1CLbC.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 3,
+            "scene_name": "Full image",
+            "visual_state": "The entire image is visible.",
+            "motion_or_transition": "Completion of image reveal.",
+            "media_asset": {
+              "filename": "Animation_Scene3_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/X96Fq7Si9MEGkqY2HH6u.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 4,
+            "scene_name": "Main scene - Headline",
+            "visual_state": "Headline appears into the base layer.",
+            "motion_or_transition": "Headline fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_Headline_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/uJRhnoYW3G6pBNiLfAka.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 5,
+            "scene_name": "Main scene - Subline",
+            "visual_state": "Subline appears beneath the headline.",
+            "motion_or_transition": "Subline fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_Subline_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/qCtruoPYe2PhYiBVU1aL.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 6,
+            "scene_name": "Main scene - CTA",
+            "visual_state": "Primary Button appears beneath the subline, concluding the reveal sequence. This final state is then shown in loop.",
+            "motion_or_transition": "CTA fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_CTA_version1.png",
+              "url": "https://media.ffycdn.net/eu/bosch/3WpdM3aJXvcrmrTJJUf6.png?width=800",
+              "asset_type": "image/png"
+            }
+          }
+        ]
+      },
+      {
+        "variant_id": "variant_2",
+        "name": "Variant 2",
+        "animation_principle": "Zoom-out principle with top-to-bottom fade-in effects.",
+        "recommended_sequence_intro": "The animation starts with a zoomed-in image in the Experience Area, then creates white space for the base layer before introducing text and CTA elements.",
+        "steps": [
+          {
+            "step_number": 1,
+            "scene_name": "First scene",
+            "visual_state": "Supergraphic, symbol/logotype and slogan are visible on the base layer. Within the Experience Area, the image is zoomed out.",
+            "motion_or_transition": "Initial zoom-out setup.",
+            "media_asset": {
+              "filename": "Animation_Scene1_version2.png",
+              "url": "https://media.ffycdn.net/eu/bosch/dd8dXZghHmiccH2oM93a.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 2,
+            "scene_name": "Transition",
+            "visual_state": "After the zoom-out, both the Experience Area and image are smaller. The Experience Area fills its initial format, creating white space for the base layer.",
+            "motion_or_transition": "Zoom-out transition.",
+            "media_asset": {
+              "filename": "Animation_Scene2_version2.png",
+              "url": "https://media.ffycdn.net/eu/bosch/qXBsyMMfwfkgSrVUHRhe.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 3,
+            "scene_name": "Main scene - Headline",
+            "visual_state": "Headline appears after the zoom-out transition.",
+            "motion_or_transition": "Headline fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_Headline_version2.png",
+              "url": "https://media.ffycdn.net/eu/bosch/XSS4SmS3DLwMVZHBZD6y.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 4,
+            "scene_name": "Main scene - Subline",
+            "visual_state": "Subline appears beneath the headline.",
+            "motion_or_transition": "Subline fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_Subline_version2.png",
+              "url": "https://media.ffycdn.net/eu/bosch/48Hu8X8oRafgEDM1jTcb.png?width=800",
+              "asset_type": "image/png"
+            }
+          },
+          {
+            "step_number": 5,
+            "scene_name": "Main scene - CTA",
+            "visual_state": "Primary Button appears beneath the subline, concluding the sequence. This final state is then shown in loop.",
+            "motion_or_transition": "CTA fades in from top to bottom.",
+            "media_asset": {
+              "filename": "Animation_CTA_version2.png",
+              "url": "https://media.ffycdn.net/eu/bosch/DGmZRoEehDLJRTnKCJTt.png?width=800",
+              "asset_type": "image/png"
+            }
+          }
+        ]
+      }
+    ],
+    "animation_example": {
+      "description": "Web banner animation example video.",
+      "media_asset": {
+        "url": "https://media.ffycdn.net/eu/bosch/PmX5NhMEpx3UzYwnekhR.mp4?width={width}&format=mp4",
+        "poster_or_preview": "https://media.ffycdn.net/eu/bosch/PmX5NhMEpx3UzYwnekhR.mp4?width=800",
+        "asset_type": "video/mp4"
+      }
+    },
+    "references": [
+      {
+        "title": "Download",
+        "url": "https://brandguide.bosch.com/r/qyxHSHPvRMGeTLwhU5u5JRm85FF5Ux75JrByyE4oERY",
+        "type": "external_or_internal_reference"
+      },
+      {
+        "title": "Design principles",
+        "url": "https://brandguide.bosch.com/r/6DIzUdFwZV412XoN8Pkc_y0lnpjE9mtTFPLrqG498rw",
+        "type": "related_guideline"
+      },
+      {
+        "title": "Core",
+        "url": "https://brandguide.bosch.com/r/WKWAKv12JRVY3w6wV7ouLCHcENT_JERWtaBONBHYdJM",
+        "type": "related_guideline_or_resource"
+      }
+    ],
+    "support": {
+      "feature_requests_and_bug_reports": {
+        "description": "Submit feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira.",
+        "link": "https://brandguide.bosch.com/r/Uxn-DQEPxHJeFpUwcVSvdbXChsWm3UR9MNg4BE6NFSc"
+      },
+      "design_feedback": {
+        "description": "For feedback or questions about designing digital touchpoints, contact the support team. The team can also check design drafts.",
+        "email": "support.design@bosch.com"
+      }
+    }
+  },
+  "ai_usage_notes": {
+    "primary_rules": [
+      "Use animation to support communication and CTA clarity, not as decoration only.",
+      "Prefer subtle, purposeful motion over excessive animation.",
+      "Avoid linear motion to create a more natural behavior.",
+      "Respect performance constraints caused by animation file size.",
+      "Avoid sound for display campaigns unless user activation is explicitly planned."
+    ],
+    "recommended_duration": {
+      "minimum_seconds": 10,
+      "maximum_seconds": 20,
+      "looping": "non-looped duration recommended; final state may be shown in loop according to variant descriptions"
+    },
+    "sequence_pattern": [
+      "brand/base layer visible",
+      "image reveal or image zoom transition",
+      "headline reveal",
+      "subline reveal",
+      "CTA reveal",
+      "final state shown in loop"
+    ]
+  }
+}
