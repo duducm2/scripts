@@ -1,0 +1,157 @@
+{
+    "file_name": "accessibility-basics-site-research",
+    "title": "Accessibility Basics - Bosch Digital Design System",
+    "purpose": "Structure accessibility principles, standards, and Bosch-specific guidelines into an AI-readable format for design, UX, and compliance workflows.",
+    "overview": {
+      "mission": "Enable barrier-free access to digital products for all users regardless of abilities or context.",
+      "value_proposition": "Accessibility improves usability for everyone and reinforces Bosch’s quality promise.",
+      "scope": ["websites", "apps", "software", "shops", "machine interfaces"]
+    },
+    "definition": {
+      "accessibility": "Designing digital content so all users can perceive, understand, navigate, and interact equally.",
+      "design_principle": "Not separate solutions, but universally usable systems across devices and conditions."
+    },
+    "core_principles": {
+      "wcag_foundation": [
+        "Perceivable",
+        "Operable",
+        "Understandable",
+        "Robust"
+      ],
+      "interpretation": {
+        "Perceivable": "Content must be visible or audible to users with different sensory abilities.",
+        "Operable": "Interfaces must be usable via different input methods (keyboard, voice, touch).",
+        "Understandable": "Content and interactions must be clear and predictable.",
+        "Robust": "Content must work across devices, browsers, and assistive technologies."
+      }
+    },
+    "standards": {
+      "primary_standard": {
+        "name": "WCAG 2.1",
+        "level_required": "AA",
+        "authority": "W3C",
+        "role": "Global benchmark for digital accessibility"
+      },
+      "related_regulations": [
+        "European Accessibility Act (EAA)",
+        "Americans with Disabilities Act (ADA)",
+        "Barrierefreiheitsstärkungsgesetz (BFSG)",
+        "EN 301 549"
+      ],
+      "compliance_risks": [
+        "Legal penalties",
+        "Fines",
+        "Lawsuits",
+        "Personal liability for responsible owners"
+      ]
+    },
+    "bosch_design_system_alignment": {
+      "ui_kit": {
+        "compliance": "WCAG 2.1 AA compliant",
+        "coverage": ["colors", "contrast", "font sizes"]
+      },
+      "frontend_kit": {
+        "requirement": "ARIA labels must be filled with semantic descriptions"
+      },
+      "design_constraints": {
+        "color_usage": "Predefined color schemes must not be altered",
+        "reason": "Ensures accessibility compliance (especially contrast)"
+      }
+    },
+    "inclusive_design_model": {
+      "goal": "Design for the widest possible range of users and contexts",
+      "types_of_limitations": [
+        {
+          "type": "situational",
+          "examples": [
+            "Using a touchscreen with gloves",
+            "Operating in low-light environments"
+          ],
+          "design_implications": [
+            "Large touch targets",
+            "Spacing between elements",
+            "Dark mode / reduced glare"
+          ]
+        },
+        {
+          "type": "temporary",
+          "examples": [
+            "Broken arm",
+            "Short-term impairment"
+          ],
+          "design_implications": [
+            "Voice navigation",
+            "Alternative input methods"
+          ]
+        },
+        {
+          "type": "permanent",
+          "examples": [
+            "Visual impairment",
+            "Blindness"
+          ],
+          "design_implications": [
+            "High contrast",
+            "Scalable text",
+            "Respect system accessibility settings"
+          ]
+        }
+      ]
+    },
+    "disability_dimensions": {
+      "categories": [
+        {
+          "name": "Sight",
+          "examples": ["blindness", "cataract", "low vision"]
+        },
+        {
+          "name": "Touch",
+          "examples": ["injury", "one-handed usage", "missing limb"]
+        },
+        {
+          "name": "Hearing",
+          "examples": ["deafness", "noisy environments", "ear infection"]
+        },
+        {
+          "name": "Speech",
+          "examples": ["speech impairment", "accent", "laryngitis"]
+        },
+        {
+          "name": "Mobility",
+          "examples": ["wheelchair use", "restricted movement", "seat constraints"]
+        }
+      ]
+    },
+    "design_implications": {
+      "interaction": [
+        "Provide multiple input methods",
+        "Ensure clickable/touch targets are large enough"
+      ],
+      "visual": [
+        "Maintain sufficient contrast",
+        "Support text scaling",
+        "Provide dark mode when needed"
+      ],
+      "semantic": [
+        "Use ARIA roles and labels correctly",
+        "Ensure meaningful content structure"
+      ],
+      "system_integration": [
+        "Respect user accessibility settings",
+        "Ensure compatibility with assistive technologies"
+      ]
+    },
+    "governance": {
+      "responsibility": "Each project owner ensures compliance with local laws",
+      "support_resources": [
+        "Bosch IT law community (internal)",
+        "Legal advisory tools (Bosch Connect)"
+      ]
+    },
+    "key_messages": [
+      "Accessibility is a universal usability requirement, not a niche feature",
+      "Design must consider situational, temporary, and permanent limitations",
+      "Compliance is legally required and enforced",
+      "Bosch provides accessible foundations, but correct implementation is critical"
+    ]
+  }

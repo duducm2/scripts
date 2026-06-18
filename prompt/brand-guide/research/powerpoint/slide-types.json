@@ -1,0 +1,389 @@
+{
+  "schema_name": "bosch_powerpoint_slide_types_research",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-06-18",
+  "source": {
+    "source_file": "slide types.html",
+    "source_title": "Slide types - PowerPoint - Bosch Brand Guide",
+    "source_url_from_html_comment": "https://brandguide.bosch.com/document/839/en#/power-point/slide-types",
+    "language": "en",
+    "brand_context": "Bosch Brand Guide",
+    "document_area": "PowerPoint",
+    "page_name": "Slide types"
+  },
+  "extraction_scope": {
+    "included": [
+      "General PowerPoint slide-type principles",
+      "Slide-type taxonomy visible on the page",
+      "Guidelines and constraints stated in text blocks",
+      "Asset references for slide-type thumbnails/examples",
+      "Related topics listed on the page"
+    ],
+    "not_included_or_limited": [
+      "Exact pixel measurements of slide templates beyond asset metadata",
+      "Detailed visual interpretation of the screenshot content",
+      "Information hidden behind external links or downloads not embedded in the HTML"
+    ]
+  },
+  "content_summary": {
+    "main_idea": "Bosch PowerPoint presentations should use generous, clearly structured layouts with ample white space, default eForms typography settings, and standardized slide types for title, chapter, split/full-picture, and content use cases.",
+    "design_intent": [
+      "Support the Bosch corporate design through generous structure and white space.",
+      "Keep typography consistent by relying on eForms defaults.",
+      "Use slide types as modular layout patterns for different communication needs."
+    ]
+  },
+  "global_presentation_guidelines": [
+    {
+      "rule_id": "ppt_slide_types_global_001",
+      "topic": "Structure and spacing",
+      "guideline": "Bosch presentations should be structured as generously as possible.",
+      "rationale": "Plenty of white space supports the corporate design and helps to structure content clearly.",
+      "ai_application": "Prefer clean layouts, avoid overcrowding, preserve generous margins and open space."
+    },
+    {
+      "rule_id": "ppt_slide_types_global_002",
+      "topic": "Typography defaults",
+      "guideline": "Font sizes, line spacing, font styles, and colors are already set in eForms.",
+      "rationale": "The page states these settings should ideally not be changed.",
+      "ai_application": "Use default eForms typography whenever possible instead of manually adjusting fonts, colors, or spacing."
+    },
+    {
+      "rule_id": "ppt_slide_types_global_003",
+      "topic": "Legibility exception",
+      "guideline": "Smaller font sizes may be used only if necessary, while ensuring sufficient legibility.",
+      "rationale": "The brand guide allows smaller font sizes as an exception, not as the default behavior.",
+      "ai_application": "If content density requires smaller text, preserve readability and avoid reducing text below practical viewing size."
+    }
+  ],
+  "slide_type_taxonomy": {
+    "listed_slide_types": [
+      "Title slides",
+      "Chapter slides",
+      "Split and full picture slides",
+      "Content slides",
+      "Standard content slide"
+    ],
+    "navigation_sections": [
+      "Title slides",
+      "Chapter slides",
+      "Split screen and full screen slides",
+      "Standard content slide"
+    ],
+    "note": "The overview image grid labels the fourth category as 'Content slides', while the detailed section labels it as 'Standard content slide'."
+  },
+  "slide_types": [
+    {
+      "id": "title_slides",
+      "display_name": "Title slides",
+      "category": "opening_or_cover",
+      "purpose": "Used as standard title or cover slides for Bosch PowerPoint presentations.",
+      "variants": [
+        {
+          "variant_id": "title_slide_horizontal",
+          "name": "Title slide horizontal"
+        },
+        {
+          "variant_id": "title_slide_vertical",
+          "name": "Title slide vertical"
+        }
+      ],
+      "source_guidance": "The following eForms slide templates are the standard title slides: Title slide horizontal; Title slides vertical.",
+      "ai_generation_rules": [
+        "Use the appropriate horizontal or vertical title slide template.",
+        "Keep title-slide structure aligned with eForms templates.",
+        "Avoid unnecessary content density on title slides."
+      ],
+      "related_assets": [
+        {
+          "asset_title": "Title slides",
+          "alt_text": "Title slides",
+          "description": "",
+          "filename": "thumb-title-en.png",
+          "file_type": "png",
+          "object_type": "IMAGE",
+          "dimensions_px": {
+            "width": 800,
+            "height": 800
+          },
+          "preview_url": "https://media.ffycdn.net/eu/bosch/icZi6CMkaxKWY8RR52YS.png?width=800",
+          "generic_url": "https://media.ffycdn.net/eu/bosch/icZi6CMkaxKWY8RR52YS.png?width={width}",
+          "link_url": "https://brandguide.bosch.com/r/Yi45PJXIrBqVA_jV3-bOLgTmzltsDe5f8KWnO5Tb7u8",
+          "asset_id": 330575
+        }
+      ]
+    },
+    {
+      "id": "chapter_slides",
+      "display_name": "Chapter slides",
+      "category": "section_divider",
+      "purpose": "Used to separate or introduce chapters or major sections in a presentation.",
+      "variants": [
+        {
+          "variant_id": "chapter_slide_horizontal",
+          "name": "Horizontal chapter slide"
+        },
+        {
+          "variant_id": "chapter_slide_vertical",
+          "name": "Vertical chapter slide"
+        }
+      ],
+      "source_guidance": "The chapter slides are available in both horizontal and vertical designs to match the design of the title slides. The large chapter number is numbered manually.",
+      "ai_generation_rules": [
+        "Match the chapter slide design direction to the title slide design.",
+        "Treat the chapter number as a manually controlled content element.",
+        "Use chapter slides to create clear narrative segmentation."
+      ],
+      "related_assets": [
+        {
+          "asset_title": "Chapter slides",
+          "alt_text": "Chapter slides",
+          "description": "",
+          "filename": "thumb-chapter-en.webp",
+          "file_type": "webp",
+          "object_type": "IMAGE",
+          "dimensions_px": {
+            "width": 800,
+            "height": 800
+          },
+          "preview_url": "https://media.ffycdn.net/eu/bosch/JKeeam2AJC392e1JSKk2.webp?width=800",
+          "generic_url": "https://media.ffycdn.net/eu/bosch/JKeeam2AJC392e1JSKk2.webp?width={width}",
+          "link_url": "https://brandguide.bosch.com/r/rbOF0gkBBWHOhNJ2neqi546r1ASOsAPSxi-weJWdD4U",
+          "asset_id": 330570
+        }
+      ]
+    },
+    {
+      "id": "split_screen_and_full_screen_slides",
+      "display_name": "Split screen and full screen slides",
+      "category": "image_led_or_hybrid_layout",
+      "purpose": "Used as flexible layout variants for either content slides or title slides, especially when using photos or images.",
+      "variants": [
+        {
+          "variant_id": "split_screen_slide",
+          "name": "Split screen slide"
+        },
+        {
+          "variant_id": "full_screen_slide",
+          "name": "Full screen slide"
+        }
+      ],
+      "source_guidance": "These layout variants can be used both as content slides and for title slides. Photos and images used must correspond to the Bosch imagery style.",
+      "ai_generation_rules": [
+        "Use split-screen or full-screen formats when the image is central to the message.",
+        "Ensure all photos and images follow Bosch imagery style.",
+        "The same layout family may support title or content purposes depending on the slide narrative."
+      ],
+      "related_assets": [
+        {
+          "asset_title": "Split and full picture slides",
+          "alt_text": "Split and full picture slides",
+          "description": "",
+          "filename": "PPT_Folientypen.png",
+          "file_type": "png",
+          "object_type": "IMAGE",
+          "dimensions_px": {
+            "width": 1600,
+            "height": 1600
+          },
+          "preview_url": "https://media.ffycdn.net/eu/bosch/tvtXRNCuSrC5cZabcVhp.png?width=800",
+          "generic_url": "https://media.ffycdn.net/eu/bosch/tvtXRNCuSrC5cZabcVhp.png?width={width}",
+          "link_url": "https://brandguide.bosch.com/document/839/en#/power-point/slide-types/split-screen-and-full-screen-slides",
+          "asset_id": 723229
+        }
+      ]
+    },
+    {
+      "id": "standard_content_slide",
+      "display_name": "Standard content slide",
+      "category": "content",
+      "purpose": "Used for regular presentation content such as text, diagrams, images, videos, and Bosch icons.",
+      "aliases": [
+        "Content slides"
+      ],
+      "fixed_components": [
+        {
+          "component": "Chapter heading",
+          "position_or_role": "1st line"
+        },
+        {
+          "component": "Headline",
+          "position_or_role": "2nd line in accent color"
+        },
+        {
+          "component": "Content area",
+          "position_or_role": "Area for texts and/or diagrams, images, videos, and Bosch icons"
+        },
+        {
+          "component": "Sender area",
+          "position_or_role": "Symbol/logotype and Supergraphic as narrow stripe"
+        },
+        {
+          "component": "Footer line 1",
+          "position_or_role": "Page number, note 'Internal', business unit, date"
+        },
+        {
+          "component": "Footer line 2",
+          "position_or_role": "Filing note, if applicable"
+        },
+        {
+          "component": "Footer line 3",
+          "position_or_role": "Confidentiality note; or 2nd line if no filing note is provided"
+        },
+        {
+          "component": "Attachment note",
+          "position_or_role": "Optional, inserted via the input mask in MasterLayout (ML)"
+        }
+      ],
+      "attachment_note_rules": {
+        "status": "optional",
+        "insertion_method": "Input mask in MasterLayout (ML)",
+        "compliance_reference": "The content must comply with the central instruction 'Uniform Form for Internal and external correspondence'.",
+        "if_not_needed": "If no attachment note is necessary, the headline can fill this area completely."
+      },
+      "source_guidance": "The fixed components include chapter heading, headline, content area, sender area, footer lines, confidentiality note, and optional attachment note.",
+      "ai_generation_rules": [
+        "Preserve the fixed hierarchy: chapter heading first, headline second, content area below.",
+        "Use accent color for the headline line as specified.",
+        "Keep sender, Supergraphic, and footer information as structural elements, not decorative extras.",
+        "Use the attachment note area only when required."
+      ],
+      "related_assets": [
+        {
+          "asset_title": "Content slides",
+          "alt_text": "Content slides",
+          "description": "",
+          "filename": "thumb-content.webp",
+          "file_type": "webp",
+          "object_type": "IMAGE",
+          "dimensions_px": {
+            "width": 800,
+            "height": 800
+          },
+          "preview_url": "https://media.ffycdn.net/eu/bosch/K1KNaBY4xPxGMxdk34At.webp?width=800",
+          "generic_url": "https://media.ffycdn.net/eu/bosch/K1KNaBY4xPxGMxdk34At.webp?width={width}",
+          "link_url": "https://brandguide.bosch.com/r/fNTb14Wjqq1eg9f6tDowJ91thy-Btc27oxDEQKtQbcw",
+          "asset_id": 330569
+        }
+      ]
+    }
+  ],
+  "download_resources": {
+    "description": "The download area contains all eForms slide types for external agencies and Mac users in 16:9 format, as well as the related Bosch Office Sans font.",
+    "resources_mentioned": [
+      "All eForms slide types in 16:9 format",
+      "Bosch Office Sans font"
+    ],
+    "intended_users_mentioned": [
+      "External agencies",
+      "Mac users"
+    ]
+  },
+  "related_topics": [
+    {
+      "topic": "Font and typography",
+      "relationship": "Supports typography consistency for PowerPoint slides."
+    },
+    {
+      "topic": "Imagery style",
+      "relationship": "Required for photos and images in split-screen and full-screen slides."
+    },
+    {
+      "topic": "Layout principle",
+      "relationship": "Supports overall slide structure and spacing decisions."
+    }
+  ],
+  "asset_inventory": [
+    {
+      "asset_title": "Title slides",
+      "alt_text": "Title slides",
+      "description": "",
+      "filename": "thumb-title-en.png",
+      "file_type": "png",
+      "object_type": "IMAGE",
+      "dimensions_px": {
+        "width": 800,
+        "height": 800
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/icZi6CMkaxKWY8RR52YS.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/icZi6CMkaxKWY8RR52YS.png?width={width}",
+      "link_url": "https://brandguide.bosch.com/r/Yi45PJXIrBqVA_jV3-bOLgTmzltsDe5f8KWnO5Tb7u8",
+      "asset_id": 330575
+    },
+    {
+      "asset_title": "Chapter slides",
+      "alt_text": "Chapter slides",
+      "description": "",
+      "filename": "thumb-chapter-en.webp",
+      "file_type": "webp",
+      "object_type": "IMAGE",
+      "dimensions_px": {
+        "width": 800,
+        "height": 800
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/JKeeam2AJC392e1JSKk2.webp?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/JKeeam2AJC392e1JSKk2.webp?width={width}",
+      "link_url": "https://brandguide.bosch.com/r/rbOF0gkBBWHOhNJ2neqi546r1ASOsAPSxi-weJWdD4U",
+      "asset_id": 330570
+    },
+    {
+      "asset_title": "Split and full picture slides",
+      "alt_text": "Split and full picture slides",
+      "description": "",
+      "filename": "PPT_Folientypen.png",
+      "file_type": "png",
+      "object_type": "IMAGE",
+      "dimensions_px": {
+        "width": 1600,
+        "height": 1600
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/tvtXRNCuSrC5cZabcVhp.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/tvtXRNCuSrC5cZabcVhp.png?width={width}",
+      "link_url": "https://brandguide.bosch.com/document/839/en#/power-point/slide-types/split-screen-and-full-screen-slides",
+      "asset_id": 723229
+    },
+    {
+      "asset_title": "Content slides",
+      "alt_text": "Content slides",
+      "description": "",
+      "filename": "thumb-content.webp",
+      "file_type": "webp",
+      "object_type": "IMAGE",
+      "dimensions_px": {
+        "width": 800,
+        "height": 800
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/K1KNaBY4xPxGMxdk34At.webp?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/K1KNaBY4xPxGMxdk34At.webp?width={width}",
+      "link_url": "https://brandguide.bosch.com/r/fNTb14Wjqq1eg9f6tDowJ91thy-Btc27oxDEQKtQbcw",
+      "asset_id": 330569
+    }
+  ],
+  "raw_evidence_text": [
+    "Bosch presentations should be structured as generously as possible. Plenty of white space supports the corporate design and helps to structure content clearly.",
+    "Font sizes and line spacing as well as font styles and colors are already set in eForms. Ideally, the font sizes should not be changed. If necessary, smaller font sizes can be used. In this case, however, attention should be paid to provide sufficient legibility.",
+    "The download area contains all eForms slide types for external agencies and Mac users in 16:9 format, as well as the related Bosch Office Sans font.",
+    "The following eForms slide templates are the standard title slides: Title slide horizontal Title slides vertical",
+    "The chapter slides are available in both horizontal and vertical designs to match the design of the title slides. The large chapter number is numbered manually.",
+    "These layout variants can be used both as content slides and for title slides. Photos and images used must correspond to the Bosch imagery style .",
+    "Best practice examples for content slides",
+    "The following elements are fixed components on this slide type: Chapter heading = 1st line Headline = 2nd line in accent color Content area for texts and/or diagrams, images, videos, Bosch icons Absender: symbol/logotype and Supergraphic as narrow stripe Footer 1st line: page number, note \"Internal\", business unit, date 2nd line: filing note, if applicable 3rd line: confidentiality note; or 2nd if no filing note is provided An attachment note (optional) is inserted via the input mask in the MasterLayout (ML). The content of the attachment note must comply with the central instruction \"Uniform Form for Internal and external correspondence\". If no attachment note is necessary, the headline can fill this area completely.",
+    "Related topics:",
+    "Font and typography | Imagery style | Layout principle"
+  ],
+  "ai_usage_guidance": {
+    "recommended_use": [
+      "Use this JSON as a rule base for generating or evaluating Bosch-style PowerPoint slides.",
+      "Map slide purpose to one of the slide_type ids before selecting a layout.",
+      "Apply global presentation guidelines before optimizing any individual slide."
+    ],
+    "validation_checks": [
+      "Does the slide use the correct slide type for its purpose?",
+      "Is the slide generously structured with sufficient white space?",
+      "Are eForms default typography settings preserved?",
+      "If smaller fonts are used, is legibility still sufficient?",
+      "If imagery is used, does it comply with Bosch imagery style?",
+      "For standard content slides, are fixed components preserved?"
+    ]
+  }
+}
