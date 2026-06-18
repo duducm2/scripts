@@ -1,0 +1,2067 @@
+{
+  "document_metadata": {
+    "file_name": "colors-site-research.json",
+    "source_file": "1.html",
+    "source_title": "Colors - Bosch Brand Guide",
+    "source_url_hint": "https://brandguide.bosch.com/document/2271/en#/-/colors-1",
+    "language": "en",
+    "last_modified_observed": "2025-08-28T12:19:00",
+    "extraction_date": "2026-06-18",
+    "purpose": "AI-readable structured representation of Bosch Colors guidance, color values, usage rules, themes, and implementation cues extracted from the supplied web page export."
+  },
+  "taxonomy": {
+    "page": "Colors",
+    "sections": [
+      "Color composition",
+      "Base colors",
+      "Brand color",
+      "Accent colors",
+      "Color gradations",
+      "Warning and notification colors",
+      "Light and Dark Theme",
+      "Use of color",
+      "Examples of use"
+    ]
+  },
+  "core_principles": [
+    {
+      "id": "principle_color_restraint",
+      "statement": "The Bosch color scheme relies on white and black with sparing use of one accent color, creating an open, breathable, reserved impression while leaving room for motif and brand promise.",
+      "implication_for_ai": "Prefer neutral surfaces and restrained accents. Avoid making color the dominant visual element unless the use case is functional or tied to the Supergraphic."
+    },
+    {
+      "id": "principle_supergraphic_contrast",
+      "statement": "The colorful narrow Supergraphic provides liveliness and contrast against the reserved overall color impression.",
+      "implication_for_ai": "Use the Supergraphic as a controlled visual contrast element rather than replacing it with broad decorative gradients."
+    },
+    {
+      "id": "principle_one_accent_at_a_time",
+      "statement": "Use one accent color at a time. Accent colors add vibrancy and differentiation without overwhelming the design.",
+      "implication_for_ai": "When generating layouts, select one accent family such as Bosch Blue, Purple, Turquoise, or Green for a single composition unless a functional state requires another color."
+    },
+    {
+      "id": "principle_functional_color",
+      "statement": "Warning and notification colors have a functional character and are not general decorative design colors.",
+      "implication_for_ai": "Reserve yellow, red, green, and blue functional states for warnings, errors, success, important notifications, and information."
+    },
+    {
+      "id": "principle_no_gradients",
+      "statement": "Gradients are not permitted. Use individual colors or lighter/darker gradations with the main accent color.",
+      "implication_for_ai": "Do not create gradient fills from Bosch palette colors. Use discrete swatches, flat fills, or explicit gradation steps."
+    },
+    {
+      "id": "principle_accessible_contrast",
+      "statement": "Color gradations support accessibility and contrast. The background and text color distance should be at least 50 according to the guidance referenced in the page.",
+      "implication_for_ai": "For text and delicate UI elements, use high-contrast combinations, typically black or white text, and check light/dark theme contrast."
+    }
+  ],
+  "base_colors": [
+    {
+      "name": "White",
+      "hex": "#ffffff",
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "cmyk": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "role": "Primary background and neutral surface."
+    },
+    {
+      "name": "Black",
+      "hex": "#000000",
+      "rgb": [
+        0,
+        0,
+        0
+      ],
+      "cmyk": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "role": "Primary text and high-contrast neutral."
+    },
+    {
+      "name": "Bosch Gray 50",
+      "hex": "#71767c",
+      "rgb": [
+        113,
+        118,
+        124
+      ],
+      "cmyk": [
+        15,
+        5,
+        0,
+        63
+      ],
+      "ral": "260.50.05",
+      "pms": "430",
+      "role": "Neutral gray reference in base palette."
+    }
+  ],
+  "brand_color": {
+    "name": "Bosch Red 50",
+    "hex": "#ed0007",
+    "rgb": [
+      237,
+      0,
+      7
+    ],
+    "cmyk": [
+      0,
+      100,
+      100,
+      0
+    ],
+    "ral": "030.50.60",
+    "pms": "485",
+    "less_variable": "torch-red",
+    "usage_rule": "Exclusive for the Bosch logotype and error messages when used as functional red. Not for general accent or decorative use."
+  },
+  "primary_digital_brand_color": {
+    "name": "Bosch Blue 50",
+    "hex": "#007bc0",
+    "rgb": [
+      0,
+      123,
+      192
+    ],
+    "cmyk": [
+      85,
+      43,
+      0,
+      0
+    ],
+    "ral": "260.50.40",
+    "pms": "2172 or 7717 as observed in extracted variants",
+    "less_variable": "lochmara-2",
+    "usage": [
+      "links",
+      "buttons",
+      "navigation hover/active states",
+      "information accents",
+      "digital UI emphasis"
+    ]
+  },
+  "accent_colors": [
+    {
+      "name": "Bosch Purple 40",
+      "hex": "#9e2896",
+      "rgb": [
+        158,
+        40,
+        150
+      ],
+      "cmyk": [
+        51,
+        94,
+        0,
+        0
+      ],
+      "ral": "330.40.45",
+      "pms": "513",
+      "role": "Accent color derived from the Supergraphic."
+    },
+    {
+      "name": "Bosch Blue 50",
+      "hex": "#007bc0",
+      "rgb": [
+        0,
+        123,
+        192
+      ],
+      "cmyk": [
+        85,
+        43,
+        0,
+        0
+      ],
+      "ral": "260.50.40",
+      "pms": "2172/7717",
+      "role": "Primary digital accent, links, buttons, information."
+    },
+    {
+      "name": "Bosch Turquoise 50",
+      "hex": "#18837e",
+      "rgb": [
+        24,
+        131,
+        126
+      ],
+      "cmyk": [
+        90,
+        20,
+        50,
+        10
+      ],
+      "ral": "190.50.40",
+      "pms": "7717",
+      "role": "Accent color derived from the Supergraphic."
+    },
+    {
+      "name": "Bosch Green 50",
+      "hex": "#00884a",
+      "rgb": [
+        0,
+        136,
+        74
+      ],
+      "cmyk": [
+        85,
+        15,
+        85,
+        12
+      ],
+      "ral": "150.50.50",
+      "pms": "7731",
+      "role": "Accent color and positive feedback color."
+    }
+  ],
+  "functional_colors": [
+    {
+      "function": "important_notification",
+      "name": "Bosch Yellow 85",
+      "hex": "#ffcf00",
+      "rgb": [
+        255,
+        207,
+        0
+      ],
+      "cmyk": [
+        0,
+        15,
+        95,
+        0
+      ],
+      "less_variable": "gold",
+      "usage_rule": "Use for important notifications and warnings only, not as decorative color."
+    },
+    {
+      "function": "positive_feedback",
+      "name": "Bosch Green 50",
+      "hex": "#00884a",
+      "rgb": [
+        0,
+        136,
+        74
+      ],
+      "cmyk": [
+        85,
+        15,
+        85,
+        12
+      ],
+      "less_variable": "fun-green",
+      "usage_rule": "Use for positive feedback, success, or tip states."
+    },
+    {
+      "function": "error",
+      "name": "Bosch Red 50",
+      "hex": "#ed0007",
+      "rgb": [
+        237,
+        0,
+        7
+      ],
+      "cmyk": [
+        0,
+        100,
+        100,
+        0
+      ],
+      "less_variable": "torch-red",
+      "usage_rule": "Use for error messages. Red gradations are restricted to error states."
+    },
+    {
+      "function": "information",
+      "name": "Bosch Blue 50",
+      "hex": "#007bc0",
+      "rgb": [
+        0,
+        123,
+        192
+      ],
+      "cmyk": [
+        85,
+        43,
+        0,
+        0
+      ],
+      "less_variable": "lochmara-2",
+      "usage_rule": "Use for information and interactive accents."
+    },
+    {
+      "function": "warning",
+      "name": "Warning",
+      "rgb": [
+        190,
+        0,
+        4
+      ],
+      "usage_rule": "Used for warning callouts, alert/don't states, and attention surfaces."
+    },
+    {
+      "function": "note",
+      "name": "Note",
+      "rgb": [
+        205,
+        166,
+        0
+      ],
+      "usage_rule": "Used for note callouts or notification emphasis."
+    },
+    {
+      "function": "tip",
+      "name": "Tip",
+      "rgb": [
+        0,
+        108,
+        58
+      ],
+      "usage_rule": "Used for tip/success-like informational guidance."
+    },
+    {
+      "function": "info",
+      "name": "Info",
+      "rgb": [
+        0,
+        98,
+        154
+      ],
+      "usage_rule": "Used for information callouts and darker blue UI states."
+    }
+  ],
+  "gradation_rules": {
+    "naming_convention": "The numeric suffix indicates brightness. Higher value means lighter color, lower value means darker color.",
+    "allowed_use": [
+      "infographics",
+      "diagrams",
+      "reporting",
+      "illustrations",
+      "UI backgrounds",
+      "theme adaptation",
+      "hover and active states"
+    ],
+    "restrictions": [
+      "Do not use gradients",
+      "Do not use gradations alone without the main accent color",
+      "Prefer black or white font color for contrast",
+      "Use red and yellow gradations only for functional states when applicable"
+    ],
+    "color_spaces_supported": [
+      "HEX",
+      "RGB",
+      "CMYK",
+      "LESS",
+      "SCSS",
+      "RAL",
+      "ORA",
+      "PMS",
+      "PMS-C",
+      "PMS-U",
+      "PMS-CP",
+      "PMS-PQ",
+      "PMS-TCX",
+      "CMYK-C",
+      "CMYK-U",
+      "CMYK-N",
+      "NCS",
+      "HKS",
+      "3M",
+      "LAB"
+    ],
+    "conversion_notes": [
+      "CMYK values are auto-converted and may differ depending on the color profile.",
+      "RAL, ORA, PMS variants, NCS, HKS, 3M, LAB and some CMYK profile fields require manual entry."
+    ]
+  },
+  "gradation_families": {
+    "bosch_gray": [
+      {
+        "step": "95",
+        "hex": "#eff1f2",
+        "rgb": [
+          239,
+          241,
+          242
+        ],
+        "cmyk": [
+          0,
+          0,
+          0,
+          8
+        ]
+      },
+      {
+        "step": "90",
+        "hex": "#e0e2e5",
+        "rgb": [
+          224,
+          226,
+          229
+        ],
+        "cmyk": [
+          3,
+          0,
+          0,
+          15
+        ]
+      },
+      {
+        "step": "85",
+        "hex": "#d0d4d8",
+        "rgb": [
+          208,
+          212,
+          216
+        ],
+        "cmyk": [
+          5,
+          0,
+          0,
+          21
+        ]
+      },
+      {
+        "step": "80",
+        "hex": "#c1c7cc",
+        "rgb": [
+          193,
+          199,
+          204
+        ],
+        "cmyk": [
+          5,
+          0,
+          0,
+          28
+        ]
+      },
+      {
+        "step": "75",
+        "hex": "#b2b9c0",
+        "rgb": [
+          178,
+          185,
+          192
+        ],
+        "cmyk": [
+          10,
+          3,
+          0,
+          35
+        ]
+      },
+      {
+        "step": "70",
+        "hex": "#a4abb3",
+        "rgb": [
+          164,
+          171,
+          179
+        ],
+        "cmyk": [
+          10,
+          3,
+          0,
+          40
+        ]
+      },
+      {
+        "step": "65",
+        "hex": "#979ea4",
+        "rgb": [
+          151,
+          158,
+          164
+        ],
+        "cmyk": [
+          10,
+          3,
+          0,
+          46
+        ]
+      },
+      {
+        "step": "60",
+        "hex": "#8a9097",
+        "rgb": [
+          138,
+          144,
+          151
+        ],
+        "cmyk": [
+          12,
+          5,
+          0,
+          52
+        ]
+      },
+      {
+        "step": "55",
+        "hex": "#7d8389",
+        "rgb": [
+          125,
+          131,
+          137
+        ],
+        "cmyk": [
+          12,
+          5,
+          0,
+          58
+        ]
+      },
+      {
+        "step": "50",
+        "hex": "#71767c",
+        "rgb": [
+          113,
+          118,
+          124
+        ],
+        "cmyk": [
+          15,
+          5,
+          0,
+          63
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#656a6f",
+        "rgb": [
+          101,
+          106,
+          111
+        ],
+        "cmyk": [
+          18,
+          8,
+          0,
+          68
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#595e62",
+        "rgb": [
+          89,
+          94,
+          98
+        ],
+        "cmyk": [
+          18,
+          8,
+          0,
+          73
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#4e5256",
+        "rgb": [
+          78,
+          82,
+          86
+        ],
+        "cmyk": [
+          18,
+          7,
+          0,
+          78
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#43464a",
+        "rgb": [
+          67,
+          70,
+          74
+        ],
+        "cmyk": [
+          16,
+          7,
+          0,
+          82
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#383b3e",
+        "rgb": [
+          56,
+          59,
+          62
+        ],
+        "cmyk": [
+          18,
+          7,
+          0,
+          85
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#2e3033",
+        "rgb": [
+          46,
+          48,
+          51
+        ],
+        "cmyk": [
+          18,
+          6,
+          0,
+          88
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#232628",
+        "rgb": [
+          35,
+          38,
+          40
+        ],
+        "cmyk": [
+          20,
+          8,
+          0,
+          91
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#1a1c1d",
+        "rgb": [
+          26,
+          28,
+          29
+        ],
+        "cmyk": [
+          20,
+          8,
+          0,
+          95
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#101112",
+        "rgb": [
+          16,
+          17,
+          18
+        ],
+        "cmyk": [
+          30,
+          10,
+          0,
+          97
+        ]
+      }
+    ],
+    "bosch_blue": [
+      {
+        "step": "95",
+        "hex": "#e8f1ff",
+        "rgb": [
+          232,
+          241,
+          255
+        ],
+        "cmyk": [
+          12,
+          4,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "90",
+        "hex": "#d1e4ff",
+        "rgb": [
+          209,
+          228,
+          255
+        ],
+        "cmyk": [
+          20,
+          6,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "85",
+        "hex": "#b8d6ff",
+        "rgb": [
+          184,
+          214,
+          255
+        ],
+        "cmyk": [
+          31,
+          11,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "80",
+        "hex": "#9dc9ff",
+        "rgb": [
+          157,
+          201,
+          255
+        ],
+        "cmyk": [
+          42,
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "75",
+        "hex": "#7ebdff",
+        "rgb": [
+          126,
+          189,
+          255
+        ],
+        "cmyk": [
+          52,
+          18,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "70",
+        "hex": "#56b0ff",
+        "rgb": [
+          86,
+          176,
+          255
+        ],
+        "cmyk": [
+          62,
+          23,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "65",
+        "hex": "#00a4fd",
+        "rgb": [
+          0,
+          164,
+          253
+        ],
+        "cmyk": [
+          70,
+          28,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "60",
+        "hex": "#0096e8",
+        "rgb": [
+          0,
+          150,
+          232
+        ],
+        "cmyk": [
+          75,
+          33,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "55",
+        "hex": "#0088d4",
+        "rgb": [
+          0,
+          136,
+          212
+        ],
+        "cmyk": [
+          80,
+          38,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "50",
+        "hex": "#007bc0",
+        "rgb": [
+          0,
+          123,
+          192
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#006ead",
+        "rgb": [
+          0,
+          110,
+          173
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          15
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#00629a",
+        "rgb": [
+          0,
+          98,
+          154
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          30
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#005587",
+        "rgb": [
+          0,
+          85,
+          135
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          41
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#004975",
+        "rgb": [
+          0,
+          73,
+          117
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          55
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#003e64",
+        "rgb": [
+          0,
+          62,
+          100
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          64
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#003253",
+        "rgb": [
+          0,
+          50,
+          83
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          72
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#002742",
+        "rgb": [
+          0,
+          39,
+          66
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          80
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#001d33",
+        "rgb": [
+          0,
+          29,
+          51
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          88
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#001222",
+        "rgb": [
+          0,
+          18,
+          34
+        ],
+        "cmyk": [
+          85,
+          43,
+          0,
+          94
+        ]
+      }
+    ],
+    "bosch_purple_core": [
+      {
+        "step": "40",
+        "hex": "#9e2896",
+        "rgb": [
+          158,
+          40,
+          150
+        ],
+        "cmyk": [
+          51,
+          94,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#8b2284",
+        "rgb": [
+          139,
+          34,
+          132
+        ],
+        "cmyk": [
+          54,
+          97,
+          0,
+          0
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#791d73",
+        "rgb": [
+          121,
+          29,
+          115
+        ],
+        "cmyk": [
+          55,
+          100,
+          0,
+          20
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#671761",
+        "rgb": [
+          103,
+          23,
+          97
+        ],
+        "cmyk": [
+          55,
+          100,
+          0,
+          33
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#551151",
+        "rgb": [
+          85,
+          17,
+          81
+        ],
+        "cmyk": [
+          53,
+          100,
+          0,
+          52
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#440c41",
+        "rgb": [
+          68,
+          12,
+          65
+        ],
+        "cmyk": [
+          60,
+          100,
+          0,
+          65
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#340731",
+        "rgb": [
+          52,
+          7,
+          49
+        ],
+        "cmyk": [
+          60,
+          100,
+          0,
+          80
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#230421",
+        "rgb": [
+          35,
+          4,
+          33
+        ],
+        "cmyk": [
+          70,
+          100,
+          0,
+          90
+        ]
+      }
+    ],
+    "bosch_turquoise_core": [
+      {
+        "step": "50",
+        "hex": "#18837e",
+        "rgb": [
+          24,
+          131,
+          126
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          10
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#147671",
+        "rgb": [
+          20,
+          118,
+          113
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          24
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#116864",
+        "rgb": [
+          17,
+          104,
+          100
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          38
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#0e5b57",
+        "rgb": [
+          14,
+          91,
+          87
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          48
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#0a4f4b",
+        "rgb": [
+          10,
+          79,
+          75
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          58
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#07423f",
+        "rgb": [
+          7,
+          66,
+          63
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          67
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#053634",
+        "rgb": [
+          5,
+          54,
+          52
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          76
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#032b28",
+        "rgb": [
+          3,
+          43,
+          40
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          83
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#02201e",
+        "rgb": [
+          2,
+          32,
+          30
+        ],
+        "cmyk": [
+          90,
+          20,
+          50,
+          89
+        ]
+      }
+    ],
+    "bosch_green_core": [
+      {
+        "step": "50",
+        "hex": "#00884a",
+        "rgb": [
+          0,
+          136,
+          74
+        ],
+        "cmyk": [
+          85,
+          15,
+          85,
+          12
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#007a42",
+        "rgb": [
+          0,
+          122,
+          66
+        ],
+        "cmyk": [
+          88,
+          22,
+          88,
+          20
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#006c3a",
+        "rgb": [
+          0,
+          108,
+          58
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          35
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#005f32",
+        "rgb": [
+          0,
+          95,
+          50
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          42
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#00512a",
+        "rgb": [
+          0,
+          81,
+          42
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          52
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#004523",
+        "rgb": [
+          0,
+          69,
+          35
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          60
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#00381b",
+        "rgb": [
+          0,
+          56,
+          27
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          70
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#002c14",
+        "rgb": [
+          0,
+          44,
+          20
+        ],
+        "cmyk": [
+          90,
+          30,
+          95,
+          78
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#00210e",
+        "rgb": [
+          0,
+          33,
+          14
+        ],
+        "cmyk": [
+          95,
+          30,
+          100,
+          86
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#001507",
+        "rgb": [
+          0,
+          21,
+          7
+        ],
+        "cmyk": [
+          95,
+          30,
+          100,
+          93
+        ]
+      }
+    ],
+    "bosch_yellow_warning": [
+      {
+        "step": "95",
+        "hex": "#ffefd1",
+        "rgb": [
+          255,
+          239,
+          209
+        ],
+        "cmyk": [
+          0,
+          7,
+          20,
+          0
+        ]
+      },
+      {
+        "step": "90",
+        "hex": "#ffdf95",
+        "rgb": [
+          255,
+          223,
+          149
+        ],
+        "cmyk": [
+          0,
+          15,
+          50,
+          0
+        ]
+      },
+      {
+        "step": "85",
+        "hex": "#ffcf00",
+        "rgb": [
+          255,
+          207,
+          0
+        ],
+        "cmyk": [
+          0,
+          15,
+          95,
+          0
+        ]
+      },
+      {
+        "step": "80",
+        "hex": "#eec100",
+        "rgb": [
+          238,
+          193,
+          0
+        ],
+        "cmyk": [
+          0,
+          20,
+          100,
+          0
+        ]
+      },
+      {
+        "step": "75",
+        "hex": "#deb300",
+        "rgb": [
+          222,
+          179,
+          0
+        ],
+        "cmyk": [
+          0,
+          22,
+          100,
+          10
+        ]
+      },
+      {
+        "step": "70",
+        "hex": "#cda600",
+        "rgb": [
+          205,
+          166,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          18
+        ]
+      },
+      {
+        "step": "65",
+        "hex": "#bd9900",
+        "rgb": [
+          189,
+          153,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          27
+        ]
+      },
+      {
+        "step": "60",
+        "hex": "#ad8c00",
+        "rgb": [
+          173,
+          140,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          32
+        ]
+      },
+      {
+        "step": "55",
+        "hex": "#9e7f00",
+        "rgb": [
+          158,
+          127,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          40
+        ]
+      },
+      {
+        "step": "50",
+        "hex": "#8f7300",
+        "rgb": [
+          143,
+          115,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          50
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#806700",
+        "rgb": [
+          128,
+          103,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          60
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#725b00",
+        "rgb": [
+          114,
+          91,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          70
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#644f00",
+        "rgb": [
+          100,
+          79,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          75
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#564400",
+        "rgb": [
+          86,
+          68,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          80
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#493900",
+        "rgb": [
+          73,
+          57,
+          0
+        ],
+        "cmyk": [
+          0,
+          25,
+          100,
+          85
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#3c2e00",
+        "rgb": [
+          60,
+          46,
+          0
+        ],
+        "cmyk": [
+          4,
+          29,
+          100,
+          88
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#2f2400",
+        "rgb": [
+          47,
+          36,
+          0
+        ],
+        "cmyk": [
+          15,
+          35,
+          95,
+          91
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#231a00",
+        "rgb": [
+          35,
+          26,
+          0
+        ],
+        "cmyk": [
+          17,
+          38,
+          90,
+          95
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#171000",
+        "rgb": [
+          23,
+          16,
+          0
+        ],
+        "cmyk": [
+          45,
+          50,
+          80,
+          95
+        ]
+      }
+    ],
+    "bosch_red_error": [
+      {
+        "step": "95",
+        "hex": "#ffecec",
+        "rgb": [
+          255,
+          236,
+          236
+        ],
+        "cmyk": [
+          0,
+          10,
+          5,
+          0
+        ]
+      },
+      {
+        "step": "90",
+        "hex": "#ffd9d9",
+        "rgb": [
+          255,
+          217,
+          217
+        ],
+        "cmyk": [
+          0,
+          20,
+          10,
+          0
+        ]
+      },
+      {
+        "step": "85",
+        "hex": "#ffc6c6",
+        "rgb": [
+          255,
+          198,
+          198
+        ],
+        "cmyk": [
+          0,
+          30,
+          18,
+          0
+        ]
+      },
+      {
+        "step": "80",
+        "hex": "#ffb2b2",
+        "rgb": [
+          255,
+          178,
+          178
+        ],
+        "cmyk": [
+          0,
+          40,
+          25,
+          0
+        ]
+      },
+      {
+        "step": "75",
+        "hex": "#ff9d9d",
+        "rgb": [
+          255,
+          157,
+          157
+        ],
+        "cmyk": [
+          0,
+          50,
+          30,
+          0
+        ]
+      },
+      {
+        "step": "70",
+        "hex": "#ff8787",
+        "rgb": [
+          255,
+          135,
+          135
+        ],
+        "cmyk": [
+          0,
+          60,
+          40,
+          0
+        ]
+      },
+      {
+        "step": "65",
+        "hex": "#ff6e6f",
+        "rgb": [
+          255,
+          110,
+          111
+        ],
+        "cmyk": [
+          0,
+          70,
+          50,
+          0
+        ]
+      },
+      {
+        "step": "60",
+        "hex": "#ff5152",
+        "rgb": [
+          255,
+          81,
+          82
+        ],
+        "cmyk": [
+          0,
+          82,
+          66,
+          0
+        ]
+      },
+      {
+        "step": "55",
+        "hex": "#ff2124",
+        "rgb": [
+          255,
+          33,
+          36
+        ],
+        "cmyk": [
+          0,
+          93,
+          83,
+          0
+        ]
+      },
+      {
+        "step": "50",
+        "hex": "#ed0007",
+        "rgb": [
+          237,
+          0,
+          7
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          0
+        ]
+      },
+      {
+        "step": "45",
+        "hex": "#d50005",
+        "rgb": [
+          213,
+          0,
+          5
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          10
+        ]
+      },
+      {
+        "step": "40",
+        "hex": "#be0004",
+        "rgb": [
+          190,
+          0,
+          4
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          25
+        ]
+      },
+      {
+        "step": "35",
+        "hex": "#a80003",
+        "rgb": [
+          168,
+          0,
+          3
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          40
+        ]
+      },
+      {
+        "step": "30",
+        "hex": "#920002",
+        "rgb": [
+          146,
+          0,
+          2
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          50
+        ]
+      },
+      {
+        "step": "25",
+        "hex": "#7d0002",
+        "rgb": [
+          125,
+          0,
+          2
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          60
+        ]
+      },
+      {
+        "step": "20",
+        "hex": "#680001",
+        "rgb": [
+          104,
+          0,
+          1
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          70
+        ]
+      },
+      {
+        "step": "15",
+        "hex": "#540001",
+        "rgb": [
+          84,
+          0,
+          1
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          75
+        ]
+      },
+      {
+        "step": "10",
+        "hex": "#410000",
+        "rgb": [
+          65,
+          0,
+          0
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          86
+        ]
+      },
+      {
+        "step": "05",
+        "hex": "#2d0000",
+        "rgb": [
+          45,
+          0,
+          0
+        ],
+        "cmyk": [
+          0,
+          100,
+          100,
+          93
+        ]
+      }
+    ]
+  },
+  "themes": {
+    "light_theme": {
+      "status": "default",
+      "description": "Light Mode is the Bosch default. It uses bright and white backgrounds with selective functional color emphasis.",
+      "background": "#ffffff",
+      "text": "#000000",
+      "link": "#007bc0",
+      "usage_guidance": [
+        "Use white content boxes",
+        "Use color sparingly",
+        "Prefer functional emphasis over decoration"
+      ]
+    },
+    "dark_theme": {
+      "status": "alternative",
+      "description": "Dark Mode is for screens/UI in night or dark environments. It reverses the color impression: white becomes black, and backgrounds use dark base colors or Bosch Blue below 20.",
+      "recommended_backgrounds": [
+        "Bosch Gray 10",
+        "Bosch Gray 05",
+        "Bosch Blue 15",
+        "Bosch Blue 10",
+        "Bosch Blue 05"
+      ],
+      "accent_guidance": [
+        "Flat elements on dark backgrounds should use the respective accent color",
+        "Typefaces and delicate elements on dark backgrounds should use lighter accent gradations",
+        "Example: Bosch Blue 50 on white can become Bosch Blue 70 on dark"
+      ]
+    }
+  },
+  "ui_component_tokens": {
+    "links": {
+      "color": "#007bc0",
+      "hover_color": "#00629a"
+    },
+    "primary_button": {
+      "background": "#007bc0",
+      "text": "#ffffff",
+      "border": "#007bc0",
+      "hover_background": "#00629a",
+      "hover_text": "#ffffff"
+    },
+    "secondary_button": {
+      "background": "transparent",
+      "text": "#007bc0",
+      "border": "#007bc0",
+      "hover_background": "#d1e4ff",
+      "hover_text": "#00629a",
+      "hover_border": "#00629a"
+    },
+    "tertiary_button": {
+      "background": "transparent",
+      "text": "#007bc0",
+      "border": "transparent",
+      "hover_background": "transparent",
+      "hover_text": "#00629a"
+    },
+    "callouts": {
+      "info": "#00629a",
+      "note": "#cda600",
+      "tip": "#006c3a",
+      "warning": "#be0004"
+    },
+    "typography": {
+      "font_family": "Bosch Sans",
+      "body_size": "18px",
+      "heading1": "2.5rem",
+      "heading2": "2rem",
+      "heading3": "1.5rem"
+    },
+    "lists": {
+      "bullet_level_1": "■",
+      "bullet_level_2": "–",
+      "bullet_level_3": "–",
+      "bullet_color": "currentColor"
+    }
+  },
+  "tools_and_downloads": {
+    "color_finder_tool": {
+      "description": "Tool for finding correct color values depending on the application.",
+      "source_link_text": "Color Finder Tool"
+    },
+    "adobe_palettes": [
+      {
+        "name": "Bosch_Colors_CMYK_2022.ase.zip",
+        "format": "Adobe ASE",
+        "size": "2 KB",
+        "use": "CMYK palettes for Adobe programs"
+      },
+      {
+        "name": "Bosch_Colors_sRGB_2022 2.ase.zip",
+        "format": "Adobe ASE",
+        "size": "3 KB",
+        "use": "sRGB palettes for Adobe programs"
+      }
+    ],
+    "support": {
+      "team": "Bosch Design Support",
+      "email": "support.design@bosch.com",
+      "response_time": "2-5 business days"
+    }
+  },
+  "ai_usage_guidelines": {
+    "do": [
+      "Use white, black, and gray as the foundation of most layouts.",
+      "Use Bosch Blue 50 for primary digital interactive elements unless another accent family is explicitly required.",
+      "Use one accent family per composition.",
+      "Use red only for logotype or error states, depending on context.",
+      "Use yellow only for warnings or important notifications.",
+      "Use gradations to solve contrast and hierarchy, especially in light/dark themes.",
+      "Keep font color black or white unless specific typography guidance allows an exception."
+    ],
+    "dont": [
+      "Do not use Bosch Red as a decorative accent.",
+      "Do not use gradients.",
+      "Do not mix multiple accent colors decoratively in one layout.",
+      "Do not treat warning/notification colors as brand decoration.",
+      "Do not rely on automatically converted PMS/RAL/NCS/HKS/LAB values without manual verification."
+    ]
+  }
+}

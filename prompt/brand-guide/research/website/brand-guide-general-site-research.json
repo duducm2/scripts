@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "file_name": "brand-guide-general-site-research.json",
+    "generated_at": "2026-06-18",
+    "source_files": [
+      "1.html",
+      "2.html",
+      "3.html"
+    ],
+    "source_pages": [
+      {
+        "file": "1.html",
+        "page_title": "Overview Brand design - Brand design - Bosch Brand Guide",
+        "saved_from_url": "https://brandguide.bosch.com/document/639/en#/brand-design/overview-brand-design"
+      },
+      {
+        "file": "2.html",
+        "page_title": "Design principles - Brand design - Bosch Brand Guide",
+        "saved_from_url": "https://brandguide.bosch.com/document/639/en#/brand-design/design-principles"
+      },
+      {
+        "file": "3.html",
+        "page_title": "How our brand appears - Brand design - Bosch Brand Guide",
+        "saved_from_url": "https://brandguide.bosch.com/document/639/en#/brand-design/how-our-brand-appears"
+      }
+    ],
+    "intended_use": "AI-readable structured summary of unstructured Bosch Brand Guide web pages for research, prompt engineering, design governance, and downstream design generation.",
+    "language": "en"
+  },
+  "brand": {
+    "name": "Bosch",
+    "brand_guide_area": "Brand design",
+    "brand_design_purpose": "Provide a comprehensive set of tools for all aspects of Bosch Corporate Design, enabling a uniform Bosch image and a convincing brand experience across touchpoints.",
+    "core_message": "Design makes the Bosch brand authentically visible and translates brand positioning into a tangible, consistent experience."
+  },
+  "overview": {
+    "scope": [
+      "Basic corporate design elements such as symbol/logotype and Supergraphic",
+      "UI patterns for digital products",
+      "Style guides for respective touchpoints",
+      "Design principles and appearance guidance"
+    ],
+    "primary_objectives": [
+      "Create a uniform Bosch image",
+      "Create a convincing brand experience",
+      "Make the Bosch brand tangible and recognizable",
+      "Support consistent application across business units, media, and touchpoints"
+    ],
+    "brand_structure_metaphor": {
+      "phrase": "Many fibres. One rope. Many units. One brand.",
+      "meaning": "Bosch's many business units and fields of expertise should appear as one unified brand through consistent corporate design."
+    }
+  },
+  "brand_positioning": {
+    "corporate_design": {
+      "definition": "The visual representation of Bosch brand positioning.",
+      "role": "Transforms abstract brand values into visible design decisions, creating recognition and coherence."
+    },
+    "brand_experience": {
+      "design_language_role": "A distinctive design language delivers a compelling experience, makes the brand tangible, and highlights Bosch values.",
+      "expected_effect": [
+        "recognition",
+        "clarity",
+        "consistency",
+        "trustworthiness",
+        "quality perception"
+      ]
+    },
+    "brand_promise": {
+      "quality": "Quality is treated as a Bosch brand promise and must be reflected in design, not only in products or services.",
+      "simplicity": "Design should be minimalistic, functional, and focused on user experience.",
+      "agility_and_diversity": "The visual language should be adaptable and should express the diversity of Bosch divisions and contexts."
+    }
+  },
+  "design_principles": {
+    "visual_identity": {
+      "summary": "Bosch's broad range of expertise makes the brand unique. Corporate design visualizes this whole and makes the brand identity perceptible.",
+      "business_areas": [
+        "Mobility solutions",
+        "Industrial technology",
+        "Consumer goods",
+        "Energy and building solutions"
+      ],
+      "application_rule": "When creating visual material, preserve a unified Bosch identity even when the topic belongs to a specific division or product area."
+    },
+    "flat_design": {
+      "summary": "Bosch design is minimalistic and reduced to essentials. It combines Bosch design elements with clear and open surfaces, lively colors, rectangular shapes, and clear edges.",
+      "do": [
+        "Use clear, open surfaces",
+        "Use functional design elements",
+        "Use rectangular shapes and clear edges",
+        "Use color purposefully to structure information or create emphasis"
+      ],
+      "dont": [
+        "Do not use decorative drop shadows",
+        "Do not use rounded edges as a dominant visual language",
+        "Do not add ornamental effects that reduce clarity"
+      ]
+    },
+    "less_is_more": {
+      "summary": "Design elements should be used only where needed. Color and visual emphasis should support user experience and avoid clutter.",
+      "do": [
+        "Prioritize simplicity",
+        "Use design elements for functional reasons",
+        "Use colors prudently",
+        "Emphasize only the elements that need attention"
+      ],
+      "dont": [
+        "Do not overload layouts with unnecessary shapes, colors, or decorative elements",
+        "Do not use color without a clear communicative purpose"
+      ]
+    },
+    "high_quality": {
+      "summary": "Design should reflect Bosch's promise of quality across all business fields and touchpoints.",
+      "do": [
+        "Use precise alignment and spacing",
+        "Maintain high readability",
+        "Use high-quality imagery and assets",
+        "Keep layouts consistent and deliberate"
+      ],
+      "dont": [
+        "Do not use low-resolution assets",
+        "Do not create inconsistent or improvised visual systems",
+        "Do not sacrifice legibility for decoration"
+      ]
+    }
+  },
+  "core_visual_elements": {
+    "symbol_logotype": {
+      "role": "Primary brand identifier optimized for clarity and recognition.",
+      "usage_intent": "Use consistently as a corporate identity anchor when brand attribution is required."
+    },
+    "supergraphic": {
+      "role": "Key colored design element representing Bosch strengths and adaptability.",
+      "symbolism": {
+        "intersecting_boxes": "Connection between technology and people.",
+        "invented_for_life": "Represents Bosch's guiding idea of technology serving life.",
+        "color_variety": "Represents agility and diversity across divisions."
+      },
+      "usage_intent": "Use as a distinctive brand framing or accent element when a Bosch-branded look is needed."
+    },
+    "colors": {
+      "role": "Support brand recognition, hierarchy, emphasis, accessibility, agility, and diversity.",
+      "known_theme_colors_from_site_css": {
+        "link_blue_rgb": "rgb(0, 123, 192)",
+        "info_blue_rgba": "rgba(0, 98, 154, 1)",
+        "note_yellow_rgba": "rgba(205, 166, 0, 1)",
+        "tip_green_rgb": "rgb(0, 108, 58)",
+        "warning_red_rgb": "rgb(190, 0, 4)",
+        "background_white_rgba": "rgba(255, 255, 255, 1)",
+        "body_black_rgb": "rgb(0, 0, 0)"
+      },
+      "application_rule": "Use colors prudently and with clear hierarchy. Avoid unnecessary color noise."
+    },
+    "layout_principle": {
+      "role": "Flexible layout logic for adapting Bosch identity across different touchpoints.",
+      "application_rule": "Prioritize clear structure, openness, functional hierarchy, and consistency."
+    },
+    "imagery_style": {
+      "role": "Make Bosch relatable, human-centric, and authentic.",
+      "attributes": [
+        "lifelike imagery",
+        "engaging illustrations",
+        "global footprint",
+        "human-centric context"
+      ],
+      "application_rule": "Use imagery that feels realistic and supports the brand story rather than purely decorative visuals."
+    },
+    "typography": {
+      "font_family": "Bosch Sans",
+      "role": "Primary font for headings, body text, captions, links, buttons, and UI elements.",
+      "known_site_type_styles": {
+        "heading_1": {
+          "size": "2.5rem",
+          "line_height": "1.3",
+          "weight": "700"
+        },
+        "heading_2": {
+          "size": "2rem",
+          "line_height": "1.3",
+          "weight": "700"
+        },
+        "heading_3": {
+          "size": "1.5rem",
+          "line_height": "1.4",
+          "weight": "700"
+        },
+        "heading_4": {
+          "size": "18px",
+          "line_height": "1.5",
+          "weight": "700"
+        },
+        "body": {
+          "size": "18px",
+          "line_height": "1.5",
+          "weight": "400"
+        },
+        "link": {
+          "size": "18px",
+          "line_height": "1.5",
+          "weight": "400",
+          "color": "rgb(0, 123, 192)",
+          "decoration": "underline"
+        },
+        "quote": {
+          "size": "3.5rem",
+          "line_height": "1",
+          "weight": "600"
+        }
+      },
+      "application_rule": "Use Bosch Sans consistently to preserve readability and brand continuity."
+    },
+    "icons": {
+      "role": "Support a consistent visual language through a shared icon library.",
+      "application_rule": "Use icons functionally to clarify meaning, not as decoration."
+    }
+  },
+  "digital_ui_tokens_observed_from_site": {
+    "buttons": {
+      "primary": {
+        "font_family": "Bosch Sans",
+        "font_size": "1rem",
+        "line_height": "1.5",
+        "font_weight": "400",
+        "border_radius": "0px",
+        "border_width": "0px",
+        "background": "rgb(0, 123, 192)",
+        "color": "rgb(255, 255, 255)",
+        "hover_background": "rgb(0, 98, 154)",
+        "hover_color": "rgb(255, 255, 255)",
+        "padding": "0.8rem 1rem 0.7rem 1rem"
+      },
+      "secondary": {
+        "font_family": "Bosch Sans",
+        "font_size": "1rem",
+        "line_height": "1.5",
+        "font_weight": "400",
+        "border_radius": "0px",
+        "border_width": "1px",
+        "background": "transparent",
+        "border_color": "rgb(0, 123, 192)",
+        "color": "rgb(0, 123, 192)",
+        "hover_background": "rgb(209, 228, 255)",
+        "hover_border_color": "rgb(0, 98, 154)",
+        "hover_color": "rgb(0, 98, 154)",
+        "padding": "0.8rem 1rem 0.7rem 1rem"
+      },
+      "tertiary": {
+        "font_family": "Bosch Sans",
+        "font_size": "1rem",
+        "line_height": "1.5",
+        "font_weight": "400",
+        "border_radius": "0px",
+        "border_width": "0px",
+        "background": "transparent",
+        "color": "rgb(0, 123, 192)",
+        "hover_color": "rgb(0, 98, 154)",
+        "padding": "0.8rem 1rem 0.7rem 1rem"
+      }
+    },
+    "navigation": {
+      "header_default_color": "rgb(45, 50, 50)",
+      "header_hover_color": "rgba(0, 123, 192, 1)",
+      "header_active_color": "rgba(0, 123, 192, 1)",
+      "header_active_decoration": "underline",
+      "sidebar_active_left_border": "4px solid rgb(0, 0, 0)"
+    },
+    "lists": {
+      "bullet_level_1_shape": "■",
+      "bullet_level_2_shape": "–",
+      "bullet_level_3_shape": "–",
+      "numbered_level_1": "decimal",
+      "numbered_level_2": "lower-alpha",
+      "numbered_level_3": "lower-roman"
+    }
+  },
+  "navigation_structure": {
+    "main_sections": [
+      "Overview Brand design",
+      "Design principles",
+      "How our brand appears"
+    ],
+    "subsections": {
+      "Design principles": [
+        "Visual identity",
+        "Flat design",
+        "Less is more",
+        "High quality"
+      ]
+    },
+    "related_topics": [
+      "Supergraphic",
+      "Colors",
+      "Layout principle",
+      "Imagery style"
+    ]
+  },
+  "media_assets_referenced": {
+    "videos": [
+      {
+        "title": "Bosch Brand Design in 5 min",
+        "url": "https://media.ffycdn.net/eu/bosch/uiJcf4zozW6sKMGBpFab.mp4?width={width}&format=mp4"
+      },
+      {
+        "title": "CD_Trailer_2022",
+        "url": "https://media.ffycdn.net/eu/bosch/L7dMxwk6HX9rM3CQNnY7.mp4?width={width}&format=mp4"
+      }
+    ],
+    "images": [
+      {
+        "title": "Design principles",
+        "url": "https://media.ffycdn.net/eu/bosch/eyJwYXRoIjoiYm9zY2hcL2FjY291bnRzXC9hNVwvNDAwMDA5OFwvcHJvamVjdHNcLzIyOVwvYXNzZXRzXC8yZlwvMTkwMzQ0XC9hOGY4NzhiMDhkNzI5MTk1OWZjMzkxMGFhNTY4NjU2Yi0xNjM0Mjk5NDYzLnBuZyJ9:bosch:XtP1aHG42gBnJuQSpPzXHHHSH4-bvS90bzsQQl4_P6w?width=800"
+      }
+    ]
+  },
+  "ai_usage_guidelines": {
+    "for_layout_generation": [
+      "Use flat design with clear rectangular geometry and no decorative shadows.",
+      "Keep the composition open, simple, and functional.",
+      "Use Bosch Sans where possible.",
+      "Use blue as a functional interactive/accent color and reserve warning colors for warnings only.",
+      "Use the Supergraphic or color accents to create Bosch recognition when appropriate."
+    ],
+    "for_copy_or_messaging": [
+      "Emphasize quality, clarity, technology serving people, and Invented for life.",
+      "Avoid generic decoration-heavy language.",
+      "Keep messaging precise and functional."
+    ],
+    "for_visual_consistency_checks": [
+      "Check whether the design uses Bosch Sans or an acceptable fallback.",
+      "Check whether shapes are mostly rectangular and clear-edged.",
+      "Check whether color has a functional purpose.",
+      "Check whether the layout avoids clutter and unnecessary decoration.",
+      "Check whether imagery supports a lifelike and human-centric brand impression."
+    ]
+  },
+  "legal_and_footer": {
+    "copyright": "© Robert Bosch GmbH 2026, all rights reserved",
+    "links": [
+      {
+        "label": "Corporate Information",
+        "url": "https://www.bosch.com/static/frontify/impressum.html"
+      },
+      {
+        "label": "Legal notice",
+        "url": "https://www.bosch.com/static/frontify/rechtliches.html"
+      },
+      {
+        "label": "Data protection policy",
+        "url": "https://www.bosch.com/static/frontify/datenschutzhinweise.html"
+      },
+      {
+        "label": "Terms of use",
+        "url": "https://www.bosch.com/static/frontify/nutzungsbedingungen.html"
+      }
+    ]
+  }
+}
