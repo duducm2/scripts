@@ -468,9 +468,9 @@ WM_WindowIsF11FullscreenRejectReason(hwnd) {
             return "no_rect"
         tol := 24
         fillsMonitor := (Abs(left - ml) <= tol && Abs(top - mt) <= tol && Abs(right - mr) <= tol && Abs(bottom - mb) <=
-            tol)
+        tol)
         fillsWorkArea := (Abs(left - wl) <= tol && Abs(top - wt) <= tol && Abs(right - wr) <= tol && Abs(bottom - wb) <=
-            tol)
+        tol)
         extendsPastWorkArea := (bottom > wb + tol || right > wr + tol || left < wl - tol || top < wt - tol)
         style := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -16, "ptr")
         hasCaption := !!(style & 0x00C00000)
@@ -1315,7 +1315,7 @@ Chrome_DetachGetActiveTab(session) {
     if Chrome_IsValidTabElement(cached) {
         try {
             if (cached.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                && cached.SelectionItemPattern.IsSelected)
+            && cached.SelectionItemPattern.IsSelected)
                 return cached
         } catch {
         }
@@ -1356,7 +1356,7 @@ Chrome_DetachGetActiveTab(session) {
         for t in uia.GetAllTabs() {
             try {
                 if (t.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                    && t.SelectionItemPattern.IsSelected) {
+                && t.SelectionItemPattern.IsSelected) {
                     if Chrome_IsValidTabElement(t) {
                         method := "selection"
                         session.activeTab := t
@@ -1480,7 +1480,7 @@ Chrome_FocusedElementIsSelectedTab(session) {
         if (focused.Type = UIA.Type.TabItem) {
             try {
                 if (focused.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                    && focused.SelectionItemPattern.IsSelected)
+                && focused.SelectionItemPattern.IsSelected)
                     return true
             } catch {
             }
@@ -1976,7 +1976,8 @@ Chrome_ActivateDetachMenuItem(session) {
         false)
     if child && Chrome_ContextMenuActivateItem(child) {
         ; #region agent log
-        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard child invoked", "E", "path=keyboardEnterChild")
+        Chrome_DetachDebugLog("Chrome_ActivateDetachMenuItem", "keyboard child invoked", "E", "path=keyboardEnterChild"
+        )
         ; #endregion
         return true
     }
@@ -2515,7 +2516,7 @@ Chrome_DetachActiveTabToNewWindow() {
         if !CHROME_DETACH_ALLOW_UIA_DEBUG_FALLBACK {
             detachErr := CHROME_DETACH_USE_EXTENSION
                 ? "❌ Could not detach tab. Install PopActiveTab (Ctrl+Shift+Y) or use 2+ tabs."
-                : "❌ Could not detach tab. Use 2+ tabs in this Chrome window."
+                    : "❌ Could not detach tab. Use 2+ tabs in this Chrome window."
             ShowCenteredOverlay_Utils(detachErr, 2800, BANNER_ACCENT_ERROR)
             return false
         }
@@ -2873,7 +2874,7 @@ GeminiCollectModelMenuItemState(mi) {
     if (!isSelected) {
         try {
             if (InStr(className, "is-selected") || InStr(className, "selected") || InStr(className, "active") ||
-                InStr(className, "mdc-selected"))
+            InStr(className, "mdc-selected"))
                 isSelected := true
         } catch {
         }
@@ -3293,7 +3294,7 @@ InitHotstringsCheatSheet() {
     ; Prompts (4 items) - First category
     try {
         RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
-            "✏️ Grammar & Spelling Corrector")
+        "✏️ Grammar & Spelling Corrector")
     } catch {
         RegisterHotstring(":o:cgrammar",
             "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
@@ -3347,22 +3348,23 @@ InitHotstringsCheatSheet() {
     }
     try {
         RegisterHotstring(":o:pptslide", FileRead(promptDir "\slide-creation.txt"), "Prompts",
-            "📊 Create PowerPoint slide")
+        "📊 Create PowerPoint slide")
     } catch {
         RegisterHotstring(":o:pptslide", "Create one PowerPoint slide as an image.`n", "Prompts",
             "📊 Create PowerPoint slide")
     }
     try {
         RegisterHotstring(":o:pptslideref", FileRead(promptDir "\slide-creation-with-ref.txt"), "Prompts",
-            "📊 Create PowerPoint slide (reference)")
+        "📊 Create PowerPoint slide (reference)")
     } catch {
         RegisterHotstring(":o:pptslideref",
-            "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n", "Prompts",
+            "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n",
+            "Prompts",
             "📊 Create PowerPoint slide (reference)")
     }
     try {
         RegisterHotstring(":o:boschimg", FileRead(promptDir "\bosch-brand-image.txt"), "Prompts",
-            "🎨 Bosch brand-compliant image")
+        "🎨 Bosch brand-compliant image")
     } catch {
         RegisterHotstring(":o:boschimg",
             "Generate one Bosch Brand Guide and BDDS compliant image.`n", "Prompts",
@@ -3370,7 +3372,7 @@ InitHotstringsCheatSheet() {
     }
     try {
         RegisterHotstring(":o:csvfill", FileRead(promptDir "\unstructured-to-csv.txt"), "Prompts",
-            "📋 Fill CSV from unstructured text")
+        "📋 Fill CSV from unstructured text")
     } catch {
         RegisterHotstring(":o:csvfill",
             "Extract information from unstructured text and fill/update CSV rows using the provided column schema.`n",
@@ -4834,7 +4836,7 @@ CursorTransfer_StripLeadingProjectFromTitle(title, cleanProjName, projName) {
         if (rest = "")
             return ""
         if (SubStr(rest, 1, 1) = "-" || SubStr(rest, 1, 1) = "|" || SubStr(rest, 1, 1) = ":" || SubStr(rest, 1, 1) =
-            "-")
+        "-")
             rest := Trim(SubStr(rest, 2))
         rest := Trim(LTrim(rest, "- "))
         return (rest != "") ? rest : title
@@ -6381,7 +6383,7 @@ Handy_ClickAiModel(hwnd, modelName) {
                 try btnClass := btn.ClassName
                 ; Menu items: w-full px-3 py-2 text-left (legacy) or text-start (new Handy UI); header: flex items-center gap-2
                 if (InStr(btnClass, "w-full px-3 py-2 text-left") || InStr(btnClass, "w-full px-3 py-2 text-start") ||
-                    InStr(btnClass, "flex items-center gap-2")) {
+                InStr(btnClass, "flex items-center gap-2")) {
                     modelBtn := btn
                     break
                 }
@@ -6718,8 +6720,8 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
         borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
         borderGui.BackColor := (passiveBgColor != "") ? passiveBgColor : BANNER_ACCENT_INTERMEDIATE
         borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
-            " h" .
-            (gh + 2 * borderWidth))
+        " h" .
+        (gh + 2 * borderWidth))
         g_StandardLoadingBarBorderGui := borderGui
     } else {
         try {
@@ -7192,7 +7194,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
         }
         g_StandardLoadingBarEscPollPrev := GetKeyState("Escape", "P") || (DllCall("user32\GetAsyncKeyState", "int",
             0x1B) &
-            0x8000)
+        0x8000)
         SetTimer(StandardLoadingBar_KeysEscapePoll, 50)
         g_StandardLoadingBarKeysEscapeActive := true
     }
@@ -7214,7 +7216,7 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
 
     if (timeoutMs > 0) {
         g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
-            timeoutMs)
+        timeoutMs)
     }
 
     StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
@@ -8225,12 +8227,12 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
         DEPRECATED_DictationGeminiConfirm_OnCancel)
     ; Official loading bar only; no blue; single banner (no border); fixed bottom strip for input.
     StandardLoadingBar_ShowWithKeys("❓ Send to " . GetGlobalAIProviderLabel() . "? (5s)", keyCallbacks,
-        D2C_SUBMIT_MENU_TIMEOUT_MS,
-        0,
-        DEPRECATED_DictationGeminiConfirm_OnTimeout, BANNER_ACCENT_INTERMEDIATE, 380, 17, "", true,
-        "[Y] Send  [S] Paste only  [N] Cancel",
-        true,
-        true)
+    D2C_SUBMIT_MENU_TIMEOUT_MS,
+    0,
+    DEPRECATED_DictationGeminiConfirm_OnTimeout, BANNER_ACCENT_INTERMEDIATE, 380, 17, "", true,
+    "[Y] Send  [S] Paste only  [N] Cancel",
+    true,
+    true)
 }
 
 ; =============================================================================
@@ -12080,7 +12082,7 @@ StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
     if !IsObject(uia)
         return
     if !ClipAngel_UiaFindFirst(uia, { AutomationId: "start-at-checkbox", Type: 50002 })
-        && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
+    && !ClipAngel_UiaFindFirst(uia, { AutomationId: "share-url", Type: 50004 })
         return
     if chromeHwnd {
         try {
@@ -13954,11 +13956,71 @@ FindAndActivateMiroWindow(url, titleKeywords) {
 }
 
 ; =============================================================================
+; Modal ListView — first-letter row jump (reusable for ListView modals)
+; =============================================================================
+ModalList_FindFirstByStartingLetter(entries, letter, getNameFn := "") {
+    ch := StrLower(SubStr(letter, 1, 1))
+    if !RegExMatch(ch, "^[a-z]$")
+        return 0
+    for i, entry in entries {
+        name := getNameFn ? getNameFn(entry) : entry.name
+        if (name = "")
+            continue
+        if (SubStr(StrLower(name), 1, 1) = ch)
+            return i
+    }
+    return 0
+}
+
+ListView_SelectRowFocused(lv, rowNum) {
+    if (!IsObject(lv) || rowNum < 1)
+        return
+    lv.Modify(rowNum, "Select Focus Vis")
+    try SendMessage(0x1117, rowNum - 1, 0, lv)
+    try lv.Focus()
+}
+
+ModalListLetterJump_Stop(&hookRef) {
+    if (IsObject(hookRef) && hookRef.HasProp("handlers")) {
+        for item in hookRef.handlers {
+            try Hotkey(item.char, item.handler, "Off")
+            try Hotkey(StrUpper(item.char), item.handler, "Off")
+        }
+    }
+    hookRef := ""
+}
+
+ModalListLetterJump_CreateHandler(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
+    return (*) => ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn)
+}
+
+ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
+    if (!isActiveFn())
+        return
+    rowNum := ModalList_FindFirstByStartingLetter(getEntriesFn(), char, getNameFn)
+    if (rowNum > 0)
+        onMatchFn(rowNum)
+}
+
+ModalListLetterJump_Start(&hookRef, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
+    ModalListLetterJump_Stop(&hookRef)
+    state := { handlers: [] }
+    loop 26 {
+        ch := Chr(96 + A_Index)
+        handler := ModalListLetterJump_CreateHandler(ch, isActiveFn, getEntriesFn, getNameFn, onMatchFn)
+        state.handlers.Push({ char: ch, handler: handler })
+        try Hotkey(ch, handler, "On")
+        try Hotkey(StrUpper(ch), handler, "On")
+    }
+    hookRef := state
+}
+
+; =============================================================================
 ; Context file browser — browse context/ and paste full local paths (Win+Alt+Shift+N)
 ; =============================================================================
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserLetterHook
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -13973,6 +14035,8 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserListView := false
     if !IsSet(g_ContextBrowserPathCtrl)
         g_ContextBrowserPathCtrl := false
+    if !IsSet(g_ContextBrowserLetterHook)
+        g_ContextBrowserLetterHook := ""
 }
 ContextBrowser_EnsureGlobals()
 
@@ -14086,12 +14150,12 @@ Context_ListDirEntries(dir) {
     folders := []
     files := []
     try {
-        Loop Files, dir "\*", "D" {
+        loop files, dir "\*", "D" {
             if (A_LoopFileAttrib ~= "[HS]")
                 continue
             folders.Push(A_LoopFileName)
         }
-        Loop Files, dir "\*", "F" {
+        loop files, dir "\*", "F" {
             if (A_LoopFileAttrib ~= "[HS]")
                 continue
             files.Push(A_LoopFileName)
@@ -14170,12 +14234,52 @@ ContextBrowser_GetActiveMonitorWorkArea(&left, &top, &right, &bottom) {
     }
 }
 
+ContextBrowser_GetEntryNameForLetterJump(entry) {
+    if (entry.type = "parent")
+        return ""
+    return entry.name
+}
+
+ContextBrowser_IsActiveForLetterJump() {
+    global g_ContextBrowserActive
+    return g_ContextBrowserActive
+}
+
+ContextBrowser_GetEntriesForLetterJump() {
+    global g_ContextBrowserEntries
+    return g_ContextBrowserEntries
+}
+
+ContextBrowser_HandleLetterJump(rowNum) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserListView
+    if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserListView))
+        return
+    if (rowNum < 1)
+        return
+    ListView_SelectRowFocused(g_ContextBrowserListView, rowNum)
+}
+
+ContextBrowser_StartLetterJump() {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserLetterHook
+    ModalListLetterJump_Start(&g_ContextBrowserLetterHook, ContextBrowser_IsActiveForLetterJump,
+        ContextBrowser_GetEntriesForLetterJump, ContextBrowser_GetEntryNameForLetterJump,
+        ContextBrowser_HandleLetterJump)
+}
+
+ContextBrowser_StopLetterJump() {
+    global g_ContextBrowserLetterHook
+    ModalListLetterJump_Stop(&g_ContextBrowserLetterHook)
+}
+
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl
 
     g_ContextBrowserActive := false
+    ContextBrowser_StopLetterJump()
     try Hotkey("Backspace", "Off")
     try Hotkey("Enter", "Off")
     catch {
@@ -14301,6 +14405,7 @@ ContextBrowser_RefreshView() {
         }
     }
     g_ContextBrowserActive := true
+    ContextBrowser_StartLetterJump()
 }
 
 ContextBrowser_CreateGui() {
@@ -14313,7 +14418,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserListView.ModifyCol(1, 72)
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
-    g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · Enter select · Backspace up · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · letter jump · Enter select · Backspace up · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
@@ -16234,8 +16339,8 @@ ShowHotstringSelector() {
         "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
         . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
     try MnemonicRich_Render(g_UtilitySelectorEditCtrl, UtilitySelector_BuildDisplayRich(isPortrait), fontSize, 6,
-        "Consolas",
-        "CDD6F4", "1E1E2E")
+    "Consolas",
+    "CDD6F4", "1E1E2E")
     g_HotstringSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
     global g_UtilitySelectorFooterCtrl
     g_UtilitySelectorFooterCtrl := g_HotstringSelectorGui.Add("Text", "w" . textControlWidth . " Center",
