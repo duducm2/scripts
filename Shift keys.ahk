@@ -420,43 +420,43 @@ cheatSheets := Map()
 ; --- Mercado Livre (Brazil) -----------------------------------------------
 cheatSheets["Mercado Livre"] := "
 (
-Mercado Livre (Shift)
-[S] Focus search field
-[C] Carrinho de compras (cart)
-[P] Compras feitas (purchases)
-[Y] Filtro Chegará amanhã
-[F] Filtro Full
-[I] Filtro Internacional
-[N] Filtro Envio local / Nacional
-[G] Filtro Frete grátis
-[O] Ordenar por (menu)
-[R] Faixa de preço (Mín/Máx)
-[L] Seguinte (paginação)
-[K] Anterior (paginação)
-[A] Adicionar ao carrinho
-[V] Favoritos (coração)
-[J] Continuar (fluxo compra/endereço)
+    Mercado Livre (Shift)
+    [S] Focus search field
+    [C] Carrinho de compras (cart)
+    [P] Compras feitas (purchases)
+    [Y] Filtro Chegará amanhã
+    [F] Filtro Full
+    [I] Filtro Internacional
+    [N] Filtro Envio local / Nacional
+    [G] Filtro Frete grátis
+    [O] Ordenar por (menu)
+    [R] Faixa de preço (Mín/Máx)
+    [L] Seguinte (paginação)
+    [K] Anterior (paginação)
+    [A] Adicionar ao carrinho
+    [V] Favoritos (coração)
+    [J] Continuar (fluxo compra/endereço)
 )"  ; end Mercado Livre
 
 ; --- Shopee (Brazil) -------------------------------------------------------
 cheatSheets["Shopee"] := "
 (
-Shopee (Shift)
-[S] Buscar na Shopee (campo de busca)
-[C] Carrinho de compras
-[P] Minhas compras / Pedidos (especulativo)
-[Y] Filtro Entrega Rápida (analogia Chegará amanhã)
-[F] Filtro Promoções / Full (especulativo)
-[I] Filtro Internacional
-[N] Filtro Envio Nacional
-[G] Filtro Frete grátis (especulativo)
-[O] Ordenar por (menu)
-[R] Faixa de preço (Mín/Máx)
-[L] Seguinte (paginação) – especulativo
-[K] Anterior (paginação) – especulativo
-[A] Adicionar ao carrinho (página do produto)
-[V] Favoritar produto (coração)
-[J] Continuar (carrinho/checkout, incl. \"Fazer pedido\")
+    Shopee (Shift)
+    [S] Buscar na Shopee (campo de busca)
+    [C] Carrinho de compras
+    [P] Minhas compras / Pedidos (especulativo)
+    [Y] Filtro Entrega Rápida (analogia Chegará amanhã)
+    [F] Filtro Promoções / Full (especulativo)
+    [I] Filtro Internacional
+    [N] Filtro Envio Nacional
+    [G] Filtro Frete grátis (especulativo)
+    [O] Ordenar por (menu)
+    [R] Faixa de preço (Mín/Máx)
+    [L] Seguinte (paginação) – especulativo
+    [K] Anterior (paginação) – especulativo
+    [A] Adicionar ao carrinho (página do produto)
+    [V] Favoritar produto (coração)
+    [J] Continuar (carrinho/checkout, incl. \"Fazer pedido\")
 )"  ; end Shopee
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
@@ -469,765 +469,765 @@ Shopee (Shift)
 ; --- WhatsApp desktop -------------------------------------------------------
 cheatSheets["WhatsApp"] := "
 (
-WhatsApp (Shift)
-🎤 [V]Toggle [V]oice message
-🔍 [S][S]earch chats
-↩️ [R][R]eply
-😀 [E][E]moji panel
-📬 [U]Toggle [U]nread filter
-💬 [F][F]ocus current chat
-✅ [M][M]ark as read/unread
-📌 [P][P]in chat or unpin
+    WhatsApp (Shift)
+    🎤 [V]Toggle [V]oice message
+    🔍 [S][S]earch chats
+    ↩️ [R][R]eply
+    😀 [E][E]moji panel
+    📬 [U]Toggle [U]nread filter
+    💬 [F][F]ocus current chat
+    ✅ [M][M]ark as read/unread
+    📌 [P][P]in chat or unpin
 )"  ; end WhatsApp
 
 ; --- Outlook main window ----------------------------------------------------
 cheatSheets["OUTLOOK.EXE"] := "
 (
-Outlook (Shift)
-📧 [G]Send to [G]eneral
-📰 [N]Send to [N]ewsletter
-📥 [I]Go to [I]nbox
-🥇 [J][J]ump to first mail
-◧ [H]Toggle high [H] navigation pane
-📝 [S][S]ubject / Title
-👥 [T][T]o / Required
-📝 [B][B]ody (Subject → Body)
-🎯 [F][F]ocused / Other
-🔀 [K]Cycle bac[K]ward pane
-🔀 [L]Cyc[L]e forward pane
-📋 [M]Toggle Mail / Calendar
-📅 [W]eek view
-📅 M[o]nth view
-🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
-
-📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
-✅ [A][A]ccept meeting invitation
-❌ [D][D]ecline meeting (confirmation first)
-📌 [Alt+F] Follow (updates from organizer)
-❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
-
-📅 Canceled meeting (organizer canceled — Remove event)
-🗑️ [E]Remove event (no confirmation)
-
-Outlook (Ctrl+Alt)
-📌 Ribbon actions select the Home tab first when needed (e.g. View or Help was active).
-🔎 [Ctrl+Alt+F] Search
-📮 [Ctrl+Alt+M] Mail view
-📅 [Ctrl+Alt+G] Calendar view
-📃 [Ctrl+Alt+L] Focus message list
-📖 [Ctrl+Alt+P] Focus reading pane
-
-↩️ [Ctrl+Alt+R] Reply
-👥 [Ctrl+Alt+A] Reply all
-➡️ [Ctrl+Alt+W] Forward
-🗑️ [Ctrl+Alt+D] Delete
-🗄️ [Ctrl+Alt+E] Archive
-✅ [Ctrl+Alt+U] Read/Unread
-🏷️ [Ctrl+Alt+C] Categorize
-📁 [Ctrl+Alt+V] Move
-🧪 [Ctrl+Alt+I] Filter menu
-↕️ [Ctrl+Alt+S] Sort menu
-
-🆕 [Ctrl+Alt+N] New (Calendar: New event / Mail: new message)
-🧭 [Ctrl+Alt+T] Today (Calendar)
+    Outlook (Shift)
+    📧 [G]Send to [G]eneral
+    📰 [N]Send to [N]ewsletter
+    📥 [I]Go to [I]nbox
+    🥇 [J][J]ump to first mail
+    ◧ [H]Toggle high [H] navigation pane
+    📝 [S][S]ubject / Title
+    👥 [T][T]o / Required
+    📝 [B][B]ody (Subject → Body)
+    🎯 [F][F]ocused / Other
+    🔀 [K]Cycle bac[K]ward pane
+    🔀 [L]Cyc[L]e forward pane
+    📋 [M]Toggle Mail / Calendar
+    📅 [W]eek view
+    📅 M[o]nth view
+    🪟 [P][P]op Out (Type 50000, Name Pop Out, LocalizedType button, Path {T:33,CN:rctrl_renwnd32}, {T:33}, {T:33}, {T:21}, {T:0, i:-1})
+    
+    📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
+    ✅ [A][A]ccept meeting invitation
+    ❌ [D][D]ecline meeting (confirmation first)
+    📌 [Alt+F] Follow (updates from organizer)
+    ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
+    
+    📅 Canceled meeting (organizer canceled — Remove event)
+    🗑️ [E]Remove event (no confirmation)
+    
+    Outlook (Ctrl+Alt)
+    📌 Ribbon actions select the Home tab first when needed (e.g. View or Help was active).
+    🔎 [Ctrl+Alt+F] Search
+    📮 [Ctrl+Alt+M] Mail view
+    📅 [Ctrl+Alt+G] Calendar view
+    📃 [Ctrl+Alt+L] Focus message list
+    📖 [Ctrl+Alt+P] Focus reading pane
+    
+    ↩️ [Ctrl+Alt+R] Reply
+    👥 [Ctrl+Alt+A] Reply all
+    ➡️ [Ctrl+Alt+W] Forward
+    🗑️ [Ctrl+Alt+D] Delete
+    🗄️ [Ctrl+Alt+E] Archive
+    ✅ [Ctrl+Alt+U] Read/Unread
+    🏷️ [Ctrl+Alt+C] Categorize
+    📁 [Ctrl+Alt+V] Move
+    🧪 [Ctrl+Alt+I] Filter menu
+    ↕️ [Ctrl+Alt+S] Sort menu
+    
+    🆕 [Ctrl+Alt+N] New (Calendar: New event / Mail: new message)
+    🧭 [Ctrl+Alt+T] Today (Calendar)
 )"  ; end Outlook
 
 ; --- Outlook Reminder window -------------------------------------------------
 cheatSheets["OutlookReminder"] := "
 (
-Outlook - Reminders (Shift)
-⏰ [H]Snooze 1 [H]our
-⏰ [F]Snooze [F]our hours
-⏰ [T]Snooze 10 minu[T]es
-⏰ [Y]Snooze 1 da[Y]
-⏰ [W]Snooze 1 [W]eek
-✅ [D][D]ismiss reminder (selected item)
-❌ [X]Dismiss all reminders (confirm)
-🌐 [J][J]oin online (selected item)
+    Outlook - Reminders (Shift)
+    ⏰ [H]Snooze 1 [H]our
+    ⏰ [F]Snooze [F]our hours
+    ⏰ [T]Snooze 10 minu[T]es
+    ⏰ [Y]Snooze 1 da[Y]
+    ⏰ [W]Snooze 1 [W]eek
+    ✅ [D][D]ismiss reminder (selected item)
+    ❌ [X]Dismiss all reminders (confirm)
+    🌐 [J][J]oin online (selected item)
 )"  ; end Outlook Reminder
 
 ; --- Outlook Appointment window ---------------------------------------------
 cheatSheets["OutlookAppointment"] := "
 (
-Outlook - Appointment (Shift)
-📅 [S][S]tart date (popover)
-🕐 [T]Start [T]ime (popover)
-🕐 [E][E]nd time (popover)
-☑️ [A][A]ll-day toggle (popover)
-🔄 [C]Re[C]urring / Series (popover)
-🕒 [1]Time suggestion 1
-🕒 [2]Time suggestion 2
-
-📝 [I]T[I]tle field
-👥 [R][R]equired attendees
-📍 [O]L[o]cation / Add a room
-📝 [B][B]ody (main details)
-
-🎥 [M]Tea[M]s meeting
-🧬 [U]Series (recurring)
-📶 A[V]ailability (Free/Busy...)
-⏰ Reminder (fre[Q]uency)
-🏷️ Cate[G]ory
-🔒 [P]rivate / Not private
-
-🗓️ Prev day [K] / Next day [L]
-🧭 [Y]Today
-📆 [D]ate header
-🧑‍🤝‍🧑 Sc[H]eduler / Scheduling assistant
-⚙️ Optio[N]s (scheduler view)
-🌐 Time [Z]one
-➕ [J]Add required attendee
-➕ [Alt+O]Add optional attendee
-
-↩️ [Backspace] Back (scheduler view)
-🧙 [W][W]izard (configure)
+    Outlook - Appointment (Shift)
+    📅 [S][S]tart date (popover)
+    🕐 [T]Start [T]ime (popover)
+    🕐 [E][E]nd time (popover)
+    ☑️ [A][A]ll-day toggle (popover)
+    🔄 [C]Re[C]urring / Series (popover)
+    🕒 [1]Time suggestion 1
+    🕒 [2]Time suggestion 2
+    
+    📝 [I]T[I]tle field
+    👥 [R][R]equired attendees
+    📍 [O]L[o]cation / Add a room
+    📝 [B][B]ody (main details)
+    
+    🎥 [M]Tea[M]s meeting
+    🧬 [U]Series (recurring)
+    📶 A[V]ailability (Free/Busy...)
+    ⏰ Reminder (fre[Q]uency)
+    🏷️ Cate[G]ory
+    🔒 [P]rivate / Not private
+    
+    🗓️ Prev day [K] / Next day [L]
+    🧭 [Y]Today
+    📆 [D]ate header
+    🧑‍🤝‍🧑 Sc[H]eduler / Scheduling assistant
+    ⚙️ Optio[N]s (scheduler view)
+    🌐 Time [Z]one
+    ➕ [J]Add required attendee
+    ➕ [Alt+O]Add optional attendee
+    
+    ↩️ [Backspace] Back (scheduler view)
+    🧙 [W][W]izard (configure)
 )"  ; end Outlook Appointment
 
 ; --- Outlook Message window ---------------------------------------------------
 cheatSheets["OutlookMessage"] := "
 (
-Outlook - Message (Shift)
-📅 Meeting invitation (same shortcuts as main Mail reading pane)
-✅ [A][A]ccept meeting invitation
-❌ [D][D]ecline meeting (confirmation first)
-📌 [Alt+F] Follow (updates from organizer)
-❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
-📅 Canceled meeting (Remove event)
-🗑️ [E]Remove event (no confirmation)
-📝 [S][S]ubject / Title
-👥 [T][T]o / Required
-📝 [B][B]ody (Location → Body)
+    Outlook - Message (Shift)
+    📅 Meeting invitation (same shortcuts as main Mail reading pane)
+    ✅ [A][A]ccept meeting invitation
+    ❌ [D][D]ecline meeting (confirmation first)
+    📌 [Alt+F] Follow (updates from organizer)
+    ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
+    📅 Canceled meeting (Remove event)
+    🗑️ [E]Remove event (no confirmation)
+    📝 [S][S]ubject / Title
+    👥 [T][T]o / Required
+    📝 [B][B]ody (Location → Body)
 )"  ; end Outlook Message
 
 ; --- Microsoft Teams â€" meeting window --------------------------------------
 cheatSheets["TeamsMeeting"] := "
 (
-Teams - Meeting (Shift)
-💬 [C]Open [C]hat pane
-⛶ [M]aximize [M]eeting window
-👍 [R]eact / [R]eagir
-🎥 [J][J]oin now (camera + mic on)
-🔊 [A][A]udio settings
+    Teams - Meeting (Shift)
+    💬 [C]Open [C]hat pane
+    ⛶ [M]aximize [M]eeting window
+    👍 [R]eact / [R]eagir
+    🎥 [J][J]oin now (camera + mic on)
+    🔊 [A][A]udio settings
 )"  ; end TeamsMeeting
 
 ; --- Microsoft Teams â€" chat window -----------------------------------------
 cheatSheets["TeamsChat"] := "
 (
-Teams - Chat (Shift)
-🔙 [K]Back (toolbar)
-⏩ [L]Forward (toolbar)
-↩️ [R][R]eply
-📬 [U]View all [U]nread items
-📌 [P][P]in chat
-✏️ [E][E]dit message
-📎 [A][A]ttach file
-📜 [H][H]istory menu
-📬 [M][M]ark unread
-📌 [X]Unpin (e[X]it pin)
-📁 [C][C]ollapse all folders
-ℹ️ [I][I]nfo / Details panel
-🪟 [.]Detach chat (new [.]window)
-👥 [T][T]eam / Add participants
-📞 [V][V]ideo call
-🩶 [F][F]old chat sections
-👍 [Y] Like reaction
-❤️ [G][G]ive heart reaction
-😂 [J][J]oke reaction (😂)
-
---- Search Field (Top) ---
-🔍 [Alt+1]Select 1st search result (↓↓ Enter)
-🔍 [Alt+2]Select 2nd search result (↓↓↓ Enter)
-🔍 [Alt+3]Select 3rd search result (↓↓↓↓ Enter)
-🔍 [Alt+4]Select 4th search result (↓↓↓↓↓ Enter)
-🔍 [Alt+5]Select 5th search result (↓↓↓↓↓↓ Enter)
-
---- Built-in Shortcuts ---
-Geral:
-[Ctrl + .] > Show keyboard shortcuts
-[Ctrl + E] > Open search
-[Ctrl + /] > Show commands
-[Ctrl + G] > Go to a chat or channel
-[Ctrl + N] > Start new chat
-[Ctrl + Shift + N] > Open a new chat
-[Ctrl + Shift + F] > Open filter
-[Ctrl + ,] > Open Settings
-[F1] > Open Help
-[Ctrl + =] > Zoom in
-[Ctrl + -] > Zoom out
-[Ctrl + 0] > Reset zoom level
-[Ctrl + O] > Open existing conversation in new window
-
-Navegação:
-[Ctrl + 1-9] > Open 1st-9th App in App Bar
-[Ctrl + L] > Move focus to left rail item
-[Ctrl + M] > Move focus to messages panel
-[Ctrl + Alt + T] > Move focus to top system notification
-[Alt + Left] > Back
-[Alt + Right] > Forward
-[Ctrl + H] > Open history menu
-[Ctrl + R] > Go to text box
-[Ctrl + Alt + Enter] > Focus on resizable divider
-[Ctrl + Shift + Enter] > Reset slots to default size
-[Win + Shift + Y] > Move focus to notification
-
-Redigir:
-[Ctrl + Shift + X] > Expand text box
-[Ctrl + Enter] > Send (expanded text box)
-[Alt + Shift + O] > Attach file
-[Shift + Enter] > Start new line
-[Ctrl + B] > Apply bold style
-[Ctrl + I] > Apply italic style
-[Ctrl + U] > Apply underline style
-[Alt + A] > Rewrite with Copilot
-[Alt + Shift + E] > Open video recorder
-[Ctrl + Alt + L] > Add a Loop paragraph
-[Ctrl + Shift + I] > Mark message as important
-[Ctrl + K] > Insert link
-[Ctrl + Alt + Shift + C] > Insert embedded code
-[Ctrl + Alt + Shift + B] > Insert code block
-
-Mensagens:
-[Alt + Q] > Collapse all conversation folders
-[Ctrl + J] > Go to last read/new message
-[Ctrl + Alt + R] > React to last message
-[Alt + P] > Activate/deactivate details panel
-[Alt + Shift + R] > Reply to last message
-[Alt + 1-9] > Open 1st-9th Tab in Chat Panel Header
-[Ctrl + Alt + Z] > Clear all filters
-[Ctrl + Alt + U] > View all unread items
-[Ctrl + Alt + B] > View all meeting items
-[Ctrl + Alt + C] > View all chat conversations
-[Ctrl + Alt + A] > View all channel conversations
-[Ctrl + F] > Search current Chat/Channel messages
-[Alt + T] > Open Threads List
+    Teams - Chat (Shift)
+    🔙 [K]Back (toolbar)
+    ⏩ [L]Forward (toolbar)
+    ↩️ [R][R]eply
+    📬 [U]View all [U]nread items
+    📌 [P][P]in chat
+    ✏️ [E][E]dit message
+    📎 [A][A]ttach file
+    📜 [H][H]istory menu
+    📬 [M][M]ark unread
+    📌 [X]Unpin (e[X]it pin)
+    📁 [C][C]ollapse all folders
+    ℹ️ [I][I]nfo / Details panel
+    🪟 [.]Detach chat (new [.]window)
+    👥 [T][T]eam / Add participants
+    📞 [V][V]ideo call
+    🩶 [F][F]old chat sections
+    👍 [Y] Like reaction
+    ❤️ [G][G]ive heart reaction
+    😂 [J][J]oke reaction (😂)
+    
+    --- Search Field (Top) ---
+    🔍 [Alt+1]Select 1st search result (↓↓ Enter)
+    🔍 [Alt+2]Select 2nd search result (↓↓↓ Enter)
+    🔍 [Alt+3]Select 3rd search result (↓↓↓↓ Enter)
+    🔍 [Alt+4]Select 4th search result (↓↓↓↓↓ Enter)
+    🔍 [Alt+5]Select 5th search result (↓↓↓↓↓↓ Enter)
+    
+    --- Built-in Shortcuts ---
+    Geral:
+    [Ctrl + .] > Show keyboard shortcuts
+    [Ctrl + E] > Open search
+    [Ctrl + /] > Show commands
+    [Ctrl + G] > Go to a chat or channel
+    [Ctrl + N] > Start new chat
+    [Ctrl + Shift + N] > Open a new chat
+    [Ctrl + Shift + F] > Open filter
+    [Ctrl + ,] > Open Settings
+    [F1] > Open Help
+    [Ctrl + =] > Zoom in
+    [Ctrl + -] > Zoom out
+    [Ctrl + 0] > Reset zoom level
+    [Ctrl + O] > Open existing conversation in new window
+    
+    Navegação:
+    [Ctrl + 1-9] > Open 1st-9th App in App Bar
+    [Ctrl + L] > Move focus to left rail item
+    [Ctrl + M] > Move focus to messages panel
+    [Ctrl + Alt + T] > Move focus to top system notification
+    [Alt + Left] > Back
+    [Alt + Right] > Forward
+    [Ctrl + H] > Open history menu
+    [Ctrl + R] > Go to text box
+    [Ctrl + Alt + Enter] > Focus on resizable divider
+    [Ctrl + Shift + Enter] > Reset slots to default size
+    [Win + Shift + Y] > Move focus to notification
+    
+    Redigir:
+    [Ctrl + Shift + X] > Expand text box
+    [Ctrl + Enter] > Send (expanded text box)
+    [Alt + Shift + O] > Attach file
+    [Shift + Enter] > Start new line
+    [Ctrl + B] > Apply bold style
+    [Ctrl + I] > Apply italic style
+    [Ctrl + U] > Apply underline style
+    [Alt + A] > Rewrite with Copilot
+    [Alt + Shift + E] > Open video recorder
+    [Ctrl + Alt + L] > Add a Loop paragraph
+    [Ctrl + Shift + I] > Mark message as important
+    [Ctrl + K] > Insert link
+    [Ctrl + Alt + Shift + C] > Insert embedded code
+    [Ctrl + Alt + Shift + B] > Insert code block
+    
+    Mensagens:
+    [Alt + Q] > Collapse all conversation folders
+    [Ctrl + J] > Go to last read/new message
+    [Ctrl + Alt + R] > React to last message
+    [Alt + P] > Activate/deactivate details panel
+    [Alt + Shift + R] > Reply to last message
+    [Alt + 1-9] > Open 1st-9th Tab in Chat Panel Header
+    [Ctrl + Alt + Z] > Clear all filters
+    [Ctrl + Alt + U] > View all unread items
+    [Ctrl + Alt + B] > View all meeting items
+    [Ctrl + Alt + C] > View all chat conversations
+    [Ctrl + Alt + A] > View all channel conversations
+    [Ctrl + F] > Search current Chat/Channel messages
+    [Alt + T] > Open Threads List
 )"  ; end TeamsChat
 
 ; --- Spotify ---------------------------------------------------------------
 cheatSheets["Spotify.exe"] := "
 (
-Spotify (Shift)
-🔗 [C][C]onnect to device
-⛶ [F][F]ullscreen
-🔍 [S][S]earch
-📋 [P][P]laylists
-🎤 [A][A]rtists
-💿 [B]Al[B]ums
-🏠 [H][H]ome
-🎵 [N][N]ow Playing
-🎯 [M][M]ade For You
-🆕 [R]New [R]eleases
-📊 [X]E[X]plore Charts
-🎵 [V][V]iew (Now Playing)
-📚 [L][L]ibrary sidebar
-⛶ [E][E]xpand Library
-🎤 [Y]L[Y]rics
-⏯️ [T][T]oggle Play/Pause
+    Spotify (Shift)
+    🔗 [C][C]onnect to device
+    ⛶ [F][F]ullscreen
+    🔍 [S][S]earch
+    📋 [P][P]laylists
+    🎤 [A][A]rtists
+    💿 [B]Al[B]ums
+    🏠 [H][H]ome
+    🎵 [N][N]ow Playing
+    🎯 [M][M]ade For You
+    🆕 [R]New [R]eleases
+    📊 [X]E[X]plore Charts
+    🎵 [V][V]iew (Now Playing)
+    📚 [L][L]ibrary sidebar
+    ⛶ [E][E]xpand Library
+    🎤 [Y]L[Y]rics
+    ⏯️ [T][T]oggle Play/Pause
 )"  ; end Spotify
 
 ; --- OneNote ---------------------------------------------------------------
 cheatSheets["ONENOTE.EXE"] := "
 (
-OneNote (Shift)
-📈 [Y]Expand [Y]section
-📉 [U]Collapse ([U]nfold reverse)
-📉 [I]Collapse All ([I]nward)
-📈 [O][O]pen All (Expand)
-📝 [P]Select [P]aragraph (line + children)
-🗑️ [D][D]elete line and children
-🗑️ [S][S]ingle delete (keep children)
-🔍 [F][F]ind Advanced (with quotes)
+    OneNote (Shift)
+    📈 [Y]Expand [Y]section
+    📉 [U]Collapse ([U]nfold reverse)
+    📉 [I]Collapse All ([I]nward)
+    📈 [O][O]pen All (Expand)
+    📝 [P]Select [P]aragraph (line + children)
+    🗑️ [D][D]elete line and children
+    🗑️ [S][S]ingle delete (keep children)
+    🔍 [F][F]ind Advanced (with quotes)
 )"  ; end OneNote
 
 ; --- Chrome general shortcuts ----------------------------------------------
 cheatSheets["chrome.exe"] := "
 (
-Chrome (Shift)
-🪟 [W]Pop current tab to new [W]indow
-🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
+    Chrome (Shift)
+    🪟 [W]Pop current tab to new [W]indow
+    🏷️ [Ctrl+Alt+Y] [N]ame ChatGPT Window as "ChatGPT"
 )"  ; end Chrome
 
 ; --- Google Maps (Chrome) ---------------------------------------------------
 cheatSheets["Google Maps"] := "
 (
-Google Maps (Shift)
-🔍 [S][S]earch box (place / query)
-📍 [L][L]at/long (copy coordinates to clipboard)
+    Google Maps (Shift)
+    🔍 [S][S]earch box (place / query)
+    📍 [L][L]at/long (copy coordinates to clipboard)
 )"  ; end Google Maps
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
 cheatSheets["Chrome PDF Viewer"] := "
 (
-Chrome PDF Viewer (Shift)
-⬇️ [D] [D]ownload PDF
-📏 [F] [F]it to page (zoom to fit)
-🔢 [P] [P]age number field (focus)
-🗂️ [T] [T]humbnails sidebar (toggle)
-🔲 [2] Two-page view ([2] pages)
-🎬 [E] Present mode (pr[E]sent)
+    Chrome PDF Viewer (Shift)
+    ⬇️ [D] [D]ownload PDF
+    📏 [F] [F]it to page (zoom to fit)
+    🔢 [P] [P]age number field (focus)
+    🗂️ [T] [T]humbnails sidebar (toggle)
+    🔲 [2] Two-page view ([2] pages)
+    🎬 [E] Present mode (pr[E]sent)
 )"  ; end Chrome PDF Viewer
 
 ; --- Cursor ------------------------------------------------------
 cheatSheets["Cursor.exe"] := "
 (
-Cursor
-
-=== Ctrl (no other modifiers) ===
-🎯 [1] Remove clustering and focus on the code (ahk)
-📁 [2] Copy path (cursor)
-📊 [3] CSV: Edit CSV
-💾 [4] CSV: Apply changes to source file and save
-📋 [5] MarkDown Enhanced: Export in PDF format. 
-📽️ [6] Marp export (PDF)
-🔨 [7] Build LaTeX project
-📄 [8] View LaTeX PDF file
-📄 [9] Markdown Preview Enhanced: Insert Page Break
-🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
-⚡ [G]Kill terminal ([G]o away)
-📉 [Y]Fold all (tuck awa[Y])
-📈 [U] [U]nfold all
-📋 [O]Open Paste As... ([O]pen)
-📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
-🔲 [J]Select to Bracket (ad[J]acent)
-📉 [,] Fold all directories
-💬 [.] Toggle chat or agent
-🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
-📂 [R]File open [R]ecent
-🔍 [T]Go to [T]ype symbol in workspace
-💬 [N] [N]ew chat tab (replacing current)
-➕ [Enter] [I]nsert line below
-🔍 [P]Open [P]roject
-💬 [;] Insert comment
-📝 [D]Duplicate selection to next find match
-🔍 [F] [F]ind
-↩️ [Z]Undo (common [Z])
-📊 [B]Toggle [B]ar (primary sidebar)
-
-=== Shift ===
-📉 [F][F]old (ahk)
-📈 [U][U]nfold (ahk)
-📄 [M][M]arkdown preview (cursor)
-🪟 [W][W]indow (move editor) (cursor)
-💻 [T][T]erminal (ahk)
-💻 [N][N]ew Terminal (ahk)
-📁 [E][E]xplorer (ahk)
-📄🪟 [K] Mar[K]down + window (ahk)
-⌨️ [C][C]ommand palette (ahk)
-📈 [X] E[X]pand selection (ahk)
-⚡ [S][S]ymbol in access view (cursor)
-💬 [H][H]istory (chat) (ahk)
-🖼️ [I][I]mage (paste) (cursor)
-📁 [G][G]it repos fold (SCM) (ahk)
-🔍 [Q][Q]uery Search (ahk)
-🍞 [R]B[R]eadcrumbs menu (ahk)
-😀 [O]Emoji selector (em[O]ji) (ahk)
-🌿 [D]Git section ([D]iff) (ahk)
-❌ [Z]Close all editors (end [Z]one) (ahk)
-🤖 [A][A]I models switch (ahk)
-🧘 [Y]Zen mode (tranquilit[Y]) (cursor)
-⬇️ [P][P]ull (Git) (cursor)
-✅ [V]Commit (Git sa[V]e) (cursor)
-⬆️ [B]Push (Git pu[B]lish) (cursor)
-
-=== Alt (ahk = AutoHotkey) ===
-📉 [x] Shri[X]nk selection (ahk)
-📉 [,] Classical Markdown Preview
-📉 [Y] Paste image to Markdown
-⬇️ [U] Scroll AI feed to bottom (ahk-based)
-📋 [M] Quick shortcut menu (ahk)
-🤖 [A] Add file to AI Context (Cursor Chat) (ahk)
-📌 [Q] Unpin current tab
-📌 [P] [P]in current tab
-📋 [I] Reveal in Explorer + copy file (ahk)
-📂 [H] Reveal in Explorer + open file (ahk)
-📄 [R] Refresh preview
-📄 [F] File: New [F]ile
-📂 [O] File: New F[O]lder
-
-=== Ctrl+Shift ===
-📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
-🐛 [Ctrl+Shift+D] [D]ebugging
-
-=== Ctrl+Alt ===
-📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
-📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
-⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
-⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
-➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
-⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
-⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
-
-=== Alt+Shift ===
-⬆️ [Shift+Alt+↑] [C]opy line Up
-⬇️ [Shift+Alt+↓] [C]opy line Down
-
-=== Alt (other chords) ===
-👁️ [Alt+F12] [P]eek Definition
-⬆️ [Alt+↑] [M]ove line Up
-⬇️ [Alt+↓] [M]ove line Down
-👆 [Alt+Click] [M]ulti-cursor by click
-🔄 [Alt+Z] Toggle word [W]rap
-⬇️ [Alt+J] Jump to [N]ext review
-⬆️ [Alt+K] [P]revious review (bac[K])
-
-=== Function keys & misc ===
-✏️ [F2] [R]ename symbol
-🔍 [F8] [N]avigate problems
-🗑️ [Shift+Delete] [D]elete line
+    Cursor
+    
+    === Ctrl (no other modifiers) ===
+    🎯 [1] Remove clustering and focus on the code (ahk)
+    📁 [2] Copy path (cursor)
+    📊 [3] CSV: Edit CSV
+    💾 [4] CSV: Apply changes to source file and save
+    📋 [5] MarkDown Enhanced: Export in PDF format. 
+    📽️ [6] Marp export (PDF)
+    🔨 [7] Build LaTeX project
+    📄 [8] View LaTeX PDF file
+    📄 [9] Markdown Preview Enhanced: Insert Page Break
+    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
+    ⚡ [G]Kill terminal ([G]o away)
+    📉 [Y]Fold all (tuck awa[Y])
+    📈 [U] [U]nfold all
+    📋 [O]Open Paste As... ([O]pen)
+    📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
+    🔲 [J]Select to Bracket (ad[J]acent)
+    📉 [,] Fold all directories
+    💬 [.] Toggle chat or agent
+    🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
+    📂 [R]File open [R]ecent
+    🔍 [T]Go to [T]ype symbol in workspace
+    💬 [N] [N]ew chat tab (replacing current)
+    ➕ [Enter] [I]nsert line below
+    🔍 [P]Open [P]roject
+    💬 [;] Insert comment
+    📝 [D]Duplicate selection to next find match
+    🔍 [F] [F]ind
+    ↩️ [Z]Undo (common [Z])
+    📊 [B]Toggle [B]ar (primary sidebar)
+    
+    === Shift ===
+    📉 [F][F]old (ahk)
+    📈 [U][U]nfold (ahk)
+    📄 [M][M]arkdown preview (cursor)
+    🪟 [W][W]indow (move editor) (cursor)
+    💻 [T][T]erminal (ahk)
+    💻 [N][N]ew Terminal (ahk)
+    📁 [E][E]xplorer (ahk)
+    📄🪟 [K] Mar[K]down + window (ahk)
+    ⌨️ [C][C]ommand palette (ahk)
+    📈 [X] E[X]pand selection (ahk)
+    ⚡ [S][S]ymbol in access view (cursor)
+    💬 [H][H]istory (chat) (ahk)
+    🖼️ [I][I]mage (paste) (cursor)
+    📁 [G][G]it repos fold (SCM) (ahk)
+    🔍 [Q][Q]uery Search (ahk)
+    🍞 [R]B[R]eadcrumbs menu (ahk)
+    😀 [O]Emoji selector (em[O]ji) (ahk)
+    🌿 [D]Git section ([D]iff) (ahk)
+    ❌ [Z]Close all editors (end [Z]one) (ahk)
+    🤖 [A][A]I models switch (ahk)
+    🧘 [Y]Zen mode (tranquilit[Y]) (cursor)
+    ⬇️ [P][P]ull (Git) (cursor)
+    ✅ [V]Commit (Git sa[V]e) (cursor)
+    ⬆️ [B]Push (Git pu[B]lish) (cursor)
+    
+    === Alt (ahk = AutoHotkey) ===
+    📉 [x] Shri[X]nk selection (ahk)
+    📉 [,] Classical Markdown Preview
+    📉 [Y] Paste image to Markdown
+    ⬇️ [U] Scroll AI feed to bottom (ahk-based)
+    📋 [M] Quick shortcut menu (ahk)
+    🤖 [A] Add file to AI Context (Cursor Chat) (ahk)
+    📌 [Q] Unpin current tab
+    📌 [P] [P]in current tab
+    📋 [I] Reveal in Explorer + copy file (ahk)
+    📂 [H] Reveal in Explorer + open file (ahk)
+    📄 [R] Refresh preview
+    📄 [F] File: New [F]ile
+    📂 [O] File: New F[O]lder
+    
+    === Ctrl+Shift ===
+    📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+    🐛 [Ctrl+Shift+D] [D]ebugging
+    
+    === Ctrl+Alt ===
+    📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+    📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
+    ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+    ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+    ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+    ⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+    ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+    
+    === Alt+Shift ===
+    ⬆️ [Shift+Alt+↑] [C]opy line Up
+    ⬇️ [Shift+Alt+↓] [C]opy line Down
+    
+    === Alt (other chords) ===
+    👁️ [Alt+F12] [P]eek Definition
+    ⬆️ [Alt+↑] [M]ove line Up
+    ⬇️ [Alt+↓] [M]ove line Down
+    👆 [Alt+Click] [M]ulti-cursor by click
+    🔄 [Alt+Z] Toggle word [W]rap
+    ⬇️ [Alt+J] Jump to [N]ext review
+    ⬆️ [Alt+K] [P]revious review (bac[K])
+    
+    === Function keys & misc ===
+    ✏️ [F2] [R]ename symbol
+    🔍 [F8] [N]avigate problems
+    🗑️ [Shift+Delete] [D]elete line
 )"  ; end Cursor
 
 cheatSheets["Code.exe"] := "
 (
-VS Code
-
-=== Ctrl (no other modifiers) ===
-🎯 [1] Remove clustering and focus on the code (ahk)
-📁 [2] Copy path (VS Code)
-📊 [3] CSV: Edit CSV
-💾 [4] CSV: Apply changes to source file and save
-📋 [5] MarkDown Enhanced: Export in PDF format. 
-📽️ [6] Marp export (PDF)
-🔨 [7] Build LaTeX project
-📄 [8] View LaTeX PDF file
-📄 [9] Markdown Preview Enhanced: Insert Page Break
-🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
-⚡ [G]Kill terminal ([G]o away)
-📉 [Y]Fold all (tuck awa[Y])
-📈 [U] [U]nfold all
-📋 [O]Open Paste As... ([O]pen)
-📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
-🔲 [J]Select to Bracket (ad[J]acent)
-📉 [,] Fold all directories
-💬 [.] Copilot Agent Modes
-🤖 [E] VS Code default behavior (Cursor custom maximize removed)
-📂 [R]File open [R]ecent
-🔍 [T]Go to [T]ype symbol in workspace
-💬 [N] Copilot chat session workflow (pending dedicated remap)
-➕ [Enter] [I]nsert line below
-🔍 [P]VS Code quick open / project search
-💬 [;] Insert comment
-📝 [D]Duplicate selection to next find match
-🔍 [F] [F]ind
-↩️ [Z]Undo (common [Z])
-📊 [B]Toggle [B]ar (primary sidebar)
-
-=== Shift ===
-📉 [F][F]old (ahk)
-📈 [U][U]nfold (ahk)
-📄 [M][M]arkdown preview (VS Code migration pending)
-🪟 [W][W]indow (move editor) (VS Code migration pending)
-💻 [T][T]erminal (ahk)
-💻 [N][N]ew Terminal (ahk)
-📁 [E][E]xplorer (ahk)
-📄🪟 [K] Mar[K]down + window (ahk)
-⌨️ [C][C]ommand palette (ahk)
-📈 [X] E[X]pand selection (ahk)
-⚡ [S][S]ymbol in access view (VS Code migration pending)
-💬 [H][H]istory (chat) (ahk)
-🖼️ [I][I]mage (paste) (VS Code migration pending)
-📁 [G][G]it repos fold (SCM) (ahk)
-🔍 [Q][Q]uery Search (ahk)
-🍞 [R]B[R]eadcrumbs menu (ahk)
-😀 [O]Emoji selector (em[O]ji) (ahk)
-🌿 [D]Git section ([D]iff) (ahk)
-❌ [Z]Close all editors (end [Z]one) (ahk)
-🤖 [A][A]I models switch (ahk)
-🧘 [Y]Zen mode (tranquilit[Y])
-⬇️ [P][P]ull (Git)
-✅ [V]Commit (Git)
-⬆️ [B]Push (Git)
-
-=== Alt (ahk = AutoHotkey) ===
-📉 [x] Shri[X]nk selection (ahk)
-📉 [,] Classical Markdown Preview
-📉 [Y] Paste image to Markdown
-⬇️ [U] Scroll AI feed to bottom (ahk-based)
-📋 [M] Quick shortcut menu (ahk)
-➕ [C] Add Context picker (VS Code chat) (ahk)
-🤖 [A] Add file to AI Context (VS Code chat) (ahk)
-📌 [Q] Unpin current tab
-📌 [P] [P]in current tab
-📋 [I] Reveal in Explorer + copy file (ahk)
-📂 [H] Reveal in Explorer + open file (ahk)
-📄 [R] Refresh preview
-📄 [F] File: New [F]ile
-📂 [O] File: New F[O]lder
-
-=== Ctrl+Shift ===
-📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
-🐛 [Ctrl+Shift+D] [D]ebugging
-
-=== Ctrl+Alt ===
-📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
-📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
-⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
-⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
-➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
-⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
-⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
-
-=== Alt+Shift ===
-⬆️ [Shift+Alt+↑] [C]opy line Up
-⬇️ [Shift+Alt+↓] [C]opy line Down
-
-=== Alt (other chords) ===
-👁️ [Alt+F12] [P]eek Definition
-⬆️ [Alt+↑] [M]ove line Up
-⬇️ [Alt+↓] [M]ove line Down
-👆 [Alt+Click] [M]ulti-cursor by click
-🔄 [Alt+Z] Toggle word [W]rap
-⬇️ [Alt+J] Jump to [N]ext review
-⬆️ [Alt+K] [P]revious review (bac[K])
-
-=== Function keys & misc ===
-✏️ [F2] [R]ename symbol
-🔍 [F8] [N]avigate problems
-🗑️ [Shift+Delete] [D]elete line
+    VS Code
+    
+    === Ctrl (no other modifiers) ===
+    🎯 [1] Remove clustering and focus on the code (ahk)
+    📁 [2] Copy path (VS Code)
+    📊 [3] CSV: Edit CSV
+    💾 [4] CSV: Apply changes to source file and save
+    📋 [5] MarkDown Enhanced: Export in PDF format. 
+    📽️ [6] Marp export (PDF)
+    🔨 [7] Build LaTeX project
+    📄 [8] View LaTeX PDF file
+    📄 [9] Markdown Preview Enhanced: Insert Page Break
+    🤖 [M]Ask [M]essage, wait 6s, then paste (ahk)
+    ⚡ [G]Kill terminal ([G]o away)
+    📉 [Y]Fold all (tuck awa[Y])
+    📈 [U] [U]nfold all
+    📋 [O]Open Paste As... ([O]pen)
+    📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
+    🔲 [J]Select to Bracket (ad[J]acent)
+    📉 [,] Fold all directories
+    💬 [.] Copilot Agent Modes
+    🤖 [E] VS Code default behavior (Cursor custom maximize removed)
+    📂 [R]File open [R]ecent
+    🔍 [T]Go to [T]ype symbol in workspace
+    💬 [N] Copilot chat session workflow (pending dedicated remap)
+    ➕ [Enter] [I]nsert line below
+    🔍 [P]VS Code quick open / project search
+    💬 [;] Insert comment
+    📝 [D]Duplicate selection to next find match
+    🔍 [F] [F]ind
+    ↩️ [Z]Undo (common [Z])
+    📊 [B]Toggle [B]ar (primary sidebar)
+    
+    === Shift ===
+    📉 [F][F]old (ahk)
+    📈 [U][U]nfold (ahk)
+    📄 [M][M]arkdown preview (VS Code migration pending)
+    🪟 [W][W]indow (move editor) (VS Code migration pending)
+    💻 [T][T]erminal (ahk)
+    💻 [N][N]ew Terminal (ahk)
+    📁 [E][E]xplorer (ahk)
+    📄🪟 [K] Mar[K]down + window (ahk)
+    ⌨️ [C][C]ommand palette (ahk)
+    📈 [X] E[X]pand selection (ahk)
+    ⚡ [S][S]ymbol in access view (VS Code migration pending)
+    💬 [H][H]istory (chat) (ahk)
+    🖼️ [I][I]mage (paste) (VS Code migration pending)
+    📁 [G][G]it repos fold (SCM) (ahk)
+    🔍 [Q][Q]uery Search (ahk)
+    🍞 [R]B[R]eadcrumbs menu (ahk)
+    😀 [O]Emoji selector (em[O]ji) (ahk)
+    🌿 [D]Git section ([D]iff) (ahk)
+    ❌ [Z]Close all editors (end [Z]one) (ahk)
+    🤖 [A][A]I models switch (ahk)
+    🧘 [Y]Zen mode (tranquilit[Y])
+    ⬇️ [P][P]ull (Git)
+    ✅ [V]Commit (Git)
+    ⬆️ [B]Push (Git)
+    
+    === Alt (ahk = AutoHotkey) ===
+    📉 [x] Shri[X]nk selection (ahk)
+    📉 [,] Classical Markdown Preview
+    📉 [Y] Paste image to Markdown
+    ⬇️ [U] Scroll AI feed to bottom (ahk-based)
+    📋 [M] Quick shortcut menu (ahk)
+    ➕ [C] Add Context picker (VS Code chat) (ahk)
+    🤖 [A] Add file to AI Context (VS Code chat) (ahk)
+    📌 [Q] Unpin current tab
+    📌 [P] [P]in current tab
+    📋 [I] Reveal in Explorer + copy file (ahk)
+    📂 [H] Reveal in Explorer + open file (ahk)
+    📄 [R] Refresh preview
+    📄 [F] File: New [F]ile
+    📂 [O] File: New F[O]lder
+    
+    === Ctrl+Shift ===
+    📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
+    🐛 [Ctrl+Shift+D] [D]ebugging
+    
+    === Ctrl+Alt ===
+    📄 [Ctrl+Alt+L] Markdown Preview Enhanced: Toggle Live Update
+    📄 [Ctrl+Alt+T] Markdown Preview Enhanced: Toggle Scroll Sync
+    ⬆️ [Ctrl+Alt+Up] Go to [P]arent Fold
+    ⬅️ [Ctrl+Alt+Left] Go to sibling fold [P]revious
+    ➡️ [Ctrl+Alt+Right] Go to sibling fold [N]ext
+    ⬆️ [Ctrl+Alt+↑] Add cursor [A]bove
+    ⬇️ [Ctrl+Alt+↓] Add cursor [B]elow
+    
+    === Alt+Shift ===
+    ⬆️ [Shift+Alt+↑] [C]opy line Up
+    ⬇️ [Shift+Alt+↓] [C]opy line Down
+    
+    === Alt (other chords) ===
+    👁️ [Alt+F12] [P]eek Definition
+    ⬆️ [Alt+↑] [M]ove line Up
+    ⬇️ [Alt+↓] [M]ove line Down
+    👆 [Alt+Click] [M]ulti-cursor by click
+    🔄 [Alt+Z] Toggle word [W]rap
+    ⬇️ [Alt+J] Jump to [N]ext review
+    ⬆️ [Alt+K] [P]revious review (bac[K])
+    
+    === Function keys & misc ===
+    ✏️ [F2] [R]ename symbol
+    🔍 [F8] [N]avigate problems
+    🗑️ [Shift+Delete] [D]elete line
 )"  ; end VS Code
 
 ; --- Windows Explorer ------------------------------------------------------
 cheatSheets["explorer.exe"] := "
 (
-Explorer (Shift)
-📄 [F]Select first [F]ile
-🔍 [S][S]earch bar
-📍 [A][A]ddress bar
-📁 [N][N]ew Folder²
-🔗 [H]Create s[H]ortcut
-📋 [C][C]opy as path
-📤 [R]Sha[R]e file
-📌 [P][P]inned item (first in sidebar)
-📌 [L][L]ast item (sidebar)
-📦 [X] WinRAR e[X]tract here (personal); work: 7-Zip extract
-📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
+    Explorer (Shift)
+    📄 [F]Select first [F]ile
+    🔍 [S][S]earch bar
+    📍 [A][A]ddress bar
+    📁 [N][N]ew Folder²
+    🔗 [H]Create s[H]ortcut
+    📋 [C][C]opy as path
+    📤 [R]Sha[R]e file
+    📌 [P][P]inned item (first in sidebar)
+    📌 [L][L]ast item (sidebar)
+    📦 [X] WinRAR e[X]tract here (personal); work: 7-Zip extract
+    📦 [W] WinRAR add to archive / compact (personal); work: 7-Zip add to archive / compress
 )"  ; end Explorer
 
 ; --- Microsoft Paint ------------------------------------------------------
 cheatSheets["mspaint.exe"] := "
 (
-MS Paint (Shift)
-📏 [R][R]esize and Skew (Ctrl+W)
-
---- Common Shortcuts ---
-[Ctrl+N] > 📄 New
-[Ctrl+O] > 📂 Open
-[Ctrl+S] > 💾 Save
-[F12] > 💾 Save As
-[Ctrl+P] > 🖨️ Print
-[Ctrl+Z] > ↩️ Undo
-[Ctrl+Y] > ↪️ Redo
-[Ctrl+A] > 📄 Select all
-[Ctrl+C] > 📋 Copy
-[Ctrl+X] > ✂️ Cut
-[Ctrl+V] > 📋 Paste
-[Ctrl+W] > 📏 Resize and Skew
-[Ctrl+E] > ℹ️ Image properties
-[Ctrl+R] > 📏 Toggle rulers
-[Ctrl+G] > 🔲 Toggle gridlines
-[Ctrl+I] > 🔄 Invert colors
-[F11] > 🖥️ Fullscreen view
-[Ctrl++] > 🔍 Zoom in
-[Ctrl+-] > 🔍 Zoom outd
+    MS Paint (Shift)
+    📏 [R][R]esize and Skew (Ctrl+W)
+    
+    --- Common Shortcuts ---
+    [Ctrl+N] > 📄 New
+    [Ctrl+O] > 📂 Open
+    [Ctrl+S] > 💾 Save
+    [F12] > 💾 Save As
+    [Ctrl+P] > 🖨️ Print
+    [Ctrl+Z] > ↩️ Undo
+    [Ctrl+Y] > ↪️ Redo
+    [Ctrl+A] > 📄 Select all
+    [Ctrl+C] > 📋 Copy
+    [Ctrl+X] > ✂️ Cut
+    [Ctrl+V] > 📋 Paste
+    [Ctrl+W] > 📏 Resize and Skew
+    [Ctrl+E] > ℹ️ Image properties
+    [Ctrl+R] > 📏 Toggle rulers
+    [Ctrl+G] > 🔲 Toggle gridlines
+    [Ctrl+I] > 🔄 Invert colors
+    [F11] > 🖥️ Fullscreen view
+    [Ctrl++] > 🔍 Zoom in
+    [Ctrl+-] > 🔍 Zoom outd
 )"  ; end MS Paint
 
 ; --- ClipAngel -------------------------------------------------------------
 cheatSheets["ClipAngel.exe"] := "
 (
-ClipAngel (Shift)
-📋 [C][C]opy filtered content
-🔄 [T][T]oggle focus list/text
-🗑️ [D][D]elete all non-favorite
-🧹 [X]E[X]it filters (Clear)
-⭐ [F]Mark as [F]avorite
-⭐ [U][U]nmark as favorite
-✏️ [E][E]dit Text (F4)
-💾 [S][S]ave as file
-🔗 [M][M]erge clips
-🔍 [Y]File t[Y]pe filter (Quick Wizard)
-⌨️ [Alt+1] [S]elect current item
-⌨️ [Alt+2] [M]ove down once and select
-⌨️ [Alt+3] [M]ove down twice and select
-⌨️ [Alt+4] [M]ove down three times and select
-⌨️ [Alt+5] [M]ove down four times and select
-📋 [Ctrl+1] Tab, Select All, Copy
-📋 [Ctrl+2] Down 1, Tab, Select All, Copy
-📋 [Ctrl+3] Down 2, Tab, Select All, Copy
-📋 [Ctrl+4] Down 3, Tab, Select All, Copy
-📋 [Ctrl+5] Down 4, Tab, Select All, Copy
+    ClipAngel (Shift)
+    📋 [C][C]opy filtered content
+    🔄 [T][T]oggle focus list/text
+    🗑️ [D][D]elete all non-favorite
+    🧹 [X]E[X]it filters (Clear)
+    ⭐ [F]Mark as [F]avorite
+    ⭐ [U][U]nmark as favorite
+    ✏️ [E][E]dit Text (F4)
+    💾 [S][S]ave as file
+    🔗 [M][M]erge clips
+    🔍 [Y]File t[Y]pe filter (Quick Wizard)
+    ⌨️ [Alt+1] [S]elect current item
+    ⌨️ [Alt+2] [M]ove down once and select
+    ⌨️ [Alt+3] [M]ove down twice and select
+    ⌨️ [Alt+4] [M]ove down three times and select
+    ⌨️ [Alt+5] [M]ove down four times and select
+    📋 [Ctrl+1] Tab, Select All, Copy
+    📋 [Ctrl+2] Down 1, Tab, Select All, Copy
+    📋 [Ctrl+3] Down 2, Tab, Select All, Copy
+    📋 [Ctrl+4] Down 3, Tab, Select All, Copy
+    📋 [Ctrl+5] Down 4, Tab, Select All, Copy
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
 cheatSheets["Figma.exe"] := "
 (
-Figma (Shift)
-👁️ [U]Toggle [U]I visibility
-🔍 [S][S]earch component
-⬆️ [P]Select [P]arent
-🧩 [C]reate [C]omponent
-🔗 [D][D]etach instance
-📐 [A]dd [A]uto layout
-📐 [R][R]emove auto layout
-💡 [S][S]uggest auto layout
-📤 [E][E]xport
-🖼️ [C][C]opy as PNG
-⚡ [A][A]ctions...
-⬅️ [L]Align [L]eft
-➡️ [R]Align [R]ight
-📏 [V]Distribute [V]ertical spacing
-🧹 [T][T]idy up
-⬆️ [T]Align [T]op
-⬇️ [B]Align [B]ottom
-↔️ [H]Align center [H]orizontal
-↕️ [V]Align center [V]ertical
-📏 [H]Distribute [H]orizontal spacing
+    Figma (Shift)
+    👁️ [U]Toggle [U]I visibility
+    🔍 [S][S]earch component
+    ⬆️ [P]Select [P]arent
+    🧩 [C]reate [C]omponent
+    🔗 [D][D]etach instance
+    📐 [A]dd [A]uto layout
+    📐 [R][R]emove auto layout
+    💡 [S][S]uggest auto layout
+    📤 [E][E]xport
+    🖼️ [C][C]opy as PNG
+    ⚡ [A][A]ctions...
+    ⬅️ [L]Align [L]eft
+    ➡️ [R]Align [R]ight
+    📏 [V]Distribute [V]ertical spacing
+    🧹 [T][T]idy up
+    ⬆️ [T]Align [T]op
+    ⬇️ [B]Align [B]ottom
+    ↔️ [H]Align center [H]orizontal
+    ↕️ [V]Align center [V]ertical
+    📏 [H]Distribute [H]orizontal spacing
 )"  ; end Figma
 
 ; --- Gmail ---------------------------------------------------------------
 cheatSheets["Gmail"] := "
 (
-Gmail (Shift)
-📥 [I][I]nbox
-📰 [U][U]pdates
-💬 [F][F]orums
-📬 [R]Toggle [R]ead status
-⬅️ [P][P]revious conversation
-➡️ [N][N]ext conversation
-📦 [A][A]rchive conversation
-✅ [S][S]elect conversation
-↩️ [Y]Repl[Y]
-↩️ [G]Reply to [G]roup (all)
-➡️ [W]For[W]ard
-⭐ [T]S[T]ar toggle
-🗑️ [D][D]elete
-🚫 [X]Spam (e[X]clude)
-✍️ [C][C]ompose new email
-🔍 [Q][Q]uery mail (Search)
-📁 [M][M]ove to folder
-⌨️ [H][H]elp (keyboard shortcuts)
-📬 [B]Inbox [B]utton
-
---- Built-in Shortcuts (Windows) ---
-
-Compose & chat:
-[p] > Previous message in an open conversation
-[n] > Next message in an open conversation
-[Shift + Esc] > Focus main window
-[Esc] > Focus latest chat or compose
-[Ctrl + .] > Advance to the next chat or compose
-[Ctrl + ,] > Advance to previous chat or compose
-[Ctrl + Enter] > Send
-[Ctrl + Shift + c] > Add cc recipients
-[Ctrl + Shift + b] > Add bcc recipients
-[Ctrl + Shift + f] > Access custom from
-[Ctrl + k] > Insert a link
-[Ctrl + m] > Open spelling suggestions
-
-Formatting text:
-[Ctrl + Shift + 5] > Previous font
-[Ctrl + Shift + 6] > Next font
-[Ctrl + Shift + -] > Decrease text size
-[Ctrl + Shift + +] > Increase text size
-[Ctrl + b] > Bold
-[Ctrl + i] > Italics
-[Ctrl + u] > Underline
-[Ctrl + Shift + 7] > Numbered list
-[Ctrl + Shift + 8] > Bulleted list
-[Ctrl + Shift + 9] > Quote
-[Ctrl + []] > Indent less
-[Ctrl + ]] > Indent more
-[Ctrl + Shift + l] > Align left
-[Ctrl + Shift + e] > Align center
-[Ctrl + Shift + r] > Align right
-[Ctrl + \] > Remove formatting
-
-Actions (shortcuts on):
-[,] > Move focus to toolbar
-[x] > Select conversation
-[s] > Toggle star/rotate among superstars
-[e] > Archive
-[m] > Mute conversation
-[!] > Report as spam
-[#] > Delete
-[r] > Reply
-[Shift + r] > Reply in a new window
-[a] > Reply all
-[Shift + a] > Reply all in a new window
-[f] > Forward
-[Shift + f] > Forward in a new window
-[Shift + n] > Update conversation
-[] or []] > Archive conversation and go previous/next
-[z] > Undo last action
-[Shift + i] > Mark as read
-[Shift + u] > Mark as unread
-[_] > Mark unread from the selected message
-[+ or =] > Mark as important
-[-] > Mark as not important
-[b] > Snooze (not available in classic Gmail)
-[;] > Expand entire conversation
-[:] > Collapse entire conversation
-[Shift + t] > Add conversation to Tasks
-
-Jumping (shortcuts on):
-[g + i] > Go to Inbox
-[g + s] > Go to Starred conversations
-[g + b] > Go to Snoozed conversations
-[g + t] > Go to Sent messages
-[g + d] > Go to Drafts
-[g + a] > Go to All mail
-[Ctrl + Alt + ,] > Switch to left sidebar (Calendar/Keep/Tasks)
-[Ctrl + Alt + .] > Switch to right (back to inbox)
-[g + k] > Go to Tasks
-[g + l] > Go to label
-
-Threadlist selection (shortcuts on):
-[* + a] > Select all conversations
-[* + n] > Deselect all conversations
-[* + r] > Select read conversations
-[* + u] > Select unread conversations
-[* + s] > Select starred conversations
-[* + t] > Select unstarred conversations
-
-Navigation (shortcuts on):
-[g + n] > Go to next page
-[g + p] > Go to previous page
-[u] > Back to threadlist
-[k] > Newer conversation
-[j] > Older conversation
-[o or Enter] > Open conversation
-[`] > Go to next Inbox section
-[~] > Go to previous Inbox section
-
-Application (shortcuts on):
-[c] > Compose
-[d] > Compose in a new tab
-[/] > Search mail
-[q] > Search chat contacts
-[.] > Open ""more actions"" menu
-[v] > Open ""move to"" menu
-[l] > Open ""label as"" menu
-[?] > Open keyboard shortcut help
+    Gmail (Shift)
+    📥 [I][I]nbox
+    📰 [U][U]pdates
+    💬 [F][F]orums
+    📬 [R]Toggle [R]ead status
+    ⬅️ [P][P]revious conversation
+    ➡️ [N][N]ext conversation
+    📦 [A][A]rchive conversation
+    ✅ [S][S]elect conversation
+    ↩️ [Y]Repl[Y]
+    ↩️ [G]Reply to [G]roup (all)
+    ➡️ [W]For[W]ard
+    ⭐ [T]S[T]ar toggle
+    🗑️ [D][D]elete
+    🚫 [X]Spam (e[X]clude)
+    ✍️ [C][C]ompose new email
+    🔍 [Q][Q]uery mail (Search)
+    📁 [M][M]ove to folder
+    ⌨️ [H][H]elp (keyboard shortcuts)
+    📬 [B]Inbox [B]utton
+    
+    --- Built-in Shortcuts (Windows) ---
+    
+    Compose & chat:
+    [p] > Previous message in an open conversation
+    [n] > Next message in an open conversation
+    [Shift + Esc] > Focus main window
+    [Esc] > Focus latest chat or compose
+    [Ctrl + .] > Advance to the next chat or compose
+    [Ctrl + ,] > Advance to previous chat or compose
+    [Ctrl + Enter] > Send
+    [Ctrl + Shift + c] > Add cc recipients
+    [Ctrl + Shift + b] > Add bcc recipients
+    [Ctrl + Shift + f] > Access custom from
+    [Ctrl + k] > Insert a link
+    [Ctrl + m] > Open spelling suggestions
+    
+    Formatting text:
+    [Ctrl + Shift + 5] > Previous font
+    [Ctrl + Shift + 6] > Next font
+    [Ctrl + Shift + -] > Decrease text size
+    [Ctrl + Shift + +] > Increase text size
+    [Ctrl + b] > Bold
+    [Ctrl + i] > Italics
+    [Ctrl + u] > Underline
+    [Ctrl + Shift + 7] > Numbered list
+    [Ctrl + Shift + 8] > Bulleted list
+    [Ctrl + Shift + 9] > Quote
+    [Ctrl + []] > Indent less
+    [Ctrl + ]] > Indent more
+    [Ctrl + Shift + l] > Align left
+    [Ctrl + Shift + e] > Align center
+    [Ctrl + Shift + r] > Align right
+    [Ctrl + \] > Remove formatting
+    
+    Actions (shortcuts on):
+    [,] > Move focus to toolbar
+    [x] > Select conversation
+    [s] > Toggle star/rotate among superstars
+    [e] > Archive
+    [m] > Mute conversation
+    [!] > Report as spam
+    [#] > Delete
+    [r] > Reply
+    [Shift + r] > Reply in a new window
+    [a] > Reply all
+    [Shift + a] > Reply all in a new window
+    [f] > Forward
+    [Shift + f] > Forward in a new window
+    [Shift + n] > Update conversation
+    [] or []] > Archive conversation and go previous/next
+    [z] > Undo last action
+    [Shift + i] > Mark as read
+    [Shift + u] > Mark as unread
+    [_] > Mark unread from the selected message
+    [+ or =] > Mark as important
+    [-] > Mark as not important
+    [b] > Snooze (not available in classic Gmail)
+    [;] > Expand entire conversation
+    [:] > Collapse entire conversation
+    [Shift + t] > Add conversation to Tasks
+    
+    Jumping (shortcuts on):
+    [g + i] > Go to Inbox
+    [g + s] > Go to Starred conversations
+    [g + b] > Go to Snoozed conversations
+    [g + t] > Go to Sent messages
+    [g + d] > Go to Drafts
+    [g + a] > Go to All mail
+    [Ctrl + Alt + ,] > Switch to left sidebar (Calendar/Keep/Tasks)
+    [Ctrl + Alt + .] > Switch to right (back to inbox)
+    [g + k] > Go to Tasks
+    [g + l] > Go to label
+    
+    Threadlist selection (shortcuts on):
+    [* + a] > Select all conversations
+    [* + n] > Deselect all conversations
+    [* + r] > Select read conversations
+    [* + u] > Select unread conversations
+    [* + s] > Select starred conversations
+    [* + t] > Select unstarred conversations
+    
+    Navigation (shortcuts on):
+    [g + n] > Go to next page
+    [g + p] > Go to previous page
+    [u] > Back to threadlist
+    [k] > Newer conversation
+    [j] > Older conversation
+    [o or Enter] > Open conversation
+    [`] > Go to next Inbox section
+    [~] > Go to previous Inbox section
+    
+    Application (shortcuts on):
+    [c] > Compose
+    [d] > Compose in a new tab
+    [/] > Search mail
+    [q] > Search chat contacts
+    [.] > Open ""more actions"" menu
+    [v] > Open ""move to"" menu
+    [l] > Open ""label as"" menu
+    [?] > Open keyboard shortcut help
 )"  ; end Gmail
 
 ; --- Google Keep ---------------------------------------------------------------
 cheatSheets["Google Keep"] := "
 (
-Google Keep (Shift)
-🔍 [S][S]earch and select Note
-📋 [M]Toggle [M]ain menu
+    Google Keep (Shift)
+    🔍 [S][S]earch and select Note
+    📋 [M]Toggle [M]ain menu
 )"  ; end Google Keep
 
 ; --- File Dialog ---------------------------------------------------------------
 cheatSheets["FileDialog"] := "
 (
-File Dialog (Shift)
-📄 [F]Select first [F]ile
-🔍 [S][S]earch bar
-📍 [A][A]ddress bar
-📁 [N][N]ew Folder
-📌 [P][P]inned item (first in sidebar)
-💻 [T][T]his PC (sidebar)
-📝 [M]File na[M]e field
-✅ [O][O]pen/Save button
-❌ [C][C]ancel button
+    File Dialog (Shift)
+    📄 [F]Select first [F]ile
+    🔍 [S][S]earch bar
+    📍 [A][A]ddress bar
+    📁 [N][N]ew Folder
+    📌 [P][P]inned item (first in sidebar)
+    💻 [T][T]his PC (sidebar)
+    📝 [M]File na[M]e field
+    ✅ [O][O]pen/Save button
+    ❌ [C][C]ancel button
 )"
 
 ; --- Settings Window -------------------------------------------------
@@ -1235,7 +1235,7 @@ cheatSheets["Settings"] := "(Settings (Shift))`r`n🔊 [V]Set input [V]olume to 
 
 ; --- Command Palette -------------------------------------------------
 cheatSheets["Command Palette"] := "
-    (
+(
     Command Palette (Shift)
     ⌨️ [Ctrl+H] Reveal in file explorer
     ⌨️ [C][C]opy file Path
@@ -1254,50 +1254,50 @@ cheatSheets["Command Palette"] := "
     ⌨️ [Alt+3] [M]ove down twice and select
     ⌨️ [Alt+4] [M]ove down three times and select
     ⌨️ [Alt+5] [M]ove down four times and select
-    )"
+)"
 
 ; --- Excel ------------------------------------------------------------
 cheatSheets["EXCEL.EXE"] := "
 (
-Excel (Shift)
-⚪ [W]Select [W]hite Color
-✏️ [E]Enable [E]diting
-📊 [C][C]SV to columns (semicolon delimited)
-📋 [V]Quickly [V]aste and extract CSV
-➕ [A][A]dd multiple rows (10 rows)
-🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
-📅 [P]Type [P]revious day date
+    Excel (Shift)
+    ⚪ [W]Select [W]hite Color
+    ✏️ [E]Enable [E]diting
+    📊 [C][C]SV to columns (semicolon delimited)
+    📋 [V]Quickly [V]aste and extract CSV
+    ➕ [A][A]dd multiple rows (10 rows)
+    🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
+    📅 [P]Type [P]revious day date
 )"
 
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
-Power BI (Shift)
-📊 [I]Report v[I]ew
-📊 [O]Table view ([O]verview)
-📋 [Z]Copy cell Val
-📊 [P]Model view ([P]lan)
-📊 [C]Get data ([C]onnect)
-📊 [T][T]ransform Data
-📊 [U][U]pdate (Close and Apply)
-📊 [E]New M[E]asure
-🔄 [Y]Refresh (read[Y])
-📊 [H]Build visual ([H]andle)
-📊 [J]Format visual (ad[J]ust)
-⬆️ [B][B]ring forward
-⬇️ [D]Sen[D] backward
-📐 [K]Keep [A]lign straight
-📄 [V]Fit to Page ([V]iew)
-🎨 [M]Format painter ([M]atch format)
-🔗 [N]Group visuals (Groupi[N]g)
-🖱️ [A][A]ll pages button
-➕ [W]Ne[W] Page
-📕 [F]Close All Drawers ([F]old)
-📖 [G]Open All Drawers (un[G]roup)
-📁 [R]Collapse Fields ([R]educe)
-🔍 [S][S]earch edit field
-✅ [L]Confirm moda[L] button (OK)
-❌ [X]Cancel/E[X]it modal button
+    Power BI (Shift)
+    📊 [I]Report v[I]ew
+    📊 [O]Table view ([O]verview)
+    📋 [Z]Copy cell Val
+    📊 [P]Model view ([P]lan)
+    📊 [C]Get data ([C]onnect)
+    📊 [T][T]ransform Data
+    📊 [U][U]pdate (Close and Apply)
+    📊 [E]New M[E]asure
+    🔄 [Y]Refresh (read[Y])
+    📊 [H]Build visual ([H]andle)
+    📊 [J]Format visual (ad[J]ust)
+    ⬆️ [B][B]ring forward
+    ⬇️ [D]Sen[D] backward
+    📐 [K]Keep [A]lign straight
+    📄 [V]Fit to Page ([V]iew)
+    🎨 [M]Format painter ([M]atch format)
+    🔗 [N]Group visuals (Groupi[N]g)
+    🖱️ [A][A]ll pages button
+    ➕ [W]Ne[W] Page
+    📕 [F]Close All Drawers ([F]old)
+    📖 [G]Open All Drawers (un[G]roup)
+    📁 [R]Collapse Fields ([R]educe)
+    🔍 [S][S]earch edit field
+    ✅ [L]Confirm moda[L] button (OK)
+    ❌ [X]Cancel/E[X]it modal button
 )"
 
 ; --- UIA Tree Inspector -------------------------------------------------
@@ -1306,210 +1306,210 @@ cheatSheets["UIATreeInspector"] :=
 ; --- SettleUp Shortcuts -----------------------------------------------------
 cheatSheets["Settle Up"] := "
 (
-Settle Up (Shift)
-➕ [A][A]dd Transaction
-📝 [N]Focus expense [N]ame field
-💰 [V]Focus expense [V]alue field
+    Settle Up (Shift)
+    ➕ [A][A]dd Transaction
+    📝 [N]Focus expense [N]ame field
+    💰 [V]Focus expense [V]alue field
 )"
 
 ; --- Miro Shortcuts -----------------------------------------------------
 cheatSheets["Miro"] := "
 (
-Miro (Shift)
-📋 [F][F]rame List
-🔗 [G][G]roup
-🔗 [U][U]ngroup
-🔒 [L][L]ock/Unlock
-🔗 [K]Add/Edit Lin[K]
-❌ [X]Close sidebar (e[X]it)
---- Built-in Shortcuts (Windows) ---
-Tools:
-[V / H] > Select tool / Hand
-[T] > Text
-[N] > Sticky notes
-[S] > Shapes
-[R] > Rectangle
-[O] > Oval
-[L] > Connection line / Arrow
-[D] > Card
-[P] > Pen
-[E] > Eraser
-[C] > Comment
-[F] > Frame
-[M] > Minimap
-[Ctrl + K] > Command palette
-[Enter (bulk)] > New sticky note
-[Esc (bulk)] > Exit sticky note bulk mode
-[Ctrl + Shift + Enter] > Open card panel
-[Shift + C] > Show/hide comments
-
-General:
-[Ctrl + C / Ctrl + V] > Copy / Paste
-[Ctrl + X] > Cut
-[Ctrl + D] > Duplicate
-[Alt + drag] > Duplicate by drag
-Alt + â†â†’â†‘â†“        â†’  Duplicate horizontally/vertically
-[Ctrl + click] > Select multiple
-[Ctrl + A] > Select all
-[Enter] > Edit selected
-[Esc] > Deselect / quit edit
-[Backspace] > Delete
-[Ctrl + G] > Group
-[Ctrl + Shift + G] > Ungroup
-[Ctrl + Shift + L] > Lock / Unlock
-[Ctrl + Shift + P] > Protected lock / Unprotected lock
-[PgUp] > Bring to front
-[Shift + PgUp] > Bring forward
-[PgDn] > Send to back
-[Shift + PgDn] > Send backward
-[Ctrl + Shift + K] > Create board in new tab
-[Alt + Ctrl + K] > Add/Edit link to object
-[Ctrl + Backspace] > Clear object contents
-
-Navigation:
-â†â†'â†'              â†'  Move items/canvas
-[Ctrl + +] > Zoom in
-[Ctrl + -] > Zoom out
-[Ctrl + 0] > Zoom to 100%
-[Alt + 1] > Zoom to fit
-[Alt + 2] > Zoom to selected item
-[Space + drag] > Move canvas
-[G] > Toggle grid
-[Ctrl + F] > Search
-
-Text: 
-[Ctrl + B] > Bold
-[Ctrl + I] > Italic
-[Ctrl + U] > Underline
-
-Board navigation:
-[Tab] > Move forwards through objects (TL > BR)
-[Shift + Tab] > Move backwards through objects (TL > BR)
-Ctrl + â†'/+â†"/â†/â†'    â†'  Move through board objects
-[Ctrl + Shift + ↓/↑] > Move in/out of container (e.g., frame)
-[Esc] > Back to menu
-[Enter] > Edit an object
-[Esc] > Stop editing an object
-
-Toolbar navigation:
-[Tab / Shift + Tab] > Move between toolbars
-[Arrow keys] > Move between toolbar items
-[Enter / Space] > Activate a menu item
-
-Desktop app:
-[Ctrl + R] > Reload the tab
-[Ctrl + W] > Close the tab
-[Ctrl + Q] > Exit the app
-[Ctrl + Shift + L] > Copy board link
+    Miro (Shift)
+    📋 [F][F]rame List
+    🔗 [G][G]roup
+    🔗 [U][U]ngroup
+    🔒 [L][L]ock/Unlock
+    🔗 [K]Add/Edit Lin[K]
+    ❌ [X]Close sidebar (e[X]it)
+    --- Built-in Shortcuts (Windows) ---
+    Tools:
+    [V / H] > Select tool / Hand
+    [T] > Text
+    [N] > Sticky notes
+    [S] > Shapes
+    [R] > Rectangle
+    [O] > Oval
+    [L] > Connection line / Arrow
+    [D] > Card
+    [P] > Pen
+    [E] > Eraser
+    [C] > Comment
+    [F] > Frame
+    [M] > Minimap
+    [Ctrl + K] > Command palette
+    [Enter (bulk)] > New sticky note
+    [Esc (bulk)] > Exit sticky note bulk mode
+    [Ctrl + Shift + Enter] > Open card panel
+    [Shift + C] > Show/hide comments
+    
+    General:
+    [Ctrl + C / Ctrl + V] > Copy / Paste
+    [Ctrl + X] > Cut
+    [Ctrl + D] > Duplicate
+    [Alt + drag] > Duplicate by drag
+    Alt + â†â†’â†‘â†“        â†’  Duplicate horizontally/vertically
+    [Ctrl + click] > Select multiple
+    [Ctrl + A] > Select all
+    [Enter] > Edit selected
+    [Esc] > Deselect / quit edit
+    [Backspace] > Delete
+    [Ctrl + G] > Group
+    [Ctrl + Shift + G] > Ungroup
+    [Ctrl + Shift + L] > Lock / Unlock
+    [Ctrl + Shift + P] > Protected lock / Unprotected lock
+    [PgUp] > Bring to front
+    [Shift + PgUp] > Bring forward
+    [PgDn] > Send to back
+    [Shift + PgDn] > Send backward
+    [Ctrl + Shift + K] > Create board in new tab
+    [Alt + Ctrl + K] > Add/Edit link to object
+    [Ctrl + Backspace] > Clear object contents
+    
+    Navigation:
+    â†â†'â†'              â†'  Move items/canvas
+    [Ctrl + +] > Zoom in
+    [Ctrl + -] > Zoom out
+    [Ctrl + 0] > Zoom to 100%
+    [Alt + 1] > Zoom to fit
+    [Alt + 2] > Zoom to selected item
+    [Space + drag] > Move canvas
+    [G] > Toggle grid
+    [Ctrl + F] > Search
+    
+    Text: 
+    [Ctrl + B] > Bold
+    [Ctrl + I] > Italic
+    [Ctrl + U] > Underline
+    
+    Board navigation:
+    [Tab] > Move forwards through objects (TL > BR)
+    [Shift + Tab] > Move backwards through objects (TL > BR)
+    Ctrl + â†'/+â†"/â†/â†'    â†'  Move through board objects
+    [Ctrl + Shift + ↓/↑] > Move in/out of container (e.g., frame)
+    [Esc] > Back to menu
+    [Enter] > Edit an object
+    [Esc] > Stop editing an object
+    
+    Toolbar navigation:
+    [Tab / Shift + Tab] > Move between toolbars
+    [Arrow keys] > Move between toolbar items
+    [Enter / Space] > Activate a menu item
+    
+    Desktop app:
+    [Ctrl + R] > Reload the tab
+    [Ctrl + W] > Close the tab
+    [Ctrl + Q] > Exit the app
+    [Ctrl + Shift + L] > Copy board link
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (
-Wikipedia (Shift)
-🔍 [S][S]earch button click
-💾 [P]Save scroll [P]osition
+    Wikipedia (Shift)
+    🔍 [S][S]earch button click
+    💾 [P]Save scroll [P]osition
 )"
 
 ; --- YouTube ---------------------------------------------------------------
 cheatSheets["YouTube"] := "
 (
-YouTube (Shift)
-🔍 [S]Focus [S]earch box
-🎬 [U]Focus first video (filter res[U]lts)
-🎬 [I]Focus first v[I]deo via Explore
-🏠 [H]Navigate to [H]ome
-📜 [R]Navigate to histo[R]y
-📋 [P]Navigate to [P]laylists
+    YouTube (Shift)
+    🔍 [S]Focus [S]earch box
+    🎬 [U]Focus first video (filter res[U]lts)
+    🎬 [I]Focus first v[I]deo via Explore
+    🏠 [H]Navigate to [H]ome
+    📜 [R]Navigate to histo[R]y
+    📋 [P]Navigate to [P]laylists
 )"
 
 ; --- Google Search ---------------------------------------------------------------
 cheatSheets["Google"] := "
 (
-Google (Shift)
-🔍 [S][S]earch box focus
-🥇 [U][U]se first result
+    Google (Shift)
+    🔍 [S][S]earch box focus
+    🥇 [U][U]se first result
 )" 44
 
 ; --- ChatGPT ---------------------------------------------------------------
 cheatSheets["ChatGPT"] := "
 (
-ChatGPT (Shift)
-📂 [I]Toggle s[I]debar
-🔄 [O]Re-send rules ([O]rder again)
-📋 [C][C]opy code block
-⬇️ [J]Go down ([J]ump)
-🤖 [L]Send and show AI P[L]anner
+    ChatGPT (Shift)
+    📂 [I]Toggle s[I]debar
+    🔄 [O]Re-send rules ([O]rder again)
+    📋 [C][C]opy code block
+    ⬇️ [J]Go down ([J]ump)
+    🤖 [L]Send and show AI P[L]anner
 )"
 
 ; --- Gemini (web, Chrome) -----------------------------------------------
 cheatSheets["Gemini"] := "
 (
-Gemini (Shift)
-📂 [D]Toggle the[D]rawer
-💬 [N][N]ew chat
-🔍 [S][S]earch
-🔄 [M]Change[M]odel
-🛠️ [T][T]ools
-🖼️ [I]Create [I]mage (Tools menu; opens if needed)
-🔬 [E]Deep r[E]search (Tools menu; opens if needed)
-⌨️ [P]Focus[P]rompt field
-📋 [C][C]opy last message
-🔊 [R][R]ead aloud last message
-🤖 [G]Send[G]emini prompt text
-⛶ [F][F]ullscreen input
-🔔 [Enter / Ctrl+Enter]Send and notify on completion
-
-=== Alt (ahk) ===
-⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+    Gemini (Shift)
+    📂 [D]Toggle the[D]rawer
+    💬 [N][N]ew chat
+    🔍 [S][S]earch
+    🔄 [M]Change[M]odel
+    🛠️ [T][T]ools
+    🖼️ [I]Create [I]mage (Tools menu; opens if needed)
+    🔬 [E]Deep r[E]search (Tools menu; opens if needed)
+    ⌨️ [P]Focus[P]rompt field
+    📋 [C][C]opy last message
+    🔊 [R][R]ead aloud last message
+    🤖 [G]Send[G]emini prompt text
+    ⛶ [F][F]ullscreen input
+    🔔 [Enter / Ctrl+Enter]Send and notify on completion
+    
+    === Alt (ahk) ===
+    ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
 )"
 
 ; --- M365 Copilot web (Chrome) — same Shift keys as Gemini -----------------
 cheatSheets["Copilot Web"] := "
 (
-Copilot Web (Shift)
-📂 [D]Toggle nav [D]rawer
-💬 [N][N]ew chat
-🔍 [S][S]earch (nav drawer)
-🔄 [M]Change [M]odel (opens selector)
-🛠️ [T]Add/manage sources (Tools menu)
-🖼️ [I]Designer / create image (Sources menu)
-🔬 [E]Researcher / deep research (Sources menu)
-⌨️ [P]Focus [P]rompt field
-📋 [C][C]opy last response
-🔊 [R][R]ead aloud last message
-🤖 [G]Send prompt text (Gemini_Prompt.txt)
-⛶ [F][F]ullscreen input (expand composer)
-🔔 [Enter / Ctrl+Enter]Send and notify on completion
-
-=== Alt (ahk) ===
-⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
+    Copilot Web (Shift)
+    📂 [D]Toggle nav [D]rawer
+    💬 [N][N]ew chat
+    🔍 [S][S]earch (nav drawer)
+    🔄 [M]Change [M]odel (opens selector)
+    🛠️ [T]Add/manage sources (Tools menu)
+    🖼️ [I]Designer / create image (Sources menu)
+    🔬 [E]Researcher / deep research (Sources menu)
+    ⌨️ [P]Focus [P]rompt field
+    📋 [C][C]opy last response
+    🔊 [R][R]ead aloud last message
+    🤖 [G]Send prompt text (Gemini_Prompt.txt)
+    ⛶ [F][F]ullscreen input (expand composer)
+    🔔 [Enter / Ctrl+Enter]Send and notify on completion
+    
+    === Alt (ahk) ===
+    ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
 )"
 
 ; --- Mobills ---------------------------------------------------------------
 cheatSheets["Mobills"] := "
 (
-Mobills (Shift)
-
---- Navigation ---
-📊 [D][D]ashboard
-💳 [A][A]ccounts (Contas)
-💰 [T][T]ransactions (Transações)
-💳 [C]redit [C]ards (Cartões)
-📅 [P][P]lanning (Planejamento)
-📈 [R][R]eports (Relatórios)
-⚙️ [M]ore [M]enu (Mais opções)
-⬅️ [K]Previous month (bac[K])
-➡️ [L]Next month (cyc[L]e)
-
---- Actions ---
-🚫 [I][I]gnore transaction
-✏️ [N][N]ame Field
-💸 [E]New [E]xpense
-💵 [Y]New Incom[Y]
-💳 [X]Credit card e[X]pense
-🔄 [F]Funds trans[F]er
-🔘 [W][W]indow (Open button + type MAIN)
+    Mobills (Shift)
+    
+    --- Navigation ---
+    📊 [D][D]ashboard
+    💳 [A][A]ccounts (Contas)
+    💰 [T][T]ransactions (Transações)
+    💳 [C]redit [C]ards (Cartões)
+    📅 [P][P]lanning (Planejamento)
+    📈 [R][R]eports (Relatórios)
+    ⚙️ [M]ore [M]enu (Mais opções)
+    ⬅️ [K]Previous month (bac[K])
+    ➡️ [L]Next month (cyc[L]e)
+    
+    --- Actions ---
+    🚫 [I][I]gnore transaction
+    ✏️ [N][N]ame Field
+    💸 [E]New [E]xpense
+    💵 [Y]New Incom[Y]
+    💳 [X]Credit card e[X]pense
+    🔄 [F]Funds trans[F]er
+    🔘 [W][W]indow (Open button + type MAIN)
 )"
 
 ; Mirrors the former sequential if-chain: later assignments override earlier ones; Shopee/Google only when still unset.
@@ -1607,7 +1607,7 @@ GetCheatSheetText() {
         if (hwnd) {
             try {
                 if (CopilotWeb_IsCopilotHwnd(hwnd, "fast") || CopilotWeb_IsCopilotHwnd(hwnd, "full")
-                || CopilotWeb_TryUiaFingerprint(hwnd))
+                    || CopilotWeb_TryUiaFingerprint(hwnd))
                     siteKey := "Copilot Web"
             } catch {
             }
@@ -1695,146 +1695,146 @@ GetGlobalCheatSheetRawText() {
 ; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
 GLOBAL_CHEAT_SHEET_RAW := "
 (
-[Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
-    [Ctrl+Alt+Win] - SECONDARY triple modifier
-
-=== AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-[Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
-[Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
-Letters available: P, T, U
-Numbers available: (none — 0–5, 7–9 assigned)
-Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
-[Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
-[Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
-[Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
-[Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
-[Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
-[Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
-[Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
-[Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
-[Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
-[Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
-[Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
-[Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
-[Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
-[Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
-[Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
-[Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
-[Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
-
-=== MAIN KEY COMBINATIONS ===
-[Symbol Layer] Win+Alt+Shift - Primary combination
-[Window Management] Ctrl+Alt+Win - Secondary combination
-
-
-[Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
-
-=== CURSOR ===
-[Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
-
-[Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
-
-=== SPOTIFY ===
-[Win+Alt+Shift+S] > Opens or activates Spotify
-
-=== CLIP ANGEL ===
-[Win+Alt+Shift+1] > Send top list item from Clip Angel
-
-=== AI CHAT (Chrome) ===
-[Win+Alt+Shift+I] > Opens {AI_PROVIDER}
-[Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
-[Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
-[Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
-[Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
-
-=== HANDY DICTATION ===
-[Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
-[Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-[Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
-[Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
-[Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
-
-=== YOUTUBE ===
-[Win+Alt+Shift+H] > Activates Youtube
-
-=== GOOGLE ===
-[Win+Alt+Shift+F] > Opens Google
-
-=== CURSOR ===
-[Win+Alt+Shift+,] > Opens or activates Cursor
-[Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
-
-=== OUTLOOK ===
-[Win+Alt+Shift+B] > Open mail
-[Win+Alt+Shift+V] > Open Reminder
-[Win+Alt+Shift+G] > Open calendar
-[Win+Alt+Shift+D] > Voice aloud the email
-
-=== MICROSOFT TEAMS ===
-[Win+Alt+Shift+R] > New conversation
-[Win+Alt+Shift+5] > Toggle Mute (meeting)
-[Win+Alt+Shift+4] > Toggle camera (meeting)
-[Win+Alt+Shift+T] > Screen share (meeting)
-[Win+Alt+Shift+2] > Exit meeting
-[Win+Alt+Shift+E] > Select the chats window
-[Win+Alt+Shift+3] > Select the meeting window
-
-=== WHATSAPP ===
-[Win+Alt+Shift+Z] > Opens WhatsApp
-
-=== WINDOWS ===
-[Win+Alt+Shift+6] > Minimizes windows
-[Win+Alt+Shift+M] > Maximizes the current window
-[Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3]
-[Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
-
-=== WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
-[Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
-[Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-[Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
-[Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
-[Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
-[Ctrl+Alt+Win+S] > Move window to monitor 2
-[Ctrl+Alt+Win+D] > Move window to monitor 3
-[Ctrl+Alt+Win+F] > Move window to monitor 4
-[Ctrl+Alt+Win+Shift+A] > Close window on monitor 1
-[Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
-[Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
-[Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
-[Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
-[Ctrl+Alt+Win+W] > Cycle windows on monitor 2
-[Ctrl+Alt+Win+E] > Cycle windows on monitor 3
-[Ctrl+Alt+Win+R] > Cycle windows on monitor 4
-[Ctrl+Alt+Win+Shift+Q] > Minimize window on monitor 1
-[Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
-[Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
-[Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
-
-=== COMMAND PALETTE BOOKMARKS ===
-[Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
-
-=== GENERAL ===
-[Win+Alt+Shift+U] > Quick string shortcuts
-[Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
-[Win+Alt+Shift+Q] > Jump mouse on the middle
-[Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
-[Win+Alt+Shift+→] > Show square selector (right direction)
-[Win+Alt+Shift+←] > Show square selector (left direction)
-[Win+Alt+Shift+↓] > Show square selector (down direction)
-[Win+Alt+Shift+↑] > Show square selector (up direction)
-[Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
-
-=== COMMAND PALETTE ===
-[Win+Ctrl+Alt+Y] > Command Palette - File search
-[Shift+D] > Command Palette (active): exclude current bookmark (confirm)
-
-=== SHORTCUTS ===
-[Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
-[Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
-[Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
-
-=== WIKIPEDIA ===
-[Win+Alt+Shift+K] > Opens or activates Wikipedia
+    [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
+        [Ctrl+Alt+Win] - SECONDARY triple modifier
+    
+    === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
+    [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
+    [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
+    Letters available: P, T, U
+    Numbers available: (none — 0–5, 7–9 assigned)
+    Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
+    [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
+    [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
+    [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
+    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
+    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
+    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
+    [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
+    [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
+    [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
+    [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
+    [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
+    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
+    [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
+    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
+    [Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
+    
+    === MAIN KEY COMBINATIONS ===
+    [Symbol Layer] Win+Alt+Shift - Primary combination
+    [Window Management] Ctrl+Alt+Win - Secondary combination
+    
+    
+    [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
+    
+    === CURSOR ===
+    [Win+Alt+Shift+N] > Opens or activates Cursor (habits, home, punctual, or work windows)
+    
+    [Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
+    
+    === SPOTIFY ===
+    [Win+Alt+Shift+S] > Opens or activates Spotify
+    
+    === CLIP ANGEL ===
+    [Win+Alt+Shift+1] > Send top list item from Clip Angel
+    
+    === AI CHAT (Chrome) ===
+    [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
+    [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
+    [Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
+    [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
+    [Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
+    
+    === HANDY DICTATION ===
+    [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+    [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
+    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
+    [Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
+    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
+    
+    === YOUTUBE ===
+    [Win+Alt+Shift+H] > Activates Youtube
+    
+    === GOOGLE ===
+    [Win+Alt+Shift+F] > Opens Google
+    
+    === CURSOR ===
+    [Win+Alt+Shift+,] > Opens or activates Cursor
+    [Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
+    
+    === OUTLOOK ===
+    [Win+Alt+Shift+B] > Open mail
+    [Win+Alt+Shift+V] > Open Reminder
+    [Win+Alt+Shift+G] > Open calendar
+    [Win+Alt+Shift+D] > Voice aloud the email
+    
+    === MICROSOFT TEAMS ===
+    [Win+Alt+Shift+R] > New conversation
+    [Win+Alt+Shift+5] > Toggle Mute (meeting)
+    [Win+Alt+Shift+4] > Toggle camera (meeting)
+    [Win+Alt+Shift+T] > Screen share (meeting)
+    [Win+Alt+Shift+2] > Exit meeting
+    [Win+Alt+Shift+E] > Select the chats window
+    [Win+Alt+Shift+3] > Select the meeting window
+    
+    === WHATSAPP ===
+    [Win+Alt+Shift+Z] > Opens WhatsApp
+    
+    === WINDOWS ===
+    [Win+Alt+Shift+6] > Minimizes windows
+    [Win+Alt+Shift+M] > Maximizes the current window
+    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3]
+    [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
+    
+    === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
+    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
+    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
+    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
+    [Ctrl+Alt+Win+S] > Move window to monitor 2
+    [Ctrl+Alt+Win+D] > Move window to monitor 3
+    [Ctrl+Alt+Win+F] > Move window to monitor 4
+    [Ctrl+Alt+Win+Shift+A] > Close window on monitor 1
+    [Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
+    [Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
+    [Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
+    [Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
+    [Ctrl+Alt+Win+W] > Cycle windows on monitor 2
+    [Ctrl+Alt+Win+E] > Cycle windows on monitor 3
+    [Ctrl+Alt+Win+R] > Cycle windows on monitor 4
+    [Ctrl+Alt+Win+Shift+Q] > Minimize window on monitor 1
+    [Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
+    [Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
+    [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
+    
+    === COMMAND PALETTE BOOKMARKS ===
+    [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
+    
+    === GENERAL ===
+    [Win+Alt+Shift+U] > Quick string shortcuts
+    [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
+    [Win+Alt+Shift+Q] > Jump mouse on the middle
+    [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
+    [Win+Alt+Shift+→] > Show square selector (right direction)
+    [Win+Alt+Shift+←] > Show square selector (left direction)
+    [Win+Alt+Shift+↓] > Show square selector (down direction)
+    [Win+Alt+Shift+↑] > Show square selector (up direction)
+    [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
+    
+    === COMMAND PALETTE ===
+    [Win+Ctrl+Alt+Y] > Command Palette - File search
+    [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
+    
+    === SHORTCUTS ===
+    [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
+    [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
+    [Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
+    
+    === WIKIPEDIA ===
+    [Win+Alt+Shift+K] > Opens or activates Wikipedia
 )"
 
 ; Returns Map of context label -> array of matching processed lines. Empty query => empty map.
@@ -2201,8 +2201,8 @@ FastCopyMode_ClipboardHasImage() {
     ; CF_DIB=8, CF_DIBV5=17, CF_BITMAP=2
     try {
         return !!(DllCall("IsClipboardFormatAvailable", "UInt", 8, "Int")
-        || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
-        || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
+            || DllCall("IsClipboardFormatAvailable", "UInt", 17, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 2, "Int"))
     } catch {
         return false
     }
@@ -3944,7 +3944,7 @@ WaitForButton(root, pattern, timeout := 5000) {
 ; Outlook Reminder Window Shortcuts
 ;-------------------------------------------------------------------
 #HotIf (WinActive("ahk_exe OUTLOOK.EXE") || WinActive("ahk_exe olk.exe")) && RegExMatch(WinGetTitle("A"),
-"i)Reminders?") && !IsFileDialogActive()
+    "i)Reminders?") && !IsFileDialogActive()
 
 ; ativa a janela de lembretes do Outlook
 ActivateReminder() {
@@ -4518,7 +4518,7 @@ Reminders_PickKey(key) {
     ; This prevents the selection modal from disappearing due to unrelated Win-key chords.
     try {
         if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P")
-        || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
+            || GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P")) {
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_PickKey", "Ignored pick due to modifier down", Map(
                 "key", key,
@@ -5166,8 +5166,8 @@ Reminders_ExecuteItemAction(action) {
             ; so locate "Dismiss reminder" by focused UIA name instead of fixed offsets.
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dynamic dismiss requested", Map(),
-            "DZ0",
-            "pre-fix")
+                "DZ0",
+                "pre-fix")
             ; #endregion
             ok := Reminders_MenuFindItemContains("dismiss", 20, "dismiss")
             if ok {
@@ -5175,14 +5175,14 @@ Reminders_ExecuteItemAction(action) {
                 Sleep Reminders_DelayValue("post_select_ms", 60)
                 ; #region agent log
                 try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss invoked", Map(), "DZ1",
-                "pre-fix")
+                    "pre-fix")
                 ; #endregion
                 return true
             }
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Dismiss not found in menu scan", Map(),
-            "DZ2",
-            "pre-fix")
+                "DZ2",
+                "pre-fix")
             ; #endregion
             return false
         }
@@ -5215,14 +5215,14 @@ Reminders_ExecuteItemAction(action) {
             ok := false
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Attempting UIA root Join invoke", Map(),
-            "C",
-            "pre-fix")
+                "C",
+                "pre-fix")
             ; #endregion
             ok := Reminders_TryInvokeJoinOnlineMenuItem()
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "UIA root Join invoke result", Map(
                 "ok", ok), "C",
-            "pre-fix")
+                "pre-fix")
             ; #endregion
             if ok
                 return true
@@ -5230,8 +5230,8 @@ Reminders_ExecuteItemAction(action) {
             ; Fallback 1: first-letter navigation (if supported)
             ; #region agent log
             try Reminders_DebugLog("Shift keys.ahk:Reminders_ExecuteItemAction", "Fallback: type 'j' then Enter", Map(),
-            "D",
-            "pre-fix")
+                "D",
+                "pre-fix")
             ; #endregion
             Send "j"
             Sleep 60
@@ -6290,9 +6290,9 @@ RestorePreviousWikipediaScrollPosition() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:3415","message":"Got normalized URL in restore","data":{"url":"' . url .
-            '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n',
-            DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:3415","message":"Got normalized URL in restore","data":{"url":"' . url .
+                '","urlLength":' . StrLen(url) . '},"sessionId":"debug-session","runId":"post-fix","hypothesisId":"F"}`n',
+                DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -9861,8 +9861,8 @@ IsNewOutlookActive() {
     try title := WinGetTitle("A")
     try exe := WinGetProcessName("A")
     return InStr(cls, "Outlook Host")
-    || InStr(title, " - Outlook")
-    || RegExMatch(title, "i)^(New event|Reminders?)")
+        || InStr(title, " - Outlook")
+        || RegExMatch(title, "i)^(New event|Reminders?)")
 }
 
 OutlookFindFirst(criteriaList) {
@@ -10029,9 +10029,9 @@ OutlookClickFirst(criteriaList) {
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db", ControlType: "RadioButton" }, ; Move to General
-        { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
-            matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
-                matchmode: "Substring" }
+            { AutomationId: "c46846eb-0853-7b70-b484-4d7f31f5d9db" }, { Name: "Move to General", ControlType: "RadioButton" }, { Name: "Move to General",
+                matchmode: "Substring" }, { Name: "Move to general", matchmode: "Substring" }, { Name: "Move to Gerais",
+                    matchmode: "Substring" }
         ]) {
             Sleep 120
             Outlook_FocusMailMessageList(true)
@@ -10053,9 +10053,9 @@ OutlookClickFirst(criteriaList) {
         Outlook_ActivateMainWindow()
         OutlookMail_EnsureHomeTab()
         if OutlookClickFirst([{ AutomationId: "91476b25-0fb7-4460-f695-8905582291db", ControlType: "RadioButton" }, ; Move to Newsletter
-        { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
-            matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
-                matchmode: "Substring", ControlType: "RadioButton" }
+            { AutomationId: "91476b25-0fb7-4460-f695-8905582291db" }, { Name: "Move to Newsletter", ControlType: "RadioButton" }, { Name: "Move to Newsletter",
+                matchmode: "Substring" }, { Name: "Move to newsletter", matchmode: "Substring" }, { Name: "newsletter",
+                    matchmode: "Substring", ControlType: "RadioButton" }
         ]) {
             Sleep 120
             Outlook_FocusMailMessageList(true)
@@ -10162,7 +10162,7 @@ OutlookClickFirst(criteriaList) {
             hwnd := WinExist("A")
             t := WinGetTitle("A")
             OC_STLog("compose_gate_passed", '{"hwnd":' hwnd ',"title":"' StrReplace(SubStr(t, 1, 120), '"', '\"') '"}',
-            "OC_ST_A")
+                "OC_ST_A")
         } catch {
         }
 
@@ -10403,7 +10403,7 @@ SelectExplorerSidebarFirstPinned() {
                             firstChar = "d" || firstChar = "D") {
                             ; Additional check: must be Desktop-related (not just any item starting with a/d)
                             if (InStr(itemName, "Desktop", false) || InStr(itemName, "Área de Trabalho", false) ||
-                            InStr(itemName, "Trabalho", false)) {
+                                InStr(itemName, "Trabalho", false)) {
                                 firstPinnedItem := item
                                 break
                             }
@@ -11288,7 +11288,7 @@ Outlook_ClickEndTime_1200PM() {
             ? (Appt_PopoverInvokeFirst([{ Name: "Start date", ControlType: "ComboBox" }, { Name: "Start date", Type: 50003 }, { Name: "Start date",
                 ControlType: "Button" }, { Name: "Start date", Type: 50000 }, { AutomationId: "DatePicker", matchmode: "Substring" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start date not found", 1400, BANNER_ACCENT_ERROR), false))
-            : (Outlook_ClickStartDate(), true)
+        : (Outlook_ClickStartDate(), true)
     ))
 }
 
@@ -11298,19 +11298,19 @@ Outlook_ClickEndTime_1200PM() {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("Private", (*) => (
             (choice := Appt_SelectFromModal("Appointment privacy", [{ k: "1", label: "Private" }, { k: "2", label: "Not private" }],
-            "[1-2] Select  [Esc] Cancel"))
+                "[1-2] Select  [Esc] Cancel"))
                 ? (
                     (choice = "1")
                         ? Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
                             ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
                                 matchmode: "Substring", ControlType: "Button" }
                         ], "Private")
-                        : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
-                            ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
-                                matchmode: "Substring", ControlType: "Button" }
-                        ], "Not private")
+                    : Appt_OpenMenuAndPick([{ Name: "Private", ControlType: "Button" }, { Name: "Not private",
+                        ControlType: "Button" }, { Name: "Private", matchmode: "Substring", ControlType: "Button" }, { Name: "Not private",
+                            matchmode: "Substring", ControlType: "Button" }
+                    ], "Not private")
                 )
-                : false
+            : false
         ))
         return
     }
@@ -11324,7 +11324,7 @@ Outlook_ClickEndTime_1200PM() {
             ? (Appt_PopoverFocusFirst([{ Name: "Start time", ControlType: "ComboBox" }, { Name: "Start time", Type: 50003 }, { AutomationId: "ComboBox",
                 matchmode: "Substring" }]) || (ShowCenteredOverlay_Utils("❌ Appointment: Start time not found", 1400,
                     BANNER_ACCENT_ERROR), false))
-            : (Outlook_ClickStartTime(), true)
+        : (Outlook_ClickStartTime(), true)
     ))
 }
 
@@ -11333,8 +11333,8 @@ Outlook_ClickEndTime_1200PM() {
     Appt_RunWithLoading("End time", (*) => (
         IsNewOutlookActive()
             ? (Appt_PopoverFocusFirst([{ Name: "End time", ControlType: "ComboBox" }, { Name: "End time", Type: 50003 }]) ||
-            (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
-            : (Outlook_ClickEndDate(), true)
+                (ShowCenteredOverlay_Utils("❌ Appointment: End time not found", 1400, BANNER_ACCENT_ERROR), false))
+        : (Outlook_ClickEndDate(), true)
     ))
 }
 
@@ -11356,10 +11356,10 @@ Outlook_ClickEndTime_1200PM() {
     if IsNewOutlookActive() {
         Appt_RunWithLoading("All day", (*) => (
             Appt_PopoverToggleFirst([{ Name: "All day", ControlType: "CheckBox" }, { Name: "All day", Type: 50002 },
-            ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
-            { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" }, { AutomationId: "Toggle",
-                matchmode: "Substring", Type: 50000 }, { Name: "All day", ControlType: "Button" }, { Name: "All day",
-                    Type: 50000 }
+                ; New Outlook exposes this as a switch (button) with a stable AutomationId (e.g. Toggle9777).
+                { AutomationId: "Toggle", matchmode: "Substring", ControlType: "Button" }, { AutomationId: "Toggle",
+                    matchmode: "Substring", Type: 50000 }, { Name: "All day", ControlType: "Button" }, { Name: "All day",
+                        Type: 50000 }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: All day not found", 1400, BANNER_ACCENT_ERROR), false)
         ))
         return
@@ -11468,11 +11468,11 @@ Appt_ClickDayNav(isNext) {
                 matchmode: "Substring", ControlType: "Button" }, { Name: "Next day", matchmode: "Substring",
                     ControlType: "Button" }
         ]
-            : [{ Name: "Go to previous", matchmode: "Substring", ControlType: "Button" }, { Name: "go to previous",
-                matchmode: "Substring", ControlType: "Button" }, { Name: "Previous", matchmode: "Substring",
-                    ControlType: "Button" }, { Name: "Back", matchmode: "Substring", ControlType: "Button" }, { Name: "Previous day",
-                        matchmode: "Substring", ControlType: "Button" }
-            ]
+        : [{ Name: "Go to previous", matchmode: "Substring", ControlType: "Button" }, { Name: "go to previous",
+            matchmode: "Substring", ControlType: "Button" }, { Name: "Previous", matchmode: "Substring",
+                ControlType: "Button" }, { Name: "Back", matchmode: "Substring", ControlType: "Button" }, { Name: "Previous day",
+                    matchmode: "Substring", ControlType: "Button" }
+        ]
     for crit in candidates {
         try {
             btn := root.FindFirst(crit)
@@ -11491,14 +11491,14 @@ Appt_ClickDayNav(isNext) {
 
 Appt_SchedulerClickBack() {
     return Appt_ClickInCommandBar([{ Name: "Back", ControlType: "Button" }])
-    || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Back", ControlType: "Button" }])
 }
 
 Appt_SchedulerClickOptions() {
     return Appt_ClickInCommandBar([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
         ControlType: "Button" }])
-    || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
-        ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Options", ControlType: "Button" }, { Name: "Options", matchmode: "Substring",
+            ControlType: "Button" }])
 }
 
 Appt_SchedulerClickAddAttendee(isOptional) {
@@ -11652,7 +11652,7 @@ Appt_ToggleOrClickAny(criteriaList) {
         IsNewOutlookActive()
             ? (Appt_FocusBodyField_NewOutlook() || (ShowCenteredOverlay_Utils("❌ Appointment: Body not found", 1400,
                 BANNER_ACCENT_ERROR), false))
-            : (true)
+        : (true)
     ))
     if IsNewOutlookActive()
         return
@@ -11686,7 +11686,7 @@ Appt_ToggleOrClickAny(criteriaList) {
             ? (Appt_PopoverInvokeFirst([{ Name: "Make recurring", ControlType: "Button" }, { Name: "recurring",
                 matchmode: "Substring", ControlType: "Button" }]) || (ShowCenteredOverlay_Utils(
                     "❌ Appointment: Recurring not found", 1400, BANNER_ACCENT_ERROR), false))
-            : (false)
+        : (false)
     ))
     if IsNewOutlookActive()
         return
@@ -11715,7 +11715,7 @@ Appt_ToggleOrClickAny(criteriaList) {
             matchmode: "Substring", ControlType: "Button" }]) || Appt_ClickAny([{ Name: "Teams meeting", matchmode: "Substring",
                 ControlType: "Button" }, { Name: "Teams", matchmode: "Substring", ControlType: "Button" }
             ]) || (ShowCenteredOverlay_Utils("❌ Appointment: Teams meeting not found", 1400, BANNER_ACCENT_ERROR),
-            false)
+                false)
     ))
 }
 
@@ -11743,16 +11743,16 @@ Appt_ToggleOrClickAny(criteriaList) {
             ? (
                 (target := (choice = "1") ? "Free"
                     : (choice = "2") ? "Working elsewhere"
-                        : (choice = "3") ? "Tentative"
-                            : (choice = "4") ? "Busy"
-                                : "Out of office"),
+                    : (choice = "3") ? "Tentative"
+                    : (choice = "4") ? "Busy"
+                    : "Out of office"),
                 Appt_OpenMenuAndPick([{ Name: "Free", ControlType: "Button" }, { Name: "Busy", ControlType: "Button" }, { Name: "Tentative",
                     ControlType: "Button" }, { Name: "Working elsewhere", ControlType: "Button" }, { Name: "Out of office",
                         ControlType: "Button" }, { Name: "Free", matchmode: "Substring", ControlType: "Button" }, { Name: "Busy",
                             matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
-            : false
+        : false
     ))
 }
 
@@ -11775,10 +11775,10 @@ RemQ_Run() {
 
     target := (choice = "1") ? "Don't remind me"
         : (choice = "2") ? "15 minutes before"
-            : (choice = "3") ? "1 hour before"
-                : (choice = "4") ? "12 hours before"
-                    : (choice = "5") ? "1 day before"
-                        : "1 week before"
+        : (choice = "3") ? "1 hour before"
+        : (choice = "4") ? "12 hours before"
+        : (choice = "5") ? "1 day before"
+        : "1 week before"
 
     RemQ_VisualizeSelection("Reminder", target)
     return Appt_OpenMenuAndPick([{ Name: "Don't remind me", ControlType: "Button" }, { Name: "15 minutes before",
@@ -11809,13 +11809,13 @@ RemQ_VisualizeSelection(label, target) {
             ? (
                 (target := (choice = "1") ? "Aniversário"
                     : (choice = "2") ? "Importante"
-                        : "Pessoal"),
+                    : "Pessoal"),
                 Appt_OpenMenuAndPick([{ Name: "Aniversário", ControlType: "Button" }, { Name: "Importante", ControlType: "Button" }, { Name: "Pessoal",
                     ControlType: "Button" }, { Name: "Category", matchmode: "Substring", ControlType: "Button" }, { Name: "Categories",
                         matchmode: "Substring", ControlType: "Button" }
                 ], target)
             )
-            : false
+        : false
     ))
 }
 
@@ -11825,7 +11825,7 @@ RemQ_VisualizeSelection(label, target) {
         IsNewOutlookActive()
             ? (Appt_PopoverSelectTimeSuggestion(1) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 1 not found", 1400, BANNER_ACCENT_ERROR), false))
-            : (false)
+        : (false)
     ))
 }
 
@@ -11834,7 +11834,7 @@ RemQ_VisualizeSelection(label, target) {
         IsNewOutlookActive()
             ? (Appt_PopoverSelectTimeSuggestion(2) || (ShowCenteredOverlay_Utils(
                 "❌ Appointment: Suggestion 2 not found", 1400, BANNER_ACCENT_ERROR), false))
-            : (false)
+        : (false)
     ))
 }
 
@@ -11967,7 +11967,7 @@ ShowOutlookAppointmentPalette() {
 
                 ; Calculate letter index in the flat array
                 letterIndex := ((statusIndex - 1) * rowsPerStatus * colsPerStatus) +
-                ((rowIndex - 1) * colsPerStatus) + colIndex
+                    ((rowIndex - 1) * colsPerStatus) + colIndex
 
                 if (letterIndex > g_OutlookPaletteLetters.Length) {
                     continue
@@ -12285,7 +12285,7 @@ RunOutlookAppointmentWizard() {
 
     ; STEP 2/5 – Privacy
     c2 := Appt_SelectFromModal("Wizard 2/5: privacy", [{ k: "1", label: "🔓 Not private" }, { k: "2", label: "🔒 Private" }],
-    "[1-2] Select  [Esc] Cancel")
+        "[1-2] Select  [Esc] Cancel")
     if (c2 = "")
         return
     privacy := (c2 = "2") ? "Private" : "Not private"
@@ -12307,14 +12307,14 @@ RunOutlookAppointmentWizard() {
         return
     reminder := (c5 = "1") ? "Don't remind me"
         : (c5 = "2") ? "15 minutes before"
-            : (c5 = "3") ? "1 hour before"
-                : (c5 = "4") ? "12 hours before"
-                    : (c5 = "5") ? "1 day before"
-                        : "1 week before"
+        : (c5 = "3") ? "1 hour before"
+        : (c5 = "4") ? "12 hours before"
+        : (c5 = "5") ? "1 day before"
+        : "1 week before"
 
     ; STEP 5/5 – All-day (final)
     c3 := Appt_SelectFromModal("Wizard 5/5: all-day", [{ k: "1", label: "⏰ Timed (All-day OFF)" }, { k: "2", label: "📅 All-day ON" }],
-    "[1-2] Select  [Esc] Cancel")
+        "[1-2] Select  [Esc] Cancel")
     if (c3 = "")
         return
     allDayOn := (c3 = "2")
@@ -12526,7 +12526,7 @@ ApptWizard_FocusTitleField_ByTabbing(maxSteps := 24) {
         ; Match both EN/PT variants.
         if (name != "") {
             if InStr(name, "Add title", false) || InStr(name, "Title", false) || InStr(name, "Adicionar título", false) ||
-            InStr(name, "Adicionar titulo", false) {
+                InStr(name, "Adicionar titulo", false) {
                 ; Ensure caret by clicking focused element if possible.
                 try fe.Click()
                 catch {
@@ -12766,13 +12766,13 @@ RenameChatGPTWindowToChatGPT() {
         for name in conversationOptionNames {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name, cs: false },
-                UIA.TreeScope.Descendants)
+                    UIA.TreeScope.Descendants)
                 if (openConversationButton)
                     break
             } catch {
                 try {
                     openConversationButton := siblingElement.FindElement({ Type: 50000, Name: name },
-                    UIA.TreeScope.Descendants)
+                        UIA.TreeScope.Descendants)
                     if (openConversationButton)
                         break
                 } catch {
@@ -12784,7 +12784,7 @@ RenameChatGPTWindowToChatGPT() {
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, AutomationId: "radix-_r_b6_" }, UIA
-                .TreeScope.Descendants)
+                    .TreeScope.Descendants)
             } catch {
             }
         }
@@ -12793,7 +12793,7 @@ RenameChatGPTWindowToChatGPT() {
         if (!openConversationButton) {
             try {
                 openConversationButton := siblingElement.FindElement({ Type: 50000, ClassName: "__menu-item-trailing-btn" },
-                UIA.TreeScope.Descendants)
+                    UIA.TreeScope.Descendants)
             } catch {
             }
         }
@@ -13060,7 +13060,7 @@ SubmitChatGPTMessage() {
     ShowSmallLoadingIndicator_ChatGPT("AI is respondingâ€¦")
     ; Use infinite timeout so the banner persists for long responses
     WaitForButtonAndShowSmallLoading_ChatGPT([currentStopStreamingName, "Stop", "Interromper"], "AI is respondingâ€¦",
-    0)
+        0)
 }
 
 #HotIf
@@ -13186,7 +13186,7 @@ SelectExplorerSidebarFirstPinned_EX() {
             ? explorerEl.FindFirst({ AutomationId: "ItemsView", Type: "List" })
             : explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
                 ? explorerEl.FindFirst({ ClassName: "UIItemsView", Type: "List" })
-                : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
+            : explorerEl.FindFirst({ Name: "Items View", Type: "List", matchmode: "Substring" })
 
         ; Fallback to entire window if we still did not find a dedicated list
         listRoot := itemsView ? itemsView : explorerEl
@@ -15298,7 +15298,7 @@ Excel_RemoveRows(iterations := 8) {
 
         msg := closed
             ? Format("Closed {} drawer{}", closed, closed = 1 ? "" : "s")
-                : "No drawers needed closing"
+            : "No drawers needed closing"
 
         if already
             msg .= Format(" | {} already closed", already)
@@ -15344,7 +15344,7 @@ Excel_RemoveRows(iterations := 8) {
 
         msg := opened
             ? Format("Opened {} drawer{}", opened, opened = 1 ? "" : "s")
-                : "No drawers needed opening"
+            : "No drawers needed opening"
 
         if already
             msg .= Format(" | {} already open", already)
@@ -15953,8 +15953,8 @@ Editor_TryCopyFileFromActiveEditor(editorHwnd, expectedBasename := "") {
             return { ok: false, path: "" }
         verifyBasename := expectedBasename != "" ? expectedBasename : Editor_GetBasenameFromEditorTitle(editorHwnd)
         if !(Editor_SetClipboardFiles([pathText])
-        && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
-        && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
+            && Editor_WaitForClipboardFileDrop(EDITOR_COPY_DIRECT_CLIP_WAIT_MS)
+            && Editor_ClipboardMatchesRevealTarget(pathText, verifyBasename))
             return { ok: false, path: "" }
         copyOk := true
         return { ok: true, path: pathText }
@@ -15969,8 +15969,8 @@ Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, clipWaitMs := 300) 
     if !Editor_PathIsExistingFile(fullPath)
         return false
     return Editor_SetClipboardFiles([fullPath])
-    && Editor_WaitForClipboardFileDrop(clipWaitMs)
-    && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)
+        && Editor_WaitForClipboardFileDrop(clipWaitMs)
+        && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)
 }
 
 Editor_SmartNavLoadingUpdate(state, editorHwnd := 0) {
@@ -16443,7 +16443,7 @@ Editor_GatherRevealContext(explorerHwnd, expectedBasename := "") {
     expectedNorm := Editor_NormalizeRevealBasename(expectedBasename)
     selectedNorm := ctx["selectedName"]
     if (expectedNorm != "" && Editor_IsPlausibleRevealBasename(expectedNorm)
-    && (selectedNorm = "" || selectedNorm != expectedNorm))
+        && (selectedNorm = "" || selectedNorm != expectedNorm))
         verifyBasename := expectedNorm
     else if (selectedNorm != "")
         verifyBasename := selectedNorm
@@ -16638,9 +16638,9 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
         A_Clipboard := ""
         Send "^c"
         if !(Editor_WaitForClipboardFileDrop(EDITOR_COPY_CLIP_WAIT_MS)
-        && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)) {
+            && Editor_ClipboardMatchesRevealTarget(fullPath, verifyBasename)) {
             if (Editor_PathIsExistingFile(fullPath)
-            && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+                && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
                 ; direct set succeeded after keyboard miss
             } else {
                 recovered := Editor_TryRecoverRevealTarget(explorerHwnd, expectedBasename)
@@ -16651,7 +16651,7 @@ Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", time
                         Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)
                 }
                 if (Editor_PathIsExistingFile(fullPath)
-                && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
+                    && Editor_CopyVerifiedFileToClipboard(fullPath, verifyBasename, EDITOR_COPY_DIRECT_CLIP_WAIT_MS)) {
                     ; recovered via find/select or direct path
                 } else {
                     Editor_SmartNavRevealShowExplorerTimeout("Copy")
@@ -18167,9 +18167,9 @@ ClickHidePanelButton() {
                 ; Likely a dialog: standard dialog class, or a Chromium modal whose TITLE indicates Save/Export.
                 ; IMPORTANT: Do NOT treat any Chrome_WidgetWin as dialog (Cursor itself is Chrome_WidgetWin_1).
                 isTitleDialogish := InStr(currTitle, "Save") || InStr(currTitle, "Save As")
-                || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
-                || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
-                || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
+                    || InStr(currTitle, "Export") || InStr(currTitle, "Marp")
+                    || InStr(currTitle, "Confirm Save As") || InStr(currTitle, "Confirm")
+                    || InStr(currTitle, "Salvar") || InStr(currTitle, "Guardar")
                 if InStr(currClass, "32770") || (InStr(currClass, "Chrome_WidgetWin") && isTitleDialogish) {
                     saveDialogHwnd := curr
                     break
@@ -18214,7 +18214,7 @@ ClickHidePanelButton() {
 
                     ; If this Edit looks like the File name field (based on name/id and .pdf suffix), capture it
                     if (suffix != "" && InStr(StrLower(suffix), ".pdf")
-                    && (el.AutomationId = "1001" || el.Name = "File name:")) {
+                        && (el.AutomationId = "1001" || el.Name = "File name:")) {
                         filePath := val
                         SplitPath filePath, , , &ext, &nameNoExt
                         fileNameOnly := (nameNoExt != "") ? (nameNoExt . (ext != "" ? "." ext : "")) : suffix
@@ -18311,7 +18311,7 @@ ClickHidePanelButton() {
             if replaceHwnd {
                 title := WinGetTitle("ahk_id " replaceHwnd)
                 if InStr(title, "Confirm Save As") || InStr(title, "Confirmar Salvar")
-                || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
+                    || InStr(title, "Confirmar Guardar") || InStr(title, "Confirm Replace") {
                     try {
                         WinActivate("ahk_id " replaceHwnd)
                     } catch {
@@ -19045,47 +19045,47 @@ ExecuteAIModelSelection(choice) {
         ; Handle different behaviors based on choice
         switch choice {
             case 1:
-            {
-                ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
-                Send "^;"
-                Sleep 300
-                SendText "auto"
-                Sleep 500
-                Send "{Enter}"
-                Sleep 300
-                SendEscape()
-            }
+                {
+                    ; For auto option: simulate ;, wait for model context menu, then send ↓, Enter
+                    Send "^;"
+                    Sleep 300
+                    SendText "auto"
+                    Sleep 500
+                    Send "{Enter}"
+                    Sleep 300
+                    SendEscape()
+                }
             case 2:
-            {
-                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
-                Send "^;"
-                Sleep 500
-                SendText "CLAUD"
-            }
+                {
+                    ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                    Send "^;"
+                    Sleep 500
+                    SendText "CLAUD"
+                }
             case 3:
-            {
-                Send "^;"
-                Sleep 500
-                SendText "GPT"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "GPT"
+                }
             case 4:
-            {
-                Send "^;"
-                Sleep 500
-                SendText "O"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "O"
+                }
             case 5:
-            {
-                Send "^;"
-                Sleep 500
-                SendText "DeepSeek"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "DeepSeek"
+                }
             case 6:
-            {
-                Send "^;"
-                Sleep 500
-                SendText "Cursor"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "Cursor"
+                }
         }
 
         Sleep 100
@@ -20647,47 +20647,47 @@ SwitchAIModel() {
         ; Handle different behaviors based on choice
         switch userChoice.Value {
             case "1":
-            {
-                ; For auto option: simulate ;, wait for model context menu, then send â†" , Enter
-                Send "^;"
-                Sleep 300
-                SendText "auto"
-                Sleep 500
-                Send "{Enter}"
-                Sleep 300
-                SendEscape()
-            }
+                {
+                    ; For auto option: simulate ;, wait for model context menu, then send â†" , Enter
+                    Send "^;"
+                    Sleep 300
+                    SendText "auto"
+                    Sleep 500
+                    Send "{Enter}"
+                    Sleep 300
+                    SendEscape()
+                }
             case "2":
-            {
-                ; For other options: simulate Ctrl + ., wait, type model string, no Enter
-                Send "^;"
-                Sleep 500
-                SendText "CLAUD"
-            }
+                {
+                    ; For other options: simulate Ctrl + ., wait, type model string, no Enter
+                    Send "^;"
+                    Sleep 500
+                    SendText "CLAUD"
+                }
             case "3":
-            {
-                Send "^;"
-                Sleep 500
-                SendText "GPT"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "GPT"
+                }
             case "4":
-            {
-                Send "^;"
-                Sleep 500
-                SendText "O"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "O"
+                }
             case "5":
-            {
-                Send "^;"
-                Sleep 500
-                SendText "DeepSeek"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "DeepSeek"
+                }
             case "6":
-            {
-                Send "^;"
-                Sleep 500
-                SendText "Cursor"
-            }
+                {
+                    Send "^;"
+                    Sleep 500
+                    SendText "Cursor"
+                }
             default:
                 MsgBox "Invalid selection. Please choose 1-6.", "AI Model Selection", "IconX"
                 return
@@ -21767,8 +21767,8 @@ Mobills_ShowRunningBanner(dir) {
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
-    " h" . (gh +
-        2 * borderWidth))
+        " h" . (gh +
+            2 * borderWidth))
     g_MobillsRunningBannerBorderGui := borderGui
 
     ov.Show("x" . cx . " y" . cy . " NA")
@@ -21904,7 +21904,7 @@ Mobills_Navigate(dir) {
         }
 
         MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") .
-        " page/month control (verified missing).", "Mobills Navigation", "IconX"
+            " page/month control (verified missing).", "Mobills Navigation", "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     } finally {
@@ -22369,8 +22369,8 @@ TryAttachBrowser() {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-        DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+            DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22382,10 +22382,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
+                    (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                    DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22398,9 +22398,9 @@ TryAttachBrowser() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
-            (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-            DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":' .
+                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22410,8 +22410,8 @@ TryAttachBrowser() {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"' .
-            A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9822","message":"TryAttachBrowser chrome failed, trying edge","data":{"error":"' .
+                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22425,10 +22425,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9829","message":"TryAttachBrowser success","data":{"browser":"edge","result":' .
-                (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9829","message":"TryAttachBrowser success","data":{"browser":"edge","result":' .
+                    (result ? 1 : 0) . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                    DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22438,10 +22438,10 @@ TryAttachBrowser() {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"' .
-                A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
-                DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9837","message":"TryAttachBrowser failed both browsers","data":{"error":"' .
+                    A_LastError . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}`n',
+                    DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22454,8 +22454,8 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9848","message":"FindMonthGroup entry","data":{"uia":' . (uia ? 1 : 0) .
-        '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9848","message":"FindMonthGroup entry","data":{"uia":' . (uia ? 1 : 0) .
+            '},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22464,8 +22464,8 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9855","message":"FindMonthGroup Strategy 1 attempt","data":{"className":"sc-kAyceB"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-            DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9855","message":"FindMonthGroup Strategy 1 attempt","data":{"className":"sc-kAyceB"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22474,9 +22474,9 @@ FindMonthGroup(uia) {
             ; #region agent log
             try {
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 success","data":{"found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-                DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 success","data":{"found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                    DEBUG_LOG_PATH
             } catch {
             }
             ; #endregion
@@ -22485,8 +22485,8 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 no result","data":{"found":false},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
-            DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9862","message":"FindMonthGroup Strategy 1 no result","data":{"found":false},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n',
+                DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22495,9 +22495,9 @@ FindMonthGroup(uia) {
         ; #region agent log
         try {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' .
-            e.Message .
-            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9876","message":"FindMonthGroup Strategy 1 exception","data":{"error":"' .
+                e.Message .
+                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}`n', DEBUG_LOG_PATH
         } catch {
         }
         ; #endregion
@@ -22506,8 +22506,8 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-        DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9883","message":"FindMonthGroup Strategy 2 attempt","data":{"monthCount":14},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+            DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22524,9 +22524,9 @@ FindMonthGroup(uia) {
                 ; #region agent log
                 try {
                     FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"' .
-                    m . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
+                        A_TickCount .
+                        ',"location":"Shift keys.ahk:9897","message":"FindMonthGroup found month text","data":{"month":"' .
+                        m . '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n', DEBUG_LOG_PATH
                 } catch {
                 }
                 ; #endregion
@@ -22535,10 +22535,10 @@ FindMonthGroup(uia) {
                     ; #region agent log
                     try {
                         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                        A_TickCount .
-                        ',"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"' .
-                        m . '","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-                        DEBUG_LOG_PATH
+                            A_TickCount .
+                            ',"location":"Shift keys.ahk:9904","message":"FindMonthGroup Strategy 2 success","data":{"month":"' .
+                            m . '","found":true},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+                            DEBUG_LOG_PATH
                     } catch {
                     }
                     ; #endregion
@@ -22552,9 +22552,9 @@ FindMonthGroup(uia) {
     ; #region agent log
     try {
         FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-        ',"location":"Shift keys.ahk:9912","message":"FindMonthGroup Strategy 2 failed","data":{"foundMonths":' .
-        foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
-        DEBUG_LOG_PATH
+            ',"location":"Shift keys.ahk:9912","message":"FindMonthGroup Strategy 2 failed","data":{"foundMonths":' .
+            foundMonths.Length . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}`n',
+            DEBUG_LOG_PATH
     } catch {
     }
     ; #endregion
@@ -22565,8 +22565,8 @@ FindMonthGroup(uia) {
             allGroups := uia.FindAll({ Type: "Group" })
             groupCount := allGroups.Length
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic","data":{"totalGroups":' .
-            groupCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic","data":{"totalGroups":' .
+                groupCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
             ; Inspect first few Groups for className and name
             sampleCount := groupCount < 5 ? groupCount : 5
             loop sampleCount {
@@ -22577,10 +22577,10 @@ FindMonthGroup(uia) {
                     try className := grp.GetPropertyValue(UIA.Property.ClassName)
                     try name := grp.GetPropertyValue(UIA.Property.Name)
                     FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                    A_TickCount .
-                    ',"location":"Shift keys.ahk:9920","message":"FindMonthGroup Group sample","data":{"index":' .
-                    A_Index . ',"className":"' . className . '","name":"' . name .
-                    '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                        A_TickCount .
+                        ',"location":"Shift keys.ahk:9920","message":"FindMonthGroup Group sample","data":{"index":' .
+                        A_Index . ',"className":"' . className . '","name":"' . name .
+                        '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
                 } catch {
                 }
             }
@@ -22591,10 +22591,10 @@ FindMonthGroup(uia) {
                     paginationBtns := uia.FindAll({ Name: "Go to previous page", Type: 50000 })
                 }
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9930","message":"FindMonthGroup pagination check","data":{"foundPagination":' .
-                (paginationBtns.Length > 0 ? 1 : 0) . ',"count":' . paginationBtns.Length .
-                '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9930","message":"FindMonthGroup pagination check","data":{"foundPagination":' .
+                    (paginationBtns.Length > 0 ? 1 : 0) . ',"count":' . paginationBtns.Length .
+                    '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n', DEBUG_LOG_PATH
             } catch {
             }
             ; Try to find any text elements that might contain dates/months
@@ -22602,10 +22602,10 @@ FindMonthGroup(uia) {
                 allTexts := uia.FindAll({ Type: "Text" })
                 textCount := allTexts.Length
                 FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' .
-                A_TickCount .
-                ',"location":"Shift keys.ahk:9935","message":"FindMonthGroup text elements","data":{"totalTexts":' .
-                textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
-                DEBUG_LOG_PATH
+                    A_TickCount .
+                    ',"location":"Shift keys.ahk:9935","message":"FindMonthGroup text elements","data":{"totalTexts":' .
+                    textCount . '},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                    DEBUG_LOG_PATH
                 ; Sample first 10 text elements
                 sampleTextCount := textCount < 10 ? textCount : 10
                 loop sampleTextCount {
@@ -22615,12 +22615,12 @@ FindMonthGroup(uia) {
                         try txtName := txt.GetPropertyValue(UIA.Property.Name)
                         if txtName && StrLen(txtName) > 0 {
                             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) .
-                            '","timestamp":' .
-                            A_TickCount .
-                            ',"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":' .
-                            A_Index . ',"text":"' . txtName .
-                            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
-                            DEBUG_LOG_PATH
+                                '","timestamp":' .
+                                A_TickCount .
+                                ',"location":"Shift keys.ahk:9940","message":"FindMonthGroup text sample","data":{"index":' .
+                                A_Index . ',"text":"' . txtName .
+                                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}`n',
+                                DEBUG_LOG_PATH
                         }
                     } catch {
                     }
@@ -22629,9 +22629,9 @@ FindMonthGroup(uia) {
             }
         } catch Error as e2 {
             FileAppend '{"id":"log_' . A_TickCount . '_' . Random(1000, 9999) . '","timestamp":' . A_TickCount .
-            ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' .
-            e2.Message .
-            '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
+                ',"location":"Shift keys.ahk:9918","message":"FindMonthGroup diagnostic failed","data":{"error":"' .
+                e2.Message .
+                '"},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}`n', DEBUG_LOG_PATH
         }
     } catch {
     }
@@ -23306,7 +23306,7 @@ Gemini_FindToolsButton(uia) {
         for button in allButtons {
             nm := button.Name
             if (InStr(nm, "tools", false) || InStr(nm, "ferramentas", false))
-            && (InStr(nm, "Upload", false) || InStr(nm, "Enviar", false) || nm = "Tools")
+                && (InStr(nm, "Upload", false) || InStr(nm, "Enviar", false) || nm = "Tools")
                 return button
         }
 
@@ -23452,8 +23452,8 @@ Gemini_FindMoreToolsButton(uia) {
             cls := btn.ClassName
             nm := btn.Name
             if InStr(cls, "more-tools-button", false)
-            || (InStr(cls, "toolbox-drawer-menu-item", false) && (InStr(nm, "More tools", false) || InStr(nm,
-                "Mais ferramentas", false)))
+                || (InStr(cls, "toolbox-drawer-menu-item", false) && (InStr(nm, "More tools", false) || InStr(nm,
+                    "Mais ferramentas", false)))
                 return btn
         }
     } catch {
@@ -24439,7 +24439,7 @@ $^Enter:: {
 ; Google Search Shortcuts
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "Google") && !InStr(WinGetTitle("A"),
-"Google Maps")
+    "Google Maps")
 
 ; Shift + S : Focus Google search box
 +s:: {
@@ -26209,8 +26209,8 @@ M365CopilotContinue_ShowBanner() {
     borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
     borderGui.BackColor := BANNER_ACCENT_INTERMEDIATE
     borderGui.Show("NA x" . (cx - borderWidth) . " y" . (cy - borderWidth) . " w" . (gw + 2 * borderWidth) .
-    " h" . (gh +
-        2 * borderWidth))
+        " h" . (gh +
+            2 * borderWidth))
     g_M365CopilotContinueBannerBorderGui := borderGui
     ov.Show("x" . cx . " y" . cy . " NA")
     WinSetTransparent(178, ov)
@@ -26292,7 +26292,7 @@ M365CopilotContinue_Timer() {
         }
         global g_M365CopilotContinueSubmitTick
         if (!g_M365CopilotContinueSawStop && (A_TickCount - g_M365CopilotContinueSubmitTick) >=
-        M365COPILOT_CONTINUE_IDLE_MS) {
+            M365COPILOT_CONTINUE_IDLE_MS) {
             SetTimer(M365CopilotContinue_DoSubmit, -1)
             return
         }
