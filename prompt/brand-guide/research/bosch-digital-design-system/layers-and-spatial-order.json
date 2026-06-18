@@ -1,0 +1,663 @@
+{
+  "schema_version": "1.0.0",
+  "topic": "Layers and spatial order",
+  "source": {
+    "source_file": "Layers and spatial order.html",
+    "source_url": "https://brandguide.bosch.com/document/8130/en#/",
+    "source_platform": "Bosch Digital Design System / Brandguide",
+    "document_id": "8130",
+    "page_slug": "layers-and-spatial-order",
+    "language": "en",
+    "last_modified_text": "Mon, 02. Feb 2026 19:19",
+    "extraction_date": "2026-06-18"
+  },
+  "purpose": "Organize Bosch Digital Design System guidance about UI layers, spatial order, overlay behavior, shadows, modality, and related design rules into AI-readable structured JSON.",
+  "core_concept": {
+    "summary": "Layers define the spatial relationship between UI elements. Only components that overlay other content create an additional layer and therefore require shadows. Components on the same layer move other content and should not use shadows.",
+    "primary_goal": "Ensure a comprehensible, uniform spatial understanding across digital user interfaces.",
+    "key_principle": "Use additional layers only when a component overlays existing content. Avoid unnecessary layer stacking and visual clutter."
+  },
+  "layer_logic": {
+    "additional_layer": {
+      "definition": "A component creates an additional layer when it overlays other UI content.",
+      "visual_treatment": [
+        "requires shadow",
+        "requires floating outline"
+      ],
+      "typical_components": [
+        "Tooltip",
+        "Popover",
+        "Menu",
+        "Dropdown",
+        "Dialog",
+        "Toast",
+        "Side navigation overlay",
+        "Sticky table header"
+      ],
+      "behavior": "It visually sits above the base UI and may cover content underneath."
+    },
+    "same_layer": {
+      "definition": "A component appears on the same layer as the rest of the screen content when it is integrated into the layout and moves other content instead of covering it.",
+      "visual_treatment": [
+        "no shadow"
+      ],
+      "typical_components": [
+        "Side Navigation (Software)",
+        "Banner",
+        "Notification banner",
+        "Non-sticky table header"
+      ],
+      "behavior": "It participates in the layout and pushes or moves surrounding content."
+    },
+    "interaction_triggered_layers": {
+      "description": "Some components open a new element upon interaction, creating an additional layer in direct spatial proximity to the button.",
+      "rule": "Only the opened element casts a shadow. The triggering button does not cast a shadow because it remains integrated in the base layer."
+    }
+  },
+  "design_principles": [
+    {
+      "id": "spatial_logic",
+      "name": "Spatial logic",
+      "rules": [
+        "Only components that overlay other content create an additional layer.",
+        "Additional layers require shadows.",
+        "Components that appear on the same layer as the rest of the screen content move other content and should not use shadows.",
+        "When a component opens an overlay, apply the shadow to the opened element only, not to the triggering button."
+      ],
+      "overlay_component_examples": [
+        "Tooltip",
+        "Popover",
+        "Menu",
+        "Dropdown",
+        "Dialog"
+      ],
+      "same_layer_component_examples": [
+        "Side Navigation (Software)",
+        "Banner"
+      ]
+    },
+    {
+      "id": "exclusivity",
+      "name": "Exclusivity",
+      "rules": [
+        "Display as few components as possible on one layer to avoid visual clutter.",
+        "In smartphone apps, display only one component per layer.",
+        "In other applications, such as software or product interfaces, multiple components on a single layer may be used only as an exception when the application requires them."
+      ]
+    },
+    {
+      "id": "no_stacking",
+      "name": "No stacking",
+      "rules": [
+        "Components can overlay each other and create multiple layers, but the number of layers should be kept as low as possible.",
+        "In smartphone apps, two layers are the maximum.",
+        "For other applications, the maximum can be higher, for example when several modal dialogs are necessary.",
+        "Because modal dialogs interrupt the user workflow, regularly review whether each dialog is necessary."
+      ],
+      "do_dont": {
+        "do": [
+          "Avoid stacking of layers"
+        ],
+        "dont": [
+          "Do not stack layers unnecessarily"
+        ]
+      }
+    },
+    {
+      "id": "law_of_proximity",
+      "name": "Law of proximity",
+      "rules": [
+        "For certain components, the opened layer must remain in direct spatial proximity to the triggering button.",
+        "This is especially relevant for desktop applications and websites."
+      ],
+      "component_examples": [
+        "Tooltip",
+        "Popover",
+        "Menu"
+      ]
+    },
+    {
+      "id": "static_vs_overlay_elements",
+      "name": "Static vs. overlay elements",
+      "element_types": [
+        {
+          "type": "static_element",
+          "definition": "Static elements are integrated into the layout.",
+          "scroll_behavior": "They move with the page when the page is scrolled."
+        },
+        {
+          "type": "sticky_overlay_element",
+          "definition": "Sticky overlay elements are placed in a layer above the layout.",
+          "scroll_behavior": "They remain in the same position when the page is scrolled."
+        },
+        {
+          "type": "mixed_element",
+          "definition": "Mixed elements are groups of elements that are integrated into the layout and an overlay.",
+          "scroll_behavior": "When the page is scrolled, both the static element and its overlay move with it."
+        }
+      ]
+    },
+    {
+      "id": "modality",
+      "name": "Modality",
+      "rules": [
+        "Layers can be modal or nonmodal.",
+        "Modal layers require user interaction.",
+        "Nonmodal layers allow optional user interaction.",
+        "Except for modal dialogs, all layers are generally nonmodal.",
+        "A modal layer dims the background to indicate that all other screen elements behind it are locked.",
+        "A modal dialog must be interacted with before users can access other screen elements again."
+      ],
+      "examples": [
+        "Non-modal dialog",
+        "Modal dialog"
+      ]
+    }
+  ],
+  "overlay_design_rules": {
+    "shadows": {
+      "rule": "Overlay elements require shadows to communicate spatial depth.",
+      "shadow_types": [
+        {
+          "type": "S",
+          "size": "1rem",
+          "size_px": 16,
+          "color_scheme": "shadow-fill",
+          "suggested_distance": "near",
+          "application_examples": [
+            "Tooltip"
+          ]
+        },
+        {
+          "type": "M",
+          "size": "2rem",
+          "size_px": 32,
+          "color_scheme": "shadow-fill",
+          "suggested_distance": "moderately near",
+          "application_examples": [
+            "Menu",
+            "Dropdown",
+            "Toast"
+          ]
+        },
+        {
+          "type": "L",
+          "size": "4rem",
+          "size_px": 64,
+          "color_scheme": "shadow-fill",
+          "suggested_distance": "far",
+          "application_examples": [
+            "Side navigation (Mobile)",
+            "Modal dialog",
+            "Non-modal dialog"
+          ]
+        }
+      ]
+    },
+    "floating_outline": {
+      "rule": "The floating outline is required for all overlaying layers, regardless of shadow size.",
+      "color_scheme": "floating-outline",
+      "line_width": "0.0625rem",
+      "line_width_px": 1
+    }
+  },
+  "component_classification_examples": [
+    {
+      "component": "Toast",
+      "classification": "additional_layer",
+      "reason": "It overlays interface content and casts a shadow."
+    },
+    {
+      "component": "Notification banner",
+      "classification": "same_layer",
+      "reason": "It appears on the same layer and does not require a shadow."
+    },
+    {
+      "component": "Side navigation overlay",
+      "classification": "additional_layer",
+      "reason": "It overlays content as a separate layer."
+    },
+    {
+      "component": "Side Navigation",
+      "classification": "same_layer",
+      "reason": "When integrated into the layout, it moves content and does not cast a shadow."
+    },
+    {
+      "component": "Sticky table header",
+      "classification": "additional_layer",
+      "reason": "It covers content below while scrolling and therefore creates a shadow."
+    },
+    {
+      "component": "Non-sticky table header",
+      "classification": "same_layer",
+      "reason": "If the entire table is scrollable, no shadow appears."
+    }
+  ],
+  "decision_tree": [
+    {
+      "question": "Does the component overlay existing content?",
+      "if_yes": "Treat it as an additional layer. Apply shadow and floating outline.",
+      "if_no": "Treat it as part of the same layer. Do not apply shadow."
+    },
+    {
+      "question": "Does the component open because of a button or trigger?",
+      "if_yes": "Apply shadow only to the opened overlay element, not to the trigger.",
+      "if_no": "Evaluate whether it is static, sticky overlay, or mixed based on scroll behavior."
+    },
+    {
+      "question": "Is the layer modal?",
+      "if_yes": "Dim and lock the background. Require user interaction before returning to the base UI.",
+      "if_no": "Keep the layer nonmodal and allow optional interaction."
+    },
+    {
+      "question": "Are multiple layers stacked?",
+      "if_yes": "Reduce layer count where possible. Smartphone apps should not exceed two layers.",
+      "if_no": "Keep the existing simplified spatial structure."
+    }
+  ],
+  "design_tokens_and_named_values": {
+    "color_schemes": [
+      "shadow-fill",
+      "floating-outline"
+    ],
+    "shadow_sizes": [
+      {
+        "name": "S",
+        "rem": "1rem",
+        "px": 16
+      },
+      {
+        "name": "M",
+        "rem": "2rem",
+        "px": 32
+      },
+      {
+        "name": "L",
+        "rem": "4rem",
+        "px": 64
+      }
+    ],
+    "outline_width": {
+      "rem": "0.0625rem",
+      "px": 1
+    }
+  },
+  "accessibility_and_behavior_notes": [
+    "Modal layers should clearly indicate that background elements are locked, typically by dimming the background.",
+    "Layer behavior should support users’ spatial understanding by keeping overlay relationships predictable.",
+    "Avoid unnecessary modal dialogs because they interrupt workflow."
+  ],
+  "support_and_feedback": {
+    "jira_guidance": "Feature requests and bug reports related to the Digital Design System or Frontend Kit should be submitted to the digital expert team via Jira.",
+    "contact": "support.design@bosch.com",
+    "note": "The team can answer questions about designing digital touchpoints and check design drafts."
+  },
+  "image_examples_extracted": [
+    {
+      "caption": "Toast (additional layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Toast",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/Lnd94uJDjVijZKzGSdcN.png?width=800",
+      "inferred_layer_classification": "additional_layer"
+    },
+    {
+      "caption": "Notification banner (the same layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Notification",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/njEPXUV8Vm6994ax6Xiz.png?width=800",
+      "inferred_layer_classification": "same_layer"
+    },
+    {
+      "caption": "Side navigation (additional layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Side bar overlay",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/po6kqKRQ9dES5B6kCXkL.png?width=800",
+      "inferred_layer_classification": "additional_layer"
+    },
+    {
+      "caption": "Side Navigation (the same layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Side bar integrated",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/DUdL25nm7qkXXhvGWmoz.png?width=800",
+      "inferred_layer_classification": "same_layer"
+    },
+    {
+      "caption": "Sticky Header (additional layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Table sticky",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/jnppkS1GH68d1qUuubNA.png?width=800",
+      "inferred_layer_classification": "additional_layer"
+    },
+    {
+      "caption": "Non-Sticky Header (the same layer)",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Table non-sticky",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/1ghbCpva8UFJXMrHBtMs.png?width=800",
+      "inferred_layer_classification": "same_layer"
+    },
+    {
+      "caption": "Non-modal dialog",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Non-modal",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/u3ahcUx8JcVv8YbM3LQ2.png?width=800",
+      "inferred_layer_classification": "modal_example"
+    },
+    {
+      "caption": "Modal dialog",
+      "alt_text": "002 - Foundations - Design Principles - Layers and spatial order - Modal",
+      "preview_url": "https://media.ffycdn.net/eu/bosch/XtLXNFGy3CAaJ1wxEx6P.png?width=800",
+      "inferred_layer_classification": "modal_example"
+    }
+  ],
+  "raw_extracted_blocks": [
+    {
+      "tag": "h1",
+      "text": "Layers and spatial order"
+    },
+    {
+      "tag": "p",
+      "text": "In order to ensure a comprehensible and uniform spatial understanding of our digital user interfaces, the following basic principles apply when dealing with layers."
+    },
+    {
+      "tag": "h2",
+      "text": "Spatial logic"
+    },
+    {
+      "tag": "p",
+      "text": "Only components that overlay other contents within the user interface create an additional layer, and as a result, shadows."
+    },
+    {
+      "tag": "p",
+      "text": "Examples for such components are:"
+    },
+    {
+      "tag": "ul",
+      "text": "Tooltip Popover Menu Dropdown Dialog"
+    },
+    {
+      "tag": "p",
+      "text": "Some components appear on the same layer as the rest of the screen content and therefore move other content. No shadow should be used in this situation."
+    },
+    {
+      "tag": "p",
+      "text": "Examples for such components are:"
+    },
+    {
+      "tag": "ul",
+      "text": "Side Navigation (Software) Banner"
+    },
+    {
+      "tag": "ul",
+      "text": "Toast (additional layer) Notification banner (the same layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Toast (additional layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Notification banner (the same layer)"
+    },
+    {
+      "tag": "ul",
+      "text": "Side navigation (additional layer) Side Navigation (the same layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Side navigation (additional layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Side Navigation (the same layer)"
+    },
+    {
+      "tag": "p",
+      "text": "The sticky header of the table creates a shadow as it covers the content below it. If the entire table is scrollable, no shadow appears."
+    },
+    {
+      "tag": "ul",
+      "text": "Sticky Header (additional layer) Non-Sticky Header (the same layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Sticky Header (additional layer)"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Non-Sticky Header (the same layer)"
+    },
+    {
+      "tag": "p",
+      "text": "Some components open a new element upon interaction, creating an additional layer directly in spatial proximity of the button."
+    },
+    {
+      "tag": "p",
+      "text": "Please note that only the opened element casts a shadow and not the button itself, as it is integrated in the basic layer."
+    },
+    {
+      "tag": "h2",
+      "text": "Exclusivity"
+    },
+    {
+      "tag": "p",
+      "text": "To avoid visual clutter, as few components as possible should be displayed on one layer . In apps for smartphones, only one component should be displayed per layer. In other applications (e.g. software, product interface), multiple components may only be displayed on a single layer as an exception when the application requires them."
+    },
+    {
+      "tag": "h2",
+      "text": "No stacking"
+    },
+    {
+      "tag": "p",
+      "text": "Components can overlay each other, resulting in multiple layers. The number of potential layers should be kept as low as possible . In apps for smartphones, two layers are the maximum. For other applications, the maximum number can be higher (e.g. in case of several modal dialogs). As modal dialogs interrupt users’ workflow, the necessity of the dialog must be reviewed on a regular basis."
+    },
+    {
+      "tag": "ul",
+      "text": "Don't Avoid stacking of layers"
+    },
+    {
+      "tag": "p",
+      "text": "Avoid stacking of layers"
+    },
+    {
+      "tag": "h2",
+      "text": "Law of proximity"
+    },
+    {
+      "tag": "p",
+      "text": "For certain components, a direct spatial proximity of the opening plane to the button must be assured, particularly in desktop applications and websites."
+    },
+    {
+      "tag": "p",
+      "text": "Examples for such components are:"
+    },
+    {
+      "tag": "ul",
+      "text": "Tooltip Popover Menu"
+    },
+    {
+      "tag": "h2",
+      "text": "Static vs. overlay elements"
+    },
+    {
+      "tag": "p",
+      "text": "Static elements are integrated into the layout. When the page is scrolled, they move with it."
+    },
+    {
+      "tag": "p",
+      "text": "Sticky overlay elements are placed in a layer above the layout. When the page is scrolled, they remain in the same position."
+    },
+    {
+      "tag": "p",
+      "text": "Mixed elements are a group of elements that are integrated into the layout and an overlay. When the page is scrolled, both the static element and its overlay move with it."
+    },
+    {
+      "tag": "p",
+      "text": "Demo: Scroll-Verhalten “Statische vs. Overlay-Elemente”"
+    },
+    {
+      "tag": "h2",
+      "text": "Modality"
+    },
+    {
+      "tag": "p",
+      "text": "Layers can be modal (user interaction required) or nonmodal (optional user interaction). Except for modal dialogs, all layers are generally nonmodal. Note that a modal layer dims the background, indicating that all other screen elements behind it are locked. The dialog must be interacted with before it is possible to access the other elements on the screen again."
+    },
+    {
+      "tag": "ul",
+      "text": "Non-modal dialog Modal dialog"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Non-modal dialog"
+    },
+    {
+      "tag": "figcaption",
+      "text": "Modal dialog"
+    },
+    {
+      "tag": "h2",
+      "text": "Design rules for overlay elements"
+    },
+    {
+      "tag": "h3",
+      "text": "Shadows"
+    },
+    {
+      "tag": "p",
+      "text": "Overlay elements require shadows to be cast . Three different shadow types are used to influence the perception of spatial depth. Shadows of type “S” create the impression of proximity to the background, while shadows of type “L” suggest a greater distance."
+    },
+    {
+      "tag": "p",
+      "text": "Type"
+    },
+    {
+      "tag": "p",
+      "text": "Size"
+    },
+    {
+      "tag": "p",
+      "text": "Color-Scheme"
+    },
+    {
+      "tag": "p",
+      "text": "Suggested distance"
+    },
+    {
+      "tag": "p",
+      "text": "Application example"
+    },
+    {
+      "tag": "p",
+      "text": "S"
+    },
+    {
+      "tag": "p",
+      "text": "1rem (16px)"
+    },
+    {
+      "tag": "p",
+      "text": "shadow-fill"
+    },
+    {
+      "tag": "p",
+      "text": "near"
+    },
+    {
+      "tag": "p",
+      "text": "Tooltip"
+    },
+    {
+      "tag": "p",
+      "text": "M"
+    },
+    {
+      "tag": "p",
+      "text": "2rem (32px)"
+    },
+    {
+      "tag": "p",
+      "text": "shadow-fill"
+    },
+    {
+      "tag": "p",
+      "text": "moderately near"
+    },
+    {
+      "tag": "p",
+      "text": "Menu"
+    },
+    {
+      "tag": "p",
+      "text": "Dropdown"
+    },
+    {
+      "tag": "p",
+      "text": "Toast"
+    },
+    {
+      "tag": "p",
+      "text": "L"
+    },
+    {
+      "tag": "p",
+      "text": "4rem"
+    },
+    {
+      "tag": "p",
+      "text": "(64px)"
+    },
+    {
+      "tag": "p",
+      "text": "shadow-fill"
+    },
+    {
+      "tag": "p",
+      "text": "far"
+    },
+    {
+      "tag": "p",
+      "text": "Side navigation (Mobile)"
+    },
+    {
+      "tag": "p",
+      "text": "Modal dialog"
+    },
+    {
+      "tag": "p",
+      "text": "Non-modal dialog"
+    },
+    {
+      "tag": "h3",
+      "text": "Floating Outline"
+    },
+    {
+      "tag": "h3",
+      "text": "﻿"
+    },
+    {
+      "tag": "p",
+      "text": "The floating outline is a required element for all overlaying layers, regardless of the shadow size."
+    },
+    {
+      "tag": "p",
+      "text": "Color scheme"
+    },
+    {
+      "tag": "p",
+      "text": "Line width"
+    },
+    {
+      "tag": "p",
+      "text": "floating-outline"
+    },
+    {
+      "tag": "p",
+      "text": "0.0625 rem (1 px)"
+    },
+    {
+      "tag": "p",
+      "text": "Please submit all feature requests and bug reports relating to the Digital Design System or the Frontend Kit directly to the digital expert team via Jira. You can learn more about how the process works, here ."
+    },
+    {
+      "tag": "p",
+      "text": "If you have any feedback or questions about designing digital touchpoints, feel free to send them to support.design@bosch.com . We’re also happy to check design drafts."
+    },
+    {
+      "tag": "p",
+      "text": "Last modified on Mon, 02. Feb 2026 19:19"
+    }
+  ]
+}

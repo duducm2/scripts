@@ -1,0 +1,762 @@
+{
+  "schema_version": "1.0",
+  "topic": {
+    "name": "States",
+    "slug": "states",
+    "system": "Bosch Digital Design System",
+    "document_area": "Design principles",
+    "source_file": "States.html",
+    "source_url": "https://brandguide.bosch.com/document/8130/en#/",
+    "html_title": "States - Design principles - Bosch Digital Design System",
+    "language": "en"
+  },
+  "purpose": {
+    "summary": "UI states make interaction between the user and the application intuitive, efficient, and accessible by visually communicating the current condition of UI elements and giving feedback on user actions.",
+    "applies_to_examples": [
+      "buttons",
+      "links",
+      "form elements",
+      "dropdowns",
+      "switches",
+      "checkboxes",
+      "menu items",
+      "option bars",
+      "chips",
+      "text fields"
+    ],
+    "accessibility_requirement": "Bosch UI element states comply with WCAG 2.1 accessibility requirements."
+  },
+  "standardization_note": {
+    "type": "info",
+    "message": "The content represents the standard definition for this topic. Depending on the digital touchpoint, such as Product UI, additional or deviating rules may apply."
+  },
+  "state_categories": [
+    {
+      "id": "interaction_states",
+      "name": "Interaction states",
+      "definition": "Interaction states help users understand which actions are possible and which action is currently being performed.",
+      "purpose": "They indicate availability and status of UI elements, communicate possible actions, and confirm user actions. Consistent use improves learnability and efficiency, reduces frustration, and increases user satisfaction.",
+      "groups": [
+        {
+          "id": "conventional_interaction_states",
+          "name": "Conventional interaction states",
+          "definition": "Conventional interaction states characterize the visual and functional reaction of an element to user interactions such as hover, click, or unavailability, ensuring direct feedback and orientation.",
+          "states": [
+            {
+              "id": "default",
+              "name": "Default",
+              "definition": "The normal state of a UI element when there is no user interaction.",
+              "usage": "Use this state to show that the element is available and ready for interaction.",
+              "interaction_trigger": "No active user interaction",
+              "examples_from_page": [
+                "Dropdown",
+                "Switch",
+                "Secondary button"
+              ]
+            },
+            {
+              "id": "hovered",
+              "name": "Hovered",
+              "definition": "Occurs when the user hovers the cursor over the element.",
+              "usage": "Use to provide visual feedback, highlight interactivity, and signal that the user can interact with the element.",
+              "interaction_trigger": "Pointer hover",
+              "examples_from_page": [
+                "Dropdown",
+                "Switch",
+                "Secondary button"
+              ]
+            },
+            {
+              "id": "pressed",
+              "name": "Pressed",
+              "definition": "Activated when the user clicks or presses the element.",
+              "usage": "Use to give immediate feedback that the user action has been registered.",
+              "interaction_trigger": "Click, press, or active pointer interaction",
+              "technical_reference": "CSS pseudo-class selector :active",
+              "examples_from_page": [
+                "Dropdown",
+                "Switch",
+                "Secondary button"
+              ]
+            },
+            {
+              "id": "disabled",
+              "name": "Disabled",
+              "definition": "Used when an element should temporarily not be interactable, for example because prerequisites have not yet been met.",
+              "usage": "Use cautiously. Disabled states can reduce understanding, accessibility, and communication.",
+              "interaction_trigger": "Element unavailable due to unmet conditions or temporary restriction",
+              "risks": [
+                {
+                  "id": "understanding_issues",
+                  "name": "Understanding Issues",
+                  "description": "Users might not understand why an element is disabled or how they can activate it."
+                },
+                {
+                  "id": "accessibility",
+                  "name": "Accessibility",
+                  "description": "Disabled elements can be hard to recognize, especially for users with visual impairments."
+                },
+                {
+                  "id": "missed_communication",
+                  "name": "Missed Communication",
+                  "description": "A disabled element does not provide a way to explain the steps needed to activate it."
+                }
+              ],
+              "recommended_alternatives": [
+                {
+                  "id": "error_messages_or_hints",
+                  "name": "Error Messages or Hints",
+                  "description": "Keep the element active and show a helpful message upon interaction explaining what is still needed."
+                },
+                {
+                  "id": "progressive_disclosure",
+                  "name": "Progressive Disclosure",
+                  "description": "Design the UI flow so elements appear only when relevant."
+                },
+                {
+                  "id": "visual_cues",
+                  "name": "Visual Cues",
+                  "description": "Use tooltips or help texts to show users how they can activate the element."
+                }
+              ],
+              "examples_from_page": [
+                "Dropdown",
+                "Switch",
+                "Secondary button"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "special_interaction_states",
+          "name": "Special interaction states",
+          "states": [
+            {
+              "id": "focused",
+              "name": "Focused",
+              "definition": "Visual state that indicates which element, such as a button, link, or form field, has keyboard focus.",
+              "usage": "Important for users who navigate with a keyboard instead of, or in addition to, a mouse or touchscreen.",
+              "accessibility_rationale": "The Bosch Digital Design System defines a focus standard to ensure WCAG contrast across possible combinations with Bosch UI elements.",
+              "focus_styles": [
+                {
+                  "id": "inner_focus",
+                  "name": "Inner focus",
+                  "specification": "3px inner inline using current background color, plus 3px outer inline using the plain pure enabled-front-default color scheme."
+                },
+                {
+                  "id": "outer_focus",
+                  "name": "Outer focus",
+                  "specification": "3px inner outline using transparent color, plus 3px outer outline using plain pure enabled-front-default."
+                },
+                {
+                  "id": "outer_inverted_focus",
+                  "name": "Outer (inverted) focus",
+                  "specification": "3px inner outline using plain pure enabled-front-default, plus 3px outer outline using current background color.",
+                  "constraint": "Can only be used on floating components."
+                }
+              ]
+            },
+            {
+              "id": "read_only",
+              "name": "Read only",
+              "definition": "Applied to components when the user is allowed to review but not modify the component.",
+              "examples_from_page": [
+                "Text field"
+              ]
+            },
+            {
+              "id": "dragging",
+              "name": "Dragging",
+              "definition": "Occurs when a user presses and moves an element or component.",
+              "visual_composition": "Combination of the pressed state plus a small box shadow.",
+              "examples_from_page": [
+                "Chip"
+              ]
+            },
+            {
+              "id": "typing",
+              "name": "Typing",
+              "definition": "Used when a user is entering or editing text.",
+              "visual_indicator": "The I-beam pointer shows the insertion position for text.",
+              "implementation_note": "In standard web components, such as in the Frontend Kit, the typing state is usually replaced by the focused state by the browser.",
+              "examples_from_page": [
+                "Text field"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "selection_states",
+      "name": "Selection states",
+      "definition": "Selection states specify the state of the selection of one or more elements by the user.",
+      "purpose": "They provide visual feedback on selected or available items, guide users through complex interactions, and help users keep track of decisions made.",
+      "states": [
+        {
+          "id": "selected",
+          "name": "Selected",
+          "definition": "Indicates that a function is actively selected.",
+          "examples_from_page": [
+            "Checkbox",
+            "Switch",
+            "Menu item"
+          ]
+        },
+        {
+          "id": "deselected",
+          "name": "Deselected",
+          "definition": "Indicates that an element is no longer selected or is available for selection without currently being selected.",
+          "visual_indication": "Can be indicated by returning to the original state or removing selection indicators.",
+          "examples_from_page": [
+            "Checkbox",
+            "Switch",
+            "Menu item"
+          ]
+        },
+        {
+          "id": "indeterminate",
+          "name": "Indeterminate",
+          "definition": "Describes a state in which the selection is not unique or there are mixed states, such as grouped checkboxes where some but not all items are selected.",
+          "examples_from_page": [
+            "Checkbox"
+          ]
+        },
+        {
+          "id": "active",
+          "name": "Active",
+          "definition": "Indicates that an element or page is actively selected.",
+          "visual_indication": "The element is visually different from other elements to indicate that it is actively being interacted with.",
+          "examples_from_page": [
+            "Menu item",
+            "Option bar"
+          ]
+        },
+        {
+          "id": "inactive",
+          "name": "Inactive",
+          "definition": "Default state of a menu item and similar elements when not currently active but still interactable.",
+          "usage": "The user can activate the element by clicking it to perform the associated action.",
+          "examples_from_page": [
+            "Menu item",
+            "Option bar"
+          ]
+        }
+      ]
+    }
+  ],
+  "component_examples_index": [
+    {
+      "component": "Checkbox",
+      "states_shown_in_assets": [
+        "deselected",
+        "indeterminate",
+        "selected"
+      ]
+    },
+    {
+      "component": "Chip",
+      "states_shown_in_assets": [
+        "dragging"
+      ]
+    },
+    {
+      "component": "Dropdown",
+      "states_shown_in_assets": [
+        "default",
+        "disabled",
+        "hovered",
+        "pressed"
+      ]
+    },
+    {
+      "component": "Menu item",
+      "states_shown_in_assets": [
+        "deselected",
+        "selected"
+      ]
+    },
+    {
+      "component": "Secondary button",
+      "states_shown_in_assets": [
+        "default",
+        "disabled",
+        "hovered",
+        "pressed"
+      ]
+    },
+    {
+      "component": "Switch",
+      "states_shown_in_assets": [
+        "default",
+        "disabled",
+        "hovered",
+        "pressed"
+      ]
+    },
+    {
+      "component": "Text field",
+      "states_shown_in_assets": [
+        "typing"
+      ]
+    }
+  ],
+  "visual_assets_extracted_from_html": [
+    {
+      "asset_id": 815837,
+      "block_id": "307003",
+      "filename": "1 01 default.png",
+      "component_label": "Dropdown",
+      "description": "",
+      "alt_text": "Dropdown",
+      "state_inferred_from_filename": "default",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/xcTSQVCaAPbeNQF2An5o.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/xcTSQVCaAPbeNQF2An5o.png?width={width}",
+      "created": "2024-03-15 06:25:33",
+      "modified": "2024-03-15 06:25:33"
+    },
+    {
+      "asset_id": 815838,
+      "block_id": "307003",
+      "filename": "2 01 default.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": "default",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/jK5TqEPw4v893BjFKijm.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/jK5TqEPw4v893BjFKijm.png?width={width}",
+      "created": "2024-03-15 06:25:33",
+      "modified": "2024-03-15 06:25:33"
+    },
+    {
+      "asset_id": 815839,
+      "block_id": "307003",
+      "filename": "3 01 default.png",
+      "component_label": "Secondary button",
+      "description": "",
+      "alt_text": "Secondary button",
+      "state_inferred_from_filename": "default",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/gjH294u7fifxBUtf1XCQ.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/gjH294u7fifxBUtf1XCQ.png?width={width}",
+      "created": "2024-03-15 06:25:33",
+      "modified": "2024-03-15 06:25:33"
+    },
+    {
+      "asset_id": 815840,
+      "block_id": "307004",
+      "filename": "1 02 hovered.png",
+      "component_label": "Dropdown",
+      "description": "",
+      "alt_text": "Dropdown",
+      "state_inferred_from_filename": "hovered",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/YXcsKmRgm41KyR34h6nY.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/YXcsKmRgm41KyR34h6nY.png?width={width}",
+      "created": "2024-03-15 06:26:05",
+      "modified": "2024-03-15 06:26:05"
+    },
+    {
+      "asset_id": 815841,
+      "block_id": "307004",
+      "filename": "2 02 hovered.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": "hovered",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/JRifPSqC4aw5jk1vuzRx.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/JRifPSqC4aw5jk1vuzRx.png?width={width}",
+      "created": "2024-03-15 06:26:06",
+      "modified": "2024-03-15 06:26:06"
+    },
+    {
+      "asset_id": 815842,
+      "block_id": "307004",
+      "filename": "3 02 hovered.png",
+      "component_label": "Secondary button",
+      "description": "",
+      "alt_text": "Secondary button",
+      "state_inferred_from_filename": "hovered",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/WZczJ3KPsCx8qSG3maqD.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/WZczJ3KPsCx8qSG3maqD.png?width={width}",
+      "created": "2024-03-15 06:26:06",
+      "modified": "2024-03-15 06:26:06"
+    },
+    {
+      "asset_id": 815843,
+      "block_id": "307002",
+      "filename": "1 03 pressed.png",
+      "component_label": "Dropdown",
+      "description": "",
+      "alt_text": "Dropdown",
+      "state_inferred_from_filename": "pressed",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/F8eMaWBpqWWvmT5VyRz7.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/F8eMaWBpqWWvmT5VyRz7.png?width={width}",
+      "created": "2024-03-15 06:26:27",
+      "modified": "2024-03-15 06:26:27"
+    },
+    {
+      "asset_id": 815844,
+      "block_id": "307002",
+      "filename": "2 03 pressed.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": "pressed",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/k4ZaDedZxubH4GFfsiKM.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/k4ZaDedZxubH4GFfsiKM.png?width={width}",
+      "created": "2024-03-15 06:26:27",
+      "modified": "2024-03-15 06:26:27"
+    },
+    {
+      "asset_id": 815845,
+      "block_id": "307002",
+      "filename": "3 03 pressed.png",
+      "component_label": "Secondary button",
+      "description": "",
+      "alt_text": "Secondary button",
+      "state_inferred_from_filename": "pressed",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/5HtSyRPSoepbauVnSADN.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/5HtSyRPSoepbauVnSADN.png?width={width}",
+      "created": "2024-03-15 06:26:28",
+      "modified": "2024-03-15 06:26:28"
+    },
+    {
+      "asset_id": 815846,
+      "block_id": "307005",
+      "filename": "1 04 disabled.png",
+      "component_label": "Dropdown",
+      "description": "",
+      "alt_text": "Dropdown",
+      "state_inferred_from_filename": "disabled",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/sYKe2864VrbR9R7kwqjM.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/sYKe2864VrbR9R7kwqjM.png?width={width}",
+      "created": "2024-03-15 06:26:52",
+      "modified": "2024-03-15 06:26:52"
+    },
+    {
+      "asset_id": 815847,
+      "block_id": "307005",
+      "filename": "2 04 disabled.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": "disabled",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/rZ5g9wmAEDK4NRZseHja.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/rZ5g9wmAEDK4NRZseHja.png?width={width}",
+      "created": "2024-03-15 06:26:53",
+      "modified": "2024-03-15 06:26:53"
+    },
+    {
+      "asset_id": 815848,
+      "block_id": "307005",
+      "filename": "3 04 disabled.png",
+      "component_label": "Secondary button",
+      "description": "",
+      "alt_text": "Secondary button",
+      "state_inferred_from_filename": "disabled",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/yhcwUmenAQvry9QsMqEf.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/yhcwUmenAQvry9QsMqEf.png?width={width}",
+      "created": "2024-03-15 06:26:53",
+      "modified": "2024-03-15 06:26:53"
+    },
+    {
+      "asset_id": 813880,
+      "block_id": "306276",
+      "filename": "Read only text field.png",
+      "component_label": "text field",
+      "description": "",
+      "alt_text": "text field",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 370,
+        "height": 168
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/NnL6dhoRUUmcHTbNmZxp.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/NnL6dhoRUUmcHTbNmZxp.png?width={width}",
+      "created": "2024-03-11 07:25:40",
+      "modified": "2024-03-11 07:25:40"
+    },
+    {
+      "asset_id": 822190,
+      "block_id": "306279",
+      "filename": "dragging.png",
+      "component_label": "Chip",
+      "description": "",
+      "alt_text": "Chip",
+      "state_inferred_from_filename": "dragging",
+      "dimensions_px": {
+        "width": 370,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/DXKkpTBDXk8hvcuhWK8S.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/DXKkpTBDXk8hvcuhWK8S.png?width={width}",
+      "created": "2024-03-19 12:21:24",
+      "modified": "2024-03-19 12:21:24"
+    },
+    {
+      "asset_id": 813882,
+      "block_id": "306280",
+      "filename": "Typing.png",
+      "component_label": "Text field",
+      "description": "",
+      "alt_text": "Text field",
+      "state_inferred_from_filename": "typing",
+      "dimensions_px": {
+        "width": 370,
+        "height": 168
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/7SkyapVad37cewNsePKp.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/7SkyapVad37cewNsePKp.png?width={width}",
+      "created": "2024-03-11 07:27:27",
+      "modified": "2024-03-11 07:27:27"
+    },
+    {
+      "asset_id": 813894,
+      "block_id": "306284",
+      "filename": "selected.png",
+      "component_label": "Checkbox",
+      "description": "",
+      "alt_text": "Checkbox",
+      "state_inferred_from_filename": "selected",
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/97G7LhCkMgMLEQonK9rD.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/97G7LhCkMgMLEQonK9rD.png?width={width}",
+      "created": "2024-03-11 08:41:17",
+      "modified": "2024-03-11 08:41:17"
+    },
+    {
+      "asset_id": 815852,
+      "block_id": "306284",
+      "filename": "selected switch.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/dZZ2xn7CKJPCWGjXqdzi.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/dZZ2xn7CKJPCWGjXqdzi.png?width={width}",
+      "created": "2024-03-15 06:50:24",
+      "modified": "2024-03-15 06:50:24"
+    },
+    {
+      "asset_id": 815854,
+      "block_id": "306284",
+      "filename": "2 selected.png",
+      "component_label": "Menu item",
+      "description": "",
+      "alt_text": "Menu item",
+      "state_inferred_from_filename": "selected",
+      "dimensions_px": {
+        "width": 614,
+        "height": 246
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/yaPwQNT6mQCe44WqcYjZ.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/yaPwQNT6mQCe44WqcYjZ.png?width={width}",
+      "created": "2024-03-15 06:51:37",
+      "modified": "2024-03-15 06:51:37"
+    },
+    {
+      "asset_id": 815855,
+      "block_id": "306285",
+      "filename": "deselected.png",
+      "component_label": "Checkbox",
+      "description": "",
+      "alt_text": "Checkbox",
+      "state_inferred_from_filename": "deselected",
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/qDrNRAy1vmHx5VrzDjj7.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/qDrNRAy1vmHx5VrzDjj7.png?width={width}",
+      "created": "2024-03-15 06:52:15",
+      "modified": "2024-03-15 06:52:15"
+    },
+    {
+      "asset_id": 815856,
+      "block_id": "306285",
+      "filename": "deselected switch.png",
+      "component_label": "Switch",
+      "description": "",
+      "alt_text": "Switch",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/p5Pwe8vGXJ83rr6Jjnfh.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/p5Pwe8vGXJ83rr6Jjnfh.png?width={width}",
+      "created": "2024-03-15 06:52:20",
+      "modified": "2024-03-15 06:52:20"
+    },
+    {
+      "asset_id": 815857,
+      "block_id": "306285",
+      "filename": "2 deselected.png",
+      "component_label": "Menu item",
+      "description": "",
+      "alt_text": "Menu item",
+      "state_inferred_from_filename": "deselected",
+      "dimensions_px": {
+        "width": 614,
+        "height": 246
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/ETbtLVCrsTn5xvCXL6jb.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/ETbtLVCrsTn5xvCXL6jb.png?width={width}",
+      "created": "2024-03-15 06:52:56",
+      "modified": "2024-03-15 06:52:56"
+    },
+    {
+      "asset_id": 815858,
+      "block_id": "307087",
+      "filename": "indeterminate.png",
+      "component_label": "Checkbox",
+      "description": "",
+      "alt_text": "Checkbox",
+      "state_inferred_from_filename": "indeterminate",
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/y7JRFAtHSQppskKSVDFF.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/y7JRFAtHSQppskKSVDFF.png?width={width}",
+      "created": "2024-03-15 06:53:51",
+      "modified": "2024-03-15 06:53:51"
+    },
+    {
+      "asset_id": 822195,
+      "block_id": "306286",
+      "filename": "active menu item.png",
+      "component_label": "Menu item",
+      "description": "",
+      "alt_text": "Menu item",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 614,
+        "height": 247
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/DTKFJ8j4kAXuyiyttePN.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/DTKFJ8j4kAXuyiyttePN.png?width={width}",
+      "created": "2024-03-19 12:30:28",
+      "modified": "2024-03-19 12:30:28"
+    },
+    {
+      "asset_id": 815860,
+      "block_id": "306286",
+      "filename": "active option bar.png",
+      "component_label": "Option bar",
+      "description": "",
+      "alt_text": "Option bar",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/S9GSrY3wGB1HC4Aowpub.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/S9GSrY3wGB1HC4Aowpub.png?width={width}",
+      "created": "2024-03-15 07:27:39",
+      "modified": "2024-03-15 07:27:39"
+    },
+    {
+      "asset_id": 822196,
+      "block_id": "307084",
+      "filename": "inactive menu item.png",
+      "component_label": "Menu item",
+      "description": "",
+      "alt_text": "Menu item",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 614,
+        "height": 246
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/JcYygdvZpZq99CDqbPF1.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/JcYygdvZpZq99CDqbPF1.png?width={width}",
+      "created": "2024-03-19 12:30:51",
+      "modified": "2024-03-19 12:30:51"
+    },
+    {
+      "asset_id": 815862,
+      "block_id": "307084",
+      "filename": "inactive option bar.png",
+      "component_label": "Option bar",
+      "description": "",
+      "alt_text": "Option bar",
+      "state_inferred_from_filename": null,
+      "dimensions_px": {
+        "width": 500,
+        "height": 200
+      },
+      "preview_url": "https://media.ffycdn.net/eu/bosch/twU5LMUhdZc3nPayNaKe.png?width=800",
+      "generic_url": "https://media.ffycdn.net/eu/bosch/twU5LMUhdZc3nPayNaKe.png?width={width}",
+      "created": "2024-03-15 07:28:32",
+      "modified": "2024-03-15 07:28:32"
+    }
+  ],
+  "support_and_feedback": {
+    "feature_requests_and_bug_reports": "Submit Digital Design System or Frontend Kit feature requests and bug reports to the digital expert team via Jira.",
+    "design_feedback_contact": "support.design@bosch.com",
+    "design_review_note": "The design support team can check design drafts."
+  },
+  "ai_usage_notes": {
+    "recommended_use": [
+      "Use this JSON as a compact knowledge representation for design linting, UX review prompts, component documentation, or design-token/state mapping.",
+      "Prefer interaction state definitions when assessing whether UI feedback communicates possible actions and current action status.",
+      "Prefer selection state definitions when assessing whether UI feedback communicates selected, deselected, mixed, active, or inactive conditions."
+    ],
+    "state_category_decision_rule": "If the state communicates what action is possible or being performed, classify it as an interaction state. If the state communicates selectedness or active membership in a set/navigation context, classify it as a selection state.",
+    "disabled_state_decision_rule": "Before using disabled, check if an active element with a hint, progressive disclosure, tooltip, or help text would communicate prerequisites more clearly and accessibly."
+  }
+}

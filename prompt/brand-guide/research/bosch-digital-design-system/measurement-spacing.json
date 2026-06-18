@@ -1,0 +1,264 @@
+{
+  "metadata": {
+    "topic": "Measurement & spacing",
+    "source_file": "Measurement & spacing.html",
+    "source_page_title": "Measurement & spacing - Design principles - Bosch Digital Design System",
+    "language": "en",
+    "extraction_purpose": "Organize unstructured brand guide information into an AI-readable JSON structure",
+    "last_modified_from_source": "2026-02-02"
+  },
+  "overview": {
+    "summary": "Bosch uses a systematic approach to measurement and spacing in digital design based on the rem (root EM) unit. The system supports consistency, accessibility, proportional scaling, responsive design, and alignment between design and development across devices, screen resolutions, and touchpoints.",
+    "core_rule": "Use root EM (rem) as the basic unit of measurement for digital components.",
+    "standard_base": {
+      "rem": 1,
+      "pixels": 16,
+      "label": "1 rem = 16 px",
+      "scope": "Websites, software, mobile apps, and other standard digital touchpoints",
+      "exception": "Product user interfaces may vary depending on use case, hardware, physical pixel density, and spatial conditions."
+    }
+  },
+  "scope_and_context": {
+    "applies_to": [
+      "Websites",
+      "Software",
+      "Mobile apps",
+      "Digital newsletters",
+      "Banners",
+      "Product user interfaces where adapted to hardware and use case"
+    ],
+    "design_problem": "Bosch develops applications for many devices, screen resolutions, and use cases, so component sizes may differ across applications. A common rem-based measurement model keeps specifications clear and broadly applicable.",
+    "key_context_variables": [
+      "Viewing distance",
+      "Ambient light",
+      "Screen resolution",
+      "Physical pixel density",
+      "Input method",
+      "Interaction frequency",
+      "Stationary vs. portable/mobile usage",
+      "Accessibility requirements",
+      "Hardware constraints"
+    ]
+  },
+  "principles": [
+    {
+      "id": "visibility_readability",
+      "name": "Visibility and readability",
+      "description": "Dimensions and sizes must be easy to perceive in the intended use situation.",
+      "considerations": [
+        "Viewing distance",
+        "Ambient light",
+        "Legibility of text and controls",
+        "Perceptibility of interface elements"
+      ]
+    },
+    {
+      "id": "consistency_predictability",
+      "name": "Consistency & predictability",
+      "description": "Uniform sizes must be used consistently for similar elements to meet user expectations and make orientation easier.",
+      "considerations": [
+        "Similar elements should use similar sizing",
+        "Spacing should support orientation",
+        "Patterns should remain predictable across interfaces"
+      ]
+    },
+    {
+      "id": "context_accessibility",
+      "name": "Context of use and accessibility",
+      "description": "Stationary and portable mobile systems must both be considered so that appropriate sizes are selected for each application.",
+      "considerations": [
+        "Touchpoint type",
+        "Device type",
+        "Interaction context",
+        "Accessibility needs",
+        "Ergonomics"
+      ]
+    }
+  ],
+  "rem_grid_system": {
+    "definition": "The rem unit (root EM) is based on the font size of the HTML root element, usually <html>. 1 rem corresponds to the base font size.",
+    "base_equivalence": {
+      "rem": 1,
+      "px": 16
+    },
+    "benefits": [
+      "Creates proportional scaling across screen resolutions",
+      "Improves consistency",
+      "Improves accessibility",
+      "Simplifies responsive design",
+      "Allows display enlargement or reduction through browser settings",
+      "Creates visual order",
+      "Strengthens coherence between design and development"
+    ],
+    "usage": [
+      "Spacing",
+      "Sizes",
+      "Typography",
+      "Component dimensions"
+    ],
+    "design_development_alignment": "1 rem acts as a universal reference point for spacing, sizes, and typography, enabling systematic design across platforms and devices."
+  },
+  "default_values_for_dimensions_and_sizes": {
+    "description": "Bosch uses modular rem-based default values for spacing and sizing. The documented scale ends at 16 rem but can be extended when needed.",
+    "scale": [
+      {
+        "token_like_name": "space_025",
+        "rem": 0.25,
+        "px": 4
+      },
+      {
+        "token_like_name": "space_050",
+        "rem": 0.5,
+        "px": 8
+      },
+      {
+        "token_like_name": "space_100",
+        "rem": 1,
+        "px": 16
+      },
+      {
+        "token_like_name": "space_150",
+        "rem": 1.5,
+        "px": 24
+      },
+      {
+        "token_like_name": "space_200",
+        "rem": 2,
+        "px": 32
+      },
+      {
+        "token_like_name": "space_300",
+        "rem": 3,
+        "px": 48
+      },
+      {
+        "token_like_name": "space_400",
+        "rem": 4,
+        "px": 64
+      },
+      {
+        "token_like_name": "space_600",
+        "rem": 6,
+        "px": 96
+      },
+      {
+        "token_like_name": "space_800",
+        "rem": 8,
+        "px": 128
+      },
+      {
+        "token_like_name": "space_1200",
+        "rem": 12,
+        "px": 192
+      },
+      {
+        "token_like_name": "space_1600",
+        "rem": 16,
+        "px": 256
+      }
+    ],
+    "implementation_note": "Use the scale consistently to keep layouts visually balanced and functional across device types."
+  },
+  "scaling_digital_products": {
+    "description": "Different digital products may use different measurement or positioning units, but Bosch's 1-rem system provides the shared reference point.",
+    "standard_touchpoints": [
+      {
+        "name": "Websites",
+        "relationship_to_system": "Uses the standard 1 rem = 16 px reference."
+      },
+      {
+        "name": "Mobile Apps",
+        "relationship_to_system": "Uses the standard 1 rem = 16 px reference."
+      },
+      {
+        "name": "Software",
+        "relationship_to_system": "Uses the standard 1 rem = 16 px reference."
+      },
+      {
+        "name": "Digital Newsletter",
+        "relationship_to_system": "Uses the standard 1 rem = 16 px reference."
+      },
+      {
+        "name": "Banner",
+        "relationship_to_system": "Uses the standard 1 rem = 16 px reference."
+      }
+    ],
+    "product_ui_hardware": {
+      "description": "For product user interfaces, size representation depends on spatial conditions, use case, hardware, and physical pixel density. Requirements for readability in mobility contexts may be based on ISO and DIN standards.",
+      "reference_standard_mentioned": "ISO 9241-161 - Ergonomics of human-system interaction - Part 161: Guidelines for visual user interface elements"
+    }
+  },
+  "dos_and_donts": {
+    "do": [
+      {
+        "rule": "Consider measurement and spacing in context.",
+        "details": "Account for touchpoints, devices, intended use, viewing distance, input methods, ambient light, and interaction frequency."
+      },
+      {
+        "rule": "Use scalable systems.",
+        "details": "Apply rem-based grids to support consistency, ergonomics, and accessibility."
+      },
+      {
+        "rule": "Maintain logical grouping.",
+        "details": "Use spacing to express relationships and hierarchy between elements."
+      }
+    ],
+    "dont": [
+      {
+        "rule": "Do not ignore proximity principles.",
+        "details": "Avoid extreme distances that break logical grouping or weaken perceived relationships."
+      },
+      {
+        "rule": "Do not design without accessibility context.",
+        "details": "Avoid dimensions and spacing that make interaction challenging or create a negative user experience."
+      }
+    ]
+  },
+  "recommendations": {
+    "areas": [
+      {
+        "title": "Setup & structure",
+        "purpose": "Establish a clear layout foundation before applying detailed spacing decisions."
+      },
+      {
+        "title": "Design grid",
+        "purpose": "Use a consistent grid to structure dimensions, spacing, and alignment."
+      },
+      {
+        "title": "Design with Figma",
+        "purpose": "Apply measurement and spacing rules systematically in design tooling."
+      },
+      {
+        "title": "Accessibility",
+        "purpose": "Ensure measurements, spacing, and scale support accessible perception and interaction."
+      }
+    ]
+  },
+  "ai_usage_guidelines": {
+    "when_generating_ui": [
+      "Use rem as the primary spacing and sizing reference unless a product UI hardware context requires adaptation.",
+      "Default to 1 rem = 16 px for standard digital touchpoints.",
+      "Use the documented modular spacing scale before inventing intermediate values.",
+      "Prioritize consistency across similar components.",
+      "Adjust sizing decisions based on viewing distance, ambient light, input method, and accessibility needs."
+    ],
+    "when_reviewing_ui": [
+      "Check if similar elements use uniform sizes and spacing.",
+      "Check whether spacing supports logical grouping and hierarchy.",
+      "Check if dimensions remain readable and usable in the intended context.",
+      "Check whether rem-based values can scale proportionally."
+    ]
+  },
+  "traceability": {
+    "extracted_sections": [
+      "Measurement & spacing introduction",
+      "The basis for measurement & spacing",
+      "The 1 rem = 16-pixel grid system",
+      "Default values for dimensions & sizes",
+      "Scaling digital products",
+      "Do's and don'ts",
+      "Recommendations"
+    ],
+    "source_reference_id": "turn1search2"
+  }
+}
