@@ -14400,8 +14400,6 @@ Context_ListDirEntries(dir) {
         loop files, dir "\*", "D" {
             if (A_LoopFileAttrib ~= "[HS]")
                 continue
-            if (StrLower(A_LoopFileName) = "minimized")
-                continue
             folders.Push(A_LoopFileName)
         }
         loop files, dir "\*", "F" {
