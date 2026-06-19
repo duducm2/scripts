@@ -14145,11 +14145,6 @@ ModalListLetterJump_CreateHandler(char, isActiveFn, getEntriesFn, getNameFn, onM
 ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
     if (!isActiveFn())
         return
-    ; #region agent log
-    if (IsSet(g_ContextBrowserActive) && g_ContextBrowserActive)
-        ContextBrowser_DebugLog("H1", "ModalListLetterJump_HandleChar", "letter jump fired while context browser open", { char: char
-            , filterFocused: ContextBrowser_IsFilterFocused() })
-    ; #endregion
     rowNum := ModalList_FindFirstByStartingLetter(getEntriesFn(), char, getNameFn)
     if (rowNum > 0)
         onMatchFn(rowNum)
@@ -14180,29 +14175,6 @@ global g_ContextBrowserFilterTyping := false
 global g_ContextBrowserSuppressFilterKillFocus := false
 global g_ContextBrowserBreadcrumbLink := false
 global g_ContextBrowserBreadcrumbSegments := []
-
-ContextBrowser_DebugLog(hypothesisId, location, message, data := unset) {
-    try {
-        dataJson := "{}"
-        if (IsSet(data) && IsObject(data)) {
-            dataJson := "{"
-            first := true
-            for k, v in data {
-                if (!first)
-                    dataJson .= ","
-                first := false
-                vEsc := StrReplace(StrReplace(String(v), "\", "\\"), '"', '\"')
-                dataJson .= Format('"{1}":"{2}"', k, vEsc)
-            }
-            dataJson .= "}"
-        }
-        line := Format(
-            '{{"sessionId":"02282e","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{4},"timestamp":{5}}}',
-            hypothesisId, location, message, dataJson, A_TickCount)
-        FileAppend line "`n", A_ScriptDir "\debug-02282e.log", "UTF-8"
-    } catch {
-    }
-}
 
 ContextBrowser_IsFilterFocused() {
     global g_ContextBrowserFilterCtrl, g_ContextBrowserGui, g_ContextBrowserFilterTyping
@@ -14954,10 +14926,6 @@ ContextBrowser_PasteFocusedContentAsText(*) {
 ContextBrowser_OnFilterChange(*) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserFilterCtrl, g_ContextBrowserFilterQuery, g_ContextBrowserActive
-    ; #region agent log
-    ContextBrowser_DebugLog("H4", "ContextBrowser_OnFilterChange", "filter change event", { active: g_ContextBrowserActive ? "true"
-        : "false", filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "" })
-    ; #endregion
     if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserFilterCtrl))
         return
     g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
@@ -14967,27 +14935,15 @@ ContextBrowser_OnFilterChange(*) {
 ContextBrowser_OnFilterFocus(*) {
     global g_ContextBrowserFilterCtrl, g_ContextBrowserActive, g_ContextBrowserFilterTyping
     g_ContextBrowserFilterTyping := true
-    ; #region agent log
-    ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterFocus", "filter field focused; disabling list hotkeys", {
-        filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "", runId: "post-fix2" })
-    ; #endregion
     if (g_ContextBrowserActive)
         ContextBrowser_SetListNavigationHotkeysEnabled(false)
 }
 
 ContextBrowser_OnFilterKillFocus(*) {
     global g_ContextBrowserActive, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
-    if (g_ContextBrowserSuppressFilterKillFocus) {
-        ; #region agent log
-        ContextBrowser_DebugLog("H8", "ContextBrowser_OnFilterKillFocus", "suppressed during refresh", { runId: "post-fix3" })
-        ; #endregion
+    if (g_ContextBrowserSuppressFilterKillFocus)
         return
-    }
     g_ContextBrowserFilterTyping := false
-    ; #region agent log
-    ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterKillFocus", "filter field unfocused; restoring list hotkeys", {
-        runId: "post-fix2" })
-    ; #endregion
     if (g_ContextBrowserActive)
         ContextBrowser_SetListNavigationHotkeysEnabled(true)
 }
@@ -15031,10 +14987,6 @@ HandleContextBrowserEscape(*) {
 ContextBrowser_HandleBack() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir
-    ; #region agent log
-    ContextBrowser_DebugLog("H3", "ContextBrowser_HandleBack", "backspace hotkey fired", { filterFocused:
-        ContextBrowser_IsFilterFocused() ? "true" : "false" })
-    ; #endregion
     if (!g_ContextBrowserActive)
         return
     if ContextBrowser_IsFilterFocused()
@@ -15132,7 +15084,6 @@ ContextBrowser_RefreshView() {
     }
 
     wasTypingInFilter := g_ContextBrowserFilterTyping
-    filterValueBefore := IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : ""
     g_ContextBrowserSuppressFilterKillFocus := wasTypingInFilter
 
     if (IsObject(g_ContextBrowserFilterCtrl))
@@ -15163,12 +15114,6 @@ ContextBrowser_RefreshView() {
             lv.Modify(1, "Select Vis")
         else
             lv.Modify(1, "Select Focus Vis")
-        ; #region agent log
-        filterValueAfter := IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : ""
-        ContextBrowser_DebugLog("H6", "ContextBrowser_RefreshView", "refresh list selection", { query: q,
-            typingInFilter: typingInFilter ? "true" : "false", filterBefore: filterValueBefore, filterAfter:
-            filterValueAfter, entryCount: g_ContextBrowserEntries.Length, runId: "post-fix3" })
-        ; #endregion
         if (!typingInFilter) {
             try lv.Focus()
             catch {
