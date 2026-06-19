@@ -1279,7 +1279,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Tile background (CAW+Y; ≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen  [Esc] Cancel",
+        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Tile background (CAW+Y; ≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen (CAW+P)  [Esc] Cancel",
         true,
         false,
         false)
@@ -2763,11 +2763,12 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
 
 ; =============================================================================
 ; Window tools (maximize lone / hidden list / tile background / exit F11 fullscreen)
-; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], 6=[2], Y=[3]; X=Snap 50/50 (not in menu)
+; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]; X=Snap 50/50 (not in menu)
 ; =============================================================================
 ^!#z:: WM_WindowTools_OnMaximizeLonely()
 ^!#6:: WM_WindowTools_OnShowMinimizedList()
 ^!#y:: WM_WindowTools_OnTileBackground()
+^!#p:: WM_WindowTools_OnExitF11Fullscreen()
 ^!#x:: WM_SnapHalfPairActiveWindow()
 #!+w:: WM_WindowTools_ShowMenu()
 
@@ -3598,7 +3599,7 @@ global g_Projects := [
                                                         workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
                                                         category: "Work", char: "0" }, { name: "astra", path: "",
                                                             workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Projeto Astra",
-                                                            category: "Work", char: "a" },                                                             { name: "Piloto PT B2B",
+                                                            category: "Work", char: "a" }, { name: "Piloto PT B2B",
                                                                 path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                                                 category: "Work", char: "b" }, { name: "Python ScripTs",
@@ -5618,6 +5619,7 @@ ShowProjectSelector() {
 ;    - Ctrl+Alt+Win+Z: Window tools [1] maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
 ;    - Ctrl+Alt+Win+6: Window tools [2] hidden background window list (also Win+Alt+Shift+W → 2)
 ;    - Ctrl+Alt+Win+Y: Window tools [3] tile background windows (also Win+Alt+Shift+W → 3)
+;    - Ctrl+Alt+Win+P: Window tools [4] exit F11 fullscreen (also Win+Alt+Shift+W → 4)
 ;
 ; 6. ALT-TAB ALTERNATIVES
 ;    - Ctrl+Alt+Shift+B: Switch to previous window (Alt+Tab once)

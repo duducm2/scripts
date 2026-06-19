@@ -1701,7 +1701,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
     [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
     [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
-    Letters available: P, T, U
+    Letters available: T, U
     Numbers available: (none — 0–5, 7–9 assigned)
     Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
@@ -1711,6 +1711,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
     [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
     [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (WindowManagement.ahk; also Win+Alt+Shift+W → 4)
     [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
     [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
     [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
@@ -1785,7 +1786,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
     [Win+Alt+Shift+M] > Maximizes the current window
-    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3]
+    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
     
     === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
@@ -1793,6 +1794,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
     [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
     [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
     [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
     [Ctrl+Alt+Win+S] > Move window to monitor 2
     [Ctrl+Alt+Win+D] > Move window to monitor 3
