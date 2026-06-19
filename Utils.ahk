@@ -14949,6 +14949,7 @@ ContextBrowser_OpenFocusedInExplorer(*) {
     StandardLoadingBar_Show("⏳ Opening in Explorer...", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     try {
         Run explorerCmd
+        CleanupContextBrowser()
     } finally {
         StandardLoadingBar_Hide(350)
     }
