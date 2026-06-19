@@ -14365,6 +14365,19 @@ Context_ResolvePastePath(path) {
     return path
 }
 
+Context_ResolvePasteTextContent(path) {
+    pastePath := Context_ResolvePastePath(path)
+    if (pastePath = "" || !Context_IsExistingFile(pastePath))
+        return ""
+    if Context_IsImagePath(pastePath)
+        return ""
+    try {
+        return FileRead(pastePath, "UTF-8")
+    } catch {
+        return ""
+    }
+}
+
 Context_SortNames(names) {
     if (names.Length < 2)
         return names
@@ -14712,6 +14725,7 @@ ContextBrowser_DisableHotkeys() {
     try Hotkey("Backspace", "Off")
     try Hotkey("Enter", "Off")
     try Hotkey("^Enter", "Off")
+    try Hotkey("+Enter", "Off")
     try Hotkey("^c", "Off")
     try Hotkey("^+e", "Off")
 }
@@ -14786,6 +14800,30 @@ ContextBrowser_PasteFocusedPathAsText(*) {
     CleanupContextBrowser()
     Sleep 50
     InsertText(pastePath)
+}
+
+ContextBrowser_PasteFocusedContentAsText(*) {
+    ContextBrowser_EnsureGlobals()
+    focused := ContextBrowser_GetFocusedEntry()
+    if (!IsObject(focused) || focused.entry.type != "file")
+        return
+    pastePath := Context_ResolvePastePath(focused.entry.path)
+    if (pastePath = "") {
+        ShowCenteredOverlay_Utils("❌ Reference target not found for: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    if Context_IsImagePath(pastePath) {
+        ShowCenteredOverlay_Utils("❌ Cannot paste image as text: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    content := Context_ResolvePasteTextContent(focused.entry.path)
+    if (content = "") {
+        ShowCenteredOverlay_Utils("❌ No text content to paste: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    CleanupContextBrowser()
+    Sleep 50
+    InsertText(content)
 }
 
 ContextBrowser_OnFilterChange(*) {
@@ -14969,7 +15007,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
-    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter · ↑↓ · letter jump · Enter attach · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
@@ -14993,6 +15031,7 @@ ContextBrowser_ShowGui() {
 
     try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
     try Hotkey("Enter", ContextBrowser_OnEnter, "On")
+    try Hotkey("+Enter", ContextBrowser_PasteFocusedContentAsText, "On")
     try Hotkey("^Enter", ContextBrowser_PasteFocusedPathAsText, "On")
     try Hotkey("^c", ContextBrowser_CopyFocusedPath, "On")
     try Hotkey("^+e", ContextBrowser_OpenFocusedInExplorer, "On")
