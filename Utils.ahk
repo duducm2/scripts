@@ -14190,6 +14190,21 @@ ContextBrowser_IsFilterFocused() {
     return (focusedHwnd = g_ContextBrowserFilterCtrl.Hwnd)
 }
 
+ContextBrowser_FocusFilterField() {
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserActive, g_ContextBrowserFilterTyping
+    if (!IsObject(g_ContextBrowserFilterCtrl))
+        return
+    g_ContextBrowserFilterTyping := true
+    if (g_ContextBrowserActive)
+        ContextBrowser_SetListNavigationHotkeysEnabled(false)
+    try g_ContextBrowserFilterCtrl.Focus()
+    catch {
+    }
+    try SendMessage(0x00B1, 0, -1, g_ContextBrowserFilterCtrl)
+    catch {
+    }
+}
+
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserLetterHook
@@ -15175,9 +15190,6 @@ ContextBrowser_ShowGui() {
     try ContextBrowser_EnableHotkeys()
     catch {
     }
-    try g_ContextBrowserListView.Focus()
-    catch {
-    }
 }
 
 ContextBrowser_OpenAtCurrentDir() {
@@ -15202,6 +15214,7 @@ ContextBrowser_OpenAtCurrentDir() {
     }
     ContextBrowser_RefreshView()
     g_ContextBrowserActive := true
+    ContextBrowser_FocusFilterField()
 }
 
 ShowContextBrowser() {
