@@ -14166,6 +14166,8 @@ ModalListLetterJump_Start(&hookRef, isActiveFn, getEntriesFn, getNameFn, onMatch
 ; =============================================================================
 ; Context file browser — browse context/ and paste full local paths (Win+Alt+Shift+N)
 ; =============================================================================
+global CONTEXT_PREVIEW_MAX_SIZE := 234  ; 180 * 1.3
+
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserLetterHook
@@ -14232,6 +14234,32 @@ ContextBrowser_GetPreviewImagePath(entry) {
     if (probe.isRef && Context_IsImagePath(probe.targetPath))
         return probe.targetPath
     return ""
+}
+
+ContextBrowser_GetFitImageSize(path, maxW, maxH, &outW, &outH) {
+    outW := 0
+    outH := 0
+    if (path = "" || maxW < 1 || maxH < 1)
+        return false
+    try hbm := LoadPicture(path)
+    catch
+        return false
+    if !hbm
+        return false
+    bm := Buffer(A_PtrSize = 8 ? 32 : 24, 0)
+    if !DllCall("GetObject", "ptr", hbm, "int", bm.Size, "ptr", bm) {
+        DllCall("DeleteObject", "ptr", hbm)
+        return false
+    }
+    imgW := NumGet(bm, 4, "int")
+    imgH := NumGet(bm, 8, "int")
+    DllCall("DeleteObject", "ptr", hbm)
+    if (imgW <= 0 || imgH <= 0)
+        return false
+    scale := Min(maxW / imgW, maxH / imgH, 1)
+    outW := Max(1, Round(imgW * scale))
+    outH := Max(1, Round(imgH * scale))
+    return true
 }
 
 Context_ReadFirstNonemptyLine(path) {
@@ -14396,7 +14424,7 @@ ContextBrowser_ClearPreview() {
 
 ContextBrowser_UpdatePreview(rowNum) {
     ContextBrowser_EnsureGlobals()
-    global g_ContextBrowserEntries, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserEntries, g_ContextBrowserPreviewCtrl, CONTEXT_PREVIEW_MAX_SIZE
     if (!IsObject(g_ContextBrowserPreviewCtrl))
         return
     if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length) {
@@ -14408,7 +14436,20 @@ ContextBrowser_UpdatePreview(rowNum) {
         ContextBrowser_ClearPreview()
         return
     }
-    try g_ContextBrowserPreviewCtrl.Value := imagePath
+    fitW := 0
+    fitH := 0
+    if !ContextBrowser_GetFitImageSize(imagePath, CONTEXT_PREVIEW_MAX_SIZE, CONTEXT_PREVIEW_MAX_SIZE, &fitW, &fitH) {
+        ContextBrowser_ClearPreview()
+        return
+    }
+    try {
+        scaledHbm := LoadPicture(imagePath, "w" fitW " h" fitH)
+        g_ContextBrowserPreviewCtrl.Move(, , fitW, fitH)
+        g_ContextBrowserPreviewCtrl.Value := "HBITMAP:*" scaledHbm
+    } catch {
+        ContextBrowser_ClearPreview()
+        return
+    }
     g_ContextBrowserPreviewCtrl.Opt("-Hidden")
 }
 
@@ -14632,11 +14673,11 @@ ContextBrowser_RefreshView() {
 ContextBrowser_CreateGui() {
     global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
 
-    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize560x320", "Context")
+    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize620x320", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
-    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w680", "")
+    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w740", "")
     g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h380 Grid -Multi", ["Kind", "Name"])
-    g_ContextBrowserPreviewCtrl := g_ContextBrowserGui.Add("Picture", "x+10 yp w180 h180 Center BackgroundTrans Hidden")
+    g_ContextBrowserPreviewCtrl := g_ContextBrowserGui.Add("Picture", "x+10 yp BackgroundTrans Hidden")
     g_ContextBrowserListView.ModifyCol(1, 72)
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
@@ -14654,14 +14695,14 @@ ContextBrowser_ShowGui() {
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
 
-    g_ContextBrowserGui.Show("w700 h480")
+    g_ContextBrowserGui.Show("w760 h480")
     g_ContextBrowserGui.GetPos(, , &gw, &gh)
     guiX := monitorLeft + (monitorWidth - gw) // 2
     guiY := monitorTop + (monitorHeight - gh) // 2
     margin := 16
     guiX := Max(monitorLeft + margin, Min(guiX, monitorRight - gw - margin))
     guiY := Max(monitorTop + margin, Min(guiY, monitorBottom - gh - margin))
-    g_ContextBrowserGui.Show("x" guiX " y" guiY " w700 h480")
+    g_ContextBrowserGui.Show("x" guiX " y" guiY " w760 h480")
 
     try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
     try Hotkey("Enter", ContextBrowser_OnEnter, "On")
