@@ -14169,6 +14169,7 @@ ModalListLetterJump_Start(&hookRef, isActiveFn, getEntriesFn, getNameFn, onMatch
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserLetterHook
+    global g_ContextBrowserPreviewCtrl
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14183,6 +14184,8 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserListView := false
     if !IsSet(g_ContextBrowserPathCtrl)
         g_ContextBrowserPathCtrl := false
+    if !IsSet(g_ContextBrowserPreviewCtrl)
+        g_ContextBrowserPreviewCtrl := false
     if !IsSet(g_ContextBrowserLetterHook)
         g_ContextBrowserLetterHook := ""
 }
@@ -14204,6 +14207,31 @@ Context_IsExistingFile(path) {
         return false
     attr := FileExist(path)
     return (attr && !InStr(attr, "D"))
+}
+
+Context_IsImageExtension(ext) {
+    ext := StrLower(ext)
+    static imageExts := Map("png", 1, "jpg", 1, "jpeg", 1, "gif", 1, "bmp", 1, "webp", 1, "ico", 1, "tif", 1,
+        "tiff", 1)
+    return imageExts.Has(ext)
+}
+
+Context_IsImagePath(path) {
+    if !Context_IsExistingFile(path)
+        return false
+    SplitPath path, , , &ext
+    return Context_IsImageExtension(ext)
+}
+
+ContextBrowser_GetPreviewImagePath(entry) {
+    if (!IsObject(entry) || entry.type != "file")
+        return ""
+    if Context_IsImagePath(entry.path)
+        return entry.path
+    probe := Context_ProbeReference(entry.path)
+    if (probe.isRef && Context_IsImagePath(probe.targetPath))
+        return probe.targetPath
+    return ""
 }
 
 Context_ReadFirstNonemptyLine(path) {
@@ -14353,7 +14381,35 @@ ContextBrowser_EntryKindLabel(entry) {
         return "Up"
     if (entry.type = "folder")
         return "Folder"
+    if (ContextBrowser_GetPreviewImagePath(entry) != "")
+        return "Image"
     return "File"
+}
+
+ContextBrowser_ClearPreview() {
+    global g_ContextBrowserPreviewCtrl
+    if (!IsObject(g_ContextBrowserPreviewCtrl))
+        return
+    try g_ContextBrowserPreviewCtrl.Value := ""
+    g_ContextBrowserPreviewCtrl.Opt("+Hidden")
+}
+
+ContextBrowser_UpdatePreview(rowNum) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserEntries, g_ContextBrowserPreviewCtrl
+    if (!IsObject(g_ContextBrowserPreviewCtrl))
+        return
+    if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length) {
+        ContextBrowser_ClearPreview()
+        return
+    }
+    imagePath := ContextBrowser_GetPreviewImagePath(g_ContextBrowserEntries[rowNum])
+    if (imagePath = "") {
+        ContextBrowser_ClearPreview()
+        return
+    }
+    try g_ContextBrowserPreviewCtrl.Value := imagePath
+    g_ContextBrowserPreviewCtrl.Opt("-Hidden")
 }
 
 ContextBrowser_GetActiveMonitorWorkArea(&left, &top, &right, &bottom) {
@@ -14406,6 +14462,7 @@ ContextBrowser_HandleLetterJump(rowNum) {
     if (rowNum < 1)
         return
     ListView_SelectRowFocused(g_ContextBrowserListView, rowNum)
+    ContextBrowser_UpdatePreview(rowNum)
 }
 
 ContextBrowser_StartLetterJump() {
@@ -14424,7 +14481,7 @@ ContextBrowser_StopLetterJump() {
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
 
     g_ContextBrowserActive := false
     ContextBrowser_StopLetterJump()
@@ -14436,6 +14493,7 @@ CleanupContextBrowser() {
     g_ContextBrowserCurrentDir := ""
     g_ContextBrowserListView := false
     g_ContextBrowserPathCtrl := false
+    g_ContextBrowserPreviewCtrl := false
     if (IsObject(g_ContextBrowserGui)) {
         try g_ContextBrowserGui.Destroy()
         catch {
@@ -14512,6 +14570,18 @@ ContextBrowser_OnListDoubleClick(lv, guiEvent, *) {
     ContextBrowser_OnSelectRow(rowNum)
 }
 
+ContextBrowser_OnItemFocus(lv, guiEvent, *) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive
+    if (!g_ContextBrowserActive)
+        return
+    rowNum := 0
+    try rowNum := guiEvent.EventInfo
+    if !rowNum
+        rowNum := lv.GetNext(0, "F")
+    ContextBrowser_UpdatePreview(rowNum)
+}
+
 ContextBrowser_OnEnter(*) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserListView
@@ -14551,21 +14621,26 @@ ContextBrowser_RefreshView() {
         try lv.Focus()
         catch {
         }
+        ContextBrowser_UpdatePreview(1)
+    } else {
+        ContextBrowser_UpdatePreview(0)
     }
     g_ContextBrowserActive := true
     ContextBrowser_StartLetterJump()
 }
 
 ContextBrowser_CreateGui() {
-    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
 
-    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize420x320", "Context")
+    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize560x320", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
-    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w520", "")
-    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w520 h380 Grid -Multi", ["Kind", "Name"])
+    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w680", "")
+    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h380 Grid -Multi", ["Kind", "Name"])
+    g_ContextBrowserPreviewCtrl := g_ContextBrowserGui.Add("Picture", "x+10 yp w180 h180 Center BackgroundTrans Hidden")
     g_ContextBrowserListView.ModifyCol(1, 72)
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
+    g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
     g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · letter jump · Enter select · Backspace up · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
@@ -14579,14 +14654,14 @@ ContextBrowser_ShowGui() {
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
 
-    g_ContextBrowserGui.Show("w540 h480")
+    g_ContextBrowserGui.Show("w700 h480")
     g_ContextBrowserGui.GetPos(, , &gw, &gh)
     guiX := monitorLeft + (monitorWidth - gw) // 2
     guiY := monitorTop + (monitorHeight - gh) // 2
     margin := 16
     guiX := Max(monitorLeft + margin, Min(guiX, monitorRight - gw - margin))
     guiY := Max(monitorTop + margin, Min(guiY, monitorBottom - gh - margin))
-    g_ContextBrowserGui.Show("x" guiX " y" guiY " w540 h480")
+    g_ContextBrowserGui.Show("x" guiX " y" guiY " w700 h480")
 
     try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
     try Hotkey("Enter", ContextBrowser_OnEnter, "On")
