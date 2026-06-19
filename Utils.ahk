@@ -14510,28 +14510,9 @@ ContextBrowser_OnBreadcrumbLinkClick(ctrl, id, href, *) {
     ContextBrowser_BreadcrumbNavigate(g_ContextBrowserBreadcrumbSegments[idx].path)
 }
 
-; #region agent log
-ContextBrowser_DebugLog(location, message, hypothesisId := "", extra := "") {
-    try {
-        ts := A_TickCount
-        safeMsg := StrReplace(message, "\", "\\")
-        safeMsg := StrReplace(safeMsg, '"', "'")
-        safeExtra := StrReplace(extra, "\", "\\")
-        safeExtra := StrReplace(safeExtra, '"', "'")
-        FileAppend('{"sessionId":"6cac3a","timestamp":' ts ',"location":"' location '","message":"' safeMsg
-            '","hypothesisId":"' hypothesisId '","data":"' safeExtra '"}' "`n", A_ScriptDir "\debug-6cac3a.log")
-    } catch {
-    }
-}
-; #endregion
-
 ContextBrowser_BreadcrumbNavigate(targetDir, *) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir
-    ; #region agent log
-    ContextBrowser_DebugLog("BreadcrumbNavigate", "click handler fired", "H2",
-        "active=" g_ContextBrowserActive " dir=" targetDir " exists=" DirExist(targetDir))
-    ; #endregion
     if (!g_ContextBrowserActive || targetDir = "" || !DirExist(targetDir))
         return
     g_ContextBrowserCurrentDir := targetDir
@@ -14540,33 +14521,21 @@ ContextBrowser_BreadcrumbNavigate(targetDir, *) {
 
 ContextBrowser_UpdateBreadcrumbs(dir) {
     global g_ContextBrowserBreadcrumbLink, g_ContextBrowserBreadcrumbSegments
-    if (!IsObject(g_ContextBrowserBreadcrumbLink)) {
-        ; #region agent log
-        ContextBrowser_DebugLog("UpdateBreadcrumbs", "early return - missing link", "H3",
-            "link=" IsObject(g_ContextBrowserBreadcrumbLink))
-        ; #endregion
+    if (!IsObject(g_ContextBrowserBreadcrumbLink))
         return
-    }
     g_ContextBrowserBreadcrumbSegments := ContextBrowser_GetBreadcrumbSegments(dir)
     segments := g_ContextBrowserBreadcrumbSegments
     linkText := ""
-    linkCount := 0
     for i, seg in segments {
         if (i > 1)
             linkText .= " » "
         label := ContextBrowser_EscapeLinkLabel(seg.label)
-        if (i = segments.Length) {
+        if (i = segments.Length)
             linkText .= label
-        } else {
+        else
             linkText .= Format("<a id=`"{1}`">{2}</a>", i, label)
-            linkCount++
-        }
     }
     g_ContextBrowserBreadcrumbLink.Text := linkText
-    ; #region agent log
-    ContextBrowser_DebugLog("UpdateBreadcrumbs", "updated", "H4",
-        "segments=" segments.Length " links=" linkCount " dir=" dir)
-    ; #endregion
 }
 
 ContextBrowser_FormatEntryLabel(entry) {
