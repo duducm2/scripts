@@ -3951,7 +3951,7 @@ ParseRTFToPlainText(rtf) {
 ; Clip Angel: Open/Activate with focus correction (Row 0)
 ; =============================================================================
 ; Show/restore always-running Clip Angel via AHK (no native Alt+V). UIA: dataGridView,
-; Row 0 (first clip) per clip-angel.txt. Bounded UIA polls; layout only when not foreground/hidden.
+; Row 0 (first clip) per clip-angel.txt. One ElementFromHandle per flow; bounded polls; layout only when not foreground/hidden.
 ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     needBanner := false
     if !targetMon {
@@ -3969,7 +3969,7 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     wasHidden := !ClipAngel_IsWindowShown(hwnd)
     needsLayout := !isActive || wasHidden
     if isActive && !needsLayout {
-        ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        ClipAngel_UiaEnsureRow0Selected(hwnd, false)
         return true
     }
     if wasHidden || !isActive {
@@ -3987,10 +3987,7 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     if needsLayout
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
     ClipAngel_EnsureWindowActive(hwnd)
-    rowOk := ClipAngel_UiaEnsureRow0Selected(hwnd, true)
-    ; #region agent log
-    ClipAngel_DebugLog("H3", "Activate", "row0_best_effort", Format('"rowOk":{1}', rowOk ? 1 : 0))
-    ; #endregion
+    ClipAngel_UiaEnsureRow0Selected(hwnd, true)
     if needBanner {
         ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
         SetTimer(ClipAngelBanner_Hide, -500)
@@ -4010,6 +4007,7 @@ CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS := 300
 CLIPANGEL_UIA_POLL_MS := 30
 CLIPANGEL_GRID_WAIT_MS := 400
 CLIPANGEL_ROW0_WAIT_MS := 300
+CLIPANGEL_ROW0_SELECT_WAIT_MS := 250
 global g_ClipAngelAutomationBusy := false
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
@@ -4091,23 +4089,6 @@ ClipAngel_MainHwnd() {
     return WinExist("ahk_exe ClipAngel.exe")
 }
 
-; #region agent log
-ClipAngel_DebugLog(hypothesisId, location, message, dataStr := "") {
-    try {
-        if (dataStr = "")
-            line := Format(
-                '{{"sessionId":"ed1657","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{{}},"timestamp":{4},"script":"{5}"}}`n',
-                hypothesisId, location, message, A_TickCount, A_ScriptName)
-        else
-            line := Format(
-                '{{"sessionId":"ed1657","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{{{4}}},"timestamp":{5},"script":"{6}"}}`n',
-                hypothesisId, location, message, dataStr, A_TickCount, A_ScriptName)
-        FileAppend(line, A_ScriptDir "\debug-ed1657.log", "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 ClipAngel_IsWindowShown(hwnd) {
     if !hwnd || !WinExist("ahk_id " hwnd)
         return false
@@ -4148,21 +4129,29 @@ ClipAngel_HideWindow(hwnd) {
 }
 
 ; dataGridView (Type 50036, AutomationId dataGridView) — clip-angel.txt.
-ClipAngel_UiaGetDataGrid(hwnd) {
+; Pass root when caller already has UIA.ElementFromHandle(hwnd) to avoid duplicate COM round-trips.
+ClipAngel_UiaGetDataGrid(hwnd, root := 0) {
     if !hwnd
         return 0
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return 0
-    return ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return 0
+    }
+    return ClipAngel_UiaFindFirst(root, { Type: 50036, AutomationId: "dataGridView" })
 }
 
-ClipAngel_WaitForDataGrid(hwnd, timeoutMs := CLIPANGEL_GRID_WAIT_MS) {
+ClipAngel_WaitForDataGrid(hwnd, timeoutMs := CLIPANGEL_GRID_WAIT_MS, root := 0) {
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if dataGrid
             return dataGrid
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return 0
+        }
         Sleep CLIPANGEL_UIA_POLL_MS
     }
     return 0
@@ -4182,13 +4171,15 @@ ClipAngel_WaitForRow0(dataGrid, timeoutMs := CLIPANGEL_ROW0_WAIT_MS) {
 }
 
 ; Invoke List menu when Window tab has focus and dataGridView is missing.
-ClipAngel_EnsureListView(hwnd) {
+ClipAngel_EnsureListView(hwnd, root := 0) {
     if !hwnd
         return false
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    listItem := ClipAngel_UiaFindFirst(el, { Type: 50011, Name: "List" })
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+    }
+    listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
     if !listItem
         return false
     try {
@@ -4208,36 +4199,34 @@ ClipAngel_UiaResolveRow0(dataGrid) {
     row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
     if row0
         return row0
-    row0 := ClipAngel_WaitForRow0(dataGrid)
-    if row0
-        return row0
-    rows := 0
-    try rows := dataGrid.FindAll({ Type: 50025 })
-    catch
-        rows := 0
-    if rows && rows.Length >= 1
-        return rows[1]
-    return 0
+    try {
+        rows := dataGrid.FindAll({ Type: 50025 })
+        if rows && rows.Length >= 1
+            return rows[1]
+    } catch {
+    }
+    return ClipAngel_WaitForRow0(dataGrid)
 }
 
-ClipAngel_UiaStatusFirstText(hwnd) {
-    if !hwnd
-        return ""
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return ""
-    strip := ClipAngel_UiaFindFirst(el, { AutomationId: "statusStrip" })
-    if !strip
-        return ""
-    texts := 0
-    try texts := strip.FindAll({ Type: 50020 })
+ClipAngel_UiaGridHasSelectionPattern(dataGrid) {
+    if !dataGrid
+        return false
+    try return dataGrid.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable)
     catch
-        return ""
-    if !texts || texts.Length < 1
-        return ""
-    try return texts[1].Name
-    catch
-        return ""
+        return false
+}
+
+ClipAngel_UiaWaitRow0Selected(row0, dataGrid, timeoutMs := CLIPANGEL_ROW0_SELECT_WAIT_MS) {
+    if !row0
+        return false
+    gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
+            return true
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return false
 }
 
 ClipAngel_UiaGridSelectionIncludesRow0(dataGrid) {
@@ -4270,32 +4259,20 @@ ClipAngel_UiaRowLegacySelected(row) {
     return false
 }
 
-; WinForms DataGridView often exposes SelectionItemIsSelected without SelectionItemPattern.
-ClipAngel_UiaRow0IsSelected(row0, dataGrid := 0) {
+; WinForms DataGridView: cheap property checks first; grid SelectionPattern only when available.
+ClipAngel_UiaRow0IsSelected(row0, dataGrid := 0, gridHasSelectionPattern := false) {
     if row0 {
         try {
             if row0.GetPropertyValue(UIA.Property.SelectionItemIsSelected)
                 return true
         } catch {
         }
-        try {
-            if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                if row0.SelectionItemPattern.IsSelected
-                    return true
-        } catch {
-        }
         if ClipAngel_UiaRowLegacySelected(row0)
             return true
     }
-    if ClipAngel_UiaGridSelectionIncludesRow0(dataGrid)
+    if gridHasSelectionPattern && dataGrid && ClipAngel_UiaGridSelectionIncludesRow0(dataGrid)
         return true
     return false
-}
-
-ClipAngel_UiaRow0SelectionVerified(hwnd, row0 := 0, dataGrid := 0, hasSel := false) {
-    if !dataGrid && hwnd
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
-    return ClipAngel_UiaRow0IsSelected(row0, dataGrid)
 }
 
 ClipAngel_UiaTryLegacySelectRow(row) {
@@ -4311,47 +4288,8 @@ ClipAngel_UiaTryLegacySelectRow(row) {
     }
 }
 
-ClipAngel_UiaProbeRow0Focus(hwnd, dataGrid, row0) {
-    gridFocused := previewFocused := rowFocused := hasLegacy := hasSelProp := -1
-    legacyState := selItemProp := -1
-    try gridFocused := dataGrid.HasKeyboardFocus ? 1 : 0
-    catch {
-    }
-    if hwnd {
-        el := UIA.ElementFromHandle(hwnd)
-        if el {
-            preview := ClipAngel_UiaFindFirst(el, { AutomationId: "richTextBox" })
-            try previewFocused := preview && preview.HasKeyboardFocus ? 1 : 0
-            catch {
-            }
-        }
-    }
-    if row0 {
-        try rowFocused := row0.HasKeyboardFocus ? 1 : 0
-        catch {
-        }
-        try hasLegacy := row0.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable) ? 1 : 0
-        catch {
-        }
-        try hasSelProp := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) ? 1 : 0
-        catch {
-        }
-        try legacyState := row0.GetPropertyValue(UIA.Property.LegacyIAccessibleState)
-        catch {
-        }
-        try selItemProp := row0.GetPropertyValue(UIA.Property.SelectionItemIsSelected)
-        catch {
-        }
-    }
-    ; #region agent log
-    ClipAngel_DebugLog("H4", "probe", "focus_state", Format(
-        '"gridFocused":{1},"previewFocused":{2},"rowFocused":{3},"hasLegacy":{4},"hasSelProp":{5},"legacyState":{6},"selItemProp":{7}',
-        gridFocused, previewFocused, rowFocused, hasLegacy, hasSelProp, legacyState, selItemProp))
-    ; #endregion
-}
-
 ; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
-ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd) {
+ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     if !dataGrid
         return false
     try dataGrid.SetFocus()
@@ -4366,28 +4304,34 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd) {
         }
         Sleep CLIPANGEL_UIA_POLL_MS
     }
+    if !hwnd
+        return true
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return true
+    }
+    preview := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
     previewFocused := false
-    if hwnd {
-        el := UIA.ElementFromHandle(hwnd)
-        if el {
-            preview := ClipAngel_UiaFindFirst(el, { AutomationId: "richTextBox" })
-            try previewFocused := preview && preview.HasKeyboardFocus
-            catch {
-            }
-        }
+    try previewFocused := preview && preview.HasKeyboardFocus
+    catch {
     }
     if previewFocused {
         ClipAngel_ReleaseChordModifiersForSend()
         Send "{F10}"
-        Sleep CLIPANGEL_UIA_POLL_MS
-        ; #region agent log
-        ClipAngel_DebugLog("H3", "gridFocus", "f10_sent", '"reason":"previewFocused"')
-        ; #endregion
+        deadline := A_TickCount + 150
+        while (A_TickCount < deadline) {
+            try {
+                if dataGrid.HasKeyboardFocus
+                    return true
+            } catch {
+            }
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
     } else {
         try dataGrid.Click()
         catch {
         }
-        Sleep CLIPANGEL_UIA_POLL_MS
         try dataGrid.SetFocus()
         catch {
         }
@@ -4395,161 +4339,82 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd) {
     return true
 }
 
-ClipAngel_UiaFocusGridList(dataGrid, hwnd := 0) {
-    return ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
-}
-
-ClipAngel_UiaSelectRowWithoutSelectionPattern(row, dataGrid, hwnd) {
-    method := "none"
-    if !row
-        return { ok: false, method: method }
-    try {
-        if row.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
-            row.ScrollItemPattern.ScrollIntoView()
-    } catch {
-    }
-    ClipAngel_UiaProbeRow0Focus(hwnd, dataGrid, row)
-    if ClipAngel_UiaTryLegacySelectRow(row) {
-        method := "legacySelect"
-        deadline := A_TickCount + 300
-        while (A_TickCount < deadline) {
-            if ClipAngel_UiaRow0IsSelected(row, dataGrid)
-                return { ok: true, method: method }
-            Sleep CLIPANGEL_UIA_POLL_MS
-        }
-    }
-    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
-    ClipAngel_ReleaseChordModifiersForSend()
-    Send "^{Home}"
-    method := "ctrlHome"
-    deadline := A_TickCount + 400
-    while (A_TickCount < deadline) {
-        if ClipAngel_UiaRow0IsSelected(row, dataGrid)
-            return { ok: true, method: method }
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    ClipAngel_ReleaseChordModifiersForSend()
-    Send "{Home}"
-    method := "homeKey"
-    deadline := A_TickCount + 400
-    while (A_TickCount < deadline) {
-        if ClipAngel_UiaRow0IsSelected(row, dataGrid)
-            return { ok: true, method: method }
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    rn := ""
-    try rn := row.Name
-    catch {
-        rn := ""
-    }
-    titleCell := ClipAngel_UiaFindFirst(row, { Type: 50006, Name: "Title " rn })
-    if !titleCell && rn != "Row 0"
-        titleCell := ClipAngel_UiaFindFirst(row, { Type: 50006, Name: "Title Row 0" })
-    if titleCell {
-        try {
-            if titleCell.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
-                titleCell.LegacyIAccessiblePattern.Select(3)
-            else
-                titleCell.Click()
-            method := "titleSelect"
-            Sleep CLIPANGEL_UIA_POLL_MS
-            if ClipAngel_UiaRow0IsSelected(row, dataGrid)
-                return { ok: true, method: method }
-        } catch {
-        }
-    }
-    try {
-        row.SetFocus()
-        method := "rowFocus"
-        Sleep CLIPANGEL_UIA_POLL_MS
-        if ClipAngel_UiaRow0IsSelected(row, dataGrid)
-            return { ok: true, method: method }
-    } catch {
-    }
-    selItem := legacyState := -1
-    try selItem := row.GetPropertyValue(UIA.Property.SelectionItemIsSelected)
-    catch {
-    }
-    try legacyState := row.GetPropertyValue(UIA.Property.LegacyIAccessibleState)
-    catch {
-    }
-    ; #region agent log
-    ClipAngel_DebugLog("H2", "selectRow", "failed", Format(
-        '"method":"{1}","selItem":{2},"legacyState":{3},"status":"{4}"', method, selItem, legacyState,
-        ClipAngel_UiaStatusFirstText(hwnd)))
-    ; #endregion
-    return { ok: false, method: method }
-}
-
-; First list row (Row 0 / rows[1]). force=true always re-select (Alt+V open path).
+; First list row (Row 0 / rows[1]). force=false skips work when Row 0 is already selected.
 ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
     if !hwnd
         return false
     listInvoked := false
     try {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if !dataGrid {
-            listInvoked := ClipAngel_EnsureListView(hwnd)
-            dataGrid := ClipAngel_WaitForDataGrid(hwnd)
+            listInvoked := ClipAngel_EnsureListView(hwnd, root)
+            dataGrid := ClipAngel_WaitForDataGrid(hwnd, CLIPANGEL_GRID_WAIT_MS, root)
             if !dataGrid
                 return false
         }
         row0 := ClipAngel_UiaResolveRow0(dataGrid)
         if !row0 && !listInvoked {
-            ClipAngel_EnsureListView(hwnd)
-            dataGrid := ClipAngel_WaitForDataGrid(hwnd)
+            ClipAngel_EnsureListView(hwnd, root)
+            dataGrid := ClipAngel_WaitForDataGrid(hwnd, CLIPANGEL_GRID_WAIT_MS, root)
             if dataGrid
                 row0 := ClipAngel_UiaResolveRow0(dataGrid)
         }
         if !row0
             return false
-        ClipAngel_UiaProbeRow0Focus(hwnd, dataGrid, row0)
-        try dataGrid.SetFocus()
-        catch {
-        }
-        if !force && ClipAngel_UiaRow0IsSelected(row0, dataGrid)
+        gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
+        if !force && ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
             return true
-        isSelAfter := false
-        if ClipAngel_UiaTryLegacySelectRow(row0) {
-            deadline := A_TickCount + 300
-            while (A_TickCount < deadline) {
-                if ClipAngel_UiaRow0IsSelected(row0, dataGrid) {
-                    isSelAfter := true
-                    break
-                }
-                Sleep CLIPANGEL_UIA_POLL_MS
-            }
+        try {
+            if row0.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+                row0.ScrollItemPattern.ScrollIntoView()
+        } catch {
         }
-        hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-        if !isSelAfter && hasSel {
-            try row0.SelectionItemPattern.Select()
-            catch {
-                try row0.SetFocus()
-            }
+        if ClipAngel_UiaTryLegacySelectRow(row0) && ClipAngel_UiaWaitRow0Selected(row0, dataGrid,
+            CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        try {
+            if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                row0.SelectionItemPattern.Select()
+        } catch {
+            try row0.SetFocus()
+        }
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "^{Home}"
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Home}"
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        rn := ""
+        try rn := row0.Name
+        catch {
+            rn := ""
+        }
+        titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title " rn })
+        if !titleCell && rn != "Row 0"
+            titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+        if titleCell {
             try {
-                if row0.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
-                    row0.ScrollItemPattern.ScrollIntoView()
+                if titleCell.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
+                    titleCell.LegacyIAccessiblePattern.Select(3)
+                else
+                    titleCell.Click()
+                if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                    return true
             } catch {
             }
-            deadline := A_TickCount + 250
-            while (A_TickCount < deadline) {
-                if ClipAngel_UiaRow0IsSelected(row0, dataGrid) {
-                    isSelAfter := true
-                    break
-                }
-                Sleep CLIPANGEL_UIA_POLL_MS
-            }
         }
-        if !isSelAfter {
-            fb := ClipAngel_UiaSelectRowWithoutSelectionPattern(row0, dataGrid, hwnd)
-            isSelAfter := fb.ok
-            ; #region agent log
-            ClipAngel_DebugLog("H2", "UiaEnsureRow0", "select_done", Format(
-                '"force":{1},"isSelAfter":{2},"method":"{3}","status":"{4}"',
-                force ? 1 : 0, isSelAfter ? 1 : 0, fb.method, ClipAngel_UiaStatusFirstText(hwnd)))
-            ; #endregion
+        try row0.SetFocus()
+        catch {
         }
-        return isSelAfter
+        return ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
     } catch {
         return false
     }
