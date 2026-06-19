@@ -14170,12 +14170,14 @@ global CONTEXT_PREVIEW_MAX_SIZE := 234  ; 180 * 1.3
 global g_ContextBrowserLastDir := ""
 global g_ContextBrowserPreviewHbm := 0
 global g_ContextBrowserFilterQuery := ""
+global g_ContextBrowserBreadcrumbLink := false
+global g_ContextBrowserBreadcrumbSegments := []
 
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserLetterHook
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserLetterHook
     global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
-    global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery
+    global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery, g_ContextBrowserBreadcrumbSegments
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14188,8 +14190,10 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserEntries := []
     if !IsSet(g_ContextBrowserListView)
         g_ContextBrowserListView := false
-    if !IsSet(g_ContextBrowserPathCtrl)
-        g_ContextBrowserPathCtrl := false
+    if !IsSet(g_ContextBrowserBreadcrumbLink)
+        g_ContextBrowserBreadcrumbLink := false
+    if !IsSet(g_ContextBrowserBreadcrumbSegments)
+        g_ContextBrowserBreadcrumbSegments := []
     if !IsSet(g_ContextBrowserPreviewCtrl)
         g_ContextBrowserPreviewCtrl := false
     if !IsSet(g_ContextBrowserPreviewText)
@@ -14477,6 +14481,94 @@ Context_GetRelativeSubtitle(dir) {
     return rootNorm "  »  " StrReplace(rel, "\", " » ")
 }
 
+ContextBrowser_GetBreadcrumbSegments(dir) {
+    root := RTrim(Context_GetRoot(), "\")
+    dirNorm := RTrim(dir, "\")
+    segments := [{ label: "context", path: root }]
+    if (StrLower(dirNorm) = StrLower(root))
+        return segments
+    rel := SubStr(dirNorm, StrLen(root) + 2)
+    built := root
+    for part in StrSplit(rel, "\") {
+        if (part = "")
+            continue
+        built .= "\" part
+        segments.Push({ label: part, path: built })
+    }
+    return segments
+}
+
+ContextBrowser_EscapeLinkLabel(label) {
+    return StrReplace(label, "&", "&&")
+}
+
+ContextBrowser_OnBreadcrumbLinkClick(ctrl, id, href, *) {
+    global g_ContextBrowserBreadcrumbSegments
+    idx := Integer(id)
+    if (idx < 1 || idx > g_ContextBrowserBreadcrumbSegments.Length)
+        return
+    ContextBrowser_BreadcrumbNavigate(g_ContextBrowserBreadcrumbSegments[idx].path)
+}
+
+; #region agent log
+ContextBrowser_DebugLog(location, message, hypothesisId := "", extra := "") {
+    try {
+        ts := A_TickCount
+        safeMsg := StrReplace(message, "\", "\\")
+        safeMsg := StrReplace(safeMsg, '"', "'")
+        safeExtra := StrReplace(extra, "\", "\\")
+        safeExtra := StrReplace(safeExtra, '"', "'")
+        FileAppend('{"sessionId":"6cac3a","timestamp":' ts ',"location":"' location '","message":"' safeMsg
+            '","hypothesisId":"' hypothesisId '","data":"' safeExtra '"}' "`n", A_ScriptDir "\debug-6cac3a.log")
+    } catch {
+    }
+}
+; #endregion
+
+ContextBrowser_BreadcrumbNavigate(targetDir, *) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserActive, g_ContextBrowserCurrentDir
+    ; #region agent log
+    ContextBrowser_DebugLog("BreadcrumbNavigate", "click handler fired", "H2",
+        "active=" g_ContextBrowserActive " dir=" targetDir " exists=" DirExist(targetDir))
+    ; #endregion
+    if (!g_ContextBrowserActive || targetDir = "" || !DirExist(targetDir))
+        return
+    g_ContextBrowserCurrentDir := targetDir
+    ContextBrowser_RefreshView()
+}
+
+ContextBrowser_UpdateBreadcrumbs(dir) {
+    global g_ContextBrowserBreadcrumbLink, g_ContextBrowserBreadcrumbSegments
+    if (!IsObject(g_ContextBrowserBreadcrumbLink)) {
+        ; #region agent log
+        ContextBrowser_DebugLog("UpdateBreadcrumbs", "early return - missing link", "H3",
+            "link=" IsObject(g_ContextBrowserBreadcrumbLink))
+        ; #endregion
+        return
+    }
+    g_ContextBrowserBreadcrumbSegments := ContextBrowser_GetBreadcrumbSegments(dir)
+    segments := g_ContextBrowserBreadcrumbSegments
+    linkText := ""
+    linkCount := 0
+    for i, seg in segments {
+        if (i > 1)
+            linkText .= " » "
+        label := ContextBrowser_EscapeLinkLabel(seg.label)
+        if (i = segments.Length) {
+            linkText .= label
+        } else {
+            linkText .= Format("<a id=`"{1}`">{2}</a>", i, label)
+            linkCount++
+        }
+    }
+    g_ContextBrowserBreadcrumbLink.Text := linkText
+    ; #region agent log
+    ContextBrowser_DebugLog("UpdateBreadcrumbs", "updated", "H4",
+        "segments=" segments.Length " links=" linkCount " dir=" dir)
+    ; #endregion
+}
+
 ContextBrowser_FormatEntryLabel(entry) {
     if (entry.type = "folder")
         return entry.name
@@ -14739,7 +14831,7 @@ ContextBrowser_OnFilterChange(*) {
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserPreviewCtrl
     global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserLastDir
 
     if (g_ContextBrowserCurrentDir != "" && DirExist(g_ContextBrowserCurrentDir))
@@ -14749,18 +14841,17 @@ CleanupContextBrowser() {
     ContextBrowser_StopLetterJump()
     ContextBrowser_DisableHotkeys()
     ContextBrowser_ReleasePreviewBitmap()
+    if (IsObject(g_ContextBrowserGui)) {
+        try g_ContextBrowserGui.Destroy()
+        g_ContextBrowserGui := false
+    }
     g_ContextBrowserEntries := []
     g_ContextBrowserListView := false
-    g_ContextBrowserPathCtrl := false
+    g_ContextBrowserBreadcrumbLink := false
+    g_ContextBrowserBreadcrumbSegments := []
     g_ContextBrowserPreviewCtrl := false
     g_ContextBrowserPreviewText := false
     g_ContextBrowserFilterCtrl := false
-    if (IsObject(g_ContextBrowserGui)) {
-        try g_ContextBrowserGui.Destroy()
-        catch {
-        }
-        g_ContextBrowserGui := false
-    }
 }
 
 HandleContextBrowserEscape(*) {
@@ -14854,7 +14945,7 @@ ContextBrowser_OnEnter(*) {
 
 ContextBrowser_RefreshView() {
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir, g_ContextBrowserEntries
-    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserFilterCtrl
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserFilterCtrl
     global g_ContextBrowserFilterQuery
 
     dir := g_ContextBrowserCurrentDir
@@ -14868,8 +14959,7 @@ ContextBrowser_RefreshView() {
     if (IsObject(g_ContextBrowserFilterCtrl))
         g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
     g_ContextBrowserEntries := ContextBrowser_ApplyNameFilter(ContextBrowser_BuildViewEntries(dir))
-    if (IsObject(g_ContextBrowserPathCtrl))
-        g_ContextBrowserPathCtrl.Value := Context_GetRelativeSubtitle(dir)
+    ContextBrowser_UpdateBreadcrumbs(dir)
 
     if (!IsObject(g_ContextBrowserListView))
         return
@@ -14894,12 +14984,13 @@ ContextBrowser_RefreshView() {
 }
 
 ContextBrowser_CreateGui() {
-    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserPreviewCtrl
     global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
 
     g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize620x340", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
-    g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w740", "")
+    g_ContextBrowserBreadcrumbLink := g_ContextBrowserGui.Add("Link", "xm w740 h22", "context")
+    g_ContextBrowserBreadcrumbLink.OnEvent("Click", ContextBrowser_OnBreadcrumbLinkClick)
     g_ContextBrowserFilterCtrl := g_ContextBrowserGui.Add("Edit", "xm w740", "")
     g_ContextBrowserFilterCtrl.OnEvent("Change", ContextBrowser_OnFilterChange)
     g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h360 Grid -Multi", ["Kind", "Name"])
@@ -14909,7 +15000,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
-    g_ContextBrowserGui.Add("Text", "xm", "filter · ↑↓ · letter jump · Enter attach · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter · ↑↓ · letter jump · Enter attach · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
@@ -14955,7 +15046,11 @@ ContextBrowser_OpenAtCurrentDir() {
         return
     }
 
-    if (!IsObject(g_ContextBrowserGui)) {
+    if (!IsObject(g_ContextBrowserGui) || !IsObject(g_ContextBrowserBreadcrumbLink)) {
+        if IsObject(g_ContextBrowserGui) {
+            try g_ContextBrowserGui.Destroy()
+            g_ContextBrowserGui := false
+        }
         ContextBrowser_CreateGui()
         ContextBrowser_ShowGui()
     }
