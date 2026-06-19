@@ -14167,11 +14167,15 @@ ModalListLetterJump_Start(&hookRef, isActiveFn, getEntriesFn, getNameFn, onMatch
 ; Context file browser — browse context/ and paste full local paths (Win+Alt+Shift+N)
 ; =============================================================================
 global CONTEXT_PREVIEW_MAX_SIZE := 234  ; 180 * 1.3
+global g_ContextBrowserLastDir := ""
+global g_ContextBrowserPreviewHbm := 0
+global g_ContextBrowserFilterQuery := ""
 
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserLetterHook
-    global g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
+    global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14188,6 +14192,16 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserPathCtrl := false
     if !IsSet(g_ContextBrowserPreviewCtrl)
         g_ContextBrowserPreviewCtrl := false
+    if !IsSet(g_ContextBrowserPreviewText)
+        g_ContextBrowserPreviewText := false
+    if !IsSet(g_ContextBrowserFilterCtrl)
+        g_ContextBrowserFilterCtrl := false
+    if !IsSet(g_ContextBrowserLastDir)
+        g_ContextBrowserLastDir := ""
+    if !IsSet(g_ContextBrowserPreviewHbm)
+        g_ContextBrowserPreviewHbm := 0
+    if !IsSet(g_ContextBrowserFilterQuery)
+        g_ContextBrowserFilterQuery := ""
     if !IsSet(g_ContextBrowserLetterHook)
         g_ContextBrowserLetterHook := ""
 }
@@ -14280,6 +14294,21 @@ Context_IsAbsoluteFilePath(line) {
     return (line != "" && RegExMatch(line, "^[A-Za-z]:\\"))
 }
 
+Context_ResolveReferenceLine(refPath, line) {
+    line := Trim(line)
+    if (line = "")
+        return ""
+    if Context_IsAbsoluteFilePath(line)
+        return Context_IsExistingFile(line) ? line : ""
+    SplitPath refPath, , &refDir
+    root := Context_GetRoot()
+    for candidate in [refDir "\" line, root "\" line] {
+        if Context_IsExistingFile(candidate)
+            return candidate
+    }
+    return ""
+}
+
 Context_ProbeReference(path) {
     result := { isRef: false, targetPath: "", targetBasename: "" }
     if !Context_IsExistingFile(path)
@@ -14300,12 +14329,11 @@ Context_ProbeReference(path) {
         return result
     }
     line := Context_ReadFirstNonemptyLine(path)
-    if !Context_IsAbsoluteFilePath(line)
-        return result
-    if Context_IsExistingFile(line) {
+    resolved := Context_ResolveReferenceLine(path, line)
+    if (resolved != "") {
         result.isRef := true
-        result.targetPath := line
-        SplitPath line, &base
+        result.targetPath := resolved
+        SplitPath resolved, &base
         result.targetBasename := base
     }
     return result
@@ -14327,11 +14355,9 @@ Context_ResolvePastePath(path) {
         return ""
     }
     line := Context_ReadFirstNonemptyLine(path)
-    if Context_IsAbsoluteFilePath(line) {
-        if Context_IsExistingFile(line)
-            return line
-        return ""
-    }
+    resolved := Context_ResolveReferenceLine(path, line)
+    if (resolved != "")
+        return resolved
     return path
 }
 
@@ -14356,6 +14382,8 @@ Context_ListDirEntries(dir) {
     try {
         loop files, dir "\*", "D" {
             if (A_LoopFileAttrib ~= "[HS]")
+                continue
+            if (StrLower(A_LoopFileName) = "minimized")
                 continue
             folders.Push(A_LoopFileName)
         }
@@ -14385,6 +14413,60 @@ ContextBrowser_BuildViewEntries(dir) {
     return entries
 }
 
+ContextBrowser_ApplyNameFilter(entries) {
+    global g_ContextBrowserFilterQuery
+    q := Trim(g_ContextBrowserFilterQuery)
+    if (q = "")
+        return entries
+    qLower := StrLower(q)
+    filtered := []
+    for entry in entries {
+        if (entry.type = "parent") {
+            filtered.Push(entry)
+            continue
+        }
+        if InStr(StrLower(entry.name), qLower)
+            filtered.Push(entry)
+    }
+    return filtered
+}
+
+ContextBrowser_FindLinkedResearchJson(imagePath) {
+    root := RTrim(Context_GetRoot(), "\")
+    pathNorm := RTrim(imagePath, "\")
+    if (StrLen(pathNorm) <= StrLen(root) + 1)
+        return ""
+    if (StrLower(SubStr(pathNorm, 1, StrLen(root))) != StrLower(root))
+        return ""
+    rel := SubStr(pathNorm, StrLen(root) + 2)
+    if !InStr(StrLower(rel), "image-references\")
+        return ""
+    relJson := StrReplace(rel, "image-references\", "research\", false)
+    SplitPath relJson, , &dir, &nameNoExt, &ext
+    if (ext != "")
+        relJson := dir "\" nameNoExt ".json"
+    candidate := root "\" relJson
+    return Context_IsExistingFile(candidate) ? candidate : ""
+}
+
+ContextBrowser_GetJsonPreviewText(path) {
+    SplitPath path, , , &ext
+    if (StrLower(ext) != "json")
+        return ""
+    try content := FileRead(path)
+    catch
+        return ""
+    if RegExMatch(content, '"_meta"\s*:\s*\{[^}]*"topic"\s*:\s*"([^"]+)"', &m)
+        return m[1]
+    if RegExMatch(content, '"metadata"\s*:\s*\{[^}]*"file_name"\s*:\s*"([^"]+)"', &m)
+        return m[1]
+    flat := RegExReplace(content, "\s+", " ")
+    flat := Trim(flat)
+    if (flat = "")
+        return ""
+    return SubStr(flat, 1, 280) . (StrLen(flat) > 280 ? "…" : "")
+}
+
 Context_GetRelativeSubtitle(dir) {
     root := Context_GetRoot()
     rootNorm := RTrim(root, "\")
@@ -14401,6 +14483,13 @@ ContextBrowser_FormatEntryLabel(entry) {
     probe := Context_ProbeReference(entry.path)
     if (probe.isRef && probe.targetBasename != "")
         return entry.name "  →  " probe.targetBasename
+    if (entry.type = "file" && Context_IsImagePath(entry.path)) {
+        linked := ContextBrowser_FindLinkedResearchJson(entry.path)
+        if (linked != "") {
+            SplitPath linked, &base
+            return entry.name "  ⇄  " base
+        }
+    }
     return entry.name
 }
 
@@ -14411,46 +14500,85 @@ ContextBrowser_EntryKindLabel(entry) {
         return "Folder"
     if (ContextBrowser_GetPreviewImagePath(entry) != "")
         return "Image"
+    if (entry.type = "file") {
+        SplitPath entry.path, , , &ext
+        if (StrLower(ext) = "json")
+            return "JSON"
+    }
     return "File"
+}
+
+ContextBrowser_ReleasePreviewBitmap() {
+    global g_ContextBrowserPreviewHbm
+    if (g_ContextBrowserPreviewHbm) {
+        try DllCall("DeleteObject", "ptr", g_ContextBrowserPreviewHbm)
+        g_ContextBrowserPreviewHbm := 0
+    }
+}
+
+ContextBrowser_ClearTextPreview() {
+    global g_ContextBrowserPreviewText
+    if (!IsObject(g_ContextBrowserPreviewText))
+        return
+    try g_ContextBrowserPreviewText.Value := ""
+    g_ContextBrowserPreviewText.Opt("+Hidden")
 }
 
 ContextBrowser_ClearPreview() {
     global g_ContextBrowserPreviewCtrl
+    ContextBrowser_ReleasePreviewBitmap()
     if (!IsObject(g_ContextBrowserPreviewCtrl))
         return
     try g_ContextBrowserPreviewCtrl.Value := ""
     g_ContextBrowserPreviewCtrl.Opt("+Hidden")
 }
 
+ContextBrowser_ClearAllPreviews() {
+    ContextBrowser_ClearPreview()
+    ContextBrowser_ClearTextPreview()
+}
+
 ContextBrowser_UpdatePreview(rowNum) {
     ContextBrowser_EnsureGlobals()
-    global g_ContextBrowserEntries, g_ContextBrowserPreviewCtrl, CONTEXT_PREVIEW_MAX_SIZE
+    global g_ContextBrowserEntries, g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, CONTEXT_PREVIEW_MAX_SIZE
+    global g_ContextBrowserPreviewHbm
     if (!IsObject(g_ContextBrowserPreviewCtrl))
         return
     if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length) {
-        ContextBrowser_ClearPreview()
+        ContextBrowser_ClearAllPreviews()
         return
     }
-    imagePath := ContextBrowser_GetPreviewImagePath(g_ContextBrowserEntries[rowNum])
-    if (imagePath = "") {
-        ContextBrowser_ClearPreview()
+    entry := g_ContextBrowserEntries[rowNum]
+    imagePath := ContextBrowser_GetPreviewImagePath(entry)
+    if (imagePath != "") {
+        ContextBrowser_ClearTextPreview()
+        fitW := 0
+        fitH := 0
+        if !ContextBrowser_GetFitImageSize(imagePath, CONTEXT_PREVIEW_MAX_SIZE, CONTEXT_PREVIEW_MAX_SIZE, &fitW, &fitH) {
+            ContextBrowser_ClearPreview()
+            return
+        }
+        try {
+            ContextBrowser_ReleasePreviewBitmap()
+            scaledHbm := LoadPicture(imagePath, "w" fitW " h" fitH)
+            g_ContextBrowserPreviewHbm := scaledHbm
+            g_ContextBrowserPreviewCtrl.Move(, , fitW, fitH)
+            g_ContextBrowserPreviewCtrl.Value := "HBITMAP:*" scaledHbm
+        } catch {
+            ContextBrowser_ClearPreview()
+            return
+        }
+        g_ContextBrowserPreviewCtrl.Opt("-Hidden")
         return
     }
-    fitW := 0
-    fitH := 0
-    if !ContextBrowser_GetFitImageSize(imagePath, CONTEXT_PREVIEW_MAX_SIZE, CONTEXT_PREVIEW_MAX_SIZE, &fitW, &fitH) {
-        ContextBrowser_ClearPreview()
-        return
+    ContextBrowser_ClearPreview()
+    jsonText := (entry.type = "file") ? ContextBrowser_GetJsonPreviewText(entry.path) : ""
+    if (jsonText != "" && IsObject(g_ContextBrowserPreviewText)) {
+        g_ContextBrowserPreviewText.Value := jsonText
+        g_ContextBrowserPreviewText.Opt("-Hidden")
+    } else {
+        ContextBrowser_ClearTextPreview()
     }
-    try {
-        scaledHbm := LoadPicture(imagePath, "w" fitW " h" fitH)
-        g_ContextBrowserPreviewCtrl.Move(, , fitW, fitH)
-        g_ContextBrowserPreviewCtrl.Value := "HBITMAP:*" scaledHbm
-    } catch {
-        ContextBrowser_ClearPreview()
-        return
-    }
-    g_ContextBrowserPreviewCtrl.Opt("-Hidden")
 }
 
 ContextBrowser_GetActiveMonitorWorkArea(&left, &top, &right, &bottom) {
@@ -14519,22 +14647,114 @@ ContextBrowser_StopLetterJump() {
     ModalListLetterJump_Stop(&g_ContextBrowserLetterHook)
 }
 
+ContextBrowser_DisableHotkeys() {
+    try Hotkey("Backspace", "Off")
+    try Hotkey("Enter", "Off")
+    try Hotkey("^Enter", "Off")
+    try Hotkey("^c", "Off")
+    try Hotkey("^+e", "Off")
+}
+
+ContextBrowser_GetFocusedEntry() {
+    global g_ContextBrowserActive, g_ContextBrowserListView, g_ContextBrowserEntries
+    if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserListView))
+        return false
+    rowNum := g_ContextBrowserListView.GetNext(0, "F")
+    if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length)
+        return false
+    return { rowNum: rowNum, entry: g_ContextBrowserEntries[rowNum] }
+}
+
+ContextBrowser_ResolveEntryPath(entry) {
+    if (!IsObject(entry))
+        return ""
+    if (entry.type = "parent") {
+        global g_ContextBrowserCurrentDir
+        SplitPath g_ContextBrowserCurrentDir, , &parentDir
+        return parentDir
+    }
+    if (entry.type = "folder")
+        return entry.path
+    pastePath := Context_ResolvePastePath(entry.path)
+    return pastePath != "" ? pastePath : entry.path
+}
+
+ContextBrowser_CopyFocusedPath(*) {
+    ContextBrowser_EnsureGlobals()
+    focused := ContextBrowser_GetFocusedEntry()
+    if (!IsObject(focused))
+        return
+    path := ContextBrowser_ResolveEntryPath(focused.entry)
+    if (path = "")
+        return
+    A_Clipboard := path
+}
+
+ContextBrowser_OpenFocusedInExplorer(*) {
+    ContextBrowser_EnsureGlobals()
+    focused := ContextBrowser_GetFocusedEntry()
+    if (!IsObject(focused))
+        return
+    entry := focused.entry
+    if (entry.type = "parent") {
+        path := ContextBrowser_ResolveEntryPath(entry)
+        if (path != "" && DirExist(path))
+            Run 'explorer.exe "' path '"'
+        return
+    }
+    if (entry.type = "folder") {
+        if DirExist(entry.path)
+            Run 'explorer.exe "' entry.path '"'
+        return
+    }
+    path := ContextBrowser_ResolveEntryPath(entry)
+    if (path != "" && FileExist(path))
+        Run 'explorer.exe /select,"' path '"'
+}
+
+ContextBrowser_PasteFocusedPathAsText(*) {
+    ContextBrowser_EnsureGlobals()
+    focused := ContextBrowser_GetFocusedEntry()
+    if (!IsObject(focused) || focused.entry.type != "file")
+        return
+    pastePath := Context_ResolvePastePath(focused.entry.path)
+    if (pastePath = "") {
+        ShowCenteredOverlay_Utils("❌ Reference target not found for: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    CleanupContextBrowser()
+    Sleep 50
+    InsertText(pastePath)
+}
+
+ContextBrowser_OnFilterChange(*) {
+    ContextBrowser_EnsureGlobals()
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserFilterQuery, g_ContextBrowserActive
+    if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserFilterCtrl))
+        return
+    g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
+    ContextBrowser_RefreshView()
+}
+
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserLastDir
+
+    if (g_ContextBrowserCurrentDir != "" && DirExist(g_ContextBrowserCurrentDir))
+        g_ContextBrowserLastDir := g_ContextBrowserCurrentDir
 
     g_ContextBrowserActive := false
     ContextBrowser_StopLetterJump()
-    try Hotkey("Backspace", "Off")
-    try Hotkey("Enter", "Off")
-    catch {
-    }
+    ContextBrowser_DisableHotkeys()
+    ContextBrowser_ReleasePreviewBitmap()
     g_ContextBrowserEntries := []
-    g_ContextBrowserCurrentDir := ""
     g_ContextBrowserListView := false
     g_ContextBrowserPathCtrl := false
     g_ContextBrowserPreviewCtrl := false
+    g_ContextBrowserPreviewText := false
+    g_ContextBrowserFilterCtrl := false
     if (IsObject(g_ContextBrowserGui)) {
         try g_ContextBrowserGui.Destroy()
         catch {
@@ -14634,7 +14854,8 @@ ContextBrowser_OnEnter(*) {
 
 ContextBrowser_RefreshView() {
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir, g_ContextBrowserEntries
-    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl
+    global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserFilterCtrl
+    global g_ContextBrowserFilterQuery
 
     dir := g_ContextBrowserCurrentDir
     if (dir = "" || !DirExist(dir)) {
@@ -14644,7 +14865,9 @@ ContextBrowser_RefreshView() {
         return
     }
 
-    g_ContextBrowserEntries := ContextBrowser_BuildViewEntries(dir)
+    if (IsObject(g_ContextBrowserFilterCtrl))
+        g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
+    g_ContextBrowserEntries := ContextBrowser_ApplyNameFilter(ContextBrowser_BuildViewEntries(dir))
     if (IsObject(g_ContextBrowserPathCtrl))
         g_ContextBrowserPathCtrl.Value := Context_GetRelativeSubtitle(dir)
 
@@ -14672,40 +14895,47 @@ ContextBrowser_RefreshView() {
 
 ContextBrowser_CreateGui() {
     global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserPathCtrl, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
 
-    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize620x320", "Context")
+    g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize620x340", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
     g_ContextBrowserPathCtrl := g_ContextBrowserGui.Add("Text", "xm w740", "")
-    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h380 Grid -Multi", ["Kind", "Name"])
+    g_ContextBrowserFilterCtrl := g_ContextBrowserGui.Add("Edit", "xm w740", "")
+    g_ContextBrowserFilterCtrl.OnEvent("Change", ContextBrowser_OnFilterChange)
+    g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h360 Grid -Multi", ["Kind", "Name"])
     g_ContextBrowserPreviewCtrl := g_ContextBrowserGui.Add("Picture", "x+10 yp BackgroundTrans Hidden")
+    g_ContextBrowserPreviewText := g_ContextBrowserGui.Add("Edit", "x+10 yp w234 h360 ReadOnly -VScroll Multi Hidden")
     g_ContextBrowserListView.ModifyCol(1, 72)
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
-    g_ContextBrowserGui.Add("Text", "xm", "↑↓ move · letter jump · Enter select · Backspace up · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "filter · ↑↓ · letter jump · Enter attach · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
 
 ContextBrowser_ShowGui() {
-    global g_ContextBrowserGui
+    global g_ContextBrowserGui, g_ContextBrowserListView
 
     MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     ContextBrowser_GetActiveMonitorWorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
 
-    g_ContextBrowserGui.Show("w760 h480")
+    g_ContextBrowserGui.Show("w760 h500")
     g_ContextBrowserGui.GetPos(, , &gw, &gh)
     guiX := monitorLeft + (monitorWidth - gw) // 2
     guiY := monitorTop + (monitorHeight - gh) // 2
     margin := 16
     guiX := Max(monitorLeft + margin, Min(guiX, monitorRight - gw - margin))
     guiY := Max(monitorTop + margin, Min(guiY, monitorBottom - gh - margin))
-    g_ContextBrowserGui.Show("x" guiX " y" guiY " w760 h480")
+    g_ContextBrowserGui.Show("x" guiX " y" guiY " w760 h500")
 
     try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
     try Hotkey("Enter", ContextBrowser_OnEnter, "On")
+    try Hotkey("^Enter", ContextBrowser_PasteFocusedPathAsText, "On")
+    try Hotkey("^c", ContextBrowser_CopyFocusedPath, "On")
+    try Hotkey("^+e", ContextBrowser_OpenFocusedInExplorer, "On")
     catch {
     }
     try g_ContextBrowserListView.Focus()
@@ -14735,7 +14965,7 @@ ContextBrowser_OpenAtCurrentDir() {
 
 ShowContextBrowser() {
     ContextBrowser_EnsureGlobals()
-    global g_ContextBrowserActive, g_ContextBrowserCurrentDir
+    global g_ContextBrowserActive, g_ContextBrowserCurrentDir, g_ContextBrowserLastDir
 
     if (g_ContextBrowserActive) {
         CleanupContextBrowser()
@@ -14760,7 +14990,10 @@ ShowContextBrowser() {
         return
     }
 
-    g_ContextBrowserCurrentDir := root
+    if (g_ContextBrowserLastDir != "" && DirExist(g_ContextBrowserLastDir))
+        g_ContextBrowserCurrentDir := g_ContextBrowserLastDir
+    else
+        g_ContextBrowserCurrentDir := root
     ContextBrowser_OpenAtCurrentDir()
 }
 
