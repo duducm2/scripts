@@ -14866,7 +14866,7 @@ ContextBrowser_DisableHotkeys() {
     try Hotkey("^Enter", "Off")
     try Hotkey("+Enter", "Off")
     try Hotkey("^c", "Off")
-    try Hotkey("^+e", "Off")
+    try Hotkey("^h", "Off")
 }
 
 ContextBrowser_EnableHotkeys() {
@@ -14875,7 +14875,7 @@ ContextBrowser_EnableHotkeys() {
     try Hotkey("+Enter", ContextBrowser_PasteFocusedContentAsText, "On")
     try Hotkey("^Enter", ContextBrowser_PasteFocusedPathAsText, "On")
     try Hotkey("^c", ContextBrowser_CopyFocusedPath, "On")
-    try Hotkey("^+e", ContextBrowser_OpenFocusedInExplorer, "On")
+    try Hotkey("^h", ContextBrowser_OpenFocusedInExplorer, "On")
 }
 
 ContextBrowser_SetListNavigationHotkeysEnabled(enabled) {
@@ -14925,24 +14925,33 @@ ContextBrowser_CopyFocusedPath(*) {
 
 ContextBrowser_OpenFocusedInExplorer(*) {
     ContextBrowser_EnsureGlobals()
+    if ContextBrowser_IsFilterFocused()
+        return
     focused := ContextBrowser_GetFocusedEntry()
     if (!IsObject(focused))
         return
     entry := focused.entry
+    explorerCmd := ""
     if (entry.type = "parent") {
         path := ContextBrowser_ResolveEntryPath(entry)
         if (path != "" && DirExist(path))
-            Run 'explorer.exe "' path '"'
-        return
-    }
-    if (entry.type = "folder") {
+            explorerCmd := 'explorer.exe "' path '"'
+    } else if (entry.type = "folder") {
         if DirExist(entry.path)
-            Run 'explorer.exe "' entry.path '"'
-        return
+            explorerCmd := 'explorer.exe "' entry.path '"'
+    } else {
+        path := ContextBrowser_ResolveEntryPath(entry)
+        if (path != "" && FileExist(path))
+            explorerCmd := 'explorer.exe /select,"' path '"'
     }
-    path := ContextBrowser_ResolveEntryPath(entry)
-    if (path != "" && FileExist(path))
-        Run 'explorer.exe /select,"' path '"'
+    if (explorerCmd = "")
+        return
+    StandardLoadingBar_Show("⏳ Opening in Explorer...", BANNER_ACCENT_INTERMEDIATE, { passive: true })
+    try {
+        Run explorerCmd
+    } finally {
+        StandardLoadingBar_Hide(350)
+    }
 }
 
 ContextBrowser_PasteFocusedPathAsText(*) {
@@ -15215,7 +15224,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserGui.SetFont("s8", "Segoe UI")
     g_ContextBrowserEntryPathLabel := g_ContextBrowserGui.Add("Text", "xm w740 h28 +Wrap +Hidden", "")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
-    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+H explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
