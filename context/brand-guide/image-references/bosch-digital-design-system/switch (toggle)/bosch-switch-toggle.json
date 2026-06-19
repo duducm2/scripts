@@ -1,0 +1,90 @@
+{
+  "title": "Switch (toggle)",
+  "description": "A switch enables the activation or deactivation of an assigned function. A switch always needs a unique label of the corresponding function.",
+  "notes": [
+    {
+      "type": "info",
+      "content": "In the front-end kit, the switch is listed under the term 'toggle'."
+    },
+    {
+      "type": "info",
+      "content": "Labeling should describe the function, not the action or state (use 'Bluetooth', not 'Bluetooth on')."
+    },
+    {
+      "type": "info",
+      "content": "Can be used without label if context makes meaning clear."
+    }
+  ],
+  "guidelines": [
+    "Used individually unlike checkboxes or radio buttons.",
+    "Only for activating or deactivating a function.",
+    "Do not use for option selection – use dropdown or radio buttons instead."
+  ],
+  "types": [
+    {
+      "name": "Switch (toggle)",
+      "description": "Standard toggle switch component"
+    }
+  ],
+  "dimensions": {
+    "outer": {
+      "size": "3rem x 1.5rem",
+      "margin_right": "0.5rem"
+    },
+    "thumb": {
+      "size": "0.75rem"
+    },
+    "label": {
+      "size": "text M",
+      "margin_left": "0.5rem"
+    },
+    "spacing_between_switches": "0.75rem"
+  },
+  "states": [
+    {
+      "name": "normal",
+      "variants": [
+        "active",
+        "inactive"
+      ]
+    },
+    {
+      "name": "hovered",
+      "variants": [
+        "active",
+        "inactive"
+      ]
+    },
+    {
+      "name": "pressed",
+      "variants": [
+        "active",
+        "inactive"
+      ]
+    },
+    {
+      "name": "disabled",
+      "variants": [
+        "active_disabled",
+        "inactive_disabled"
+      ]
+    }
+  ],
+  "colors": {
+    "inactive": "base major",
+    "active": "accent major",
+    "label": "plain pure"
+  },
+  "usage": {
+    "do": "Use with clear functional label",
+    "dont": "Do not use for selecting options"
+  },
+  "links": {
+    "frontend_kit": "https://frok.ui.bosch.tech/atoms/toggle/guide",
+    "color_picker": "https://dds-color-picker.ui.bosch.tech/"
+  },
+  "support": {
+    "email": "support.design@bosch.com",
+    "note": "Feature requests via Jira to digital expert team"
+  }
+}

@@ -14145,6 +14145,11 @@ ModalListLetterJump_CreateHandler(char, isActiveFn, getEntriesFn, getNameFn, onM
 ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
     if (!isActiveFn())
         return
+    ; #region agent log
+    if (IsSet(g_ContextBrowserActive) && g_ContextBrowserActive)
+        ContextBrowser_DebugLog("H1", "ModalListLetterJump_HandleChar", "letter jump fired while context browser open", { char: char
+            , filterFocused: ContextBrowser_IsFilterFocused() })
+    ; #endregion
     rowNum := ModalList_FindFirstByStartingLetter(getEntriesFn(), char, getNameFn)
     if (rowNum > 0)
         onMatchFn(rowNum)
@@ -14170,14 +14175,51 @@ global CONTEXT_PREVIEW_MAX_SIZE := 234  ; 180 * 1.3
 global g_ContextBrowserLastDir := ""
 global g_ContextBrowserPreviewHbm := 0
 global g_ContextBrowserFilterQuery := ""
+global g_ContextBrowserFileIndex := []
 global g_ContextBrowserBreadcrumbLink := false
 global g_ContextBrowserBreadcrumbSegments := []
+
+ContextBrowser_DebugLog(hypothesisId, location, message, data := unset) {
+    try {
+        dataJson := "{}"
+        if (IsSet(data) && IsObject(data)) {
+            dataJson := "{"
+            first := true
+            for k, v in data {
+                if (!first)
+                    dataJson .= ","
+                first := false
+                vEsc := StrReplace(StrReplace(String(v), "\", "\\"), '"', '\"')
+                dataJson .= Format('"{1}":"{2}"', k, vEsc)
+            }
+            dataJson .= "}"
+        }
+        line := Format(
+            '{{"sessionId":"02282e","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{4},"timestamp":{5}}}',
+            hypothesisId, location, message, dataJson, A_TickCount)
+        FileAppend line "`n", A_ScriptDir "\debug-02282e.log", "UTF-8"
+    } catch {
+    }
+}
+
+ContextBrowser_IsFilterFocused() {
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserGui
+    if (!IsObject(g_ContextBrowserFilterCtrl) || !IsObject(g_ContextBrowserGui))
+        return false
+    try {
+        focusedHwnd := ControlGetFocus(, g_ContextBrowserGui)
+    } catch {
+        return false
+    }
+    return (focusedHwnd = g_ContextBrowserFilterCtrl.Hwnd)
+}
 
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserLetterHook
     global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
     global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery, g_ContextBrowserBreadcrumbSegments
+    global g_ContextBrowserFileIndex
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14206,6 +14248,8 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserPreviewHbm := 0
     if !IsSet(g_ContextBrowserFilterQuery)
         g_ContextBrowserFilterQuery := ""
+    if !IsSet(g_ContextBrowserFileIndex)
+        g_ContextBrowserFileIndex := []
     if !IsSet(g_ContextBrowserLetterHook)
         g_ContextBrowserLetterHook := ""
 }
@@ -14428,6 +14472,50 @@ ContextBrowser_BuildViewEntries(dir) {
     return entries
 }
 
+ContextBrowser_BuildFileIndex() {
+    root := RTrim(Context_GetRoot(), "\")
+    relPaths := []
+    pathByRel := Map()
+    try {
+        loop files, root "\**", "R" {
+            if (A_LoopFileAttrib ~= "[HS]")
+                continue
+            fullPath := A_LoopFileFullPath
+            relPath := SubStr(fullPath, StrLen(root) + 2)
+            SplitPath fullPath, &name
+            relPaths.Push(relPath)
+            pathByRel[relPath] := { type: "file", name: name, path: fullPath, relPath: relPath }
+        }
+    } catch {
+    }
+    index := []
+    for relPath in Context_SortNames(relPaths)
+        index.Push(pathByRel[relPath])
+    return index
+}
+
+ContextBrowser_GetFileIndex() {
+    global g_ContextBrowserFileIndex
+    if (!IsObject(g_ContextBrowserFileIndex) || g_ContextBrowserFileIndex.Length = 0)
+        g_ContextBrowserFileIndex := ContextBrowser_BuildFileIndex()
+    return g_ContextBrowserFileIndex
+}
+
+ContextBrowser_SearchFileIndex(index, query) {
+    q := Trim(query)
+    if (q = "")
+        return []
+    qLower := StrLower(q)
+    qPath := StrReplace(qLower, "/", "\")
+    results := []
+    for entry in index {
+        relLower := StrLower(entry.relPath)
+        if InStr(StrLower(entry.name), qLower) || InStr(relLower, qPath)
+            results.Push(entry)
+    }
+    return results
+}
+
 ContextBrowser_ApplyNameFilter(entries) {
     global g_ContextBrowserFilterQuery
     q := Trim(g_ContextBrowserFilterQuery)
@@ -14549,9 +14637,21 @@ ContextBrowser_UpdateBreadcrumbs(dir) {
     g_ContextBrowserBreadcrumbLink.Text := linkText
 }
 
+ContextBrowser_UpdateSearchBreadcrumbs(query, count) {
+    global g_ContextBrowserBreadcrumbLink, g_ContextBrowserBreadcrumbSegments
+    if (!IsObject(g_ContextBrowserBreadcrumbLink))
+        return
+    root := RTrim(Context_GetRoot(), "\")
+    g_ContextBrowserBreadcrumbSegments := [{ label: "context", path: root }]
+    qEsc := ContextBrowser_EscapeLinkLabel(query)
+    g_ContextBrowserBreadcrumbLink.Text := Format("<a id=`"1`">context</a> » search: `"{1}`" ({2})", qEsc, count)
+}
+
 ContextBrowser_FormatEntryLabel(entry) {
     if (entry.type = "folder")
         return entry.name
+    if (entry.HasProp("relPath") && entry.relPath != "")
+        return StrReplace(entry.relPath, "\", " » ")
     probe := Context_ProbeReference(entry.path)
     if (probe.isRef && probe.targetBasename != "")
         return entry.name "  →  " probe.targetBasename
@@ -14728,6 +14828,25 @@ ContextBrowser_DisableHotkeys() {
     try Hotkey("^+e", "Off")
 }
 
+ContextBrowser_EnableHotkeys() {
+    try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
+    try Hotkey("Enter", ContextBrowser_OnEnter, "On")
+    try Hotkey("+Enter", ContextBrowser_PasteFocusedContentAsText, "On")
+    try Hotkey("^Enter", ContextBrowser_PasteFocusedPathAsText, "On")
+    try Hotkey("^c", ContextBrowser_CopyFocusedPath, "On")
+    try Hotkey("^+e", ContextBrowser_OpenFocusedInExplorer, "On")
+}
+
+ContextBrowser_SetListNavigationHotkeysEnabled(enabled) {
+    if (enabled) {
+        ContextBrowser_EnableHotkeys()
+        ContextBrowser_StartLetterJump()
+    } else {
+        ContextBrowser_StopLetterJump()
+        ContextBrowser_DisableHotkeys()
+    }
+}
+
 ContextBrowser_GetFocusedEntry() {
     global g_ContextBrowserActive, g_ContextBrowserListView, g_ContextBrowserEntries
     if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserListView))
@@ -14827,17 +14946,41 @@ ContextBrowser_PasteFocusedContentAsText(*) {
 ContextBrowser_OnFilterChange(*) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserFilterCtrl, g_ContextBrowserFilterQuery, g_ContextBrowserActive
+    ; #region agent log
+    ContextBrowser_DebugLog("H4", "ContextBrowser_OnFilterChange", "filter change event", { active: g_ContextBrowserActive ? "true"
+        : "false", filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "" })
+    ; #endregion
     if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserFilterCtrl))
         return
     g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
     ContextBrowser_RefreshView()
 }
 
+ContextBrowser_OnFilterFocus(*) {
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserActive
+    ; #region agent log
+    ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterFocus", "filter field focused; disabling list hotkeys", {
+        filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "", runId: "post-fix" })
+    ; #endregion
+    if (g_ContextBrowserActive)
+        ContextBrowser_SetListNavigationHotkeysEnabled(false)
+}
+
+ContextBrowser_OnFilterKillFocus(*) {
+    global g_ContextBrowserActive
+    ; #region agent log
+    ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterKillFocus", "filter field unfocused; restoring list hotkeys", {
+        runId: "post-fix" })
+    ; #endregion
+    if (g_ContextBrowserActive)
+        ContextBrowser_SetListNavigationHotkeysEnabled(true)
+}
+
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserPreviewCtrl
-    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserLastDir
+    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserLastDir, g_ContextBrowserFileIndex
 
     if (g_ContextBrowserCurrentDir != "" && DirExist(g_ContextBrowserCurrentDir))
         g_ContextBrowserLastDir := g_ContextBrowserCurrentDir
@@ -14851,6 +14994,7 @@ CleanupContextBrowser() {
         g_ContextBrowserGui := false
     }
     g_ContextBrowserEntries := []
+    g_ContextBrowserFileIndex := []
     g_ContextBrowserListView := false
     g_ContextBrowserBreadcrumbLink := false
     g_ContextBrowserBreadcrumbSegments := []
@@ -14869,7 +15013,13 @@ HandleContextBrowserEscape(*) {
 ContextBrowser_HandleBack() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir
+    ; #region agent log
+    ContextBrowser_DebugLog("H3", "ContextBrowser_HandleBack", "backspace hotkey fired", { filterFocused:
+        ContextBrowser_IsFilterFocused() ? "true" : "false" })
+    ; #endregion
     if (!g_ContextBrowserActive)
+        return
+    if ContextBrowser_IsFilterFocused()
         return
     if Context_IsAtRoot(g_ContextBrowserCurrentDir)
         return
@@ -14942,6 +15092,8 @@ ContextBrowser_OnItemFocus(lv, guiEvent, *) {
 ContextBrowser_OnEnter(*) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserListView
+    if ContextBrowser_IsFilterFocused()
+        return
     if (!IsObject(g_ContextBrowserListView))
         return
     rowNum := g_ContextBrowserListView.GetNext(0, "F")
@@ -14963,8 +15115,14 @@ ContextBrowser_RefreshView() {
 
     if (IsObject(g_ContextBrowserFilterCtrl))
         g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
-    g_ContextBrowserEntries := ContextBrowser_ApplyNameFilter(ContextBrowser_BuildViewEntries(dir))
-    ContextBrowser_UpdateBreadcrumbs(dir)
+    q := Trim(g_ContextBrowserFilterQuery)
+    if (q != "") {
+        g_ContextBrowserEntries := ContextBrowser_SearchFileIndex(ContextBrowser_GetFileIndex(), q)
+        ContextBrowser_UpdateSearchBreadcrumbs(q, g_ContextBrowserEntries.Length)
+    } else {
+        g_ContextBrowserEntries := ContextBrowser_BuildViewEntries(dir)
+        ContextBrowser_UpdateBreadcrumbs(dir)
+    }
 
     if (!IsObject(g_ContextBrowserListView))
         return
@@ -14977,15 +15135,24 @@ ContextBrowser_RefreshView() {
     lv.Opt("+Redraw")
     if (g_ContextBrowserEntries.Length) {
         lv.Modify(1, "Select Focus Vis")
-        try lv.Focus()
-        catch {
+        filterFocused := ContextBrowser_IsFilterFocused()
+        ; #region agent log
+        ContextBrowser_DebugLog("H2", "ContextBrowser_RefreshView", "refresh list selection", { query: q,
+            filterFocused: filterFocused ? "true" : "false", entryCount: g_ContextBrowserEntries.Length, runId:
+            "post-fix" })
+        ; #endregion
+        if (!filterFocused) {
+            try lv.Focus()
+            catch {
+            }
         }
         ContextBrowser_UpdatePreview(1)
     } else {
         ContextBrowser_UpdatePreview(0)
     }
     g_ContextBrowserActive := true
-    ContextBrowser_StartLetterJump()
+    if (!ContextBrowser_IsFilterFocused())
+        ContextBrowser_StartLetterJump()
 }
 
 ContextBrowser_CreateGui() {
@@ -14998,6 +15165,8 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserBreadcrumbLink.OnEvent("Click", ContextBrowser_OnBreadcrumbLinkClick)
     g_ContextBrowserFilterCtrl := g_ContextBrowserGui.Add("Edit", "xm w740", "")
     g_ContextBrowserFilterCtrl.OnEvent("Change", ContextBrowser_OnFilterChange)
+    g_ContextBrowserFilterCtrl.OnEvent("Focus", ContextBrowser_OnFilterFocus)
+    g_ContextBrowserFilterCtrl.OnEvent("LoseFocus", ContextBrowser_OnFilterKillFocus)
     g_ContextBrowserListView := g_ContextBrowserGui.Add("ListView", "xm w480 h360 Grid -Multi", ["Kind", "Name"])
     g_ContextBrowserPreviewCtrl := g_ContextBrowserGui.Add("Picture", "x+10 yp BackgroundTrans Hidden")
     g_ContextBrowserPreviewText := g_ContextBrowserGui.Add("Edit", "x+10 yp w234 h360 ReadOnly -VScroll Multi Hidden")
@@ -15005,7 +15174,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
-    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
@@ -15027,12 +15196,7 @@ ContextBrowser_ShowGui() {
     guiY := Max(monitorTop + margin, Min(guiY, monitorBottom - gh - margin))
     g_ContextBrowserGui.Show("x" guiX " y" guiY " w760 h500")
 
-    try Hotkey("Backspace", (*) => ContextBrowser_HandleBack(), "On")
-    try Hotkey("Enter", ContextBrowser_OnEnter, "On")
-    try Hotkey("+Enter", ContextBrowser_PasteFocusedContentAsText, "On")
-    try Hotkey("^Enter", ContextBrowser_PasteFocusedPathAsText, "On")
-    try Hotkey("^c", ContextBrowser_CopyFocusedPath, "On")
-    try Hotkey("^+e", ContextBrowser_OpenFocusedInExplorer, "On")
+    try ContextBrowser_EnableHotkeys()
     catch {
     }
     try g_ContextBrowserListView.Focus()
