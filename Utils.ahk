@@ -14175,6 +14175,7 @@ global g_ContextBrowserFilterTyping := false
 global g_ContextBrowserSuppressFilterKillFocus := false
 global g_ContextBrowserBreadcrumbLink := false
 global g_ContextBrowserBreadcrumbSegments := []
+global g_ContextBrowserEntryPathLabel := false
 
 ContextBrowser_IsFilterFocused() {
     global g_ContextBrowserFilterCtrl, g_ContextBrowserGui, g_ContextBrowserFilterTyping
@@ -14211,6 +14212,7 @@ ContextBrowser_EnsureGlobals() {
     global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
     global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery, g_ContextBrowserBreadcrumbSegments
     global g_ContextBrowserFileIndex, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
+    global g_ContextBrowserEntryPathLabel
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14245,6 +14247,8 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserFilterTyping := false
     if !IsSet(g_ContextBrowserSuppressFilterKillFocus)
         g_ContextBrowserSuppressFilterKillFocus := false
+    if !IsSet(g_ContextBrowserEntryPathLabel)
+        g_ContextBrowserEntryPathLabel := false
     if !IsSet(g_ContextBrowserLetterHook)
         g_ContextBrowserLetterHook := ""
 }
@@ -14642,11 +14646,48 @@ ContextBrowser_UpdateSearchBreadcrumbs(query, count) {
     g_ContextBrowserBreadcrumbLink.Text := Format("<a id=`"1`">context</a> » search: `"{1}`" ({2})", qEsc, count)
 }
 
+ContextBrowser_IsSearchMode() {
+    global g_ContextBrowserFilterQuery
+    return (Trim(g_ContextBrowserFilterQuery) != "")
+}
+
+ContextBrowser_FormatEntryFolderPath(entry) {
+    if (!IsObject(entry) || !entry.HasProp("relPath") || entry.relPath = "")
+        return ""
+    SplitPath entry.relPath, , &dir
+    if (dir = "")
+        return ""
+    return StrReplace(dir, "\", " » ")
+}
+
+ContextBrowser_ClearEntryPathLabel() {
+    global g_ContextBrowserEntryPathLabel
+    if (!IsObject(g_ContextBrowserEntryPathLabel))
+        return
+    try g_ContextBrowserEntryPathLabel.Value := ""
+    g_ContextBrowserEntryPathLabel.Opt("+Hidden")
+}
+
+ContextBrowser_UpdateEntryPathLabel(rowNum) {
+    global g_ContextBrowserEntries, g_ContextBrowserEntryPathLabel
+    if (!IsObject(g_ContextBrowserEntryPathLabel))
+        return
+    if (!ContextBrowser_IsSearchMode() || rowNum < 1 || rowNum > g_ContextBrowserEntries.Length) {
+        ContextBrowser_ClearEntryPathLabel()
+        return
+    }
+    pathText := ContextBrowser_FormatEntryFolderPath(g_ContextBrowserEntries[rowNum])
+    if (pathText = "") {
+        ContextBrowser_ClearEntryPathLabel()
+        return
+    }
+    try g_ContextBrowserEntryPathLabel.Value := pathText
+    g_ContextBrowserEntryPathLabel.Opt("-Hidden")
+}
+
 ContextBrowser_FormatEntryLabel(entry) {
     if (entry.type = "folder")
         return entry.name
-    if (entry.HasProp("relPath") && entry.relPath != "")
-        return StrReplace(entry.relPath, "\", " » ")
     probe := Context_ProbeReference(entry.path)
     if (probe.isRef && probe.targetBasename != "")
         return entry.name "  →  " probe.targetBasename
@@ -14713,6 +14754,7 @@ ContextBrowser_UpdatePreview(rowNum) {
         return
     if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length) {
         ContextBrowser_ClearAllPreviews()
+        ContextBrowser_UpdateEntryPathLabel(0)
         return
     }
     entry := g_ContextBrowserEntries[rowNum]
@@ -14723,6 +14765,7 @@ ContextBrowser_UpdatePreview(rowNum) {
         fitH := 0
         if !ContextBrowser_GetFitImageSize(imagePath, CONTEXT_PREVIEW_MAX_SIZE, CONTEXT_PREVIEW_MAX_SIZE, &fitW, &fitH) {
             ContextBrowser_ClearPreview()
+            ContextBrowser_UpdateEntryPathLabel(rowNum)
             return
         }
         try {
@@ -14733,9 +14776,11 @@ ContextBrowser_UpdatePreview(rowNum) {
             g_ContextBrowserPreviewCtrl.Value := "HBITMAP:*" scaledHbm
         } catch {
             ContextBrowser_ClearPreview()
+            ContextBrowser_UpdateEntryPathLabel(rowNum)
             return
         }
         g_ContextBrowserPreviewCtrl.Opt("-Hidden")
+        ContextBrowser_UpdateEntryPathLabel(rowNum)
         return
     }
     ContextBrowser_ClearPreview()
@@ -14746,6 +14791,7 @@ ContextBrowser_UpdatePreview(rowNum) {
     } else {
         ContextBrowser_ClearTextPreview()
     }
+    ContextBrowser_UpdateEntryPathLabel(rowNum)
 }
 
 ContextBrowser_GetActiveMonitorWorkArea(&left, &top, &right, &bottom) {
@@ -14990,6 +15036,7 @@ CleanupContextBrowser() {
     g_ContextBrowserPreviewCtrl := false
     g_ContextBrowserPreviewText := false
     g_ContextBrowserFilterCtrl := false
+    g_ContextBrowserEntryPathLabel := false
 }
 
 HandleContextBrowserEscape(*) {
@@ -15148,7 +15195,7 @@ ContextBrowser_RefreshView() {
 
 ContextBrowser_CreateGui() {
     global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserPreviewCtrl
-    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
+    global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserEntryPathLabel
 
     g_ContextBrowserGui := Gui("+AlwaysOnTop +Resize +MinSize620x340", "Context")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
@@ -15165,6 +15212,9 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserListView.ModifyCol(2, "AutoHdr")
     g_ContextBrowserListView.OnEvent("DoubleClick", ContextBrowser_OnListDoubleClick)
     g_ContextBrowserListView.OnEvent("ItemFocus", ContextBrowser_OnItemFocus)
+    g_ContextBrowserGui.SetFont("s8", "Segoe UI")
+    g_ContextBrowserEntryPathLabel := g_ContextBrowserGui.Add("Text", "xm w740 h28 +Wrap +Hidden", "")
+    g_ContextBrowserGui.SetFont("s10", "Segoe UI")
     g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+Shift+E explorer · Esc close")
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
