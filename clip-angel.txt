@@ -1,0 +1,147 @@
+Type: 50032 (Window) Name: "ClipAngel 2.23 >> UIATreeInspector [AutoHotkey64]" LocalizedType: "janela" AutomationId: "Main" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+1: Type: 50021 (ToolBar) Name: "toolStrip1" LocalizedType: "barra de ferramentas" AutomationId: "toolStripTop" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+1,1: Type: 50027 (Thumb) Name: "Grip" LocalizedType: "elevador"
+1,2: Type: 50000 (Button) Name: "Native formatting" LocalizedType: "botão"
+1,3: Type: 50000 (Button) Name: "Word wrap" LocalizedType: "botão"
+1,4: Type: 50000 (Button) Name: "Monospaced font" LocalizedType: "botão"
+1,5: Type: 50000 (Button) Name: "Move to top after use" LocalizedType: "botão"
+1,6: Type: 50000 (Button) LocalizedType: "botão"
+1,7: Type: 50000 (Button) LocalizedType: "botão"
+1,8: Type: 50000 (Button) Name: "Edit clip text" LocalizedType: "botão"
+1,9: Type: 50011 (MenuItem) Name: "Open clip file" LocalizedType: "item de menu"
+1,10: Type: 50000 (Button) Name: "Secondary columns" LocalizedType: "botão"
+1,11: Type: 50000 (Button) Name: "Window always on top" LocalizedType: "botão"
+2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "splitContainer1" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "1575242" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,1: Type: 50021 (ToolBar) Name: "toolStrip2" LocalizedType: "barra de ferramentas" AutomationId: "toolStripBottom" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,1,1: Type: 50000 (Button) LocalizedType: "botão"
+2,1,1,2: Type: 50000 (Button) Name: "toolStripDropDownButton1" LocalizedType: "botão"
+2,1,1,3: Type: 50000 (Button) LocalizedType: "botão"
+2,1,1,4: Type: 50000 (Button) LocalizedType: "botão"
+2,1,2: Type: 50003 (ComboBox) Name: "all marks" Value: "all marks" LocalizedType: "caixa de combinação" AutomationId: "MarkFilter" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,2,1: Type: 50020 (Text) LocalizedType: "text"
+2,1,2,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,3: Type: 50003 (ComboBox) Name: "all types" Value: "all types" LocalizedType: "caixa de combinação" AutomationId: "TypeFilter" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,3,1: Type: 50020 (Text) LocalizedType: "text"
+2,1,3,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,4: Type: 50003 (ComboBox) LocalizedType: "caixa de combinação" AutomationId: "comboBoxSearchString" ClassName: "WindowsForms10.COMBOBOX.app.0.3b93019_r7_ad1"
+2,1,4,1: Type: 50004 (Edit) LocalizedType: "editar" AutomationId: "1001" ClassName: "Edit"
+2,1,4,2: Type: 50000 (Button) Name: "Open" LocalizedType: "botão"
+2,1,5: Type: 50036 (Table) Name: "DataGridView" LocalizedType: "tabela" AutomationId: "dataGridView" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,1,5,1: Type: 50025 (Custom) Name: "Row 0"
+2,1,5,1,1: Type: 50006 (Image) Name: "AppImage Row 0" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4256599738"
+2,1,5,1,2: Type: 50006 (Image) Name: "TypeImg Row 0" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4221176078"
+2,1,5,1,3: Type: 50006 (Image) Name: "Title Row 0" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 Step 1: Update Descriptive Statistics Because your data is not nor...\par
+}
+" LocalizedType: "Imagem" AutomationId: "4256366974"
+2,1,5,1,4: Type: 50004 (Edit) Name: "VisualWeight Row 0" Value: "4" LocalizedType: "editar" AutomationId: "4237540721"
+2,1,5,2: Type: 50025 (Custom) Name: "Row 1"
+2,1,5,2,1: Type: 50006 (Image) Name: "AppImage Row 1" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4220899598"
+2,1,5,2,2: Type: 50006 (Image) Name: "TypeImg Row 1" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4253878657"
+2,1,5,2,3: Type: 50006 (Image) Name: "Title Row 1" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}{\f1\fnil\fcharset1 Segoe UI Symbol;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 ------------------------------------ SUPER FAV \f1\u11088?\f0\par
+}
+" LocalizedType: "Imagem" AutomationId: "4215145867"
+2,1,5,2,4: Type: 50004 (Edit) Name: "VisualWeight Row 1" Value: "(null)" LocalizedType: "editar" AutomationId: "422095077"
+2,1,5,3: Type: 50025 (Custom) Name: "Row 2"
+2,1,5,3,1: Type: 50006 (Image) Name: "AppImage Row 2" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4235483542"
+2,1,5,3,2: Type: 50006 (Image) Name: "TypeImg Row 2" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4250916422"
+2,1,5,3,3: Type: 50006 (Image) Name: "Title Row 2" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 DeepSeek Prices and Cost Benefit\par
+}
+" LocalizedType: "Imagem" AutomationId: "4255594619"
+2,1,5,3,4: Type: 50004 (Edit) Name: "VisualWeight Row 2" Value: "4" LocalizedType: "editar" AutomationId: "4230589524"
+2,1,5,4: Type: 50025 (Custom) Name: "Row 3"
+2,1,5,4,1: Type: 50006 (Image) Name: "AppImage Row 3" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4261832419"
+2,1,5,4,2: Type: 50006 (Image) Name: "TypeImg Row 3" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4219620867"
+2,1,5,4,3: Type: 50006 (Image) Name: "Title Row 3" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 Models price rates\par
+}
+" LocalizedType: "Imagem" AutomationId: "4242370075"
+2,1,5,4,4: Type: 50004 (Edit) Name: "VisualWeight Row 3" Value: "4" LocalizedType: "editar" AutomationId: "4245786357"
+2,1,5,5: Type: 50025 (Custom) Name: "Row 4"
+2,1,5,5,1: Type: 50006 (Image) Name: "AppImage Row 4" Value: "(null)" LocalizedType: "Imagem" AutomationId: "4217707452"
+2,1,5,5,2: Type: 50006 (Image) Name: "TypeImg Row 4" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4225149347"
+2,1,5,5,3: Type: 50006 (Image) Name: "Title Row 4" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 ITQM\par
+}
+" LocalizedType: "Imagem" AutomationId: "4225017536"
+2,1,5,5,4: Type: 50004 (Edit) Name: "VisualWeight Row 4" Value: "7" LocalizedType: "editar" AutomationId: "4223831236"
+2,1,5,6: Type: 50025 (Custom) Name: "Row 5"
+2,1,5,6,1: Type: 50006 (Image) Name: "AppImage Row 5" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4251281965"
+2,1,5,6,2: Type: 50006 (Image) Name: "TypeImg Row 5" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4258884509"
+2,1,5,6,3: Type: 50006 (Image) Name: "Title Row 5" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 Trustmate - last question\par
+}
+" LocalizedType: "Imagem" AutomationId: "4260198535"
+2,1,5,6,4: Type: 50004 (Edit) Name: "VisualWeight Row 5" Value: "(null)" LocalizedType: "editar" AutomationId: "424915910"
+2,1,5,7: Type: 50025 (Custom) Name: "Row 6"
+2,1,5,7,1: Type: 50006 (Image) Name: "AppImage Row 6" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4262644428"
+2,1,5,7,2: Type: 50006 (Image) Name: "TypeImg Row 6" Value: "System.Drawing.Bitmap" LocalizedType: "Imagem" AutomationId: "4226928941"
+2,1,5,7,3: Type: 50006 (Image) Name: "Title Row 6" Value: "{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Segoe UI;}}
+{\*\generator Riched20 10.0.26100}\viewkind4\uc1 
+\pard\f0\fs29\lang1046 Hand stretch\par
+}
+" LocalizedType: "Imagem" AutomationId: "4241033878"
+2,1,5,7,4: Type: 50004 (Edit) Name: "VisualWeight Row 6" Value: "7" LocalizedType: "editar" AutomationId: "4233760584"
+2,2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "1573740" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "pictureBoxSource" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "tableLayoutPanelData" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,1: Type: 50004 (Edit) Name: "RichEdit Control" Value: "
+" LocalizedType: "editar" AutomationId: "urlTextBox" ClassName: "WindowsForms10.RICHEDIT50W.app.0.3b93019_r7_ad1"
+2,2,2,2: Type: 50030 (Document) Name: "RichEdit Control" Value: "
+Step 1: Update Descriptive Statistics
+Because your data is not normally distributed, the mean and standard deviation are no longer the most accurate representations of your dataset. You must calculate and report the median and the interquartile range for all 36 trust attributes. Update all preliminary tables in your chapter to reflect these metrics instead of the averages.
+
+Step 2: The Paired Comparison
+For the scenarios where the same user evaluated two different conditions, you will replace the paired T test with the Wilcoxon Signed Rank test. This method evaluates the median difference between paired observations, perfectly matching your advisor's recommendation.
+
+Step 3: The Independent Comparison
+For scenarios where you are comparing two entirely separate groups of ai evaluators, replace the independent T test with the Mann Whitney U test. This will rank all responses across both groups to determine if one group generally scores higher than the other.
+
+Step 4: Humans versus AI Agents
+You previously used the Welch test here to account for the likelihood that the variance in human scores differs significantly from the variance in AI agent scores. The nonparametric equivalent for this comparison is also the Mann Whitney U test. It does not assume equal variances or normal distributions, making it the mathematically correct choice to evaluate if the AI agents emulated the human baseline.
+
+Step 5: Apply Multiple Comparisons Correction
+Because you are evaluating 36 separate attributes, running this many statistical tests introduces a high probability of finding false positives. After running the Wilcoxon and Mann Whitney U tests, you must apply the Benjamini Hochberg procedure to adjust your final p values and control the false discovery rate.
+
+Step 6: Update the Manuscript and Visuals
+Review your results document carefully. Ensure that any text discussing statistical significance now refers to median differences rather than mean differences. For your custom metrics like the absolute mean deviation, consider if calculating the absolute median deviation provides a more cohesive narrative alongside your new nonparametric tests.
+<END>
+
+" LocalizedType: "documento" AutomationId: "richTextBox" ClassName: "WindowsForms10.RICHEDIT50W.app.0.3b93019_r7_ad1"
+2,2,2,2,1: Type: 50014 (ScrollBar) Name: "Vertical" LocalizedType: "barra de rolagem" AutomationId: "NonClientVerticalScrollBar"
+2,2,2,2,1,1: Type: 50000 (Button) Name: "Uma linha acima" LocalizedType: "botão" AutomationId: "UpButton"
+2,2,2,2,1,2: Type: 50027 (Thumb) Name: "Posição" LocalizedType: "elevador" AutomationId: "ScrollbarThumb"
+2,2,2,2,1,3: Type: 50000 (Button) Name: "Uma página abaixo" LocalizedType: "botão" AutomationId: "DownPageButton"
+2,2,2,2,1,4: Type: 50000 (Button) Name: "Uma linha abaixo" LocalizedType: "botão" AutomationId: "DownButton"
+2,2,2,3: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "ImageControl" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,3,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "OuterPanel" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,2,3,1,1: Type: 50033 (Pane) LocalizedType: "painel" AutomationId: "PicBox" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,3: Type: 50017 (StatusBar) Name: "statusStrip" LocalizedType: "Barra de status" AutomationId: "statusStrip" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+2,2,3,1: Type: 50020 (Text) Name: "0(1:1)" LocalizedType: "text"
+2,2,3,2: Type: 50020 (Text) Name: "2 164 С" LocalizedType: "text"
+2,2,3,3: Type: 50020 (Text) Name: "4 328 B" LocalizedType: "text"
+2,2,3,4: Type: 50020 (Text) Name: "text" LocalizedType: "text"
+2,2,3,5: Type: 50020 (Text) Name: "18/06/2026 19:57:06" LocalizedType: "text"
+2,2,4: Type: 50004 (Edit) LocalizedType: "editar" AutomationId: "textBoxApplication" ClassName: "WindowsForms10.EDIT.app.0.3b93019_r7_ad1"
+2,2,5: Type: 50004 (Edit) LocalizedType: "editar" AutomationId: "textBoxWindow" ClassName: "WindowsForms10.EDIT.app.0.3b93019_r7_ad1"
+3: Type: 50010 (MenuBar) Name: "menuStrip1" LocalizedType: "barra de menus" AutomationId: "MainMenu" ClassName: "WindowsForms10.Window.8.app.0.3b93019_r7_ad1"
+3,1: Type: 50011 (MenuItem) Name: "Window" LocalizedType: "item de menu"
+3,2: Type: 50011 (MenuItem) Name: "List" LocalizedType: "item de menu"
+3,3: Type: 50011 (MenuItem) Name: "Clip" LocalizedType: "item de menu"
+3,4: Type: 50011 (MenuItem) Name: "Settings" LocalizedType: "item de menu"
+3,5: Type: 50011 (MenuItem) Name: "Help" LocalizedType: "item de menu"
+4: Type: 50037 (TitleBar) Value: "ClipAngel 2.23 >> UIATreeInspector [AutoHotkey64]" LocalizedType: "barra de título" AutomationId: "TitleBar"
+4,1: Type: 50010 (MenuBar) Name: "Sistema" LocalizedType: "barra de menus" AutomationId: "MenuBar"
+4,1,1: Type: 50011 (MenuItem) Name: "Sistema" LocalizedType: "item de menu"
+4,2: Type: 50000 (Button) Name: "Minimizar" LocalizedType: "botão"
+4,3: Type: 50000 (Button) Name: "Maximizar" LocalizedType: "botão"
+4,4: Type: 50000 (Button) Name: "Fechar" LocalizedType: "botão"

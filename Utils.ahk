@@ -3727,19 +3727,12 @@ GetHandyProcessPath() {
 ; =============================================================================
 ; Clip Angel: Merge Non-Favorite Clips
 ; =============================================================================
-; Ensure Clip Angel window is closed (Alt+V then WinClose fallback)
+; Minimize Clip Angel after automation (process stays running; no native Alt+V / WinClose).
 EnsureClipAngelClosed() {
-    if !WinExist("ClipAngel")
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
         return
-    Send "!v"
-    Sleep 400
-    if WinExist("ClipAngel") {
-        Send "!v"
-        Sleep 300
-    }
-    if WinExist("ClipAngel") {
-        try WinClose("ClipAngel")
-    }
+    ClipAngel_HideWindow(hwnd)
 }
 
 ; Extract title from first non-favorite clip in ClipAngel
@@ -3823,6 +3816,7 @@ MergeNonFavoriteClips() {
         ; Step 9: Switch to "All Clips" view to search for this favorite clip
         Send "!b"  ; Close current view
         Sleep 600
+        ; TODO/follow-up: replace native Alt+V with UIA (All Clips view) — Alt+V breaks with always-open mode.
         Send "!v"  ; Open "All Clips" view (non-favorites first, favorites second)
         Sleep 500  ; Wait for view to update
 
@@ -3956,84 +3950,67 @@ ParseRTFToPlainText(rtf) {
 ; =============================================================================
 ; Clip Angel: Open/Activate with focus correction (Row 0)
 ; =============================================================================
-; Alt+V: Activate Clip Angel and ensure focus is on "Row 0" (fixes bug where focus
-; defaults to upper tabs). Uses UIA: Type 50025, Name "Row 0" per clipangel-tree.txt.
-ActivateClipAngelWithFocusCorrection(silent := false) {
+; Show/restore always-running Clip Angel via AHK (no native Alt+V). UIA: dataGridView,
+; Row 0 per clip-angel.txt. Layout on monitor only when restoring from hidden/minimized.
+ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     needBanner := false
-    if WinExist("ClipAngel") {
-        try {
-            WinActivate("ClipAngel")
-        } catch {
-            if !silent
-                ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
-        WinWaitActive("ClipAngel", , 2)
-    } else {
+    if !targetMon {
+        try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
+        catch
+            targetMon := 0
+    }
+    hwnd := ClipAngel_MainHwnd()
+    ; #region agent log
+    ClipAngel_DebugLog("H2", "ActivateClipAngel:entry", "activate_start",
+        Format('"hwnd":{1},"targetMon":{2},"silent":{3}', hwnd ? hwnd : 0, targetMon, silent ? 1 : 0))
+    ; #endregion
+    if !hwnd {
+        ; #region agent log
+        ClipAngel_DebugLog("H2", "ActivateClipAngel:no_hwnd", "no_main_hwnd", "")
+        ; #endregion
+        if !silent
+            ShowCenteredOverlay_Utils("❌ Clip Angel não está em execução.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    wasHidden := !ClipAngel_IsWindowShown(hwnd)
+    needsLayout := !WinActive("ahk_id " hwnd) || wasHidden
+    ; #region agent log
+    minMax := -9
+    isVis := 0
+    isActive := WinActive("ahk_id " hwnd) ? 1 : 0
+    try minMax := WinGetMinMax("ahk_id " hwnd)
+    try isVis := DllCall("IsWindowVisible", "ptr", hwnd)
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    ClipAngel_DebugLog("H3", "ActivateClipAngel:state", "window_state",
+        Format('"wasHidden":{1},"needsLayout":{2},"isActive":{3},"minMax":{4},"isVisible":{5},"titleLen":{6}',
+            wasHidden ? 1 : 0, needsLayout ? 1 : 0, isActive, minMax, isVis, StrLen(title)))
+    ; #endregion
+    if wasHidden || !isActive {
         needBanner := !silent
         if needBanner
             ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
-        Send "!v"
-        if !WinWait("ClipAngel", , 10) {
-            if needBanner
-                ClipAngelBanner_Hide()
-            return false
-        }
-        try {
-            WinActivate("ClipAngel")
-        } catch {
-            if needBanner
-                ClipAngelBanner_Hide()
-            if !silent
-                ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
-        WinWaitActive("ClipAngel", , 2)
     }
+    showOk := ClipAngel_ShowWindow(hwnd)
+    ; #region agent log
+    ClipAngel_DebugLog("H4", "ActivateClipAngel:show", "show_result", Format('"showOk":{1}', showOk ? 1 : 0))
+    ; #endregion
+    if !showOk {
+        if needBanner
+            ClipAngelBanner_Hide()
+        if !silent
+            ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if needsLayout
+        ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
     Sleep 50
-    ; Must use Clip Angel's HWND, not WinExist("A") - another app can be foreground and UIA targets the wrong tree.
-    hwnd := WinExist("ClipAngel")
-    if !hwnd {
-        if needBanner
-            ClipAngelBanner_Hide()
-        return false
-    }
-    el := UIA.ElementFromHandle(hwnd)
-    if !el {
-        if needBanner
-            ClipAngelBanner_Hide()
-        return false
-    }
-    try {
-        dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
-        if !dataGrid {
-            if needBanner
-                ClipAngelBanner_Hide()
-            return false
-        }
-        row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
-        if !row0 {
-            if needBanner
-                ClipAngelBanner_Hide()
-            return false
-        }
-        hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-        isSelected := hasSel && row0.SelectionItemPattern.IsSelected
-        if (!isSelected) {
-            if !silent && !needBanner
-                ClipAngelBanner_Show("🎯 Focusing Row 0...", BANNER_ACCENT_INTERMEDIATE)
-            if (!silent)
-                needBanner := true
-            try {
-                if hasSel
-                    row0.SelectionItemPattern.Select()
-                else
-                    row0.SetFocus()
-            } catch {
-                try row0.SetFocus()
-            }
-        }
-    } catch {
+    focusOk := ClipAngel_UiaFocusRow0(hwnd)
+    ; #region agent log
+    ClipAngel_DebugLog("H5", "ActivateClipAngel:focus", "focus_result",
+        Format('"focusOk":{1},"needsLayout":{2}', focusOk ? 1 : 0, needsLayout ? 1 : 0))
+    ; #endregion
+    if !focusOk {
         if needBanner
             ClipAngelBanner_Hide()
         return false
@@ -4042,6 +4019,9 @@ ActivateClipAngelWithFocusCorrection(silent := false) {
         ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
         SetTimer(ClipAngelBanner_Hide, -500)
     }
+    ; #region agent log
+    ClipAngel_DebugLog("H4", "ActivateClipAngel:exit", "activate_ok", Format('"hwnd":{1}', hwnd))
+    ; #endregion
     return true
 }
 
@@ -4135,6 +4115,123 @@ ClipAngel_MainHwnd() {
     return WinExist("ahk_exe ClipAngel.exe")
 }
 
+; #region agent log
+ClipAngel_DebugLog(hypothesisId, location, message, dataStr := "") {
+    try {
+        if (dataStr = "")
+            line := Format(
+                '{{"sessionId":"ed1657","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{{}},"timestamp":{4},"script":"{5}"}}`n',
+                hypothesisId, location, message, A_TickCount, A_ScriptName)
+        else
+            line := Format(
+                '{{"sessionId":"ed1657","hypothesisId":"{1}","location":"{2}","message":"{3}","data":{{{4}}},"timestamp":{5},"script":"{6}"}}`n',
+                hypothesisId, location, message, dataStr, A_TickCount, A_ScriptName)
+        FileAppend(line, A_ScriptDir "\debug-ed1657.log", "UTF-8")
+    } catch {
+    }
+}
+; #endregion
+
+ClipAngel_IsWindowShown(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        if WinGetMinMax("ahk_id " hwnd) = 1
+            return false
+    } catch {
+        return false
+    }
+    return DllCall("IsWindowVisible", "ptr", hwnd)
+}
+
+ClipAngel_ShowWindow(hwnd) {
+    if !hwnd
+        return false
+    try {
+        if WinGetMinMax("ahk_id " hwnd) = 1
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    return ClipAngel_EnsureWindowActive(hwnd)
+}
+
+ClipAngel_HideWindow(hwnd) {
+    if !hwnd
+        return false
+    try {
+        WinMinimize("ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Invoke List menu when Window tab has focus and dataGridView is missing.
+ClipAngel_EnsureListView(hwnd) {
+    if !hwnd
+        return false
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return false
+    listItem := ClipAngel_UiaFindFirst(el, { Type: 50011, Name: "List" })
+    if !listItem
+        return false
+    try {
+        if listItem.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            listItem.InvokePattern.Invoke()
+        else
+            listItem.SetFocus()
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Select Row 0 in dataGridView (clip-angel.txt). Retries after List menu if grid missing.
+ClipAngel_UiaFocusRow0(hwnd) {
+    if !hwnd
+        return false
+    try {
+        el := UIA.ElementFromHandle(hwnd)
+        if !el
+            return false
+        dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+        row0 := dataGrid ? ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" }) : 0
+        if !row0 {
+            ClipAngel_EnsureListView(hwnd)
+            Sleep 100
+            el := UIA.ElementFromHandle(hwnd)
+            if !el
+                return false
+            dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+            if !dataGrid
+                return false
+            row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
+            if !row0
+                return false
+        }
+        hasSel := row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+        isSelected := hasSel && row0.SelectionItemPattern.IsSelected
+        if !isSelected {
+            if hasSel
+                row0.SelectionItemPattern.Select()
+            else
+                row0.SetFocus()
+        }
+        return true
+    } catch {
+        try {
+            row0.SetFocus()
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
 ; Macro hotkeys use Ctrl+Alt+Win - if those keys are still down, Send "!q" is not plain Alt+Q (Win+Alt+... hijacks it).
 ClipAngel_ReleaseChordModifiersForSend() {
     SendInput "{LWin up}{RWin up}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}"
@@ -4148,6 +4245,55 @@ ClipAngel_WaitChordModifiersReleased() {
     KeyWait "Shift", tw
     KeyWait "LWin", tw
     KeyWait "RWin", tw
+}
+
+; Legacy native Alt+V send — open/close flows use ClipAngel_ShowWindow/HideWindow instead.
+; Still used by MergeNonFavoriteClips (All Clips view); replace with UIA when that macro is updated.
+ClipAngel_SendToggleHotkey() {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "!v"
+}
+
+ClipAngel_EnsureWindowActive(hwnd, timeoutMs := 800) {
+    if !hwnd
+        return false
+    if WinActive("ahk_id " hwnd)
+        return true
+    endTick := A_TickCount + timeoutMs
+    loop 3 {
+        try WinActivate("ahk_id " hwnd)
+        catch
+            return false
+        remaining := endTick - A_TickCount
+        if (remaining <= 0)
+            break
+        if WinWaitActive("ahk_id " hwnd, , Max(0.05, remaining / 1000.0))
+            return true
+        Sleep 50
+    }
+    return WinActive("ahk_id " hwnd)
+}
+
+; Move to monitor work area and maximize; re-activate if layout steals focus.
+ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
+    if !hwnd
+        return false
+    if (!targetMon || targetMon < 1 || targetMon > MonitorGetCount()) {
+        try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
+        catch
+            targetMon := 0
+    }
+    if (!targetMon) {
+        try targetMon := MonitorGetPrimary()
+        catch
+            targetMon := 1
+    }
+    MoveWindowToMonitor(hwnd, targetMon)
+    if !WinActive("ahk_id " hwnd)
+        ClipAngel_EnsureWindowActive(hwnd)
+    TryMaximizeWindow(hwnd)
+    return ClipAngel_EnsureWindowActive(hwnd)
 }
 
 ClipAngel_IsListReady(&outHwnd := 0) {
@@ -7846,26 +7992,17 @@ class D2C_FlowManager {
                 try originHwnd := WinGetID("A")
             originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
 
-            ActivateClipAngelWithFocusCorrection()
+            ActivateClipAngelWithFocusCorrection(true, originMon)
             clipHwnd := WinExist("ClipAngel")
             if (!clipHwnd) {
                 StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
                 return
             }
 
-            ; Activation is already handled inside ActivateClipAngelWithFocusCorrection(), but keep a short bounded wait
-            ; so we never inject keys into the wrong window.
+            ; Activation/layout handled inside ActivateClipAngelWithFocusCorrection(); bounded wait before F4.
             if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
                 StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
                 return
-            }
-
-            if (originMon) {
-                StandardLoadingBar_Update("⏳ Clip Angel: moving to your monitor...", BANNER_ACCENT_INTERMEDIATE)
-                MoveWindowToMonitor(clipHwnd, originMon)
-                ; If a move caused focus loss, reacquire quickly (bounded).
-                if (!WinActive("ahk_id " clipHwnd))
-                    WinWaitActive("ahk_id " clipHwnd, , 0.4)
             }
 
             StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
@@ -9821,12 +9958,31 @@ DesktopToRecycle_Trigger() {
 
 ; =============================================================================
 ; Clip Angel: Open/Activate with focus correction (Row 0)
-; Hotkey: Alt+V - when closed: open + focus Row 0; when open: pass Alt+V to close (toggle).
+; Hotkey: Alt+V - minimize when Clip Angel is foreground; else show + layout + Row 0.
 ; =============================================================================
 !v::
 {
-    if WinExist("ClipAngel") {
-        Send "!v"   ; Already open: close it (Clip Angel toggle)
+    ; #region agent log
+    ClipAngel_DebugLog("H1", "!v::", "hotkey_fired", Format('"activeHwnd":{1}', WinExist("A") ? WinExist("A") : 0))
+    ; #endregion
+    hwnd := ClipAngel_MainHwnd()
+    ; #region agent log
+    ClipAngel_DebugLog("H2", "!v::", "main_hwnd", Format('"hwnd":{1}', hwnd ? hwnd : 0))
+    ; #endregion
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel não está em execução.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    isActive := WinActive("ahk_id " hwnd)
+    ; #region agent log
+    ClipAngel_DebugLog("H3", "!v::", "branch", Format('"isActive":{1},"isShown":{2}', isActive ? 1 : 0,
+        ClipAngel_IsWindowShown(hwnd) ? 1 : 0))
+    ; #endregion
+    if isActive {
+        ClipAngel_HideWindow(hwnd)
+        ; #region agent log
+        ClipAngel_DebugLog("H3", "!v::", "hid_minimized", Format('"hwnd":{1}', hwnd))
+        ; #endregion
         return
     }
     ActivateClipAngelWithFocusCorrection()
@@ -14208,9 +14364,11 @@ ContextBrowser_FocusFilterField() {
 
 ContextBrowser_EnsureGlobals() {
     global CONTEXT_ROOT, g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserLetterHook
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink,
+        g_ContextBrowserLetterHook
     global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
-    global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery, g_ContextBrowserBreadcrumbSegments
+    global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery,
+        g_ContextBrowserBreadcrumbSegments
     global g_ContextBrowserFileIndex, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
     global g_ContextBrowserEntryPathLabel
     if !IsSet(CONTEXT_ROOT)
@@ -15022,7 +15180,8 @@ ContextBrowser_OnFilterKillFocus(*) {
 CleanupContextBrowser() {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserActive, g_ContextBrowserGui, g_ContextBrowserCurrentDir
-    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserPreviewCtrl
+    global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink,
+        g_ContextBrowserPreviewCtrl
     global g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl, g_ContextBrowserLastDir, g_ContextBrowserFileIndex
 
     if (g_ContextBrowserCurrentDir != "" && DirExist(g_ContextBrowserCurrentDir))
@@ -15225,7 +15384,9 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserGui.SetFont("s8", "Segoe UI")
     g_ContextBrowserEntryPathLabel := g_ContextBrowserGui.Add("Text", "xm w740 h28 +Wrap +Hidden", "")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
-    g_ContextBrowserGui.Add("Text", "xm", "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+H explorer · Esc close")
+    g_ContextBrowserGui.Add("Text", "xm",
+        "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+H explorer · Esc close"
+    )
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
 }
