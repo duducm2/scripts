@@ -14176,6 +14176,8 @@ global g_ContextBrowserLastDir := ""
 global g_ContextBrowserPreviewHbm := 0
 global g_ContextBrowserFilterQuery := ""
 global g_ContextBrowserFileIndex := []
+global g_ContextBrowserFilterTyping := false
+global g_ContextBrowserSuppressFilterKillFocus := false
 global g_ContextBrowserBreadcrumbLink := false
 global g_ContextBrowserBreadcrumbSegments := []
 
@@ -14203,7 +14205,9 @@ ContextBrowser_DebugLog(hypothesisId, location, message, data := unset) {
 }
 
 ContextBrowser_IsFilterFocused() {
-    global g_ContextBrowserFilterCtrl, g_ContextBrowserGui
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserGui, g_ContextBrowserFilterTyping
+    if (g_ContextBrowserFilterTyping)
+        return true
     if (!IsObject(g_ContextBrowserFilterCtrl) || !IsObject(g_ContextBrowserGui))
         return false
     try {
@@ -14219,7 +14223,7 @@ ContextBrowser_EnsureGlobals() {
     global g_ContextBrowserEntries, g_ContextBrowserListView, g_ContextBrowserBreadcrumbLink, g_ContextBrowserLetterHook
     global g_ContextBrowserPreviewCtrl, g_ContextBrowserPreviewText, g_ContextBrowserFilterCtrl
     global g_ContextBrowserLastDir, g_ContextBrowserPreviewHbm, g_ContextBrowserFilterQuery, g_ContextBrowserBreadcrumbSegments
-    global g_ContextBrowserFileIndex
+    global g_ContextBrowserFileIndex, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
     if !IsSet(CONTEXT_ROOT)
         CONTEXT_ROOT := A_ScriptDir "\context"
     if !IsSet(g_ContextBrowserActive)
@@ -14250,6 +14254,10 @@ ContextBrowser_EnsureGlobals() {
         g_ContextBrowserFilterQuery := ""
     if !IsSet(g_ContextBrowserFileIndex)
         g_ContextBrowserFileIndex := []
+    if !IsSet(g_ContextBrowserFilterTyping)
+        g_ContextBrowserFilterTyping := false
+    if !IsSet(g_ContextBrowserSuppressFilterKillFocus)
+        g_ContextBrowserSuppressFilterKillFocus := false
     if !IsSet(g_ContextBrowserLetterHook)
         g_ContextBrowserLetterHook := ""
 }
@@ -14957,20 +14965,28 @@ ContextBrowser_OnFilterChange(*) {
 }
 
 ContextBrowser_OnFilterFocus(*) {
-    global g_ContextBrowserFilterCtrl, g_ContextBrowserActive
+    global g_ContextBrowserFilterCtrl, g_ContextBrowserActive, g_ContextBrowserFilterTyping
+    g_ContextBrowserFilterTyping := true
     ; #region agent log
     ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterFocus", "filter field focused; disabling list hotkeys", {
-        filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "", runId: "post-fix" })
+        filterValue: IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : "", runId: "post-fix2" })
     ; #endregion
     if (g_ContextBrowserActive)
         ContextBrowser_SetListNavigationHotkeysEnabled(false)
 }
 
 ContextBrowser_OnFilterKillFocus(*) {
-    global g_ContextBrowserActive
+    global g_ContextBrowserActive, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
+    if (g_ContextBrowserSuppressFilterKillFocus) {
+        ; #region agent log
+        ContextBrowser_DebugLog("H8", "ContextBrowser_OnFilterKillFocus", "suppressed during refresh", { runId: "post-fix3" })
+        ; #endregion
+        return
+    }
+    g_ContextBrowserFilterTyping := false
     ; #region agent log
     ContextBrowser_DebugLog("H5", "ContextBrowser_OnFilterKillFocus", "filter field unfocused; restoring list hotkeys", {
-        runId: "post-fix" })
+        runId: "post-fix2" })
     ; #endregion
     if (g_ContextBrowserActive)
         ContextBrowser_SetListNavigationHotkeysEnabled(true)
@@ -14986,6 +15002,8 @@ CleanupContextBrowser() {
         g_ContextBrowserLastDir := g_ContextBrowserCurrentDir
 
     g_ContextBrowserActive := false
+    g_ContextBrowserFilterTyping := false
+    g_ContextBrowserSuppressFilterKillFocus := false
     ContextBrowser_StopLetterJump()
     ContextBrowser_DisableHotkeys()
     ContextBrowser_ReleasePreviewBitmap()
@@ -15103,7 +15121,7 @@ ContextBrowser_OnEnter(*) {
 ContextBrowser_RefreshView() {
     global g_ContextBrowserActive, g_ContextBrowserCurrentDir, g_ContextBrowserEntries
     global g_ContextBrowserGui, g_ContextBrowserListView, g_ContextBrowserFilterCtrl
-    global g_ContextBrowserFilterQuery
+    global g_ContextBrowserFilterQuery, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
 
     dir := g_ContextBrowserCurrentDir
     if (dir = "" || !DirExist(dir)) {
@@ -15112,6 +15130,10 @@ ContextBrowser_RefreshView() {
         CleanupContextBrowser()
         return
     }
+
+    wasTypingInFilter := g_ContextBrowserFilterTyping
+    filterValueBefore := IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : ""
+    g_ContextBrowserSuppressFilterKillFocus := wasTypingInFilter
 
     if (IsObject(g_ContextBrowserFilterCtrl))
         g_ContextBrowserFilterQuery := g_ContextBrowserFilterCtrl.Value
@@ -15124,8 +15146,10 @@ ContextBrowser_RefreshView() {
         ContextBrowser_UpdateBreadcrumbs(dir)
     }
 
-    if (!IsObject(g_ContextBrowserListView))
+    if (!IsObject(g_ContextBrowserListView)) {
+        g_ContextBrowserSuppressFilterKillFocus := false
         return
+    }
 
     lv := g_ContextBrowserListView
     lv.Opt("-Redraw")
@@ -15134,14 +15158,18 @@ ContextBrowser_RefreshView() {
         lv.Add("", ContextBrowser_EntryKindLabel(entry), ContextBrowser_FormatEntryLabel(entry))
     lv.Opt("+Redraw")
     if (g_ContextBrowserEntries.Length) {
-        lv.Modify(1, "Select Focus Vis")
-        filterFocused := ContextBrowser_IsFilterFocused()
+        typingInFilter := wasTypingInFilter
+        if (typingInFilter)
+            lv.Modify(1, "Select Vis")
+        else
+            lv.Modify(1, "Select Focus Vis")
         ; #region agent log
-        ContextBrowser_DebugLog("H2", "ContextBrowser_RefreshView", "refresh list selection", { query: q,
-            filterFocused: filterFocused ? "true" : "false", entryCount: g_ContextBrowserEntries.Length, runId:
-            "post-fix" })
+        filterValueAfter := IsObject(g_ContextBrowserFilterCtrl) ? g_ContextBrowserFilterCtrl.Value : ""
+        ContextBrowser_DebugLog("H6", "ContextBrowser_RefreshView", "refresh list selection", { query: q,
+            typingInFilter: typingInFilter ? "true" : "false", filterBefore: filterValueBefore, filterAfter:
+            filterValueAfter, entryCount: g_ContextBrowserEntries.Length, runId: "post-fix3" })
         ; #endregion
-        if (!filterFocused) {
+        if (!typingInFilter) {
             try lv.Focus()
             catch {
             }
@@ -15151,7 +15179,10 @@ ContextBrowser_RefreshView() {
         ContextBrowser_UpdatePreview(0)
     }
     g_ContextBrowserActive := true
-    if (!ContextBrowser_IsFilterFocused())
+    g_ContextBrowserSuppressFilterKillFocus := false
+    if (wasTypingInFilter)
+        g_ContextBrowserFilterTyping := true
+    if (!g_ContextBrowserFilterTyping)
         ContextBrowser_StartLetterJump()
 }
 
