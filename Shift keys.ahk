@@ -2117,7 +2117,17 @@ ShowGlobalShortcutsHelp() {
 ; =============================================================================
 #!+1::
 {
-    ClipAngel_SendTopListItem(, true)
+    ; Release any potentially stuck modifiers before sending ⚡
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    Sleep(100)
+    SendInput "!p"
+    Sleep(100)
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_ShowWindow(hwnd)
+    SendInput "^{Home}"
+    Sleep(100)
+    SendInput "^!b"
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
 }
 
 ; =============================================================================
