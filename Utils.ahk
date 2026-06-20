@@ -3727,7 +3727,7 @@ GetHandyProcessPath() {
 ; =============================================================================
 ; Clip Angel: Merge Non-Favorite Clips
 ; =============================================================================
-; Minimize Clip Angel after automation (process stays running; no native Alt+V / WinClose).
+; Minimize Clip Angel after automation (process stays running; no native Alt+P / WinClose).
 EnsureClipAngelClosed() {
     hwnd := ClipAngel_MainHwnd()
     if !hwnd
@@ -3950,7 +3950,7 @@ ParseRTFToPlainText(rtf) {
 ; =============================================================================
 ; Clip Angel: Open/Activate with focus correction (Row 0)
 ; =============================================================================
-; Show/restore always-running Clip Angel via AHK (no native Alt+V). UIA: dataGridView,
+; Show/restore always-running Clip Angel via AHK (no native Alt+P paste hotkey). UIA: dataGridView,
 ; Row 0 (first clip) per clip-angel.txt. One ElementFromHandle per flow; bounded polls; layout only when not foreground/hidden.
 ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     needBanner := false
@@ -4008,100 +4008,7 @@ CLIPANGEL_UIA_POLL_MS := 30
 CLIPANGEL_GRID_WAIT_MS := 400
 CLIPANGEL_ROW0_WAIT_MS := 300
 CLIPANGEL_ROW0_SELECT_WAIT_MS := 250
-; Win+Alt+Shift+1 discreet paste: move all Clip Angel windows off-screen (WinForms rejects 1×1 WinMove).
-CLIPANGEL_DISCREET_OFFSCREEN_X := -48000
-CLIPANGEL_DISCREET_OFFSCREEN_Y := -48000
 global g_ClipAngelAutomationBusy := false
-
-ClipAngel_DiscreetDebugLog(hypothesisId, location, message, data := "", runId := "pre-fix") {
-    ; #region agent log
-    try {
-        dataJson := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data
-                parts.Push('"' StrReplace("" k, '"', '\"') '":"' StrReplace("" v, '"', '\"') '"')
-            joined := ""
-            for i, p in parts
-                joined .= (i = 1 ? "" : ",") p
-            dataJson := "{" joined "}"
-        } else if (data != "") {
-            dataJson := '{"value":"' StrReplace("" data, '"', '\"') '"}'
-        }
-        line := '{"sessionId":"9993b9","timestamp":' A_TickCount ',"runId":"' StrReplace(runId, '"', '\"')
-        . '","hypothesisId":"' StrReplace(hypothesisId, '"', '\"') '","location":"' StrReplace(location, '"', '\"')
-        . '","message":"' StrReplace(message, '"', '\"') '","data":' dataJson "}"
-        FileAppend(line "`n", A_ScriptDir . "\debug-9993b9.log", "UTF-8")
-    } catch {
-    }
-    ; #endregion agent log
-}
-
-ClipAngel_DebugWindowGeom(hwnd, label := "") {
-    info := Map("label", label, "hwnd", hwnd ? hwnd : 0, "exists", 0)
-    if !hwnd || !WinExist("ahk_id " hwnd)
-        return info
-    info["exists"] := 1
-    try {
-        info["title"] := WinGetTitle("ahk_id " hwnd)
-    } catch {
-        info["title"] := ""
-    }
-    try {
-        info["class"] := WinGetClass("ahk_id " hwnd)
-    } catch {
-        info["class"] := ""
-    }
-    try {
-        info["minMax"] := WinGetMinMax("ahk_id " hwnd)
-    } catch {
-        info["minMax"] := -1
-    }
-    try {
-        info["visible"] := DllCall("IsWindowVisible", "ptr", hwnd)
-    } catch {
-        info["visible"] := -1
-    }
-    try {
-        WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
-        info["x"] := x
-        info["y"] := y
-        info["w"] := w
-        info["h"] := h
-    } catch {
-    }
-    return info
-}
-
-ClipAngel_DebugSnapshotAllWindows(stage := "") {
-    ; #region agent log
-    windows := []
-    try {
-        for h in WinGetList("ahk_exe ClipAngel.exe") {
-            g := ClipAngel_DebugWindowGeom(h, "hwnd_" h)
-            g["isMainHwnd"] := (h = ClipAngel_MainHwnd()) ? 1 : 0
-                windows.Push(g)
-        }
-    } catch {
-    }
-    ClipAngel_DiscreetDebugLog("H3", "Utils.ahk:ClipAngel_DebugSnapshotAllWindows", stage, Map(
-        "count", windows.Length, "mainHwnd", ClipAngel_MainHwnd(), "windows", windows.Length ? "see_data" : "none"))
-    for g in windows {
-        ClipAngel_DiscreetDebugLog("H3", "Utils.ahk:ClipAngel_DebugSnapshotAllWindows", stage . "_win", Map(
-            "hwnd", g["hwnd"], "isMain", g["isMainHwnd"], "title", g.Has("title") ? g["title"] : "",
-            "class", g.Has("class") ? g["class"] : "", "x", g.Has("x") ? g["x"] : "", "y", g.Has("y") ? g["y"] : "",
-            "w", g.Has("w") ? g["w"] : "", "h", g.Has("h") ? g["h"] : "", "minMax", g["minMax"],
-            "visible", g["visible"]))
-    }
-    ; #endregion agent log
-}
-
-ClipAngel_DebugLogGeom(hypothesisId, location, label, hwnd) {
-    ; #region agent log
-    g := ClipAngel_DebugWindowGeom(hwnd, label)
-    ClipAngel_DiscreetDebugLog(hypothesisId, location, label, g)
-    ; #endregion agent log
-}
 
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
@@ -4220,116 +4127,6 @@ ClipAngel_HideWindow(hwnd) {
     } catch {
         return false
     }
-}
-
-; Shrink Clip Angel to a tiny corner tile so automation runs without a full-window flash (#!+1 only).
-ClipAngel_DiscreetShouldConceal(hwnd) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
-        return false
-    try {
-        if !DllCall("IsWindowVisible", "ptr", hwnd)
-            return false
-    } catch {
-        return false
-    }
-    try {
-        WinGetPos(, , &w, &h, "ahk_id " hwnd)
-        if (w <= 0 && h <= 0)
-            return false
-    } catch {
-        return false
-    }
-    return true
-}
-
-ClipAngel_IsOffScreenConcealed(hwnd) {
-    if !hwnd || !WinExist("ahk_id " hwnd)
-        return false
-    try {
-        WinGetPos(&x, &y, , , "ahk_id " hwnd)
-        return (x <= CLIPANGEL_DISCREET_OFFSCREEN_X + 5000)
-    } catch {
-        return false
-    }
-}
-
-; Wake Clip Angel for UIA without ShowWindow's activate path (which maximizes / pulls on-screen).
-ClipAngel_DiscreetWake(hwnd) {
-    if !hwnd
-        return false
-    try {
-        if (WinGetMinMax("ahk_id " hwnd) = -1)
-            WinRestore("ahk_id " hwnd)
-    } catch {
-    }
-    try WinShow("ahk_id " hwnd)
-    catch {
-        return false
-    }
-    return DllCall("IsWindowVisible", "ptr", hwnd)
-}
-
-ClipAngel_ShrinkForAutomation(hwnd, targetMon := 0) {
-    saved := Map("windows", Map())
-    ; #region agent log
-    ClipAngel_DiscreetDebugLog("H1", "Utils.ahk:ClipAngel_ShrinkForAutomation", "conceal_start", Map(
-        "mainHwnd", hwnd, "offscreenX", CLIPANGEL_DISCREET_OFFSCREEN_X, "offscreenY", CLIPANGEL_DISCREET_OFFSCREEN_Y),
-    "post-fix")
-    ; #endregion agent log
-    try {
-        for caHwnd in WinGetList("ahk_exe ClipAngel.exe") {
-            if !ClipAngel_DiscreetShouldConceal(caHwnd)
-                continue
-            g := Map()
-            try {
-                WinGetPos(&x, &y, &w, &caH, "ahk_id " caHwnd)
-                g["x"] := x
-                g["y"] := y
-                g["w"] := w
-                g["h"] := caH
-                g["minMax"] := WinGetMinMax("ahk_id " caHwnd)
-                g["wasShown"] := ClipAngel_IsWindowShown(caHwnd)
-            } catch {
-                continue
-            }
-            loop 3 {
-                try {
-                    mm := WinGetMinMax("ahk_id " caHwnd)
-                } catch {
-                    break
-                }
-                if (mm = 0)
-                    break
-                try {
-                    WinRestore("ahk_id " caHwnd)
-                } catch {
-                    break
-                }
-                Sleep 50
-            }
-            try WinGetPos(, , &w, &caH, "ahk_id " caHwnd)
-            catch {
-                w := g.Has("w") ? g["w"] : 300
-                caH := g.Has("h") ? g["h"] : 51
-            }
-            ; #region agent log
-            ClipAngel_DebugLogGeom("H1", "Utils.ahk:ClipAngel_ShrinkForAutomation", "before_conceal_" caHwnd, caHwnd)
-            ; #endregion agent log
-            try WinMove(CLIPANGEL_DISCREET_OFFSCREEN_X, CLIPANGEL_DISCREET_OFFSCREEN_Y, w, caH, "ahk_id " caHwnd)
-            catch {
-                try DllCall("MoveWindow", "ptr", caHwnd, "int", CLIPANGEL_DISCREET_OFFSCREEN_X, "int",
-                    CLIPANGEL_DISCREET_OFFSCREEN_Y, "int", w, "int", caH, "int", 1)
-            }
-            ; #region agent log
-            ClipAngel_DebugLogGeom("H1", "Utils.ahk:ClipAngel_ShrinkForAutomation", "after_conceal_" caHwnd, caHwnd)
-            ; #endregion agent log
-            saved["windows"][caHwnd] := g
-        }
-    } catch {
-    }
-    if (hwnd && saved["windows"].Has(hwnd))
-        return saved["windows"][hwnd]
-    return saved
 }
 
 ; dataGridView (Type 50036, AutomationId dataGridView) — clip-angel.txt.
@@ -4639,8 +4436,8 @@ ClipAngel_WaitChordModifiersReleased() {
     KeyWait "RWin", tw
 }
 
-; Legacy native Alt+V send — open/close flows use ClipAngel_ShowWindow/HideWindow instead.
-; Still used by MergeNonFavoriteClips (All Clips view); replace with UIA when that macro is updated.
+; Legacy native Alt+V send — All Clips view in MergeNonFavoriteClips only.
+; Open/close and paste flows use ClipAngel_ShowWindow/HideWindow or Alt+P (+ Enter) instead.
 ClipAngel_SendToggleHotkey() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -4755,96 +4552,38 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
-; Send top list item via Clip Angel incremental paste (^!b). Opens with Alt+V, closes after paste.
-; discreet=true (#!+1 only): loading banner + shrink window instead of maximize flash.
-ClipAngel_SendTopListItem(priorHwnd := 0, discreet := false) {
+; Native top-item paste: Alt+P + ShowWindow + ^Home + ^!b (same as Win+Alt+Shift+1).
+; Trade-off: brief Clip Angel visibility vs full UIA open/row-select (efficiency-canon §11).
+ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    if (priorHwnd)
+        ClipAngel_EnsureWindowActive(priorHwnd)
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    Sleep 200
+    SendInput "!p"
+    Sleep 200
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_ShowWindow(hwnd)
+    SendInput "^{Home}"
+    Sleep 200
+    SendInput "^!b"
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+}
+
+; Send top list item via Clip Angel native keys. Closes after paste and restores prior focus.
+ClipAngel_SendTopListItem(priorHwnd := 0) {
     if !ClipAngel_TryAcquireAutomationLock()
         return false
     priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
     ok := false
-    bannerShown := false
     try {
-        ClipAngel_WaitChordModifiersReleased()
-        ClipAngel_ReleaseChordModifiersForSend()
-        if (discreet) {
-            ; #region agent log
-            ClipAngel_DiscreetDebugLog("H5", "Utils.ahk:ClipAngel_SendTopListItem", "discreet_enter", Map(
-                "priorHwnd", priorHwnd))
-            ClipAngel_DebugSnapshotAllWindows("enter")
-            ; #endregion agent log
-            StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
-            bannerShown := true
-            hwnd := ClipAngel_MainHwnd()
-            if !hwnd {
-                ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            ; Conceal any on-screen windows first (desktop button + main) before wake/activate.
-            ClipAngel_ShrinkForAutomation(hwnd)
-            if !DllCall("IsWindowVisible", "ptr", hwnd) {
-                ; #region agent log
-                ClipAngel_DebugLogGeom("H4", "Utils.ahk:ClipAngel_SendTopListItem", "before_discreet_wake", hwnd)
-                ; #endregion agent log
-                if !ClipAngel_DiscreetWake(hwnd) {
-                    ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
-                    return false
-                }
-                ClipAngel_ShrinkForAutomation(hwnd)
-                ; #region agent log
-                ClipAngel_DebugLogGeom("H4", "Utils.ahk:ClipAngel_SendTopListItem", "after_discreet_wake", hwnd)
-                ClipAngel_DebugSnapshotAllWindows("after_discreet_wake")
-                ; #endregion agent log
-            } else if !ClipAngel_IsOffScreenConcealed(hwnd) {
-                ; #region agent log
-                ClipAngel_DebugLogGeom("H4", "Utils.ahk:ClipAngel_SendTopListItem", "before_reconceal", hwnd)
-                ; #endregion agent log
-                ClipAngel_ShrinkForAutomation(hwnd)
-            }
-            if !ClipAngel_EnsureWindowActive(hwnd) {
-                ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            ClipAngel_ShrinkForAutomation(hwnd)
-            ; #region agent log
-            ClipAngel_DebugLogGeom("H2", "Utils.ahk:ClipAngel_SendTopListItem", "after_ensure_active", hwnd)
-            ClipAngel_DebugSnapshotAllWindows("after_ensure_active")
-            ; #endregion agent log
-            if !ClipAngel_UiaEnsureRow0Selected(hwnd, true) || !ClipAngel_IsListReady(&hwnd) {
-                ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            ClipAngel_ShrinkForAutomation(hwnd)
-            ; #region agent log
-            ClipAngel_DebugLogGeom("H2", "Utils.ahk:ClipAngel_SendTopListItem", "after_row0", hwnd)
-            ClipAngel_DebugSnapshotAllWindows("after_row0")
-            ; #endregion agent log
-            StandardLoadingBar_Update("📋 Pasting top clip...")
-            ClipAngel_SendIncrementalPaste()
-            ; #region agent log
-            ClipAngel_DebugLogGeom("H2", "Utils.ahk:ClipAngel_SendTopListItem", "after_paste", hwnd)
-            ClipAngel_DebugSnapshotAllWindows("after_paste")
-            ; #endregion agent log
-            ClipAngel_CloseAndRestoreFocus(priorHwnd)
-            StandardLoadingBar_Show("✅ Done", BANNER_ACCENT_SUCCESS, { passive: true, centerOnHwnd: 0, textWidth: 200,
-                fontSize: 17, passiveBgColor: BANNER_ACCENT_SUCCESS, alpha: 220 })
-            StandardLoadingBar_Hide(400)
-            bannerShown := false
-            ok := true
-        } else {
-            if !ClipAngel_EnsureOpenAndReady(true) {
-                ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            ClipAngel_SendIncrementalPaste()
-            ClipAngel_CloseAndRestoreFocus(priorHwnd)
-            ok := true
-        }
+        ClipAngel_SendNativeTopItemKeys(priorHwnd)
+        ok := true
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         ok := false
     } finally {
-        if (bannerShown)
-            StandardLoadingBar_Hide(0)
         EnsureClipAngelClosed()
         ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
@@ -4868,15 +4607,12 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
         ClipAngel_ReleaseChordModifiersForSend()
         loop n {
             if (A_Index = 1) {
-                if !ClipAngel_EnsureOpenAndReady(true) {
-                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                    return false
-                }
+                ClipAngel_SendNativeTopItemKeys(priorHwnd)
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput "^!b"
             }
-            ClipAngel_ReleaseChordModifiersForSend()
-            SendInput "^!b"
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
         ClipAngel_CloseAndRestoreFocus(priorHwnd)
@@ -9459,10 +9195,8 @@ CleanClipboard_ShouldAbort(sessionId := 0) {
 }
 
 CleanClipboard_UnwindClipAngel() {
-    try {
-        if WinExist("ClipAngel")
-            SendInput "!v"
-    } catch {
+    try EnsureClipAngelClosed()
+    catch {
     }
     Sleep 100
 }
@@ -9491,7 +9225,8 @@ CleanClipboardInternal(sessionId := 0) {
         return
     }
 
-    SendInput "!v"
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_ShowWindow(hwnd)
     Sleep 600
     if (CleanClipboard_ShouldAbort(sessionId)) {
         CleanClipboard_UnwindClipAngel()
@@ -9512,7 +9247,7 @@ CleanClipboardInternal(sessionId := 0) {
         return
     }
 
-    SendInput "!v"
+    EnsureClipAngelClosed()
     Sleep 400
 }
 
@@ -9694,7 +9429,7 @@ DictationCleanup_Tick() {
     g_DictationCleanupRemaining -= 1
 
     if (g_DictationCleanupRemaining <= 0) {
-        ; Countdown finished -> hide banner and clear clipboard using the existing workflow (Alt+V, Ctrl+Alt+K, etc.)
+        ; Countdown finished -> hide banner and clear clipboard using the existing workflow (show Clip Angel, Ctrl+Alt+K, etc.)
         DictationCleanup_StopCountdown(false)
         CleanClipboardInternal()
         return
@@ -16025,7 +15760,7 @@ CleanupHotstringSelector() {
 ; =============================================================================
 
 ; Navigate to Gemini, focus the prompt field, then paste first clipboard snippet (same as Win+Alt+Shift+1).
-; Reference: "order called snippets" - Clip Angel top item sent via !v then ^!b.
+; Reference: "order called snippets" - Clip Angel top item via ClipAngel_SendNativeTopItemKeys (Win+Alt+Shift+1 sequence).
 ; If optionalPromptText is non-empty, inserts that text into the prompt field instead (same as Win+Alt+Shift+U then L, prompt char).
 ; switchToFirstTab: when true (default), send Ctrl+1 and show tab-1 banner (AI Text Optimizer / ^!#4). When false, use currently active Gemini tab if any, else first Gemini window, without changing tab (delay-submit flow).
 GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {

@@ -2117,17 +2117,7 @@ ShowGlobalShortcutsHelp() {
 ; =============================================================================
 #!+1::
 {
-    ; Release any potentially stuck modifiers before sending ⚡
-    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
-    Sleep(100)
-    SendInput "!p"
-    Sleep(100)
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_ShowWindow(hwnd)
-    SendInput "^{Home}"
-    Sleep(100)
-    SendInput "^!b"
-    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    ClipAngel_SendTopListItem()
 }
 
 ; =============================================================================
@@ -2562,15 +2552,12 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             }
             Gemini_FocusPromptSameAsOpenHotkey(uia, false)
             if (A_Index = 1) {
-                if !ClipAngel_EnsureOpenAndReady(true) {
-                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                    return
-                }
+                ClipAngel_SendNativeTopItemKeys(priorHwnd)
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput "^!b"
             }
-            ClipAngel_ReleaseChordModifiersForSend()
-            SendInput "^!b"
             ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon: bounded
             ; wait vs fixed 2.6s). minNoIndicatorMs 2600 preserves ~legacy tail when no upload indicator.
             Sleep 400
@@ -2801,15 +2788,12 @@ ExecuteSequentialPaste(actionCount) {
             catch {
             }
             if (A_Index = 1) {
-                if !ClipAngel_EnsureOpenAndReady(true) {
-                    ShowCenteredOverlay_Utils("❌ Clip Angel list not ready.", 2000, BANNER_ACCENT_ERROR)
-                    return
-                }
+                ClipAngel_SendNativeTopItemKeys(priorHwnd)
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput "^!b"
             }
-            ClipAngel_ReleaseChordModifiersForSend()
-            SendInput "^!b"
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
     } finally {
@@ -18848,6 +18832,7 @@ GetEmojiByNumber(numberText) {
     emojiMap[3] := "⚡"
     emojiMap[4] := "✅"
     emojiMap[5] := "❓"
+    emojiMap[6] := "🚀"
     return (emojiMap.Has(number)) ? emojiMap[number] : ""
 }
 
