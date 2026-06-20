@@ -64,7 +64,7 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
     }
 }
 
-; Handy + WindowManagement script identity: skip for per-monitor cycling, move-to-monitor, and auto-cursor.
+; Handy, Clip Angel, and WindowManagement identity: skip for per-monitor cycling, move-to-monitor, tile, and auto-cursor.
 WM_IsExcludedIndicatorWindow(hwnd) {
     if (!hwnd)
         return false
@@ -73,7 +73,7 @@ WM_IsExcludedIndicatorWindow(hwnd) {
     } catch {
         return false
     }
-    if (exe = "handy.exe")
+    if (exe = "handy.exe" || exe = "clipangel.exe")
         return true
     try {
         title := WinGetTitle(hwnd)
@@ -390,6 +390,10 @@ WM_SnapHalfPairActiveWindow() {
         targetHwnd := 0
     if (!targetHwnd) {
         ShowNotification_WM("No active window to snap.")
+        return
+    }
+    if (WM_IsExcludedIndicatorWindow(targetHwnd)) {
+        ShowNotification_WM("Cannot snap this window (indicator / overlay).")
         return
     }
     monIdx := GetMonitorIndexForForeground_StandardBar()
