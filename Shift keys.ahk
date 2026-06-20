@@ -1702,8 +1702,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
     [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
     Letters available: T, U
-    Numbers available: (none — 0–5, 7–9 assigned)
+
     Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
+    [Ctrl+Alt+Win+1] > Available
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
     [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
     [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
@@ -1727,6 +1728,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
     
+    [Alt+P] Ope clip angel
     
     [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
     

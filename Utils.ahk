@@ -10416,24 +10416,6 @@ DesktopToRecycle_Trigger() {
 }
 
 ; =============================================================================
-; Clip Angel: Open/Activate with focus correction (Row 0)
-; Hotkey: Alt+V - minimize when Clip Angel is foreground; else show + layout + Row 0.
-; =============================================================================
-!v::
-{
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel não está em execução.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    if WinActive("ahk_id " hwnd) {
-        ClipAngel_HideWindow(hwnd)
-        return
-    }
-    ActivateClipAngelWithFocusCorrection()
-}
-
-; =============================================================================
 ; Mouse Jump Shortcuts
 ; Hotkeys: Win+Alt+Shift+Arrow Keys
 ; Jump mouse cursor by fixed pixel distance in each direction with multi-monitor support
