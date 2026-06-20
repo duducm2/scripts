@@ -3603,7 +3603,7 @@ global g_Projects := [
                                                                 path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                                                 workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
                                                                 category: "Work", char: "b" }, { name: "Python ScripTs",
-                                                                    path: "",
+                                                                    path: "C:\Users\eduev\Meu Drive\17 - Projects\My-Python-Scripts",
                                                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
                                                                     category: "Work", char: "t" }
 ]
