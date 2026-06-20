@@ -4552,9 +4552,9 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
-; Native top-item paste: Alt+P + ShowWindow + ^Home + ^!b (same as Win+Alt+Shift+1).
+; Native open + row 0: Alt+P + ShowWindow + ^Home (shared by paste and favorite flows).
 ; Trade-off: brief Clip Angel visibility vs full UIA open/row-select (efficiency-canon §11).
-ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
+ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
@@ -4567,8 +4567,13 @@ ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
         ClipAngel_ShowWindow(hwnd)
     SendInput "^{Home}"
     Sleep 200
-    SendInput "^!b"
     SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+}
+
+; Native top-item paste: open via ActivateNativeFirstClip, then incremental paste (^!b).
+ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
+    ClipAngel_ActivateNativeFirstClip(priorHwnd)
+    SendInput "^!b"
 }
 
 ; Send top list item via Clip Angel native keys. Closes after paste and restores prior focus.
@@ -4633,79 +4638,18 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
 MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     if waitForIngest
         Sleep(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS)
-    ActivateClipAngelWithFocusCorrection()
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+    if !ClipAngel_TryAcquireAutomationLock()
         return
-    }
+    priorHwnd := ClipAngel_ResolvePriorHwnd(0)
     try {
-        try WinActivate("ahk_id " hwnd)
-        catch {
-            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-            EnsureClipAngelClosed()
+        if (target = "last") {
+            MarkLastClipAsFavorite_UiaLastRow()
             return
         }
-        if !WinWaitActive("ahk_id " hwnd, , 2) {
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
-            EnsureClipAngelClosed()
+        ClipAngel_ActivateNativeFirstClip()
+        if !ClipAngel_MainHwnd() {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
             return
-        }
-        el := UIA.ElementFromHandle(hwnd)
-        if !el {
-            ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
-            EnsureClipAngelClosed()
-            return
-        }
-        dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
-        if !dataGrid {
-            ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
-                BANNER_ACCENT_ERROR)
-            EnsureClipAngelClosed()
-            return
-        }
-        rows := 0
-        try rows := dataGrid.FindAll({ Type: 50025 })
-        catch {
-            rows := 0
-        }
-        if !rows || rows.Length < 1 {
-            ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
-            EnsureClipAngelClosed()
-            return
-        }
-        rowTarget := rows[1]
-        if (target = "last")
-            rowTarget := rows[rows.Length]
-        hasSel := rowTarget.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-        try {
-            if hasSel
-                rowTarget.SelectionItemPattern.Select()
-            else
-                rowTarget.SetFocus()
-        } catch {
-            try rowTarget.SetFocus()
-        }
-        try {
-            if rowTarget.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
-                rowTarget.ScrollItemPattern.ScrollIntoView()
-        } catch {
-        }
-        favCell := ClipAngel_FindFavoriteCell(rowTarget)
-        if favCell {
-            if ClipAngel_FavoriteCellIsOn(favCell) {
-                ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
-                EnsureClipAngelClosed()
-                return
-            }
-        }
-        if !WinActive("ahk_id " hwnd) {
-            try WinActivate("ahk_id " hwnd)
-            if !WinWaitActive("ahk_id " hwnd, , 2) {
-                ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
-                EnsureClipAngelClosed()
-                return
-            }
         }
         Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
         ClipAngel_WaitChordModifiersReleased()
@@ -4713,11 +4657,85 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
         SendInput "!q"
         ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
         ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
-        EnsureClipAngelClosed()
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    } finally {
         EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
     }
+}
+
+; Legacy UIA path for target="last" only (no callers today; API preserved).
+MarkLastClipAsFavorite_UiaLastRow() {
+    ActivateClipAngelWithFocusCorrection()
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !WinWaitActive("ahk_id " hwnd, , 2) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    el := UIA.ElementFromHandle(hwnd)
+    if !el {
+        ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+    if !dataGrid {
+        ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+    rows := 0
+    try rows := dataGrid.FindAll({ Type: 50025 })
+    catch {
+        rows := 0
+    }
+    if !rows || rows.Length < 1 {
+        ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    rowTarget := rows[rows.Length]
+    hasSel := rowTarget.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+    try {
+        if hasSel
+            rowTarget.SelectionItemPattern.Select()
+        else
+            rowTarget.SetFocus()
+    } catch {
+        try rowTarget.SetFocus()
+    }
+    try {
+        if rowTarget.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+            rowTarget.ScrollItemPattern.ScrollIntoView()
+    } catch {
+    }
+    favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
+        ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
+        return
+    }
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 2) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
+    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "!q"
+    ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
+    ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
 }
 
 ; =============================================================================
