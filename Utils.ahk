@@ -11565,30 +11565,8 @@ HandleLoopModeUp() {
     }
 }
 
-; Win+Alt+Shift+Arrow: send that arrow key five times
-#!+Right::
-{
-    Send("{Right 5}")
-    return
-}
-
-#!+Left::
-{
-    Send("{Left 5}")
-    return
-}
-
-#!+Down::
-{
-    Send("{Down 5}")
-    return
-}
-
-#!+Up::
-{
-    Send("{Up 5}")
-    return
-}
+; [Utils module] Win+Alt+Shift+Arrow five-step hotkeys -> Utils\mouse_jump_hotkeys.ahk
+#include %A_ScriptDir%\Utils\mouse_jump_hotkeys.ahk
 
 ; [Utils module] Peek PDF / QuickLook study helpers (part 1) -> Utils\peek_pdf_study_01.ahk
 #include %A_ScriptDir%\Utils\peek_pdf_study_01.ahk
