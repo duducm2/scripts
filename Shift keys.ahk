@@ -22061,84 +22061,8 @@ Mobills_TypeMainInOpenPicker() {
     }
 }
 
-; =============================================================================
-; Mobills hotkeys fallback for mobile/device mode
-; - Some Chrome "mobile device" views do not keep "Mobills" in the window title,
-;   which prevents the WinActive("Mobills") context from matching.
-; - This fallback scopes K/L (+Shift variants) to the Mobills Transactions URL only.
-; =============================================================================
-global g_MobillsUrlCacheTick := 0
-global g_MobillsUrlCacheUrl := ""
-
-Mobills_IsTransactionsUrlActive(cacheMs := 250) {
-    global g_MobillsUrlCacheTick, g_MobillsUrlCacheUrl
-    now := A_TickCount
-
-    if (g_MobillsUrlCacheTick && (now - g_MobillsUrlCacheTick) < cacheMs) {
-        return InStr(g_MobillsUrlCacheUrl, "/transactions")
-    }
-
-    g_MobillsUrlCacheTick := now
-    g_MobillsUrlCacheUrl := ""
-
-    try {
-        ; Prefer Chrome if active, else try Edge.
-        if WinActive("ahk_exe chrome.exe")
-            uia := UIA_Browser("ahk_exe chrome.exe")
-        else if WinActive("ahk_exe msedge.exe")
-            uia := UIA_Browser("ahk_exe msedge.exe")
-        else
-            uia := ""
-
-        if uia {
-            try g_MobillsUrlCacheUrl := StrLower(uia.GetCurrentURL())
-        }
-    } catch {
-        g_MobillsUrlCacheUrl := ""
-    }
-
-    return InStr(g_MobillsUrlCacheUrl, "/transactions")
-}
-
-; True when Chrome/Edge UIA focus is in a text-editable control (typing must not trigger month nav).
-; Omit ControlType Document: the web root is often Document and would block K/L when the list has focus.
-Mobills_IsWebTextInputFocused() {
-    try {
-        fe := UIA.GetFocusedElement()
-        if !fe
-            return false
-        ct := fe.GetPropertyValue(UIA.Property.ControlType)
-        if (ct = UIA.Type.Edit || ct = 50004)
-            return true
-        if (ct = UIA.Type.ComboBox || ct = 50003)
-            return true
-        if (ct = 50023) ; UIA Type Spinner (number inputs)
-            return true
-    } catch {
-    }
-    return false
-}
-
-; Previous/Next month: WinActive("Mobills") OR mobile fallback (transactions URL). Never while typing in a field
-; (fixes bare k/l stealing keys and +k/+l from long-press on mobile keyboards).
-Mobills_ShouldHandleMonthNavKeys() {
-    if Mobills_IsWebTextInputFocused()
-        return false
-    if WinActive("Mobills")
-        return true
-    if (WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe")) && Mobills_IsTransactionsUrlActive()
-        return true
-    return false
-}
-
-#HotIf Mobills_ShouldHandleMonthNavKeys()
-
-k:: Mobills_Navigate("Prev")
-l:: Mobills_Navigate("Next")
-+k:: Mobills_Navigate("Prev")
-+l:: Mobills_Navigate("Next")
-
-#HotIf
+; [SK module] Mobills URL-scoped month nav hotkeys -> Shift keys\mobills_hotkeys_fallback.ahk
+#include %A_ScriptDir%\Shift keys\mobills_hotkeys_fallback.ahk
 
 ; [SK module] Google Keep hotkeys and reminder dismiss helpers -> Shift keys\hotif_google_keep.ahk
 #include %A_ScriptDir%\Shift keys\hotif_google_keep.ahk
