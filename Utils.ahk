@@ -10068,13 +10068,8 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     DllCall("SetCursorPos", "int", centerX, "int", centerY)
 }
 
-; =============================================================================
-; Select AI Model in Handy (Win+Alt+Shift+C)
-; =============================================================================
-#!+C::
-{
-    SelectAiModelInHandy()
-}
+; [Utils module] Handy AI model selector hotkey #!+C -> Utils\handy_selector_hotkey.ahk
+#include %A_ScriptDir%\Utils\handy_selector_hotkey.ahk
 
 ; [Utils module] Desktop to Recycle Bin macro -> Utils\desktop_recycle.ahk
 #include %A_ScriptDir%\Utils\desktop_recycle.ahk
