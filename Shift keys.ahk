@@ -26,10 +26,10 @@ SetTitleMatchMode 2
 ; -----------------------------------------------------------------------------
 ; MODULE MAP - this file stays the runnable entry point / source of truth and
 ; #includes each module below. For a given feature, open just its small module
-; (handy for low-context AI). Anything not listed still lives inline in this file.
-;   Shift keys\helpers.ahk through m365_copilot_temp.ahk — see #include list below (59 modules)
-;   Remaining inline: ML/Shopee predicates, IsChromePdfViewerActive, IsFileDialogActive,
-;   UIATreeInspector helpers, VSCode_TriggerGenerateCommitMessage (orchestrator glue between modules)
+; (handy for low-context AI). See Shift keys/MODULARIZATION_PROGRESS.md.
+;   Shift keys\helpers.ahk through m365_copilot_temp.ahk — 65 modules total
+;   Still inline: preamble side effects, #HotIf resets, g_WikipediaScrollHistory,
+;   VSCode evidence bootstrap (VSCodeEvidenceSearch.ahk at file end)
 ; -----------------------------------------------------------------------------
 
 #include %A_ScriptDir%\env.ahk
