@@ -184,17 +184,38 @@ global g_cheatSheetSuppressFilter := false
 
 ; ListView uses system white background; black text for readability.
 global CHEAT_SHEET_LV_TEXT := 0x000000    ; black (COLORREF BGR)
+global CHEAT_SHEET_WIDTH_FRAC := 0.8      ; overlay width as fraction of monitor work area
+global CHEAT_SHEET_HEIGHT_FRAC := 0.8     ; overlay height as fraction of monitor work area
+global CHEAT_SHEET_WORKAREA_MARGIN := 12  ; px inset from work-area edges (each side)
 
 ; #region agent log
-CheatSheet_AgentDebugLog(hypothesisId, location, message, dataJson := "{}", runId := "post-fix") {
+CheatSheet_AgentDebugLog(hypothesisId, location, message, dataJson := "{}", runId := "pre-fix") {
     try {
-        logPath := A_ScriptDir "\debug-e6792c.log"
         line := Format(
             '{{"sessionId":"e6792c","timestamp":{1},"location":"{2}","message":"{3}","hypothesisId":"{4}","runId":"{5}","data":{6}}}`n',
             A_TickCount, location, message, hypothesisId, runId, dataJson)
-        FileAppend line, logPath
+        FileAppend line, A_ScriptDir "\debug-e6792c.log"
     } catch {
     }
+}
+
+CheatSheet_GetOverlayFramePad() {
+    ; +Border adds non-client pixels beyond Show w/h (client area).
+    return DllCall("GetSystemMetrics", "int", 32, "int")  ; SM_CXDLGFRAME
+}
+
+CheatSheet_GetDpiScaleAt(x, y) {
+    try {
+        pt := (y & 0xFFFFFFFF) << 32 | (x & 0xFFFFFFFF)
+        hMon := DllCall("User32.dll\MonitorFromPoint", "int64", pt, "uint", 2, "ptr")
+        dpiX := 0, dpiY := 0
+        if (DllCall("Shcore.dll\GetDpiForMonitor", "ptr", hMon, "int", 0, "uint*", &dpiX, "uint*", &dpiY, "hresult") =
+        0
+        && dpiX > 0)
+            return dpiX / 96.0
+    } catch {
+    }
+    return 1.0
 }
 ; #endregion
 
@@ -245,17 +266,14 @@ CheatSheet_ApplyListViewTheme(lv) {
     if !IsObject(lv)
         return
     ; Light theme only: black text on default white ListView (no SetWindowTheme — can block the hotkey thread).
-    textRet := 0
-    try textRet := SendMessage(0x1024, 0, CHEAT_SHEET_LV_TEXT, lv) ; LVM_SETTEXTCOLOR
-    ; #region agent log
-    CheatSheet_AgentDebugLog("C", "cheat_sheet_gui.ahk:ApplyListViewTheme", "text color only",
-        Format('{{"textRet":{1}}}', textRet), "post-fix")
-    ; #endregion
+    try SendMessage(0x1024, 0, CHEAT_SHEET_LV_TEXT, lv) ; LVM_SETTEXTCOLOR
 }
 
-CheatSheet_ConfigureSheetListViewColumns(lv) {
-    lv.ModifyCol(1, 200)
-    lv.ModifyCol(2, 280)
+CheatSheet_ConfigureSheetListViewColumns(lv, guiW := 1000) {
+    col1 := Min(200, Max(80, Round(guiW * 0.20)))
+    col2 := Min(280, Max(100, Round(guiW * 0.28)))
+    lv.ModifyCol(1, col1)
+    lv.ModifyCol(2, col2)
     lv.ModifyCol(3, "AutoHdr")
 }
 
@@ -319,49 +337,73 @@ CheatSheet_FilterSheetRows(rows, query) {
 }
 
 CheatSheet_RefreshSheetListView(lv, rows) {
-    lvOk := IsObject(lv)
-    rowIn := rows.Length
-    if !lvOk {
-        ; #region agent log
-        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:RefreshSheetListView", "lv not object", "{}")
-        ; #endregion
+    if !IsObject(lv)
         return
-    }
     lv.Delete()
     for row in rows
         lv.Add("", row.section, row.shortcut, row.description)
-    lvCount := 0
-    try lvCount := lv.GetCount()
+}
+
+CheatSheet_ComputeOverlayBounds(&wx, &wy, &wr, &wb, &guiW, &guiH, &lvH, &outerX, &outerY) {
+    global CHEAT_SHEET_WIDTH_FRAC, CHEAT_SHEET_HEIGHT_FRAC, CHEAT_SHEET_WORKAREA_MARGIN
+    chromePx := 52  ; filter + spacing in Gui.Show/Move units
+    margin := CHEAT_SHEET_WORKAREA_MARGIN
+    wx := 0, wy := 0, wr := A_ScreenWidth, wb := A_ScreenHeight
+    try GetActiveMonitorWorkArea_StandardBar(&wx, &wy, &wr, &wb)
+    workW := wr - wx
+    workH := wb - wy
+    dpiScale := CheatSheet_GetDpiScaleAt(wx + workW // 2, wy + workH // 2)
+    framePadPhysical := Max(2, Round(CheatSheet_GetOverlayFramePad() * dpiScale))
+    maxOuterW := workW - 2 * margin
+    maxOuterH := workH - 2 * margin
+    minClientPhysical := Max(320, Round((chromePx + 200) * dpiScale))
+    outerW := Max(minClientPhysical + 2 * framePadPhysical, Min(maxOuterW, Round(workW * CHEAT_SHEET_WIDTH_FRAC)))
+    outerH := Max(minClientPhysical + 2 * framePadPhysical, Min(maxOuterH, Round(workH * CHEAT_SHEET_HEIGHT_FRAC)))
+    outerX := wx + (workW - outerW) / 2
+    outerY := wy + (workH - outerH) / 2
+    outerX := Max(wx + margin, Min(outerX, wr - outerW - margin))
+    outerY := Max(wy + margin, Min(outerY, wb - outerH - margin))
+    ; Work area is physical px; Gui.Show w/h are logical — divide before Show/Move.
+    guiW := Max(chromePx + 200, Round((outerW - 2 * framePadPhysical) / dpiScale))
+    guiH := Max(chromePx + 200, Round((outerH - 2 * framePadPhysical) / dpiScale))
+    lvH := guiH - chromePx
     ; #region agent log
-    CheatSheet_AgentDebugLog("D", "cheat_sheet_gui.ahk:RefreshSheetListView", "after refresh",
-        Format('{{"lvOk":1,"rowIn":{1},"lvCount":{2},"sampleShortcut":"{3}"}}',
-            rowIn, lvCount, rowIn ? StrReplace(rows[1].shortcut, '"', "'") : ""))
+    CheatSheet_AgentDebugLog("F", "cheat_sheet_gui.ahk:ComputeOverlayBounds", "computed",
+        Format(
+            '{{"wx":{1},"wy":{2},"wr":{3},"wb":{4},"workW":{5},"workH":{6},"dpiScale":{7},"guiW":{8},"guiH":{9},"outerW":{10},"outerH":{11},"outerX":{12},"outerY":{13},"framePadPhysical":{14}}}',
+            wx, wy, wr, wb, workW, workH, Round(dpiScale, 3), guiW, guiH, outerW, outerH, outerX, outerY,
+            framePadPhysical))
     ; #endregion
 }
 
-CheatSheet_ShowSheetListView(gui, lv) {
-    chromePx := 52
-    guiW := 1000
-    lvH := 520
-    wx := 0, wy := 0, wr := A_ScreenWidth, wb := A_ScreenHeight
-    try GetActiveMonitorWorkArea_StandardBar(&wx, &wy, &wr, &wb)
-    maxLvH := wb - wy - chromePx - 12
-    if (maxLvH >= 200)
-        lvH := maxLvH
-    lv.Move(, , guiW, lvH)
-    guiH := lvH + chromePx
-    guiX := wx + ((wr - wx) - guiW) / 2
-    guiY := wy + ((wb - wy) - guiH) / 2
-    guiX := Max(wx, Min(guiX, wr - guiW))
-    guiY := Max(wy, Min(guiY, wb - guiH))
+CheatSheet_ShowSheetListView(gui, lv, filterEdit := 0) {
+    wx := 0, wy := 0, wr := 0, wb := 0, guiW := 0, guiH := 0, lvH := 0, outerX := 0, outerY := 0
+    CheatSheet_ComputeOverlayBounds(&wx, &wy, &wr, &wb, &guiW, &guiH, &lvH, &outerX, &outerY)
+    mx := IsObject(gui) ? gui.MarginX : 10
+    bodyW := Max(200, guiW - 2 * mx)
+    if IsObject(filterEdit)
+        filterEdit.Move(, , bodyW)
+    if IsObject(lv) {
+        lv.Move(, , bodyW, lvH)
+        CheatSheet_ConfigureSheetListViewColumns(lv, bodyW)
+    }
+    gui.Show("x" Round(outerX) " y" Round(outerY) " w" guiW " h" guiH)
     ; #region agent log
-    CheatSheet_AgentDebugLog("E", "cheat_sheet_gui.ahk:ShowSheetListView", "before show",
-        Format('{{"guiW":{1},"guiH":{2}}}', guiW, guiH), "post-fix")
+    try {
+        ogX := 0, ogY := 0, ogW := 0, ogH := 0, cgX := 0, cgY := 0, cgW := 0, cgH := 0
+        WinGetPos &ogX, &ogY, &ogW, &ogH, gui
+        WinGetClientPos &cgX, &cgY, &cgW, &cgH, gui
+        CheatSheet_AgentDebugLog("F", "cheat_sheet_gui.ahk:ShowSheetListView", "after show",
+            Format(
+                '{{"bodyW":{1},"mx":{2},"outerLeft":{3},"outerRight":{4},"outerBottom":{5},"clientRight":{6},"wx":{7},"wr":{8},"wb":{9},"overflowX":{10},"overflowY":{11},"showW":{12},"showH":{13}}}',
+                bodyW, mx, ogX, ogX + ogW, ogY + ogH, cgX + cgW, wx, wr, wb,
+                (ogX + ogW > wr || ogX < wx) ? 1 : 0, (ogY + ogH > wb || ogY < wy) ? 1 : 0, guiW, guiH),
+            "post-fix")
+    } catch {
+    }
     ; #endregion
-    gui.Show("NoActivate x" Round(guiX) " y" Round(guiY) " w" guiW " h" guiH)
-    ; #region agent log
-    CheatSheet_AgentDebugLog("E", "cheat_sheet_gui.ahk:ShowSheetListView", "after show", "{}", "post-fix")
-    ; #endregion
+    if IsObject(filterEdit)
+        CheatSheet_DeferFocusSearch(filterEdit)
 }
 
 CheatSheet_OnSheetListCopy(lv, guiEvent) {
@@ -383,10 +425,12 @@ CheatSheet_OnSheetListCopy(lv, guiEvent) {
 }
 
 CheatSheet_InitSheetOverlayGui(gui, &filterEdit, &lv, onFilter, onEscape, onCopy) {
+    gui.MarginX := 10
+    gui.MarginY := 6
     gui.BackColor := "FFFFFF"
     gui.SetFont("s10 c000000", "Consolas")
-    filterEdit := gui.Add("Edit", "xm w1000 Section Limit20 BackgroundFFFFFF c000000", "")
-    lv := gui.Add("ListView", "xm w1000 h520 Grid -Multi +ReadOnly c000000 BackgroundFFFFFF",
+    filterEdit := gui.Add("Edit", "xm w400 Section Limit20 BackgroundFFFFFF c000000", "")
+    lv := gui.Add("ListView", "xm w400 h520 Grid -Multi +ReadOnly c000000 BackgroundFFFFFF",
         ["Section", "Shortcut", "Description"])
     filterEdit.OnEvent("Change", onFilter)
     lv.OnEvent("DoubleClick", onCopy)
@@ -410,9 +454,6 @@ CheatSheet_DestroySheetOverlayIfStale(&gui, &filterEdit, &lv, &shown) {
     filterEdit := 0
     lv := 0
     shown := false
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:DestroySheetOverlayIfStale", "rebuilt stale gui", "{}")
-    ; #endregion
 }
 
 CheatSheet_EnsureAppSheetGui() {
@@ -509,18 +550,12 @@ ToggleShortcutHelp() {
     global g_helpGui, g_helpShown, g_helpSearchEdit, g_helpLv
     global g_cheatSheetAppFullProcessed, g_cheatSheetAppRows
 
-    ; Toggle off if currently shown (or gui exists but flag lost after a partial show)
+    ; Toggle off if currently shown
     if (IsObject(g_helpGui) && g_helpShown) {
         g_helpGui.Hide()
         g_helpShown := false
         return
     }
-
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "entry state",
-        Format('{{"helpGui":{1},"helpLv":{2},"helpShown":0}}',
-            IsObject(g_helpGui) ? 1 : 0, IsObject(g_helpLv) ? 1 : 0))
-    ; #endregion
 
     text := NormalizeMojibake(GetCheatSheetText())
     if (text = "") {
@@ -538,29 +573,16 @@ ToggleShortcutHelp() {
         g_cheatSheetAppRows := CheatSheet_ParseSheetRows(g_cheatSheetAppFullProcessed)
     }
 
-    ; #region agent log
-    CheatSheet_AgentDebugLog("B", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "parsed app rows",
-        Format('{{"appRowCount":{1},"procLen":{2}}}', g_cheatSheetAppRows.Length, StrLen(g_cheatSheetAppFullProcessed))
-    )
-    ; #endregion
-
     try {
         global g_cheatSheetSuppressFilter
         CheatSheet_EnsureAppSheetGui()
-        ; #region agent log
-        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "ensure done", "{}")
-        ; #endregion
         g_cheatSheetSuppressFilter := true
         g_helpSearchEdit.Value := ""
         g_cheatSheetSuppressFilter := false
         CheatSheet_RefreshSheetListView(g_helpLv, g_cheatSheetAppRows)
-        CheatSheet_ShowSheetListView(g_helpGui, g_helpLv)
+        CheatSheet_ShowSheetListView(g_helpGui, g_helpLv, g_helpSearchEdit)
         g_helpShown := true
-    } catch as e {
-        ; #region agent log
-        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "error",
-            Format('{{"msg":"{1}"}}', StrReplace(e.Message, '"', "'")))
-        ; #endregion
+    } catch {
         g_helpShown := false
     }
 }
@@ -576,20 +598,10 @@ ShowGlobalShortcutsHelp() {
         return
     }
 
-    ; #region agent log
-    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "entry state",
-        Format('{{"globalGui":{1},"globalLv":{2},"globalShown":0}}',
-            IsObject(g_globalGui) ? 1 : 0, IsObject(g_globalLv) ? 1 : 0))
-    ; #endregion
-
     normalizedText := NormalizeMojibake(GetGlobalCheatSheetRawText())
     processedText := ProcessCheatSheetText(normalizedText)
     g_cheatSheetGlobalFullProcessed := processedText
     g_cheatSheetGlobalRows := CheatSheet_ParseSheetRows(processedText)
-    ; #region agent log
-    CheatSheet_AgentDebugLog("B", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "parsed global rows",
-        Format('{{"globalRowCount":{1},"procLen":{2}}}', g_cheatSheetGlobalRows.Length, StrLen(processedText)))
-    ; #endregion
     try {
         global g_cheatSheetSuppressFilter
         CheatSheet_EnsureGlobalSheetGui()
@@ -597,13 +609,9 @@ ShowGlobalShortcutsHelp() {
         g_globalSearchEdit.Value := ""
         g_cheatSheetSuppressFilter := false
         CheatSheet_RefreshSheetListView(g_globalLv, g_cheatSheetGlobalRows)
-        CheatSheet_ShowSheetListView(g_globalGui, g_globalLv)
+        CheatSheet_ShowSheetListView(g_globalGui, g_globalLv, g_globalSearchEdit)
         g_globalShown := true
-    } catch as e {
-        ; #region agent log
-        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "error",
-            Format('{{"msg":"{1}"}}', StrReplace(e.Message, '"', "'")))
-        ; #endregion
+    } catch {
         g_globalShown := false
     }
 }

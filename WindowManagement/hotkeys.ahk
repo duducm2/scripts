@@ -2,6 +2,7 @@
 ; WindowManagement module: hotkeys.ahk
 ; Global hotkey bindings (minimize/maximize, window tools menu, move/close/cycle/
 ; minimize on monitor). Definitions only; handlers live in WindowManagement.ahk.
+; Cheat-sheet descriptions: Shift keys/cheat_sheet_registry.ahk GLOBAL_CHEAT_SHEET_RAW
 ; Extracted verbatim from WindowManagement.ahk; loaded via #include into the
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================

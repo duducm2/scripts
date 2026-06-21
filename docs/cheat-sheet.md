@@ -27,11 +27,13 @@ On open, the **search/filter field is focused** so you can type immediately.
 Both **app** (quick tap) and **global** (long hold) overlays use the same **ListView** shell in [`cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk):
 
 - Columns: **Section**, **Shortcut**, **Description** (processed text parsed by `CheatSheet_ParseSheetRows()`).
-- **Catppuccin-style** dark theme: background `#1E1E2E`, text `#CDD6F4` (via `LVM_SETBKCOLOR` / header theming — Win32 ListView ignores plain `Gui.BackColor`).
-- Column widths: Section 200px, Shortcut 280px, Description fills remainder (avoids `Win+A...` truncation).
+- **Light theme:** white background, black text (`BackgroundFFFFFF` / `c000000` on ListView and filter Edit).
+- Column widths: Section ~20%, Shortcut ~28% of overlay width (mins 80/100px; scales on portrait), Description fills remainder.
 - Double-click a row to copy `Shortcut > Description`. Filter uses the same haystack/AND rules as before (`CheatSheet_LineMatchesQuery` on each row’s raw processed line).
 
-Overlays are **centered** on the foreground window’s monitor (`GetActiveMonitorWorkArea_StandardBar` in [`Utils.ahk`](../Utils.ahk)) with height capped to the monitor work area.
+Overlays are **centered** on the foreground window’s monitor (`GetActiveMonitorWorkArea_StandardBar` in [`Utils.ahk`](../Utils.ahk)) at **80% of that monitor’s work-area width and height** (`CHEAT_SHEET_WIDTH_FRAC` / `CHEAT_SHEET_HEIGHT_FRAC` in [`cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk)), with a **12px margin** on each edge so the window never spills into adjacent monitors (portrait-safe).
+
+**WindowManagement** global chords (`Ctrl+Alt+Win`, close/cycle/minimize per monitor, MEH Alt+Tab, etc.) are documented in **`GLOBAL_CHEAT_SHEET_RAW`** under `=== WINDOW MANAGEMENT ===` in [`cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk) — that registry is the source of truth (not the comment block in `WindowManagement.ahk`).
 
 [`CheatSheetRich.ahk`](../Shift%20keys/CheatSheetRich.ahk) is no longer used by the overlays (kept in the repo for now).
 

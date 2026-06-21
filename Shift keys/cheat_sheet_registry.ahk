@@ -1110,17 +1110,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
     [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
     Letters available: T, U
-
-    Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
-    [Ctrl+Alt+Win+1] > Available
+    Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +Z/+G/+Numpad1 fallbacks) — see === WINDOW MANAGEMENT === below
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
     [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
-    [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
-    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
-    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
-    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
-    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
-    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (WindowManagement.ahk; also Win+Alt+Shift+W → 4)
     [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
     [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
     [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
@@ -1198,8 +1190,12 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+M] > Maximizes the current window
     [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
+    [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)
+    [Ctrl+Alt+Shift+C] > Switch to second previous window (Alt+Tab twice; MEH+C; WindowManagement.ahk)
     
     === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
+    Canonical list for WindowManagement.ahk — see also === WINDOWS === for Win+Alt+Shift equivalents
+    [Ctrl+Alt+Win+V] > Maximize active window (also Win+Alt+Shift+M; ZMK hold on minimize/close key)
     [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
     [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
     [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
@@ -1213,6 +1209,11 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
     [Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
     [Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
+    [Ctrl+Alt+Win+Shift+Z] > Close window on monitor 1 (fallback when digit-1 chord fails)
+    [Ctrl+Alt+Win+Shift+G] > Close window on monitor 1 (fallback from center/IDE display)
+    [Ctrl+Alt+Win+Shift+Numpad1] > Close window on monitor 1 (numpad fallback)
+    [Win+Ctrl+Alt+Shift+1] > Close window on monitor 1 (fallback when Win+ is swallowed)
+    [Win+Ctrl+Alt+Shift+G] > Close window on monitor 1 (fallback when Win+ is swallowed)
     [Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
     [Ctrl+Alt+Win+W] > Cycle windows on monitor 2
     [Ctrl+Alt+Win+E] > Cycle windows on monitor 3
@@ -1221,6 +1222,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
     [Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
     [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
+    [Ctrl+Alt+Win+Shift+B] > DEV: log taskbar-minimized background window scan (WindowManagement.ahk)
     
     === COMMAND PALETTE BOOKMARKS ===
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
