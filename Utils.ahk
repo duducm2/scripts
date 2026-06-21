@@ -4002,6 +4002,8 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
 CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS := 400
 ; Settle after row focus, before Alt+Q (all favorite paths).
 CLIPANGEL_FAVORITE_UI_SETTLE_MS := 50
+; Bounded poll after native Alt+P open before favoriting (cold start can exceed fixed sleeps).
+CLIPANGEL_FAVORITE_OPEN_READY_MS := 1200
 CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS := 250
 CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS := 300
 CLIPANGEL_UIA_POLL_MS := 30
@@ -4495,6 +4497,27 @@ ClipAngel_IsListReady(&outHwnd := 0) {
     return ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" }) ? true : false
 }
 
+; Poll until dataGridView + Row 0 exist (e.g. after native Alt+P open). Retries row-0 selection at end.
+ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+    deadline := A_TickCount + timeoutMs
+    hwnd := 0
+    while (A_TickCount < deadline) {
+        if ClipAngel_IsListReady(&hwnd) {
+            ClipAngel_UiaEnsureRow0Selected(hwnd, false)
+            return true
+        }
+        if hwnd := ClipAngel_MainHwnd()
+            ClipAngel_ShowWindow(hwnd)
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if hwnd := ClipAngel_MainHwnd() {
+        ClipAngel_ShowWindow(hwnd)
+        ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        return ClipAngel_IsListReady()
+    }
+    return false
+}
+
 ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
     if (priorHwnd && WinExist("ahk_id " priorHwnd))
         return priorHwnd
@@ -4647,7 +4670,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
             return
         }
         ClipAngel_ActivateNativeFirstClip()
-        if !ClipAngel_MainHwnd() {
+        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS) {
             ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
             return
         }
