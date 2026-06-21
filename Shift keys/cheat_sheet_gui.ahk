@@ -172,12 +172,31 @@ global g_helpShown := false
 global g_globalGui := 0
 global g_globalShown := false
 global g_helpSearchEdit := 0
-global g_helpCheatCtrl := 0
+global g_helpLv := 0
 global g_globalSearchEdit := 0
-global g_globalCheatCtrl := 0
+global g_globalLv := 0
 global g_cheatSheetAppFullProcessed := ""
 global g_cheatSheetGlobalFullProcessed := ""
+global g_cheatSheetAppRows := []
+global g_cheatSheetGlobalRows := []
 global g_searchAllGui := 0
+global g_cheatSheetSuppressFilter := false
+
+; ListView uses system white background; black text for readability.
+global CHEAT_SHEET_LV_TEXT := 0x000000    ; black (COLORREF BGR)
+
+; #region agent log
+CheatSheet_AgentDebugLog(hypothesisId, location, message, dataJson := "{}", runId := "post-fix") {
+    try {
+        logPath := A_ScriptDir "\debug-e6792c.log"
+        line := Format(
+            '{{"sessionId":"e6792c","timestamp":{1},"location":"{2}","message":"{3}","hypothesisId":"{4}","runId":"{5}","data":{6}}}`n',
+            A_TickCount, location, message, hypothesisId, runId, dataJson)
+        FileAppend line, logPath
+    } catch {
+    }
+}
+; #endregion
 
 GetGlobalCheatSheetRawText() {
     global GLOBAL_CHEAT_SHEET_RAW
@@ -221,69 +240,219 @@ SearchCheatSheets(query, includeGlobal := true) {
     return results
 }
 
-CheatSheet_ResizeBody(editCtrl, gui, fontLinePx := 18, minH := 200, lineCountSource := "", chromeAboveBodyPx := 48) {
-    text := lineCountSource != "" ? lineCountSource : editCtrl.Value
-    lineCnt := StrLen(text) ? StrSplit(text, "`n").Length : 1
-    controlHeight := lineCnt * fontLinePx + 10
-    if (controlHeight < minH)
-        controlHeight := minH
-    ; Same work-rect as standard banners (Utils.GetActiveMonitorWorkArea_StandardBar).
-    GetActiveMonitorWorkArea_StandardBar(&ml, &mt, &mr, &mb)
-    workH := mb - mt
-    margin := 6
-    maxHeight := workH - chromeAboveBodyPx - margin
-    if (maxHeight < 80)
-        maxHeight := 80
-    if (controlHeight > maxHeight)
-        controlHeight := maxHeight
-    ; Pixel height for body; Custom RichEdit50W may not use rN row metrics like a built-in Edit.
-    editCtrl.Move(, , 1000, controlHeight)
-    gui.Show("AutoSize Hide")
-    ; If chrome estimate was low, total GUI height can still exceed work area — shrink body once.
-    gui.GetPos(, , &gw, &gh)
-    maxGuiH := workH - margin
-    if (gh > maxGuiH) {
-        newH := controlHeight - (gh - maxGuiH)
-        if (newH < 80)
-            newH := 80
-        editCtrl.Move(, , 1000, newH)
-        gui.Show("AutoSize Hide")
+CheatSheet_ApplyListViewTheme(lv) {
+    global CHEAT_SHEET_LV_TEXT
+    if !IsObject(lv)
+        return
+    ; Light theme only: black text on default white ListView (no SetWindowTheme — can block the hotkey thread).
+    textRet := 0
+    try textRet := SendMessage(0x1024, 0, CHEAT_SHEET_LV_TEXT, lv) ; LVM_SETTEXTCOLOR
+    ; #region agent log
+    CheatSheet_AgentDebugLog("C", "cheat_sheet_gui.ahk:ApplyListViewTheme", "text color only",
+        Format('{{"textRet":{1}}}', textRet), "post-fix")
+    ; #endregion
+}
+
+CheatSheet_ConfigureSheetListViewColumns(lv) {
+    lv.ModifyCol(1, 200)
+    lv.ModifyCol(2, 280)
+    lv.ModifyCol(3, "AutoHdr")
+}
+
+CheatSheet_ConfigureSheetListView(lv) {
+    CheatSheet_ConfigureSheetListViewColumns(lv)
+}
+
+; Parse processed sheet into ListView rows (Section | Shortcut | Description).
+CheatSheet_ParseSheetRows(processedText) {
+    rows := []
+    section := ""
+    for line in StrSplit(processedText, "`n", "`r") {
+        rawLine := line
+        stripped := RegExReplace(line, "^(>>>\s*|---\s*)", "")
+        stripped := Trim(stripped, "`r`n `t")
+        if (stripped = "")
+            continue
+        if RegExMatch(stripped, "^\s*===\s*(.+?)\s*===\s*$", &hm) {
+            section := Trim(hm[1])
+            continue
+        }
+        if RegExMatch(stripped, "^\s*(.+)\s*\([^)]+\)\s*$") && !InStr(stripped, "[") {
+            section := stripped
+            continue
+        }
+        shortcut := ""
+        description := ""
+        if RegExMatch(stripped, "i)^\[ZMK\s([^\]]+)\]\s*(.+?)\s*>\s*(.*)$", &zm) {
+            shortcut := Trim(zm[1]) . " · " . Trim(zm[2])
+            description := zm[3]
+        } else if RegExMatch(stripped, "^\[(.+?)\]\s*>\s*(.*)$", &m) {
+            shortcut := Trim(m[1])
+            description := m[2]
+        } else if RegExMatch(stripped, "\[(.+?)\]", &m) {
+            shortcut := Trim(m[1])
+            pos := InStr(stripped, "]")
+            description := Trim(SubStr(stripped, pos + 1))
+        } else {
+            description := stripped
+        }
+        rows.Push({
+            section: section,
+            shortcut: shortcut,
+            description: description,
+            rawLine: rawLine
+        })
     }
-    CenterGuiOnActiveMonitor(gui)
-    gui.Show()
+    return rows
+}
+
+CheatSheet_FilterSheetRows(rows, query) {
+    q := Trim(query)
+    if (q = "")
+        return rows
+    filtered := []
+    for row in rows {
+        if CheatSheet_LineMatchesQuery(row.rawLine, q)
+            filtered.Push(row)
+    }
+    return filtered
+}
+
+CheatSheet_RefreshSheetListView(lv, rows) {
+    lvOk := IsObject(lv)
+    rowIn := rows.Length
+    if !lvOk {
+        ; #region agent log
+        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:RefreshSheetListView", "lv not object", "{}")
+        ; #endregion
+        return
+    }
+    lv.Delete()
+    for row in rows
+        lv.Add("", row.section, row.shortcut, row.description)
+    lvCount := 0
+    try lvCount := lv.GetCount()
+    ; #region agent log
+    CheatSheet_AgentDebugLog("D", "cheat_sheet_gui.ahk:RefreshSheetListView", "after refresh",
+        Format('{{"lvOk":1,"rowIn":{1},"lvCount":{2},"sampleShortcut":"{3}"}}',
+            rowIn, lvCount, rowIn ? StrReplace(rows[1].shortcut, '"', "'") : ""))
+    ; #endregion
+}
+
+CheatSheet_ShowSheetListView(gui, lv) {
+    chromePx := 52
+    guiW := 1000
+    lvH := 520
+    wx := 0, wy := 0, wr := A_ScreenWidth, wb := A_ScreenHeight
+    try GetActiveMonitorWorkArea_StandardBar(&wx, &wy, &wr, &wb)
+    maxLvH := wb - wy - chromePx - 12
+    if (maxLvH >= 200)
+        lvH := maxLvH
+    lv.Move(, , guiW, lvH)
+    guiH := lvH + chromePx
+    guiX := wx + ((wr - wx) - guiW) / 2
+    guiY := wy + ((wb - wy) - guiH) / 2
+    guiX := Max(wx, Min(guiX, wr - guiW))
+    guiY := Max(wy, Min(guiY, wb - guiH))
+    ; #region agent log
+    CheatSheet_AgentDebugLog("E", "cheat_sheet_gui.ahk:ShowSheetListView", "before show",
+        Format('{{"guiW":{1},"guiH":{2}}}', guiW, guiH), "post-fix")
+    ; #endregion
+    gui.Show("NoActivate x" Round(guiX) " y" Round(guiY) " w" guiW " h" guiH)
+    ; #region agent log
+    CheatSheet_AgentDebugLog("E", "cheat_sheet_gui.ahk:ShowSheetListView", "after show", "{}", "post-fix")
+    ; #endregion
+}
+
+CheatSheet_OnSheetListCopy(lv, guiEvent) {
+    row := 0
+    try
+        row := guiEvent.EventInfo
+    if !row
+        row := lv.GetNext(0, "F")
+    if !row
+        return
+    shortcut := lv.GetText(row, 2)
+    description := lv.GetText(row, 3)
+    if (shortcut != "" && description != "")
+        A_Clipboard := shortcut . " > " . description
+    else if (description != "")
+        A_Clipboard := description
+    else
+        A_Clipboard := shortcut
+}
+
+CheatSheet_InitSheetOverlayGui(gui, &filterEdit, &lv, onFilter, onEscape, onCopy) {
+    gui.BackColor := "FFFFFF"
+    gui.SetFont("s10 c000000", "Consolas")
+    filterEdit := gui.Add("Edit", "xm w1000 Section Limit20 BackgroundFFFFFF c000000", "")
+    lv := gui.Add("ListView", "xm w1000 h520 Grid -Multi +ReadOnly c000000 BackgroundFFFFFF",
+        ["Section", "Shortcut", "Description"])
+    filterEdit.OnEvent("Change", onFilter)
+    lv.OnEvent("DoubleClick", onCopy)
+    gui.OnEvent("Escape", onEscape)
+    CheatSheet_ConfigureSheetListViewColumns(lv)
+    CheatSheet_ApplyListViewTheme(lv)
+}
+
+CheatSheet_DestroySheetOverlayIfStale(&gui, &filterEdit, &lv, &shown) {
+    if !IsObject(gui)
+        return
+    if IsObject(filterEdit) && IsObject(lv)
+        return
+    try {
+        if shown
+            gui.Hide()
+        gui.Destroy()
+    } catch {
+    }
+    gui := 0
+    filterEdit := 0
+    lv := 0
+    shown := false
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:DestroySheetOverlayIfStale", "rebuilt stale gui", "{}")
+    ; #endregion
+}
+
+CheatSheet_EnsureAppSheetGui() {
+    global g_helpGui, g_helpSearchEdit, g_helpLv, g_helpShown
+    CheatSheet_DestroySheetOverlayIfStale(&g_helpGui, &g_helpSearchEdit, &g_helpLv, &g_helpShown)
+    if !IsObject(g_helpGui) {
+        g_helpGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border")
+        CheatSheet_InitSheetOverlayGui(g_helpGui, &g_helpSearchEdit, &g_helpLv, CheatSheet_OnAppFilterChanged,
+            CheatSheet_OnEscapeApp, (ctrl, guiEvent) => CheatSheet_OnSheetListCopy(ctrl, guiEvent))
+    }
+}
+
+CheatSheet_EnsureGlobalSheetGui() {
+    global g_globalGui, g_globalSearchEdit, g_globalLv, g_globalShown
+    CheatSheet_DestroySheetOverlayIfStale(&g_globalGui, &g_globalSearchEdit, &g_globalLv, &g_globalShown)
+    if !IsObject(g_globalGui) {
+        g_globalGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border")
+        CheatSheet_InitSheetOverlayGui(g_globalGui, &g_globalSearchEdit, &g_globalLv, CheatSheet_OnGlobalFilterChanged,
+            CheatSheet_OnEscapeGlobal, (ctrl, guiEvent) => CheatSheet_OnSheetListCopy(ctrl, guiEvent))
+    }
 }
 
 CheatSheet_OnAppFilterChanged(*) {
-    global g_helpSearchEdit, g_helpCheatCtrl, g_cheatSheetAppFullProcessed, g_helpGui, g_helpShown
-    if (!IsObject(g_helpCheatCtrl) || !IsObject(g_helpSearchEdit))
+    global g_cheatSheetSuppressFilter, g_helpSearchEdit, g_helpLv, g_cheatSheetAppRows, g_helpGui, g_helpShown
+    if (g_cheatSheetSuppressFilter || !IsObject(g_helpLv) || !IsObject(g_helpSearchEdit))
         return
     q := Trim(g_helpSearchEdit.Value)
-    body := g_cheatSheetAppFullProcessed
-    displayBody := ""
-    if (q = "") {
-        displayBody := body
-    } else {
-        displayBody := CheatSheet_BuildFilteredBodyWithSections(body, q)
-    }
-    CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, displayBody)
-    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, displayBody, 48)
+    rows := CheatSheet_FilterSheetRows(g_cheatSheetAppRows, q)
+    CheatSheet_RefreshSheetListView(g_helpLv, rows)
     CheatSheet_DeferFocusSearch(g_helpSearchEdit)
 }
 
 CheatSheet_OnGlobalFilterChanged(*) {
-    global g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed, g_globalGui, g_globalShown
-    if (!IsObject(g_globalCheatCtrl) || !IsObject(g_globalSearchEdit))
+    global g_cheatSheetSuppressFilter, g_globalSearchEdit, g_globalLv, g_cheatSheetGlobalRows, g_globalGui,
+        g_globalShown
+    if (g_cheatSheetSuppressFilter || !IsObject(g_globalLv) || !IsObject(g_globalSearchEdit))
         return
     q := Trim(g_globalSearchEdit.Value)
-    body := g_cheatSheetGlobalFullProcessed
-    displayBody := ""
-    if (q = "") {
-        displayBody := body
-    } else {
-        displayBody := CheatSheet_BuildFilteredBodyWithSections(body, q)
-    }
-    CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, displayBody)
-    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 16, 180, displayBody, 46)
+    rows := CheatSheet_FilterSheetRows(g_cheatSheetGlobalRows, q)
+    CheatSheet_RefreshSheetListView(g_globalLv, rows)
     CheatSheet_DeferFocusSearch(g_globalSearchEdit)
 }
 
@@ -337,47 +506,69 @@ CheatSheet_OnSearchAllCopy(lv, guiEvent) {
 
 ; ========== GUI creation & showing ========================================
 ToggleShortcutHelp() {
-    global g_helpGui, g_helpShown, g_helpSearchEdit, g_helpCheatCtrl, g_cheatSheetAppFullProcessed
+    global g_helpGui, g_helpShown, g_helpSearchEdit, g_helpLv
+    global g_cheatSheetAppFullProcessed, g_cheatSheetAppRows
 
-    ; Toggle off if currently shown
+    ; Toggle off if currently shown (or gui exists but flag lost after a partial show)
     if (IsObject(g_helpGui) && g_helpShown) {
         g_helpGui.Hide()
         g_helpShown := false
         return
     }
 
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "entry state",
+        Format('{{"helpGui":{1},"helpLv":{2},"helpShown":0}}',
+            IsObject(g_helpGui) ? 1 : 0, IsObject(g_helpLv) ? 1 : 0))
+    ; #endregion
+
     text := NormalizeMojibake(GetCheatSheetText())
-    usedFallback := false
     if (text = "") {
         exe := WinGetProcessName("A")
-        text := "No cheat-sheet registered for:`n" exe
-        usedFallback := true
+        msg := "No cheat-sheet registered for: " exe
+        g_cheatSheetAppFullProcessed := msg
+        g_cheatSheetAppRows := [{
+            section: "",
+            shortcut: "",
+            description: msg,
+            rawLine: msg
+        }]
+    } else {
+        g_cheatSheetAppFullProcessed := ProcessCheatSheetText(text)
+        g_cheatSheetAppRows := CheatSheet_ParseSheetRows(g_cheatSheetAppFullProcessed)
     }
 
-    if !IsObject(g_helpGui) {
-        CheatSheet_EnsureRichDll()
-        g_helpGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
-        g_helpGui.BackColor := "000000"
-        g_helpGui.SetFont("s11 cFFFF00", "Consolas")
-        g_helpSearchEdit := g_helpGui.Add("Edit", "xm w1000 Section Limit20", "")
-        g_helpCheatCtrl := g_helpGui.Add("Custom",
-            "ClassRichEdit50W xs+0 y+4 +0x44 +Multi -E0x200 +VScroll -HScroll -Border Background000000 w1000 r12")
-        g_helpSearchEdit.OnEvent("Change", CheatSheet_OnAppFilterChanged)
-        g_helpGui.OnEvent("Escape", CheatSheet_OnEscapeApp)
-    }
+    ; #region agent log
+    CheatSheet_AgentDebugLog("B", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "parsed app rows",
+        Format('{{"appRowCount":{1},"procLen":{2}}}', g_cheatSheetAppRows.Length, StrLen(g_cheatSheetAppFullProcessed))
+    )
+    ; #endregion
 
-    processedText := ProcessCheatSheetText(text)
-    g_cheatSheetAppFullProcessed := processedText
-    g_helpSearchEdit.Value := ""
-    CheatSheet_RichSetProcessedBody(g_helpCheatCtrl, processedText)
-    CheatSheet_ResizeBody(g_helpCheatCtrl, g_helpGui, 18, 200, processedText, 48)
-    g_helpShown := true
-    CheatSheet_DeferFocusSearch(g_helpSearchEdit)
+    try {
+        global g_cheatSheetSuppressFilter
+        CheatSheet_EnsureAppSheetGui()
+        ; #region agent log
+        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "ensure done", "{}")
+        ; #endregion
+        g_cheatSheetSuppressFilter := true
+        g_helpSearchEdit.Value := ""
+        g_cheatSheetSuppressFilter := false
+        CheatSheet_RefreshSheetListView(g_helpLv, g_cheatSheetAppRows)
+        CheatSheet_ShowSheetListView(g_helpGui, g_helpLv)
+        g_helpShown := true
+    } catch as e {
+        ; #region agent log
+        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ToggleShortcutHelp", "error",
+            Format('{{"msg":"{1}"}}', StrReplace(e.Message, '"', "'")))
+        ; #endregion
+        g_helpShown := false
+    }
 }
 
 ; ========== Global shortcuts cheat sheet (Win+Alt+Shift+key) ===============
 ShowGlobalShortcutsHelp() {
-    global g_globalGui, g_globalShown, g_globalSearchEdit, g_globalCheatCtrl, g_cheatSheetGlobalFullProcessed
+    global g_globalGui, g_globalShown, g_globalSearchEdit, g_globalLv
+    global g_cheatSheetGlobalFullProcessed, g_cheatSheetGlobalRows
 
     if (IsObject(g_globalGui) && g_globalShown) {
         g_globalGui.Hide()
@@ -385,26 +576,36 @@ ShowGlobalShortcutsHelp() {
         return
     }
 
-    if !IsObject(g_globalGui) {
-        CheatSheet_EnsureRichDll()
-        g_globalGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border +Owner +LastFound")
-        g_globalGui.BackColor := "000000"
-        g_globalGui.SetFont("s9 c00BFFF", "Consolas")
-        g_globalSearchEdit := g_globalGui.Add("Edit", "xm w1000 Section Limit20", "")
-        g_globalCheatCtrl := g_globalGui.Add("Custom",
-            "ClassRichEdit50W xs+0 y+4 +0x44 +Multi +VScroll -HScroll -Border Background000000 w1000 r12")
-        g_globalSearchEdit.OnEvent("Change", CheatSheet_OnGlobalFilterChanged)
-        g_globalGui.OnEvent("Escape", CheatSheet_OnEscapeGlobal)
-    }
+    ; #region agent log
+    CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "entry state",
+        Format('{{"globalGui":{1},"globalLv":{2},"globalShown":0}}',
+            IsObject(g_globalGui) ? 1 : 0, IsObject(g_globalLv) ? 1 : 0))
+    ; #endregion
 
     normalizedText := NormalizeMojibake(GetGlobalCheatSheetRawText())
     processedText := ProcessCheatSheetText(normalizedText)
     g_cheatSheetGlobalFullProcessed := processedText
-    g_globalSearchEdit.Value := ""
-    CheatSheet_RichSetProcessedBody(g_globalCheatCtrl, processedText)
-    CheatSheet_ResizeBody(g_globalCheatCtrl, g_globalGui, 16, 180, processedText, 46)
-    g_globalShown := true
-    CheatSheet_DeferFocusSearch(g_globalSearchEdit)
+    g_cheatSheetGlobalRows := CheatSheet_ParseSheetRows(processedText)
+    ; #region agent log
+    CheatSheet_AgentDebugLog("B", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "parsed global rows",
+        Format('{{"globalRowCount":{1},"procLen":{2}}}', g_cheatSheetGlobalRows.Length, StrLen(processedText)))
+    ; #endregion
+    try {
+        global g_cheatSheetSuppressFilter
+        CheatSheet_EnsureGlobalSheetGui()
+        g_cheatSheetSuppressFilter := true
+        g_globalSearchEdit.Value := ""
+        g_cheatSheetSuppressFilter := false
+        CheatSheet_RefreshSheetListView(g_globalLv, g_cheatSheetGlobalRows)
+        CheatSheet_ShowSheetListView(g_globalGui, g_globalLv)
+        g_globalShown := true
+    } catch as e {
+        ; #region agent log
+        CheatSheet_AgentDebugLog("A", "cheat_sheet_gui.ahk:ShowGlobalShortcutsHelp", "error",
+            Format('{{"msg":"{1}"}}', StrReplace(e.Message, '"', "'")))
+        ; #endregion
+        g_globalShown := false
+    }
 }
 
 ; ========== Hotkey with hold detection ====================================

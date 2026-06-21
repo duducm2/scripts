@@ -10,11 +10,11 @@ This document is the single reference for **authoring** cheat sheet strings, **u
 
 ## How to open the overlays
 
-| Gesture                            | Result                                                                                                          |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Win+Alt+Shift+A** (quick tap)    | App-specific sheet for the foreground window (if registered).                                                   |
-| **Win+Alt+Shift+A** (hold ~700ms+) | Global sheet: system-wide **Win+Alt+Shift** and related chords from this script.                                |
-| **Win+Alt+Shift+/**                | Search across all registered cheat sheets and the global block (ListView; double-click a row to copy the line). |
+| Gesture                            | Result                                                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Win+Alt+Shift+A** (quick tap)    | App-specific sheet for the foreground window (if registered). **ListView** (Section \| Shortcut \| Description). |
+| **Win+Alt+Shift+A** (hold ~700ms+) | Global sheet: same **ListView** layout (system-wide chords + ZMK).                                               |
+| **Win+Alt+Shift+/**                | Search across all registered cheat sheets and the global block (ListView; double-click a row to copy the line).  |
 
 Closing:
 
@@ -22,7 +22,18 @@ Closing:
 - **Win+Alt+Shift+A** again toggles off the app or global sheet, and also closes the **Search cheat sheets** window if it is open.
 - Otherwise close the search window normally (e.g. title bar).
 
-On open, the **search/filter field is focused** so you can type immediately. The body area below is read-only **RichEdit 5** text (`ClassRichEdit50W` with `msftedit.dll` loaded first) in a **Custom** control. The control uses explicit **`ES_MULTILINE | ES_AUTOVSCROLL` (`+0x44`)** because `+Multi` may not apply to Custom controls in AutoHotkey. Display text joins lines with **CR** (`\r`) only so UTF-16 indices match RichEdit’s stored text for mnemonic formatting. Mnemonic letters are shown **bold** and slightly **larger** than the rest; square brackets from the source are **not** drawn. The overlay is **centered** on the **foreground window’s monitor** using the same work-area helper as standard banners (`GetActiveMonitorWorkArea_StandardBar` in [`Utils.ahk`](../Utils.ahk)), and the window **height is capped** to that monitor’s work area so long content scrolls inside the RichEdit with a vertical scrollbar.
+On open, the **search/filter field is focused** so you can type immediately.
+
+Both **app** (quick tap) and **global** (long hold) overlays use the same **ListView** shell in [`cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk):
+
+- Columns: **Section**, **Shortcut**, **Description** (processed text parsed by `CheatSheet_ParseSheetRows()`).
+- **Catppuccin-style** dark theme: background `#1E1E2E`, text `#CDD6F4` (via `LVM_SETBKCOLOR` / header theming — Win32 ListView ignores plain `Gui.BackColor`).
+- Column widths: Section 200px, Shortcut 280px, Description fills remainder (avoids `Win+A...` truncation).
+- Double-click a row to copy `Shortcut > Description`. Filter uses the same haystack/AND rules as before (`CheatSheet_LineMatchesQuery` on each row’s raw processed line).
+
+Overlays are **centered** on the foreground window’s monitor (`GetActiveMonitorWorkArea_StandardBar` in [`Utils.ahk`](../Utils.ahk)) with height capped to the monitor work area.
+
+[`CheatSheetRich.ahk`](../Shift%20keys/CheatSheetRich.ahk) is no longer used by the overlays (kept in the repo for now).
 
 ---
 
@@ -63,7 +74,7 @@ Within each section, keep the existing line format (emoji + `[KEY]` + descriptio
 1. **`GetCheatSheetText()`** picks raw text for the active context (process, window title, Chrome site, Teams mode, etc.).
 2. **`NormalizeMojibake()`** fixes common UTF-8→ANSI display glitches (arrows, dashes).
 3. **`ProcessCheatSheetText()`** merges the active section (or `AppName (Modifier)` context line) into the **first** `[shortcut]` when the key is implied (e.g. `[M]` under `=== Shift ===` becomes `[Shift+M]`), pads that bracket, and prefixes lines with `>>>` (custom/remapped) or `---` (built-in style chords; classification uses the **unmerged** bracket).
-4. **`CheatSheet_RichSetProcessedBody()`** in [`CheatSheetRich.ahk`](../Shift%20keys/CheatSheetRich.ahk) renders the processed lines in a **RichEdit 5** control (`msftedit.dll`): brackets are stripped for display; mnemonic characters (first column and inline `[KEY]` segments) are shown in **bold** and a **larger** font (default body ~11 pt, mnemonics ~14 pt, yellow on black). Line breaks in the RichEdit buffer use **CR** between logical lines for index alignment with `EM_SETTEXTEX` / `EM_SETCHARFORMAT`.
+4. **`CheatSheet_ParseSheetRows()`** in [`cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk) splits processed lines into ListView rows; filter/search still operate on the underlying processed line text.
 
 Filter and **Search all sheets** operate on this **processed** text (with haystack rules above) so the query matches readable words, not bracket notation.
 
