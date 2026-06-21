@@ -79,7 +79,6 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Chrome detach context menu phases (part 2) -> Utils\chrome_detach_02.ahk
 #include %A_ScriptDir%\Utils\chrome_detach_02.ahk
 
-; Dismiss overlays, focus page content, then F6×2 opens tab context menu (page → toolbar → tab strip).
 ; [Utils module] Chrome detach tab (part 3) and detach entry -> Utils\chrome_detach_03.ahk
 #include %A_ScriptDir%\Utils\chrome_detach_03.ahk
 
