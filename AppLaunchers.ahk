@@ -59,12 +59,8 @@ global AL_WikiState := "Idle"
 
 ; --- Hotkeys & Functions -----------------------------------------------------
 
-; =============================================================================
-; Win+Alt+Shift+N — Context file browser (paste path into active input)
-; =============================================================================
-#!+n:: {
-    ShowContextBrowser()
-}
+; [AppLaunchers module] #!+n context file browser hotkey -> AppLaunchers\hotkey_context_browser.ahk
+#include %A_ScriptDir%\AppLaunchers\hotkey_context_browser.ahk
 
 ; [AppLaunchers module] Shift+Win+E desktop explorer and UIA helpers -> AppLaunchers\desktop_explorer.ahk
 #include %A_ScriptDir%\AppLaunchers\desktop_explorer.ahk
