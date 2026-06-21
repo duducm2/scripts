@@ -33,40 +33,101 @@ GroupAdd "YouTubeBrowsers", "ahk_exe brave.exe"
 ; Minimum width/height for the main Spotify UI (skip hidden Electron helper windows).
 global SPOTIFY_MIN_WINDOW_SIZE := 200
 global SPOTIFY_OPEN_WAIT_SEC := 12
+global SPOTIFY_OPEN_RETRIES := 3
+global SPOTIFY_VERIFY_SETTLE_MS := 200
 
 OpenSpotify() {
-    hwnd := GetSpotifyMainHwnd()
-    if hwnd > 0 {
-        if SpotifyActivateWindow(hwnd)
+    loop SPOTIFY_OPEN_RETRIES {
+        if SpotifyOpenAttempt(A_Index)
             return
-        SpotifyLaunchRestore()
-        hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
-        if hwnd > 0 && SpotifyActivateWindow(hwnd)
-            return
-        SpotifyShowOpenFailure()
-        return
+        if (A_Index < SPOTIFY_OPEN_RETRIES)
+            Sleep 400
     }
-
-    if ProcessExist("Spotify.exe") {
-        SpotifyLaunchRestore()
-        hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
-        if hwnd > 0 && SpotifyActivateWindow(hwnd)
-            return
-        SpotifyShowOpenFailure()
-        return
-    }
-
-    SpotifyLaunchFresh()
-    hwnd := SpotifyWaitForMainHwnd(SPOTIFY_OPEN_WAIT_SEC)
-    if hwnd > 0 && SpotifyActivateWindow(hwnd)
-        return
     SpotifyShowOpenFailure()
+}
+
+; One open cycle: launch/restore as needed, then quality-gate on a usable foreground window.
+SpotifyOpenAttempt(attempt := 1) {
+    hwnd := GetSpotifyMainHwnd()
+    if hwnd > 0 && SpotifyActivateAndVerify(hwnd)
+        return true
+
+    SpotifyLaunchForAttempt(attempt)
+    return SpotifyWaitActivateAndVerify(SPOTIFY_OPEN_WAIT_SEC)
+}
+
+; Quality gate: main Spotify window exists, is usable, and is the active foreground window.
+SpotifyIsOpenedAndActive(hwnd := 0) {
+    if !hwnd
+        hwnd := GetSpotifyMainHwnd()
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    if !SpotifyIsUsableMainWindow(hwnd)
+        return false
+    return WinActive("ahk_id " hwnd)
+}
+
+SpotifyActivateAndVerify(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    if !SpotifyActivateWindow(hwnd)
+        return false
+    Sleep SPOTIFY_VERIFY_SETTLE_MS
+    current := GetSpotifyMainHwnd()
+    if current
+        hwnd := current
+    return SpotifyIsOpenedAndActive(hwnd)
+}
+
+SpotifyWaitActivateAndVerify(timeoutSec := 12) {
+    hwnd := SpotifyWaitForMainHwnd(timeoutSec)
+    if hwnd > 0 && SpotifyActivateAndVerify(hwnd)
+        return true
+    ; Window may appear slightly after ProcessWait; one short re-check before failing the attempt.
+    Sleep 400
+    hwnd := GetSpotifyMainHwnd()
+    return hwnd > 0 && SpotifyActivateAndVerify(hwnd)
+}
+
+; Escalating launch methods per retry (shortcut/exe path may move between installs).
+SpotifyLaunchForAttempt(attempt := 1) {
+    if (attempt = 1) {
+        if SpotifyProcessExists()
+            SpotifyLaunchRestore()
+        else
+            SpotifyLaunchFresh()
+        return
+    }
+    if (attempt = 2) {
+        Run("spotify:")
+        if !SpotifyProcessExists()
+            SpotifyLaunchFresh()
+        return
+    }
+    exe := SpotifyResolveExePath()
+    if exe != ""
+        Run('"' exe '"')
+    else if (link := GetSpotifyShortcutPath()) != ""
+        Run(link)
+    else
+        Run("shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
+    try
+        ProcessWait("Spotify.exe", Min(SPOTIFY_OPEN_WAIT_SEC, 8))
+    catch {
+        ;
+    }
+}
+
+SpotifyProcessExists() {
+    return ProcessExist("Spotify.exe") > 0
 }
 
 SpotifyLaunchFresh() {
     link := GetSpotifyShortcutPath()
     if (link != "")
         Run(link)
+    else if (exe := SpotifyResolveExePath()) != ""
+        Run('"' exe '"')
     else
         Run("shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
     try
@@ -81,8 +142,35 @@ SpotifyLaunchRestore() {
     link := GetSpotifyShortcutPath()
     if (link != "")
         Run(link)
+    else if (exe := SpotifyResolveExePath()) != ""
+        Run('"' exe '"')
     else
         Run("spotify:")
+}
+
+; Resolve Spotify.exe from shortcut target or common install locations (handles moved installs).
+SpotifyResolveExePath() {
+    link := GetSpotifyShortcutPath()
+    if (link != "") {
+        try {
+            FileGetShortcut link, &target
+            if (target != "") {
+                if FileExist(target)
+                    return target
+                fixed := StrReplace(target, "Program Files (x86)", "Program Files")
+                if FileExist(fixed)
+                    return fixed
+            }
+        } catch {
+            ;
+        }
+    }
+    localAppData := EnvGet("LocalAppData")
+    for candidate in [A_AppData "\Spotify\Spotify.exe", localAppData "\Microsoft\WindowsApps\Spotify.exe"] {
+        if FileExist(candidate)
+            return candidate
+    }
+    return ""
 }
 
 SpotifyWaitForMainHwnd(timeoutSec := 12) {
