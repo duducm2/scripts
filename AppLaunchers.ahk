@@ -2244,24 +2244,5 @@ CenterMouse() {
         AL_CenterMouseOnHwnd(hwnd)
 }
 
-; =============================================================================
-; Send specific key combinations
-; Hotkey: Win+Alt+Shift+.
-; =============================================================================
-#!+.::
-{
-    Sleep(100)
-    Send("^c")
-    Sleep(200)
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_ShowWindow(hwnd)
-    Sleep(700)
-    Send("!q")
-    Sleep(200)
-    SendEscape()
-}
-
-; =============================================================================
-; Initialize Wikipedia scroll position auto-save timer - REMOVED
-; =============================================================================
-; Auto-save timer removed - now using manual save via Shift keys.ahk shortcut
+; [AppLaunchers module] #!+. Clip Angel paste and favorite flow -> AppLaunchers\hotkey_clipangel.ahk
+#include %A_ScriptDir%\AppLaunchers\hotkey_clipangel.ahk
