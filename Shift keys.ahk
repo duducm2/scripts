@@ -5424,38 +5424,8 @@ Reminders_ExecuteItemAction(action) {
 
 #HotIf
 
-;-------------------------------------------------------------------
-; Microsoft Teams Helper functions
-;-------------------------------------------------------------------
-TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
-
-IsTeamsMeetingTitle(title) {
-    if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
-        return false
-    if InStr(title, "Microsoft Teams meeting")
-        return true
-    return RegExMatch(title, "i)^.*\| Microsoft Teams.*$")
-}
-
-IsTeamsChatTitle(title) {
-    if InStr(title, "Sharing control bar |") || InStr(title, "Microsoft Teams meeting")
-        return false
-    return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
-}
-
-; -------------------------------------------------------------------
-; Helper predicates to detect which Teams window is active
-; -------------------------------------------------------------------
-IsTeamsMeetingActive() {
-    return IsTeamsMeetingTitle(WinGetTitle("A"))
-}
-IsTeamsChatActive() {
-    return IsTeamsChatTitle(WinGetTitle("A"))
-}
-
-; -------------------------------------------------------------------
-; Microsoft Teams Shortcuts â€" MEETING WINDOW
-; -------------------------------------------------------------------
+; [SK module] Teams meeting/chat predicate helpers -> Shift keys\teams_predicates.ahk
+#include %A_ScriptDir%\Shift keys\teams_predicates.ahk
 ; [SK module] Teams meeting window hotkeys -> Shift keys\hotif_teams_meeting.ahk
 #include %A_ScriptDir%\Shift keys\hotif_teams_meeting.ahk
 
