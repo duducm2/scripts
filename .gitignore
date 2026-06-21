@@ -4,3 +4,6 @@ debug-*.log
 infra/tools/MonitorEnumerationSnapshot-out.txt
 docs/aib-allow-runtime-debug.log
 .pytest_cache/
+# Windows reserved device name — cannot be tracked by git; use infra/ipc/ instead
+aux/
+infra/aux/
