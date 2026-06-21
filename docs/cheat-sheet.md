@@ -8,11 +8,11 @@ This document is the single reference for **authoring** cheat sheet strings, **u
 
 ## How to open the overlays
 
-| Gesture | Result |
-|--------|--------|
-| **Win+Alt+Shift+A** (quick tap) | App-specific sheet for the foreground window (if registered). |
-| **Win+Alt+Shift+A** (hold ~700ms+) | Global sheet: system-wide **Win+Alt+Shift** and related chords from this script. |
-| **Win+Alt+Shift+/** | Search across all registered cheat sheets and the global block (ListView; double-click a row to copy the line). |
+| Gesture                            | Result                                                                                                          |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Win+Alt+Shift+A** (quick tap)    | App-specific sheet for the foreground window (if registered).                                                   |
+| **Win+Alt+Shift+A** (hold ~700ms+) | Global sheet: system-wide **Win+Alt+Shift** and related chords from this script.                                |
+| **Win+Alt+Shift+/**                | Search across all registered cheat sheets and the global block (ListView; double-click a row to copy the line). |
 
 Closing:
 
@@ -61,7 +61,7 @@ Within each section, keep the existing line format (emoji + `[KEY]` + descriptio
 1. **`GetCheatSheetText()`** picks raw text for the active context (process, window title, Chrome site, Teams mode, etc.).
 2. **`NormalizeMojibake()`** fixes common UTF-8→ANSI display glitches (arrows, dashes).
 3. **`ProcessCheatSheetText()`** merges the active section (or `AppName (Modifier)` context line) into the **first** `[shortcut]` when the key is implied (e.g. `[M]` under `=== Shift ===` becomes `[Shift+M]`), pads that bracket, and prefixes lines with `>>>` (custom/remapped) or `---` (built-in style chords; classification uses the **unmerged** bracket).
-4. **`CheatSheet_RichSetProcessedBody()`** in [`CheatSheetRich.ahk`](../CheatSheetRich.ahk) renders the processed lines in a **RichEdit 5** control (`msftedit.dll`): brackets are stripped for display; mnemonic characters (first column and inline `[KEY]` segments) are shown in **bold** and a **larger** font (default body ~11 pt, mnemonics ~14 pt, yellow on black). Line breaks in the RichEdit buffer use **CR** between logical lines for index alignment with `EM_SETTEXTEX` / `EM_SETCHARFORMAT`.
+4. **`CheatSheet_RichSetProcessedBody()`** in [`CheatSheetRich.ahk`](../Shift%20keys/CheatSheetRich.ahk) renders the processed lines in a **RichEdit 5** control (`msftedit.dll`): brackets are stripped for display; mnemonic characters (first column and inline `[KEY]` segments) are shown in **bold** and a **larger** font (default body ~11 pt, mnemonics ~14 pt, yellow on black). Line breaks in the RichEdit buffer use **CR** between logical lines for index alignment with `EM_SETTEXTEX` / `EM_SETCHARFORMAT`.
 
 Filter and **Search all sheets** operate on this **processed** text (with haystack rules above) so the query matches readable words, not bracket notation.
 
@@ -71,43 +71,43 @@ Filter and **Search all sheets** operate on this **processed** text (with haysta
 
 Each row is a key in `cheatSheets` in [`Shift keys.ahk`](../Shift%20keys.ahk). Line numbers drift with edits; search the file for `cheatSheets["Key"]`.
 
-| Map key | When it applies |
-|---------|-----------------|
-| `Mercado Livre` | `chrome.exe` and `IsMercadoLivreActive()` (URL/site, not title). |
-| `Shopee` | `chrome.exe`, resolver chain, and `IsShopeeActive()` when applicable. |
-| `WhatsApp` | Chrome tab title contains `WhatsApp`. |
-| `OUTLOOK.EXE` | Default Outlook when no reminder/message/appointment-specific sheet matches. |
-| `OutlookReminder` | Outlook window title matches `Reminder`. |
-| `OutlookAppointment` | Outlook title matches `Appointment`, `Meeting`, or `Event`. |
-| `OutlookMessage` | Outlook title matches ` - Message (` (HTML inspector). |
-| `TeamsMeeting` | `IsTeamsMeetingActive()`. |
-| `TeamsChat` | `IsTeamsChatActive()`. |
-| `Spotify.exe` | Foreground process `Spotify.exe`. |
-| `ONENOTE.EXE` | Foreground process OneNote. |
-| `chrome.exe` | Chrome: general browser shortcuts; often combined with a site-specific sheet. |
-| `Chrome PDF Viewer` | Chrome and `IsChromePdfViewerActive()`. |
-| `Cursor.exe` | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout). |
-| `Code.exe` | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults. |
-| `explorer.exe` | File Explorer. |
-| `mspaint.exe` | Paint. |
-| `ClipAngel.exe` | Clip Angel. |
-| `Figma.exe` | Figma. |
-| `Gmail` | Chrome title contains `Gmail`. |
-| `Google Keep` | Chrome title contains `Google Keep` or `keep.google.com`. |
-| `FileDialog` | Class `#32770` and dialog text contains the namespace tree control (EN/PT). |
-| `Settings` | Title `Settings` or `Configurações`. |
-| `Command Palette` | Title contains `Command Palette`. |
-| `EXCEL.EXE` | Excel. |
-| `Power BI` | `PBIDesktop.exe` or title contains `powerbi`. |
-| `UIATreeInspector` | Chrome title or `AutoHotkey64.exe` + UIATreeInspector title. |
-| `Settle Up` | Chrome title contains `Settle Up`. |
-| `Miro` | Chrome title contains `Miro`. |
-| `Wikipedia` | Chrome title contains `Wikipedia` or `wikipedia.org`. |
-| `YouTube` | Chrome title contains `YouTube`. |
-| `Google` | Chrome, no other site sheet, and title is `Google` or ` - Google Search`. |
-| `ChatGPT` | Chrome title contains `chatgpt`. |
-| `Gemini` | Chrome title contains `gemini` (`cheatSheets["Gemini"]`). |
-| `Mobills` | Chrome title contains `Mobills`. |
+| Map key              | When it applies                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Mercado Livre`      | `chrome.exe` and `IsMercadoLivreActive()` (URL/site, not title).                                                                                   |
+| `Shopee`             | `chrome.exe`, resolver chain, and `IsShopeeActive()` when applicable.                                                                              |
+| `WhatsApp`           | Chrome tab title contains `WhatsApp`.                                                                                                              |
+| `OUTLOOK.EXE`        | Default Outlook when no reminder/message/appointment-specific sheet matches.                                                                       |
+| `OutlookReminder`    | Outlook window title matches `Reminder`.                                                                                                           |
+| `OutlookAppointment` | Outlook title matches `Appointment`, `Meeting`, or `Event`.                                                                                        |
+| `OutlookMessage`     | Outlook title matches ` - Message (` (HTML inspector).                                                                                             |
+| `TeamsMeeting`       | `IsTeamsMeetingActive()`.                                                                                                                          |
+| `TeamsChat`          | `IsTeamsChatActive()`.                                                                                                                             |
+| `Spotify.exe`        | Foreground process `Spotify.exe`.                                                                                                                  |
+| `ONENOTE.EXE`        | Foreground process OneNote.                                                                                                                        |
+| `chrome.exe`         | Chrome: general browser shortcuts; often combined with a site-specific sheet.                                                                      |
+| `Chrome PDF Viewer`  | Chrome and `IsChromePdfViewerActive()`.                                                                                                            |
+| `Cursor.exe`         | Foreground Cursor. **Reference layout** for [modifier clusters](#modifier-clusters-standard-layout).                                               |
+| `Code.exe`           | Foreground VS Code. Separate sheet, initially derived from Cursor layout; diverges as migration proceeds to official VS Code and Copilot defaults. |
+| `explorer.exe`       | File Explorer.                                                                                                                                     |
+| `mspaint.exe`        | Paint.                                                                                                                                             |
+| `ClipAngel.exe`      | Clip Angel.                                                                                                                                        |
+| `Figma.exe`          | Figma.                                                                                                                                             |
+| `Gmail`              | Chrome title contains `Gmail`.                                                                                                                     |
+| `Google Keep`        | Chrome title contains `Google Keep` or `keep.google.com`.                                                                                          |
+| `FileDialog`         | Class `#32770` and dialog text contains the namespace tree control (EN/PT).                                                                        |
+| `Settings`           | Title `Settings` or `Configurações`.                                                                                                               |
+| `Command Palette`    | Title contains `Command Palette`.                                                                                                                  |
+| `EXCEL.EXE`          | Excel.                                                                                                                                             |
+| `Power BI`           | `PBIDesktop.exe` or title contains `powerbi`.                                                                                                      |
+| `UIATreeInspector`   | Chrome title or `AutoHotkey64.exe` + UIATreeInspector title.                                                                                       |
+| `Settle Up`          | Chrome title contains `Settle Up`.                                                                                                                 |
+| `Miro`               | Chrome title contains `Miro`.                                                                                                                      |
+| `Wikipedia`          | Chrome title contains `Wikipedia` or `wikipedia.org`.                                                                                              |
+| `YouTube`            | Chrome title contains `YouTube`.                                                                                                                   |
+| `Google`             | Chrome, no other site sheet, and title is `Google` or ` - Google Search`.                                                                          |
+| `ChatGPT`            | Chrome title contains `chatgpt`.                                                                                                                   |
+| `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                          |
+| `Mobills`            | Chrome title contains `Mobills`.                                                                                                                   |
 
 ### Special resolution (not only `exe` match)
 

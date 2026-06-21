@@ -23,8 +23,8 @@ This repository is an AutoHotkey v2 scripts toolkit: multiple independent entry 
 - `Gemini.ahk` — Gemini-specific flows (prompt, copy, read aloud, model toggle)
 - `Microsoft Teams.ahk` — Meeting/chat helpers, robust window activation, mic/camera state verification
 - `Outlook.ahk` — Outlook helpers
-- `Spotify.ahk`, `SpotifyWASAPI.ahk` — Media and volume (state-aware focus/return)
-- `GeminiToCursorBridge.ahk` — Copy-from-Gemini to Cursor (included by WindowManagement)
+- `Spotify.ahk` — Media and volume (state-aware focus/return); includes `lib/SpotifyWASAPI.ahk`
+- `lib/GeminiToCursorBridge.ahk` — Copy-from-Gemini to Cursor (included by WindowManagement)
 - `UIA-v2/` — UI Automation v2 library (`UIA.ahk`, `UIA_Browser.ahk`); see [UIA-v2/README.md](UIA-v2/README.md)
 - `aux/` — IPC clients (WMIPC, AppLauncherIPC, ShiftKeysIPC) and harnesses
 
@@ -35,13 +35,15 @@ This repository is an AutoHotkey v2 scripts toolkit: multiple independent entry 
 ```
 scripts/
 ├── Act.ahk, Shift keys.ahk, Utils.ahk, WindowManagement.ahk, AppLaunchers.ahk
-├── Gemini.ahk, Microsoft Teams.ahk, Outlook.ahk, Spotify.ahk, SpotifyWASAPI.ahk
-├── GeminiToCursorBridge.ahk, Set-MicVolume.ps1
+├── Gemini.ahk, Microsoft Teams.ahk, Outlook.ahk, Spotify.ahk, mousemaster.ahk
+├── env.ahk.example, README.md
+├── lib/          — CopilotWeb.ahk, Media.ahk, GeminiToCursorBridge.ahk, SpotifyWASAPI.ahk, study/
+├── tools/        — Set-MicVolume.ps1, SetAutoHotkeyVolume.ps1, VSCodeEvidenceSearch.ahk, TestStudyLinkApi.ahk
 ├── aux/          — WMIPC.ahk, AppLauncherIPC.ahk, ShiftKeysIPC.ahk; *_Harness.ahk; Verify-ScriptUpdate.ps1
 ├── UIA-v2/       — Lib/UIA.ahk, Lib/UIA_Browser.ahk; UIATreeInspector.ahk
 ├── python/       — Daemons (wm_daemon, applauncher_daemon, shiftkeys_daemon, gemini_daemon) and protocols
 ├── data/         — settings.ini, wikipedia_scroll_positions.ini, peek_pdf.ini, Gemini_Prompt.txt, *.csv
-├── docs/         — Standards (efficiency-canon, asynchronous_workflow_standards, standard_information_display, cheat-sheet)
+├── docs/         — Standards, context/, reference/; cheat-sheet, efficiency-canon, etc.
 ├── sounds/       — quick-update-success.wav, quick-update-failure.wav
 └── prompt/       — Text files for prompts/hotstrings
 ```
@@ -50,17 +52,17 @@ scripts/
 
 **Script inventory:**
 
-| Script               | Purpose                                                              | Main includes                               | Notes                                 |
-| -------------------- | -------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------- |
-| Act.ahk              | Bootstrap, git pull, launch scripts                                  | env, Utils                                  | Requires `GetScriptPath()` in env.ahk |
-| Shift keys.ahk       | Global shortcuts, UIA, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp | env, UIA-v2, Utils, aux/ShiftKeysIPC        | `WaitForButton()` defined here        |
-| Utils.ahk            | Shared utilities, overlays, hotstrings, MEH hotkeys                  | env, UIA-v2                                 | Used by almost all scripts            |
-| WindowManagement.ahk | Move/maximize/minimize, multi-monitor, cursor halo                   | env, GeminiToCursorBridge, Utils, aux/WMIPC |                                       |
-| AppLaunchers.ahk     | App launch, Wikipedia, Pomodoro, Cursor                              | env, UIA-v2, Utils, aux/AppLauncherIPC      |                                       |
-| Gemini.ahk           | Gemini flows (prompt, copy, read aloud, model toggle)                | UIA-v2, env, Utils                          |                                       |
-| Microsoft Teams.ahk  | Meeting/chat, mic/camera state                                       | env, UIA-v2, Utils                          |                                       |
-| Outlook.ahk          | Outlook helpers                                                      | env, UIA-v2, Utils                          |                                       |
-| Spotify.ahk          | Media, volume                                                        | env, Utils; optional SpotifyWASAPI          |                                       |
+| Script               | Purpose                                                              | Main includes                                   | Notes                                 |
+| -------------------- | -------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------- |
+| Act.ahk              | Bootstrap, git pull, launch scripts                                  | env, Utils                                      | Requires `GetScriptPath()` in env.ahk |
+| Shift keys.ahk       | Global shortcuts, UIA, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp | env, UIA-v2, Utils, aux/ShiftKeysIPC            | `WaitForButton()` defined here        |
+| Utils.ahk            | Shared utilities, overlays, hotstrings, MEH hotkeys                  | env, UIA-v2                                     | Used by almost all scripts            |
+| WindowManagement.ahk | Move/maximize/minimize, multi-monitor, cursor halo                   | env, lib/GeminiToCursorBridge, Utils, aux/WMIPC |                                       |
+| AppLaunchers.ahk     | App launch, Wikipedia, Pomodoro, Cursor                              | env, UIA-v2, Utils, aux/AppLauncherIPC          |                                       |
+| Gemini.ahk           | Gemini flows (prompt, copy, read aloud, model toggle)                | UIA-v2, env, Utils                              |                                       |
+| Microsoft Teams.ahk  | Meeting/chat, mic/camera state                                       | env, UIA-v2, Utils                              |                                       |
+| Outlook.ahk          | Outlook helpers                                                      | env, UIA-v2, Utils                              |                                       |
+| Spotify.ahk          | Media, volume                                                        | env, Utils; lib/SpotifyWASAPI                   |                                       |
 
 ### Dependencies and environment
 
@@ -74,6 +76,7 @@ scripts/
 3. Diff local `env.ahk` against `env.ahk.example` for new blocks.
 4. Run `Act.ahk`.
 5. Smoke test AI hotkeys (`#!+p` copy, `#!+o` read aloud): personal should use Gemini; work should use M365 Copilot web.
+
 - **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
 - **UIA-v2:** [UIA-v2/README.md](UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
 - **WaitForButton:** The canonical implementation lives in **Shift keys.ahk** (not Utils). Scripts that need similar behavior can copy the pattern or implement a local variant (e.g. Gemini.ahk has `WaitForButtonAndShowSmallLoading`). The README patterns below reference `WaitForButton(root, pattern, timeout)`; use that signature when reimplementing.

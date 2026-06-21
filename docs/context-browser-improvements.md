@@ -2,10 +2,10 @@
 
 Scratchpad for the modal Context browser (Win+Alt+Shift+N). Code: Utils.ahk.
 
-- [x] Remember last folder between opens (today always resets to context/ root)
-- [x] JSON preview snippet in pane (topic from _meta or first lines) — most entries are .json, not images
+- [x] Remember last folder between opens (today always resets to docs/context/ root)
+- [x] JSON preview snippet in pane (topic from \_meta or first lines) — most entries are .json, not images
 - [x] Type-to-filter list (narrow rows as you type; letter jump only matches first character today)
-- [x] Global file index search when filter has text (matches filename and relative path across all of context/; list shows filename only, folder path in footer)
+- [x] Global file index search when filter has text (matches filename and relative path across all of docs/context/; list shows filename only, folder path in footer)
 - [x] Secondary action: paste path as text vs attach file (Enter always attaches — use Ctrl+Enter for path)
 - [x] Copy path / open in Explorer without closing modal (Ctrl+C copy · Ctrl+H explorer)
 - [x] Clickable breadcrumb segments in path subtitle

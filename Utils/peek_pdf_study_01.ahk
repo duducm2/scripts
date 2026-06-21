@@ -28,8 +28,8 @@ global g_StudyTopics := Map(
     6, { name: "German", mnemonicsPath: "\studies\german\mnemonics-german.md",
         plansPath: "\studies\german\german-plan.md" }
 )
-#include %A_ScriptDir%\StudyArticleLink.ahk
-#include %A_ScriptDir%\StudyFavoriteLink.ahk
+#include %A_ScriptDir%\lib\study\StudyArticleLink.ahk
+#include %A_ScriptDir%\lib\study\StudyFavoriteLink.ahk
 
 global g_StudyTopicSelectorGui := false
 global g_StudyTopicSelectorActive := false

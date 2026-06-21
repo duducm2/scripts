@@ -10,7 +10,7 @@
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
-#include %A_ScriptDir%\SpotifyWASAPI.ahk
+#include %A_ScriptDir%\lib\SpotifyWASAPI.ahk
 
 ; --- Feature: use WASAPI for Ctrl+Volume (no window activation). Set false to use legacy activate+send.
 global AL_USE_WASAPI := true

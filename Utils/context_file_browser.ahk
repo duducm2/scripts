@@ -6,7 +6,7 @@
 ; =============================================================================
 
 ; =============================================================================
-; Context file browser — browse context/ and paste full local paths (Win+Alt+Shift+N)
+; Context file browser — browse docs/context/ and paste full local paths (Win+Alt+Shift+N)
 ; =============================================================================
 global CONTEXT_PREVIEW_MAX_SIZE := 234  ; 180 * 1.3
 global g_ContextBrowserLastDir := ""
@@ -58,7 +58,7 @@ ContextBrowser_EnsureGlobals() {
     global g_ContextBrowserFileIndex, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
     global g_ContextBrowserEntryPathLabel
     if !IsSet(CONTEXT_ROOT)
-        CONTEXT_ROOT := A_ScriptDir "\context"
+        CONTEXT_ROOT := A_ScriptDir "\docs\context"
     if !IsSet(g_ContextBrowserActive)
         g_ContextBrowserActive := false
     if !IsSet(g_ContextBrowserGui)

@@ -3,3 +3,4 @@ env.ahk
 debug-*.log
 tools/MonitorEnumerationSnapshot-out.txt
 docs/aib-allow-runtime-debug.log
+.pytest_cache/

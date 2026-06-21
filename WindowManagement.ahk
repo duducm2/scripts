@@ -34,7 +34,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 #include %A_ScriptDir%\env.ahk
 
 ; --- Copy-from-Gemini to Cursor bridge (self-contained module) --------------
-#include %A_ScriptDir%\GeminiToCursorBridge.ahk
+#include %A_ScriptDir%\lib\GeminiToCursorBridge.ahk
 
 #include %A_ScriptDir%\Utils.ahk
 ; Focus blackout + Study Topic QuickLook (#!+X) run in Shift keys.ahk so globals match #!+Y. Unregister here.

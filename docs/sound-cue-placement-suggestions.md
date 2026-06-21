@@ -6,11 +6,11 @@ Use this file as a scratchpad: which actions deserve a distinct chime, which ass
 
 ## Conventions in this repo
 
-| Mechanism | Where |
-|-----------|--------|
-| Global sound on/off | `IsSoundEnabled()` / `ToggleSoundState()` in [`../Utils.ahk`](../Utils.ahk) (`data/settings.ini`, `SoundEnabled`) |
-| AutoHotkey playback volume (per-app) | `ApplyScriptMasterVolumeTarget()` / `SCRIPT_MASTER_VOLUME_PERCENT` in Utils — WASAPI `ApplyAutoHotkeyAudioSessionsVolumePercent` in [`../SpotifyWASAPI.ahk`](../SpotifyWASAPI.ahk); does **not** change Windows master volume |
-| Quiet confirm chimes | `PlayCleaningDesktopSound()` pattern (WASAPI attenuation; no master ducking) |
+| Mechanism                            | Where                                                                                                                                                                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Global sound on/off                  | `IsSoundEnabled()` / `ToggleSoundState()` in [`../Utils.ahk`](../Utils.ahk) (`data/settings.ini`, `SoundEnabled`)                                                                                                                     |
+| AutoHotkey playback volume (per-app) | `ApplyScriptMasterVolumeTarget()` / `SCRIPT_MASTER_VOLUME_PERCENT` in Utils — WASAPI `ApplyAutoHotkeyAudioSessionsVolumePercent` in [`../Lib/SpotifyWASAPI.ahk`](../Lib/SpotifyWASAPI.ahk); does **not** change Windows master volume |
+| Quiet confirm chimes                 | `PlayCleaningDesktopSound()` pattern (WASAPI attenuation; no master ducking)                                                                                                                                                          |
 
 ---
 
@@ -18,24 +18,24 @@ Use this file as a scratchpad: which actions deserve a distinct chime, which ass
 
 Fill in filenames you keep locally if they differ from the list.
 
-| Sound file (under `sounds/`) | Role |
-|------------------------------|------|
-| `gemini-focused.wav` | Gemini / Cursor focus chimes |
-| `gemini-completion.wav` | Task / copy / completion |
-| `copy.wav` | Copy actions |
-| `handy-model-chosen.mp3` | Handy model selection |
-| `pre-movement.wav` | Before mouse move / “hands off” style flows |
-| `cleaning-desktop.wav` | Clipboard-clean / desktop-clean confirm (Y) |
-| `robots-are-working.wav` / `no-robot-working.wav` | AI working check |
-| `quick-update-success.wav` | After Quick Update (`/Updated`) |
-| `print-screen.wav` | PrintScreen path |
-| `speach-start.wav` / `speach-finished.wav` | Dictation |
-| `into-cursor-textfield.wav` | WindowManagement → Cursor field |
-| `pomodo-start.wav` | Pomodoro start (AppLaunchers) |
-| `fastcopy-start.mp3` / `fastcopy-finish.mp3` | Fast Copy mode |
-| `commit-start.wav` | Commit flows (Shift keys) |
-| `favorite-set.wav` | After Alt+Q marks focused Clip Angel clip as favorite (`MarkLastClipAsFavorite`) |
-| System `*16` / `*64` | Via `ScriptSoundPlaySystem` (gated) |
+| Sound file (under `sounds/`)                      | Role                                                                             |
+| ------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `gemini-focused.wav`                              | Gemini / Cursor focus chimes                                                     |
+| `gemini-completion.wav`                           | Task / copy / completion                                                         |
+| `copy.wav`                                        | Copy actions                                                                     |
+| `handy-model-chosen.mp3`                          | Handy model selection                                                            |
+| `pre-movement.wav`                                | Before mouse move / “hands off” style flows                                      |
+| `cleaning-desktop.wav`                            | Clipboard-clean / desktop-clean confirm (Y)                                      |
+| `robots-are-working.wav` / `no-robot-working.wav` | AI working check                                                                 |
+| `quick-update-success.wav`                        | After Quick Update (`/Updated`)                                                  |
+| `print-screen.wav`                                | PrintScreen path                                                                 |
+| `speach-start.wav` / `speach-finished.wav`        | Dictation                                                                        |
+| `into-cursor-textfield.wav`                       | WindowManagement → Cursor field                                                  |
+| `pomodo-start.wav`                                | Pomodoro start (AppLaunchers)                                                    |
+| `fastcopy-start.mp3` / `fastcopy-finish.mp3`      | Fast Copy mode                                                                   |
+| `commit-start.wav`                                | Commit flows (Shift keys)                                                        |
+| `favorite-set.wav`                                | After Alt+Q marks focused Clip Angel clip as favorite (`MarkLastClipAsFavorite`) |
+| System `*16` / `*64`                              | Via `ScriptSoundPlaySystem` (gated)                                              |
 
 `quick-update-failure.wav` exists in tree; confirm whether any path plays it—if not, candidate for failed Quick Update.
 
@@ -89,10 +89,10 @@ Check boxes when you add an asset and wire it.
 ## Blank rows (your ideas)
 
 | Where (file:function or hotkey) | Event | Proposed filename | Notes |
-|---------------------------------|-------|-------------------|-------|
-| | | | |
-| | | | |
-| | | | |
+| ------------------------------- | ----- | ----------------- | ----- |
+|                                 |       |                   |       |
+|                                 |       |                   |       |
+|                                 |       |                   |       |
 
 ---
 

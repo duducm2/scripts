@@ -1,14 +1,14 @@
 #Requires AutoHotkey v2.0+
 #SingleInstance Force
 #include %A_ScriptDir%\env.ahk
-#include %A_ScriptDir%\StudyLinkHelpers.ahk
+#include %A_ScriptDir%\lib\study\StudyLinkHelpers.ahk
 
 global g_StudyLinkSubmenuGui := ""
 
 #include UIA-v2\Lib\UIA.ahk
 #include UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\lib\Media.ahk
-#include %A_ScriptDir%\SpotifyWASAPI.ahk
+#include %A_ScriptDir%\lib\SpotifyWASAPI.ahk
 #include %A_ScriptDir%\aux\ClipboardFiles.ahk
 
 ; UIA ControlType constants (Button=50000). Shared with Gemini.ahk focus helpers.

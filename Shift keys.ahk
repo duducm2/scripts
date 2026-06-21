@@ -41,7 +41,7 @@ FocusBlackoutWatcher_Start()
 ; Volume: AppLaunchers also schedules retries; this catches Shift keys process when sessions register slightly later.
 SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\aux\ShiftKeysIPC.ahk
-#include %A_ScriptDir%\CheatSheetRich.ahk
+#include %A_ScriptDir%\Shift keys\CheatSheetRich.ahk
 
 ; [SK module] Early globals and SafeDebugLog helpers -> Shift keys\helpers.ahk
 #include %A_ScriptDir%\Shift keys\helpers.ahk
@@ -309,6 +309,6 @@ global g_WikipediaScrollHistory := []
 
 ; VS Code evidence -> PDF search loop (^!#o) — see VSCodeEvidenceSearch.ahk
 global EVIDENCE_SEARCH_FROM_SHIFT_KEYS := true
-#include %A_ScriptDir%\VSCodeEvidenceSearch.ahk
+#include %A_ScriptDir%\tools\VSCodeEvidenceSearch.ahk
 #InputLevel 10
 EvidenceSearch_BindHotkey()

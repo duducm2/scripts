@@ -1,6 +1,6 @@
 # Study Link lightweight API — setup guides
 
-Configure the **Google Apps Script** backend and **MacroDroid** for study links. PC code is split by module: YouTube in [`Utils.ahk`](../Utils.ahk), articles in [`StudyArticleLink.ahk`](../StudyArticleLink.ahk), favorites in [`StudyFavoriteLink.ahk`](../StudyFavoriteLink.ahk), shared HTTP in [`StudyLinkHelpers.ahk`](../StudyLinkHelpers.ahk).
+Configure the **Google Apps Script** backend and **MacroDroid** for study links. PC code is split by module: YouTube in [`Utils.ahk`](../Utils.ahk), articles in [`StudyArticleLink.ahk`](../Lib/study/StudyArticleLink.ahk), favorites in [`StudyFavoriteLink.ahk`](../Lib/study/StudyFavoriteLink.ahk), shared HTTP in [`StudyLinkHelpers.ahk`](../Lib/study/StudyLinkHelpers.ahk).
 
 ## Study material menu (main)
 
@@ -228,7 +228,7 @@ Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`St
 
 1. **Quick Update Scripts** after any AHK change.
 
-2. Run `TestStudyLinkApi.ahk` — YouTube, article, and favorite SET/GET.
+2. Run [`tools/TestStudyLinkApi.ahk`](../tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
 3. Manual: `[3]` inner 1–2, `[4]` inner 1–2, `[5]` inner 1–2, `[6]` (technique).
 
@@ -240,15 +240,15 @@ Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`St
 
 - [`study-link-api/Code.gs`](study-link-api/Code.gs) — Apps Script source (deploy to Google)
 
-- `StudyLinkHelpers.ahk` — HTTP, keys, `StudyLink_OpenUrlInChrome`, sentinel, functional test
+- `Lib/study/StudyLinkHelpers.ahk` — HTTP, keys, `StudyLink_OpenUrlInChrome`, sentinel, functional test
 
-- `StudyArticleLink.ahk` — module 4 GUI + F6 capture
+- `Lib/study/StudyArticleLink.ahk` — module 4 GUI + F6 capture
 
-- `StudyFavoriteLink.ahk` — module 5 GUI + open/set (reuses F6 capture)
+- `Lib/study/StudyFavoriteLink.ahk` — module 5 GUI + open/set (reuses F6 capture)
 
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 
-- `TestStudyLinkApi.ahk` — API smoke test
+- `tools/TestStudyLinkApi.ahk` — API smoke test
 
 - [`macrodroid/`](macrodroid/) — Set/Get macro exports (Video, Article, Favorite)
 

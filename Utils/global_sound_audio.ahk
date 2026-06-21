@@ -122,7 +122,7 @@ ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate() {
 }
 
 RunSetMicVolumeScript() {
-    micVolumeScript := A_ScriptDir "\scripts\Set-MicVolume.ps1"
+    micVolumeScript := A_ScriptDir "\tools\Set-MicVolume.ps1"
     if (!FileExist(micVolumeScript))
         return
     try {
