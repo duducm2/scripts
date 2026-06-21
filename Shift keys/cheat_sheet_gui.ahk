@@ -188,17 +188,6 @@ global CHEAT_SHEET_WIDTH_FRAC := 0.8      ; overlay width as fraction of monitor
 global CHEAT_SHEET_HEIGHT_FRAC := 0.8     ; overlay height as fraction of monitor work area
 global CHEAT_SHEET_WORKAREA_MARGIN := 12  ; px inset from work-area edges (each side)
 
-; #region agent log
-CheatSheet_AgentDebugLog(hypothesisId, location, message, dataJson := "{}", runId := "pre-fix") {
-    try {
-        line := Format(
-            '{{"sessionId":"e6792c","timestamp":{1},"location":"{2}","message":"{3}","hypothesisId":"{4}","runId":"{5}","data":{6}}}`n',
-            A_TickCount, location, message, hypothesisId, runId, dataJson)
-        FileAppend line, A_ScriptDir "\debug-e6792c.log"
-    } catch {
-    }
-}
-
 CheatSheet_GetOverlayFramePad() {
     ; +Border adds non-client pixels beyond Show w/h (client area).
     return DllCall("GetSystemMetrics", "int", 32, "int")  ; SM_CXDLGFRAME
@@ -217,7 +206,6 @@ CheatSheet_GetDpiScaleAt(x, y) {
     }
     return 1.0
 }
-; #endregion
 
 GetGlobalCheatSheetRawText() {
     global GLOBAL_CHEAT_SHEET_RAW
@@ -367,13 +355,6 @@ CheatSheet_ComputeOverlayBounds(&wx, &wy, &wr, &wb, &guiW, &guiH, &lvH, &outerX,
     guiW := Max(chromePx + 200, Round((outerW - 2 * framePadPhysical) / dpiScale))
     guiH := Max(chromePx + 200, Round((outerH - 2 * framePadPhysical) / dpiScale))
     lvH := guiH - chromePx
-    ; #region agent log
-    CheatSheet_AgentDebugLog("F", "cheat_sheet_gui.ahk:ComputeOverlayBounds", "computed",
-        Format(
-            '{{"wx":{1},"wy":{2},"wr":{3},"wb":{4},"workW":{5},"workH":{6},"dpiScale":{7},"guiW":{8},"guiH":{9},"outerW":{10},"outerH":{11},"outerX":{12},"outerY":{13},"framePadPhysical":{14}}}',
-            wx, wy, wr, wb, workW, workH, Round(dpiScale, 3), guiW, guiH, outerW, outerH, outerX, outerY,
-            framePadPhysical))
-    ; #endregion
 }
 
 CheatSheet_ShowSheetListView(gui, lv, filterEdit := 0) {
@@ -388,20 +369,6 @@ CheatSheet_ShowSheetListView(gui, lv, filterEdit := 0) {
         CheatSheet_ConfigureSheetListViewColumns(lv, bodyW)
     }
     gui.Show("x" Round(outerX) " y" Round(outerY) " w" guiW " h" guiH)
-    ; #region agent log
-    try {
-        ogX := 0, ogY := 0, ogW := 0, ogH := 0, cgX := 0, cgY := 0, cgW := 0, cgH := 0
-        WinGetPos &ogX, &ogY, &ogW, &ogH, gui
-        WinGetClientPos &cgX, &cgY, &cgW, &cgH, gui
-        CheatSheet_AgentDebugLog("F", "cheat_sheet_gui.ahk:ShowSheetListView", "after show",
-            Format(
-                '{{"bodyW":{1},"mx":{2},"outerLeft":{3},"outerRight":{4},"outerBottom":{5},"clientRight":{6},"wx":{7},"wr":{8},"wb":{9},"overflowX":{10},"overflowY":{11},"showW":{12},"showH":{13}}}',
-                bodyW, mx, ogX, ogX + ogW, ogY + ogH, cgX + cgW, wx, wr, wb,
-                (ogX + ogW > wr || ogX < wx) ? 1 : 0, (ogY + ogH > wb || ogY < wy) ? 1 : 0, guiW, guiH),
-            "post-fix")
-    } catch {
-    }
-    ; #endregion
     if IsObject(filterEdit)
         CheatSheet_DeferFocusSearch(filterEdit)
 }
