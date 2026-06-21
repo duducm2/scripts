@@ -27,18 +27,9 @@ SetTitleMatchMode 2
 ; MODULE MAP - this file stays the runnable entry point / source of truth and
 ; #includes each module below. For a given feature, open just its small module
 ; (handy for low-context AI). Anything not listed still lives inline in this file.
-;   Shift keys\helpers.ahk                  - early globals, SafeDebugLog, GetChatGPTWindowHwnd
-;   Shift keys\config.ahk                     - config, cheat-sheet string utils, ShiftKeysIPC_Bootstrap
-;   Shift keys\cheat_sheet_data.ahk           - cheatSheets map population
-;   Shift keys\app_hotkeys.ahk                - per-app Win+Alt+Shift hotkey definitions
-;   Shift keys\cheat_sheet_gui.ahk            - cheat sheet GUI, search, hold detection
-;   Shift keys\fast_copy_clipangel.ahk        - Clip Angel fast copy mode + #!+1/#!+J
-;   Shift keys\hotif_*.ahk                    - #HotIf app handlers (OneNote, Outlook, Teams, ...)
-;   Shift keys\teams_chat_uia_*.ahk           - Teams chat UIA automation
-;   Shift keys\outlook_appointment_palette.ahk - Outlook appointment configuration palette
-;   Shift keys\outlook_appointment_uia_*.ahk  - Outlook appointment UIA state checking
-;   Shift keys\mobills_*.ahk                  - Mobills pagination, banner, URL hotkeys
-;   Shift keys\m365_copilot_temp.ahk          - TEMPORARY M365 Copilot auto-continue (^!#n)
+;   Shift keys\helpers.ahk through m365_copilot_temp.ahk — see #include list below (59 modules)
+;   Remaining inline: ML/Shopee predicates, IsChromePdfViewerActive, IsFileDialogActive,
+;   UIATreeInspector helpers, VSCode_TriggerGenerateCommitMessage (orchestrator glue between modules)
 ; -----------------------------------------------------------------------------
 
 #include %A_ScriptDir%\env.ahk
