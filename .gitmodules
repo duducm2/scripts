@@ -1,0 +1,3 @@
+[submodule "vendor/UIA-v2"]
+	path = vendor/UIA-v2
+	url = https://github.com/Descolada/UIA-v2.git

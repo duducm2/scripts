@@ -17,7 +17,7 @@ Baseline rollback ref: `39a8210^` (pre-modularization `AppLaunchers.ahk`)
 ## Still in orchestrator
 
 - Preamble: `#Requires`, `#SingleInstance`, IPC feature flags (`AL_USE_*`)
-- External `#include`s: `env.ahk`, `aux/AppLauncherIPC.ahk`, UIA, `Utils.ahk`
+- External `#include`s: `env.ahk`, `infra/ipc/AppLauncherIPC.ahk`, UIA, `Utils.ahk`
 - `OnExit(AL_AppLaunchersExit)` handler (calls module helpers for teardown)
 - `AL_DESKTOP_CACHE` UIA cache creation (must run after UIA include)
 - Duplicate hotkey disable (`#!+Y`, `#!+X`) owned by Utils/Shift keys

@@ -28,7 +28,7 @@ Phase-2 baseline rollback ref: `aa53439` (orchestrator + 59 modules before glue 
 ## Still inline in orchestrator
 
 - Header comment block, preamble, external includes
-- `FocusBlackoutWatcher_Start()`, volume `SetTimer`, `ShiftKeysIPC`, `CheatSheetRich`
+- `FocusBlackoutWatcher_Start()`, volume `SetTimer`, `ShiftKeysIPC`
 - MODULE MAP comment block
 - `global g_WikipediaScrollHistory := []` (one line between includes)
 - `#HotIf` context resets between hotif modules

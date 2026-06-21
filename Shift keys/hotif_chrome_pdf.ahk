@@ -178,7 +178,6 @@ ChromePdf_TogglePresentMode() {
                     catch {
                         try presentItem.Click()
                     }
-                    AgentDebugLog("H8", "ShiftE_presentmode_selector_success")
                     return true
                 }
             }
@@ -187,15 +186,12 @@ ChromePdf_TogglePresentMode() {
         Sleep 40
     }
 
-    AgentDebugLog("H9", "ShiftE_presentmode_selector_timeout")
-
     if (USE_CHROME_PDF_PRESENT_FALLBACK) {
         Sleep 120
         Send "{Up}"
         Send "{Up}"
         Sleep 40
         Send "{Enter}"
-        AgentDebugLog("H10", "ShiftE_presentmode_fallback_used")
         return true
     }
 
@@ -206,19 +202,7 @@ ChromePdf_TogglePresentMode() {
 +f::
 {
     ; UIA tree: AutomationId "fit"
-    ; #region agent log
-    AgentDebugLog("H5", "ShiftF_handler_enter")
-    ; #endregion
-    result := ChromePdf_ClickByAutomationId("fit")
-    if (result) {
-        ; #region agent log
-        AgentDebugLog("H6", "ShiftF_handler_click_success")
-        ; #endregion
-    } else {
-        ; #region agent log
-        AgentDebugLog("H7", "ShiftF_handler_click_failed")
-        ; #endregion
-    }
+    ChromePdf_ClickByAutomationId("fit")
 }
 
 ; Shift + P : Focus page number field - Page

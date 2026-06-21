@@ -18,7 +18,7 @@ Baseline rollback ref: `5eeb9a31` (pre-modularization `Gemini.ahk`)
 
 - Preamble: `#Requires`, `#SingleInstance`, UIA includes, `env.ahk`, `Utils.ahk`
 - Duplicate hotkey disable (`#!+Y`, `#!+X`) owned by Shift keys
-- `aux/WMIPC.ahk`, `aux/GeminiIPC.ahk`
+- `infra/ipc/WMIPC.ahk`, `infra/ipc/GeminiIPC.ahk`
 - MODULE MAP comment block and ordered `#include Gemini\...` pointers
 - Note: `Gemini_FocusPromptSameAsOpenHotkey` lives in `Utils.ahk` (shared with Shift keys)
 

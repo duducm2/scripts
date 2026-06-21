@@ -35,8 +35,6 @@ Overlays are **centered** on the foreground window’s monitor (`GetActiveMonito
 
 **WindowManagement** global chords (`Ctrl+Alt+Win`, close/cycle/minimize per monitor, MEH Alt+Tab, etc.) are documented in **`GLOBAL_CHEAT_SHEET_RAW`** under `=== WINDOW MANAGEMENT ===` in [`cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk) — that registry is the source of truth (not the comment block in `WindowManagement.ahk`).
 
-[`CheatSheetRich.ahk`](../Shift%20keys/CheatSheetRich.ahk) is no longer used by the overlays (kept in the repo for now).
-
 ---
 
 ## Search behavior (filter and cross-context search)

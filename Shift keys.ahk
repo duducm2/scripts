@@ -41,7 +41,6 @@ FocusBlackoutWatcher_Start()
 ; Volume: AppLaunchers also schedules retries; this catches Shift keys process when sessions register slightly later.
 SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\infra\ipc\ShiftKeysIPC.ahk
-#include %A_ScriptDir%\Shift keys\CheatSheetRich.ahk
 
 ; [SK module] Early globals and SafeDebugLog helpers -> Shift keys\helpers.ahk
 #include %A_ScriptDir%\Shift keys\helpers.ahk

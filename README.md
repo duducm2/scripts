@@ -69,18 +69,19 @@ scripts/
 **Checklist when switching machines or after `git pull`:**
 
 1. `git pull` in the scripts repo on that machine.
-2. `powershell -File infra\ipc\Verify-EnvAhk.ps1` (or let `Act.ahk` run it automatically before loading Utils).
-3. Diff local `env.ahk` against `env.ahk.example` for new blocks.
-4. Run `Act.ahk`.
-5. Smoke test AI hotkeys (`#!+p` copy, `#!+o` read aloud): personal should use Gemini; work should use M365 Copilot web.
+2. If `vendor/UIA-v2/Lib/UIA.ahk` is missing, run `git submodule update --init vendor/UIA-v2` (UIA-v2 is a git submodule pinned in the parent repo).
+3. `powershell -File infra\ipc\Verify-EnvAhk.ps1` (or let `Act.ahk` run it automatically before loading Utils).
+4. Diff local `env.ahk` against `env.ahk.example` for new blocks.
+5. Run `Act.ahk`.
+6. Smoke test AI hotkeys (`#!+p` copy, `#!+o` read aloud): personal should use Gemini; work should use M365 Copilot web.
 
 - **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
-- **UIA-v2:** [vendor/UIA-v2/README.md](vendor/UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
+- **UIA-v2:** Git submodule at [vendor/UIA-v2/](vendor/UIA-v2/) ([Descolada/UIA-v2](https://github.com/Descolada/UIA-v2)). After clone, run `git submodule update --init vendor/UIA-v2` if `Lib/UIA.ahk` is missing. See [vendor/UIA-v2/README.md](vendor/UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.
 - **WaitForButton:** The canonical implementation lives in **Shift keys.ahk** (not Utils). Scripts that need similar behavior can copy the pattern or implement a local variant (e.g. Gemini.ahk has `WaitForButtonAndShowSmallLoading`). The README patterns below reference `WaitForButton(root, pattern, timeout)`; use that signature when reimplementing.
 
 ### IPC and Python daemons
 
-IPC is **optional** and controlled by feature flags in the aux modules. AHK clients live in `infra/ipc/`; when a daemon is unavailable or disabled, scripts fall back to legacy (in-process) behavior.
+IPC is **optional** and controlled by feature flags in the `infra/ipc/` modules. AHK clients live in `infra/ipc/`; when a daemon is unavailable or disabled, scripts fall back to legacy (in-process) behavior.
 
 | Daemon             | Transport            | Purpose                                              | Protocol / entry                                        |
 | ------------------ | -------------------- | ---------------------------------------------------- | ------------------------------------------------------- |

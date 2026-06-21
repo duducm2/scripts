@@ -20,9 +20,6 @@ DisableBlackout7Min(*) {
     Blackout_Disable7Min()
 }
 
-; Debug mode agent logging (runtime evidence for this session only)
-; (disabled) agent log debug-31b036
-
 ; Helper function for safe debug logging with retry on file lock
 ; Handles file locking gracefully by retrying with exponential backoff
 ; No-op when DEBUG_SHIFTKEYS is false (production).
@@ -58,12 +55,6 @@ SafeDebugLog(text) {
         }
     }
     return false
-}
-
-; Helper: write NDJSON log line for debug agent (no-op on failure)
-AgentDebugLog(hypothesisId, message, runId := "initial") {
-    ; Intentionally no-op.
-    return
 }
 
 ; Helper: find ChatGPT chrome window by case-insensitive contains match
