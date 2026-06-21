@@ -1,0 +1,772 @@
+; =============================================================================
+; Utils module: clip_angel_favorite.ahk
+; Clip Angel mark favorite and related flows
+; Extracted verbatim from Utils.ahk; loaded via #include into the
+; Utils.ahk orchestrator / shared library entry point.
+; =============================================================================
+
+; =============================================================================
+; Clip Angel: Mark Last Clip as Favorite
+; =============================================================================
+; Wait after clipboard change before favoriting newest clip (copy / dictation ingest).
+CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS := 400
+; Settle after row focus, before Alt+Q (all favorite paths).
+CLIPANGEL_FAVORITE_UI_SETTLE_MS := 50
+; Bounded poll after native Alt+P open before favoriting (cold start can exceed fixed sleeps).
+CLIPANGEL_FAVORITE_OPEN_READY_MS := 1200
+CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS := 250
+CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS := 300
+CLIPANGEL_UIA_POLL_MS := 30
+CLIPANGEL_GRID_WAIT_MS := 400
+CLIPANGEL_ROW0_WAIT_MS := 300
+CLIPANGEL_ROW0_SELECT_WAIT_MS := 250
+global g_ClipAngelAutomationBusy := false
+
+; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
+; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
+; UIA-v2 FindFirst throws TargetError when nothing matches - never chain with if !c without try.
+ClipAngel_UiaFindFirst(root, conditions) {
+    if !root
+        return 0
+    try return root.FindFirst(conditions)
+    catch
+        return 0
+}
+
+ClipAngel_FindFavoriteCell(row) {
+    if !row
+        return 0
+    rn := ""
+    try rn := row.Name
+    catch {
+        rn := ""
+    }
+    suffix := "0"
+    if RegExMatch(rn, "i)(?:Row|Linha)\s*(\d+)", &m)
+        suffix := m[1]
+    else if RegExMatch(rn, "(\d+)\s*$", &m)
+        suffix := m[1]
+    ; EN + PT-BR column headers seen in Clip Angel / localized WinForms.
+    for cand in [
+        "Favorite Row " . suffix, "Favourite Row " . suffix, "Favorito Row " . suffix,
+        "Favorite Linha " . suffix, "Favorito Linha " . suffix
+    ] {
+        c := ClipAngel_UiaFindFirst(row, { Type: UIA.Type.CheckBox, Name: cand })
+        if c
+            return c
+        c := ClipAngel_UiaFindFirst(row, { Type: 50002, Name: cand })
+        if c
+            return c
+    }
+    try {
+        for c in row.FindAll({ Type: 50002 }) {
+            try n := c.Name
+            catch
+                continue
+            if RegExMatch(n, "i)favorite|favourite|favorito")
+                return c
+        }
+        boxes := row.FindAll({ Type: 50002 })
+        if boxes.Length >= 2
+            return boxes[boxes.Length]
+    } catch {
+    }
+    return 0
+}
+
+ClipAngel_FavoriteCellIsOn(cell) {
+    if !cell
+        return false
+    try {
+        if cell.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
+            return cell.TogglePattern.ToggleState = UIA.ToggleState.On
+        ts := cell.GetPropertyValue(UIA.Property.ToggleToggleState)
+        if ts != ""
+            return ts = UIA.ToggleState.On
+    } catch {
+    }
+    ; Value only for read-only grid cells - Legacy CHECKED (0x10) often false-positives on DataGrid cells.
+    try {
+        v := cell.Value
+        if (v = "true" || v = "True" || v = "1")
+            return true
+    } catch {
+    }
+    return false
+}
+
+ClipAngel_MainHwnd() {
+    h := WinExist("ClipAngel")
+    if h
+        return h
+    return WinExist("ahk_exe ClipAngel.exe")
+}
+
+ClipAngel_IsWindowShown(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        if WinGetMinMax("ahk_id " hwnd) = 1
+            return false
+    } catch {
+        return false
+    }
+    return DllCall("IsWindowVisible", "ptr", hwnd)
+}
+
+ClipAngel_ShowWindow(hwnd) {
+    if !hwnd
+        return false
+    if WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd)
+        return true
+    try {
+        if WinGetMinMax("ahk_id " hwnd) = 1
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    return ClipAngel_EnsureWindowActive(hwnd)
+}
+
+ClipAngel_HideWindow(hwnd) {
+    if !hwnd
+        return false
+    try {
+        WinMinimize("ahk_id " hwnd)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; dataGridView (Type 50036, AutomationId dataGridView) — clip-angel.txt.
+; Pass root when caller already has UIA.ElementFromHandle(hwnd) to avoid duplicate COM round-trips.
+ClipAngel_UiaGetDataGrid(hwnd, root := 0) {
+    if !hwnd
+        return 0
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return 0
+    }
+    return ClipAngel_UiaFindFirst(root, { Type: 50036, AutomationId: "dataGridView" })
+}
+
+ClipAngel_WaitForDataGrid(hwnd, timeoutMs := CLIPANGEL_GRID_WAIT_MS, root := 0) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid
+            return dataGrid
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return 0
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return 0
+}
+
+ClipAngel_WaitForRow0(dataGrid, timeoutMs := CLIPANGEL_ROW0_WAIT_MS) {
+    if !dataGrid
+        return 0
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
+        if row0
+            return row0
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return 0
+}
+
+; Invoke List menu when Window tab has focus and dataGridView is missing.
+ClipAngel_EnsureListView(hwnd, root := 0) {
+    if !hwnd
+        return false
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+    }
+    listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
+    if !listItem
+        return false
+    try {
+        if listItem.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            listItem.InvokePattern.Invoke()
+        else
+            listItem.SetFocus()
+        return true
+    } catch {
+        return false
+    }
+}
+
+ClipAngel_UiaResolveRow0(dataGrid) {
+    if !dataGrid
+        return 0
+    row0 := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" })
+    if row0
+        return row0
+    try {
+        rows := dataGrid.FindAll({ Type: 50025 })
+        if rows && rows.Length >= 1
+            return rows[1]
+    } catch {
+    }
+    return ClipAngel_WaitForRow0(dataGrid)
+}
+
+ClipAngel_UiaGridHasSelectionPattern(dataGrid) {
+    if !dataGrid
+        return false
+    try return dataGrid.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable)
+    catch
+        return false
+}
+
+ClipAngel_UiaWaitRow0Selected(row0, dataGrid, timeoutMs := CLIPANGEL_ROW0_SELECT_WAIT_MS) {
+    if !row0
+        return false
+    gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
+            return true
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return false
+}
+
+ClipAngel_UiaGridSelectionIncludesRow0(dataGrid) {
+    if !dataGrid
+        return false
+    try {
+        if dataGrid.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable) {
+            for item in dataGrid.SelectionPattern.GetSelection() {
+                try n := item.Name
+                catch
+                    continue
+                if RegExMatch(n, "i)^Row\s*0")
+                    return true
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+ClipAngel_UiaRowLegacySelected(row) {
+    if !row
+        return false
+    try {
+        state := row.GetPropertyValue(UIA.Property.LegacyIAccessibleState)
+        if (state & 0x2)
+            return true
+    } catch {
+    }
+    return false
+}
+
+; WinForms DataGridView: cheap property checks first; grid SelectionPattern only when available.
+ClipAngel_UiaRow0IsSelected(row0, dataGrid := 0, gridHasSelectionPattern := false) {
+    if row0 {
+        try {
+            if row0.GetPropertyValue(UIA.Property.SelectionItemIsSelected)
+                return true
+        } catch {
+        }
+        if ClipAngel_UiaRowLegacySelected(row0)
+            return true
+    }
+    if gridHasSelectionPattern && dataGrid && ClipAngel_UiaGridSelectionIncludesRow0(dataGrid)
+        return true
+    return false
+}
+
+ClipAngel_UiaTryLegacySelectRow(row) {
+    if !row
+        return false
+    try {
+        if !row.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
+            return false
+        row.LegacyIAccessiblePattern.Select(3)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
+ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
+    if !dataGrid
+        return false
+    try dataGrid.SetFocus()
+    catch {
+    }
+    deadline := A_TickCount + 200
+    while (A_TickCount < deadline) {
+        try {
+            if dataGrid.HasKeyboardFocus
+                return true
+        } catch {
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if !hwnd
+        return true
+    if !root {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return true
+    }
+    preview := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
+    previewFocused := false
+    try previewFocused := preview && preview.HasKeyboardFocus
+    catch {
+    }
+    if previewFocused {
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{F10}"
+        deadline := A_TickCount + 150
+        while (A_TickCount < deadline) {
+            try {
+                if dataGrid.HasKeyboardFocus
+                    return true
+            } catch {
+            }
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
+    } else {
+        try dataGrid.Click()
+        catch {
+        }
+        try dataGrid.SetFocus()
+        catch {
+        }
+    }
+    return true
+}
+
+; First list row (Row 0 / rows[1]). force=false skips work when Row 0 is already selected.
+ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
+    if !hwnd
+        return false
+    listInvoked := false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if !dataGrid {
+            listInvoked := ClipAngel_EnsureListView(hwnd, root)
+            dataGrid := ClipAngel_WaitForDataGrid(hwnd, CLIPANGEL_GRID_WAIT_MS, root)
+            if !dataGrid
+                return false
+        }
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        if !row0 && !listInvoked {
+            ClipAngel_EnsureListView(hwnd, root)
+            dataGrid := ClipAngel_WaitForDataGrid(hwnd, CLIPANGEL_GRID_WAIT_MS, root)
+            if dataGrid
+                row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        }
+        if !row0
+            return false
+        gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
+        if !force && ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
+            return true
+        try {
+            if row0.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+                row0.ScrollItemPattern.ScrollIntoView()
+        } catch {
+        }
+        if ClipAngel_UiaTryLegacySelectRow(row0) && ClipAngel_UiaWaitRow0Selected(row0, dataGrid,
+            CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        try {
+            if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                row0.SelectionItemPattern.Select()
+        } catch {
+            try row0.SetFocus()
+        }
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "^{Home}"
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Home}"
+        if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+            return true
+        rn := ""
+        try rn := row0.Name
+        catch {
+            rn := ""
+        }
+        titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title " rn })
+        if !titleCell && rn != "Row 0"
+            titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+        if titleCell {
+            try {
+                if titleCell.GetPropertyValue(UIA.Property.IsLegacyIAccessiblePatternAvailable)
+                    titleCell.LegacyIAccessiblePattern.Select(3)
+                else
+                    titleCell.Click()
+                if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                    return true
+            } catch {
+            }
+        }
+        try row0.SetFocus()
+        catch {
+        }
+        return ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+    } catch {
+        return false
+    }
+}
+
+; Macro hotkeys use Ctrl+Alt+Win - if those keys are still down, Send "!q" is not plain Alt+Q (Win+Alt+... hijacks it).
+ClipAngel_ReleaseChordModifiersForSend() {
+    SendInput "{LWin up}{RWin up}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}"
+}
+
+; Wait for physical release (KeyWait) then synthetic up - chord hotkeys often leave keys logically down.
+ClipAngel_WaitChordModifiersReleased() {
+    tw := "T0.45"
+    KeyWait "Ctrl", tw
+    KeyWait "Alt", tw
+    KeyWait "Shift", tw
+    KeyWait "LWin", tw
+    KeyWait "RWin", tw
+}
+
+; Legacy native Alt+V send — All Clips view in MergeNonFavoriteClips only.
+; Open/close and paste flows use ClipAngel_ShowWindow/HideWindow or Alt+P (+ Enter) instead.
+ClipAngel_SendToggleHotkey() {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "!v"
+}
+
+ClipAngel_EnsureWindowActive(hwnd, timeoutMs := 800) {
+    if !hwnd
+        return false
+    if WinActive("ahk_id " hwnd)
+        return true
+    endTick := A_TickCount + timeoutMs
+    loop 3 {
+        try WinActivate("ahk_id " hwnd)
+        catch
+            return false
+        remaining := endTick - A_TickCount
+        if (remaining <= 0)
+            break
+        if WinWaitActive("ahk_id " hwnd, , Max(0.05, remaining / 1000.0))
+            return true
+        Sleep 50
+    }
+    return WinActive("ahk_id " hwnd)
+}
+
+; Move to monitor work area and maximize; re-activate if layout steals focus.
+ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
+    if !hwnd
+        return false
+    if (!targetMon || targetMon < 1 || targetMon > MonitorGetCount()) {
+        try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
+        catch
+            targetMon := 0
+    }
+    if (!targetMon) {
+        try targetMon := MonitorGetPrimary()
+        catch
+            targetMon := 1
+    }
+    MoveWindowToMonitor(hwnd, targetMon)
+    if !WinActive("ahk_id " hwnd)
+        ClipAngel_EnsureWindowActive(hwnd)
+    TryMaximizeWindow(hwnd)
+    return ClipAngel_EnsureWindowActive(hwnd)
+}
+
+ClipAngel_IsListReady(&outHwnd := 0) {
+    outHwnd := ClipAngel_MainHwnd()
+    if !outHwnd
+        return false
+    dataGrid := ClipAngel_UiaGetDataGrid(outHwnd)
+    if !dataGrid
+        return false
+    return ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" }) ? true : false
+}
+
+; Poll until dataGridView + Row 0 exist (e.g. after native Alt+P open). Retries row-0 selection at end.
+ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+    deadline := A_TickCount + timeoutMs
+    hwnd := 0
+    while (A_TickCount < deadline) {
+        if ClipAngel_IsListReady(&hwnd) {
+            ClipAngel_UiaEnsureRow0Selected(hwnd, false)
+            return true
+        }
+        if hwnd := ClipAngel_MainHwnd()
+            ClipAngel_ShowWindow(hwnd)
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if hwnd := ClipAngel_MainHwnd() {
+        ClipAngel_ShowWindow(hwnd)
+        ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        return ClipAngel_IsListReady()
+    }
+    return false
+}
+
+ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
+    if (priorHwnd && WinExist("ahk_id " priorHwnd))
+        return priorHwnd
+    try {
+        activeHwnd := WinGetID("A")
+        if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe"))
+            return activeHwnd
+    } catch {
+    }
+    return 0
+}
+
+ClipAngel_RestorePriorFocus(priorHwnd) {
+    if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
+        return
+    if WinActive("ahk_exe ClipAngel.exe")
+        return
+    try {
+        WinActivate("ahk_id " priorHwnd)
+        WinWaitActive("ahk_id " priorHwnd, , 2)
+    } catch {
+    }
+}
+
+ClipAngel_TryAcquireAutomationLock() {
+    global g_ClipAngelAutomationBusy
+    if (g_ClipAngelAutomationBusy) {
+        ShowCenteredOverlay_Utils("⏳ Clip Angel busy.", 1200, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    g_ClipAngelAutomationBusy := true
+    return true
+}
+
+ClipAngel_ReleaseAutomationLock() {
+    global g_ClipAngelAutomationBusy
+    g_ClipAngelAutomationBusy := false
+}
+
+ClipAngel_EnsureOpenAndReady(silent := true) {
+    if !ActivateClipAngelWithFocusCorrection(silent)
+        return false
+    return ClipAngel_IsListReady()
+}
+
+ClipAngel_SendIncrementalPaste() {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "^!b"
+    Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
+}
+
+ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
+    EnsureClipAngelClosed()
+    ClipAngel_RestorePriorFocus(priorHwnd)
+}
+
+; Native open + row 0: Alt+P + ShowWindow + ^Home (shared by paste and favorite flows).
+; Trade-off: brief Clip Angel visibility vs full UIA open/row-select (efficiency-canon §11).
+ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    if (priorHwnd)
+        ClipAngel_EnsureWindowActive(priorHwnd)
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    Sleep 200
+    SendInput "!p"
+    Sleep 200
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_ShowWindow(hwnd)
+    SendInput "^{Home}"
+    Sleep 200
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+}
+
+; Native top-item paste: open via ActivateNativeFirstClip, then incremental paste (^!b).
+ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
+    ClipAngel_ActivateNativeFirstClip(priorHwnd)
+    SendInput "^!b"
+}
+
+; Send top list item via Clip Angel native keys. Closes after paste and restores prior focus.
+ClipAngel_SendTopListItem(priorHwnd := 0) {
+    if !ClipAngel_TryAcquireAutomationLock()
+        return false
+    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+    ok := false
+    try {
+        ClipAngel_SendNativeTopItemKeys(priorHwnd)
+        ok := true
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
+    }
+    return ok
+}
+
+; Paste N top-list items in order. Opens once, incremental paste between items, closes at end.
+ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
+    if (!IsInteger(count))
+        return false
+    n := Integer(count)
+    if (n < 1)
+        return false
+    if !ClipAngel_TryAcquireAutomationLock()
+        return false
+    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+    ok := false
+    try {
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        loop n {
+            if (A_Index = 1) {
+                ClipAngel_SendNativeTopItemKeys(priorHwnd)
+            } else {
+                Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
+                ClipAngel_ReleaseChordModifiersForSend()
+                SendInput "^!b"
+            }
+            Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
+        }
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+        ok := true
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
+    }
+    return ok
+}
+
+; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
+; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
+MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
+    if waitForIngest
+        Sleep(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS)
+    if !ClipAngel_TryAcquireAutomationLock()
+        return
+    priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+    try {
+        if (target = "last") {
+            MarkLastClipAsFavorite_UiaLastRow()
+            return
+        }
+        ClipAngel_ActivateNativeFirstClip()
+        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "!q"
+        ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
+        ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    } finally {
+        EnsureClipAngelClosed()
+        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_ReleaseAutomationLock()
+    }
+}
+
+; Legacy UIA path for target="last" only (no callers today; API preserved).
+MarkLastClipAsFavorite_UiaLastRow() {
+    ActivateClipAngelWithFocusCorrection()
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !WinWaitActive("ahk_id " hwnd, , 2) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    el := UIA.ElementFromHandle(hwnd)
+    if !el {
+        ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
+    if !dataGrid {
+        ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+    rows := 0
+    try rows := dataGrid.FindAll({ Type: 50025 })
+    catch {
+        rows := 0
+    }
+    if !rows || rows.Length < 1 {
+        ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    rowTarget := rows[rows.Length]
+    hasSel := rowTarget.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+    try {
+        if hasSel
+            rowTarget.SelectionItemPattern.Select()
+        else
+            rowTarget.SetFocus()
+    } catch {
+        try rowTarget.SetFocus()
+    }
+    try {
+        if rowTarget.GetPropertyValue(UIA.Property.IsScrollItemPatternAvailable)
+            rowTarget.ScrollItemPattern.ScrollIntoView()
+    } catch {
+    }
+    favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
+        ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
+        return
+    }
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 2) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
+    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "!q"
+    ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
+    ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+}
