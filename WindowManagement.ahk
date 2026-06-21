@@ -14,12 +14,19 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;
 ; MODULE MAP - this file stays the runnable entry point / source of truth and
 ; #includes each module below. For a given feature, open just its small module
-; (handy for low-context AI). Anything not listed still lives inline in this file.
+; (handy for low-context AI). See WindowManagement/MODULARIZATION_PROGRESS.md.
 ;   WindowManagement\helpers.ahk              - notifications, activation, cursor-centering helpers
 ;   WindowManagement\globals.ahk              - global vars + startup timers (auto-execute; keep #include in place)
+;   WindowManagement\tile_snap.ahk            - tile background, snap half-pair, maximize helpers
+;   WindowManagement\window_tools.ahk         - Win+Alt+Shift+W window tools menu
+;   WindowManagement\background_scan.ahk      - background window scan and title excludes
+;   WindowManagement\minimized_list.ahk       - hidden/minimized background window list GUI
 ;   WindowManagement\hotkeys.ahk              - global hotkey bindings (minimize/maximize/move/close/cycle)
+;   WindowManagement\move_monitor.ahk         - move window to ordered monitor; MEH Alt+Tab
 ;   WindowManagement\window_cycle.ahk         - cycle/minimize/close visible windows on a monitor by order
+;   WindowManagement\project_selector_01.ahk  - project quick selector GUI (#!+L), part 1
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
+;   WindowManagement\project_selector_02.ahk  - project selector selection mode / preview, part 2
 ;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
 ; -----------------------------------------------------------------------------
 

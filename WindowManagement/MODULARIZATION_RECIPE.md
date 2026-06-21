@@ -59,16 +59,14 @@ the blob byte-faithfully with `Start-Process git show ... -RedirectStandardOutpu
 
 ## Pilot result (WindowManagement.ahk)
 
-Orchestrator 5701 -> 4197 lines. Modules: `helpers.ahk`, `globals.ahk`,
-`hotkeys.ahk`, `window_cycle.ahk`, `cursor_composer.ahk`,
-`cursor_window_select.ahk` (57-836 lines each). `/validate` passes and the
-code-line multiset is identical to the original.
+Orchestrator 5701 -> ~210 lines (plus summary comments). **13 modules** in
+`WindowManagement/` (helpers, globals, tile_snap, window_tools, background_scan,
+minimized_list, hotkeys, move_monitor, window_cycle, project_selector_01/02,
+cursor_composer, cursor_window_select). `/validate` passes. See
+`WindowManagement/MODULARIZATION_PROGRESS.md`.
 
 ## Rollout notes
 
-- `Shift keys.ahk` (~26k, leaf process): same recipe, more modules.
-- `Utils.ahk` (~18.8k, shared library): after extracting, validate **every**
-  script that `#include`s it (`Act.ahk`, `Shift keys.ahk`, `AppLaunchers.ahk`,
-  etc.), since a break there affects all of them.
-- Keep modules feature-cohesive (~300-900 lines); do not split one function per
-  file.
+- `Shift keys.ahk` (~26k, leaf process): done (59 modules).
+- `Utils.ahk` (~18.8k, shared library): done (51 modules); validate every consumer.
+- Optional: `Gemini.ahk`, `AppLaunchers.ahk`; Shift keys orchestrator glue (~400 lines).
