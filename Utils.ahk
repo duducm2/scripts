@@ -6977,38 +6977,8 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
     }
 }
 
-; =============================================================================
-; SelectAiModelInHandy() - Opens or closes the selector GUI (hotkey entry point)
-; =============================================================================
-; Select AI model in Handy via interactive GUI selector.
-; Win+Alt+Shift+C toggles: open when closed, close when open.
-; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
-SelectAiModelInHandy() {
-    global g_AiModelSelectorActive
-    if (g_AiModelSelectorActive)
-        AiModelSelector_Close()
-    else
-        ShowAiModelSelector()
-}
-
-; =============================================================================
-; Helper: Show centered overlay banner (uses standard loading indicator; non-blocking).
-; =============================================================================
-ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTERMEDIATE) {
-    ; centerOnHwnd 0 = foreground monitor (GetActiveMonitorWorkArea_StandardBar); same intent as prior WinGetID("A") path.
-    StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
-        passiveBgColor: bgColor })
-    StandardLoadingBar_Hide(duration)
-}
-
-; =============================================================================
-; Helper: Pre-movement warning (sound + 2s delay) before automated window changes.
-; =============================================================================
-PlayPreMovementWarning(targetName) {
-    ScriptSoundPlay(A_ScriptDir . "\sounds\pre-movement.wav")
-    ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 2000, BANNER_ACCENT_INTERMEDIATE)
-    Sleep 2000
-}
+; [Utils module] SelectAiModelInHandy entry and pre-movement warning -> Utils\handy_selector_entry.ahk
+#include %A_ScriptDir%\Utils\handy_selector_entry.ahk
 
 ; [Utils module] Standard loading bar show/update/hide lifecycle -> Utils\standard_loading_bar.ahk
 #include %A_ScriptDir%\Utils\standard_loading_bar.ahk
