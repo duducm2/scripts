@@ -15,6 +15,14 @@ global g_StudyLinkSubmenuGui := ""
 global UIA_ControlType_Button := 50000
 
 ; -----------------------------------------------------------------------------
+; MODULE MAP - Utils.ahk stays the runnable entry point / shared library and
+; #includes each module below. For a given feature, open just its small module.
+; Early BANNER_ACCENT_* and GEMINI_PROMPT_* globals stay here (must load first).
+; lib\CopilotWeb.ahk #include stays inline before d2c_flow_manager module.
+; See Utils/MODULARIZATION_PROGRESS.md for the full module list.
+; -----------------------------------------------------------------------------
+
+; -----------------------------------------------------------------------------
 ; Timing and window utilities for performance measurement and lightweight checks
 ; -----------------------------------------------------------------------------
 ; StartTimer() -> returns a timer object { start: A_TickCount }
