@@ -2,7 +2,9 @@
 
 This document is the single reference for **authoring** cheat sheet strings, **using** the in-script overlays in [`Shift keys.ahk`](../Shift%20keys.ahk), and **resolving** which sheet applies. The implementation follows repository guidance in [efficiency-canon.md](efficiency-canon.md) (behavior parity, no extra hot-path IPC for the overlay).
 
-**Canonical script:** [`Shift keys.ahk`](../Shift%20keys.ahk) — not `shiftkeys.autohotkey` (that filename is not used in this repo).
+**Canonical registry (all sheet strings):** [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk) — `cheatSheets` map entries and `GLOBAL_CHEAT_SHEET_RAW`.
+
+**Canonical script:** [`Shift keys.ahk`](../Shift%20keys.ahk) — entry point; not `shiftkeys.autohotkey` (that filename is not used in this repo).
 
 ---
 
@@ -52,7 +54,7 @@ Within each section, keep the existing line format (emoji + `[KEY]` + descriptio
 
 **Display merge:** [`ProcessCheatSheetText()`](../Shift%20keys.ahk) expands the **first** `[KEY]` on each shortcut line using the active modifier cluster: the nearest preceding `=== Cluster label ===` header (or a leading **`AppName (Modifier)`** line such as `Explorer (Shift)`) supplies an implied prefix (`Shift+`, `Ctrl+`, etc.), so the overlay shows **`[Shift+M]`** instead of bare **`[M]`** when the section implies Shift. Brackets that already list a full chord (`+`, `/`, `...`, or parenthetical keys) are left unchanged. The **`>>>` / `---`** classification still uses the **original** first bracket (before merge) so built-in detection matches prior behavior.
 
-**Reference implementation:** `cheatSheets["Cursor.exe"]` in [`Shift keys.ahk`](../Shift%20keys.ahk) is the **template** for modifier clustering (Cursor-first, complex). New app sheets should mirror this structure before adding one-off sections.
+**Reference implementation:** `cheatSheets["Cursor.exe"]` in [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk) is the **template** for modifier clustering (Cursor-first, complex). New app sheets should mirror this structure before adding one-off sections.
 
 ---
 
@@ -69,7 +71,7 @@ Filter and **Search all sheets** operate on this **processed** text (with haysta
 
 ## Registry: `cheatSheets` map keys
 
-Each row is a key in `cheatSheets` in [`Shift keys.ahk`](../Shift%20keys.ahk). Line numbers drift with edits; search the file for `cheatSheets["Key"]`.
+Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk). Line numbers drift with edits; search the file for `cheatSheets["Key"]`.
 
 | Map key              | When it applies                                                                                                                                    |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -111,13 +113,15 @@ Each row is a key in `cheatSheets` in [`Shift keys.ahk`](../Shift%20keys.ahk). L
 
 ### Special resolution (not only `exe` match)
 
-- **Chrome (`chrome.exe`):** Site-specific keys are chosen via **`PickChromeAppSheetKey()`** (sequential overwrites, same semantics as the former `if` chain). The generic `chrome.exe` sheet may be appended for combined display.
+- **Chrome (`chrome.exe`):** Site-specific keys are chosen via **`PickChromeAppSheetKey()`** in [`Shift keys/cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk) (sequential overwrites, same semantics as the former `if` chain). The generic `chrome.exe` sheet may be appended for combined display.
 - **Outlook:** Reminder / message / appointment inspectors override generic `OUTLOOK.EXE` where applicable.
 - **Teams:** Meeting vs chat uses helper predicates, not raw `exe` only.
 
 ### Global shortcuts text
 
-The long-hold overlay text lives in **`GLOBAL_CHEAT_SHEET_RAW`** in [`Shift keys.ahk`](../Shift%20keys.ahk). It lists **Win+Alt+Shift** and **Ctrl+Alt+Win** chords. **`GetGlobalCheatSheetRawText()`** returns that string. **`SearchCheatSheets()`** includes it when `includeGlobal` is true.
+The long-hold overlay text lives in **`GLOBAL_CHEAT_SHEET_RAW`** in [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk). It lists **Win+Alt+Shift** and **Ctrl+Alt+Win** chords. **`GetGlobalCheatSheetRawText()`** in [`Shift keys/cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk) returns that string. **`SearchCheatSheets()`** includes it when `includeGlobal` is true.
+
+A **`=== ZMK KEYBOARD (eyelash_sofle.keymap) ===`** block at the end of that string documents the Sofle ZMK keymap by **layer and physical key** (e.g. `[ZMK L0 · L] hold > …`). Source of truth for bindings: `C:\Users\eduev\Documents\ZMK\zmk-sofle\config\eyelash_sofle.keymap`. Legend: **L0** = base, **L1** = hold left thumb, **L2** = hold right thumb, **L3** = sticky rapid arrows (activate from **L2·W**), **L4** = auto when L2+L3 are both active. Tap-dance lines use **1× / 2× / 3×** for single/double/triple tap. Update the registry manually when the keymap changes.
 
 ---
 
@@ -244,7 +248,7 @@ appShortcuts := "Gemini (Shift)`r`n📂 [D]Toggle the[D]rawer`r`n💬 [N][N]ew c
 
 ### Processing
 
-The `ProcessCheatSheetText()` function (with `PadShortcut()` in [`Shift keys.ahk`](../Shift%20keys.ahk)) will:
+The `ProcessCheatSheetText()` function (with `PadShortcut()` in [`Shift keys/config.ahk`](../Shift%20keys/config.ahk)) will:
 
 - Pad the **first** `[...]` on each line so the bracket group reaches a target width (default 18 characters) by centering spaces **inside** the brackets when the inner text is shorter than the target (longer keys are left unchanged).
 - Add `>>> ` prefix for custom shortcuts
@@ -306,9 +310,9 @@ Gemini (Shift)
 
 ## Add a new cheat sheet (checklist)
 
-1. Add the raw string to `cheatSheets["YourKey"]` using the header and line rules above.
+1. Add the raw string to `cheatSheets["YourKey"]` in [`Shift keys/cheat_sheet_registry.ahk`](../Shift%20keys/cheat_sheet_registry.ahk) using the header and line rules above.
 2. For non-trivial apps, follow [Modifier clusters (standard layout)](#modifier-clusters-standard-layout); compare with `Cursor.exe` as needed.
-3. If the sheet is not selected by process name alone, extend `GetCheatSheetText()` and (for Chrome) `PickChromeAppSheetKey()` in [`Shift keys.ahk`](../Shift%20keys.ahk).
+3. If the sheet is not selected by process name alone, extend `GetCheatSheetText()` and (for Chrome) `PickChromeAppSheetKey()` in [`Shift keys/cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk).
 4. Press **Win+Alt+Shift+A** in the target app and confirm the overlay.
 5. If the resolver is non-obvious, add a short note to this document’s registry table.
 

@@ -43,7 +43,7 @@ Largest modules (good targets for focused AI edits):
 - `hotif_powerbi.ahk` (~1,289)
 - `cursor_predicates.ahk` (~1,264)
 - `hotif_scroll_ai.ahk` (~1,089)
-- `app_hotkeys.ahk` (~1,092)
+- `cheat_sheet_registry.ahk` (~1,251) — canonical `cheatSheets` map + `GLOBAL_CHEAT_SHEET_RAW` (replaces `app_hotkeys.ahk` and `cheat_sheet_data.ahk`)
 - `gemini_chrome_02.ahk` (~941)
 - `outlook_helpers_02.ahk` (~938)
 

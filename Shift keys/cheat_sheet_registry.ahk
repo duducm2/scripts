@@ -1,9 +1,51 @@
 ; =============================================================================
-; Shift keys module: app_hotkeys.ahk
-; Per-app Win+Alt+Shift hotkey cheat sheet definitions
-; Extracted verbatim from Shift keys.ahk; loaded via #include into the
-; Shift keys.ahk process, which remains the entry point / source of truth.
+; Shift keys module: cheat_sheet_registry.ahk
+; Canonical registry for all cheat sheet strings (per-app cheatSheets map +
+; GLOBAL_CHEAT_SHEET_RAW). Loaded via #include into Shift keys.ahk.
 ; =============================================================================
+cheatSheets := Map()
+
+; --- Mercado Livre (Brazil) -----------------------------------------------
+cheatSheets["Mercado Livre"] := "
+(
+    Mercado Livre (Shift)
+    [S] Focus search field
+    [C] Carrinho de compras (cart)
+    [P] Compras feitas (purchases)
+    [Y] Filtro Chegará amanhã
+    [F] Filtro Full
+    [I] Filtro Internacional
+    [N] Filtro Envio local / Nacional
+    [G] Filtro Frete grátis
+    [O] Ordenar por (menu)
+    [R] Faixa de preço (Mín/Máx)
+    [L] Seguinte (paginação)
+    [K] Anterior (paginação)
+    [A] Adicionar ao carrinho
+    [V] Favoritos (coração)
+    [J] Continuar (fluxo compra/endereço)
+)"  ; end Mercado Livre
+
+; --- Shopee (Brazil) -------------------------------------------------------
+cheatSheets["Shopee"] := "
+(
+    Shopee (Shift)
+    [S] Buscar na Shopee (campo de busca)
+    [C] Carrinho de compras
+    [P] Minhas compras / Pedidos (especulativo)
+    [Y] Filtro Entrega Rápida (analogia Chegará amanhã)
+    [F] Filtro Promoções / Full (especulativo)
+    [I] Filtro Internacional
+    [N] Filtro Envio Nacional
+    [G] Filtro Frete grátis (especulativo)
+    [O] Ordenar por (menu)
+    [R] Faixa de preço (Mín/Máx)
+    [L] Seguinte (paginação) – especulativo
+    [K] Anterior (paginação) – especulativo
+    [A] Adicionar ao carrinho (página do produto)
+    [V] Favoritar produto (coração)
+    [J] Continuar (carrinho/checkout, incl. \"Fazer pedido\")
+)"  ; end Shopee
 
 ;---------------------------------------- Shift + keys ----------------------------------------------
 ; ----- Assignment policy: use Shift + <key> first. When all Shift slots in the sequence are consumed, continue with Ctrl + Alt + <key> in the same order.
@@ -1058,42 +1100,297 @@ cheatSheets["Mobills"] := "
     🔘 [W][W]indow (Open button + type MAIN)
 )"
 
-; Mirrors the former sequential if-chain: later assignments override earlier ones; Shopee/Google only when still unset.
-PickChromeAppSheetKey(chromeTitle) {
-    key := ""
-    if IsChromePdfViewerActive()
-        key := "Chrome PDF Viewer"
-    if InStr(chromeTitle, "WhatsApp")
-        key := "WhatsApp"
-    if InStr(chromeTitle, "Gmail")
-        key := "Gmail"
-    if InStr(chromeTitle, "chatgpt")
-        key := "ChatGPT"
-    if InStr(chromeTitle, "Mobills")
-        key := "Mobills"
-    if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
-        key := "Google Keep"
-    if InStr(chromeTitle, "YouTube")
-        key := "YouTube"
-    if InStr(chromeTitle, "UIATreeInspector")
-        key := "UIATreeInspector"
-    if InStr(chromeTitle, "Settle Up")
-        key := "Settle Up"
-    if InStr(chromeTitle, "Miro")
-        key := "Miro"
-    if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
-        key := "Wikipedia"
-    if IsMercadoLivreActive()
-        key := "Mercado Livre"
-    if (key = "" && IsShopeeActive())
-        key := "Shopee"
-    if InStr(chromeTitle, "gemini", false)
-        key := "Gemini"
-    if (key = "" && (InStr(chromeTitle, "M365 Copilot", false) || InStr(chromeTitle, "Chat | M365 Copilot", false)))
-        key := "Copilot Web"
-    if InStr(chromeTitle, "Google Maps")
-        key := "Google Maps"
-    if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
-        key := "Google"
-    return key
-}
+; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
+GLOBAL_CHEAT_SHEET_RAW := "
+(
+    [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
+        [Ctrl+Alt+Win] - SECONDARY triple modifier
+    
+    === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
+    [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
+    [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
+    Letters available: T, U
+
+    Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
+    [Ctrl+Alt+Win+1] > Available
+    [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
+    [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
+    [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
+    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
+    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
+    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (WindowManagement.ahk; also Win+Alt+Shift+W → 4)
+    [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
+    [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
+    [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
+    [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
+    [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
+    [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
+    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
+    [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
+    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
+    [Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
+    
+    === MAIN KEY COMBINATIONS ===
+    [Symbol Layer] Win+Alt+Shift - Primary combination
+    [Window Management] Ctrl+Alt+Win - Secondary combination
+    
+    [Alt+P] Ope clip angel
+    
+    [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
+    
+    === CURSOR ===
+    [Win+Alt+Shift+N] > Context file browser (paste path)
+    
+    [Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
+    
+    === SPOTIFY ===
+    [Win+Alt+Shift+S] > Opens or activates Spotify
+    
+    === CLIP ANGEL ===
+    [Win+Alt+Shift+1] > Send top list item from Clip Angel
+    
+    === AI CHAT (Chrome) ===
+    [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
+    [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
+    [Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
+    [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
+    [Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
+    
+    === HANDY DICTATION ===
+    [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+    [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
+    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
+    [Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
+    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
+    
+    === YOUTUBE ===
+    [Win+Alt+Shift+H] > Activates Youtube
+    
+    === GOOGLE ===
+    [Win+Alt+Shift+F] > Opens Google
+    
+    === CURSOR ===
+    [Win+Alt+Shift+,] > Opens or activates Cursor
+    [Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
+    
+    === OUTLOOK ===
+    [Win+Alt+Shift+B] > Open mail
+    [Win+Alt+Shift+V] > Open Reminder
+    [Win+Alt+Shift+G] > Open calendar
+    [Win+Alt+Shift+D] > Voice aloud the email
+    
+    === MICROSOFT TEAMS ===
+    [Win+Alt+Shift+R] > New conversation
+    [Win+Alt+Shift+5] > Toggle Mute (meeting)
+    [Win+Alt+Shift+4] > Toggle camera (meeting)
+    [Win+Alt+Shift+T] > Screen share (meeting)
+    [Win+Alt+Shift+2] > Exit meeting
+    [Win+Alt+Shift+E] > Select the chats window
+    [Win+Alt+Shift+3] > Select the meeting window
+    
+    === WHATSAPP ===
+    [Win+Alt+Shift+Z] > Opens WhatsApp
+    
+    === WINDOWS ===
+    [Win+Alt+Shift+6] > Minimizes windows
+    [Win+Alt+Shift+M] > Maximizes the current window
+    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
+    [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
+    
+    === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
+    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
+    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
+    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
+    [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
+    [Ctrl+Alt+Win+S] > Move window to monitor 2
+    [Ctrl+Alt+Win+D] > Move window to monitor 3
+    [Ctrl+Alt+Win+F] > Move window to monitor 4
+    [Ctrl+Alt+Win+Shift+A] > Close window on monitor 1
+    [Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
+    [Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
+    [Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
+    [Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
+    [Ctrl+Alt+Win+W] > Cycle windows on monitor 2
+    [Ctrl+Alt+Win+E] > Cycle windows on monitor 3
+    [Ctrl+Alt+Win+R] > Cycle windows on monitor 4
+    [Ctrl+Alt+Win+Shift+Q] > Minimize window on monitor 1
+    [Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
+    [Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
+    [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
+    
+    === COMMAND PALETTE BOOKMARKS ===
+    [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
+    
+    === GENERAL ===
+    [Win+Alt+Shift+U] > Quick string shortcuts
+    [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
+    [Win+Alt+Shift+Q] > Jump mouse on the middle
+    [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
+    [Win+Alt+Shift+→] > Show square selector (right direction)
+    [Win+Alt+Shift+←] > Show square selector (left direction)
+    [Win+Alt+Shift+↓] > Show square selector (down direction)
+    [Win+Alt+Shift+↑] > Show square selector (up direction)
+    [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
+    
+    === COMMAND PALETTE ===
+    [Win+Ctrl+Alt+Y] > Command Palette - File search
+    [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
+    
+    === SHORTCUTS ===
+    [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
+    [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
+    [Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
+    
+    === ZMK KEYBOARD (eyelash_sofle.keymap) ===
+    Source: eyelash_sofle.keymap — Sofle split; layers 0–4
+    Legend: L0=base, L1=hold left thumb, L2=hold right thumb, L3=sticky (from L2·W), L4=auto when L2+L3
+    Tap-dance: 1× / 2× / 3× = single/double/triple tap within tapping-term
+    
+    --- ZMK Layer 0 (base) ---
+    [ZMK L0 · ↑] > Up Arrow
+    [ZMK L0 · ↓] > Down Arrow
+    [ZMK L0 · ←] > Left Arrow
+    [ZMK L0 · →] > Right Arrow
+    [ZMK L0 · P] hold > Alt+Shift+S
+    [ZMK L0 · P] tap 1× > Alt+Shift+Q — jump mouse to middle
+    [ZMK L0 · P] tap 2× > Alt+Shift+W
+    [ZMK L0 · P] tap 3× > Ctrl+Alt+Win+M — Command Palette bookmark
+    [ZMK L0 · L] hold > Ctrl+Alt+Win+L — {AI_PROVIDER} D2C direct submit (Utils.ahk)
+    [ZMK L0 · L] tap 1× > Win+Alt+Shift+0 — start/stop dictation
+    [ZMK L0 · L] tap 2× > Ctrl+Alt+Win+4 — AI Text Optimizer
+    [ZMK L0 · L] tap 3× > Ctrl+Alt+Win+7 — mark last clip favorite
+    [ZMK L0 · ;] hold > Ctrl+Shift+V — paste plain text
+    [ZMK L0 · ;] tap 1× > Win+Alt+Shift+1 — Clip Angel top item
+    [ZMK L0 · ;] tap 2× > Ctrl+Alt+B
+    [ZMK L0 · ;] tap 3× > Ctrl+Alt+V
+    [ZMK L0 · .] hold > Ctrl+Alt+Win+V — maximize active window (WindowManagement.ahk)
+    [ZMK L0 · .] tap 1× > Win+Alt+Shift+6 — minimize windows
+    [ZMK L0 · .] tap 2× > Alt+F4 — close window
+    [ZMK L0 · Left thumb] hold > Layer 1 (ONE)
+    [ZMK L0 · Left thumb] tap 1× > Ctrl+Alt+Win+0 — Project Quick Selector
+    [ZMK L0 · Left thumb] tap 2× > Ctrl+Alt+Win+1 — Cursor AI quick action
+    [ZMK L0 · Right thumb] hold > Layer 2 (TWO)
+    [ZMK L0 · Right thumb] tap 1× > Win+Alt+Shift+U — quick string shortcuts
+    [ZMK L0 · Right thumb] tap 2× > Win+Alt+Shift+Y — Focus Mode toggle
+    [ZMK L0 · Win+Alt+Shift key] > Win+Alt+Shift (modifier chord)
+    [ZMK L0 · X thumb] hold > Win+Alt+Shift+X — Peek PDF / set PDF path
+    [ZMK L0 · X thumb] tap 1× > Win+Alt+Shift+I — open {AI_PROVIDER}
+    [ZMK L0 · X thumb] tap 2× > Ctrl+Alt+Win+6 — window tools [2]
+    [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+Y — window tools [3]
+    [ZMK L0 · E thumb] hold > Win+Shift+E
+    [ZMK L0 · E thumb] tap 1× > Context menu
+    [ZMK L0 · E thumb] tap 2× > Ctrl+Alt+Win+B — Handy Cohere English
+    [ZMK L0 · E thumb] tap 3× > Ctrl+Alt+Win+9 — Handy Cohere Portuguese
+    
+    --- ZMK Layer 1 (ONE) — hold left thumb ---
+    [ZMK L1 · Esc] > F11
+    [ZMK L1 · 2] > F2
+    [ZMK L1 · 5] > F5
+    [ZMK L1 · ↑] default > mouse move up (slow)
+    [ZMK L1 · ↑] +Ctrl > quick jump up (~32767 px)
+    [ZMK L1 · ↑] +Shift > Win+Alt+Shift+↑ — square selector up
+    [ZMK L1 · ↓] default > mouse move down (slow)
+    [ZMK L1 · ↓] +Ctrl > quick jump down (~32767 px)
+    [ZMK L1 · ↓] +Shift > Win+Alt+Shift+↓ — square selector down
+    [ZMK L1 · ←] default > mouse move left (slow)
+    [ZMK L1 · ←] +Ctrl > quick jump left (~32767 px)
+    [ZMK L1 · ←] +Shift > Win+Alt+Shift+← — square selector left
+    [ZMK L1 · →] default > mouse move right (slow)
+    [ZMK L1 · →] +Ctrl > quick jump right (~32767 px)
+    [ZMK L1 · →] +Shift > Win+Alt+Shift+→ — square selector right
+    [ZMK L1 · 6] > F6
+    [ZMK L1 · 7] > Ctrl+A then Ctrl+C (select all + copy)
+    [ZMK L1 · 8] > Ctrl+Alt+Win+Z — window tools [1]
+    [ZMK L1 · 9] > Ctrl+Alt+Win+P — exit F11 fullscreen
+    [ZMK L1 · 0] > F10
+    [ZMK L1 · Bksp] > F12
+    [ZMK L1 · Q] > Ctrl+Alt+Win+Q then Ctrl+Alt+Win+X — snap 50/50 (monitor 1 pair)
+    [ZMK L1 · W] > Ctrl+Alt+Win+W then Ctrl+Alt+Win+X — snap 50/50 (monitor 2 pair)
+    [ZMK L1 · E] > Ctrl+Alt+Win+E then Ctrl+Alt+Win+X — snap 50/50 (monitor 3 pair)
+    [ZMK L1 · R] > Ctrl+Alt+Win+R then Ctrl+Alt+Win+X — snap 50/50 (monitor 4 pair)
+    [ZMK L1 · A] > Ctrl+Alt+Win+A — move window to monitor 1
+    [ZMK L1 · S] > Ctrl+Alt+Win+S — move window to monitor 2
+    [ZMK L1 · D] > Ctrl+Alt+Win+D — move window to monitor 3
+    [ZMK L1 · F] > Ctrl+Alt+Win+F — move window to monitor 4
+    [ZMK L1 · T] > Ctrl+Alt+W — cycle windows monitor 2
+    [ZMK L1 · ]] > ]
+    [ZMK L1 · \] > \
+    [ZMK L1 · /] > /
+    [ZMK L1 · ;] > ;
+    [ZMK L1 · -] > -
+    [ZMK L1 · =] > =
+    [ZMK L1 · `] > `
+    [ZMK L1 · [] > [
+    [ZMK L1 · '] > '
+    [ZMK L1 · N] > mouse left click
+    [ZMK L1 · Shift+'] > Shift+'
+    [ZMK L1 · Shift+[] > Shift+[
+    [ZMK L1 · Non-US \] > Non-US backslash
+    [ZMK L1 · encoder] > Ctrl+Shift+= / Ctrl+- (zoom-style inc/dec)
+    
+    --- ZMK Layer 2 (TWO) — hold right thumb ---
+    [ZMK L2 · Esc] > Ctrl+Alt+Win+2 — Quick Update to Your Scripts
+    [ZMK L2 · 1] > Bluetooth select profile 0
+    [ZMK L2 · 2] > Bluetooth select profile 3
+    [ZMK L2 · 3] > Bluetooth select profile 2
+    [ZMK L2 · 5] > Ctrl+Alt+Win+X — snap 50/50
+    [ZMK L2 · ↑] > 5× Up Arrow
+    [ZMK L2 · ↑] +Ctrl > Page Down
+    [ZMK L2 · ↓] > 5× Down Arrow
+    [ZMK L2 · ↓] +Ctrl > Page Up
+    [ZMK L2 · ←] > 5× Left Arrow
+    [ZMK L2 · →] > 5× Right Arrow
+    [ZMK L2 · Home slot] hold > Ctrl+Shift+Home then Delete
+    [ZMK L2 · Home slot] tap > Shift+Home then Delete
+    [ZMK L2 · End slot] hold > Ctrl+Shift+End then Delete
+    [ZMK L2 · End slot] tap > Shift+End then Delete
+    [ZMK L2 · Home] hold > Ctrl+Home
+    [ZMK L2 · Home] tap > Home
+    [ZMK L2 · End] hold > Ctrl+End
+    [ZMK L2 · End] tap > End
+    [ZMK L2 · Tab] > Ctrl+Alt+Win+8 — Moves Desktop to Recycle Bin
+    [ZMK L2 · W] > Sticky Layer 3 (RAPID-AIB)
+    [ZMK L2 · T] > Win+Ctrl+.
+    [ZMK L2 · Y] > Alt+PrtSc
+    [ZMK L2 · U] > Up Arrow
+    [ZMK L2 · I] > Page Up
+    [ZMK L2 · O] > Page Down
+    [ZMK L2 · H] > Left Arrow
+    [ZMK L2 · J] > Down Arrow
+    [ZMK L2 · K] > Right Arrow
+    [ZMK L2 · PgUp slot] hold > Ctrl+Shift+Page Up
+    [ZMK L2 · PgUp slot] tap > Ctrl+Page Up
+    [ZMK L2 · PgDn slot] hold > Ctrl+Shift+Page Down
+    [ZMK L2 · PgDn slot] tap > Ctrl+Page Down
+    [ZMK L2 · A] > Ctrl+Alt+Win+5 — Clean the Clipboard
+    [ZMK L2 · S] > Ctrl+Alt+Win+3 — Toggle Outlook and Teams
+    [ZMK L2 · D] > Ctrl+Shift+V — paste plain text
+    [ZMK L2 · F] > Ctrl+Alt+C
+    [ZMK L2 · G] > Ctrl+Win+Alt+C
+    [ZMK L2 · Z] > Win+Alt+Shift+4 — toggle camera (Teams meeting)
+    [ZMK L2 · /] > Win+Alt+Shift+5 — toggle mute (Teams meeting)
+    [ZMK L2 · Bottom-left] > Bluetooth clear all
+    [ZMK L2 · ,] > Shift+,
+    [ZMK L2 · .] > Shift+.
+    [ZMK L2 · Bottom-right] > Ctrl+A then Delete (select all + delete)
+    [ZMK L2 · encoder] > Page Down / Page Up
+    
+    --- ZMK Layer 3 (RAPID-AIB) — sticky from L2·W ---
+    [ZMK L3 · ↑] > 5× Up Arrow
+    [ZMK L3 · ↓] > 5× Down Arrow
+    [ZMK L3 · ←] > 5× Left Arrow
+    [ZMK L3 · →] > 5× Right Arrow
+    
+    --- ZMK Layer 4 — auto when L2+L3 both active ---
+    [ZMK L4 · U] > 5× Up Arrow (overrides L2 single Up on this key)
+    [ZMK L4 · H] > 5× Left Arrow
+    [ZMK L4 · J] > 5× Down Arrow
+    [ZMK L4 · K] > 5× Right Arrow
+    
+    === WIKIPEDIA ===
+    [Win+Alt+Shift+K] > Opens or activates Wikipedia
+)"

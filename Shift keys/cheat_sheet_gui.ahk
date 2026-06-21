@@ -126,6 +126,46 @@ GetCheatSheetText() {
     return ""
 }
 
+; Mirrors the former sequential if-chain: later assignments override earlier ones; Shopee/Google only when still unset.
+PickChromeAppSheetKey(chromeTitle) {
+    key := ""
+    if IsChromePdfViewerActive()
+        key := "Chrome PDF Viewer"
+    if InStr(chromeTitle, "WhatsApp")
+        key := "WhatsApp"
+    if InStr(chromeTitle, "Gmail")
+        key := "Gmail"
+    if InStr(chromeTitle, "chatgpt")
+        key := "ChatGPT"
+    if InStr(chromeTitle, "Mobills")
+        key := "Mobills"
+    if InStr(chromeTitle, "Google Keep") || InStr(chromeTitle, "keep.google.com")
+        key := "Google Keep"
+    if InStr(chromeTitle, "YouTube")
+        key := "YouTube"
+    if InStr(chromeTitle, "UIATreeInspector")
+        key := "UIATreeInspector"
+    if InStr(chromeTitle, "Settle Up")
+        key := "Settle Up"
+    if InStr(chromeTitle, "Miro")
+        key := "Miro"
+    if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
+        key := "Wikipedia"
+    if IsMercadoLivreActive()
+        key := "Mercado Livre"
+    if (key = "" && IsShopeeActive())
+        key := "Shopee"
+    if InStr(chromeTitle, "gemini", false)
+        key := "Gemini"
+    if (key = "" && (InStr(chromeTitle, "M365 Copilot", false) || InStr(chromeTitle, "Chat | M365 Copilot", false)))
+        key := "Copilot Web"
+    if InStr(chromeTitle, "Google Maps")
+        key := "Google Maps"
+    if (key = "" && (chromeTitle = "Google" || InStr(chromeTitle, " - Google Search")))
+        key := "Google"
+    return key
+}
+
 ; ========== Shared variables for cheat sheet state ========================
 global g_helpGui := 0
 global g_helpShown := false
@@ -144,155 +184,6 @@ GetGlobalCheatSheetRawText() {
     provider := GetGlobalAIProviderLabel()
     return StrReplace(GLOBAL_CHEAT_SHEET_RAW, "{AI_PROVIDER}", provider)
 }
-
-; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
-GLOBAL_CHEAT_SHEET_RAW := "
-(
-    [Win+Alt+Shift] - PRIMARY triple modifier (most used for system-wide shortcuts)
-        [Ctrl+Alt+Win] - SECONDARY triple modifier
-    
-    === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
-    [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
-    [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
-    Letters available: T, U
-
-    Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +1/Z/G fallbacks) used for window management; other Shift+letters unassigned.
-    [Ctrl+Alt+Win+1] > Available
-    [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
-    [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
-    [Ctrl+Alt+Win+V] > Maximize active window (WindowManagement.ahk; ZMK hold on minimize/close key)
-    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half (WindowManagement.ahk)
-    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (WindowManagement.ahk; also Win+Alt+Shift+W → 1)
-    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (WindowManagement.ahk; also Win+Alt+Shift+W → 2)
-    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (WindowManagement.ahk; also Win+Alt+Shift+W → 3)
-    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (WindowManagement.ahk; also Win+Alt+Shift+W → 4)
-    [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
-    [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
-    [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
-    [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
-    [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
-    [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
-    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
-    [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
-    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
-    [Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
-    
-    === MAIN KEY COMBINATIONS ===
-    [Symbol Layer] Win+Alt+Shift - Primary combination
-    [Window Management] Ctrl+Alt+Win - Secondary combination
-    
-    [Alt+P] Ope clip angel
-    
-    [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
-    
-    === CURSOR ===
-    [Win+Alt+Shift+N] > Context file browser (paste path)
-    
-    [Win+Alt+Shift+J] > Fast Copy: tap on/off (count Ctrl+C / PrtSc / Alt+PrtSc, then paste N); hold 700ms+ repeats last N (Clip Angel)
-    
-    === SPOTIFY ===
-    [Win+Alt+Shift+S] > Opens or activates Spotify
-    
-    === CLIP ANGEL ===
-    [Win+Alt+Shift+1] > Send top list item from Clip Angel
-    
-    === AI CHAT (Chrome) ===
-    [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
-    [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
-    [Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
-    [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
-    [Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
-    
-    === HANDY DICTATION ===
-    [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
-    [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
-    [Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
-    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
-    
-    === YOUTUBE ===
-    [Win+Alt+Shift+H] > Activates Youtube
-    
-    === GOOGLE ===
-    [Win+Alt+Shift+F] > Opens Google
-    
-    === CURSOR ===
-    [Win+Alt+Shift+,] > Opens or activates Cursor
-    [Win+Alt+Shift+C] > Handy AI model picker (see HANDY DICTATION)
-    
-    === OUTLOOK ===
-    [Win+Alt+Shift+B] > Open mail
-    [Win+Alt+Shift+V] > Open Reminder
-    [Win+Alt+Shift+G] > Open calendar
-    [Win+Alt+Shift+D] > Voice aloud the email
-    
-    === MICROSOFT TEAMS ===
-    [Win+Alt+Shift+R] > New conversation
-    [Win+Alt+Shift+5] > Toggle Mute (meeting)
-    [Win+Alt+Shift+4] > Toggle camera (meeting)
-    [Win+Alt+Shift+T] > Screen share (meeting)
-    [Win+Alt+Shift+2] > Exit meeting
-    [Win+Alt+Shift+E] > Select the chats window
-    [Win+Alt+Shift+3] > Select the meeting window
-    
-    === WHATSAPP ===
-    [Win+Alt+Shift+Z] > Opens WhatsApp
-    
-    === WINDOWS ===
-    [Win+Alt+Shift+6] > Minimizes windows
-    [Win+Alt+Shift+M] > Maximizes the current window
-    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
-    [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
-    
-    === WINDOW MANAGEMENT (Ctrl+Alt+Win) ===
-    [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
-    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
-    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
-    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
-    [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
-    [Ctrl+Alt+Win+S] > Move window to monitor 2
-    [Ctrl+Alt+Win+D] > Move window to monitor 3
-    [Ctrl+Alt+Win+F] > Move window to monitor 4
-    [Ctrl+Alt+Win+Shift+A] > Close window on monitor 1
-    [Ctrl+Alt+Win+Shift+S] > Close window on monitor 2
-    [Ctrl+Alt+Win+Shift+D] > Close window on monitor 3
-    [Ctrl+Alt+Win+Shift+F] > Close window on monitor 4
-    [Ctrl+Alt+Win+Q] > Cycle windows on monitor 1
-    [Ctrl+Alt+Win+W] > Cycle windows on monitor 2
-    [Ctrl+Alt+Win+E] > Cycle windows on monitor 3
-    [Ctrl+Alt+Win+R] > Cycle windows on monitor 4
-    [Ctrl+Alt+Win+Shift+Q] > Minimize window on monitor 1
-    [Ctrl+Alt+Win+Shift+W] > Minimize window on monitor 2
-    [Ctrl+Alt+Win+Shift+E] > Minimize window on monitor 3
-    [Ctrl+Alt+Win+Shift+R] > Minimize window on monitor 4
-    
-    === COMMAND PALETTE BOOKMARKS ===
-    [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
-    
-    === GENERAL ===
-    [Win+Alt+Shift+U] > Quick string shortcuts
-    [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
-    [Win+Alt+Shift+Q] > Jump mouse on the middle
-    [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
-    [Win+Alt+Shift+→] > Show square selector (right direction)
-    [Win+Alt+Shift+←] > Show square selector (left direction)
-    [Win+Alt+Shift+↓] > Show square selector (down direction)
-    [Win+Alt+Shift+↑] > Show square selector (up direction)
-    [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
-    
-    === COMMAND PALETTE ===
-    [Win+Ctrl+Alt+Y] > Command Palette - File search
-    [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
-    
-    === SHORTCUTS ===
-    [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)
-    [Win+Alt+Shift+A] > Show global shortcuts (hold 700ms+)
-    [Win+Alt+Shift+/] > Search all cheat sheets (cross-context)
-    
-    === WIKIPEDIA ===
-    [Win+Alt+Shift+K] > Opens or activates Wikipedia
-)"
 
 ; Returns Map of context label -> array of matching processed lines. Empty query => empty map.
 SearchCheatSheets(query, includeGlobal := true) {

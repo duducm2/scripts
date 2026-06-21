@@ -52,11 +52,8 @@ SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 ; Cheat-sheet overlay (Win + Alt + Shift + A) â€" shows remapped shortcuts
 ;-------------------------------------------------------------------
 
-; [SK module] cheatSheets map population (Mercado Livre, Shopee) -> Shift keys\cheat_sheet_data.ahk
-#include %A_ScriptDir%\Shift keys\cheat_sheet_data.ahk
-
-; [SK module] Per-app Win+Alt+Shift hotkey cheat sheet definitions -> Shift keys\app_hotkeys.ahk
-#include %A_ScriptDir%\Shift keys\app_hotkeys.ahk
+; [SK module] Cheat sheet registry (all sheet strings) -> Shift keys\cheat_sheet_registry.ahk
+#include %A_ScriptDir%\Shift keys\cheat_sheet_registry.ahk
 
 ; [SK module] Cheat sheet GUI, search, hold detection -> Shift keys\cheat_sheet_gui.ahk
 #include %A_ScriptDir%\Shift keys\cheat_sheet_gui.ahk
