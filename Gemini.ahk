@@ -12,6 +12,12 @@ try Hotkey("#!+X", "Off")
 
 #include %A_ScriptDir%\aux\GeminiIPC.ahk
 
+; -----------------------------------------------------------------------------
+; MODULE MAP - Gemini.ahk stays the runnable entry point and #includes each
+; module below. Early preamble includes (UIA, env, Utils, WMIPC, GeminiIPC) stay
+; here. See Gemini/MODULARIZATION_PROGRESS.md for the full module list.
+; -----------------------------------------------------------------------------
+
 ; --- Config ---------------------------------------------------------------
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
