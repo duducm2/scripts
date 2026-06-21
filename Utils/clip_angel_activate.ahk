@@ -25,7 +25,7 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     }
     isActive := WinActive("ahk_id " hwnd)
     wasHidden := !ClipAngel_IsWindowShown(hwnd)
-    needsLayout := !isActive || wasHidden
+    needsLayout := !isActive || wasHidden || ClipAngel_NeedsLayoutCorrection(hwnd)
     if isActive && !needsLayout {
         ClipAngel_UiaEnsureRow0Selected(hwnd, false)
         return true
@@ -52,4 +52,3 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0) {
     }
     return true
 }
-

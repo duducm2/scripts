@@ -157,10 +157,7 @@ CleanClipboard_ShouldAbort(sessionId := 0) {
 }
 
 CleanClipboard_UnwindClipAngel() {
-    try EnsureClipAngelClosed()
-    catch {
-    }
-    Sleep 100
+    ; Clip Angel stays visible; no unwind needed.
 }
 
 ; N/Esc while automation runs (overlay already closed; StandardLoadingBar keys are inactive)
@@ -208,7 +205,4 @@ CleanClipboardInternal(sessionId := 0) {
         CleanClipboard_UnwindClipAngel()
         return
     }
-
-    EnsureClipAngelClosed()
-    Sleep 400
 }

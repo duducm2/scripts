@@ -20,6 +20,10 @@ CLIPANGEL_UIA_POLL_MS := 30
 CLIPANGEL_GRID_WAIT_MS := 400
 CLIPANGEL_ROW0_WAIT_MS := 300
 CLIPANGEL_ROW0_SELECT_WAIT_MS := 250
+CLIPANGEL_MIN_LAYOUT_WIDTH := 300
+CLIPANGEL_MIN_LAYOUT_HEIGHT := 200
+CLIPANGEL_ALT_P_SETTLE_MS := 200
+CLIPANGEL_ALT_P_HWND_WAIT_MS := 800
 global g_ClipAngelAutomationBusy := false
 
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
@@ -114,11 +118,26 @@ ClipAngel_IsWindowShown(hwnd) {
     return DllCall("IsWindowVisible", "ptr", hwnd)
 }
 
-ClipAngel_ShowWindow(hwnd) {
+; True when minimized, invisible, or shrunk to a tiny bar (Alt+P toggle can leave a 1px-sized window).
+ClipAngel_NeedsLayoutCorrection(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    if !ClipAngel_IsWindowShown(hwnd)
+        return true
+    try {
+        WinGetPos(, , &w, &h, "ahk_id " hwnd)
+        if (w > 0 && h > 0 && (w < CLIPANGEL_MIN_LAYOUT_WIDTH || h < CLIPANGEL_MIN_LAYOUT_HEIGHT))
+            return true
+    } catch {
+        return true
+    }
+    return false
+}
+
+; AHK fallback after native Alt+P: restore, show, move/maximize when needed, optionally activate.
+ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true) {
     if !hwnd
         return false
-    if WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd)
-        return true
     try {
         if WinGetMinMax("ahk_id " hwnd) = 1
             WinRestore("ahk_id " hwnd)
@@ -127,18 +146,27 @@ ClipAngel_ShowWindow(hwnd) {
     try WinShow("ahk_id " hwnd)
     catch {
     }
-    return ClipAngel_EnsureWindowActive(hwnd)
+    if ClipAngel_NeedsLayoutCorrection(hwnd)
+        ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
+    return activate ? ClipAngel_EnsureWindowActive(hwnd) : true
 }
 
-ClipAngel_HideWindow(hwnd) {
+ClipAngel_ShowWindow(hwnd) {
     if !hwnd
         return false
-    try {
-        WinMinimize("ahk_id " hwnd)
+    if WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd)
         return true
-    } catch {
-        return false
+    return ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
+}
+
+ClipAngel_WaitForMainHwnd(timeoutMs := CLIPANGEL_ALT_P_HWND_WAIT_MS) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if hwnd := ClipAngel_MainHwnd()
+            return hwnd
+        Sleep CLIPANGEL_UIA_POLL_MS
     }
+    return ClipAngel_MainHwnd()
 }
 
 ; dataGridView (Type 50036, AutomationId dataGridView) — clip-angel.txt.
@@ -449,7 +477,7 @@ ClipAngel_WaitChordModifiersReleased() {
 }
 
 ; Legacy native Alt+V send — All Clips view in MergeNonFavoriteClips only.
-; Open/close and paste flows use ClipAngel_ShowWindow/HideWindow or Alt+P (+ Enter) instead.
+; Open/paste flows use ClipAngel_ShowWindow or Alt+P (+ Enter) instead.
 ClipAngel_SendToggleHotkey() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -508,7 +536,8 @@ ClipAngel_IsListReady(&outHwnd := 0) {
 }
 
 ; Poll until dataGridView + Row 0 exist (e.g. after native Alt+P open). Retries row-0 selection at end.
-ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+; activateOnRetry: false when paste target must keep foreground (#!+1 / ^!b).
+ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activateOnRetry := true) {
     deadline := A_TickCount + timeoutMs
     hwnd := 0
     while (A_TickCount < deadline) {
@@ -517,11 +546,11 @@ ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS) {
             return true
         }
         if hwnd := ClipAngel_MainHwnd()
-            ClipAngel_ShowWindow(hwnd)
+            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
         Sleep CLIPANGEL_UIA_POLL_MS
     }
     if hwnd := ClipAngel_MainHwnd() {
-        ClipAngel_ShowWindow(hwnd)
+        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
         ClipAngel_UiaEnsureRow0Selected(hwnd, true)
         return ClipAngel_IsListReady()
     }
@@ -542,8 +571,6 @@ ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
 
 ClipAngel_RestorePriorFocus(priorHwnd) {
     if (!priorHwnd || !WinExist("ahk_id " priorHwnd))
-        return
-    if WinActive("ahk_exe ClipAngel.exe")
         return
     try {
         WinActivate("ahk_id " priorHwnd)
@@ -581,35 +608,47 @@ ClipAngel_SendIncrementalPaste() {
 }
 
 ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
-    EnsureClipAngelClosed()
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
-; Native open + row 0: Alt+P + ShowWindow + ^Home (shared by paste and favorite flows).
-; Trade-off: brief Clip Angel visibility vs full UIA open/row-select (efficiency-canon §11).
+; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
+; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
     SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
-    Sleep 200
+    Sleep CLIPANGEL_ALT_P_SETTLE_MS
     SendInput "!p"
-    Sleep 200
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_ShowWindow(hwnd)
+    Sleep CLIPANGEL_ALT_P_SETTLE_MS
+    targetMon := 0
+    if (priorHwnd) {
+        try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+        catch
+            targetMon := 0
+    }
+    if (hwnd := ClipAngel_WaitForMainHwnd())
+        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
     SendInput "^{Home}"
-    Sleep 200
-    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    Sleep CLIPANGEL_ALT_P_SETTLE_MS
+    ClipAngel_ReleaseChordModifiersForSend()
+    ; Paste flows: return focus to target before incremental paste (^!b).
+    if (priorHwnd)
+        ClipAngel_EnsureWindowActive(priorHwnd)
 }
 
-; Native top-item paste: open via ActivateNativeFirstClip, then incremental paste (^!b).
+; Native top-item paste: open via ActivateNativeFirstClip, wait for grid, then incremental paste (^!b).
 ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
     ClipAngel_ActivateNativeFirstClip(priorHwnd)
+    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+    ClipAngel_ReleaseChordModifiersForSend()
+    if (priorHwnd)
+        ClipAngel_EnsureWindowActive(priorHwnd)
     SendInput "^!b"
 }
 
-; Send top list item via Clip Angel native keys. Closes after paste and restores prior focus.
+; Send top list item via Clip Angel native keys. Restores prior focus after paste.
 ClipAngel_SendTopListItem(priorHwnd := 0) {
     if !ClipAngel_TryAcquireAutomationLock()
         return false
@@ -622,14 +661,13 @@ ClipAngel_SendTopListItem(priorHwnd := 0) {
         ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         ok := false
     } finally {
-        EnsureClipAngelClosed()
         ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
     return ok
 }
 
-; Paste N top-list items in order. Opens once, incremental paste between items, closes at end.
+; Paste N top-list items in order. Opens once, incremental paste between items, restores prior focus at end.
 ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
     if (!IsInteger(count))
         return false
@@ -659,7 +697,6 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
         ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         ok := false
     } finally {
-        EnsureClipAngelClosed()
         ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
@@ -680,7 +717,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
             return
         }
         ClipAngel_ActivateNativeFirstClip()
-        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
             ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
             return
         }
@@ -693,7 +730,6 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
-        EnsureClipAngelClosed()
         ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
