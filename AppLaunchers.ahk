@@ -36,6 +36,12 @@ try Hotkey("#!+X", "Off")
 if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
     ScheduleApplyScriptMasterVolumeTargetWithRetries()
 
+; -----------------------------------------------------------------------------
+; MODULE MAP - AppLaunchers.ahk stays the runnable entry point and #includes each
+; module below. Early preamble (feature flags, includes, OnExit, volume schedule)
+; stays here. See AppLaunchers/MODULARIZATION_PROGRESS.md for the full module list.
+; -----------------------------------------------------------------------------
+
 ; --- Global Variables ---
 
 ; Phase 3: WinEvent hook for foreground (replaces 200ms Wikipedia focus polling)
