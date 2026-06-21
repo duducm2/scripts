@@ -11,6 +11,17 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ; -----------------------------------------------------------------------------
 ; This script consolidates all Window Management hotkeys.
 ; -----------------------------------------------------------------------------
+;
+; MODULE MAP - this file stays the runnable entry point / source of truth and
+; #includes each module below. For a given feature, open just its small module
+; (handy for low-context AI). Anything not listed still lives inline in this file.
+;   WindowManagement\helpers.ahk              - notifications, activation, cursor-centering helpers
+;   WindowManagement\globals.ahk              - global vars + startup timers (auto-execute; keep #include in place)
+;   WindowManagement\hotkeys.ahk              - global hotkey bindings (minimize/maximize/move/close/cycle)
+;   WindowManagement\window_cycle.ahk         - cycle/minimize/close visible windows on a monitor by order
+;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
+;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
+; -----------------------------------------------------------------------------
 
 ; --- Environment (use env.ahk so personal vs work matches Act/Utils) --------
 #include %A_ScriptDir%\env.ahk
