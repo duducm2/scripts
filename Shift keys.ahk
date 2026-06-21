@@ -3021,52 +3021,8 @@ CenterGuiOnActiveMonitor(guiObj) {
     guiObj.Show("NoActivate x" Round(guiX) " y" Round(guiY))
 }
 
-;-------------------------------------------------------------------
-; OneNote Shortcuts
-;-------------------------------------------------------------------
-#HotIf WinActive("ahk_exe onenote.exe") && !IsFileDialogActive()
-
-; Shift + P : Onenote: select line and children
-+p:: Send("^+-") ; Remaps to Ctrl + Shift + -
-
-; Shift + F : Advanced Searching with double quotes
-+f:: {
-    Send "^f"
-    Sleep 50
-    Send "^a"
-    Sleep 20
-    Send "{Del}"
-    Sleep 20
-    Send '""'
-    Sleep 20
-    Send "{Left}"
-}
-
-; Shift + D : Onenote: delete line and children
-+d:: {
-    Send("^+-") ; Remaps to Ctrl + Shift + -
-    Send "{Del}"
-}
-
-; Shift + S : Onenote: delete only current line (keep children)
-+s:: {
-    Send("+{Right}")
-    Send "{Del}"
-}
-
-; Shift + U : Onenote: collapse
-+u:: Send("!+{+}")     ; Remaps to Alt + Shift + +
-
-; Shift + Y : Onenote: expand
-+y:: Send("!+{-}")     ; Remaps to Alt + Shift + -
-
-; Shift + I : Onenote: collapse all
-+i:: Send("!+1")     ; Remaps to Alt + Shift + 1
-
-; Shift + O : Onenote: expand all
-+o:: Send("!+0")     ; Remaps to Alt + Shift + 0
-
-#HotIf
+; [SK module] OneNote hotkeys -> Shift keys\hotif_onenote.ahk
+#include %A_ScriptDir%\Shift keys\hotif_onenote.ahk
 
 ; [SK module] ClipAngel hotkeys and filter selector -> Shift keys\hotif_clipangel.ahk
 #include %A_ScriptDir%\Shift keys\hotif_clipangel.ahk
