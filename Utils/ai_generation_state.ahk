@@ -86,9 +86,9 @@ IsAnyAiGenerating() {
 PlayAiWorkingStateSound(isWorking) {
     try {
         if (isWorking)
-            ScriptSoundPlay(A_ScriptDir . "\sounds\robots-are-working.wav")
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\robots-are-working.wav")
         else
-            ScriptSoundPlay(A_ScriptDir . "\sounds\no-robot-working.wav")
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\no-robot-working.wav")
     } catch {
     }
 }
@@ -161,7 +161,7 @@ InitDpiAwareness()
 if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
     try {
         ShowCenteredOverlay_Utils("✅ Scripts updated and relaunched", 6500, BANNER_ACCENT_SUCCESS)
-        soundPath := A_ScriptDir "\sounds\quick-update-success.wav"
+        soundPath := A_ScriptDir "\assets\sounds\quick-update-success.wav"
         ; Play success chime to completion before scheduling volume: async SoundPlay can register a new session after
         ; the first Apply pass, leaving that session at a low default (~10% in the mixer) until something re-enumerates.
         try {

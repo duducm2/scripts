@@ -631,7 +631,7 @@ StudyTopicSelector_Close() {
 }
 
 PeekPdf_GetIniPath() {
-    return A_ScriptDir "\data\peek_pdf.ini"
+    return A_ScriptDir "\assets\data\peek_pdf.ini"
 }
 
 PeekPdf_NormalizePath(path) {
@@ -660,7 +660,7 @@ PeekPdf_ResolvePeekExePath() {
 }
 
 QuickLook_GetIniPath() {
-    return A_ScriptDir "\data\quicklook.ini"
+    return A_ScriptDir "\assets\data\quicklook.ini"
 }
 
 QuickLook_NormalizePath(path) {

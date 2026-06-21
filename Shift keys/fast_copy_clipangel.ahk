@@ -712,7 +712,7 @@ FastCopyMode_OnCopy() {
 FastCopyMode_PlayCueSound(fileName) {
     if (!IsSoundEnabled())
         return
-    path := A_ScriptDir "\sounds\" fileName
+    path := A_ScriptDir "\assets\sounds\" fileName
     if (!FileExist(path))
         return
     try {

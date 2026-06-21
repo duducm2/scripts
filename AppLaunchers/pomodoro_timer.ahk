@@ -16,14 +16,14 @@ global g_ChimeTimer := false
 global g_ChimeStopTimer := false
 global g_PomodoroOverlay := false
 global g_PomodoroTinyIndicator := false
-global g_PomodoroLogFile := A_ScriptDir "\data\pomodoro_log.csv"
+global g_PomodoroLogFile := A_ScriptDir "\assets\data\pomodoro_log.csv"
 global g_PomodoroCount := 0  ; Track Pomodoro count in work environment
 
 ; Show water bottle image overlay as hydration reminder
 ShowWaterBottleOverlay() {
     imagePath := ""
     for name in ["water-bottle.jpg"] {
-        candidate := A_ScriptDir "\pictures\" name
+        candidate := A_ScriptDir "\assets\pictures\" name
         if FileExist(candidate) {
             imagePath := candidate
             break
@@ -445,7 +445,7 @@ StartPomodoroTimer() {
     g_PomodoroTinyIndicator := ShowTinyWaterBottleIndicator()
 
     ; Play start sound (if enabled)
-    try ScriptSoundPlay(A_ScriptDir . "\sounds\pomodo-start.wav")
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\pomodo-start.wav")
     catch {
     }
 

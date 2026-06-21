@@ -5,11 +5,11 @@
 
 global g_StudyLinkSubmenuGui := ""
 
-#include UIA-v2\Lib\UIA.ahk
-#include UIA-v2\Lib\UIA_Browser.ahk
+#include vendor\UIA-v2\Lib\UIA.ahk
+#include vendor\UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\lib\Media.ahk
 #include %A_ScriptDir%\lib\SpotifyWASAPI.ahk
-#include %A_ScriptDir%\aux\ClipboardFiles.ahk
+#include %A_ScriptDir%\infra\ipc\ClipboardFiles.ahk
 
 ; UIA ControlType constants (Button=50000). Shared with Gemini.ahk focus helpers.
 global UIA_ControlType_Button := 50000

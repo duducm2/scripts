@@ -33,7 +33,7 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
 ; Helper: Pre-movement warning (sound + 2s delay) before automated window changes.
 ; =============================================================================
 PlayPreMovementWarning(targetName) {
-    ScriptSoundPlay(A_ScriptDir . "\sounds\pre-movement.wav")
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\pre-movement.wav")
     ShowCenteredOverlay_Utils("✋ Hands off! Moving to " . targetName . "...", 2000, BANNER_ACCENT_INTERMEDIATE)
     Sleep 2000
 }

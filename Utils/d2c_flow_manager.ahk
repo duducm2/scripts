@@ -408,7 +408,7 @@ class D2C_FlowManager {
 
             if (isTrulyGone) {
                 ; Timer is already stopped, proceed to next phase
-                try ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+                try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
                 catch {
                     ; Ignore chime failures
                 }
@@ -587,7 +587,7 @@ class D2C_FlowManager {
                     DetectHiddenWindows prevDH
                 }
             } else
-                try ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
+                try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
         } else {
             ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
         }

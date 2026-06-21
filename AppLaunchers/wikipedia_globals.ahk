@@ -18,13 +18,13 @@ global g_WikipediaSelectorActive := false
 global g_WikipediaSelectorHandlers := []  ; Store hotkey handlers for cleanup
 
 ; Global variables for Wikipedia scroll position save/restore
-global g_WikipediaScrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
+global g_WikipediaScrollPositionsFile := A_ScriptDir "\assets\data\wikipedia_scroll_positions.ini"
 
 ; Global variable for Wikipedia focus monitoring (automatic blackout cancellation)
 global g_WikipediaFocusMonitorTimer := false
 
 ; Global variable for Wikipedia completed articles CSV file
-global g_WikipediaCompletedFile := A_ScriptDir "\data\wikipedia_completed.csv"
+global g_WikipediaCompletedFile := A_ScriptDir "\assets\data\wikipedia_completed.csv"
 
 ; Wikipedia article items configuration (Taoist philosophy completed and removed)
 ; Item 1: Claude Debussy

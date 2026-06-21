@@ -2,7 +2,7 @@
 #SingleInstance Force
 ; One-shot snapshot: AHK MonitorGet numbering + same left-to-right sort as WindowManagement GetMonitorIndexByOrder.
 ; Output: tools\MonitorEnumerationSnapshot-out.txt
-; Pair with: python\compare_monitor_enumeration.py
+; Pair with: infra\python\compare_monitor_enumeration.py
 
 outPath := A_ScriptDir "\MonitorEnumerationSnapshot-out.txt"
 count := MonitorGetCount()

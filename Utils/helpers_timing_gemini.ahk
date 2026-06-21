@@ -71,7 +71,7 @@ Utils_PlayGeminiFocusedChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
     return true
 }
 

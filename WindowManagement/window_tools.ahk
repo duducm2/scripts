@@ -215,7 +215,7 @@ WM_ArrJoin(arr, sep := "`n") {
 }
 
 WM_BackgroundTitleExcludes_IniPath() {
-    return A_ScriptDir "\data\wm_background_excludes.ini"
+    return A_ScriptDir "\assets\data\wm_background_excludes.ini"
 }
 
 WM_BackgroundTitleExcludes_Register(&list, &seen, needle) {

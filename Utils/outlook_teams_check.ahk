@@ -122,7 +122,7 @@ CheckAndOpenOutlookTeams(checkOutlook := false, checkTeams := false) {
 PlayCleaningDesktopSound() {
     if (!IsSoundEnabled())
         return
-    soundPath := A_ScriptDir "\sounds\cleaning-desktop.wav"
+    soundPath := A_ScriptDir "\assets\sounds\cleaning-desktop.wav"
     if (!FileExist(soundPath))
         return
     ScriptSoundPlay(soundPath, false)

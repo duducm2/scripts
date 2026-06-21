@@ -4,8 +4,8 @@
 #Warn
 
 ; Incluindo a biblioteca UIA-v2 que você já possui instalada
-#Include %A_ScriptDir%\UIA-v2\Lib\UIA.ahk
-#Include %A_ScriptDir%\UIA-v2\Lib\UIA_Browser.ahk
+#Include %A_ScriptDir%\vendor\UIA-v2\Lib\UIA.ahk
+#Include %A_ScriptDir%\vendor\UIA-v2\Lib\UIA_Browser.ahk
 
 ; ==============================================================================
 ; Phase 1: Activation and Initialization

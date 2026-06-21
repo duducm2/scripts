@@ -95,7 +95,7 @@ global g_CursorShortcutMenuActive := false
     gCommitPushDecision := "push"
 
     ; 1. Trigger generation immediately (Ctrl+Alt+A)
-    ScriptSoundPlay(A_ScriptDir "\sounds\commit-start.wav")
+    ScriptSoundPlay(A_ScriptDir "\assets\sounds\commit-start.wav")
     Send "^!."
     ShowCommitPushBanner()
 

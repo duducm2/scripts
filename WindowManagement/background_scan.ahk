@@ -132,7 +132,7 @@ WM_DebugBackgroundEnabled() {
     if (EnvGet("WM_DEBUG_BACKGROUND") = "1")
         return true
     try {
-        return IniRead(A_ScriptDir "\data\wm_debug.ini", "Debug", "BackgroundScan", "0") = "1"
+        return IniRead(A_ScriptDir "\assets\data\wm_debug.ini", "Debug", "BackgroundScan", "0") = "1"
     } catch {
         return false
     }
@@ -352,7 +352,7 @@ WM_BackgroundEnumerateHiddenHwnds() {
 }
 
 WM_PlayNoWindowSound() {
-    try ScriptSoundPlay(A_ScriptDir . "\sounds\no-window.wav", true)
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\no-window.wav", true)
 }
 
 ; Fast scans can finish before the banner repaints; keep "Scanning…" visible briefly so the no-window chime is not raced by GUI setup.

@@ -50,7 +50,7 @@ UnescapeMarkdownClipboard() {
     }
     msg := (result.count = 1) ? "Removed 1 markdown escape" : "Removed " result.count " markdown escapes"
     ShowCenteredOverlay_Utils("📋 " msg, 1500, BANNER_ACCENT_SUCCESS)
-    try ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
 }
 
 CleanClipboard_ShowCountdown() {

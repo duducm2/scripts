@@ -483,7 +483,7 @@ SaveWikipediaScrollPositionManually_ShiftKeys() {
                 }
 
                 ; Save to INI file
-                scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
+                scrollPositionsFile := A_ScriptDir "\assets\data\wikipedia_scroll_positions.ini"
                 SplitPath(scrollPositionsFile, , &dir)
                 if (dir != "" && !DirExist(dir)) {
                     DirCreate(dir)
@@ -641,7 +641,7 @@ RestorePreviousWikipediaScrollPosition() {
             }
 
             ; Load from INI file
-            scrollPositionsFile := A_ScriptDir "\data\wikipedia_scroll_positions.ini"
+            scrollPositionsFile := A_ScriptDir "\assets\data\wikipedia_scroll_positions.ini"
             savedPercentage := IniRead(scrollPositionsFile, "Positions", url, "0")
             savedPercentageFloat := Float(savedPercentage)
 

@@ -23,7 +23,7 @@ Implemented in [`env.ahk`](../env.ahk) and [`Utils.ahk`](../Utils.ahk):
 2. Else **`GetNotesRepoPath()`** + `studies\technique\prompts` (work vs personal is chosen from `NOTES_REPO_PATH_WORK` / `NOTES_REPO_PATH_PERSONAL` and `IS_WORK_ENVIRONMENT`).
 3. Else the **other** machine’s notes root (if that clone exists), same subpath.
 
-`GetTechniquePromptFilePath()` in [`Utils.ahk`](../Utils.ahk) then resolves each file: **live MyNotes folder first**, then fallback **`A_ScriptDir\prompt\technique\<filename>`**.
+`GetTechniquePromptFilePath()` in [`Utils.ahk`](../Utils.ahk) then resolves each file: **live MyNotes folder first**, then fallback **`A_ScriptDir\assets\prompt\technique\<filename>`**.
 
 ---
 
@@ -31,10 +31,10 @@ Implemented in [`env.ahk`](../env.ahk) and [`Utils.ahk`](../Utils.ahk):
 
 Same idea as [`Act.ahk`](../Act.ahk) (`notesFolder`):
 
-| Environment | Notes root (typical) |
-|---------------|----------------------|
-| Work | `C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes` |
-| Personal | `C:\Users\eduev\Meu Drive\17 - Projects\notes` |
+| Environment | Notes root (typical)                                 |
+| ----------- | ---------------------------------------------------- |
+| Work        | `C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes` |
+| Personal    | `C:\Users\eduev\Meu Drive\17 - Projects\notes`       |
 
 Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
@@ -42,23 +42,23 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 ## Scripts-repo mirror and automation
 
-| Mechanism | Role |
-|-----------|------|
-| [`aux/Sync-MyNotesTechniquePrompts.ps1`](../aux/Sync-MyNotesTechniquePrompts.ps1) | Copies the registered technique prompt files into `prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
-| [`aux/Watch-MyNotesTechniquePrompts.ps1`](../aux/Watch-MyNotesTechniquePrompts.ps1) | Optional **debounced** watcher on the MyNotes prompts folder; re-runs sync when files change. |
-| [`Act.ahk`](../Act.ahk) | After **`git pull`** on the notes repo, runs the sync script with **`-Commit`** so the mirror stays aligned with MyNotes. |
+| Mechanism                                                                                       | Role                                                                                                                                      |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`infra/ipc/Sync-MyNotesTechniquePrompts.ps1`](../infra/ipc/Sync-MyNotesTechniquePrompts.ps1)   | Copies the registered technique prompt files into `assets/prompt/technique/`. Use **`-Commit`** to commit the mirror in the scripts repo. |
+| [`infra/ipc/Watch-MyNotesTechniquePrompts.ps1`](../infra/ipc/Watch-MyNotesTechniquePrompts.ps1) | Optional **debounced** watcher on the MyNotes prompts folder; re-runs sync when files change.                                             |
+| [`Act.ahk`](../Act.ahk)                                                                         | After **`git pull`** on the notes repo, runs the sync script with **`-Commit`** so the mirror stays aligned with MyNotes.                 |
 
 ---
 
 ## The five registered files and hotstring triggers
 
-| File | Hotstring | Role (short) |
-|------|-----------|----------------|
-| `story-prompt.txt` | `:o:mnemonic` | Creating mnemonic stories |
-| `video-transcription-prompt.txt` | `:o:ytranscript` | YouTube transcript workflow |
-| `story-reduction-prompt.txt` | `:o:storyreduction` | Story reduction |
-| `punctual-beast-append-prompt.txt` | `:o:punctualbeast` | Append isolated beasts or small punctual batches into open streets |
-| `image-background-preservation-prompt.txt` | `:o:imgpreserve` | Preserve the locked background while adding mnemonic foreground elements |
+| File                                       | Hotstring           | Role (short)                                                             |
+| ------------------------------------------ | ------------------- | ------------------------------------------------------------------------ |
+| `story-prompt.txt`                         | `:o:mnemonic`       | Creating mnemonic stories                                                |
+| `video-transcription-prompt.txt`           | `:o:ytranscript`    | YouTube transcript workflow                                              |
+| `story-reduction-prompt.txt`               | `:o:storyreduction` | Story reduction                                                          |
+| `punctual-beast-append-prompt.txt`         | `:o:punctualbeast`  | Append isolated beasts or small punctual batches into open streets       |
+| `image-background-preservation-prompt.txt` | `:o:imgpreserve`    | Preserve the locked background while adding mnemonic foreground elements |
 
 Registration lives in `InitTechniquePromptHotstrings()` in [`Utils.ahk`](../Utils.ahk).
 

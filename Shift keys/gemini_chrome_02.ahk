@@ -656,7 +656,7 @@ FocusGeminiPromptField() {
             }
 
             ; Read the Gemini_Prompt.txt file and paste its contents via clipboard
-            promptFilePath := A_ScriptDir "\data\Gemini_Prompt.txt"
+            promptFilePath := A_ScriptDir "\assets\data\Gemini_Prompt.txt"
             if FileExist(promptFilePath) {
                 ; Save current clipboard
                 oldClipboard := A_Clipboard
@@ -940,7 +940,7 @@ PlayCompletionChime_Gemini() {
             return
         lastTick := A_TickCount
 
-        ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
     } catch {
     }
 }

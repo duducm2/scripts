@@ -172,7 +172,7 @@ EvidenceSearch_CsvEscapeField(s) {
 }
 
 EvidenceSearch_GetNotFoundOutputPath() {
-    return A_ScriptDir . "\data\evidence_not_found.csv"
+    return A_ScriptDir . "\assets\data\evidence_not_found.csv"
 }
 
 EvidenceSearch_WriteNotFoundFile() {

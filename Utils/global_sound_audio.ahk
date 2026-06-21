@@ -12,7 +12,7 @@
 
 ; Check if sound is enabled (reads from INI file for cross-process persistence)
 IsSoundEnabled() {
-    settingsFile := A_ScriptDir . "\data\settings.ini"
+    settingsFile := A_ScriptDir . "\assets\data\settings.ini"
     ; Default to enabled (1) if file doesn't exist or key is missing
     soundEnabled := IniRead(settingsFile, "Settings", "SoundEnabled", "1")
     return (soundEnabled = "1")
@@ -48,7 +48,7 @@ ScriptSoundPlaySystem(scheme) {
 
 ; Study subtopic / article link API save success (Manage Study Link flows).
 StudyLink_PlayApiSuccessSound() {
-    try ScriptSoundPlay(A_ScriptDir . "\sounds\api-success.mp3")
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\api-success.mp3")
 }
 
 ScriptSoundBeep(freq, duration) {
@@ -74,7 +74,7 @@ ScriptMessageBeep(type := 0xFFFFFFFF) {
 
 ; Toggle sound state and show visual feedback
 ToggleSoundState() {
-    settingsFile := A_ScriptDir . "\data\settings.ini"
+    settingsFile := A_ScriptDir . "\assets\data\settings.ini"
     currentState := IsSoundEnabled()
     newState := currentState ? "0" : "1"
 
@@ -122,7 +122,7 @@ ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate() {
 }
 
 RunSetMicVolumeScript() {
-    micVolumeScript := A_ScriptDir "\tools\Set-MicVolume.ps1"
+    micVolumeScript := A_ScriptDir "\infra\tools\Set-MicVolume.ps1"
     if (!FileExist(micVolumeScript))
         return
     try {

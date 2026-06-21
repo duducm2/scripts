@@ -303,7 +303,7 @@ CopilotWeb_PlayFocusedChime(minIntervalMs := 400) {
     if (lastChimeTick && (now - lastChimeTick) < minIntervalMs)
         return false
     lastChimeTick := now
-    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
     return true
 }
 
@@ -619,7 +619,7 @@ CopilotWeb_CopyLastMessageToClipboard(options := "", copilotHwnd := 0) {
         if !ClipWait(2)
             return false
         if (playChimeAndNotify) {
-            try ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
             CopilotWeb_Notify("Copied!", 800, 24)
         }
         if (restoreWindow)
@@ -902,7 +902,7 @@ class CopilotAsyncTTS {
 
     OnStreamingCompleted() {
         StandardLoadingBar_Hide(0)
-        try ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
         catch {
         }
         Sleep(CopilotAsyncTTS.PostStreamingDelayMs)
@@ -999,7 +999,7 @@ class CopilotAsyncLookup {
     }
 
     OnStreamingCompleted() {
-        try ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
         catch {
         }
         this.RetrieveResponse()
@@ -1382,7 +1382,7 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
 
 CopilotWeb_SendPromptFromFile(promptFilePath := "") {
     if (promptFilePath = "")
-        promptFilePath := A_ScriptDir "\data\Gemini_Prompt.txt"
+        promptFilePath := A_ScriptDir "\assets\data\Gemini_Prompt.txt"
     uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
@@ -1428,7 +1428,7 @@ CopilotWeb_PlayCompletionChime() {
         if (A_TickCount - lastTick < 1500)
             return
         lastTick := A_TickCount
-        ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+        ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
     } catch {
     }
 }

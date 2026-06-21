@@ -15,15 +15,15 @@ global AL_DESKTOP_WARM_KEYBOARD_ONLY := true
 
 ; --- Includes ----------------------------------------------------------------
 #include %A_ScriptDir%\env.ahk
-#include %A_ScriptDir%\aux\AppLauncherIPC.ahk
+#include %A_ScriptDir%\infra\ipc\AppLauncherIPC.ahk
 OnExit(AL_AppLaunchersExit, 1)
 AL_AppLaunchersExit(*) {
     AL_RemoveInputGuard()
     AL_UnregisterForegroundHook()
     AL_IPC_Teardown()
 }
-#include UIA-v2\Lib\UIA.ahk
-#include UIA-v2\Lib\UIA_Browser.ahk
+#include vendor\UIA-v2\Lib\UIA.ahk
+#include vendor\UIA-v2\Lib\UIA_Browser.ahk
 ; Slow-path UIA cache for Desktop Explorer (Shift+Win+E).
 AL_DESKTOP_CACHE := UIA.CreateCacheRequest(["Name", "AutomationId", "BoundingRectangle"], ["Selection", "SelectionItem"])
 #include %A_ScriptDir%\Utils.ahk

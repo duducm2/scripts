@@ -1,6 +1,6 @@
-UIA-v2~
+vendor/UIA-v2~
 env.ahk
 debug-*.log
-tools/MonitorEnumerationSnapshot-out.txt
+infra/tools/MonitorEnumerationSnapshot-out.txt
 docs/aib-allow-runtime-debug.log
 .pytest_cache/

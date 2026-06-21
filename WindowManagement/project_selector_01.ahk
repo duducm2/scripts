@@ -229,7 +229,7 @@ ActivateCursorProject(projectPath) {
     ; #endregion
     if (focusOk) {
         try {
-            ScriptSoundPlay(A_ScriptDir . "\sounds\into-cursor-textfield.wav")
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\into-cursor-textfield.wav")
         } catch {
         }
         ; #region agent log

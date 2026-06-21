@@ -156,7 +156,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     ; Brief delay so paste is received and UI/character limits register before any submit or focus change
     Sleep 250
     ; Same sound as when opening Gemini (focus/paste feedback)
-    ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
 }
 
 ; Returns grammar preset (from prompt/grammar.txt or fallback). Matches InitHotstringsCheatSheet catch for :o:cgrammar.
@@ -516,7 +516,7 @@ HandleHotstringChar(char) {
                 ; Paste the text (do NOT send Enter)
                 InsertText(expansion)
                 ; Same sound as when opening Gemini (focus/paste feedback)
-                ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-focused.wav")
+                ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
             } finally {
                 HotstringGeminiBanner_Hide()
             }

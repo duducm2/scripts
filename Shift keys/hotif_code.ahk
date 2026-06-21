@@ -51,7 +51,7 @@
         return
     }
 
-    ScriptSoundPlay(A_ScriptDir "\sounds\commit-start.wav")
+    ScriptSoundPlay(A_ScriptDir "\assets\sounds\commit-start.wav")
     ShowCommitPushBanner()
 
     ; 2. Wait 14s for message generation to complete; user can interact with any window

@@ -2,15 +2,15 @@
 #SingleInstance Force
 
 ; --- Includes ----------------------------------------------------------------
-#include UIA-v2\Lib\UIA.ahk
-#include UIA-v2\Lib\UIA_Browser.ahk
+#include vendor\UIA-v2\Lib\UIA.ahk
+#include vendor\UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\Utils.ahk
 try Hotkey("#!+Y", "Off")
 try Hotkey("#!+X", "Off")
-#include %A_ScriptDir%\aux\WMIPC.ahk
+#include %A_ScriptDir%\infra\ipc\WMIPC.ahk
 
-#include %A_ScriptDir%\aux\GeminiIPC.ahk
+#include %A_ScriptDir%\infra\ipc\GeminiIPC.ahk
 
 ; -----------------------------------------------------------------------------
 ; MODULE MAP - Gemini.ahk stays the runnable entry point and #includes each

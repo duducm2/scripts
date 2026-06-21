@@ -228,7 +228,7 @@ Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`St
 
 1. **Quick Update Scripts** after any AHK change.
 
-2. Run [`tools/TestStudyLinkApi.ahk`](../tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
+2. Run [`infra/tools/TestStudyLinkApi.ahk`](../infra/tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
 3. Manual: `[3]` inner 1–2, `[4]` inner 1–2, `[5]` inner 1–2, `[6]` (technique).
 
@@ -248,7 +248,7 @@ Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`St
 
 - `Utils.ahk` — module 3 GUI + YouTube UIA capture
 
-- `tools/TestStudyLinkApi.ahk` — API smoke test
+- `infra/tools/TestStudyLinkApi.ahk` — API smoke test
 
 - [`macrodroid/`](macrodroid/) — Set/Get macro exports (Video, Article, Favorite)
 

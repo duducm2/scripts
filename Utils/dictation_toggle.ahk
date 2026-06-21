@@ -22,8 +22,8 @@ global g_DictationPulseOpacity := 128  ; Current opacity (50-255)
 global g_DictationFollowCache := ""  ; "x,y,w,h" when unchanged skip redundant Move (follow active window)
 global g_DictationCompletionChimeScheduled := false  ; Flag to prevent multiple completion chimes
 global g_LastDictationSoundTick := 0  ; Timestamp of last dictation sound to throttle audio output
-global g_DictationStartSound := A_ScriptDir . "\sounds\speach-start.wav"
-global g_DictationStopSound := A_ScriptDir . "\sounds\speach-finished.wav"
+global g_DictationStartSound := A_ScriptDir . "\assets\sounds\speach-start.wav"
+global g_DictationStopSound := A_ScriptDir . "\assets\sounds\speach-finished.wav"
 global g_PendingDictationAction := ""  ; Action to execute after transcription: "Paste" (reserved for future)
 global g_PendingGeminiPromptAfterDictation := false  ; When set by ~#!+0 stop, show "Send to Gemini? Y (4s)" after completion
 global g_D2C_DictationSubmitMenuCycleFinished := false  ; After V/E/N/timeout/F/O: block stray second StartFromDictation for this wave
@@ -434,7 +434,7 @@ PlayDictationCompletionChime(*) {
         g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
         Critical "Off"
         if (pendingGemini && pendingAction = "") {
-            try ScriptSoundPlay(A_ScriptDir . "\sounds\dictation-selection-menu.wav")
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\dictation-selection-menu.wav")
             D2C_FlowManager.GetInstance().StartFromDictation()
         }
     }

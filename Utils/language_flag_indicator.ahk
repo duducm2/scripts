@@ -26,7 +26,7 @@ AiModelBanner_Hide() {
 ; =============================================================================
 
 LanguageFlag_GetImagePath(slot) {
-    rel := (slot = 3) ? "\images\flags\united-kingdom.png" : (slot = 4) ? "\images\flags\brazil.png" : ""
+    rel := (slot = 3) ? "\assets\images\flags\united-kingdom.png" : (slot = 4) ? "\assets\images\flags\brazil.png" : ""
     if (rel = "")
         return ""
     ; Prefer the running script's folder, then the folder that contains Utils.ahk (covers odd layouts).
@@ -252,7 +252,7 @@ ExecuteHandyAiModelSelection(selection) {
         Handy_WaitForModelReady(handyHwnd, 20000)
 
         ; Step 4.5: Play confirmation sound when model is ready
-        soundPath := A_ScriptDir . "\sounds\handy-model-chosen.mp3"
+        soundPath := A_ScriptDir . "\assets\sounds\handy-model-chosen.mp3"
         if (FileExist(soundPath))
             ScriptSoundPlay(soundPath)
 

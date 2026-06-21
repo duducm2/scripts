@@ -7,7 +7,7 @@
 
 ; --- Chrome: detach active tab to new window (Shift+W) ---
 ; Primary UIA menu path (F6 + tab context menu). Optional: MV3 PopActiveTab (Ctrl+Shift+Y)
-; in chrome\PopActiveTab — set CHROME_DETACH_USE_EXTENSION := true when loaded in Chrome.
+; in infra\chrome\PopActiveTab — set CHROME_DETACH_USE_EXTENSION := true when loaded in Chrome.
 ; Success gates: top-level HWND + title match + SetWinEventHook (not fixed sleeps).
 global CHROME_DETACH_USE_EXTENSION := false
 global CHROME_DETACH_USE_WIN_EVENT_HOOK := true
@@ -543,4 +543,3 @@ Chrome_ContextMenuActivateItem(item) {
     }
     return true
 }
-

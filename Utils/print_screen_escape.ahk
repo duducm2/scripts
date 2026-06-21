@@ -27,7 +27,7 @@ SafePlayPrintScreenSound() {
 
     ; Update timestamp and play sound (if enabled)
     g_LastPrintScreenSound := A_TickCount
-    ScriptSoundPlay(A_ScriptDir . "\sounds\print-screen.wav")
+    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\print-screen.wav")
 }
 
 ; Set higher InputLevel to ensure our handler processes before others

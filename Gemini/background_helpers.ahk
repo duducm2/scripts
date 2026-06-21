@@ -193,7 +193,7 @@ PlayCopyCompletedChime() {
             return
         lastTick := A_TickCount
 
-        ScriptSoundPlay(A_ScriptDir . "\sounds\copy.wav")
+        ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
     } catch {
         ; Silently ignore errors
     }

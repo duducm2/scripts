@@ -10,24 +10,24 @@
 
 Record **one line per occurrence** before deeper debugging:
 
-| Symptom class | What to write |
-|---------------|----------------|
-| **Wrong physical screen** | e.g. “Ctrl+Alt+Win+A moved window to monitor 3, not leftmost.” |
+| Symptom class                | What to write                                                         |
+| ---------------------------- | --------------------------------------------------------------------- |
+| **Wrong physical screen**    | e.g. “Ctrl+Alt+Win+A moved window to monitor 3, not leftmost.”        |
 | **Empty / false no windows** | e.g. “Toast: no windows on monitor 1; Chrome visible on left screen.” |
-| **Cursor / flash** | e.g. “Red flash centered on primary, window was on M1.” |
-| **Move / maximize** | e.g. “Window snapped back after maximize on M1 only.” |
+| **Cursor / flash**           | e.g. “Red flash centered on primary, window was on M1.”               |
+| **Move / maximize**          | e.g. “Window snapped back after maximize on M1 only.”                 |
 
 **Incident log (append rows):**
 
 | Date/time | Symptom class | Hotkey / action | Daemon flags on? (Y/N) | Notes |
-|-----------|---------------|-----------------|------------------------|-------|
-| | | | | |
+| --------- | ------------- | --------------- | ---------------------- | ----- |
+|           |               |                 |                        |       |
 
 ---
 
 ## Step 1: A/B — daemon path vs legacy
 
-`GetVisibleWindowsOnMonitor` uses the WM automation daemon when **all** of these are true (see [aux/WMIPC.ahk](../aux/WMIPC.ahk)):
+`GetVisibleWindowsOnMonitor` uses the WM automation daemon when **all** of these are true (see [infra/ipc/WMIPC.ahk](../infra/ipc/WMIPC.ahk)):
 
 - `WM_USE_DAEMON := true`
 - `WM_USE_PIPE_IPC := true`
@@ -41,7 +41,7 @@ Record **one line per occurrence** before deeper debugging:
 
 **Interpretation:**
 
-- If the problem **disappears** with the daemon off, prioritize **AHK monitor index vs Python `EnumDisplayMonitors` order** (see Step 2 and [python/compare_monitor_enumeration.py](../python/compare_monitor_enumeration.py)).
+- If the problem **disappears** with the daemon off, prioritize **AHK monitor index vs Python `EnumDisplayMonitors` order** (see Step 2 and [infra/python/compare_monitor_enumeration.py](../infra/python/compare_monitor_enumeration.py)).
 - If it **persists**, focus on legacy geometry (`MonitorGet`, `MonitorFromPoint`, sleeps, OS “remember window locations”).
 
 ---
@@ -53,17 +53,17 @@ Run **both** from the same machine state (no display topology change between run
 1. **Python** (requires `pywin32`; same stack as `wm_daemon.py`):
 
    ```text
-   cd python
+   cd infra/python
    python compare_monitor_enumeration.py
    ```
 
 2. **AutoHotkey** (mirrors `GetMonitorIndexByOrder` sort in [WindowManagement.ahk](../WindowManagement.ahk)):
 
    ```text
-   "C:\Path\To\AutoHotkey64.exe" tools\MonitorEnumerationSnapshot.ahk
+   "C:\Path\To\AutoHotkey64.exe" infra\tools\MonitorEnumerationSnapshot.ahk
    ```
 
-   Output file: [tools/MonitorEnumerationSnapshot-out.txt](../tools/MonitorEnumerationSnapshot-out.txt) (next to the script).
+   Output file: [infra/tools/MonitorEnumerationSnapshot-out.txt](../infra/tools/MonitorEnumerationSnapshot-out.txt) (next to the script).
 
 **Check:** For **ordinal 1** (leftmost by `cx`, then `cy`), compare:
 
@@ -84,20 +84,20 @@ Optional `WM_DEBUG_MONITOR_MAP` / `debug-2f65b1.log` hooks were **removed** afte
 
 ## Step 4: Map observations to canon taxonomy
 
-| If you observe… | Canon bucket ([efficiency-canon.md](efficiency-canon.md) §3) |
-|-----------------|--------------------------------------------------------------|
-| Daemon vs legacy different results | Repeated enumeration; non-deterministic fallbacks (silent catch + alternate path) |
-| Wrong monitor only when daemon succeeds | Hardcoded literals / **contract mismatch** at IPC boundary |
-| Cursor wrong on M1 only | Polling (`MonitorActiveWindow` interval) + race with focus |
-| Move fails sporadically | Blocking sleeps; timing vs bounded waits elsewhere |
+| If you observe…                         | Canon bucket ([efficiency-canon.md](efficiency-canon.md) §3)                      |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| Daemon vs legacy different results      | Repeated enumeration; non-deterministic fallbacks (silent catch + alternate path) |
+| Wrong monitor only when daemon succeeds | Hardcoded literals / **contract mismatch** at IPC boundary                        |
+| Cursor wrong on M1 only                 | Polling (`MonitorActiveWindow` interval) + race with focus                        |
+| Move fails sporadically                 | Blocking sleeps; timing vs bounded waits elsewhere                                |
 
 ---
 
 ## Step 5: Evidence table (fill after investigation)
 
 | Symptom | Hypothesis | Test | Result | Fix direction |
-|---------|------------|------|--------|----------------|
-| | | | | |
+| ------- | ---------- | ---- | ------ | ------------- |
+|         |            |      |        |               |
 
 **Suggested fix directions:**
 

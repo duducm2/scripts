@@ -104,7 +104,7 @@ class GeminiAsyncTTS {
         StandardLoadingBar_Hide(0)
         ; Completion detection matches GeminiAsyncLookup (#!+8): Layer 1 only (Stop button gone). No extra Layer 2 so we don't miss completion.
         try {
-            ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
         } catch {
             PlayCopyCompletedChime()
         }

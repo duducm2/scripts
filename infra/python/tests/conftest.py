@@ -1,4 +1,4 @@
-"""Pytest: ensure `python/` is on sys.path for protocol imports."""
+"""Pytest: ensure `infra/python/` is on sys.path for protocol imports."""
 
 from __future__ import annotations
 

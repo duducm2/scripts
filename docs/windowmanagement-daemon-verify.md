@@ -4,17 +4,17 @@ This document describes how to verify the polyglot refactor (daemon + IPC) and h
 
 ## Rollback (legacy paths)
 
-- All daemon-backed paths are guarded by **feature flags** (in `aux/WMIPC.ahk`):
+- All daemon-backed paths are guarded by **feature flags** (in `infra/ipc/WMIPC.ahk`):
   - `WM_USE_DAEMON`
   - `WM_USE_PIPE_IPC`
   - `WM_USE_EVENT_HOOK_CACHE`
 - Default is **all off**. With flags off, the script behaves as before (legacy only).
-- To **roll back** after enabling: set all three to `false` in `aux/WMIPC.ahk` (or override before the include) and reload the script. No daemon dependency.
+- To **roll back** after enabling: set all three to `false` in `infra/ipc/WMIPC.ahk` (or override before the include) and reload the script. No daemon dependency.
 
 ## Enabling the daemon
 
-1. Start the daemon: `python python/wm_daemon.py` (keep it running).
-2. In `aux/WMIPC.ahk` set:
+1. Start the daemon: `python infra/python/wm_daemon.py` (keep it running).
+2. In `infra/ipc/WMIPC.ahk` set:
    - `WM_USE_DAEMON := true`
    - `WM_USE_PIPE_IPC := true`
    - `WM_USE_EVENT_HOOK_CACHE := true`
@@ -41,15 +41,15 @@ For intermittent **monitor 1 / wrong-screen** behavior when the daemon is on, se
 ### Reliability
 
 - **Daemon down**: Each IPC call has a timeout; on failure the script falls back to the legacy path (e.g. `WinGetList`, local `GetVisibleWindowsOnMonitor`). No AHK restart required.
-- **Reconnect**: If the pipe breaks, the next request will reconnect (see `WMIPC_SendRequest` in `aux/WMIPC.ahk`).
-- **Latency**: Use `aux/WM_IPC_Harness.ahk` (or `python python/wm_harness.py`) to measure Ping RTT; transport is sub-millisecond when daemon is running.
+- **Reconnect**: If the pipe breaks, the next request will reconnect (see `WMIPC_SendRequest` in `infra/ipc/WMIPC.ahk`).
+- **Latency**: Use `infra/ipc/WM_IPC_Harness.ahk` (or `python infra/python/wm_harness.py`) to measure Ping RTT; transport is sub-millisecond when daemon is running.
 
 ## Files
 
-- **Daemon**: `python/wm_daemon.py`, `python/wm_protocol.py`, `python/wm_hooks.py`
-- **AHK client**: `aux/WMIPC.ahk`
-- **Harness**: `aux/WM_IPC_Harness.ahk`, `python/wm_harness.py`
+- **Daemon**: `infra/python/wm_daemon.py`, `infra/python/wm_protocol.py`, `infra/python/wm_hooks.py`
+- **AHK client**: `infra/ipc/WMIPC.ahk`
+- **Harness**: `infra/ipc/WM_IPC_Harness.ahk`, `infra/python/wm_harness.py`
 
 ## Python IPC unit tests (all daemons)
 
-From the repo root: `pip install -r python/requirements.txt` then `python -m pytest python/tests`. This checks framed JSON for WM, ShiftKeys, AppLauncher, and Gemini protocols (no pipe server or AHK required). WM daemon verification above is separate (functional + harness).
+From the repo root: `pip install -r infra/python/requirements.txt` then `python -m pytest infra/python/tests`. This checks framed JSON for WM, ShiftKeys, AppLauncher, and Gemini protocols (no pipe server or AHK required). WM daemon verification above is separate (functional + harness).

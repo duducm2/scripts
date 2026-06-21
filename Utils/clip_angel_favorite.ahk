@@ -688,7 +688,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
         ClipAngel_WaitChordModifiersReleased()
         ClipAngel_ReleaseChordModifiersForSend()
         SendInput "!q"
-        ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
+        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
         ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
@@ -767,6 +767,6 @@ MarkLastClipAsFavorite_UiaLastRow() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     SendInput "!q"
-    ScriptSoundPlay(A_ScriptDir "\sounds\favorite-set.wav")
+    ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
     ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
 }

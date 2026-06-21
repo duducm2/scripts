@@ -8,7 +8,7 @@ Run from repo:
   cd python
   python compare_monitor_enumeration.py
 
-Pair with: AutoHotkey64.exe ..\\tools\\MonitorEnumerationSnapshot.ahk
+Pair with: AutoHotkey64.exe ..\\infra\\tools\\MonitorEnumerationSnapshot.ahk
 """
 
 from __future__ import annotations

@@ -158,7 +158,7 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 
 - **IPC framing must match on both ends.** If the AHK client speaks length-prefixed JSON over `\\.\pipe\...`, the Python daemon must use the same framing (not a different transport for the same script without updating the client).
 
-- **Repo hygiene:** This tree may **track** some `python/__pycache__/*.pyc` files. Running `python -m py_compile` in the workspace can dirty or create bytecode artifacts; prefer restoring tracked `.pyc` from git or avoiding compile-in-place when only validating syntax elsewhere.
+- **Repo hygiene:** This tree may **track** some `infra/python/__pycache__/*.pyc` files. Running `python -m py_compile` in the workspace can dirty or create bytecode artifacts; prefer restoring tracked `.pyc` from git or avoiding compile-in-place when only validating syntax elsewhere.
 
 - **Verification reminder for this stack:** With daemons off, behavior should match legacy AHK paths; with daemons on, confirm no pointer recenter during Gemini→restore cycles, read-aloud still reaches the latest response, and IPC timeouts degrade without wedging the script.
 

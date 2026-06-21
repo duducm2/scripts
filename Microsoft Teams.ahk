@@ -14,7 +14,7 @@ TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
 WS_VISIBLE := 0x10000000
 
 ; --- Includes ----------------------------------------------------------------
-#include UIA-v2\Lib\UIA.ahk
+#include vendor\UIA-v2\Lib\UIA.ahk
 #include %A_ScriptDir%\Utils.ahk
 try Hotkey("#!+Y", "Off")
 try Hotkey("#!+X", "Off")

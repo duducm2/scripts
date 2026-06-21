@@ -126,7 +126,7 @@ class GeminiAsyncLookup {
     OnStreamingCompleted() {
         ; Use the same sound as Shift keys.ahk for consistency
         try {
-            ScriptSoundPlay(A_ScriptDir . "\sounds\gemini-completion.wav")
+            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
         } catch {
             PlayCopyCompletedChime()
         }

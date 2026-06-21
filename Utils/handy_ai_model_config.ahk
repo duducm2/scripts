@@ -41,7 +41,7 @@ global LANGUAGE_FLAG_MARGIN := 20               ; px from work-area right/bottom
 SetTimer(LanguageFlag_InitFromPersistedSlot, -250)
 
 Handy_GetHandyAiModelIniPath() {
-    return A_ScriptDir "\data\handy_ai_model.ini"
+    return A_ScriptDir "\assets\data\handy_ai_model.ini"
 }
 
 ; Returns persisted slot 1-4, or 0 if missing / invalid / not in g_HandyAiModels.

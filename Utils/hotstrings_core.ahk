@@ -174,7 +174,7 @@ InsertFiles_IsAiChatForeground() {
 }
 
 GetPromptText(key) {
-    promptFile := A_ScriptDir "\prompt\" key ".txt"
+    promptFile := A_ScriptDir "\assets\prompt\" key ".txt"
     try {
         return FileRead(promptFile)
     } catch {
@@ -253,7 +253,7 @@ GetTechniquePromptFilePath(fileName) {
     dir := (repo != "") ? repo "\studies\technique\prompts" : ""
     if (dir != "" && FileExist(dir "\" fileName))
         return dir "\" fileName
-    mirror := A_ScriptDir "\prompt\technique\" fileName
+    mirror := A_ScriptDir "\assets\prompt\technique\" fileName
     if FileExist(mirror)
         return mirror
     if (dir != "")

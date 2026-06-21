@@ -284,7 +284,7 @@ StudyLink_Set(studyKey, url) {
 
 ; Legacy INI path (kept for reference — not used by new API code)
 StudyLink_IniPath() {
-    return A_ScriptDir "\data\study_links.ini"
+    return A_ScriptDir "\assets\data\study_links.ini"
 }
 
 StudyLink_ManageSubtopicSentinelPath() {

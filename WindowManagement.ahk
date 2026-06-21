@@ -43,7 +43,7 @@ try Hotkey("#!+X", "Off")
 
 ; --- WindowManagement daemon integration (Phase 1: feature flags in WMIPC.ahk; Phase 3: use daemon) ---
 ; WM_USE_DAEMON, WM_USE_PIPE_IPC, WM_USE_SHM_IPC, WM_USE_EVENT_HOOK_CACHE (all default off)
-#include %A_ScriptDir%\aux\WMIPC.ahk
+#include %A_ScriptDir%\infra\ipc\WMIPC.ahk
 
 ; Default duration (ms) when WMAutomation_SuppressCursorCentering is called with durationMs := 0.
 ; Matches wm_daemon BeginAutomationSwitch default (python/wm_daemon.py).
