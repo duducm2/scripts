@@ -2235,14 +2235,8 @@ StartPomodoroTimer() {
 ; NOTE: Win+Alt+Shift+8 is reserved for Gemini pronunciation/translation.
 ; Do not bind #!+8 in this file.
 
-; =============================================================================
-; Helper function to center mouse on the active window
-; =============================================================================
-CenterMouse() {
-    hwnd := WinExist("A")
-    if hwnd
-        AL_CenterMouseOnHwnd(hwnd)
-}
+; [AppLaunchers module] CenterMouse helper on active window -> AppLaunchers\center_mouse.ahk
+#include %A_ScriptDir%\AppLaunchers\center_mouse.ahk
 
 ; [AppLaunchers module] #!+. Clip Angel paste and favorite flow -> AppLaunchers\hotkey_clipangel.ahk
 #include %A_ScriptDir%\AppLaunchers\hotkey_clipangel.ahk
