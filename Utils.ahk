@@ -13721,36 +13721,8 @@ PeekPdf_WaitAndConfigure(skipGoToLastPage := false) {
     }
 }
 
-#!+x::
-{
-    hwnd := WinExist("ahk_exe QuickLook.exe")
-    if hwnd {
-        if (STUDY_TOPIC_QL_STRICT_LAYOUT) {
-            QuickLook_ApplyStudyLayout(hwnd, true, 0)
-        } else {
-            try {
-                WinShow("ahk_id " hwnd)
-                WinActivate("ahk_id " hwnd)
-                WinWaitActive("ahk_id " hwnd, , 1)
-            } catch {
-            }
-            QuickLook_ClickWindowCenter(hwnd)
-            try
-                ControlSend("^End", "ahk_id " hwnd)
-            catch {
-                try {
-                    WinActivate("ahk_id " hwnd)
-                    WinWaitActive("ahk_id " hwnd, , 1)
-                } catch {
-                }
-                try Send("^End")
-            }
-        }
-        StudyTopic_StartBlackoutCountdown(hwnd)
-        return
-    }
-    ShowStudyTopicSelector()
-}
+; [Utils module] Peek PDF study hotkey #!+x -> Utils\study_hotkey_x.ahk
+#include %A_ScriptDir%\Utils\study_hotkey_x.ahk
 
 ; [Utils module] Hotstring selector system core and BuildHotstringCharMap -> Utils\hotstring_selector_core.ahk
 #include %A_ScriptDir%\Utils\hotstring_selector_core.ahk
