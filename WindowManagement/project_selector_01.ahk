@@ -136,7 +136,10 @@ global g_Projects := [
                                                                 category: "Work", char: "b" }, { name: "Python ScripTs",
                                                                     path: "C:\Users\eduev\Meu Drive\17 - Projects\My-Python-Scripts",
                                                                     workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
-                                                                    category: "Work", char: "t" }
+                                                                    category: "Work", char: "t" }, { name: "BPM",
+                                                                        path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM",
+                                                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM",
+                                                                        category: "Work", char: "m" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector

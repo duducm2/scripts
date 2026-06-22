@@ -145,3 +145,13 @@ eligible=9 hidden=0 visible=2 openOnMon=6 skipReject=477 skipNoMon=0
 selected=9 planned=9 tiled=8 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=462082 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
+=== WM tile quality 20260622143904 final ===
+eligible=12 hidden=3 visible=3 openOnMon=5 skipReject=489 skipNoMon=0
+selected=12 planned=12 tiled=11 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=856696 mon=2 title=Untitled - Paint
+=== WM tile quality 20260622144506 final ===
+eligible=8 hidden=1 visible=3 openOnMon=3 skipReject=490 skipNoMon=0
+selected=8 planned=8 tiled=7 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=132676 mon=2 title=Chat | New Message | Microsoft Teams

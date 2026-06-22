@@ -173,6 +173,11 @@ InsertFiles_IsAiChatForeground() {
     InsertText("GS_B2C_Portals and Key Accounts Process POC")
 }
 
+:o:gbpm::
+{
+    InsertText("SO UX - LA (Internal) - BPM")
+}
+
 GetPromptText(key) {
     promptFile := A_ScriptDir "\assets\prompt\" key ".txt"
     try {
@@ -398,6 +403,7 @@ InitHotstringsCheatSheet() {
         "o")
     RegisterHotstring(":o:gpilotb2b", "Piloto PT B2B", "Projects", "🧪 Piloto PT B2B", "b")
     RegisterHotstring(":o:gpython", "17 - Python Scripts", "Projects", "🐍 Python Scripts", "t")
+    RegisterHotstring(":o:gbpm", "SO UX - LA (Internal) - BPM", "Projects", "📌 BPM", "m")
 
     ; Hotstrings (non-workspace "project-like" names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
