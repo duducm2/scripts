@@ -159,24 +159,14 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
 }
 
-; Returns grammar preset (from prompt/grammar.txt or fallback). Matches InitHotstringsCheatSheet catch for :o:cgrammar.
+; Returns grammar preset (from assets/prompt/grammar.txt). Matches InitHotstringsCheatSheet for :o:cgrammar.
 GetGrammarPromptText() {
-    promptDir := A_ScriptDir "\prompt"
-    try {
-        return FileRead(promptDir "\grammar.txt")
-    } catch {
-        return "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n"
-    }
+    return GetPromptText("grammar")
 }
 
-; Returns the AI Text Optimizer prompt text (from prompt/aiopt.txt or fallback). Used by Ctrl+Alt+Win+4 and L+4 flow.
+; Returns the AI Text Optimizer prompt text (from assets/prompt/aiopt.txt). Used by Ctrl+Alt+Win+4 and L+4 flow.
 GetAioptPromptText() {
-    promptDir := A_ScriptDir "\prompt"
-    try {
-        return FileRead(promptDir "\aiopt.txt")
-    } catch {
-        return "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n"
-    }
+    return GetPromptText("aiopt")
 }
 
 ; Delayed submit flow: show 4s banner, allow N to cancel auto-submit; then navigate+paste and optionally send Enter.

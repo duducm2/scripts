@@ -178,10 +178,13 @@ InsertFiles_IsAiChatForeground() {
     InsertText("SO UX - LA (Internal) - BPM")
 }
 
+GetPromptDir() {
+    return A_ScriptDir "\assets\prompt"
+}
+
 GetPromptText(key) {
-    promptFile := A_ScriptDir "\assets\prompt\" key ".txt"
     try {
-        return FileRead(promptFile)
+        return FileRead(GetPromptDir() "\" key ".txt")
     } catch {
         return "[PROMPT FILE MISSING: " key "]"
     }
@@ -298,95 +301,23 @@ InitTechniquePromptHotstrings() {
 ; Register hotstrings for cheat sheet display
 ; ----------------------
 InitHotstringsCheatSheet() {
-    promptDir := A_ScriptDir "\prompt"
-
-    ; Prompts (4 items) - First category
-    try {
-        RegisterHotstring(":o:cgrammar", FileRead(promptDir "\grammar.txt"), "Prompts",
-        "✏️ Grammar & Spelling Corrector")
-    } catch {
-        RegisterHotstring(":o:cgrammar",
-            "Correct grammar, spelling, punctuation, and casing. Give back only the text.`n", "Prompts",
-            "✏️ Grammar & Spelling Corrector")
-    }
-    try {
-        RegisterHotstring(":o:mtask", FileRead(promptDir "\mtask.txt"), "Prompts", "🔲 Convert to Task")
-    } catch {
-        RegisterHotstring(":o:mtask", "Translate this into a task. Output ONLY the task. Start with 🔲.`n", "Prompts",
-            "🔲 Convert to Task")
-    }
-    try {
-        RegisterHotstring(":o:flog", FileRead(promptDir "\flog.txt"), "Prompts", "🍽️ Food Log Dictation")
-    } catch {
-        RegisterHotstring(":o:flog", "Food_Log dictation → Excel CSV. Output ONLY the final CSV block.`n", "Prompts",
-            "🍽️ Food Log Dictation")
-    }
-    try {
-        RegisterHotstring(":o:aiopt", FileRead(promptDir "\aiopt.txt"), "Prompts", "🤖 AI Text Optimizer")
-    } catch {
-        RegisterHotstring(":o:aiopt",
-            "Rewrite the input text so it becomes AI-oriented. Preserve all important information.`n", "Prompts",
-            "🤖 AI Text Optimizer")
-    }
-
-    ; Placeholder prompts (6 slots reserved for future prompts)
-    ; Technical Architect & Code Planner (content from prompt/markdown-plan.txt)
-    try {
-        planPrompt := FileRead(promptDir "\markdown-plan.txt")
-        RegisterHotstring(":o:cplan", planPrompt, "Prompts", "📋 Technical Architect & Code Planner")
-    } catch {
-        RegisterHotstring(":o:cplan",
-            "You are an expert Technical Architect and Code Planner. Generate a .plan.md file. **Input Task:**`n",
-            "Prompts", "📋 Technical Architect & Code Planner")
-    }
-    try {
-        RegisterHotstring(":o:cplant", FileRead(promptDir "\cplant.txt"), "Prompts", "📝 Plan File Template")
-    } catch {
-        RegisterHotstring(":o:cplant",
-            "---`nname: [Title]`noverview: [Summary]`ntodos:`n  - id: x`n    content: [Step]`n    status: pending`n---`n",
-            "Prompts", "📝 Plan File Template")
-    }
+    ; General prompts from assets/prompt/*.txt (same source as GetPromptText / direct :o: triggers).
+    RegisterHotstring(":o:cgrammar", GetPromptText("grammar"), "Prompts", "✏️ Grammar & Spelling Corrector")
+    RegisterHotstring(":o:mtask", GetPromptText("mtask"), "Prompts", "🔲 Convert to Task")
+    RegisterHotstring(":o:flog", GetPromptText("flog"), "Prompts", "🍽️ Food Log Dictation")
+    RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
+    RegisterHotstring(":o:cplan", GetPromptText("markdown-plan"), "Prompts",
+        "📋 Technical Architect & Code Planner")
+    RegisterHotstring(":o:cplant", GetPromptText("cplant"), "Prompts", "📝 Plan File Template")
     InitTechniquePromptHotstrings()
-    try {
-        aibRapidFireTpl := FileRead(promptDir "\aib-rapid-fire-template.txt")
-        RegisterHotstring(":o:aibrapid", aibRapidFireTpl, "Prompts", "📜 Junior AI: ⚡ rapid-fire template")
-    } catch {
-        RegisterHotstring(":o:aibrapid",
-            "Junior AI (AIB): planning doc with ⚡ - conceptual above, execution steps below.`n", "Prompts",
-            "📜 Junior AI: ⚡ rapid-fire template")
-    }
-    try {
-        RegisterHotstring(":o:pptslide", FileRead(promptDir "\slide-creation.txt"), "Prompts",
-        "📊 Create PowerPoint slide")
-    } catch {
-        RegisterHotstring(":o:pptslide", "Create one PowerPoint slide as an image.`n", "Prompts",
-            "📊 Create PowerPoint slide")
-    }
-    try {
-        RegisterHotstring(":o:pptslideref", FileRead(promptDir "\slide-creation-with-ref.txt"), "Prompts",
+    RegisterHotstring(":o:aibrapid", GetPromptText("aib-rapid-fire-template"), "Prompts",
+        "📜 Junior AI: ⚡ rapid-fire template")
+    RegisterHotstring(":o:pptslide", GetPromptText("slide-creation"), "Prompts", "📊 Create PowerPoint slide")
+    RegisterHotstring(":o:pptslideref", GetPromptText("slide-creation-with-ref"), "Prompts",
         "📊 Create PowerPoint slide (reference)")
-    } catch {
-        RegisterHotstring(":o:pptslideref",
-            "Create one PowerPoint slide as an image using the attached reference as the main visual guide.`n",
-            "Prompts",
-            "📊 Create PowerPoint slide (reference)")
-    }
-    try {
-        RegisterHotstring(":o:boschimg", FileRead(promptDir "\bosch-brand-image.txt"), "Prompts",
-        "🎨 Bosch brand-compliant image")
-    } catch {
-        RegisterHotstring(":o:boschimg",
-            "Generate one Bosch Brand Guide and BDDS compliant image.`n", "Prompts",
-            "🎨 Bosch brand-compliant image")
-    }
-    try {
-        RegisterHotstring(":o:csvfill", FileRead(promptDir "\unstructured-to-csv.txt"), "Prompts",
+    RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
+    RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
         "📋 Fill CSV from unstructured text")
-    } catch {
-        RegisterHotstring(":o:csvfill",
-            "Extract information from unstructured text and fill/update CSV rows using the provided column schema.`n",
-            "Prompts", "📋 Fill CSV from unstructured text")
-    }
 
     ; Hotstrings: emails
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")

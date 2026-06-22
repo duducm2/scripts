@@ -261,7 +261,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" = preset from prompt/*.txt + clipboard dictation via InsertText.
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
     ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
     ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
         this.CurrentPhase := "Submitting"
