@@ -377,6 +377,7 @@ cheatSheets["Cursor.exe"] := "
     📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
     🔲 [J]Select to Bracket (ad[J]acent)
     📉 [,] Fold all directories
+    📈 [Q] Unfold all directories
     💬 [.] Toggle chat or agent
     🤖 [E] Maximize chat size — native Cursor (`workbench.action.maximizeChatSize`; user keybinding)
     📂 [R]File open [R]ecent
@@ -485,6 +486,7 @@ cheatSheets["Code.exe"] := "
     📁 [H]Smart nav: Editor→Explorer / Explorer→Reveal (s[H]ow)
     🔲 [J]Select to Bracket (ad[J]acent)
     📉 [,] Fold all directories
+    📈 [Q] Unfold all directories
     💬 [.] Copilot Agent Modes
     🤖 [E] VS Code default behavior (Cursor custom maximize removed)
     📂 [R]File open [R]ecent

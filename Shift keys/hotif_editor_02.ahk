@@ -1195,10 +1195,8 @@ CancelCommit(ctrl, *) {
     ctrl.Gui.Destroy()
 }
 
-; Ctrl + Alt + I : Fold all directories in VS Code Explorer
-^,:: FoldAllDirectoriesInExplorer()
-
-; Ctrl+Q : free (was UnfoldAllDirectoriesInExplorer; function kept below for reuse)
+; Ctrl+, / Ctrl+Q : Fold/Unfold all directories — disabled (UIA breaks VS Code/Cursor).
+; Functions kept in hotif_scroll_ai.ahk for possible reuse. Documented on cheat sheet only.
 
 ; Alt + N : Review next file - Click the button that contains "Review next file" (Type 50020 Text)
 ; Path from UIA tree: workbench.parts.editor -> editor-instance -> ... -> Group (anysphere-text-button) -> Text "Review next file"

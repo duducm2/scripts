@@ -140,3 +140,8 @@ issues: tile_short:3
   FAIL hwnd=524782 mon=2 title=Windows Shell Experience Host
   FAIL hwnd=855486 mon=2 title=Chat | The blend of topics for our meeting this week | Micr…
   FAIL hwnd=987304 mon=1 title=Projetos 9868 [SO] Astra - Google Chrome
+=== WM tile quality 20260622092811 final ===
+eligible=9 hidden=0 visible=2 openOnMon=6 skipReject=477 skipNoMon=0
+selected=9 planned=9 tiled=8 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=462082 mon=1 title=Calendar - Figueiredo Eduardo (SO/BDO-UX-LA) - Outlook
