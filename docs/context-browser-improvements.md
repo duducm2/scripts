@@ -14,3 +14,4 @@ Scratchpad for the modal Context browser (Win+Alt+Shift+N). Code: Utils.ahk.
 - [x] Free previous preview HBITMAP on each row change (minor memory leak risk in long sessions)
 - [x] Support relative paths in reference files (first-line pointers must be absolute today)
 - [x] Shift+Enter paste file contents as text (follows reference pointers to target file, e.g. characters.md → characters.json)
+- [x] Support folder targets in reference files (first-line pointer navigates into folder on Enter)

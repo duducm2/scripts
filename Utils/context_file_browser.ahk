@@ -116,6 +116,21 @@ Context_IsExistingFile(path) {
     return (attr && !InStr(attr, "D"))
 }
 
+Context_IsExistingDir(path) {
+    if (path = "")
+        return false
+    attr := FileExist(path)
+    return (attr && InStr(attr, "D"))
+}
+
+Context_ResolveExistingPath(path) {
+    if Context_IsExistingFile(path)
+        return path
+    if Context_IsExistingDir(path)
+        return path
+    return ""
+}
+
 Context_IsImageExtension(ext) {
     ext := StrLower(ext)
     static imageExts := Map("png", 1, "jpg", 1, "jpeg", 1, "gif", 1, "bmp", 1, "webp", 1, "ico", 1, "tif", 1,
@@ -190,18 +205,19 @@ Context_ResolveReferenceLine(refPath, line) {
     if (line = "")
         return ""
     if Context_IsAbsoluteFilePath(line)
-        return Context_IsExistingFile(line) ? line : ""
+        return Context_ResolveExistingPath(line)
     SplitPath refPath, , &refDir
     root := Context_GetRoot()
     for candidate in [refDir "\" line, root "\" line] {
-        if Context_IsExistingFile(candidate)
-            return candidate
+        resolved := Context_ResolveExistingPath(candidate)
+        if (resolved != "")
+            return resolved
     }
     return ""
 }
 
 Context_ProbeReference(path) {
-    result := { isRef: false, targetPath: "", targetBasename: "" }
+    result := { isRef: false, targetPath: "", targetBasename: "", targetIsDir: false }
     if !Context_IsExistingFile(path)
         return result
     SplitPath path, , , &ext
@@ -209,10 +225,12 @@ Context_ProbeReference(path) {
     if (ext = "lnk") {
         try {
             target := ComObject("WScript.Shell").CreateShortcut(path).TargetPath
-            if (target != "" && Context_IsExistingFile(target)) {
+            resolved := Context_ResolveExistingPath(target)
+            if (resolved != "") {
                 result.isRef := true
-                result.targetPath := target
-                SplitPath target, &base
+                result.targetPath := resolved
+                result.targetIsDir := Context_IsExistingDir(resolved)
+                SplitPath resolved, &base
                 result.targetBasename := base
             }
         } catch {
@@ -224,6 +242,7 @@ Context_ProbeReference(path) {
     if (resolved != "") {
         result.isRef := true
         result.targetPath := resolved
+        result.targetIsDir := Context_IsExistingDir(resolved)
         SplitPath resolved, &base
         result.targetBasename := base
     }
@@ -239,8 +258,9 @@ Context_ResolvePastePath(path) {
     if (ext = "lnk") {
         try {
             target := ComObject("WScript.Shell").CreateShortcut(path).TargetPath
-            if (target != "" && Context_IsExistingFile(target))
-                return target
+            resolved := Context_ResolveExistingPath(target)
+            if (resolved != "")
+                return resolved
         } catch {
         }
         return ""
@@ -429,13 +449,31 @@ ContextBrowser_GetBreadcrumbSegments(dir) {
     segments := [{ label: "context", path: root }]
     if (StrLower(dirNorm) = StrLower(root))
         return segments
-    rel := SubStr(dirNorm, StrLen(root) + 2)
-    built := root
-    for part in StrSplit(rel, "\") {
-        if (part = "")
-            continue
-        built .= "\" part
-        segments.Push({ label: part, path: built })
+    underRoot := (StrLen(dirNorm) > StrLen(root) + 1
+        && StrLower(SubStr(dirNorm, 1, StrLen(root))) = StrLower(root)
+        && SubStr(dirNorm, StrLen(root) + 1, 1) = "\")
+    if (underRoot) {
+        rel := SubStr(dirNorm, StrLen(root) + 2)
+        built := root
+        for part in StrSplit(rel, "\") {
+            if (part = "")
+                continue
+            built .= "\" part
+            segments.Push({ label: part, path: built })
+        }
+    } else {
+        built := ""
+        for part in StrSplit(dirNorm, "\") {
+            if (part = "")
+                continue
+            if (built = "")
+                built := part
+            else if (RegExMatch(built, "^[A-Za-z]:$"))
+                built .= "\" part
+            else
+                built .= "\" part
+            segments.Push({ label: part, path: built })
+        }
     }
     return segments
 }
@@ -553,6 +591,9 @@ ContextBrowser_EntryKindLabel(entry) {
     if (ContextBrowser_GetPreviewImagePath(entry) != "")
         return "Image"
     if (entry.type = "file") {
+        probe := Context_ProbeReference(entry.path)
+        if (probe.isRef && probe.targetIsDir)
+            return "Folder"
         SplitPath entry.path, , , &ext
         if (StrLower(ext) = "json")
             return "JSON"
@@ -785,7 +826,9 @@ ContextBrowser_OpenFocusedInExplorer(*) {
             explorerCmd := 'explorer.exe "' entry.path '"'
     } else {
         path := ContextBrowser_ResolveEntryPath(entry)
-        if (path != "" && FileExist(path))
+        if (path != "" && Context_IsExistingDir(path))
+            explorerCmd := 'explorer.exe "' path '"'
+        else if (path != "" && FileExist(path))
             explorerCmd := 'explorer.exe /select,"' path '"'
     }
     if (explorerCmd = "")
@@ -930,7 +973,13 @@ ContextBrowser_ActivateEntry(entry) {
         ContextBrowser_RefreshView()
         return
     }
-    pastePath := Context_ResolvePastePath(entry.path)
+    targetPath := Context_ResolvePastePath(entry.path)
+    if (targetPath != "" && Context_IsExistingDir(targetPath)) {
+        g_ContextBrowserCurrentDir := targetPath
+        ContextBrowser_RefreshView()
+        return
+    }
+    pastePath := targetPath
     if (pastePath = "") {
         ShowCenteredOverlay_Utils("❌ Reference target not found for: " entry.name, 2500, BANNER_ACCENT_ERROR)
         return
