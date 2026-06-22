@@ -494,7 +494,7 @@ UtilitySelector_RefreshUiAndHotkeys() {
     try g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
 
     UtilitySelector_RebindHotkeys()
-    SetTimer(HotstringSelector_AutoCloseIfIdle, -3000)
+    SetTimer(HotstringSelector_AutoCloseIfIdle, -g_HotstringSelectorAutoCloseMs)
 }
 
 ; Triggers for InitTechniquePromptHotstrings - used to group Utility Shortcuts Prompts submenu.

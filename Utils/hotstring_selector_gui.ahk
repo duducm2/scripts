@@ -658,5 +658,5 @@ ShowHotstringSelector() {
 
     ; Bind top-level hotkeys (1-6) + Escape; category view binds are applied when user selects a category.
     UtilitySelector_RebindHotkeys()
-    SetTimer(HotstringSelector_AutoCloseIfIdle, -3000)
+    SetTimer(HotstringSelector_AutoCloseIfIdle, -g_HotstringSelectorAutoCloseMs)
 }

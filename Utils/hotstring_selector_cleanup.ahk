@@ -5,6 +5,8 @@
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
+global g_HotstringSelectorAutoCloseMs := 10000 ; Auto-close Utility Shortcuts if no choice made in time
+
 HotstringSelector_AutoCloseIfIdle() {
     global g_HotstringSelectorActive
     if (g_HotstringSelectorActive)
