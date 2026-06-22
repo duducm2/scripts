@@ -889,17 +889,21 @@ GetEmojiByNumber(numberText) {
     return (emojiMap.Has(number)) ? emojiMap[number] : ""
 }
 
-InsertEmojiToTarget(emoji) {
+InsertEmojiToTarget(emoji, targetWin := 0) {
+    global gEmojiTargetWin
     if (emoji = "")
         return
-    ; Activate the target window if we have it stored
-    if (gEmojiTargetWin) {
-        if (WinExist("ahk_id " gEmojiTargetWin)) {
-            WinActivate gEmojiTargetWin
-            Sleep 150
-        } else {
+    hwnd := targetWin ? targetWin : gEmojiTargetWin
+    if (hwnd) {
+        if (!WinExist("ahk_id " hwnd)) {
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+            return
         }
+        if (!WM_EnsureForegroundForSend(hwnd, 2000)) {
+            ShowCenteredOverlay_Utils("❌ Error: Could not focus target window.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        Sleep 50
     }
 
     ; Use direct text insertion - no clipboard manipulation
@@ -908,24 +912,28 @@ InsertEmojiToTarget(emoji) {
 }
 
 AutoSubmitEmoji(ctrl, *) {
+    global gEmojiTargetWin
     currentValue := ctrl.Text
     if (currentValue != "" && IsInteger(currentValue)) {
         emoji := GetEmojiByNumber(currentValue)
         if (emoji != "") {
+            targetWin := gEmojiTargetWin
             ctrl.Gui.Destroy()
-            InsertEmojiToTarget(emoji)
+            SetTimer(() => InsertEmojiToTarget(emoji, targetWin), -75)
         }
     }
 }
 
 ; Manual submit function (backup)
 SubmitEmoji(ctrl, *) {
+    global gEmojiTargetWin
     currentValue := ctrl.Gui["EmojiInput"].Text
     if (currentValue != "" && IsInteger(currentValue)) {
         emoji := GetEmojiByNumber(currentValue)
         if (emoji != "") {
+            targetWin := gEmojiTargetWin
             ctrl.Gui.Destroy()
-            InsertEmojiToTarget(emoji)
+            SetTimer(() => InsertEmojiToTarget(emoji, targetWin), -75)
         } else {
             MsgBox "Invalid selection. Please choose 1-6.", "Emoji Selector", "IconX"
         }
@@ -942,9 +950,11 @@ CancelEmoji(ctrl, *) {
 {
     try {
         ; Remember current target window before showing GUI
-        gEmojiTargetWin := WinExist("A")
+        gEmojiTargetWin := WinGetID("A")
         ; Create GUI for emoji selection with auto-submit
         emojiGui := Gui("+AlwaysOnTop +ToolWindow", "Emoji Selector")
+        if (gEmojiTargetWin)
+            emojiGui.Opt("+Owner" gEmojiTargetWin)
         emojiGui.SetFont("s10", "Segoe UI")
 
         ; Add instruction text
