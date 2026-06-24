@@ -8,6 +8,8 @@
 ; --- Config ---------------------------------------------------------------
 PROMPT_FILE := A_ScriptDir "\\ChatGPT_Prompt.txt"
 global USE_CHROME_PDF_PRESENT_FALLBACK := true
+; Command Palette: "new_window" (copy URL + chrome --new-window) or "detach" (Enter + Shift+W detach)
+global COMMAND_PALETTE_WEB_OPEN_MODE := "new_window"
 
 ; ShiftKeys daemon IPC: bootstrap connection on load (non-blocking)
 ShiftKeysIPC_Bootstrap()

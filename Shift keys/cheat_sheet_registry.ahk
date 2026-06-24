@@ -833,6 +833,7 @@ cheatSheets["Command Palette"] := "
     ⌨️ [S]Precise [S]earch
     ⌨️ [I][I]nsert Favorite (Add)
     ⌨️ [D][E]xclude Favorite
+    🌐 [Enter] Open web bookmark in new Chrome window
     ⌨️ [Ctrl+1] [S]elect current item
     ⌨️ [Ctrl+2] [M]ove down once and select
     ⌨️ [Ctrl+3] [M]ove down twice and select

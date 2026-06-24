@@ -294,6 +294,8 @@ global g_WikipediaScrollHistory := []
 ;-------------------------------------------------------------------
 ; PowerToys Command Palette Shortcuts
 ;-------------------------------------------------------------------
+; [SK module] Command Palette helpers -> Shift keys\command_palette_helpers.ahk
+#include %A_ScriptDir%\Shift keys\command_palette_helpers.ahk
 ; [SK module] Command Palette hotkeys -> Shift keys\hotif_command_palette.ahk
 #include %A_ScriptDir%\Shift keys\hotif_command_palette.ahk
 

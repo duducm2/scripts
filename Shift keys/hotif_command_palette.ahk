@@ -7,6 +7,16 @@
 
 #HotIf WinActive("Command Palette")
 
+; Debug: probe web-bookmark detection while arrowing through results (Ctrl+Alt+Shift+F12)
+^!+F12:: {
+    isWeb := CommandPalette_IsWebBookmarkSelected()
+    ToolTip "CommandPalette web bookmark: " (isWeb ? "YES" : "NO"), 10, 10
+    SetTimer(() => ToolTip(), -2500)
+}
+
+; Enter: web bookmarks open in a new Chrome window; other results unchanged
+$Enter:: CommandPalette_ActivateSelectedItem()
+
 ; Ctrl + H : Trigger Ctrl+Shift+E
 ^h:: Send "^+e"
 
@@ -78,87 +88,37 @@
 }
 
 ; Ctrl + 1 : Trigger Enter
-^1:: Send "{Enter}"
+^1:: CommandPalette_SelectNthAndActivate(0)
 
 ; Ctrl + 2 : Trigger Down then Enter
-^2:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
+^2:: CommandPalette_SelectNthAndActivate(1)
 
 ; Ctrl + 3 : Trigger Down twice then Enter
-^3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+^3:: CommandPalette_SelectNthAndActivate(2)
 
 ; Ctrl + 4 : Trigger Down three times then Enter
-^4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+^4:: CommandPalette_SelectNthAndActivate(3)
 
 ; Ctrl + 5 : Trigger Down four times then Enter
-^5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+^5:: CommandPalette_SelectNthAndActivate(4)
 
 ; Ctrl + 6 : Trigger Down five times then Enter
-^6:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+^6:: CommandPalette_SelectNthAndActivate(5)
 
 ; Easy Selection
 ; Alt + 1 : Easy Selection - 1st item
-!1::
-{
-    Send "{Enter}"
-}
+!1:: CommandPalette_SelectNthAndActivate(0)
 
 ; Alt + 2 : Easy Selection - 2nd item
-!2::
-{
-    Send "{Down}"
-    Send "{Enter}"
-}
+!2:: CommandPalette_SelectNthAndActivate(1)
 
 ; Alt + 3 : Easy Selection - 3rd item
-!3::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+!3:: CommandPalette_SelectNthAndActivate(2)
 
 ; Alt + 4 : Easy Selection - 4th item
-!4::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+!4:: CommandPalette_SelectNthAndActivate(3)
 
 ; Alt + 5 : Easy Selection - 5th item
-!5::
-{
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
+!5:: CommandPalette_SelectNthAndActivate(4)
 
 #HotIf
