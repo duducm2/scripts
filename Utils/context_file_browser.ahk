@@ -1183,11 +1183,6 @@ ShowContextBrowser() {
     }
 
     try {
-        if (IsSet(g_HotstringSelectorActive) && g_HotstringSelectorActive)
-            CleanupHotstringSelector()
-    } catch {
-    }
-    try {
         if (IsSet(g_ProjectSelectorActive) && g_ProjectSelectorActive && IsSet(CleanupProjectSelector))
             CleanupProjectSelector()
     } catch {

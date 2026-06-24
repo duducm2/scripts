@@ -521,36 +521,11 @@ HandleCursorWindowSelectionTrigger(*) {
 ShowProjectSelector() {
     global g_ProjectSelectorGui, g_ProjectSelectorActive, g_Projects
     global g_ProjectHotkeyHandlers
-    global g_HotstringSelectorGui, g_HotstringSelectorActive
-    global g_HS_SelectorOpenFile_WM, g_HS_SelectorCloseRequestFile_WM
 
     ; Close existing GUI if open
     if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
         CleanupProjectSelector()
         Sleep 50
-    }
-
-    ; In-process mutual exclusion: if the Hotstring Selector is active, close it first
-    try {
-        if (IsSet(g_HotstringSelectorActive) && g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
-            CleanupHotstringSelector()
-            Sleep 50
-        }
-    } catch {
-        ; Ignore failures – project selector should still open
-    }
-
-    ; Cross-process mutual exclusion: if a Hotstring Selector sentinel exists in another process,
-    ; request it to close via hs_selector_close_request.
-    try {
-        if (FileExist(g_HS_SelectorOpenFile_WM)) {
-            try FileAppend("", g_HS_SelectorCloseRequestFile_WM)
-            catch {
-            }
-            Sleep 50
-        }
-    } catch {
-        ; Ignore IPC failures – project selector should still open
     }
 
     ; Check if we have projects configured

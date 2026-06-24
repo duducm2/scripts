@@ -7,7 +7,7 @@
 
 ; =============================================================================
 ; Move all Desktop items to Recycle Bin (recoverable)
-; Trigger: Win+Alt+Shift+U selector → letter N
+; Trigger: Ctrl+Alt+Win+8 (or RegisterMacro char N when selector existed)
 ; Target path: OneDrive Desktop. Standard banner with 4s timeout (N = cancel, Y or timeout = run); then success/error banner.
 ; =============================================================================
 global g_DesktopToRecyclePath := ""  ; Set from GetDesktopToRecyclePath() when macro runs
@@ -91,7 +91,7 @@ DesktopToRecycle_Run() {
     g_DesktopToRecycleCloseHwnd := 0
 }
 
-; Entry point when "N" is pressed in Win+Alt+Shift+U selector
+; Entry point for Desktop to Recycle macro (^!#8)
 DesktopToRecycle_Trigger() {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
     g_DesktopToRecyclePath := GetDesktopToRecyclePath()

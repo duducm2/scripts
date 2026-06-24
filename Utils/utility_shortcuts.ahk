@@ -1,34 +1,9 @@
 ; =============================================================================
 ; Utils module: utility_shortcuts.ahk
-; Utility shortcuts #!+U and ^!# secondary triggers
+; Utility shortcuts ^!# secondary triggers
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
-
-; =============================================================================
-; Hotkey Handler: Windows + Alt + Shift + U (#!+U)
-; =============================================================================
-; PURPOSE: Toggles the hotstring selector GUI on/off.
-;
-; BEHAVIOR:
-;   - If selector is currently open: Closes selector via CleanupHotstringSelector()
-;   - If selector is closed: Opens selector via ShowHotstringSelector()
-;
-; TECHNICAL NOTE: The character sequence displayed in the GUI must remain consistent
-;                  and list every slot in order, even when empty, to ensure downstream
-;                  AI systems and debugging tools can reliably parse the full character set.
-; =============================================================================
-#!+U::
-{
-    global g_HotstringSelectorActive, g_HotstringSelectorGui
-
-    ; Toggle behavior: Close if open, open if closed
-    if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
-        CleanupHotstringSelector()
-    } else {
-        ShowHotstringSelector()
-    }
-}
 
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
@@ -82,7 +57,7 @@
         ShowCenteredOverlay_Utils("❌ Shortcut execution failed", 2000, BANNER_ACCENT_ERROR)
 }
 
-; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
+; Ctrl+Alt+Win+2..8 - direct macro hotkeys (secondary triggers)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
 ^!#5:: CleanClipboard()

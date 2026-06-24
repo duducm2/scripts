@@ -165,10 +165,6 @@ global g_WM_SelectorOpenFile := A_ScriptDir "\.cursor\wm_selector_open"
 global g_WM_SelectorCloseRequestFile := A_ScriptDir "\.cursor\wm_selector_close_request"
 global g_WM_SelectorCloseCheckTimer := ""
 
-; Cross-process IPC for Hotstring Selector (Utils.ahk)
-global g_HS_SelectorOpenFile_WM := A_ScriptDir "\.cursor\hs_selector_open"
-global g_HS_SelectorCloseRequestFile_WM := A_ScriptDir "\.cursor\hs_selector_close_request"
-
 WM_CheckSelectorCloseRequest() {
     global g_ProjectSelectorActive, g_WM_SelectorCloseRequestFile
     if (!g_ProjectSelectorActive)
