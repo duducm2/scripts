@@ -6,81 +6,6 @@
 ; =============================================================================
 
 ; =============================================================================
-; =============================================================================
-
-; #region agent log
-D2C_DebugLog1672ab(location, message, data := "", hypothesisId := "H1", runId := "pre-fix") {
-    try {
-        Esc(s) => StrReplace(StrReplace(StrReplace(String(s), "\", "\\"), "`"", "\`""), "`n", "\n")
-        MapToJson(m) {
-            out := ""
-            for k, v in m {
-                if (out != "")
-                    out .= ","
-                out .= "`"" Esc(k) "`":"
-                if (v is Integer || v is Float)
-                    out .= String(v)
-                else if (v = true || v = false)
-                    out .= (v ? "true" : "false")
-                else
-                    out .= "`"" Esc(v) "`""
-            }
-            return "{" out "}"
-        }
-        payload := Map(
-            "sessionId", "1672ab",
-            "id", "log_" A_TickCount "_" Random(1000, 9999),
-            "timestamp", A_TickCount,
-            "location", location,
-            "message", message,
-            "runId", runId,
-            "hypothesisId", hypothesisId
-        )
-        d := IsObject(data) ? data : Map("value", data)
-        payloadJson := MapToJson(payload)
-        dataJson := MapToJson(d)
-        line := SubStr(payloadJson, 1, StrLen(payloadJson) - 1) . ",`"data`":" . dataJson . "}"
-        FileAppend(line "`n", A_ScriptDir . "\debug-1672ab.log", "UTF-8")
-    } catch {
-    }
-}
-
-D2C_DebugClipAngelMarkFilter(hwnd := 0) {
-    try {
-        if !hwnd
-            hwnd := WinExist("ClipAngel")
-        if !hwnd
-            return "(no hwnd)"
-        root := UIA.ElementFromHandle(hwnd)
-        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
-        if mf
-            return mf.Value
-        return "(MarkFilter not found)"
-    } catch as e {
-        return "(error: " . e.Message . ")"
-    }
-}
-
-D2C_DebugModifierStates() {
-    return Map(
-        "shift", GetKeyState("Shift", "P"),
-        "ctrl", GetKeyState("Ctrl", "P"),
-        "alt", GetKeyState("Alt", "P"),
-        "lwin", GetKeyState("LWin", "P"),
-        "rwin", GetKeyState("RWin", "P")
-    )
-}
-
-D2C_DebugActiveWindowInfo() {
-    try {
-        return Map("hwnd", WinGetID("A"), "title", WinGetTitle("A"), "exe", WinGetProcessName("A"))
-    } catch {
-        return Map("hwnd", 0, "title", "", "exe", "")
-    }
-}
-; #endregion
-
-; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
 ; Replaces legacy fragmented functions with a central authority to prevent race conditions.
 ; =============================================================================
@@ -283,9 +208,6 @@ class D2C_FlowManager {
     OnSubmitO(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        ; #region agent log
-        D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "entry", D2C_DebugModifierStates(), "H3")
-        ; #endregion
         StandardLoadingBar_CloseKeysOverlay()
         HideDictationIndicator()
 
@@ -304,66 +226,17 @@ class D2C_FlowManager {
                 return
             }
 
-            ; #region agent log
-            global g_StandardLoadingBarGui
-            barHwnd := (IsObject(g_StandardLoadingBarGui) ? g_StandardLoadingBarGui.Hwnd : 0)
-            activeAfterActivate := D2C_DebugActiveWindowInfo()
-            activeAfterActivate["clipHwnd"] := clipHwnd
-            activeAfterActivate["barHwnd"] := barHwnd
-            activeAfterActivate["markFilter"] := D2C_DebugClipAngelMarkFilter(clipHwnd)
-            D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "after ActivateClipAngel", activeAfterActivate, "H1")
-            ; #endregion
-
-            ; Activation/layout handled inside ActivateClipAngelWithFocusCorrection(); bounded wait before F4.
             if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
                 StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
-                ; #region agent log
-                D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "WinWaitActive failed", D2C_DebugActiveWindowInfo(),
-                    "H1")
-                ; #endregion
                 return
             }
 
-            markBefore := D2C_DebugClipAngelMarkFilter(clipHwnd)
-            ; #region agent log
-            preSend := D2C_DebugActiveWindowInfo()
-            preSend["clipHwnd"] := clipHwnd
-            preSend["markFilter"] := markBefore
-            mods := D2C_DebugModifierStates()
-            preSend["modShift"] := mods["shift"]
-            preSend["modCtrl"] := mods["ctrl"]
-            preSend["modAlt"] := mods["alt"]
-            preSend["clipActive"] := WinActive("ahk_id " clipHwnd)
-            D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "before leave favorites", preSend, "H3,H5", "post-fix")
-            ; #endregion
-
             StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
-            leaveStartTick := A_TickCount
-            leaveResult := ClipAngel_LeaveFavoritesFilter(clipHwnd)
-            markAfterShiftP := D2C_DebugClipAngelMarkFilter(clipHwnd)
-            ; #region agent log
-            postShiftP := D2C_DebugActiveWindowInfo()
-            postShiftP["markFilterBefore"] := markBefore
-            postShiftP["markFilterAfter"] := markAfterShiftP
-            postShiftP["markFilterChanged"] := (markBefore != markAfterShiftP)
-            postShiftP["leaveMethod"] := leaveResult["method"]
-            postShiftP["leaveOk"] := leaveResult["ok"]
-            postShiftP["leaveMs"] := A_TickCount - leaveStartTick
-            postShiftP["row0Selected"] := leaveResult.Has("row0Selected") ? leaveResult["row0Selected"] : ClipAngel_UiaIsRow0Selected(clipHwnd)
-            D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "after leave favorites", postShiftP, "H4", "post-fix")
-            ; #endregion
+            ClipAngel_LeaveFavoritesFilter(clipHwnd)
             priorSendLevel := A_SendLevel
             SendLevel 0
             SendInput "{F4}"
             SendLevel priorSendLevel
-
-            markAfterF4 := D2C_DebugClipAngelMarkFilter(clipHwnd)
-            ; #region agent log
-            postF4 := D2C_DebugActiveWindowInfo()
-            postF4["markFilterAfterF4"] := markAfterF4
-            postF4["row0Selected"] := ClipAngel_UiaIsRow0Selected(clipHwnd)
-            D2C_DebugLog1672ab("d2c_flow_manager.ahk:OnSubmitO", "after Send F4", postF4, "H2", "post-fix")
-            ; #endregion
 
             StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
             TryMaximizeWindow(clipHwnd)
