@@ -1062,7 +1062,7 @@ cheatSheets["Copilot Web"] := "
     📂 [D]Toggle nav [D]rawer
     💬 [N][N]ew chat
     🔍 [S][S]earch (nav drawer)
-    🔄 [M]Change [M]odel (opens selector)
+    🔄 [M]Change [M]odel (opens selector; Up then Right)
     🛠️ [T]Add/manage sources (Tools menu)
     🖼️ [I]Designer / create image (Sources menu)
     🔬 [E]Researcher / deep research (Sources menu)

@@ -1272,7 +1272,17 @@ CopilotWeb_OpenModelSelector(uia := 0) {
     if (!IsObject(uia))
         return false
     el := CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
-    return el && CopilotWeb_ClickUiaElement(el)
+    if !(el && CopilotWeb_ClickUiaElement(el))
+        return false
+    Sleep 150
+    Send "{Up}"
+    Sleep 30
+    Send "{Right}"
+    Sleep 60
+    Send "{Down}"
+    Sleep 60
+    Send "{Down}"
+    return true
 }
 
 CopilotWeb_FindSourcesButton(uia) {
