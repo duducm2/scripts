@@ -705,6 +705,144 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
 
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
 ; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
+ClipAngel_UiaGetMarkFilterValue(hwnd) {
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+        return mf ? mf.Value : ""
+    } catch {
+        return ""
+    }
+}
+
+; MarkFilter combo: leave "favorite" (or any non-all) for "all marks" via dropdown (fast fallback).
+ClipAngel_UiaSetMarkFilterAllMarks(hwnd) {
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+        if !mf
+            return false
+        if (StrLower(Trim(mf.Value)) = "all marks")
+            return true
+        mf.SetFocus()
+        mf.Click()
+        Sleep 30
+        Send "{Home}"
+        Sleep 30
+        Send "{Tab}"
+        Sleep 30
+        return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+    } catch {
+        return false
+    }
+}
+
+; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
+ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220) {
+    if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+        return true
+    if !WinActive("ahk_id " hwnd)
+        ClipAngel_EnsureWindowActive(hwnd, 200)
+    ClipAngel_ReleaseChordModifiersForSend()
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid
+            try dataGrid.SetFocus()
+    } catch {
+    }
+    priorSendLevel := A_SendLevel
+    SendLevel 0
+    SendInput "+p"
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks") {
+            SendLevel priorSendLevel
+            return true
+        }
+        Sleep 15
+    }
+    SendLevel priorSendLevel
+    return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+}
+
+; ^Home first; full UIA row-0 only if still not selected.
+ClipAngel_FastEnsureRow0(hwnd) {
+    if ClipAngel_UiaIsRow0Selected(hwnd)
+        return true
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid
+            try dataGrid.SetFocus()
+    } catch {
+    }
+    priorSendLevel := A_SendLevel
+    SendLevel 0
+    ClipAngel_ReleaseChordModifiersForSend()
+    SendInput "^{Home}"
+    deadline := A_TickCount + 180
+    while (A_TickCount < deadline) {
+        if ClipAngel_UiaIsRow0Selected(hwnd) {
+            SendLevel priorSendLevel
+            return true
+        }
+        Sleep 15
+    }
+    SendLevel priorSendLevel
+    if ClipAngel_UiaIsRow0Selected(hwnd)
+        return true
+    return ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+}
+
+; Native Shift+P to leave favorites filter; fast UIA MarkFilter fallback when synthetic Send is ignored.
+ClipAngel_LeaveFavoritesFilter(hwnd) {
+    result := Map("method", "none", "ok", false, "before", "", "after", "", "row0Selected", false)
+    if !hwnd
+        return result
+    result["before"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+    if (StrLower(Trim(result["before"])) = "all marks") {
+        result["ok"] := true
+        result["method"] := "already_all_marks"
+        result["after"] := result["before"]
+        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd)
+        return result
+    }
+    if ClipAngel_NativeSendShiftP(hwnd) {
+        result["ok"] := true
+        result["method"] := "native_shift_p"
+        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+        result["row0Selected"] := ClipAngel_UiaIsRow0Selected(hwnd) || ClipAngel_FastEnsureRow0(hwnd)
+        return result
+    }
+    if ClipAngel_UiaSetMarkFilterAllMarks(hwnd) {
+        result["ok"] := true
+        result["method"] := "uia_combo"
+        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd)
+        return result
+    }
+    result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+    return result
+}
+
+ClipAngel_UiaIsRow0Selected(hwnd) {
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if !dataGrid
+            return false
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        if !row0
+            return false
+        return ClipAngel_UiaRow0IsSelected(row0, dataGrid, ClipAngel_UiaGridHasSelectionPattern(dataGrid))
+    } catch {
+        return false
+    }
+}
+
 MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     if waitForIngest
         Sleep(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS)
