@@ -1231,7 +1231,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
     
     === GENERAL ===
-    [Ctrl+Alt+Win+4] > Toggle Gemini tab 1/2
+    [Win+Alt+Shift+U] > Quick string shortcuts
+    [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
     [Win+Alt+Shift+→] > Show square selector (right direction)
@@ -1278,6 +1279,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · Left thumb] tap 1× > Ctrl+Alt+Win+0 — Project Quick Selector
     [ZMK L0 · Left thumb] tap 2× > Ctrl+Alt+Win+1 — Cursor AI quick action
     [ZMK L0 · Right thumb] hold > Layer 2 (TWO)
+    [ZMK L0 · Right thumb] tap 1× > Win+Alt+Shift+U — quick string shortcuts
     [ZMK L0 · Right thumb] tap 2× > Win+Alt+Shift+Y — Focus Mode toggle
     [ZMK L0 · Win+Alt+Shift key] > Win+Alt+Shift (modifier chord)
     [ZMK L0 · X thumb] hold > Win+Alt+Shift+X — Peek PDF / set PDF path

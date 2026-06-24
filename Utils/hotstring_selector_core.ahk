@@ -1,4 +1,4 @@
-; =============================================================================
+﻿; =============================================================================
 ; Utils module: hotstring_selector_core.ahk
 ; Hotstring selector system core and BuildHotstringCharMap
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
@@ -65,7 +65,7 @@ global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", 
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
 ; Category display order: defines the sequence in which action categories appear in the GUI
-; Order: Prompts → General → Projects → Links → Macros → Hotstrings
+; Order: Prompts â†’ General â†’ Projects â†’ Links â†’ Macros â†’ Hotstrings
 ; Note: Utility-only views are not included here.
 ; "Hotstrings" must be present so BuildHotstringCharMap() populates g_UtilityHotstringCharMapByCategory["Hotstrings"].
 global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Links", "Macros", "Hotstrings"]
@@ -73,188 +73,6 @@ global g_HotstringCategories := ["Prompts", "General", "Projects", "Files & Link
 ; Reserved empty character: never assigned to any action; always shows as (empty) in selector
 ; Set to "" to disable reservation
 global g_ReservedEmptyChar := ""
-
-; =============================================================================
-; RichEdit helpers (mnemonic emphasis for selectors)
-; =============================================================================
-global g_MnemonicRichDll := 0
-
-MnemonicRich_EnsureDll() {
-    global g_MnemonicRichDll
-    ; msftedit.dll must be loaded before creating RichEdit50W controls (ClassRichEdit50W).
-    if (!g_MnemonicRichDll)
-        g_MnemonicRichDll := DllCall("LoadLibrary", "str", "msftedit.dll", "ptr")
-}
-
-; UTF-16 code unit count for RichEdit character indices (BMP = 1, supplementary = 2).
-MnemonicRich_Utf16Units(s) {
-    n := 0
-    for c in StrSplit(s, "") {
-        o := Ord(c)
-        n += (o > 0xFFFF) ? 2 : 1
-    }
-    return n
-}
-
-; EM_SETTEXTEX = 0x461, ST_UNICODE = 8 - RichEdit's native UTF-16 path.
-MnemonicRich_SetPlainUtf16(ctrl, plain) {
-    hwnd := ctrl.Hwnd
-    flags := 8 ; ST_UNICODE
-    cp := 1200
-    settextex := Buffer(8, 0)
-    NumPut("uint", flags, settextex, 0)
-    NumPut("uint", cp, settextex, 4)
-    if (plain = "") {
-        emptyBuf := Buffer(2, 0)
-        SendMessage(0x461, settextex.Ptr, emptyBuf.Ptr, hwnd)
-        return
-    }
-    textBuf := Buffer((StrLen(plain) + 1) * 2)
-    StrPut(plain, textBuf, "UTF-16")
-    SendMessage(0x461, settextex.Ptr, textBuf.Ptr, hwnd)
-}
-
-MnemonicRich_ThemingOff(ctrl) {
-    hwnd := ctrl.Hwnd
-    DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
-    parent := DllCall("GetParent", "ptr", hwnd, "ptr")
-    if (parent)
-        DllCall("uxtheme\SetWindowTheme", "ptr", parent, "wstr", "", "wstr", "")
-}
-
-; CHARFORMAT2W buffer (116 bytes). textColor is COLORREF (0x00BBGGRR).
-MnemonicRich_CharFormat2(faceName, pt, textColor, bold := false) {
-    yh := Round(pt * 20)
-    cf := Buffer(116, 0)
-    NumPut("uint", 116, cf, 0) ; cbSize
-    mask := 0x40000000 | 0x80000000 | 0x20000000 | 0x1 ; CFM_COLOR | CFM_SIZE | CFM_FACE | CFM_BOLD
-    NumPut("uint", mask, cf, 4) ; dwMask
-    NumPut("uint", bold ? 0x1 : 0, cf, 8) ; dwEffects
-    NumPut("int", yh, cf, 12) ; yHeight (twips)
-    NumPut("int", 0, cf, 16) ; yOffset
-    NumPut("uint", textColor, cf, 20) ; crTextColor
-    NumPut("uchar", 1, cf, 24) ; bCharSet DEFAULT_CHARSET
-    NumPut("uchar", 0, cf, 25) ; bPitchAndFamily
-    StrPut(faceName, cf.Ptr + 26, 64, "UTF-16")
-    return cf
-}
-
-MnemonicRich_ApplyCharFormat(ctrl, scopeAll, cfBuf) {
-    w := scopeAll ? 4 : 1 ; SCF_ALL = 4, SCF_SELECTION = 1
-    return SendMessage(0x444, w, cfBuf.Ptr, ctrl.Hwnd) ; EM_SETCHARFORMAT
-}
-
-MnemonicRich_SetSel(hwnd, cpMin, cpMax) {
-    return SendMessage(0xB1, cpMin, cpMax, hwnd) ; EM_SETSEL
-}
-
-; Render lines (joined by CR only) and emphasize mnemonic letter (bumpPx) in [key] and first title occurrence.
-MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rgbHex := "CDD6F4", bgHex := "1E1E2E") {
-    MnemonicRich_EnsureDll()
-    MnemonicRich_ThemingOff(ctrl)
-
-    ; Convert RGB hex (RRGGBB) to COLORREF (0x00BBGGRR).
-    rr := Integer("0x" . SubStr(rgbHex, 1, 2))
-    gg := Integer("0x" . SubStr(rgbHex, 3, 2))
-    bb := Integer("0x" . SubStr(rgbHex, 5, 2))
-    textColor := (bb << 16) | (gg << 8) | rr
-
-    br := Integer("0x" . SubStr(bgHex, 1, 2))
-    bg := Integer("0x" . SubStr(bgHex, 3, 2))
-    bb2 := Integer("0x" . SubStr(bgHex, 5, 2))
-    bgColor := (bb2 << 16) | (bg << 8) | br
-
-    bumpPt := bumpPx * 72 / 96
-    bigPt := basePt + bumpPt
-
-    plain := ""
-    spans := [] ; {start,len} in UTF-16 units
-    subsectionSpans := [] ; {start,len} for mnemonic subsection lines (distinct color)
-    u16Pos := 0
-    first := true
-
-    RenderTitleKey(lineText, key, baseU16) {
-        if (key = "")
-            return
-        rb := InStr(lineText, "]")
-        if (!rb)
-            return
-        after := SubStr(lineText, rb + 1)
-        tpos := InStr(after, key, false)
-        if (!tpos)
-            tpos := InStr(after, StrUpper(key), false)
-        if (!tpos)
-            return
-        preNoLast := SubStr(lineText, 1, rb + tpos - 1)
-        spans.Push({ start: baseU16 + MnemonicRich_Utf16Units(preNoLast), len: 1 })
-    }
-
-    for ln in lines {
-        if (!first) {
-            plain .= "`r"
-            u16Pos += 1
-        }
-        first := false
-
-        lineText := ln.text
-        lineStartU16 := u16Pos
-        key := ln.HasProp("key") ? ln.key : ""
-        RenderTitleKey(lineText, key, u16Pos)
-
-        ; Optional right-side key emphasis for two-column layouts.
-        if (ln.HasProp("keyRight") && ln.keyRight != "" && ln.HasProp("rightStartCharPos") && ln.rightStartCharPos > 1) {
-            rightStart := ln.rightStartCharPos
-            prefix := SubStr(lineText, 1, rightStart - 1)
-            rightText := SubStr(lineText, rightStart)
-            baseRightU16 := u16Pos + MnemonicRich_Utf16Units(prefix)
-            RenderTitleKey(rightText, ln.keyRight, baseRightU16)
-        }
-
-        plain .= lineText
-        u16Pos += MnemonicRich_Utf16Units(lineText)
-        if (ln.HasProp("isMnemonicSubsection") && ln.isMnemonicSubsection && lineText != "") {
-            subsectionSpans.Push({ start: lineStartU16, len: MnemonicRich_Utf16Units(lineText) })
-        }
-    }
-
-    MnemonicRich_SetPlainUtf16(ctrl, plain)
-
-    hwnd := ctrl.Hwnd
-    SendMessage(0x4CF, 0, 0, hwnd) ; EM_SETREADONLY FALSE while formatting
-    SendMessage(0x443, 0, bgColor, hwnd) ; EM_SETBKGNDCOLOR
-
-    baseCf := MnemonicRich_CharFormat2(faceName, basePt, textColor, false)
-    MnemonicRich_SetSel(hwnd, 0, -1)
-    MnemonicRich_ApplyCharFormat(ctrl, false, baseCf)
-
-    ; Subsection headers inside Prompts (mnemonic technique): softer accent, bold
-    if (subsectionSpans.Length > 0) {
-        subRgb := "CBA6F7" ; mauve, distinct from body
-        srr := Integer("0x" . SubStr(subRgb, 1, 2))
-        sgg := Integer("0x" . SubStr(subRgb, 3, 2))
-        sbb := Integer("0x" . SubStr(subRgb, 5, 2))
-        subColor := (sbb << 16) | (sgg << 8) | srr
-        subCf := MnemonicRich_CharFormat2(faceName, basePt + 1, subColor, true)
-        for ss in subsectionSpans {
-            if (ss.len <= 0)
-                continue
-            MnemonicRich_SetSel(hwnd, ss.start, ss.start + ss.len)
-            MnemonicRich_ApplyCharFormat(ctrl, false, subCf)
-        }
-    }
-
-    bigCf := MnemonicRich_CharFormat2(faceName, bigPt, textColor, false)
-    for sp in spans {
-        if (sp.len <= 0)
-            continue
-        MnemonicRich_SetSel(hwnd, sp.start, sp.start + sp.len)
-        MnemonicRich_ApplyCharFormat(ctrl, false, bigCf)
-    }
-    MnemonicRich_SetSel(hwnd, 0, 0)
-    SendMessage(0xB7, 0, 0, hwnd) ; EM_SCROLLCARET
-    SendMessage(0x4CF, 1, 0, hwnd) ; EM_SETREADONLY TRUE
-    SendMessage(0x443, 0, bgColor, hwnd) ; RichEdit can reset bg after readonly
-}
 
 ; =============================================================================
 ; BuildHotstringCharMap()
@@ -268,7 +86,7 @@ MnemonicRich_Render(ctrl, lines, basePt, bumpPx := 6, faceName := "Segoe UI", rg
 ;      - Files & Links: Maps characters to file paths for quick-open functionality
 ;      - Macros: Maps characters to executable macro functions (explicit assignments first, then sequential)
 ;      - Other categories: Maps characters to hotstring expansion text
-;   3. Returns Map of character → expansion text for hotstrings
+;   3. Returns Map of character â†’ expansion text for hotstrings
 ;
 ; RETURNS: Map object where keys are characters and values are expansion text strings
 ; SIDE EFFECTS: Populates global maps g_QuickOpenFileCharMap and g_MacroCharMap
@@ -723,62 +541,3 @@ FindAndActivateMiroWindow(url, titleKeywords) {
     }
 }
 
-; =============================================================================
-; Modal ListView — first-letter row jump (reusable for ListView modals)
-; =============================================================================
-ModalList_FindFirstByStartingLetter(entries, letter, getNameFn := "") {
-    ch := StrLower(SubStr(letter, 1, 1))
-    if !RegExMatch(ch, "^[a-z]$")
-        return 0
-    for i, entry in entries {
-        name := getNameFn ? getNameFn(entry) : entry.name
-        if (name = "")
-            continue
-        if (SubStr(StrLower(name), 1, 1) = ch)
-            return i
-    }
-    return 0
-}
-
-ListView_SelectRowFocused(lv, rowNum) {
-    if (!IsObject(lv) || rowNum < 1)
-        return
-    lv.Modify(rowNum, "Select Focus Vis")
-    try SendMessage(0x1117, rowNum - 1, 0, lv)
-    try lv.Focus()
-}
-
-ModalListLetterJump_Stop(&hookRef) {
-    if (IsObject(hookRef) && hookRef.HasProp("handlers")) {
-        for item in hookRef.handlers {
-            try Hotkey(item.char, item.handler, "Off")
-            try Hotkey(StrUpper(item.char), item.handler, "Off")
-        }
-    }
-    hookRef := ""
-}
-
-ModalListLetterJump_CreateHandler(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
-    return (*) => ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn)
-}
-
-ModalListLetterJump_HandleChar(char, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
-    if (!isActiveFn())
-        return
-    rowNum := ModalList_FindFirstByStartingLetter(getEntriesFn(), char, getNameFn)
-    if (rowNum > 0)
-        onMatchFn(rowNum)
-}
-
-ModalListLetterJump_Start(&hookRef, isActiveFn, getEntriesFn, getNameFn, onMatchFn) {
-    ModalListLetterJump_Stop(&hookRef)
-    state := { handlers: [] }
-    loop 26 {
-        ch := Chr(96 + A_Index)
-        handler := ModalListLetterJump_CreateHandler(ch, isActiveFn, getEntriesFn, getNameFn, onMatchFn)
-        state.handlers.Push({ char: ch, handler: handler })
-        try Hotkey(ch, handler, "On")
-        try Hotkey(StrUpper(ch), handler, "On")
-    }
-    hookRef := state
-}

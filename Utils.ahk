@@ -89,7 +89,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
 
-; [Utils module] Prompt helpers and safe paste -> Utils\hotstrings_core.ahk
+; [Utils module] Hotstrings core (InitHotstringsCheatSheet) -> Utils\hotstrings_core.ahk
 #include %A_ScriptDir%\Utils\hotstrings_core.ahk
 ; [Utils module] Files and links quick-open (InitQuickOpenFiles) -> Utils\files_links.ahk
 #include %A_ScriptDir%\Utils\files_links.ahk
@@ -199,10 +199,26 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Modal ListView letter jump helpers -> Utils\modal_list_letter_jump.ahk
 #include %A_ScriptDir%\Utils\modal_list_letter_jump.ahk
 
+; [Utils module] Hotstring selector system core and BuildHotstringCharMap -> Utils\hotstring_selector_core.ahk
+#include %A_ScriptDir%\Utils\hotstring_selector_core.ahk
+
 ; [Utils module] Context file browser (Win+Alt+Shift+N) -> Utils\context_file_browser.ahk
 #include %A_ScriptDir%\Utils\context_file_browser.ahk
 
-; [Utils module] Utility shortcuts ^!# secondary triggers -> Utils\utility_shortcuts.ahk
+; One-shot: close Utility Shortcuts if still open (no expansion/macro chosen in time)
+; [Utils module] CleanupHotstringSelector and auto-close idle -> Utils\hotstring_selector_cleanup.ahk
+#include %A_ScriptDir%\Utils\hotstring_selector_cleanup.ahk
+
+; [Utils module] HandleHotstringChar and Gemini paste helpers -> Utils\hotstring_selector_handlers_01.ahk
+#include %A_ScriptDir%\Utils\hotstring_selector_handlers_01.ahk
+
+; [Utils module] Hotstring selector utility category handlers -> Utils\hotstring_selector_handlers_02.ahk
+#include %A_ScriptDir%\Utils\hotstring_selector_handlers_02.ahk
+
+; [Utils module] ShowHotstringSelector GUI and category view -> Utils\hotstring_selector_gui.ahk
+#include %A_ScriptDir%\Utils\hotstring_selector_gui.ahk
+
+; [Utils module] Utility shortcuts #!+U and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 
 ; [Utils module] Focus mode multi-monitor blackout (#!+Y) -> Utils\focus_mode.ahk

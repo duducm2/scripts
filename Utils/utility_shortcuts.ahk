@@ -1,63 +1,31 @@
 ; =============================================================================
 ; Utils module: utility_shortcuts.ahk
-; Utility shortcuts ^!# secondary triggers
+; Utility shortcuts #!+U and ^!# secondary triggers
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
+; =============================================================================
+; Hotkey Handler: Windows + Alt + Shift + U (#!+U)
+; =============================================================================
+#!+U::
+{
+    global g_HotstringSelectorActive, g_HotstringSelectorGui
+
+    if (g_HotstringSelectorActive && IsObject(g_HotstringSelectorGui)) {
+        CleanupHotstringSelector()
+    } else {
+        ShowHotstringSelector()
+    }
+}
+
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; Ctrl+Alt+Win+4 - Gemini tab 1/2 toggle + banner
-^!#4::
-{
-    global g_GeminiToggleTab
+; Ctrl+Alt+Win+4 - AI Text Optimizer (same as Win+Alt+Shift+U then L, 4)
+^!#4:: GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText(), true)
 
-    geminiHwnd := 0
-    try {
-        for hwnd in WinGetList("ahk_exe chrome.exe") {
-            try {
-                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
-                    geminiHwnd := hwnd
-                    break
-                }
-            } catch {
-            }
-        }
-    } catch {
-    }
-
-    if (!geminiHwnd)
-        return
-
-    WinActivate("ahk_id " geminiHwnd)
-    if (!WinWaitActive("ahk_id " geminiHwnd, , 2))
-        return
-
-    Sleep(120)
-    uia := UIA_Browser("ahk_id " geminiHwnd)
-    tabInfo := GetChromeActiveTabIndex(uia)
-    if (!tabInfo) {
-        Sleep(150)
-        tabInfo := GetChromeActiveTabIndex(uia)
-    }
-    targetTab := (tabInfo && tabInfo.index == 1) ? 2 : 1
-    g_GeminiToggleTab := targetTab
-    Send("^" . targetTab)
-    ShowSingleCharTabBanner_Utils(targetTab)
-    Sleep(200)
-
-    tabInfoAfter := GetChromeActiveTabIndex(uia)
-    if (!tabInfoAfter) {
-        Sleep(100)
-        tabInfoAfter := GetChromeActiveTabIndex(uia)
-    }
-    tabOk := tabInfoAfter && tabInfoAfter.index == targetTab
-    if (!tabOk)
-        ShowCenteredOverlay_Utils("❌ Shortcut execution failed", 2000, BANNER_ACCENT_ERROR)
-}
-
-; Ctrl+Alt+Win+2..8 - direct macro hotkeys (secondary triggers)
+; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
 ^!#5:: CleanClipboard()
