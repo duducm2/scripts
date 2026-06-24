@@ -1,0 +1,32 @@
+Improve the resolution of the attached image without changing its content.
+
+Before processing:
+
+1. Check that the blurry or low-resolution image is attached.
+2. Treat the attached image as the only source of truth.
+
+Allowed changes only:
+
+1. Increase output resolution and pixel density.
+2. Sharpen edges and restore clean boundaries on buttons, icons, boxes, lines, and text.
+3. Remove blur, noise, gray halos, feathered anti-aliasing, compression artifacts, and smearing.
+
+Forbidden changes:
+
+1. Do not redesign, reinterpret, or restyle the image.
+2. Do not recolor, move, resize, crop, rotate, or rearrange any element.
+3. Do not change, add, remove, or rewrite any text, icons, shapes, or objects.
+4. Do not "improve" the layout, composition, or visual design in any way.
+
+Output requirements:
+
+1. Preserve the exact same layout, colors, proportions, typography, icons, and style as the attached image.
+2. Default target: upscale to 1920 x 1080 for 16:9 slide images, or 2x the attached image dimensions — whichever yields sharper output.
+3. Flat UI elements must have hard, vector-sharp edges and uniform solid fills — no new halos or soft fringes against backgrounds.
+4. All text and icons must be legible at 100% zoom after upscaling.
+
+Target resolution override (optional):
+[Target width x height, e.g. 3840x2160 — leave blank to use the default above]
+
+Reference reminder:
+[Attach the blurry or low-resolution image here before sending]

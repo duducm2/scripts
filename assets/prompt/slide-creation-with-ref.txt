@@ -21,6 +21,16 @@ Requirements:
 12. Apply style changes only if the user provides additional style instructions at the end of this prompt.
 13. If no additional style instructions are provided, strictly follow the attached reference and the rules above.
 
+Image output quality (mandatory):
+
+14. Output at 1920 x 1080 pixels minimum (16:9 widescreen slide resolution).
+15. Render buttons, icons, boxes, lines, and text with hard, clean, vector-sharp edges — not painted, airbrushed, or softly anti-aliased.
+16. No grayish fringes, feathered edges, soft glow, or muddy transitions between colored shapes and the white background.
+17. Flat UI areas must use uniform solid color fills with crisp boundaries — no gradient bleed or haze at shape borders.
+18. No outer glow, ambient haze, drop-shadow bleed, or compression-like smearing around any element.
+19. All text and icons must be legible at 100% zoom with no blurry glyph edges or icon smear.
+20. Before delivering, inspect every element at full size. If any shape shows a soft halo or low-resolution blur, regenerate with sharper edges before output.
+
 User content for the slide:
 \[Insert slide content here]
 

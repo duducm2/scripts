@@ -175,7 +175,7 @@ InsertFiles_IsAiChatForeground() {
 
 :o:gbpm::
 {
-    InsertText("SO UX - LA (Internal) - BPM")
+    InsertText("BPM")
 }
 
 GetPromptDir() {
@@ -243,6 +243,11 @@ GetPromptText(key) {
 :o:boschimg::
 {
     InsertText(GetPromptText("bosch-brand-image"))
+}
+
+:o:imgupscale::
+{
+    InsertText(GetPromptText("image-upscale"))
 }
 
 :o:csvfill::
@@ -316,6 +321,7 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:pptslideref", GetPromptText("slide-creation-with-ref"), "Prompts",
         "📊 Create PowerPoint slide (reference)")
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
+    RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts", "🔍 Upscale image (resolution only)")
     RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
         "📋 Fill CSV from unstructured text")
 
@@ -334,7 +340,7 @@ InitHotstringsCheatSheet() {
         "o")
     RegisterHotstring(":o:gpilotb2b", "Piloto PT B2B", "Projects", "🧪 Piloto PT B2B", "b")
     RegisterHotstring(":o:gpython", "17 - Python Scripts", "Projects", "🐍 Python Scripts", "t")
-    RegisterHotstring(":o:gbpm", "SO UX - LA (Internal) - BPM", "Projects", "📌 BPM", "m")
+    RegisterHotstring(":o:gbpm", "BPM", "Projects", "📌 BPM", "m")
 
     ; Hotstrings (non-workspace "project-like" names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")

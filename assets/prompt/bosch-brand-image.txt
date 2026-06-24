@@ -175,13 +175,16 @@ Final quality double-check
 Before delivering the image, verify every item below. If any check fails, revise before output:
 
 1. The result looks professionally designed and aesthetically pleasant — not generic or obviously AI-generated.
-2. No blur, smear, noise, compression artifacts, or visual glitches.
-3. No bent, melted, warped, or inconsistent icons or symbols.
-4. All text is readable, correctly spelled, well-aligned, and uses Bosch Sans styling.
-5. Colors match the Bosch palette above and attached JSON — no decorative red, no random gradients, no off-brand hues.
-6. Shapes are mostly rectangular with clear edges; no shadow-heavy or rounded-corner-heavy aesthetic unless type-specific JSON allows it.
-7. Layout is clean, aligned, and easy to crop or paste onto a white background.
-8. The output matches the specified image type, user content, attached JSON rules, and reference imagery.
+2. Output resolution is sharp at the intended display size: 1920 x 1080 pixels minimum for 16:9 slides; other image types must be equally crisp at native size.
+3. No blur, smear, noise, compression artifacts, or visual glitches — especially no soft halos or grayish fringes around buttons, icons, boxes, lines, or text against white backgrounds.
+4. Flat UI elements use hard, vector-sharp edges and uniform solid color fills — no feathered anti-aliasing, gradient bleed, outer glow, ambient haze, or drop-shadow bleed at shape borders.
+5. No bent, melted, warped, or inconsistent icons or symbols.
+6. All text is readable at 100% zoom, correctly spelled, well-aligned, and uses Bosch Sans styling — no blurry glyph edges.
+7. Colors match the Bosch palette above and attached JSON — no decorative red, no random gradients, no off-brand hues.
+8. Shapes are mostly rectangular with clear edges; no shadow-heavy or rounded-corner-heavy aesthetic unless type-specific JSON allows it.
+9. Layout is clean, aligned, and easy to crop or paste onto a white background.
+10. The output matches the specified image type, user content, attached JSON rules, and reference imagery.
+11. If any element shows a soft halo or low-resolution blur, revise and regenerate with sharper edges before delivering.
 
 ---
 
