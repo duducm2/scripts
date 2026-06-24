@@ -10,11 +10,11 @@
 TEAMS_USE_HWND_CACHE := true
 TEAMS_ACTIVATION_ATTEMPTS := 3
 TEAMS_ACTIVATION_WAIT_MS := 300
-TEAMS_PROCESSES := ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
 WS_VISIBLE := 0x10000000
 
 ; --- Includes ----------------------------------------------------------------
 #include vendor\UIA-v2\Lib\UIA.ahk
+#include %A_ScriptDir%\Lib\TeamsContext.ahk
 #include %A_ScriptDir%\Utils.ahk
 try Hotkey("#!+Y", "Off")
 try Hotkey("#!+X", "Off")
@@ -47,22 +47,19 @@ class TeamsHwndCache {
 
 ; Returns meeting window HWND (integer) or 0. Uses cache when TEAMS_USE_HWND_CACHE.
 ResolveTeamsMeetingHwnd() {
-    if (TEAMS_USE_HWND_CACHE && TeamsHwndCache.IsValid(TeamsHwndCache.MeetingHwnd))
-        return TeamsHwndCache.MeetingHwnd
+    if (TEAMS_USE_HWND_CACHE && TeamsHwndCache.IsValid(TeamsHwndCache.MeetingHwnd)) {
+        if TeamsIsMeetingHwnd(TeamsHwndCache.MeetingHwnd)
+            return TeamsHwndCache.MeetingHwnd
+        TeamsHwndCache.InvalidateMeeting()
+    }
     for proc in TEAMS_PROCESSES {
         for hwnd in WinGetList("ahk_exe " proc) {
-            if IsTeamsMeetingTitle(WinGetTitle(hwnd)) {
+            if TeamsIsMeetingHwnd(hwnd) {
                 if (TEAMS_USE_HWND_CACHE)
                     TeamsHwndCache.MeetingHwnd := hwnd
                 return hwnd
             }
         }
-    }
-    hwnd := WinExist("RegEx)^.*\| Microsoft Teams$")
-    if (hwnd && IsTeamsMeetingTitle(WinGetTitle(hwnd))) {
-        if (TEAMS_USE_HWND_CACHE)
-            TeamsHwndCache.MeetingHwnd := hwnd
-        return hwnd
     }
     if (TEAMS_USE_HWND_CACHE)
         TeamsHwndCache.InvalidateMeeting()
@@ -136,9 +133,14 @@ ActivateTeamsMeetingWindow() {
 }
 
 ActivateTeamsChatWindow() {
+    activeHwnd := WinExist("A")
+    if (activeHwnd && TeamsIsChatHwnd(activeHwnd)) {
+        WinActivate(activeHwnd)
+        return true
+    }
     for proc in TEAMS_PROCESSES {
         for hwnd in WinGetList("ahk_exe " proc) {
-            if IsTeamsChatTitle(title := WinGetTitle(hwnd)) {
+            if TeamsIsChatHwnd(hwnd) {
                 if (WinExist("ahk_id " hwnd)) {
                     WinActivate(hwnd)
                     return true
@@ -146,14 +148,6 @@ ActivateTeamsChatWindow() {
             }
         }
     }
-    if hwnd := WinExist("RegEx)^Chat \| .* \| Microsoft Teams$") {
-        if (WinExist("ahk_id " hwnd)) {
-            WinActivate(hwnd)
-            return true
-        }
-        try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-    }
-    ; No message box here - just return false
     return false
 }
 
@@ -200,21 +194,6 @@ WaitListItemByNames(root, nameOrNames, timeout := 3000) {
         Sleep 150
     }
     return false
-}
-
-IsTeamsMeetingTitle(title) {
-    if InStr(title, "Chat |") || InStr(title, "Sharing control bar |")
-        return false
-    ; Support both English and Portuguese meeting indicators
-    if InStr(title, "Microsoft Teams meeting") || InStr(title, "Reunião do Microsoft Teams")
-        return true
-    return RegExMatch(title, "i)^.*\| Microsoft Teams.*$")
-}
-
-IsTeamsChatTitle(title) {
-    if InStr(title, "Sharing control bar |") || InStr(title, "Microsoft Teams meeting")
-        return false
-    return InStr(title, "Chat |") && RegExMatch(title, "i)\| Microsoft Teams$")
 }
 
 ; --- Standard overlay (uses Utils) -------------------------------------------
