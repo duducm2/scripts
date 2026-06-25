@@ -1,0 +1,1 @@
+C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\1-discover\briefing\briefing.csv

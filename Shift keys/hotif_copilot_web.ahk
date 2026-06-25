@@ -75,6 +75,14 @@ $+r:: {
     }
 }
 
+$+v:: {
+    try {
+        if !CopilotWeb_ToggleVoiceChat()
+            ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
+    } catch {
+    }
+}
+
 $+g:: {
     try CopilotWeb_SendPromptFromFile()
     catch {

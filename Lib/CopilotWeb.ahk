@@ -26,6 +26,8 @@ COPILOT_READ_ALOUD_NAMES := ["Read aloud", "Read Aloud", "Ler em voz alta"]
 COPILOT_MORE_OPTIONS_NAMES := ["More options", "Show more options", "Mais opções"]
 COPILOT_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
 COPILOT_TTS_RESUME_NAMES := ["Resume", "Retomar"]
+COPILOT_VOICE_START_NAMES := ["Start a new voice chat", "Iniciar um novo chat de voz"]
+COPILOT_VOICE_END_NAMES := ["End voice chat", "Encerrar chat de voz"]
 
 UIA_Copilot_ControlType_Button := 50000
 UIA_Copilot_ControlType_MenuItem := 50011
@@ -1436,6 +1438,38 @@ CopilotWeb_ShiftCopyLastMessage() {
 
 CopilotWeb_ShiftReadAloud() {
     return CopilotWeb_TriggerReadAloud(false, { alreadyActive: true })
+}
+
+CopilotWeb_IsVoiceChatActive(uia := 0) {
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    return !!CopilotWeb_FindButtonByNames(uia, COPILOT_VOICE_END_NAMES)
+}
+
+CopilotWeb_ToggleVoiceChat(uia := 0) {
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    endBtn := CopilotWeb_FindButtonByNames(uia, COPILOT_VOICE_END_NAMES)
+    if (endBtn) {
+        if (!CopilotWeb_ClickUiaElement(endBtn))
+            return false
+        CopilotWeb_Notify("Voice chat ended", 800, 24)
+        return true
+    }
+    startBtn := CopilotWeb_FindButtonByNames(uia, COPILOT_VOICE_START_NAMES)
+    if (!startBtn)
+        return false
+    try startBtn.ScrollIntoView()
+    catch {
+    }
+    if (!CopilotWeb_ClickUiaElement(startBtn))
+        return false
+    CopilotWeb_Notify("Voice chat started", 800, 24)
+    return true
 }
 
 CopilotWeb_PlayCompletionChime() {

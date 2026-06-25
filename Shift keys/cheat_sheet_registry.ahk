@@ -1069,6 +1069,7 @@ cheatSheets["Copilot Web"] := "
     ⌨️ [P]Focus [P]rompt field
     📋 [C][C]opy last response
     🔊 [R][R]ead aloud last message
+    🎙️ [V]Toggle [V]oice chat (start / end)
     🤖 [G]Send prompt text (Gemini_Prompt.txt)
     ⛶ [F][F]ullscreen input (expand composer)
     🔔 [Enter / Ctrl+Enter]Send and notify on completion
