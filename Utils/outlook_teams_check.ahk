@@ -175,6 +175,46 @@ CleanClipboard_SetAbortHotkeys(enable := true) {
     }
 }
 
+; Open/focus Clip Angel for cleanup (native Alt+P fallback, layout correction). Returns hwnd or 0.
+CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0) {
+    if (CleanClipboard_ShouldAbort(sessionId))
+        return 0
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd) {
+        priorSendLevel := A_SendLevel
+        SendLevel 0
+        SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+        Sleep CLIPANGEL_ALT_P_SETTLE_MS
+        SendInput "!p"
+        Sleep CLIPANGEL_ALT_P_SETTLE_MS
+        SendLevel priorSendLevel
+        hwnd := ClipAngel_WaitForMainHwnd()
+    }
+
+    if (CleanClipboard_ShouldAbort(sessionId))
+        return 0
+
+    if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel not found — is it running?", 2500, BANNER_ACCENT_ERROR)
+        return 0
+    }
+
+    if !ClipAngel_ShowWindow(hwnd)
+        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
+
+    if (!WinWaitActive("ahk_id " hwnd, , 0.8))
+        ClipAngel_EnsureWindowActive(hwnd, 800)
+
+    if (CleanClipboard_ShouldAbort(sessionId))
+        return 0
+
+    return hwnd
+}
+
 ; Internal helper: Performs clipboard cleanup without showing prompt
 ; sessionId: macro session from CleanClipboard_ShowCountdown; 0 = dictation legacy path (no session guard)
 CleanClipboardInternal(sessionId := 0) {
@@ -184,25 +224,39 @@ CleanClipboardInternal(sessionId := 0) {
         return
     }
 
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_ShowWindow(hwnd)
-    Sleep 600
-    if (CleanClipboard_ShouldAbort(sessionId)) {
+    StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
+    hwnd := CleanClipboard_ActivateClipAngelForCleanup(sessionId)
+    if (!hwnd || CleanClipboard_ShouldAbort(sessionId)) {
+        StandardLoadingBar_Hide(0)
         CleanClipboard_UnwindClipAngel()
         return
     }
 
+    StandardLoadingBar_Update("⏳ Preparing clip list...", BANNER_ACCENT_INTERMEDIATE)
+    ClipAngel_LeaveFavoritesFilter(hwnd)
+    Sleep 200
+    if (CleanClipboard_ShouldAbort(sessionId)) {
+        StandardLoadingBar_Hide(0)
+        CleanClipboard_UnwindClipAngel()
+        return
+    }
+
+    StandardLoadingBar_Update("⏳ Deleting non-favorites...", BANNER_ACCENT_INTERMEDIATE)
+    priorSendLevel := A_SendLevel
+    SendLevel 0
+    ClipAngel_ReleaseChordModifiersForSend()
     SendInput "^!k"
     Sleep 600
     if (CleanClipboard_ShouldAbort(sessionId)) {
+        SendLevel priorSendLevel
+        StandardLoadingBar_Hide(0)
         CleanClipboard_UnwindClipAngel()
         return
     }
 
     SendInput "{Enter}"
-    Sleep 800
-    if (CleanClipboard_ShouldAbort(sessionId)) {
-        CleanClipboard_UnwindClipAngel()
-        return
-    }
+    SendLevel priorSendLevel
+    Sleep 300
+    StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
+    StandardLoadingBar_Hide(500)
 }

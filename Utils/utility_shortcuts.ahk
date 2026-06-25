@@ -28,10 +28,10 @@
 ; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
-^!#5:: CleanClipboard()
-; Same macro; InputLevel 10 + hook so chord wins over other low-level handlers (optional ghosting fallback: ^!#j).
+; InputLevel 10 + hook so ZMK / firmware chords win over other low-level handlers.
 #InputLevel 10
 #UseHook
+^!#5:: CleanClipboard()
 ^!#7:: MarkLastClipAsFavorite()
 ^!#j:: MarkLastClipAsFavorite()
 #UseHook False

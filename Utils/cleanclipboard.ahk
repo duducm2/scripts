@@ -82,7 +82,7 @@ CleanClipboard_ShowCountdown() {
         0,
         CleanClipboard_OnTimeout.Bind(g_CleanClipboardSessionId),
         BANNER_ACCENT_ERROR,
-        0,
+        560,
         17,
         "",
         false,
