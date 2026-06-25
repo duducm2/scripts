@@ -1276,12 +1276,14 @@ CopilotWeb_OpenModelSelector(uia := 0) {
         return false
     Sleep 150
     Send "{Up}"
-    Sleep 80
+    Sleep 60
     Send "{Right}"
-    Sleep 80
+    Sleep 60
     Send "{Down}"
-    Sleep 80
+    Sleep 60
     Send "{Down}"
+    Sleep 60
+    Send "{Enter}"
     return true
 }
 
