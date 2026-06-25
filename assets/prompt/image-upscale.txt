@@ -1,60 +1,64 @@
-Improve the resolution of the attached image without changing its content.
+Upscale the attached image to higher resolution. Remove every sign of low resolution — gray blur, color fringing, compression noise, soft edges. Do not change any content, layout, colors, or wording.
 
-PRIMARY GOAL:
+#1 RULE: ZERO TOLERANCE
 
-1. This is a restoration task, not a soft resize. Reconstruct sharp detail; do not preserve existing blur.
-2. Gray halos, feathered edges, compression noise, and smearing around text are artifacts to remove — not style to preserve.
-3. The output must look like a clean high-resolution export (vector/PDF quality), not an enlarged low-res screenshot.
+Partial cleanup is a failure. If even one word, one letter, or one icon stroke still has a grayish blur, color fringe, or muddy edge at 200% zoom, the output is wrong. Redo until every edge is clean.
 
-Before processing:
+Common defects you must eliminate completely:
 
-1. Check that the blurry or low-resolution image is attached.
-2. Treat the attached image as the only source of truth.
+1. Gray or light halo ringing black/dark text on white or light backgrounds.
+2. Purple, magenta, cyan, or green color fringing on letter or icon edges (compression/subpixel bleed).
+3. Mosquito noise, blocky patches, or mottling in white or flat-color areas near edges.
+4. Soft, feathered, or bicubic-smoothed strokes on text, lines, curves, and icons.
+5. Compression ringing (faint repeating shadow) around high-contrast edges.
+6. Jagged low-res pixels that look enlarged instead of reconstructed.
 
-Text restoration (critical):
+Wrong: any visible gray band between ink and background; dirty white space; fuzzy curves on icons.
+Right: vector-export quality — crisp boundary, uniform solid fill inside the stroke, uniform solid background outside, with no intermediate blur zone.
 
-The attached image may be a low-resolution export. Gray or light fringes around letters, muddy stroke edges, and blocky noise in white areas next to text are compression/upscale artifacts — not part of the design.
+Workflow (follow in order)
 
-1. Reconstruct each letterform with clean, high-contrast edges: solid ink inside the stroke, solid background outside, with no gray halo or feathered fringe.
-2. Small labels, captions, and body text (e.g. "Measure:", "Direction:") must be as sharp as headings — no softer standard for smaller text.
-3. Remove JPEG/block noise and mosquito artifacts in flat areas adjacent to text; backgrounds must be uniform solid color.
-4. Do not change wording, font weight, size ratios, alignment, or line breaks. Do not invent, substitute, or "correct" any text.
+Step 1 — Full de-artifact pass (entire image, every region):
+1. Scan every word and every icon edge. No region may be skipped.
+2. Remove all gray halos, color fringes, ringing, noise, and smearing around text AND colored UI strokes (lines, arcs, icons, boxes).
+3. Restore backgrounds to clean uniform solid color — pure white must look pure, not dusty or noisy.
+4. Treat every soft fringe between a foreground stroke and its background as damage to erase — never preserve it as anti-aliasing.
 
-Flat UI and infographic elements:
+Step 2 — Reconstruct edges, then upscale:
+1. Rebuild stroke boundaries to be sharp and high-contrast before increasing resolution.
+2. Default target: 1920 x 1080 for 16:9 slides, or 2x attached dimensions — whichever yields sharper output.
+3. Do not upscale by smooth interpolation that carries blur, halos, or noise forward from the source.
 
-1. Solid color fills (white, gray cards, colored icons) must be uniform — no gradient smear, blur, or noise inside fills.
-2. Lines, boxes, card borders, and icon strokes must have hard, vector-sharp edges and consistent stroke weight.
-3. Do not add glow, shadow, feather, or anti-aliasing fringe against backgrounds.
+Text rules (critical — every word)
 
-Allowed changes only:
+1. Every letter in every word must pass: solid ink inside, clean background outside, zero gray halo.
+2. Body text, captions, and small labels must match title sharpness — no weaker standard anywhere.
+3. White space between letters must be clean — no gray haze in gaps.
+4. Do not change, add, remove, rewrite, or "correct" any text.
 
-1. Increase output resolution and pixel density.
-2. Restore clean boundaries on text, icons, boxes, lines, and UI elements as described above.
-3. Remove blur, noise, gray halos, feathered anti-aliasing, compression artifacts, ringing, and smearing.
+Icons, lines, and flat UI (same standard as text)
 
-Forbidden changes:
+1. Curved strokes, arcs, and icon outlines: hard clean edge — no purple/gray haze around blue or colored lines.
+2. Solid fills must be uniform — no gradient smear, blur, or noise inside fills.
+3. Card borders, boxes, and dividers: vector-sharp, consistent weight, no soft fringe.
 
-1. Do not redesign, reinterpret, or restyle the image.
-2. Do not recolor, move, resize, crop, rotate, or rearrange any element.
-3. Do not change, add, remove, or rewrite any text, icons, shapes, or objects.
-4. Do not "improve" the layout, composition, or visual design in any way.
-5. Do not upscale by smooth interpolation that preserves existing blur.
-6. Do not add soft halos around text or edges for perceived "smoothness".
-7. Do not leave visible compression ringing around high-contrast text.
-8. Do not treat gray fringes around black or dark text as intentional design.
+Forbidden
 
-Output requirements:
+1. Redesign, recolor, crop, rotate, move, or rearrange anything.
+2. Leave any word or icon with residual blur, halo, fringe, or compression artifacts.
+3. Accept "mostly clean" output — one dirty word = full failure.
+4. Add glow, shadow, feather, or soft smoothing for perceived polish.
+5. Treat gray or colored fringes as intentional design.
 
-1. Preserve the exact same layout, colors, proportions, typography, icons, and style as the attached image.
-2. Default target: upscale to 1920 x 1080 for 16:9 slide images, or 2x the attached image dimensions — whichever yields sharper output.
-3. All text and icons must be legible at 100% zoom after upscaling.
+Output quality gate (inspect at 200% zoom — all must pass)
 
-Self-check before output:
-
-1. At 100% zoom, every text character has crisp edges with no gray outline or halo.
-2. White or solid-color space touching text is clean and uniform — no noise blobs or blocky artifacts.
-3. Icon, card, and UI edges are vector-sharp, not smudged or over-smoothed.
-4. Layout, colors, and content are faithful to the attached source — only resolution and sharpness improved.
+- [ ] Every word: no gray outline on any character
+- [ ] Every word: no color fringing (purple/magenta/cyan) on strokes
+- [ ] Gaps between letters: clean uniform background
+- [ ] Every icon and curve: sharp edge, no gray/purple haze
+- [ ] Flat backgrounds: uniform, no mosquito noise or blocky patches
+- [ ] Nothing in the image still looks like a low-res export or JPEG upscale
+- [ ] Layout, colors, typography, and content match the source exactly
 
 Target resolution override (optional):
 [Target width x height, e.g. 3840x2160 — leave blank to use the default above]
