@@ -1284,6 +1284,10 @@ CopilotWeb_OpenModelSelector(uia := 0) {
     Send "{Down}"
     Sleep 60
     Send "{Enter}"
+    Sleep 60
+    Send "d"
+    Sleep 60
+    Send "{Backspace}"
     return true
 }
 
