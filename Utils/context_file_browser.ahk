@@ -19,6 +19,38 @@ global g_ContextBrowserBreadcrumbLink := false
 global g_ContextBrowserBreadcrumbSegments := []
 global g_ContextBrowserEntryPathLabel := false
 
+ContextBrowser_DebugLogPath() {
+    static path := ""
+    if !path
+        path := RegExReplace(A_LineFile, "i)\\[^\\]+$", "") . "\..\debug-cde5e3.log"
+    return path
+}
+
+ContextBrowser_DebugLog(location, message, hypothesisId, data := unset) {
+    ; #region agent log
+    try {
+        dataJson := "{}"
+        if IsSet(data) {
+            if (Type(data) = "Map") {
+                parts := []
+                for k, v in data
+                    parts.Push('"' k '":' (IsNumber(v) ? v : '"' StrReplace(String(v), '"', '\"') '"'))
+                dataJson := "{"
+                for i, part in parts
+                    dataJson .= (i = 1 ? "" : ",") part
+                dataJson .= "}"
+            } else
+                dataJson := '{"value":"' StrReplace(String(data), '"', '\"') '"}'
+        }
+        line := Format(
+            '{{"sessionId":"cde5e3","timestamp":{1},"location":"{2}","message":"{3}","hypothesisId":"{4}","data":{5},"runId":"post-fix"}}`n',
+            A_TickCount, location, message, hypothesisId, dataJson)
+        FileAppend(line, ContextBrowser_DebugLogPath(), "UTF-8")
+    } catch {
+    }
+    ; #endregion
+}
+
 ContextBrowser_IsFilterFocused() {
     global g_ContextBrowserFilterCtrl, g_ContextBrowserGui, g_ContextBrowserFilterTyping
     if (g_ContextBrowserFilterTyping)
@@ -450,8 +482,8 @@ ContextBrowser_GetBreadcrumbSegments(dir) {
     if (StrLower(dirNorm) = StrLower(root))
         return segments
     underRoot := (StrLen(dirNorm) > StrLen(root) + 1
-        && StrLower(SubStr(dirNorm, 1, StrLen(root))) = StrLower(root)
-        && SubStr(dirNorm, StrLen(root) + 1, 1) = "\")
+    && StrLower(SubStr(dirNorm, 1, StrLen(root))) = StrLower(root)
+    && SubStr(dirNorm, StrLen(root) + 1, 1) = "\")
     if (underRoot) {
         rel := SubStr(dirNorm, StrLen(root) + 2)
         built := root
@@ -773,11 +805,45 @@ ContextBrowser_SetListNavigationHotkeysEnabled(enabled) {
     }
 }
 
+ContextBrowser_GetListRowNum() {
+    global g_ContextBrowserListView
+    if (!IsObject(g_ContextBrowserListView))
+        return 0
+    focusedRow := g_ContextBrowserListView.GetNext(0, "F")
+    selectedRow := g_ContextBrowserListView.GetNext(0)
+    rowNum := focusedRow
+    if (rowNum < 1)
+        rowNum := selectedRow
+    ; #region agent log
+    ContextBrowser_DebugLog("context_file_browser.ahk:GetListRowNum", "row resolved", "A", Map(
+        "focusedRow", focusedRow, "selectedRow", selectedRow, "rowResult", rowNum))
+    ; #endregion
+    return rowNum
+}
+
+ContextBrowser_FocusListSelection() {
+    global g_ContextBrowserListView
+    if (!IsObject(g_ContextBrowserListView))
+        return
+    rowNum := ContextBrowser_GetListRowNum()
+    ; #region agent log
+    ContextBrowser_DebugLog("context_file_browser.ahk:FocusListSelection", "before focus sync", "B", Map("rowNum",
+        rowNum))
+    ; #endregion
+    if (rowNum < 1)
+        return
+    ListView_SelectRowFocused(g_ContextBrowserListView, rowNum)
+    ; #region agent log
+    ContextBrowser_DebugLog("context_file_browser.ahk:FocusListSelection", "after focus sync", "B", Map(
+        "focusedRow", g_ContextBrowserListView.GetNext(0, "F")))
+    ; #endregion
+}
+
 ContextBrowser_GetFocusedEntry() {
     global g_ContextBrowserActive, g_ContextBrowserListView, g_ContextBrowserEntries
     if (!g_ContextBrowserActive || !IsObject(g_ContextBrowserListView))
         return false
-    rowNum := g_ContextBrowserListView.GetNext(0, "F")
+    rowNum := ContextBrowser_GetListRowNum()
     if (rowNum < 1 || rowNum > g_ContextBrowserEntries.Length)
         return false
     return { rowNum: rowNum, entry: g_ContextBrowserEntries[rowNum] }
@@ -902,8 +968,14 @@ ContextBrowser_OnFilterKillFocus(*) {
     if (g_ContextBrowserSuppressFilterKillFocus)
         return
     g_ContextBrowserFilterTyping := false
-    if (g_ContextBrowserActive)
+    if (g_ContextBrowserActive) {
         ContextBrowser_SetListNavigationHotkeysEnabled(true)
+        ; #region agent log
+        ContextBrowser_DebugLog("context_file_browser.ahk:OnFilterKillFocus", "filter blur", "C", Map(
+            "filterTyping", false, "suppress", g_ContextBrowserSuppressFilterKillFocus))
+        ; #endregion
+        ContextBrowser_FocusListSelection()
+    }
 }
 
 CleanupContextBrowser() {
@@ -1009,7 +1081,7 @@ ContextBrowser_OnListDoubleClick(lv, guiEvent, *) {
     rowNum := 0
     try rowNum := guiEvent.EventInfo
     if !rowNum
-        rowNum := lv.GetNext(0, "F")
+        rowNum := ContextBrowser_GetListRowNum()
     ContextBrowser_OnSelectRow(rowNum)
 }
 
@@ -1021,18 +1093,26 @@ ContextBrowser_OnItemFocus(lv, guiEvent, *) {
     rowNum := 0
     try rowNum := guiEvent.EventInfo
     if !rowNum
-        rowNum := lv.GetNext(0, "F")
+        rowNum := ContextBrowser_GetListRowNum()
     ContextBrowser_UpdatePreview(rowNum)
 }
 
 ContextBrowser_OnEnter(*) {
     ContextBrowser_EnsureGlobals()
-    global g_ContextBrowserListView
-    if ContextBrowser_IsFilterFocused()
+    global g_ContextBrowserListView, g_ContextBrowserFilterTyping
+    filterFocused := ContextBrowser_IsFilterFocused()
+    ; #region agent log
+    ContextBrowser_DebugLog("context_file_browser.ahk:OnEnter", "enter pressed", "D", Map(
+        "filterFocused", filterFocused ? 1 : 0, "filterTyping", g_ContextBrowserFilterTyping ? 1 : 0))
+    ; #endregion
+    if filterFocused
         return
     if (!IsObject(g_ContextBrowserListView))
         return
-    rowNum := g_ContextBrowserListView.GetNext(0, "F")
+    rowNum := ContextBrowser_GetListRowNum()
+    ; #region agent log
+    ContextBrowser_DebugLog("context_file_browser.ahk:OnEnter", "activating row", "E", Map("rowNum", rowNum))
+    ; #endregion
     ContextBrowser_OnSelectRow(rowNum)
 }
 
