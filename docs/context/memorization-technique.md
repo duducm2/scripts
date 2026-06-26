@@ -1,1 +1,0 @@
-C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\technique

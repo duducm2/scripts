@@ -1,0 +1,1 @@
+C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\science\mnemonics-science.md
