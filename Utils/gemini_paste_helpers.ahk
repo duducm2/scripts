@@ -8,78 +8,89 @@ global g_HotstringGeminiRestoreHwnd := 0
 global g_GeminiDelayedSubmit_PreEnterDelayMs := 1000
 global g_GeminiDelayedSubmit_WaitContentMaxMs := 5000
 
-GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
-    SetTitleMatchMode(2)
-    geminiHwnd := 0
-    if (!switchToFirstTab) {
-        try {
-            activeHwnd := WinExist("A")
-            if (activeHwnd && WinGetProcessName("ahk_id " activeHwnd) = "chrome.exe" && InStr(WinGetTitle("ahk_id " activeHwnd
-            ), "gemini", false))
-                geminiHwnd := activeHwnd
-        } catch {
-        }
-    }
-    if (!geminiHwnd) {
-        try {
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                try {
-                    if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
-                        geminiHwnd := hwnd
-                        break
-                    }
-                } catch {
-                }
-            }
-        } catch {
-        }
-    }
-
-    if (!geminiHwnd) {
-        Run "chrome.exe --new-window https://gemini.google.com/"
-        if !WinWaitActive("ahk_exe chrome.exe", , 5)
-            return 0
-        Sleep 2500
-        geminiHwnd := WinExist("A")
-    }
-
-    if (geminiHwnd) {
-        WinActivate("ahk_id " geminiHwnd)
-        WinWaitActive("ahk_id " geminiHwnd, , 2)
-        Sleep 350
-    } else {
-        WinActivate("ahk_exe chrome.exe")
-        WinWaitActive("ahk_exe chrome.exe", , 2)
-        Sleep 350
-    }
-
-    if (switchToFirstTab) {
-        Send("^1")
-        Sleep 280
-        ShowSingleCharTabBanner_Utils(1)
-    }
-
+Gemini_GetSearchRoot(uia) {
+    if (!IsObject(uia))
+        return 0
     try {
-        uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
-        Sleep 80
-        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+        root := uia.GetCurrentMainPaneElement()
+        if (root)
+            return root
     } catch {
     }
+    return uia
+}
 
-    if (geminiHwnd && WinExist("ahk_id " geminiHwnd)) {
-        WinActivate("ahk_id " geminiHwnd)
-        WinWaitActive("ahk_id " geminiHwnd, , 2)
-        Sleep 150
-    }
+GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstTab := true) {
+    prevTitleMatchMode := A_TitleMatchMode
+    SetTitleMatchMode(2)
+    geminiHwnd := 0
+    try {
+        if (!switchToFirstTab) {
+            try {
+                activeHwnd := WinExist("A")
+                if (activeHwnd && WinGetProcessName("ahk_id " activeHwnd) = "chrome.exe" && InStr(WinGetTitle(
+                    "ahk_id " activeHwnd), "gemini", false))
+                    geminiHwnd := activeHwnd
+            } catch {
+            }
+        }
+        if (!geminiHwnd) {
+            try {
+                for hwnd in WinGetList("ahk_exe chrome.exe") {
+                    try {
+                        if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) {
+                            geminiHwnd := hwnd
+                            break
+                        }
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+        }
 
-    if (optionalPromptText != "") {
-        InsertText(optionalPromptText)
-    } else {
-        ClipAngel_SendTopListItem(geminiHwnd)
+        if (!geminiHwnd) {
+            Run "chrome.exe --new-window https://gemini.google.com/"
+            if !WinWaitActive("ahk_exe chrome.exe", , 5)
+                return 0
+            Sleep 2500
+            geminiHwnd := WinExist("A")
+        }
+
+        if (geminiHwnd) {
+            WinActivate("ahk_id " geminiHwnd)
+            WinWaitActive("ahk_id " geminiHwnd, , 2)
+            Sleep 350
+        } else {
+            WinActivate("ahk_exe chrome.exe")
+            WinWaitActive("ahk_exe chrome.exe", , 2)
+            Sleep 350
+        }
+
+        if (switchToFirstTab) {
+            Send("^1")
+            Sleep 280
+            ShowSingleCharTabBanner_Utils(1)
+        }
+
+        try {
+            uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
+            Sleep 80
+            Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+        } catch {
+        }
+
+        if (optionalPromptText != "") {
+            InsertText(optionalPromptText)
+        } else {
+            ClipAngel_SendTopListItem(geminiHwnd)
+        }
+        Sleep 250
+        ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+        return geminiHwnd ? geminiHwnd : WinExist("A")
+    } finally {
+        SetTitleMatchMode(prevTitleMatchMode)
     }
-    Sleep 250
-    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-    return geminiHwnd ? geminiHwnd : WinExist("A")
 }
 
 Gemini_IsExcludedSendButtonName(name) {
@@ -108,37 +119,31 @@ Gemini_IsSendButtonCandidate(btn) {
     return false
 }
 
+; Send/stop discovery: FindFirstBuildCache on main pane only; no FindAll fallback (canon §3).
 Gemini_FindSendButton(uia) {
     if (!IsObject(uia))
         return 0
-    for typeSpec in [50000, "Button"] {
-        try {
-            el := uia.FindFirst({ Type: typeSpec, ClassName: "send-button", matchmode: "Substring" })
-            if (el && Gemini_IsSendButtonCandidate(el))
-                return el
-        } catch {
-        }
+    static cacheRequest := 0
+    if (!cacheRequest)
+        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    root := Gemini_GetSearchRoot(uia)
+    if (!root)
+        return 0
+    try {
+        el := root.FindFirstBuildCache(cacheRequest, { Type: UIA_ControlType_Button, ClassName: "send-button",
+            matchmode: "Substring" }, 4)
+        if (el && Gemini_IsSendButtonCandidate(el))
+            return el
+    } catch {
     }
     for nameSpec in ["Send", "Enviar"] {
         try {
-            el := uia.FindFirst({ Type: 50000, Name: nameSpec, matchmode: "Substring" })
+            el := root.FindFirstBuildCache(cacheRequest, { Type: UIA_ControlType_Button, Name: nameSpec,
+                matchmode: "Substring" }, 4)
             if (el && Gemini_IsSendButtonCandidate(el))
                 return el
         } catch {
         }
-        try {
-            el := uia.FindFirst({ Type: "Button", Name: nameSpec, matchmode: "Substring" })
-            if (el && Gemini_IsSendButtonCandidate(el))
-                return el
-        } catch {
-        }
-    }
-    try {
-        for button in uia.FindAll({ Type: 50000 }) {
-            if (Gemini_IsSendButtonCandidate(button))
-                return button
-        }
-    } catch {
     }
     return 0
 }
@@ -146,13 +151,17 @@ Gemini_FindSendButton(uia) {
 Gemini_HasGeneratingStopButtonForUia(uia) {
     if (!IsObject(uia))
         return false
+    static cacheRequest := 0
+    if (!cacheRequest)
+        cacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    root := Gemini_GetSearchRoot(uia)
+    if (!root)
+        return false
     for n in ["Stop response", "Stop streaming", "Interromper transmissão"] {
-        for typeSpec in [50000, "Button"] {
-            try {
-                if (uia.FindFirst({ Name: n, Type: typeSpec }))
-                    return true
-            } catch {
-            }
+        try {
+            if (root.FindFirstBuildCache(cacheRequest, { Type: UIA_ControlType_Button, Name: n }, 4))
+                return true
+        } catch {
         }
     }
     return false
@@ -215,19 +224,40 @@ Gemini_TrySubmitOnce(uia, fallback := "enter") {
     return true
 }
 
-Gemini_TrySubmit(geminiHwnd) {
+; Bounded content wait: minSettleMs floor for Clip Angel paste settle; 25 ms poll for early exit (canon §13).
+Gemini_WaitForPromptContent(uia, maxMs, minSettleMs := "") {
+    global g_GeminiDelayedSubmit_PreEnterDelayMs
+    if (minSettleMs = "")
+        minSettleMs := g_GeminiDelayedSubmit_PreEnterDelayMs
+    if (!IsObject(uia))
+        return false
+    t0 := A_TickCount
+    loop {
+        if (GeminiPromptFieldGetTextFromUia(uia) != "" && (A_TickCount - t0) >= minSettleMs)
+            return true
+        if (A_TickCount - t0 >= maxMs)
+            break
+        Sleep GEMINI_PROMPT_FOCUS_POLL_MS
+    }
+    return GeminiPromptFieldGetTextFromUia(uia) != ""
+}
+
+Gemini_TrySubmit(geminiHwnd, uia := 0) {
     if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
         return false
-    try WinActivate("ahk_id " geminiHwnd)
-    catch {
-        return false
+    if (!WinActive("ahk_id " geminiHwnd)) {
+        try WinActivate("ahk_id " geminiHwnd)
+        catch {
+            return false
+        }
+        if (!WinWaitActive("ahk_id " geminiHwnd, , 1))
+            return false
     }
-    if (!WinWaitActive("ahk_id " geminiHwnd, , 1))
-        return false
-    uia := 0
-    try uia := UIA_Browser("ahk_id " geminiHwnd)
-    catch {
-        return false
+    if (!IsObject(uia)) {
+        try uia := UIA_Browser("ahk_id " geminiHwnd)
+        catch {
+            return false
+        }
     }
     if (!IsObject(uia))
         return false
@@ -245,19 +275,19 @@ Gemini_TrySubmit(geminiHwnd) {
 }
 
 Gemini_WaitForPromptContentAndSubmit(geminiHwnd) {
-    global g_GeminiDelayedSubmit_PreEnterDelayMs, g_GeminiDelayedSubmit_WaitContentMaxMs
+    global g_GeminiDelayedSubmit_WaitContentMaxMs
     if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
         return false
-    Sleep (g_GeminiDelayedSubmit_PreEnterDelayMs)
-    pollIntervalMs := 200
-    endTick := A_TickCount + g_GeminiDelayedSubmit_WaitContentMaxMs
-    while (A_TickCount < endTick) {
-        try WinActivate("ahk_id " geminiHwnd)
-        if (GeminiPromptFieldGetText(geminiHwnd) != "")
-            break
-        Sleep pollIntervalMs
+    uia := 0
+    try uia := UIA_Browser("ahk_id " geminiHwnd)
+    catch {
+        return false
     }
-    return Gemini_TrySubmit(geminiHwnd)
+    if (!IsObject(uia))
+        return false
+    if (!Gemini_WaitForPromptContent(uia, g_GeminiDelayedSubmit_WaitContentMaxMs))
+        return false
+    return Gemini_TrySubmit(geminiHwnd, uia)
 }
 
 GetGrammarPromptText() {
