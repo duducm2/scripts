@@ -234,6 +234,230 @@ ClipAngel_EnsureListView(hwnd, root := 0) {
     }
 }
 
+ClipAngel_UiaInvokeElement(el) {
+    if !el
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    try {
+        el.SetFocus()
+        Sleep 40
+        Send "{Enter}"
+        return true
+    } catch {
+    }
+    return false
+}
+
+ClipAngel_UiaOpenSubmenu(menuItem) {
+    if !menuItem
+        return false
+    try {
+        if menuItem.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable) {
+            pat := menuItem.ExpandCollapsePattern
+            if pat.ExpandCollapseState = UIA.ExpandCollapseState.Collapsed {
+                pat.Expand()
+                return true
+            }
+        }
+    } catch {
+    }
+    try {
+        menuItem.SetFocus()
+        Sleep 40
+        Send "{Right}"
+        return true
+    } catch {
+    }
+    return ClipAngel_UiaInvokeElement(menuItem)
+}
+
+ClipAngel_UiaFindMenuItem(roots, conditions) {
+    for r in roots {
+        if !r
+            continue
+        el := ClipAngel_UiaFindFirst(r, conditions)
+        if el
+            return el
+    }
+    return 0
+}
+
+ClipAngel_PasteEnterDebugLog(hypothesisId, location, message, data := "") {
+    ; #region agent log
+    try {
+        logPath := A_ScriptDir "\debug-d0d26e.log"
+        dataJson := "{}"
+        if (IsObject(data)) {
+            parts := []
+            for k, v in data {
+                key := StrReplace("" . k, "\", "\\")
+                key := StrReplace(key, '"', '\"')
+                val := StrReplace("" . v, "\", "\\")
+                val := StrReplace(val, '"', '\"')
+                parts.Push('"' . key . '":"' . val . '"')
+            }
+            joined := ""
+            for i, p in parts
+                joined .= (i = 1 ? "" : ",") . p
+            dataJson := "{" . joined . "}"
+        } else if (data != "")
+            dataJson := '{"value":"' . StrReplace("" . data, '"', '\"') . '"}'
+        line := '{"sessionId":"d0d26e","timestamp":' . A_TickCount . ',"hypothesisId":"' . hypothesisId
+            . '","location":"' . StrReplace(location, '"', '\"') . '","message":"' . StrReplace(message, '"', '\"')
+            . '","data":' . dataJson . ',"runId":"pre-fix"}' . "`n"
+        FileAppend(line, logPath, "UTF-8")
+    } catch {
+    }
+    ; #endregion
+}
+
+ClipAngel_UiaCollectMenuItemNames(roots) {
+    names := []
+    for r in roots {
+        if !r
+            continue
+        try {
+            for item in r.FindAll({ Type: 50011 }) {
+                try {
+                    n := item.Name
+                    if (n != "")
+                        names.Push(n)
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+    return names
+}
+
+ClipAngel_InvokePasteEnterViaKeyboard() {
+    ; #region agent log
+    ClipAngel_PasteEnterDebugLog("B", "clip_angel_favorite.ahk:keyboard", "keyboard_fallback_start", Map(
+        "sequence", "Alt c Right Downx3 Enter"))
+    ; #endregion
+    Send "{Alt}"
+    Sleep 80
+    Send "c"
+    Sleep 80
+    Send "{Right}"
+    Sleep 80
+    Send "{Down 3}"
+    Sleep 80
+    Send "{Enter}"
+    ; #region agent log
+    ClipAngel_PasteEnterDebugLog("B", "clip_angel_favorite.ahk:keyboard", "keyboard_fallback_done", Map("result",
+        "true"))
+    ; #endregion
+    return true
+}
+
+; Clip > Paste > Paste file — paste selected clip as a file into the prior app (e.g. Explorer).
+ClipAngel_InvokePasteEnter(hwnd := 0) {
+    ; #region agent log
+    ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "entry", Map("hwnd", hwnd ? hwnd :
+        "auto"))
+    ; #endregion
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "exit_no_hwnd", Map("result",
+            "false"))
+        ; #endregion
+        return false
+    }
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            ; #region agent log
+            ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "branch", Map("path",
+                "keyboard_no_root"))
+            ; #endregion
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        }
+        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if !clipMenu {
+            ; #region agent log
+            ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "branch", Map("path",
+                "keyboard_no_clip_menu"))
+            ; #endregion
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        }
+        clipOpened := ClipAngel_UiaInvokeElement(clipMenu)
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("D", "clip_angel_favorite.ahk:InvokePasteEnter", "clip_menu_opened", Map("ok",
+            clipOpened ? "true" : "false"))
+        ; #endregion
+        if !clipOpened
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        Sleep 120
+        desktop := 0
+        try desktop := UIA.GetRootElement()
+        searchRoots := [root]
+        if desktop
+            searchRoots.Push(desktop)
+        pasteItem := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Paste" })
+        pasteItemName := ""
+        try pasteItemName := pasteItem ? pasteItem.Name : ""
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "paste_item_found", Map("found",
+            pasteItem ? "true" : "false",
+            "name", pasteItemName))
+        ; #endregion
+        if !pasteItem
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        submenuOpened := ClipAngel_UiaOpenSubmenu(pasteItem)
+        ; #region agent log
+        menuNames := ClipAngel_UiaCollectMenuItemNames(searchRoots)
+        menuNamesStr := ""
+        for n in menuNames
+            menuNamesStr .= (menuNamesStr = "" ? "" : "|") . n
+        ClipAngel_PasteEnterDebugLog("E", "clip_angel_favorite.ahk:InvokePasteEnter", "submenu_opened", Map("ok",
+            submenuOpened ? "true" : "false",
+            "visibleMenuItems", menuNamesStr))
+        ; #endregion
+        if !submenuOpened
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        Sleep 120
+        pasteFile := ClipAngel_UiaFindFirst(pasteItem, { Type: 50011, Name: "Paste file" })
+        if !pasteFile
+            pasteFile := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Paste file" })
+        pasteFileName := ""
+        try pasteFileName := pasteFile ? pasteFile.Name : ""
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("A", "clip_angel_favorite.ahk:InvokePasteEnter", "target_items", Map(
+            "pasteFileFound", pasteFile ? "true" : "false", "pasteFileName", pasteFileName))
+        ; #endregion
+        if !pasteFile
+            return ClipAngel_InvokePasteEnterViaKeyboard()
+        invoked := ClipAngel_UiaInvokeElement(pasteFile)
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("D", "clip_angel_favorite.ahk:InvokePasteEnter", "final_invoke", Map("target",
+            pasteFileName,
+            "ok", invoked ? "true" : "false", "path", "uia", "runId", "post-fix"))
+        ; #endregion
+        return invoked
+    } catch Error as e {
+        ; #region agent log
+        ClipAngel_PasteEnterDebugLog("C", "clip_angel_favorite.ahk:InvokePasteEnter", "catch", Map("error", e.Message,
+            "path", "keyboard"))
+        ; #endregion
+        return ClipAngel_InvokePasteEnterViaKeyboard()
+    }
+}
+
 ClipAngel_UiaResolveRow0(dataGrid) {
     if !dataGrid
         return 0

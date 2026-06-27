@@ -96,6 +96,31 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "{Enter}"
 }
 
+; Alt + Enter : Paste file — Clip > Paste > Paste file
+!Enter:: {
+    ; #region agent log
+    try FileAppend('{"sessionId":"d0d26e","timestamp":' . A_TickCount
+        .
+        ',"hypothesisId":"C","location":"hotif_clipangel.ahk:!Enter","message":"hotkey_fired","data":{},"runId":"pre-fix"}'
+        . "`n", A_ScriptDir "\debug-d0d26e.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    ok := ClipAngel_InvokePasteEnter()
+    ; #region agent log
+    try FileAppend('{"sessionId":"d0d26e","timestamp":' . A_TickCount
+        . ',"hypothesisId":"D","location":"hotif_clipangel.ahk:!Enter","message":"hotkey_done","data":{"ok":"' . (ok ?
+            "true" : "false")
+        . '"},"runId":"pre-fix"}' . "`n", A_ScriptDir "\debug-d0d26e.log", "UTF-8")
+    catch {
+    }
+    ; #endregion
+    if !ok
+        ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
+}
+
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)
 ^1:: {
     Send "{F10}"

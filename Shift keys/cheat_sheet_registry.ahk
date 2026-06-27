@@ -638,6 +638,7 @@ cheatSheets["ClipAngel.exe"] := "
     ⌨️ [Alt+3] [M]ove down twice and select
     ⌨️ [Alt+4] [M]ove down three times and select
     ⌨️ [Alt+5] [M]ove down four times and select
+    📋 [Alt+Enter] Paste [F]ile (Clip menu)
     📋 [Ctrl+1] Tab, Select All, Copy
     📋 [Ctrl+2] Down 1, Tab, Select All, Copy
     📋 [Ctrl+3] Down 2, Tab, Select All, Copy
