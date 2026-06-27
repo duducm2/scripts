@@ -38,7 +38,7 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     if (!geminiHwnd) {
         Run "chrome.exe --new-window https://gemini.google.com/"
         if !WinWaitActive("ahk_exe chrome.exe", , 5)
-            return
+            return 0
         Sleep 2500
         geminiHwnd := WinExist("A")
     }
@@ -60,53 +60,9 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     }
 
     try {
-        uia := UIA_Browser()
+        uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
         Sleep 80
-        anchorButton := 0
-        try {
-            anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", ControlType: "Button" })
-            if (!anchorButton)
-                anchorButton := uia.FindFirst({ Type: "50000", Name: "Open upload file menu", cs: false })
-        } catch {
-        }
-        if (!anchorButton) {
-            try {
-                allButtons := uia.FindAll({ Type: "50000" })
-                for button in allButtons {
-                    try {
-                        if (InStr(button.Name, "Open upload file menu", false)) {
-                            anchorButton := button
-                            break
-                        }
-                    } catch {
-                        continue
-                    }
-                }
-            } catch {
-            }
-        }
-        if (anchorButton) {
-            try {
-                anchorButton.SetFocus()
-                Sleep 25
-                SendInput "+{Tab}"
-                Sleep 15
-            } catch {
-                try {
-                    promptField := FindGeminiPromptField(uia)
-                    if (promptField)
-                        promptField.SetFocus()
-                } catch {
-                }
-            }
-        } else {
-            try {
-                promptField := FindGeminiPromptField(uia)
-                if (promptField)
-                    promptField.SetFocus()
-            } catch {
-            }
-        }
+        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
     } catch {
     }
 
@@ -123,6 +79,185 @@ GeminiNavigateFocusAndPasteFirstSnippet(optionalPromptText := "", switchToFirstT
     }
     Sleep 250
     ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+    return geminiHwnd ? geminiHwnd : WinExist("A")
+}
+
+Gemini_IsExcludedSendButtonName(name) {
+    if (!name)
+        return true
+    if (InStr(name, "Stop response", false) || InStr(name, "Interromper", false) || InStr(name, "Stop streaming",
+        false))
+        return true
+    if (InStr(name, "Open upload file menu", false) || name = "Tools")
+        return true
+    return false
+}
+
+Gemini_IsSendButtonCandidate(btn) {
+    try {
+        name := btn.Name
+        className := btn.ClassName
+        if (Gemini_IsExcludedSendButtonName(name))
+            return false
+        if (InStr(className, "send-button", false) && !InStr(className, "stop", false))
+            return true
+        if (InStr(name, "Send", false) || InStr(name, "Enviar", false))
+            return true
+    } catch {
+    }
+    return false
+}
+
+Gemini_FindSendButton(uia) {
+    if (!IsObject(uia))
+        return 0
+    for typeSpec in [50000, "Button"] {
+        try {
+            el := uia.FindFirst({ Type: typeSpec, ClassName: "send-button", matchmode: "Substring" })
+            if (el && Gemini_IsSendButtonCandidate(el))
+                return el
+        } catch {
+        }
+    }
+    for nameSpec in ["Send", "Enviar"] {
+        try {
+            el := uia.FindFirst({ Type: 50000, Name: nameSpec, matchmode: "Substring" })
+            if (el && Gemini_IsSendButtonCandidate(el))
+                return el
+        } catch {
+        }
+        try {
+            el := uia.FindFirst({ Type: "Button", Name: nameSpec, matchmode: "Substring" })
+            if (el && Gemini_IsSendButtonCandidate(el))
+                return el
+        } catch {
+        }
+    }
+    try {
+        for button in uia.FindAll({ Type: 50000 }) {
+            if (Gemini_IsSendButtonCandidate(button))
+                return button
+        }
+    } catch {
+    }
+    return 0
+}
+
+Gemini_HasGeneratingStopButtonForUia(uia) {
+    if (!IsObject(uia))
+        return false
+    for n in ["Stop response", "Stop streaming", "Interromper transmissão"] {
+        for typeSpec in [50000, "Button"] {
+            try {
+                if (uia.FindFirst({ Name: n, Type: typeSpec }))
+                    return true
+            } catch {
+            }
+        }
+    }
+    return false
+}
+
+Gemini_SubmitAttemptSucceeded(uia) {
+    if (Gemini_HasGeneratingStopButtonForUia(uia))
+        return true
+    return GeminiPromptFieldGetTextFromUia(uia) = ""
+}
+
+GeminiPromptFieldGetTextFromUia(uia) {
+    if (!IsObject(uia))
+        return ""
+    pf := 0
+    try pf := FindGeminiPromptField(uia)
+    catch {
+    }
+    if (!pf)
+        return ""
+    try {
+        text := Trim(pf.Value)
+        if (text != "")
+            return text
+    } catch {
+    }
+    try {
+        text := Trim(pf.TextPattern.DocumentRange.GetText(-1))
+        if (text != "")
+            return text
+    } catch {
+    }
+    return ""
+}
+
+Gemini_TrySubmitOnce(uia, fallback := "enter") {
+    if (!IsObject(uia))
+        return false
+    if (Gemini_HasGeneratingStopButtonForUia(uia))
+        return true
+    sendBtn := Gemini_FindSendButton(uia)
+    if (sendBtn) {
+        try {
+            if (sendBtn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+                sendBtn.InvokePattern.Invoke()
+                return true
+            }
+        } catch {
+        }
+        try {
+            sendBtn.Click()
+            return true
+        } catch {
+        }
+    }
+    if (fallback = "ctrlEnter")
+        SendInput "^{Enter}"
+    else
+        SendInput "{Enter}"
+    return true
+}
+
+Gemini_TrySubmit(geminiHwnd) {
+    if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
+        return false
+    try WinActivate("ahk_id " geminiHwnd)
+    catch {
+        return false
+    }
+    if (!WinWaitActive("ahk_id " geminiHwnd, , 1))
+        return false
+    uia := 0
+    try uia := UIA_Browser("ahk_id " geminiHwnd)
+    catch {
+        return false
+    }
+    if (!IsObject(uia))
+        return false
+    for fallback in ["enter", "ctrlEnter"] {
+        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+        Gemini_TrySubmitOnce(uia, fallback)
+        endTick := A_TickCount + 2000
+        while (A_TickCount < endTick) {
+            if (Gemini_SubmitAttemptSucceeded(uia))
+                return true
+            Sleep 200
+        }
+    }
+    return false
+}
+
+Gemini_WaitForPromptContentAndSubmit(geminiHwnd) {
+    global g_GeminiDelayedSubmit_PreEnterDelayMs, g_GeminiDelayedSubmit_WaitContentMaxMs
+    if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
+        return false
+    Sleep (g_GeminiDelayedSubmit_PreEnterDelayMs)
+    pollIntervalMs := 200
+    endTick := A_TickCount + g_GeminiDelayedSubmit_WaitContentMaxMs
+    while (A_TickCount < endTick) {
+        try WinActivate("ahk_id " geminiHwnd)
+        if (GeminiPromptFieldGetText(geminiHwnd) != "")
+            break
+        Sleep pollIntervalMs
+    }
+    return Gemini_TrySubmit(geminiHwnd)
 }
 
 GetGrammarPromptText() {
@@ -163,32 +298,17 @@ DEPRECATED_GeminiDelayedSubmitFlow() {
     GeminiFinalizeSubmit()
 }
 
-GeminiPromptFieldGetText() {
+GeminiPromptFieldGetText(geminiHwnd := 0) {
     try {
-        uia := UIA_Browser()
-        pf := FindGeminiPromptField(uia)
-        if (!pf)
-            return ""
-        try {
-            text := Trim(pf.Value)
-            if (text != "")
-                return text
-        } catch {
-        }
-        try {
-            text := Trim(pf.TextPattern.DocumentRange.GetText(-1))
-            if (text != "")
-                return text
-        } catch {
-        }
+        uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
+        return GeminiPromptFieldGetTextFromUia(uia)
     } catch {
     }
     return ""
 }
 
 GeminiFinalizeSubmit() {
-    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd, g_GeminiDelayedSubmit_PreEnterDelayMs,
-        g_GeminiDelayedSubmit_WaitContentMaxMs
+    global g_HotstringGeminiAutoSubmit, g_HotstringGeminiRestoreHwnd
 
     try Hotkey("n", "Off")
     try Hotkey("N", "Off")
@@ -196,23 +316,12 @@ GeminiFinalizeSubmit() {
     try Hotkey("Y", "Off")
     HotstringGeminiBanner_Hide()
 
-    GeminiNavigateFocusAndPasteFirstSnippet("", false)
-
-    didAutoSubmit := false
-    geminiChromeHwnd := 0
-    if (g_HotstringGeminiAutoSubmit) {
-        Sleep (g_GeminiDelayedSubmit_PreEnterDelayMs)
-        pollIntervalMs := 200
-        endTick := A_TickCount + g_GeminiDelayedSubmit_WaitContentMaxMs
-        while (A_TickCount < endTick) {
-            if (GeminiPromptFieldGetText() != "")
-                break
-            Sleep pollIntervalMs
-        }
-        Send("{Enter}")
+    geminiChromeHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+    if (!geminiChromeHwnd)
         geminiChromeHwnd := WinExist("A")
-        didAutoSubmit := true
-    }
+    didAutoSubmit := false
+    if (g_HotstringGeminiAutoSubmit && geminiChromeHwnd)
+        didAutoSubmit := Gemini_WaitForPromptContentAndSubmit(geminiChromeHwnd)
 
     g_HotstringGeminiAutoSubmit := true
 

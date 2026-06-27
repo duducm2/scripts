@@ -155,3 +155,8 @@ eligible=8 hidden=1 visible=3 openOnMon=3 skipReject=490 skipNoMon=0
 selected=8 planned=8 tiled=7 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=132676 mon=2 title=Chat | New Message | Microsoft Teams
+=== WM tile quality 20260627000732 final ===
+eligible=5 hidden=1 visible=1 openOnMon=2 skipReject=358 skipNoMon=0
+selected=5 planned=5 tiled=4 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=67114 mon=2 title=Sticky Password

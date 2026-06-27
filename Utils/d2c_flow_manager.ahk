@@ -290,24 +290,21 @@ class D2C_FlowManager {
                 this.GeminiHwnd := GetCopilotWebWindowHwnd()
         } else {
             if (optionalSnippet != "")
-                GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
+                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet(optionalSnippet, false)
             else
-                GeminiNavigateFocusAndPasteFirstSnippet("", false)
-            this.GeminiHwnd := WinExist("A")
+                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+            this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
         }
 
         if (autoSubmit) {
-            Sleep 1000 ; Pre-enter delay
-            endTick := A_TickCount + 5000
-            while (A_TickCount < endTick) {
-                hasContent := UseCopilotWebForGlobalAI()
-                    ? (CopilotWeb_ComposerGetText(this.GeminiHwnd) != "")
-                    : (GeminiPromptFieldGetText() != "")
-                if (hasContent)
-                    break
-                Sleep 200
-            }
             if (UseCopilotWebForGlobalAI()) {
+                Sleep 1000 ; Pre-enter delay
+                endTick := A_TickCount + 5000
+                while (A_TickCount < endTick) {
+                    if (CopilotWeb_ComposerGetText(this.GeminiHwnd) != "")
+                        break
+                    Sleep 200
+                }
                 try {
                     uia := UIA_Browser("ahk_id " this.GeminiHwnd)
                     CopilotWeb_TrySubmit(uia)
@@ -315,7 +312,7 @@ class D2C_FlowManager {
                     Send("{Enter}")
                 }
             } else
-                Send("{Enter}")
+                Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
             this.StartGeminiMonitor()
         }
 
