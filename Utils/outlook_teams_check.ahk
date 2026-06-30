@@ -157,7 +157,14 @@ CleanClipboard_ShouldAbort(sessionId := 0) {
 }
 
 CleanClipboard_UnwindClipAngel() {
-    ; Clip Angel stays visible; no unwind needed.
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd)
+        return
+    try {
+        if ClipAngel_IsWindowShown(hwnd)
+            WinMinimize("ahk_id " hwnd)
+    } catch {
+    }
 }
 
 ; N/Esc while automation runs (overlay already closed; StandardLoadingBar keys are inactive)
@@ -257,6 +264,7 @@ CleanClipboardInternal(sessionId := 0) {
     SendInput "{Enter}"
     SendLevel priorSendLevel
     Sleep 300
+    CleanClipboard_UnwindClipAngel()
     StandardLoadingBar_Update("✅ Clipboard cleaned", BANNER_ACCENT_SUCCESS)
     StandardLoadingBar_Hide(500)
 }
