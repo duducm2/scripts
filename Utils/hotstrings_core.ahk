@@ -182,9 +182,14 @@ GetPromptDir() {
     return A_ScriptDir "\assets\prompt"
 }
 
+; Prompt .txt files are UTF-8; default FileRead uses ANSI on Windows without BOM.
+ReadUtf8File(path) {
+    return FileRead(path, "UTF-8")
+}
+
 GetPromptText(key) {
     try {
-        return FileRead(GetPromptDir() "\" key ".txt")
+        return ReadUtf8File(GetPromptDir() "\" key ".txt")
     } catch {
         return "[PROMPT FILE MISSING: " key "]"
     }
@@ -223,6 +228,11 @@ GetPromptText(key) {
 :o:cplant::
 {
     InsertText(GetPromptText("cplant"))
+}
+
+:o:cascadeplan::
+{
+    InsertText(GetPromptText("cascade-plan"))
 }
 
 :o:aibrapid::
@@ -291,7 +301,7 @@ InitTechniquePromptHotstrings() {
         exChar := row[4]
         reserved := row[5]
         try {
-            body := FileRead(GetTechniquePromptFilePath(fileName))
+            body := ReadUtf8File(GetTechniquePromptFilePath(fileName))
             if (exChar != "")
                 RegisterHotstring(trigger, body, "Prompts", title, exChar)
             else
@@ -312,18 +322,21 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:flog", GetPromptText("flog"), "Prompts", "🍽️ Food Log Dictation")
     RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
     RegisterHotstring(":o:cplan", GetPromptText("markdown-plan"), "Prompts",
-        "📋 Technical Architect & Code Planner")
+    "📋 Technical Architect & Code Planner")
     RegisterHotstring(":o:cplant", GetPromptText("cplant"), "Prompts", "📝 Plan File Template")
+    RegisterHotstring(":o:cascadeplan", GetPromptText("cascade-plan"), "Prompts",
+    "🔁 Low-context cascade plan (1 step/run)")
     InitTechniquePromptHotstrings()
     RegisterHotstring(":o:aibrapid", GetPromptText("aib-rapid-fire-template"), "Prompts",
-        "📜 Junior AI: ⚡ rapid-fire template")
+    "📜 Junior AI: ⚡ rapid-fire template")
     RegisterHotstring(":o:pptslide", GetPromptText("slide-creation"), "Prompts", "📊 Create PowerPoint slide")
     RegisterHotstring(":o:pptslideref", GetPromptText("slide-creation-with-ref"), "Prompts",
-        "📊 Create PowerPoint slide (reference)")
+    "📊 Create PowerPoint slide (reference)")
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
-    RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts", "🔍 Upscale image (resolution + sharp text)")
+    RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts",
+    "🔍 Upscale image (resolution + sharp text)")
     RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
-        "📋 Fill CSV from unstructured text")
+    "📋 Fill CSV from unstructured text")
 
     ; Hotstrings: emails
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")
@@ -350,4 +363,3 @@ InitHotstringsCheatSheet() {
     )
 }
 InitHotstringsCheatSheet()
-
