@@ -18,15 +18,18 @@ AiModelBanner_Hide() {
 }
 
 ; =============================================================================
-; Persistent Language Flag Indicator (slot 3 = UK, slot 4 = Brazil)
+; Persistent Language Flag Indicator (slot 1 = UK, slot 2 = Brazil, slot 3 = multi)
 ; =============================================================================
 ; Opaque, always-on-top flag chips pinned to the bottom-right of every monitor.
-; Slot 3 shows English (UK flag), slot 4 shows Portuguese (Brazil flag).
+; Slot 1 = English (UK), slot 2 = Portuguese (Brazil), slot 3 = multi-language (combined flag).
 ; Use the visible flag as the spoken-language indicator across all screens.
 ; =============================================================================
 
 LanguageFlag_GetImagePath(slot) {
-    rel := (slot = 3) ? "\assets\images\flags\united-kingdom.png" : (slot = 4) ? "\assets\images\flags\brazil.png" : ""
+    rel := (slot = 1) ? "\assets\images\flags\united-kingdom.png"
+        : (slot = 2) ? "\assets\images\flags\brazil.png"
+            : (slot = 3) ? "\assets\images\flags\brazil-united-kingdom.png"
+                : ""
     if (rel = "")
         return ""
     ; Prefer the running script's folder, then the folder that contains Utils.ahk (covers odd layouts).
@@ -63,7 +66,7 @@ LanguageFlag_CreateGui(slot, imagePath) {
     }
     if !usedPicture {
         flagGui.SetFont("s13 cFFFFFF Bold", "Segoe UI")
-        label := (slot = 3) ? "EN" : "PT"
+        label := (slot = 1) ? "EN" : (slot = 2) ? "PT" : (slot = 3) ? "EN+PT" : "?"
         flagGui.Add("Text", "Center w" . LANGUAGE_FLAG_WIDTH . " h31 Background45475A", label)
     }
     flagGui.Show("AutoSize Hide")
@@ -73,7 +76,7 @@ LanguageFlag_CreateGui(slot, imagePath) {
 LanguageFlag_Show(slot) {
     global g_LanguageFlagGuis, g_LanguageFlagSlot
 
-    if (slot != 3 && slot != 4) {
+    if (slot < 1 || slot > 3) {
         LanguageFlag_Hide()
         return
     }
@@ -149,7 +152,7 @@ LanguageFlag_RepositionAllMonitors() {
 
 LanguageFlag_InitFromPersistedSlot() {
     slot := Handy_GetPersistedAiModelSlot()
-    if (slot = 3 || slot = 4)
+    if (slot >= 1 && slot <= 3)
         LanguageFlag_Show(slot)
 }
 
@@ -210,18 +213,6 @@ ExecuteHandyAiModelSelection(selection) {
             return
         }
 
-        ; Step 1b: Optional - set Cohere language on General (explicit English / Portuguese)
-        if (modelInfo.HasProp("cohereLanguage") && modelInfo.cohereLanguage != "") {
-            AiModelBanner_Show("🌐 Setting Cohere language: " . modelInfo.cohereLanguage . "...")
-            if (!Handy_SetCohereLanguage(handyHwnd, modelInfo.cohereLanguage)) {
-                AiModelBanner_Show("❌ Could not set Cohere language", "E74C3C")
-                Sleep 2000
-                AiModelBanner_Hide()
-                return
-            }
-            Sleep 120
-        }
-
         ; Step 2: Open AI model menu
         AiModelBanner_Show("📋 Opening AI model menu...")
         if (!Handy_OpenAiModelMenu(handyHwnd)) {
@@ -241,8 +232,8 @@ ExecuteHandyAiModelSelection(selection) {
         }
         Handy_SetPersistedAiModelSlot(selection)
 
-        ; Update persistent language flag indicator (slot 3 = UK, slot 4 = BR; hidden for slots 1/2).
-        if (selection = 3 || selection = 4)
+        ; Update persistent language flag indicator (slot 1 = UK, slot 2 = BR, slot 3 = multi).
+        if (selection >= 1 && selection <= 3)
             LanguageFlag_Show(selection)
         else
             LanguageFlag_Hide()

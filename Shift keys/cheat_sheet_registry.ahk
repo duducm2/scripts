@@ -1126,8 +1126,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
     [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
     [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
-    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (model slot 4)
-    [Ctrl+Alt+Win+B] > Handy: Cohere English (model slot 3)
+    [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (model slot 2)
+    [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (model slot 1)
     
     === MAIN KEY COMBINATIONS ===
     [Symbol Layer] Win+Alt+Shift - Primary combination
@@ -1158,9 +1158,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
     [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
-    [Ctrl+Alt+Win+9] > Handy: Cohere Portuguese (picker slot 4; same as Win+Alt+Shift+C then 4)
-    [Ctrl+Alt+Win+B] > Handy: Cohere English (picker slot 3; same as Win+Alt+Shift+C then 3)
-    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet V2, 2 Parakeet V3, 3 Cohere English, 4 Cohere Portuguese
+    [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (picker slot 2; same as Win+Alt+Shift+C then 2)
+    [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)
+    [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
     
     === YOUTUBE ===
     [Win+Alt+Shift+H] > Activates Youtube
@@ -1290,8 +1290,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+Y — window tools [3]
     [ZMK L0 · E thumb] hold > Win+Shift+E
     [ZMK L0 · E thumb] tap 1× > Context menu
-    [ZMK L0 · E thumb] tap 2× > Ctrl+Alt+Win+B — Handy Cohere English
-    [ZMK L0 · E thumb] tap 3× > Ctrl+Alt+Win+9 — Handy Cohere Portuguese
+    [ZMK L0 · E thumb] tap 2× > Ctrl+Alt+Win+B — Handy Parakeet Unified English
+    [ZMK L0 · E thumb] tap 3× > Ctrl+Alt+Win+9 — Handy Nemotron Streaming Portuguese
     
     --- ZMK Layer 1 (ONE) — hold left thumb ---
     [ZMK L1 · Esc] > F11

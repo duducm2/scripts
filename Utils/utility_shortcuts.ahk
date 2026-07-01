@@ -37,9 +37,9 @@
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
-; Ctrl+Alt+Win+9 / +B - Handy Cohere Portuguese / English (g_HandyAiModels slots 4 and 3)
-^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_COHERE_PORTUGUESE)
-^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_COHERE_ENGLISH)
+; Ctrl+Alt+Win+9 / +B - Handy Nemotron Portuguese / Parakeet Unified English (slots 2 and 1)
+^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
+^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
 
 ; =============================================================================
 ; Alt+Shift+W Shortcut

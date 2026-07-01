@@ -49,7 +49,7 @@ ShowAiModelSelector() {
     g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
     g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     g_AiModelSelectorGui.Add("Text", "w280 Center", "Green row = last saved model")
-    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1-4 | Esc to cancel")
+    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1-3 | Esc to cancel")
 
     ; Get active window to determine which monitor to center on
     activeWin := 0
@@ -104,11 +104,10 @@ ShowAiModelSelector() {
 
     g_AiModelSelectorActive := true
 
-    ; Enable hotkeys for 1-4 and Escape
+    ; Enable hotkeys for 1-3 and Escape
     Hotkey("1", AiModelSelector_HandleKey, "On")
     Hotkey("2", AiModelSelector_HandleKey, "On")
     Hotkey("3", AiModelSelector_HandleKey, "On")
-    Hotkey("4", AiModelSelector_HandleKey, "On")
     Hotkey("Escape", AiModelSelector_Cancel, "On")
 }
 
@@ -149,7 +148,6 @@ AiModelSelector_Close() {
     try Hotkey("1", "Off")
     try Hotkey("2", "Off")
     try Hotkey("3", "Off")
-    try Hotkey("4", "Off")
     try Hotkey("Escape", AiModelSelector_Cancel, "Off")
     Utils_EnsureGlobalEscapeHotkey()
 

@@ -8,29 +8,26 @@
 ; =============================================================================
 ; AI Model Selection System for Handy
 ; =============================================================================
-; Configuration: Maps selection numbers (1-4) to AI model names.
+; Configuration: Maps selection numbers (1-3) to AI model names.
 ; These are partial name prefixes used to find buttons in the UIA tree (Type 50000, botão).
 ; Descriptions match Handy Transcription Models UI for quick verification.
-; Slots 3-4: set Cohere Language on General tab before selecting the Cohere model (modelClickName).
 global g_HandyAiModels := Map(
-    1, { name: "Parakeet V2", desc: "English only. Best model for English speakers." },
-    2, { name: "Parakeet V3", desc: "Fast and accurate. Multi-language." },
-    3, { name: "Cohere English", desc: "Sets Cohere language to English (General), then activates Cohere.",
-        cohereLanguage: "English", modelClickName: "Cohere" },
-    4, { name: "Cohere Portuguese", desc: "Sets Cohere language to Portuguese (General), then activates Cohere.",
-        cohereLanguage: "Portuguese", modelClickName: "Cohere" }
+    1, { name: "Parakeet Unified EN", desc: "Fast, accurate live English transcription." },
+    2, { name: "Nemotron Streaming", desc: "Live multilingual transcription (Portuguese)." },
+    3, { name: "Cohere Transcribe", desc: "Highest accuracy, 14 languages, slower." }
 )
 
 ; Picker indices for ^!#9 / ^!#b; update g_HandyAiModels names if Handy renames models.
-global HANDY_AI_SLOT_COHERE_PORTUGUESE := 4
-global HANDY_AI_SLOT_COHERE_ENGLISH := 3
+global HANDY_AI_SLOT_ENGLISH := 1
+global HANDY_AI_SLOT_PORTUGUESE := 2
+global HANDY_AI_SLOT_MULTILANG := 3
 
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false
 global g_AiModelBannerGui := false
 
-; Persistent language flag indicator (slot 3 = UK, slot 4 = Brazil); see docs/standard_information_display.md "Persistent Indicators".
+; Persistent language flag indicator (slot 1 = UK, slot 2 = Brazil, slot 3 = multi); see docs/standard_information_display.md "Persistent Indicators".
 global g_LanguageFlagGuis := []
 global g_LanguageFlagSlot := 0
 global LANGUAGE_FLAG_WIDTH := 45                ; px (~30% smaller than 64); aspect kept via Picture h:-1
@@ -44,7 +41,17 @@ Handy_GetHandyAiModelIniPath() {
     return A_ScriptDir "\assets\data\handy_ai_model.ini"
 }
 
-; Returns persisted slot 1-4, or 0 if missing / invalid / not in g_HandyAiModels.
+; Map legacy persisted slots (pre 3-model lineup) to current slots.
+Handy_MigrateLegacyAiModelSlot(n) {
+    switch n {
+        case 3: return 1   ; old Cohere English -> Parakeet Unified EN
+        case 4: return 2   ; old Cohere Portuguese -> Nemotron Streaming
+        case 2: return 3   ; old Parakeet V3 multi -> Cohere Transcribe
+        default: return n
+    }
+}
+
+; Returns persisted slot 1-3, or 0 if missing / invalid / not in g_HandyAiModels.
 Handy_GetPersistedAiModelSlot() {
     global g_HandyAiModels
     path := Handy_GetHandyAiModelIniPath()
@@ -54,7 +61,7 @@ Handy_GetPersistedAiModelSlot() {
         return 0
     if !IsInteger(s)
         return 0
-    n := Integer(s)
+    n := Handy_MigrateLegacyAiModelSlot(Integer(s))
     if !g_HandyAiModels.Has(n)
         return 0
     return n
@@ -73,4 +80,3 @@ Handy_SetPersistedAiModelSlot(slot) {
     } catch {
     }
 }
-
