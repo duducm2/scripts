@@ -22,6 +22,10 @@ global HANDY_AI_SLOT_ENGLISH := 1
 global HANDY_AI_SLOT_PORTUGUESE := 2
 global HANDY_AI_SLOT_MULTILANG := 3
 
+; Model switch retry / quality gate (ExecuteHandyAiModelSelection).
+global HANDY_AI_MODEL_MAX_ATTEMPTS := 3
+global HANDY_AI_MODEL_RETRY_DELAY_MS := 500
+
 ; GUI state for AI model selector
 global g_AiModelSelectorGui := false
 global g_AiModelSelectorActive := false

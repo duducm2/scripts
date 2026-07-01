@@ -395,6 +395,65 @@ Handy_ClickAiModel(hwnd, modelName) {
     }
 }
 
+; Active model selector button in Handy header (not menu row).
+Handy_FindActiveAiModelButton(el) {
+    if !el
+        return 0
+    try {
+        return el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
+    } catch {
+        return 0
+    }
+}
+
+; Returns the active model button label, or "" if not found.
+Handy_ReadActiveAiModelName(hwnd) {
+    global UIA
+    el := UIA.ElementFromHandle(hwnd)
+    if !el
+        return ""
+    btn := Handy_FindActiveAiModelButton(el)
+    if !btn
+        return ""
+    try {
+        return btn.Name
+    } catch {
+        return ""
+    }
+}
+
+; Quality gate: active model name must match prefix and not be loading.
+Handy_VerifyAiModelActive(hwnd, modelName) {
+    if (modelName = "")
+        return false
+    name := Handy_ReadActiveAiModelName(hwnd)
+    if (name = "")
+        return false
+    if (InStr(name, "loading"))
+        return false
+    return InStr(name, modelName) = 1
+}
+
+; Open menu, click model, wait for load — all must succeed.
+Handy_TrySelectAiModel(hwnd, modelClickName, maxWaitMs := 20000) {
+    if !Handy_OpenAiModelMenu(hwnd)
+        return false
+    if !Handy_ClickAiModel(hwnd, modelClickName)
+        return false
+    return Handy_WaitForModelReady(hwnd, maxWaitMs)
+}
+
+; Close a stuck model menu before retrying.
+Handy_DismissOpenUi(hwnd) {
+    if !hwnd
+        return
+    try WinActivate("ahk_id " . hwnd)
+    Sleep 80
+    Send "{Escape}"
+    Sleep 80
+    Send "{Escape}"
+}
+
 ; Poll the AI model selection button until Name no longer contains "loading", or maxWaitMs elapses.
 ; Button: Type 50000, ClassName "flex items-center gap-2 hover:text-text/80 transition-colors "
 ; Returns true when loading text disappeared, false on timeout or if button not found.
@@ -402,30 +461,23 @@ Handy_WaitForModelReady(hwnd, maxWaitMs) {
     global UIA
     pollInterval := 250
     start := A_TickCount
-    firstLog := true
     loop {
-        if ((A_TickCount - start) >= maxWaitMs) {
+        if ((A_TickCount - start) >= maxWaitMs)
             return false
-        }
         el := UIA.ElementFromHandle(hwnd)
         if !el {
             Sleep pollInterval
             continue
         }
-        btn := 0
-        try btn := el.FindFirst({ Type: 50000, ClassName: "flex items-center gap-2 hover:text-text/80 transition-colors " })
+        btn := Handy_FindActiveAiModelButton(el)
         if (!btn) {
-            if (firstLog) {
-                firstLog := false
-            }
             Sleep pollInterval
             continue
         }
         btnName := ""
         try btnName := btn.Name
-        if (InStr(btnName, "loading") = 0) {
+        if (InStr(btnName, "loading") = 0)
             return true
-        }
         Sleep pollInterval
     }
 }

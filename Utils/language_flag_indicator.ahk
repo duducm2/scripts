@@ -196,40 +196,66 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection) {
-    global g_HandyAiModels
+    global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
+
+    if !g_HandyAiModels.Has(selection)
+        return
 
     modelInfo := g_HandyAiModels[selection]
     modelDisplayName := modelInfo.name
     modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
     try {
-        ; Step 1: Launch/activate Handy
-        AiModelBanner_Show("🚀 Launching Handy...")
-        handyHwnd := Handy_ActivateOrLaunch()
-        if (!handyHwnd) {
-            AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
+        handyHwnd := 0
+        verified := false
+
+        loop HANDY_AI_MODEL_MAX_ATTEMPTS {
+            attempt := A_Index
+            attemptLabel := (attempt = 1)
+                ? "Attempt " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
+                : "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
+            AiModelBanner_Show(attemptLabel)
+            handyHwnd := Handy_ActivateOrLaunch()
+            if (!handyHwnd) {
+                if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
+                    Sleep HANDY_AI_MODEL_RETRY_DELAY_MS
+                    continue
+                }
+                AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
+                Sleep 2000
+                AiModelBanner_Hide()
+                return
+            }
+
+            AiModelBanner_Show((attempt > 1 ? "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": " : "")
+            . "Selecting " . modelDisplayName . "...")
+            if (!Handy_TrySelectAiModel(handyHwnd, modelClickName)) {
+                Handy_DismissOpenUi(handyHwnd)
+                if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
+                    Sleep HANDY_AI_MODEL_RETRY_DELAY_MS
+                    continue
+                }
+                break
+            }
+
+            AiModelBanner_Show("Verifying " . modelDisplayName . "...", BANNER_ACCENT_INTERMEDIATE)
+            if (Handy_VerifyAiModelActive(handyHwnd, modelClickName)) {
+                verified := true
+                break
+            }
+
+            Handy_DismissOpenUi(handyHwnd)
+            if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS)
+                Sleep HANDY_AI_MODEL_RETRY_DELAY_MS
+        }
+
+        if (!verified) {
+            AiModelBanner_Show("❌ Could not switch model after " . HANDY_AI_MODEL_MAX_ATTEMPTS . " attempts", "E74C3C")
             Sleep 2000
             AiModelBanner_Hide()
             return
         }
 
-        ; Step 2: Open AI model menu
-        AiModelBanner_Show("📋 Opening AI model menu...")
-        if (!Handy_OpenAiModelMenu(handyHwnd)) {
-            AiModelBanner_Show("❌ Could not open AI menu", "E74C3C")
-            Sleep 2000
-            AiModelBanner_Hide()
-            return
-        }
-
-        ; Step 3: Select the model
-        AiModelBanner_Show("🎯 Selecting " . modelDisplayName . "...")
-        if (!Handy_ClickAiModel(handyHwnd, modelClickName)) {
-            AiModelBanner_Show("❌ Model not found: " . modelClickName, "E74C3C")
-            Sleep 2000
-            AiModelBanner_Hide()
-            return
-        }
         Handy_SetPersistedAiModelSlot(selection)
 
         ; Update persistent language flag indicator (slot 1 = UK, slot 2 = BR, slot 3 = multi).
@@ -238,16 +264,10 @@ ExecuteHandyAiModelSelection(selection) {
         else
             LanguageFlag_Hide()
 
-        ; Step 4: Wait for model to finish loading (poll button name until "loading" disappears)
-        AiModelBanner_Show("⏳ Waiting for model...", BANNER_ACCENT_INTERMEDIATE)
-        Handy_WaitForModelReady(handyHwnd, 20000)
-
-        ; Step 4.5: Play confirmation sound when model is ready
         soundPath := A_ScriptDir . "\assets\sounds\handy-model-chosen.mp3"
         if (FileExist(soundPath))
             ScriptSoundPlay(soundPath)
 
-        ; Step 5: Close Handy window
         AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
         try WinClose("ahk_id " . handyHwnd)
         Sleep 150
