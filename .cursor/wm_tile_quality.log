@@ -160,3 +160,8 @@ eligible=5 hidden=1 visible=1 openOnMon=2 skipReject=358 skipNoMon=0
 selected=5 planned=5 tiled=4 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=67114 mon=2 title=Sticky Password
+=== WM tile quality 20260630102551 final ===
+eligible=7 hidden=2 visible=2 openOnMon=2 skipReject=441 skipNoMon=0
+selected=7 planned=7 tiled=6 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=330926 mon=2 title=Bosch Customer Service Classification - Google Chrome
