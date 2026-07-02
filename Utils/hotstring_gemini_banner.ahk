@@ -31,68 +31,6 @@ D2C_CombinePresetWithDictation(presetText, dictationText) {
     return p . "`n`n" . d
 }
 
-; Buffer after dictation ends before "Send to Gemini?" (linear loading bar + accidental key buffer).
-D2C_SUBMIT_MENU_DELAY_MS := 2000
-D2C_SUBMIT_MENU_PROGRESS_TICK_MS := 50
-global g_D2C_PreparingMenuCancelledByV := false
-
-D2C_OnPreparingMenuCtrlV(*) {
-    global g_D2C_PreparingMenuCancelledByV
-    g_D2C_PreparingMenuCancelledByV := true
-}
-
-; Linear 0–100% loading bar for D2C_SUBMIT_MENU_DELAY_MS, then hide (no keys). Stops StandardLoadingBar_Tick spinner.
-; Returns true when delay completes; false when user presses Ctrl+V (same as menu [V] — paste dictated text only).
-D2C_RunSubmitMenuDelayBar() {
-    global g_StandardLoadingBarGui, g_D2C_PreparingMenuCancelledByV
-    delayMs := D2C_SUBMIT_MENU_DELAY_MS
-    tickMs := D2C_SUBMIT_MENU_PROGRESS_TICK_MS
-    g_D2C_PreparingMenuCancelledByV := false
-    StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_Hide(0)
-    StandardLoadingBar_Show("⏳ Preparing menu…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 520, fontSize: 17,
-        noBorder: true, trackActiveMonitor: true })
-    SetTimer(StandardLoadingBar_Tick, 0)
-    try {
-        if IsObject(g_StandardLoadingBarGui)
-            g_StandardLoadingBarGui["OverlayProg"].Value := 0
-    } catch {
-    }
-    steps := delayMs // tickMs
-    if (steps < 1)
-        steps := 1
-    try {
-        Hotkey("$^v", D2C_OnPreparingMenuCtrlV, "On")
-        loop steps {
-            if g_D2C_PreparingMenuCancelledByV
-                break
-            Sleep(tickMs)
-            if g_D2C_PreparingMenuCancelledByV
-                break
-            pct := Min(100, Round(100 * A_Index / steps))
-            try {
-                if IsObject(g_StandardLoadingBarGui)
-                    g_StandardLoadingBarGui["OverlayProg"].Value := pct
-            } catch {
-                break
-            }
-        }
-        if !g_D2C_PreparingMenuCancelledByV {
-            try {
-                if IsObject(g_StandardLoadingBarGui)
-                    g_StandardLoadingBarGui["OverlayProg"].Value := 100
-            } catch {
-            }
-        }
-    } finally {
-        try Hotkey("$^v", "Off")
-        catch {
-        }
-        StandardLoadingBar_Hide(0)
-    }
-    return !g_D2C_PreparingMenuCancelledByV
-}
-
 TryGetSelectedTextViaUIA_QuickLook() {
     hwnd := WinExist("A")
     focused := 0

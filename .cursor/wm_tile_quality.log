@@ -165,3 +165,13 @@ eligible=7 hidden=2 visible=2 openOnMon=2 skipReject=441 skipNoMon=0
 selected=7 planned=7 tiled=6 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=330926 mon=2 title=Bosch Customer Service Classification - Google Chrome
+=== WM tile quality 20260701230950 final ===
+eligible=5 hidden=0 visible=1 openOnMon=3 skipReject=339 skipNoMon=0
+selected=5 planned=5 tiled=4 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=262996 mon=1 title=YouTube - ASMR Opening Subscriber Gifts! (Soft Spoken only)…
+=== WM tile quality 20260701231017 final ===
+eligible=5 hidden=0 visible=4 openOnMon=1 skipReject=349 skipNoMon=0
+selected=5 planned=5 tiled=4 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=262996 mon=1 title=YouTube - ASMR Opening Subscriber Gifts! (Soft Spoken only)…

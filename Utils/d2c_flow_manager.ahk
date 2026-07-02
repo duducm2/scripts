@@ -46,10 +46,6 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "Idle")
             return
         this.Reset()
-        if !D2C_RunSubmitMenuDelayBar() {
-            this.PasteDictationToActiveWindow()
-            return
-        }
         this.OriginHwnd := 0
         try this.OriginHwnd := WinGetID("A")
         this.PromptForGeminiSubmit()
@@ -94,7 +90,7 @@ class D2C_FlowManager {
         )
     }
 
-    ; OriginHwnd is set after the submit delay bar ends, before the keys overlay activates.
+    ; OriginHwnd is captured when the submit menu opens, before the keys overlay activates.
     ActivateOriginForPaste() {
         if (!this.OriginHwnd || !WinExist("ahk_id " this.OriginHwnd))
             return
@@ -133,7 +129,7 @@ class D2C_FlowManager {
         this.PasteDictationToActiveWindow()
     }
 
-    ; Paste dictated text into the active window and end the D2C flow (menu [V] or Ctrl+V during preparing bar).
+    ; Paste dictated text into the active window and end the D2C flow (menu [V]).
     PasteDictationToActiveWindow() {
         targetHwnd := 0
         try targetHwnd := WinGetID("A")

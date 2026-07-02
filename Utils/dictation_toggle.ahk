@@ -434,7 +434,6 @@ PlayDictationCompletionChime(*) {
         g_PendingGeminiPromptAfterDictation := false  ; Claim atomically so only one invocation shows the banner
         Critical "Off"
         if (pendingGemini && pendingAction = "") {
-            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\dictation-selection-menu.wav")
             D2C_FlowManager.GetInstance().StartFromDictation()
         }
     }
