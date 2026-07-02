@@ -4,6 +4,19 @@
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
+;
+; Clip Angel hotkey inventory (automation entry points):
+;   #!+1     Shift keys\fast_copy_clipangel.ahk  — ClipAngel_SendTopListItem (top-clip paste)
+;   #!+J     Shift keys\fast_copy_clipangel.ahk  — Fast Copy sequential paste
+;   #!+.     AppLaunchers\hotkey_clipangel.ahk   — copy + favorite + quit (legacy)
+;   ^!#5     Utils\utility_shortcuts.ahk         — CleanClipboard
+;   ^!#7/j   Utils\utility_shortcuts.ahk         — MarkLastClipAsFavorite
+;   Shift+*  Shift keys\hotif_clipangel.ahk       — in-app shortcuts when ClipAngel focused
+;   Indirect: d2c_flow_manager, gemini_paste_helpers, CopilotWeb, gemini_delayed_submit
+; Efficiency: CLIPANGEL_USE_FAST_PASTE_PATH (warm path skips Alt+P when grid ready).
+; Rollback: set CLIPANGEL_USE_FAST_PASTE_PATH := false for legacy ActivateNativeFirstClip always.
+;
+; Verification (#!+1, flag on): CA open+Row0 | CA hidden | tiny layout | busy lock | Gemini target | flag off.
 
 ; =============================================================================
 ; Clip Angel: Mark Last Clip as Favorite
@@ -24,6 +37,13 @@ CLIPANGEL_MIN_LAYOUT_WIDTH := 300
 CLIPANGEL_MIN_LAYOUT_HEIGHT := 200
 CLIPANGEL_ALT_P_SETTLE_MS := 200
 CLIPANGEL_ALT_P_HWND_WAIT_MS := 800
+; Warm top-clip paste: ShowWindow + grid poll instead of Alt+P when list already ready (canon §7).
+global CLIPANGEL_USE_FAST_PASTE_PATH := false
+; Cache ClipAngel.exe HWND; validated on each hit via WinExist + process name (canon §4).
+global CLIPANGEL_USE_HWND_CACHE := false
+global g_ClipAngelCachedHwnd := 0
+; Dev-only: OutputDebug phase timings; keep false on hotkey paths in production (canon §17).
+global CLIPANGEL_TIMING_LOG := false
 global g_ClipAngelAutomationBusy := false
 
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
@@ -99,11 +119,38 @@ ClipAngel_FavoriteCellIsOn(cell) {
     return false
 }
 
+ClipAngel_InvalidateCachedHwnd() {
+    global g_ClipAngelCachedHwnd
+    g_ClipAngelCachedHwnd := 0
+}
+
+ClipAngel_TimingLog(phase, tStart) {
+    global CLIPANGEL_TIMING_LOG
+    if !CLIPANGEL_TIMING_LOG
+        return
+    try OutputDebug("ClipAngel " phase " " (A_TickCount - tStart) " ms`n")
+    catch {
+    }
+}
+
 ClipAngel_MainHwnd() {
+    global g_ClipAngelCachedHwnd, CLIPANGEL_USE_HWND_CACHE
+    if CLIPANGEL_USE_HWND_CACHE && g_ClipAngelCachedHwnd {
+        if WinExist("ahk_id " g_ClipAngelCachedHwnd) {
+            try {
+                if (WinGetProcessName("ahk_id " g_ClipAngelCachedHwnd) = "ClipAngel.exe")
+                    return g_ClipAngelCachedHwnd
+            } catch {
+            }
+        }
+        g_ClipAngelCachedHwnd := 0
+    }
     h := WinExist("ClipAngel")
-    if h
-        return h
-    return WinExist("ahk_exe ClipAngel.exe")
+    if !h
+        h := WinExist("ahk_exe ClipAngel.exe")
+    if CLIPANGEL_USE_HWND_CACHE && h
+        g_ClipAngelCachedHwnd := h
+    return h
 }
 
 ClipAngel_IsWindowShown(hwnd) {
@@ -721,41 +768,107 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
-; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
-; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
-ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    if (priorHwnd)
-        ClipAngel_EnsureWindowActive(priorHwnd)
-    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
-    Sleep CLIPANGEL_ALT_P_SETTLE_MS
-    SendInput "!p"
-    Sleep CLIPANGEL_ALT_P_SETTLE_MS
+; Warm path for top-clip paste: show/layout without Alt+P when process + grid are reachable.
+; Returns true when Row 0 is ready; false => caller falls back to ActivateNativeFirstClip.
+ClipAngel_TryWarmPastePrepare(priorHwnd := 0) {
     targetMon := 0
     if (priorHwnd) {
         try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
         catch
             targetMon := 0
     }
-    if (hwnd := ClipAngel_WaitForMainHwnd())
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    if !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd) {
+        if !ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false)
+            return false
+    }
+    if ClipAngel_IsListReady(&hwnd) {
+        ClipAngel_FastEnsureRow0(hwnd)
+        return true
+    }
+    deadline := A_TickCount + CLIPANGEL_GRID_WAIT_MS + CLIPANGEL_ROW0_WAIT_MS
+    while (A_TickCount < deadline) {
+        if ClipAngel_IsListReady(&hwnd) {
+            ClipAngel_FastEnsureRow0(hwnd)
+            return true
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return false
+}
+
+; Shared prep for #!+1, Fast Copy first clip, Gemini sequential paste (canon §2 condition waits).
+ClipAngel_PrepareForTopItemPaste(priorHwnd := 0) {
+    global CLIPANGEL_USE_FAST_PASTE_PATH
+    t0 := A_TickCount
+    if !CLIPANGEL_USE_FAST_PASTE_PATH {
+        ClipAngel_ActivateNativeFirstClip(priorHwnd)
+        ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+        ClipAngel_TimingLog("prepare_legacy", t0)
+        return
+    }
+    if ClipAngel_TryWarmPastePrepare(priorHwnd) {
+        ClipAngel_TimingLog("prepare_warm", t0)
+        return
+    }
+    ClipAngel_ActivateNativeFirstClip(priorHwnd)
+    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+    ClipAngel_TimingLog("prepare_cold", t0)
+}
+
+; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
+; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
+; Fixed sleeps replaced with bounded polls (efficiency-canon §2).
+ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    if (priorHwnd)
+        ClipAngel_EnsureWindowActive(priorHwnd)
+    SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
+    modDeadline := A_TickCount + 80
+    while (A_TickCount < modDeadline) {
+        if !GetKeyState("Alt") && !GetKeyState("LWin") && !GetKeyState("RWin")
+            break
+        Sleep 10
+    }
+    SendInput "!p"
+    targetMon := 0
+    if (priorHwnd) {
+        try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+        catch
+            targetMon := 0
+    }
+    hwnd := ClipAngel_WaitForMainHwnd(CLIPANGEL_ALT_P_HWND_WAIT_MS)
+    if hwnd
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
     SendInput "^{Home}"
-    Sleep CLIPANGEL_ALT_P_SETTLE_MS
+    homeDeadline := A_TickCount + CLIPANGEL_ALT_P_SETTLE_MS + CLIPANGEL_ROW0_SELECT_WAIT_MS
+    while (A_TickCount < homeDeadline) {
+        if (hwnd := ClipAngel_MainHwnd()) {
+            if ClipAngel_UiaIsRow0Selected(hwnd)
+                break
+            if ClipAngel_IsListReady(&hwnd)
+                break
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
     ClipAngel_ReleaseChordModifiersForSend()
     ; Paste flows: return focus to target before incremental paste (^!b).
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
 }
 
-; Native top-item paste: open via ActivateNativeFirstClip, wait for grid, then incremental paste (^!b).
+; Native top-item paste: prepare grid (warm or cold), then incremental paste (^!b).
 ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
-    ClipAngel_ActivateNativeFirstClip(priorHwnd)
-    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+    t0 := A_TickCount
+    ClipAngel_PrepareForTopItemPaste(priorHwnd)
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
     SendInput "^!b"
+    ClipAngel_TimingLog("paste_total", t0)
 }
 
 ; Send top list item via Clip Angel native keys. Restores prior focus after paste.
