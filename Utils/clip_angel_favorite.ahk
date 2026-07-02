@@ -13,8 +13,8 @@
 ;   ^!#7/j   Utils\utility_shortcuts.ahk         — MarkLastClipAsFavorite
 ;   Shift+*  Shift keys\hotif_clipangel.ahk       — in-app shortcuts when ClipAngel focused
 ;   Indirect: d2c_flow_manager, gemini_paste_helpers, CopilotWeb, gemini_delayed_submit
-; Efficiency: CLIPANGEL_USE_FAST_PASTE_PATH (warm path skips Alt+P when grid ready).
-; Rollback: set CLIPANGEL_USE_FAST_PASTE_PATH := false for legacy ActivateNativeFirstClip always.
+; Efficiency: CLIPANGEL_USE_FAST_PASTE_PATH (warm path skips Alt+P when grid ready). Default true.
+; Rollback: set CLIPANGEL_USE_FAST_PASTE_PATH or CLIPANGEL_USE_HWND_CACHE := false.
 ;
 ; Verification (#!+1, flag on): CA open+Row0 | CA hidden | tiny layout | busy lock | Gemini target | flag off.
 
@@ -38,9 +38,9 @@ CLIPANGEL_MIN_LAYOUT_HEIGHT := 200
 CLIPANGEL_ALT_P_SETTLE_MS := 200
 CLIPANGEL_ALT_P_HWND_WAIT_MS := 800
 ; Warm top-clip paste: ShowWindow + grid poll instead of Alt+P when list already ready (canon §7).
-global CLIPANGEL_USE_FAST_PASTE_PATH := false
+global CLIPANGEL_USE_FAST_PASTE_PATH := true
 ; Cache ClipAngel.exe HWND; validated on each hit via WinExist + process name (canon §4).
-global CLIPANGEL_USE_HWND_CACHE := false
+global CLIPANGEL_USE_HWND_CACHE := true
 global g_ClipAngelCachedHwnd := 0
 ; Dev-only: OutputDebug phase timings; keep false on hotkey paths in production (canon §17).
 global CLIPANGEL_TIMING_LOG := false
@@ -697,9 +697,13 @@ ClipAngel_IsListReady(&outHwnd := 0) {
 ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activateOnRetry := true) {
     deadline := A_TickCount + timeoutMs
     hwnd := 0
+    ensureRow0 := activateOnRetry ? ClipAngel_UiaEnsureRow0Selected.Bind(0) : ClipAngel_FastEnsureRow0
     while (A_TickCount < deadline) {
         if ClipAngel_IsListReady(&hwnd) {
-            ClipAngel_UiaEnsureRow0Selected(hwnd, false)
+            if activateOnRetry
+                ClipAngel_UiaEnsureRow0Selected(hwnd, false)
+            else
+                ClipAngel_FastEnsureRow0(hwnd)
             return true
         }
         if hwnd := ClipAngel_MainHwnd()
@@ -708,10 +712,20 @@ ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activa
     }
     if hwnd := ClipAngel_MainHwnd() {
         ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
-        ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        if activateOnRetry
+            ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        else
+            ClipAngel_FastEnsureRow0(hwnd)
         return ClipAngel_IsListReady()
     }
     return false
+}
+
+; Paste flows: skip up to 1200ms wait when grid is already ready after native open.
+ClipAngel_WaitForListReadyIfNeeded(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS) {
+    if ClipAngel_IsListReady()
+        return true
+    return ClipAngel_WaitForListReady(timeoutMs, false)
 }
 
 ClipAngel_ResolvePriorHwnd(priorHwnd := 0) {
@@ -780,18 +794,25 @@ ClipAngel_TryWarmPastePrepare(priorHwnd := 0) {
     hwnd := ClipAngel_MainHwnd()
     if !hwnd
         return false
+    ; Ultra-fast: visible grid with Row 0 already selected — no layout, no ^Home, no Alt+P.
+    if ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd) {
+        if ClipAngel_IsListReady(&hwnd) && ClipAngel_UiaIsRow0Selected(hwnd)
+            return true
+    }
     if !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd) {
         if !ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false)
             return false
     }
     if ClipAngel_IsListReady(&hwnd) {
-        ClipAngel_FastEnsureRow0(hwnd)
+        if !ClipAngel_UiaIsRow0Selected(hwnd)
+            ClipAngel_FastEnsureRow0(hwnd)
         return true
     }
     deadline := A_TickCount + CLIPANGEL_GRID_WAIT_MS + CLIPANGEL_ROW0_WAIT_MS
     while (A_TickCount < deadline) {
         if ClipAngel_IsListReady(&hwnd) {
-            ClipAngel_FastEnsureRow0(hwnd)
+            if !ClipAngel_UiaIsRow0Selected(hwnd)
+                ClipAngel_FastEnsureRow0(hwnd)
             return true
         }
         Sleep CLIPANGEL_UIA_POLL_MS
@@ -805,7 +826,7 @@ ClipAngel_PrepareForTopItemPaste(priorHwnd := 0) {
     t0 := A_TickCount
     if !CLIPANGEL_USE_FAST_PASTE_PATH {
         ClipAngel_ActivateNativeFirstClip(priorHwnd)
-        ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+        ClipAngel_WaitForListReadyIfNeeded(CLIPANGEL_FAVORITE_OPEN_READY_MS)
         ClipAngel_TimingLog("prepare_legacy", t0)
         return
     }
@@ -814,7 +835,7 @@ ClipAngel_PrepareForTopItemPaste(priorHwnd := 0) {
         return
     }
     ClipAngel_ActivateNativeFirstClip(priorHwnd)
-    ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false)
+    ClipAngel_WaitForListReadyIfNeeded(CLIPANGEL_FAVORITE_OPEN_READY_MS)
     ClipAngel_TimingLog("prepare_cold", t0)
 }
 
