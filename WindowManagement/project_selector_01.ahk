@@ -142,7 +142,10 @@ global g_Projects := [
                                                                         category: "Work", char: "m" }, { name: "SRS",
                                                                             path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - SNB BSTP",
                                                                             workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - SNB BSTP",
-                                                                            category: "Work", char: "r" }
+                                                                            category: "Work", char: "r" }, { name: "RISE",
+                                                                                path: "",
+                                                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO_BDO-DT-LA-Governança - Programa RISE",
+                                                                                category: "Work", char: "g" }
 ]
 ; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
