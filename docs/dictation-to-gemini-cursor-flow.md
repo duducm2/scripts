@@ -4,7 +4,7 @@
 2. **Finish dictating** (second press of `~#!+0` or stop manually).
 3. **After dictation stops (Gemini path):** `dictation-selection-menu.wav` plays, then a **2-second** standard loading bar fills **linearly from 0% to 100%** (buffer against accidental keys), then **Send to Gemini?** appears.
 4. **First banner — Send to Gemini?**  
-   **Y** = paste and auto-send (Enter) to Gemini (uses your Clip Angel first snippet, same as before). **G** = grammar-and-spelling preset from `prompt/grammar.txt` plus the dictated text (clipboard), then auto-send. **A** = AI text optimizer preset from `prompt/aiopt.txt` plus the dictated text, then auto-send. **S** = paste only to Gemini (no Enter). **V** = paste dictated text into the original window (**Ctrl+V**) and end the flow. **O** = open Clip Angel with focus on the newest clip (Row 0), then open **Edit text** (**F4**, same as **Shift+E** when `Shift keys.ahk` Clip Angel hotkeys are active); flow ends. **N** = cancel (flow ends).  
+   **Y** = paste and auto-send (Enter) to Gemini (uses your Clip Angel first snippet, same as before). **G** = grammar-and-spelling preset from `prompt/grammar.txt` plus the dictated text (clipboard), then auto-send. **A** = AI text optimizer preset from `prompt/aiopt.txt` plus the dictated text, then auto-send. **S** = paste only to Gemini (no Enter). **V** = paste dictated text into the window active when **V** is pressed (**Ctrl+V**) and end the flow. **W** = open a **visible windows** modal (inverse of the hidden-windows list), pick a window, activate it, paste dictated text (**Ctrl+V**), and end the flow. **O** = open Clip Angel with focus on the newest clip (Row 0), then open **Edit text** (**F4**, same as **Shift+E** when `Shift keys.ahk` Clip Angel hotkeys are active); flow ends. **N** = cancel (flow ends).  
    If no action is taken within 6 seconds, **Y** (yes) is selected by default—the same as pressing **Y** (first-snippet paste, not the **G** or **A** preset path). When the script moves fuocus from the original window to Gemini to perform this paste, it first shows a **2-second “✋ Hands off!” pre-movement cue** so you can stop typing before the automated transition.
 
 5. **If the flow sent your text to Gemini** (you chose **Y**, **G**, **A**, or let the first banner time out), after Gemini responds you see **Copy response?**  
@@ -14,7 +14,7 @@
 
 Pressing **N** at any banner terminates the whole flow.
 
-**Multi-monitor UI:** While **Send to Gemini?**, **Copy response?**, or the **Transfer to Cursor** window picker is open, banners and the picker stay on the monitor that contains the **current foreground window**. If you switch focus to a window on another screen, the visible prompt moves to that monitor so it remains in view (implemented via `trackActiveMonitor` on standard bars and foreground-based placement for the Cursor selector in `Utils.ahk` / `Gemini.ahk`).
+**Multi-monitor UI:** While **Send to Gemini?**, **Copy response?**, the **visible-window paste picker** (**W**), or the **Transfer to Cursor** window picker is open, banners and the picker stay on the monitor that contains the **current foreground window**. If you switch focus to a window on another screen, the visible prompt moves to that monitor so it remains in view (implemented via `trackActiveMonitor` on standard bars and foreground-based placement for the Cursor selector in `Utils.ahk` / `Gemini.ahk`).
 
 ## High-level flow
 
@@ -31,10 +31,12 @@ flowchart TB
     Branch --> |"Paste"| PasteOnly["^v, hide indicator"]
     Branch --> |"pendingGemini"| PreMenu["Selection sound plus 2s linear loading bar"]
     PreMenu --> ShowAndWait["Send to Gemini? 6s"]
-    ShowAndWait --> User6s{"G / A / Y / S / V / E / F / O / N / timeout"}
+    ShowAndWait --> User6s{"G / A / Y / S / V / W / E / F / O / N / timeout"}
     User6s --> |"N"| Stop6s["Flow ends"]
     User6s --> |"O"| ClipAngelOpen["Clip Angel Row0 plus Edit F4, flow ends"]
-    User6s --> |"V"| PasteOrig["Activate original, ^v, flow ends"]
+    User6s --> |"V"| PasteOrig["Activate active window, ^v, flow ends"]
+    User6s --> |"W"| VisiblePick["Visible windows modal"]
+    VisiblePick --> PasteVisible["Activate picked window, ^v, flow ends"]
     User6s --> |"timeout"| Finalize["FinalizeSubmit like Y"]
     User6s --> |"Y"| Finalize
     User6s --> |"G"| FinalizePreset["Preset grammar plus dictation"]
@@ -82,11 +84,11 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 
 ## Where the user can stop the flow
 
-| Step | Banner                                 | Actions                                                                       | Effect                                                                              |
-| ---- | -------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send (first snippet). **G** / **A** = preset + dictated text, then send. **S** = paste only (no Enter). **V** = paste dictated text into original window (**Ctrl+V**) then end. **O** = open Clip Angel (Row 0), **Edit text** (**F4**), flow ends. **N** = cancel. | N ends flow; O ends in Clip Angel editor; V ends flow after paste; S = paste only (Gemini, no Enter); Y/timeout = paste + Enter; G/A = preset + dictation + Enter; then Copy response? banner. |
-| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel. | N ends flow. Y/C/R/timeout perform their action.                                    |
-| 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                    | Cancel = no paste to Cursor.                                                        |
+| Step | Banner                                 | Actions                                                                                                                                                                                                                                                                                                                                                                                           | Effect                                                                                                                                                                                          |
+| ---- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Send to Gemini?** (6s)               | **Y** or timeout = send (first snippet). **G** / **A** = preset + dictated text, then send. **S** = paste only (no Enter). **V** = paste dictated text into the window active when **V** is pressed (**Ctrl+V**) then end. **W** = pick a visible window from modal, activate, paste (**Ctrl+V**), flow ends. **O** = open Clip Angel (Row 0), **Edit text** (**F4**), flow ends. **N** = cancel. | N ends flow; O ends in Clip Angel editor; V/W end flow after paste; S = paste only (Gemini, no Enter); Y/timeout = paste + Enter; G/A = preset + dictation + Enter; then Copy response? banner. |
+| 2    | **Copy response?** (5s)                | **Y** = copy. **C** = transfer to Cursor. **R** = read aloud. **N** = cancel.                                                                                                                                                                                                                                                                                                                     | N ends flow. Y/C/R/timeout perform their action.                                                                                                                                                |
+| 3    | **Transfer to Cursor** (window picker) | **N** or **Esc** = cancel. **1–9** = paste to that window.                                                                                                                                                                                                                                                                                                                                        | Cancel = no paste to Cursor.                                                                                                                                                                    |
 
 ## Hotkeys
 
@@ -98,7 +100,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 
 ## Files and entry points
 
-- **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste` (optional second arg restores focus to the anchored window after paste + Enter).
+- **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `Dictation_ShowVisiblePasteSelector`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste` (optional second arg restores focus to the anchored window after paste + Enter).
 - **Gemini.ahk**: `GeminiDelayedSubmitMonitor` (response done detection), “Copy response?” banner, Copy/Read/Transfer actions.
 
 ## Happy path (no cancel)

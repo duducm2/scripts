@@ -70,6 +70,7 @@ class D2C_FlowManager {
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
+            "W", this.OnSubmitW.Bind(this),
             "E", this.OnSubmitE.Bind(this),
             "F", this.OnSubmitF.Bind(this),
             "O", this.OnSubmitO.Bind(this),
@@ -83,7 +84,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
             true,
             true,
             true
@@ -127,6 +128,30 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.PasteDictationToActiveWindow()
+    }
+
+    ; [W] Pick a visible window from modal list, activate it, paste dictated text (Ctrl+V), end flow.
+    OnSubmitW(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.CurrentPhase := "PickingVisiblePaste"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+        clipBackup := ""
+        try clipBackup := A_Clipboard
+        targetHwnd := Dictation_ShowVisiblePasteSelector(this.OriginHwnd)
+        if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
+            try WinActivate("ahk_id " targetHwnd)
+            if (!WinActive("ahk_id " targetHwnd))
+                WinWaitActive("ahk_id " targetHwnd, , 0.3)
+            Sleep 60
+            try A_Clipboard := clipBackup
+            Send("^v")
+        }
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
     }
 
     ; Paste dictated text into the active window and end the D2C flow (menu [V]).

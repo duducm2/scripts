@@ -136,6 +136,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
 
+; [Utils module] Post-dictation visible-window paste picker -> Utils\dictation_visible_paste.ahk
+#include %A_ScriptDir%\Utils\dictation_visible_paste.ahk
+
 ; [Utils module] D2C_FlowManager dictation-Gemini-Cursor state machine -> Utils\d2c_flow_manager.ahk
 #include %A_ScriptDir%\Utils\d2c_flow_manager.ahk
 
