@@ -46,7 +46,10 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "Idle")
             return
         this.Reset()
-        D2C_RunSubmitMenuDelayBar()
+        if !D2C_RunSubmitMenuDelayBar() {
+            this.PasteDictationToActiveWindow()
+            return
+        }
         this.OriginHwnd := 0
         try this.OriginHwnd := WinGetID("A")
         this.PromptForGeminiSubmit()
@@ -127,8 +130,11 @@ class D2C_FlowManager {
     OnSubmitV(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
+        this.PasteDictationToActiveWindow()
+    }
 
-        ; Lock target at keypress time: last text field the user selected before pressing V.
+    ; Paste dictated text into the active window and end the D2C flow (menu [V] or Ctrl+V during preparing bar).
+    PasteDictationToActiveWindow() {
         targetHwnd := 0
         try targetHwnd := WinGetID("A")
 
