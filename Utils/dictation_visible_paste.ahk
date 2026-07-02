@@ -18,6 +18,130 @@ global g_DictationVisiblePasteTrackTimer := ""
 global g_DictationVisiblePasteLastForegroundMonitorIdx := 0
 global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d",
     "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
+
+global DICTATION_VISIBLE_PASTE_THUMB_W := 200
+global DICTATION_VISIBLE_PASTE_THUMB_H := 112
+global DICTATION_VISIBLE_PASTE_ROW_H := 122
+global DICTATION_VISIBLE_PASTE_MODAL_W := 680
+
+; DWM thumbnail property flags
+global DWM_TNP_RECTDESTINATION := 0x1
+global DWM_TNP_VISIBLE := 0x8
+global DWM_TNP_SOURCECLIENTAREAONLY := 0x10
+
+Dictation_DwmRegisterThumbnail(destHwnd, sourceHwnd) {
+    if (!destHwnd || !sourceHwnd || destHwnd = sourceHwnd)
+        return 0
+    thumbId := 0
+    hr := 0
+    try {
+        hr := DllCall("dwmapi\DwmRegisterThumbnail", "Ptr", destHwnd, "Ptr", sourceHwnd, "Ptr*", &thumbId, "HRESULT")
+    } catch {
+        return 0
+    }
+    if (hr < 0 || !thumbId)
+        return 0
+    return thumbId
+}
+
+Dictation_DwmUpdateThumbnailRect(thumbId, x, y, w, h, sourceClientOnly := false) {
+    if (!thumbId)
+        return false
+    props := Buffer(48, 0)
+    flags := DWM_TNP_RECTDESTINATION | DWM_TNP_VISIBLE | DWM_TNP_SOURCECLIENTAREAONLY
+    NumPut("UInt", flags, props, 0)
+    NumPut("Int", x, props, 4)
+    NumPut("Int", y, props, 8)
+    NumPut("Int", x + w, props, 12)
+    NumPut("Int", y + h, props, 16)
+    NumPut("Int", 1, props, 40)
+    NumPut("Int", sourceClientOnly ? 1 : 0, props, 44)
+    try {
+        return DllCall("dwmapi\DwmUpdateThumbnailProperties", "Ptr", thumbId, "Ptr", props, "HRESULT") >= 0
+    } catch {
+        return false
+    }
+}
+
+Dictation_DwmUnregisterThumbnail(thumbId) {
+    if (!thumbId)
+        return
+    try DllCall("dwmapi\DwmUnregisterThumbnail", "Ptr", thumbId, "HRESULT")
+    catch {
+    }
+}
+
+Dictation_VisiblePasteUnregisterAllThumbnails() {
+    global g_DictationVisiblePasteThumbnails
+    for entry in g_DictationVisiblePasteThumbnails {
+        if (IsObject(entry) && entry.HasProp("thumbId"))
+            Dictation_DwmUnregisterThumbnail(entry.thumbId)
+    }
+    g_DictationVisiblePasteThumbnails := []
+}
+
+Dictation_VisiblePasteTruncateTitle(title, maxLen := 55) {
+    if (StrLen(title) <= maxLen)
+        return title
+    return SubStr(title, 1, maxLen - 1) . "…"
+}
+
+; Map panel control screen rect to destination GUI client coordinates (DWM rcDestination).
+Dictation_VisiblePastePanelDestRect(gui, panel, &outX, &outY, &outW, &outH) {
+    if (!Dictation_VisiblePasteGuiHasWindow(gui) || !IsObject(panel))
+        return false
+    try panelHwnd := panel.Hwnd
+    catch
+        return false
+    if (!panelHwnd)
+        return false
+    guiHwnd := gui.Hwnd
+    panelRect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "Ptr", panelHwnd, "Ptr", panelRect)
+        return false
+    ptTL := Buffer(8, 0)
+    ptBR := Buffer(8, 0)
+    NumPut("Int", NumGet(panelRect, 0, "Int"), ptTL, 0)
+    NumPut("Int", NumGet(panelRect, 4, "Int"), ptTL, 4)
+    NumPut("Int", NumGet(panelRect, 8, "Int"), ptBR, 0)
+    NumPut("Int", NumGet(panelRect, 12, "Int"), ptBR, 4)
+    if !DllCall("MapWindowPoints", "Ptr", 0, "Ptr", guiHwnd, "Ptr", ptTL, "UInt", 1)
+        return false
+    if !DllCall("MapWindowPoints", "Ptr", 0, "Ptr", guiHwnd, "Ptr", ptBR, "UInt", 1)
+        return false
+    outX := NumGet(ptTL, 0, "Int")
+    outY := NumGet(ptTL, 4, "Int")
+    outW := NumGet(ptBR, 0, "Int") - outX
+    outH := NumGet(ptBR, 4, "Int") - outY
+    return outW > 2 && outH > 2
+}
+
+Dictation_VisiblePasteAttachThumbnails(gui, panelRows) {
+    global g_DictationVisiblePasteThumbnails
+    if (!Dictation_VisiblePasteGuiHasWindow(gui))
+        return
+    destHwnd := gui.Hwnd
+    for row in panelRows {
+        if (!IsObject(row) || !row.HasProp("panel") || !row.HasProp("sourceHwnd"))
+            continue
+        sourceHwnd := row.sourceHwnd
+        if (!sourceHwnd || sourceHwnd = destHwnd || !WinExist("ahk_id " sourceHwnd))
+            continue
+        if (Dictation_IsExcludedPasteTarget(sourceHwnd))
+            continue
+        if (!Dictation_VisiblePastePanelDestRect(gui, row.panel, &px, &py, &pw, &ph))
+            continue
+        thumbId := Dictation_DwmRegisterThumbnail(destHwnd, sourceHwnd)
+        if (!thumbId)
+            continue
+        if (!Dictation_DwmUpdateThumbnailRect(thumbId, px, py, pw, ph, false)) {
+            Dictation_DwmUnregisterThumbnail(thumbId)
+            continue
+        }
+        g_DictationVisiblePasteThumbnails.Push({ thumbId: thumbId, sourceHwnd: sourceHwnd })
+    }
+}
 
 Dictation_IsExcludedPasteTarget(hwnd) {
     if (!hwnd)
@@ -410,17 +534,96 @@ Dictation_VisiblePasteAssignKeys(rows) {
     return windows
 }
 
-Dictation_VisiblePasteBuildDisplayText(rows, windows) {
+Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
+    global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
     global g_DictationVisiblePasteCharSequence
+    global DICTATION_VISIBLE_PASTE_THUMB_W, DICTATION_VISIBLE_PASTE_THUMB_H, DICTATION_VISIBLE_PASTE_ROW_H,
+        DICTATION_VISIBLE_PASTE_MODAL_W
+    Dictation_VisiblePasteUnregisterAllThumbnails()
+    windows := Dictation_VisiblePasteAssignKeys(rows)
+    fontSize := 11
+    modalW := DICTATION_VISIBLE_PASTE_MODAL_W
+    marginX := 15
+    marginY := 10
+    keyW := 28
+    thumbW := DICTATION_VISIBLE_PASTE_THUMB_W
+    thumbH := DICTATION_VISIBLE_PASTE_THUMB_H
+    rowH := DICTATION_VISIBLE_PASTE_ROW_H
+    thumbX := marginX + keyW + 8
+    titleX := thumbX + thumbW + 10
+    titleW := modalW - titleX - marginX
+    contentW := modalW - 2 * marginX
+
+    g_DictationVisiblePasteGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_DictationVisiblePasteGui.Opt("-DPIScale")
+    g_DictationVisiblePasteGui.BackColor := "1E1E2E"
+    g_DictationVisiblePasteGui.MarginX := marginX
+    g_DictationVisiblePasteGui.MarginY := marginY
+    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4 Bold", "Segoe UI")
+    g_DictationVisiblePasteGui.Add("Text", "w" . contentW . " Center", "=== VISIBLE WINDOWS ===")
+
+    rowY := marginY + 28
+    thumbPanels := []
+    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4 Bold", "Segoe UI")
+    for w in windows {
+        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . rowY . " w" . keyW . " h" . thumbH . " Center",
+            "[" . w.label . "]")
+        ; Border frame around preview slot (DWM renders into the inner panel rect).
+        g_DictationVisiblePasteGui.Add("Text", "x" . (thumbX - 1) . " y" . (rowY - 1) . " w" . (thumbW + 2) . " h" . (
+            thumbH + 2) . " Background6C7086", "")
+        panel := g_DictationVisiblePasteGui.Add("Text", "x" . thumbX . " y" . rowY . " w" . thumbW . " h" . thumbH .
+            " Background1E1E2E", "")
+        g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text", "x" . titleX . " y" . (rowY + 36) . " w" . titleW,
+        Dictation_VisiblePasteTruncateTitle(w.title))
+        thumbPanels.Push({ sourceHwnd: w.hwnd, panel: panel })
+        rowY += rowH
+    }
+
     slotCount := g_DictationVisiblePasteCharSequence.Length
-    displayText := "=== VISIBLE WINDOWS ===`n`n"
-    for w in windows
-        displayText .= "[" . w.label . "] " . w.title . "`n"
-    if (rows.Length > slotCount)
-        displayText .= "`n(" . (rows.Length - slotCount) . " more — close some and reopen)`n"
-    displayText .= "`n>>> slot key = GO + PASTE <<<`n"
-    displayText .= "`n[ESC] Cancel"
-    return displayText
+    if (rows.Length > slotCount) {
+        g_DictationVisiblePasteGui.SetFont("s" . (fontSize - 1) . " c6C7086", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 4) . " w" . contentW,
+        "(" . (rows.Length - slotCount) . " more — close some and reopen)")
+        rowY += 22
+    }
+
+    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 8) . " w" . contentW,
+    ">>> slot key = GO + PASTE <<<")
+    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 28) . " w" . contentW, "[ESC] Cancel")
+    g_DictationVisiblePasteGui.OnEvent("Escape", Dictation_VisiblePasteCancel)
+    g_DictationVisiblePasteActive := true
+    g_DictationVisiblePasteResult := ""
+    Dictation_VisiblePasteBindHotkeys(windows)
+    try {
+        #InputLevel 10
+        Hotkey("$*Escape", Dictation_VisiblePasteCancel, "On")
+        #InputLevel 0
+    } catch {
+    }
+    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
+        monitorIndex := 1
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", centerOnHwnd, "ptr", rect)) {
+            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+                if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
+                    monitorIndex := A_Index
+                    break
+                }
+            }
+        }
+        Dictation_VisiblePasteRepositionToActiveMonitor(monitorIndex)
+    } else {
+        Dictation_VisiblePasteRepositionToActiveMonitor(0)
+    }
+    ; Layout must be final before mapping panel HWNDs to DWM destination rects.
+    Sleep 30
+    Dictation_VisiblePasteAttachThumbnails(g_DictationVisiblePasteGui, thumbPanels)
+    Dictation_VisiblePasteStartMonitorTracking()
 }
 
 Dictation_VisiblePasteClose() {
@@ -429,6 +632,7 @@ Dictation_VisiblePasteClose() {
         return
     g_DictationVisiblePasteActive := false
     Dictation_VisiblePasteStopMonitorTracking()
+    Dictation_VisiblePasteUnregisterAllThumbnails()
     g_DictationVisiblePasteKeyMap := Map()
     Dictation_VisiblePasteUnbindHotkeys()
     try {
@@ -466,49 +670,6 @@ Dictation_VisiblePasteHandleChar(char, *) {
     } finally {
         Dictation_VisiblePasteReleaseCharActionLock()
     }
-}
-
-Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
-    global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
-    windows := Dictation_VisiblePasteAssignKeys(rows)
-    displayText := Dictation_VisiblePasteBuildDisplayText(rows, windows)
-    fontSize := 11
-    baseWidth := 480
-    g_DictationVisiblePasteGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_DictationVisiblePasteGui.BackColor := "1E1E2E"
-    g_DictationVisiblePasteGui.MarginX := 15
-    g_DictationVisiblePasteGui.MarginY := 10
-    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
-    g_DictationVisiblePasteGui.Add("Text", "w" . (baseWidth - 30), displayText)
-    g_DictationVisiblePasteGui.OnEvent("Escape", Dictation_VisiblePasteCancel)
-    g_DictationVisiblePasteActive := true
-    g_DictationVisiblePasteResult := ""
-    Dictation_VisiblePasteBindHotkeys(windows)
-    try {
-        #InputLevel 10
-        Hotkey("$*Escape", Dictation_VisiblePasteCancel, "On")
-        #InputLevel 0
-    } catch {
-    }
-    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
-        monitorIndex := 1
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", centerOnHwnd, "ptr", rect)) {
-            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
-            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
-            loop MonitorGetCount() {
-                MonitorGet(A_Index, &ml, &mt, &mr, &mb)
-                if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                    monitorIndex := A_Index
-                    break
-                }
-            }
-        }
-        Dictation_VisiblePasteRepositionToActiveMonitor(monitorIndex)
-    } else {
-        Dictation_VisiblePasteRepositionToActiveMonitor(0)
-    }
-    Dictation_VisiblePasteStartMonitorTracking()
 }
 
 ; Returns selected window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
