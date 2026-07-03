@@ -26,7 +26,7 @@ Inputs:
 
 - Optional deck constraints: <target slide count, audience, tone, language, must-include topics>
 
-- Optional style notes: <for downstream image generation; brand rules may be attached later in Stage 2>
+- Optional style notes: <for downstream image generation; human may attach any style requirements in Stage 2>
 
 
 
@@ -58,7 +58,7 @@ Column definitions:
 
 - data_points: Numbers and labels for charts (e.g. EMEA:42|APAC:31). Leave empty if not applicable.
 
-- visual_intent: Short description of intended look (columns, chart type, icons, layout).
+- visual_intent: Short description of layout and content (columns, chart type, icons, subjects). No colors, fonts, or brand style.
 
 - speaker_notes: Optional presenter notes.
 

@@ -1,258 +1,125 @@
 Task:
-
 Take a slides CSV (output from ppt-content-to-slides-csv, Stage 1) and produce an elements CSV. One row = one compositable image asset for a single slide. Each row must include an image_gen_prompt for an image-generation AI.
-
-
 
 This is Stage 2 of a two-stage PowerPoint workflow. Stage 1 plans the deck; Stage 2 decomposes each slide into isolated visual elements so image AIs can render sharp, halo-free components instead of messy full-slide images.
 
-
-
-The human attaches Bosch brand rules (bosch-brand-image.txt, illustration-style.json, reference illustrations) when generating each image. image_gen_prompt must describe subject and composition only — never visual style — so attachments remain the style authority.
-
-
+image_gen_prompt must be generic: state what to depict and how to frame it only. Never prescribe visual style (colors, fonts, illustration style, realism level, brand rules). The human may attach any style requirements later (brand guides, JSON, reference images, custom instructions) — those attachments override and define all visual style at image-generation time.
 
 Before processing:
 
-
-
 1. Confirm the slides CSV is present (paste or attach).
-
 2. If the slides CSV is missing or lacks a slide_id column, stop and ask the user to provide it.
-
-
 
 Inputs:
 
-
-
 - Slides CSV: <paste or attach output from ppt-content-to-slides-csv>
-
-- Optional assembly notes: <global margins, font preference — not colors or illustration style>
-
-
+- Optional assembly notes: <global margins or placement preferences — not colors or illustration style>
 
 Column schema (authoritative — use exactly these columns in this order):
 
-
-
 element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
-
-
 
 Column definitions:
 
-
-
 - element_id: Stable primary key. Format EL_SLIDE_001_01, EL_SLIDE_001_02, etc. Encode parent slide in the ID.
-
 - slide_id: Foreign key — must match a slide_id from the input slides CSV.
-
 - element_order: Stacking / reading order on the slide (1 = first / back / top-left).
-
 - element_type: One of: title, subtitle, section_label, bullet_group, body_text_block, metric_card, chart_bar, chart_line, chart_pie, icon_badge, illustration, diagram, timeline_segment, process_step, persona_card, comparison_column, callout, divider_line, decorative_shape.
-
 - position_region: Placement hint — e.g. top, top_left, top_center, center, bottom_right, full_width_band, left_column, right_column.
-
 - size_hint: One of: small, medium, large, full_width, full_height.
-
 - text_to_render: Literal text that must appear in the image. Leave empty for non-text elements (e.g. charts with data only in the prompt).
-
-- image_gen_prompt: Subject + composition brief for image generation. Copy-paste ready. See rules below — style is deferred to Bosch attachments.
-
+- image_gen_prompt: Minimal subject + composition brief. Copy-paste ready. No visual style. See rules below.
 - assembly_notes: How to place this element on the slide (margins, alignment relative to other elements).
-
-
 
 Decomposition rules:
 
-
-
 1. Never produce one element that represents an entire slide. Split into title, content blocks, charts, icons, illustrations, cards, etc.
-
 2. Every slide_id from the input must have at least one element. Typical slides have 2–6 elements.
-
 3. Respect decomposition_hints and visual_intent from the slides CSV.
-
 4. For chart_focus or metric_dashboard slides, create separate chart or metric_card elements — one chart per element.
-
 5. Use data_points from the parent slide row when writing chart or metric prompts.
-
 6. Use element_type illustration for standalone illustrative assets (objects, metaphors, scenes) that are not charts, icons, or text blocks.
-
-
 
 Illustration-specific decomposition (element_type: illustration, diagram, decorative_shape, icon_badge, persona_card, process_step, timeline_segment):
 
-
-
-1. Describe the concept in abstract, stylized terms — not photorealistic scene detail.
-
-2. Good: "large passenger ship as scale metaphor (Titanic concept, not historical replica)".
-
-3. Bad: "detailed Titanic with rivets, smokestacks, ocean waves, and cinematic lighting".
-
-4. Require simplified iconic representation suitable for Bosch 2.5D modular illustration.
-
-5. Do not describe materials, lighting, realism, historical accuracy, textures, or decorative art styles in image_gen_prompt.
-
-
+1. State what to depict — directly and briefly from the slide content (e.g. "Titanic ship illustration").
+2. Do not add art direction: no colors, materials, lighting, realism level, historical detail, textures, or "make it look like…" language.
+3. Do not expand the subject into a full scene or storyboard. One isolated element only.
 
 image_gen_prompt rules (every row must follow all of these inside image_gen_prompt):
 
-
-
 Structure every image_gen_prompt in three layers:
 
-
-
 Layer 1 — Subject (what the element depicts):
-
-- Concept, metaphor, data values, or literal text content.
-
+- What to show: literal text, chart data, or the named subject (e.g. Titanic ship illustration).
 - For charts: chart type and numeric data only.
-
 - For text elements: exact text from text_to_render.
-
-- FORBIDDEN in Subject: photorealistic scene description, cinematic lighting, textures, era-specific realism, color palettes, fonts, illustration style, "make it look like…" language.
-
-
+- FORBIDDEN in Subject: colors, fonts, illustration style, realism level, brand rules, lighting, textures, decorative style adjectives, scene-setting beyond the named subject.
 
 Layer 2 — Composition (how the element is framed):
-
 1. Start with: Generate only this isolated UI element, not a full slide.
-
 2. Pure white #FFFFFF background — unless the element is a small icon_badge, in which case specify a clean icon on white with no outer glow.
-
 3. Sharp, vector-like edges. No gray fringes, feathered edges, soft glow, muddy transitions, outer glow, ambient haze, drop-shadow bleed, or compression-like smearing around shapes or text.
+4. Include exact text from text_to_render when that column is non-empty. Spell and capitalize correctly.
+5. Use an appropriate aspect ratio for the element type — not always 16:9. Examples: title = wide horizontal strip; metric_card = near-square; chart = landscape rectangle.
+6. All text must be legible at 100% zoom with no blurry glyph edges.
+7. FORBIDDEN in Composition: full-slide layout, background scenes, color choices, font family, shadows, style adjectives.
 
-4. Flat UI areas must use uniform solid color fills with crisp boundaries — no gradient bleed or haze at shape borders.
-
-5. Include exact text from text_to_render when that column is non-empty. Spell and capitalize correctly.
-
-6. Use an appropriate aspect ratio for the element type — not always 16:9. Examples: title = wide horizontal strip; metric_card = near-square; chart = landscape rectangle; illustration = landscape or square crop as appropriate.
-
-7. All text must be legible at 100% zoom with no blurry glyph edges.
-
-8. FORBIDDEN in Composition: full-slide layout, background scenes, color choices, font family, shadows, style adjectives (e.g. elegant, modern, cinematic).
-
-
-
-Layer 3 — Style deferral (mandatory closing — include in every image_gen_prompt):
-
-Visual style: follow the attached Bosch brand prompt, illustration-style.json, and reference illustration. Do not substitute photorealistic, cinematic, sketch, watercolor, or decorative styles.
-
-
+Layer 3 — Style override (mandatory closing — include in every image_gen_prompt):
+If the human provides style requirements, attachments, or reference images, those override this prompt and define all visual style. Do not invent or substitute a different style when human guidance is present.
 
 Type-specific Subject rules:
 
-
-
-- title, subtitle, section_label, bullet_group, body_text_block: Subject = exact text_to_render. Composition = layout band only. No font, color, or weight.
-
-- chart_bar, chart_line, chart_pie, metric_card: Subject = chart type + labels + values from data_points. No bar colors, fonts, or shadows.
-
-- illustration, diagram, decorative_shape, icon_badge, persona_card, process_step, timeline_segment: Subject = abstract concept and simplified iconic representation only. No materials, lighting, or realism.
-
-
+- title, subtitle, section_label, bullet_group, body_text_block: Subject = exact text_to_render. Composition = layout band only.
+- chart_bar, chart_line, chart_pie, metric_card: Subject = chart type + labels + values from data_points. No colors or fonts.
+- illustration, diagram, decorative_shape, icon_badge, persona_card, process_step, timeline_segment: Subject = what to depict, named briefly (e.g. Titanic ship illustration). Nothing else.
 
 Validation (before output):
 
-
-
 - Every slide_id in elements exists in the input slides CSV.
-
 - No duplicate element_id values.
-
 - Every row has a non-empty image_gen_prompt.
-
 - No row represents a full slide layout.
-
-- Every image_gen_prompt ends with the mandatory Style deferral sentence.
-
-- No image_gen_prompt contains color palettes, font names, photorealistic descriptions, or generic style adjectives.
-
-
+- Every image_gen_prompt ends with the mandatory Style override sentence.
+- No image_gen_prompt contains color palettes, font names, brand names, illustration-style directives, or generic style adjectives.
 
 Output (CRITICAL — read before responding):
 
-
-
 Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
 
-
-
 WRONG (do not output): element\_id, EL\_SLIDE\_001\_01
-
 RIGHT: element_id, EL_SLIDE_001_01
-
-
 
 Put the CSV inside a fenced code block labeled csv. Example:
 
-
-
 ```csv
-
 element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
-
-EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"Generate only this isolated UI element, not a full slide. Subject: title text Q4 Results. Composition: wide horizontal strip, centered text band, pure white #FFFFFF background, sharp edges, no halos. Visual style: follow the attached Bosch brand prompt, illustration-style.json, and reference illustration. Do not substitute photorealistic, cinematic, sketch, watercolor, or decorative styles.";Place in top third, horizontally centered
-
-EL_SLIDE_002_01;SLIDE_002;1;title;top_center;medium;Revenue by Region;"Generate only this isolated UI element, not a full slide. Subject: section title Revenue by Region. Composition: wide horizontal strip, pure white #FFFFFF background, sharp edges, no halos. Visual style: follow the attached Bosch brand prompt, illustration-style.json, and reference illustration. Do not substitute photorealistic, cinematic, sketch, watercolor, or decorative styles.";Above chart, centered
-
-EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"Generate only this isolated UI element, not a full slide. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Composition: landscape rectangle, pure white #FFFFFF background, sharp edges, no halos. Visual style: follow the attached Bosch brand prompt, illustration-style.json, and reference illustration. Do not substitute photorealistic, cinematic, sketch, watercolor, or decorative styles.";Below title, ~80% slide width, centered
-
-EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"Generate only this isolated UI element, not a full slide. Subject: simplified iconic passenger ship representing maritime scale (Titanic concept, not historical replica). Composition: single foreground object, centered, landscape crop, pure white #FFFFFF background, sharp edges, no halos. Visual style: follow the attached Bosch brand prompt, illustration-style.json, and reference illustration. Do not substitute photorealistic, cinematic, sketch, watercolor, or decorative styles.";Center of slide, dominant visual
-
+EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"Generate only this isolated UI element, not a full slide. Subject: title text Q4 Results. Composition: wide horizontal strip, centered text band, pure white #FFFFFF background, sharp edges, no halos. If the human provides style requirements, attachments, or reference images, those override this prompt and define all visual style. Do not invent or substitute a different style when human guidance is present.";Place in top third, horizontally centered
+EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"Generate only this isolated UI element, not a full slide. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Composition: landscape rectangle, pure white #FFFFFF background, sharp edges, no halos. If the human provides style requirements, attachments, or reference images, those override this prompt and define all visual style. Do not invent or substitute a different style when human guidance is present.";Below title, ~80% slide width, centered
+EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"Generate only this isolated UI element, not a full slide. Subject: Titanic ship illustration. Composition: single isolated object, centered, landscape crop, pure white #FFFFFF background, sharp edges, no halos. If the human provides style requirements, attachments, or reference images, those override this prompt and define all visual style. Do not invent or substitute a different style when human guidance is present.";Center of slide, dominant visual
 ```
-
-
 
 Rules for the code block contents:
 
-
-
 1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
-
 2. Inside the block: raw plain text only. Never escape characters with backslashes.
-
 3. No markdown escaping anywhere — not in headers, IDs, or cell text.
-
 4. Underscores are literal: write element_id, not element\_id.
-
 5. The backslash character must not appear unless it is real data in a cell.
-
 6. Use the exact column names and order defined above.
-
 7. One row per line inside the code block (header on line 1, each data row on its own line).
-
 8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores. image_gen_prompt often needs quoting because it contains semicolons — quote it when required.
 
-
-
 ---
-
 Reminder for the human (do not include in AI output):
-
-
 
 Before sending this prompt, attach or paste the slides CSV from Stage 1 (ppt-content-to-slides-csv.txt).
 
-
-
 After the AI responds:
 
-
-
 1. Save the CSV as elements.csv (or similar).
-
 2. After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them.
-
-3. For each row, before generating the image:
-
-   a. Attach bosch-brand-image.txt + type-specific JSON (e.g. illustration-style.json for illustrations) + BNG reference illustration.
-
-   b. Then paste image_gen_prompt. The prompt is subject/composition only — attachments own visual style.
-
+3. For each row, when generating the image:
+   a. Attach your style requirements first (brand prompt, JSON, reference images, custom instructions — Bosch is one option, not the default).
+   b. Then paste image_gen_prompt. It states subject and composition only; your attachments define visual style and override the prompt.
 4. Assemble generated images in PowerPoint using position_region, size_hint, and assembly_notes from each row.
-
