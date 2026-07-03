@@ -196,6 +196,8 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection) {
+    if (!HandyAi_IsOwnerProcess())
+        return
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
 
     if !g_HandyAiModels.Has(selection)
@@ -256,7 +258,12 @@ ExecuteHandyAiModelSelection(selection) {
             return
         }
 
-        Handy_SetPersistedAiModelSlot(selection)
+        if (!Handy_SetPersistedAiModelSlot(selection)) {
+            AiModelBanner_Show("❌ Could not save model preference", BANNER_ACCENT_ERROR)
+            Sleep 2000
+            AiModelBanner_Hide()
+            return
+        }
 
         ; Update persistent language flag indicator (slot 1 = UK, slot 2 = BR, slot 3 = multi).
         if (selection >= 1 && selection <= 3)

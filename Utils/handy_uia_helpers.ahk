@@ -422,7 +422,7 @@ Handy_ReadActiveAiModelName(hwnd) {
     }
 }
 
-; Quality gate: active model name must match prefix and not be loading.
+; Quality gate: active model name must contain modelName and not be loading.
 Handy_VerifyAiModelActive(hwnd, modelName) {
     if (modelName = "")
         return false
@@ -431,7 +431,7 @@ Handy_VerifyAiModelActive(hwnd, modelName) {
         return false
     if (InStr(name, "loading"))
         return false
-    return InStr(name, modelName) = 1
+    return InStr(name, modelName)
 }
 
 ; Open menu, click model, wait for load — all must succeed.

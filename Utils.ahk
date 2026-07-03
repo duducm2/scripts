@@ -233,4 +233,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Dictation indicator, ~#!+0 hotkey, ToggleDictationMode -> Utils\dictation_toggle.ahk
 #include %A_ScriptDir%\Utils\dictation_toggle.ahk
 
+; Handy model hotkeys and language flag: AppLaunchers.ahk only (after #!+C / ^!#9 / ^!#b are registered).
+HandyAi_ConfigureProcessOwnership()
+
 ; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).

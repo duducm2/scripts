@@ -171,6 +171,8 @@ if (A_Args.Length > 0 && A_Args[1] = "/Updated") {
         }
         ; After all scripts have been started (this block runs last in include order for AppLaunchers /Updated), apply AHK volume - not at Quick Update start (old sessions / dead timers).
         ScheduleApplyScriptMasterVolumeTargetAfterQuickUpdate()
+        if (HandyAi_IsOwnerProcess())
+            LanguageFlag_InitFromPersistedSlot()
     } catch {
     }
 }

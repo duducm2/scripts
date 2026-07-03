@@ -12,6 +12,8 @@
 ; Win+Alt+Shift+C toggles: open when closed, close when open.
 ; Targets the correct Handy instance by environment: work = Documents\Handy\handy.exe, home = any.
 SelectAiModelInHandy() {
+    if (!HandyAi_IsOwnerProcess())
+        return
     global g_AiModelSelectorActive
     if (g_AiModelSelectorActive)
         AiModelSelector_Close()
