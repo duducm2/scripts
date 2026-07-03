@@ -99,76 +99,11 @@ Typography:
 
 ---
 
-Image-type adapters
-
-Apply the rules for the image type specified below. For detailed rules, defer to the attached JSON files listed under "Recommended JSON attachments."
-
-PowerPoint slide:
-- Use 16:9 widescreen aspect ratio.
-- One accent color per presentation or chapter unless chapter-based color coding is required.
-- CD-compliant hierarchy: consistent typeface, uniform design language, clear structure.
-- Bosch Red reserved for logotype only; use sparingly for accentuation.
-- Recommended JSON: powerpoint/design-elements.json, powerpoint/slide-types.json
-
-Chart / data visualization:
-- Use Bosch diagram color scheme for complex charts (contrast, readability, accessibility).
-- Use accent color and its gradations first; add further brand colors only if needed.
-- No decorative color noise; every color must communicate data or hierarchy.
-- Recommended JSON: layout/data-visualization.json, basic-elements/colors.json
-
-Software / web UI:
-- Flatten-column grid, flat components, rem-based spacing.
-- Primary button: Bosch Blue 50 background, white text, 0px border radius.
-- Secondary button: transparent background, Bosch Blue border and text.
-- Clear hover/active states per attached JSON.
-- Recommended JSON: bosch-digital-design-system/general.json, bosch-digital-design-system/software/design-principles-software.json, bosch-digital-design-system/measurement-spacing.json, bosch-digital-design-system/states.json
-
-Product UI / prototype screen:
-- Adapt layout to the product context and viewing distance.
-- Follow BDDS product UI patterns; hardware-appropriate sizing.
-- Recommended JSON: bosch-digital-design-system/product/product-ui-basics.json, bosch-digital-design-system/product/display-types.json
-
-Illustration / icon:
-- Follow Bosch illustration style (2.5D, modular, clear) or Bosch iconography rules.
-- Recommended JSON: basic-elements/illustration-style.json, basic-elements/iconography.json
-
----
-
 White background rule (default)
 
 1. Default: use a pure white (#FFFFFF) background for the entire image.
 2. If the subject cannot be full-bleed white (e.g. a UI screen mockup), surround it with a clear, thick white border or margin so the image pastes cleanly onto any white document, slide, or report.
 3. Apply overrides only if the user provides explicit instructions at the end of this prompt.
-
----
-
-Recommended JSON attachments
-
-Core (attach for most image types):
-- context/brand-guide/research/general/general.json
-- context/brand-guide/research/basic-elements/colors.json
-- context/brand-guide/research/basic-elements/typography.json
-- context/brand-guide/research/bosch-digital-design-system/general.json
-
-Type-specific (attach as needed):
-- PowerPoint: context/brand-guide/research/powerpoint/design-elements.json
-- Charts: context/brand-guide/research/layout/data-visualization.json
-- Software UI: context/brand-guide/research/bosch-digital-design-system/software/design-principles-software.json
-- Product UI: context/brand-guide/research/bosch-digital-design-system/product/product-ui-basics.json
-- Illustrations: context/brand-guide/research/basic-elements/illustration-style.json
-- Icons: context/brand-guide/research/basic-elements/iconography.json
-- Imagery: context/brand-guide/research/basic-elements/imagery-style.json
-
-Reference images (attach as needed):
-- context/brand-guide/image-references/powerpoint/general.png
-- context/brand-guide/image-references/bosch-digital-design-system/ (buttons, accordions, loading indicators, etc.)
-- context/brand-guide/image-references/graphics/ (timelines, diagrams)
-- context/brand-guide/image-references/illustration/ (people, light vs dark examples)
-- Screenshots of official Bosch websites or products that exemplify the target style
-
-(Mirrored copies may also exist under prompt/brand-guide/.)
-
----
 
 Final quality double-check
 
@@ -188,6 +123,8 @@ Before delivering the image, verify every item below. If any check fails, revise
 
 ---
 
+Human reminders (for the person sending this prompt):
+
 User fill-in sections
 
 Image type:
@@ -198,10 +135,6 @@ Content and requirements:
 
 Optional overrides:
 [Insert any exceptions to the defaults above, including non-white backgrounds if explicitly required]
-
----
-
-Human reminders (for the person sending this prompt):
 
 📄 Attach brand-guide JSON context files (core + type-specific from context/brand-guide/research/)
 🖼️ Attach reference images (Bosch website, PowerPoint example, DDS components, charts)
