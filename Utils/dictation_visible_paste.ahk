@@ -303,7 +303,16 @@ Dictation_BuildMonitorGrid() {
         mon := Dictation_GetMonitorIndexByOrder(col)
         if (!mon)
             continue
-        for win in Dictation_GetVisibleWindowsOnMonitor(mon) {
+        monWins := Dictation_GetVisibleWindowsOnMonitor(mon)
+        if (monWins.Length = 1) {
+            win := monWins[1]
+            title := ""
+            try title := WinGetTitle(win.hwnd)
+            paneSize := Dictation_PaneSizeOnAxis(mon, win.left, win.top, win.right, win.bottom)
+            grid[col][1] := { hwnd: win.hwnd, title: title, paneSize: paneSize, mon: mon }
+            continue
+        }
+        for win in monWins {
             paneRow := Dictation_ClassifyWindowPaneRow(mon, win.left, win.top, win.right, win.bottom)
             paneSize := Dictation_PaneSizeOnAxis(mon, win.left, win.top, win.right, win.bottom)
             title := ""
