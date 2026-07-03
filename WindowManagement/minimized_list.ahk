@@ -970,7 +970,7 @@ HandleMinimizedListCloseModeArm(*) {
     if (A_TickCount - g_WM_MinimizedListLastCloseArmTick < 250)
         return
     g_WM_MinimizedListLastCloseArmTick := A_TickCount
-    g_WM_MinimizedListCloseModeArmed := true
+    g_WM_MinimizedListCloseModeArmed := !g_WM_MinimizedListCloseModeArmed
     WM_MinimizedList_RepaintMainList()
 }
 
@@ -991,7 +991,6 @@ HandleMinimizedListByChar(char, *) {
         if (!hwnd)
             return
         if (g_WM_MinimizedListCloseModeArmed) {
-            g_WM_MinimizedListCloseModeArmed := false
             WM_MinimizedList_CloseHwnd(hwnd)
             WM_MinimizedList_Refresh(hwnd)
             return
@@ -1148,8 +1147,12 @@ WM_MinimizedList_ShowGridModal(gridData) {
         g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
             ">>> [Q] then slot key = CLOSE  |  slot key alone = OPEN <<<")
     footerY += 24
-    g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
-        "[Q] Arm close  [E] Add to exclude list  [ESC] Cancel")
+    if (g_WM_MinimizedListCloseModeArmed)
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            "[Q] Return to open mode  [E] Add to exclude list  [ESC] Cancel")
+    else
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            "[Q] Arm close  [E] Add to exclude list  [ESC] Cancel")
     g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
     WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
     WM_MinimizedList_ActivateGui(g_WM_MinimizedListGui)
@@ -1309,7 +1312,6 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
         return
     g_WM_MinimizedListRefreshing := true
     WM_BackgroundTitleExcludes_Init()
-    g_WM_MinimizedListCloseModeArmed := false
     g_WM_MinimizedListExcludePickerActive := false
     g_WM_MinimizedListExcludePickerRows := []
     g_WM_MinimizedListExcludePickerMap := Map()
