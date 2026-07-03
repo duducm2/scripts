@@ -20,10 +20,14 @@ global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7"
     "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
 
-global DICTATION_VISIBLE_PASTE_THUMB_W := 200
-global DICTATION_VISIBLE_PASTE_THUMB_H := 112
-global DICTATION_VISIBLE_PASTE_ROW_H := 122
-global DICTATION_VISIBLE_PASTE_MODAL_W := 680
+global DICTATION_VISIBLE_PASTE_THUMB_W := 400
+global DICTATION_VISIBLE_PASTE_THUMB_H := 224
+global DICTATION_VISIBLE_PASTE_COL_COUNT := 3
+global DICTATION_VISIBLE_PASTE_COL_GAP := 18
+global DICTATION_VISIBLE_PASTE_CELL_H := 310
+global DICTATION_VISIBLE_PASTE_KEY_FONT := 16
+global DICTATION_VISIBLE_PASTE_TITLE_FONT := 13
+global DICTATION_VISIBLE_PASTE_HEADER_FONT := 14
 
 ; DWM thumbnail property flags
 global DWM_TNP_RECTDESTINATION := 0x1
@@ -81,7 +85,7 @@ Dictation_VisiblePasteUnregisterAllThumbnails() {
     g_DictationVisiblePasteThumbnails := []
 }
 
-Dictation_VisiblePasteTruncateTitle(title, maxLen := 55) {
+Dictation_VisiblePasteTruncateTitle(title, maxLen := 38) {
     if (StrLen(title) <= maxLen)
         return title
     return SubStr(title, 1, maxLen - 1) . "…"
@@ -537,61 +541,76 @@ Dictation_VisiblePasteAssignKeys(rows) {
 Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
     global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
     global g_DictationVisiblePasteCharSequence
-    global DICTATION_VISIBLE_PASTE_THUMB_W, DICTATION_VISIBLE_PASTE_THUMB_H, DICTATION_VISIBLE_PASTE_ROW_H,
-        DICTATION_VISIBLE_PASTE_MODAL_W
+    global DICTATION_VISIBLE_PASTE_THUMB_W, DICTATION_VISIBLE_PASTE_THUMB_H, DICTATION_VISIBLE_PASTE_COL_COUNT,
+        DICTATION_VISIBLE_PASTE_COL_GAP, DICTATION_VISIBLE_PASTE_CELL_H,
+        DICTATION_VISIBLE_PASTE_KEY_FONT, DICTATION_VISIBLE_PASTE_TITLE_FONT, DICTATION_VISIBLE_PASTE_HEADER_FONT
     Dictation_VisiblePasteUnregisterAllThumbnails()
     windows := Dictation_VisiblePasteAssignKeys(rows)
-    fontSize := 11
-    modalW := DICTATION_VISIBLE_PASTE_MODAL_W
     marginX := 15
     marginY := 10
-    keyW := 28
+    colCount := DICTATION_VISIBLE_PASTE_COL_COUNT
+    colGap := DICTATION_VISIBLE_PASTE_COL_GAP
     thumbW := DICTATION_VISIBLE_PASTE_THUMB_W
     thumbH := DICTATION_VISIBLE_PASTE_THUMB_H
-    rowH := DICTATION_VISIBLE_PASTE_ROW_H
-    thumbX := marginX + keyW + 8
-    titleX := thumbX + thumbW + 10
-    titleW := modalW - titleX - marginX
-    contentW := modalW - 2 * marginX
+    cellW := thumbW + 2
+    cellH := DICTATION_VISIBLE_PASTE_CELL_H
+    keyH := 28
+    keyGap := 6
+    titleGap := 10
+    contentW := colCount * cellW + (colCount - 1) * colGap
+    modalW := contentW + 2 * marginX
 
     g_DictationVisiblePasteGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_DictationVisiblePasteGui.Opt("-DPIScale")
     g_DictationVisiblePasteGui.BackColor := "1E1E2E"
     g_DictationVisiblePasteGui.MarginX := marginX
     g_DictationVisiblePasteGui.MarginY := marginY
-    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4 Bold", "Segoe UI")
+    g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_HEADER_FONT . " cCDD6F4 Bold", "Segoe UI")
     g_DictationVisiblePasteGui.Add("Text", "w" . contentW . " Center", "=== VISIBLE WINDOWS ===")
 
-    rowY := marginY + 28
+    gridStartY := marginY + 34
     thumbPanels := []
-    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4 Bold", "Segoe UI")
-    for w in windows {
-        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . rowY . " w" . keyW . " h" . thumbH . " Center",
+    loop windows.Length {
+        idx := A_Index - 1
+        col := Mod(idx, colCount)
+        row := idx // colCount
+        cellX := marginX + col * (cellW + colGap)
+        cellY := gridStartY + row * cellH
+        w := windows[A_Index]
+        thumbX := cellX + (cellW - thumbW) // 2
+        thumbY := cellY + keyH + keyGap
+
+        g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_KEY_FONT . " cCDD6F4 Bold", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH . " Center",
             "[" . w.label . "]")
-        ; Border frame around preview slot (DWM renders into the inner panel rect).
-        g_DictationVisiblePasteGui.Add("Text", "x" . (thumbX - 1) . " y" . (rowY - 1) . " w" . (thumbW + 2) . " h" . (
-            thumbH + 2) . " Background6C7086", "")
-        panel := g_DictationVisiblePasteGui.Add("Text", "x" . thumbX . " y" . rowY . " w" . thumbW . " h" . thumbH .
-            " Background1E1E2E", "")
-        g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
-        g_DictationVisiblePasteGui.Add("Text", "x" . titleX . " y" . (rowY + 36) . " w" . titleW,
-        Dictation_VisiblePasteTruncateTitle(w.title))
+        g_DictationVisiblePasteGui.Add("Text",
+            "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) . " Background6C7086",
+            "")
+        panel := g_DictationVisiblePasteGui.Add("Text",
+            "x" . thumbX . " y" . thumbY . " w" . thumbW . " h" . thumbH . " Background1E1E2E", "")
+        g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_TITLE_FONT . " cCDD6F4", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text",
+            "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " Center",
+            Dictation_VisiblePasteTruncateTitle(w.title))
         thumbPanels.Push({ sourceHwnd: w.hwnd, panel: panel })
-        rowY += rowH
     }
+
+    numGridRows := Ceil(windows.Length / colCount)
+    footerY := gridStartY + numGridRows * cellH + 8
 
     slotCount := g_DictationVisiblePasteCharSequence.Length
     if (rows.Length > slotCount) {
-        g_DictationVisiblePasteGui.SetFont("s" . (fontSize - 1) . " c6C7086", "Segoe UI")
-        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 4) . " w" . contentW,
-        "(" . (rows.Length - slotCount) . " more — close some and reopen)")
-        rowY += 22
+        g_DictationVisiblePasteGui.SetFont("s12 c6C7086", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            "(" . (rows.Length - slotCount) . " more — close some and reopen)")
+        footerY += 24
     }
 
-    g_DictationVisiblePasteGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
-    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 8) . " w" . contentW,
-    ">>> slot key = GO + PASTE <<<")
-    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (rowY + 28) . " w" . contentW, "[ESC] Cancel")
+    g_DictationVisiblePasteGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+        ">>> slot key = GO + PASTE <<<")
+    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (footerY + 24) . " w" . contentW . " Center",
+    "[ESC] Cancel")
     g_DictationVisiblePasteGui.OnEvent("Escape", Dictation_VisiblePasteCancel)
     g_DictationVisiblePasteActive := true
     g_DictationVisiblePasteResult := ""
@@ -620,7 +639,6 @@ Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
     } else {
         Dictation_VisiblePasteRepositionToActiveMonitor(0)
     }
-    ; Layout must be final before mapping panel HWNDs to DWM destination rects.
     Sleep 30
     Dictation_VisiblePasteAttachThumbnails(g_DictationVisiblePasteGui, thumbPanels)
     Dictation_VisiblePasteStartMonitorTracking()
