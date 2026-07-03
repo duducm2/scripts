@@ -163,6 +163,353 @@ WM_CheckMinimizedListCloseRequest() {
     }
 }
 
+WM_MinimizedList_DwmRegisterThumbnail(destHwnd, sourceHwnd) {
+    if (!destHwnd || !sourceHwnd || destHwnd = sourceHwnd)
+        return 0
+    thumbId := 0
+    try {
+        hr := DllCall("dwmapi\DwmRegisterThumbnail", "Ptr", destHwnd, "Ptr", sourceHwnd, "Ptr*", &thumbId, "HRESULT")
+        if (hr < 0 || !thumbId)
+            return 0
+        return thumbId
+    } catch {
+        return 0
+    }
+}
+
+WM_MinimizedList_DwmUpdateThumbnailRect(thumbId, x, y, w, h, sourceClientOnly := false) {
+    global WM_DWM_TNP_RECTDESTINATION, WM_DWM_TNP_VISIBLE, WM_DWM_TNP_SOURCECLIENTAREAONLY
+    if (!thumbId)
+        return false
+    props := Buffer(48, 0)
+    flags := WM_DWM_TNP_RECTDESTINATION | WM_DWM_TNP_VISIBLE | WM_DWM_TNP_SOURCECLIENTAREAONLY
+    NumPut("UInt", flags, props, 0)
+    NumPut("Int", x, props, 4)
+    NumPut("Int", y, props, 8)
+    NumPut("Int", x + w, props, 12)
+    NumPut("Int", y + h, props, 16)
+    NumPut("Int", 1, props, 40)
+    NumPut("Int", sourceClientOnly ? 1 : 0, props, 44)
+    try {
+        return DllCall("dwmapi\DwmUpdateThumbnailProperties", "Ptr", thumbId, "Ptr", props, "HRESULT") >= 0
+    } catch {
+        return false
+    }
+}
+
+WM_MinimizedList_DwmUnregisterThumbnail(thumbId) {
+    if (!thumbId)
+        return
+    try DllCall("dwmapi\DwmUnregisterThumbnail", "Ptr", thumbId, "HRESULT")
+    catch {
+    }
+}
+
+WM_MinimizedList_UnregisterAllThumbnails() {
+    global g_WM_MinimizedListThumbnails
+    for entry in g_WM_MinimizedListThumbnails {
+        if (IsObject(entry) && entry.HasProp("thumbId"))
+            WM_MinimizedList_DwmUnregisterThumbnail(entry.thumbId)
+    }
+    g_WM_MinimizedListThumbnails := []
+}
+
+WM_MinimizedList_PanelDestRect(gui, panel, &outX, &outY, &outW, &outH) {
+    if (!WM_MinimizedList_GuiHasWindow(gui) || !IsObject(panel))
+        return false
+    try panelHwnd := panel.Hwnd
+    catch
+        return false
+    if (!panelHwnd)
+        return false
+    guiHwnd := gui.Hwnd
+    panelRect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "Ptr", panelHwnd, "Ptr", panelRect)
+        return false
+    ptTL := Buffer(8, 0)
+    ptBR := Buffer(8, 0)
+    NumPut("Int", NumGet(panelRect, 0, "Int"), ptTL, 0)
+    NumPut("Int", NumGet(panelRect, 4, "Int"), ptTL, 4)
+    NumPut("Int", NumGet(panelRect, 8, "Int"), ptBR, 0)
+    NumPut("Int", NumGet(panelRect, 12, "Int"), ptBR, 4)
+    if !DllCall("MapWindowPoints", "Ptr", 0, "Ptr", guiHwnd, "Ptr", ptTL, "UInt", 1)
+        return false
+    if !DllCall("MapWindowPoints", "Ptr", 0, "Ptr", guiHwnd, "Ptr", ptBR, "UInt", 1)
+        return false
+    outX := NumGet(ptTL, 0, "Int")
+    outY := NumGet(ptTL, 4, "Int")
+    outW := NumGet(ptBR, 0, "Int") - outX
+    outH := NumGet(ptBR, 4, "Int") - outY
+    return outW > 2 && outH > 2
+}
+
+WM_MinimizedList_AttachThumbnails(gui, panelRows) {
+    global g_WM_MinimizedListThumbnails
+    if (!WM_MinimizedList_GuiHasWindow(gui))
+        return
+    destHwnd := gui.Hwnd
+    for row in panelRows {
+        if (!IsObject(row) || !row.HasProp("panel") || !row.HasProp("sourceHwnd"))
+            continue
+        sourceHwnd := row.sourceHwnd
+        if (!sourceHwnd || sourceHwnd = destHwnd || !WinExist("ahk_id " sourceHwnd))
+            continue
+        if (!WM_MinimizedList_PanelDestRect(gui, row.panel, &px, &py, &pw, &ph))
+            continue
+        thumbId := WM_MinimizedList_DwmRegisterThumbnail(destHwnd, sourceHwnd)
+        if (!thumbId)
+            continue
+        if (!WM_MinimizedList_DwmUpdateThumbnailRect(thumbId, px, py, pw, ph, false)) {
+            WM_MinimizedList_DwmUnregisterThumbnail(thumbId)
+            continue
+        }
+        g_WM_MinimizedListThumbnails.Push({ thumbId: thumbId, sourceHwnd: sourceHwnd })
+    }
+}
+
+WM_MinimizedList_GridSlotChar(col, row) {
+    if (row = 1)
+        return ["a", "s", "d", "f"][col]
+    return ["z", "x", "c", "v"][col]
+}
+
+WM_MinimizedList_GetWindowRestoreRect(hwnd, &left, &top, &right, &bottom) {
+    left := top := right := bottom := 0
+    if (!hwnd)
+        return false
+    wp := Buffer(44, 0)
+    NumPut("UInt", 44, wp, 0)
+    try {
+        if !DllCall("GetWindowPlacement", "ptr", hwnd, "ptr", wp)
+            return false
+        left := NumGet(wp, 28, "int")
+        top := NumGet(wp, 32, "int")
+        right := NumGet(wp, 36, "int")
+        bottom := NumGet(wp, 40, "int")
+        if (right <= left || bottom <= top) {
+            rect := Buffer(16, 0)
+            if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
+                left := NumGet(rect, 0, "int")
+                top := NumGet(rect, 4, "int")
+                right := NumGet(rect, 8, "int")
+                bottom := NumGet(rect, 12, "int")
+            }
+        }
+        return right > left && bottom > top
+    } catch {
+        return false
+    }
+}
+
+WM_MinimizedList_GetWindowMonitorIndex(hwnd) {
+    if (!hwnd)
+        return 0
+    try {
+        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")) = Integer(hMon))
+                return A_Index
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Returns ordered monitor column 1..4, or 0 if beyond grid columns.
+WM_MinimizedList_GetWindowOrderedMonitorCol(hwnd) {
+    monIdx := WM_MinimizedList_GetWindowMonitorIndex(hwnd)
+    if (!monIdx)
+        return 0
+    loop Min(WM_MINIMIZED_LIST_COL_COUNT, MonitorGetCount()) {
+        if (GetMonitorIndexByOrder(A_Index) = monIdx)
+            return A_Index
+    }
+    return 0
+}
+
+WM_MinimizedList_GetSnapSplitAxis(monIdx) {
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    return (wr - wl >= wb - wt) ? "h" : "v"
+}
+
+WM_MinimizedList_ClassifyWindowPaneRow(monIdx, left, top, right, bottom) {
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    if (WM_MinimizedList_GetSnapSplitAxis(monIdx) = "h") {
+        center := wl + (wr - wl) // 2
+        return ((left + right) // 2 < center) ? 1 : 2
+    }
+    center := wt + (wb - wt) // 2
+    return ((top + bottom) // 2 < center) ? 1 : 2
+}
+
+WM_MinimizedList_PaneSizeOnAxis(monIdx, left, top, right, bottom) {
+    return (WM_MinimizedList_GetSnapSplitAxis(monIdx) = "h") ? (right - left) : (bottom - top)
+}
+
+WM_MinimizedList_ComputeLayout() {
+    global WM_MINIMIZED_LIST_COL_COUNT, WM_MINIMIZED_LIST_COL_GAP, WM_MINIMIZED_LIST_THUMB_MAX_W,
+        WM_MINIMIZED_LIST_TITLE_H, WM_MINIMIZED_LIST_ROW_PAD
+    colCount := WM_MINIMIZED_LIST_COL_COUNT
+    colGap := WM_MINIMIZED_LIST_COL_GAP
+    monIdx := GetMonitorIndexForForeground_StandardBar()
+    MonitorGetWorkArea(monIdx, &ml, &mt, &mr, &mb)
+    workW := mr - ml
+    contentW := Max(640, Floor(workW * 0.92))
+    cellW := (contentW - (colCount - 1) * colGap) // colCount
+    thumbW := Min(WM_MINIMIZED_LIST_THUMB_MAX_W, cellW - 2)
+    thumbH := Round(thumbW * 9 / 16)
+    keyH := 28
+    keyGap := 6
+    titleGap := 12
+    titleH := WM_MINIMIZED_LIST_TITLE_H
+    rowPad := WM_MINIMIZED_LIST_ROW_PAD
+    cellH := keyH + keyGap + thumbH + 2 + titleGap + titleH + rowPad
+    return {
+        colCount: colCount,
+        colGap: colGap,
+        cellW: cellW,
+        cellH: cellH,
+        thumbW: thumbW,
+        thumbH: thumbH,
+        keyH: keyH,
+        keyGap: keyGap,
+        titleGap: titleGap,
+        titleH: titleH,
+        contentW: colCount * cellW + (colCount - 1) * colGap
+    }
+}
+
+WM_MinimizedList_BuildHiddenWindowGrid(rows) {
+    global WM_MINIMIZED_LIST_COL_COUNT, WM_MINIMIZED_LIST_ROW_COUNT, g_WM_MinimizedCharSequence
+    displayCols := WM_MINIMIZED_LIST_COL_COUNT
+    rowCount := WM_MINIMIZED_LIST_ROW_COUNT
+    grid := []
+    loop displayCols {
+        colCells := []
+        loop rowCount
+            colCells.Push("")
+        grid.Push(colCells)
+    }
+    overflowWins := []
+    byCol := Map()
+    loop displayCols
+        byCol[A_Index] := []
+    for row in rows {
+        col := WM_MinimizedList_GetWindowOrderedMonitorCol(row.hwnd)
+        monIdx := WM_MinimizedList_GetWindowMonitorIndex(row.hwnd)
+        left := top := right := bottom := 0
+        if (!WM_MinimizedList_GetWindowRestoreRect(row.hwnd, &left, &top, &right, &bottom)) {
+            overflowWins.Push({ hwnd: row.hwnd, title: row.title })
+            continue
+        }
+        if (col < 1 || col > displayCols) {
+            overflowWins.Push({ hwnd: row.hwnd, title: row.title })
+            continue
+        }
+        paneSize := monIdx ? WM_MinimizedList_PaneSizeOnAxis(monIdx, left, top, right, bottom) : (right - left)
+        byCol[col].Push({
+            hwnd: row.hwnd,
+            title: row.title,
+            mon: monIdx,
+            left: left,
+            top: top,
+            right: right,
+            bottom: bottom,
+            paneSize: paneSize
+        })
+    }
+    loop displayCols {
+        col := A_Index
+        monWins := byCol[col]
+        if (monWins.Length = 0)
+            continue
+        mon := GetMonitorIndexByOrder(col)
+        if (!mon)
+            continue
+        if (monWins.Length = 1) {
+            win := monWins[1]
+            grid[col][1] := { hwnd: win.hwnd, title: win.title, paneSize: win.paneSize, mon: mon }
+            continue
+        }
+        for win in monWins {
+            paneRow := WM_MinimizedList_ClassifyWindowPaneRow(mon, win.left, win.top, win.right, win.bottom)
+            candidate := { hwnd: win.hwnd, title: win.title, paneSize: win.paneSize, mon: mon }
+            existing := grid[col][paneRow]
+            if (!IsObject(existing) || !existing.HasProp("hwnd")) {
+                grid[col][paneRow] := candidate
+            } else if (win.paneSize > existing.paneSize) {
+                overflowWins.Push({ hwnd: existing.hwnd, title: existing.title })
+                grid[col][paneRow] := candidate
+            } else {
+                overflowWins.Push({ hwnd: win.hwnd, title: win.title })
+            }
+        }
+    }
+    gridSlots := []
+    loop displayCols {
+        col := A_Index
+        loop rowCount {
+            row := A_Index
+            cell := grid[col][row]
+            if (!IsObject(cell) || !cell.HasProp("hwnd"))
+                continue
+            ch := WM_MinimizedList_GridSlotChar(col, row)
+            slot := {
+                hwnd: cell.hwnd,
+                title: cell.title,
+                char: ch,
+                label: StrUpper(ch),
+                col: col,
+                row: row,
+                isOverflow: false
+            }
+            gridSlots.Push(slot)
+            grid[col][row] := slot
+        }
+    }
+    overflowSlots := []
+    overflowKeys := []
+    for ch in g_WM_MinimizedCharSequence {
+        if (!WM_MinimizedList_IsReservedSlotChar(ch))
+            overflowKeys.Push(ch)
+    }
+    loop overflowWins.Length {
+        if (A_Index > overflowKeys.Length)
+            break
+        win := overflowWins[A_Index]
+        ch := overflowKeys[A_Index]
+        overflowSlots.Push({
+            hwnd: win.hwnd,
+            title: win.title,
+            char: ch,
+            label: WM_MinimizedList_KeyLabel(ch),
+            isOverflow: true
+        })
+    }
+    unkeyedOverflowCount := overflowWins.Length - overflowSlots.Length
+    slots := []
+    for slot in gridSlots
+        slots.Push(slot)
+    for slot in overflowSlots
+        slots.Push(slot)
+    return { grid: grid, slots: slots, overflowSlots: overflowSlots, unkeyedOverflowCount: unkeyedOverflowCount }
+}
+
+WM_MinimizedList_AssignKeysFromSlots(slots) {
+    global g_WM_MinimizedKeyMap
+    g_WM_MinimizedKeyMap := Map()
+    windows := []
+    for slot in slots {
+        g_WM_MinimizedKeyMap[slot.char] := slot.hwnd
+        windows.Push(slot)
+    }
+    return windows
+}
+
 WM_MinimizedList_ModifiersDown() {
     try {
         return GetKeyState("LWin", "P") || GetKeyState("RWin", "P") || GetKeyState("Ctrl", "P") || GetKeyState("Alt",
@@ -195,10 +542,10 @@ WM_IsDigitSlotChar(c) {
     return o >= Ord("0") && o <= Ord("9")
 }
 
-; [A] and [C] are command keys — never assign hidden-window slots to a/c (same physical key for exclude/close).
+; [E] and [Q] are command keys — never assign hidden-window overflow slots to e/q.
 WM_MinimizedList_IsReservedSlotChar(char) {
     c := StrLower(char)
-    return c = "a" || c = "c"
+    return c = "e" || c = "q"
 }
 
 WM_MinimizedList_WindowSlotChars() {
@@ -335,8 +682,8 @@ WM_MinimizedList_BindHotkeys(windows) {
         if (WM_IsDigitSlotChar(slotChar))
             WM_MinimizedList_RegisterHotkey("$*Numpad" . slotChar, HandleMinimizedListByChar.Bind(slotChar))
     }
-    WM_MinimizedList_RegisterHotkey("$*A", HandleMinimizedListAddExcludeTrigger)
-    WM_MinimizedList_RegisterHotkey("$*C", HandleMinimizedListCloseModeArm)
+    WM_MinimizedList_RegisterHotkey("$*E", HandleMinimizedListAddExcludeTrigger)
+    WM_MinimizedList_RegisterHotkey("$*Q", HandleMinimizedListCloseModeArm)
     try HotIf()
     catch {
     }
@@ -667,29 +1014,168 @@ HandleMinimizedListByChar(char, *) {
     }
 }
 
-WM_MinimizedList_BuildDisplayText(rows, windows) {
-    global g_WM_MinimizedListCloseModeArmed
-    slotCount := WM_MinimizedList_WindowSlotChars().Length
-    displayText := "=== HIDDEN WINDOWS (NOT VISIBLE ON MONITORS) ===`n`n"
-    for w in windows
-        displayText .= "[" . w.label . "] " . w.title . "`n"
-    if (rows.Length > slotCount)
-        displayText .= "`n(" . (rows.Length - slotCount) . " more — close some and reopen)`n"
+WM_MinimizedList_ShowGridModal(gridData) {
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListCloseModeArmed
+    global WM_MINIMIZED_LIST_ROW_COUNT, WM_MINIMIZED_LIST_KEY_FONT, WM_MINIMIZED_LIST_TITLE_FONT,
+        WM_MINIMIZED_LIST_HEADER_FONT, WM_MINIMIZED_LIST_MON_LABEL_FONT
+    WM_MinimizedList_StopActiveMonitorTracking()
+    WM_MinimizedList_UnregisterAllThumbnails()
+    if (WM_MinimizedList_GuiHasWindow()) {
+        try g_WM_MinimizedListGui.Destroy()
+        catch {
+        }
+        g_WM_MinimizedListGui := false
+    }
+    slots := gridData.slots
+    grid := gridData.grid
+    overflowSlots := gridData.overflowSlots
+    unkeyedOverflowCount := gridData.unkeyedOverflowCount
+    windows := WM_MinimizedList_AssignKeysFromSlots(slots)
+    layout := WM_MinimizedList_ComputeLayout()
+    marginX := 15
+    marginY := 10
+    colCount := layout.colCount
+    colGap := layout.colGap
+    cellW := layout.cellW
+    cellH := layout.cellH
+    thumbW := layout.thumbW
+    thumbH := layout.thumbH
+    keyH := layout.keyH
+    keyGap := layout.keyGap
+    titleGap := layout.titleGap
+    titleH := layout.titleH
+    contentW := layout.contentW
+    rowCount := WM_MINIMIZED_LIST_ROW_COUNT
+    monLabelH := 18
+    monLabelGap := 4
+
+    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
+    g_WM_MinimizedListGui.Opt("-DPIScale")
+    g_WM_MinimizedListGui.BackColor := "1E1E2E"
+    g_WM_MinimizedListGui.MarginX := marginX
+    g_WM_MinimizedListGui.MarginY := marginY
+    g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_HEADER_FONT . " cCDD6F4 Bold", "Segoe UI")
+    g_WM_MinimizedListGui.Add("Text", "w" . contentW . " Center", "=== HIDDEN WINDOWS ===")
+
+    gridStartY := marginY + 34
+    monRowY := gridStartY
+    g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_MON_LABEL_FONT . " c6C7086", "Segoe UI")
+    loop colCount {
+        col := A_Index - 1
+        cellX := marginX + col * (cellW + colGap)
+        g_WM_MinimizedListGui.Add("Text", "x" . cellX . " y" . monRowY . " w" . cellW . " h" . monLabelH . " Center",
+            "M" . A_Index)
+    }
+    gridStartY := monRowY + monLabelH + monLabelGap
+    thumbPanels := []
+    loop colCount {
+        col := A_Index
+        loop rowCount {
+            row := A_Index
+            rowIdx := row - 1
+            cellX := marginX + (col - 1) * (cellW + colGap)
+            cellY := gridStartY + rowIdx * cellH
+            thumbX := cellX + (cellW - thumbW) // 2
+            thumbY := cellY + keyH + keyGap
+            cell := grid[col][row]
+            occupied := IsObject(cell) && cell.HasProp("hwnd") && cell.HasProp("char")
+
+            if (occupied) {
+                g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_KEY_FONT . " cCDD6F4 Bold", "Segoe UI")
+                g_WM_MinimizedListGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH . " Center",
+                    "[" . cell.label . "]")
+                g_WM_MinimizedListGui.Add("Text",
+                    "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) .
+                    " Background6C7086",
+                    "")
+                panel := g_WM_MinimizedListGui.Add("Text",
+                    "x" . thumbX . " y" . thumbY . " w" . thumbW . " h" . thumbH . " Background1E1E2E", "")
+                g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_TITLE_FONT . " cCDD6F4", "Segoe UI")
+                g_WM_MinimizedListGui.Add("Text",
+                    "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " h" . titleH . " Center Wrap",
+                    WM_TruncateTitleForList(cell.title, 38))
+                thumbPanels.Push({ sourceHwnd: cell.hwnd, panel: panel })
+            } else {
+                g_WM_MinimizedListGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH . " Center",
+                    "")
+                g_WM_MinimizedListGui.Add("Text",
+                    "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) .
+                    " Background45475A",
+                    "")
+                g_WM_MinimizedListGui.Add("Text",
+                    "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " h" . titleH . " Center", "")
+            }
+        }
+    }
+
+    footerY := gridStartY + rowCount * cellH + 8
+
+    if (overflowSlots.Length > 0) {
+        footerY += 8
+        g_WM_MinimizedListGui.SetFont("s11 c6C7086", "Segoe UI")
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Left",
+            "Additional windows:")
+        footerY += 20
+        ovKeyW := 36
+        ovThumbW := Max(120, Min(160, cellW // 2))
+        ovThumbH := Round(ovThumbW * 9 / 16)
+        ovRowH := ovThumbH + 8
+        ovTitleW := contentW - ovKeyW - ovThumbW - 16
+        for slot in overflowSlots {
+            rowY := footerY
+            g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_KEY_FONT . " cCDD6F4 Bold", "Segoe UI")
+            g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . rowY . " w" . ovKeyW . " h" . ovThumbH .
+                " Center", "[" . slot.label . "]")
+            ovThumbX := marginX + ovKeyW + 4
+            g_WM_MinimizedListGui.Add("Text",
+                "x" . (ovThumbX - 1) . " y" . (rowY - 1) . " w" . (ovThumbW + 2) . " h" . (ovThumbH + 2) .
+                " Background6C7086",
+                "")
+            ovPanel := g_WM_MinimizedListGui.Add("Text",
+                "x" . ovThumbX . " y" . rowY . " w" . ovThumbW . " h" . ovThumbH . " Background1E1E2E", "")
+            ovTitleX := ovThumbX + ovThumbW + 8
+            g_WM_MinimizedListGui.SetFont("s" . WM_MINIMIZED_LIST_TITLE_FONT . " cCDD6F4", "Segoe UI")
+            g_WM_MinimizedListGui.Add("Text",
+                "x" . ovTitleX . " y" . rowY . " w" . ovTitleW . " h" . ovThumbH . " Left Wrap",
+                WM_TruncateTitleForList(slot.title, 52))
+            thumbPanels.Push({ sourceHwnd: slot.hwnd, panel: ovPanel })
+            footerY += ovRowH
+        }
+    }
+
+    if (unkeyedOverflowCount > 0) {
+        g_WM_MinimizedListGui.SetFont("s12 c6C7086", "Segoe UI")
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            "(" . unkeyedOverflowCount . " more — close some and reopen)")
+        footerY += 24
+    }
+
+    g_WM_MinimizedListGui.SetFont("s12 cCDD6F4", "Segoe UI")
     if (g_WM_MinimizedListCloseModeArmed)
-        displayText .= "`n>>> Press a slot key to CLOSE <<<`n"
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            ">>> Press a slot key to CLOSE <<<")
     else
-        displayText .= "`n>>> [C] then slot key = CLOSE  |  slot key alone = OPEN <<<`n"
-    displayText .= "`n[C] Arm close  [A] Add to exclude list  [ESC] Cancel"
-    return displayText
+        g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+            ">>> [Q] then slot key = CLOSE  |  slot key alone = OPEN <<<")
+    footerY += 24
+    g_WM_MinimizedListGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
+        "[Q] Arm close  [E] Add to exclude list  [ESC] Cancel")
+    g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
+    WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
+    WM_MinimizedList_ActivateGui(g_WM_MinimizedListGui)
+    if (g_WM_MinimizedListActive)
+        WM_MinimizedList_StartActiveMonitorTracking()
+    Sleep 30
+    WM_MinimizedList_AttachThumbnails(g_WM_MinimizedListGui, thumbPanels)
+    return windows
 }
 
 WM_MinimizedList_RepaintMainList() {
     global g_WM_MinimizedListRows
     if (g_WM_MinimizedListRows.Length = 0)
         return
-    windows := WM_MinimizedList_AssignKeys(g_WM_MinimizedListRows)
-    displayText := WM_MinimizedList_BuildDisplayText(g_WM_MinimizedListRows, windows)
-    WM_MinimizedList_RebuildListGui(displayText)
+    gridData := WM_MinimizedList_BuildHiddenWindowGrid(g_WM_MinimizedListRows)
+    windows := WM_MinimizedList_ShowGridModal(gridData)
     WM_MinimizedList_BindHotkeys(windows)
 }
 
@@ -804,6 +1290,7 @@ WM_MinimizedList_Cleanup() {
     g_WM_MinimizedListExcludePickerRows := []
     g_WM_MinimizedListExcludePickerMap := Map()
     WM_MinimizedList_StopActiveMonitorTracking()
+    WM_MinimizedList_UnregisterAllThumbnails()
     g_WM_MinimizedListRows := []
     g_WM_MinimizedKeyMap := Map()
     WM_MinimizedList_UnbindHotkeys()
@@ -856,7 +1343,7 @@ WM_MinimizedList_Refresh(closedHwnd := 0) {
 }
 
 WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
-    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows, g_WM_MinimizedCharSequence
+    global g_WM_MinimizedListGui, g_WM_MinimizedListActive, g_WM_MinimizedListRows
     if (g_WM_MinimizedListActive && !refresh)
         return
     if (WM_DebugBackgroundEnabled())
@@ -872,29 +1359,16 @@ WM_ShowMinimizedBackgroundList(rows := unset, refresh := false) {
         return
     }
     g_WM_MinimizedListRows := rows
-    if (refresh && IsObject(g_WM_MinimizedListGui)) {
-        try g_WM_MinimizedListGui.Destroy()
-        g_WM_MinimizedListGui := false
+    gridData := WM_MinimizedList_BuildHiddenWindowGrid(rows)
+    if (gridData.slots.Length = 0) {
+        if (refresh)
+            WM_MinimizedList_Cleanup()
+        WM_PresentNoBackgroundWindowsEmpty(, false)
+        return
     }
-    windows := WM_MinimizedList_AssignKeys(rows)
-    displayText := WM_MinimizedList_BuildDisplayText(rows, windows)
-    fontSize := 11
-    baseWidth := 480
-    lineHeight := fontSize + 6
-    lineCount := StrSplit(displayText, "`n").Length
-    textControlHeight := lineCount * lineHeight + 10
-    g_WM_MinimizedListGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_WM_MinimizedListGui.BackColor := "1E1E2E"
-    g_WM_MinimizedListGui.MarginX := 15
-    g_WM_MinimizedListGui.MarginY := 10
-    g_WM_MinimizedListGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
-    g_WM_MinimizedListGui.Add("Text", "w" . (baseWidth - 30), displayText)
-    g_WM_MinimizedListGui.OnEvent("Escape", WM_MinimizedList_Cancel)
     if (!refresh)
         g_WM_MinimizedListActive := true
     WM_MinimizedList_BindEscape()
+    windows := WM_MinimizedList_ShowGridModal(gridData)
     WM_MinimizedList_BindHotkeys(windows)
-    WM_MinimizedList_RepositionToActiveMonitor(0, g_WM_MinimizedListGui)
-    WM_MinimizedList_ActivateGui(g_WM_MinimizedListGui)
-    WM_MinimizedList_StartActiveMonitorTracking()
 }
