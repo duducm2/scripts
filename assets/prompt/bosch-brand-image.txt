@@ -4,10 +4,14 @@ Strict compliance is mandatory. At Bosch, corporate design rules are binding —
 
 Before generating, read all attached JSON context files and reference images. Use them as the primary source of truth.
 
+When used with a PPT element subject prompt (from ppt-slides-to-elements-csv): the element prompt states subject and framing only. This Bosch prompt plus your JSON and reference attachments define ALL visual style. If the element prompt implies a different style, ignore that implication and apply this prompt and attachments instead.
+
 Source-of-truth priority:
+0. Human style instructions and attachments provided before the element subject prompt (brand prompts, JSON, reference images — absolute authority for visual style)
 1. Attached JSON context files (brand guide and BDDS research)
 2. Attached reference images (Bosch website, PowerPoint examples, DDS components, charts)
 3. The embedded summary in this prompt
+4. Element subject prompt (subject and framing only — never use it to choose colors, illustration style, typography, or realism level)
 
 ---
 
