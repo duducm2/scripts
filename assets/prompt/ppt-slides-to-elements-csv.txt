@@ -109,16 +109,28 @@ Rules for the code block contents:
 8. Quote image_gen_prompt fields because they contain semicolons.
 
 ---
-Reminder for the human (do not include in AI output):
+Human reminders (for the person sending this prompt — do not include in AI output):
 
-Before sending this prompt, attach or paste the slides CSV from Stage 1 (ppt-content-to-slides-csv.txt).
+Before you send (Stage 2):
+
+📎 Attach or paste the slides CSV from Stage 1 (ppt-content-to-slides-csv.txt output)
+📐 Optional: assembly notes for placement on slide only — not colors or illustration style
 
 After the AI responds:
 
-1. Save the CSV as elements.csv (or similar).
-2. After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc).
-3. For each image, paste in this order in the same message:
-   a. Your style prompt and attachments FIRST (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack).
-   b. Then paste image_gen_prompt from the CSV row.
-   The HUMAN STYLE AUTHORITY block in image_gen_prompt tells the image AI your attachments win.
-4. Assemble in PowerPoint using position_region, size_hint, and assembly_notes.
+💾 Save the CSV as elements.csv (or similar)
+🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc)
+
+For each element image (repeat per CSV row):
+
+1️⃣ Paste your style prompt and attachments FIRST in the same message (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack)
+2️⃣ Then paste image_gen_prompt from that CSV row (3 lines: HUMAN STYLE AUTHORITY + Subject + Framing)
+👑 Your style attachments define ALL visual style — the CSV row states subject and framing only
+🧩 Assemble finished images in PowerPoint using position_region, size_hint, and assembly_notes from each row
+
+Quick reference — full workflow:
+
+📋 Stage 1 (s): raw content → slides.csv
+🧩 Stage 2 (e): slides.csv → elements.csv
+🎨 Image gen: style pack first, then image_gen_prompt from each row
+📊 PowerPoint: place images using assembly_notes

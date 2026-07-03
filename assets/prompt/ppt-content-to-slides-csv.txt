@@ -136,23 +136,17 @@ Rules for the code block contents:
 
 8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores.
 
-
-
 ---
+Human reminders (for the person sending this prompt — do not include in AI output):
 
-Reminder for the human (do not include in AI output):
+Before you send (Stage 1):
 
-
-
-Before sending this prompt, attach or paste your source content (notes, outline, documents, tables).
-
-
+📎 Attach or paste your source content (notes, outline, documents, tables, files)
+🎯 Optional: fill in deck constraints (slide count, audience, tone, language, must-include topics)
+🎨 Optional: style notes for later — you will attach actual style requirements in Stage 2 / image generation
 
 After the AI responds:
 
-1. Save the CSV as slides.csv (or similar).
-
-2. After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. slide\_id → slide_id).
-
-3. Next step: use ppt-slides-to-elements-csv.txt (Stage 2) and attach this slides CSV as input.
-
+💾 Save the CSV as slides.csv (or similar)
+🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. slide\_id → slide_id)
+➡️ Next: open ppt-slides-to-elements-csv.txt (Stage 2) and attach this slides CSV as input
