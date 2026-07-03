@@ -3,7 +3,13 @@ Take a slides CSV (output from ppt-content-to-slides-csv, Stage 1) and produce a
 
 This is Stage 2 of a two-stage PowerPoint workflow. Stage 1 plans the deck; Stage 2 decomposes each slide into isolated visual elements.
 
-CRITICAL — image_gen_prompt is subject and framing only. The human supplies all visual style separately (brand prompts, JSON, reference images, custom instructions — Bosch or any other). Those human style inputs are absolute authority and must not be contradicted by image_gen_prompt.
+CRITICAL — text_to_render MUST appear inside image_gen_prompt:
+- Keep both columns: text_to_render (spreadsheet column) and image_gen_prompt (paste at image-gen time).
+- For every row, copy the text_to_render cell verbatim into the image_gen_prompt line that starts with Text to render:
+- The human pastes ONLY image_gen_prompt — never text_to_render separately.
+- If you put text only in text_to_render but omit it from image_gen_prompt, the output is WRONG. Reject and fix before delivering.
+
+CRITICAL — image_gen_prompt is subject and framing only for visual style. The human supplies style separately (brand prompts, JSON, reference images). Human style inputs are absolute authority.
 
 Before processing:
 
@@ -21,90 +27,91 @@ element_id;slide_id;element_order;element_type;position_region;size_hint;text_to
 
 Column definitions:
 
-- element_id: Stable primary key. Format EL_SLIDE_001_01, EL_SLIDE_001_02, etc. Encode parent slide in the ID.
+- element_id: Stable primary key. Format EL_SLIDE_001_01, EL_SLIDE_001_02, etc.
 - slide_id: Foreign key — must match a slide_id from the input slides CSV.
 - element_order: Stacking / reading order on the slide (1 = first / back / top-left).
 - element_type: One of: title, subtitle, section_label, bullet_group, body_text_block, metric_card, chart_bar, chart_line, chart_pie, icon_badge, illustration, diagram, timeline_segment, process_step, persona_card, comparison_column, callout, divider_line, decorative_shape.
 - position_region: Placement hint — e.g. top, top_left, top_center, center, bottom_right, full_width_band, left_column, right_column.
 - size_hint: One of: small, medium, large, full_width, full_height.
-- text_to_render: Literal text that must appear in the image. Leave empty when the element has no text labels. When non-empty, the same text must appear verbatim inside image_gen_prompt (see sync rule below).
-- image_gen_prompt: Minimal subject + framing only. Must include full text_to_render when that column is non-empty. See exact template below.
-- assembly_notes: How to place this element on the slide (margins, alignment relative to other elements).
+- text_to_render: Literal text that must appear in the image. Empty cell when no text. Same value must appear on the Text to render: line inside image_gen_prompt.
+- image_gen_prompt: Four-part template below. Must embed text_to_render verbatim.
+- assembly_notes: How to place this element on the slide.
 
 Decomposition rules:
 
-1. Never produce one element that represents an entire slide. Split into title, content blocks, charts, icons, illustrations, cards, etc.
-2. Every slide_id from the input must have at least one element. Typical slides have 2–6 elements.
+1. Never produce one element that represents an entire slide.
+2. Every slide_id must have at least one element. Typical slides have 2–6 elements.
 3. Respect decomposition_hints and visual_intent from the slides CSV.
-4. For chart_focus or metric_dashboard slides, create separate chart or metric_card elements — one chart per element.
-5. Use data_points from the parent slide row when writing chart or metric prompts.
-6. Use element_type illustration for standalone illustrative assets that are not charts, icons, or text blocks.
+4. For chart_focus or metric_dashboard slides, separate chart or metric_card elements — one chart per element.
+5. Use data_points from the parent slide row for chart Subject lines.
+6. Populate text_to_render for any element whose image must show specific words, labels, dates, timeline entries, bullets, or data callouts — then copy that cell verbatim into image_gen_prompt.
 
-Illustration-specific decomposition:
+image_gen_prompt template (MANDATORY — every row uses exactly these four parts in this order):
 
-1. Subject = what to depict, named briefly from slide content (e.g. Titanic ship illustration).
-2. Do not add art direction of any kind.
-
-image_gen_prompt template (MANDATORY — every row must match this structure exactly):
-
-Line 1 (priority block — copy verbatim, always first):
+Part 1 — copy verbatim:
 HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style.
 
-Line 2 (subject — one short sentence):
-Subject: [what to depict]
+Part 2 — brief label only (do NOT put the full text_to_render here):
+Subject: [element type + short label, e.g. Titanic timeline, Q4 Results title, horizontal bar chart]
 
-Line 3 (framing — one short sentence):
-Framing: isolated element only, not a full slide; [aspect ratio hint if useful].
+Part 3 — COPY FROM text_to_render COLUMN (mechanical sync):
+Text to render: [paste exact contents of text_to_render cell for this row, character for character]
+If text_to_render cell is empty, write exactly: Text to render: none
 
-That is the complete image_gen_prompt. No additional sentences.
+Part 4 — framing:
+Framing: isolated element only, not a full slide; [aspect ratio hint].
 
-text_to_render sync rule (MANDATORY):
+Join all four parts into one image_gen_prompt cell, separated by spaces (single paragraph). No fifth part.
 
-- Keep text_to_render and image_gen_prompt as separate columns.
-- When text_to_render is non-empty, copy its full content verbatim into the Subject line of image_gen_prompt. The human pastes only image_gen_prompt at image-generation time — never both columns separately.
-- When text_to_render is empty, Subject uses chart data from data_points or a brief named subject only.
-- text_to_render and the Subject portion of image_gen_prompt must match exactly whenever text_to_render is non-empty. Do not paraphrase, shorten, or omit labels, dates, or timeline entries.
+WRONG vs RIGHT (timeline example):
 
-Subject line rules by element_type:
+text_to_render cell: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking
 
-- title, subtitle, section_label, bullet_group, body_text_block: Subject: [exact text_to_render verbatim]
-- chart_bar, chart_line, chart_pie, metric_card: Subject: [chart type + labels + values from data_points]. If text_to_render is non-empty, append after a dash: — [exact text_to_render verbatim]
-- timeline_segment, process_step, diagram, callout, comparison_column, persona_card: Subject: [brief element label] — [exact text_to_render verbatim]. If text_to_render is empty, Subject: [brief element label from slide content]
-- illustration, decorative_shape, icon_badge: Subject: [named subject]. If text_to_render is non-empty, append: — [exact text_to_render verbatim]
+WRONG image_gen_prompt (missing Text to render line):
+... Subject: Titanic timeline. Framing: isolated element only, not a full slide; wide horizontal strip.
 
-FORBIDDEN anywhere in image_gen_prompt (these cause style conflicts with human attachments):
+WRONG image_gen_prompt (text only in Subject, paraphrased):
+... Subject: Titanic timeline with departure, iceberg, and sinking dates. Framing: ...
 
-- Colors, hex codes, palettes, brand names
-- Font names, weights, typography style
-- Illustration style adjectives (2.5D, flat, photorealistic, cinematic, sketch, watercolor, vector, modern, professional)
-- Materials, lighting, textures, shadows, glow, halos, edge treatment
-- Background color or quality rules (white background, sharp edges, anti-aliasing, resolution)
-- "Generate only this isolated UI element" or similar long boilerplate — use the three-line template only
+RIGHT image_gen_prompt:
+... Subject: Titanic timeline. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.
+
+Pre-output row check (run for EVERY row before writing CSV):
+
+1. Read text_to_render cell for this row.
+2. If non-empty: confirm image_gen_prompt contains Text to render: followed by the identical string.
+3. If empty: confirm image_gen_prompt contains Text to render: none
+4. If check fails, fix the row before output.
+
+FORBIDDEN in image_gen_prompt:
+
+- Colors, hex codes, palettes, brand names, fonts, illustration-style adjectives, materials, lighting, backgrounds, quality rules
+- Putting timeline labels, titles, or bullet text only in Subject without the Text to render: line
+- Paraphrasing or shortening text_to_render inside image_gen_prompt
 
 Validation (before output):
 
 - Every slide_id in elements exists in the input slides CSV.
 - No duplicate element_id values.
-- Every image_gen_prompt is exactly three lines (priority block + Subject + Framing).
-- Every image_gen_prompt starts with HUMAN STYLE AUTHORITY:
-- No forbidden style language in any image_gen_prompt.
-- When text_to_render is non-empty, its full content appears verbatim in that row's image_gen_prompt Subject line.
+- Every image_gen_prompt contains all four parts: HUMAN STYLE AUTHORITY, Subject:, Text to render:, Framing:
+- For every row where text_to_render is non-empty, image_gen_prompt contains that exact string after Text to render:
+- No forbidden style language.
 
 Output (CRITICAL — read before responding):
 
-Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them with a backslash.
 
-WRONG (do not output): element\_id, EL\_SLIDE\_001\_01
+WRONG: element\_id, EL\_SLIDE\_001\_01
 RIGHT: element_id, EL_SLIDE_001_01
 
 Put the CSV inside a fenced code block labeled csv. Example:
 
 ```csv
 element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
-EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Q4 Results. Framing: isolated element only, not a full slide; wide horizontal strip.";Place in top third, horizontally centered
-EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Framing: isolated element only, not a full slide; landscape rectangle.";Below title, ~80% slide width, centered
-EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic ship illustration. Framing: isolated element only, not a full slide; landscape crop.";Center of slide, dominant visual
-EL_SLIDE_004_01;SLIDE_004;1;timeline_segment;center;large;1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic timeline — 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.";Center of slide
+EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Q4 Results title. Text to render: Q4 Results. Framing: isolated element only, not a full slide; wide horizontal strip.";Place in top third, horizontally centered
+EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Text to render: none. Framing: isolated element only, not a full slide; landscape rectangle.";Below title, ~80% slide width, centered
+EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic ship illustration. Text to render: none. Framing: isolated element only, not a full slide; landscape crop.";Center of slide, dominant visual
+EL_SLIDE_004_01;SLIDE_004;1;timeline_segment;center;large;1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic timeline. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.";Center of slide
 ```
 
 Rules for the code block contents:
@@ -113,10 +120,8 @@ Rules for the code block contents:
 2. Inside the block: raw plain text only. Never escape characters with backslashes.
 3. No markdown escaping anywhere — not in headers, IDs, or cell text.
 4. Underscores are literal: write element_id, not element\_id.
-5. The backslash character must not appear unless it is real data in a cell.
-6. Use the exact column names and order defined above.
-7. One row per line inside the code block (header on line 1, each data row on its own line).
-8. Quote image_gen_prompt fields because they contain semicolons.
+5. Quote image_gen_prompt fields because they contain semicolons.
+6. One row per line (header on line 1).
 
 ---
 Human reminders (for the person sending this prompt — do not include in AI output):
@@ -130,13 +135,14 @@ After the AI responds:
 
 💾 Save the CSV as elements.csv (or similar)
 🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc)
+✅ Spot-check: for any row with text in text_to_render, open image_gen_prompt and confirm Text to render: line matches exactly
 
 For each element image (repeat per CSV row):
 
 1️⃣ Paste your style prompt and attachments FIRST in the same message (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack)
-2️⃣ Then paste image_gen_prompt from that CSV row only (text_to_render is already inside it — do not copy both columns)
-👑 Your style attachments define ALL visual style — the CSV row states subject and framing only
-🧩 Assemble finished images in PowerPoint using position_region, size_hint, and assembly_notes from each row
+2️⃣ Paste image_gen_prompt only — it already contains Text to render: with all labels/timeline text
+👑 Your style attachments define ALL visual style
+🧩 Assemble in PowerPoint using position_region, size_hint, and assembly_notes
 
 Quick reference — full workflow:
 
