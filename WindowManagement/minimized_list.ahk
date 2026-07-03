@@ -430,23 +430,13 @@ WM_MinimizedList_BuildHiddenWindowGrid(rows) {
         mon := GetMonitorIndexByOrder(col)
         if (!mon)
             continue
-        if (monWins.Length = 1) {
-            win := monWins[1]
-            grid[col][1] := { hwnd: win.hwnd, title: win.title, paneSize: win.paneSize, mon: mon }
-            continue
-        }
         for win in monWins {
-            paneRow := WM_MinimizedList_ClassifyWindowPaneRow(mon, win.left, win.top, win.right, win.bottom)
-            candidate := { hwnd: win.hwnd, title: win.title, paneSize: win.paneSize, mon: mon }
-            existing := grid[col][paneRow]
-            if (!IsObject(existing) || !existing.HasProp("hwnd")) {
-                grid[col][paneRow] := candidate
-            } else if (win.paneSize > existing.paneSize) {
-                overflowWins.Push({ hwnd: existing.hwnd, title: existing.title })
-                grid[col][paneRow] := candidate
-            } else {
+            idx := A_Index
+            if (idx > rowCount) {
                 overflowWins.Push({ hwnd: win.hwnd, title: win.title })
+                continue
             }
+            grid[col][idx] := { hwnd: win.hwnd, title: win.title, paneSize: win.paneSize, mon: mon }
         }
     }
     gridSlots := []
