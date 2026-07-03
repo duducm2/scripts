@@ -20,14 +20,17 @@ global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7"
     "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
 
-global DICTATION_VISIBLE_PASTE_THUMB_W := 400
-global DICTATION_VISIBLE_PASTE_THUMB_H := 224
-global DICTATION_VISIBLE_PASTE_COL_COUNT := 3
+global DICTATION_VISIBLE_PASTE_COL_COUNT := 4
+global DICTATION_VISIBLE_PASTE_ROW_COUNT := 2
+global DICTATION_VISIBLE_PASTE_MAX_KEYS := 8
 global DICTATION_VISIBLE_PASTE_COL_GAP := 18
-global DICTATION_VISIBLE_PASTE_CELL_H := 310
+global DICTATION_VISIBLE_PASTE_THUMB_MAX_W := 320
+global DICTATION_VISIBLE_PASTE_TITLE_H := 48
+global DICTATION_VISIBLE_PASTE_ROW_PAD := 22
 global DICTATION_VISIBLE_PASTE_KEY_FONT := 16
 global DICTATION_VISIBLE_PASTE_TITLE_FONT := 13
 global DICTATION_VISIBLE_PASTE_HEADER_FONT := 14
+global DICTATION_VISIBLE_PASTE_MON_LABEL_FONT := 11
 
 ; DWM thumbnail property flags
 global DWM_TNP_RECTDESTINATION := 0x1
@@ -178,6 +181,169 @@ Dictation_VisiblePasteKeyLabel(char) {
     return (char = "0") ? "10" : char
 }
 
+; Left-to-right monitor order (parity with WindowManagement GetMonitorIndexByOrder).
+Dictation_GetMonitorIndexByOrder(order) {
+    count := MonitorGetCount()
+    if (order < 1 || order > count)
+        return 0
+    monitors := []
+    loop count {
+        i := A_Index
+        MonitorGet i, &l, &t, &r, &b
+        cx := (l + r) // 2
+        cy := (t + b) // 2
+        monitors.Push({ idx: i, cx: cx, cy: cy })
+    }
+    n := monitors.Length
+    loop n - 1 {
+        loop n - A_Index {
+            j := A_Index
+            a := monitors[j]
+            b := monitors[j + 1]
+            if (a.cx > b.cx || (a.cx = b.cx && a.cy > b.cy)) {
+                monitors[j] := b
+                monitors[j + 1] := a
+            }
+        }
+    }
+    return monitors[order].idx
+}
+
+Dictation_GetSnapSplitAxis(monIdx) {
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    return (wr - wl >= wb - wt) ? "h" : "v"
+}
+
+; Returns grid row 1 = start pane (left/top), 2 = end pane (right/bottom).
+Dictation_ClassifyWindowPaneRow(monIdx, left, top, right, bottom) {
+    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    if (Dictation_GetSnapSplitAxis(monIdx) = "h") {
+        center := wl + (wr - wl) // 2
+        return ((left + right) // 2 < center) ? 1 : 2
+    }
+    center := wt + (wb - wt) // 2
+    return ((top + bottom) // 2 < center) ? 1 : 2
+}
+
+Dictation_PaneSizeOnAxis(monIdx, left, top, right, bottom) {
+    return (Dictation_GetSnapSplitAxis(monIdx) = "h") ? (right - left) : (bottom - top)
+}
+
+Dictation_VisiblePasteResolveLayoutMonitor(centerOnHwnd := 0) {
+    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
+        rect := Buffer(16, 0)
+        if (DllCall("GetWindowRect", "ptr", centerOnHwnd, "ptr", rect)) {
+            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
+            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
+            loop MonitorGetCount() {
+                MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+                if (cx >= ml && cx <= mr && cy >= mt && cy <= mb)
+                    return A_Index
+            }
+        }
+    }
+    return GetMonitorIndexForForeground_StandardBar()
+}
+
+Dictation_VisiblePasteComputeLayout(centerOnHwnd := 0) {
+    global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_COL_GAP, DICTATION_VISIBLE_PASTE_THUMB_MAX_W,
+        DICTATION_VISIBLE_PASTE_TITLE_H, DICTATION_VISIBLE_PASTE_ROW_PAD
+    colCount := DICTATION_VISIBLE_PASTE_COL_COUNT
+    colGap := DICTATION_VISIBLE_PASTE_COL_GAP
+    monIdx := Dictation_VisiblePasteResolveLayoutMonitor(centerOnHwnd)
+    MonitorGetWorkArea(monIdx, &ml, &mt, &mr, &mb)
+    workW := mr - ml
+    contentW := Max(640, Floor(workW * 0.92))
+    cellW := (contentW - (colCount - 1) * colGap) // colCount
+    thumbW := Min(DICTATION_VISIBLE_PASTE_THUMB_MAX_W, cellW - 2)
+    thumbH := Round(thumbW * 9 / 16)
+    keyH := 28
+    keyGap := 6
+    titleGap := 12
+    titleH := DICTATION_VISIBLE_PASTE_TITLE_H
+    rowPad := DICTATION_VISIBLE_PASTE_ROW_PAD
+    cellH := keyH + keyGap + thumbH + 2 + titleGap + titleH + rowPad
+    return {
+        colCount: colCount,
+        colGap: colGap,
+        cellW: cellW,
+        cellH: cellH,
+        thumbW: thumbW,
+        thumbH: thumbH,
+        keyH: keyH,
+        keyGap: keyGap,
+        titleGap: titleGap,
+        titleH: titleH,
+        contentW: colCount * cellW + (colCount - 1) * colGap
+    }
+}
+
+; Fixed 4x2 grid: columns = monitors L→R, rows = start/end pane. Keys 1-8 column-major.
+Dictation_BuildMonitorGrid() {
+    global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_ROW_COUNT, DICTATION_VISIBLE_PASTE_MAX_KEYS
+    displayCols := DICTATION_VISIBLE_PASTE_COL_COUNT
+    rowCount := DICTATION_VISIBLE_PASTE_ROW_COUNT
+    grid := []
+    loop displayCols {
+        colCells := []
+        loop rowCount
+            colCells.Push("")
+        grid.Push(colCells)
+    }
+    overflowCount := 0
+    physicalCols := Min(displayCols, MonitorGetCount())
+    loop physicalCols {
+        col := A_Index
+        mon := Dictation_GetMonitorIndexByOrder(col)
+        if (!mon)
+            continue
+        for win in Dictation_GetVisibleWindowsOnMonitor(mon) {
+            paneRow := Dictation_ClassifyWindowPaneRow(mon, win.left, win.top, win.right, win.bottom)
+            paneSize := Dictation_PaneSizeOnAxis(mon, win.left, win.top, win.right, win.bottom)
+            title := ""
+            try title := WinGetTitle(win.hwnd)
+            candidate := { hwnd: win.hwnd, title: title, paneSize: paneSize, mon: mon }
+            existing := grid[col][paneRow]
+            if (!IsObject(existing) || !existing.HasProp("hwnd")) {
+                grid[col][paneRow] := candidate
+            } else if (paneSize > existing.paneSize) {
+                overflowCount++
+                grid[col][paneRow] := candidate
+            } else {
+                overflowCount++
+            }
+        }
+    }
+    slots := []
+    keyIdx := 0
+    loop displayCols {
+        col := A_Index
+        loop rowCount {
+            row := A_Index
+            cell := grid[col][row]
+            if (!IsObject(cell) || !cell.HasProp("hwnd"))
+                continue
+            keyIdx++
+            if (keyIdx > DICTATION_VISIBLE_PASTE_MAX_KEYS) {
+                overflowCount++
+                continue
+            }
+            ch := String(keyIdx)
+            slot := {
+                hwnd: cell.hwnd,
+                title: cell.title,
+                char: ch,
+                label: Dictation_VisiblePasteKeyLabel(ch),
+                col: col,
+                row: row
+            }
+            slots.Push(slot)
+            grid[col][row] := slot
+        }
+    }
+    return { grid: grid, slots: slots, overflowCount: overflowCount, physicalCols: physicalCols }
+}
+
 ; Legacy visible-window enumeration for one monitor (no daemon IPC).
 Dictation_GetVisibleWindowsOnMonitor(mon) {
     MonitorGet mon, &ml, &mt, &mr, &mb
@@ -256,54 +422,6 @@ Dictation_GetVisibleWindowsOnMonitor(mon) {
         }
     }
     return visible
-}
-
-Dictation_SortVisiblePasteRows(&rows) {
-    n := rows.Length
-    if (n < 2)
-        return
-    loop n - 1 {
-        loop n - A_Index {
-            j := A_Index
-            a := rows[j]
-            b := rows[j + 1]
-            if (StrCompare(a.title, b.title, true) > 0) {
-                tmp := rows[j]
-                rows[j] := rows[j + 1]
-                rows[j + 1] := tmp
-            }
-        }
-    }
-}
-
-Dictation_CollectVisibleWindowRows(promoteHwnd := 0) {
-    rows := []
-    seen := Map()
-    loop MonitorGetCount() {
-        for win in Dictation_GetVisibleWindowsOnMonitor(A_Index) {
-            if (seen.Has(win.hwnd))
-                continue
-            seen[win.hwnd] := true
-            try {
-                rows.Push({ hwnd: win.hwnd, title: WinGetTitle(win.hwnd) })
-            } catch {
-            }
-        }
-    }
-    Dictation_SortVisiblePasteRows(&rows)
-    if (promoteHwnd && rows.Length > 1) {
-        loop rows.Length {
-            if (rows[A_Index].hwnd = promoteHwnd) {
-                if (A_Index > 1) {
-                    swap := rows[1]
-                    rows[1] := rows[A_Index]
-                    rows[A_Index] := swap
-                }
-                break
-            }
-        }
-    }
-    return rows
 }
 
 Dictation_VisiblePasteModifiersDown() {
@@ -524,41 +642,44 @@ Dictation_VisiblePasteStartMonitorTracking() {
     g_DictationVisiblePasteTrackTimer := SetTimer(Dictation_VisiblePasteTrackActiveMonitorTick, 115)
 }
 
-Dictation_VisiblePasteAssignKeys(rows) {
-    global g_DictationVisiblePasteKeyMap, g_DictationVisiblePasteCharSequence
+Dictation_VisiblePasteAssignKeys(slots) {
+    global g_DictationVisiblePasteKeyMap
     g_DictationVisiblePasteKeyMap := Map()
     windows := []
-    limit := Min(rows.Length, g_DictationVisiblePasteCharSequence.Length)
-    loop limit {
-        ch := g_DictationVisiblePasteCharSequence[A_Index]
-        row := rows[A_Index]
-        g_DictationVisiblePasteKeyMap[ch] := row.hwnd
-        windows.Push({ hwnd: row.hwnd, title: row.title, char: ch, label: Dictation_VisiblePasteKeyLabel(ch) })
+    for slot in slots {
+        g_DictationVisiblePasteKeyMap[slot.char] := slot.hwnd
+        windows.Push(slot)
     }
     return windows
 }
 
-Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
+Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
     global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
-    global g_DictationVisiblePasteCharSequence
-    global DICTATION_VISIBLE_PASTE_THUMB_W, DICTATION_VISIBLE_PASTE_THUMB_H, DICTATION_VISIBLE_PASTE_COL_COUNT,
-        DICTATION_VISIBLE_PASTE_COL_GAP, DICTATION_VISIBLE_PASTE_CELL_H,
-        DICTATION_VISIBLE_PASTE_KEY_FONT, DICTATION_VISIBLE_PASTE_TITLE_FONT, DICTATION_VISIBLE_PASTE_HEADER_FONT
+    global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_ROW_COUNT,
+        DICTATION_VISIBLE_PASTE_KEY_FONT, DICTATION_VISIBLE_PASTE_TITLE_FONT, DICTATION_VISIBLE_PASTE_HEADER_FONT,
+        DICTATION_VISIBLE_PASTE_MON_LABEL_FONT
     Dictation_VisiblePasteUnregisterAllThumbnails()
-    windows := Dictation_VisiblePasteAssignKeys(rows)
+    slots := gridData.slots
+    grid := gridData.grid
+    overflowCount := gridData.overflowCount
+    windows := Dictation_VisiblePasteAssignKeys(slots)
+    layout := Dictation_VisiblePasteComputeLayout(centerOnHwnd)
     marginX := 15
     marginY := 10
-    colCount := DICTATION_VISIBLE_PASTE_COL_COUNT
-    colGap := DICTATION_VISIBLE_PASTE_COL_GAP
-    thumbW := DICTATION_VISIBLE_PASTE_THUMB_W
-    thumbH := DICTATION_VISIBLE_PASTE_THUMB_H
-    cellW := thumbW + 2
-    cellH := DICTATION_VISIBLE_PASTE_CELL_H
-    keyH := 28
-    keyGap := 6
-    titleGap := 10
-    contentW := colCount * cellW + (colCount - 1) * colGap
-    modalW := contentW + 2 * marginX
+    colCount := layout.colCount
+    colGap := layout.colGap
+    cellW := layout.cellW
+    cellH := layout.cellH
+    thumbW := layout.thumbW
+    thumbH := layout.thumbH
+    keyH := layout.keyH
+    keyGap := layout.keyGap
+    titleGap := layout.titleGap
+    titleH := layout.titleH
+    contentW := layout.contentW
+    rowCount := DICTATION_VISIBLE_PASTE_ROW_COUNT
+    monLabelH := 18
+    monLabelGap := 4
 
     g_DictationVisiblePasteGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
     g_DictationVisiblePasteGui.Opt("-DPIScale")
@@ -569,40 +690,65 @@ Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
     g_DictationVisiblePasteGui.Add("Text", "w" . contentW . " Center", "=== VISIBLE WINDOWS ===")
 
     gridStartY := marginY + 34
-    thumbPanels := []
-    loop windows.Length {
-        idx := A_Index - 1
-        col := Mod(idx, colCount)
-        row := idx // colCount
+    monRowY := gridStartY
+    g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_MON_LABEL_FONT . " c6C7086", "Segoe UI")
+    loop colCount {
+        col := A_Index - 1
         cellX := marginX + col * (cellW + colGap)
-        cellY := gridStartY + row * cellH
-        w := windows[A_Index]
-        thumbX := cellX + (cellW - thumbW) // 2
-        thumbY := cellY + keyH + keyGap
+        g_DictationVisiblePasteGui.Add("Text", "x" . cellX . " y" . monRowY . " w" . cellW . " h" . monLabelH .
+            " Center",
+            "M" . A_Index)
+    }
+    gridStartY := monRowY + monLabelH + monLabelGap
+    thumbPanels := []
+    loop colCount {
+        col := A_Index
+        loop rowCount {
+            row := A_Index
+            rowIdx := row - 1
+            cellX := marginX + (col - 1) * (cellW + colGap)
+            cellY := gridStartY + rowIdx * cellH
+            thumbX := cellX + (cellW - thumbW) // 2
+            thumbY := cellY + keyH + keyGap
+            cell := grid[col][row]
+            occupied := IsObject(cell) && cell.HasProp("hwnd") && cell.HasProp("char")
 
-        g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_KEY_FONT . " cCDD6F4 Bold", "Segoe UI")
-        g_DictationVisiblePasteGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH . " Center",
-            "[" . w.label . "]")
-        g_DictationVisiblePasteGui.Add("Text",
-            "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) . " Background6C7086",
-            "")
-        panel := g_DictationVisiblePasteGui.Add("Text",
-            "x" . thumbX . " y" . thumbY . " w" . thumbW . " h" . thumbH . " Background1E1E2E", "")
-        g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_TITLE_FONT . " cCDD6F4", "Segoe UI")
-        g_DictationVisiblePasteGui.Add("Text",
-            "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " Center",
-            Dictation_VisiblePasteTruncateTitle(w.title))
-        thumbPanels.Push({ sourceHwnd: w.hwnd, panel: panel })
+            if (occupied) {
+                g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_KEY_FONT . " cCDD6F4 Bold", "Segoe UI"
+                )
+                g_DictationVisiblePasteGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH .
+                    " Center",
+                    "[" . cell.label . "]")
+                g_DictationVisiblePasteGui.Add("Text",
+                    "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) .
+                    " Background6C7086",
+                    "")
+                panel := g_DictationVisiblePasteGui.Add("Text",
+                    "x" . thumbX . " y" . thumbY . " w" . thumbW . " h" . thumbH . " Background1E1E2E", "")
+                g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_TITLE_FONT . " cCDD6F4", "Segoe UI")
+                g_DictationVisiblePasteGui.Add("Text",
+                    "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " h" . titleH . " Center Wrap",
+                    Dictation_VisiblePasteTruncateTitle(cell.title))
+                thumbPanels.Push({ sourceHwnd: cell.hwnd, panel: panel })
+            } else {
+                g_DictationVisiblePasteGui.Add("Text", "x" . cellX . " y" . cellY . " w" . cellW . " h" . keyH .
+                    " Center", "")
+                g_DictationVisiblePasteGui.Add("Text",
+                    "x" . (thumbX - 1) . " y" . (thumbY - 1) . " w" . (thumbW + 2) . " h" . (thumbH + 2) .
+                    " Background45475A",
+                    "")
+                g_DictationVisiblePasteGui.Add("Text",
+                    "x" . cellX . " y" . (thumbY + thumbH + titleGap) . " w" . cellW . " h" . titleH . " Center", "")
+            }
+        }
     }
 
-    numGridRows := Ceil(windows.Length / colCount)
-    footerY := gridStartY + numGridRows * cellH + 8
+    footerY := gridStartY + rowCount * cellH + 8
 
-    slotCount := g_DictationVisiblePasteCharSequence.Length
-    if (rows.Length > slotCount) {
+    if (overflowCount > 0) {
         g_DictationVisiblePasteGui.SetFont("s12 c6C7086", "Segoe UI")
         g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
-            "(" . (rows.Length - slotCount) . " more — close some and reopen)")
+            "(" . overflowCount . " more — close some and reopen)")
         footerY += 24
     }
 
@@ -621,24 +767,10 @@ Dictation_VisiblePasteShowModal(rows, centerOnHwnd := 0) {
         #InputLevel 0
     } catch {
     }
-    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd)) {
-        monitorIndex := 1
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", centerOnHwnd, "ptr", rect)) {
-            cx := NumGet(rect, 0, "int") + (NumGet(rect, 8, "int") - NumGet(rect, 0, "int")) // 2
-            cy := NumGet(rect, 4, "int") + (NumGet(rect, 12, "int") - NumGet(rect, 4, "int")) // 2
-            loop MonitorGetCount() {
-                MonitorGet(A_Index, &ml, &mt, &mr, &mb)
-                if (cx >= ml && cx <= mr && cy >= mt && cy <= mb) {
-                    monitorIndex := A_Index
-                    break
-                }
-            }
-        }
-        Dictation_VisiblePasteRepositionToActiveMonitor(monitorIndex)
-    } else {
+    if (centerOnHwnd && WinExist("ahk_id " centerOnHwnd))
+        Dictation_VisiblePasteRepositionToActiveMonitor(Dictation_VisiblePasteResolveLayoutMonitor(centerOnHwnd))
+    else
         Dictation_VisiblePasteRepositionToActiveMonitor(0)
-    }
     Sleep 30
     Dictation_VisiblePasteAttachThumbnails(g_DictationVisiblePasteGui, thumbPanels)
     Dictation_VisiblePasteStartMonitorTracking()
@@ -696,13 +828,13 @@ Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
     clipBackup := ""
     try clipBackup := A_Clipboard
     Dictation_VisiblePasteClose()
-    rows := Dictation_CollectVisibleWindowRows(centerOnHwnd)
-    if (rows.Length = 0) {
+    gridData := Dictation_BuildMonitorGrid()
+    if (gridData.slots.Length = 0) {
         ShowCenteredOverlay_Utils("ℹ️ No visible windows found", 2500, BANNER_ACCENT_INFO)
         try A_Clipboard := clipBackup
         return 0
     }
-    Dictation_VisiblePasteShowModal(rows, centerOnHwnd)
+    Dictation_VisiblePasteShowModal(gridData, centerOnHwnd)
     start := A_TickCount
     timeoutMs := 30000
     lastMonitorIdx := g_DictationVisiblePasteLastForegroundMonitorIdx
