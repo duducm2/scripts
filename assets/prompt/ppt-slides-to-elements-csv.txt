@@ -27,8 +27,8 @@ Column definitions:
 - element_type: One of: title, subtitle, section_label, bullet_group, body_text_block, metric_card, chart_bar, chart_line, chart_pie, icon_badge, illustration, diagram, timeline_segment, process_step, persona_card, comparison_column, callout, divider_line, decorative_shape.
 - position_region: Placement hint — e.g. top, top_left, top_center, center, bottom_right, full_width_band, left_column, right_column.
 - size_hint: One of: small, medium, large, full_width, full_height.
-- text_to_render: Literal text that must appear in the image. Leave empty for non-text elements.
-- image_gen_prompt: Minimal subject + framing only. See exact template below.
+- text_to_render: Literal text that must appear in the image. Leave empty when the element has no text labels. When non-empty, the same text must appear verbatim inside image_gen_prompt (see sync rule below).
+- image_gen_prompt: Minimal subject + framing only. Must include full text_to_render when that column is non-empty. See exact template below.
 - assembly_notes: How to place this element on the slide (margins, alignment relative to other elements).
 
 Decomposition rules:
@@ -58,11 +58,19 @@ Framing: isolated element only, not a full slide; [aspect ratio hint if useful].
 
 That is the complete image_gen_prompt. No additional sentences.
 
+text_to_render sync rule (MANDATORY):
+
+- Keep text_to_render and image_gen_prompt as separate columns.
+- When text_to_render is non-empty, copy its full content verbatim into the Subject line of image_gen_prompt. The human pastes only image_gen_prompt at image-generation time — never both columns separately.
+- When text_to_render is empty, Subject uses chart data from data_points or a brief named subject only.
+- text_to_render and the Subject portion of image_gen_prompt must match exactly whenever text_to_render is non-empty. Do not paraphrase, shorten, or omit labels, dates, or timeline entries.
+
 Subject line rules by element_type:
 
-- title, subtitle, section_label, bullet_group, body_text_block: Subject: [exact text_to_render]
-- chart_bar, chart_line, chart_pie, metric_card: Subject: [chart type + labels + values from data_points]
-- illustration, diagram, decorative_shape, icon_badge, persona_card, process_step, timeline_segment: Subject: [named subject only, e.g. Titanic ship illustration]
+- title, subtitle, section_label, bullet_group, body_text_block: Subject: [exact text_to_render verbatim]
+- chart_bar, chart_line, chart_pie, metric_card: Subject: [chart type + labels + values from data_points]. If text_to_render is non-empty, append after a dash: — [exact text_to_render verbatim]
+- timeline_segment, process_step, diagram, callout, comparison_column, persona_card: Subject: [brief element label] — [exact text_to_render verbatim]. If text_to_render is empty, Subject: [brief element label from slide content]
+- illustration, decorative_shape, icon_badge: Subject: [named subject]. If text_to_render is non-empty, append: — [exact text_to_render verbatim]
 
 FORBIDDEN anywhere in image_gen_prompt (these cause style conflicts with human attachments):
 
@@ -80,6 +88,7 @@ Validation (before output):
 - Every image_gen_prompt is exactly three lines (priority block + Subject + Framing).
 - Every image_gen_prompt starts with HUMAN STYLE AUTHORITY:
 - No forbidden style language in any image_gen_prompt.
+- When text_to_render is non-empty, its full content appears verbatim in that row's image_gen_prompt Subject line.
 
 Output (CRITICAL — read before responding):
 
@@ -95,6 +104,7 @@ element_id;slide_id;element_order;element_type;position_region;size_hint;text_to
 EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Q4 Results. Framing: isolated element only, not a full slide; wide horizontal strip.";Place in top third, horizontally centered
 EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Framing: isolated element only, not a full slide; landscape rectangle.";Below title, ~80% slide width, centered
 EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic ship illustration. Framing: isolated element only, not a full slide; landscape crop.";Center of slide, dominant visual
+EL_SLIDE_004_01;SLIDE_004;1;timeline_segment;center;large;1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic timeline — 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.";Center of slide
 ```
 
 Rules for the code block contents:
@@ -124,7 +134,7 @@ After the AI responds:
 For each element image (repeat per CSV row):
 
 1️⃣ Paste your style prompt and attachments FIRST in the same message (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack)
-2️⃣ Then paste image_gen_prompt from that CSV row (3 lines: HUMAN STYLE AUTHORITY + Subject + Framing)
+2️⃣ Then paste image_gen_prompt from that CSV row only (text_to_render is already inside it — do not copy both columns)
 👑 Your style attachments define ALL visual style — the CSV row states subject and framing only
 🧩 Assemble finished images in PowerPoint using position_region, size_hint, and assembly_notes from each row
 
