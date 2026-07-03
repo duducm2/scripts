@@ -1,0 +1,192 @@
+Task:
+
+Take a slides CSV (output from ppt-content-to-slides-csv, Stage 1) and produce an elements CSV. One row = one compositable image asset for a single slide. Each row must include a complete, self-contained image_gen_prompt for an image-generation AI.
+
+
+
+This is Stage 2 of a two-stage PowerPoint workflow. Stage 1 plans the deck; Stage 2 decomposes each slide into isolated visual elements so image AIs can render sharp, halo-free components instead of messy full-slide images.
+
+
+
+Before processing:
+
+
+
+1. Confirm the slides CSV is present (paste or attach).
+
+2. If the slides CSV is missing or lacks a slide_id column, stop and ask the user to provide it.
+
+
+
+Inputs:
+
+
+
+- Slides CSV: <paste or attach output from ppt-content-to-slides-csv>
+
+- Optional assembly notes: <global style, margins, font preference>
+
+
+
+Column schema (authoritative — use exactly these columns in this order):
+
+
+
+element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
+
+
+
+Column definitions:
+
+
+
+- element_id: Stable primary key. Format EL_SLIDE_001_01, EL_SLIDE_001_02, etc. Encode parent slide in the ID.
+
+- slide_id: Foreign key — must match a slide_id from the input slides CSV.
+
+- element_order: Stacking / reading order on the slide (1 = first / back / top-left).
+
+- element_type: One of: title, subtitle, section_label, bullet_group, body_text_block, metric_card, chart_bar, chart_line, chart_pie, icon_badge, diagram, timeline_segment, process_step, persona_card, comparison_column, callout, divider_line, decorative_shape.
+
+- position_region: Placement hint — e.g. top, top_left, top_center, center, bottom_right, full_width_band, left_column, right_column.
+
+- size_hint: One of: small, medium, large, full_width, full_height.
+
+- text_to_render: Literal text that must appear in the image. Leave empty for non-text elements (e.g. charts with data only in the prompt).
+
+- image_gen_prompt: Full standalone prompt, copy-paste ready for an image-generation AI. See rules below.
+
+- assembly_notes: How to place this element on the slide (margins, alignment relative to other elements).
+
+
+
+Decomposition rules:
+
+
+
+1. Never produce one element that represents an entire slide. Split into title, content blocks, charts, icons, cards, etc.
+
+2. Every slide_id from the input must have at least one element. Typical slides have 2–6 elements.
+
+3. Respect decomposition_hints and visual_intent from the slides CSV.
+
+4. For chart_focus or metric_dashboard slides, create separate chart or metric_card elements — one chart per element.
+
+5. Use data_points from the parent slide row when writing chart or metric prompts.
+
+
+
+image_gen_prompt rules (every row must follow all of these inside image_gen_prompt):
+
+
+
+1. Start with: Generate only this isolated UI element, not a full slide.
+
+2. Pure white #FFFFFF background — unless the element is a small icon_badge, in which case specify a clean icon on white with no outer glow.
+
+3. Sharp, vector-like edges. No gray fringes, feathered edges, soft glow, muddy transitions, outer glow, ambient haze, drop-shadow bleed, or compression-like smearing around shapes or text.
+
+4. Flat UI areas must use uniform solid color fills with crisp boundaries — no gradient bleed or haze at shape borders.
+
+5. Include exact text from text_to_render when that column is non-empty. Spell and capitalize correctly.
+
+6. Use an appropriate aspect ratio for the element type — not always 16:9. Examples: title = wide horizontal strip; metric_card = near-square; chart = landscape rectangle.
+
+7. Professional business presentation style unless assembly notes override.
+
+8. All text and icons must be legible at 100% zoom with no blurry glyph edges.
+
+9. For charts: embed the numeric data from the parent slide's data_points column in the prompt.
+
+10. The prompt must be self-contained — assume the image AI has no other context except what you write and any brand files the human attaches separately.
+
+
+
+Validation (before output):
+
+
+
+- Every slide_id in elements exists in the input slides CSV.
+
+- No duplicate element_id values.
+
+- Every row has a non-empty image_gen_prompt.
+
+- No row represents a full slide layout.
+
+
+
+Output (CRITICAL — read before responding):
+
+
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+
+
+
+WRONG (do not output): element\_id, EL\_SLIDE\_001\_01
+
+RIGHT: element_id, EL_SLIDE_001_01
+
+
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+
+
+```csv
+
+element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
+
+EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;Generate only this isolated UI element, not a full slide. Create a presentation title reading Q4 Results on pure white #FFFFFF background. Wide horizontal strip aspect ratio. Sharp vector-like edges, no gray fringes or glow. Professional business style.;Place in top third, horizontally centered
+
+EL_SLIDE_002_01;SLIDE_002;1;title;top_center;medium;Revenue by Region;Generate only this isolated UI element, not a full slide. Create a slide section title reading Revenue by Region on pure white #FFFFFF background. Sharp edges, no halos. Professional business style.;Above chart, centered
+
+EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;Generate only this isolated UI element, not a full slide. Create a horizontal bar chart: EMEA 42%, APAC 31%, Americas 27%. Pure white #FFFFFF background. Sharp bars and labels, no gray fringes. Landscape rectangle.;Below title, ~80% slide width, centered
+
+```
+
+
+
+Rules for the code block contents:
+
+
+
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+
+4. Underscores are literal: write element_id, not element\_id.
+
+5. The backslash character must not appear unless it is real data in a cell.
+
+6. Use the exact column names and order defined above.
+
+7. One row per line inside the code block (header on line 1, each data row on its own line).
+
+8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores. image_gen_prompt often needs quoting because it contains semicolons — quote it when required.
+
+
+
+---
+
+Reminder for the human (do not include in AI output):
+
+
+
+Before sending this prompt, attach or paste the slides CSV from Stage 1 (ppt-content-to-slides-csv.txt).
+
+
+
+After the AI responds:
+
+1. Save the CSV as elements.csv (or similar).
+
+2. After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them.
+
+3. For each row: run your image-generation AI using image_gen_prompt. Optionally attach brand rules (e.g. bosch-brand-image.txt and brand JSON) before generating — generic style is the default in the prompts.
+
+4. Assemble generated images in PowerPoint using position_region, size_hint, and assembly_notes from each row.
+

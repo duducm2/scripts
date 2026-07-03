@@ -1,0 +1,158 @@
+Task:
+
+Convert user-provided material into a slide deck plan as CSV. One row = one PowerPoint page. Do not generate images.
+
+
+
+This is Stage 1 of a two-stage PowerPoint workflow. The CSV you produce is the input for Stage 2 (ppt-slides-to-elements-csv), which decomposes each slide into isolated image elements.
+
+
+
+Before processing:
+
+
+
+1. Confirm source content is present (pasted text, notes, outline, table, or attached files).
+
+2. If source content is missing, stop and ask the user to provide it.
+
+
+
+Inputs:
+
+
+
+- Source content: <paste or attach here>
+
+- Optional deck constraints: <target slide count, audience, tone, language, must-include topics>
+
+- Optional style notes: <for downstream image generation; brand rules may be attached later in Stage 2>
+
+
+
+Column schema (authoritative — use exactly these columns in this order):
+
+
+
+slide_id;slide_order;title;subtitle;layout_archetype;key_message;content_body;data_points;visual_intent;speaker_notes;decomposition_hints
+
+
+
+Column definitions:
+
+
+
+- slide_id: Stable primary key. Format SLIDE_001, SLIDE_002, etc.
+
+- slide_order: Integer display order, 1-based, contiguous.
+
+- title: Slide headline.
+
+- subtitle: Optional subhead. Leave empty if not applicable.
+
+- layout_archetype: One of: title_slide, agenda, section_divider, content_bullets, two_column, chart_focus, comparison, timeline, process_flow, persona_cards, metric_dashboard, closing.
+
+- key_message: One-sentence takeaway for this slide.
+
+- content_body: Main copy — bullets or paragraphs. Separate bullets with | inside the cell.
+
+- data_points: Numbers and labels for charts (e.g. EMEA:42|APAC:31). Leave empty if not applicable.
+
+- visual_intent: Short description of intended look (columns, chart type, icons, layout).
+
+- speaker_notes: Optional presenter notes.
+
+- decomposition_hints: Explicit list of distinct visual blocks this slide needs (e.g. title bar + 3 icon cards + footer metric strip). Required handoff for Stage 2.
+
+
+
+Processing rules:
+
+
+
+1. Infer a logical narrative flow from the source. Do not invent facts absent from the source.
+
+2. Prefer 8–15 slides unless deck constraints specify otherwise.
+
+3. One idea per slide. Split overcrowded content across multiple slides.
+
+4. slide_id must be unique and stable. slide_order must be contiguous starting at 1.
+
+5. Write decomposition_hints explicitly for every slide — name each visual block Stage 2 should produce as a separate image.
+
+6. If the source is ambiguous, produce best-effort rows and note gaps in speaker_notes. Do not add commentary outside the CSV block.
+
+7. Use semicolon as the field separator.
+
+
+
+Output (CRITICAL — read before responding):
+
+
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+
+
+
+WRONG (do not output): slide\_id, SLIDE\_001
+
+RIGHT: slide_id, SLIDE_001
+
+
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+
+
+```csv
+
+slide_id;slide_order;title;subtitle;layout_archetype;key_message;content_body;data_points;visual_intent;speaker_notes;decomposition_hints
+
+SLIDE_001;1;Q4 Results;;title_slide;Strong quarter across regions;;;Centered title and subtitle;Open with energy;title block + subtitle block
+
+SLIDE_002;2;Revenue by Region;;chart_focus;EMEA led growth;EMEA 42% | APAC 31% | Americas 27%;EMEA:42|APAC:31|Americas:27;Horizontal bar chart;Walk through regions;title + horizontal bar chart
+
+```
+
+
+
+Rules for the code block contents:
+
+
+
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+
+4. Underscores are literal: write slide_id, not slide\_id.
+
+5. The backslash character must not appear unless it is real data in a cell.
+
+6. Use the exact column names and order defined above.
+
+7. One row per line inside the code block (header on line 1, each data row on its own line).
+
+8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores.
+
+
+
+---
+
+Reminder for the human (do not include in AI output):
+
+
+
+Before sending this prompt, attach or paste your source content (notes, outline, documents, tables).
+
+
+
+After the AI responds:
+
+1. Save the CSV as slides.csv (or similar).
+
+2. After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. slide\_id → slide_id).
+
+3. Next step: use ppt-slides-to-elements-csv.txt (Stage 2) and attach this slides CSV as input.
+

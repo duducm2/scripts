@@ -332,6 +332,10 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:pptslide", GetPromptText("slide-creation"), "Prompts", "📊 Create PowerPoint slide")
     RegisterHotstring(":o:pptslideref", GetPromptText("slide-creation-with-ref"), "Prompts",
     "📊 Create PowerPoint slide (reference)")
+    RegisterHotstring(":o:pptdeckcsv", GetPromptText("ppt-content-to-slides-csv"), "Prompts",
+    "📊 PPT stage 1: content to slides CSV", "s")
+    RegisterHotstring(":o:pptelemcsv", GetPromptText("ppt-slides-to-elements-csv"), "Prompts",
+    "🧩 PPT stage 2: slides to elements CSV", "e")
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
     RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts",
     "🔍 Upscale image (resolution + sharp text)")
