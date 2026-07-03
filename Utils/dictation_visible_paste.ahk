@@ -22,7 +22,6 @@ global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
 
 global DICTATION_VISIBLE_PASTE_COL_COUNT := 4
 global DICTATION_VISIBLE_PASTE_ROW_COUNT := 2
-global DICTATION_VISIBLE_PASTE_MAX_KEYS := 8
 global DICTATION_VISIBLE_PASTE_COL_GAP := 18
 global DICTATION_VISIBLE_PASTE_THUMB_MAX_W := 320
 global DICTATION_VISIBLE_PASTE_TITLE_H := 48
@@ -181,6 +180,13 @@ Dictation_VisiblePasteKeyLabel(char) {
     return (char = "0") ? "10" : char
 }
 
+; row 1 = start pane (A/S/D/F), row 2 = end pane (Z/X/C/V); col 1..4 = monitors L→R
+Dictation_VisiblePasteGridSlotChar(col, row) {
+    if (row = 1)
+        return ["a", "s", "d", "f"][col]
+    return ["z", "x", "c", "v"][col]
+}
+
 ; Left-to-right monitor order (parity with WindowManagement GetMonitorIndexByOrder).
 Dictation_GetMonitorIndexByOrder(order) {
     count := MonitorGetCount()
@@ -278,9 +284,9 @@ Dictation_VisiblePasteComputeLayout(centerOnHwnd := 0) {
     }
 }
 
-; Fixed 4x2 grid: columns = monitors L→R, rows = start/end pane. Keys 1-8 column-major.
+; Fixed 4x2 grid: columns = monitors L→R, rows = start/end pane. Grid keys A/S/D/F + Z/X/C/V.
 Dictation_BuildMonitorGrid() {
-    global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_ROW_COUNT, DICTATION_VISIBLE_PASTE_MAX_KEYS
+    global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_ROW_COUNT, g_DictationVisiblePasteCharSequence
     displayCols := DICTATION_VISIBLE_PASTE_COL_COUNT
     rowCount := DICTATION_VISIBLE_PASTE_ROW_COUNT
     grid := []
@@ -290,7 +296,7 @@ Dictation_BuildMonitorGrid() {
             colCells.Push("")
         grid.Push(colCells)
     }
-    overflowCount := 0
+    overflowWins := []
     physicalCols := Min(displayCols, MonitorGetCount())
     loop physicalCols {
         col := A_Index
@@ -307,15 +313,14 @@ Dictation_BuildMonitorGrid() {
             if (!IsObject(existing) || !existing.HasProp("hwnd")) {
                 grid[col][paneRow] := candidate
             } else if (paneSize > existing.paneSize) {
-                overflowCount++
+                overflowWins.Push({ hwnd: existing.hwnd, title: existing.title })
                 grid[col][paneRow] := candidate
             } else {
-                overflowCount++
+                overflowWins.Push({ hwnd: candidate.hwnd, title: candidate.title })
             }
         }
     }
-    slots := []
-    keyIdx := 0
+    gridSlots := []
     loop displayCols {
         col := A_Index
         loop rowCount {
@@ -323,25 +328,43 @@ Dictation_BuildMonitorGrid() {
             cell := grid[col][row]
             if (!IsObject(cell) || !cell.HasProp("hwnd"))
                 continue
-            keyIdx++
-            if (keyIdx > DICTATION_VISIBLE_PASTE_MAX_KEYS) {
-                overflowCount++
-                continue
-            }
-            ch := String(keyIdx)
+            ch := Dictation_VisiblePasteGridSlotChar(col, row)
             slot := {
                 hwnd: cell.hwnd,
                 title: cell.title,
                 char: ch,
-                label: Dictation_VisiblePasteKeyLabel(ch),
+                label: StrUpper(ch),
                 col: col,
-                row: row
+                row: row,
+                isOverflow: false
             }
-            slots.Push(slot)
+            gridSlots.Push(slot)
             grid[col][row] := slot
         }
     }
-    return { grid: grid, slots: slots, overflowCount: overflowCount, physicalCols: physicalCols }
+    overflowSlots := []
+    seqIdx := 0
+    for win in overflowWins {
+        seqIdx++
+        if (seqIdx > g_DictationVisiblePasteCharSequence.Length)
+            break
+        ch := g_DictationVisiblePasteCharSequence[seqIdx]
+        overflowSlots.Push({
+            hwnd: win.hwnd,
+            title: win.title,
+            char: ch,
+            label: Dictation_VisiblePasteKeyLabel(ch),
+            isOverflow: true
+        })
+    }
+    unkeyedOverflowCount := overflowWins.Length - overflowSlots.Length
+    slots := []
+    for slot in gridSlots
+        slots.Push(slot)
+    for slot in overflowSlots
+        slots.Push(slot)
+    return { grid: grid, slots: slots, overflowSlots: overflowSlots, unkeyedOverflowCount: unkeyedOverflowCount,
+        physicalCols: physicalCols }
 }
 
 ; Legacy visible-window enumeration for one monitor (no daemon IPC).
@@ -661,7 +684,8 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
     Dictation_VisiblePasteUnregisterAllThumbnails()
     slots := gridData.slots
     grid := gridData.grid
-    overflowCount := gridData.overflowCount
+    overflowSlots := gridData.overflowSlots
+    unkeyedOverflowCount := gridData.unkeyedOverflowCount
     windows := Dictation_VisiblePasteAssignKeys(slots)
     layout := Dictation_VisiblePasteComputeLayout(centerOnHwnd)
     marginX := 15
@@ -745,10 +769,43 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
 
     footerY := gridStartY + rowCount * cellH + 8
 
-    if (overflowCount > 0) {
+    if (overflowSlots.Length > 0) {
+        footerY += 8
+        g_DictationVisiblePasteGui.SetFont("s11 c6C7086", "Segoe UI")
+        g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Left",
+            "Additional windows:")
+        footerY += 20
+        ovKeyW := 36
+        ovThumbW := Max(120, Min(160, cellW // 2))
+        ovThumbH := Round(ovThumbW * 9 / 16)
+        ovRowH := ovThumbH + 8
+        ovTitleW := contentW - ovKeyW - ovThumbW - 16
+        for slot in overflowSlots {
+            rowY := footerY
+            g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_KEY_FONT . " cCDD6F4 Bold", "Segoe UI")
+            g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . rowY . " w" . ovKeyW . " h" . ovThumbH .
+                " Center", "[" . slot.label . "]")
+            ovThumbX := marginX + ovKeyW + 4
+            g_DictationVisiblePasteGui.Add("Text",
+                "x" . (ovThumbX - 1) . " y" . (rowY - 1) . " w" . (ovThumbW + 2) . " h" . (ovThumbH + 2) .
+                " Background6C7086",
+                "")
+            ovPanel := g_DictationVisiblePasteGui.Add("Text",
+                "x" . ovThumbX . " y" . rowY . " w" . ovThumbW . " h" . ovThumbH . " Background1E1E2E", "")
+            ovTitleX := ovThumbX + ovThumbW + 8
+            g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_TITLE_FONT . " cCDD6F4", "Segoe UI")
+            g_DictationVisiblePasteGui.Add("Text",
+                "x" . ovTitleX . " y" . rowY . " w" . ovTitleW . " h" . ovThumbH . " Left Wrap",
+                Dictation_VisiblePasteTruncateTitle(slot.title, 52))
+            thumbPanels.Push({ sourceHwnd: slot.hwnd, panel: ovPanel })
+            footerY += ovRowH
+        }
+    }
+
+    if (unkeyedOverflowCount > 0) {
         g_DictationVisiblePasteGui.SetFont("s12 c6C7086", "Segoe UI")
         g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
-            "(" . overflowCount . " more — close some and reopen)")
+            "(" . unkeyedOverflowCount . " more — close some and reopen)")
         footerY += 24
     }
 
