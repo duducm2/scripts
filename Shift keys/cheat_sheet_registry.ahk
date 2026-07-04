@@ -416,6 +416,7 @@ cheatSheets["Cursor.exe"] := "
     ⬇️ [P][P]ull (Git) (cursor)
     ✅ [V]Commit (Git sa[V]e) (cursor)
     ⬆️ [B]Push (Git pu[B]lish) (cursor)
+    ✅ [J] Quick commit — generic timestamp, commit + push (ahk)
     
     === Alt (ahk = AutoHotkey) ===
     📉 [x] Shri[X]nk selection (ahk)
@@ -525,6 +526,7 @@ cheatSheets["Code.exe"] := "
     ⬇️ [P][P]ull (Git)
     ✅ [V]Commit (Git)
     ⬆️ [B]Push (Git)
+    ✅ [J] Quick commit — generic timestamp, commit + push (ahk)
     
     === Alt (ahk = AutoHotkey) ===
     📉 [x] Shri[X]nk selection (ahk)

@@ -653,6 +653,64 @@ ClickVSCodeCopilotModelButton() {
 ; Shift + D : Git section - Git
 +d:: Send "+d"
 
+Editor_FocusScmCommitInput() {
+    try {
+        hwnd := WinExist("A")
+        if (!hwnd)
+            return false
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        el := 0
+        try el := root.FindFirst({ AutomationId: "scm.input" })
+        catch {
+        }
+        if (!el) {
+            try {
+                for edit in root.FindAll({ Type: UIA.Type.Edit }) {
+                    try {
+                        if (InStr(edit.Name, "Message", false) || InStr(edit.AutomationId, "scm", false)) {
+                            el := edit
+                            break
+                        }
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+        }
+        if (el) {
+            try {
+                el.SetFocus()
+                return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    Send "{Tab}"
+    return false
+}
+
+Editor_QuickCommit() {
+    if !WinExist("A")
+        return
+    FocusSourceControlViewForCommitGeneration()
+    Editor_FocusScmCommitInput()
+    Sleep 80
+    msg := "generic commit " . FormatTime(, "yyyy-MM-dd HH:mm:ss")
+    Send "^a"
+    Sleep 50
+    SendText msg
+    Sleep 100
+    Send "+v"
+    Sleep 500
+    Send "+b"
+}
+
+; Shift + J : Quick commit — generic timestamped message, commit, push
++j:: Editor_QuickCommit()
+
 ; Shift + Z : Close all editors - Close
 +z::
 {
@@ -1421,4 +1479,3 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
     Send "{Down}"
     Send "{Enter}"
 }
-
