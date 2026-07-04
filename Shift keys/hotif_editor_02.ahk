@@ -667,6 +667,22 @@ Editor_FocusScmCommitInput() {
         }
         if (!el) {
             try {
+                ti := root.FindFirst({ Type: UIA.Type.TreeItem, Name: "Source Control Input" })
+                if (ti) {
+                    try el := ti.FindFirst({ Type: UIA.Type.Edit, ClassName: "inputarea monaco-mouse-cursor-text" })
+                    catch {
+                    }
+                    if (!el) {
+                        try el := ti.FindFirst({ Type: UIA.Type.Edit })
+                        catch {
+                        }
+                    }
+                }
+            } catch {
+            }
+        }
+        if (!el) {
+            try {
                 for edit in root.FindAll({ Type: UIA.Type.Edit }) {
                     try {
                         if (InStr(edit.Name, "Message", false) || InStr(edit.AutomationId, "scm", false)) {
@@ -706,6 +722,9 @@ Editor_QuickCommit() {
     Send "+v"
     Sleep 500
     Send "+b"
+    Sleep 500
+    ; Send "+e" types "E" when SCM commit input still has focus — use ^+e + UIA verify (Shift+E relay).
+    Editor_EnsureFilesExplorerSidebarFocused(WinExist("A"))
 }
 
 ; Shift + J : Quick commit — generic timestamped message, commit, push
