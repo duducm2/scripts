@@ -602,6 +602,74 @@ Cursor_WaitForContextMenuItemGone(itemName, timeoutMs := 800) {
     return false
 }
 
+CursorShortcutMenu_EscapeFromHotkey(*) {
+    CursorShortcutMenu_Cancel()
+}
+
+CursorShortcutMenu_GlobalEscapeCallback(*) {
+    CursorShortcutMenu_Cancel()
+}
+
+CursorShortcutMenu_GuiEscape(*) {
+    CursorShortcutMenu_Cancel()
+}
+
+CursorShortcutMenu_BindRobustEscape() {
+    global g_CursorShortcutMenuGui, g_OnEscapePressed, g_CursorShortcutMenuEscPollPrev
+    SetTimer(CursorShortcutMenu_EscapePoll, 0)
+    if (!IsObject(g_CursorShortcutMenuGui) || !g_CursorShortcutMenuGui.Hwnd)
+        return
+    try {
+        g_CursorShortcutMenuGui.OnEvent("Escape", CursorShortcutMenu_GuiEscape)
+    } catch {
+    }
+    Hotkey("$*Escape", CursorShortcutMenu_EscapeFromHotkey, "On")
+    global g_OnEscapePressed
+    g_OnEscapePressed := CursorShortcutMenu_GlobalEscapeCallback
+    Utils_EnsureGlobalEscapeHotkey()
+    g_CursorShortcutMenuEscPollPrev := false
+    SetTimer(CursorShortcutMenu_EscapePoll, 50)
+}
+
+CursorShortcutMenu_UnbindRobustEscape() {
+    global g_OnEscapePressed, g_CursorShortcutMenuEscPollPrev
+    SetTimer(CursorShortcutMenu_EscapePoll, 0)
+    g_CursorShortcutMenuEscPollPrev := false
+    try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
+    catch {
+    }
+    try Hotkey("*Escape", CursorShortcutMenu_Cancel, "Off")
+    catch {
+    }
+    try Hotkey("$*Escape", CursorShortcutMenu_EscapeFromHotkey, "Off")
+    catch {
+    }
+    global g_OnEscapePressed
+    if (g_OnEscapePressed = CursorShortcutMenu_GlobalEscapeCallback)
+        g_OnEscapePressed := ""
+    Utils_EnsureGlobalEscapeHotkey()
+}
+
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (StudyTopicSelector_EscapePoll).
+CursorShortcutMenu_EscapePoll() {
+    global g_CursorShortcutMenuActive, g_CursorShortcutMenuEscPollPrev
+    if (!g_CursorShortcutMenuActive) {
+        SetTimer(CursorShortcutMenu_EscapePoll, 0)
+        return
+    }
+    escSync := GetKeyState("Escape", "P")
+    escAsync := (DllCall("user32\GetAsyncKeyState", "int", 0x1B) & 0x8000) != 0
+    escDown := escSync || escAsync
+    if (escDown) {
+        if (!g_CursorShortcutMenuEscPollPrev) {
+            g_CursorShortcutMenuEscPollPrev := true
+            CursorShortcutMenu_Cancel()
+        }
+    } else {
+        g_CursorShortcutMenuEscPollPrev := false
+    }
+}
+
 ShowCursorShortcutMenu() {
     global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
     if (g_CursorShortcutMenuActive)
@@ -664,9 +732,16 @@ ShowCursorShortcutMenu() {
     g_CursorShortcutMenuGui.GetPos(&gx, &gy, &gw, &gh)
     cx := monitorLeft + (monitorWidth - gw) // 2
     cy := monitorTop + (monitorHeight - gh) // 2
-    g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy . " NA")
+    global g_CursorShortcutMenuPrevHwnd
+    g_CursorShortcutMenuPrevHwnd := activeWin
+    ; Avoid "NA": if focus stays in Cursor/Chromium, Esc is consumed there first (ShowOutlookCopilotSelector).
+    g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy)
+    try WinActivate(g_CursorShortcutMenuGui.Hwnd)
 
     g_CursorShortcutMenuActive := true
+    try HotIf()
+    catch {
+    }
     Hotkey("1", (*) => CursorShortcutMenu_HandleKey("1"), "On")
     Hotkey("2", (*) => CursorShortcutMenu_HandleKey("2"), "On")
     Hotkey("r", (*) => CursorShortcutMenu_HandleKey("r"), "On")
@@ -674,7 +749,7 @@ ShowCursorShortcutMenu() {
     Hotkey("f", (*) => CursorShortcutMenu_HandleKey("f"), "On")
     Hotkey("p", (*) => CursorShortcutMenu_HandleKey("p"), "On")
     Hotkey("e", (*) => CursorShortcutMenu_HandleKey("e"), "On")
-    Hotkey("Escape", CursorShortcutMenu_Cancel, "On")
+    CursorShortcutMenu_BindRobustEscape()
 }
 
 CursorShortcutMenu_HandleKey(key) {
@@ -703,7 +778,7 @@ CursorShortcutMenu_Cancel(*) {
 }
 
 CursorShortcutMenu_Close() {
-    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
+    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive, g_CursorShortcutMenuPrevHwnd
     if (!g_CursorShortcutMenuActive)
         return
     g_CursorShortcutMenuActive := false
@@ -714,11 +789,18 @@ CursorShortcutMenu_Close() {
     try Hotkey("f", "Off")
     try Hotkey("p", "Off")
     try Hotkey("e", "Off")
-    try Hotkey("Escape", CursorShortcutMenu_Cancel, "Off")
+    CursorShortcutMenu_UnbindRobustEscape()
     if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
         try g_CursorShortcutMenuGui.Destroy()
     }
     g_CursorShortcutMenuGui := false
+    prevHwnd := g_CursorShortcutMenuPrevHwnd
+    g_CursorShortcutMenuPrevHwnd := 0
+    if (prevHwnd && WinExist("ahk_id " prevHwnd)) {
+        try WinActivate("ahk_id " prevHwnd)
+        catch {
+        }
+    }
 }
 
 CursorShortcutMenu_Action1(*) {
@@ -881,4 +963,3 @@ EnsureSingleChromePdfInstance(filePath := "", fileNameOnly := "") {
     ; in the last activated Chrome window after export completes.
     try Run "chrome.exe --new-window"
 }
-

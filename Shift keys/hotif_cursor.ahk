@@ -11,6 +11,8 @@
 ; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
+global g_CursorShortcutMenuEscPollPrev := false
+global g_CursorShortcutMenuPrevHwnd := 0
 
 !m::
 {
@@ -150,4 +152,3 @@ global g_CursorShortcutMenuActive := false
         }
     }
 }
-
