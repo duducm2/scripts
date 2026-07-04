@@ -488,7 +488,7 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
     for num, topic in g_StudyTopics {
         n := Integer(num)
-        if (g_StudyTopicSelectorCategory = "mnemonics" && n = 0)
+        if (g_StudyTopicSelectorCategory = "mnemonics" && (n = 0 || topic.mnemonicsPath = ""))
             continue
         g_StudyTopicSelectorGui.Add("Text", "w300", "[" . num . "] " . topic.name)
     }
@@ -496,7 +496,7 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Backspace back | Esc cancel" :
-        "Press 0-6 | Backspace back | Esc cancel"
+        "Press 0-7 | Backspace back | Esc cancel"
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
 
     try {
@@ -515,6 +515,7 @@ StudyTopicSelector_ShowTopicPhase() {
         Hotkey("4", StudyTopicSelector_HandleKey, "On")
         Hotkey("5", StudyTopicSelector_HandleKey, "On")
         Hotkey("6", StudyTopicSelector_HandleKey, "On")
+        Hotkey("7", StudyTopicSelector_HandleKey, "On")
     } else {
         Hotkey("1", StudyTopicSelector_HandleKey, "On")
         Hotkey("2", StudyTopicSelector_HandleKey, "On")

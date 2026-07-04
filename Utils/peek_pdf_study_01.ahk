@@ -15,8 +15,8 @@
 global g_StudyTopics := Map(
     0, { name: "Technique (how to create studies)", mnemonicsPath: "\studies\technique\README.md",
         plansPath: "\studies\technique\plans.md" },
-    1, { name: "Mnemonics", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
-        plansPath: "\studies\skills\learning-techniques.md" },
+    1, { name: "Skills", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
+        plansPath: "\studies\skills\skills-plan.md" },
     2, { name: "Science", mnemonicsPath: "\studies\science\mnemonics-science.md",
         plansPath: "\studies\science\science-plan.md" },
     3, { name: "Piano", mnemonicsPath: "\studies\piano\mnemonics-piano.md",
@@ -26,7 +26,8 @@ global g_StudyTopics := Map(
     5, { name: "Communication", mnemonicsPath: "\studies\communication\mnemonics-communication.md",
         plansPath: "\studies\communication\communication-plan.md" },
     6, { name: "German", mnemonicsPath: "\studies\german\mnemonics-german.md",
-        plansPath: "\studies\german\german-plan.md" }
+        plansPath: "\studies\german\german-plan.md" },
+    7, { name: "Entertainment", mnemonicsPath: "", plansPath: "\studies\entertainment\entertainment-plan.md" }
 )
 #include %A_ScriptDir%\lib\study\StudyArticleLink.ahk
 #include %A_ScriptDir%\lib\study\StudyFavoriteLink.ahk
@@ -623,7 +624,7 @@ StudyTopicSelector_UnbindCategoryHotkeys() {
 }
 
 StudyTopicSelector_UnbindDigitHotkeys() {
-    loop 7 {
+    loop 8 {
         try Hotkey(String(A_Index - 1), "Off")
     }
 }
