@@ -388,6 +388,58 @@ Editor_EnsureFilesExplorerSidebarFocused(editorHwnd := 0) {
     return Editor_WaitForSidebarExplorerFocus(400)
 }
 
+; Primary sidebar open when monaco-workbench carries the sidebarvisible CSS class.
+Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
+    try {
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return false
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return false
+        for el in root.FindAll({ Type: UIA.Type.Pane }) {
+            try {
+                cls := el.ClassName
+                if InStr(cls, "monaco-workbench") && InStr(cls, "sidebarvisible")
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+Editor_HidePrimarySidebar(editorHwnd := 0) {
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    if !editorHwnd || !Editor_IsPrimarySidebarVisible(editorHwnd)
+        return true
+    Editor_EnsureCursorWindowActive(editorHwnd)
+    Send "^b"
+    deadline := A_TickCount + 600
+    while (A_TickCount < deadline) {
+        Sleep 50
+        if !Editor_IsPrimarySidebarVisible(editorHwnd)
+            return true
+    }
+    return !Editor_IsPrimarySidebarVisible(editorHwnd)
+}
+
+; Shift+E relay (^+e) twice — leave SCM/sidebar chrome and restore focus to the main editor.
+Editor_ReturnFocusToMainEditor(editorHwnd := 0) {
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    if !editorHwnd
+        return false
+    Editor_EnsureCursorWindowActive(editorHwnd)
+    Send "^+e"
+    Sleep 80
+    Send "^+e"
+    return true
+}
+
 ; Folder path from Explorer window title (path before " - File Explorer" / localized suffix).
 Editor_ParseExplorerFolderFromTitle(title) {
     if (title = "")

@@ -709,8 +709,10 @@ Editor_FocusScmCommitInput() {
 }
 
 Editor_QuickCommit() {
-    if !WinExist("A")
+    hwnd := WinExist("A")
+    if !hwnd
         return
+    sidebarWasVisible := Editor_IsPrimarySidebarVisible(hwnd)
     FocusSourceControlViewForCommitGeneration()
     Editor_FocusScmCommitInput()
     Sleep 80
@@ -723,8 +725,12 @@ Editor_QuickCommit() {
     Sleep 500
     Send "+b"
     Sleep 500
-    ; Send "+e" types "E" when SCM commit input still has focus — use ^+e + UIA verify (Shift+E relay).
-    Editor_EnsureFilesExplorerSidebarFocused(WinExist("A"))
+    if (sidebarWasVisible) {
+        ; Send "+e" types "E" when SCM commit input still has focus — use ^+e twice (Shift+E relay).
+        Editor_ReturnFocusToMainEditor(hwnd)
+    } else {
+        Editor_HidePrimarySidebar(hwnd)
+    }
 }
 
 ; Shift + J : Quick commit — generic timestamped message, commit, push
