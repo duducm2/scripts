@@ -41,11 +41,6 @@
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
 
-; =============================================================================
-; Alt+Shift+W Shortcut
-; Hotkey: Alt+Shift+W
-; Sends Alt+Shift+W again, then shows a message box
-; =============================================================================
 !+W::
 {
     ; Send Alt+Shift+W again
@@ -55,6 +50,18 @@
     ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
     ; SendInput is more reliable for complex modifier combinations
     SendInput "#^!y"
+
+}
+
+#^!m::
+{
+    ; Send Alt+Shift+W again
+    ; Small delay to ensure previous key release is complete
+    Sleep 50
+
+    ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
+    ; SendInput is more reliable for complex modifier combinations
+    SendInput "#^!m"
 
     ; Show message box
 
