@@ -43,10 +43,6 @@
 
 !+W::
 {
-    ; Send Alt+Shift+W again
-    ; Small delay to ensure previous key release is complete
-    Sleep 50
-
     ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
     ; SendInput is more reliable for complex modifier combinations
     SendInput "#^!y"
