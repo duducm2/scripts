@@ -96,6 +96,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `~#!+0`                 | Start dictation (first press); stop dictation (second press). If stopped manually, sets “Send to Gemini?” path. |
 | `Ctrl+Alt+Win+L`        | Direct paste+Enter to Gemini (no dictation).                                                                    |
+| `#!+L`                  | Paste current clipboard to a picked visible window (same as D2C submit menu **[W]**).                           |
 | `#!+U` then **L** twice | Same from hotstring selector.                                                                                   |
 
 ## Files and entry points

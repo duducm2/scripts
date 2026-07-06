@@ -130,7 +130,22 @@ class D2C_FlowManager {
         this.PasteDictationToActiveWindow()
     }
 
-    ; [W] Pick a visible window from modal list, activate it, paste dictated text (Ctrl+V), end flow.
+    ; Shared by menu [W] and #!+L global hotkey.
+    PasteClipboardToVisibleWindow(originHwnd := 0) {
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
+        if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+            return false
+        try WinActivate("ahk_id " targetHwnd)
+        if (!WinActive("ahk_id " targetHwnd))
+            WinWaitActive("ahk_id " targetHwnd, , 0.3)
+        Sleep 60
+        Send("^v")
+        return true
+    }
+
+    ; [W] Pick a visible window from modal list, activate it, paste clipboard (Ctrl+V), end flow.
     OnSubmitW(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
@@ -138,17 +153,7 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
-        clipBackup := ""
-        try clipBackup := A_Clipboard
-        targetHwnd := Dictation_ShowVisiblePasteSelector(this.OriginHwnd)
-        if (targetHwnd && WinExist("ahk_id " targetHwnd)) {
-            try WinActivate("ahk_id " targetHwnd)
-            if (!WinActive("ahk_id " targetHwnd))
-                WinWaitActive("ahk_id " targetHwnd, , 0.3)
-            Sleep 60
-            try A_Clipboard := clipBackup
-            Send("^v")
-        }
+        this.PasteClipboardToVisibleWindow(this.OriginHwnd)
         global g_D2C_DictationSubmitMenuCycleFinished
         g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()

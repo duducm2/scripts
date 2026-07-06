@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: utility_shortcuts.ahk
-; Utility shortcuts #!+U and ^!# secondary triggers
+; Utility shortcuts #!+U, #!+L and ^!# secondary triggers
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
@@ -17,6 +17,16 @@
     } else {
         ShowHotstringSelector()
     }
+}
+
+; Win+Alt+Shift+L — paste current clipboard to a picked visible window (same as D2C menu [W])
+#!+l:: {
+    mgr := D2C_FlowManager.GetInstance()
+    if (mgr.CurrentPhase = "PromptingSubmit") {
+        mgr.OnSubmitW()
+        return
+    }
+    mgr.PasteClipboardToVisibleWindow()
 }
 
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
