@@ -388,7 +388,55 @@ Editor_EnsureFilesExplorerSidebarFocused(editorHwnd := 0) {
     return Editor_WaitForSidebarExplorerFocus(400)
 }
 
-; Primary sidebar open when monaco-workbench carries the sidebarvisible CSS class.
+Editor_FindWorkbenchToggleButton(root, nameSubstring) {
+    if !root || !nameSubstring
+        return 0
+    toggleBtn := 0
+    try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: UIA.Type.Button })
+    catch
+        toggleBtn := 0
+    if toggleBtn
+        return toggleBtn
+    try {
+        allButtons := root.FindAll({ Type: UIA.Type.Button })
+        if allButtons {
+            for btn in allButtons {
+                try {
+                    if InStr(btn.Name, nameSubstring) {
+                        toggleBtn := btn
+                        break
+                    }
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return toggleBtn
+}
+
+; True when a workbench title-bar toggle (e.g. primary/secondary sidebar) is in the "on" state.
+Editor_IsWorkbenchToggleOn(root, nameSubstring) {
+    toggleBtn := Editor_FindWorkbenchToggleButton(root, nameSubstring)
+    if !toggleBtn
+        return false
+    try {
+        if InStr(toggleBtn.ClassName, "checked")
+            return true
+    } catch {
+    }
+    try {
+        if toggleBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+            toggleState := toggleBtn.TogglePattern.ToggleState
+            ; ToggleState: 1 = On, 2 = Off, 3 = Indeterminate
+            return (toggleState = 1)
+        }
+    } catch {
+    }
+    return false
+}
+
+; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
     try {
         if !editorHwnd
@@ -406,6 +454,8 @@ Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
             } catch {
             }
         }
+        if Editor_IsWorkbenchToggleOn(root, "Toggle Primary Side Bar")
+            return true
     } catch {
     }
     return false

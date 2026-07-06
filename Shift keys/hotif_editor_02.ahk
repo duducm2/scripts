@@ -392,68 +392,13 @@ ClickHidePanelButton() {
 IsSecondarySidebarVisible() {
     try {
         hwnd := WinExist("A")
-        if (!hwnd)
+        if !hwnd
             return false
-
         root := UIA.ElementFromHandle(hwnd)
-        if (!root)
+        if !root
             return false
-
-        ; Find the "Toggle Secondary Side Bar (Alt+I)" button
-        ; It's in the toolbar at path: 2,1,1,2,1,1,1,1,1,1,6,4
-        toggleBtn := 0
-
-        ; Strategy 1: Find by exact Name
-        try {
-            toggleBtn := root.FindFirst({ Name: "Toggle Secondary Side Bar (Alt+I)", Type: 50000 })
-        } catch {
-            toggleBtn := 0
-        }
-
-        ; Strategy 2: Find by partial Name match
-        if (!toggleBtn) {
-            try {
-                allButtons := root.FindAll({ Type: 50000 })
-                if (allButtons) {
-                    for btn in allButtons {
-                        try {
-                            name := btn.Name
-                            if (InStr(name, "Toggle Secondary Side Bar")) {
-                                toggleBtn := btn
-                                break
-                            }
-                        } catch {
-                            continue
-                        }
-                    }
-                }
-            } catch {
-            }
-        }
-
-        if (toggleBtn) {
-            try {
-                ; Check if the button has "checked" in its ClassName or other properties
-                className := toggleBtn.ClassName
-                if (InStr(className, "checked")) {
-                    return true
-                }
-            } catch {
-            }
-
-            try {
-                ; Alternative: Check IsTogglePatternAvailable and ToggleState
-                if toggleBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
-                    toggleState := toggleBtn.TogglePattern.ToggleState
-                    ; ToggleState: 1 = On (checked), 2 = Off (unchecked), 3 = Indeterminate
-                    return (toggleState = 1)
-                }
-            } catch {
-            }
-        }
-
-        return false
-    } catch Error as e {
+        return Editor_IsWorkbenchToggleOn(root, "Toggle Secondary Side Bar")
+    } catch {
         return false
     }
 }
