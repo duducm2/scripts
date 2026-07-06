@@ -5,6 +5,43 @@
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
+; #region agent log
+WM_DBG_LOG_PATH := A_ScriptDir "\debug-c518c4.log"
+WM_DBG_SESSION_ID := "c518c4"
+WM_DbgJsonVal(v) {
+    if (v == "")
+        return '""'
+    if IsNumber(v)
+        return String(v)
+    s := String(v)
+    s := StrReplace(s, "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    return '"' . s . '"'
+}
+WM_DbgLog(hypothesisId, location, message, data) {
+    try {
+        dataJson := "{"
+        first := true
+        for k, v in data {
+            if (!first)
+                dataJson .= ","
+            dataJson .= '"' . k . '":' . WM_DbgJsonVal(v)
+            first := false
+        }
+        dataJson .= "}"
+        loc := StrReplace(String(location), "\", "\\")
+        loc := StrReplace(loc, '"', '\"')
+        msg := StrReplace(String(message), "\", "\\")
+        msg := StrReplace(msg, '"', '\"')
+        line := '{"sessionId":"' . WM_DBG_SESSION_ID . '","timestamp":' . A_TickCount . ',"location":"' . loc
+            . '","message":"' . msg . '","data":' . dataJson . ',"hypothesisId":"' . hypothesisId .
+            '","runId":"post-fix"}'
+        FileAppend(line . "`n", WM_DBG_LOG_PATH, "UTF-8")
+    } catch {
+    }
+}
+; #endregion
+
 ; Maximize foreground window via Win API (reliable vs simulating Win+Up / system menu).
 ; If WinMaximize fails for a stubborn window, fall back to WM_SYSCOMMAND SC_MAXIMIZE (see AutoHotkey WinMaximize docs).
 WM_MaximizeActiveWindow() {
@@ -25,29 +62,23 @@ WM_MaximizeHwnd(hwnd) {
     }
 }
 
-; Native Windows 11 snap: layout + pair recent window (Win+Z UI sequence from ZMK macro).
-; Success: axis-aware work-area bipartition — two panes share the monitor (15–85%% each, >=85%% coverage).
-WM_SNAP_HALF_PAIR_MAX_ATTEMPTS := 3
-WM_SNAP_HALF_PAIR_VALIDATE_TIMEOUT_MS := 1200
-WM_SNAP_HALF_PAIR_VALIDATE_POLL_MS := 50
+; 50/50 half-pair snap: native Win+Left/Right (landscape) + DWM-compensated SetWindowPos fallback.
+; Loose validation constants (legacy bipartition helper — kept for reference / diagnostics).
 WM_SNAP_PANE_MIN_FRAC := 0.15
 WM_SNAP_PANE_MAX_FRAC := 0.85
 WM_SNAP_COVERAGE_MIN_FRAC := 0.85
 WM_SNAP_ORTH_MIN_FRAC := 0.20
-
-WM_SendSnapHalfPairSequence() {
-    ClipAngel_WaitChordModifiersReleased()
-    ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "{Esc}"
-    Sleep 100
-    SendInput "#z"
-    Sleep 400
-    SendInput "4"
-    Sleep 400
-    SendInput "{Enter}"
-    Sleep 400
-    SendInput "{Enter}"
-}
+; Strict validation for gapless 50/50 snap.
+WM_SNAP_STRICT_PANE_MIN_FRAC := 0.42
+WM_SNAP_STRICT_PANE_MAX_FRAC := 0.58
+WM_SNAP_STRICT_COVERAGE_MIN_FRAC := 0.97
+WM_SNAP_STRICT_EDGE_TOL := 4
+WM_SNAP_STRICT_VALIDATE_TIMEOUT_MS := 400
+WM_SNAP_STRICT_VALIDATE_POLL_MS := 25
+WM_DWMWA_EXTENDED_FRAME_BOUNDS := 9
+; Uniform inset inside work area + gutter between the two panes (same recipe as working M4 portrait baseline).
+WM_SNAP_PAIR_MARGIN := 6
+WM_SNAP_PAIR_GAP := 4
 
 ; Absolute placement vs monitor work area (no before/after size comparison).
 WM_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom) {
@@ -61,6 +92,217 @@ WM_GetWindowRectHwnd(hwnd, &left, &top, &right, &bottom) {
     return true
 }
 
+; DPI-scaled invisible resize border (~7px at 96 DPI; matches observed 9px at 144 DPI).
+WM_GetDpiScaledEdgeInset(hwnd) {
+    dpi := 96
+    try dpi := DllCall("GetDpiForWindow", "ptr", hwnd, "uint")
+    return Max(0, Round(7 * dpi / 96))
+}
+
+WM_GetDpiScaledEdgeForMonitor(monIdx) {
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return 7
+    MonitorGet monIdx, &ml, &mt, &mr, &mb
+    cx := (ml + mr) // 2
+    cy := (mt + mb) // 2
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    hMon := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+    dpiX := 96, dpiY := 96
+    try DllCall("Shcore\GetDpiForMonitor", "ptr", hMon, "uint", 0, "uint*", &dpiX, "uint*", &dpiY)
+    return Max(0, Round(7 * dpiX / 96))
+}
+
+; Margin-inset work area split into start/end pane visible-target rects (exclusive right/bottom).
+WM_ComputeSnapPairPaneRects(monIdx, axis) {
+    MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+    m := WM_SNAP_PAIR_MARGIN
+    g := WM_SNAP_PAIR_GAP
+    innerL := wl + m
+    innerT := wt + m
+    innerR := wr - m
+    innerB := wb - m
+    if (innerR - innerL < 120 || innerB - innerT < 80)
+        return Map()
+    if (axis = "h") {
+        halfW := (innerR - innerL - g) // 2
+        if (halfW < 60)
+            return Map()
+        return Map("start", [innerL, innerT, innerL + halfW, innerB],
+        "end", [innerL + halfW + g, innerT, innerR, innerB])
+    }
+    halfH := (innerB - innerT - g) // 2
+    if (halfH < 60)
+        return Map()
+    return Map("start", [innerL, innerT, innerR, innerT + halfH],
+    "end", [innerL, innerT + halfH + g, innerR, innerB])
+}
+
+WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb) {
+    MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+    m := WM_SNAP_PAIR_MARGIN
+    wl += m
+    wt += m
+    wr -= m
+    wb -= m
+}
+
+; Estimated visible frame; use target monitor DPI (not stale hwnd DPI after cross-monitor moves).
+WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &left, &top, &right, &bottom) {
+    if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+        return false
+    edge := (monIdx >= 1) ? WM_GetDpiScaledEdgeForMonitor(monIdx) : WM_GetDpiScaledEdgeInset(hwnd)
+    left := wl + edge
+    top := wt
+    right := wr - edge
+    bottom := wb - edge
+    return true
+}
+
+; Estimated visible frame in the same logical space as GetWindowRect / MonitorGetWorkArea.
+WM_GetEstimatedVisibleFrame(hwnd, &left, &top, &right, &bottom) {
+    return WM_GetEstimatedVisibleFrameForMonitor(hwnd, 0, &left, &top, &right, &bottom)
+}
+
+; Visible frame for snap validation/placement.
+WM_GetDwmVisibleFrameHwnd(hwnd, &left, &top, &right, &bottom) {
+    return WM_GetEstimatedVisibleFrame(hwnd, &left, &top, &right, &bottom)
+}
+
+WM_GetEstimatedFrameInsets(hwnd, &insetLeft, &insetTop, &insetRight, &insetBottom) {
+    if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+        return false
+    if (!WM_GetEstimatedVisibleFrame(hwnd, &fl, &ft, &fr, &fb))
+        return false
+    insetLeft := fl - wl
+    insetTop := ft - wt
+    insetRight := wr - fr
+    insetBottom := wb - fb
+    ; #region agent log
+    dpi := 0
+    try dpi := DllCall("GetDpiForWindow", "ptr", hwnd, "uint")
+    WM_DbgLog("H6", "tile_snap.ahk:WM_GetEstimatedFrameInsets", "insets computed", Map(
+        "hwnd", hwnd, "dpi", dpi,
+        "winL", wl, "winT", wt, "winR", wr, "winB", wb,
+        "frameL", fl, "frameT", ft, "frameR", fr, "frameB", fb,
+        "insetLeft", insetLeft, "insetTop", insetTop, "insetRight", insetRight, "insetBottom", insetBottom))
+    ; #endregion
+    return true
+}
+
+; Snap placement move — issues MoveWindow without the background-tile verify tolerance gate.
+WM_ForceMoveHwndToRect(hwnd, left, top, width, height) {
+    if (!hwnd || width < 1 || height < 1)
+        return false
+    try WinMove(hwnd, left, top, width, height)
+    catch {
+        try DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
+        catch
+            return false
+    }
+    return true
+}
+
+WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom) {
+    fl := 0, ft := 0, fr := 0, fb := 0
+    if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb))
+        return false
+    edge := WM_GetDpiScaledEdgeForMonitor(monIdx)
+    WM_GetSnapInnerWorkArea(monIdx, &iwl, &iwt, &iwr, &iwb)
+    tol := WM_SNAP_STRICT_EDGE_TOL
+    boundTol := Max(tol, edge)
+    leftTol := (targetLeft <= iwl + 1) ? boundTol : tol
+    topTol := (targetTop <= iwt + 1) ? boundTol : tol
+    rightTol := (targetRight >= iwr - 1) ? boundTol : tol
+    bottomTol := (targetBottom >= iwb - 1) ? boundTol : tol
+    return (Abs(fl - targetLeft) <= leftTol && Abs(ft - targetTop) <= topTol
+    && Abs(fr - targetRight) <= rightTol && Abs(fb - targetBottom) <= bottomTol)
+}
+
+; Places hwnd so its visible frame lands on targetLeft..targetRight (exclusive right/bottom).
+WM_MoveHwndToRectGapless(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom) {
+    edge := WM_GetDpiScaledEdgeForMonitor(monIdx)
+    paneW := targetRight - targetLeft
+    paneH := targetBottom - targetTop
+    x := targetLeft - edge
+    y := targetTop
+    w := paneW + 2 * edge
+    h := paneH
+
+    MonitorGetWorkArea monIdx, &mwl, &mwt, &mwr, &mwb
+    if (x + w > mwr + edge)
+        w := Max(paneW, mwr + edge - x)
+    if (y + h > mwb)
+        h := Max(paneH, mwb - y)
+    if (x < mwl)
+        x := mwl
+
+    ; #region agent log
+    WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "inset move computed", Map(
+        "hwnd", hwnd, "monIdx", monIdx, "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight,
+        "targetBottom", targetBottom, "edge", edge, "x", x, "y", y, "w", w, "h", h))
+    ; #endregion
+
+    if (!WM_ForceMoveHwndToRect(hwnd, x, y, w, h))
+        return false
+    try DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", w, "int", h, "uint", 0x0014)
+
+    if (WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)) {
+        fl := 0, ft := 0, fr := 0, fb := 0
+        WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb)
+        ; #region agent log
+        WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
+            "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
+            "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom", targetBottom,
+            "diffL", fl - targetLeft, "diffT", ft - targetTop, "diffR", fr - targetRight, "diffB", fb - targetBottom,
+            "strictOk", 1, "pass", 1))
+        ; #endregion
+        return true
+    }
+    loop 4 {
+        fl := 0, ft := 0, fr := 0, fb := 0
+        if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb))
+            return false
+        diffL := targetLeft - fl
+        diffT := targetTop - ft
+        diffR := targetRight - fr
+        diffB := targetBottom - fb
+        result := WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)
+        ; #region agent log
+        WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
+            "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
+            "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom", targetBottom,
+            "diffL", diffL, "diffT", diffT, "diffR", diffR, "diffB", diffB,
+            "strictOk", result, "pass", A_Index))
+        ; #endregion
+        if (result)
+            return true
+        if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+            return false
+        actualW := wr - wl
+        actualH := wb - wt
+        if (actualW > w + 15 || actualH > h + 15) {
+            w := paneW + 2 * edge
+            h := paneH
+            x := targetLeft - edge
+            y := targetTop
+            if (x < mwl)
+                x := mwl
+            if (x + w > mwr + edge)
+                w := Max(paneW, mwr + edge - x)
+            WM_ForceMoveHwndToRect(hwnd, x, y, w, h)
+            try DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", w, "int", h, "uint", 0x0014)
+            continue
+        }
+        newW := actualW + diffR - diffL
+        newH := actualH + diffB - diffT
+        if (newW < 1 || newH < 1)
+            return false
+        if (!WM_ForceMoveHwndToRect(hwnd, wl + diffL, wt + diffT, newW, newH))
+            return false
+    }
+    return false
+}
+
 ; "h" = left/right panes (landscape); "v" = top/bottom panes (portrait).
 WM_GetSnapSplitAxis(monIdx) {
     MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
@@ -68,7 +310,8 @@ WM_GetSnapSplitAxis(monIdx) {
 }
 
 ; Classifies window into start/end pane on split axis; sets paneSize on that axis.
-WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &paneSize) {
+WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &paneSize, minFrac := WM_SNAP_PANE_MIN_FRAC,
+    maxFrac := WM_SNAP_PANE_MAX_FRAC) {
     pane := ""
     paneSize := 0
     workW := wr - wl
@@ -98,8 +341,8 @@ WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &pane
             return false
     }
 
-    minPane := Round(workDim * WM_SNAP_PANE_MIN_FRAC)
-    maxPane := Round(workDim * WM_SNAP_PANE_MAX_FRAC)
+    minPane := Round(workDim * minFrac)
+    maxPane := Round(workDim * maxFrac)
     if (paneSize < minPane || paneSize > maxPane)
         return false
 
@@ -195,13 +438,171 @@ WM_ValidateSnapBipartition(monIdx, primaryHwnd, &failReason := "") {
 }
 
 WM_WaitValidateSnapBipartition(monIdx, primaryHwnd) {
-    deadline := A_TickCount + WM_SNAP_HALF_PAIR_VALIDATE_TIMEOUT_MS
+    deadline := A_TickCount + 1200
     while (A_TickCount < deadline) {
         if (WM_ValidateSnapBipartition(monIdx, primaryHwnd))
             return true
-        Sleep WM_SNAP_HALF_PAIR_VALIDATE_POLL_MS
+        Sleep 50
     }
     return false
+}
+
+; Edge alignment for visible frame vs margin-inset work area and shared gutter (edgeTol allows DPI border at outer edges).
+WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, edgeTol := 0) {
+    g := WM_SNAP_PAIR_GAP
+    tol := WM_SNAP_STRICT_EDGE_TOL
+    boundTol := edgeTol > 0 ? Max(tol, edgeTol) : tol
+    if (axis = "h") {
+        halfW := (wr - wl - g) // 2
+        startEdge := wl + halfW
+        endEdge := wl + halfW + g
+        if (Abs(top - wt) > boundTol || Abs(bottom - wb) > boundTol)
+            return false
+        if (pane = "start")
+            return (Abs(left - wl) <= boundTol && Abs(right - startEdge) <= tol)
+        return (Abs(left - endEdge) <= tol && Abs(right - wr) <= boundTol)
+    }
+    halfH := (wb - wt - g) // 2
+    startEdge := wt + halfH
+    endEdge := wt + halfH + g
+    if (Abs(left - wl) > boundTol || Abs(right - wr) > boundTol)
+        return false
+    if (pane = "start")
+        return (Abs(top - wt) <= boundTol && Abs(bottom - startEdge) <= tol)
+    return (Abs(top - endEdge) <= tol && Abs(bottom - wb) <= boundTol)
+}
+
+WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, hwnd, oppPane, &paneSize, edgeTol := 0) {
+    winL := 0, winT := 0, winR := 0, winB := 0
+    if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &winL, &winT, &winR, &winB))
+        return false
+    pane := ""
+    paneSize := 0
+    if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, winL, winT, winR, winB, &pane, &paneSize,
+        WM_SNAP_STRICT_PANE_MIN_FRAC, WM_SNAP_STRICT_PANE_MAX_FRAC))
+        return false
+    if (pane != oppPane)
+        return false
+    if (!WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, winL, winT, winR, winB, pane, edgeTol))
+        return false
+    return true
+}
+
+WM_ValidateSnapBipartitionStrict(monIdx, primaryHwnd, &failReason := "", partnerHwnd := 0) {
+    failReason := ""
+    if (!primaryHwnd || monIdx < 1 || monIdx > MonitorGetCount()) {
+        failReason := "invalid_args"
+        return false
+    }
+    try {
+        if (WinGetMinMax("ahk_id " primaryHwnd) = 1) {
+            failReason := "primary_maximized"
+            return false
+        }
+    } catch {
+        failReason := "primary_minmax_error"
+        return false
+    }
+    axis := WM_GetSnapSplitAxis(monIdx)
+    WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb)
+    workW := wr - wl
+    workH := wb - wt
+    workDim := (axis = "h") ? workW : workH
+    monEdge := WM_GetDpiScaledEdgeForMonitor(monIdx)
+    if (!WM_GetEstimatedVisibleFrameForMonitor(primaryHwnd, monIdx, &pl, &pt, &pr, &pb)) {
+        failReason := "primary_no_rect"
+        return false
+    }
+    primaryPane := ""
+    primaryPaneSize := 0
+    if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, pl, pt, pr, pb, &primaryPane, &primaryPaneSize,
+        WM_SNAP_STRICT_PANE_MIN_FRAC, WM_SNAP_STRICT_PANE_MAX_FRAC)) {
+        failReason := "primary_not_in_pane"
+        return false
+    }
+    if (!WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, pl, pt, pr, pb, primaryPane, monEdge)) {
+        failReason := "primary_edge_gap"
+        return false
+    }
+
+    oppPane := (primaryPane = "start") ? "end" : "start"
+    bestOppSize := 0
+    foundOpp := false
+    if (partnerHwnd && partnerHwnd != primaryHwnd) {
+        oppSize := 0
+        if (WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, partnerHwnd, oppPane, &oppSize, monEdge)) {
+            foundOpp := true
+            bestOppSize := oppSize
+        }
+    }
+    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+        if (win.hwnd = primaryHwnd || (partnerHwnd && win.hwnd = partnerHwnd))
+            continue
+        oppSize := 0
+        if (!WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, win.hwnd, oppPane, &oppSize, monEdge))
+            continue
+        foundOpp := true
+        if (oppSize > bestOppSize)
+            bestOppSize := oppSize
+    }
+    if (!foundOpp) {
+        failReason := "no_opposite_pane"
+        return false
+    }
+    if ((primaryPaneSize + bestOppSize) / workDim < WM_SNAP_STRICT_COVERAGE_MIN_FRAC) {
+        failReason := "insufficient_coverage"
+        return false
+    }
+    return true
+}
+
+WM_WaitValidateSnapBipartitionStrict(monIdx, primaryHwnd, partnerHwnd := 0) {
+    deadline := A_TickCount + WM_SNAP_STRICT_VALIDATE_TIMEOUT_MS
+    while (A_TickCount < deadline) {
+        if (WM_ValidateSnapBipartitionStrict(monIdx, primaryHwnd, , partnerHwnd))
+            return true
+        Sleep WM_SNAP_STRICT_VALIDATE_POLL_MS
+    }
+    return false
+}
+
+WM_SnapPairLandscapeNative(targetHwnd, targetPane, partnerHwnd, partnerPane) {
+    keyFor(pane) => (pane = "start") ? "{Left}" : "{Right}"
+    try {
+        WinActivate "ahk_id " targetHwnd
+        WinWaitActive "ahk_id " targetHwnd, , 0.3
+        SendInput "{LWin down}" keyFor(targetPane) "{LWin up}"
+        Sleep 60
+        WinActivate "ahk_id " partnerHwnd
+        WinWaitActive "ahk_id " partnerHwnd, , 0.3
+        SendInput "{LWin down}" keyFor(partnerPane) "{LWin up}"
+        Sleep 60
+    } catch {
+        return false
+    }
+    return true
+}
+
+WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane) {
+    rects := WM_ComputeSnapPairPaneRects(monIdx, axis)
+    if (rects.Count = 0)
+        return false
+    tRect := rects[targetPane]
+    pRect := rects[partnerPane]
+    ; #region agent log
+    WM_DbgLog("H2", "tile_snap.ahk:WM_SnapPairGaplessRects", "work area split computed", Map(
+        "monIdx", monIdx, "axis", axis, "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP,
+        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx),
+        "targetPane", targetPane, "partnerPane", partnerPane,
+        "tRectL", tRect[1], "tRectT", tRect[2], "tRectR", tRect[3], "tRectB", tRect[4],
+        "pRectL", pRect[1], "pRectT", pRect[2], "pRectR", pRect[3], "pRectB", pRect[4]))
+    ; #endregion
+    ok1 := WM_MoveHwndToRectGapless(targetHwnd, monIdx, tRect[1], tRect[2], tRect[3], tRect[4])
+    ok2 := WM_MoveHwndToRectGapless(partnerHwnd, monIdx, pRect[1], pRect[2], pRect[3], pRect[4])
+    ; #region agent log
+    WM_DbgLog("H4", "tile_snap.ahk:WM_SnapPairGaplessRects", "gapless move results", Map("ok1", ok1, "ok2", ok2))
+    ; #endregion
+    return ok1 && ok2
 }
 
 WM_SnapHalfPairActiveWindow() {
@@ -217,14 +618,68 @@ WM_SnapHalfPairActiveWindow() {
         ShowNotification_WM("Cannot snap this window (indicator / overlay).")
         return
     }
-    monIdx := GetMonitorIndexForForeground_StandardBar()
 
-    loop WM_SNAP_HALF_PAIR_MAX_ATTEMPTS {
-        WM_SendSnapHalfPairSequence()
-        if (WM_WaitValidateSnapBipartition(monIdx, targetHwnd))
-            return
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    monIdx := GetMonitorIndexForForeground_StandardBar()
+    axis := WM_GetSnapSplitAxis(monIdx)
+
+    partnerHwnd := 0
+    for hwnd in WM_EnumerateOpenHwndsGlobal() {
+        if (hwnd != targetHwnd) {
+            partnerHwnd := hwnd
+            break
+        }
     }
-    ShowNotification_WM("Snap layout failed after 3 attempts")
+    if (!partnerHwnd) {
+        WM_PrepareHwndForTile(targetHwnd)
+        WM_MaximizeHwnd(targetHwnd)
+        ShowNotification_WM("No other window open anywhere — maximized instead.")
+        return
+    }
+
+    WM_PrepareHwndForTile(targetHwnd)
+    WM_PrepareHwndForTile(partnerHwnd)
+
+    partnerMon := WM_GetHwndMonitorIndex(partnerHwnd)
+    sameMonitor := (partnerMon = monIdx)
+    ; #region agent log
+    dpiTarget := 0, dpiPartner := 0
+    try dpiTarget := DllCall("GetDpiForWindow", "ptr", targetHwnd, "uint")
+    try dpiPartner := DllCall("GetDpiForWindow", "ptr", partnerHwnd, "uint")
+    WM_DbgLog("H5", "tile_snap.ahk:WM_SnapHalfPairActiveWindow", "snap context", Map(
+        "targetHwnd", targetHwnd, "partnerHwnd", partnerHwnd, "monIdx", monIdx, "axis", axis,
+        "partnerMon", partnerMon, "sameMonitor", sameMonitor, "dpiTarget", dpiTarget, "dpiPartner", dpiPartner,
+        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx), "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP))
+    ; #endregion
+
+    targetPane := "start"
+    if (WM_GetWindowRectHwnd(targetHwnd, &tl, &tt, &tr, &tb)) {
+        WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb)
+        pane := ""
+        paneSize := 0
+        if (WM_ClassifySnapPane(axis, wl, wt, wr, wb, tl, tt, tr, tb, &pane, &paneSize) && pane != "")
+            targetPane := pane
+    }
+    partnerPane := (targetPane = "start") ? "end" : "start"
+
+    ok := false
+    if (axis = "h" && sameMonitor)
+        ok := WM_SnapPairLandscapeNative(targetHwnd, targetPane, partnerHwnd, partnerPane)
+
+    if (!ok || !WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd))
+        ok := WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane)
+
+    finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
+    ; #region agent log
+    failReason := ""
+    WM_ValidateSnapBipartitionStrict(monIdx, targetHwnd, &failReason, partnerHwnd)
+    WM_DbgLog("H4", "tile_snap.ahk:WM_SnapHalfPairActiveWindow", "final validation", Map(
+        "ok", ok, "finalOk", finalOk, "failReason", failReason))
+    ; #endregion
+    if (!ok || !finalOk)
+        ShowNotification_WM("Snap failed — window may be resisting resize.")
 }
 
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
@@ -344,6 +799,32 @@ WM_ResolveHwndMonitorIndex(hwnd, fallbackMon := 0) {
     } catch {
         return 0
     }
+}
+
+; Eligible windows across ALL monitors, in real global z-order (topmost first == most-recently-used).
+WM_EnumerateOpenHwndsGlobal() {
+    out := []
+    for hwnd in WinGetList() {
+        try {
+            if (WinGetMinMax(hwnd) = -1)
+                continue
+            if !DllCall("IsWindowVisible", "ptr", hwnd)
+                continue
+            exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+            if (exStyle & 0x00000080)
+                continue
+            class := WinGetClass(hwnd)
+            if (class = "Progman" || class = "WorkerW")
+                continue
+            if (WinGetTitle(hwnd) = "")
+                continue
+            if (WM_IsExcludedIndicatorWindow(hwnd))
+                continue
+            out.Push(hwnd)
+        } catch {
+        }
+    }
+    return out
 }
 
 ; Non-minimized windows on a monitor (includes z-order covered — not only unobstructed visible).
