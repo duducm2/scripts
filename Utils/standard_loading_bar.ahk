@@ -30,7 +30,7 @@ global g_StandardLoadingBarTimedProgressTimer := ""
 global g_StandardLoadingBarTimedProgressStartTick := 0
 global g_StandardLoadingBarTimedProgressDurationMs := 0
 global D2C_SUBMIT_MENU_TIMEOUT_MS := 5000
-; Keys overlay: same escape stack as Outlook Copilot selector (#!+l) — *Escape alone misses when the bar is NA/no focus.
+; Keys overlay: same escape stack as Handy AI model selector (#!+C) — *Escape alone misses when the bar is NA/no focus.
 global g_StandardLoadingBarKeysEscapeUserCb := ""
 global g_StandardLoadingBarKeysEscapeActive := false
 global g_StandardLoadingBarEscPollPrev := false
@@ -605,7 +605,7 @@ StandardLoadingBar_WaitForTriggerKeyRelease() {
     }
 }
 
-; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (same idea as OutlookCopilotSelector_EscapePoll).
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (same idea as ShowAiModelSelector escape poll).
 StandardLoadingBar_KeysEscapePoll() {
     global g_StandardLoadingBarKeysEscapeActive, g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarEscPollPrev
     if (!g_StandardLoadingBarKeysEscapeActive || !g_StandardLoadingBarIsKeysOverlay) {
@@ -624,7 +624,7 @@ StandardLoadingBar_KeysEscapePoll() {
         g_StandardLoadingBarEscPollPrev := false
 }
 
-; $*Escape, I10 g_OnEscapePressed, Gui Escape, and poll all route here (align with #!+l Outlook Copilot selector).
+; $*Escape, I10 g_OnEscapePressed, Gui Escape, and poll all route here (align with #!+C Handy AI model selector).
 StandardLoadingBar_KeysEscapeDismiss(*) {
     global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysEscapeUserCb
     if !g_StandardLoadingBarIsKeysOverlay

@@ -1137,8 +1137,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     [Alt+P] Ope clip angel
     
-    [Win+Alt+Shift+L] > Outlook Copilot shortcut modal (1–9); global hotkey
-    
     === CURSOR ===
     [Win+Alt+Shift+N] > Context file browser (paste path)
     

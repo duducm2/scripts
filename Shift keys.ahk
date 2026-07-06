@@ -6,8 +6,7 @@
      *   AVAILABLE WIN+ALT+SHIFT COMBINATIONS
      *   The following combinations are not currently in use:
      *
-     *   Letters still free: P, U
-     *   Win+Alt+Shift+L: Outlook Copilot shortcut modal (global; actions target New Outlook)
+     *   Letters still free: L, P, U
      *
      *   Ctrl+Alt+Win+V: RESERVED — maximize active window (handled in WindowManagement.ahk;
      *   used by ZMK hold on minimize/close key). Do not bind another global ^!#v action here.

@@ -833,11 +833,6 @@ FastCopyMode_RepeatLastPaste() {
         FastCopyMode_Start()
 }
 
-; Win+Alt+Shift+L — Outlook Copilot shortcut modal (1–9). Global: works from any app; actions activate Outlook.
-#!+l:: {
-    SelectOutlookCopilotShortcut()
-}
-
 #HotIf FastCopyMode_IsActive()
 ~^c:: FastCopyMode_OnCopy()
 ~PrintScreen:: FastCopyMode_OnCopy()

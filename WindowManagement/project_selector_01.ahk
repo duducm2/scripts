@@ -1,13 +1,13 @@
 ; =============================================================================
 ; WindowManagement module: project_selector_01.ahk
-; Project quick selector GUI and handlers (#!+L)
+; Project quick selector GUI and handlers (Ctrl+Alt+Win+0)
 ; Extracted verbatim from WindowManagement.ahk; loaded via #include into the
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
 ; =============================================================================
 ; Project Quick Selector
-; Hotkey: Win+Alt+Shift+L
+; Hotkey: Ctrl+Alt+Win+0 (see WindowManagement\cursor_window_select.ahk)
 ; Displays a numbered list of projects and opens the selected folder in Cursor.
 ; =============================================================================
 

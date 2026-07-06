@@ -37,7 +37,7 @@ global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
-global g_StudyTopicEscPollPrev := false   ; edge-detect Esc for StudyTopicSelector_EscapePoll (parity with OutlookCopilotSelector)
+global g_StudyTopicEscPollPrev := false   ; edge-detect Esc for StudyTopicSelector_EscapePoll (parity with ShowAiModelSelector)
 global STUDY_TOPIC_BLACKOUT_DELAY_MS := 3000
 ; Study Topic QuickLook: strict bounded waits + shared layout (false = legacy 2s WinWait + inline scroll).
 global STUDY_TOPIC_QL_STRICT_LAYOUT := true
@@ -565,7 +565,7 @@ StudyTopicSelector_PositionGuiLikeOutlook(gui) {
     gui.Show("AutoSize Hide")
     gui.GetPos(, , &gw, &gh)
     StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
-    ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowOutlookCopilotSelector comment).
+    ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowAiModelSelector comment).
     gui.Show("x" . cx . " y" . cy)
     try WinActivate(gui.Hwnd)
 }
@@ -629,7 +629,7 @@ StudyTopicSelector_UnbindDigitHotkeys() {
     }
 }
 
-; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (OutlookCopilotSelector_EscapePoll).
+; Poll Esc — fallback when $*Escape / g_OnEscapePressed miss (ShowAiModelSelector escape poll).
 StudyTopicSelector_EscapePoll() {
     global g_StudyTopicSelectorActive, g_StudyTopicEscPollPrev
     if (!g_StudyTopicSelectorActive) {
@@ -661,4 +661,4 @@ StudyTopicSelector_GuiEscape(*) {
     StudyTopicSelector_Cancel()
 }
 
-; Same escape registration order as ShowOutlookCopilotSelector (after Gui.OnEvent registered at build time).
+; Same escape registration order as ShowAiModelSelector (after Gui.OnEvent registered at build time).

@@ -5,65 +5,6 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-OutlookCopilotSelector_EscapeFromHotkey(*) {
-    OutlookCopilotSelector_Cancel()
-}
-
-; Used with g_OnEscapePressed when I0 *Escape does not fire
-OutlookCopilotSelector_GlobalEscapeCallback(*) {
-    OutlookCopilotSelector_Cancel()
-}
-
-OutlookCopilotSelector_GuiEscape(*) {
-    OutlookCopilotSelector_Cancel()
-}
-
-OutlookCopilotSelector_HandleKey(ThisHotkey, *) {
-    global g_OutlookCopilotSelectorActive
-    if !g_OutlookCopilotSelectorActive
-        return
-    sel := Integer(ThisHotkey)
-    if sel < 1 || sel > 9
-        return
-    OutlookCopilotSelector_Close()
-    OutlookCopilot_RunSlot(sel)
-}
-
-OutlookCopilotSelector_Cancel(*) {
-    OutlookCopilotSelector_Close()
-}
-
-OutlookCopilotSelector_Close() {
-    global g_OutlookCopilotSelectorGui, g_OutlookCopilotSelectorActive
-    if !g_OutlookCopilotSelectorActive
-        return
-    SetTimer(OutlookCopilotSelector_EscapePoll, 0)
-    global g_OutlookCopilotEscPollPrev
-    g_OutlookCopilotEscPollPrev := false
-    g_OutlookCopilotSelectorActive := false
-    global g_OnEscapePressed
-    g_OnEscapePressed := ""
-    loop 9 {
-        try Hotkey(String(A_Index), "Off")
-    }
-    try Hotkey("Escape", OutlookCopilotSelector_Cancel, "Off")
-    try Hotkey("*Escape", OutlookCopilotSelector_Cancel, "Off")
-    try Hotkey("$*Escape", OutlookCopilotSelector_EscapeFromHotkey, "Off")
-    Utils_EnsureGlobalEscapeHotkey()
-    if IsObject(g_OutlookCopilotSelectorGui) && g_OutlookCopilotSelectorGui.Hwnd {
-        try g_OutlookCopilotSelectorGui.Destroy()
-    }
-    g_OutlookCopilotSelectorGui := false
-}
-
-SelectOutlookCopilotShortcut() {
-    global g_OutlookCopilotSelectorActive
-    if g_OutlookCopilotSelectorActive {
-        OutlookCopilotSelector_Cancel()
-    } else
-        ShowOutlookCopilotSelector()
-}
-
 ; True if toggle appears "on" (left-rail app bar toggle buttons).
 Outlook_RailToggleIsPressed(el) {
     if !el

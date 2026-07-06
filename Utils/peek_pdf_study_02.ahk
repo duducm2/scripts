@@ -593,7 +593,7 @@ StudyTopicSelector_Cancel(*) {
     StudyTopicSelector_Close()
 }
 
-; Tear-down order aligned with OutlookCopilotSelector_Close (Shift keys.ahk).
+; Tear-down order aligned with ShowAiModelSelector close (Utils\handy_selector_hotkey.ahk).
 StudyTopicSelector_Close() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
         g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyFavoriteLinksGui,

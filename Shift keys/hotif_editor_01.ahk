@@ -734,7 +734,7 @@ ShowCursorShortcutMenu() {
     cy := monitorTop + (monitorHeight - gh) // 2
     global g_CursorShortcutMenuPrevHwnd
     g_CursorShortcutMenuPrevHwnd := activeWin
-    ; Avoid "NA": if focus stays in Cursor/Chromium, Esc is consumed there first (ShowOutlookCopilotSelector).
+    ; Avoid "NA": if focus stays in Cursor/Chromium, Esc is consumed there first (ShowAiModelSelector).
     g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy)
     try WinActivate(g_CursorShortcutMenuGui.Hwnd)
 
