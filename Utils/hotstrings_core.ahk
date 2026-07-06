@@ -358,6 +358,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:gpilotb2b", "Piloto PT B2B", "Projects", "🧪 Piloto PT B2B", "b")
     RegisterHotstring(":o:gpython", "17 - Python Scripts", "Projects", "🐍 Python Scripts", "t")
     RegisterHotstring(":o:gbpm", "BPM", "Projects", "📌 BPM", "m")
+    RegisterHotstring(":o:gsrs", "SRS", "Projects", "📡 SRS", "r")
+    RegisterHotstring(":o:grise", "RISE", "Projects", "📈 RISE", "g")
 
     ; Hotstrings (non-workspace "project-like" names)
     RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
