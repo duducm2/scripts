@@ -622,7 +622,8 @@ WM_SnapHalfPairActiveWindow() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
 
-    monIdx := GetMonitorIndexForForeground_StandardBar()
+    snapMon := WM_ResolveSnapTargetMonitor(targetHwnd)
+    monIdx := snapMon["monIdx"]
     axis := WM_GetSnapSplitAxis(monIdx)
 
     partnerHwnd := 0
@@ -651,11 +652,13 @@ WM_SnapHalfPairActiveWindow() {
     WM_DbgLog("H5", "tile_snap.ahk:WM_SnapHalfPairActiveWindow", "snap context", Map(
         "targetHwnd", targetHwnd, "partnerHwnd", partnerHwnd, "monIdx", monIdx, "axis", axis,
         "partnerMon", partnerMon, "sameMonitor", sameMonitor, "dpiTarget", dpiTarget, "dpiPartner", dpiPartner,
-        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx), "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP))
+        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx), "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP,
+        "fgMonIdx", snapMon["fgMonIdx"], "cursorMonIdx", snapMon["cursorMonIdx"], "targetMon", snapMon["targetMon"],
+        "emptyMonitorSnap", snapMon["emptyMonitorSnap"]))
     ; #endregion
 
     targetPane := "start"
-    if (WM_GetWindowRectHwnd(targetHwnd, &tl, &tt, &tr, &tb)) {
+    if (!snapMon["emptyMonitorSnap"] && WM_GetWindowRectHwnd(targetHwnd, &tl, &tt, &tr, &tb)) {
         WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb)
         pane := ""
         paneSize := 0
@@ -724,6 +727,53 @@ WM_GetHwndMonitorIndex(hwnd) {
     } catch {
     }
     return 0
+}
+
+; AHK 1-based monitor index under the cursor (matches CycleWindowsOnMonitor empty-monitor navigation).
+WM_GetMonitorIndexAtCursor() {
+    MouseGetPos(&cx, &cy)
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    try {
+        hMon := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+        loop MonitorGetCount() {
+            MonitorGet A_Index, &ml, &mt, &mr, &mb
+            mcx := (ml + mr) // 2
+            mcy := (mt + mb) // 2
+            mpoint := (mcy & 0xFFFFFFFF) << 32 | (mcx & 0xFFFFFFFF)
+            if (Integer(DllCall("MonitorFromPoint", "int64", mpoint, "uint", 2, "ptr")) = Integer(hMon))
+                return A_Index
+        }
+    } catch {
+    }
+    return 0
+}
+
+; True when the monitor has no unobstructed visible windows (same rule as CycleWindowsOnMonitor).
+WM_MonitorIsVisuallyEmpty(monIdx) {
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return false
+    try {
+        return GetVisibleWindowsOnMonitor(monIdx).Length = 0
+    } catch {
+        return WM_EnumerateOpenHwndsOnMonitor(monIdx).Length = 0
+    }
+}
+
+; When cursor sits on an empty monitor, snap there instead of on the still-focused window's monitor.
+WM_ResolveSnapTargetMonitor(targetHwnd) {
+    fgMonIdx := GetMonitorIndexForForeground_StandardBar()
+    cursorMonIdx := WM_GetMonitorIndexAtCursor()
+    targetMon := WM_GetHwndMonitorIndex(targetHwnd)
+    if (targetMon < 1)
+        targetMon := fgMonIdx
+    monIdx := targetMon
+    emptyMonitorSnap := false
+    if (cursorMonIdx >= 1 && cursorMonIdx != targetMon && WM_MonitorIsVisuallyEmpty(cursorMonIdx)) {
+        monIdx := cursorMonIdx
+        emptyMonitorSnap := true
+    }
+    return Map("monIdx", monIdx, "fgMonIdx", fgMonIdx, "cursorMonIdx", cursorMonIdx,
+        "targetMon", targetMon, "emptyMonitorSnap", emptyMonitorSnap)
 }
 
 WM_PrepareHwndForTile(hwnd) {
