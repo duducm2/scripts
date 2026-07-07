@@ -6,6 +6,8 @@ Before generating, read all attached JSON context files and reference images. Us
 
 When used with a PPT element subject prompt (from ppt-slides-to-elements-csv): the element prompt states subject and framing only. This Bosch prompt plus your JSON and reference attachments define ALL visual style. If the element prompt implies a different style, ignore that implication and apply this prompt and attachments instead.
 
+When used with a prototype element subject prompt (from proto-screens-to-elements-csv): the element prompt states subject and framing only. This Bosch prompt plus your JSON and reference attachments define ALL visual style. If the element prompt implies a different style, ignore that implication and apply this prompt and attachments instead.
+
 Source-of-truth priority:
 0. Human style instructions and attachments provided before the element subject prompt (brand prompts, JSON, reference images — absolute authority for visual style)
 1. Attached JSON context files (brand guide and BDDS research)

@@ -265,6 +265,16 @@ GetPromptText(key) {
     InsertText(GetPromptText("unstructured-to-csv"))
 }
 
+:o:protscreencsv::
+{
+    InsertText(GetPromptText("proto-content-to-screens-csv"))
+}
+
+:o:protoelemcsv::
+{
+    InsertText(GetPromptText("proto-screens-to-elements-csv"))
+}
+
 :o:mdunesc::
 {
     UnescapeMarkdownClipboard()
@@ -336,6 +346,10 @@ InitHotstringsCheatSheet() {
     "📊 PPT stage 1: content to slides CSV", "s")
     RegisterHotstring(":o:pptelemcsv", GetPromptText("ppt-slides-to-elements-csv"), "Prompts",
     "🧩 PPT stage 2: slides to elements CSV", "e")
+    RegisterHotstring(":o:protscreencsv", GetPromptText("proto-content-to-screens-csv"), "Prompts",
+    "📱 Prototype stage 1: content to screens CSV", "w")
+    RegisterHotstring(":o:protoelemcsv", GetPromptText("proto-screens-to-elements-csv"), "Prompts",
+    "🧩 Prototype stage 2: screens to elements CSV", "f")
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
     RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts",
     "🔍 Upscale image (resolution + sharp text)")

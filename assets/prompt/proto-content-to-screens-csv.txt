@@ -1,0 +1,100 @@
+Task:
+
+Convert user-provided material into a prototype screen plan as CSV. One row = one prototype screen. Do not generate images.
+
+This is Stage 1 of a two-stage prototype workflow. The CSV you produce is the input for Stage 2 (proto-screens-to-elements-csv), which decomposes each screen into isolated compositable UI elements.
+
+Before processing:
+
+1. Confirm source content is present (pasted text, notes, outline, user story, wireframe sketch, table, or attached files).
+2. If source content is missing, stop and ask the user to provide it.
+
+Inputs:
+
+- Source content: <paste or attach here>
+- Optional flow constraints: <target screen count, platform preference, audience, language, must-include flows>
+- Optional style notes: <for downstream image generation; human may attach any style requirements in Stage 2>
+
+Column schema (authoritative — use exactly these columns in this order):
+
+screen_id;screen_order;flow_name;screen_name;platform;viewport_width;viewport_height;layout_archetype;user_goal;content_body;navigation_in;navigation_out;interaction_summary;visual_intent;decomposition_hints;transition_notes
+
+Column definitions:
+
+- screen_id: Stable primary key. Format SCREEN_001, SCREEN_002, etc.
+- screen_order: Integer display order in the flow, 1-based, contiguous.
+- flow_name: User journey or feature area (e.g. Onboarding, Checkout, Settings).
+- screen_name: Short screen label (e.g. Login, Order list, Confirm payment).
+- platform: One of: mobile, tablet, desktop. Pick the best fit per screen from source context.
+- viewport_width: Reference frame width in px for proportion math. Examples: 390 (mobile), 768 (tablet), 1440 (desktop).
+- viewport_height: Reference frame height in px. Examples: 844 (mobile), 1024 (tablet), 900 (desktop).
+- layout_archetype: One of: splash, login, list, detail, form, dashboard, settings, modal_overlay, empty_state, onboarding_step, confirmation, error_state.
+- user_goal: One-sentence goal the user accomplishes on this screen.
+- content_body: Main copy, labels, field names, list items. Separate items with | inside the cell.
+- navigation_in: Pipe-separated screen_id values the user can arrive from. Empty for entry screens.
+- navigation_out: Pipe-separated screen_id values the user can navigate to from this screen.
+- interaction_summary: What the user can do (tap, submit, filter, back, toggle, scroll, open overlay, etc.).
+- visual_intent: Short description of layout structure (header, nav, cards, form fields). No colors, fonts, or brand style.
+- decomposition_hints: Explicit list of distinct UI blocks Stage 2 must generate as separate images. Required handoff for Stage 2.
+- transition_notes: Optional notes on entry animation, modal vs push, or overlay behavior. Leave empty if not applicable.
+
+Processing rules:
+
+1. Infer a logical user flow from the source. Do not invent features absent from the source.
+2. Prefer 5–12 screens unless flow constraints specify otherwise.
+3. One primary user task per screen. Split overcrowded flows across multiple screens.
+4. screen_id must be unique and stable. screen_order must be contiguous starting at 1.
+5. Choose platform and viewport per screen — mobile 390×844, tablet 768×1024, desktop 1440×900 unless source implies otherwise.
+6. Build a consistent navigation graph: navigation_out targets must reference valid screen_id values in the output.
+7. Write decomposition_hints explicitly for every screen — name each UI block Stage 2 should produce as a separate image.
+8. If the source is ambiguous, produce best-effort rows and note gaps in transition_notes. Do not add commentary outside the CSV block.
+9. Use semicolon as the field separator.
+
+Output (CRITICAL — read before responding):
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+
+WRONG (do not output): screen\_id, SCREEN\_001
+RIGHT: screen_id, SCREEN_001
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+```csv
+screen_id;screen_order;flow_name;screen_name;platform;viewport_width;viewport_height;layout_archetype;user_goal;content_body;navigation_in;navigation_out;interaction_summary;visual_intent;decomposition_hints;transition_notes
+SCREEN_001;1;Onboarding;Welcome;mobile;390;844;splash;Understand app value;Track orders | Get notifications | Manage profile;;SCREEN_002;Tap Get started to continue;Centered hero illustration with headline and CTA;hero illustration + headline block + primary CTA button;
+SCREEN_002;2;Onboarding;Login;mobile;390;844;login;Sign in to account;Email | Password;SCREEN_001;SCREEN_003;Enter credentials and tap Sign in;Top app bar with back + centered form fields + full-width CTA;app bar + email field + password field + sign-in button + forgot-password link;
+SCREEN_003;3;Home;Dashboard;mobile;390;844;dashboard;See overview at a glance;Orders: 3 active | Alerts: 1 new;SCREEN_002;SCREEN_004|SCREEN_005;Tap cards to open detail or settings;Header + 2 summary cards + bottom tab bar;app bar + order summary card + alerts card + tab bar;
+```
+
+Rules for the code block contents:
+
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+4. Underscores are literal: write screen_id, not screen\_id.
+5. The backslash character must not appear unless it is real data in a cell.
+6. Use the exact column names and order defined above.
+7. One row per line inside the code block (header on line 1, each data row on its own line).
+8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores.
+
+---
+Human reminders (for the person sending this prompt — do not include in AI output):
+
+Before you send (Stage 1):
+
+📎 Attach or paste your source content (brief, user stories, wireframes, notes, files)
+🎯 Optional: fill in flow constraints (screen count, platform preference, language, must-include flows)
+🎨 Optional: style notes for later — you will attach actual style requirements in Stage 2 / image generation
+
+After the AI responds:
+
+💾 Save the CSV as screens.csv (or similar)
+🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. screen\_id → screen_id)
+➡️ Next: open proto-screens-to-elements-csv.txt (Stage 2) and attach this screens CSV as input
+
+Quick reference — full prototype workflow:
+
+📋 Stage 1 (w): raw content → screens.csv
+🧩 Stage 2 (f): screens.csv → elements.csv
+🎨 Image gen: style pack first, then image_gen_prompt from each row
+📐 Assemble: use viewport_width×viewport_height frame + bbox % from elements CSV

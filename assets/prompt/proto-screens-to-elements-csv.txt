@@ -1,0 +1,174 @@
+Task:
+Take a screens CSV (output from proto-content-to-screens-csv, Stage 1) and produce an elements CSV. One row = one compositable image asset for a single prototype screen. Each row must include an image_gen_prompt for an image-generation AI.
+
+This is Stage 2 of a two-stage prototype workflow. Stage 1 plans the screen flow; Stage 2 decomposes each screen into isolated UI elements with proportional bounding boxes and interaction metadata.
+
+CRITICAL — text_to_render MUST appear inside image_gen_prompt:
+- Keep both columns: text_to_render (spreadsheet column) and image_gen_prompt (paste at image-gen time).
+- For every row, copy the text_to_render cell verbatim into the image_gen_prompt line that starts with Text to render:
+- The human pastes ONLY image_gen_prompt — never text_to_render separately.
+- If you put text only in text_to_render but omit it from image_gen_prompt, the output is WRONG. Reject and fix before delivering.
+
+CRITICAL — image_gen_prompt is subject and framing only for visual style. The human supplies style separately (brand prompts, JSON, reference images). Human style inputs are absolute authority.
+
+Before processing:
+
+1. Confirm the screens CSV is present (paste or attach).
+2. If the screens CSV is missing or lacks a screen_id column, stop and ask the user to provide it.
+
+Inputs:
+
+- Screens CSV: <paste or attach output from proto-content-to-screens-csv>
+- Optional assembly notes: <placement on screen only — not colors or UI style>
+
+Column schema (authoritative — use exactly these columns in this order):
+
+element_id;screen_id;element_order;z_index;element_type;bbox_x_pct;bbox_y_pct;bbox_w_pct;bbox_h_pct;text_to_render;state_variant;interaction_type;interaction_target;adjacency_notes;image_gen_prompt;assembly_notes
+
+Column definitions:
+
+- element_id: Stable primary key. Format EL_SCREEN_001_01, EL_SCREEN_001_02, etc.
+- screen_id: Foreign key — must match a screen_id from the input screens CSV.
+- element_order: Stacking / reading order on the screen (1 = first / back / top-left).
+- z_index: Layer order (1 = back, higher = front). Overlays (modal, toast, FAB) use higher z_index.
+- element_type: One of: status_bar, app_bar, nav_bar, tab_bar, sidebar, search_field, text_field, dropdown, checkbox, radio_group, button_primary, button_secondary, card, list_item, table, chart, avatar, badge, modal_shell, toast, divider, illustration, map, fab.
+- bbox_x_pct: Left edge position as 0–100 % of parent screen viewport width.
+- bbox_y_pct: Top edge position as 0–100 % of parent screen viewport height.
+- bbox_w_pct: Width as 0–100 % of parent screen viewport width.
+- bbox_h_pct: Height as 0–100 % of parent screen viewport height.
+- text_to_render: Literal text that must appear in the image. Empty cell when no text. Same value must appear on the Text to render: line inside image_gen_prompt.
+- state_variant: One of: default, hover, pressed, focus, disabled, error, selected, empty.
+- interaction_type: One of: none, navigate, submit, toggle, open_overlay, filter, select, back, scroll.
+- interaction_target: screen_id (SCREEN_###) or element_id (EL_SCREEN_###_##) when interaction targets another piece. Empty when interaction_type is none.
+- adjacency_notes: Relational fit hints — e.g. flush below header, fills remaining height between sidebar and bottom nav.
+- image_gen_prompt: Four-part template below. Must embed text_to_render verbatim.
+- assembly_notes: Tool-agnostic placement — repeat bbox values, z_index, and how piece connects to neighbors.
+
+Decomposition rules:
+
+1. Never produce one element that represents an entire screen.
+2. Every screen_id must have at least one element. Typical screens have 2–8 elements; overlays may add one extra high-z_index piece.
+3. Respect decomposition_hints, visual_intent, and interaction_summary from the screens CSV.
+4. Use viewport_width and viewport_height from the parent screen row when writing assembly_notes (e.g. bbox 8,82,84,8 on 390×844 viewport).
+5. Populate text_to_render for any element whose image must show specific words, labels, placeholders, button text, or list item text — then copy that cell verbatim into image_gen_prompt.
+
+Proportion / puzzle-piece rules:
+
+1. bbox_*_pct values are the primary assembly contract. Non-overlapping siblings at the same z_index should tile without unintended gaps (±1% tolerance).
+2. Overlaps only when z_index indicates overlay (modal, toast, FAB).
+3. bbox_x_pct + bbox_w_pct must not exceed 100. bbox_y_pct + bbox_h_pct must not exceed 100.
+4. Derive aspect ratio for Framing: from bbox proportions — e.g. bbox 100×12 → wide horizontal strip ~25:3.
+5. adjacency_notes must describe how this piece connects to neighboring elements so images fit like puzzle pieces.
+
+Interaction rules:
+
+1. Any tappable or clickable control gets a non-none interaction_type and a valid interaction_target when navigation is known from screens CSV navigation_out.
+2. Decorative or static pieces: interaction_type=none, empty interaction_target.
+3. Submit buttons: interaction_type=submit, interaction_target=target screen from navigation_out when applicable.
+4. Back buttons: interaction_type=back, interaction_target=screen from navigation_in when applicable.
+
+image_gen_prompt template (MANDATORY — every row uses exactly these four parts in this order):
+
+Part 1 — copy verbatim:
+HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style.
+
+Part 2 — brief label only (do NOT put the full text_to_render here):
+Subject: [element type + short label, e.g. sign-in button, email text field, order summary card]
+
+Part 3 — COPY FROM text_to_render COLUMN (mechanical sync):
+Text to render: [paste exact contents of text_to_render cell for this row, character for character]
+If text_to_render cell is empty, write exactly: Text to render: none
+
+Part 4 — framing:
+Framing: isolated UI component only, not a full screen; [aspect ratio from bbox]; neutral edge-friendly background for compositing.
+
+Join all four parts into one image_gen_prompt cell, separated by spaces (single paragraph). No fifth part.
+
+WRONG vs RIGHT (button example):
+
+text_to_render cell: Sign in
+
+WRONG image_gen_prompt (missing Text to render line):
+... Subject: sign-in button. Framing: isolated UI component only, not a full screen; wide horizontal strip ~21:2; neutral edge-friendly background for compositing.
+
+WRONG image_gen_prompt (text only in Subject, paraphrased):
+... Subject: Sign in button. Framing: ...
+
+RIGHT image_gen_prompt:
+... Subject: primary sign-in button. Text to render: Sign in. Framing: isolated UI component only, not a full screen; wide horizontal strip ~21:2; neutral edge-friendly background for compositing.
+
+Pre-output row check (run for EVERY row before writing CSV):
+
+1. Read text_to_render cell for this row.
+2. If non-empty: confirm image_gen_prompt contains Text to render: followed by the identical string.
+3. If empty: confirm image_gen_prompt contains Text to render: none
+4. If check fails, fix the row before output.
+
+FORBIDDEN in image_gen_prompt:
+
+- Colors, hex codes, palettes, brand names, fonts, illustration-style adjectives, materials, lighting, backgrounds, quality rules
+- Putting labels, button text, or field placeholders only in Subject without the Text to render: line
+- Paraphrasing or shortening text_to_render inside image_gen_prompt
+
+Validation (before output):
+
+- Every screen_id in elements exists in the input screens CSV.
+- Every interaction_target references a valid screen_id or element_id in the output.
+- No duplicate element_id values.
+- Every image_gen_prompt contains all four parts: HUMAN STYLE AUTHORITY, Subject:, Text to render:, Framing:
+- For every row where text_to_render is non-empty, image_gen_prompt contains that exact string after Text to render:
+- No forbidden style language.
+- All bbox values are 0–100; bbox_x_pct + bbox_w_pct ≤ 100; bbox_y_pct + bbox_h_pct ≤ 100.
+
+Output (CRITICAL — read before responding):
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them with a backslash.
+
+WRONG: element\_id, EL\_SCREEN\_001\_01
+RIGHT: element_id, EL_SCREEN_001_01
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+```csv
+element_id;screen_id;element_order;z_index;element_type;bbox_x_pct;bbox_y_pct;bbox_w_pct;bbox_h_pct;text_to_render;state_variant;interaction_type;interaction_target;adjacency_notes;image_gen_prompt;assembly_notes
+EL_SCREEN_002_01;SCREEN_002;1;1;app_bar;0;0;100;8;;default;back;SCREEN_001;Top edge flush with viewport top;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: app bar with back control. Text to render: none. Framing: isolated UI component only, not a full screen; wide horizontal strip ~25:2; neutral edge-friendly background for compositing.";Place at bbox 0,0,100,8 (% of 390x844 viewport). z_index 1. Full-width header band.
+EL_SCREEN_002_02;SCREEN_002;2;5;text_field;8;20;84;8;Email;default;none;;Flush below app bar with 8% side margins;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: email text field. Text to render: Email. Framing: isolated UI component only, not a full screen; wide horizontal strip ~21:2; neutral edge-friendly background for compositing.";Place at bbox 8,20,84,8 (% of 390x844 viewport). z_index 5. Below app bar.
+EL_SCREEN_002_03;SCREEN_002;3;10;button_primary;8;82;84;8;Sign in;default;submit;SCREEN_003;Flush below password field with 8% side margins;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: primary sign-in button. Text to render: Sign in. Framing: isolated UI component only, not a full screen; wide horizontal strip ~21:2; neutral edge-friendly background for compositing.";Place at bbox 8,82,84,8 (% of 390x844 viewport). z_index 10. Full-width CTA above bottom safe area.
+```
+
+Rules for the code block contents:
+
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+4. Underscores are literal: write element_id, not element\_id.
+5. Quote image_gen_prompt fields because they contain semicolons.
+6. One row per line (header on line 1).
+
+---
+Human reminders (for the person sending this prompt — do not include in AI output):
+
+Before you send (Stage 2):
+
+📎 Attach or paste the screens CSV from Stage 1 (proto-content-to-screens-csv.txt output)
+📐 Optional: assembly notes for placement on screen only — not colors or UI style
+
+After the AI responds:
+
+💾 Save the CSV as elements.csv (or similar)
+🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc)
+✅ Spot-check: for any row with text in text_to_render, open image_gen_prompt and confirm Text to render: line matches exactly
+
+For each element image (repeat per CSV row):
+
+1️⃣ Paste your style prompt and attachments FIRST in the same message (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack)
+2️⃣ Paste image_gen_prompt only — it already contains Text to render: with all labels and button text
+👑 Your style attachments define ALL visual style
+🧩 Assemble using viewport_width×viewport_height from screens CSV + bbox_*_pct + z_index + assembly_notes (any tool)
+
+Quick reference — full prototype workflow:
+
+📋 Stage 1 (w): raw content → screens.csv
+🧩 Stage 2 (f): screens.csv → elements.csv
+🎨 Image gen: style pack first, then image_gen_prompt from each row
+📐 Assemble: place images at bbox % on the screen viewport frame
