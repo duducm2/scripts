@@ -25,11 +25,10 @@ WM_MaximizeHwnd(hwnd) {
     }
 }
 
-; 50/50 half-pair snap: native Win+Left/Right (landscape) + DWM-compensated SetWindowPos fallback.
-; Loose validation constants (legacy bipartition helper — kept for reference / diagnostics).
+; 50/50 half-pair snap: DWM-measured programmatic placement (gapless panes with margin + gutter).
+; Loose pane fraction constants (WM_ClassifySnapPane defaults for target-pane detection).
 WM_SNAP_PANE_MIN_FRAC := 0.15
 WM_SNAP_PANE_MAX_FRAC := 0.85
-WM_SNAP_COVERAGE_MIN_FRAC := 0.85
 WM_SNAP_ORTH_MIN_FRAC := 0.20
 ; Strict validation for gapless 50/50 snap.
 WM_SNAP_STRICT_PANE_MIN_FRAC := 0.42
@@ -382,77 +381,6 @@ WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &pane
     return true
 }
 
-WM_ValidateSnapBipartition(monIdx, primaryHwnd, &failReason := "") {
-    failReason := ""
-    if (!primaryHwnd || monIdx < 1 || monIdx > MonitorGetCount()) {
-        failReason := "invalid_args"
-        return false
-    }
-    try {
-        if (WinGetMinMax("ahk_id " primaryHwnd) = 1) {
-            failReason := "primary_maximized"
-            return false
-        }
-    } catch {
-        failReason := "primary_minmax_error"
-        return false
-    }
-    axis := WM_GetSnapSplitAxis(monIdx)
-    MonitorGetWorkArea(monIdx, &wl, &wt, &wr, &wb)
-    workW := wr - wl
-    workH := wb - wt
-    workDim := (axis = "h") ? workW : workH
-    if (!WM_GetWindowRectHwnd(primaryHwnd, &pl, &pt, &pr, &pb)) {
-        failReason := "primary_no_rect"
-        return false
-    }
-    primaryPane := ""
-    primaryPaneSize := 0
-    if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, pl, pt, pr, pb, &primaryPane, &primaryPaneSize)) {
-        failReason := "primary_not_in_pane"
-        return false
-    }
-
-    oppPane := (primaryPane = "start") ? "end" : "start"
-    bestOppSize := 0
-    foundOpp := false
-    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
-        if (win.hwnd = primaryHwnd)
-            continue
-        winL := 0, winT := 0, winR := 0, winB := 0
-        if (!WM_GetWindowRectHwnd(win.hwnd, &winL, &winT, &winR, &winB))
-            continue
-        pane := ""
-        paneSize := 0
-        if (!WM_ClassifySnapPane(axis, wl, wt, wr, wb, winL, winT, winR, winB, &pane, &paneSize))
-            continue
-        if (pane != oppPane)
-            continue
-        foundOpp := true
-        if (paneSize > bestOppSize)
-            bestOppSize := paneSize
-    }
-    if (!foundOpp) {
-        failReason := "no_opposite_pane"
-        return false
-    }
-    if ((primaryPaneSize + bestOppSize) / workDim < WM_SNAP_COVERAGE_MIN_FRAC) {
-        failReason := "insufficient_coverage"
-        return false
-    }
-    return true
-}
-
-WM_WaitValidateSnapBipartition(monIdx, primaryHwnd) {
-    deadline := A_TickCount + 1200
-    while (A_TickCount < deadline) {
-        if (WM_ValidateSnapBipartition(monIdx, primaryHwnd))
-            return true
-        Sleep 50
-    }
-    return false
-}
-
 ; Edge alignment for visible frame vs margin-inset work area and shared gutter (edgeTol allows DPI border at outer edges).
 WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, edgeTol := 0) {
     g := WM_SNAP_PAIR_GAP
@@ -534,22 +462,26 @@ WM_ValidateSnapBipartitionStrict(monIdx, primaryHwnd, &failReason := "", partner
     oppPane := (primaryPane = "start") ? "end" : "start"
     bestOppSize := 0
     foundOpp := false
+    partnerValidated := false
     if (partnerHwnd && partnerHwnd != primaryHwnd) {
         oppSize := 0
         if (WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, partnerHwnd, oppPane, &oppSize, monEdge)) {
             foundOpp := true
             bestOppSize := oppSize
+            partnerValidated := true
         }
     }
-    for win in GetVisibleWindowsOnMonitor(monIdx, true) {
-        if (win.hwnd = primaryHwnd || (partnerHwnd && win.hwnd = partnerHwnd))
-            continue
-        oppSize := 0
-        if (!WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, win.hwnd, oppPane, &oppSize, monEdge))
-            continue
-        foundOpp := true
-        if (oppSize > bestOppSize)
-            bestOppSize := oppSize
+    if (!partnerValidated) {
+        for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+            if (win.hwnd = primaryHwnd || (partnerHwnd && win.hwnd = partnerHwnd))
+                continue
+            oppSize := 0
+            if (!WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, win.hwnd, oppPane, &oppSize, monEdge))
+                continue
+            foundOpp := true
+            if (oppSize > bestOppSize)
+                bestOppSize := oppSize
+        }
     }
     if (!foundOpp) {
         failReason := "no_opposite_pane"
@@ -570,23 +502,6 @@ WM_WaitValidateSnapBipartitionStrict(monIdx, primaryHwnd, partnerHwnd := 0) {
         Sleep WM_SNAP_STRICT_VALIDATE_POLL_MS
     }
     return false
-}
-
-WM_SnapPairLandscapeNative(targetHwnd, targetPane, partnerHwnd, partnerPane) {
-    keyFor(pane) => (pane = "start") ? "{Left}" : "{Right}"
-    try {
-        WinActivate "ahk_id " targetHwnd
-        WinWaitActive "ahk_id " targetHwnd, , 0.3
-        SendInput "{LWin down}" keyFor(targetPane) "{LWin up}"
-        Sleep 60
-        WinActivate "ahk_id " partnerHwnd
-        WinWaitActive "ahk_id " partnerHwnd, , 0.3
-        SendInput "{LWin down}" keyFor(partnerPane) "{LWin up}"
-        Sleep 60
-    } catch {
-        return false
-    }
-    return true
 }
 
 WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane) {
@@ -638,9 +553,6 @@ WM_SnapHalfPairActiveWindow() {
     WM_PrepareHwndForTile(targetHwnd)
     WM_PrepareHwndForTile(partnerHwnd)
 
-    partnerMon := WM_GetHwndMonitorIndex(partnerHwnd)
-    sameMonitor := (partnerMon = monIdx)
-
     targetPane := "start"
     if (!snapMon["emptyMonitorSnap"] && WM_GetWindowRectHwnd(targetHwnd, &tl, &tt, &tr, &tb)) {
         WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb)
@@ -651,13 +563,7 @@ WM_SnapHalfPairActiveWindow() {
     }
     partnerPane := (targetPane = "start") ? "end" : "start"
 
-    ok := false
-    if (axis = "h" && sameMonitor)
-        ok := WM_SnapPairLandscapeNative(targetHwnd, targetPane, partnerHwnd, partnerPane)
-
-    if (!ok || !WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd))
-        ok := WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane)
-
+    ok := WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane)
     finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")

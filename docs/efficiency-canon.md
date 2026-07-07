@@ -248,3 +248,16 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Rollback:** `EDITOR_COPY_USE_EDITOR_FASTPATH := false` restores always-reveal copy; `EDITOR_COPY_PREFER_DIRECT_SET := false` restores keyboard-first on reveal fallback; `EDITOR_USE_CONDITIONAL_EXPLORER_WAIT := false` restores legacy `Sleep 2500` after Explorer activation; `EDITOR_COPY_VERIFY_FILEDROP := false` restores legacy `^c` + `ClipWait` copy behavior only; tune **`EDITOR_REVEAL_STABLE_POLLS`** / clipboard wait globals without code revert.
 - **Failure:** `Editor_SmartNavRevealShowExplorerTimeout` (hides loading bar first); no NDJSON on hotkey path.
 - **Loading UI:** `StandardLoadingBar_Show` / `Update` / `Hide` across `Editor_SmartNavReveal` and Explorer wait/copy/open (`BANNER_ACCENT_INTERMEDIATE`; `centerOnHwnd` = editor); see [standard_information_display.md](standard_information_display.md).
+
+---
+
+## 18. Snap half-pair hot path (Ctrl+Alt+Win+X, 2026)
+
+- **Gapless-only placement:** `^!#x` → `WM_SnapHalfPairActiveWindow` → `WM_SnapPairGaplessRects` → `WM_MoveHwndToRectGapless` per pane. No Win+Z UI automation, no Win+Left/Right synthetic tier (removed — OS snap ignores margin/gutter and forced a redundant validation pass).
+- **Sizing:** `DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS)` converted via `PhysicalToLogicalPointForPerMonitorDPI`; split `SetWindowPos` (move then size) for cross-DPI stability; up to 6 measure-and-nudge iterations per window — acceptable on hotkey press for pixel-accurate fit; do not reduce without verification.
+- **Geometry authority:** `WM_ComputeSnapPairPaneRects` applies `WM_SNAP_PAIR_MARGIN` (6 px) and `WM_SNAP_PAIR_GAP` (4 px) before halving; portrait/landscape axis from work-area aspect ratio.
+- **Empty monitor:** `WM_ResolveSnapTargetMonitor` — when cursor is on a visually empty monitor (same rule as `CycleWindowsOnMonitor`), snap both windows there instead of the still-focused window's monitor.
+- **Partner search:** `WM_EnumerateOpenHwndsGlobal` (global MRU z-order via `WinGetList`); validation uses `partnerHwnd` fast path when known — skip `GetVisibleWindowsOnMonitor` scan when partner already classifies in the opposite pane.
+- **Bounded validation:** single post-placement `WM_WaitValidateSnapBipartitionStrict` (400 ms deadline, 25 ms poll); failure → `ShowNotification_WM`.
+- **Do not:** reintroduce synthetic snap keystrokes, NDJSON/logging on the hotkey path, or unbounded validation waits.
+- **Rollback:** revert [`WindowManagement/tile_snap.ahk`](../WindowManagement/tile_snap.ahk) if snap regressions appear on any monitor/DPI combo.
