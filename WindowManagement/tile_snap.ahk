@@ -5,43 +5,6 @@
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-; #region agent log
-WM_DBG_LOG_PATH := A_ScriptDir "\debug-c518c4.log"
-WM_DBG_SESSION_ID := "c518c4"
-WM_DbgJsonVal(v) {
-    if (v == "")
-        return '""'
-    if IsNumber(v)
-        return String(v)
-    s := String(v)
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    return '"' . s . '"'
-}
-WM_DbgLog(hypothesisId, location, message, data) {
-    try {
-        dataJson := "{"
-        first := true
-        for k, v in data {
-            if (!first)
-                dataJson .= ","
-            dataJson .= '"' . k . '":' . WM_DbgJsonVal(v)
-            first := false
-        }
-        dataJson .= "}"
-        loc := StrReplace(String(location), "\", "\\")
-        loc := StrReplace(loc, '"', '\"')
-        msg := StrReplace(String(message), "\", "\\")
-        msg := StrReplace(msg, '"', '\"')
-        line := '{"sessionId":"' . WM_DBG_SESSION_ID . '","timestamp":' . A_TickCount . ',"location":"' . loc
-            . '","message":"' . msg . '","data":' . dataJson . ',"hypothesisId":"' . hypothesisId .
-            '","runId":"post-fix"}'
-        FileAppend(line . "`n", WM_DBG_LOG_PATH, "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 ; Maximize foreground window via Win API (reliable vs simulating Win+Up / system menu).
 ; If WinMaximize fails for a stubborn window, fall back to WM_SYSCOMMAND SC_MAXIMIZE (see AutoHotkey WinMaximize docs).
 WM_MaximizeActiveWindow() {
@@ -279,20 +242,6 @@ WM_GetDwmVisibleFrameHwnd(hwnd, &left, &top, &right, &bottom) {
     return WM_GetSnapVisibleFrame(hwnd, 0, &left, &top, &right, &bottom, &src)
 }
 
-WM_GetEstimatedFrameInsets(hwnd, &insetLeft, &insetTop, &insetRight, &insetBottom) {
-    src := ""
-    if (!WM_MeasureOuterInsetsForSnap(hwnd, 0, &insetLeft, &insetTop, &insetRight, &insetBottom, &src))
-        return false
-    ; #region agent log
-    dpi := 0
-    try dpi := DllCall("GetDpiForWindow", "ptr", hwnd, "uint")
-    WM_DbgLog("H8", "tile_snap.ahk:WM_GetEstimatedFrameInsets", "insets computed", Map(
-        "hwnd", hwnd, "dpi", dpi, "source", src,
-        "insetLeft", insetLeft, "insetTop", insetTop, "insetRight", insetRight, "insetBottom", insetBottom))
-    ; #endregion
-    return true
-}
-
 ; Snap placement move — issues MoveWindow without the background-tile verify tolerance gate.
 WM_ForceMoveHwndToRect(hwnd, left, top, width, height) {
     if (!hwnd || width < 1 || height < 1)
@@ -333,45 +282,15 @@ WM_MoveHwndToRectGapless(hwnd, monIdx, targetLeft, targetTop, targetRight, targe
         h)
     WM_ClampOuterRectToMonitor(monIdx, &x, &y, &w, &h)
 
-    ; #region agent log
-    WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "inset move computed", Map(
-        "hwnd", hwnd, "monIdx", monIdx, "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight,
-        "targetBottom", targetBottom, "il", il, "it", it, "ir", ir, "ib", ib, "source", src, "x", x, "y", y, "w", w,
-        "h", h))
-    ; #endregion
-
     if (!WM_ForceMoveHwndToRectSplit(hwnd, x, y, w, h))
         return false
 
     loop 6 {
-        if (WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)) {
-            fl := 0, ft := 0, fr := 0, fb := 0
-            WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb, &src)
-            ; #region agent log
-            WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
-                "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
-                "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom",
-                targetBottom,
-                "diffL", fl - targetLeft, "diffT", ft - targetTop, "diffR", fr - targetRight, "diffB", fb -
-                targetBottom,
-                "strictOk", 1, "pass", A_Index, "source", src))
-            ; #endregion
+        if (WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom))
             return true
-        }
         fl := 0, ft := 0, fr := 0, fb := 0
         if (!WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb, &src))
             return false
-        diffL := targetLeft - fl
-        diffT := targetTop - ft
-        diffR := targetRight - fr
-        diffB := targetBottom - fb
-        ; #region agent log
-        WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
-            "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
-            "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom", targetBottom,
-            "diffL", diffL, "diffT", diffT, "diffR", diffR, "diffB", diffB,
-            "strictOk", 0, "pass", A_Index, "source", src))
-        ; #endregion
         if (!WM_MeasureOuterInsetsForSnap(hwnd, monIdx, &il, &it, &ir, &ib, &src))
             return false
         WM_ComputeOuterRectForVisibleTarget(targetLeft, targetTop, targetRight, targetBottom, il, it, ir, ib, &x, &y, &
@@ -676,19 +595,8 @@ WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partn
         return false
     tRect := rects[targetPane]
     pRect := rects[partnerPane]
-    ; #region agent log
-    WM_DbgLog("H2", "tile_snap.ahk:WM_SnapPairGaplessRects", "work area split computed", Map(
-        "monIdx", monIdx, "axis", axis, "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP,
-        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx),
-        "targetPane", targetPane, "partnerPane", partnerPane,
-        "tRectL", tRect[1], "tRectT", tRect[2], "tRectR", tRect[3], "tRectB", tRect[4],
-        "pRectL", pRect[1], "pRectT", pRect[2], "pRectR", pRect[3], "pRectB", pRect[4]))
-    ; #endregion
     ok1 := WM_MoveHwndToRectGapless(targetHwnd, monIdx, tRect[1], tRect[2], tRect[3], tRect[4])
     ok2 := WM_MoveHwndToRectGapless(partnerHwnd, monIdx, pRect[1], pRect[2], pRect[3], pRect[4])
-    ; #region agent log
-    WM_DbgLog("H4", "tile_snap.ahk:WM_SnapPairGaplessRects", "gapless move results", Map("ok1", ok1, "ok2", ok2))
-    ; #endregion
     return ok1 && ok2
 }
 
@@ -732,17 +640,6 @@ WM_SnapHalfPairActiveWindow() {
 
     partnerMon := WM_GetHwndMonitorIndex(partnerHwnd)
     sameMonitor := (partnerMon = monIdx)
-    ; #region agent log
-    dpiTarget := 0, dpiPartner := 0
-    try dpiTarget := DllCall("GetDpiForWindow", "ptr", targetHwnd, "uint")
-    try dpiPartner := DllCall("GetDpiForWindow", "ptr", partnerHwnd, "uint")
-    WM_DbgLog("H5", "tile_snap.ahk:WM_SnapHalfPairActiveWindow", "snap context", Map(
-        "targetHwnd", targetHwnd, "partnerHwnd", partnerHwnd, "monIdx", monIdx, "axis", axis,
-        "partnerMon", partnerMon, "sameMonitor", sameMonitor, "dpiTarget", dpiTarget, "dpiPartner", dpiPartner,
-        "monEdge", WM_GetDpiScaledEdgeForMonitor(monIdx), "margin", WM_SNAP_PAIR_MARGIN, "gap", WM_SNAP_PAIR_GAP,
-        "fgMonIdx", snapMon["fgMonIdx"], "cursorMonIdx", snapMon["cursorMonIdx"], "targetMon", snapMon["targetMon"],
-        "emptyMonitorSnap", snapMon["emptyMonitorSnap"]))
-    ; #endregion
 
     targetPane := "start"
     if (!snapMon["emptyMonitorSnap"] && WM_GetWindowRectHwnd(targetHwnd, &tl, &tt, &tr, &tb)) {
@@ -762,12 +659,6 @@ WM_SnapHalfPairActiveWindow() {
         ok := WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane)
 
     finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
-    ; #region agent log
-    failReason := ""
-    WM_ValidateSnapBipartitionStrict(monIdx, targetHwnd, &failReason, partnerHwnd)
-    WM_DbgLog("H4", "tile_snap.ahk:WM_SnapHalfPairActiveWindow", "final validation", Map(
-        "ok", ok, "finalOk", finalOk, "failReason", failReason))
-    ; #endregion
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")
 }
