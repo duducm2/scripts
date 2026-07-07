@@ -158,6 +158,116 @@ WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &left, &top, &right, &bottom
     return true
 }
 
+WM_LogicalPointFromPhysical(x, y, &lx, &ly) {
+    pt := Buffer(8, 0)
+    NumPut("int", x, pt, 0)
+    NumPut("int", y, pt, 4)
+    if DllCall("user32\PhysicalToLogicalPointForPerMonitorDPI", "ptr", pt, "int", 1) {
+        lx := NumGet(pt, 0, "int")
+        ly := NumGet(pt, 4, "int")
+        return true
+    }
+    lx := x
+    ly := y
+    return false
+}
+
+; DWM extended frame bounds in the same logical space as GetWindowRect / MonitorGetWorkArea.
+WM_GetDwmExtendedFrameLogical(hwnd, &left, &top, &right, &bottom) {
+    rc := Buffer(16, 0)
+    if (DllCall("dwmapi\DwmGetWindowAttribute", "ptr", hwnd, "uint", WM_DWMWA_EXTENDED_FRAME_BOUNDS, "ptr", rc, "uint",
+        16) != 0)
+        return false
+    pxL := NumGet(rc, 0, "int"), pxT := NumGet(rc, 4, "int")
+    pxR := NumGet(rc, 8, "int"), pxB := NumGet(rc, 12, "int")
+    if (pxR <= pxL || pxB <= pxT)
+        return false
+    WM_LogicalPointFromPhysical(pxL, pxT, &c1x, &c1y)
+    WM_LogicalPointFromPhysical(pxR, pxT, &c2x, &c2y)
+    WM_LogicalPointFromPhysical(pxL, pxB, &c3x, &c3y)
+    WM_LogicalPointFromPhysical(pxR, pxB, &c4x, &c4y)
+    left := Min(c1x, c2x, c3x, c4x)
+    top := Min(c1y, c2y, c3y, c4y)
+    right := Max(c1x, c2x, c3x, c4x)
+    bottom := Max(c1y, c2y, c3y, c4y)
+    return (right > left && bottom > top)
+}
+
+; True visible frame for snap placement/validation — DWM when sane, else DPI-scaled estimate.
+WM_GetSnapVisibleFrame(hwnd, monIdx, &left, &top, &right, &bottom, &source := "") {
+    source := "estimate"
+    if (WM_GetDwmExtendedFrameLogical(hwnd, &dl, &dt, &dr, &db)) {
+        if (WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb)) {
+            il := dl - wl, it := dt - wt, ir := wr - dr, ib := wb - db
+            if (il >= -2 && it >= -2 && ir >= -2 && ib >= -2 && il <= 40 && it <= 40 && ir <= 40 && ib <= 40) {
+                left := dl, top := dt, right := dr, bottom := db
+                source := "dwm"
+                return true
+            }
+        } else {
+            left := dl, top := dt, right := dr, bottom := db
+            source := "dwm"
+            return true
+        }
+    }
+    source := "estimate"
+    return WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &left, &top, &right, &bottom)
+}
+
+; Measured outer-window insets (GetWindowRect minus visible frame) for target monitor context.
+WM_MeasureOuterInsetsForSnap(hwnd, monIdx, &insetLeft, &insetTop, &insetRight, &insetBottom, &source := "") {
+    insetLeft := 0, insetTop := 0, insetRight := 0, insetBottom := 0
+    if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+        return false
+    if (!WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb, &source))
+        return false
+    insetLeft := Max(0, fl - wl)
+    insetTop := Max(0, ft - wt)
+    insetRight := Max(0, wr - fr)
+    insetBottom := Max(0, wb - fb)
+    return true
+}
+
+WM_ComputeOuterRectForVisibleTarget(targetLeft, targetTop, targetRight, targetBottom, il, it, ir, ib, &x, &y, &w, &h) {
+    paneW := targetRight - targetLeft
+    paneH := targetBottom - targetTop
+    x := targetLeft - il
+    y := targetTop - it
+    w := paneW + il + ir
+    h := paneH + it + ib
+}
+
+WM_ClampOuterRectToMonitor(monIdx, &x, &y, &w, &h) {
+    MonitorGetWorkArea monIdx, &mwl, &mwt, &mwr, &mwb
+    if (x < mwl) {
+        w -= (mwl - x)
+        x := mwl
+    }
+    if (y < mwt) {
+        h -= (mwt - y)
+        y := mwt
+    }
+    if (x + w > mwr)
+        w := Max(1, mwr - x)
+    if (y + h > mwb)
+        h := Max(1, mwb - y)
+}
+
+; Move then resize separately — avoids cross-DPI width ballooning from combined SetWindowPos.
+WM_ForceMoveHwndToRectSplit(hwnd, x, y, w, h) {
+    if (!hwnd || w < 1 || h < 1)
+        return false
+    try {
+        if (!DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", 0, "int", 0, "uint", 0x0015))
+            throw Error("SetWindowPos move failed")
+        if (!DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", 0, "int", 0, "int", w, "int", h, "uint", 0x0016))
+            throw Error("SetWindowPos size failed")
+        return true
+    } catch {
+        return WM_ForceMoveHwndToRect(hwnd, x, y, w, h)
+    }
+}
+
 ; Estimated visible frame in the same logical space as GetWindowRect / MonitorGetWorkArea.
 WM_GetEstimatedVisibleFrame(hwnd, &left, &top, &right, &bottom) {
     return WM_GetEstimatedVisibleFrameForMonitor(hwnd, 0, &left, &top, &right, &bottom)
@@ -165,25 +275,19 @@ WM_GetEstimatedVisibleFrame(hwnd, &left, &top, &right, &bottom) {
 
 ; Visible frame for snap validation/placement.
 WM_GetDwmVisibleFrameHwnd(hwnd, &left, &top, &right, &bottom) {
-    return WM_GetEstimatedVisibleFrame(hwnd, &left, &top, &right, &bottom)
+    src := ""
+    return WM_GetSnapVisibleFrame(hwnd, 0, &left, &top, &right, &bottom, &src)
 }
 
 WM_GetEstimatedFrameInsets(hwnd, &insetLeft, &insetTop, &insetRight, &insetBottom) {
-    if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+    src := ""
+    if (!WM_MeasureOuterInsetsForSnap(hwnd, 0, &insetLeft, &insetTop, &insetRight, &insetBottom, &src))
         return false
-    if (!WM_GetEstimatedVisibleFrame(hwnd, &fl, &ft, &fr, &fb))
-        return false
-    insetLeft := fl - wl
-    insetTop := ft - wt
-    insetRight := wr - fr
-    insetBottom := wb - fb
     ; #region agent log
     dpi := 0
     try dpi := DllCall("GetDpiForWindow", "ptr", hwnd, "uint")
-    WM_DbgLog("H6", "tile_snap.ahk:WM_GetEstimatedFrameInsets", "insets computed", Map(
-        "hwnd", hwnd, "dpi", dpi,
-        "winL", wl, "winT", wt, "winR", wr, "winB", wb,
-        "frameL", fl, "frameT", ft, "frameR", fr, "frameB", fb,
+    WM_DbgLog("H8", "tile_snap.ahk:WM_GetEstimatedFrameInsets", "insets computed", Map(
+        "hwnd", hwnd, "dpi", dpi, "source", src,
         "insetLeft", insetLeft, "insetTop", insetTop, "insetRight", insetRight, "insetBottom", insetBottom))
     ; #endregion
     return true
@@ -204,7 +308,7 @@ WM_ForceMoveHwndToRect(hwnd, left, top, width, height) {
 
 WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom) {
     fl := 0, ft := 0, fr := 0, fb := 0
-    if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb))
+    if (!WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb))
         return false
     edge := WM_GetDpiScaledEdgeForMonitor(monIdx)
     WM_GetSnapInnerWorkArea(monIdx, &iwl, &iwt, &iwr, &iwb)
@@ -220,87 +324,70 @@ WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetB
 
 ; Places hwnd so its visible frame lands on targetLeft..targetRight (exclusive right/bottom).
 WM_MoveHwndToRectGapless(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom) {
-    edge := WM_GetDpiScaledEdgeForMonitor(monIdx)
     paneW := targetRight - targetLeft
     paneH := targetBottom - targetTop
-    x := targetLeft - edge
-    y := targetTop
-    w := paneW + 2 * edge
-    h := paneH
-
-    MonitorGetWorkArea monIdx, &mwl, &mwt, &mwr, &mwb
-    if (x + w > mwr + edge)
-        w := Max(paneW, mwr + edge - x)
-    if (y + h > mwb)
-        h := Max(paneH, mwb - y)
-    if (x < mwl)
-        x := mwl
+    il := WM_GetDpiScaledEdgeForMonitor(monIdx)
+    it := 0, ir := il, ib := il
+    src := "estimate"
+    WM_ComputeOuterRectForVisibleTarget(targetLeft, targetTop, targetRight, targetBottom, il, it, ir, ib, &x, &y, &w, &
+        h)
+    WM_ClampOuterRectToMonitor(monIdx, &x, &y, &w, &h)
 
     ; #region agent log
     WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "inset move computed", Map(
         "hwnd", hwnd, "monIdx", monIdx, "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight,
-        "targetBottom", targetBottom, "edge", edge, "x", x, "y", y, "w", w, "h", h))
+        "targetBottom", targetBottom, "il", il, "it", it, "ir", ir, "ib", ib, "source", src, "x", x, "y", y, "w", w,
+        "h", h))
     ; #endregion
 
-    if (!WM_ForceMoveHwndToRect(hwnd, x, y, w, h))
+    if (!WM_ForceMoveHwndToRectSplit(hwnd, x, y, w, h))
         return false
-    try DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", w, "int", h, "uint", 0x0014)
 
-    if (WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)) {
+    loop 6 {
+        if (WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)) {
+            fl := 0, ft := 0, fr := 0, fb := 0
+            WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb, &src)
+            ; #region agent log
+            WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
+                "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
+                "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom",
+                targetBottom,
+                "diffL", fl - targetLeft, "diffT", ft - targetTop, "diffR", fr - targetRight, "diffB", fb -
+                targetBottom,
+                "strictOk", 1, "pass", A_Index, "source", src))
+            ; #endregion
+            return true
+        }
         fl := 0, ft := 0, fr := 0, fb := 0
-        WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb)
-        ; #region agent log
-        WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
-            "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
-            "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom", targetBottom,
-            "diffL", fl - targetLeft, "diffT", ft - targetTop, "diffR", fr - targetRight, "diffB", fb - targetBottom,
-            "strictOk", 1, "pass", 1))
-        ; #endregion
-        return true
-    }
-    loop 4 {
-        fl := 0, ft := 0, fr := 0, fb := 0
-        if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &fl, &ft, &fr, &fb))
+        if (!WM_GetSnapVisibleFrame(hwnd, monIdx, &fl, &ft, &fr, &fb, &src))
             return false
         diffL := targetLeft - fl
         diffT := targetTop - ft
         diffR := targetRight - fr
         diffB := targetBottom - fb
-        result := WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)
         ; #region agent log
         WM_DbgLog("H6", "tile_snap.ahk:WM_MoveHwndToRectGapless", "post-move visible frame vs target", Map(
             "hwnd", hwnd, "actualL", fl, "actualT", ft, "actualR", fr, "actualB", fb,
             "targetLeft", targetLeft, "targetTop", targetTop, "targetRight", targetRight, "targetBottom", targetBottom,
             "diffL", diffL, "diffT", diffT, "diffR", diffR, "diffB", diffB,
-            "strictOk", result, "pass", A_Index))
+            "strictOk", 0, "pass", A_Index, "source", src))
         ; #endregion
-        if (result)
-            return true
-        if (!WM_GetWindowRectHwnd(hwnd, &wl, &wt, &wr, &wb))
+        if (!WM_MeasureOuterInsetsForSnap(hwnd, monIdx, &il, &it, &ir, &ib, &src))
             return false
-        actualW := wr - wl
-        actualH := wb - wt
-        if (actualW > w + 15 || actualH > h + 15) {
-            w := paneW + 2 * edge
-            h := paneH
-            x := targetLeft - edge
-            y := targetTop
-            if (x < mwl)
-                x := mwl
-            if (x + w > mwr + edge)
-                w := Max(paneW, mwr + edge - x)
-            WM_ForceMoveHwndToRect(hwnd, x, y, w, h)
-            try DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", x, "int", y, "int", w, "int", h, "uint", 0x0014)
-            continue
-        }
-        newW := actualW + diffR - diffL
-        newH := actualH + diffB - diffT
-        if (newW < 1 || newH < 1)
-            return false
-        if (!WM_ForceMoveHwndToRect(hwnd, wl + diffL, wt + diffT, newW, newH))
+        WM_ComputeOuterRectForVisibleTarget(targetLeft, targetTop, targetRight, targetBottom, il, it, ir, ib, &x, &y, &
+            w,
+            &h)
+        WM_ClampOuterRectToMonitor(monIdx, &x, &y, &w, &h)
+        maxOuterW := paneW + il + ir + 8
+        maxOuterH := paneH + it + ib + 8
+        if (w > maxOuterW)
+            w := maxOuterW
+        if (h > maxOuterH)
+            h := maxOuterH
+        if (!WM_ForceMoveHwndToRectSplit(hwnd, x, y, w, h))
             return false
     }
-    return false
+    return WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetBottom)
 }
 
 ; "h" = left/right panes (landscape); "v" = top/bottom panes (portrait).
@@ -474,7 +561,7 @@ WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, ed
 
 WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, hwnd, oppPane, &paneSize, edgeTol := 0) {
     winL := 0, winT := 0, winR := 0, winB := 0
-    if (!WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &winL, &winT, &winR, &winB))
+    if (!WM_GetSnapVisibleFrame(hwnd, monIdx, &winL, &winT, &winR, &winB))
         return false
     pane := ""
     paneSize := 0
@@ -509,7 +596,7 @@ WM_ValidateSnapBipartitionStrict(monIdx, primaryHwnd, &failReason := "", partner
     workH := wb - wt
     workDim := (axis = "h") ? workW : workH
     monEdge := WM_GetDpiScaledEdgeForMonitor(monIdx)
-    if (!WM_GetEstimatedVisibleFrameForMonitor(primaryHwnd, monIdx, &pl, &pt, &pr, &pb)) {
+    if (!WM_GetSnapVisibleFrame(primaryHwnd, monIdx, &pl, &pt, &pr, &pb)) {
         failReason := "primary_no_rect"
         return false
     }
