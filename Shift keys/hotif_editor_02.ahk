@@ -676,7 +676,7 @@ Editor_QuickCommit() {
     } else {
         Editor_HidePrimarySidebar(hwnd)
     }
-    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\commit.wav")
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\commit.mp3")
 }
 
 ; Shift + J : Quick commit — generic timestamped message, commit, push
