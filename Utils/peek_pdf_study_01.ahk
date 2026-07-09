@@ -654,7 +654,11 @@ StudyTopicSelector_EscapeFromHotkey(*) {
 }
 
 StudyTopicSelector_GlobalEscapeCallback(*) {
+    global g_StudyTopicSelectorActive
+    if (!g_StudyTopicSelectorActive)
+        return false
     StudyTopicSelector_Cancel()
+    return true
 }
 
 StudyTopicSelector_GuiEscape(*) {

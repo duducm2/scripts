@@ -607,7 +607,11 @@ CursorShortcutMenu_EscapeFromHotkey(*) {
 }
 
 CursorShortcutMenu_GlobalEscapeCallback(*) {
+    global g_CursorShortcutMenuActive
+    if (!g_CursorShortcutMenuActive)
+        return false
     CursorShortcutMenu_Cancel()
+    return true
 }
 
 CursorShortcutMenu_GuiEscape(*) {

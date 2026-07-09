@@ -626,9 +626,11 @@ StandardLoadingBar_KeysEscapePoll() {
 
 ; $*Escape, I10 g_OnEscapePressed, Gui Escape, and poll all route here (align with #!+C Handy AI model selector).
 StandardLoadingBar_KeysEscapeDismiss(*) {
-    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysEscapeUserCb
-    if !g_StandardLoadingBarIsKeysOverlay
-        return
+    global g_StandardLoadingBarIsKeysOverlay, g_StandardLoadingBarKeysEscapeUserCb, g_OnEscapePressed
+    if !g_StandardLoadingBarIsKeysOverlay {
+        g_OnEscapePressed := ""
+        return false
+    }
     cb := g_StandardLoadingBarKeysEscapeUserCb
     if cb {
         try cb.Call()
@@ -636,6 +638,7 @@ StandardLoadingBar_KeysEscapeDismiss(*) {
         }
     }
     StandardLoadingBar_CloseKeysOverlay()
+    return true
 }
 
 ; Show overlay and register hotkeys; optional timeout. keyCallbacks: Map/object key -> callback (e.g. "N" -> fn, "R" -> fn).

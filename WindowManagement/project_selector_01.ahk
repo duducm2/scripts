@@ -172,9 +172,16 @@ global g_WM_SelectorCloseRequestFile := A_ScriptDir "\.cursor\wm_selector_close_
 global g_WM_SelectorCloseCheckTimer := ""
 
 WM_CheckSelectorCloseRequest() {
-    global g_ProjectSelectorActive, g_WM_SelectorCloseRequestFile
-    if (!g_ProjectSelectorActive)
+    global g_ProjectSelectorActive, g_WM_SelectorCloseRequestFile, g_WM_SelectorOpenFile
+    if (!g_ProjectSelectorActive) {
+        try FileDelete(g_WM_SelectorOpenFile)
+        catch {
+        }
+        try FileDelete(g_WM_SelectorCloseRequestFile)
+        catch {
+        }
         return
+    }
     if (FileExist(g_WM_SelectorCloseRequestFile)) {
         try FileDelete(g_WM_SelectorCloseRequestFile)
         catch {
@@ -182,6 +189,30 @@ WM_CheckSelectorCloseRequest() {
         CleanupProjectSelector()
     }
 }
+
+; Remove sentinel files left by a crash or force-kill so global Escape is not permanently swallowed.
+WM_CleanupStaleEscapeSentinels() {
+    global g_ProjectSelectorActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile
+    global g_WM_MinimizedListActive, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseRequestFile
+    if (!g_ProjectSelectorActive) {
+        try FileDelete(g_WM_SelectorOpenFile)
+        catch {
+        }
+        try FileDelete(g_WM_SelectorCloseRequestFile)
+        catch {
+        }
+    }
+    if (!g_WM_MinimizedListActive) {
+        try FileDelete(g_WM_MinimizedListOpenFile)
+        catch {
+        }
+        try FileDelete(g_WM_MinimizedListCloseRequestFile)
+        catch {
+        }
+    }
+}
+
+SetTimer(WM_CleanupStaleEscapeSentinels, -1)
 
 ; Activate a Cursor project by path: find or launch window, then focus the AI text field. Returns true on success.
 ; Ensures the target project window is explicitly activated before focus/paste, regardless of current active window.
@@ -629,8 +660,11 @@ CreateProjectHandler(index) {
 
 ; Handler for Escape key in project selector
 HandleProjectEscape(*) {
-    global g_ProjectSelectorActive
+    global g_ProjectSelectorActive, g_OnEscapePressed
     if (g_ProjectSelectorActive) {
         CleanupProjectSelector()
+        return true
     }
+    g_OnEscapePressed := ""
+    return false
 }

@@ -84,36 +84,52 @@ SendEscape(count := 1) {
 ; unhandled until Utils_EnsureGlobalEscapeHotkey() runs (see AiModel cleanup, square selector, hotstring cleanup, etc.).
 ; =============================================================================
 
-; Optional escape callback: when set (e.g. by WindowManagement for project selector), Utils runs it and consumes Escape.
+; Optional escape callback: when set (e.g. by WindowManagement for project selector), Utils runs it.
+; Callbacks return true when they handled Escape; false clears a stale callback and forwards to the app.
 global g_OnEscapePressed := ""
+
+; Cross-process WM selector IPC: write close request, wait for live selector to react, else purge stale sentinel.
+Utils_TryCloseViaSentinel(sentinelPath, closeReqPath) {
+    if (!FileExist(sentinelPath))
+        return false
+    try FileAppend("", closeReqPath)
+    catch {
+    }
+    ; WM_Check*CloseRequest polls every 120ms — brief wait for a live selector to close.
+    Sleep 160
+    if (!FileExist(sentinelPath))
+        return true
+    try FileDelete(sentinelPath)
+    catch {
+    }
+    try FileDelete(closeReqPath)
+    catch {
+    }
+    return false
+}
+
 Utils_GlobalEscapeHandler(*) {
     global g_OnEscapePressed
 
     if (g_OnEscapePressed) {
+        handled := false
         try {
-            g_OnEscapePressed.Call()
+            handled := !!g_OnEscapePressed.Call()
         } catch {
+            handled := false
         }
-        return
+        if (handled)
+            return
+        g_OnEscapePressed := ""
     }
 
     try {
-        sentinel := A_ScriptDir "\.cursor\wm_selector_open"
-        if (FileExist(sentinel)) {
-            closeReq := A_ScriptDir "\.cursor\wm_selector_close_request"
-            try FileAppend "", closeReq
-            catch {
-            }
+        if (Utils_TryCloseViaSentinel(A_ScriptDir "\.cursor\wm_selector_open",
+            A_ScriptDir "\.cursor\wm_selector_close_request"))
             return
-        }
-        minSentinel := A_ScriptDir "\.cursor\wm_minimized_list_open"
-        if (FileExist(minSentinel)) {
-            minCloseReq := A_ScriptDir "\.cursor\wm_minimized_list_close_request"
-            try FileAppend "", minCloseReq
-            catch {
-            }
+        if (Utils_TryCloseViaSentinel(A_ScriptDir "\.cursor\wm_minimized_list_open",
+            A_ScriptDir "\.cursor\wm_minimized_list_close_request"))
             return
-        }
     } catch {
     }
 

@@ -117,6 +117,15 @@ HandleCursorWindowSelectionByChar(char) {
 HandleCursorWindowSelectorEscape(*) {
     global g_CursorWindowSelectorGui, g_CursorWindowHotkeyHandlers, g_CursorWindowMap
 
+    if (!IsObject(g_CursorWindowSelectorGui))
+        return false
+    try {
+        if !g_CursorWindowSelectorGui.Hwnd
+            return false
+    } catch {
+        return false
+    }
+
     ; Close and destroy GUI
     if (IsObject(g_CursorWindowSelectorGui)) {
         try {
@@ -154,6 +163,7 @@ HandleCursorWindowSelectorEscape(*) {
     ; Clear handlers and map
     g_CursorWindowHotkeyHandlers := []
     g_CursorWindowMap := Map()
+    return true
 }
 
 ; Show Cursor window selector sub-menu GUI

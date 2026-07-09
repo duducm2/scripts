@@ -152,9 +152,16 @@ WM_CollectBackgroundWindows(foreHwndOverride := 0) {
 }
 
 WM_CheckMinimizedListCloseRequest() {
-    global g_WM_MinimizedListActive, g_WM_MinimizedListCloseRequestFile
-    if (!g_WM_MinimizedListActive)
+    global g_WM_MinimizedListActive, g_WM_MinimizedListCloseRequestFile, g_WM_MinimizedListOpenFile
+    if (!g_WM_MinimizedListActive) {
+        try FileDelete(g_WM_MinimizedListOpenFile)
+        catch {
+        }
+        try FileDelete(g_WM_MinimizedListCloseRequestFile)
+        catch {
+        }
         return
+    }
     if (FileExist(g_WM_MinimizedListCloseRequestFile)) {
         try FileDelete(g_WM_MinimizedListCloseRequestFile)
         catch {
@@ -721,9 +728,13 @@ WM_MinimizedList_EscapePoll() {
 }
 
 HandleMinimizedListEscape(*) {
-    global g_WM_MinimizedListActive
-    if (g_WM_MinimizedListActive)
+    global g_WM_MinimizedListActive, g_OnEscapePressed
+    if (g_WM_MinimizedListActive) {
         WM_MinimizedList_Cancel()
+        return true
+    }
+    g_OnEscapePressed := ""
+    return false
 }
 
 WM_MinimizedList_BindEscape() {

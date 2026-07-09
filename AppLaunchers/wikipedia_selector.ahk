@@ -295,7 +295,11 @@ CreateWikipediaCharHandler(char) {
 
 ; Used with g_OnEscapePressed so Utils_GlobalEscapeHandler (I10) closes the modal when *Escape (I0) never fires.
 WikipediaSelector_GlobalEscapeCallback(*) {
+    global g_WikipediaSelectorActive
+    if (!g_WikipediaSelectorActive)
+        return false
     WikipediaSelector_Cancel()
+    return true
 }
 
 ; GUI message-path Escape (helps when Esc is delivered via the GUI message pump)
