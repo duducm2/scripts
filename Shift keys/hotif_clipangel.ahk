@@ -37,6 +37,8 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "^c"  ; Copy
     Sleep 100
     Send "{F10}"
+    Sleep 50
+    Send "{Escape}"
 }
 
 ; Shift + T : Switch focus between list and text (Toggle) (F10)
