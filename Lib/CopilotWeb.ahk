@@ -1279,12 +1279,12 @@ CopilotWeb_OpenModelSelector(uia := 0) {
     Sleep 150
     Send "{Up}"
     Sleep 60
-    Send "{Right}"
-    Sleep 60
-    Send "{Down}"
-    Sleep 60
-    Send "{Down}"
-    Sleep 60
+    ; Send "{Right}"
+    ; Sleep 60
+    ; Send "{Down}"
+    ; Sleep 60
+    ; Send "{Down}"
+    ; Sleep 60
     Send "{Enter}"
     Sleep 60
     Send "d"
