@@ -33,6 +33,15 @@ $+m:: {
     }
 }
 
+$+a:: {
+    try {
+        CopilotWeb_OpenModelSelector()
+        Sleep 250
+        CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+    } catch {
+    }
+}
+
 $+t:: {
     try {
         uia := CopilotWeb_GetActiveUia()

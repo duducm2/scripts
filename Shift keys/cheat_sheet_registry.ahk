@@ -1066,6 +1066,7 @@ cheatSheets["Copilot Web"] := "
     💬 [N][N]ew chat
     🔍 [S][S]earch (nav drawer)
     🔄 [M]Select deep reasoning / Think (no-op if already active)
+    🎨 [A][A]rt: Think model + Designer/image
     🛠️ [T]Add/manage sources (Tools menu)
     🖼️ [I]Designer / create image (Sources menu)
     🔬 [E]Researcher / deep research (Sources menu)
