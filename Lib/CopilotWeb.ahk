@@ -38,6 +38,19 @@ COPILOT_NEW_CHAT_NAMES := ["New chat", "Novo chat"]
 COPILOT_NAV_SEARCH_NAMES := ["Search", "Pesquisar", "Buscar"]
 COPILOT_MODEL_SELECTOR_CRITERIA := [{ AutomationId: "gptModeSwitcher", ControlType: "Button" }, { Name: "Model Selector",
     ControlType: "Button" }]
+; Longer / more specific phrases first — used for scoring when multiple menu rows match.
+COPILOT_DEEP_REASONING_NEEDLES := [
+    "think deeper",
+    "mais profundo",
+    "pensar mais",
+    "deeper",
+    "profundo",
+    "think",
+    "pensar"
+]
+COPILOT_MODEL_MENU_WAIT_MS := 2000
+COPILOT_MODEL_MENU_POLL_MS := 80
+UIA_Copilot_ControlType_ListItem := 50007
 COPILOT_SOURCES_BUTTON_CRITERIA := [{ Name: "Add and manage sources", ControlType: "Button" }, { Name: "Adicionar e gerenciar fontes",
     ControlType: "Button" }]
 COPILOT_SOURCES_MENU_MARKERS := [{ AutomationId: "capability-id-researcher", ControlType: "MenuItem" }, { Name: "Upload images and files",
@@ -1268,29 +1281,124 @@ CopilotWeb_ClickNavSearch(uia := 0) {
     return el && CopilotWeb_ClickUiaElement(el)
 }
 
+CopilotWeb_DeepReasoningNameScore(name) {
+    global COPILOT_DEEP_REASONING_NEEDLES
+    if (name = "")
+        return 0
+    ; Progress / status labels are not selectable models.
+    if RegExMatch(name, "i)\bthinking\b") && !RegExMatch(name, "i)\bthink\s+deeper\b")
+        return 0
+    best := 0
+    for needle in COPILOT_DEEP_REASONING_NEEDLES {
+        pat := "i)\b" . RegExReplace(needle, "\s+", "\\s+") . "\b"
+        if RegExMatch(name, pat) {
+            score := StrLen(needle)
+            if (score > best)
+                best := score
+        }
+    }
+    return best
+}
+
+CopilotWeb_IsDeepReasoningModelName(name) {
+    return CopilotWeb_DeepReasoningNameScore(name) > 0
+}
+
+CopilotWeb_FindModelSelectorButton(uia) {
+    return CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
+}
+
+CopilotWeb_FindDeepReasoningMenuItem(uia) {
+    if (!IsObject(uia))
+        return 0
+    bestEl := 0
+    bestScore := 0
+    for typeSpec in [UIA_Copilot_ControlType_MenuItem, "MenuItem", UIA_Copilot_ControlType_ListItem, "ListItem",
+        UIA_Copilot_ControlType_Button, "Button"] {
+        try {
+            items := uia.FindAll({ Type: typeSpec })
+        } catch {
+            continue
+        }
+        if !IsObject(items)
+            continue
+        for item in items {
+            try {
+                aid := ""
+                try aid := item.AutomationId
+                if (aid = "gptModeSwitcher")
+                    continue
+                name := ""
+                try name := item.Name
+                score := CopilotWeb_DeepReasoningNameScore(name)
+                if (score <= 0)
+                    continue
+                try {
+                    if (!item.GetPropertyValue(UIA.Property.IsEnabled))
+                        continue
+                } catch {
+                }
+                if (score > bestScore) {
+                    bestScore := score
+                    bestEl := item
+                }
+            } catch {
+            }
+        }
+        if (bestEl)
+            return bestEl
+    }
+    return bestEl
+}
+
+CopilotWeb_WaitForModelMenu(uia := 0, timeoutMs := 0) {
+    global COPILOT_MODEL_MENU_WAIT_MS, COPILOT_MODEL_MENU_POLL_MS
+    if (timeoutMs <= 0)
+        timeoutMs := COPILOT_MODEL_MENU_WAIT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        cur := CopilotWeb_GetActiveUia()
+        if (!IsObject(cur))
+            cur := uia
+        if (IsObject(cur) && CopilotWeb_FindDeepReasoningMenuItem(cur))
+            return true
+        Sleep COPILOT_MODEL_MENU_POLL_MS
+    }
+    cur := CopilotWeb_GetActiveUia()
+    if (!IsObject(cur))
+        cur := uia
+    return IsObject(cur) && !!CopilotWeb_FindDeepReasoningMenuItem(cur)
+}
+
 CopilotWeb_OpenModelSelector(uia := 0) {
     if (!uia)
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
-    el := CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
-    if !(el && CopilotWeb_ClickUiaElement(el))
+    btn := CopilotWeb_FindModelSelectorButton(uia)
+    if (!btn)
         return false
-    Sleep 150
-    Send "{Up}"
-    Sleep 60
-    ; Send "{Right}"
-    ; Sleep 60
-    ; Send "{Down}"
-    ; Sleep 60
-    ; Send "{Down}"
-    ; Sleep 60
-    Send "{Enter}"
-    Sleep 60
-    Send "d"
-    Sleep 60
-    Send "{Backspace}"
-    return true
+    btnName := ""
+    try btnName := btn.Name
+    ; Already on deep reasoning — do not open the menu.
+    if (CopilotWeb_IsDeepReasoningModelName(btnName))
+        return true
+    if (!CopilotWeb_ClickUiaElement(btn))
+        return false
+    if (!CopilotWeb_WaitForModelMenu(uia)) {
+        Send "{Escape}"
+        ShowCenteredOverlay_Utils("Deep reasoning model not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    item := CopilotWeb_FindDeepReasoningMenuItem(uia)
+    if (item && CopilotWeb_ClickUiaElement(item))
+        return true
+    Send "{Escape}"
+    ShowCenteredOverlay_Utils("Deep reasoning model not found", 2200, BANNER_ACCENT_ERROR)
+    return false
 }
 
 CopilotWeb_FindSourcesButton(uia) {
