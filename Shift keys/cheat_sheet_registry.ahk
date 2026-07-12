@@ -308,6 +308,7 @@ cheatSheets["Spotify.exe"] := "
     🎵 [V][V]iew (Now Playing)
     📚 [L][L]ibrary sidebar
     ⛶ [E][E]xpand Library
+    🌊 [I][I]mmerse (header Play + fullscreen)
     🎤 [Y]L[Y]rics
     ⏯️ [T][T]oggle Play/Pause
 )"  ; end Spotify

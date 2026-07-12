@@ -114,64 +114,7 @@
 }
 
 ; Shift + F : Toggle full screen - Fullscreen
-+f::
-{
-    try {
-        spot := UIA_Browser("ahk_exe Spotify.exe")
-        Sleep 300
-
-        ; Look for either Enter or Exit full screen button with case-insensitive pattern
-        enterFsPattern := "i)^Enter Full[- ]?screen$"
-        exitFsPattern := "i)^Exit Full[- ]?screen$"
-
-        ; Helper function to click button with multi-strategy (Invoke or Click)
-        ClickButton(btn) {
-            if (!btn)
-                return false
-            supportsInvoke := false
-            try {
-                supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-            } catch {
-                supportsInvoke := false
-            }
-            clicked := false
-            if (supportsInvoke) {
-                try {
-                    btn.Invoke()
-                    clicked := true
-                } catch {
-                }
-            }
-            if (!clicked) {
-                try {
-                    btn.Click()
-                    clicked := true
-                } catch {
-                }
-            }
-            return clicked
-        }
-
-        ; First attempt - immediate check
-        enterFsBtn := WaitForButton(spot, enterFsPattern, 500)
-        if (!enterFsBtn) {
-            exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
-            if (!exitFsBtn) {
-                ; Wait 1 second and try again
-                Sleep 1000
-                exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
-                if (exitFsBtn)
-                    ClickButton(exitFsBtn)
-            } else {
-                ClickButton(exitFsBtn)
-            }
-        } else {
-            ClickButton(enterFsBtn)
-            Sleep 300
-            Send "{Escape}"
-        }
-    }
-}
++f:: SpotifyToggleFullscreen()
 
 ; Shift + S : Open Search - Search
 +s:: Send "^k"
@@ -238,6 +181,46 @@
         }
     } catch Error as e {
         MsgBox "Error toggling fullscreen library: " e.Message, "Spotify Error", "IconX"
+    }
+}
+
+; Shift + I : Immerse — header Play (proximity to Explore/Shuffle/Follow/More/Popular) then fullscreen
++i:: {
+    try {
+        StandardLoadingBar_Show("⏳ Immersing — finding header Play…", BANNER_ACCENT_INTERMEDIATE, {
+            passive: false, centerOnHwnd: 0, fontSize: 17 })
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep(200)
+        if (!spot) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Spotify UIA root not found", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        StandardLoadingBar_Update("⏳ Immersing — scoring Play by anchors…", BANNER_ACCENT_INTERMEDIATE)
+        playBtn := FindHeaderPlayByProximity(spot)
+        if (!playBtn) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Header Play button not found", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        StandardLoadingBar_Update("⏳ Immersing — activating Play…", BANNER_ACCENT_INTERMEDIATE)
+        activated := ActivateElement(playBtn)
+        if (!activated) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Failed to activate header Play", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        Sleep(250)
+        StandardLoadingBar_Update("⏳ Immersing — entering fullscreen…", BANNER_ACCENT_INTERMEDIATE)
+        fsOk := SpotifyToggleFullscreen()
+        StandardLoadingBar_Hide(0)
+        if (fsOk)
+            ShowCenteredOverlay_Utils("✅ Immersed", 1200, BANNER_ACCENT_SUCCESS)
+        else
+            ShowCenteredOverlay_Utils("⚠ Play started; fullscreen control not found", 2000, BANNER_ACCENT_INTERMEDIATE)
+    } catch Error as e {
+        try StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ Immerse error: " e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -459,6 +442,185 @@ FindBestPlayPauseButton(root) {
     return best
 }
 
+; --- header Play immersion (Shift+I) ---
+
+; Shared fullscreen toggle used by +f and +i (Send("+f") does not reliably re-enter +f).
+SpotifyToggleFullscreen() {
+    try {
+        spot := UIA_Browser("ahk_exe Spotify.exe")
+        Sleep 300
+        enterFsPattern := "i)^Enter Full[- ]?screen$"
+        exitFsPattern := "i)^Exit Full[- ]?screen$"
+
+        ClickFsButton(btn) {
+            if (!btn)
+                return false
+            supportsInvoke := false
+            try supportsInvoke := btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+            catch
+                supportsInvoke := false
+            if (supportsInvoke) {
+                try {
+                    btn.Invoke()
+                    return true
+                } catch {
+                }
+            }
+            try {
+                btn.Click()
+                return true
+            } catch {
+            }
+            return false
+        }
+
+        enterFsBtn := WaitForButton(spot, enterFsPattern, 500)
+        if (enterFsBtn) {
+            clickedEnter := ClickFsButton(enterFsBtn)
+            Sleep 300
+            Send "{Escape}"
+            return clickedEnter
+        }
+
+        exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
+        if (!exitFsBtn) {
+            Sleep 1000
+            exitFsBtn := WaitForButton(spot, exitFsPattern, 500)
+        }
+        if (exitFsBtn)
+            return ClickFsButton(exitFsBtn)
+        return false
+    } catch {
+        return false
+    }
+}
+
+; Collect Explore / Shuffle / Follow / More options / Popular anchors near the page header.
+CollectHeaderPlayAnchors(root) {
+    anchors := []
+    if (!root)
+        return anchors
+
+    ; Buttons: Explore …, Enable Shuffle for … (not …Popular), Follow/Following, More options for …
+    try {
+        btns := root.FindAll({ Type: 50000 })
+        if (btns && btns.Length) {
+            for b in btns {
+                try {
+                    nm := b.Name
+                    if (!nm)
+                        continue
+                    if (RegExMatch(nm, "i)^Explore "))
+                        anchors.Push(b)
+                    else if (RegExMatch(nm, "i)^Enable Shuffle for ") && !RegExMatch(nm, "i)Popular$"))
+                        anchors.Push(b)
+                    else if (nm = "Follow" || nm = "Following")
+                        anchors.Push(b)
+                    else if (RegExMatch(nm, "i)^More options for "))
+                        anchors.Push(b)
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+
+    ; Text title "Popular"
+    try {
+        texts := root.FindAll({ Type: 50020 })
+        if (texts && texts.Length) {
+            for t in texts {
+                try {
+                    if (t.Name = "Popular")
+                        anchors.Push(t)
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+
+    return anchors
+}
+
+; Exact Name "Play" primary buttons (excludes "Play Track…", track rows, etc.).
+CollectExactPlayCandidates(root) {
+    candidates := []
+    if (!root)
+        return candidates
+    try {
+        btns := root.FindAll({ Type: 50000 })
+        if (btns && btns.Length) {
+            for b in btns {
+                try {
+                    if (b.Name != "Play")
+                        continue
+                    cn := ""
+                    try cn := b.ClassName
+                    if (cn != "" && !InStr(cn, "legacy-button-primary"))
+                        continue
+                    candidates.Push(b)
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+    return candidates
+}
+
+UiaElementCenter(el) {
+    try {
+        br := el.BoundingRectangle
+        return { x: (br.l + br.r) / 2, y: (br.t + br.b) / 2 }
+    } catch {
+        return ""
+    }
+}
+
+; Sum of inverse squared distances from candidate center to each anchor center.
+HeaderPlayProximityScore(candidate, anchors) {
+    c := UiaElementCenter(candidate)
+    if (c = "")
+        return 0
+    score := 0.0
+    for a in anchors {
+        ac := UiaElementCenter(a)
+        if (ac = "")
+            continue
+        dx := c.x - ac.x
+        dy := c.y - ac.y
+        distSq := dx * dx + dy * dy
+        if (distSq < 1)
+            distSq := 1
+        score += 1.0 / distSq
+    }
+    return score
+}
+
+; Pick the Name="Play" button closest (by inverse-dist² sum) to header anchors. Needs ≥2 anchors.
+FindHeaderPlayByProximity(root) {
+    anchors := CollectHeaderPlayAnchors(root)
+    if (anchors.Length < 2)
+        return ""
+    candidates := CollectExactPlayCandidates(root)
+    if (!candidates.Length)
+        return ""
+    best := ""
+    bestScore := 0.0
+    for c in candidates {
+        sc := HeaderPlayProximityScore(c, anchors)
+        if (sc > bestScore) {
+            bestScore := sc
+            best := c
+        }
+    }
+    return best
+}
+
 ; --- text utils ---
 
 NormalizeName(s) {
@@ -476,4 +638,3 @@ ContainsWord(norm, word) {
     ; Match a whole word boundary after normalization
     return RegExMatch(norm, "(^|\s)" . word . "(\s|$)")
 }
-
