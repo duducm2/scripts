@@ -515,6 +515,71 @@ WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partn
     return ok1 && ok2
 }
 
+WM_FindStrictSnapCompanion(hwnd, monIdx) {
+    if (!hwnd || monIdx < 1 || monIdx > MonitorGetCount())
+        return 0
+    try {
+        for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+            if (win.hwnd = hwnd)
+                continue
+            if (WM_IsExcludedIndicatorWindow(win.hwnd))
+                continue
+            if (WM_ValidateSnapBipartitionStrict(monIdx, hwnd, , win.hwnd))
+                return win.hwnd
+        }
+    } catch {
+    }
+    return 0
+}
+
+WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx) {
+    if (!companionHwnd || sourceMonIdx < 1)
+        return false
+    if (!WinExist("ahk_id " companionHwnd))
+        return false
+    if (WM_GetHwndMonitorIndex(companionHwnd) != sourceMonIdx)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " companionHwnd) = 1)
+            return true
+    } catch {
+    }
+    if (!WM_PrepareHwndForTile(companionHwnd))
+        return false
+    WM_MaximizeHwnd(companionHwnd)
+    return true
+}
+
+WM_ActivateHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        if (!WinActive("ahk_id " hwnd))
+            WinWaitActive("ahk_id " hwnd, , 0.3)
+    } catch {
+        return false
+    }
+    ; Deferred re-activate beats async maximize on an abandoned companion.
+    SetTimer(() => WM_ActivateHwnd_Deferred(hwnd), -100)
+    return true
+}
+
+WM_ActivateHwnd_Deferred(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    try WinActivate("ahk_id " hwnd)
+    catch {
+    }
+}
+
+; After a cross-monitor move/snap: maximize leftover 50/50 companion on source, focus moved hwnd.
+WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx) {
+    if (sourceMonIdx >= 1 && destMonIdx >= 1 && destMonIdx != sourceMonIdx && companionHwnd)
+        WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
+    WM_ActivateHwnd(movedHwnd)
+}
+
 WM_SnapHalfPairActiveWindow() {
     targetHwnd := 0
     try targetHwnd := WinExist("A")
@@ -532,6 +597,9 @@ WM_SnapHalfPairActiveWindow() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
 
+    sourceMon := WM_GetHwndMonitorIndex(targetHwnd)
+    companionHwnd := sourceMon >= 1 ? WM_FindStrictSnapCompanion(targetHwnd, sourceMon) : 0
+
     snapMon := WM_ResolveSnapTargetMonitor(targetHwnd)
     monIdx := snapMon["monIdx"]
     axis := WM_GetSnapSplitAxis(monIdx)
@@ -547,6 +615,7 @@ WM_SnapHalfPairActiveWindow() {
         WM_PrepareHwndForTile(targetHwnd)
         WM_MaximizeHwnd(targetHwnd)
         ShowNotification_WM("No other window open anywhere — maximized instead.")
+        WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, WM_GetHwndMonitorIndex(targetHwnd))
         return
     }
 
@@ -567,6 +636,11 @@ WM_SnapHalfPairActiveWindow() {
     finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")
+
+    destMon := WM_GetHwndMonitorIndex(targetHwnd)
+    if (destMon < 1)
+        destMon := monIdx
+    WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, destMon)
 }
 
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.

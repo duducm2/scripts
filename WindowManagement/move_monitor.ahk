@@ -306,6 +306,9 @@ MoveWinToMonitor(mon) {
         return
     }
 
+    sourceMon := WM_GetHwndMonitorIndex(hwnd)
+    companionHwnd := sourceMon >= 1 ? WM_FindStrictSnapCompanion(hwnd, sourceMon) : 0
+
     ; Obtain monitor work area
     MonitorGet mon, &left, &top, &right, &bottom
 
@@ -337,5 +340,7 @@ MoveWinToMonitor(mon) {
     ; Move mouse to the center of the window after the move
     Sleep 150 ; allow window animation to finish
     WM_MaybeCenterMouse(hwnd, "move_window_to_monitor")
-}
 
+    ; If this left a strict 50/50 companion alone on the source monitor, maximize it.
+    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon)
+}
