@@ -342,5 +342,5 @@ MoveWinToMonitor(mon) {
     WM_MaybeCenterMouse(hwnd, "move_window_to_monitor")
 
     ; If this left a strict 50/50 companion alone on the source monitor, maximize it.
-    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon)
+    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1, 0, 0, true)
 }

@@ -515,20 +515,63 @@ WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partn
     return ok1 && ok2
 }
 
+; #region agent log
+WM_DebugLog_Abandon(hypothesisId, location, message, data := "") {
+    try {
+        payload := '{"sessionId":"b9d999","runId":"post-fix2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
+            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
+        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
+    } catch {
+    }
+}
+; #endregion
+
 WM_FindStrictSnapCompanion(hwnd, monIdx) {
     if (!hwnd || monIdx < 1 || monIdx > MonitorGetCount())
         return 0
+    others := []
     try {
         for win in GetVisibleWindowsOnMonitor(monIdx, true) {
             if (win.hwnd = hwnd)
                 continue
             if (WM_IsExcludedIndicatorWindow(win.hwnd))
                 continue
-            if (WM_ValidateSnapBipartitionStrict(monIdx, hwnd, , win.hwnd))
-                return win.hwnd
+            others.Push(win.hwnd)
         }
     } catch {
+        return 0
     }
+    for other in others {
+        if (WM_ValidateSnapBipartitionStrict(monIdx, hwnd, , other)) {
+            ; #region agent log
+            WM_DebugLog_Abandon("A", "FindStrict", "companion_strict", '{"hwnd":' hwnd ',"mon":' monIdx ',"companion":' other '}'
+            )
+            ; #endregion
+            return other
+        }
+    }
+    ; Fallback: one other visible window; reject only if that window is already maximized.
+    if (others.Length = 1) {
+        other := others[1]
+        try {
+            if (WinGetMinMax("ahk_id " other) = 1) {
+                ; #region agent log
+                WM_DebugLog_Abandon("D", "FindStrict", "fallback_other_max", '{"hwnd":' hwnd ',"other":' other '}')
+                ; #endregion
+                return 0
+            }
+        } catch {
+            return 0
+        }
+        ; #region agent log
+        WM_DebugLog_Abandon("D", "FindStrict", "companion_fallback", '{"hwnd":' hwnd ',"other":' other '}')
+        ; #endregion
+        return other
+    }
+    ; #region agent log
+    WM_DebugLog_Abandon("A", "FindStrict", "no_companion", '{"hwnd":' hwnd ',"mon":' monIdx ',"others":' others.Length '}'
+    )
+    ; #endregion
     return 0
 }
 
@@ -550,7 +593,41 @@ WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx) {
     return true
 }
 
-WM_ActivateHwnd(hwnd) {
+; When pre-snap companion lookup missed, maximize the sole non-max visible window left on a monitor.
+WM_HealOrphanOnMonitor(monIdx, excludeHwnd := 0, alsoExcludeHwnd := 0) {
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return false
+    candidates := []
+    try {
+        for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+            if (win.hwnd = excludeHwnd || win.hwnd = alsoExcludeHwnd)
+                continue
+            if (WM_IsExcludedIndicatorWindow(win.hwnd))
+                continue
+            try {
+                if (WinGetMinMax("ahk_id " win.hwnd) = 1)
+                    continue
+            } catch {
+                continue
+            }
+            candidates.Push(win.hwnd)
+        }
+    } catch {
+        return false
+    }
+    if (candidates.Length = 1) {
+        ; #region agent log
+        WM_DebugLog_Abandon("C", "HealOrphan", "orphan_maximize", '{"mon":' monIdx ',"orphan":' candidates[1] '}')
+        ; #endregion
+        return WM_MaximizeAbandonedSnapCompanion(candidates[1], monIdx)
+    }
+    ; #region agent log
+    WM_DebugLog_Abandon("C", "HealOrphan", "skip", '{"mon":' monIdx ',"candidates":' candidates.Length '}')
+    ; #endregion
+    return false
+}
+
+WM_ActivateHwnd(hwnd, strong := false) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     try {
@@ -560,8 +637,9 @@ WM_ActivateHwnd(hwnd) {
     } catch {
         return false
     }
-    ; Deferred re-activate beats async maximize on an abandoned companion.
-    SetTimer(() => WM_ActivateHwnd_Deferred(hwnd), -100)
+    SetTimer(() => WM_ActivateHwnd_Deferred(hwnd), -120)
+    if (strong)
+        SetTimer(() => WM_ActivateHwnd_Deferred(hwnd), -400)
     return true
 }
 
@@ -573,11 +651,65 @@ WM_ActivateHwnd_Deferred(hwnd) {
     }
 }
 
-; After a cross-monitor move/snap: maximize leftover 50/50 companion on source, focus moved hwnd.
-WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx) {
-    if (sourceMonIdx >= 1 && destMonIdx >= 1 && destMonIdx != sourceMonIdx && companionHwnd)
+; After move/snap: maximize leftover companions, then focus moved hwnd.
+; snapPartnerHwnd: pass snap pair partner (>=0). Use -1 for move-to-monitor (heal only on leave).
+; partnerFormerMon/Companion: when snap drags partner from another monitor, heal that monitor too.
+WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapPartnerHwnd := -1,
+    partnerFormerMon := 0, partnerFormerCompanion := 0, focusStrong := false) {
+    leftSource := false
+    if (sourceMonIdx >= 1) {
+        if (destMonIdx >= 1 && destMonIdx != sourceMonIdx)
+            leftSource := true
+        curMon := WM_GetHwndMonitorIndex(movedHwnd)
+        if (curMon >= 1 && curMon != sourceMonIdx)
+            leftSource := true
+    }
+    shouldHeal := false
+    if (companionHwnd) {
+        if (snapPartnerHwnd >= 0) {
+            if (snapPartnerHwnd != companionHwnd)
+                shouldHeal := true
+        } else if (leftSource) {
+            shouldHeal := true
+        }
+    }
+    if (shouldHeal) {
+        ; #region agent log
+        WM_DebugLog_Abandon("B", "AfterLeaving", "heal_companion", '{"companion":' companionHwnd ',"sourceMon":' sourceMonIdx '}'
+        )
+        ; #endregion
         WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
-    WM_ActivateHwnd(movedHwnd)
+    } else if (sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd != companionHwnd))) {
+        ; #region agent log
+        WM_DebugLog_Abandon("C", "AfterLeaving", "try_orphan", '{"sourceMon":' sourceMonIdx ',"companion":' companionHwnd ',"snapPartner":' snapPartnerHwnd ',"leftSource":' (
+            leftSource ? 1 : 0) '}')
+        ; #endregion
+        WM_HealOrphanOnMonitor(sourceMonIdx, movedHwnd, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0)
+    } else {
+        ; #region agent log
+        WM_DebugLog_Abandon("B", "AfterLeaving", "no_heal", '{"sourceMon":' sourceMonIdx ',"companion":' companionHwnd ',"snapPartner":' snapPartnerHwnd ',"leftSource":' (
+            leftSource ? 1 : 0) '}')
+        ; #endregion
+    }
+    ; Partner was pulled from another monitor — orphan is on partner's former monitor, not sourceMon.
+    if (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx) {
+        if (partnerFormerCompanion) {
+            ; #region agent log
+            WM_DebugLog_Abandon("E", "AfterLeaving", "heal_partner_companion", '{"mon":' partnerFormerMon ',"companion":' partnerFormerCompanion '}'
+            )
+            ; #endregion
+            WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
+        } else {
+            ; #region agent log
+            WM_DebugLog_Abandon("E", "AfterLeaving", "try_partner_orphan", '{"mon":' partnerFormerMon ',"partner":' snapPartnerHwnd '}'
+            )
+            ; #endregion
+            WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
+        }
+    }
+    if (focusStrong || leftSource || (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx))
+        focusStrong := true
+    WM_ActivateHwnd(movedHwnd, focusStrong)
 }
 
 WM_SnapHalfPairActiveWindow() {
@@ -603,21 +735,52 @@ WM_SnapHalfPairActiveWindow() {
     snapMon := WM_ResolveSnapTargetMonitor(targetHwnd)
     monIdx := snapMon["monIdx"]
     axis := WM_GetSnapSplitAxis(monIdx)
+    ; #region agent log
+    WM_DebugLog_Abandon("B", "SnapHalf", "pre", '{"target":' targetHwnd ',"sourceMon":' sourceMon ',"monIdx":' monIdx ',"companion":' companionHwnd '}'
+    )
+    ; #endregion
 
     partnerHwnd := 0
     for hwnd in WM_EnumerateOpenHwndsGlobal() {
-        if (hwnd != targetHwnd) {
-            partnerHwnd := hwnd
-            break
-        }
+        if (hwnd = targetHwnd)
+            continue
+        if (monIdx != sourceMon && companionHwnd && hwnd = companionHwnd)
+            continue
+        partnerHwnd := hwnd
+        break
     }
     if (!partnerHwnd) {
         WM_PrepareHwndForTile(targetHwnd)
-        WM_MaximizeHwnd(targetHwnd)
-        ShowNotification_WM("No other window open anywhere — maximized instead.")
-        WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, WM_GetHwndMonitorIndex(targetHwnd))
+        if (monIdx != sourceMon && sourceMon >= 1) {
+            MonitorGet monIdx, &left, &top, &right, &bottom
+            try {
+                if (WinGetMinMax("ahk_id " targetHwnd) != 0) {
+                    WinRestore "ahk_id " targetHwnd
+                    Sleep 80
+                }
+            } catch {
+            }
+            try WinMove(targetHwnd, left, top, right - left, bottom - top)
+            catch
+                DllCall("MoveWindow", "ptr", targetHwnd, "int", left, "int", top, "int", right - left, "int",
+                    bottom - top, "int", true)
+            WM_MaximizeHwnd(targetHwnd)
+        } else {
+            WM_MaximizeHwnd(targetHwnd)
+            ShowNotification_WM("No other window open anywhere — maximized instead.")
+        }
+        WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, monIdx, 0, 0, 0, monIdx != sourceMon)
         return
     }
+
+    partnerFormerMon := WM_GetHwndMonitorIndex(partnerHwnd)
+    partnerFormerCompanion := 0
+    if (partnerFormerMon >= 1 && partnerFormerMon != monIdx)
+        partnerFormerCompanion := WM_FindStrictSnapCompanion(partnerHwnd, partnerFormerMon)
+    ; #region agent log
+    WM_DebugLog_Abandon("E", "SnapHalf", "partner_former", '{"partner":' partnerHwnd ',"formerMon":' partnerFormerMon ',"formerCompanion":' partnerFormerCompanion ',"snapMon":' monIdx '}'
+    )
+    ; #endregion
 
     WM_PrepareHwndForTile(targetHwnd)
     WM_PrepareHwndForTile(partnerHwnd)
@@ -637,10 +800,8 @@ WM_SnapHalfPairActiveWindow() {
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")
 
-    destMon := WM_GetHwndMonitorIndex(targetHwnd)
-    if (destMon < 1)
-        destMon := monIdx
-    WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, destMon)
+    WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, monIdx, partnerHwnd, partnerFormerMon,
+        partnerFormerCompanion, monIdx != sourceMon || partnerFormerMon != monIdx)
 }
 
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
