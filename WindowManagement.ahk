@@ -25,6 +25,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\move_monitor.ahk         - move window to ordered monitor; MEH Alt+Tab
 ;   WindowManagement\window_cycle.ahk         - cycle/minimize/close visible windows on a monitor by order
 ;   WindowManagement\project_selector_01.ahk  - project quick selector GUI (#!+L), part 1
+; Optional (deletable): AutoSlot\AutoSlot.ahk — auto-position new windows (see AutoSlot\README.md)
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
 ;   WindowManagement\project_selector_02.ahk  - project selector selection mode / preview, part 2
 ;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
@@ -88,6 +89,9 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 #include %A_ScriptDir%\WindowManagement\move_monitor.ahk
 ; [WM module] Window cycling / minimize / close on monitor by order -> WindowManagement\window_cycle.ahk
 #include %A_ScriptDir%\WindowManagement\window_cycle.ahk
+
+; Optional AutoSlot package (self-contained; remove this line + AutoSlot\ to disable)
+#include %A_ScriptDir%\AutoSlot\AutoSlot.ahk
 
 ; [WM module] Project quick selector GUI and handlers (#!+L) -> WindowManagement\project_selector_01.ahk
 #include %A_ScriptDir%\WindowManagement\project_selector_01.ahk
