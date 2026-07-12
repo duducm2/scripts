@@ -515,17 +515,6 @@ WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partn
     return ok1 && ok2
 }
 
-; #region agent log
-WM_DebugLog_Abandon(hypothesisId, location, message, data := "") {
-    try {
-        payload := '{"sessionId":"b9d999","runId":"post-fix2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
-            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
-        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
-    } catch {
-    }
-}
-; #endregion
-
 WM_FindStrictSnapCompanion(hwnd, monIdx) {
     if (!hwnd || monIdx < 1 || monIdx > MonitorGetCount())
         return 0
@@ -542,36 +531,20 @@ WM_FindStrictSnapCompanion(hwnd, monIdx) {
         return 0
     }
     for other in others {
-        if (WM_ValidateSnapBipartitionStrict(monIdx, hwnd, , other)) {
-            ; #region agent log
-            WM_DebugLog_Abandon("A", "FindStrict", "companion_strict", '{"hwnd":' hwnd ',"mon":' monIdx ',"companion":' other '}'
-            )
-            ; #endregion
+        if (WM_ValidateSnapBipartitionStrict(monIdx, hwnd, , other))
             return other
-        }
     }
     ; Fallback: one other visible window; reject only if that window is already maximized.
     if (others.Length = 1) {
         other := others[1]
         try {
-            if (WinGetMinMax("ahk_id " other) = 1) {
-                ; #region agent log
-                WM_DebugLog_Abandon("D", "FindStrict", "fallback_other_max", '{"hwnd":' hwnd ',"other":' other '}')
-                ; #endregion
+            if (WinGetMinMax("ahk_id " other) = 1)
                 return 0
-            }
         } catch {
             return 0
         }
-        ; #region agent log
-        WM_DebugLog_Abandon("D", "FindStrict", "companion_fallback", '{"hwnd":' hwnd ',"other":' other '}')
-        ; #endregion
         return other
     }
-    ; #region agent log
-    WM_DebugLog_Abandon("A", "FindStrict", "no_companion", '{"hwnd":' hwnd ',"mon":' monIdx ',"others":' others.Length '}'
-    )
-    ; #endregion
     return 0
 }
 
@@ -615,15 +588,8 @@ WM_HealOrphanOnMonitor(monIdx, excludeHwnd := 0, alsoExcludeHwnd := 0) {
     } catch {
         return false
     }
-    if (candidates.Length = 1) {
-        ; #region agent log
-        WM_DebugLog_Abandon("C", "HealOrphan", "orphan_maximize", '{"mon":' monIdx ',"orphan":' candidates[1] '}')
-        ; #endregion
+    if (candidates.Length = 1)
         return WM_MaximizeAbandonedSnapCompanion(candidates[1], monIdx)
-    }
-    ; #region agent log
-    WM_DebugLog_Abandon("C", "HealOrphan", "skip", '{"mon":' monIdx ',"candidates":' candidates.Length '}')
-    ; #endregion
     return false
 }
 
@@ -674,36 +640,15 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
         }
     }
     if (shouldHeal) {
-        ; #region agent log
-        WM_DebugLog_Abandon("B", "AfterLeaving", "heal_companion", '{"companion":' companionHwnd ',"sourceMon":' sourceMonIdx '}'
-        )
-        ; #endregion
         WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
     } else if (sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd != companionHwnd))) {
-        ; #region agent log
-        WM_DebugLog_Abandon("C", "AfterLeaving", "try_orphan", '{"sourceMon":' sourceMonIdx ',"companion":' companionHwnd ',"snapPartner":' snapPartnerHwnd ',"leftSource":' (
-            leftSource ? 1 : 0) '}')
-        ; #endregion
         WM_HealOrphanOnMonitor(sourceMonIdx, movedHwnd, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0)
-    } else {
-        ; #region agent log
-        WM_DebugLog_Abandon("B", "AfterLeaving", "no_heal", '{"sourceMon":' sourceMonIdx ',"companion":' companionHwnd ',"snapPartner":' snapPartnerHwnd ',"leftSource":' (
-            leftSource ? 1 : 0) '}')
-        ; #endregion
     }
     ; Partner was pulled from another monitor — orphan is on partner's former monitor, not sourceMon.
     if (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx) {
         if (partnerFormerCompanion) {
-            ; #region agent log
-            WM_DebugLog_Abandon("E", "AfterLeaving", "heal_partner_companion", '{"mon":' partnerFormerMon ',"companion":' partnerFormerCompanion '}'
-            )
-            ; #endregion
             WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
         } else {
-            ; #region agent log
-            WM_DebugLog_Abandon("E", "AfterLeaving", "try_partner_orphan", '{"mon":' partnerFormerMon ',"partner":' snapPartnerHwnd '}'
-            )
-            ; #endregion
             WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
         }
     }
@@ -735,10 +680,6 @@ WM_SnapHalfPairActiveWindow() {
     snapMon := WM_ResolveSnapTargetMonitor(targetHwnd)
     monIdx := snapMon["monIdx"]
     axis := WM_GetSnapSplitAxis(monIdx)
-    ; #region agent log
-    WM_DebugLog_Abandon("B", "SnapHalf", "pre", '{"target":' targetHwnd ',"sourceMon":' sourceMon ',"monIdx":' monIdx ',"companion":' companionHwnd '}'
-    )
-    ; #endregion
 
     partnerHwnd := 0
     for hwnd in WM_EnumerateOpenHwndsGlobal() {
@@ -777,10 +718,6 @@ WM_SnapHalfPairActiveWindow() {
     partnerFormerCompanion := 0
     if (partnerFormerMon >= 1 && partnerFormerMon != monIdx)
         partnerFormerCompanion := WM_FindStrictSnapCompanion(partnerHwnd, partnerFormerMon)
-    ; #region agent log
-    WM_DebugLog_Abandon("E", "SnapHalf", "partner_former", '{"partner":' partnerHwnd ',"formerMon":' partnerFormerMon ',"formerCompanion":' partnerFormerCompanion ',"snapMon":' monIdx '}'
-    )
-    ; #endregion
 
     WM_PrepareHwndForTile(targetHwnd)
     WM_PrepareHwndForTile(partnerHwnd)
