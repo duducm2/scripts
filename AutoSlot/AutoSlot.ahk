@@ -3,6 +3,7 @@
 ;
 ; Detection/placement policy is self-contained. 50/50 placement reuses the
 ; proven gapless snap APIs from WindowManagement\tile_snap.ahk (same as ^!#x).
+; After a successful snap, a 2s ShowWithKeys modal offers [M] undo.
 ; Delete: remove the #include in WindowManagement.ahk + this folder (see README).
 ;
 ; Placement (MonitorGetCount() > 1 only):
@@ -18,6 +19,7 @@ global g_AutoSlotShellMsg := 0
 global g_AutoSlotPending := Map()
 global g_AutoSlotRecent := Map()
 global g_AutoSlotGui := 0
+global g_AutoSlotUndo := 0
 
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_OBJID_WINDOW := 0
@@ -25,6 +27,7 @@ AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
+AutoSlot_UNDO_MODAL_MS := 2000
 
 ; --- Init --------------------------------------------------------------------
 
@@ -348,14 +351,40 @@ AutoSlot_MaximizeInPlace(hwnd) {
 
 ; 50/50 via tile_snap gapless APIs (same engine as ^!#x / WM_SnapHalfPairActiveWindow).
 ; Returns pane name the new window was placed into, or "".
+; On success, stashes undo context in g_AutoSlotUndo (partner pre-snap state).
+AutoSlot_CapturePartnerState(partnerHwnd) {
+    if (!partnerHwnd || !WinExist("ahk_id " partnerHwnd))
+        return 0
+    minMax := 0
+    try minMax := WinGetMinMax("ahk_id " partnerHwnd)
+    catch
+        minMax := 0
+    rect := Buffer(16, 0)
+    if !DllCall("GetWindowRect", "ptr", partnerHwnd, "ptr", rect)
+        return 0
+    return {
+        hwnd: partnerHwnd,
+        left: NumGet(rect, 0, "int"),
+        top: NumGet(rect, 4, "int"),
+        right: NumGet(rect, 8, "int"),
+        bottom: NumGet(rect, 12, "int"),
+        minMax: minMax,
+        wasMaximized: (minMax = 1)
+    }
+}
+
 AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
+    global g_AutoSlotUndo
     if (!newHwnd || !partnerHwnd || monIdx < 1)
         return ""
 
-    partnerWasMax := false
-    try partnerWasMax := (WinGetMinMax("ahk_id " partnerHwnd) = 1)
-    catch
-        partnerWasMax := false
+    partnerState := AutoSlot_CapturePartnerState(partnerHwnd)
+    partnerWasMax := IsObject(partnerState) ? partnerState.wasMaximized : false
+    if (!partnerWasMax) {
+        try partnerWasMax := (WinGetMinMax("ahk_id " partnerHwnd) = 1)
+        catch
+            partnerWasMax := false
+    }
 
     if (!WM_PrepareHwndForTile(newHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
         return ""
@@ -376,10 +405,21 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
         return ""
     if (!WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd))
         return ""
+
+    if (IsObject(partnerState)) {
+        g_AutoSlotUndo := {
+            newHwnd: newHwnd,
+            partner: partnerState,
+            snapMonIdx: monIdx,
+            newPane: newPane
+        }
+    } else {
+        g_AutoSlotUndo := 0
+    }
     return newPane
 }
 
-; --- Toast -------------------------------------------------------------------
+; --- Toast / undo modal ------------------------------------------------------
 
 AutoSlot_Toast(msg) {
     if (msg = "")
@@ -389,15 +429,123 @@ AutoSlot_Toast(msg) {
     }
 }
 
+AutoSlot_ClearUndo() {
+    global g_AutoSlotUndo
+    g_AutoSlotUndo := 0
+}
+
+AutoSlot_CloseUndoModal() {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+}
+
+AutoSlot_RestorePartner(partnerState) {
+    if (!IsObject(partnerState) || !partnerState.hwnd)
+        return false
+    hwnd := partnerState.hwnd
+    if (!WinExist("ahk_id " hwnd))
+        return false
+    try {
+        state := WinGetMinMax("ahk_id " hwnd)
+        if (state = 1 || state = -1) {
+            WinRestore "ahk_id " hwnd
+            Sleep 80
+        }
+    } catch {
+    }
+    if (!AutoSlot_MoveHwndToRect(hwnd, partnerState.left, partnerState.top, partnerState.right, partnerState.bottom))
+        return false
+    if (partnerState.wasMaximized) {
+        Sleep 50
+        AutoSlot_MaximizeHwnd(hwnd)
+    }
+    return true
+}
+
+AutoSlot_TargetMonitorForUndoMax() {
+    monIdx := AutoSlot_GetMonitorIndexByOrder(2)
+    if (monIdx >= 1)
+        return monIdx
+    try return MonitorGetPrimary()
+    catch
+        return 1
+}
+
+AutoSlot_OnUndoM(*) {
+    global g_AutoSlotUndo
+    undo := g_AutoSlotUndo
+    AutoSlot_CloseUndoModal()
+    if (!IsObject(undo) || !undo.newHwnd) {
+        AutoSlot_ClearUndo()
+        return
+    }
+    newHwnd := undo.newHwnd
+    partnerState := undo.partner
+    AutoSlot_ClearUndo()
+
+    monIdx := AutoSlot_TargetMonitorForUndoMax()
+    if (WinExist("ahk_id " newHwnd))
+        AutoSlot_MaximizeOnMonitor(newHwnd, monIdx)
+    if (IsObject(partnerState))
+        AutoSlot_RestorePartner(partnerState)
+    AutoSlot_Toast("ℹ️ Auto-slot undone → M2")
+}
+
+AutoSlot_OnUndoTimeout(*) {
+    AutoSlot_CloseUndoModal()
+    AutoSlot_ClearUndo()
+}
+
+AutoSlot_ShowUndoModal(paneLabel := "") {
+    global g_AutoSlotUndo
+    if (!IsObject(g_AutoSlotUndo) || !g_AutoSlotUndo.newHwnd)
+        return
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    suffix := paneLabel != "" ? " (" paneLabel ")" : ""
+    keyCallbacks := Map("M", AutoSlot_OnUndoM)
+    try {
+        StandardLoadingBar_ShowWithKeys(
+            "❓ Undo auto-slot? (2s)" suffix,
+            keyCallbacks,
+            AutoSlot_UNDO_MODAL_MS,
+            0,
+            AutoSlot_OnUndoTimeout,
+            BANNER_ACCENT_INTERMEDIATE,
+            480,
+            17,
+            "",
+            true,
+            "[M] Max on M2 + restore partner",
+            true,
+            true,
+            true
+        )
+    } catch {
+        AutoSlot_Toast("ℹ️ Auto-slotted" suffix)
+        AutoSlot_ClearUndo()
+    }
+}
+
 ; --- Placement ---------------------------------------------------------------
 
 AutoSlot_Place(hwnd) {
+    global g_AutoSlotUndo
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return
     ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
     if (ordinalCount < 2)
         return
 
+    g_AutoSlotUndo := 0
     msg := ""
 
     ; 1) Origin-first: exactly one other window on the monitor where the new hwnd appeared.
@@ -409,7 +557,7 @@ AutoSlot_Place(hwnd) {
             order := AutoSlot_OrderForMonitorIndex(originMon)
             if (pane != "") {
                 label := order > 0 ? order : originMon
-                AutoSlot_Toast("ℹ️ Auto-slotted → M" label " " pane)
+                AutoSlot_ShowUndoModal("M" label " " pane)
                 return
             }
             if (AutoSlot_MaximizeInPlace(hwnd)) {
@@ -450,9 +598,11 @@ AutoSlot_Place(hwnd) {
             msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
     } else if (halfMon && halfPartner) {
         pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon)
-        if (pane != "")
-            msg := "ℹ️ Auto-slotted → M" halfOrder " " pane
-        else if (AutoSlot_MaximizeInPlace(hwnd))
+        if (pane != "") {
+            AutoSlot_ShowUndoModal("M" halfOrder " " pane)
+            return
+        }
+        if (AutoSlot_MaximizeInPlace(hwnd))
             msg := "ℹ️ Auto-slot snap failed — maximized"
     } else {
         if (AutoSlot_MaximizeInPlace(hwnd))
