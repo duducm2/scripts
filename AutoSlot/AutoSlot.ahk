@@ -331,6 +331,19 @@ AutoSlot_MaximizeHwnd(hwnd) {
     }
 }
 
+AutoSlot_ActivateHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        if (!WinActive("ahk_id " hwnd))
+            WinWaitActive("ahk_id " hwnd, , 0.3)
+        return !!WinActive("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+}
+
 AutoSlot_MaximizeOnMonitor(hwnd, monIdx) {
     if (!hwnd || monIdx < 1 || monIdx > MonitorGetCount())
         return false
@@ -339,6 +352,7 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx) {
     MonitorGet monIdx, &left, &top, &right, &bottom
     AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
     AutoSlot_MaximizeHwnd(hwnd)
+    AutoSlot_ActivateHwnd(hwnd)
     return true
 }
 
@@ -346,6 +360,7 @@ AutoSlot_MaximizeInPlace(hwnd) {
     if (!AutoSlot_PrepareHwnd(hwnd))
         return false
     AutoSlot_MaximizeHwnd(hwnd)
+    AutoSlot_ActivateHwnd(hwnd)
     return true
 }
 
@@ -416,6 +431,7 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
     } else {
         g_AutoSlotUndo := 0
     }
+    AutoSlot_ActivateHwnd(newHwnd)
     return newPane
 }
 
@@ -492,24 +508,31 @@ AutoSlot_OnUndoM(*) {
         AutoSlot_MaximizeOnMonitor(newHwnd, monIdx)
     if (IsObject(partnerState))
         AutoSlot_RestorePartner(partnerState)
+    ; Partner restore can steal focus — always finish on the new window.
+    AutoSlot_ActivateHwnd(newHwnd)
     AutoSlot_Toast("ℹ️ Auto-slot undone → M2")
 }
 
 AutoSlot_OnUndoTimeout(*) {
+    global g_AutoSlotUndo
+    newHwnd := IsObject(g_AutoSlotUndo) ? g_AutoSlotUndo.newHwnd : 0
     AutoSlot_CloseUndoModal()
     AutoSlot_ClearUndo()
+    AutoSlot_ActivateHwnd(newHwnd)
 }
 
 AutoSlot_ShowUndoModal(paneLabel := "") {
     global g_AutoSlotUndo
     if (!IsObject(g_AutoSlotUndo) || !g_AutoSlotUndo.newHwnd)
         return
+    newHwnd := g_AutoSlotUndo.newHwnd
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
     }
     try StandardLoadingBar_Hide(0)
     catch {
     }
+    AutoSlot_ActivateHwnd(newHwnd)
     suffix := paneLabel != "" ? " (" paneLabel ")" : ""
     keyCallbacks := Map("M", AutoSlot_OnUndoM)
     try {
@@ -533,6 +556,8 @@ AutoSlot_ShowUndoModal(paneLabel := "") {
         AutoSlot_Toast("ℹ️ Auto-slotted" suffix)
         AutoSlot_ClearUndo()
     }
+    ; After modal dismiss (timeout/Esc/M), ensure the new window is foreground.
+    AutoSlot_ActivateHwnd(newHwnd)
 }
 
 ; --- Placement ---------------------------------------------------------------
