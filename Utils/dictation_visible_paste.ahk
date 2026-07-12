@@ -891,8 +891,7 @@ Dictation_VisiblePasteHandleChar(char, *) {
 ; Returns selected window HWND or 0 on cancel/timeout/no windows. Blocking with timeout.
 Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
     global g_DictationVisiblePasteResult, g_DictationVisiblePasteLastForegroundMonitorIdx
-    clipBackup := ""
-    try clipBackup := A_Clipboard
+    clipBackup := ClipboardAll()
     Dictation_VisiblePasteClose()
     gridData := Dictation_BuildMonitorGrid()
     if (gridData.slots.Length = 0) {
