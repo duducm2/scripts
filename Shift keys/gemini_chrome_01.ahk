@@ -24,7 +24,9 @@ global g_GeminiModels := [{ name: "3.1 Flash-Lite", description: "Fastest answer
 ]
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
-+d:: {
+; $ + KeyWait — avoid leaking "d" into the prompt while UIA runs
+$+d:: {
+    KeyWait "d", "T1"
     ToggleGeminiDrawer()
 }
 
@@ -78,12 +80,14 @@ ToggleGeminiDrawer() {
 }
 
 ; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
-+n:: {
+$+n:: {
+    KeyWait "n", "T1"
     Send "^+o"
 }
 
 ; Shift + S : Click the Search button - Search
-+s:: {
+$+s:: {
+    KeyWait "s", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -134,7 +138,8 @@ ToggleGeminiDrawer() {
 }
 
 ; Shift + M : Show model selector wizard menu (Fast, Thinking, Pro) - Model
-+m:: {
+$+m:: {
+    KeyWait "m", "T1"
     ShowGeminiModelSelector()
 }
 
@@ -476,4 +481,3 @@ ShowGeminiModelSelector() {
     ; Enable Escape hotkey
     Hotkey("Escape", HandleGeminiModelSelectorEscape, "On")
 }
-

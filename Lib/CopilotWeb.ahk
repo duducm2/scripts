@@ -1141,7 +1141,8 @@ IsCopilotWebChromeActiveForHotkey() {
             title := ""
         }
         if (title != g_CopilotWebCachedTitle)
-            return CopilotWeb_RefreshHotkeyContext(hwnd, false)
+        ; Full refresh — fast mode can flap HotIf false mid-chord when the tab title updates (e.g. drawer toggle).
+            return CopilotWeb_RefreshHotkeyContext(hwnd, true)
         return true
     }
     return CopilotWeb_RefreshHotkeyContext(hwnd, true)

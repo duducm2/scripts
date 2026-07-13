@@ -270,7 +270,8 @@ Gemini_ActivateToolboxItem(el) {
 }
 
 ; Shift + T : Click the Tools button - Tools
-+t:: {
+$+t:: {
+    KeyWait "t", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -285,8 +286,9 @@ Gemini_ActivateToolboxItem(el) {
 }
 
 ; Shift + I : Tools menu — Create image (opens Tools if needed)
-; $ = keyboard hook — reduces stray key passthrough to the prompt while this runs.
+; $ + KeyWait — avoid leaking the trigger letter into the prompt while UIA runs.
 $+i:: {
+    KeyWait "i", "T1"
     try {
         uia := UIA_Browser()
         if !IsObject(uia)
@@ -307,6 +309,7 @@ $+i:: {
 
 ; Shift + E : Tools menu — Deep research (opens Tools if needed)
 $+e:: {
+    KeyWait "e", "T1"
     try {
         uia := UIA_Browser()
         if !IsObject(uia)
@@ -394,12 +397,14 @@ FocusGeminiPromptField() {
 }
 
 ; Shift + P : Focus the prompt text field - Prompt
-+p:: {
+$+p:: {
+    KeyWait "p", "T1"
     FocusGeminiPromptField()
 }
 
 ; Shift + C : Click the last Copy button (copies the preceding message) - Copy
-+c:: {
+$+c:: {
+    KeyWait "c", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -468,7 +473,8 @@ FocusGeminiPromptField() {
 }
 
 ; Shift + R : Read aloud the last message (click last "Show more options" then "Text to speech") - Read
-+r:: {
+$+r:: {
+    KeyWait "r", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -587,7 +593,8 @@ FocusGeminiPromptField() {
 }
 
 ; Shift + G : Focus the prompt text field and send Gemini prompt text - Gemini
-+g:: {
+$+g:: {
+    KeyWait "g", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300
@@ -699,7 +706,8 @@ FocusGeminiPromptField() {
 }
 
 ; Shift + F : Click the Expand input to Fullscreen button
-+f:: {
+$+f:: {
+    KeyWait "f", "T1"
     try {
         uia := UIA_Browser()
         Sleep 300

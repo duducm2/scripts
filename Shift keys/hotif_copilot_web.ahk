@@ -7,33 +7,38 @@
 
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
+; KeyWait before UIA/Send so a held Shift+letter cannot leak into the composer.
+
 $+d:: {
-    try {
-        CopilotWeb_ToggleNavDrawer()
-        Sleep 200
-    } catch {
+    KeyWait "d", "T1"
+    try CopilotWeb_ToggleNavDrawer()
+    catch {
     }
 }
 
 $+n:: {
+    KeyWait "n", "T1"
     try CopilotWeb_ClickNewChat()
     catch {
     }
 }
 
 $+s:: {
+    KeyWait "s", "T1"
     try CopilotWeb_ClickNavSearch()
     catch {
     }
 }
 
 $+m:: {
+    KeyWait "m", "T1"
     try CopilotWeb_OpenModelSelector()
     catch {
     }
 }
 
 $+a:: {
+    KeyWait "a", "T1"
     try {
         CopilotWeb_OpenModelSelector()
         Sleep 250
@@ -43,6 +48,7 @@ $+a:: {
 }
 
 $+t:: {
+    KeyWait "t", "T1"
     try {
         uia := CopilotWeb_GetActiveUia()
         if CopilotWeb_OpenSourcesMenu(uia) {
@@ -54,12 +60,14 @@ $+t:: {
 }
 
 $+i:: {
+    KeyWait "i", "T1"
     try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
     catch {
     }
 }
 
 $+e:: {
+    KeyWait "e", "T1"
     try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
         "Pesquisa aprofundada"])
     catch {
@@ -67,24 +75,28 @@ $+e:: {
 }
 
 $+p:: {
+    KeyWait "p", "T1"
     try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
     catch {
     }
 }
 
 $+c:: {
+    KeyWait "c", "T1"
     try CopilotWeb_ShiftCopyLastMessage()
     catch {
     }
 }
 
 $+r:: {
+    KeyWait "r", "T1"
     try CopilotWeb_ShiftReadAloud()
     catch {
     }
 }
 
 $+v:: {
+    KeyWait "v", "T1"
     try {
         if !CopilotWeb_ToggleVoiceChat()
             ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
@@ -93,12 +105,14 @@ $+v:: {
 }
 
 $+g:: {
+    KeyWait "g", "T1"
     try CopilotWeb_SendPromptFromFile()
     catch {
     }
 }
 
 $+f:: {
+    KeyWait "f", "T1"
     try {
         if !CopilotWeb_ToggleComposerFullscreen()
             ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
