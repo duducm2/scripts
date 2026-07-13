@@ -309,6 +309,8 @@ MoveWinToMonitor(mon) {
     sourceMon := WM_GetHwndMonitorIndex(hwnd)
     companionHwnd := sourceMon >= 1 ? WM_FindStrictSnapCompanion(hwnd, sourceMon) : 0
 
+    WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
+
     ; Obtain monitor work area
     MonitorGet mon, &left, &top, &right, &bottom
 
@@ -337,10 +339,6 @@ MoveWinToMonitor(mon) {
     ; Finally maximise so Windows treats it as maximised on that monitor
     WinMaximize hwnd
 
-    ; Move mouse to the center of the window after the move
-    Sleep 150 ; allow window animation to finish
-    WM_MaybeCenterMouse(hwnd, "move_window_to_monitor")
-
-    ; If this left a strict 50/50 companion alone on the source monitor, maximize it.
-    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1, 0, 0, true)
+    ; Heal source companion and ensure moved window is foreground + cursor centered.
+    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1)
 }

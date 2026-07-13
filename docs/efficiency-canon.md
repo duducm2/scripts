@@ -259,5 +259,8 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Empty monitor:** `WM_ResolveSnapTargetMonitor` — when cursor is on a visually empty monitor (same rule as `CycleWindowsOnMonitor`), snap both windows there instead of the still-focused window's monitor.
 - **Partner search:** `WM_EnumerateOpenHwndsGlobal` (global MRU z-order via `WinGetList`); validation uses `partnerHwnd` fast path when known — skip `GetVisibleWindowsOnMonitor` scan when partner already classifies in the opposite pane.
 - **Bounded validation:** single post-placement `WM_WaitValidateSnapBipartitionStrict` (400 ms deadline, 25 ms poll); failure → `ShowNotification_WM`.
+- **Abandoned companion heal:** use `WM_MaximizeHwndBackground` with `SetWindowPos` flags `SWP_NOACTIVATE | SWP_NOZORDER` (`0x0014`) — never `SWP_SHOWWINDOW` / `SC_MAXIMIZE` on heal paths (those activate and steal focus).
+- **Foreground after mutations:** single `WM_EnsureForegroundHwnd` (`WinActivate` + bounded `WinWaitActive`) then one `WM_MaybeCenterMouse`; no focus-lock timers, no deferred reclaim, no NDJSON on the hotkey path.
+- **Prepare order:** in `WM_SnapHalfPairActiveWindow`, `WM_PrepareHwndForTile(partner)` then `WM_PrepareHwndForTile(target)` so the target remains the foreground candidate before gapless placement.
 - **Do not:** reintroduce synthetic snap keystrokes, NDJSON/logging on the hotkey path, or unbounded validation waits.
 - **Rollback:** revert [`WindowManagement/tile_snap.ahk`](../WindowManagement/tile_snap.ahk) if snap regressions appear on any monitor/DPI combo.

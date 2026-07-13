@@ -86,8 +86,10 @@ WMAutomation_CursorCenteringSuppressed(hwnd := 0) {
     return false
 }
 
-WM_MaybeCenterMouse(hwnd, reason := "") {
-    if (!hwnd || WMAutomation_CursorCenteringSuppressed(hwnd))
+WM_MaybeCenterMouse(hwnd, reason := "", force := false) {
+    if (!hwnd)
+        return false
+    if (!force && WMAutomation_CursorCenteringSuppressed(hwnd))
         return false
     MoveMouseToCenter(hwnd)
     return true
