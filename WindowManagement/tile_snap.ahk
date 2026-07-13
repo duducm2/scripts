@@ -44,86 +44,14 @@ WM_MaximizeHwndBackground(hwnd) {
         h := wb - wt
         if (w < 1 || h < 1)
             return false
-        ok := !!DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", wl, "int", wt, "int", w, "int", h, "uint",
+        return !!DllCall("SetWindowPos", "ptr", hwnd, "ptr", 0, "int", wl, "int", wt, "int", w, "int", h, "uint",
             0x0014)
-        ; #region agent log
-        WM_DebugLog_Focus("A", "MaximizeHwndBackground", "after_setwindowpos", '{"healed":' hwnd ',"ok":' (ok ? 1 : 0) ',"active":' WM_DebugActiveHwnd() ',"fg":' WM_DebugFgHwnd() '}'
-        )
-        ; #endregion
-        return ok
     } catch {
         return false
     }
 }
 
 WM_ENSURE_FOREGROUND_TIMEOUT_MS := 500
-
-; #region agent log
-WM_DebugLog_Focus(hypothesisId, location, message, data := "") {
-    try {
-        payload := '{"sessionId":"b9d999","runId":"focus-v3","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
-            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
-        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
-    } catch {
-    }
-}
-WM_DebugActiveHwnd() {
-    try
-        return Integer(WinExist("A"))
-    catch
-        return 0
-}
-WM_DebugFgHwnd() {
-    try
-        return Integer(DllCall("GetForegroundWindow", "ptr"))
-    catch
-        return 0
-}
-WM_DebugExe(hwnd) {
-    if (!hwnd)
-        return ""
-    try
-        return WinGetProcessName("ahk_id " hwnd)
-    catch
-        return ""
-}
-WM_DebugFocusSnapshot(wantedHwnd, partnerHwnd := 0) {
-    active := WM_DebugActiveHwnd()
-    fg := WM_DebugFgHwnd()
-    ptHwnd := 0
-    cx := 0, cy := 0
-    try {
-        pt := Buffer(8, 0)
-        DllCall("GetCursorPos", "ptr", pt)
-        cx := NumGet(pt, 0, "int")
-        cy := NumGet(pt, 4, "int")
-        ptHwnd := Integer(DllCall("WindowFromPoint", "int64", (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF), "ptr"))
-        root := Integer(DllCall("GetAncestor", "ptr", ptHwnd, "uint", 2, "ptr"))  ; GA_ROOT
-        if (root)
-            ptHwnd := root
-    } catch {
-    }
-    return '{"wanted":' wantedHwnd ',"partner":' partnerHwnd ',"active":' active ',"fg":' fg
-        . ',"activeMatch":' (active = wantedHwnd ? 1 : 0) ',"fgMatch":' (fg = wantedHwnd ? 1 : 0)
-        . ',"activeIsPartner":' (partnerHwnd && active = partnerHwnd ? 1 : 0)
-        . ',"fgIsPartner":' (partnerHwnd && fg = partnerHwnd ? 1 : 0)
-        . ',"cursorOnWanted":' (ptHwnd = wantedHwnd ? 1 : 0)
-        . ',"cursorOnPartner":' (partnerHwnd && ptHwnd = partnerHwnd ? 1 : 0)
-        . ',"ptHwnd":' ptHwnd ',"cx":' cx ',"cy":' cy
-        . ',"wantedExe":"' WM_DebugExe(wantedHwnd) '","activeExe":"' WM_DebugExe(active)
-        . '","partnerExe":"' WM_DebugExe(partnerHwnd) '","ptExe":"' WM_DebugExe(ptHwnd) '"}'
-}
-WM_DebugScheduleFocusPoll(wantedHwnd, partnerHwnd, delayMs) {
-    SetTimer(() => WM_DebugLog_Focus("F", "deferred_poll", "t" delayMs,
-        WM_DebugFocusSnapshot(wantedHwnd, partnerHwnd)), -delayMs)
-}
-WM_DebugScheduleFocusPolls(wantedHwnd, partnerHwnd) {
-    ; Catch async steal after snap returns (flash destroy ~400ms, MonitorActiveWindow, etc.).
-    WM_DebugScheduleFocusPoll(wantedHwnd, partnerHwnd, 100)
-    WM_DebugScheduleFocusPoll(wantedHwnd, partnerHwnd, 350)
-    WM_DebugScheduleFocusPoll(wantedHwnd, partnerHwnd, 700)
-}
-; #endregion
 
 ; Single authority: bounded activation after move/snap mutations (efficiency-canon §2/§4).
 WM_EnsureForegroundHwnd(hwnd, timeoutMs := 0) {
@@ -132,20 +60,11 @@ WM_EnsureForegroundHwnd(hwnd, timeoutMs := 0) {
     if (timeoutMs <= 0)
         timeoutMs := WM_ENSURE_FOREGROUND_TIMEOUT_MS
     try {
-        if (WinActive("ahk_id " hwnd)) {
-            ; #region agent log
-            WM_DebugLog_Focus("C", "EnsureForeground", "already_active", '{"wanted":' hwnd '}')
-            ; #endregion
+        if (WinActive("ahk_id " hwnd))
             return true
-        }
         WinActivate("ahk_id " hwnd)
         WinWaitActive("ahk_id " hwnd, , 0.5)
-        ok := !!WinActive("ahk_id " hwnd)
-        ; #region agent log
-        WM_DebugLog_Focus("E", "EnsureForeground", "after_activate", '{"wanted":' hwnd ',"ok":' (ok ? 1 : 0) ',"active":' WM_DebugActiveHwnd() ',"fg":' WM_DebugFgHwnd() '}'
-        )
-        ; #endregion
-        return ok
+        return !!WinActive("ahk_id " hwnd)
     } catch {
         return false
     }
@@ -753,21 +672,8 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
         else
             WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
     }
-    ; #region agent log
-    WM_DebugLog_Focus("G", "AfterLeavingMonitor", "after_heal", WM_DebugFocusSnapshot(activateHwnd, snapPartnerHwnd >=
-        0 ?
-            snapPartnerHwnd : 0))
-    ; #endregion
     WM_EnsureForegroundHwnd(activateHwnd)
-    ; #region agent log
-    WM_DebugLog_Focus("G", "AfterLeavingMonitor", "after_ensure", WM_DebugFocusSnapshot(activateHwnd, snapPartnerHwnd >=
-        0 ? snapPartnerHwnd : 0))
-    ; #endregion
     WM_MaybeCenterMouse(activateHwnd, "after_leaving_monitor", true)
-    ; #region agent log
-    WM_DebugLog_Focus("G", "AfterLeavingMonitor", "after_center_mouse", WM_DebugFocusSnapshot(activateHwnd,
-        snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0))
-    ; #endregion
 }
 
 WM_SnapHalfPairActiveWindow() {
@@ -846,9 +752,6 @@ WM_SnapHalfPairActiveWindow() {
     partnerPane := (targetPane = "start") ? "end" : "start"
 
     ok := WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane)
-    ; #region agent log
-    WM_DebugLog_Focus("C", "SnapHalf", "after_gapless", WM_DebugFocusSnapshot(targetHwnd, partnerHwnd))
-    ; #endregion
     finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")
@@ -856,24 +759,10 @@ WM_SnapHalfPairActiveWindow() {
     ; If the hotkey target stayed on the snap monitor and the partner was imported from
     ; another monitor, the partner is the window that moved — activate that (not the resident).
     activateHwnd := targetHwnd
-    focusReason := "target"
-    if (partnerHwnd && partnerFormerMon >= 1 && partnerFormerMon != monIdx && sourceMon == monIdx) {
+    if (partnerHwnd && partnerFormerMon >= 1 && partnerFormerMon != monIdx && sourceMon == monIdx)
         activateHwnd := partnerHwnd
-        focusReason := "imported_partner"
-    }
-    ; #region agent log
-    WM_DebugLog_Focus("G", "SnapHalf", "focus_choice", '{"target":' targetHwnd ',"partner":' partnerHwnd
-        . ',"activate":' activateHwnd ',"reason":"' focusReason '","sourceMon":' sourceMon
-        . ',"monIdx":' monIdx ',"partnerFormerMon":' partnerFormerMon
-        . ',"emptyMonitorSnap":' (snapMon["emptyMonitorSnap"] ? 1 : 0) '}')
-    ; #endregion
     WM_AfterLeavingMonitor(targetHwnd, sourceMon, companionHwnd, monIdx, partnerHwnd, partnerFormerMon,
         partnerFormerCompanion, activateHwnd)
-    ; #region agent log
-    WM_DebugLog_Focus("G", "SnapHalf", "end", WM_DebugFocusSnapshot(activateHwnd, partnerHwnd = activateHwnd ?
-        targetHwnd : partnerHwnd))
-    WM_DebugScheduleFocusPolls(activateHwnd, partnerHwnd = activateHwnd ? targetHwnd : partnerHwnd)
-    ; #endregion
 }
 
 ; Per monitor: if exactly one visible non-minimized window and not maximized, maximize it.
