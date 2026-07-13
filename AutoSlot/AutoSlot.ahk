@@ -40,17 +40,6 @@ AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
 
-; #region agent log
-AutoSlot_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        payload := '{"sessionId":"b9d999","runId":"heal-loop-v1","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
-            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
-        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
-    } catch {
-    }
-}
-; #endregion
-
 ; --- Init --------------------------------------------------------------------
 
 AutoSlot_Init() {
@@ -151,21 +140,10 @@ AutoSlot_ScheduleFill(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     if (monIdx < 1 || MonitorGetCount() <= 1)
         return
-    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS) {
-        ; #region agent log
-        AutoSlot_DebugLog("C", "ScheduleFill", "cooldown_skip", '{"monIdx":' monIdx '}')
-        ; #endregion
+    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
         return
-    }
-    if (g_AutoSlotFillPending.Has(monIdx)) {
-        ; #region agent log
-        AutoSlot_DebugLog("A", "ScheduleFill", "pending_skip", '{"monIdx":' monIdx '}')
-        ; #endregion
+    if (g_AutoSlotFillPending.Has(monIdx))
         return
-    }
-    ; #region agent log
-    AutoSlot_DebugLog("A", "ScheduleFill", "armed", '{"monIdx":' monIdx '}')
-    ; #endregion
     g_AutoSlotFillPending[monIdx] := true
     SetTimer(() => AutoSlot_ProcessFillPending(monIdx), -AutoSlot_DEBOUNCE_MS)
 }
@@ -734,12 +712,7 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     ; Closed one half of a pair, nothing to promote → maximize the leftover companion.
     if (!cand && others.Length = 1) {
         companion := others[1].hwnd
-        already := AutoSlot_CompanionAlreadyFilled(companion, monIdx)
-        ; #region agent log
-        AutoSlot_DebugLog("B", "FillMonitor", "heal_check", '{"monIdx":' monIdx ',"companion":' companion ',"already":' (
-            already ? 1 : 0) '}')
-        ; #endregion
-        if (already)
+        if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
             return true
         healed := false
         try healed := !!WM_MaximizeHwndBackground(companion)
@@ -752,10 +725,6 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             } catch {
             }
         }
-        ; #region agent log
-        AutoSlot_DebugLog("D", "FillMonitor", "heal_toast", '{"monIdx":' monIdx ',"companion":' companion ',"ok":' (
-            healed ? 1 : 0) '}')
-        ; #endregion
         if (healed)
             AutoSlot_Toast("ℹ️ Companion maximized → M" label)
         return healed
