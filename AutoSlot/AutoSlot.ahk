@@ -14,8 +14,9 @@
 ;   4) Else maximize new window in place
 ;
 ; Fill-on-close (same multi-monitor gate):
-;   Destroy on monitor → debounce → if occupancy 0 maximize / 1 snap first
-;   WM_CollectBackgroundWindows candidate (no undo modal).
+;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
+;   already-filled skip → else WM_CollectBackgroundWindows → maximize or gapless
+;   50/50 without strict validate; no candidate → companion heal.
 ; =============================================================================
 
 global g_AutoSlotHook := 0
@@ -28,6 +29,8 @@ global g_AutoSlotUndo := 0
 global g_AutoSlotFillPending := Map()
 global g_AutoSlotHwndMon := Map()
 global g_AutoSlotFillCooldown := Map()
+global g_AutoSlotLastDestroyHwnd := 0
+global g_AutoSlotLastDestroyTick := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -35,6 +38,7 @@ AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
 AutoSlot_FILL_COOLDOWN_MS := 1500
+AutoSlot_DESTROY_DEDUP_MS := 250
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -84,7 +88,7 @@ AutoSlot_OnShellHook(wParam, lParam, *) {
     if (wParam = AutoSlot_HSHELL_WINDOWCREATED)
         AutoSlot_Schedule(hwnd)
     else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED)
-        AutoSlot_OnDestroy(hwnd)
+        AutoSlot_OnDestroy(hwnd, true)  ; shell is primary fill trigger
     return 0
 }
 
@@ -95,7 +99,7 @@ AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     if (event = AutoSlot_EVENT_OBJECT_SHOW)
         AutoSlot_Schedule(hwnd)
     else if (event = AutoSlot_EVENT_OBJECT_DESTROY)
-        AutoSlot_OnDestroy(hwnd)
+        AutoSlot_OnDestroy(hwnd, false)  ; secondary; skip if shell just handled same hwnd
 }
 
 AutoSlot_RememberHwndMon(hwnd) {
@@ -118,21 +122,70 @@ AutoSlot_PruneHwndMon() {
         g_AutoSlotHwndMon.Delete(h)
 }
 
-AutoSlot_OnDestroy(hwnd) {
+; Cheap gate before MonitorFromWindow — avoid DESTROY storm work for chrome/tool windows.
+AutoSlot_DestroyLooksInteresting(hwnd) {
     global g_AutoSlotHwndMon
+    if (!hwnd)
+        return false
+    if (g_AutoSlotHwndMon.Has(hwnd))
+        return true
+    if (!DllCall("IsWindow", "ptr", hwnd))
+        return false
+    try {
+        if (DllCall("GetParent", "ptr", hwnd))
+            return false
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (AutoSlot_IsDesktopOrTaskbarClass(class))
+            return false
+        if (WinGetTitle(hwnd) = "")
+            return false
+        if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+; fromShell: true for HSHELL_WINDOWDESTROYED (primary). WinEvent skips if same hwnd just armed.
+AutoSlot_OnDestroy(hwnd, fromShell := false) {
+    global g_AutoSlotHwndMon, g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick
     if (!hwnd || MonitorGetCount() <= 1)
         return
+
+    cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
     alive := !!DllCall("IsWindow", "ptr", hwnd)
+
+    if (!fromShell) {
+        if (hwnd = g_AutoSlotLastDestroyHwnd && A_TickCount - g_AutoSlotLastDestroyTick < AutoSlot_DESTROY_DEDUP_MS)
+            return
+        if (!cached && !AutoSlot_DestroyLooksInteresting(hwnd))
+            return
+    } else {
+        ; Shell primary: skip chrome noise when alive; dead HWNDs need cache to resolve mon.
+        if (!cached) {
+            if (!alive)
+                return
+            if (!AutoSlot_DestroyLooksInteresting(hwnd))
+                return
+        }
+    }
+
     monIdx := 0
     if (alive)
         monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
-    cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
     if (monIdx < 1 && cached)
         monIdx := cached
     if (g_AutoSlotHwndMon.Has(hwnd))
         g_AutoSlotHwndMon.Delete(hwnd)
     if (monIdx < 1)
         return
+
+    g_AutoSlotLastDestroyHwnd := hwnd
+    g_AutoSlotLastDestroyTick := A_TickCount
     AutoSlot_ScheduleFill(monIdx)
 }
 
@@ -504,10 +557,8 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
             partnerWasMax := false
     }
 
-    ; Background / minimized windows: restore via AutoSlot_Prepare first, then tile prepare.
-    if (!AutoSlot_PrepareHwnd(newHwnd) || !WM_PrepareHwndForTile(newHwnd))
-        return ""
-    if (!AutoSlot_PrepareHwnd(partnerHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
+    ; Single prepare (parity with ^!#x) — avoid double Sleep from AutoSlot_Prepare + WM_Prepare.
+    if (!WM_PrepareHwndForTile(newHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
         return ""
 
     axis := WM_GetSnapSplitAxis(monIdx)
@@ -524,9 +575,11 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     ok := WM_SnapPairGaplessRects(monIdx, axis, newHwnd, newPane, partnerHwnd, partnerPane)
     if (!ok)
         return ""
-    validated := WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd)
-    if (!validated && !acceptUnvalidated)
-        return ""
+    ; Close-fill skips strict validate (gapless already applied); new-window place keeps it.
+    if (!acceptUnvalidated) {
+        if (!WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd))
+            return ""
+    }
 
     if (IsObject(partnerState)) {
         g_AutoSlotUndo := {
@@ -704,16 +757,19 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     others := AutoSlot_OccupancyOnMonitor(monIdx)
     if (others.Length >= 2)
         return false
-    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
+    ; Already full-screen companion — skip expensive background collect.
+    if (others.Length = 1 && AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
+        return true
+
+    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
+
     ; Closed one half of a pair, nothing to promote → maximize the leftover companion.
     if (!cand && others.Length = 1) {
         companion := others[1].hwnd
-        if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
-            return true
         healed := false
         try healed := !!WM_MaximizeHwndBackground(companion)
         catch
@@ -746,7 +802,7 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     }
 
     g_AutoSlotUndo := 0
-    ; Fill path: accept gapless placement even if strict bipartition validate times out.
+    ; Fill path: gapless only (no strict validate wait).
     pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
     AutoSlot_ClearUndo()  ; close-fill never offers the new-window undo modal
     if (pane != "") {
