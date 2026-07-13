@@ -22,6 +22,8 @@ global g_CopilotWebHotkeyActive := false
 global g_CopilotWebCachedTitle := ""
 global g_CopilotWeb_ForegroundHookHandle := 0
 global g_CopilotWeb_ForegroundHookCallback := 0
+; HWND locked true for #HotIf while a Shift+letter handler is active (prevents autorepeat leak).
+global g_CopilotWebChordBusyHwnd := 0
 COPILOT_READ_ALOUD_NAMES := ["Read aloud", "Read Aloud", "Ler em voz alta"]
 COPILOT_MORE_OPTIONS_NAMES := ["More options", "Show more options", "Mais opções"]
 COPILOT_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
@@ -119,6 +121,8 @@ CopilotWeb_TitleMatchesCopilot(title) {
     if (COPILOT_WEB_TITLE_NEEDLE != "" && InStr(title, COPILOT_WEB_TITLE_NEEDLE, false))
         return true
     if (InStr(title, "Chat | M365 Copilot", false))
+        return true
+    if (InStr(title, "M365 Copilot", false) || InStr(title, "Microsoft 365 Copilot", false))
         return true
     return false
 }
@@ -1108,6 +1112,10 @@ CopilotWeb_OnForegroundChanged(hwnd) {
         g_CopilotWebCachedTitle := ""
         return
     }
+    ; Same trusted Copilot Chrome hwnd — skip re-detect (avoids mid-chord HotIf flap).
+    global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd
+    if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd)
+        return
     CopilotWeb_RefreshHotkeyContext(hwnd, true)
 }
 
@@ -1134,18 +1142,36 @@ IsCopilotWebChromeActiveForHotkey() {
     if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
         return false
     global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
+    global g_CopilotWebChordBusyHwnd
+    ; While a Shift+letter handler runs, keep HotIf true so autorepeat cannot leak into the composer.
+    if (g_CopilotWebChordBusyHwnd && hwnd = g_CopilotWebChordBusyHwnd)
+        return true
+    ; Sticky: once this hwnd is known Copilot, stay true across title-only churn.
     if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd) {
         try {
-            title := WinGetTitle("ahk_id " hwnd)
+            g_CopilotWebCachedTitle := WinGetTitle("ahk_id " hwnd)
         } catch {
-            title := ""
         }
-        if (title != g_CopilotWebCachedTitle)
-        ; Full refresh — fast mode can flap HotIf false mid-chord when the tab title updates (e.g. drawer toggle).
-            return CopilotWeb_RefreshHotkeyContext(hwnd, true)
         return true
     }
     return CopilotWeb_RefreshHotkeyContext(hwnd, true)
+}
+
+CopilotWeb_BeginChord() {
+    global g_CopilotWebChordBusyHwnd
+    g_CopilotWebChordBusyHwnd := WinExist("A")
+}
+
+CopilotWeb_EndChord() {
+    global g_CopilotWebChordBusyHwnd
+    g_CopilotWebChordBusyHwnd := 0
+}
+
+; Wait for physical letter release, then clear logical key state before UIA/Send.
+CopilotWeb_ConsumeShiftLetter(letter) {
+    CopilotWeb_BeginChord()
+    KeyWait letter
+    Send "{Blind}{" letter " up}"
 }
 
 CopilotWeb_GetActiveUia() {

@@ -7,116 +7,172 @@
 
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
-; KeyWait before UIA/Send so a held Shift+letter cannot leak into the composer.
+; ConsumeShiftLetter waits for release + Blind up; EndChord clears HotIf lock.
 
 $+d:: {
-    KeyWait "d", "T1"
-    try CopilotWeb_ToggleNavDrawer()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("d")
+        try CopilotWeb_ToggleNavDrawer()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+n:: {
-    KeyWait "n", "T1"
-    try CopilotWeb_ClickNewChat()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("n")
+        try CopilotWeb_ClickNewChat()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+s:: {
-    KeyWait "s", "T1"
-    try CopilotWeb_ClickNavSearch()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("s")
+        try CopilotWeb_ClickNavSearch()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+m:: {
-    KeyWait "m", "T1"
-    try CopilotWeb_OpenModelSelector()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("m")
+        try CopilotWeb_OpenModelSelector()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+a:: {
-    KeyWait "a", "T1"
     try {
-        CopilotWeb_OpenModelSelector()
-        Sleep 250
-        CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
-    } catch {
+        CopilotWeb_ConsumeShiftLetter("a")
+        try {
+            CopilotWeb_OpenModelSelector()
+            Sleep 250
+            CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+        } catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+t:: {
-    KeyWait "t", "T1"
     try {
-        uia := CopilotWeb_GetActiveUia()
-        if CopilotWeb_OpenSourcesMenu(uia) {
-            Sleep 100
-            Send "{Tab}"
+        CopilotWeb_ConsumeShiftLetter("t")
+        try {
+            uia := CopilotWeb_GetActiveUia()
+            if CopilotWeb_OpenSourcesMenu(uia) {
+                Sleep 100
+                Send "{Tab}"
+            }
+        } catch {
         }
-    } catch {
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+i:: {
-    KeyWait "i", "T1"
-    try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("i")
+        try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+e:: {
-    KeyWait "e", "T1"
-    try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
-        "Pesquisa aprofundada"])
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("e")
+        try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
+            "Pesquisa aprofundada"])
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+p:: {
-    KeyWait "p", "T1"
-    try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("p")
+        try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+c:: {
-    KeyWait "c", "T1"
-    try CopilotWeb_ShiftCopyLastMessage()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("c")
+        try CopilotWeb_ShiftCopyLastMessage()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+r:: {
-    KeyWait "r", "T1"
-    try CopilotWeb_ShiftReadAloud()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("r")
+        try CopilotWeb_ShiftReadAloud()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+v:: {
-    KeyWait "v", "T1"
     try {
-        if !CopilotWeb_ToggleVoiceChat()
-            ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
-    } catch {
+        CopilotWeb_ConsumeShiftLetter("v")
+        try {
+            if !CopilotWeb_ToggleVoiceChat()
+                ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
+        } catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+g:: {
-    KeyWait "g", "T1"
-    try CopilotWeb_SendPromptFromFile()
-    catch {
+    try {
+        CopilotWeb_ConsumeShiftLetter("g")
+        try CopilotWeb_SendPromptFromFile()
+        catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
 $+f:: {
-    KeyWait "f", "T1"
     try {
-        if !CopilotWeb_ToggleComposerFullscreen()
-            ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
-    } catch {
+        CopilotWeb_ConsumeShiftLetter("f")
+        try {
+            if !CopilotWeb_ToggleComposerFullscreen()
+                ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
+        } catch {
+        }
+    } finally {
+        CopilotWeb_EndChord()
     }
 }
 
