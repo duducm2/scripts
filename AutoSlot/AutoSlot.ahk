@@ -27,16 +27,29 @@ global g_AutoSlotGui := 0
 global g_AutoSlotUndo := 0
 global g_AutoSlotFillPending := Map()
 global g_AutoSlotHwndMon := Map()
+global g_AutoSlotFillCooldown := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
+AutoSlot_FILL_COOLDOWN_MS := 1500
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
+
+; #region agent log
+AutoSlot_DebugLog(hypothesisId, location, message, data := "") {
+    try {
+        payload := '{"sessionId":"b9d999","runId":"heal-loop-v1","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
+            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
+        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
+    } catch {
+    }
+}
+; #endregion
 
 ; --- Init --------------------------------------------------------------------
 
@@ -135,19 +148,55 @@ AutoSlot_OnDestroy(hwnd) {
 }
 
 AutoSlot_ScheduleFill(monIdx) {
-    global g_AutoSlotFillPending
+    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     if (monIdx < 1 || MonitorGetCount() <= 1)
         return
-    if (g_AutoSlotFillPending.Has(monIdx))
+    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS) {
+        ; #region agent log
+        AutoSlot_DebugLog("C", "ScheduleFill", "cooldown_skip", '{"monIdx":' monIdx '}')
+        ; #endregion
         return
+    }
+    if (g_AutoSlotFillPending.Has(monIdx)) {
+        ; #region agent log
+        AutoSlot_DebugLog("A", "ScheduleFill", "pending_skip", '{"monIdx":' monIdx '}')
+        ; #endregion
+        return
+    }
+    ; #region agent log
+    AutoSlot_DebugLog("A", "ScheduleFill", "armed", '{"monIdx":' monIdx '}')
+    ; #endregion
     g_AutoSlotFillPending[monIdx] := true
     SetTimer(() => AutoSlot_ProcessFillPending(monIdx), -AutoSlot_DEBOUNCE_MS)
 }
 
 AutoSlot_ProcessFillPending(monIdx) {
-    global g_AutoSlotFillPending
+    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     g_AutoSlotFillPending.Delete(monIdx)
     AutoSlot_FillMonitorFromBackground(monIdx)
+    g_AutoSlotFillCooldown[monIdx] := A_TickCount
+}
+
+AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
+    if (!hwnd || monIdx < 1)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = 1)
+            return true
+    } catch {
+    }
+    try {
+        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+        rect := Buffer(16, 0)
+        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+            return false
+        l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
+        r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
+        ; Work-area fill from WM_MaximizeHwndBackground (not OS-maximized).
+        return (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
+    } catch {
+        return false
+    }
 }
 
 AutoSlot_Schedule(hwnd) {
@@ -685,6 +734,13 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     ; Closed one half of a pair, nothing to promote → maximize the leftover companion.
     if (!cand && others.Length = 1) {
         companion := others[1].hwnd
+        already := AutoSlot_CompanionAlreadyFilled(companion, monIdx)
+        ; #region agent log
+        AutoSlot_DebugLog("B", "FillMonitor", "heal_check", '{"monIdx":' monIdx ',"companion":' companion ',"already":' (
+            already ? 1 : 0) '}')
+        ; #endregion
+        if (already)
+            return true
         healed := false
         try healed := !!WM_MaximizeHwndBackground(companion)
         catch
@@ -696,6 +752,10 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             } catch {
             }
         }
+        ; #region agent log
+        AutoSlot_DebugLog("D", "FillMonitor", "heal_toast", '{"monIdx":' monIdx ',"companion":' companion ',"ok":' (
+            healed ? 1 : 0) '}')
+        ; #endregion
         if (healed)
             AutoSlot_Toast("ℹ️ Companion maximized → M" label)
         return healed
