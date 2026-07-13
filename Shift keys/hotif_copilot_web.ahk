@@ -7,174 +7,64 @@
 
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
-; ConsumeShiftLetter waits for release + Blind up; EndChord clears HotIf lock.
+; RunShiftLetterAction: suppress letter during UIA, undo stray char if composer absorbed it.
 
-$+d:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("d")
-        try CopilotWeb_ToggleNavDrawer()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
+CopilotWeb_ShiftA(*) {
+    CopilotWeb_OpenModelSelector()
+    Sleep 250
+    CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+}
+
+CopilotWeb_ShiftT(*) {
+    uia := CopilotWeb_GetActiveUia()
+    if CopilotWeb_OpenSourcesMenu(uia) {
+        Sleep 100
+        Send "{Tab}"
     }
 }
 
-$+n:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("n")
-        try CopilotWeb_ClickNewChat()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftI(*) {
+    CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
 }
 
-$+s:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("s")
-        try CopilotWeb_ClickNavSearch()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftE(*) {
+    CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
+        "Pesquisa aprofundada"])
 }
 
-$+m:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("m")
-        try CopilotWeb_OpenModelSelector()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftP(*) {
+    CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
 }
 
-$+a:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("a")
-        try {
-            CopilotWeb_OpenModelSelector()
-            Sleep 250
-            CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
-        } catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftV(*) {
+    if !CopilotWeb_ToggleVoiceChat()
+        ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
 }
 
-$+t:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("t")
-        try {
-            uia := CopilotWeb_GetActiveUia()
-            if CopilotWeb_OpenSourcesMenu(uia) {
-                Sleep 100
-                Send "{Tab}"
-            }
-        } catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftF(*) {
+    if !CopilotWeb_ToggleComposerFullscreen()
+        ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
 }
 
-$+i:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("i")
-        try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
+CopilotWeb_ShiftD(*) {
+    if !CopilotWeb_ToggleNavDrawer()
+        ShowCenteredOverlay_Utils("Copilot nav drawer button not found", 2000, BANNER_ACCENT_ERROR)
 }
 
-$+e:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("e")
-        try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
-            "Pesquisa aprofundada"])
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+p:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("p")
-        try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+c:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("c")
-        try CopilotWeb_ShiftCopyLastMessage()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+r:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("r")
-        try CopilotWeb_ShiftReadAloud()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+v:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("v")
-        try {
-            if !CopilotWeb_ToggleVoiceChat()
-                ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
-        } catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+g:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("g")
-        try CopilotWeb_SendPromptFromFile()
-        catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
-
-$+f:: {
-    try {
-        CopilotWeb_ConsumeShiftLetter("f")
-        try {
-            if !CopilotWeb_ToggleComposerFullscreen()
-                ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
-        } catch {
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
-}
+$+d:: CopilotWeb_RunShiftLetterAction("d", CopilotWeb_ShiftD)
+$+n:: CopilotWeb_RunShiftLetterAction("n", CopilotWeb_ClickNewChat)
+$+s:: CopilotWeb_RunShiftLetterAction("s", CopilotWeb_ClickNavSearch)
+$+m:: CopilotWeb_RunShiftLetterAction("m", CopilotWeb_OpenModelSelector)
+$+a:: CopilotWeb_RunShiftLetterAction("a", CopilotWeb_ShiftA)
+$+t:: CopilotWeb_RunShiftLetterAction("t", CopilotWeb_ShiftT)
+$+i:: CopilotWeb_RunShiftLetterAction("i", CopilotWeb_ShiftI)
+$+e:: CopilotWeb_RunShiftLetterAction("e", CopilotWeb_ShiftE)
+$+p:: CopilotWeb_RunShiftLetterAction("p", CopilotWeb_ShiftP)
+$+c:: CopilotWeb_RunShiftLetterAction("c", CopilotWeb_ShiftCopyLastMessage)
+$+r:: CopilotWeb_RunShiftLetterAction("r", CopilotWeb_ShiftReadAloud)
+$+v:: CopilotWeb_RunShiftLetterAction("v", CopilotWeb_ShiftV)
+$+g:: CopilotWeb_RunShiftLetterAction("g", CopilotWeb_SendPromptFromFile)
+$+f:: CopilotWeb_RunShiftLetterAction("f", CopilotWeb_ShiftF)
 
 $Enter:: {
     if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {

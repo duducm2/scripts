@@ -1167,11 +1167,48 @@ CopilotWeb_EndChord() {
     g_CopilotWebChordBusyHwnd := 0
 }
 
-; Wait for physical letter release, then clear logical key state before UIA/Send.
-CopilotWeb_ConsumeShiftLetter(letter) {
+; True when Copilot's composer gained exactly one trigger letter (usually after drawer UIA returns focus).
+CopilotWeb_IsStrayTriggerLetter(before, after, letter) {
+    if (after = "" || after = before)
+        return false
+    up := StrUpper(letter)
+    lo := StrLower(letter)
+    if (after = before . up || after = before . lo)
+        return true
+    if (StrLen(after) = StrLen(before) + 1) {
+        last := SubStr(after, -1)
+        if (last = up || last = lo)
+            return true
+    }
+    return false
+}
+
+; Run action on press, then strip a stray trigger letter if the composer absorbed it after focus return.
+CopilotWeb_RunShiftLetterAction(letter, actionCallback) {
     CopilotWeb_BeginChord()
-    KeyWait letter
-    Send "{Blind}{" letter " up}"
+    before := CopilotWeb_ComposerGetText(WinExist("A"))
+    try {
+        ; Prefer calling as a function (Func/closure), not relying on .Call().
+        try actionCallback()
+        catch {
+            try actionCallback.Call()
+            catch {
+            }
+        }
+        KeyWait letter, "T2"
+        ; Copilot often refocuses the prompt after UIA; undo one leaked letter if it appeared.
+        deadline := A_TickCount + 300
+        while (A_TickCount < deadline) {
+            after := CopilotWeb_ComposerGetText(WinExist("A"))
+            if (CopilotWeb_IsStrayTriggerLetter(before, after, letter)) {
+                Send "{Blind}{Backspace}"
+                break
+            }
+            Sleep 40
+        }
+    } finally {
+        CopilotWeb_EndChord()
+    }
 }
 
 CopilotWeb_GetActiveUia() {
@@ -1188,16 +1225,20 @@ CopilotWeb_GetActiveUia() {
 CopilotWeb_ClickUiaElement(el) {
     if (!IsObject(el))
         return false
+    ; Fluent nav buttons often expose Invoke but only react to a real click — try both.
     try {
-        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
             el.InvokePattern.Invoke()
-            return true
-        }
     } catch {
     }
     try {
-        el.Click()
+        el.Click("left")
         return true
+    } catch {
+    }
+    try {
+        if (el.Click() != 0)
+            return true
     } catch {
     }
     return false

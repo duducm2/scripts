@@ -33,23 +33,86 @@ Gemini_EndChord() {
     g_GeminiChordBusy := false
 }
 
+Gemini_IsStrayTriggerLetter(before, after, letter) {
+    if (after = "" || after = before)
+        return false
+    up := StrUpper(letter)
+    lo := StrLower(letter)
+    if (after = before . up || after = before . lo)
+        return true
+    if (StrLen(after) = StrLen(before) + 1) {
+        last := SubStr(after, -1)
+        if (last = up || last = lo)
+            return true
+    }
+    return false
+}
+
+Gemini_GetPromptTextSnapshot() {
+    try {
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return ""
+        pf := 0
+        try pf := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
+        catch
+            pf := 0
+        if !pf {
+            try pf := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
+            catch
+                pf := 0
+        }
+        if !pf
+            return ""
+        try {
+            t := Trim(pf.Value)
+            if (t != "")
+                return t
+        } catch {
+        }
+        try {
+            t := Trim(pf.TextPattern.DocumentRange.GetText(-1))
+            if (t != "")
+                return t
+        } catch {
+        }
+    } catch {
+    }
+    return ""
+}
+
+; Legacy chord wait used by gemini_chrome_02 (prefer Gemini_RunShiftLetterAction for prompt leak).
 Gemini_ConsumeShiftLetter(letter) {
     Gemini_BeginChord()
     KeyWait letter
-    Send "{Blind}{" letter " up}"
+}
+
+; Run action on press, suppress letter until release, strip stray letter if prompt absorbed it.
+Gemini_RunShiftLetterAction(letter, actionCallback) {
+    Gemini_BeginChord()
+    ih := InputHook("L0")
+    ih.KeyOpt("{" . letter . "}", "S")
+    ih.Start()
+    before := Gemini_GetPromptTextSnapshot()
+    try {
+        actionCallback.Call()
+        KeyWait letter
+        Sleep 80
+        after := Gemini_GetPromptTextSnapshot()
+        if (Gemini_IsStrayTriggerLetter(before, after, letter))
+            Send "{Blind}{Backspace}"
+    } finally {
+        try ih.Stop()
+        catch {
+        }
+        Gemini_EndChord()
+    }
 }
 
 #HotIf WinActive("ahk_exe chrome.exe") && (g_GeminiChordBusy || InStr(WinGetTitle("A"), "gemini", false))
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
-$+d:: {
-    try {
-        Gemini_ConsumeShiftLetter("d")
-        ToggleGeminiDrawer()
-    } finally {
-        Gemini_EndChord()
-    }
-}
+$+d:: Gemini_RunShiftLetterAction("d", (*) => ToggleGeminiDrawer())
 
 ; ---------------------------------------------------------------------------
 ToggleGeminiDrawer() {
@@ -101,80 +164,47 @@ ToggleGeminiDrawer() {
 }
 
 ; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
-$+n:: {
-    try {
-        Gemini_ConsumeShiftLetter("n")
-        Send "^+o"
-    } finally {
-        Gemini_EndChord()
-    }
-}
+$+n:: Gemini_RunShiftLetterAction("n", (*) => Send("^+o"))
 
 ; Shift + S : Click the Search button - Search
-$+s:: {
+$+s:: Gemini_RunShiftLetterAction("s", Gemini_ClickSearchButton)
+
+Gemini_ClickSearchButton(*) {
     try {
-        Gemini_ConsumeShiftLetter("s")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
-
-            ; Primary strategy: Find by Name "Search" with Type 50000 (Button)
-            searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })
-
-            ; Fallback 1: Try by Type "Button" and Name "Search"
-            if !searchButton {
-                searchButton := uia.FindFirst({ Type: "Button", Name: "Search" })
+        uia := UIA_Browser()
+        Sleep 300
+        searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })
+        if !searchButton
+            searchButton := uia.FindFirst({ Type: "Button", Name: "Search" })
+        if !searchButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "search-button") && InStr(button.Name, "Search") {
+                    searchButton := button
+                    break
+                }
             }
-
-            ; Fallback 2: Try by ClassName containing "search-button" (substring match)
-            if !searchButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if InStr(button.ClassName, "search-button") && InStr(button.Name, "Search") {
+        }
+        if !searchButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name,
+                    "Buscar") {
+                    if InStr(button.ClassName, "search-button") {
                         searchButton := button
                         break
                     }
                 }
             }
-
-            ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-            if !searchButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name,
-                        "Buscar") {
-                        ; Additional check to ensure it's the search button (has search-button in className)
-                        if InStr(button.ClassName, "search-button") {
-                            searchButton := button
-                            break
-                        }
-                    }
-                }
-            }
-
-            if (searchButton) {
-                searchButton.Click()
-            } else {
-                ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for search
-                ; For now, we'll just not do anything if we can't find the button
-            }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
         }
-    } finally {
-        Gemini_EndChord()
+        if (searchButton)
+            searchButton.Click()
+    } catch Error as e {
     }
 }
 
 ; Shift + M : Show model selector wizard menu (Fast, Thinking, Pro) - Model
-$+m:: {
-    try {
-        Gemini_ConsumeShiftLetter("m")
-        ShowGeminiModelSelector()
-    } finally {
-        Gemini_EndChord()
-    }
-}
+$+m:: Gemini_RunShiftLetterAction("m", (*) => ShowGeminiModelSelector())
 
 ; ---------------------------------------------------------------------------
 ; Cleanup function for Gemini model selector
