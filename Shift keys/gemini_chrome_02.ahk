@@ -270,74 +270,60 @@ Gemini_ActivateToolboxItem(el) {
 }
 
 ; Shift + T : Click the Tools button - Tools
-$+t:: {
++t:: {
     try {
-        Gemini_ConsumeShiftLetter("t")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
+        uia := UIA_Browser()
+        Sleep 300
 
-            if (Gemini_OpenToolsMenu(uia)) {
-                Sleep 100
-                Send "{Tab}"
-            }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
+        if (Gemini_OpenToolsMenu(uia)) {
+            Sleep 100
+            Send "{Tab}"
         }
-    } finally {
-        Gemini_EndChord()
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
 ; Shift + I : Tools menu — Create image (opens Tools if needed)
+; $ = keyboard hook — reduces stray key passthrough to the prompt while this runs.
 $+i:: {
     try {
-        Gemini_ConsumeShiftLetter("i")
-        try {
-            uia := UIA_Browser()
-            if !IsObject(uia)
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return
+        Sleep 150
+        subs := ["Create image", "Criar imagem"]
+        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        if !cb {
+            if !Gemini_EnsureToolsMenuOpen(&uia)
                 return
-            Sleep 150
-            subs := ["Create image", "Criar imagem"]
             cb := Gemini_FindToolboxCheckBox(uia, subs)
-            if !cb {
-                if !Gemini_EnsureToolsMenuOpen(&uia)
-                    return
-                cb := Gemini_FindToolboxCheckBox(uia, subs)
-            }
-            if (cb)
-                Gemini_ActivateToolboxItem(cb)
-        } catch Error as e {
         }
-    } finally {
-        Gemini_EndChord()
+        if (cb)
+            Gemini_ActivateToolboxItem(cb)
+    } catch Error as e {
     }
 }
 
 ; Shift + E : Tools menu — Deep research (opens Tools if needed)
 $+e:: {
     try {
-        Gemini_ConsumeShiftLetter("e")
-        try {
-            uia := UIA_Browser()
-            if !IsObject(uia)
+        uia := UIA_Browser()
+        if !IsObject(uia)
+            return
+        Sleep 150
+        subs := ["Deep research", "Pesquisa aprofundada", "Investigação profunda", "Pesquisa profunda"]
+        cb := Gemini_FindToolboxCheckBox(uia, subs)
+        if !cb {
+            if !Gemini_EnsureToolsMenuOpen(&uia)
                 return
-            Sleep 150
-            subs := ["Deep research", "Pesquisa aprofundada", "Investigação profunda", "Pesquisa profunda"]
             cb := Gemini_FindToolboxCheckBox(uia, subs)
-            if !cb {
-                if !Gemini_EnsureToolsMenuOpen(&uia)
-                    return
-                cb := Gemini_FindToolboxCheckBox(uia, subs)
-            }
-            if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs)
-                cb := Gemini_FindToolboxCheckBox(uia, subs)
-            if (cb)
-                Gemini_ActivateToolboxItem(cb)
-        } catch Error as e {
         }
-    } finally {
-        Gemini_EndChord()
+        if !cb && Gemini_EnsureMoreToolsExpanded(&uia, subs)
+            cb := Gemini_FindToolboxCheckBox(uia, subs)
+        if (cb)
+            Gemini_ActivateToolboxItem(cb)
+    } catch Error as e {
     }
 }
 
@@ -408,382 +394,357 @@ FocusGeminiPromptField() {
 }
 
 ; Shift + P : Focus the prompt text field - Prompt
-$+p:: {
-    try {
-        Gemini_ConsumeShiftLetter("p")
-        FocusGeminiPromptField()
-    } finally {
-        Gemini_EndChord()
-    }
++p:: {
+    FocusGeminiPromptField()
 }
 
 ; Shift + C : Click the last Copy button (copies the preceding message) - Copy
-$+c:: {
++c:: {
     try {
-        Gemini_ConsumeShiftLetter("c")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
+        uia := UIA_Browser()
+        Sleep 300
 
-            ; Find all Copy buttons
-            allCopyButtons := []
+        ; Find all Copy buttons
+        allCopyButtons := []
 
-            ; Primary strategy: Find all buttons with Name "Copy"
-            allButtons := uia.FindAll({ Type: 50000 })
+        ; Primary strategy: Find all buttons with Name "Copy"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
+                ; Additional check: ensure it has the Copy button className pattern
+                if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
+                    allCopyButtons.Push(button)
+                }
+            }
+        }
+
+        ; Fallback: Try by Type "Button" if the above didn't find enough
+        if (allCopyButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
                 if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
-                    ; Additional check: ensure it has the Copy button className pattern
-                    if (InStr(button.ClassName, "icon-button") || InStr(button.ClassName, "mdc-button")) {
-                        allCopyButtons.Push(button)
-                    }
+                    allCopyButtons.Push(button)
                 }
             }
-
-            ; Fallback: Try by Type "Button" if the above didn't find enough
-            if (allCopyButtons.Length = 0) {
-                allButtons := uia.FindAll({ Type: "Button" })
-                for button in allButtons {
-                    if (button.Name = "Copy" || InStr(button.Name, "Copy", false) = 1) {
-                        allCopyButtons.Push(button)
-                    }
-                }
-            }
-
-            if (allCopyButtons.Length = 0) {
-                ; No Copy buttons found
-                return
-            }
-
-            ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
-            lastCopyButton := 0
-            highestY := -1
-
-            for copyButton in allCopyButtons {
-                try {
-                    btnPos := copyButton.Location
-                    btnBottomY := btnPos.y + btnPos.h
-
-                    ; The last button will be the one with the highest bottom Y coordinate
-                    if (btnBottomY > highestY) {
-                        highestY := btnBottomY
-                        lastCopyButton := copyButton
-                    }
-                } catch {
-                    ; If getting location fails, skip this button
-                }
-            }
-
-            ; If position-based approach didn't work, just use the last one in the array
-            if (!lastCopyButton && allCopyButtons.Length > 0) {
-                lastCopyButton := allCopyButtons[allCopyButtons.Length]
-            }
-
-            if (lastCopyButton) {
-                lastCopyButton.Click()
-            } else {
-                ; Last resort: Could not find last Copy button
-            }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
         }
-    } finally {
-        Gemini_EndChord()
+
+        if (allCopyButtons.Length = 0) {
+            ; No Copy buttons found
+            return
+        }
+
+        ; Find the last Copy button (the one with the highest Y position, meaning furthest down the page)
+        lastCopyButton := 0
+        highestY := -1
+
+        for copyButton in allCopyButtons {
+            try {
+                btnPos := copyButton.Location
+                btnBottomY := btnPos.y + btnPos.h
+
+                ; The last button will be the one with the highest bottom Y coordinate
+                if (btnBottomY > highestY) {
+                    highestY := btnBottomY
+                    lastCopyButton := copyButton
+                }
+            } catch {
+                ; If getting location fails, skip this button
+            }
+        }
+
+        ; If position-based approach didn't work, just use the last one in the array
+        if (!lastCopyButton && allCopyButtons.Length > 0) {
+            lastCopyButton := allCopyButtons[allCopyButtons.Length]
+        }
+
+        if (lastCopyButton) {
+            lastCopyButton.Click()
+        } else {
+            ; Last resort: Could not find last Copy button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
 ; Shift + R : Read aloud the last message (click last "Show more options" then "Text to speech") - Read
-$+r:: {
++r:: {
     try {
-        Gemini_ConsumeShiftLetter("r")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
+        uia := UIA_Browser()
+        Sleep 300
 
-            ; Step 1: Find all "Show more options" buttons
-            allMoreOptionsButtons := []
+        ; Step 1: Find all "Show more options" buttons
+        allMoreOptionsButtons := []
 
-            ; Primary strategy: Find all buttons with Name "Show more options"
-            allButtons := uia.FindAll({ Type: 50000 })
+        ; Primary strategy: Find all buttons with Name "Show more options"
+        allButtons := uia.FindAll({ Type: 50000 })
+        for button in allButtons {
+            if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
+                ; Additional check: ensure it has the more-menu-button className pattern
+                if (InStr(button.ClassName, "more-menu-button") || InStr(button.ClassName, "mdc-button")) {
+                    allMoreOptionsButtons.Push(button)
+                }
+            }
+        }
+
+        ; Fallback: Try by Type "Button" if the above didn't find enough
+        if (allMoreOptionsButtons.Length = 0) {
+            allButtons := uia.FindAll({ Type: "Button" })
             for button in allButtons {
                 if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
-                    ; Additional check: ensure it has the more-menu-button className pattern
-                    if (InStr(button.ClassName, "more-menu-button") || InStr(button.ClassName, "mdc-button")) {
+                    if (InStr(button.ClassName, "more-menu-button")) {
                         allMoreOptionsButtons.Push(button)
                     }
                 }
             }
-
-            ; Fallback: Try by Type "Button" if the above didn't find enough
-            if (allMoreOptionsButtons.Length = 0) {
-                allButtons := uia.FindAll({ Type: "Button" })
-                for button in allButtons {
-                    if (button.Name = "Show more options" || InStr(button.Name, "Show more options", false) = 1) {
-                        if (InStr(button.ClassName, "more-menu-button")) {
-                            allMoreOptionsButtons.Push(button)
-                        }
-                    }
-                }
-            }
-
-            if (allMoreOptionsButtons.Length = 0) {
-                ; No "Show more options" buttons found
-                return
-            }
-
-            ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
-            lastMoreOptionsButton := 0
-            highestY := -1
-
-            for moreOptionsButton in allMoreOptionsButtons {
-                try {
-                    btnPos := moreOptionsButton.Location
-                    btnBottomY := btnPos.y + btnPos.h
-
-                    ; The last button will be the one with the highest bottom Y coordinate
-                    if (btnBottomY > highestY) {
-                        highestY := btnBottomY
-                        lastMoreOptionsButton := moreOptionsButton
-                    }
-                } catch {
-                    ; If getting location fails, skip this button
-                }
-            }
-
-            ; If position-based approach didn't work, just use the last one in the array
-            if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
-                lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
-            }
-
-            if (!lastMoreOptionsButton) {
-                ; Could not find last "Show more options" button
-                return
-            }
-
-            ; Step 2: Click the last "Show more options" button
-            lastMoreOptionsButton.Click()
-            Sleep 400 ; Wait for menu to appear
-
-            ; Step 3: Find and click the "Text to speech" menu item
-            textToSpeechMenuItem := 0
-
-            ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
-            textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
-
-            ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
-            if !textToSpeechMenuItem {
-                textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
-            }
-
-            ; Fallback 2: Try by ClassName containing "mat-mdc-menu-item" (substring match)
-            if !textToSpeechMenuItem {
-                allMenuItems := uia.FindAll({ Type: 50011 })
-                for menuItem in allMenuItems {
-                    if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "speech") {
-                        if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
-                            textToSpeechMenuItem := menuItem
-                            break
-                        }
-                    }
-                }
-            }
-
-            ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-            if !textToSpeechMenuItem {
-                allMenuItems := uia.FindAll({ Type: 50011 })
-                for menuItem in allMenuItems {
-                    if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "Texto para fala") || InStr(
-                        menuItem.Name,
-                        "Ler em voz alta") {
-                        if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
-                            textToSpeechMenuItem := menuItem
-                            break
-                        }
-                    }
-                }
-            }
-
-            if (textToSpeechMenuItem) {
-                textToSpeechMenuItem.Click()
-            } else {
-                ; Last resort: Could not find "Text to speech" menu item
-            }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
         }
-    } finally {
-        Gemini_EndChord()
+
+        if (allMoreOptionsButtons.Length = 0) {
+            ; No "Show more options" buttons found
+            return
+        }
+
+        ; Find the last "Show more options" button (the one with the highest Y position, meaning furthest down the page)
+        lastMoreOptionsButton := 0
+        highestY := -1
+
+        for moreOptionsButton in allMoreOptionsButtons {
+            try {
+                btnPos := moreOptionsButton.Location
+                btnBottomY := btnPos.y + btnPos.h
+
+                ; The last button will be the one with the highest bottom Y coordinate
+                if (btnBottomY > highestY) {
+                    highestY := btnBottomY
+                    lastMoreOptionsButton := moreOptionsButton
+                }
+            } catch {
+                ; If getting location fails, skip this button
+            }
+        }
+
+        ; If position-based approach didn't work, just use the last one in the array
+        if (!lastMoreOptionsButton && allMoreOptionsButtons.Length > 0) {
+            lastMoreOptionsButton := allMoreOptionsButtons[allMoreOptionsButtons.Length]
+        }
+
+        if (!lastMoreOptionsButton) {
+            ; Could not find last "Show more options" button
+            return
+        }
+
+        ; Step 2: Click the last "Show more options" button
+        lastMoreOptionsButton.Click()
+        Sleep 400 ; Wait for menu to appear
+
+        ; Step 3: Find and click the "Text to speech" menu item
+        textToSpeechMenuItem := 0
+
+        ; Primary strategy: Find by Name "Text to speech" with Type 50011 (MenuItem)
+        textToSpeechMenuItem := uia.FindFirst({ Name: "Text to speech", Type: 50011 })
+
+        ; Fallback 1: Try by Type "MenuItem" and Name "Text to speech"
+        if !textToSpeechMenuItem {
+            textToSpeechMenuItem := uia.FindFirst({ Type: "MenuItem", Name: "Text to speech" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "mat-mdc-menu-item" (substring match)
+        if !textToSpeechMenuItem {
+            allMenuItems := uia.FindAll({ Type: 50011 })
+            for menuItem in allMenuItems {
+                if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "speech") {
+                    if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
+                        textToSpeechMenuItem := menuItem
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !textToSpeechMenuItem {
+            allMenuItems := uia.FindAll({ Type: 50011 })
+            for menuItem in allMenuItems {
+                if InStr(menuItem.Name, "Text to speech") || InStr(menuItem.Name, "Texto para fala") || InStr(
+                    menuItem.Name,
+                    "Ler em voz alta") {
+                    if InStr(menuItem.ClassName, "mat-mdc-menu-item") {
+                        textToSpeechMenuItem := menuItem
+                        break
+                    }
+                }
+            }
+        }
+
+        if (textToSpeechMenuItem) {
+            textToSpeechMenuItem.Click()
+        } else {
+            ; Last resort: Could not find "Text to speech" menu item
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
 ; Shift + G : Focus the prompt text field and send Gemini prompt text - Gemini
-$+g:: {
++g:: {
     try {
-        Gemini_ConsumeShiftLetter("g")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
+        uia := UIA_Browser()
+        Sleep 300
 
-            ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
+        ; Primary strategy: Find by Name (Gemini updated placeholder in 2025)
+        try
+            promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
+        catch
+            promptField := ""
+
+        ; Fallback 1: Legacy name "Enter a prompt here"
+        if !promptField {
             try
-                promptField := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
+                promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
             catch
                 promptField := ""
+        }
 
-            ; Fallback 1: Legacy name "Enter a prompt here"
-            if !promptField {
-                try
-                    promptField := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-                catch
-                    promptField := ""
-            }
-
-            ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
-            if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
-                        if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
-                            promptField := edit
-                            break
-                        }
+        ; Fallback 2: Try by ClassName containing "ql-editor" or "new-input-ui" (substring match)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if (InStr(edit.ClassName, "ql-editor") || InStr(edit.ClassName, "new-input-ui")) {
+                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "prompt") {
+                        promptField := edit
+                        break
                     }
                 }
             }
+        }
 
-            ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
-            if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
+        ; Fallback 3: Try finding by ClassName containing "ql-editor" (most specific identifier)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.ClassName, "ql-editor") {
+                    promptField := edit
+                    break
+                }
+            }
+        }
+
+        ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
+        if !promptField {
+            allEdits := uia.FindAll({ Type: 50004 })
+            for edit in allEdits {
+                if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
+                    "prompt") {
+                    ; Additional check to ensure it's the prompt field (has ql-editor in className)
                     if InStr(edit.ClassName, "ql-editor") {
                         promptField := edit
                         break
                     }
                 }
             }
+        }
 
-            ; Fallback 4: Try finding by Name with substring match (in case of localization variations)
-            if !promptField {
-                allEdits := uia.FindAll({ Type: 50004 })
-                for edit in allEdits {
-                    if InStr(edit.Name, "Enter a prompt") || InStr(edit.Name, "Digite um prompt") || InStr(edit.Name,
-                        "prompt") {
-                        ; Additional check to ensure it's the prompt field (has ql-editor in className)
-                        if InStr(edit.ClassName, "ql-editor") {
-                            promptField := edit
-                            break
-                        }
-                    }
-                }
+        if (promptField) {
+            promptField.SetFocus()
+            Sleep 100
+            ; Ensure focus was successful
+            if (!promptField.HasKeyboardFocus) {
+                ; Fallback: try clicking if SetFocus didn't work
+                promptField.Click()
+                Sleep 100
             }
 
-            if (promptField) {
-                promptField.SetFocus()
-                Sleep 100
-                ; Ensure focus was successful
-                if (!promptField.HasKeyboardFocus) {
-                    ; Fallback: try clicking if SetFocus didn't work
-                    promptField.Click()
-                    Sleep 100
-                }
+            ; Read the Gemini_Prompt.txt file and paste its contents via clipboard
+            promptFilePath := A_ScriptDir "\assets\data\Gemini_Prompt.txt"
+            if FileExist(promptFilePath) {
+                ; Save current clipboard
+                oldClipboard := A_Clipboard
+                try {
+                    ; Read and set clipboard
+                    promptText := FileRead(promptFilePath, "UTF-8")
+                    if (promptText) {
+                        A_Clipboard := promptText
+                        ClipWait 1, 1  ; Wait for clipboard to be ready
 
-                ; Read the Gemini_Prompt.txt file and paste its contents via clipboard
-                promptFilePath := A_ScriptDir "\assets\data\Gemini_Prompt.txt"
-                if FileExist(promptFilePath) {
-                    ; Save current clipboard
-                    oldClipboard := A_Clipboard
-                    try {
-                        ; Read and set clipboard
-                        promptText := FileRead(promptFilePath, "UTF-8")
-                        if (promptText) {
-                            A_Clipboard := promptText
-                            ClipWait 1, 1  ; Wait for clipboard to be ready
+                        ; Clear any existing text first (select all and delete)
+                        Send "^a"
+                        Sleep 50
 
-                            ; Clear any existing text first (select all and delete)
-                            Send "^a"
-                            Sleep 50
+                        ; Paste the text from clipboard
+                        Send "^v"
+                        Sleep 100
 
-                            ; Paste the text from clipboard
-                            Send "^v"
-                            Sleep 100
+                        ; Restore original clipboard
+                        A_Clipboard := oldClipboard
 
-                            ; Restore original clipboard
-                            A_Clipboard := oldClipboard
-
-                            Sleep 400
-                            Send "{Enter}"
-                        }
-                    } catch Error as e {
-                        ; If file reading fails, try to restore clipboard
-                        try {
-                            A_Clipboard := oldClipboard
-                        }
+                        Sleep 400
+                        Send "{Enter}"
                     }
-                } else {
-                    ; File not found - could show a message or just silently fail
+                } catch Error as e {
+                    ; If file reading fails, try to restore clipboard
+                    try {
+                        A_Clipboard := oldClipboard
+                    }
                 }
             } else {
-                ; Last resort: Could not find prompt field
+                ; File not found - could show a message or just silently fail
             }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
+        } else {
+            ; Last resort: Could not find prompt field
         }
-    } finally {
-        Gemini_EndChord()
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
 ; Shift + F : Click the Expand input to Fullscreen button
-$+f:: {
++f:: {
     try {
-        Gemini_ConsumeShiftLetter("f")
-        try {
-            uia := UIA_Browser()
-            Sleep 300
+        uia := UIA_Browser()
+        Sleep 300
 
-            ; Primary strategy: Find by Name "Expand input to Fullscreen" with Type 50000 (Button)
-            fullscreenButton := uia.FindFirst({ Name: "Expand input to Fullscreen", Type: 50000 })
+        ; Primary strategy: Find by Name "Expand input to Fullscreen" with Type 50000 (Button)
+        fullscreenButton := uia.FindFirst({ Name: "Expand input to Fullscreen", Type: 50000 })
 
-            ; Fallback 1: Try by Type "Button" and Name "Expand input to Fullscreen"
-            if !fullscreenButton {
-                fullscreenButton := uia.FindFirst({ Type: "Button", Name: "Expand input to Fullscreen" })
+        ; Fallback 1: Try by Type "Button" and Name "Expand input to Fullscreen"
+        if !fullscreenButton {
+            fullscreenButton := uia.FindFirst({ Type: "Button", Name: "Expand input to Fullscreen" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "fullscreen-button" (substring match)
+        if !fullscreenButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.ClassName, "fullscreen-button") {
+                    fullscreenButton := button
+                    break
+                }
             }
+        }
 
-            ; Fallback 2: Try by ClassName containing "fullscreen-button" (substring match)
-            if !fullscreenButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
+        if !fullscreenButton {
+            allButtons := uia.FindAll({ Type: 50000 })
+            for button in allButtons {
+                if InStr(button.Name, "Expand input") || InStr(button.Name, "Fullscreen") || InStr(button.Name,
+                    "Expandir") {
+                    ; Additional check to ensure it's the fullscreen button (has fullscreen-button in className)
                     if InStr(button.ClassName, "fullscreen-button") {
                         fullscreenButton := button
                         break
                     }
                 }
             }
-
-            ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
-            if !fullscreenButton {
-                allButtons := uia.FindAll({ Type: 50000 })
-                for button in allButtons {
-                    if InStr(button.Name, "Expand input") || InStr(button.Name, "Fullscreen") || InStr(button.Name,
-                        "Expandir") {
-                        ; Additional check to ensure it's the fullscreen button (has fullscreen-button in className)
-                        if InStr(button.ClassName, "fullscreen-button") {
-                            fullscreenButton := button
-                            break
-                        }
-                    }
-                }
-            }
-
-            if (fullscreenButton) {
-                fullscreenButton.Click()
-            } else {
-                ; Last resort: Could not find fullscreen button
-            }
-        } catch Error as e {
-            ; If all else fails, silently fail (no fallback action defined)
         }
-    } finally {
-        Gemini_EndChord()
+
+        if (fullscreenButton) {
+            fullscreenButton.Click()
+        } else {
+            ; Last resort: Could not find fullscreen button
+        }
+    } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 

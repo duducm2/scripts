@@ -5,6 +5,8 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
+#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false)
+
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
@@ -20,99 +22,11 @@ global g_GeminiModels := [{ name: "3.1 Flash-Lite", description: "Fastest answer
     description: "All-around help" }, { name: "3.1 Pro",
         description: "Advanced math and code" }, { name: "Thinking level", description: "Open thinking submenu (set level manually)" }
 ]
-; While Shift+letter handler runs, keep HotIf true so autorepeat cannot leak into the prompt.
-global g_GeminiChordBusy := false
-
-Gemini_BeginChord() {
-    global g_GeminiChordBusy
-    g_GeminiChordBusy := true
-}
-
-Gemini_EndChord() {
-    global g_GeminiChordBusy
-    g_GeminiChordBusy := false
-}
-
-Gemini_IsStrayTriggerLetter(before, after, letter) {
-    if (after = "" || after = before)
-        return false
-    up := StrUpper(letter)
-    lo := StrLower(letter)
-    if (after = before . up || after = before . lo)
-        return true
-    if (StrLen(after) = StrLen(before) + 1) {
-        last := SubStr(after, -1)
-        if (last = up || last = lo)
-            return true
-    }
-    return false
-}
-
-Gemini_GetPromptTextSnapshot() {
-    try {
-        uia := UIA_Browser()
-        if !IsObject(uia)
-            return ""
-        pf := 0
-        try pf := uia.FindFirst({ Name: "Enter a prompt for Gemini", Type: 50004 })
-        catch
-            pf := 0
-        if !pf {
-            try pf := uia.FindFirst({ Name: "Enter a prompt here", Type: 50004 })
-            catch
-                pf := 0
-        }
-        if !pf
-            return ""
-        try {
-            t := Trim(pf.Value)
-            if (t != "")
-                return t
-        } catch {
-        }
-        try {
-            t := Trim(pf.TextPattern.DocumentRange.GetText(-1))
-            if (t != "")
-                return t
-        } catch {
-        }
-    } catch {
-    }
-    return ""
-}
-
-; Legacy chord wait used by gemini_chrome_02 (prefer Gemini_RunShiftLetterAction for prompt leak).
-Gemini_ConsumeShiftLetter(letter) {
-    Gemini_BeginChord()
-    KeyWait letter
-}
-
-; Run action on press, suppress letter until release, strip stray letter if prompt absorbed it.
-Gemini_RunShiftLetterAction(letter, actionCallback) {
-    Gemini_BeginChord()
-    ih := InputHook("L0")
-    ih.KeyOpt("{" . letter . "}", "S")
-    ih.Start()
-    before := Gemini_GetPromptTextSnapshot()
-    try {
-        actionCallback.Call()
-        KeyWait letter
-        Sleep 80
-        after := Gemini_GetPromptTextSnapshot()
-        if (Gemini_IsStrayTriggerLetter(before, after, letter))
-            Send "{Blind}{Backspace}"
-    } finally {
-        try ih.Stop()
-        catch {
-        }
-        Gemini_EndChord()
-    }
-}
-
-#HotIf WinActive("ahk_exe chrome.exe") && (g_GeminiChordBusy || InStr(WinGetTitle("A"), "gemini", false))
 
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
-$+d:: Gemini_RunShiftLetterAction("d", (*) => ToggleGeminiDrawer())
++d:: {
+    ToggleGeminiDrawer()
+}
 
 ; ---------------------------------------------------------------------------
 ToggleGeminiDrawer() {
@@ -164,18 +78,25 @@ ToggleGeminiDrawer() {
 }
 
 ; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
-$+n:: Gemini_RunShiftLetterAction("n", (*) => Send("^+o"))
++n:: {
+    Send "^+o"
+}
 
 ; Shift + S : Click the Search button - Search
-$+s:: Gemini_RunShiftLetterAction("s", Gemini_ClickSearchButton)
-
-Gemini_ClickSearchButton(*) {
++s:: {
     try {
         uia := UIA_Browser()
         Sleep 300
+
+        ; Primary strategy: Find by Name "Search" with Type 50000 (Button)
         searchButton := uia.FindFirst({ Name: "Search", Type: 50000 })
-        if !searchButton
+
+        ; Fallback 1: Try by Type "Button" and Name "Search"
+        if !searchButton {
             searchButton := uia.FindFirst({ Type: "Button", Name: "Search" })
+        }
+
+        ; Fallback 2: Try by ClassName containing "search-button" (substring match)
         if !searchButton {
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
@@ -185,11 +106,14 @@ Gemini_ClickSearchButton(*) {
                 }
             }
         }
+
+        ; Fallback 3: Try finding by Name with substring match (in case of localization variations)
         if !searchButton {
             allButtons := uia.FindAll({ Type: 50000 })
             for button in allButtons {
                 if InStr(button.Name, "Search") || InStr(button.Name, "Pesquisar") || InStr(button.Name,
                     "Buscar") {
+                    ; Additional check to ensure it's the search button (has search-button in className)
                     if InStr(button.ClassName, "search-button") {
                         searchButton := button
                         break
@@ -197,14 +121,22 @@ Gemini_ClickSearchButton(*) {
                 }
             }
         }
-        if (searchButton)
+
+        if (searchButton) {
             searchButton.Click()
+        } else {
+            ; Last resort: Could try keyboard navigation if Gemini has a keyboard shortcut for search
+            ; For now, we'll just not do anything if we can't find the button
+        }
     } catch Error as e {
+        ; If all else fails, silently fail (no fallback action defined)
     }
 }
 
 ; Shift + M : Show model selector wizard menu (Fast, Thinking, Pro) - Model
-$+m:: Gemini_RunShiftLetterAction("m", (*) => ShowGeminiModelSelector())
++m:: {
+    ShowGeminiModelSelector()
+}
 
 ; ---------------------------------------------------------------------------
 ; Cleanup function for Gemini model selector
@@ -544,3 +476,4 @@ ShowGeminiModelSelector() {
     ; Enable Escape hotkey
     Hotkey("Escape", HandleGeminiModelSelectorEscape, "On")
 }
+
