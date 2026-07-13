@@ -7467,3 +7467,5 @@
 {"id":"log_257603234_3811","timestamp":257603234,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_257630187_4728","timestamp":257630187,"location":"Shift keys.ahk:9806","message":"TryAttachBrowser entry","data":{"attempt":"chrome"},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"id":"log_257630718_7944","timestamp":257630718,"location":"Shift keys.ahk:9814","message":"TryAttachBrowser success","data":{"browser":"chrome","result":1},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"entry","data":{"pathLen":86,"dirExists":1},"hypothesisId":"H3","timestamp":26593343}
+{"location":"WindowManagement.ahk:ActivateCursorProject","message":"after FindAndActivate","data":{"targetHwnd":0},"hypothesisId":"H3","timestamp":26593359}
