@@ -7,7 +7,20 @@
 
 #HotIf IsCopilotWebChromeActiveForHotkey()
 
-; RunShiftLetterAction: suppress letter during UIA, undo stray char if composer absorbed it.
+; BeginChord + KeyWait keep the letter suppressed until release (composer refocus safe).
+
+CopilotWeb_ShiftChord(letter, actionCallback) {
+    CopilotWeb_BeginChord()
+    try {
+        if (actionCallback is Func)
+            actionCallback.Call()
+        else
+            actionCallback()
+        KeyWait letter
+    } finally {
+        CopilotWeb_EndChord()
+    }
+}
 
 CopilotWeb_ShiftA(*) {
     CopilotWeb_OpenModelSelector()
@@ -46,25 +59,20 @@ CopilotWeb_ShiftF(*) {
         ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
 }
 
-CopilotWeb_ShiftD(*) {
-    if !CopilotWeb_ToggleNavDrawer()
-        ShowCenteredOverlay_Utils("Copilot nav drawer button not found", 2000, BANNER_ACCENT_ERROR)
-}
-
-$+d:: CopilotWeb_RunShiftLetterAction("d", CopilotWeb_ShiftD)
-$+n:: CopilotWeb_RunShiftLetterAction("n", CopilotWeb_ClickNewChat)
-$+s:: CopilotWeb_RunShiftLetterAction("s", CopilotWeb_ClickNavSearch)
-$+m:: CopilotWeb_RunShiftLetterAction("m", CopilotWeb_OpenModelSelector)
-$+a:: CopilotWeb_RunShiftLetterAction("a", CopilotWeb_ShiftA)
-$+t:: CopilotWeb_RunShiftLetterAction("t", CopilotWeb_ShiftT)
-$+i:: CopilotWeb_RunShiftLetterAction("i", CopilotWeb_ShiftI)
-$+e:: CopilotWeb_RunShiftLetterAction("e", CopilotWeb_ShiftE)
-$+p:: CopilotWeb_RunShiftLetterAction("p", CopilotWeb_ShiftP)
-$+c:: CopilotWeb_RunShiftLetterAction("c", CopilotWeb_ShiftCopyLastMessage)
-$+r:: CopilotWeb_RunShiftLetterAction("r", CopilotWeb_ShiftReadAloud)
-$+v:: CopilotWeb_RunShiftLetterAction("v", CopilotWeb_ShiftV)
-$+g:: CopilotWeb_RunShiftLetterAction("g", CopilotWeb_SendPromptFromFile)
-$+f:: CopilotWeb_RunShiftLetterAction("f", CopilotWeb_ShiftF)
+$+d:: CopilotWeb_ShiftChord("d", CopilotWeb_ToggleNavDrawer)
+$+n:: CopilotWeb_ShiftChord("n", CopilotWeb_ClickNewChat)
+$+s:: CopilotWeb_ShiftChord("s", CopilotWeb_ClickNavSearch)
+$+m:: CopilotWeb_ShiftChord("m", CopilotWeb_OpenModelSelector)
+$+a:: CopilotWeb_ShiftChord("a", CopilotWeb_ShiftA)
+$+t:: CopilotWeb_ShiftChord("t", CopilotWeb_ShiftT)
+$+i:: CopilotWeb_ShiftChord("i", CopilotWeb_ShiftI)
+$+e:: CopilotWeb_ShiftChord("e", CopilotWeb_ShiftE)
+$+p:: CopilotWeb_ShiftChord("p", CopilotWeb_ShiftP)
+$+c:: CopilotWeb_ShiftChord("c", CopilotWeb_ShiftCopyLastMessage)
+$+r:: CopilotWeb_ShiftChord("r", CopilotWeb_ShiftReadAloud)
+$+v:: CopilotWeb_ShiftChord("v", CopilotWeb_ShiftV)
+$+g:: CopilotWeb_ShiftChord("g", CopilotWeb_SendPromptFromFile)
+$+f:: CopilotWeb_ShiftChord("f", CopilotWeb_ShiftF)
 
 $Enter:: {
     if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {

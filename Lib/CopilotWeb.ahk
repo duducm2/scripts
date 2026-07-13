@@ -120,9 +120,10 @@ CopilotWeb_TitleMatchesCopilot(title) {
         return false
     if (COPILOT_WEB_TITLE_NEEDLE != "" && InStr(title, COPILOT_WEB_TITLE_NEEDLE, false))
         return true
-    if (InStr(title, "Chat | M365 Copilot", false))
+    ; Keep this cheap — used from #HotIf; never add UIA here.
+    if RegExMatch(title, "i)m365\s*copilot|microsoft\s*365\s*copilot")
         return true
-    if (InStr(title, "M365 Copilot", false) || InStr(title, "Microsoft 365 Copilot", false))
+    if (InStr(title, "Copilot", false))
         return true
     return false
 }
@@ -1137,24 +1138,30 @@ CopilotWeb_EnsureForegroundHook() {
 }
 
 IsCopilotWebChromeActiveForHotkey() {
+    ; MUST stay cheap — full UIA here exceeds #HotIfTimeout, so Shift+D intermittently
+    ; falls through as a typed "D" and the hotkey never runs.
     CopilotWeb_EnsureForegroundHook()
     hwnd := WinExist("A")
     if (!hwnd || !CopilotWeb_IsChromeHwnd(hwnd))
         return false
     global g_CopilotWebHotkeyActive, g_CopilotWebCachedHwnd, g_CopilotWebCachedTitle
     global g_CopilotWebChordBusyHwnd
-    ; While a Shift+letter handler runs, keep HotIf true so autorepeat cannot leak into the composer.
     if (g_CopilotWebChordBusyHwnd && hwnd = g_CopilotWebChordBusyHwnd)
         return true
-    ; Sticky: once this hwnd is known Copilot, stay true across title-only churn.
-    if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd) {
-        try {
-            g_CopilotWebCachedTitle := WinGetTitle("ahk_id " hwnd)
-        } catch {
-        }
+    if (g_CopilotWebHotkeyActive && hwnd = g_CopilotWebCachedHwnd)
+        return true
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        title := ""
+    }
+    if (CopilotWeb_TitleMatchesCopilot(title)) {
+        g_CopilotWebHotkeyActive := true
+        g_CopilotWebCachedHwnd := hwnd
+        g_CopilotWebCachedTitle := title
         return true
     }
-    return CopilotWeb_RefreshHotkeyContext(hwnd, true)
+    return false
 }
 
 CopilotWeb_BeginChord() {
@@ -1165,50 +1172,6 @@ CopilotWeb_BeginChord() {
 CopilotWeb_EndChord() {
     global g_CopilotWebChordBusyHwnd
     g_CopilotWebChordBusyHwnd := 0
-}
-
-; True when Copilot's composer gained exactly one trigger letter (usually after drawer UIA returns focus).
-CopilotWeb_IsStrayTriggerLetter(before, after, letter) {
-    if (after = "" || after = before)
-        return false
-    up := StrUpper(letter)
-    lo := StrLower(letter)
-    if (after = before . up || after = before . lo)
-        return true
-    if (StrLen(after) = StrLen(before) + 1) {
-        last := SubStr(after, -1)
-        if (last = up || last = lo)
-            return true
-    }
-    return false
-}
-
-; Run action on press, then strip a stray trigger letter if the composer absorbed it after focus return.
-CopilotWeb_RunShiftLetterAction(letter, actionCallback) {
-    CopilotWeb_BeginChord()
-    before := CopilotWeb_ComposerGetText(WinExist("A"))
-    try {
-        ; Prefer calling as a function (Func/closure), not relying on .Call().
-        try actionCallback()
-        catch {
-            try actionCallback.Call()
-            catch {
-            }
-        }
-        KeyWait letter, "T2"
-        ; Copilot often refocuses the prompt after UIA; undo one leaked letter if it appeared.
-        deadline := A_TickCount + 300
-        while (A_TickCount < deadline) {
-            after := CopilotWeb_ComposerGetText(WinExist("A"))
-            if (CopilotWeb_IsStrayTriggerLetter(before, after, letter)) {
-                Send "{Blind}{Backspace}"
-                break
-            }
-            Sleep 40
-        }
-    } finally {
-        CopilotWeb_EndChord()
-    }
 }
 
 CopilotWeb_GetActiveUia() {
@@ -1225,20 +1188,16 @@ CopilotWeb_GetActiveUia() {
 CopilotWeb_ClickUiaElement(el) {
     if (!IsObject(el))
         return false
-    ; Fluent nav buttons often expose Invoke but only react to a real click — try both.
     try {
-        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable))
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
             el.InvokePattern.Invoke()
-    } catch {
-    }
-    try {
-        el.Click("left")
-        return true
-    } catch {
-    }
-    try {
-        if (el.Click() != 0)
             return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
     } catch {
     }
     return false
