@@ -4,6 +4,7 @@
 ; Detection/placement policy is self-contained. 50/50 placement reuses the
 ; proven gapless snap APIs from WindowManagement\tile_snap.ahk (same as ^!#x).
 ; After a successful snap, a 2s ShowWithKeys modal offers [M] undo.
+; On window close, fills the freed monitor slot from background windows.
 ; Delete: remove the #include in WindowManagement.ahk + this folder (see README).
 ;
 ; Placement (MonitorGetCount() > 1 only):
@@ -11,6 +12,10 @@
 ;   2) Else first empty ordinal monitor → maximize onto it
 ;   3) Else first half-full ordinal → 50/50
 ;   4) Else maximize new window in place
+;
+; Fill-on-close (same multi-monitor gate):
+;   Destroy on monitor → debounce → if occupancy 0 maximize / 1 snap first
+;   WM_CollectBackgroundWindows candidate (no undo modal).
 ; =============================================================================
 
 global g_AutoSlotHook := 0
@@ -20,14 +25,29 @@ global g_AutoSlotPending := Map()
 global g_AutoSlotRecent := Map()
 global g_AutoSlotGui := 0
 global g_AutoSlotUndo := 0
+global g_AutoSlotFillPending := Map()
+global g_AutoSlotHwndMon := Map()
 
+AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
+AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
+
+; #region agent log
+AutoSlot_DebugLog(hypothesisId, location, message, data := "") {
+    try {
+        payload := '{"sessionId":"b9d999","runId":"fill-v2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
+            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
+        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
+    } catch {
+    }
+}
+; #endregion
 
 ; --- Init --------------------------------------------------------------------
 
@@ -41,15 +61,18 @@ AutoSlot_Init() {
         g_AutoSlotGui.Show("x0 y0 w0 h0 Hide")
     }
     sinkHwnd := g_AutoSlotGui.Hwnd
+    shellOk := 0
     if (DllCall("RegisterShellHookWindow", "ptr", sinkHwnd)) {
         g_AutoSlotShellMsg := DllCall("RegisterWindowMessage", "str", "SHELLHOOK", "uint")
         if (g_AutoSlotShellMsg)
             OnMessage(g_AutoSlotShellMsg, AutoSlot_OnShellHook)
+        shellOk := 1
     }
 
+    ; One hook covers DESTROY..SHOW; OnWinEvent branches by event.
     g_AutoSlotHookCb := CallbackCreate(AutoSlot_OnWinEvent, "F", 7)
     g_AutoSlotHook := DllCall("user32\SetWinEventHook",
-        "UInt", AutoSlot_EVENT_OBJECT_SHOW,
+        "UInt", AutoSlot_EVENT_OBJECT_DESTROY,
         "UInt", AutoSlot_EVENT_OBJECT_SHOW,
         "Ptr", 0,
         "Ptr", g_AutoSlotHookCb,
@@ -59,6 +82,10 @@ AutoSlot_Init() {
         "Ptr")
 
     OnMessage(0x007E, AutoSlot_OnDisplayChange)  ; WM_DISPLAYCHANGE
+    ; #region agent log
+    AutoSlot_DebugLog("A", "AutoSlot_Init", "hooks_ready", '{"hook":' Integer(g_AutoSlotHook) ',"shellOk":' shellOk ',"shellMsg":' Integer(
+        g_AutoSlotShellMsg) ',"monCount":' MonitorGetCount() '}')
+    ; #endregion
 }
 
 AutoSlot_OnDisplayChange(*) {
@@ -66,15 +93,92 @@ AutoSlot_OnDisplayChange(*) {
 }
 
 AutoSlot_OnShellHook(wParam, lParam, *) {
-    if (wParam = AutoSlot_HSHELL_WINDOWCREATED && lParam)
-        AutoSlot_Schedule(Integer(lParam))
+    if (!lParam)
+        return 0
+    hwnd := Integer(lParam)
+    if (wParam = AutoSlot_HSHELL_WINDOWCREATED)
+        AutoSlot_Schedule(hwnd)
+    else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED) {
+        ; #region agent log
+        AutoSlot_DebugLog("A", "OnShellHook", "destroyed", '{"hwnd":' hwnd ',"wParam":' Integer(wParam) '}')
+        ; #endregion
+        AutoSlot_OnDestroy(hwnd)
+    }
     return 0
 }
 
 AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
-    if (event != AutoSlot_EVENT_OBJECT_SHOW || idObject != AutoSlot_OBJID_WINDOW || !hwnd)
+    if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
-    AutoSlot_Schedule(Integer(hwnd))
+    hwnd := Integer(hwnd)
+    if (event = AutoSlot_EVENT_OBJECT_SHOW)
+        AutoSlot_Schedule(hwnd)
+    else if (event = AutoSlot_EVENT_OBJECT_DESTROY) {
+        AutoSlot_OnDestroy(hwnd)
+    }
+}
+
+AutoSlot_RememberHwndMon(hwnd) {
+    global g_AutoSlotHwndMon
+    if (!hwnd)
+        return
+    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx >= 1)
+        g_AutoSlotHwndMon[hwnd] := monIdx
+}
+
+AutoSlot_PruneHwndMon() {
+    global g_AutoSlotHwndMon
+    toDelete := []
+    for h, _ in g_AutoSlotHwndMon {
+        if (!DllCall("IsWindow", "ptr", h))
+            toDelete.Push(h)
+    }
+    for h in toDelete
+        g_AutoSlotHwndMon.Delete(h)
+}
+
+AutoSlot_OnDestroy(hwnd) {
+    global g_AutoSlotHwndMon
+    if (!hwnd || MonitorGetCount() <= 1) {
+        ; #region agent log
+        AutoSlot_DebugLog("A", "OnDestroy", "skip_gate", '{"hwnd":' hwnd ',"monCount":' MonitorGetCount() '}')
+        ; #endregion
+        return
+    }
+    alive := !!DllCall("IsWindow", "ptr", hwnd)
+    monIdx := 0
+    if (alive)
+        monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
+    if (monIdx < 1 && cached)
+        monIdx := cached
+    if (g_AutoSlotHwndMon.Has(hwnd))
+        g_AutoSlotHwndMon.Delete(hwnd)
+    ; #region agent log
+    if (monIdx >= 1)
+        AutoSlot_DebugLog("B", "OnDestroy", "resolve_mon", '{"hwnd":' hwnd ',"alive":' (alive ? 1 : 0) ',"monIdx":' monIdx ',"cached":' cached '}'
+        )
+    ; #endregion
+    if (monIdx < 1)
+        return
+    AutoSlot_ScheduleFill(monIdx)
+}
+
+AutoSlot_ScheduleFill(monIdx) {
+    global g_AutoSlotFillPending
+    if (monIdx < 1 || MonitorGetCount() <= 1)
+        return
+    if (g_AutoSlotFillPending.Has(monIdx))
+        return
+    g_AutoSlotFillPending[monIdx] := true
+    SetTimer(() => AutoSlot_ProcessFillPending(monIdx), -AutoSlot_DEBOUNCE_MS)
+}
+
+AutoSlot_ProcessFillPending(monIdx) {
+    global g_AutoSlotFillPending
+    g_AutoSlotFillPending.Delete(monIdx)
+    AutoSlot_FillMonitorFromBackground(monIdx)
 }
 
 AutoSlot_Schedule(hwnd) {
@@ -85,6 +189,7 @@ AutoSlot_Schedule(hwnd) {
         return
     if (g_AutoSlotPending.Has(hwnd))
         return
+    AutoSlot_RememberHwndMon(hwnd)
     g_AutoSlotPending[hwnd] := true
     SetTimer(() => AutoSlot_ProcessPending(hwnd), -AutoSlot_DEBOUNCE_MS)
 }
@@ -102,6 +207,7 @@ AutoSlot_ProcessPending(hwnd) {
         return
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
+    AutoSlot_RememberHwndMon(hwnd)
     AutoSlot_Place(hwnd)
 }
 
@@ -115,6 +221,7 @@ AutoSlot_PruneRecent() {
     }
     for h in toDelete
         g_AutoSlotRecent.Delete(h)
+    AutoSlot_PruneHwndMon()
 }
 
 ; --- Eligibility / excludes (local; not WM_Background*) ----------------------
@@ -388,7 +495,7 @@ AutoSlot_CapturePartnerState(partnerHwnd) {
     }
 }
 
-AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
+AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     global g_AutoSlotUndo
     if (!newHwnd || !partnerHwnd || monIdx < 1)
         return ""
@@ -401,8 +508,16 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
             partnerWasMax := false
     }
 
-    if (!WM_PrepareHwndForTile(newHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
+    ; Background / minimized windows: restore via AutoSlot_Prepare first, then tile prepare.
+    prepNew := AutoSlot_PrepareHwnd(newHwnd) && WM_PrepareHwndForTile(newHwnd)
+    prepPartner := AutoSlot_PrepareHwnd(partnerHwnd) && WM_PrepareHwndForTile(partnerHwnd)
+    if (!prepNew || !prepPartner) {
+        ; #region agent log
+        AutoSlot_DebugLog("F", "SnapPair", "fail_prepare", '{"new":' newHwnd ',"partner":' partnerHwnd
+            . ',"prepNew":' (prepNew ? 1 : 0) ',"prepPartner":' (prepPartner ? 1 : 0) '}')
+        ; #endregion
         return ""
+    }
 
     axis := WM_GetSnapSplitAxis(monIdx)
     partnerPane := "start"
@@ -416,10 +531,26 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx) {
     newPane := (partnerPane = "start") ? "end" : "start"
 
     ok := WM_SnapPairGaplessRects(monIdx, axis, newHwnd, newPane, partnerHwnd, partnerPane)
-    if (!ok)
+    if (!ok) {
+        ; #region agent log
+        AutoSlot_DebugLog("F", "SnapPair", "fail_gapless", '{"new":' newHwnd ',"partner":' partnerHwnd
+            . ',"newPane":"' newPane '","partnerPane":"' partnerPane '","partnerWasMax":' (partnerWasMax ? 1 : 0) '}')
+        ; #endregion
         return ""
-    if (!WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd))
+    }
+    validated := WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd)
+    if (!validated && !acceptUnvalidated) {
+        ; #region agent log
+        AutoSlot_DebugLog("F", "SnapPair", "fail_validate", '{"new":' newHwnd ',"partner":' partnerHwnd
+            . ',"newPane":"' newPane '"}')
+        ; #endregion
         return ""
+    }
+    ; #region agent log
+    if (!validated)
+        AutoSlot_DebugLog("F", "SnapPair", "accept_unvalidated", '{"new":' newHwnd ',"partner":' partnerHwnd
+            . ',"newPane":"' newPane '"}')
+    ; #endregion
 
     if (IsObject(partnerState)) {
         g_AutoSlotUndo := {
@@ -560,6 +691,124 @@ AutoSlot_ShowUndoModal(paneLabel := "") {
     AutoSlot_ActivateHwnd(newHwnd)
 }
 
+; --- Fill-on-close (background → freed slot) ---------------------------------
+
+AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
+    occupied := Map()
+    for row in occupancyRows {
+        if (row.hwnd)
+            occupied[row.hwnd] := true
+    }
+    rows := []
+    try rows := WM_CollectBackgroundWindows()
+    catch
+        return 0
+    for row in rows {
+        hwnd := 0
+        try hwnd := Integer(row.hwnd)
+        catch
+            continue
+        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+            continue
+        if (occupied.Has(hwnd))
+            continue
+        if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+            continue
+        return hwnd
+    }
+    return 0
+}
+
+; Promote first background window into an empty (maximize) or half-full (50/50) slot.
+; If half-full and no background candidate, maximize the remaining companion.
+AutoSlot_FillMonitorFromBackground(monIdx) {
+    global g_AutoSlotRecent, g_AutoSlotUndo
+    if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1) {
+        ; #region agent log
+        AutoSlot_DebugLog("C", "FillMonitor", "skip_gate", '{"monIdx":' monIdx ',"monCount":' MonitorGetCount() '}')
+        ; #endregion
+        return false
+    }
+    others := AutoSlot_OccupancyOnMonitor(monIdx)
+    ; #region agent log
+    AutoSlot_DebugLog("C", "FillMonitor", "occupancy", '{"monIdx":' monIdx ',"count":' others.Length '}')
+    ; #endregion
+    if (others.Length >= 2)
+        return false
+    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
+    bgCount := 0
+    try bgCount := WM_CollectBackgroundWindows().Length
+    catch
+        bgCount := -1
+    ; #region agent log
+    AutoSlot_DebugLog("D", "FillMonitor", "candidate", '{"monIdx":' monIdx ',"cand":' cand ',"bgCount":' bgCount '}')
+    ; #endregion
+
+    order := AutoSlot_OrderForMonitorIndex(monIdx)
+    label := order > 0 ? order : monIdx
+
+    ; Closed one half of a pair, nothing to promote → maximize the leftover companion.
+    if (!cand && others.Length = 1) {
+        companion := others[1].hwnd
+        healed := false
+        try healed := !!WM_MaximizeHwndBackground(companion)
+        catch
+            healed := false
+        if (!healed) {
+            try {
+                AutoSlot_MaximizeHwnd(companion)
+                healed := true
+            } catch {
+            }
+        }
+        ; #region agent log
+        AutoSlot_DebugLog("G", "FillMonitor", "heal_companion", '{"companion":' companion ',"ok":' (healed ? 1 : 0) '}'
+        )
+        ; #endregion
+        if (healed)
+            AutoSlot_Toast("ℹ️ Companion maximized → M" label)
+        return healed
+    }
+
+    if (!cand)
+        return false
+
+    ; Suppress SHOW/CREATED AutoSlot_Place for the window we are about to restore.
+    g_AutoSlotRecent[cand] := A_TickCount
+    AutoSlot_PruneRecent()
+
+    if (others.Length = 0) {
+        ok := AutoSlot_MaximizeOnMonitor(cand, monIdx)
+        ; #region agent log
+        AutoSlot_DebugLog("E", "FillMonitor", "maximize", '{"cand":' cand ',"ok":' (ok ? 1 : 0) '}')
+        ; #endregion
+        if (!ok)
+            return false
+        AutoSlot_RememberHwndMon(cand)
+        AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+        return true
+    }
+
+    g_AutoSlotUndo := 0
+    ; Fill path: accept gapless placement even if strict bipartition validate times out.
+    pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
+    AutoSlot_ClearUndo()  ; close-fill never offers the new-window undo modal
+    ; #region agent log
+    AutoSlot_DebugLog("E", "FillMonitor", "snap", '{"cand":' cand ',"partner":' others[1].hwnd ',"pane":"' pane '"}')
+    ; #endregion
+    if (pane != "") {
+        AutoSlot_RememberHwndMon(cand)
+        AutoSlot_Toast("ℹ️ Slot filled → M" label " " pane)
+        return true
+    }
+    if (AutoSlot_MaximizeOnMonitor(cand, monIdx)) {
+        AutoSlot_RememberHwndMon(cand)
+        AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+        return true
+    }
+    return false
+}
+
 ; --- Placement ---------------------------------------------------------------
 
 AutoSlot_Place(hwnd) {
@@ -572,6 +821,7 @@ AutoSlot_Place(hwnd) {
 
     g_AutoSlotUndo := 0
     msg := ""
+    AutoSlot_RememberHwndMon(hwnd)
 
     ; 1) Origin-first: exactly one other window on the monitor where the new hwnd appeared.
     originMon := AutoSlot_GetHwndMonitorIndex(hwnd)

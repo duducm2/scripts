@@ -6,6 +6,18 @@ Detection and placement policy live in this folder. **50/50 snaps reuse** the ga
 
 After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadingBar_ShowWithKeys`) offers **[M]** to maximize the new window on ordinal monitor 2 and restore the partner to its pre-snap state. Timeout keeps the snap.
 
+## Fill empty slot on close
+
+When a window closes and leaves a monitor empty or with exactly one visible window, AutoSlot promotes the first eligible **background** window (`WM_CollectBackgroundWindows`: covered and/or minimized):
+
+| Occupancy after close | Action                                                 |
+| --------------------- | ------------------------------------------------------ |
+| 0 visible             | Maximize background window onto that monitor           |
+| 1 visible             | 50/50 snap background window with the remaining window |
+| 2+                    | No-op                                                  |
+
+Only the monitor that lost the window is considered. No undo modal on this path. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND.
+
 ## Disable
 
 Comment out or remove this line in `WindowManagement.ahk`:
