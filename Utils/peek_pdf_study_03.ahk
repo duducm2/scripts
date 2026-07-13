@@ -23,17 +23,6 @@ GetMonitorIndexByDeviceName(deviceName) {
     return 0
 }
 
-; Preferred target for "main monitor (2)" in this setup: Windows DISPLAY2.
-; Falls back to the primary monitor if DISPLAY2 isn't present.
-GetQuickLookTargetMonitorIndex() {
-    idx := GetMonitorIndexByDeviceName("\\.\DISPLAY2")
-    if (idx && IsMonitorConnected(idx))
-        return idx
-    try return MonitorGetPrimary()
-    catch
-        return 1
-}
-
 ; Poll until QuickLook.exe has a window (cold start can exceed 2s). Returns hwnd or 0.
 QuickLook_WaitForHwnd(timeoutMs := 10000) {
     deadline := A_TickCount + timeoutMs
@@ -44,61 +33,6 @@ QuickLook_WaitForHwnd(timeoutMs := 10000) {
         Sleep 75
     }
     return 0
-}
-
-QuickLook_WindowCenterOnMonitor(hwnd, targetMon) {
-    if (!hwnd || !WinExist("ahk_id " hwnd))
-        return false
-    try {
-        rect := Buffer(16, 0)
-        if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect))
-            return false
-        wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-        wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-        cx := wl + (wr - wl) // 2
-        cy := wt + (wb - wt) // 2
-        MonitorGetWorkArea(targetMon, &ml, &mt, &mr, &mb)
-        return (cx >= ml && cx <= mr && cy >= mt && cy <= mb)
-    } catch {
-        return false
-    }
-}
-
-QuickLook_WindowLooksMaximized(hwnd, targetMon) {
-    if (!hwnd)
-        return false
-    try {
-        if (WinGetMinMax("ahk_id " hwnd) = 2)
-            return true
-    } catch {
-    }
-    try {
-        MonitorGetWorkArea(targetMon, &ml, &mt, &mr, &mb)
-        rect := Buffer(16, 0)
-        if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-            wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-            wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-            wArea := (mr - ml) * (mb - mt)
-            wWin := (wr - wl) * (wb - wt)
-            if (wArea > 0 && wWin >= 0.9 * wArea)
-                return true
-        }
-    } catch {
-    }
-    return false
-}
-
-; Bounded wait: center on target monitor and maximized (or ~90% work area).
-QuickLook_WaitForLayoutReady(hwnd, targetMon, timeoutMs := 2500) {
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        if (!WinExist("ahk_id " hwnd))
-            return false
-        if (QuickLook_WindowCenterOnMonitor(hwnd, targetMon) && QuickLook_WindowLooksMaximized(hwnd, targetMon))
-            return true
-        Sleep 50
-    }
-    return false
 }
 
 QuickLook_FindDocumentElement(hwnd) {
@@ -232,14 +166,10 @@ QuickLook_ScrollToEnd(hwnd, extraRetries := 0) {
     }
 }
 
-; Single authority: DISPLAY2 (or fallback), maximize, focus, optional scroll-to-end.
+; Single authority: focus QuickLook as-is (no move/maximize), optional scroll-to-end.
 QuickLook_ApplyStudyLayout(hwnd, scrollToEnd := true, extraScrollRetries := 0) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
-    targetMon := GetQuickLookTargetMonitorIndex()
-    MoveWindowToMonitor(hwnd, targetMon)
-    TryMaximizeWindow(hwnd)
-    QuickLook_WaitForLayoutReady(hwnd, targetMon, 2500)
     try {
         WinShow("ahk_id " hwnd)
         WinActivate("ahk_id " hwnd)
@@ -289,26 +219,6 @@ QuickLook_OpenPath_Legacy(path, scrollToEnd := true) {
             else
                 Sleep 50
             gateUsedFallback := gate["fallback"]
-            targetMon := GetQuickLookTargetMonitorIndex()
-            MoveWindowToMonitor(hwnd, targetMon)
-            WinMaximize("ahk_id " hwnd)
-            deadline := A_TickCount + 1500
-            while (A_TickCount < deadline) {
-                try {
-                    rect := Buffer(16, 0)
-                    if (DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)) {
-                        wl := NumGet(rect, 0, "int"), wt := NumGet(rect, 4, "int")
-                        wr := NumGet(rect, 8, "int"), wb := NumGet(rect, 12, "int")
-                        cx := wl + (wr - wl) // 2
-                        cy := wt + (wb - wt) // 2
-                        MonitorGetWorkArea(targetMon, &ml, &mt, &mr, &mb)
-                        if (cx >= ml && cx <= mr && cy >= mt && cy <= mb)
-                            break
-                    }
-                } catch {
-                }
-                Sleep 50
-            }
             try {
                 WinShow("ahk_id " hwnd)
                 WinActivate("ahk_id " hwnd)
@@ -316,26 +226,8 @@ QuickLook_OpenPath_Legacy(path, scrollToEnd := true) {
             } catch {
             }
             QuickLook_ClickWindowCenter(hwnd)
-            if (scrollToEnd) {
-                scrollAttempts := gateUsedFallback ? 2 : 1
-                loop scrollAttempts {
-                    if (A_Index > 1)
-                        Sleep 175
-                    try {
-                        WinActivate("ahk_id " hwnd)
-                        WinWaitActive("ahk_id " hwnd, , 1)
-                        SendInput("^{End}")
-                    } catch {
-                        try {
-                            WinActivate("ahk_id " hwnd)
-                            WinWaitActive("ahk_id " hwnd, , 1)
-                            Send("{Ctrl down}{End}{Ctrl up}")
-                        } catch {
-                            try ControlSend("^End", "ahk_id " hwnd)
-                        }
-                    }
-                }
-            }
+            if (scrollToEnd)
+                QuickLook_ScrollToEnd(hwnd, gateUsedFallback ? 2 : 0)
             StudyTopic_StartBlackoutCountdown(hwnd)
         }
     }
