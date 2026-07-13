@@ -10,13 +10,14 @@ After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadi
 
 When a window closes and leaves a monitor empty or with exactly one visible window, AutoSlot promotes the first eligible **background** window (`WM_CollectBackgroundWindows`: covered and/or minimized):
 
-| Occupancy after close | Action                                                 |
-| --------------------- | ------------------------------------------------------ |
-| 0 visible             | Maximize background window onto that monitor           |
-| 1 visible             | 50/50 snap background window with the remaining window |
-| 2+                    | No-op                                                  |
+| Occupancy after close            | Action                                                 |
+| -------------------------------- | ------------------------------------------------------ |
+| 0 visible                        | Maximize background window onto that monitor           |
+| 1 visible + background available | 50/50 snap background window with the remaining window |
+| 1 visible + no background        | Maximize the remaining companion                       |
+| 2+                               | No-op                                                  |
 
-Only the monitor that lost the window is considered. No undo modal on this path. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND.
+Only the monitor that lost the window is considered. No undo modal on this path. Fill snaps accept gapless placement even if strict validate times out. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND.
 
 ## Disable
 

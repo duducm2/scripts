@@ -38,17 +38,6 @@ AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
 
-; #region agent log
-AutoSlot_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        payload := '{"sessionId":"b9d999","runId":"fill-v2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' (
-            data != "" ? data : "{}") ',"timestamp":' A_TickCount '}'
-        FileAppend payload "`n", A_ScriptDir "\debug-b9d999.log"
-    } catch {
-    }
-}
-; #endregion
-
 ; --- Init --------------------------------------------------------------------
 
 AutoSlot_Init() {
@@ -61,12 +50,10 @@ AutoSlot_Init() {
         g_AutoSlotGui.Show("x0 y0 w0 h0 Hide")
     }
     sinkHwnd := g_AutoSlotGui.Hwnd
-    shellOk := 0
     if (DllCall("RegisterShellHookWindow", "ptr", sinkHwnd)) {
         g_AutoSlotShellMsg := DllCall("RegisterWindowMessage", "str", "SHELLHOOK", "uint")
         if (g_AutoSlotShellMsg)
             OnMessage(g_AutoSlotShellMsg, AutoSlot_OnShellHook)
-        shellOk := 1
     }
 
     ; One hook covers DESTROY..SHOW; OnWinEvent branches by event.
@@ -82,10 +69,6 @@ AutoSlot_Init() {
         "Ptr")
 
     OnMessage(0x007E, AutoSlot_OnDisplayChange)  ; WM_DISPLAYCHANGE
-    ; #region agent log
-    AutoSlot_DebugLog("A", "AutoSlot_Init", "hooks_ready", '{"hook":' Integer(g_AutoSlotHook) ',"shellOk":' shellOk ',"shellMsg":' Integer(
-        g_AutoSlotShellMsg) ',"monCount":' MonitorGetCount() '}')
-    ; #endregion
 }
 
 AutoSlot_OnDisplayChange(*) {
@@ -98,12 +81,8 @@ AutoSlot_OnShellHook(wParam, lParam, *) {
     hwnd := Integer(lParam)
     if (wParam = AutoSlot_HSHELL_WINDOWCREATED)
         AutoSlot_Schedule(hwnd)
-    else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED) {
-        ; #region agent log
-        AutoSlot_DebugLog("A", "OnShellHook", "destroyed", '{"hwnd":' hwnd ',"wParam":' Integer(wParam) '}')
-        ; #endregion
+    else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED)
         AutoSlot_OnDestroy(hwnd)
-    }
     return 0
 }
 
@@ -113,9 +92,8 @@ AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     hwnd := Integer(hwnd)
     if (event = AutoSlot_EVENT_OBJECT_SHOW)
         AutoSlot_Schedule(hwnd)
-    else if (event = AutoSlot_EVENT_OBJECT_DESTROY) {
+    else if (event = AutoSlot_EVENT_OBJECT_DESTROY)
         AutoSlot_OnDestroy(hwnd)
-    }
 }
 
 AutoSlot_RememberHwndMon(hwnd) {
@@ -140,12 +118,8 @@ AutoSlot_PruneHwndMon() {
 
 AutoSlot_OnDestroy(hwnd) {
     global g_AutoSlotHwndMon
-    if (!hwnd || MonitorGetCount() <= 1) {
-        ; #region agent log
-        AutoSlot_DebugLog("A", "OnDestroy", "skip_gate", '{"hwnd":' hwnd ',"monCount":' MonitorGetCount() '}')
-        ; #endregion
+    if (!hwnd || MonitorGetCount() <= 1)
         return
-    }
     alive := !!DllCall("IsWindow", "ptr", hwnd)
     monIdx := 0
     if (alive)
@@ -155,11 +129,6 @@ AutoSlot_OnDestroy(hwnd) {
         monIdx := cached
     if (g_AutoSlotHwndMon.Has(hwnd))
         g_AutoSlotHwndMon.Delete(hwnd)
-    ; #region agent log
-    if (monIdx >= 1)
-        AutoSlot_DebugLog("B", "OnDestroy", "resolve_mon", '{"hwnd":' hwnd ',"alive":' (alive ? 1 : 0) ',"monIdx":' monIdx ',"cached":' cached '}'
-        )
-    ; #endregion
     if (monIdx < 1)
         return
     AutoSlot_ScheduleFill(monIdx)
@@ -509,15 +478,10 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     }
 
     ; Background / minimized windows: restore via AutoSlot_Prepare first, then tile prepare.
-    prepNew := AutoSlot_PrepareHwnd(newHwnd) && WM_PrepareHwndForTile(newHwnd)
-    prepPartner := AutoSlot_PrepareHwnd(partnerHwnd) && WM_PrepareHwndForTile(partnerHwnd)
-    if (!prepNew || !prepPartner) {
-        ; #region agent log
-        AutoSlot_DebugLog("F", "SnapPair", "fail_prepare", '{"new":' newHwnd ',"partner":' partnerHwnd
-            . ',"prepNew":' (prepNew ? 1 : 0) ',"prepPartner":' (prepPartner ? 1 : 0) '}')
-        ; #endregion
+    if (!AutoSlot_PrepareHwnd(newHwnd) || !WM_PrepareHwndForTile(newHwnd))
         return ""
-    }
+    if (!AutoSlot_PrepareHwnd(partnerHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
+        return ""
 
     axis := WM_GetSnapSplitAxis(monIdx)
     partnerPane := "start"
@@ -531,26 +495,11 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     newPane := (partnerPane = "start") ? "end" : "start"
 
     ok := WM_SnapPairGaplessRects(monIdx, axis, newHwnd, newPane, partnerHwnd, partnerPane)
-    if (!ok) {
-        ; #region agent log
-        AutoSlot_DebugLog("F", "SnapPair", "fail_gapless", '{"new":' newHwnd ',"partner":' partnerHwnd
-            . ',"newPane":"' newPane '","partnerPane":"' partnerPane '","partnerWasMax":' (partnerWasMax ? 1 : 0) '}')
-        ; #endregion
+    if (!ok)
         return ""
-    }
     validated := WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd)
-    if (!validated && !acceptUnvalidated) {
-        ; #region agent log
-        AutoSlot_DebugLog("F", "SnapPair", "fail_validate", '{"new":' newHwnd ',"partner":' partnerHwnd
-            . ',"newPane":"' newPane '"}')
-        ; #endregion
+    if (!validated && !acceptUnvalidated)
         return ""
-    }
-    ; #region agent log
-    if (!validated)
-        AutoSlot_DebugLog("F", "SnapPair", "accept_unvalidated", '{"new":' newHwnd ',"partner":' partnerHwnd
-            . ',"newPane":"' newPane '"}')
-    ; #endregion
 
     if (IsObject(partnerState)) {
         g_AutoSlotUndo := {
@@ -723,26 +672,12 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
 ; If half-full and no background candidate, maximize the remaining companion.
 AutoSlot_FillMonitorFromBackground(monIdx) {
     global g_AutoSlotRecent, g_AutoSlotUndo
-    if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1) {
-        ; #region agent log
-        AutoSlot_DebugLog("C", "FillMonitor", "skip_gate", '{"monIdx":' monIdx ',"monCount":' MonitorGetCount() '}')
-        ; #endregion
+    if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return false
-    }
     others := AutoSlot_OccupancyOnMonitor(monIdx)
-    ; #region agent log
-    AutoSlot_DebugLog("C", "FillMonitor", "occupancy", '{"monIdx":' monIdx ',"count":' others.Length '}')
-    ; #endregion
     if (others.Length >= 2)
         return false
     cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
-    bgCount := 0
-    try bgCount := WM_CollectBackgroundWindows().Length
-    catch
-        bgCount := -1
-    ; #region agent log
-    AutoSlot_DebugLog("D", "FillMonitor", "candidate", '{"monIdx":' monIdx ',"cand":' cand ',"bgCount":' bgCount '}')
-    ; #endregion
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
@@ -761,10 +696,6 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             } catch {
             }
         }
-        ; #region agent log
-        AutoSlot_DebugLog("G", "FillMonitor", "heal_companion", '{"companion":' companion ',"ok":' (healed ? 1 : 0) '}'
-        )
-        ; #endregion
         if (healed)
             AutoSlot_Toast("ℹ️ Companion maximized → M" label)
         return healed
@@ -778,11 +709,7 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     AutoSlot_PruneRecent()
 
     if (others.Length = 0) {
-        ok := AutoSlot_MaximizeOnMonitor(cand, monIdx)
-        ; #region agent log
-        AutoSlot_DebugLog("E", "FillMonitor", "maximize", '{"cand":' cand ',"ok":' (ok ? 1 : 0) '}')
-        ; #endregion
-        if (!ok)
+        if (!AutoSlot_MaximizeOnMonitor(cand, monIdx))
             return false
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
@@ -793,9 +720,6 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     ; Fill path: accept gapless placement even if strict bipartition validate times out.
     pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
     AutoSlot_ClearUndo()  ; close-fill never offers the new-window undo modal
-    ; #region agent log
-    AutoSlot_DebugLog("E", "FillMonitor", "snap", '{"cand":' cand ',"partner":' others[1].hwnd ',"pane":"' pane '"}')
-    ; #endregion
     if (pane != "") {
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " " pane)
