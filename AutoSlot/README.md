@@ -4,6 +4,8 @@ Optional auto-positioning for newly opened windows on multi-monitor setups. Incl
 
 Detection and placement policy live in this folder. **50/50 snaps reuse** the gapless algorithm in `WindowManagement\tile_snap.ahk` (same engine as `Ctrl+Alt+Win+X`).
 
+AutoSlot ignores **AutoHotkeyGUI** windows, AutoHotkey host processes, and windows owned by this script’s PID (prompts, selectors, overlays). They stay where they opened and do not count toward monitor occupancy or fill-on-close. ToolWindow loading banners were already skipped via `WS_EX_TOOLWINDOW`.
+
 ## Enable / disable
 
 From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF. The banner title and footer show the current state. Preference is stored in `assets/data/wm_autoslot.ini` (`[AutoSlot] Enabled=1|0`) and applied without reloading hooks: when OFF, place and fill-on-close are no-ops.

@@ -539,13 +539,45 @@ AutoSlot_PruneRecent() {
 
 ; --- Eligibility / excludes (local; not WM_Background*) ----------------------
 
+AutoSlot_IsAhkHostProcess(exe) {
+    exe := StrLower(exe)
+    return exe = "autohotkey.exe" || exe = "autohotkey64.exe" || exe = "autohotkey32.exe"
+        || exe = "autohotkeyux.exe"
+}
+
+AutoSlot_IsSameScriptPid(hwnd) {
+    if (!hwnd)
+        return false
+    pid := 0
+    try DllCall("GetWindowThreadProcessId", "ptr", hwnd, "uint*", &pid)
+    catch
+        return false
+    if (!pid)
+        return false
+    return Integer(pid) = Integer(DllCall("GetCurrentProcessId", "uint"))
+}
+
+; Handy/ClipAngel overlays, WindowManagement identity, and suite AHK GUIs/prompts.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
+    if (!hwnd)
+        return false
     try {
         exe := StrLower(WinGetProcessName("ahk_id " hwnd))
     } catch {
         exe := ""
     }
     if (exe = "handy.exe" || exe = "clipangel.exe")
+        return true
+    if (AutoSlot_IsAhkHostProcess(exe))
+        return true
+    if (AutoSlot_IsSameScriptPid(hwnd))
+        return true
+    try {
+        class := StrLower(WinGetClass(hwnd))
+    } catch {
+        class := ""
+    }
+    if (class = "autohotkeygui")
         return true
     try {
         title := WinGetTitle(hwnd)
@@ -555,7 +587,7 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     t := StrLower(title)
     if (InStr(t, "windowmanagement.ahk"))
         return true
-    if (InStr(t, "autohotkey") && InStr(StrLower(WinGetClass(hwnd)), "ahk"))
+    if (InStr(t, "autohotkey") && InStr(class, "ahk"))
         return true
     return false
 }
