@@ -1646,11 +1646,22 @@ CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 400) {
     return true
 }
 
-; Shift+A: Think deeper then Generate an image (named — AHK fat-arrow blocks are object literals).
+; Shift+A: Think deeper then Generate an image, paste bosch-brand-image, strip human reminders.
 CopilotWeb_ShiftArt() {
     CopilotWeb_OpenModelSelector()
     CopilotWeb_WaitForModelSelectionSettled()
-    return CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
+    if !CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
+        return false
+    promptText := GetPromptText("bosch-brand-image")
+    if (InStr(promptText, "[PROMPT FILE MISSING:"))
+        return false
+    stripped := StripPromptHumanReminders(promptText)
+    if (stripped != "")
+        promptText := stripped
+    root := CopilotWeb_ReadRootFromHwnd(WinExist("A"))
+    if (IsObject(root))
+        CopilotWeb_FocusComposer(root, false)
+    return ReplaceFocusedEditWithText(promptText)
 }
 
 CopilotWeb_OpenModelSelector(uia := 0) {

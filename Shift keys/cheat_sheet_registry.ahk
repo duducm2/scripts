@@ -1068,7 +1068,7 @@ cheatSheets["Copilot Web"] := "
     💬 [N][N]ew chat
     🔍 [S][S]earch (nav drawer)
     🔄 [M]Select Think deeper (no-op if already active)
-    🎨 [A][A]rt: Think deeper + Generate an image
+    🎨 [A][A]rt: Think deeper + Generate image + bosch-brand-image (strip reminders)
     🛠️ [T]Add/manage sources (Tools menu)
     🖼️ [I]Add capabilities → Generate an image
     🔬 [E]Add capabilities → Research a topic

@@ -46,11 +46,9 @@ $+m:: {
 
 $+a:: {
     try {
-        ok := CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt
-        )
-        if (ok)
-            CopilotWeb_ReturnToComposer()
-        else
+        ok := CopilotWeb_RunWithBusyBanner(
+            "⏳ Think deeper + Generate image + Bosch prompt… Don't move the mouse", CopilotWeb_ShiftArt)
+        if !ok
             ShowCenteredOverlay_Utils("Generate an image failed", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }
