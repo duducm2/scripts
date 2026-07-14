@@ -1154,7 +1154,13 @@ IsCopilotWebChromeActiveForHotkey() {
 }
 
 CopilotWeb_GetActiveUia() {
-    hwnd := WinExist("A")
+    return CopilotWeb_GetBoundUia(WinExist("A"))
+}
+
+; Bind UIA to a specific Chrome hwnd (prefer over bare UIA_Browser() in wait loops).
+CopilotWeb_GetBoundUia(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
     if (!hwnd)
         return 0
     try {
@@ -1162,6 +1168,29 @@ CopilotWeb_GetActiveUia() {
     } catch {
         return 0
     }
+}
+
+CopilotWeb_RefreshBoundUia(hwnd) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    return CopilotWeb_GetBoundUia(hwnd)
+}
+
+; Loading Indication while mouse/UIA automation runs — always Hide in finally.
+CopilotWeb_RunWithBusyBanner(message, fn, hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    StandardLoadingBar_Show(message, BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd, fontSize: 17 })
+    try {
+        return fn.Call()
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+}
+
+; After busy banner Hide — avoid clearing a same-frame error overlay.
+CopilotWeb_ShowErrorAfterBanner(text, durationMs := 2200) {
+    SetTimer(() => ShowCenteredOverlay_Utils(text, durationMs, BANNER_ACCENT_ERROR), -60)
 }
 
 CopilotWeb_ClickUiaElement(el) {
@@ -1395,6 +1424,38 @@ CopilotWeb_GetModelSelectorLabel(btn) {
 CopilotWeb_FindDeepReasoningMenuItem(uia) {
     if (!IsObject(uia))
         return 0
+    ; Targeted FindFirst first (cheap); FindAll scoring only as fallback.
+    for needle in COPILOT_DEEP_REASONING_NEEDLES {
+        if (needle = "")
+            continue
+        for typeSpec in [UIA_Copilot_ControlType_RadioButton, "RadioButton", UIA_Copilot_ControlType_MenuItem,
+            "MenuItem"] {
+            try {
+                el := uia.FindFirst({ Name: needle, Type: typeSpec, matchmode: "Substring" })
+            } catch {
+                el := 0
+            }
+            if (!el)
+                continue
+            try {
+                aid := ""
+                try aid := el.AutomationId
+                if (aid = "gptModeSwitcher")
+                    continue
+                name := ""
+                try name := el.Name
+                if (CopilotWeb_DeepReasoningNameScore(name) <= 0)
+                    continue
+                try {
+                    if (!el.GetPropertyValue(UIA.Property.IsEnabled))
+                        continue
+                } catch {
+                }
+                return el
+            } catch {
+            }
+        }
+    }
     bestEl := 0
     bestScore := 0
     for typeSpec in [UIA_Copilot_ControlType_RadioButton, "RadioButton", UIA_Copilot_ControlType_MenuItem, "MenuItem",
@@ -1435,28 +1496,59 @@ CopilotWeb_FindDeepReasoningMenuItem(uia) {
     return bestEl
 }
 
-CopilotWeb_WaitForModelMenu(uia := 0, timeoutMs := 0) {
+CopilotWeb_WaitForModelMenu(uia := 0, timeoutMs := 0, hwnd := 0) {
     global COPILOT_MODEL_MENU_WAIT_MS, COPILOT_MODEL_MENU_POLL_MS
     if (timeoutMs <= 0)
         timeoutMs := COPILOT_MODEL_MENU_WAIT_MS
+    if (!hwnd)
+        hwnd := WinExist("A")
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        cur := CopilotWeb_GetActiveUia()
+        cur := CopilotWeb_RefreshBoundUia(hwnd)
         if (!IsObject(cur))
             cur := uia
         if (IsObject(cur) && CopilotWeb_FindDeepReasoningMenuItem(cur))
             return true
         Sleep COPILOT_MODEL_MENU_POLL_MS
     }
-    cur := CopilotWeb_GetActiveUia()
+    cur := CopilotWeb_RefreshBoundUia(hwnd)
     if (!IsObject(cur))
         cur := uia
     return IsObject(cur) && !!CopilotWeb_FindDeepReasoningMenuItem(cur)
 }
 
+; After Think deeper click — wait until label shows deep reasoning or model menu is gone.
+CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 700) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        uia := CopilotWeb_RefreshBoundUia(hwnd)
+        if (!IsObject(uia)) {
+            Sleep 80
+            continue
+        }
+        btn := CopilotWeb_FindModelSelectorButton(uia)
+        if (btn && CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn)))
+            return true
+        if (!CopilotWeb_FindDeepReasoningMenuItem(uia) && CopilotWeb_FindSourcesButton(uia))
+            return true
+        Sleep 80
+    }
+    return true
+}
+
+; Shift+A: Think deeper then Generate an image (named — AHK fat-arrow blocks are object literals).
+CopilotWeb_ShiftArt() {
+    CopilotWeb_OpenModelSelector()
+    CopilotWeb_WaitForModelSelectionSettled()
+    return CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
+}
+
 CopilotWeb_OpenModelSelector(uia := 0) {
+    hwnd := WinExist("A")
     if (!uia)
-        uia := CopilotWeb_GetActiveUia()
+        uia := CopilotWeb_GetBoundUia(hwnd)
     if (!IsObject(uia))
         return false
     btn := CopilotWeb_FindModelSelectorButton(uia)
@@ -1467,19 +1559,19 @@ CopilotWeb_OpenModelSelector(uia := 0) {
         return true
     if (!CopilotWeb_ClickUiaElement(btn))
         return false
-    if (!CopilotWeb_WaitForModelMenu(uia)) {
+    if (!CopilotWeb_WaitForModelMenu(uia, 0, hwnd)) {
         Send "{Escape}"
-        ShowCenteredOverlay_Utils("Deep reasoning model not found", 2200, BANNER_ACCENT_ERROR)
+        CopilotWeb_ShowErrorAfterBanner("❌ Deep reasoning model not found")
         return false
     }
-    uia := CopilotWeb_GetActiveUia()
+    uia := CopilotWeb_RefreshBoundUia(hwnd)
     if (!IsObject(uia))
         return false
     item := CopilotWeb_FindDeepReasoningMenuItem(uia)
     if (item && CopilotWeb_ClickUiaElement(item))
         return true
     Send "{Escape}"
-    ShowCenteredOverlay_Utils("Deep reasoning model not found", 2200, BANNER_ACCENT_ERROR)
+    CopilotWeb_ShowErrorAfterBanner("❌ Deep reasoning model not found")
     return false
 }
 
@@ -1495,7 +1587,7 @@ CopilotWeb_IsSourcesMenuOpen(uia) {
 
 CopilotWeb_OpenSourcesMenu(uia := 0) {
     if (!uia)
-        uia := CopilotWeb_GetActiveUia()
+        uia := CopilotWeb_GetBoundUia()
     if (!IsObject(uia))
         return false
     if (CopilotWeb_IsSourcesMenuOpen(uia))
@@ -1505,13 +1597,13 @@ CopilotWeb_OpenSourcesMenu(uia := 0) {
         return false
     if (!CopilotWeb_ClickUiaElement(btn))
         return false
-    Sleep 250
     return true
 }
 
 CopilotWeb_EnsureSourcesMenuOpen(&uia) {
+    hwnd := WinExist("A")
     if (!IsObject(uia))
-        uia := CopilotWeb_GetActiveUia()
+        uia := CopilotWeb_GetBoundUia(hwnd)
     if (!IsObject(uia))
         return false
     if (CopilotWeb_IsSourcesMenuOpen(uia))
@@ -1520,9 +1612,8 @@ CopilotWeb_EnsureSourcesMenuOpen(&uia) {
         return false
     deadline := A_TickCount + 3000
     while (A_TickCount < deadline) {
-        try
-            uia := UIA_Browser()
-        catch
+        uia := CopilotWeb_RefreshBoundUia(hwnd)
+        if (!IsObject(uia))
             return false
         if (CopilotWeb_IsSourcesMenuOpen(uia))
             return true
@@ -1533,7 +1624,7 @@ CopilotWeb_EnsureSourcesMenuOpen(&uia) {
 
 CopilotWeb_ClickSourcesCapability(automationId, nameSubstrings, uia := 0) {
     if (!uia)
-        uia := CopilotWeb_GetActiveUia()
+        uia := CopilotWeb_GetBoundUia()
     if (!IsObject(uia))
         return false
     if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
@@ -1571,16 +1662,17 @@ CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles) {
 
 ; + -> Add capabilities (nested flyout) -> submenu item (Generate an image / Research a topic).
 CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
+    hwnd := WinExist("A")
     if (!uia)
-        uia := CopilotWeb_GetActiveUia()
+        uia := CopilotWeb_GetBoundUia(hwnd)
     if (!IsObject(uia))
         return false
     if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
         return false
     addCap := CopilotWeb_FindMenuItemByNameNeedles(uia, COPILOT_ADD_CAPABILITIES_NAMES)
     if (!addCap) {
-        try uia := UIA_Browser()
-        catch
+        uia := CopilotWeb_RefreshBoundUia(hwnd)
+        if (!IsObject(uia))
             return false
         addCap := CopilotWeb_FindMenuItemByNameNeedles(uia, COPILOT_ADD_CAPABILITIES_NAMES)
     }
@@ -1588,11 +1680,11 @@ CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
         return false
     ; Fluent opens the capabilities flyout on hover; Invoke alone does not.
     CopilotWeb_HoverUiaElement(addCap)
-    item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 900)
+    item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 900, hwnd)
     if (!item) {
         if (!CopilotWeb_ForceOpenSubmenuMenuItem(addCap))
             return false
-        item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 3000)
+        item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 3000, hwnd)
     }
     if (!item)
         return false
@@ -1601,12 +1693,13 @@ CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
     return CopilotWeb_ClickUiaElement(item)
 }
 
-CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, timeoutMs := 2000) {
+CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, timeoutMs := 2000, hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        try
-            uia := UIA_Browser()
-        catch
+        uia := CopilotWeb_RefreshBoundUia(hwnd)
+        if (!IsObject(uia))
             return 0
         item := CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles)
         if (item)

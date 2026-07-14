@@ -28,17 +28,15 @@ $+s:: {
 }
 
 $+m:: {
-    try CopilotWeb_OpenModelSelector()
+    try CopilotWeb_RunWithBusyBanner("⏳ Selecting Think deeper… Don't move the mouse", (*) =>
+        CopilotWeb_OpenModelSelector())
     catch {
     }
 }
 
 $+a:: {
-    try {
-        CopilotWeb_OpenModelSelector()
-        Sleep 400
-        CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
-    } catch {
+    try CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt)
+    catch {
     }
 }
 
@@ -54,13 +52,15 @@ $+t:: {
 }
 
 $+i:: {
-    try CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
+    try CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
+        COPILOT_CAPABILITY_IMAGE_NAMES))
     catch {
     }
 }
 
 $+e:: {
-    try CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_RESEARCH_NAMES)
+    try CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
+        COPILOT_CAPABILITY_RESEARCH_NAMES))
     catch {
     }
 }
