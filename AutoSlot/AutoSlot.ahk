@@ -28,6 +28,8 @@ global g_AutoSlotRecent := Map()
 global g_AutoSlotGui := 0
 global g_AutoSlotUndo := 0
 global g_AutoSlotFillPending := Map()
+global g_AutoSlotHealPending := Map()
+global g_AutoSlotFillRetry := Map()
 global g_AutoSlotHwndMon := Map()
 global g_AutoSlotFillCooldown := Map()
 global g_AutoSlotLastDestroyHwnd := 0
@@ -40,6 +42,7 @@ AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
 AutoSlot_FILL_COOLDOWN_MS := 1500
+AutoSlot_FILL_RETRY_MS := 400
 AutoSlot_DESTROY_DEDUP_MS := 250
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
@@ -228,7 +231,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     AutoSlot_ScheduleFill(monIdx)
 }
 
-; Place claimed this monitor — suppress deferred fill-on-close races.
+; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
 AutoSlot_ClaimMonitor(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     if (monIdx < 1)
@@ -238,14 +241,44 @@ AutoSlot_ClaimMonitor(monIdx) {
         g_AutoSlotFillPending.Delete(monIdx)
 }
 
+AutoSlot_FillCooldownActive(monIdx) {
+    global g_AutoSlotFillCooldown
+    return g_AutoSlotFillCooldown.Has(monIdx)
+    && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS
+}
+
+; During Place claim cooldown: still arm companion heal (not background promote).
+AutoSlot_ScheduleHealOnly(monIdx) {
+    global g_AutoSlotHealPending
+    if (!AutoSlot_IsEnabled() || monIdx < 1 || MonitorGetCount() <= 1)
+        return
+    if (g_AutoSlotHealPending.Has(monIdx))
+        return
+    g_AutoSlotHealPending[monIdx] := true
+    SetTimer(() => AutoSlot_ProcessHealOnly(monIdx), -AutoSlot_DEBOUNCE_MS)
+}
+
+AutoSlot_ProcessHealOnly(monIdx) {
+    global g_AutoSlotHealPending, g_AutoSlotFillCooldown
+    if (g_AutoSlotHealPending.Has(monIdx))
+        g_AutoSlotHealPending.Delete(monIdx)
+    if (!AutoSlot_IsEnabled())
+        return
+    if (AutoSlot_HealLoneCompanion(monIdx))
+        g_AutoSlotFillCooldown[monIdx] := A_TickCount
+}
+
 AutoSlot_ScheduleFill(monIdx) {
-    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
+    global g_AutoSlotFillPending
     if (!AutoSlot_IsEnabled())
         return
     if (monIdx < 1 || MonitorGetCount() <= 1)
         return
-    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
+    ; Claim cooldown: block background promote, still allow companion heal.
+    if (AutoSlot_FillCooldownActive(monIdx)) {
+        AutoSlot_ScheduleHealOnly(monIdx)
         return
+    }
     if (g_AutoSlotFillPending.Has(monIdx))
         return
     g_AutoSlotFillPending[monIdx] := true
@@ -254,16 +287,52 @@ AutoSlot_ScheduleFill(monIdx) {
 
 AutoSlot_ProcessFillPending(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
-    ; ClaimMonitor may already have cleared pending; Map.Delete throws if key missing.
     if (g_AutoSlotFillPending.Has(monIdx))
         g_AutoSlotFillPending.Delete(monIdx)
     if (!AutoSlot_IsEnabled())
         return
-    ; Place may have claimed this monitor after the timer was armed.
-    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
+    ; Place may have claimed this monitor after the timer was armed — heal only.
+    if (AutoSlot_FillCooldownActive(monIdx)) {
+        if (AutoSlot_HealLoneCompanion(monIdx))
+            g_AutoSlotFillCooldown[monIdx] := A_TickCount
         return
-    AutoSlot_FillMonitorFromBackground(monIdx)
-    g_AutoSlotFillCooldown[monIdx] := A_TickCount
+    }
+    result := AutoSlot_FillMonitorFromBackground(monIdx)
+    if (result = "stale") {
+        AutoSlot_ScheduleFillRetry(monIdx)
+        return
+    }
+    if (result = "ok")
+        g_AutoSlotFillCooldown[monIdx] := A_TickCount
+}
+
+AutoSlot_ScheduleFillRetry(monIdx) {
+    global g_AutoSlotFillRetry
+    if (!AutoSlot_IsEnabled() || monIdx < 1)
+        return
+    if (g_AutoSlotFillRetry.Has(monIdx))
+        return
+    g_AutoSlotFillRetry[monIdx] := true
+    SetTimer(() => AutoSlot_ProcessFillRetry(monIdx), -AutoSlot_FILL_RETRY_MS)
+}
+
+AutoSlot_ProcessFillRetry(monIdx) {
+    global g_AutoSlotFillRetry, g_AutoSlotFillCooldown
+    if (g_AutoSlotFillRetry.Has(monIdx))
+        g_AutoSlotFillRetry.Delete(monIdx)
+    if (!AutoSlot_IsEnabled())
+        return
+    if (AutoSlot_FillCooldownActive(monIdx)) {
+        if (AutoSlot_HealLoneCompanion(monIdx))
+            g_AutoSlotFillCooldown[monIdx] := A_TickCount
+        return
+    }
+    result := AutoSlot_FillMonitorFromBackground(monIdx)
+    ; One retry only — no further stale reschedule.
+    if (result = "ok")
+        g_AutoSlotFillCooldown[monIdx] := A_TickCount
+    else if (result = "stale")
+        AutoSlot_HealLoneCompanion(monIdx)  ; no-op if still 2+; heals if dead HWND cleared to 1
 }
 
 AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
@@ -810,81 +879,97 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
     return 0
 }
 
-; Promote first background window into an empty (maximize) or half-full (50/50) slot.
-; If half-full and no background candidate, maximize the remaining companion.
+AutoSlot_OccupancyHasRecent(occupancyRows) {
+    global g_AutoSlotRecent
+    for row in occupancyRows {
+        h := row.hwnd
+        if (h && g_AutoSlotRecent.Has(h) && A_TickCount - g_AutoSlotRecent[h] < AutoSlot_RECENT_MS)
+            return true
+    }
+    return false
+}
+
+; Maximize the sole visible window on monIdx when it is not already filled.
+AutoSlot_HealLoneCompanion(monIdx) {
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return false
+    others := AutoSlot_OccupancyOnMonitor(monIdx)
+    if (others.Length != 1)
+        return false
+    companion := others[1].hwnd
+    if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
+        return true
+    healed := false
+    try healed := !!WM_MaximizeHwndBackground(companion)
+    catch
+        healed := false
+    if (!healed) {
+        try {
+            AutoSlot_MaximizeHwnd(companion)
+            healed := true
+        } catch {
+        }
+    }
+    if (healed) {
+        order := AutoSlot_OrderForMonitorIndex(monIdx)
+        label := order > 0 ? order : monIdx
+        AutoSlot_Toast("ℹ️ Companion maximized → M" label)
+    }
+    return healed
+}
+
+; Returns "ok" | "noop" | "stale" (stale = occupancy still 2+, caller may retry).
 AutoSlot_FillMonitorFromBackground(monIdx) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
-        return false
+        return "noop"
     others := AutoSlot_OccupancyOnMonitor(monIdx)
     if (others.Length >= 2)
-        return false
+        return "stale"
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
-    ; Do not promote over a window AutoSlot_Place just assigned to this monitor.
-    for row in others {
-        h := row.hwnd
-        if (h && g_AutoSlotRecent.Has(h) && A_TickCount - g_AutoSlotRecent[h] < AutoSlot_RECENT_MS)
-            return false
-    }
-
-    ; Already full-screen companion — skip expensive background collect.
-    if (others.Length = 1 && AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
-        return true
-
-    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
-
-    ; Closed one half of a pair, nothing to promote → maximize the leftover companion.
-    if (!cand && others.Length = 1) {
-        companion := others[1].hwnd
-        healed := false
-        try healed := !!WM_MaximizeHwndBackground(companion)
-        catch
-            healed := false
-        if (!healed) {
-            try {
-                AutoSlot_MaximizeHwnd(companion)
-                healed := true
-            } catch {
-            }
+    ; Leftover half of a pair — maximize companion (even if that hwnd is recent-placed).
+    if (others.Length = 1) {
+        if (AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
+            return "ok"
+        ; Do not promote background over a window AutoSlot_Place just assigned.
+        if (AutoSlot_OccupancyHasRecent(others))
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
+        if (!cand)
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+        g_AutoSlotRecent[cand] := A_TickCount
+        AutoSlot_PruneRecent()
+        g_AutoSlotUndo := 0
+        pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
+        AutoSlot_ClearUndo()
+        if (pane != "") {
+            AutoSlot_RememberHwndMon(cand)
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " " pane)
+            return "ok"
         }
-        if (healed)
-            AutoSlot_Toast("ℹ️ Companion maximized → M" label)
-        return healed
+        if (AutoSlot_MaximizeOnMonitor(cand, monIdx)) {
+            AutoSlot_RememberHwndMon(cand)
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+            return "ok"
+        }
+        return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
     }
 
+    ; Empty monitor — promote background (skip if somehow contested by recent; empty has none).
+    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
     if (!cand)
-        return false
-
-    ; Suppress SHOW/CREATED AutoSlot_Place for the window we are about to restore.
+        return "noop"
     g_AutoSlotRecent[cand] := A_TickCount
     AutoSlot_PruneRecent()
-
-    if (others.Length = 0) {
-        if (!AutoSlot_MaximizeOnMonitor(cand, monIdx))
-            return false
-        AutoSlot_RememberHwndMon(cand)
-        AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
-        return true
-    }
-
-    g_AutoSlotUndo := 0
-    ; Fill path: gapless only (no strict validate wait).
-    pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
-    AutoSlot_ClearUndo()  ; close-fill never offers the new-window undo modal
-    if (pane != "") {
-        AutoSlot_RememberHwndMon(cand)
-        AutoSlot_Toast("ℹ️ Slot filled → M" label " " pane)
-        return true
-    }
     if (AutoSlot_MaximizeOnMonitor(cand, monIdx)) {
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
-        return true
+        return "ok"
     }
-    return false
+    return "noop"
 }
 
 ; --- Placement ---------------------------------------------------------------
