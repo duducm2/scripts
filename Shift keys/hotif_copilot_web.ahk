@@ -37,7 +37,7 @@ $+a:: {
     try {
         CopilotWeb_OpenModelSelector()
         Sleep 250
-        CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+        CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
     } catch {
     }
 }
@@ -54,20 +54,13 @@ $+t:: {
 }
 
 $+i:: {
-    try CopilotWeb_ClickSourcesCapability("capability-id-imageGeneration", ["Designer", "Criar imagem"])
+    try CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
     catch {
     }
 }
 
 $+e:: {
-    try CopilotWeb_ClickSourcesCapability("capability-id-researcher", ["Researcher", "Pesquisador",
-        "Pesquisa aprofundada"])
-    catch {
-    }
-}
-
-$+p:: {
-    try CopilotWeb_FocusComposer(CopilotWeb_GetActiveUia(), false)
+    try CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_RESEARCH_NAMES)
     catch {
     }
 }
@@ -89,12 +82,6 @@ $+v:: {
         if !CopilotWeb_ToggleVoiceChat()
             ShowCenteredOverlay_Utils("Voice chat control not found", 2200, BANNER_ACCENT_ERROR)
     } catch {
-    }
-}
-
-$+g:: {
-    try CopilotWeb_SendPromptFromFile()
-    catch {
     }
 }
 

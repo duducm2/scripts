@@ -1066,16 +1066,14 @@ cheatSheets["Copilot Web"] := "
     📂 [D]Toggle nav [D]rawer
     💬 [N][N]ew chat
     🔍 [S][S]earch (nav drawer)
-    🔄 [M]Select deep reasoning / Think (no-op if already active)
-    🎨 [A][A]rt: Think model + Designer/image
+    🔄 [M]Select Think deeper (no-op if already active)
+    🎨 [A][A]rt: Think deeper + Generate an image
     🛠️ [T]Add/manage sources (Tools menu)
-    🖼️ [I]Designer / create image (Sources menu)
-    🔬 [E]Researcher / deep research (Sources menu)
-    ⌨️ [P]Focus [P]rompt field
+    🖼️ [I]Add capabilities → Generate an image
+    🔬 [E]Add capabilities → Research a topic
     📋 [C][C]opy last response
     🔊 [R][R]ead aloud last message
     🎙️ [V]Toggle [V]oice chat (start / end)
-    🤖 [G]Send prompt text (Gemini_Prompt.txt)
     ⛶ [F][F]ullscreen input (expand composer)
     🔔 [Enter / Ctrl+Enter]Send and notify on completion
     

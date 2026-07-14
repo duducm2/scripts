@@ -31,6 +31,8 @@ COPILOT_VOICE_END_NAMES := ["End voice chat", "Encerrar chat de voz"]
 
 UIA_Copilot_ControlType_Button := 50000
 UIA_Copilot_ControlType_MenuItem := 50011
+UIA_Copilot_ControlType_RadioButton := 50013
+UIA_Copilot_ControlType_Text := 50020
 
 COPILOT_NAV_EXPAND_NAMES := ["Expand navigation", "Expandir navegação"]
 COPILOT_NAV_COLLAPSE_NAMES := ["Collapse navigation", "Recolher navegação"]
@@ -53,9 +55,13 @@ COPILOT_MODEL_MENU_POLL_MS := 80
 UIA_Copilot_ControlType_ListItem := 50007
 COPILOT_SOURCES_BUTTON_CRITERIA := [{ Name: "Add and manage sources", ControlType: "Button" }, { Name: "Adicionar e gerenciar fontes",
     ControlType: "Button" }]
-COPILOT_SOURCES_MENU_MARKERS := [{ AutomationId: "capability-id-researcher", ControlType: "MenuItem" }, { Name: "Upload images and files",
-    ControlType: "MenuItem" }, { Name: "Add work content", ControlType: "MenuItem" }
+COPILOT_SOURCES_MENU_MARKERS := [{ Name: "Add capabilities", ControlType: "MenuItem" }, { Name: "Adicionar capacidades",
+    ControlType: "MenuItem" }, { Name: "Upload images and files", ControlType: "MenuItem" }, { Name: "Add work content",
+        ControlType: "MenuItem" }, { Name: "Adicionar conteúdo de trabalho", ControlType: "MenuItem" }
 ]
+COPILOT_ADD_CAPABILITIES_NAMES := ["Add capabilities", "Adicionar capacidades"]
+COPILOT_CAPABILITY_IMAGE_NAMES := ["Generate an image", "Criar imagem", "Criar uma imagem"]
+COPILOT_CAPABILITY_RESEARCH_NAMES := ["Research a topic", "Pesquisar um tópico", "Researcher", "Pesquisador"]
 COPILOT_COMPOSER_EXPAND_NAMES := [
     "Expand message copilot input box",
     "Expand input to Fullscreen"
@@ -1308,13 +1314,35 @@ CopilotWeb_FindModelSelectorButton(uia) {
     return CopilotWeb_FindFirstInUia(uia, COPILOT_MODEL_SELECTOR_CRITERIA)
 }
 
+; Visible mode label lives on a Text child under gptModeSwitcher (button Name stays "Model Selector").
+CopilotWeb_GetModelSelectorLabel(btn) {
+    if (!IsObject(btn))
+        return ""
+    try {
+        for child in btn.FindAll({ Type: UIA_Copilot_ControlType_Text }) {
+            try {
+                t := Trim(child.Name)
+                if (t != "")
+                    return t
+            } catch {
+            }
+        }
+    } catch {
+    }
+    try {
+        return Trim(btn.Name)
+    } catch {
+    }
+    return ""
+}
+
 CopilotWeb_FindDeepReasoningMenuItem(uia) {
     if (!IsObject(uia))
         return 0
     bestEl := 0
     bestScore := 0
-    for typeSpec in [UIA_Copilot_ControlType_MenuItem, "MenuItem", UIA_Copilot_ControlType_ListItem, "ListItem",
-        UIA_Copilot_ControlType_Button, "Button"] {
+    for typeSpec in [UIA_Copilot_ControlType_RadioButton, "RadioButton", UIA_Copilot_ControlType_MenuItem, "MenuItem",
+        UIA_Copilot_ControlType_ListItem, "ListItem", UIA_Copilot_ControlType_Button, "Button"] {
         try {
             items := uia.FindAll({ Type: typeSpec })
         } catch {
@@ -1378,10 +1406,8 @@ CopilotWeb_OpenModelSelector(uia := 0) {
     btn := CopilotWeb_FindModelSelectorButton(uia)
     if (!btn)
         return false
-    btnName := ""
-    try btnName := btn.Name
-    ; Already on deep reasoning — do not open the menu.
-    if (CopilotWeb_IsDeepReasoningModelName(btnName))
+    ; Already on Think deeper (label text child) — do not open the menu.
+    if (CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn)))
         return true
     if (!CopilotWeb_ClickUiaElement(btn))
         return false
@@ -1463,6 +1489,56 @@ CopilotWeb_ClickSourcesCapability(automationId, nameSubstrings, uia := 0) {
     }
     el := CopilotWeb_FindFirstInUia(uia, criteria)
     return el && CopilotWeb_ClickUiaElement(el)
+}
+
+CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles) {
+    if (!IsObject(uia) || !IsObject(nameNeedles))
+        return 0
+    for needle in nameNeedles {
+        if (needle = "")
+            continue
+        try {
+            el := uia.FindFirst({ Name: needle, Type: UIA_Copilot_ControlType_MenuItem, matchmode: "Substring" })
+            if (el)
+                return el
+        } catch {
+        }
+        try {
+            el := uia.FindFirst({ Name: needle, ControlType: "MenuItem", matchmode: "Substring" })
+            if (el)
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+; + -> Add capabilities -> submenu item (Generate an image / Research a topic).
+CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
+    if (!uia)
+        uia := CopilotWeb_GetActiveUia()
+    if (!IsObject(uia))
+        return false
+    if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
+        return false
+    addCap := CopilotWeb_FindMenuItemByNameNeedles(uia, COPILOT_ADD_CAPABILITIES_NAMES)
+    if (!addCap || !CopilotWeb_ClickUiaElement(addCap))
+        return false
+    deadline := A_TickCount + 2000
+    item := 0
+    while (A_TickCount < deadline) {
+        try
+            uia := UIA_Browser()
+        catch
+            return false
+        item := CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles)
+        if (item)
+            break
+        Sleep 80
+    }
+    if (!item)
+        return false
+    return CopilotWeb_ClickUiaElement(item)
 }
 
 CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
