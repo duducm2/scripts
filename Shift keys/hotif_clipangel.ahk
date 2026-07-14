@@ -104,6 +104,12 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
+; Ctrl+Enter : native Clip Angel action; then minimize
+~^Enter:: {
+    Sleep 100
+    ClipAngel_CloseAndRestoreFocus(0)
+}
+
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)
 ^1:: {
     Send "{F10}"
