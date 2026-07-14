@@ -8,10 +8,19 @@
 ; Maximize foreground window via Win API (reliable vs simulating Win+Up / system menu).
 ; If WinMaximize fails for a stubborn window, fall back to WM_SYSCOMMAND SC_MAXIMIZE (see AutoHotkey WinMaximize docs).
 WM_MaximizeActiveWindow() {
+    hwnd := 0
+    try hwnd := WinExist("A")
+    catch
+        hwnd := 0
     try {
         WinMaximize "A"
     } catch {
         try PostMessage 0x0112, 0xF030, , , "A"  ; WM_SYSCOMMAND, SC_MAXIMIZE
+    }
+    if (hwnd) {
+        try AutoSlot_OnPairedMaximize(hwnd)
+        catch {
+        }
     }
 }
 
@@ -22,6 +31,9 @@ WM_MaximizeHwnd(hwnd) {
         WinMaximize "ahk_id " hwnd
     } catch {
         try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd  ; WM_SYSCOMMAND, SC_MAXIMIZE
+    }
+    try AutoSlot_OnPairedMaximize(hwnd)
+    catch {
     }
 }
 
@@ -755,6 +767,11 @@ WM_SnapHalfPairActiveWindow() {
     finalOk := WM_WaitValidateSnapBipartitionStrict(monIdx, targetHwnd, partnerHwnd)
     if (!ok || !finalOk)
         ShowNotification_WM("Snap failed — window may be resisting resize.")
+    else {
+        try AutoSlot_RegisterSnapPair(targetHwnd, partnerHwnd)
+        catch {
+        }
+    }
 
     ; If the hotkey target stayed on the snap monitor and the partner was imported from
     ; another monitor, the partner is the window that moved — activate that (not the resident).

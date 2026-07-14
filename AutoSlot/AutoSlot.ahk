@@ -37,15 +37,23 @@ global g_AutoSlotLastDestroyHwnd := 0
 global g_AutoSlotLastDestroyTick := 0
 global g_AutoSlotEnabled := true
 global g_AutoSlotPlaceFreezeUntil := 0
+global g_AutoSlotSnapPairs := Map()
+global g_AutoSlotMaxCompanionSuppress := Map()
+global g_AutoSlotPairMaxPending := Map()
+global g_AutoSlotLocHook := 0
+global g_AutoSlotLocHookCb := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
+AutoSlot_EVENT_OBJECT_LOCATIONCHANGE := 0x800B
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
 AutoSlot_FILL_COOLDOWN_MS := 1500
 AutoSlot_FILL_RETRY_MS := 400
 AutoSlot_DESTROY_DEDUP_MS := 250
+AutoSlot_PAIR_MAX_DEBOUNCE_MS := 120
+AutoSlot_PAIR_SUPPRESS_MS := 500
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -90,6 +98,7 @@ AutoSlot_SetEnabled(on) {
 
 AutoSlot_Init() {
     global g_AutoSlotHook, g_AutoSlotHookCb, g_AutoSlotShellMsg, g_AutoSlotGui
+    global g_AutoSlotLocHook, g_AutoSlotLocHookCb
     if (g_AutoSlotHook || g_AutoSlotShellMsg)
         return
 
@@ -113,6 +122,18 @@ AutoSlot_Init() {
         "UInt", AutoSlot_EVENT_OBJECT_SHOW,
         "Ptr", 0,
         "Ptr", g_AutoSlotHookCb,
+        "UInt", 0,
+        "UInt", 0,
+        "UInt", 0,
+        "Ptr")
+
+    ; Narrow hook: paired maximize when one half of a 50/50 becomes maximized.
+    g_AutoSlotLocHookCb := CallbackCreate(AutoSlot_OnLocationChange, "F", 7)
+    g_AutoSlotLocHook := DllCall("user32\SetWinEventHook",
+        "UInt", AutoSlot_EVENT_OBJECT_LOCATIONCHANGE,
+        "UInt", AutoSlot_EVENT_OBJECT_LOCATIONCHANGE,
+        "Ptr", 0,
+        "Ptr", g_AutoSlotLocHookCb,
         "UInt", 0,
         "UInt", 0,
         "UInt", 0,
@@ -197,7 +218,12 @@ AutoSlot_DestroyLooksInteresting(hwnd) {
 ; fromShell: true for HSHELL_WINDOWDESTROYED (primary). WinEvent skips if same hwnd just armed.
 AutoSlot_OnDestroy(hwnd, fromShell := false) {
     global g_AutoSlotHwndMon, g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick
-    if (!hwnd || MonitorGetCount() <= 1)
+    if (!hwnd)
+        return
+
+    AutoSlot_UnregisterSnapPair(hwnd)
+
+    if (MonitorGetCount() <= 1)
         return
 
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
@@ -231,6 +257,111 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     g_AutoSlotLastDestroyHwnd := hwnd
     g_AutoSlotLastDestroyTick := A_TickCount
     AutoSlot_ScheduleFill(monIdx)
+}
+
+; --- 50/50 pair registry (maximize either side → maximize companion) ----------
+
+AutoSlot_RegisterSnapPair(a, b) {
+    global g_AutoSlotSnapPairs
+    if (!a || !b || a = b)
+        return
+    g_AutoSlotSnapPairs[a] := b
+    g_AutoSlotSnapPairs[b] := a
+}
+
+AutoSlot_UnregisterSnapPair(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!hwnd || !g_AutoSlotSnapPairs.Has(hwnd))
+        return
+    partner := g_AutoSlotSnapPairs[hwnd]
+    g_AutoSlotSnapPairs.Delete(hwnd)
+    if (partner && g_AutoSlotSnapPairs.Has(partner) && g_AutoSlotSnapPairs[partner] = hwnd)
+        g_AutoSlotSnapPairs.Delete(partner)
+}
+
+AutoSlot_PairSuppressActive(hwnd) {
+    global g_AutoSlotMaxCompanionSuppress
+    if (!hwnd || !g_AutoSlotMaxCompanionSuppress.Has(hwnd))
+        return false
+    return A_TickCount - g_AutoSlotMaxCompanionSuppress[hwnd] < AutoSlot_PAIR_SUPPRESS_MS
+}
+
+AutoSlot_PairSuppressMark(hwnd) {
+    global g_AutoSlotMaxCompanionSuppress
+    if (hwnd)
+        g_AutoSlotMaxCompanionSuppress[hwnd] := A_TickCount
+}
+
+AutoSlot_OnLocationChange(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
+        return
+    if (!AutoSlot_IsEnabled())
+        return
+    hwnd := Integer(hwnd)
+    global g_AutoSlotSnapPairs, g_AutoSlotPairMaxPending
+    if (!g_AutoSlotSnapPairs.Has(hwnd))
+        return
+    if (AutoSlot_PairSuppressActive(hwnd))
+        return
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) != 1)
+            return
+    } catch {
+        return
+    }
+    if (g_AutoSlotPairMaxPending.Has(hwnd))
+        return
+    g_AutoSlotPairMaxPending[hwnd] := true
+    SetTimer(() => AutoSlot_ProcessPairedMaximizePending(hwnd), -AutoSlot_PAIR_MAX_DEBOUNCE_MS)
+}
+
+AutoSlot_ProcessPairedMaximizePending(hwnd) {
+    global g_AutoSlotPairMaxPending
+    if (g_AutoSlotPairMaxPending.Has(hwnd))
+        g_AutoSlotPairMaxPending.Delete(hwnd)
+    AutoSlot_OnPairedMaximize(hwnd)
+}
+
+; When hwnd is (or became) maximized, maximize its registered 50/50 companion.
+AutoSlot_OnPairedMaximize(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!AutoSlot_IsEnabled() || !hwnd)
+        return false
+    if (AutoSlot_PairSuppressActive(hwnd))
+        return false
+    if (!g_AutoSlotSnapPairs.Has(hwnd))
+        return false
+    partner := g_AutoSlotSnapPairs[hwnd]
+    if (!partner || !DllCall("IsWindow", "ptr", partner)) {
+        AutoSlot_UnregisterSnapPair(hwnd)
+        return false
+    }
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) != 1)
+            return false
+    } catch {
+        return false
+    }
+    monIdx := AutoSlot_GetHwndMonitorIndex(partner)
+    if (monIdx < 1)
+        monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(partner, monIdx))
+        return false
+
+    AutoSlot_PairSuppressMark(hwnd)
+    AutoSlot_PairSuppressMark(partner)
+    healed := false
+    try healed := !!WM_MaximizeHwndBackground(partner)
+    catch
+        healed := false
+    if (!healed) {
+        try {
+            AutoSlot_MaximizeHwnd(partner)
+            healed := true
+        } catch {
+        }
+    }
+    return healed
 }
 
 ; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
@@ -726,6 +857,7 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     } else {
         g_AutoSlotUndo := 0
     }
+    AutoSlot_RegisterSnapPair(newHwnd, partnerHwnd)
     AutoSlot_ActivateHwnd(newHwnd)
     return newPane
 }

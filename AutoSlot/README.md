@@ -27,6 +27,8 @@ Empty monitors always win over 50/50. Origin is preferred before any remote half
 
 After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadingBar_ShowWithKeys`) offers **[M]** to maximize the new window on ordinal monitor 2 and restore the partner to its pre-snap state. Timeout keeps the snap.
 
+Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script maximize) also maximizes the companion so no orphaned half-pane remains. Disabled when AutoSlot is OFF.
+
 ## Fill empty slot on close
 
 When a window closes and leaves a monitor empty or with exactly one visible window, AutoSlot promotes the first eligible **background** window (`WM_CollectBackgroundWindows`: covered and/or minimized):
