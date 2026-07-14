@@ -10,14 +10,16 @@
 $+d:: {
     try {
         CopilotWeb_ToggleNavDrawer()
-        Sleep 200
+        CopilotWeb_ReturnToComposer()
     } catch {
     }
 }
 
 $+n:: {
-    try CopilotWeb_ClickNewChat()
-    catch {
+    try {
+        CopilotWeb_ClickNewChat()
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
@@ -28,15 +30,19 @@ $+s:: {
 }
 
 $+m:: {
-    try CopilotWeb_RunWithBusyBanner("⏳ Selecting Think deeper… Don't move the mouse", (*) =>
-        CopilotWeb_OpenModelSelector())
-    catch {
+    try {
+        CopilotWeb_RunWithBusyBanner("⏳ Selecting Think deeper… Don't move the mouse", (*) =>
+            CopilotWeb_OpenModelSelector())
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
 $+a:: {
-    try CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt)
-    catch {
+    try {
+        CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt)
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
@@ -52,28 +58,36 @@ $+t:: {
 }
 
 $+i:: {
-    try CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
-        COPILOT_CAPABILITY_IMAGE_NAMES))
-    catch {
+    try {
+        CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
+            COPILOT_CAPABILITY_IMAGE_NAMES))
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
 $+e:: {
-    try CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
-        COPILOT_CAPABILITY_RESEARCH_NAMES))
-    catch {
+    try {
+        CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
+            COPILOT_CAPABILITY_RESEARCH_NAMES))
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
 $+c:: {
-    try CopilotWeb_ShiftCopyLastMessage()
-    catch {
+    try {
+        CopilotWeb_ShiftCopyLastMessage()
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
 $+r:: {
-    try CopilotWeb_ShiftReadAloud()
-    catch {
+    try {
+        CopilotWeb_ShiftReadAloud()
+        CopilotWeb_ReturnToComposer()
+    } catch {
     }
 }
 
@@ -87,7 +101,9 @@ $+v:: {
 
 $+f:: {
     try {
-        if !CopilotWeb_ToggleComposerFullscreen()
+        if CopilotWeb_ToggleComposerFullscreen()
+            CopilotWeb_ReturnToComposer()
+        else
             ShowCenteredOverlay_Utils("Fullscreen input button not found", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }

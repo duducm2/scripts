@@ -365,6 +365,14 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
     return false
 }
 
+; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).
+CopilotWeb_ReturnToComposer() {
+    Sleep 80
+    Send "{Blind}d"
+    Sleep 30
+    Send "{Blind}{Backspace}"
+}
+
 CopilotWeb_WaitForComposerDiscoverable(uia, timeoutMs := 500) {
     start := A_TickCount
     while (A_TickCount - start < timeoutMs) {
@@ -1818,6 +1826,7 @@ CopilotWeb_ToggleVoiceChat(uia := 0) {
         if (!CopilotWeb_ClickUiaElement(endBtn))
             return false
         CopilotWeb_Notify("Voice chat ended", 800, 24)
+        CopilotWeb_ReturnToComposer()
         return true
     }
     startBtn := CopilotWeb_FindButtonByNames(uia, COPILOT_VOICE_START_NAMES)
