@@ -46,8 +46,12 @@ $+m:: {
 
 $+a:: {
     try {
-        CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt)
-        CopilotWeb_ReturnToComposer()
+        ok := CopilotWeb_RunWithBusyBanner("⏳ Think deeper + Generate image… Don't move the mouse", CopilotWeb_ShiftArt
+        )
+        if (ok)
+            CopilotWeb_ReturnToComposer()
+        else
+            ShowCenteredOverlay_Utils("Generate an image failed", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }
 }
@@ -65,18 +69,26 @@ $+t:: {
 
 $+i:: {
     try {
-        CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
-            COPILOT_CAPABILITY_IMAGE_NAMES))
-        CopilotWeb_ReturnToComposer()
+        ok := CopilotWeb_RunWithBusyBanner("⏳ Generate an image… Don't move the mouse", (*) =>
+            CopilotWeb_ClickAddCapability(
+                COPILOT_CAPABILITY_IMAGE_NAMES))
+        if (ok)
+            CopilotWeb_ReturnToComposer()
+        else
+            ShowCenteredOverlay_Utils("Generate an image failed", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }
 }
 
 $+e:: {
     try {
-        CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) => CopilotWeb_ClickAddCapability(
-            COPILOT_CAPABILITY_RESEARCH_NAMES))
-        CopilotWeb_ReturnToComposer()
+        ok := CopilotWeb_RunWithBusyBanner("⏳ Research a topic… Don't move the mouse", (*) =>
+            CopilotWeb_ClickAddCapability(
+                COPILOT_CAPABILITY_RESEARCH_NAMES))
+        if (ok)
+            CopilotWeb_ReturnToComposer()
+        else
+            ShowCenteredOverlay_Utils("Research a topic failed", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }
 }
