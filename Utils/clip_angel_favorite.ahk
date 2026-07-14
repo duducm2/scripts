@@ -110,11 +110,13 @@ ClipAngel_IsWindowShown(hwnd) {
     if !hwnd || !WinExist("ahk_id " hwnd)
         return false
     try {
-        if WinGetMinMax("ahk_id " hwnd) = 1
+        if WinGetMinMax("ahk_id " hwnd) = -1
             return false
     } catch {
         return false
     }
+    if DllCall("IsIconic", "ptr", hwnd)
+        return false
     return DllCall("IsWindowVisible", "ptr", hwnd)
 }
 
@@ -139,7 +141,8 @@ ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true) {
     if !hwnd
         return false
     try {
-        if WinGetMinMax("ahk_id " hwnd) = 1
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = -1 || mm = 1)
             WinRestore("ahk_id " hwnd)
     } catch {
     }
@@ -157,6 +160,27 @@ ClipAngel_ShowWindow(hwnd) {
     if WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd) && !ClipAngel_NeedsLayoutCorrection(hwnd)
         return true
     return ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
+}
+
+; Minimize Clip Angel (process stays running; no native Alt+P / WinClose).
+ClipAngel_HideWindow(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        WinMinimize("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    Sleep 50
+    if !ClipAngel_IsWindowShown(hwnd)
+        return true
+    try {
+        WinMinimize("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    Sleep 50
+    return !ClipAngel_IsWindowShown(hwnd)
 }
 
 ClipAngel_WaitForMainHwnd(timeoutMs := CLIPANGEL_ALT_P_HWND_WAIT_MS) {
@@ -718,6 +742,8 @@ ClipAngel_SendIncrementalPaste() {
 }
 
 ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_HideWindow(hwnd)
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
@@ -978,7 +1004,7 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     } finally {
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
 }
