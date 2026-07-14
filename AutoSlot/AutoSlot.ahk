@@ -8,10 +8,9 @@
 ; Delete: remove the #include in WindowManagement.ahk + this folder (see README).
 ;
 ; Placement (MonitorGetCount() > 1 only):
-;   1) Origin monitor has exactly 1 other window → restore if maximized, 50/50
-;   2) Else first empty ordinal monitor → maximize onto it
-;   3) Else first half-full ordinal → 50/50
-;   4) Else maximize new window in place
+;   1) First empty ordinal monitor → maximize onto it
+;   2) Else first half-full ordinal → 50/50
+;   3) Else maximize new window in place
 ;
 ; Fill-on-close (same multi-monitor gate):
 ;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
@@ -832,25 +831,7 @@ AutoSlot_Place(hwnd) {
     msg := ""
     AutoSlot_RememberHwndMon(hwnd)
 
-    ; 1) Origin-first: exactly one other window on the monitor where the new hwnd appeared.
-    originMon := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (originMon >= 1) {
-        originOthers := AutoSlot_OccupancyOnMonitor(originMon, hwnd)
-        if (originOthers.Length = 1) {
-            pane := AutoSlot_SnapPair(hwnd, originOthers[1].hwnd, originMon)
-            order := AutoSlot_OrderForMonitorIndex(originMon)
-            if (pane != "") {
-                label := order > 0 ? order : originMon
-                AutoSlot_ShowUndoModal("M" label " " pane)
-                return
-            }
-            if (AutoSlot_MaximizeInPlace(hwnd)) {
-                AutoSlot_Toast("ℹ️ Auto-slot snap failed — maximized")
-                return
-            }
-        }
-    }
-
+    ; Empty-monitor-first: never 50/50 on an occupied screen when any ordinal is empty.
     emptyOrder := 0
     emptyMon := 0
     halfOrder := 0
