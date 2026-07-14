@@ -150,6 +150,27 @@ WM_WindowTools_OnCancel(*) {
     StandardLoadingBar_Hide(0)
 }
 
+WM_WindowTools_OnToggleAutoSlot(*) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    Sleep 50
+    newState := false
+    try newState := AutoSlot_SetEnabled(!AutoSlot_IsEnabled())
+    catch {
+        try ShowCenteredOverlay_Utils("❌ AutoSlot toggle unavailable", 2500, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    label := newState ? "ON" : "OFF"
+    accent := newState ? BANNER_ACCENT_SUCCESS : BANNER_ACCENT_INFO
+    try ShowCenteredOverlay_Utils("AutoSlot " label, 1400, accent)
+    catch {
+    }
+    Sleep 200
+    WM_WindowTools_ShowMenu()
+}
+
 WM_WindowTools_ShowMenu() {
     global g_WM_MinimizedListActive
     if (g_WM_MinimizedListActive)
@@ -157,14 +178,20 @@ WM_WindowTools_ShowMenu() {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     Sleep 50
+    autoSlotOn := true
+    try autoSlotOn := AutoSlot_IsEnabled()
+    catch
+        autoSlotOn := true
+    autoSlotLabel := autoSlotOn ? "ON" : "OFF"
     keyCallbacks := Map(
         "1", WM_WindowTools_OnMaximizeLonely,
         "2", WM_WindowTools_OnShowMinimizedList,
         "3", WM_WindowTools_OnTileBackground,
         "4", WM_WindowTools_OnExitF11Fullscreen,
+        "5", WM_WindowTools_OnToggleAutoSlot,
         "Escape", WM_WindowTools_OnCancel)
     StandardLoadingBar_ShowWithKeys(
-        "❓ Window tools — choose an action (8s)",
+        "❓ Window tools — AutoSlot " autoSlotLabel " (8s)",
         keyCallbacks,
         8000,
         0,
@@ -174,7 +201,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Tile background (CAW+Y; ≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen (CAW+P)  [Esc] Cancel",
+        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Tile background (CAW+Y; ≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen (CAW+P)  [5] AutoSlot: " autoSlotLabel "  [Esc] Cancel",
         true,
         false,
         false)
@@ -262,4 +289,3 @@ WM_BackgroundTitleExcludes_ParseDiskEntries(raw) {
     }
     return entries
 }
-

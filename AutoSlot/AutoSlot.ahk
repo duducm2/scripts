@@ -16,6 +16,8 @@
 ;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
 ;   already-filled skip → else WM_CollectBackgroundWindows → maximize or gapless
 ;   50/50 without strict validate; no candidate → companion heal.
+;
+; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
 
 global g_AutoSlotHook := 0
@@ -30,6 +32,7 @@ global g_AutoSlotHwndMon := Map()
 global g_AutoSlotFillCooldown := Map()
 global g_AutoSlotLastDestroyHwnd := 0
 global g_AutoSlotLastDestroyTick := 0
+global g_AutoSlotEnabled := true
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -43,12 +46,49 @@ AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
 
+; --- Enable / persist --------------------------------------------------------
+
+AutoSlot_IniPath() {
+    return A_ScriptDir "\assets\data\wm_autoslot.ini"
+}
+
+AutoSlot_IsEnabled() {
+    global g_AutoSlotEnabled
+    return !!g_AutoSlotEnabled
+}
+
+AutoSlot_LoadEnabled() {
+    global g_AutoSlotEnabled
+    path := AutoSlot_IniPath()
+    raw := "1"
+    try raw := IniRead(path, "AutoSlot", "Enabled", "1")
+    catch
+        raw := "1"
+    g_AutoSlotEnabled := (raw = "1" || raw = "true" || raw = "True")
+}
+
+AutoSlot_SetEnabled(on) {
+    global g_AutoSlotEnabled
+    g_AutoSlotEnabled := !!on
+    path := AutoSlot_IniPath()
+    try {
+        dir := A_ScriptDir "\assets\data"
+        if !DirExist(dir)
+            DirCreate(dir)
+        IniWrite(g_AutoSlotEnabled ? "1" : "0", path, "AutoSlot", "Enabled")
+    } catch {
+    }
+    return g_AutoSlotEnabled
+}
+
 ; --- Init --------------------------------------------------------------------
 
 AutoSlot_Init() {
     global g_AutoSlotHook, g_AutoSlotHookCb, g_AutoSlotShellMsg, g_AutoSlotGui
     if (g_AutoSlotHook || g_AutoSlotShellMsg)
         return
+
+    AutoSlot_LoadEnabled()
 
     if (!g_AutoSlotGui) {
         g_AutoSlotGui := Gui("+ToolWindow -Caption +E0x08000000")
@@ -200,6 +240,8 @@ AutoSlot_ClaimMonitor(monIdx) {
 
 AutoSlot_ScheduleFill(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
+    if (!AutoSlot_IsEnabled())
+        return
     if (monIdx < 1 || MonitorGetCount() <= 1)
         return
     if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
@@ -215,6 +257,8 @@ AutoSlot_ProcessFillPending(monIdx) {
     ; ClaimMonitor may already have cleared pending; Map.Delete throws if key missing.
     if (g_AutoSlotFillPending.Has(monIdx))
         g_AutoSlotFillPending.Delete(monIdx)
+    if (!AutoSlot_IsEnabled())
+        return
     ; Place may have claimed this monitor after the timer was armed.
     if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
         return
@@ -246,6 +290,8 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
 
 AutoSlot_Schedule(hwnd) {
     global g_AutoSlotPending, g_AutoSlotRecent
+    if (!AutoSlot_IsEnabled())
+        return
     if (!hwnd || MonitorGetCount() <= 1)
         return
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
@@ -260,6 +306,8 @@ AutoSlot_Schedule(hwnd) {
 AutoSlot_ProcessPending(hwnd) {
     global g_AutoSlotPending, g_AutoSlotRecent
     g_AutoSlotPending.Delete(hwnd)
+    if (!AutoSlot_IsEnabled())
+        return
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
     if (MonitorGetCount() <= 1)
