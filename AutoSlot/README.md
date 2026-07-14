@@ -31,16 +31,17 @@ Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script 
 
 ## Fill empty slot on close
 
-When a window closes and leaves a monitor empty or with exactly one visible window, AutoSlot promotes the first eligible **background** window (`WM_CollectBackgroundWindows`: covered and/or minimized):
+When a window closes and leaves a monitor empty or with exactly one visible window:
 
-| Occupancy after close            | Action                                                 |
-| -------------------------------- | ------------------------------------------------------ |
-| 0 visible                        | Maximize background window onto that monitor           |
-| 1 visible + background available | 50/50 snap background window with the remaining window |
-| 1 visible + no background        | Maximize the remaining companion                       |
-| 2+                               | No-op                                                  |
+| Occupancy after close | Action                                                               |
+| --------------------- | -------------------------------------------------------------------- |
+| 0 visible             | Maximize first eligible background window onto that monitor          |
+| 1 visible             | Maximize the remaining companion to 100% (never import a background) |
+| 2+                    | No-op                                                                |
 
-Only the monitor that lost the window is considered. No undo modal on this path. Fill snaps use gapless placement **without** the ~400 ms strict validate wait (new-window place still validates). Companions already maximized/work-area-filled skip background enumeration. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Background fill is suppressed for a monitor recently claimed by new-window placement (avoids a deferred fill racing Place and stealing the slot/foreground), but **companion heal still runs** during that cooldown and is not blocked when the leftover window is tagged recent. If occupancy still shows 2+ windows briefly (e.g. Chrome closing), fill retries once (~400 ms) before giving up.
+Empty-monitor background candidates skip windows that still have a living 50/50 snap-pair partner, and windows whose home monitor has another window in **F11 fullscreen** (so an F11-covered companion is not stolen into another slot). True minimized / unrelated background windows remain eligible.
+
+Only the monitor that lost the window is considered. No undo modal on this path. Companions already maximized/work-area-filled skip work. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Background fill is suppressed for a monitor recently claimed by new-window placement, but companion heal still runs during that cooldown and is not blocked when the leftover window is tagged recent. If occupancy still shows 2+ windows briefly (e.g. Chrome closing), fill retries once (~400 ms) before giving up.
 
 ## Disable
 

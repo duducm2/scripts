@@ -989,6 +989,44 @@ AutoSlot_ShowUndoModal(paneLabel := "") {
 
 ; --- Fill-on-close (background → freed slot) ---------------------------------
 
+; True when hwnd still belongs to a living 50/50 pair (must not be relocated by fill).
+AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!hwnd || !g_AutoSlotSnapPairs.Has(hwnd))
+        return false
+    partner := g_AutoSlotSnapPairs[hwnd]
+    return !!(partner && DllCall("IsWindow", "ptr", partner))
+}
+
+; True when hwnd's home monitor has another window in F11 fullscreen (hwnd is covered there).
+AutoSlot_BackgroundCandCoveredByF11(hwnd) {
+    global g_AutoSlotHwndMon
+    if (!hwnd)
+        return false
+    monIdx := 0
+    if (g_AutoSlotHwndMon.Has(hwnd))
+        monIdx := g_AutoSlotHwndMon[hwnd]
+    if (monIdx < 1)
+        monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx < 1)
+        return false
+    try {
+        for other in WinGetList() {
+            if (!other || other = hwnd)
+                continue
+            if (AutoSlot_GetHwndMonitorIndex(other) != monIdx)
+                continue
+            try {
+                if (WM_WindowIsF11Fullscreen(other))
+                    return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
     occupied := Map()
     for row in occupancyRows {
@@ -1009,6 +1047,11 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
         if (occupied.Has(hwnd))
             continue
         if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+            continue
+        ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
+        if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))
+            continue
+        if (AutoSlot_BackgroundCandCoveredByF11(hwnd))
             continue
         return hwnd
     }
@@ -1066,7 +1109,7 @@ AutoSlot_BeginPlaceFreeze() {
 }
 
 AutoSlot_FillMonitorFromBackground(monIdx) {
-    global g_AutoSlotRecent, g_AutoSlotUndo
+    global g_AutoSlotRecent
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return "noop"
     others := AutoSlot_OccupancyOnMonitor(monIdx)
@@ -1076,38 +1119,14 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
-    ; Leftover half of a pair — maximize companion (even if that hwnd is recent-placed).
+    ; Leftover half: always maximize the residual window — never import a background cand.
     if (others.Length = 1) {
         if (AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
             return "ok"
-        ; Do not promote background over a window AutoSlot_Place just assigned.
-        if (AutoSlot_OccupancyHasRecent(others))
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
-        ; During Place freeze: heal only — never SnapPair a background cand into the resident.
-        if (AutoSlot_PlaceFreezeActive())
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
-        cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
-        if (!cand)
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
-        g_AutoSlotRecent[cand] := A_TickCount
-        AutoSlot_PruneRecent()
-        g_AutoSlotUndo := 0
-        pane := AutoSlot_SnapPair(cand, others[1].hwnd, monIdx, true)
-        AutoSlot_ClearUndo()
-        if (pane != "") {
-            AutoSlot_RememberHwndMon(cand)
-            AutoSlot_Toast("ℹ️ Slot filled → M" label " " pane)
-            return "ok"
-        }
-        if (AutoSlot_MaximizeOnMonitor(cand, monIdx)) {
-            AutoSlot_RememberHwndMon(cand)
-            AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
-            return "ok"
-        }
         return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
     }
 
-    ; Empty monitor — promote background (skip if somehow contested by recent; empty has none).
+    ; Empty monitor — promote eligible background (not snap-paired / F11-covered).
     cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
     if (!cand)
         return "noop"
