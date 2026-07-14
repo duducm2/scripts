@@ -67,37 +67,19 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 ; Shift + M : Merge clips
 +m:: Send "^!j"
 
-; Alt + 1 : Select current item
-!1:: Send "{Enter}"
+; Alt + 1–5 : Move down (N-1), Enter to paste selected clip into prior text field, then minimize.
+!1:: ClipAngel_SelectClipPasteThenMinimize(0)
+!2:: ClipAngel_SelectClipPasteThenMinimize(1)
+!3:: ClipAngel_SelectClipPasteThenMinimize(2)
+!4:: ClipAngel_SelectClipPasteThenMinimize(3)
+!5:: ClipAngel_SelectClipPasteThenMinimize(4)
 
-; Alt + 2 : Move down once and select
-!2:: {
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Alt + 3 : Move down twice and select
-!3:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Alt + 4 : Move down three times and select
-!4:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
-}
-
-; Alt + 5 : Move down four times and select
-!5:: {
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Down}"
-    Send "{Enter}"
+; Enter : paste focused list clip into prior text field, then minimize (skip when editing filters/preview).
+$Enter:: {
+    if ClipAngel_IsListPasteEnterContext()
+        ClipAngel_SelectClipPasteThenMinimize(0)
+    else
+        Send "{Enter}"
 }
 
 ; Alt + Enter : Paste file — Clip > Paste > Paste file; then minimize (process stays running).

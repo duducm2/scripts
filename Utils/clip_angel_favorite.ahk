@@ -747,6 +747,59 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
+; True when Enter on the clip list pastes into the prior app (not filter combo / preview edit).
+ClipAngel_IsListPasteEnterContext(hwnd := 0) {
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    try {
+        focused := UIA.GetFocusedElement()
+        if !focused
+            return true
+        type := 0
+        aid := ""
+        name := ""
+        try type := focused.Type
+        catch {
+        }
+        try aid := focused.AutomationId
+        catch {
+        }
+        try name := focused.Name
+        catch {
+        }
+        ; ComboBox / Edit / Document — filters, search, preview, edit-clip UI.
+        if (type = 50003 || type = 50004 || type = 50030)
+            return false
+        if (aid = "MarkFilter" || aid = "TypeFilter" || aid = "comboBoxSearchString"
+            || aid = "richTextBox" || aid = "urlTextBox")
+            return false
+        if (type = 50036 || type = 50025)  ; Table / DataGrid row
+            return true
+        if RegExMatch(name, "i)^(?:Row|Linha)\s*\d+")
+            return true
+        if (aid = "dataGridView")
+            return true
+        ; Title/image cells inside a row still paste via Enter.
+        if (type = 50006 && RegExMatch(name, "i)(?:Row|Linha)\s*\d+"))
+            return true
+    } catch {
+    }
+    return true
+}
+
+; Down N (optional), native Enter to paste selected clip, then minimize Clip Angel.
+ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
+    if (downCount > 0) {
+        loop downCount
+            Send "{Down}"
+    }
+    Send "{Enter}"
+    Sleep 100
+    ClipAngel_CloseAndRestoreFocus(0)
+}
+
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
