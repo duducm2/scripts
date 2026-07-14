@@ -127,6 +127,15 @@ $+f:: {
     }
 }
 
+; Shift+H: strip human reminders after last --- (keep divider + blank lines for comments)
+$+h:: {
+    try {
+        if !CopilotWeb_StripComposerHumanReminders()
+            ShowCenteredOverlay_Utils("No --- human-reminder divider found", 2200, BANNER_ACCENT_ERROR)
+    } catch {
+    }
+}
+
 $Enter:: {
     if (GetKeyState("Shift", "P") || GetKeyState("Ctrl", "P")) {
         Send "{Enter}"

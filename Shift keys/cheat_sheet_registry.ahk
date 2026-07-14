@@ -1053,6 +1053,7 @@ cheatSheets["Gemini"] := "
     🔊 [R][R]ead aloud last message
     🤖 [G]Send[G]emini prompt text
     ⛶ [F][F]ullscreen input
+    ✂️ [H]Strip [H]uman reminders (keep --- + blank lines)
     🔔 [Enter / Ctrl+Enter]Send and notify on completion
     
     === Alt (ahk) ===
@@ -1075,6 +1076,7 @@ cheatSheets["Copilot Web"] := "
     🔊 [R][R]ead aloud last message
     🎙️ [V]Toggle [V]oice chat (start / end)
     ⛶ [F][F]ullscreen input (expand composer)
+    ✂️ [H]Strip [H]uman reminders (keep --- + blank lines)
     🔔 [Enter / Ctrl+Enter]Send and notify on completion
     
     === Alt (ahk) ===

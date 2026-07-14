@@ -91,6 +91,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] Hotstrings core (InitHotstringsCheatSheet) -> Utils\hotstrings_core.ahk
 #include %A_ScriptDir%\Utils\hotstrings_core.ahk
+; [Utils module] Strip prompt human reminders after --- (Shift+H Copilot/Gemini)
+#include %A_ScriptDir%\Utils\prompt_strip_reminders.ahk
 ; [Utils module] Files and links quick-open (InitQuickOpenFiles) -> Utils\files_links.ahk
 #include %A_ScriptDir%\Utils\files_links.ahk
 ; [Utils module] Macros system RegisterMacro and assignments -> Utils\macros_system.ahk

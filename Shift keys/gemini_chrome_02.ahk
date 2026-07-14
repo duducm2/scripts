@@ -945,4 +945,28 @@ PlayCompletionChime_Gemini() {
     }
 }
 
+; Shift+H: strip human reminders after last --- (keep divider + blank lines for comments)
+$+h:: {
+    try {
+        uia := UIA_Browser()
+        text := GeminiPromptFieldGetTextFromUia(uia)
+        newText := StripPromptHumanReminders(text)
+        if (newText = "") {
+            ShowCenteredOverlay_Utils("No --- human-reminder divider found", 2200, BANNER_ACCENT_ERROR)
+            return
+        }
+        phase := ""
+        if !Gemini_FocusPromptWithChime(uia, { playChime: false }, &phase) {
+            pf := FindGeminiPromptField(uia)
+            if pf {
+                try pf.SetFocus()
+                catch {
+                }
+            }
+        }
+        ReplaceFocusedEditWithText(newText)
+    } catch {
+    }
+}
+
 #HotIf

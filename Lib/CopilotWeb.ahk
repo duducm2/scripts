@@ -485,6 +485,21 @@ CopilotWeb_ComposerGetText(copilotHwnd := 0) {
     return ""
 }
 
+; Strip human-reminder block after the last --- in the composer (keep --- + blank lines).
+CopilotWeb_StripComposerHumanReminders() {
+    hwnd := WinExist("A")
+    text := CopilotWeb_ComposerGetText(hwnd)
+    if (text = "")
+        return false
+    newText := StripPromptHumanReminders(text)
+    if (newText = "")
+        return false
+    root := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if (IsObject(root))
+        CopilotWeb_FocusComposer(root, false)
+    return ReplaceFocusedEditWithText(newText)
+}
+
 ; Navigate to Copilot, focus composer, paste snippet (optional text or Clip Angel first snippet).
 CopilotWeb_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
     SetTitleMatchMode(2)
