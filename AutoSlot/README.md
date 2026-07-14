@@ -12,15 +12,18 @@ Default is ON when the ini is missing.
 
 ## New-window placement
 
+Capacity model: **2 slots per ordinal monitor** (up to 8). A single maximized window uses one full-screen presentation but only **one** slot — the other half-slot stays available for 50/50.
+
 On show (multi-monitor only):
 
-| Condition                                            | Action                                             |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| Any empty ordinal monitor (0 visible excl. new hwnd) | Maximize new window onto the first empty monitor   |
-| No empty; **origin** monitor has exactly 1 other     | 50/50 on origin only — partner keeps its pane/side |
-| Otherwise                                            | Maximize new window in place                       |
+| Condition                                            | Action                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------- |
+| Any empty ordinal (0 visible excl. new hwnd)         | Maximize new window onto the first empty monitor        |
+| No empty; **origin** has exactly 1 other             | 50/50 on origin — partner keeps its pane/side           |
+| No empty; origin full; another monitor has exactly 1 | 50/50 on that half-full monitor (incl. maximized-alone) |
+| All ordinals have 2+ windows                         | Maximize new window in place (“grid full”)              |
 
-Empty monitors always win over 50/50. AutoSlot never snaps onto a half-full monitor that is not where the new window appeared (avoids reshaping unrelated slots). During Place, fill-on-close will not SnapPair a background window into a half-full monitor (heal-only under place freeze).
+Empty monitors always win over 50/50. Origin is preferred before any remote half-full so unrelated layouts are not reshaped when the origin can partition. During Place, fill-on-close will not SnapPair a background window into a half-full monitor (heal-only under place freeze).
 
 After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadingBar_ShowWithKeys`) offers **[M]** to maximize the new window on ordinal monitor 2 and restore the partner to its pre-snap state. Timeout keeps the snap.
 

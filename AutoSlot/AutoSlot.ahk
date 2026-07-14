@@ -7,10 +7,11 @@
 ; On window close, fills the freed monitor slot from background windows.
 ; Delete: remove the #include in WindowManagement.ahk + this folder (see README).
 ;
-; Placement (MonitorGetCount() > 1 only):
-;   1) First empty ordinal monitor → maximize onto it
-;   2) Else origin monitor has exactly 1 other → 50/50 there (partner keeps pane)
-;   3) Else maximize new window in place
+; Placement (MonitorGetCount() > 1 only); 2 slots per ordinal monitor (max 8):
+;   1) First empty ordinal → maximize onto it
+;   2) Else origin has exactly 1 other (max or half) → 50/50 on origin
+;   3) Else first half-full ordinal anywhere → 50/50 (maximized still has a free half-slot)
+;   4) Else maximize new window in place
 ;
 ; Fill-on-close (same multi-monitor gate):
 ;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
@@ -990,6 +991,38 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
 
 ; --- Placement ---------------------------------------------------------------
 
+; First ordinal monitor with exactly one occupant (excl. hwnd). One maximized
+; window counts as half-full — the other half-slot is still available.
+AutoSlot_FindHalfFullMonitor(excludeHwnd := 0) {
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    loop ordinalCount {
+        order := A_Index
+        monIdx := AutoSlot_GetMonitorIndexByOrder(order)
+        if (!monIdx)
+            continue
+        others := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
+        if (others.Length = 1)
+            return { order: order, monIdx: monIdx, partner: others[1].hwnd }
+    }
+    return 0
+}
+
+AutoSlot_TrySnapOnMonitor(hwnd, monIdx, orderLabel := 0) {
+    others := AutoSlot_OccupancyOnMonitor(monIdx, hwnd)
+    if (others.Length != 1)
+        return false
+    partner := others[1].hwnd
+    pane := AutoSlot_SnapPair(hwnd, partner, monIdx)
+    if (pane = "")
+        return false
+    AutoSlot_ClaimMonitor(monIdx)
+    if (orderLabel < 1)
+        orderLabel := AutoSlot_OrderForMonitorIndex(monIdx)
+    label := orderLabel > 0 ? orderLabel : monIdx
+    AutoSlot_ShowUndoModal("M" label " " pane)
+    return true
+}
+
 AutoSlot_Place(hwnd) {
     global g_AutoSlotUndo
     if (!hwnd || !WinExist("ahk_id " hwnd))
@@ -1029,26 +1062,15 @@ AutoSlot_Place(hwnd) {
         return
     }
 
-    ; 50/50 only on the monitor where the new window appeared — never steal a remote half-full.
+    ; Prefer partitioning the origin slot when it has exactly one resident (incl. maximized).
     originMon := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (originMon >= 1) {
-        originOthers := AutoSlot_OccupancyOnMonitor(originMon, hwnd)
-        if (originOthers.Length = 1) {
-            partner := originOthers[1].hwnd
-            pane := AutoSlot_SnapPair(hwnd, partner, originMon)
-            if (pane != "") {
-                AutoSlot_ClaimMonitor(originMon)
-                order := AutoSlot_OrderForMonitorIndex(originMon)
-                label := order > 0 ? order : originMon
-                AutoSlot_ShowUndoModal("M" label " " pane)
-                return
-            }
-            if (AutoSlot_MaximizeInPlace(hwnd))
-                msg := "ℹ️ Auto-slot snap failed — maximized"
-            AutoSlot_Toast(msg)
-            return
-        }
-    }
+    if (originMon >= 1 && AutoSlot_TrySnapOnMonitor(hwnd, originMon))
+        return
+
+    ; Half-slots remain open on any monitor with a single window (maximized = 1 of 2 slots).
+    half := AutoSlot_FindHalfFullMonitor(hwnd)
+    if (IsObject(half) && AutoSlot_TrySnapOnMonitor(hwnd, half.monIdx, half.order))
+        return
 
     if (AutoSlot_MaximizeInPlace(hwnd))
         msg := "ℹ️ Grid full — maximized"
