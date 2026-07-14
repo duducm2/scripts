@@ -1182,6 +1182,62 @@ CopilotWeb_ClickUiaElement(el) {
     return false
 }
 
+; Force a mouse click. el.Click() with no button prefers Invoke, which often does not
+; open Fluent nested flyouts (e.g. "Add capabilities").
+CopilotWeb_ClickUiaElementMouse(el) {
+    if (!IsObject(el))
+        return false
+    try {
+        el.Click("left")
+        return true
+    } catch {
+    }
+    return false
+}
+
+CopilotWeb_HoverUiaElement(el) {
+    if (!IsObject(el))
+        return false
+    try {
+        loc := el.Location
+        CoordMode("Mouse", "Screen")
+        MouseMove(loc.x + loc.w // 2, loc.y + loc.h // 2, 0)
+        return true
+    } catch {
+    }
+    return false
+}
+
+; Open a submenu parent when hover alone did not reveal children.
+; Do not call this after hover has already opened the flyout — a second click can dismiss it.
+CopilotWeb_ForceOpenSubmenuMenuItem(el) {
+    if (!IsObject(el))
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)) {
+            pat := el.ExpandCollapsePattern
+            state := pat.ExpandCollapseState
+            if (state = UIA.ExpandCollapseState.Expanded)
+                return true
+            if (state = UIA.ExpandCollapseState.Collapsed) {
+                pat.Expand()
+                return true
+            }
+        }
+    } catch {
+    }
+    if (CopilotWeb_ClickUiaElementMouse(el))
+        return true
+    try {
+        el.SetFocus()
+        Sleep 40
+        Send "{Right}"
+        return true
+    } catch {
+    }
+    return false
+}
+
 CopilotWeb_FindButtonByNames(uia, names) {
     if (!IsObject(uia) || !IsObject(names))
         return 0
@@ -1513,7 +1569,7 @@ CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles) {
     return 0
 }
 
-; + -> Add capabilities -> submenu item (Generate an image / Research a topic).
+; + -> Add capabilities (nested flyout) -> submenu item (Generate an image / Research a topic).
 CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
     if (!uia)
         uia := CopilotWeb_GetActiveUia()
@@ -1522,23 +1578,42 @@ CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
     if (!CopilotWeb_EnsureSourcesMenuOpen(&uia))
         return false
     addCap := CopilotWeb_FindMenuItemByNameNeedles(uia, COPILOT_ADD_CAPABILITIES_NAMES)
-    if (!addCap || !CopilotWeb_ClickUiaElement(addCap))
+    if (!addCap) {
+        try uia := UIA_Browser()
+        catch
+            return false
+        addCap := CopilotWeb_FindMenuItemByNameNeedles(uia, COPILOT_ADD_CAPABILITIES_NAMES)
+    }
+    if (!addCap)
         return false
-    deadline := A_TickCount + 2000
-    item := 0
+    ; Fluent opens the capabilities flyout on hover; Invoke alone does not.
+    CopilotWeb_HoverUiaElement(addCap)
+    item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 900)
+    if (!item) {
+        if (!CopilotWeb_ForceOpenSubmenuMenuItem(addCap))
+            return false
+        item := CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, 3000)
+    }
+    if (!item)
+        return false
+    if (CopilotWeb_ClickUiaElementMouse(item))
+        return true
+    return CopilotWeb_ClickUiaElement(item)
+}
+
+CopilotWeb_WaitForMenuItemByNameNeedles(nameNeedles, timeoutMs := 2000) {
+    deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         try
             uia := UIA_Browser()
         catch
-            return false
+            return 0
         item := CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles)
         if (item)
-            break
+            return item
         Sleep 80
     }
-    if (!item)
-        return false
-    return CopilotWeb_ClickUiaElement(item)
+    return 0
 }
 
 CopilotWeb_ScrollFeedToBottom(hwnd := 0) {

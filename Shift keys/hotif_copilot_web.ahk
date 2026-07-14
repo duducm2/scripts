@@ -36,7 +36,7 @@ $+m:: {
 $+a:: {
     try {
         CopilotWeb_OpenModelSelector()
-        Sleep 250
+        Sleep 400
         CopilotWeb_ClickAddCapability(COPILOT_CAPABILITY_IMAGE_NAMES)
     } catch {
     }
