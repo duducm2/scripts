@@ -94,6 +94,16 @@ $Enter:: {
     }
 }
 
+; Ctrl+Alt+B / Ctrl+Alt+V : native paste + move selection; then minimize
+~^!b:: {
+    Sleep 100
+    ClipAngel_CloseAndRestoreFocus(0)
+}
+~^!v:: {
+    Sleep 100
+    ClipAngel_CloseAndRestoreFocus(0)
+}
+
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)
 ^1:: {
     Send "{F10}"
