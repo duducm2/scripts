@@ -19,7 +19,7 @@
     Sleep(700)
     Send("!q")
     Sleep(200)
-    SendEscape()
+    ClipAngel_CloseAndRestoreFocus(0)
 }
 
 ; =============================================================================

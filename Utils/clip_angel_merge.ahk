@@ -185,10 +185,12 @@ MergeNonFavoriteClips() {
                 BANNER_ACCENT_INTERMEDIATE)
         }
 
-        ; Guarantee Clip Angel is closed when macro finishes (success or not found)
+        ; Guarantee Clip Angel is minimized when macro finishes (success or not found)
     } catch Error as e {
         AiModelBanner_Hide()
         MsgBox "Error in MergeNonFavoriteClips: " . e.Message, "Merge Clips", "IconX"
+    } finally {
+        ClipAngel_CloseAndRestoreFocus(0)
     }
 }
 

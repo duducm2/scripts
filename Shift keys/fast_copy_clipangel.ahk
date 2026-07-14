@@ -460,7 +460,7 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             try FastCopyMode_FocusGeminiPromptField(uia)
         }
     } finally {
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
         try StandardLoadingBar_Hide(0)
         try {
@@ -690,7 +690,7 @@ ExecuteSequentialPaste(actionCount) {
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
     } finally {
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
         try StandardLoadingBar_Hide(0)
     }

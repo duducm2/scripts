@@ -100,12 +100,16 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
     Send "{Enter}"
 }
 
-; Alt + Enter : Paste file — Clip > Paste > Paste file
+; Alt + Enter : Paste file — Clip > Paste > Paste file; then minimize (process stays running).
 !Enter:: {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
-    if !ClipAngel_InvokePasteEnter()
-        ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
+    try {
+        if !ClipAngel_InvokePasteEnter()
+            ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
+    } finally {
+        ClipAngel_CloseAndRestoreFocus(0)
+    }
 }
 
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)

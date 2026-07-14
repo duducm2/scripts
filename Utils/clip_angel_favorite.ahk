@@ -784,7 +784,7 @@ ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
     SendInput "^!b"
 }
 
-; Send top list item via Clip Angel native keys. Restores prior focus after paste.
+; Send top list item via Clip Angel native keys. Minimizes Clip Angel and restores prior focus after paste.
 ClipAngel_SendTopListItem(priorHwnd := 0) {
     if !ClipAngel_TryAcquireAutomationLock()
         return false
@@ -797,13 +797,13 @@ ClipAngel_SendTopListItem(priorHwnd := 0) {
         ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         ok := false
     } finally {
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
     return ok
 }
 
-; Paste N top-list items in order. Opens once, incremental paste between items, restores prior focus at end.
+; Paste N top-list items in order. Opens once, incremental paste between items, minimizes + restores prior focus at end.
 ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
     if (!IsInteger(count))
         return false
@@ -827,13 +827,12 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
             }
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
-        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ok := true
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Clip Angel sequential paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         ok := false
     } finally {
-        ClipAngel_RestorePriorFocus(priorHwnd)
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
     return ok
