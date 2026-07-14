@@ -180,7 +180,8 @@ CopilotWeb_TryUiaFingerprint(hwnd) {
             return true
         for criteria in [{ AutomationId: "m365-copilot-app-layout-main" }, { AutomationId: "copilot-message-rbp-title" }, { AutomationId: "m365-chat-editor-target-element" }, { AutomationId: "gptModeSwitcher",
             ControlType: "Button" }, { Name: "Message Copilot" }, { Name: "Copilot said:" }, { Name: "Expand navigation",
-                ControlType: "Button" }, { Name: "New chat", ControlType: "MenuItem" }
+                ControlType: "Button" }, { Name: "New chat", ControlType: "Link" }, { Name: "New chat", ControlType: "Hyperlink" }, { Name: "New chat",
+                    ControlType: "MenuItem" }
         ] {
             try {
                 if (uia.FindFirst(criteria))
@@ -1343,8 +1344,15 @@ CopilotWeb_ClickNewChat(uia := 0) {
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
+    ; Live UI exposes New chat as Link (50005) + fai-CopilotNavItem — works collapsed or expanded.
+    ; Do not EnsureNavDrawerOpen; click the control in place.
     criteria := []
     for n in COPILOT_NEW_CHAT_NAMES {
+        criteria.Push({ Name: n, ControlType: "Link", ClassName: "fai-CopilotNavItem", matchmode: "Substring" })
+        criteria.Push({ Name: n, ControlType: "Hyperlink", ClassName: "fai-CopilotNavItem", matchmode: "Substring" })
+        criteria.Push({ Name: n, ControlType: "Link" })
+        criteria.Push({ Name: n, ControlType: "Hyperlink" })
+        criteria.Push({ Name: n, Type: 50005 })
         criteria.Push({ Name: n, ControlType: "Button" })
         criteria.Push({ Name: n, ControlType: "MenuItem" })
     }
