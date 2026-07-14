@@ -54,16 +54,21 @@ COPILOT_MODEL_MENU_WAIT_MS := 2000
 COPILOT_MODEL_MENU_POLL_MS := 80
 UIA_Copilot_ControlType_ListItem := 50007
 COPILOT_SOURCES_BUTTON_CRITERIA := [{ Name: "Add and manage sources", ControlType: "Button" }, { Name: "Adicionar e gerenciar fontes",
-    ControlType: "Button" }]
+    ControlType: "Button" }, { Name: "Add and manage sources", matchmode: "Substring" }]
 COPILOT_SOURCES_MENU_MARKERS := [{ Name: "Add capabilities", ControlType: "MenuItem" }, { Name: "Adicionar capacidades",
     ControlType: "MenuItem" }, { Name: "Upload images and files", ControlType: "MenuItem" }, { Name: "Add work content",
-        ControlType: "MenuItem" }, { Name: "Adicionar conteúdo de trabalho", ControlType: "MenuItem" }
+        ControlType: "MenuItem" }, { Name: "Adicionar conteúdo de trabalho", ControlType: "MenuItem" }, { Name: "Add capabilities",
+            matchmode: "Substring" }, { Name: "Attach cloud files", matchmode: "Substring" }
 ]
 COPILOT_ADD_CAPABILITIES_NAMES := ["Add capabilities", "Adicionar capacidades"]
 COPILOT_CAPABILITY_IMAGE_NAMES := ["Generate an image", "Criar imagem", "Criar uma imagem"]
 COPILOT_CAPABILITY_IMAGE_AID := "capability-id-imageGeneration"
 COPILOT_CAPABILITY_IMAGE_ENGAGE_NAMES := ["Generate an image", "Criar imagem", "Criar uma imagem", "Designer"]
 COPILOT_CAPABILITY_RESEARCH_NAMES := ["Research a topic", "Pesquisar um tópico", "Researcher", "Pesquisador"]
+; Sources popup order (screenshot): work content, upload, cloud, Add capabilities → Research, Analyze, Generate an image
+COPILOT_CAP_MENU_DOWN_TO_ADD_CAP := 3
+COPILOT_CAP_SUBMENU_DOWN_IMAGE := 2
+COPILOT_CAP_SUBMENU_DOWN_RESEARCH := 0
 COPILOT_COMPOSER_EXPAND_NAMES := [
     "Expand message copilot input box",
     "Expand input to Fullscreen"
@@ -1224,15 +1229,49 @@ CopilotWeb_ClickUiaElement(el) {
     return false
 }
 
-; Force a mouse click. el.Click() with no button prefers Invoke, which often does not
-; open Fluent nested flyouts (e.g. "Add capabilities").
+; Force a physical screen click (Fluent flyout items often ignore Invoke).
 CopilotWeb_ClickUiaElementMouse(el) {
     if (!IsObject(el))
         return false
+    saveCoord := A_CoordModeMouse
+    CoordMode("Mouse", "Screen")
     try {
-        el.Click("left")
-        return true
-    } catch {
+        try {
+            pt := el.GetClickablePoint()
+            if (IsObject(pt) && (pt.x || pt.y)) {
+                Click(pt.x " " pt.y)
+                CoordMode("Mouse", saveCoord)
+                return true
+            }
+        } catch {
+        }
+        try {
+            loc := el.Location
+            if (IsObject(loc) && loc.w > 1 && loc.h > 1) {
+                Click((loc.x + loc.w // 2) " " (loc.y + loc.h // 2))
+                CoordMode("Mouse", saveCoord)
+                return true
+            }
+        } catch {
+        }
+        try {
+            if (el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)) {
+                el.SelectionItemPattern.Select()
+                CoordMode("Mouse", saveCoord)
+                return true
+            }
+        } catch {
+        }
+        try {
+            el.Click("left")
+            CoordMode("Mouse", saveCoord)
+            return true
+        } catch {
+        }
+    } finally {
+        try CoordMode("Mouse", saveCoord)
+        catch {
+        }
     }
     return false
 }
@@ -1242,6 +1281,8 @@ CopilotWeb_HoverUiaElement(el) {
         return false
     try {
         loc := el.Location
+        if (!IsObject(loc) || loc.w < 1 || loc.h < 1)
+            return false
         CoordMode("Mouse", "Screen")
         MouseMove(loc.x + loc.w // 2, loc.y + loc.h // 2, 0)
         return true
@@ -1724,6 +1765,13 @@ CopilotWeb_FindCapabilityByNames(uia, names) {
             } catch {
             }
         }
+        ; Name-only substring (emoji-prefixed Fluent rows).
+        try {
+            el := uia.FindFirst({ Name: needle, matchmode: "Substring" })
+            if (el)
+                return el
+        } catch {
+        }
     }
     return 0
 }
@@ -1732,8 +1780,21 @@ CopilotWeb_FindMenuItemByNameNeedles(uia, nameNeedles) {
     return CopilotWeb_FindCapabilityByNames(uia, nameNeedles)
 }
 
-; True when sources menu closed and an engaged capability marker is visible.
-CopilotWeb_CapabilityEngaged(hwnd, engageNames, automationIds := 0, timeoutMs := 800) {
+CopilotWeb_WaitSourcesMenuClosed(hwnd, timeoutMs := 1200) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (IsObject(root) && !CopilotWeb_IsSourcesMenuOpen(root))
+            return true
+        Sleep 40
+    }
+    return false
+}
+
+; True when an engaged capability marker is visible and sources menu is closed.
+CopilotWeb_CapabilityEngaged(hwnd, engageNames, automationIds := 0, timeoutMs := 1200) {
     if (!hwnd)
         hwnd := WinExist("A")
     deadline := A_TickCount + timeoutMs
@@ -1766,15 +1827,59 @@ CopilotWeb_CapabilityEngaged(hwnd, engageNames, automationIds := 0, timeoutMs :=
     return false
 }
 
-CopilotWeb_ImageCapabilityEngaged(hwnd := 0, timeoutMs := 800) {
+CopilotWeb_ImageCapabilityEngaged(hwnd := 0, timeoutMs := 1200) {
     return CopilotWeb_CapabilityEngaged(hwnd, COPILOT_CAPABILITY_IMAGE_ENGAGE_NAMES, [COPILOT_CAPABILITY_IMAGE_AID],
     timeoutMs)
+}
+
+CopilotWeb_CapabilitySubmenuDowns(nameNeedles) {
+    if (!IsObject(nameNeedles))
+        return COPILOT_CAP_SUBMENU_DOWN_IMAGE
+    for n in nameNeedles {
+        if InStr(n, "Research", false) || InStr(n, "Pesquis", false) || InStr(n, "topic", false) || InStr(n, "tópico",
+            false)
+            return COPILOT_CAP_SUBMENU_DOWN_RESEARCH
+        if InStr(n, "image", false) || InStr(n, "imagem", false)
+            return COPILOT_CAP_SUBMENU_DOWN_IMAGE
+    }
+    return COPILOT_CAP_SUBMENU_DOWN_IMAGE
+}
+
+; Keyboard path: Fluent nested menus (hover/UIA Invoke often fail to activate the row).
+CopilotWeb_ClickAddCapabilityViaKeyboard(nameNeedles, hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    root := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if (!IsObject(root))
+        root := CopilotWeb_GetBoundUia(hwnd)
+    if (!CopilotWeb_EnsureSourcesMenuOpen(&root))
+        return false
+    Sleep 120
+    loop COPILOT_CAP_MENU_DOWN_TO_ADD_CAP {
+        Send "{Down}"
+        Sleep 35
+    }
+    Sleep 60
+    Send "{Right}"
+    Sleep 150
+    downs := CopilotWeb_CapabilitySubmenuDowns(nameNeedles)
+    loop downs {
+        Send "{Down}"
+        Sleep 35
+    }
+    Sleep 50
+    Send "{Enter}"
+    return true
 }
 
 CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd) {
     if (!IsObject(addCap))
         return 0
-    ; Prefer ExpandCollapse / Right — mouse click can dismiss an already-open flyout.
+    CopilotWeb_HoverUiaElement(addCap)
+    Sleep 180
+    item := CopilotWeb_WaitForCapabilityByNames(nameNeedles, 600, hwnd)
+    if (item)
+        return item
     expanded := false
     try {
         if (addCap.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)) {
@@ -1797,12 +1902,12 @@ CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd) {
         } catch {
         }
     }
-    item := CopilotWeb_WaitForCapabilityByNames(nameNeedles, 700, hwnd)
+    item := CopilotWeb_WaitForCapabilityByNames(nameNeedles, 900, hwnd)
     if (item)
         return item
-    ; Last resort: one mouse click to open submenu.
     if (!CopilotWeb_ClickUiaElementMouse(addCap))
         return 0
+    Sleep 120
     return CopilotWeb_WaitForCapabilityByNames(nameNeedles, 2000, hwnd)
 }
 
@@ -1813,12 +1918,15 @@ CopilotWeb_WaitForCapabilityByNames(nameNeedles, timeoutMs := 2000, hwnd := 0) {
     while (A_TickCount < deadline) {
         root := CopilotWeb_ReadRootFromHwnd(hwnd)
         if (!IsObject(root)) {
-            Sleep 40
-            continue
+            try root := UIA_Browser("ahk_id " hwnd)
+            catch
+                root := 0
         }
-        item := CopilotWeb_FindCapabilityByNames(root, nameNeedles)
-        if (item)
-            return item
+        if (IsObject(root)) {
+            item := CopilotWeb_FindCapabilityByNames(root, nameNeedles)
+            if (item)
+                return item
+        }
         Sleep 40
     }
     return 0
@@ -1843,38 +1951,39 @@ CopilotWeb_CapabilityPresetMeta(nameNeedles) {
     return meta
 }
 
-; Sources -> (optional AID row) or Add capabilities -> submenu item. QC until engaged.
+; Sources -> keyboard Add capabilities path, then UIA hover/click, then AID. QC until engaged.
 CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
     hwnd := WinExist("A")
     meta := CopilotWeb_CapabilityPresetMeta(nameNeedles)
     engageNames := meta.EngageNames
     automationId := meta.AutomationId
+    aids := automationId != "" ? [automationId] : 0
+
     loop 2 {
         attempt := A_Index
         if (attempt > 1) {
             Send "{Escape}"
-            Sleep 80
-        }
-        root := IsObject(uia) ? uia : CopilotWeb_ReadRootFromHwnd(hwnd)
-        if (!IsObject(root))
-            root := CopilotWeb_GetBoundUia(hwnd)
-        if (!IsObject(root))
-            return false
-
-        ; Strategy A: direct AutomationId / name under sources menu.
-        if (automationId != "") {
-            if (CopilotWeb_ClickSourcesCapability(automationId, nameNeedles, root)) {
-                if (CopilotWeb_CapabilityEngaged(hwnd, engageNames, automationId != "" ? [automationId] : 0))
-                    return true
-            }
+            Sleep 100
         }
 
-        ; Strategy B: Add capabilities nested flyout.
+        ; Strategy K: keyboard Down × N → Right → Down × M → Enter (matches live Fluent menu).
+        if (CopilotWeb_ClickAddCapabilityViaKeyboard(nameNeedles, hwnd)) {
+            if (CopilotWeb_WaitSourcesMenuClosed(hwnd, 1200) || CopilotWeb_CapabilityEngaged(hwnd, engageNames, aids))
+                return true
+        }
+
+        ; Strategy B: hover Add capabilities then physical click target row.
         root := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!IsObject(root)) {
+            try root := UIA_Browser("ahk_id " hwnd)
+            catch
+                root := 0
+        }
         if (!IsObject(root))
             continue
         if (!CopilotWeb_EnsureSourcesMenuOpen(&root))
             continue
+        Sleep 80
         addCap := CopilotWeb_FindCapabilityByNames(root, COPILOT_ADD_CAPABILITIES_NAMES)
         if (!addCap) {
             root := CopilotWeb_ReadRootFromHwnd(hwnd)
@@ -1883,18 +1992,24 @@ CopilotWeb_ClickAddCapability(nameNeedles, uia := 0) {
         }
         if (!addCap)
             continue
-        CopilotWeb_HoverUiaElement(addCap)
-        item := CopilotWeb_WaitForCapabilityByNames(nameNeedles, 500, hwnd)
-        if (!item)
-            item := CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd)
+        item := CopilotWeb_OpenAddCapabilitiesSubmenu(addCap, nameNeedles, hwnd)
         if (!item)
             continue
-        clicked := CopilotWeb_ClickUiaElementMouse(item) || CopilotWeb_ClickUiaElement(item)
-        if (!clicked)
+        ; Keep Add capabilities hovered open — move and physical-click Generate an image.
+        if (!(CopilotWeb_ClickUiaElementMouse(item) || CopilotWeb_ClickUiaElement(item)))
             continue
-        aids := automationId != "" ? [automationId] : 0
-        if (CopilotWeb_CapabilityEngaged(hwnd, engageNames, aids))
+        if (CopilotWeb_WaitSourcesMenuClosed(hwnd, 1200) || CopilotWeb_CapabilityEngaged(hwnd, engageNames, aids))
             return true
+
+        ; Strategy A: legacy AutomationId row under sources (if present).
+        if (automationId != "") {
+            root := CopilotWeb_ReadRootFromHwnd(hwnd)
+            if (CopilotWeb_ClickSourcesCapability(automationId, nameNeedles, root)) {
+                if (CopilotWeb_WaitSourcesMenuClosed(hwnd, 1200) || CopilotWeb_CapabilityEngaged(hwnd, engageNames,
+                    aids))
+                    return true
+            }
+        }
     }
     return false
 }
