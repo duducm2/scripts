@@ -188,6 +188,16 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     AutoSlot_ScheduleFill(monIdx)
 }
 
+; Place claimed this monitor — suppress deferred fill-on-close races.
+AutoSlot_ClaimMonitor(monIdx) {
+    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
+    if (monIdx < 1)
+        return
+    g_AutoSlotFillCooldown[monIdx] := A_TickCount
+    if (g_AutoSlotFillPending.Has(monIdx))
+        g_AutoSlotFillPending.Delete(monIdx)
+}
+
 AutoSlot_ScheduleFill(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     if (monIdx < 1 || MonitorGetCount() <= 1)
@@ -202,7 +212,12 @@ AutoSlot_ScheduleFill(monIdx) {
 
 AutoSlot_ProcessFillPending(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
-    g_AutoSlotFillPending.Delete(monIdx)
+    ; ClaimMonitor may already have cleared pending; Map.Delete throws if key missing.
+    if (g_AutoSlotFillPending.Has(monIdx))
+        g_AutoSlotFillPending.Delete(monIdx)
+    ; Place may have claimed this monitor after the timer was armed.
+    if (g_AutoSlotFillCooldown.Has(monIdx) && A_TickCount - g_AutoSlotFillCooldown[monIdx] < AutoSlot_FILL_COOLDOWN_MS)
+        return
     AutoSlot_FillMonitorFromBackground(monIdx)
     g_AutoSlotFillCooldown[monIdx] := A_TickCount
 }
@@ -760,6 +775,13 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
+    ; Do not promote over a window AutoSlot_Place just assigned to this monitor.
+    for row in others {
+        h := row.hwnd
+        if (h && g_AutoSlotRecent.Has(h) && A_TickCount - g_AutoSlotRecent[h] < AutoSlot_RECENT_MS)
+            return false
+    }
+
     ; Already full-screen companion — skip expensive background collect.
     if (others.Length = 1 && AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
         return true
@@ -859,11 +881,14 @@ AutoSlot_Place(hwnd) {
     }
 
     if (emptyMon) {
-        if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon))
+        if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon)) {
+            AutoSlot_ClaimMonitor(emptyMon)
             msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
+        }
     } else if (halfMon && halfPartner) {
         pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon)
         if (pane != "") {
+            AutoSlot_ClaimMonitor(halfMon)
             AutoSlot_ShowUndoModal("M" halfOrder " " pane)
             return
         }

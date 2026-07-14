@@ -29,7 +29,7 @@ When a window closes and leaves a monitor empty or with exactly one visible wind
 | 1 visible + no background        | Maximize the remaining companion                       |
 | 2+                               | No-op                                                  |
 
-Only the monitor that lost the window is considered. No undo modal on this path. Fill snaps use gapless placement **without** the ~400 ms strict validate wait (new-window place still validates). Companions already maximized/work-area-filled skip background enumeration. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND.
+Only the monitor that lost the window is considered. No undo modal on this path. Fill snaps use gapless placement **without** the ~400 ms strict validate wait (new-window place still validates). Companions already maximized/work-area-filled skip background enumeration. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Fill is suppressed for a monitor recently claimed by new-window placement (avoids a deferred fill racing Place and stealing the slot/foreground).
 
 ## Disable
 
