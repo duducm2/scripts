@@ -31,6 +31,12 @@ $+s:: {
 
 $+m:: {
     try {
+        root := CopilotWeb_GetActiveUia()
+        btn := CopilotWeb_FindModelSelectorButton(root)
+        if (btn && CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn))) {
+            CopilotWeb_ReturnToComposer()
+            return
+        }
         CopilotWeb_RunWithBusyBanner("⏳ Selecting Think deeper… Don't move the mouse", (*) =>
             CopilotWeb_OpenModelSelector())
         CopilotWeb_ReturnToComposer()

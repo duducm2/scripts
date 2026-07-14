@@ -367,10 +367,8 @@ CopilotWeb_FocusComposerForHwnd(copilotHwnd, playChime := false) {
 
 ; After nav / chrome UIA clicks: type a letter into the prompt then erase it (Shift shortcuts).
 CopilotWeb_ReturnToComposer() {
-    Sleep 80
-    Send "{Blind}d"
-    Sleep 30
-    Send "{Blind}{Backspace}"
+    Sleep 40
+    Send "{Blind}d{Backspace}"
 }
 
 CopilotWeb_WaitForComposerDiscoverable(uia, timeoutMs := 500) {
@@ -1163,7 +1161,8 @@ IsCopilotWebChromeActiveForHotkey() {
 }
 
 CopilotWeb_GetActiveUia() {
-    return CopilotWeb_GetBoundUia(WinExist("A"))
+    ; Prefer ElementFromHandle for in-page Shift actions (cheaper than UIA_Browser init).
+    return CopilotWeb_ReadRootFromHwnd(WinExist("A"))
 }
 
 ; Bind UIA to a specific Chrome hwnd (prefer over bare UIA_Browser() in wait loops).
@@ -1172,6 +1171,9 @@ CopilotWeb_GetBoundUia(hwnd := 0) {
         hwnd := WinExist("A")
     if (!hwnd)
         return 0
+    root := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if (root)
+        return root
     try {
         return UIA_Browser("ahk_id " hwnd)
     } catch {
@@ -1352,14 +1354,9 @@ CopilotWeb_ClickNewChat(uia := 0) {
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
-    ; Live UI exposes New chat as Link (50005) + fai-CopilotNavItem — works collapsed or expanded.
-    ; Do not EnsureNavDrawerOpen; click the control in place.
+    ; Live UI: Link Type 50005 — works collapsed or expanded. Do not EnsureNavDrawerOpen.
     criteria := []
     for n in COPILOT_NEW_CHAT_NAMES {
-        criteria.Push({ Name: n, ControlType: "Link", ClassName: "fai-CopilotNavItem", matchmode: "Substring" })
-        criteria.Push({ Name: n, ControlType: "Hyperlink", ClassName: "fai-CopilotNavItem", matchmode: "Substring" })
-        criteria.Push({ Name: n, ControlType: "Link" })
-        criteria.Push({ Name: n, ControlType: "Hyperlink" })
         criteria.Push({ Name: n, Type: 50005 })
         criteria.Push({ Name: n, ControlType: "Button" })
         criteria.Push({ Name: n, ControlType: "MenuItem" })
@@ -1368,24 +1365,43 @@ CopilotWeb_ClickNewChat(uia := 0) {
     return el && CopilotWeb_ClickUiaElement(el)
 }
 
+CopilotWeb_FindNavSearchLink(uia) {
+    if (!IsObject(uia))
+        return 0
+    criteria := []
+    for n in COPILOT_NAV_SEARCH_NAMES {
+        criteria.Push({ Name: n, Type: 50005 })
+        criteria.Push({ Name: n, ControlType: "Button" })
+        criteria.Push({ Name: n, ControlType: "MenuItem" })
+    }
+    return CopilotWeb_FindFirstInUia(uia, criteria)
+}
+
 CopilotWeb_ClickNavSearch(uia := 0) {
+    hwnd := WinExist("A")
     if (!uia)
         uia := CopilotWeb_GetActiveUia()
     if (!IsObject(uia))
         return false
-    CopilotWeb_EnsureNavDrawerOpen(uia)
-    Sleep 150
-    try
-        uia := UIA_Browser()
-    catch
+    el := CopilotWeb_FindNavSearchLink(uia)
+    if (el)
+        return CopilotWeb_ClickUiaElement(el)
+    ; Link not visible (drawer fully closed) — expand, then bounded wait.
+    if (!CopilotWeb_EnsureNavDrawerOpen(uia))
         return false
-    criteria := []
-    for n in COPILOT_NAV_SEARCH_NAMES
-        criteria.Push({ Name: n, ControlType: "MenuItem", ClassName: "fai-CopilotNavItem" })
-    for n in COPILOT_NAV_SEARCH_NAMES
-        criteria.Push({ Name: n, ControlType: "MenuItem" })
-    el := CopilotWeb_FindFirstInUia(uia, criteria)
-    return el && CopilotWeb_ClickUiaElement(el)
+    deadline := A_TickCount + 400
+    while (A_TickCount < deadline) {
+        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (!IsObject(uia)) {
+            Sleep 40
+            continue
+        }
+        el := CopilotWeb_FindNavSearchLink(uia)
+        if (el)
+            return CopilotWeb_ClickUiaElement(el)
+        Sleep 40
+    }
+    return false
 }
 
 CopilotWeb_DeepReasoningNameScore(name) {
@@ -1409,6 +1425,24 @@ CopilotWeb_DeepReasoningNameScore(name) {
 
 CopilotWeb_IsDeepReasoningModelName(name) {
     return CopilotWeb_DeepReasoningNameScore(name) > 0
+}
+
+; Cheap menu-open probe for wait loops — FindFirst only, no FindAll.
+CopilotWeb_DeepReasoningMenuReady(uia) {
+    if (!IsObject(uia))
+        return false
+    for needle in ["think deeper", "mais profundo", "pensar mais", "deeper"] {
+        for typeSpec in [UIA_Copilot_ControlType_RadioButton, "RadioButton", UIA_Copilot_ControlType_MenuItem,
+            "MenuItem"] {
+            try {
+                el := uia.FindFirst({ Name: needle, Type: typeSpec, matchmode: "Substring" })
+                if (el)
+                    return true
+            } catch {
+            }
+        }
+    }
+    return false
 }
 
 CopilotWeb_FindModelSelectorButton(uia) {
@@ -1520,26 +1554,26 @@ CopilotWeb_WaitForModelMenu(uia := 0, timeoutMs := 0, hwnd := 0) {
         hwnd := WinExist("A")
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        cur := CopilotWeb_RefreshBoundUia(hwnd)
+        cur := CopilotWeb_ReadRootFromHwnd(hwnd)
         if (!IsObject(cur))
             cur := uia
-        if (IsObject(cur) && CopilotWeb_FindDeepReasoningMenuItem(cur))
+        if (IsObject(cur) && CopilotWeb_DeepReasoningMenuReady(cur))
             return true
         Sleep COPILOT_MODEL_MENU_POLL_MS
     }
-    cur := CopilotWeb_RefreshBoundUia(hwnd)
+    cur := CopilotWeb_ReadRootFromHwnd(hwnd)
     if (!IsObject(cur))
         cur := uia
-    return IsObject(cur) && !!CopilotWeb_FindDeepReasoningMenuItem(cur)
+    return IsObject(cur) && CopilotWeb_DeepReasoningMenuReady(cur)
 }
 
 ; After Think deeper click — wait until label shows deep reasoning or model menu is gone.
-CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 700) {
+CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 400) {
     if (!hwnd)
         hwnd := WinExist("A")
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        uia := CopilotWeb_RefreshBoundUia(hwnd)
+        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
         if (!IsObject(uia)) {
             Sleep 80
             continue
@@ -1547,7 +1581,7 @@ CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 700) {
         btn := CopilotWeb_FindModelSelectorButton(uia)
         if (btn && CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn)))
             return true
-        if (!CopilotWeb_FindDeepReasoningMenuItem(uia) && CopilotWeb_FindSourcesButton(uia))
+        if (!CopilotWeb_DeepReasoningMenuReady(uia) && CopilotWeb_FindSourcesButton(uia))
             return true
         Sleep 80
     }
