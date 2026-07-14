@@ -9,7 +9,7 @@
 ;
 ; Placement (MonitorGetCount() > 1 only):
 ;   1) First empty ordinal monitor → maximize onto it
-;   2) Else first half-full ordinal → 50/50
+;   2) Else origin monitor has exactly 1 other → 50/50 there (partner keeps pane)
 ;   3) Else maximize new window in place
 ;
 ; Fill-on-close (same multi-monitor gate):
@@ -35,6 +35,7 @@ global g_AutoSlotFillCooldown := Map()
 global g_AutoSlotLastDestroyHwnd := 0
 global g_AutoSlotLastDestroyTick := 0
 global g_AutoSlotEnabled := true
+global g_AutoSlotPlaceFreezeUntil := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -692,6 +693,8 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     if (!WM_PrepareHwndForTile(newHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
         return ""
 
+    ; Partner keeps its pane (shrink in place); new always takes the opposite.
+    ; Maximized / unclassified → "start" once — do not flip sides after placement.
     axis := WM_GetSnapSplitAxis(monIdx)
     partnerPane := "start"
     if (!partnerWasMax && WM_GetWindowRectHwnd(partnerHwnd, &pl, &pt, &pr, &pb)) {
@@ -919,6 +922,16 @@ AutoSlot_HealLoneCompanion(monIdx) {
 }
 
 ; Returns "ok" | "noop" | "stale" (stale = occupancy still 2+, caller may retry).
+AutoSlot_PlaceFreezeActive() {
+    global g_AutoSlotPlaceFreezeUntil
+    return g_AutoSlotPlaceFreezeUntil > 0 && A_TickCount < g_AutoSlotPlaceFreezeUntil
+}
+
+AutoSlot_BeginPlaceFreeze() {
+    global g_AutoSlotPlaceFreezeUntil
+    g_AutoSlotPlaceFreezeUntil := A_TickCount + AutoSlot_RECENT_MS
+}
+
 AutoSlot_FillMonitorFromBackground(monIdx) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
@@ -936,6 +949,9 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             return "ok"
         ; Do not promote background over a window AutoSlot_Place just assigned.
         if (AutoSlot_OccupancyHasRecent(others))
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+        ; During Place freeze: heal only — never SnapPair a background cand into the resident.
+        if (AutoSlot_PlaceFreezeActive())
             return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
         cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
         if (!cand)
@@ -985,13 +1001,11 @@ AutoSlot_Place(hwnd) {
     g_AutoSlotUndo := 0
     msg := ""
     AutoSlot_RememberHwndMon(hwnd)
+    AutoSlot_BeginPlaceFreeze()
 
     ; Empty-monitor-first: never 50/50 on an occupied screen when any ordinal is empty.
     emptyOrder := 0
     emptyMon := 0
-    halfOrder := 0
-    halfMon := 0
-    halfPartner := 0
 
     loop ordinalCount {
         order := A_Index
@@ -1000,16 +1014,9 @@ AutoSlot_Place(hwnd) {
             continue
         others := AutoSlot_OccupancyOnMonitor(monIdx, hwnd)
         if (others.Length = 0) {
-            if (!emptyMon) {
-                emptyOrder := order
-                emptyMon := monIdx
-            }
-        } else if (others.Length = 1) {
-            if (!halfMon) {
-                halfOrder := order
-                halfMon := monIdx
-                halfPartner := others[1].hwnd
-            }
+            emptyOrder := order
+            emptyMon := monIdx
+            break
         }
     }
 
@@ -1018,20 +1025,33 @@ AutoSlot_Place(hwnd) {
             AutoSlot_ClaimMonitor(emptyMon)
             msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
         }
-    } else if (halfMon && halfPartner) {
-        pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon)
-        if (pane != "") {
-            AutoSlot_ClaimMonitor(halfMon)
-            AutoSlot_ShowUndoModal("M" halfOrder " " pane)
-            return
-        }
-        if (AutoSlot_MaximizeInPlace(hwnd))
-            msg := "ℹ️ Auto-slot snap failed — maximized"
-    } else {
-        if (AutoSlot_MaximizeInPlace(hwnd))
-            msg := "ℹ️ Grid full — maximized"
+        AutoSlot_Toast(msg)
+        return
     }
 
+    ; 50/50 only on the monitor where the new window appeared — never steal a remote half-full.
+    originMon := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (originMon >= 1) {
+        originOthers := AutoSlot_OccupancyOnMonitor(originMon, hwnd)
+        if (originOthers.Length = 1) {
+            partner := originOthers[1].hwnd
+            pane := AutoSlot_SnapPair(hwnd, partner, originMon)
+            if (pane != "") {
+                AutoSlot_ClaimMonitor(originMon)
+                order := AutoSlot_OrderForMonitorIndex(originMon)
+                label := order > 0 ? order : originMon
+                AutoSlot_ShowUndoModal("M" label " " pane)
+                return
+            }
+            if (AutoSlot_MaximizeInPlace(hwnd))
+                msg := "ℹ️ Auto-slot snap failed — maximized"
+            AutoSlot_Toast(msg)
+            return
+        }
+    }
+
+    if (AutoSlot_MaximizeInPlace(hwnd))
+        msg := "ℹ️ Grid full — maximized"
     AutoSlot_Toast(msg)
 }
 
