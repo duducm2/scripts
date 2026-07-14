@@ -507,7 +507,8 @@ AutoSlot_Schedule(hwnd) {
 
 AutoSlot_ProcessPending(hwnd) {
     global g_AutoSlotPending, g_AutoSlotRecent
-    g_AutoSlotPending.Delete(hwnd)
+    if (g_AutoSlotPending.Has(hwnd))
+        g_AutoSlotPending.Delete(hwnd)
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))

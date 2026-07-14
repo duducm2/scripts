@@ -98,6 +98,10 @@ ContextBrowser_EnsureGlobals() {
 }
 ContextBrowser_EnsureGlobals()
 
+ContextBrowser_ShowError(msg, durationMs := 2500) {
+    ShowCenteredOverlay_Utils(msg, durationMs, BANNER_ACCENT_ERROR)
+}
+
 Context_GetRoot() {
     ContextBrowser_EnsureGlobals()
     global CONTEXT_ROOT
@@ -823,8 +827,10 @@ ContextBrowser_CopyFocusedPath(*) {
     if (!IsObject(focused))
         return
     path := ContextBrowser_ResolveEntryPath(focused.entry)
-    if (path = "")
+    if (path = "") {
+        ContextBrowser_ShowError("❌ No path to copy for: " focused.entry.name)
         return
+    }
     A_Clipboard := path
 }
 
@@ -851,8 +857,10 @@ ContextBrowser_OpenFocusedInExplorer(*) {
         else if (path != "" && FileExist(path))
             explorerCmd := 'explorer.exe /select,"' path '"'
     }
-    if (explorerCmd = "")
+    if (explorerCmd = "") {
+        ContextBrowser_ShowError("❌ Cannot open in Explorer: " entry.name)
         return
+    }
     StandardLoadingBar_Show("⏳ Opening in Explorer...", BANNER_ACCENT_INTERMEDIATE, { passive: true })
     try {
         Run explorerCmd
@@ -869,7 +877,7 @@ ContextBrowser_PasteFocusedPathAsText(*) {
         return
     pastePath := Context_ResolvePastePath(focused.entry.path)
     if (pastePath = "") {
-        ShowCenteredOverlay_Utils("❌ Reference target not found for: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("❌ Reference target not found for: " focused.entry.name)
         return
     }
     CleanupContextBrowser()
@@ -884,16 +892,16 @@ ContextBrowser_PasteFocusedContentAsText(*) {
         return
     pastePath := Context_ResolvePastePath(focused.entry.path)
     if (pastePath = "") {
-        ShowCenteredOverlay_Utils("❌ Reference target not found for: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("❌ Reference target not found for: " focused.entry.name)
         return
     }
     if Context_IsImagePath(pastePath) {
-        ShowCenteredOverlay_Utils("❌ Cannot paste image as text: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("❌ Cannot paste image as text: " focused.entry.name)
         return
     }
     content := Context_ResolvePasteTextContent(focused.entry.path)
     if (content = "") {
-        ShowCenteredOverlay_Utils("❌ No text content to paste: " focused.entry.name, 2500, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("❌ No text content to paste: " focused.entry.name)
         return
     }
     CleanupContextBrowser()
@@ -1003,13 +1011,13 @@ ContextBrowser_ActivateEntry(entry) {
     }
     pastePath := targetPath
     if (pastePath = "") {
-        ShowCenteredOverlay_Utils("❌ Reference target not found for: " entry.name, 2500, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("❌ Reference target not found for: " entry.name)
         return
     }
     CleanupContextBrowser()
     Sleep 50
     if !InsertFiles([pastePath]) {
-        ShowCenteredOverlay_Utils("⚠ Could not attach file — pasting path as text", 2800, BANNER_ACCENT_ERROR)
+        ContextBrowser_ShowError("⚠ Could not attach file — pasting path as text", 2800)
         InsertText(pastePath)
         return
     }
@@ -1064,8 +1072,7 @@ ContextBrowser_RefreshView() {
 
     dir := g_ContextBrowserCurrentDir
     if (dir = "" || !DirExist(dir)) {
-        TrayTip("Context", "Folder not found.", "IconX")
-        SetTimer(() => TrayTip(), -5000)
+        ContextBrowser_ShowError("❌ Folder not found.")
         CleanupContextBrowser()
         return
     }
@@ -1175,8 +1182,7 @@ ContextBrowser_OpenAtCurrentDir() {
 
     dir := g_ContextBrowserCurrentDir
     if (dir = "" || !DirExist(dir)) {
-        TrayTip("Context", "Folder not found.", "IconX")
-        SetTimer(() => TrayTip(), -5000)
+        ContextBrowser_ShowError("❌ Folder not found.")
         CleanupContextBrowser()
         return
     }
@@ -1211,8 +1217,7 @@ ShowContextBrowser() {
 
     root := Context_GetRoot()
     if !DirExist(root) {
-        TrayTip("Context", "context folder not found at:`n" root, "IconX")
-        SetTimer(() => TrayTip(), -5000)
+        ContextBrowser_ShowError("❌ Context folder not found at: " root, 2800)
         return
     }
 
