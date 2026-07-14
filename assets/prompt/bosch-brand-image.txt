@@ -2,18 +2,24 @@ Generate one Bosch Brand Guide and Bosch Digital Design System (BDDS) compliant 
 
 Strict compliance is mandatory. At Bosch, corporate design rules are binding — do not improvise styles, colors, or components that conflict with the brand guide or BDDS. Deviations are not acceptable unless the user explicitly overrides them at the end of this prompt.
 
-Before generating, read all attached JSON context files and reference images. Use them as the primary source of truth.
+Before generating, read all attached JSON context files and reference images. Use them as the primary source of truth for visual style.
+
+Attached images — aesthetic reference only (default):
+- Any image attached in context is for aesthetics and style reference only (colors, illustration language, UI patterns, photography mood).
+- Do not replicate, reuse, copy, or reframe attached images as the generated subject or content.
+- Subject, content, and framing must come from the human information / element subject prompt below (and the fill-in sections).
+- Exception: replicate or reframe an attached image exactly only if the human fill-in explicitly states that that image should be replicated.
 
 When used with a PPT element subject prompt (from ppt-slides-to-elements-csv): the element prompt states subject and framing only. This Bosch prompt plus your JSON and reference attachments define ALL visual style. If the element prompt implies a different style, ignore that implication and apply this prompt and attachments instead.
 
 When used with a prototype element subject prompt (from proto-screens-to-elements-csv): the element prompt states subject and framing only. This Bosch prompt plus your JSON and reference attachments define ALL visual style. If the element prompt implies a different style, ignore that implication and apply this prompt and attachments instead.
 
 Source-of-truth priority:
-0. Human style instructions and attachments provided before the element subject prompt (brand prompts, JSON, reference images — absolute authority for visual style)
+0. Human style instructions and attachments provided before the element subject prompt (brand prompts, JSON, reference images — absolute authority for visual style only; never copy their content unless the human explicitly requests replication)
 1. Attached JSON context files (brand guide and BDDS research)
-2. Attached reference images (Bosch website, PowerPoint examples, DDS components, charts)
+2. Attached reference images (Bosch website, PowerPoint examples, DDS components, charts — style reference only unless human requests replication)
 3. The embedded summary in this prompt
-4. Element subject prompt (subject and framing only — never use it to choose colors, illustration style, typography, or realism level)
+4. Element subject prompt / human fill-in (subject, content, and framing — never use it to choose colors, illustration style, typography, or realism level)
 
 ---
 
@@ -124,8 +130,9 @@ Before delivering the image, verify every item below. If any check fails, revise
 7. Colors match the Bosch palette above and attached JSON — no decorative red, no random gradients, no off-brand hues.
 8. Shapes are mostly rectangular with clear edges; no shadow-heavy or rounded-corner-heavy aesthetic unless type-specific JSON allows it.
 9. Layout is clean, aligned, and easy to crop or paste onto a white background.
-10. The output matches the specified image type, user content, attached JSON rules, and reference imagery.
-11. If any element shows a soft halo or low-resolution blur, revise and regenerate with sharper edges before delivering.
+10. The output matches the specified image type, user content, attached JSON rules, and reference imagery (style only).
+11. The output is not a copy, reuse, or reframe of any attached image unless the human fill-in explicitly requested replication of that image.
+12. If any element shows a soft halo or low-resolution blur, revise and regenerate with sharper edges before delivering.
 
 ---
 
@@ -139,11 +146,14 @@ Image type:
 Content and requirements:
 [Insert what the image should show, including text, data, layout intent, and any specific Bosch context]
 
+Replication (optional):
+[Leave blank = attached images are style reference only | state which attached image to replicate/reframe]
+
 Optional overrides:
 [Insert any exceptions to the defaults above, including non-white backgrounds if explicitly required]
 
 📄 Attach brand-guide JSON context files (core + type-specific from context/brand-guide/research/)
-🖼️ Attach reference images (Bosch website, PowerPoint example, DDS components, charts)
+🖼️ Attach reference images for aesthetics/style only (Bosch website, PowerPoint example, DDS components, charts) — not for content unless you fill in Replication above
 🎯 Specify image type in the fill-in section above
-📝 Describe content and requirements in the fill-in section above
+📝 Describe content and requirements in the fill-in section above (this drives the generated subject)
 ⚪ Keep white background or thick white border unless you override explicitly
