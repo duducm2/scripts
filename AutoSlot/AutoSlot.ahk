@@ -18,6 +18,9 @@
 ;   already-filled skip → else WM_CollectBackgroundWindows → maximize or gapless
 ;   50/50 without strict validate; no candidate → companion heal.
 ;
+; Rearrange-on-move (same fill/heal rules, no visible reshuffle):
+;   MOVESIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
+;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
 
@@ -42,10 +45,15 @@ global g_AutoSlotMaxCompanionSuppress := Map()
 global g_AutoSlotPairMaxPending := Map()
 global g_AutoSlotLocHook := 0
 global g_AutoSlotLocHookCb := 0
+global g_AutoSlotMoveHook := 0
+global g_AutoSlotMoveHookCb := 0
+global g_AutoSlotRearrangePending := false
+global g_AutoSlotRearrangeExclude := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_EVENT_OBJECT_LOCATIONCHANGE := 0x800B
+AutoSlot_EVENT_SYSTEM_MOVESIZEEND := 0x000B
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
@@ -54,6 +62,7 @@ AutoSlot_FILL_RETRY_MS := 400
 AutoSlot_DESTROY_DEDUP_MS := 250
 AutoSlot_PAIR_MAX_DEBOUNCE_MS := 120
 AutoSlot_PAIR_SUPPRESS_MS := 500
+AutoSlot_REARRANGE_MS := 350
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -98,7 +107,7 @@ AutoSlot_SetEnabled(on) {
 
 AutoSlot_Init() {
     global g_AutoSlotHook, g_AutoSlotHookCb, g_AutoSlotShellMsg, g_AutoSlotGui
-    global g_AutoSlotLocHook, g_AutoSlotLocHookCb
+    global g_AutoSlotLocHook, g_AutoSlotLocHookCb, g_AutoSlotMoveHook, g_AutoSlotMoveHookCb
     if (g_AutoSlotHook || g_AutoSlotShellMsg)
         return
 
@@ -134,6 +143,18 @@ AutoSlot_Init() {
         "UInt", AutoSlot_EVENT_OBJECT_LOCATIONCHANGE,
         "Ptr", 0,
         "Ptr", g_AutoSlotLocHookCb,
+        "UInt", 0,
+        "UInt", 0,
+        "UInt", 0,
+        "Ptr")
+
+    ; Manual drag/resize end → rearrange underfilled monitors.
+    g_AutoSlotMoveHookCb := CallbackCreate(AutoSlot_OnMoveSizeEnd, "F", 7)
+    g_AutoSlotMoveHook := DllCall("user32\SetWinEventHook",
+        "UInt", AutoSlot_EVENT_SYSTEM_MOVESIZEEND,
+        "UInt", AutoSlot_EVENT_SYSTEM_MOVESIZEEND,
+        "Ptr", 0,
+        "Ptr", g_AutoSlotMoveHookCb,
         "UInt", 0,
         "UInt", 0,
         "UInt", 0,
@@ -362,6 +383,73 @@ AutoSlot_OnPairedMaximize(hwnd) {
         }
     }
     return healed
+}
+
+; --- Rearrange underfilled slots after a move --------------------------------
+
+AutoSlot_ScheduleRearrange(excludeHwnd := 0) {
+    global g_AutoSlotRearrangePending, g_AutoSlotRearrangeExclude
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
+        return
+    g_AutoSlotRearrangeExclude := excludeHwnd
+    g_AutoSlotRearrangePending := true
+    SetTimer(AutoSlot_ProcessRearrange, -AutoSlot_REARRANGE_MS)
+}
+
+AutoSlot_ProcessRearrange(*) {
+    global g_AutoSlotRearrangePending, g_AutoSlotRearrangeExclude
+    if (!g_AutoSlotRearrangePending)
+        return
+    g_AutoSlotRearrangePending := false
+    excludeHwnd := g_AutoSlotRearrangeExclude
+    g_AutoSlotRearrangeExclude := 0
+    AutoSlot_RearrangeUnderfilled(excludeHwnd)
+}
+
+; Heal/fill every underfilled ordinal monitor (empty → background; half → companion max).
+AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
+        return
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    loop ordinalCount {
+        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
+        if (!monIdx)
+            continue
+        others := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
+        if (others.Length = 0) {
+            if (AutoSlot_FillCooldownActive(monIdx))
+                continue
+            AutoSlot_FillMonitorFromBackground(monIdx)
+        } else if (others.Length = 1) {
+            if (!AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
+                AutoSlot_HealLoneCompanion(monIdx)
+        }
+    }
+}
+
+AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    global g_AutoSlotHwndMon
+    if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
+        return
+    if (!AutoSlot_IsEnabled())
+        return
+    hwnd := Integer(hwnd)
+    if (AutoSlot_PairSuppressActive(hwnd))
+        return
+    if (AutoSlot_PlaceFreezeActive())
+        return
+    if (!AutoSlot_IsOccupancyCandidate(hwnd))
+        return
+    oldMon := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
+    newMon := AutoSlot_GetHwndMonitorIndex(hwnd)
+    AutoSlot_RememberHwndMon(hwnd)
+    changedMon := (oldMon >= 1 && newMon >= 1 && oldMon != newMon)
+    becameMax := false
+    try becameMax := (WinGetMinMax("ahk_id " hwnd) = 1)
+    catch
+        becameMax := false
+    if (changedMon || becameMax)
+        AutoSlot_ScheduleRearrange(hwnd)
 }
 
 ; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
@@ -806,6 +894,9 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx) {
     AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
     AutoSlot_MaximizeHwnd(hwnd)
     AutoSlot_ActivateHwnd(hwnd)
+    try AutoSlot_ScheduleRearrange(hwnd)
+    catch {
+    }
     return true
 }
 

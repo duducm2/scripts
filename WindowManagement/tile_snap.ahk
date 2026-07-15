@@ -686,6 +686,9 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
     }
     WM_EnsureForegroundHwnd(activateHwnd)
     WM_MaybeCenterMouse(activateHwnd, "after_leaving_monitor", true)
+    try AutoSlot_ScheduleRearrange(movedHwnd)
+    catch {
+    }
 }
 
 WM_SnapHalfPairActiveWindow() {

@@ -341,4 +341,7 @@ MoveWinToMonitor(mon) {
 
     ; Heal source companion and ensure moved window is foreground + cursor centered.
     WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1)
+    try AutoSlot_ScheduleRearrange(hwnd)
+    catch {
+    }
 }

@@ -45,6 +45,18 @@ Empty-monitor background candidates skip windows that still have a living 50/50 
 
 Only the monitor that lost the window is considered. No undo modal on this path. Companions already maximized/work-area-filled skip work. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Background fill is suppressed for a monitor recently claimed by new-window placement, but companion heal still runs during that cooldown and is not blocked when the leftover window is tagged recent. If occupancy still shows 2+ windows briefly (e.g. Chrome closing), fill retries once (~400 ms) before giving up.
 
+## Rearrange on move
+
+After a window changes slots (manual drag end, suite move-to-monitor, or AutoSlot relocate/maximize onto another monitor), underfilled ordinal monitors are healed/filled the same way as fill-on-close:
+
+| Occupancy        | Action                                         |
+| ---------------- | ---------------------------------------------- |
+| 0                | Maximize eligible background onto that monitor |
+| 1 and not filled | Maximize the lone companion                    |
+| 2+               | No-op                                          |
+
+Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF.
+
 ## Disable
 
 Comment out or remove this line in `WindowManagement.ahk`:
