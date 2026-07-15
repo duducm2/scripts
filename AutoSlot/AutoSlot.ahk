@@ -667,7 +667,8 @@ AutoSlot_IsSameScriptPid(hwnd) {
     return Integer(pid) = Integer(DllCall("GetCurrentProcessId", "uint"))
 }
 
-; Handy/ClipAngel overlays, WindowManagement identity, and suite AHK GUIs/prompts.
+; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, and ClipAngel (place-only).
+; ClipAngel stays place-excluded so it is never auto-slotted / 50/50'd; occupancy uses a narrower skip.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
@@ -700,6 +701,27 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (InStr(t, "autohotkey") && InStr(class, "ahk"))
         return true
     return false
+}
+
+; Occupancy skip: same as place-exclude, except shown ClipAngel counts as filling the monitor
+; (otherwise rearrange/fill treats the monitor as empty and snaps backgrounds over it).
+AutoSlot_IsOccupancySkipExeOrTitle(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        if (StrLower(WinGetProcessName("ahk_id " hwnd)) = "clipangel.exe")
+            return false
+    } catch {
+    }
+    return AutoSlot_IsExcludedExeOrTitle(hwnd)
+}
+
+AutoSlot_IsClipAngelHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    try return StrLower(WinGetProcessName("ahk_id " hwnd)) = "clipangel.exe"
+    catch
+        return false
 }
 
 AutoSlot_IsDesktopOrTaskbarClass(cls) {
@@ -751,7 +773,7 @@ AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd := 0) {
             return false
         if (WinGetTitle(hwnd) = "")
             return false
-        if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+        if (AutoSlot_IsOccupancySkipExeOrTitle(hwnd))
             return false
     } catch {
         return false
@@ -1143,6 +1165,9 @@ AutoSlot_CapturePartnerState(partnerHwnd) {
 AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     global g_AutoSlotUndo
     if (!newHwnd || !partnerHwnd || monIdx < 1)
+        return ""
+    ; Clip Angel is a quick-use overlay — never 50/50 snap with it.
+    if (AutoSlot_IsClipAngelHwnd(newHwnd) || AutoSlot_IsClipAngelHwnd(partnerHwnd))
         return ""
 
     partnerState := AutoSlot_CapturePartnerState(partnerHwnd)

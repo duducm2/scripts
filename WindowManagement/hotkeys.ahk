@@ -47,6 +47,11 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
+; Clip Angel open/toggle (Alt+P / Alt+B): maximize on active window's monitor; second press minimizes.
+; Hook ($) so scripted SendInput "!p" from paste/favorite does not re-enter.
+$!p:: ClipAngel_ToggleOrShowOnActiveMonitor()
+$!b:: ClipAngel_ToggleOrShowOnActiveMonitor()
+
 ; =============================================================================
 ; Move Active Window to Monitor by POSITION (left-to-right order)
 ; Hotkeys: Ctrl+Alt+Win+A/S/D/F move active window to 1st–4th monitors (left-to-right)
