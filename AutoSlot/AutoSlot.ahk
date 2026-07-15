@@ -15,8 +15,8 @@
 ;
 ; Fill-on-close (same multi-monitor gate):
 ;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
-;   already-filled skip → else WM_CollectBackgroundWindows → maximize or gapless
-;   50/50 without strict validate; no candidate → companion heal.
+;   empty → two backgrounds 50/50 or one maximize; half → SnapPair bg else heal.
+;   Place freeze / claim cooldown → heal-only (no background import).
 ;
 ; Rearrange-on-move (same fill/heal rules, no visible reshuffle):
 ;   MOVESIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
@@ -406,7 +406,7 @@ AutoSlot_ProcessRearrange(*) {
     AutoSlot_RearrangeUnderfilled(excludeHwnd)
 }
 
-; Heal/fill every underfilled ordinal monitor (empty → background; half → companion max).
+; Heal/fill every underfilled ordinal monitor (same policy as fill-on-close).
 AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
@@ -421,8 +421,8 @@ AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
                 continue
             AutoSlot_FillMonitorFromBackground(monIdx)
         } else if (others.Length = 1) {
-            if (!AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
-                AutoSlot_HealLoneCompanion(monIdx)
+            ; Fill handles SnapPair import / heal / place-freeze / claim cooldown.
+            AutoSlot_FillMonitorFromBackground(monIdx)
         }
     }
 }
@@ -1151,11 +1151,25 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
     return false
 }
 
-AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows) {
+; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
+AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0) {
     occupied := Map()
     for row in occupancyRows {
         if (row.hwnd)
             occupied[row.hwnd] := true
+    }
+    if (IsObject(excludeExtra)) {
+        try {
+            for h, _ in excludeExtra
+                if (h)
+                    occupied[Integer(h)] := true
+        } catch {
+            for h in excludeExtra
+                if (h)
+                    occupied[Integer(h)] := true
+        }
+    } else if (excludeExtra) {
+        occupied[Integer(excludeExtra)] := true
     }
     rows := []
     try rows := WM_CollectBackgroundWindows()
@@ -1232,8 +1246,10 @@ AutoSlot_BeginPlaceFreeze() {
     g_AutoSlotPlaceFreezeUntil := A_TickCount + AutoSlot_RECENT_MS
 }
 
+; Promote background into free capacity: empty → up to two 50/50 (or one max);
+; half → SnapPair one background with residual (else heal). No undo modal.
 AutoSlot_FillMonitorFromBackground(monIdx) {
-    global g_AutoSlotRecent
+    global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return "noop"
     others := AutoSlot_OccupancyOnMonitor(monIdx)
@@ -1243,25 +1259,73 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
-    ; Leftover half: always maximize the residual window — never import a background cand.
-    if (others.Length = 1) {
-        if (AutoSlot_CompanionAlreadyFilled(others[1].hwnd, monIdx))
-            return "ok"
-        return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
-    }
+    ; Place freeze / claim cooldown: companion heal only (no background import).
+    blockImport := AutoSlot_PlaceFreezeActive() || AutoSlot_FillCooldownActive(monIdx)
 
-    ; Empty monitor — promote eligible background (not snap-paired / F11-covered).
-    cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
-    if (!cand)
-        return "noop"
-    g_AutoSlotRecent[cand] := A_TickCount
-    AutoSlot_PruneRecent()
-    if (AutoSlot_MaximizeOnMonitor(cand, monIdx)) {
+    if (others.Length = 1) {
+        residual := others[1].hwnd
+        if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
+            return "ok"
+        if (blockImport)
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
+        if (!cand)
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+        g_AutoSlotRecent[cand] := A_TickCount
+        AutoSlot_PruneRecent()
+        pane := AutoSlot_SnapPair(cand, residual, monIdx, true)
+        g_AutoSlotUndo := 0
+        if (pane = "")
+            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
         AutoSlot_RememberHwndMon(cand)
-        AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+        AutoSlot_RememberHwndMon(residual)
+        AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
         return "ok"
     }
-    return "noop"
+
+    ; Empty monitor — fill both slots when two candidates exist.
+    if (blockImport)
+        return "noop"
+    cand1 := AutoSlot_PickBackgroundCandidate(monIdx, others)
+    if (!cand1)
+        return "noop"
+    cand2 := AutoSlot_PickBackgroundCandidate(monIdx, others, cand1)
+    if (cand2) {
+        g_AutoSlotRecent[cand1] := A_TickCount
+        g_AutoSlotRecent[cand2] := A_TickCount
+        AutoSlot_PruneRecent()
+        pane := AutoSlot_SnapPair(cand1, cand2, monIdx, true)
+        g_AutoSlotUndo := 0
+        if (pane != "") {
+            AutoSlot_RememberHwndMon(cand1)
+            AutoSlot_RememberHwndMon(cand2)
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+            return "ok"
+        }
+        ; Snap failed — fall through to single maximize of cand1.
+    }
+    g_AutoSlotRecent[cand1] := A_TickCount
+    AutoSlot_PruneRecent()
+    if (!AutoSlot_MaximizeOnMonitor(cand1, monIdx))
+        return "noop"
+    AutoSlot_RememberHwndMon(cand1)
+    ; Still one free half-slot after maximize — fill it now (same pass; claim cooldown
+    ; would otherwise block rearrange from importing the second background).
+    if (!cand2)
+        cand2 := AutoSlot_PickBackgroundCandidate(monIdx, [{ hwnd: cand1 }], cand1)
+    if (cand2) {
+        g_AutoSlotRecent[cand2] := A_TickCount
+        AutoSlot_PruneRecent()
+        pane := AutoSlot_SnapPair(cand2, cand1, monIdx, true)
+        g_AutoSlotUndo := 0
+        if (pane != "") {
+            AutoSlot_RememberHwndMon(cand2)
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+            return "ok"
+        }
+    }
+    AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+    return "ok"
 }
 
 ; --- Placement ---------------------------------------------------------------
