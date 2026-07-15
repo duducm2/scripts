@@ -309,6 +309,16 @@ MoveWinToMonitor(mon) {
     sourceMon := WM_GetHwndMonitorIndex(hwnd)
     companionHwnd := sourceMon >= 1 ? WM_FindStrictSnapCompanion(hwnd, sourceMon) : 0
 
+    ; AutoSlot: exchange whole-monitor FG layouts (full↔pair / half↔full / full↔full).
+    if (sourceMon >= 1 && sourceMon != mon) {
+        swapped := false
+        try swapped := !!AutoSlot_TryForegroundSwap(hwnd, sourceMon, mon)
+        catch
+            swapped := false
+        if (swapped)
+            return
+    }
+
     WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
 
     ; Obtain monitor work area

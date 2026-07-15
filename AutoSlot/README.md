@@ -31,6 +31,18 @@ After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadi
 
 Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script maximize) also maximizes the companion so no orphaned half-pane remains. Disabled when AutoSlot is OFF.
 
+## Foreground monitor swap
+
+When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) may **swap whole-monitor foreground layouts** instead of only moving the active window:
+
+| Active window on source           | Destination foreground | Result                                                                                                                                      |
+| --------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full (maximized / work-area fill) | Two half-slot windows  | Active maximizes on dest; the pair keeps panes on source                                                                                    |
+| Half (or lone unfilled)           | One full window        | Active maximizes on dest (becomes two-slot presentation); former full goes to source (50/50 with leftover companion if any, else maximized) |
+| Full                              | Full                   | Windows exchange maximized monitors                                                                                                         |
+
+Swap is skipped when a half with a living companion would need to host an incoming pair on the vacated monitor (ambiguous 3-window case). Rearrange/fill is quieted briefly after a successful swap so background promote does not fight the exchange. Manual drag does not trigger this path.
+
 ## Fill empty slot on close
 
 When a window closes and leaves a monitor empty or with exactly one visible window, free capacity is filled from eligible background windows (toward **2 slots × ordinal monitors, max 8**):
