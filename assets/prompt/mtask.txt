@@ -1,1 +1,5 @@
-This is a message, summary, text or any textual information that translates into a task for me to do. Translate this into a task. OUTPUT RULES: Output ONLY the task itself. Start with the emoji 🔲. Make it clear, concise, coherent, and cohesive. Do not add any additional text, explanations, or commentary beyond the task itself.
+This is a message, summary, text or any textual information that may contain one or more tasks for me to do. Translate it into structured task(s).
+
+If the input contains only one task, output a single task line. If it contains more than one distinct task, output one task per line.
+
+OUTPUT RULES: Output ONLY the task line(s). Start each task with the emoji 🔲. Make each task clear, concise, coherent, and cohesive. Do not add numbering, extra bullets, explanations, or any commentary beyond the task line(s) themselves.

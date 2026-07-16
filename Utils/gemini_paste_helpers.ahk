@@ -298,6 +298,10 @@ GetAioptPromptText() {
     return GetPromptText("aiopt")
 }
 
+GetMtaskPromptText() {
+    return GetPromptText("mtask")
+}
+
 GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
     targetHwnd := GetGeminiScriptMsgTargetHwnd()

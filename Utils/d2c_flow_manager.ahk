@@ -67,6 +67,7 @@ class D2C_FlowManager {
         keyCallbacks := Map(
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
+            "T", this.OnSubmitT.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
@@ -84,7 +85,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
-            "[G] Grammar  [A] AI opt  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
             true,
             true,
             true
@@ -110,6 +111,12 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(true, "aiopt")
+    }
+
+    OnSubmitT(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true, "mtask")
     }
 
     OnSubmitY(*) {
@@ -295,7 +302,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
     ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
     ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
         this.CurrentPhase := "Submitting"
@@ -304,15 +311,20 @@ class D2C_FlowManager {
         HideDictationIndicator()
 
         aiLabel := GetGlobalAIProviderLabel()
-        ; For explicit first-banner choices (Y/G/A/S), skip the handoff cue: user intentionally chose the AI target.
+        ; For explicit first-banner choices (Y/G/A/T/S), skip the handoff cue: user intentionally chose the AI target.
         if (showPreMovementWarning)
             PlayPreMovementWarning(aiLabel)
 
         optionalSnippet := ""
-        if (presetMode = "grammar" || presetMode = "aiopt") {
+        if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
             dictation := ""
             try dictation := A_Clipboard
-            preset := presetMode = "grammar" ? GetGrammarPromptText() : GetAioptPromptText()
+            if (presetMode = "grammar")
+                preset := GetGrammarPromptText()
+            else if (presetMode = "aiopt")
+                preset := GetAioptPromptText()
+            else
+                preset := GetMtaskPromptText()
             optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)
         }
 
