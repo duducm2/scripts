@@ -22,7 +22,8 @@
 ;   MOVESIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
-;   Full↔pair / half↔full / full↔full — exchange whole-monitor layouts; quiet rearrange.
+;   Full/halfAlone↔pair; full/halfAlone/half↔full|single; half→pair skipped.
+;   After swap: 2s ShowWithKeys [N] minimizes displaced dest windows.
 ;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
@@ -53,6 +54,8 @@ global g_AutoSlotMoveHookCb := 0
 global g_AutoSlotRearrangePending := false
 global g_AutoSlotRearrangeExclude := 0
 global g_AutoSlotSwapQuietUntil := 0
+global g_AutoSlotSwapDisplaced := []
+global g_AutoSlotSwapMoverHwnd := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -67,7 +70,8 @@ AutoSlot_DESTROY_DEDUP_MS := 250
 AutoSlot_PAIR_MAX_DEBOUNCE_MS := 120
 AutoSlot_PAIR_SUPPRESS_MS := 500
 AutoSlot_REARRANGE_MS := 350
-AutoSlot_SWAP_QUIET_MS := 900
+AutoSlot_SWAP_QUIET_MS := 2500
+AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -1028,6 +1032,82 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx) {
     return true
 }
 
+AutoSlot_ClearSwapDisplaced() {
+    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
+    g_AutoSlotSwapDisplaced := []
+    g_AutoSlotSwapMoverHwnd := 0
+}
+
+AutoSlot_OnSwapN(*) {
+    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
+    displaced := g_AutoSlotSwapDisplaced
+    mover := g_AutoSlotSwapMoverHwnd
+    AutoSlot_ClearSwapDisplaced()
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    for h in displaced {
+        if (!h || !DllCall("IsWindow", "ptr", h))
+            continue
+        try WinMinimize("ahk_id " h)
+        catch {
+        }
+    }
+    AutoSlot_ActivateHwnd(mover)
+}
+
+AutoSlot_OnSwapTimeout(*) {
+    global g_AutoSlotSwapMoverHwnd
+    mover := g_AutoSlotSwapMoverHwnd
+    AutoSlot_ClearSwapDisplaced()
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    AutoSlot_ActivateHwnd(mover)
+}
+
+AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
+    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
+    g_AutoSlotSwapDisplaced := displacedHwnds
+    g_AutoSlotSwapMoverHwnd := moverHwnd
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    AutoSlot_ActivateHwnd(moverHwnd)
+    keyCallbacks := Map("N", AutoSlot_OnSwapN)
+    try {
+        StandardLoadingBar_ShowWithKeys(
+            "ℹ️ Swapped M" srcLabel " ↔ M" dstLabel " (2s)",
+            keyCallbacks,
+            AutoSlot_SWAP_MODAL_MS,
+            0,
+            AutoSlot_OnSwapTimeout,
+            BANNER_ACCENT_INFO,
+            480,
+            17,
+            "",
+            true,
+            "[N] Minimize displaced",
+            true,
+            true,
+            true
+        )
+    } catch {
+        AutoSlot_ClearSwapDisplaced()
+        AutoSlot_Toast("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel)
+    }
+    AutoSlot_ActivateHwnd(moverHwnd)
+}
+
 ; Exchange whole-monitor FG layouts when MoveWinToMonitor would collide.
 ; Returns true when swap was applied (caller should skip normal move).
 AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
@@ -1039,7 +1119,10 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
     mover := AutoSlot_ClassifyMoverRole(hwnd, sourceMon)
     dest := AutoSlot_ClassifyFgLayout(destMon)
     role := mover.role
-    if (role = "other" || dest.kind = "empty" || dest.kind = "other" || dest.kind = "single")
+    ; Lone dest occupant (single) exchanges like a full window.
+    if (dest.kind = "single")
+        dest := { kind: "full", hwnd: dest.hwnd }
+    if (role = "other" || dest.kind = "empty" || dest.kind = "other")
         return false
 
     ; Half with a left-behind companion cannot host an incoming pair on source.
@@ -1051,10 +1134,15 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
         wantSwap := true
     else if ((role = "full" || role = "halfAlone" || role = "half") && dest.kind = "full")
         wantSwap := true
-    else if (role = "full" && dest.kind = "full")
-        wantSwap := true
     if (!wantSwap)
         return false
+
+    displaced := []
+    if (dest.kind = "pair") {
+        displaced.Push(dest.a)
+        displaced.Push(dest.b)
+    } else if (dest.kind = "full")
+        displaced.Push(dest.hwnd)
 
     AutoSlot_BeginSwapQuiet()
     AutoSlot_PairSuppressMark(hwnd)
@@ -1126,7 +1214,7 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
         srcLabel := sourceMon
     if (dstLabel < 1)
         dstLabel := destMon
-    AutoSlot_Toast("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel)
+    AutoSlot_ShowSwapModal(srcLabel, dstLabel, hwnd, displaced)
     return true
 }
 

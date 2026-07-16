@@ -33,15 +33,15 @@ Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script 
 
 ## Foreground monitor swap
 
-When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) may **swap whole-monitor foreground layouts** instead of only moving the active window:
+When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) may **swap whole-monitor foreground layouts** instead of only moving the active window. Manual drag does not swap.
 
-| Active window on source           | Destination foreground | Result                                                                                                                                      |
-| --------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full (maximized / work-area fill) | Two half-slot windows  | Active maximizes on dest; the pair keeps panes on source                                                                                    |
-| Half (or lone unfilled)           | One full window        | Active maximizes on dest (becomes two-slot presentation); former full goes to source (50/50 with leftover companion if any, else maximized) |
-| Full                              | Full                   | Windows exchange maximized monitors                                                                                                         |
+| Active window on source                            | Destination foreground                      | Result                                                                                                             |
+| -------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Full (maximized / work-area fill) or lone unfilled | Two half-slot windows                       | Active maximizes on dest; the pair keeps panes on source                                                           |
+| Full, lone unfilled, or half of a pair             | One window (maximized **or** lone “single”) | Active maximizes on dest; former dest window goes to source (50/50 with leftover companion if any, else maximized) |
+| Half of a pair                                     | Two half-slot windows                       | **No swap** (would leave companion + pair = 3 on source) — normal maximize + rearrange                             |
 
-Swap is skipped when a half with a living companion would need to host an incoming pair on the vacated monitor (ambiguous 3-window case). Rearrange/fill is quieted briefly after a successful swap so background promote does not fight the exchange. Manual drag does not trigger this path.
+After a successful swap, a **2-second** interactive banner offers **[N]** to **minimize the displaced** destination window(s). Timeout / Esc keeps them placed on the source monitor. Rearrange/fill is quieted through the banner window so background promote does not fight the exchange.
 
 ## Fill empty slot on close
 
