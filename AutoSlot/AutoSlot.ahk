@@ -73,6 +73,7 @@ AutoSlot_PAIR_SUPPRESS_MS := 500
 AutoSlot_REARRANGE_MS := 350
 AutoSlot_SWAP_QUIET_MS := 2500
 AutoSlot_SWAP_MODAL_MS := 2000
+AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
 AutoSlot_REPLACE_SKIP_TTL_MS := 600000
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
@@ -315,13 +316,16 @@ AutoSlot_PairSuppressActive(hwnd) {
     global g_AutoSlotMaxCompanionSuppress
     if (!hwnd || !g_AutoSlotMaxCompanionSuppress.Has(hwnd))
         return false
-    return A_TickCount - g_AutoSlotMaxCompanionSuppress[hwnd] < AutoSlot_PAIR_SUPPRESS_MS
+    return A_TickCount < g_AutoSlotMaxCompanionSuppress[hwnd]
 }
 
-AutoSlot_PairSuppressMark(hwnd) {
+AutoSlot_PairSuppressMark(hwnd, ms := 0) {
     global g_AutoSlotMaxCompanionSuppress
-    if (hwnd)
-        g_AutoSlotMaxCompanionSuppress[hwnd] := A_TickCount
+    if (!hwnd)
+        return
+    if (ms < 1)
+        ms := AutoSlot_PAIR_SUPPRESS_MS
+    g_AutoSlotMaxCompanionSuppress[hwnd] := A_TickCount + ms
 }
 
 AutoSlot_OnLocationChange(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
@@ -1069,7 +1073,7 @@ AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     return { role: "other" }
 }
 
-AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx) {
+AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx, registerPair := true) {
     if (!a || !b || a = b || monIdx < 1)
         return false
     if (aPane = "" || bPane = "" || aPane = bPane) {
@@ -1083,10 +1087,47 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx) {
     axis := WM_GetSnapSplitAxis(monIdx)
     if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
         return false
-    AutoSlot_RegisterSnapPair(a, b)
+    ; If either half got OS-maximized during place, restore and re-gapless once.
+    needRetry := false
+    try needRetry := (WinGetMinMax("ahk_id " a) = 1) || (WinGetMinMax("ahk_id " b) = 1)
+    catch
+        needRetry := false
+    if (needRetry) {
+        try {
+            if (WinGetMinMax("ahk_id " a) = 1) {
+                WinRestore "ahk_id " a
+                Sleep 60
+            }
+        } catch {
+        }
+        try {
+            if (WinGetMinMax("ahk_id " b) = 1) {
+                WinRestore "ahk_id " b
+                Sleep 60
+            }
+        } catch {
+        }
+        if (!WM_PrepareHwndForTile(a) || !WM_PrepareHwndForTile(b))
+            return false
+        if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
+            return false
+    }
+    if (registerPair)
+        AutoSlot_RegisterSnapPair(a, b)
     AutoSlot_RememberHwndMon(a)
     AutoSlot_RememberHwndMon(b)
     return true
+}
+
+; After swap place: register pair and keep paired-max suppressed through the banner window.
+AutoSlot_FinishSwappedPair(a, b) {
+    if (!a || !b || a = b)
+        return
+    AutoSlot_RegisterSnapPair(a, b)
+    AutoSlot_PairSuppressMark(a, AutoSlot_SWAP_PAIR_SUPPRESS_MS)
+    AutoSlot_PairSuppressMark(b, AutoSlot_SWAP_PAIR_SUPPRESS_MS)
+    AutoSlot_ClearPairMaxPending(a)
+    AutoSlot_ClearPairMaxPending(b)
 }
 
 AutoSlot_ForgetHwndMon(hwnd) {
@@ -1191,6 +1232,18 @@ AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
     global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
     g_AutoSlotSwapDisplaced := displacedHwnds
     g_AutoSlotSwapMoverHwnd := moverHwnd
+    ; Keep heal/pair-max/rearrange gated for the whole Interactive Input window.
+    AutoSlot_BeginSwapQuiet(AutoSlot_SWAP_MODAL_MS + 500)
+    for h in displacedHwnds {
+        if (h) {
+            AutoSlot_PairSuppressMark(h, AutoSlot_SWAP_PAIR_SUPPRESS_MS)
+            AutoSlot_ClearPairMaxPending(h)
+        }
+    }
+    if (moverHwnd) {
+        AutoSlot_PairSuppressMark(moverHwnd, AutoSlot_SWAP_PAIR_SUPPRESS_MS)
+        AutoSlot_ClearPairMaxPending(moverHwnd)
+    }
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
     }
@@ -1276,14 +1329,14 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
     for h in displaced
         parties.Push(h)
     for h in parties {
-        AutoSlot_PairSuppressMark(h)
+        AutoSlot_PairSuppressMark(h, AutoSlot_SWAP_PAIR_SUPPRESS_MS)
         AutoSlot_ClearPairMaxPending(h)
         AutoSlot_UnregisterSnapPair(h)
     }
 
     if (dest.kind = "pair") {
-        ; Displaced pair onto source FIRST so source never looks empty for companion heal.
-        if (!AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon)) {
+        ; Displaced pair onto source FIRST; do not register snap pair until layout is stable.
+        if (!AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)) {
             global g_AutoSlotSwapQuietUntil
             g_AutoSlotSwapQuietUntil := 0
             return false
@@ -1294,6 +1347,7 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
             return false
         }
         AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_FinishSwappedPair(dest.a, dest.b)
     } else if (dest.kind = "full") {
         other := dest.hwnd
         if (other = hwnd) {
@@ -1303,8 +1357,11 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
         }
         ; Former dest window onto source first, then mover takes dest.
         placedOther := false
-        if (companion && companion != other)
-            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, "start", "end", sourceMon)
+        if (companion && companion != other) {
+            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, "start", "end", sourceMon, false)
+            if (placedOther)
+                AutoSlot_FinishSwappedPair(other, companion)
+        }
         if (!placedOther)
             placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
         if (!placedOther) {
