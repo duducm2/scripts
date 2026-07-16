@@ -902,7 +902,15 @@ AutoSlot_GetHwndMonitorIndex(hwnd) {
     if (!hwnd)
         return 0
     try {
-        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        ; Prefer window center (same as WM_GetHwndMonitorIndex) so end halves near
+        ; monitor edges are not attributed to the neighbor.
+        if (WM_GetWindowRectHwnd(hwnd, &l, &t, &r, &b)) {
+            wcx := (l + r) // 2
+            wcy := (t + b) // 2
+            wPoint := (wcy & 0xFFFFFFFF) << 32 | (wcx & 0xFFFFFFFF)
+            hMon := DllCall("MonitorFromPoint", "int64", wPoint, "uint", 2, "ptr")
+        } else
+            hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
         loop MonitorGetCount() {
             MonitorGet A_Index, &ml, &mt, &mr, &mb
             cx := (ml + mr) // 2
@@ -930,18 +938,27 @@ AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd := 0) {
         if (!AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd))
             continue
         try {
-            hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
-            if (Integer(hMon) != Integer(hTarget))
-                continue
             rect := Buffer(16, 0)
             if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
                 continue
+            left := NumGet(rect, 0, "int")
+            top := NumGet(rect, 4, "int")
+            right := NumGet(rect, 8, "int")
+            bottom := NumGet(rect, 12, "int")
+            ; Center point — more reliable than MonitorFromWindow for end (right/bottom) halves
+            ; that sit near a monitor edge and can be attributed to the neighbor.
+            wcx := (left + right) // 2
+            wcy := (top + bottom) // 2
+            wPoint := (wcy & 0xFFFFFFFF) << 32 | (wcx & 0xFFFFFFFF)
+            hMon := DllCall("MonitorFromPoint", "int64", wPoint, "uint", 2, "ptr")
+            if (Integer(hMon) != Integer(hTarget))
+                continue
             rows.Push({
                 hwnd: hwnd,
-                left: NumGet(rect, 0, "int"),
-                top: NumGet(rect, 4, "int"),
-                right: NumGet(rect, 8, "int"),
-                bottom: NumGet(rect, 12, "int")
+                left: left,
+                top: top,
+                right: right,
+                bottom: bottom
             })
         } catch {
             continue
@@ -1220,19 +1237,23 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx, registerPair := true) {
     }
     AutoSlot_UnregisterSnapPair(a)
     AutoSlot_UnregisterSnapPair(b)
+    prepared := true
     if (!WM_PrepareHwndForTile(a) || !WM_PrepareHwndForTile(b))
-        return false
+        prepared := false
     axis := WM_GetSnapSplitAxis(monIdx)
-    if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane)) {
-        ; Retry with default panes if vacated-pane placement failed.
-        if (aPane != "start" || bPane != "end") {
-            aPane := "start"
-            bPane := "end"
-            if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
-                return false
-        } else
-            return false
+    ok := false
+    if (prepared)
+        ok := !!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane)
+    if (!ok && prepared && (aPane != "start" || bPane != "end")) {
+        aPane := "start"
+        bPane := "end"
+        ok := !!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane)
     }
+    ; Gapless can flake (DPI/chrome) — crude work-area halves still complete the swap.
+    if (!ok)
+        ok := AutoSlot_ApplyPairCrude(a, b, aPane, bPane, monIdx)
+    if (!ok)
+        return false
     ; If either half got OS-maximized during place, restore and re-gapless once.
     needRetry := false
     try needRetry := (WinGetMinMax("ahk_id " a) = 1) || (WinGetMinMax("ahk_id " b) = 1)
@@ -1253,16 +1274,69 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx, registerPair := true) {
             }
         } catch {
         }
-        if (!WM_PrepareHwndForTile(a) || !WM_PrepareHwndForTile(b))
-            return false
-        if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
-            return false
+        if (WM_PrepareHwndForTile(a) && WM_PrepareHwndForTile(b)) {
+            if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
+                AutoSlot_ApplyPairCrude(a, b, aPane, bPane, monIdx)
+        }
     }
     if (registerPair)
         AutoSlot_RegisterSnapPair(a, b)
     AutoSlot_RememberHwndMon(a)
     AutoSlot_RememberHwndMon(b)
     return true
+}
+
+; Best-effort 50/50 without gapless inset math (swap fallback).
+AutoSlot_ApplyPairCrude(a, b, aPane, bPane, monIdx) {
+    if (!a || !b || a = b || monIdx < 1)
+        return false
+    if (aPane = "" || bPane = "" || aPane = bPane) {
+        aPane := "start"
+        bPane := "end"
+    }
+    MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+    axis := WM_GetSnapSplitAxis(monIdx)
+    g := 4
+    if (axis = "h") {
+        half := (wr - wl - g) // 2
+        startR := [wl, wt, wl + half, wb]
+        endR := [wl + half + g, wt, wr, wb]
+    } else {
+        half := (wb - wt - g) // 2
+        startR := [wl, wt, wr, wt + half]
+        endR := [wl, wt + half + g, wr, wb]
+    }
+    aR := (aPane = "start") ? startR : endR
+    bR := (bPane = "start") ? startR : endR
+    try {
+        if (WinGetMinMax("ahk_id " a) != 0) {
+            WinRestore "ahk_id " a
+            Sleep 40
+        }
+    } catch {
+    }
+    try {
+        if (WinGetMinMax("ahk_id " b) != 0) {
+            WinRestore "ahk_id " b
+            Sleep 40
+        }
+    } catch {
+    }
+    okB := false
+    okA := false
+    try okB := !!WinMove(b, bR[1], bR[2], bR[3] - bR[1], bR[4] - bR[2])
+    catch
+        okB := false
+    if (!okB)
+        okB := !!DllCall("MoveWindow", "ptr", b, "int", bR[1], "int", bR[2], "int", bR[3] - bR[1], "int", bR[4] - bR[2],
+            "int", true)
+    try okA := !!WinMove(a, aR[1], aR[2], aR[3] - aR[1], aR[4] - aR[2])
+    catch
+        okA := false
+    if (!okA)
+        okA := !!DllCall("MoveWindow", "ptr", a, "int", aR[1], "int", aR[2], "int", aR[3] - aR[1], "int", aR[4] - aR[2],
+            "int", true)
+    return okA && okB
 }
 
 ; After swap place: register pair and keep paired-max suppressed through the banner window.
@@ -1482,10 +1556,11 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
 
     if (dest.kind = "pair") {
         ; Displaced pair onto source FIRST; do not register snap pair until layout is stable.
-        if (!AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)) {
-            global g_AutoSlotSwapQuietUntil
-            g_AutoSlotSwapQuietUntil := 0
-            return false
+        placedPair := AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon, false)
+        if (!placedPair) {
+            ; Last resort: stack both maximized on source so exchange still happens.
+            AutoSlot_MaximizeOnMonitor(dest.a, sourceMon, false)
+            AutoSlot_MaximizeOnMonitor(dest.b, sourceMon, false)
         }
         if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
             global g_AutoSlotSwapQuietUntil
@@ -1493,7 +1568,8 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
             return false
         }
         AutoSlot_RememberHwndMon(hwnd)
-        AutoSlot_FinishSwappedPair(dest.a, dest.b)
+        if (placedPair)
+            AutoSlot_FinishSwappedPair(dest.a, dest.b)
     } else if (dest.kind = "full") {
         other := dest.hwnd
         if (other = hwnd) {
@@ -1521,12 +1597,9 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
         }
         if (!placedOther)
             placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
-        if (!placedOther) {
-            global g_AutoSlotSwapQuietUntil
-            g_AutoSlotSwapQuietUntil := 0
-            return false
-        }
-        AutoSlot_RememberHwndMon(other)
+        ; If other resisted, still continue — mover takes dest (partial swap better than none).
+        if (placedOther)
+            AutoSlot_RememberHwndMon(other)
         if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
             global g_AutoSlotSwapQuietUntil
             g_AutoSlotSwapQuietUntil := 0

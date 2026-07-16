@@ -895,7 +895,15 @@ WM_GetHwndMonitorIndex(hwnd) {
     if (!hwnd)
         return 0
     try {
-        hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
+        ; Prefer window center — MonitorFromWindow near edges (end/right/bottom halves)
+        ; can attribute the hwnd to the neighboring monitor and skip cross-monitor swap.
+        if (WM_GetWindowRectHwnd(hwnd, &l, &t, &r, &b)) {
+            wcx := (l + r) // 2
+            wcy := (t + b) // 2
+            wPoint := (wcy & 0xFFFFFFFF) << 32 | (wcx & 0xFFFFFFFF)
+            hMon := DllCall("MonitorFromPoint", "int64", wPoint, "uint", 2, "ptr")
+        } else
+            hMon := DllCall("MonitorFromWindow", "ptr", hwnd, "uint", 2, "ptr")
         loop MonitorGetCount() {
             MonitorGet A_Index, &ml, &mt, &mr, &mb
             cx := (ml + mr) // 2
