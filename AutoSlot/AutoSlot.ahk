@@ -1120,16 +1120,30 @@ AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
 
 ; Mover role on source: full | half | halfAlone | other (+ companion when half).
 ; Maximized / work-area-filled always counts as full even if covered extras share the monitor.
+; Half detection ignores maximized-behind: prefer strict snap companion, else non-filled others only.
 AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return { role: "other" }
     if (AutoSlot_CompanionAlreadyFilled(hwnd, sourceMon))
         return { role: "full" }
+    companion := 0
+    try companion := Integer(WM_FindStrictSnapCompanion(hwnd, sourceMon))
+    catch
+        companion := 0
+    if (companion)
+        return { role: "half", companion: companion }
     others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
-    if (others.Length = 0)
+    nonFilled := []
+    for row in others {
+        h := row.hwnd
+        if (!h || AutoSlot_CompanionAlreadyFilled(h, sourceMon))
+            continue
+        nonFilled.Push(h)
+    }
+    if (nonFilled.Length = 0)
         return { role: "halfAlone" }
-    if (others.Length = 1)
-        return { role: "half", companion: others[1].hwnd }
+    if (nonFilled.Length = 1)
+        return { role: "half", companion: nonFilled[1] }
     return { role: "other" }
 }
 
