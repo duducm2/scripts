@@ -495,6 +495,10 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
         return
     if (AutoSlot_PlaceFreezeActive())
         return
+    ; Clip Angel maximize/move must not trigger fill — excludeHwnd=ClipAngel made the
+    ; monitor look empty and SnapPair/Maximize imported backgrounds on top of it.
+    if (AutoSlot_IsClipAngelHwnd(hwnd))
+        return
     if (!AutoSlot_IsOccupancyCandidate(hwnd))
         return
     oldMon := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
@@ -804,6 +808,30 @@ AutoSlot_IsClipAngelHwnd(hwnd) {
         return false
 }
 
+; True when a shown (non-minimized) Clip Angel window sits on monIdx.
+AutoSlot_MonitorHasShownClipAngel(monIdx) {
+    if (monIdx < 1)
+        return false
+    try {
+        for hwnd in WinGetList("ahk_exe ClipAngel.exe") {
+            if (!hwnd || !AutoSlot_IsClipAngelHwnd(hwnd))
+                continue
+            try {
+                if (WinGetMinMax("ahk_id " hwnd) = -1)
+                    continue
+                if (!DllCall("IsWindowVisible", "ptr", hwnd))
+                    continue
+            } catch {
+                continue
+            }
+            if (AutoSlot_GetHwndMonitorIndex(hwnd) = monIdx)
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
 AutoSlot_IsDesktopOrTaskbarClass(cls) {
     return cls = "Progman" || cls = "WorkerW" || cls = "Shell_TrayWnd" || cls = "Shell_SecondaryTrayWnd"
 }
@@ -836,7 +864,11 @@ AutoSlot_IsEligibleNewWindow(hwnd) {
 }
 
 AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd := 0) {
-    if (!hwnd || (excludeHwnd && hwnd = excludeHwnd))
+    if (!hwnd)
+        return false
+    ; Never drop Clip Angel from occupancy via excludeHwnd — rearrange after its own
+    ; maximize used to treat the monitor as empty and fill backgrounds over it.
+    if (excludeHwnd && hwnd = excludeHwnd && !AutoSlot_IsClipAngelHwnd(hwnd))
         return false
     try {
         if (WinGetMinMax("ahk_id " hwnd) = -1)
@@ -1034,7 +1066,8 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx, scheduleRearrange := true) {
     AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
     AutoSlot_MaximizeHwnd(hwnd)
     AutoSlot_ActivateHwnd(hwnd)
-    if (scheduleRearrange) {
+    ; Never rearrange because Clip Angel moved/maximized (see OnMoveSizeEnd).
+    if (scheduleRearrange && !AutoSlot_IsClipAngelHwnd(hwnd)) {
         try AutoSlot_ScheduleRearrange(hwnd)
         catch {
         }
@@ -1946,10 +1979,14 @@ AutoSlot_HealLoneCompanion(monIdx) {
         return false
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
+    if (AutoSlot_MonitorHasShownClipAngel(monIdx))
+        return false
     others := AutoSlot_OccupancyOnMonitor(monIdx)
     if (others.Length != 1)
         return false
     companion := others[1].hwnd
+    if (AutoSlot_IsClipAngelHwnd(companion))
+        return false
     if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
         return true
     healed := false
@@ -1988,6 +2025,9 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return "noop"
+    ; Clip Angel owns the monitor for quick use — do not import/snap backgrounds over it.
+    if (AutoSlot_MonitorHasShownClipAngel(monIdx))
+        return "noop"
     others := AutoSlot_OccupancyOnMonitor(monIdx)
     if (others.Length >= 2)
         return "stale"
@@ -2000,6 +2040,8 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
 
     if (others.Length = 1) {
         residual := others[1].hwnd
+        if (AutoSlot_IsClipAngelHwnd(residual))
+            return "noop"
         if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
             return "ok"
         if (blockImport)

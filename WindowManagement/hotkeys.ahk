@@ -56,10 +56,16 @@ ClipAngel_HotIfNeedsForegroundAssist())
     try AutoSlot_BeginPlaceFreeze()
     catch {
     }
+    try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
+    catch {
+    }
     ClipAngel_EnsureForegroundAfterNativeOpen()
 }
 ~+b:: {
     try AutoSlot_BeginPlaceFreeze()
+    catch {
+    }
+    try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
     catch {
     }
     ClipAngel_EnsureForegroundAfterNativeOpen()
