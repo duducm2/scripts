@@ -23,7 +23,7 @@
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
 ;   Full/halfAlone↔pair; full/halfAlone/half↔full|single; half→pair skipped.
-;   After swap: 2s ShowWithKeys [N] minimizes displaced dest windows.
+;   After swap: 2s ShowWithKeys [F] replaces (minimizes displaced dest windows).
 ;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
@@ -1038,7 +1038,7 @@ AutoSlot_ClearSwapDisplaced() {
     g_AutoSlotSwapMoverHwnd := 0
 }
 
-AutoSlot_OnSwapN(*) {
+AutoSlot_OnSwapF(*) {
     global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
     displaced := g_AutoSlotSwapDisplaced
     mover := g_AutoSlotSwapMoverHwnd
@@ -1083,23 +1083,25 @@ AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
     catch {
     }
     AutoSlot_ActivateHwnd(moverHwnd)
-    keyCallbacks := Map("N", AutoSlot_OnSwapN)
+    keyCallbacks := Map("F", AutoSlot_OnSwapF)
     try {
+        ; Interactive Input: ❓ + intermediate accent; progress countdown; overlay owns focus
+        ; after MEH chord (preserveUserFocus false). Key F = replace (minimize displaced).
         StandardLoadingBar_ShowWithKeys(
-            "ℹ️ Swapped M" srcLabel " ↔ M" dstLabel " (2s)",
+            "❓ Swapped M" srcLabel " ↔ M" dstLabel " (2s)",
             keyCallbacks,
             AutoSlot_SWAP_MODAL_MS,
             0,
             AutoSlot_OnSwapTimeout,
-            BANNER_ACCENT_INFO,
+            BANNER_ACCENT_INTERMEDIATE,
             480,
             17,
             "",
             true,
-            "[N] Minimize displaced",
+            "[F] Replace (minimize displaced)",
             true,
             true,
-            true
+            false
         )
     } catch {
         AutoSlot_ClearSwapDisplaced()
