@@ -351,6 +351,8 @@ AutoSlot_ProcessPairedMaximizePending(hwnd) {
     global g_AutoSlotPairMaxPending
     if (g_AutoSlotPairMaxPending.Has(hwnd))
         g_AutoSlotPairMaxPending.Delete(hwnd)
+    if (AutoSlot_SwapQuietActive())
+        return
     AutoSlot_OnPairedMaximize(hwnd)
 }
 
@@ -358,6 +360,8 @@ AutoSlot_ProcessPairedMaximizePending(hwnd) {
 AutoSlot_OnPairedMaximize(hwnd) {
     global g_AutoSlotSnapPairs
     if (!AutoSlot_IsEnabled() || !hwnd)
+        return false
+    if (AutoSlot_SwapQuietActive())
         return false
     if (AutoSlot_PairSuppressActive(hwnd))
         return false
@@ -394,6 +398,12 @@ AutoSlot_OnPairedMaximize(hwnd) {
         }
     }
     return healed
+}
+
+AutoSlot_ClearPairMaxPending(hwnd) {
+    global g_AutoSlotPairMaxPending
+    if (hwnd && g_AutoSlotPairMaxPending.Has(hwnd))
+        g_AutoSlotPairMaxPending.Delete(hwnd)
 }
 
 ; --- Rearrange underfilled slots after a move --------------------------------
@@ -1251,35 +1261,39 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
     } else if (dest.kind = "full")
         displaced.Push(dest.hwnd)
 
-    AutoSlot_BeginSwapQuiet()
-    AutoSlot_PairSuppressMark(hwnd)
     companion := 0
     if (role = "half") {
         try companion := Integer(mover.companion)
         catch
             companion := 0
     }
+
+    ; Quiet heal/pair-max/rearrange; cancel queued paired-maximize; break snap links.
+    AutoSlot_BeginSwapQuiet()
+    parties := [hwnd]
     if (companion)
-        AutoSlot_PairSuppressMark(companion)
-    if (dest.kind = "pair") {
-        AutoSlot_PairSuppressMark(dest.a)
-        AutoSlot_PairSuppressMark(dest.b)
-    } else if (dest.kind = "full")
-        AutoSlot_PairSuppressMark(dest.hwnd)
+        parties.Push(companion)
+    for h in displaced
+        parties.Push(h)
+    for h in parties {
+        AutoSlot_PairSuppressMark(h)
+        AutoSlot_ClearPairMaxPending(h)
+        AutoSlot_UnregisterSnapPair(h)
+    }
 
-    AutoSlot_UnregisterSnapPair(hwnd)
-
     if (dest.kind = "pair") {
-        ; Mover takes whole dest; pair keeps relative panes on source.
+        ; Displaced pair onto source FIRST so source never looks empty for companion heal.
+        if (!AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon)) {
+            global g_AutoSlotSwapQuietUntil
+            g_AutoSlotSwapQuietUntil := 0
+            return false
+        }
         if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
             global g_AutoSlotSwapQuietUntil
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
         AutoSlot_RememberHwndMon(hwnd)
-        if (!AutoSlot_ApplyPairOnMonitor(dest.a, dest.b, dest.aPane, dest.bPane, sourceMon)) {
-            ; Mover already owns dest — do not roll back; avoid fill fighting.
-        }
     } else if (dest.kind = "full") {
         other := dest.hwnd
         if (other = hwnd) {
@@ -1287,22 +1301,24 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
-        AutoSlot_UnregisterSnapPair(other)
+        ; Former dest window onto source first, then mover takes dest.
+        placedOther := false
+        if (companion && companion != other)
+            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, "start", "end", sourceMon)
+        if (!placedOther)
+            placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
+        if (!placedOther) {
+            global g_AutoSlotSwapQuietUntil
+            g_AutoSlotSwapQuietUntil := 0
+            return false
+        }
+        AutoSlot_RememberHwndMon(other)
         if (!AutoSlot_MaximizeOnMonitor(hwnd, destMon, false)) {
             global g_AutoSlotSwapQuietUntil
             g_AutoSlotSwapQuietUntil := 0
             return false
         }
         AutoSlot_RememberHwndMon(hwnd)
-        placedOther := false
-        if (companion && companion != other) {
-            AutoSlot_UnregisterSnapPair(companion)
-            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, "start", "end", sourceMon)
-        }
-        if (!placedOther)
-            placedOther := AutoSlot_MaximizeOnMonitor(other, sourceMon, false)
-        if (placedOther)
-            AutoSlot_RememberHwndMon(other)
     } else {
         global g_AutoSlotSwapQuietUntil
         g_AutoSlotSwapQuietUntil := 0
@@ -1639,6 +1655,8 @@ AutoSlot_OccupancyHasRecent(occupancyRows) {
 
 ; Maximize the sole visible window on monIdx when it is not already filled.
 AutoSlot_HealLoneCompanion(monIdx) {
+    if (AutoSlot_SwapQuietActive())
+        return false
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
     others := AutoSlot_OccupancyOnMonitor(monIdx)

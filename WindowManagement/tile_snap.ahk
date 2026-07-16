@@ -656,6 +656,10 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
     partnerFormerMon := 0, partnerFormerCompanion := 0, activateHwnd := 0) {
     if (!activateHwnd)
         activateHwnd := movedHwnd
+    swapQuiet := false
+    try swapQuiet := !!AutoSlot_SwapQuietActive()
+    catch
+        swapQuiet := false
     leftSource := false
     if (sourceMonIdx >= 1) {
         if (destMonIdx >= 1 && destMonIdx != sourceMonIdx)
@@ -664,25 +668,27 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
         if (curMon >= 1 && curMon != sourceMonIdx)
             leftSource := true
     }
-    shouldHeal := false
-    if (companionHwnd) {
-        if (snapPartnerHwnd >= 0) {
-            if (snapPartnerHwnd != companionHwnd)
+    if (!swapQuiet) {
+        shouldHeal := false
+        if (companionHwnd) {
+            if (snapPartnerHwnd >= 0) {
+                if (snapPartnerHwnd != companionHwnd)
+                    shouldHeal := true
+            } else if (leftSource) {
                 shouldHeal := true
-        } else if (leftSource) {
-            shouldHeal := true
+            }
         }
-    }
-    if (shouldHeal) {
-        WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
-    } else if (sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd != companionHwnd))) {
-        WM_HealOrphanOnMonitor(sourceMonIdx, movedHwnd, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0)
-    }
-    if (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx) {
-        if (partnerFormerCompanion)
-            WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
-        else
-            WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
+        if (shouldHeal) {
+            WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
+        } else if (sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd != companionHwnd))) {
+            WM_HealOrphanOnMonitor(sourceMonIdx, movedHwnd, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0)
+        }
+        if (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx) {
+            if (partnerFormerCompanion)
+                WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
+            else
+                WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
+        }
     }
     WM_EnsureForegroundHwnd(activateHwnd)
     WM_MaybeCenterMouse(activateHwnd, "after_leaving_monitor", true)
