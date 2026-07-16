@@ -1028,18 +1028,51 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx, scheduleRearrange := true) {
 ; --- Foreground monitor swap (suite move-to-monitor) -------------------------
 
 ; Presentation pane for a window on monIdx ("start"|"end"|"").
+; Prefer DWM/visible frame so end (right/bottom) halves classify like snap validation.
 AutoSlot_GetHwndPaneOnMonitor(hwnd, monIdx) {
     if (!hwnd || monIdx < 1)
         return ""
     axis := WM_GetSnapSplitAxis(monIdx)
     WM_GetSnapInnerWorkArea(monIdx, &wl, &wt, &wr, &wb)
-    if (!WM_GetWindowRectHwnd(hwnd, &l, &t, &r, &b))
+    l := 0, t := 0, r := 0, b := 0
+    got := false
+    try got := !!WM_GetSnapVisibleFrame(hwnd, monIdx, &l, &t, &r, &b)
+    catch
+        got := false
+    if (!got && !WM_GetWindowRectHwnd(hwnd, &l, &t, &r, &b))
         return ""
     pane := ""
     paneSize := 0
     if (WM_ClassifySnapPane(axis, wl, wt, wr, wb, l, t, r, b, &pane, &paneSize) && pane != "")
         return pane
     return ""
+}
+
+; Among non-filled others on sourceMon, pick opposite-pane companion (or sole non-filled).
+AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon) {
+    if (!hwnd || sourceMon < 1)
+        return 0
+    moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
+    others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
+    nonFilled := []
+    for row in others {
+        h := row.hwnd
+        if (!h || AutoSlot_CompanionAlreadyFilled(h, sourceMon))
+            continue
+        nonFilled.Push(h)
+    }
+    if (nonFilled.Length = 0)
+        return 0
+    if (nonFilled.Length = 1)
+        return nonFilled[1]
+    if (moverPane = "")
+        return 0
+    wantPane := (moverPane = "start") ? "end" : "start"
+    for h in nonFilled {
+        if (AutoSlot_GetHwndPaneOnMonitor(h, sourceMon) = wantPane)
+            return h
+    }
+    return 0
 }
 
 ; Dest/source FG layout: empty | full | single | pair | other.
@@ -1089,7 +1122,14 @@ AutoSlot_PickPairFromOccupancyRows(rows) {
             bestBPane := AutoSlot_GetHwndPaneOnMonitor(bestB, monIdx)
         }
         if (bestAPane = "" || bestBPane = "" || bestAPane = bestBPane) {
-            if (rows[1].left <= rows[2].left) {
+            ; Axis-aware: portrait (v) uses top; landscape (h) uses left.
+            axis := (monIdx >= 1) ? WM_GetSnapSplitAxis(monIdx) : "h"
+            aFirst := true
+            if (axis = "v")
+                aFirst := (rows[1].top <= rows[2].top)
+            else
+                aFirst := (rows[1].left <= rows[2].left)
+            if (aFirst) {
                 bestAPane := "start"
                 bestBPane := "end"
             } else {
@@ -1120,7 +1160,7 @@ AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
 
 ; Mover role on source: full | half | halfAlone | other (+ companion when half).
 ; Maximized / work-area-filled always counts as full even if covered extras share the monitor.
-; Half detection ignores maximized-behind: prefer strict snap companion, else non-filled others only.
+; Half detection ignores maximized-behind: strict snap, then opposite-pane / non-filled others.
 AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return { role: "other" }
@@ -1130,6 +1170,9 @@ AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     try companion := Integer(WM_FindStrictSnapCompanion(hwnd, sourceMon))
     catch
         companion := 0
+    if (companion)
+        return { role: "half", companion: companion }
+    companion := AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon)
     if (companion)
         return { role: "half", companion: companion }
     others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
@@ -1433,9 +1476,20 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
             return false
         }
         ; Former dest window onto source first, then mover takes dest.
+        ; Place other into the vacated mover pane; keep companion on its pane.
         placedOther := false
         if (companion && companion != other) {
-            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, "start", "end", sourceMon, false)
+            moverPane := AutoSlot_GetHwndPaneOnMonitor(hwnd, sourceMon)
+            companionPane := AutoSlot_GetHwndPaneOnMonitor(companion, sourceMon)
+            if (moverPane = "" && companionPane != "")
+                moverPane := (companionPane = "start") ? "end" : "start"
+            if (companionPane = "" && moverPane != "")
+                companionPane := (moverPane = "start") ? "end" : "start"
+            if (moverPane = "" || companionPane = "" || moverPane = companionPane) {
+                moverPane := "start"
+                companionPane := "end"
+            }
+            placedOther := AutoSlot_ApplyPairOnMonitor(other, companion, moverPane, companionPane, sourceMon, false)
             if (placedOther)
                 AutoSlot_FinishSwappedPair(other, companion)
         }
