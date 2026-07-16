@@ -969,6 +969,64 @@ AutoSlot_GetHwndPaneOnMonitor(hwnd, monIdx) {
 }
 
 ; Dest/source FG layout: empty | full | single | pair | other.
+; When 2+ occupants, pick two for a swappable pair (prefer opposite panes).
+AutoSlot_PickPairFromOccupancyRows(rows) {
+    if (!IsObject(rows) || rows.Length < 2)
+        return 0
+    monIdx := 0
+    try monIdx := AutoSlot_GetHwndMonitorIndex(rows[1].hwnd)
+    catch
+        monIdx := 0
+    bestA := 0
+    bestB := 0
+    bestAPane := ""
+    bestBPane := ""
+    if (monIdx >= 1) {
+        found := false
+        loop rows.Length - 1 {
+            i := A_Index
+            a := rows[i].hwnd
+            aPane := AutoSlot_GetHwndPaneOnMonitor(a, monIdx)
+            if (aPane = "")
+                continue
+            j := i + 1
+            while (j <= rows.Length) {
+                b := rows[j].hwnd
+                bPane := AutoSlot_GetHwndPaneOnMonitor(b, monIdx)
+                if (bPane != "" && bPane != aPane) {
+                    bestA := a
+                    bestB := b
+                    bestAPane := aPane
+                    bestBPane := bPane
+                    found := true
+                    break
+                }
+                j += 1
+            }
+            if (found)
+                break
+        }
+    }
+    if (!bestA) {
+        bestA := rows[1].hwnd
+        bestB := rows[2].hwnd
+        if (monIdx >= 1) {
+            bestAPane := AutoSlot_GetHwndPaneOnMonitor(bestA, monIdx)
+            bestBPane := AutoSlot_GetHwndPaneOnMonitor(bestB, monIdx)
+        }
+        if (bestAPane = "" || bestBPane = "" || bestAPane = bestBPane) {
+            if (rows[1].left <= rows[2].left) {
+                bestAPane := "start"
+                bestBPane := "end"
+            } else {
+                bestAPane := "end"
+                bestBPane := "start"
+            }
+        }
+    }
+    return { kind: "pair", a: bestA, b: bestB, aPane: bestAPane, bPane: bestBPane }
+}
+
 AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
     rows := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
     if (rows.Length = 0)
@@ -979,36 +1037,23 @@ AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
             return { kind: "full", hwnd: h }
         return { kind: "single", hwnd: h }
     }
-    if (rows.Length = 2) {
-        a := rows[1].hwnd
-        b := rows[2].hwnd
-        aPane := AutoSlot_GetHwndPaneOnMonitor(a, monIdx)
-        bPane := AutoSlot_GetHwndPaneOnMonitor(b, monIdx)
-        if (aPane = "" || bPane = "" || aPane = bPane) {
-            if (rows[1].left <= rows[2].left) {
-                aPane := "start"
-                bPane := "end"
-            } else {
-                aPane := "end"
-                bPane := "start"
-            }
-        }
-        return { kind: "pair", a: a, b: b, aPane: aPane, bPane: bPane }
-    }
+    ; 2+ visible candidates → swappable pair (stray 3rd must not kill swap).
+    picked := AutoSlot_PickPairFromOccupancyRows(rows)
+    if (IsObject(picked))
+        return picked
     return { kind: "other" }
 }
 
 ; Mover role on source: full | half | halfAlone | other (+ companion when half).
+; Maximized / work-area-filled always counts as full even if covered extras share the monitor.
 AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return { role: "other" }
+    if (AutoSlot_CompanionAlreadyFilled(hwnd, sourceMon))
+        return { role: "full" }
     others := AutoSlot_OccupancyOnMonitor(sourceMon, hwnd)
-    filled := AutoSlot_CompanionAlreadyFilled(hwnd, sourceMon)
-    if (others.Length = 0) {
-        if (filled)
-            return { role: "full" }
+    if (others.Length = 0)
         return { role: "halfAlone" }
-    }
     if (others.Length = 1)
         return { role: "half", companion: others[1].hwnd }
     return { role: "other" }

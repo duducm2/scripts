@@ -43,6 +43,8 @@ When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinT
 
 After a successful swap, a **2-second** Interactive Input banner (`❓`, progress) offers **[F]** to **replace**: minimize the displaced destination window(s) and **block fill/rearrange from promoting them** back into a freed slot until the user restores those windows (or a long TTL expires). Timeout / Esc keeps them placed on the source monitor (true swap). Rearrange/fill is quieted through the banner window so background promote does not fight the exchange.
 
+Classification notes: a maximized / work-area-filled mover is always treated as **full** even if covered extras share its monitor. A destination with **2+** occupancy candidates is treated as a **pair** (best opposite-pane duo, else the first two) so stray third windows do not skip the swap.
+
 ## Fill empty slot on close
 
 When a window closes and leaves a monitor empty or with exactly one visible window, free capacity is filled from eligible background windows (toward **2 slots × ordinal monitors, max 8**):
