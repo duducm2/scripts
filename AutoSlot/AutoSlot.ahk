@@ -18,8 +18,8 @@
 ;   empty → two backgrounds 50/50 or one maximize; half → SnapPair bg else heal.
 ;   Place freeze / claim cooldown → heal-only (no background import).
 ;
-; Rearrange-on-move (same fill/heal rules, no visible reshuffle):
-;   MOVESIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
+; Rearrange-on-move / minimize (same fill/heal rules, no visible reshuffle):
+;   MOVESIZEEND / MINIMIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
 ;   Full/halfAlone↔pair; full/halfAlone/half↔full|single; half→pair skipped.
@@ -51,6 +51,8 @@ global g_AutoSlotLocHook := 0
 global g_AutoSlotLocHookCb := 0
 global g_AutoSlotMoveHook := 0
 global g_AutoSlotMoveHookCb := 0
+global g_AutoSlotMinHook := 0
+global g_AutoSlotMinHookCb := 0
 global g_AutoSlotRearrangePending := false
 global g_AutoSlotRearrangeExclude := 0
 global g_AutoSlotSwapQuietUntil := 0
@@ -62,6 +64,7 @@ AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_EVENT_OBJECT_LOCATIONCHANGE := 0x800B
 AutoSlot_EVENT_SYSTEM_MOVESIZEEND := 0x000B
+AutoSlot_EVENT_SYSTEM_MINIMIZEEND := 0x0017
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
 AutoSlot_RECENT_MS := 4000
@@ -120,6 +123,7 @@ AutoSlot_SetEnabled(on) {
 AutoSlot_Init() {
     global g_AutoSlotHook, g_AutoSlotHookCb, g_AutoSlotShellMsg, g_AutoSlotGui
     global g_AutoSlotLocHook, g_AutoSlotLocHookCb, g_AutoSlotMoveHook, g_AutoSlotMoveHookCb
+    global g_AutoSlotMinHook, g_AutoSlotMinHookCb
     if (g_AutoSlotHook || g_AutoSlotShellMsg)
         return
 
@@ -167,6 +171,18 @@ AutoSlot_Init() {
         "UInt", AutoSlot_EVENT_SYSTEM_MOVESIZEEND,
         "Ptr", 0,
         "Ptr", g_AutoSlotMoveHookCb,
+        "UInt", 0,
+        "UInt", 0,
+        "UInt", 0,
+        "Ptr")
+
+    ; Minimize end → heal/fill monitors for windows that become foreground.
+    g_AutoSlotMinHookCb := CallbackCreate(AutoSlot_OnMinimizeEnd, "F", 7)
+    g_AutoSlotMinHook := DllCall("user32\SetWinEventHook",
+        "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZEEND,
+        "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZEEND,
+        "Ptr", 0,
+        "Ptr", g_AutoSlotMinHookCb,
         "UInt", 0,
         "UInt", 0,
         "UInt", 0,
@@ -491,6 +507,50 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
         becameMax := false
     if (changedMon || becameMax)
         AutoSlot_ScheduleRearrange(hwnd)
+}
+
+; After minimize: heal/fill underfilled monitors for windows now in the foreground.
+AutoSlot_OnMinimizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    global g_AutoSlotHwndMon
+    if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
+        return
+    if (!AutoSlot_IsEnabled())
+        return
+    hwnd := Integer(hwnd)
+    if (AutoSlot_SwapQuietActive())
+        return
+    if (AutoSlot_PlaceFreezeActive())
+        return
+    ; Minimized hwnds fail IsOccupancyCandidate — cache or occupancy-worthy (ignore iconic).
+    cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
+    if (!cached && !AutoSlot_IsMinimizeRearrangeCandidate(hwnd))
+        return
+    AutoSlot_UnregisterSnapPair(hwnd)
+    AutoSlot_ForgetHwndMon(hwnd)
+    AutoSlot_ScheduleRearrange(hwnd)
+}
+
+; Like IsOccupancyCandidate but allows iconic (minMax = -1).
+AutoSlot_IsMinimizeRearrangeCandidate(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    try {
+        if (DllCall("GetParent", "ptr", hwnd))
+            return false
+        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
+        if (exStyle & 0x00000080)
+            return false
+        class := WinGetClass(hwnd)
+        if (AutoSlot_IsDesktopOrTaskbarClass(class))
+            return false
+        if (WinGetTitle(hwnd) = "")
+            return false
+        if (AutoSlot_IsOccupancySkipExeOrTitle(hwnd))
+            return false
+    } catch {
+        return false
+    }
+    return true
 }
 
 ; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
@@ -1211,8 +1271,11 @@ AutoSlot_OnSwapF(*) {
     }
     for monIdx, _ in claimed
         AutoSlot_ClaimMonitor(monIdx)
-    AutoSlot_BeginSwapQuiet()
     AutoSlot_ActivateHwnd(mover)
+    ; Heal/fill what is now foreground on vacated monitors (ReplaceSkip blocks re-promote).
+    try AutoSlot_ScheduleRearrange(mover)
+    catch {
+    }
 }
 
 AutoSlot_OnSwapTimeout(*) {

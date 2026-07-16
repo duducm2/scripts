@@ -59,9 +59,9 @@ Empty-monitor / half-slot background candidates skip windows that still have a l
 
 Only the monitor that lost the window is considered. No undo modal on this path. Companions already maximized/work-area-filled skip work when there is no import. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Background import is suppressed during Place freeze and for a monitor recently claimed by new-window placement (companion heal still runs). If occupancy still shows 2+ windows briefly (e.g. Chrome closing), fill retries once (~400 ms) before giving up.
 
-## Rearrange on move
+## Rearrange on move / minimize
 
-After a window changes slots (manual drag end, suite move-to-monitor, or AutoSlot relocate/maximize onto another monitor), underfilled ordinal monitors are filled the same way as fill-on-close:
+After a window changes slots (manual drag end, suite move-to-monitor, AutoSlot relocate/maximize, or **minimize**), underfilled ordinal monitors are filled the same way as fill-on-close so windows that were behind a minimized/moved window can take foreground slots:
 
 | Occupancy | Action                                                    |
 | --------- | --------------------------------------------------------- |
@@ -69,7 +69,7 @@ After a window changes slots (manual drag end, suite move-to-monitor, or AutoSlo
 | 1         | Background → 50/50 with residual; else maximize companion |
 | 2+        | No-op                                                     |
 
-Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF.
+Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF. Windows minimized via **[F] replace** stay fill-skipped until the user restores them.
 
 ## Disable
 
