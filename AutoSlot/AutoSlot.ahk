@@ -23,7 +23,7 @@
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
 ;   Full/halfAlone↔pair; full/halfAlone/half↔full|single; half→pair skipped.
-;   After swap: 2s ShowWithKeys [F] replaces (minimizes displaced dest windows).
+;   After swap: 2s ShowWithKeys [F] replaces (minimizes + fill-skip displaced).
 ;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
@@ -56,6 +56,7 @@ global g_AutoSlotRearrangeExclude := 0
 global g_AutoSlotSwapQuietUntil := 0
 global g_AutoSlotSwapDisplaced := []
 global g_AutoSlotSwapMoverHwnd := 0
+global g_AutoSlotReplaceSkip := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -72,6 +73,7 @@ AutoSlot_PAIR_SUPPRESS_MS := 500
 AutoSlot_REARRANGE_MS := 350
 AutoSlot_SWAP_QUIET_MS := 2500
 AutoSlot_SWAP_MODAL_MS := 2000
+AutoSlot_REPLACE_SKIP_TTL_MS := 600000
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -1032,6 +1034,50 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx) {
     return true
 }
 
+AutoSlot_ForgetHwndMon(hwnd) {
+    global g_AutoSlotHwndMon
+    if (hwnd && g_AutoSlotHwndMon.Has(hwnd))
+        g_AutoSlotHwndMon.Delete(hwnd)
+}
+
+; True while [F]-replaced hwnd must not be fill/rearrange-promoted (clears if restored).
+AutoSlot_ReplaceSkipActive(hwnd) {
+    global g_AutoSlotReplaceSkip
+    if (!hwnd || !g_AutoSlotReplaceSkip.Has(hwnd))
+        return false
+    if (!DllCall("IsWindow", "ptr", hwnd)) {
+        g_AutoSlotReplaceSkip.Delete(hwnd)
+        return false
+    }
+    if (A_TickCount - g_AutoSlotReplaceSkip[hwnd] > AutoSlot_REPLACE_SKIP_TTL_MS) {
+        g_AutoSlotReplaceSkip.Delete(hwnd)
+        return false
+    }
+    minMax := 0
+    try minMax := WinGetMinMax("ahk_id " hwnd)
+    catch
+        minMax := 0
+    ; User restored the window — allow promote again.
+    if (minMax != -1) {
+        try {
+            if (!WM_WindowIsTaskbarMinimized(hwnd)) {
+                g_AutoSlotReplaceSkip.Delete(hwnd)
+                return false
+            }
+        } catch {
+            g_AutoSlotReplaceSkip.Delete(hwnd)
+            return false
+        }
+    }
+    return true
+}
+
+AutoSlot_MarkReplaceSkip(hwnd) {
+    global g_AutoSlotReplaceSkip
+    if (hwnd)
+        g_AutoSlotReplaceSkip[hwnd] := A_TickCount
+}
+
 AutoSlot_ClearSwapDisplaced() {
     global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
     g_AutoSlotSwapDisplaced := []
@@ -1039,7 +1085,7 @@ AutoSlot_ClearSwapDisplaced() {
 }
 
 AutoSlot_OnSwapF(*) {
-    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
+    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd, g_AutoSlotHwndMon
     displaced := g_AutoSlotSwapDisplaced
     mover := g_AutoSlotSwapMoverHwnd
     AutoSlot_ClearSwapDisplaced()
@@ -1049,13 +1095,27 @@ AutoSlot_OnSwapF(*) {
     try StandardLoadingBar_Hide(0)
     catch {
     }
+    claimed := Map()
     for h in displaced {
         if (!h || !DllCall("IsWindow", "ptr", h))
             continue
+        monIdx := 0
+        if (g_AutoSlotHwndMon.Has(h))
+            monIdx := g_AutoSlotHwndMon[h]
+        if (monIdx < 1)
+            monIdx := AutoSlot_GetHwndMonitorIndex(h)
         try WinMinimize("ahk_id " h)
         catch {
         }
+        AutoSlot_UnregisterSnapPair(h)
+        AutoSlot_MarkReplaceSkip(h)
+        AutoSlot_ForgetHwndMon(h)
+        if (monIdx >= 1)
+            claimed[monIdx] := true
     }
+    for monIdx, _ in claimed
+        AutoSlot_ClaimMonitor(monIdx)
+    AutoSlot_BeginSwapQuiet()
     AutoSlot_ActivateHwnd(mover)
 }
 
@@ -1508,6 +1568,9 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0) {
         if (occupied.Has(hwnd))
             continue
         if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+            continue
+        ; [F] replace: do not re-promote minimized displaced windows into freed slots.
+        if (AutoSlot_ReplaceSkipActive(hwnd))
             continue
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
         if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))

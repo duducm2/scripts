@@ -41,7 +41,7 @@ When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinT
 | Full, lone unfilled, or half of a pair             | One window (maximized **or** lone “single”) | Active maximizes on dest; former dest window goes to source (50/50 with leftover companion if any, else maximized) |
 | Half of a pair                                     | Two half-slot windows                       | **No swap** (would leave companion + pair = 3 on source) — normal maximize + rearrange                             |
 
-After a successful swap, a **2-second** Interactive Input banner (`❓`, progress) offers **[F]** to **replace**: minimize the displaced destination window(s) so they leave the foreground. Timeout / Esc keeps them placed on the source monitor (true swap). Rearrange/fill is quieted through the banner window so background promote does not fight the exchange.
+After a successful swap, a **2-second** Interactive Input banner (`❓`, progress) offers **[F]** to **replace**: minimize the displaced destination window(s) and **block fill/rearrange from promoting them** back into a freed slot until the user restores those windows (or a long TTL expires). Timeout / Esc keeps them placed on the source monitor (true swap). Rearrange/fill is quieted through the banner window so background promote does not fight the exchange.
 
 ## Fill empty slot on close
 
