@@ -715,6 +715,24 @@ WM_SnapHalfPairActiveWindow() {
     monIdx := snapMon["monIdx"]
     axis := WM_GetSnapSplitAxis(monIdx)
 
+    ; AutoSlot: whole-monitor FG swap when aiming at another monitor (prefer cursor mon
+    ; so an occupied pair under the cursor can swap; ResolveSnapTarget only redirects if empty).
+    swapMon := monIdx
+    cursorMonIdx := 0
+    try cursorMonIdx := Integer(snapMon["cursorMonIdx"])
+    catch
+        cursorMonIdx := 0
+    if (cursorMonIdx >= 1 && cursorMonIdx != sourceMon)
+        swapMon := cursorMonIdx
+    if (sourceMon >= 1 && swapMon >= 1 && sourceMon != swapMon) {
+        swapped := false
+        try swapped := !!AutoSlot_TryForegroundSwap(targetHwnd, sourceMon, swapMon)
+        catch
+            swapped := false
+        if (swapped)
+            return
+    }
+
     partnerHwnd := 0
     for hwnd in WM_EnumerateOpenHwndsGlobal() {
         if (hwnd = targetHwnd)

@@ -33,7 +33,7 @@ Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script 
 
 ## Foreground monitor swap
 
-When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) may **swap whole-monitor foreground layouts** instead of only moving the active window. Manual drag does not swap.
+When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) **or** snap (`Ctrl+Alt+Win+X` → `WM_SnapHalfPairActiveWindow`) may **swap whole-monitor foreground layouts**. For snap, the cursor’s monitor is preferred as the swap target when it differs from the source (so an occupied 50/50 under the cursor can exchange). Manual drag does not swap.
 
 | Active window on source                            | Destination foreground                      | Result                                                                                                             |
 | -------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
