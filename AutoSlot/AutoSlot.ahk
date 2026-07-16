@@ -22,7 +22,7 @@
 ;   MOVESIZEEND / MINIMIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
-;   Full/halfAlone↔pair; full/halfAlone/half↔full|single; half→pair skipped.
+;   Full/halfAlone/half↔pair; full/halfAlone/half↔full|single.
 ;   After swap: 2s ShowWithKeys [F] replaces (minimizes + fill-skip displaced).
 ;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
@@ -1045,10 +1045,17 @@ AutoSlot_GetHwndPaneOnMonitor(hwnd, monIdx) {
     paneSize := 0
     if (WM_ClassifySnapPane(axis, wl, wt, wr, wb, l, t, r, b, &pane, &paneSize) && pane != "")
         return pane
-    return ""
+    ; Size/edge classify failed — still assign by center along the split axis.
+    if (axis = "h") {
+        center := wl + (wr - wl) // 2
+        return ((l + r) // 2 < center) ? "start" : "end"
+    }
+    center := wt + (wb - wt) // 2
+    return ((t + b) // 2 < center) ? "start" : "end"
 }
 
 ; Among non-filled others on sourceMon, pick opposite-pane companion (or sole non-filled).
+; If panes are ambiguous, pick the geometrically opposite window along the split axis.
 AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return 0
@@ -1059,20 +1066,35 @@ AutoSlot_PickOppositeNonFilledCompanion(hwnd, sourceMon) {
         h := row.hwnd
         if (!h || AutoSlot_CompanionAlreadyFilled(h, sourceMon))
             continue
-        nonFilled.Push(h)
+        nonFilled.Push(row)
     }
     if (nonFilled.Length = 0)
         return 0
     if (nonFilled.Length = 1)
-        return nonFilled[1]
-    if (moverPane = "")
-        return 0
-    wantPane := (moverPane = "start") ? "end" : "start"
-    for h in nonFilled {
-        if (AutoSlot_GetHwndPaneOnMonitor(h, sourceMon) = wantPane)
-            return h
+        return nonFilled[1].hwnd
+    if (moverPane != "") {
+        wantPane := (moverPane = "start") ? "end" : "start"
+        for row in nonFilled {
+            if (AutoSlot_GetHwndPaneOnMonitor(row.hwnd, sourceMon) = wantPane)
+                return row.hwnd
+        }
     }
-    return 0
+    ; Geometric fallback: farthest along split axis from mover center.
+    axis := WM_GetSnapSplitAxis(sourceMon)
+    if (!WM_GetWindowRectHwnd(hwnd, &ml, &mt, &mr, &mb))
+        return nonFilled[1].hwnd
+    mMid := (axis = "h") ? ((ml + mr) // 2) : ((mt + mb) // 2)
+    bestH := 0
+    bestDist := -1
+    for row in nonFilled {
+        oMid := (axis = "h") ? ((row.left + row.right) // 2) : ((row.top + row.bottom) // 2)
+        dist := Abs(oMid - mMid)
+        if (dist > bestDist) {
+            bestDist := dist
+            bestH := row.hwnd
+        }
+    }
+    return bestH
 }
 
 ; Dest/source FG layout: empty | full | single | pair | other.
@@ -1160,7 +1182,7 @@ AutoSlot_ClassifyFgLayout(monIdx, excludeHwnd := 0) {
 
 ; Mover role on source: full | half | halfAlone | other (+ companion when half).
 ; Maximized / work-area-filled always counts as full even if covered extras share the monitor.
-; Half detection ignores maximized-behind: strict snap, then opposite-pane / non-filled others.
+; Half detection ignores maximized-behind: strict snap, then opposite-pane / geometric non-filled.
 AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     if (!hwnd || sourceMon < 1)
         return { role: "other" }
@@ -1185,9 +1207,8 @@ AutoSlot_ClassifyMoverRole(hwnd, sourceMon) {
     }
     if (nonFilled.Length = 0)
         return { role: "halfAlone" }
-    if (nonFilled.Length = 1)
-        return { role: "half", companion: nonFilled[1] }
-    return { role: "other" }
+    ; Any remaining non-filled other is a half companion (prefer first).
+    return { role: "half", companion: nonFilled[1] }
 }
 
 AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx, registerPair := true) {
@@ -1202,8 +1223,16 @@ AutoSlot_ApplyPairOnMonitor(a, b, aPane, bPane, monIdx, registerPair := true) {
     if (!WM_PrepareHwndForTile(a) || !WM_PrepareHwndForTile(b))
         return false
     axis := WM_GetSnapSplitAxis(monIdx)
-    if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
-        return false
+    if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane)) {
+        ; Retry with default panes if vacated-pane placement failed.
+        if (aPane != "start" || bPane != "end") {
+            aPane := "start"
+            bPane := "end"
+            if (!WM_SnapPairGaplessRects(monIdx, axis, a, aPane, b, bPane))
+                return false
+        } else
+            return false
+    }
     ; If either half got OS-maximized during place, restore and re-gapless once.
     needRetry := false
     try needRetry := (WinGetMinMax("ahk_id " a) = 1) || (WinGetMinMax("ahk_id " b) = 1)
@@ -1415,12 +1444,9 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
     if (role = "other" || dest.kind = "empty" || dest.kind = "other")
         return false
 
-    ; Half with a left-behind companion cannot host an incoming pair on source.
-    if (role = "half" && dest.kind = "pair")
-        return false
-
+    ; half→pair allowed: incoming pair covers source; leftover companion stays behind.
     wantSwap := false
-    if ((role = "full" || role = "halfAlone") && dest.kind = "pair")
+    if ((role = "full" || role = "halfAlone" || role = "half") && dest.kind = "pair")
         wantSwap := true
     else if ((role = "full" || role = "halfAlone" || role = "half") && dest.kind = "full")
         wantSwap := true

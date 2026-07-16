@@ -785,6 +785,12 @@ WM_SnapHalfPairActiveWindow() {
         try swapped := !!AutoSlot_TryForegroundSwap(targetHwnd, sourceMon, swapMon)
         catch
             swapped := false
+        ; If cursor-mon swap missed, retry snap-resolved mon (e.g. empty redirect).
+        if (!swapped && monIdx >= 1 && monIdx != sourceMon && monIdx != swapMon) {
+            try swapped := !!AutoSlot_TryForegroundSwap(targetHwnd, sourceMon, monIdx)
+            catch
+                swapped := false
+        }
         if (swapped)
             return
     }
