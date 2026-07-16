@@ -63,22 +63,33 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     return true
 }
 
-; Alt+P / Alt+B: if Clip Angel already foreground and shown → minimize; else maximize on active monitor.
-ClipAngel_ToggleOrShowOnActiveMonitor() {
-    hwnd := ClipAngel_MainHwnd()
-    if (hwnd && WinActive("ahk_id " hwnd) && ClipAngel_IsWindowShown(hwnd)) {
-        ClipAngel_HideWindow(hwnd)
-        return true
-    }
+; After native Shift+P / Shift+B open: capture prior monitor, then maximize + activate (no UIA / no toggle).
+global g_ClipAngelNativeOpenTargetMon := 0
+
+ClipAngel_EnsureForegroundAfterNativeOpen() {
+    global g_ClipAngelNativeOpenTargetMon
     targetMon := 0
     try {
         activeHwnd := WinGetID("A")
-        if (activeHwnd && hwnd && activeHwnd = hwnd) {
-            ; Active is Clip Angel but not shown (edge) — fall through to layout on primary focus monitor.
-        } else if (activeHwnd)
+        if (activeHwnd)
             targetMon := GetAhkMonitorIndexFromHwnd(activeHwnd)
     } catch {
         targetMon := 0
     }
-    return ActivateClipAngelWithFocusCorrection(false, targetMon, false, true)
+    g_ClipAngelNativeOpenTargetMon := targetMon
+    SetTimer(ClipAngel_ApplyForegroundMaximizeDeferred, -200)
+}
+
+ClipAngel_ApplyForegroundMaximizeDeferred(*) {
+    global g_ClipAngelNativeOpenTargetMon
+    targetMon := g_ClipAngelNativeOpenTargetMon
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return
+    if !ClipAngel_IsWindowShown(hwnd)
+        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
+    else {
+        ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
+        ClipAngel_EnsureWindowActive(hwnd)
+    }
 }
