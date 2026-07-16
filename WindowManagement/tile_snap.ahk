@@ -576,6 +576,23 @@ WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partn
 WM_FindStrictSnapCompanion(hwnd, monIdx) {
     if (!hwnd || monIdx < 1 || monIdx > MonitorGetCount())
         return 0
+    ; Maximized / full-screen windows are not in a 50/50 leave-heal relationship.
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = 1)
+            return 0
+    } catch {
+    }
+    try {
+        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
+            l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
+            r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
+            if (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
+                return 0
+        }
+    } catch {
+    }
     others := []
     try {
         for win in GetVisibleWindowsOnMonitor(monIdx, true) {
@@ -604,6 +621,31 @@ WM_FindStrictSnapCompanion(hwnd, monIdx) {
         return other
     }
     return 0
+}
+
+; Count non-maximized visible windows still on monIdx (excluding excludeHwnd).
+WM_CountNonMaxVisibleOnMonitor(monIdx, excludeHwnd := 0) {
+    n := 0
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return 0
+    try {
+        for win in GetVisibleWindowsOnMonitor(monIdx, true) {
+            if (win.hwnd = excludeHwnd)
+                continue
+            if (WM_IsExcludedIndicatorWindow(win.hwnd))
+                continue
+            try {
+                if (WinGetMinMax("ahk_id " win.hwnd) = 1)
+                    continue
+            } catch {
+                continue
+            }
+            n += 1
+        }
+    } catch {
+        return 0
+    }
+    return n
 }
 
 WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx) {
@@ -643,9 +685,10 @@ WM_HealOrphanOnMonitor(monIdx, excludeHwnd := 0, alsoExcludeHwnd := 0) {
     } catch {
         return false
     }
-    if (candidates.Length = 1)
-        return WM_MaximizeAbandonedSnapCompanion(candidates[1], monIdx)
-    return false
+    ; Two+ non-max leftovers (e.g. intact 50/50) — do not maximize either.
+    if (candidates.Length != 1)
+        return false
+    return WM_MaximizeAbandonedSnapCompanion(candidates[1], monIdx)
 }
 
 ; After move/snap: maximize leftover companions, then focus activateHwnd (defaults to movedHwnd).
@@ -669,8 +712,10 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
             leftSource := true
     }
     if (!swapQuiet) {
+        ; FG pair still present — never heal/maximize a half when a full window left.
+        sourceHasPair := (sourceMonIdx >= 1 && WM_CountNonMaxVisibleOnMonitor(sourceMonIdx, movedHwnd) >= 2)
         shouldHeal := false
-        if (companionHwnd) {
+        if (!sourceHasPair && companionHwnd) {
             if (snapPartnerHwnd >= 0) {
                 if (snapPartnerHwnd != companionHwnd)
                     shouldHeal := true
@@ -680,14 +725,19 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
         }
         if (shouldHeal) {
             WM_MaximizeAbandonedSnapCompanion(companionHwnd, sourceMonIdx)
-        } else if (sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd != companionHwnd))) {
+        } else if (!sourceHasPair && sourceMonIdx >= 1 && (leftSource || (snapPartnerHwnd >= 0 && snapPartnerHwnd !=
+            companionHwnd))) {
             WM_HealOrphanOnMonitor(sourceMonIdx, movedHwnd, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0)
         }
         if (partnerFormerMon >= 1 && partnerFormerMon != destMonIdx) {
-            if (partnerFormerCompanion)
-                WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
-            else
-                WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
+            formerHasPair := (WM_CountNonMaxVisibleOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd :
+                0) >= 2)
+            if (!formerHasPair) {
+                if (partnerFormerCompanion)
+                    WM_MaximizeAbandonedSnapCompanion(partnerFormerCompanion, partnerFormerMon)
+                else
+                    WM_HealOrphanOnMonitor(partnerFormerMon, snapPartnerHwnd >= 0 ? snapPartnerHwnd : 0, movedHwnd)
+            }
         }
     }
     WM_EnsureForegroundHwnd(activateHwnd)
