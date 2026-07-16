@@ -63,24 +63,34 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     return true
 }
 
-; After native Shift+P / Shift+B open: capture prior monitor, then maximize + activate (no UIA / no toggle).
-; Quality gate: poll + multi-pass retry; strong foreground (AttachThreadInput); cursor-monitor fallback.
-CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 200
-CLIPANGEL_NATIVE_OPEN_RETRY_MS := 500
-CLIPANGEL_NATIVE_OPEN_LATE_MS := 1100
-CLIPANGEL_NATIVE_OPEN_POLL_MS := 800
+; After native Shift+P / Shift+B open: capture look-at monitor, then maximize + activate (no UIA / no toggle).
+; Quality gate: multi-pass retry; strong foreground (AttachThreadInput + Alt unlock + AOT flicker).
+CLIPANGEL_NATIVE_OPEN_EARLY_MS := 50
+CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 250
+CLIPANGEL_NATIVE_OPEN_RETRY_MS := 600
+CLIPANGEL_NATIVE_OPEN_LATE_MS := 1200
+CLIPANGEL_NATIVE_OPEN_FINAL_MS := 2200
+CLIPANGEL_NATIVE_OPEN_POLL_MS := 500
 global g_ClipAngelNativeOpenTargetMon := 0
 global g_ClipAngelNativeOpenGen := 0
 
-; Used by WindowManagement #HotIf: assist when Clip Angel is focused but still iconic/tiny.
+; Kept for callers that still gate on "needs assist"; HotIf itself always assists when Clip Angel exists.
 ClipAngel_HotIfNeedsForegroundAssist() {
     hwnd := ClipAngel_MainHwnd()
     if !hwnd
         return false
-    return !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd)
+    if !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd)
+        return true
+    try {
+        lookMon := ClipAngel_GetMonitorIndexFromCursor()
+        if (lookMon >= 1 && GetAhkMonitorIndexFromHwnd(hwnd) != lookMon)
+            return true
+    } catch {
+    }
+    return !WinActive("ahk_id " hwnd)
 }
 
-; Monitor under the mouse — where the user is looking (better than ClipAngel's own hwnd when it already has focus).
+; Monitor under the mouse — where the user is looking.
 ClipAngel_GetMonitorIndexFromCursor() {
     CoordMode "Mouse", "Screen"
     MouseGetPos &mx, &my
@@ -97,14 +107,25 @@ ClipAngel_GetMonitorIndexFromCursor() {
         return 1
 }
 
-; WinActivate often fails under foreground-lock; AttachThreadInput + SetForegroundWindow is more reliable.
+; WinActivate often fails under foreground-lock; combine several unlock tricks.
 ClipAngel_ForceForeground(hwnd) {
     if !hwnd || !WinExist("ahk_id " hwnd)
         return false
-    if WinActive("ahk_id " hwnd)
-        return true
+    try {
+        pid := WinGetPID("ahk_id " hwnd)
+        if (pid)
+            DllCall("AllowSetForegroundWindow", "uint", pid)
+    } catch {
+    }
     try DllCall("AllowSetForegroundWindow", "int", -1)  ; ASFW_ANY
     catch {
+    }
+    ; Brief Alt tap unlocks SetForegroundWindow for processes that did not start the last input chain.
+    static VK_MENU := 0x12
+    try {
+        DllCall("keybd_event", "uchar", VK_MENU, "uchar", 0xB8, "uint", 0, "uptr", 0)
+        DllCall("keybd_event", "uchar", VK_MENU, "uchar", 0xB8, "uint", 2, "uptr", 0)
+    } catch {
     }
     fg := 0
     try fg := DllCall("GetForegroundWindow", "ptr")
@@ -123,7 +144,11 @@ ClipAngel_ForceForeground(hwnd) {
             attachedFore := !!DllCall("AttachThreadInput", "uint", tidCurr, "uint", tidFore, "int", 1)
         if (tidTarget && tidTarget != tidCurr && tidTarget != tidFore)
             attachedTarget := !!DllCall("AttachThreadInput", "uint", tidCurr, "uint", tidTarget, "int", 1)
+        if (DllCall("IsIconic", "ptr", hwnd))
+            DllCall("ShowWindow", "ptr", hwnd, "int", 9)  ; SW_RESTORE
         DllCall("BringWindowToTop", "ptr", hwnd)
+        DllCall("SetWindowPos", "ptr", hwnd, "ptr", -1, "int", 0, "int", 0, "int", 0, "int", 0, "uint", 0x0003)  ; HWND_TOPMOST, NOSIZE|NOMOVE
+        DllCall("SetWindowPos", "ptr", hwnd, "ptr", -2, "int", 0, "int", 0, "int", 0, "int", 0, "uint", 0x0003)  ; HWND_NOTOPMOST
         DllCall("SetForegroundWindow", "ptr", hwnd)
         try WinActivate("ahk_id " hwnd)
         catch {
@@ -137,7 +162,15 @@ ClipAngel_ForceForeground(hwnd) {
         DllCall("AttachThreadInput", "uint", tidCurr, "uint", tidFore, "int", 0)
     if (attachedTarget)
         DllCall("AttachThreadInput", "uint", tidCurr, "uint", tidTarget, "int", 0)
-    try WinWaitActive("ahk_id " hwnd, , 0.25)
+    if !WinActive("ahk_id " hwnd) {
+        try {
+            WinSetAlwaysOnTop true, "ahk_id " hwnd
+            WinSetAlwaysOnTop false, "ahk_id " hwnd
+            WinActivate("ahk_id " hwnd)
+        } catch {
+        }
+    }
+    try WinWaitActive("ahk_id " hwnd, , 0.35)
     catch {
     }
     return !!WinActive("ahk_id " hwnd)
@@ -145,15 +178,15 @@ ClipAngel_ForceForeground(hwnd) {
 
 ClipAngel_EnsureForegroundAfterNativeOpen() {
     global g_ClipAngelNativeOpenTargetMon, g_ClipAngelNativeOpenGen
-    targetMon := 0
+    ; Prefer cursor (look-at monitor); fall back to active window only if it is not Clip Angel.
+    targetMon := ClipAngel_GetMonitorIndexFromCursor()
     try {
-        activeHwnd := WinGetID("A")
-        if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe"))
-            targetMon := GetAhkMonitorIndexFromHwnd(activeHwnd)
-        else
-            targetMon := ClipAngel_GetMonitorIndexFromCursor()
+        if (!targetMon || targetMon < 1) {
+            activeHwnd := WinGetID("A")
+            if (activeHwnd && !WinActive("ahk_exe ClipAngel.exe"))
+                targetMon := GetAhkMonitorIndexFromHwnd(activeHwnd)
+        }
     } catch {
-        targetMon := ClipAngel_GetMonitorIndexFromCursor()
     }
     if (!targetMon)
         try targetMon := MonitorGetPrimary()
@@ -162,9 +195,11 @@ ClipAngel_EnsureForegroundAfterNativeOpen() {
     g_ClipAngelNativeOpenTargetMon := targetMon
     g_ClipAngelNativeOpenGen += 1
     gen := g_ClipAngelNativeOpenGen
+    SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_EARLY_MS)
     SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_SETTLE_MS)
     SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_RETRY_MS)
     SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_LATE_MS)
+    SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_FINAL_MS)
 }
 
 ; True when Clip Angel is shown, maximized (or large enough), on targetMon, and foreground.
@@ -204,7 +239,7 @@ ClipAngel_ApplyForegroundMaximizePass(gen) {
         if !hwnd {
             if (A_TickCount >= deadline)
                 return
-            Sleep 50
+            Sleep 40
             continue
         }
         try {
@@ -223,7 +258,7 @@ ClipAngel_ApplyForegroundMaximizePass(gen) {
             return
         if (A_TickCount >= deadline)
             break
-        Sleep 50
+        Sleep 40
     }
     hwnd := ClipAngel_MainHwnd()
     if !hwnd

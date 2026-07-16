@@ -48,10 +48,10 @@
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
 ; Clip Angel Shift+P / Shift+B: pass-through to native open; AHK only maximizes + foreground afterward.
-; When Clip Angel is running and either not focused, or focused but not shown (iconic / tiny restore race).
+; Always assist when Clip Angel is running — skipping when it was already "active" left it
+; maximized on another monitor / behind other windows with no cleanup pass.
 ; AutoSlot freeze lives here (WindowManagement includes AutoSlot; Utils does not).
-#HotIf WinExist("ahk_exe ClipAngel.exe") && (!WinActive("ahk_exe ClipAngel.exe") ||
-ClipAngel_HotIfNeedsForegroundAssist())
+#HotIf WinExist("ahk_exe ClipAngel.exe")
 ~+p:: {
     try AutoSlot_BeginPlaceFreeze()
     catch {
