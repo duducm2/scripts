@@ -64,10 +64,23 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
 }
 
 ; After native Shift+P / Shift+B open: capture prior monitor, then maximize + activate (no UIA / no toggle).
+; Quality gate: single early pass often races Clip Angel's own restore — poll + deferred retry.
+CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 200
+CLIPANGEL_NATIVE_OPEN_RETRY_MS := 500
+CLIPANGEL_NATIVE_OPEN_POLL_MS := 700
 global g_ClipAngelNativeOpenTargetMon := 0
+global g_ClipAngelNativeOpenGen := 0
+
+; Used by WindowManagement #HotIf: assist when Clip Angel is focused but still iconic/tiny.
+ClipAngel_HotIfNeedsForegroundAssist() {
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    return !ClipAngel_IsWindowShown(hwnd) || ClipAngel_NeedsLayoutCorrection(hwnd)
+}
 
 ClipAngel_EnsureForegroundAfterNativeOpen() {
-    global g_ClipAngelNativeOpenTargetMon
+    global g_ClipAngelNativeOpenTargetMon, g_ClipAngelNativeOpenGen
     targetMon := 0
     try {
         activeHwnd := WinGetID("A")
@@ -77,19 +90,51 @@ ClipAngel_EnsureForegroundAfterNativeOpen() {
         targetMon := 0
     }
     g_ClipAngelNativeOpenTargetMon := targetMon
-    SetTimer(ClipAngel_ApplyForegroundMaximizeDeferred, -200)
+    g_ClipAngelNativeOpenGen += 1
+    gen := g_ClipAngelNativeOpenGen
+    SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_SETTLE_MS)
+    SetTimer(() => ClipAngel_ApplyForegroundMaximizePass(gen), -CLIPANGEL_NATIVE_OPEN_RETRY_MS)
 }
 
-ClipAngel_ApplyForegroundMaximizeDeferred(*) {
-    global g_ClipAngelNativeOpenTargetMon
+; Force restore/show + maximize on targetMon + activate; poll until stable or timeout.
+ClipAngel_ApplyForegroundMaximizePass(gen) {
+    global g_ClipAngelNativeOpenTargetMon, g_ClipAngelNativeOpenGen
+    if (gen != g_ClipAngelNativeOpenGen)
+        return
     targetMon := g_ClipAngelNativeOpenTargetMon
     hwnd := ClipAngel_MainHwnd()
     if !hwnd
         return
-    if !ClipAngel_IsWindowShown(hwnd)
-        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
-    else {
+
+    deadline := A_TickCount + CLIPANGEL_NATIVE_OPEN_POLL_MS
+    loop {
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1 || DllCall("IsIconic", "ptr", hwnd))
+                WinRestore("ahk_id " hwnd)
+        } catch {
+        }
+        try WinShow("ahk_id " hwnd)
+        catch {
+        }
+        ; Always apply layout (not only when "tiny") — visible-but-wrong-monitor was a miss.
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
         ClipAngel_EnsureWindowActive(hwnd)
+
+        shown := ClipAngel_IsWindowShown(hwnd)
+        active := !!WinActive("ahk_id " hwnd)
+        onMon := true
+        if (targetMon >= 1) {
+            try onMon := (GetAhkMonitorIndexFromHwnd(hwnd) = targetMon)
+            catch
+                onMon := false
+        }
+        if (shown && active && onMon)
+            return
+        if (A_TickCount >= deadline)
+            break
+        Sleep 50
     }
+    ; Final force attempt after poll budget.
+    ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
+    ClipAngel_EnsureWindowActive(hwnd)
 }
