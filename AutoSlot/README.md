@@ -49,12 +49,12 @@ Classification notes: a maximized / work-area-filled mover is always treated as 
 
 When a window closes and leaves a monitor empty or with exactly one **non-filled** (non-maximized) window, free capacity is filled from eligible background windows (toward **2 slots × ordinal monitors, max 8**). Maximized / work-area-filled windows behind a 50/50 pair are ignored for this count, so closing one half still maximizes the leftover companion.
 
-| Non-filled after close | Action                                                    |
-| ---------------------- | --------------------------------------------------------- |
-| 0 (truly empty)        | Two backgrounds → 50/50; one → maximize; none → noop      |
-| 0 (maximized already)  | No-op                                                     |
-| 1                      | Background → 50/50 with residual; else maximize companion |
-| 2+                     | No-op                                                     |
+| Non-filled after close | Action                                                             |
+| ---------------------- | ------------------------------------------------------------------ |
+| 0 (truly empty)        | Two backgrounds → 50/50; one → maximize; none → noop               |
+| 0 (maximized already)  | No-op                                                              |
+| 1                      | Maximize residual to both slots; if heal fails, background → 50/50 |
+| 2+                     | No-op                                                              |
 
 Empty-monitor / half-slot background candidates skip windows that still have a living 50/50 snap-pair partner, and windows whose home monitor has another window in **F11 fullscreen** (so an F11-covered companion is not stolen into another slot). True minimized / unrelated background windows remain eligible.
 
@@ -64,11 +64,11 @@ Only the monitor that lost the window is considered. No undo modal on this path.
 
 After a window changes slots (manual drag end, suite move-to-monitor, AutoSlot relocate/maximize, or **minimize**), underfilled ordinal monitors are filled the same way as fill-on-close so windows that were behind a minimized/moved window can take foreground slots (non-filled count; maximized-behind ignored):
 
-| Non-filled | Action                                                    |
-| ---------- | --------------------------------------------------------- |
-| 0 (empty)  | Two backgrounds → 50/50; one → maximize                   |
-| 1          | Background → 50/50 with residual; else maximize companion |
-| 2+         | No-op                                                     |
+| Non-filled | Action                                               |
+| ---------- | ---------------------------------------------------- |
+| 0 (empty)  | Two backgrounds → 50/50; one → maximize              |
+| 1          | Maximize residual; if heal fails, background → 50/50 |
+| 2+         | No-op                                                |
 
 Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF. Windows minimized via **[F] replace** stay fill-skipped until the user restores them.
 

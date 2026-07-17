@@ -266,9 +266,23 @@ AutoSlot_DestroyLooksInteresting(hwnd) {
 
 ; fromShell: true for HSHELL_WINDOWDESTROYED (primary). WinEvent skips if same hwnd just armed.
 AutoSlot_OnDestroy(hwnd, fromShell := false) {
-    global g_AutoSlotHwndMon, g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick
+    global g_AutoSlotHwndMon, g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick, g_AutoSlotSnapPairs
     if (!hwnd)
         return
+
+    ; Capture living snap partner BEFORE unregister — dead HWND often has no mon cache,
+    ; and fill must still heal the leftover half.
+    partner := 0
+    partnerMon := 0
+    if (g_AutoSlotSnapPairs.Has(hwnd)) {
+        partner := g_AutoSlotSnapPairs[hwnd]
+        if (partner && partner != hwnd && DllCall("IsWindow", "ptr", partner)) {
+            partnerMon := AutoSlot_GetHwndMonitorIndex(partner)
+            if (partnerMon < 1 && g_AutoSlotHwndMon.Has(partner))
+                partnerMon := g_AutoSlotHwndMon[partner]
+        } else
+            partner := 0
+    }
 
     AutoSlot_UnregisterSnapPair(hwnd)
 
@@ -281,11 +295,11 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     if (!fromShell) {
         if (hwnd = g_AutoSlotLastDestroyHwnd && A_TickCount - g_AutoSlotLastDestroyTick < AutoSlot_DESTROY_DEDUP_MS)
             return
-        if (!cached && !AutoSlot_DestroyLooksInteresting(hwnd))
+        if (!cached && !partner && !AutoSlot_DestroyLooksInteresting(hwnd))
             return
     } else {
-        ; Shell primary: skip chrome noise when alive; dead HWNDs need cache to resolve mon.
-        if (!cached) {
+        ; Shell primary: skip chrome noise when alive; dead HWNDs need cache or snap partner.
+        if (!cached && !partner) {
             if (!alive)
                 return
             if (!AutoSlot_DestroyLooksInteresting(hwnd))
@@ -298,6 +312,8 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
         monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
     if (monIdx < 1 && cached)
         monIdx := cached
+    if (monIdx < 1 && partnerMon >= 1)
+        monIdx := partnerMon
     if (g_AutoSlotHwndMon.Has(hwnd))
         g_AutoSlotHwndMon.Delete(hwnd)
     if (monIdx < 1)
@@ -305,7 +321,58 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
 
     g_AutoSlotLastDestroyHwnd := hwnd
     g_AutoSlotLastDestroyTick := A_TickCount
+    ; Closing one half of a registered pair → maximize that partner (bypass occupancy races).
+    if (partner) {
+        p := partner
+        m := monIdx
+        SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
+        ; Second pass after destroy HWND clears from occupancy lists.
+        SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
+    }
+    AutoSlot_ScheduleHealOnly(monIdx)
     AutoSlot_ScheduleFill(monIdx)
+    ; Late heal for unregistered 50/50 (no snap pair) once zombie HWNDs drop out.
+    lateMon := monIdx
+    SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
+}
+
+; Maximize a known leftover companion after its snap-pair partner closed.
+AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
+    if (!companion || !DllCall("IsWindow", "ptr", companion))
+        return false
+    if (AutoSlot_IsClipAngelHwnd(companion))
+        return false
+    if (monIdx < 1)
+        monIdx := AutoSlot_GetHwndMonitorIndex(companion)
+    if (monIdx < 1)
+        return false
+    if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
+        return true
+    healed := false
+    try healed := !!WM_MaximizeHwndBackground(companion)
+    catch
+        healed := false
+    if (!healed) {
+        try {
+            AutoSlot_MaximizeHwnd(companion)
+            healed := true
+        } catch {
+        }
+    }
+    if (!healed) {
+        try {
+            WinMaximize("ahk_id " companion)
+            healed := true
+        } catch {
+        }
+    }
+    if (healed) {
+        AutoSlot_RememberHwndMon(companion)
+        order := AutoSlot_OrderForMonitorIndex(monIdx)
+        label := order > 0 ? order : monIdx
+        AutoSlot_Toast("ℹ️ Companion maximized → M" label)
+    }
+    return healed
 }
 
 ; --- 50/50 pair registry (maximize either side → maximize companion) ----------
@@ -316,6 +383,8 @@ AutoSlot_RegisterSnapPair(a, b) {
         return
     g_AutoSlotSnapPairs[a] := b
     g_AutoSlotSnapPairs[b] := a
+    AutoSlot_RememberHwndMon(a)
+    AutoSlot_RememberHwndMon(b)
 }
 
 AutoSlot_UnregisterSnapPair(hwnd) {
@@ -2064,19 +2133,22 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             return "noop"
         if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
             return "ok"
-        ; Occupancy rows for exclude lists: residual only (not filled-behind).
-        residualRows := [{ hwnd: residual }]
+        ; Closing one half of a pair: maximize the leftover to both slots first.
+        ; Only import a background companion if heal fails (do not keep residual as a half).
+        if (AutoSlot_HealLoneCompanion(monIdx))
+            return "ok"
         if (blockImport)
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+            return "noop"
+        residualRows := [{ hwnd: residual }]
         cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows)
         if (!cand)
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+            return "noop"
         g_AutoSlotRecent[cand] := A_TickCount
         AutoSlot_PruneRecent()
         pane := AutoSlot_SnapPair(cand, residual, monIdx, true)
         g_AutoSlotUndo := 0
         if (pane = "")
-            return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
+            return "noop"
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_RememberHwndMon(residual)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
