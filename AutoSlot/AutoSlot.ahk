@@ -462,6 +462,7 @@ AutoSlot_ProcessRearrange(*) {
 }
 
 ; Heal/fill every underfilled ordinal monitor (same policy as fill-on-close).
+; Counts non-filled occupants only — maximized-behind must not block heal/fill.
 AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
@@ -470,12 +471,16 @@ AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
         monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
         if (!monIdx)
             continue
-        others := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
-        if (others.Length = 0) {
+        part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
+        if (part.nonFilled.Length >= 2)
+            continue
+        if (part.nonFilled.Length = 0) {
+            if (part.filled.Length >= 1)
+                continue  ; already full (maximized occupant)
             if (AutoSlot_FillCooldownActive(monIdx))
                 continue
             AutoSlot_FillMonitorFromBackground(monIdx)
-        } else if (others.Length = 1) {
+        } else if (part.nonFilled.Length = 1) {
             ; Fill handles SnapPair import / heal / place-freeze / claim cooldown.
             AutoSlot_FillMonitorFromBackground(monIdx)
         }
@@ -1973,18 +1978,32 @@ AutoSlot_OccupancyHasRecent(occupancyRows) {
     return false
 }
 
-; Maximize the sole visible window on monIdx when it is not already filled.
+; Split occupancy into non-filled (half-slot) vs filled (maximized / work-area).
+AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
+    nonFilled := []
+    filled := []
+    for row in AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd) {
+        h := row.hwnd
+        if (!h)
+            continue
+        if (AutoSlot_CompanionAlreadyFilled(h, monIdx))
+            filled.Push(row)
+        else
+            nonFilled.Push(row)
+    }
+    return { nonFilled: nonFilled, filled: filled }
+}
+
+; Maximize the sole non-filled window on monIdx (ignores maximized-behind).
 AutoSlot_HealLoneCompanion(monIdx) {
-    if (AutoSlot_SwapQuietActive())
-        return false
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
     if (AutoSlot_MonitorHasShownClipAngel(monIdx))
         return false
-    others := AutoSlot_OccupancyOnMonitor(monIdx)
-    if (others.Length != 1)
+    part := AutoSlot_PartitionOccupancy(monIdx)
+    if (part.nonFilled.Length != 1)
         return false
-    companion := others[1].hwnd
+    companion := part.nonFilled[1].hwnd
     if (AutoSlot_IsClipAngelHwnd(companion))
         return false
     if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
@@ -2021,6 +2040,7 @@ AutoSlot_BeginPlaceFreeze() {
 
 ; Promote background into free capacity: empty → up to two 50/50 (or one max);
 ; half → SnapPair one background with residual (else heal). No undo modal.
+; Policy uses non-filled count so maximized-behind does not block heal/fill.
 AutoSlot_FillMonitorFromBackground(monIdx) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
@@ -2028,8 +2048,8 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     ; Clip Angel owns the monitor for quick use — do not import/snap backgrounds over it.
     if (AutoSlot_MonitorHasShownClipAngel(monIdx))
         return "noop"
-    others := AutoSlot_OccupancyOnMonitor(monIdx)
-    if (others.Length >= 2)
+    part := AutoSlot_PartitionOccupancy(monIdx)
+    if (part.nonFilled.Length >= 2)
         return "stale"
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
@@ -2038,15 +2058,17 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     ; Place freeze / claim cooldown: companion heal only (no background import).
     blockImport := AutoSlot_PlaceFreezeActive() || AutoSlot_FillCooldownActive(monIdx)
 
-    if (others.Length = 1) {
-        residual := others[1].hwnd
+    if (part.nonFilled.Length = 1) {
+        residual := part.nonFilled[1].hwnd
         if (AutoSlot_IsClipAngelHwnd(residual))
             return "noop"
         if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
             return "ok"
+        ; Occupancy rows for exclude lists: residual only (not filled-behind).
+        residualRows := [{ hwnd: residual }]
         if (blockImport)
             return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
-        cand := AutoSlot_PickBackgroundCandidate(monIdx, others)
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows)
         if (!cand)
             return AutoSlot_HealLoneCompanion(monIdx) ? "ok" : "noop"
         g_AutoSlotRecent[cand] := A_TickCount
@@ -2061,9 +2083,14 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
         return "ok"
     }
 
+    ; No non-filled windows — already full if anything is maximized; else truly empty.
+    if (part.filled.Length >= 1)
+        return "ok"
+
     ; Empty monitor — fill both slots when two candidates exist.
     if (blockImport)
         return "noop"
+    others := []
     cand1 := AutoSlot_PickBackgroundCandidate(monIdx, others)
     if (!cand1)
         return "noop"
