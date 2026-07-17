@@ -825,7 +825,8 @@ AutoSlot_IsSameScriptPid(hwnd) {
     return Integer(pid) = Integer(DllCall("GetCurrentProcessId", "uint"))
 }
 
-; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, and ClipAngel (place-only).
+; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel (place-only),
+; and Win+Shift+S screen clip / Snipping Tool (must not be auto-slotted or resized).
 ; ClipAngel stays place-excluded so it is never auto-slotted / 50/50'd; occupancy uses a narrower skip.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
@@ -836,6 +837,9 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
         exe := ""
     }
     if (exe = "handy.exe" || exe = "clipangel.exe")
+        return true
+    ; Win+Shift+S region capture overlay + Snipping Tool / Screen Sketch editors.
+    if (exe = "screenclippinghost.exe" || exe = "snippingtool.exe" || exe = "screensketch.exe")
         return true
     if (AutoSlot_IsAhkHostProcess(exe))
         return true

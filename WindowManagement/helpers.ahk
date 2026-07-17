@@ -25,7 +25,8 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
     }
 }
 
-; Handy, Clip Angel, and WindowManagement identity: skip for per-monitor cycling, move-to-monitor, tile, and auto-cursor.
+; Handy, Clip Angel, Win+Shift+S clip UI, and WindowManagement identity: skip for
+; per-monitor cycling, move-to-monitor, tile, and auto-cursor.
 WM_IsExcludedIndicatorWindow(hwnd) {
     if (!hwnd)
         return false
@@ -35,6 +36,8 @@ WM_IsExcludedIndicatorWindow(hwnd) {
         return false
     }
     if (exe = "handy.exe" || exe = "clipangel.exe")
+        return true
+    if (exe = "screenclippinghost.exe" || exe = "snippingtool.exe" || exe = "screensketch.exe")
         return true
     try {
         title := WinGetTitle(hwnd)
