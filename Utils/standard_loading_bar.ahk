@@ -37,6 +37,10 @@ global g_StandardLoadingBarEscPollPrev := false
 global g_StandardLoadingBarKeysPollTimer := ""
 global g_StandardLoadingBarKeysPollPrev := Map()
 global g_StandardLoadingBarKeysPollCallbacks := Map()
+; Replaceable delayed-hide + hard-max watchdog (anonymous SetTimer fat-arrows do not replace each other).
+global g_StandardLoadingBarHideTimerArmed := false
+global g_StandardLoadingBarForceHideTimerArmed := false
+global STANDARD_LOADING_BAR_FORCE_HIDE_MS := 5000
 
 ; Return work area { left, top, right, bottom } for the monitor containing hwnd, or "" on failure.
 GetWorkAreaForWindow_StandardBar(hwnd) {
@@ -189,6 +193,7 @@ StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERME
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
     try StandardLoadingBar_CloseKeysOverlay()
+    ; Hide(0) also cancels replaceable hide / force-hide watchdogs from a prior banner.
     try StandardLoadingBar_Hide(0)
     passive := options && options.HasProp("passive") && options.passive
     centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
@@ -374,13 +379,60 @@ StandardLoadingBar_Update(state := "", barColor := "") {
     }
 }
 
+StandardLoadingBar_CancelHideTimers() {
+    global g_StandardLoadingBarHideTimerArmed, g_StandardLoadingBarForceHideTimerArmed
+    try SetTimer(StandardLoadingBar_HideNow, 0)
+    catch {
+    }
+    try SetTimer(StandardLoadingBar_ForceHideWatchdog, 0)
+    catch {
+    }
+    g_StandardLoadingBarHideTimerArmed := false
+    g_StandardLoadingBarForceHideTimerArmed := false
+}
+
+; Named timer target so delayed Hide replaces prior schedules (not fat-arrow one-shots).
+StandardLoadingBar_HideNow(*) {
+    global g_StandardLoadingBarHideTimerArmed
+    g_StandardLoadingBarHideTimerArmed := false
+    StandardLoadingBar_Hide(0)
+}
+
+; Hard-max dismiss for passive banners that missed their normal hide.
+StandardLoadingBar_ForceHideWatchdog(*) {
+    global g_StandardLoadingBarForceHideTimerArmed, g_StandardLoadingBarGui, g_StandardLoadingBarIsKeysOverlay
+    g_StandardLoadingBarForceHideTimerArmed := false
+    if (g_StandardLoadingBarIsKeysOverlay)
+        return
+    if (!IsObject(g_StandardLoadingBarGui))
+        return
+    StandardLoadingBar_Hide(0)
+}
+
+; Arm (or replace) a force-hide watchdog; does not shorten a shorter normal Hide(duration).
+StandardLoadingBar_ArmForceHide(maxMs := 0) {
+    global g_StandardLoadingBarForceHideTimerArmed, STANDARD_LOADING_BAR_FORCE_HIDE_MS
+    if (maxMs < 1)
+        maxMs := STANDARD_LOADING_BAR_FORCE_HIDE_MS
+    try SetTimer(StandardLoadingBar_ForceHideWatchdog, 0)
+    catch {
+    }
+    SetTimer(StandardLoadingBar_ForceHideWatchdog, -maxMs)
+    g_StandardLoadingBarForceHideTimerArmed := true
+}
+
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
-        g_StandardLoadingBarBorderGui
+        g_StandardLoadingBarBorderGui, g_StandardLoadingBarHideTimerArmed
     if (delayMs > 0) {
-        SetTimer(() => StandardLoadingBar_Hide(0), -delayMs)
+        try SetTimer(StandardLoadingBar_HideNow, 0)
+        catch {
+        }
+        SetTimer(StandardLoadingBar_HideNow, -delayMs)
+        g_StandardLoadingBarHideTimerArmed := true
         return
     }
+    StandardLoadingBar_CancelHideTimers()
     StandardLoadingBar_StopActiveMonitorTracking()
     StandardLoadingBar_StopTimedProgress()
     if (g_StandardLoadingBarIsKeysOverlay) {
@@ -409,6 +461,7 @@ StandardLoadingBar_CloseKeysOverlay() {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
     global g_StandardLoadingBarKeysEscapeActive, g_OnEscapePressed, g_StandardLoadingBarKeysEscapeUserCb
+    StandardLoadingBar_CancelHideTimers()
     g_StandardLoadingBarIsKeysOverlay := false
     StandardLoadingBar_StopKeysSelectionPoll()
     hadEscStack := g_StandardLoadingBarKeysEscapeActive

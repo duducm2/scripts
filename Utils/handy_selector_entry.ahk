@@ -28,7 +28,12 @@ ShowCenteredOverlay_Utils(text, duration := 1500, bgColor := BANNER_ACCENT_INTER
     ; centerOnHwnd 0 = foreground monitor (GetActiveMonitorWorkArea_StandardBar); same intent as prior WinGetID("A") path.
     StandardLoadingBar_Show(text, bgColor, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
         passiveBgColor: bgColor })
+    if (duration < 1)
+        duration := 1
     StandardLoadingBar_Hide(duration)
+    ; Hard max (5s default) so a missed/raced hide cannot leave the banner stuck.
+    ; Keys overlays use ShowWithKeys and do not call this path.
+    StandardLoadingBar_ArmForceHide()
 }
 
 ; =============================================================================
