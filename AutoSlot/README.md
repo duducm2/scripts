@@ -52,7 +52,8 @@ When a window closes and leaves a monitor empty or with exactly one **non-filled
 | Non-filled after close | Action                                                             |
 | ---------------------- | ------------------------------------------------------------------ |
 | 0 (truly empty)        | Two backgrounds → 50/50; one → maximize; none → noop               |
-| 0 (maximized already)  | No-op                                                              |
+| 0 + lone maximized     | Background → 50/50 with the maximized window (free half-slot)      |
+| 0 + 2+ maximized       | No-op                                                              |
 | 1                      | Maximize residual to both slots; if heal fails, background → 50/50 |
 | 2+                     | No-op                                                              |
 
@@ -64,13 +65,22 @@ Only the monitor that lost the window is considered. No undo modal on this path.
 
 After a window changes slots (manual drag end, suite move-to-monitor, AutoSlot relocate/maximize, or **minimize**), underfilled ordinal monitors are filled the same way as fill-on-close so windows that were behind a minimized/moved window can take foreground slots (non-filled count; maximized-behind ignored):
 
-| Non-filled | Action                                               |
-| ---------- | ---------------------------------------------------- |
-| 0 (empty)  | Two backgrounds → 50/50; one → maximize              |
-| 1          | Maximize residual; if heal fails, background → 50/50 |
-| 2+         | No-op                                                |
+| Non-filled   | Action                                               |
+| ------------ | ---------------------------------------------------- |
+| 0 (empty)    | Two backgrounds → 50/50; one → maximize              |
+| 0 + lone max | Background → 50/50 with maximized (free half-slot)   |
+| 1            | Maximize residual; if heal fails, background → 50/50 |
+| 2+           | No-op                                                |
 
 Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF. Windows minimized via **[F] replace** stay fill-skipped until the user restores them.
+
+## Fill free slots hotkey (Ctrl+Alt+Win+Y)
+
+When AutoSlot is ON, **Ctrl+Alt+Win+Y** (Window tools **[3]**) fills free ordinal capacity from background: empty monitors first, then half-slots including a **lone maximized** window (50/50 in place). Existing 50/50 pairs and multi-filled monitors are not reshuffled. When AutoSlot is OFF, the legacy background tile runs with at most **2 per monitor** and still skips already-slotted windows.
+
+## Background list open (Ctrl+Alt+Win+6)
+
+When AutoSlot is ON, picking a window from the hidden-background list (**Ctrl+Alt+Win+6** / Window tools **[2]**) places it into free capacity: empty ordinal → maximize; one free half (lone max/half) → 50/50 with the residual. If no free slot (or AutoSlot OFF), it restores in place as before. Close mode is unchanged.
 
 ## Disable
 

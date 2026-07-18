@@ -1008,7 +1008,15 @@ HandleMinimizedListByChar(char, *) {
         }
         WM_MinimizedList_Cleanup()
         Sleep 30
-        WM_MinimizedList_OpenHwnd(hwnd)
+        placed := false
+        try {
+            if (AutoSlot_IsEnabled())
+                placed := !!AutoSlot_TryPlaceBackgroundHwnd(hwnd)
+        } catch {
+            placed := false
+        }
+        if (!placed)
+            WM_MinimizedList_OpenHwnd(hwnd)
     } finally {
         WM_MinimizedList_ReleaseCharActionLock()
     }

@@ -1196,7 +1196,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
     [Win+Alt+Shift+M] > Maximizes the current window
-    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list; [3] tile background (≤12 total, ≤3/monitor); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
+    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
     [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)
     [Ctrl+Alt+Shift+C] > Switch to second previous window (Alt+Tab twice; MEH+C; WindowManagement.ahk)
@@ -1206,8 +1206,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+V] > Maximize active window (also Win+Alt+Shift+M; ZMK hold on minimize/close key)
     [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
     [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background window list (also Win+Alt+Shift+W → 2)
-    [Ctrl+Alt+Win+Y] > Window tools [3]: tile background windows (also Win+Alt+Shift+W → 3)
+    [Ctrl+Alt+Win+6] > Window tools [2]: hidden background list — open into free AutoSlot half/empty (AutoSlot ON) or restore in place (OFF); close mode arms with list UI (also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+Y] > Window tools [3]: fill free AutoSlot slots from background (AutoSlot ON; slotted windows stay); else tile bg ≤2/mon skipping slotted (also Win+Alt+Shift+W → 3)
     [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
     [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
     [Ctrl+Alt+Win+S] > Move window to monitor 2

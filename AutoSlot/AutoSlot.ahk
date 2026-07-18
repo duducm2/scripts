@@ -64,6 +64,7 @@ AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
 AutoSlot_EVENT_OBJECT_LOCATIONCHANGE := 0x800B
 AutoSlot_EVENT_SYSTEM_MOVESIZEEND := 0x000B
+AutoSlot_EVENT_SYSTEM_MINIMIZESTART := 0x0016
 AutoSlot_EVENT_SYSTEM_MINIMIZEEND := 0x0017
 AutoSlot_OBJID_WINDOW := 0
 AutoSlot_DEBOUNCE_MS := 250
@@ -176,10 +177,10 @@ AutoSlot_Init() {
         "UInt", 0,
         "Ptr")
 
-    ; Minimize end → heal/fill monitors for windows that become foreground.
+    ; Minimize start/end → clear snap pair, heal leftover companion, rearrange/fill.
     g_AutoSlotMinHookCb := CallbackCreate(AutoSlot_OnMinimizeEnd, "F", 7)
     g_AutoSlotMinHook := DllCall("user32\SetWinEventHook",
-        "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZEEND,
+        "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZESTART,
         "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZEEND,
         "Ptr", 0,
         "Ptr", g_AutoSlotMinHookCb,
@@ -532,6 +533,7 @@ AutoSlot_ProcessRearrange(*) {
 
 ; Heal/fill every underfilled ordinal monitor (same policy as fill-on-close).
 ; Counts non-filled occupants only — maximized-behind must not block heal/fill.
+; Lone maximized = half-full (free half-slot for background SnapPair).
 AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
@@ -543,17 +545,79 @@ AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
         part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
         if (part.nonFilled.Length >= 2)
             continue
-        if (part.nonFilled.Length = 0) {
-            if (part.filled.Length >= 1)
-                continue  ; already full (maximized occupant)
+        if (part.nonFilled.Length = 0 && part.filled.Length >= 2)
+            continue  ; no free slot
+        if (part.nonFilled.Length = 0 && part.filled.Length = 0) {
             if (AutoSlot_FillCooldownActive(monIdx))
                 continue
             AutoSlot_FillMonitorFromBackground(monIdx)
-        } else if (part.nonFilled.Length = 1) {
-            ; Fill handles SnapPair import / heal / place-freeze / claim cooldown.
+        } else if (part.nonFilled.Length = 1 || (part.nonFilled.Length = 0 && part.filled.Length = 1)) {
+            ; Half (unfilled) or lone maximized — Fill SnapPairs / heals.
             AutoSlot_FillMonitorFromBackground(monIdx)
         }
     }
+}
+
+; Ctrl+Alt+Win+Y when AutoSlot ON: fill underfilled ordinal slots from background only
+; (never relocates windows already occupying slots). Returns { ok, message }.
+; Prefer empty monitors before splitting a lone maximized (half-slot).
+AutoSlot_RunTileBackground() {
+    if (!AutoSlot_IsEnabled())
+        return { ok: false, message: "AutoSlot is OFF" }
+    if (MonitorGetCount() <= 1)
+        return { ok: false, message: "Need more than one monitor for slot fill" }
+    filled := 0
+    healed := 0
+    skippedFull := 0
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    emptyMons := []
+    halfMons := []
+    loop ordinalCount {
+        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
+        if (!monIdx)
+            continue
+        part := AutoSlot_PartitionOccupancy(monIdx)
+        if (part.nonFilled.Length >= 2 || (part.nonFilled.Length = 0 && part.filled.Length >= 2)) {
+            skippedFull++
+            continue
+        }
+        if (part.nonFilled.Length = 0 && part.filled.Length = 0)
+            emptyMons.Push(monIdx)
+        else
+            halfMons.Push(monIdx)  ; nonFilled=1 or lone maximized
+    }
+    for monIdx in emptyMons {
+        beforeNon := 0
+        beforeFilled := 0
+        result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+        if (result != "ok")
+            continue
+        filled++
+    }
+    for monIdx in halfMons {
+        part := AutoSlot_PartitionOccupancy(monIdx)
+        beforeNon := part.nonFilled.Length
+        beforeFilled := part.filled.Length
+        result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+        if (result != "ok")
+            continue
+        after := AutoSlot_PartitionOccupancy(monIdx)
+        if (beforeNon = 1 && after.nonFilled.Length = 0 && after.filled.Length > beforeFilled)
+            healed++
+        else
+            filled++
+    }
+    total := filled + healed
+    if (total = 0) {
+        if (skippedFull >= ordinalCount && emptyMons.Length = 0 && halfMons.Length = 0)
+            return { ok: false, message: "All ordinal slots full — nothing to fill" }
+        return { ok: false, noBackground: true, message: "No background windows to fill free slots" }
+    }
+    msg := "Filled " total " slot group(s) from background"
+    if (healed > 0)
+        msg .= " (" healed " companion heal)"
+    msg .= " — slotted windows left in place"
+    return { ok: true, message: msg, filled: filled, healed: healed }
 }
 
 AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
@@ -587,24 +651,33 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
         AutoSlot_ScheduleRearrange(hwnd)
 }
 
-; After minimize: heal/fill underfilled monitors for windows now in the foreground.
+; After minimize: clear pair registry, heal leftover companion, then rearrange/fill.
 AutoSlot_OnMinimizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
-    global g_AutoSlotHwndMon
+    global g_AutoSlotHwndMon, g_AutoSlotSnapPairs
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
         return
     hwnd := Integer(hwnd)
-    if (AutoSlot_SwapQuietActive())
-        return
-    if (AutoSlot_PlaceFreezeActive())
-        return
-    ; Minimized hwnds fail IsOccupancyCandidate — cache or occupancy-worthy (ignore iconic).
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
+    partner := g_AutoSlotSnapPairs.Has(hwnd) ? g_AutoSlotSnapPairs[hwnd] : 0
     if (!cached && !AutoSlot_IsMinimizeRearrangeCandidate(hwnd))
         return
+    monIdx := cached >= 1 ? cached : 0
+    partnerHwnd := partner
+    ; Always break the 50/50 link when one side minimizes — place freeze / swap quiet
+    ; must not leave a stale pair that blocks later Y/fill (skipPartner).
     AutoSlot_UnregisterSnapPair(hwnd)
     AutoSlot_ForgetHwndMon(hwnd)
+    if (partnerHwnd && monIdx >= 1) {
+        p := partnerHwnd
+        m := monIdx
+        SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
+    }
+    if (AutoSlot_SwapQuietActive())
+        return
+    ; Rearrange may import background; skip only while swap-quiet. Place freeze still
+    ; allows heal above; Y uses forceImport and does not depend on this path.
     AutoSlot_ScheduleRearrange(hwnd)
 }
 
@@ -739,19 +812,25 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
     if (!hwnd || monIdx < 1)
         return false
     try {
-        if (WinGetMinMax("ahk_id " hwnd) = 1)
-            return true
-    } catch {
-    }
-    try {
         MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
         rect := Buffer(16, 0)
         if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
             return false
         l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
         r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
-        ; Work-area fill from WM_MaximizeHwndBackground (not OS-maximized).
-        return (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
+        ; Geometry is authoritative: OS-max flag alone can stick on a half-sized window
+        ; after a failed demax (Explorer mm=1 at half height was counted as filled:2).
+        workW := wr - wl
+        workH := wb - wt
+        if (workW < 1 || workH < 1)
+            return false
+        w := r - l
+        h := b - t
+        if (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
+            return true
+        ; Near-full work area (≥90% both axes) counts as 2-slot presentation.
+        return (w >= Round(workW * 0.90) && h >= Round(workH * 0.90)
+        && Abs(l - wl) <= 24 && Abs(t - wt) <= 24)
     } catch {
         return false
     }
@@ -1786,10 +1865,16 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
         catch
             partnerWasMax := false
     }
+    ; Work-area fill counts as "max" for snap (mm often 0 on Chrome after heal).
+    if (!partnerWasMax && AutoSlot_CompanionAlreadyFilled(partnerHwnd, monIdx))
+        partnerWasMax := true
 
     ; Single prepare (parity with ^!#x) — avoid double Sleep from AutoSlot_Prepare + WM_Prepare.
     if (!WM_PrepareHwndForTile(newHwnd) || !WM_PrepareHwndForTile(partnerHwnd))
         return ""
+    ; Restore-from-minimized can land OS-maximized; work-area fill needs an explicit demax nudge.
+    AutoSlot_EnsureRestoredForSnap(newHwnd, monIdx)
+    AutoSlot_EnsureRestoredForSnap(partnerHwnd, monIdx)
 
     ; Partner keeps its pane (shrink in place); new always takes the opposite.
     ; Maximized / unclassified → "start" once — do not flip sides after placement.
@@ -1807,6 +1892,28 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     ok := WM_SnapPairGaplessRects(monIdx, axis, newHwnd, newPane, partnerHwnd, partnerPane)
     if (!ok)
         return ""
+    ; Gapless can report success while a work-area residual never shrunk (Chrome).
+    if (AutoSlot_CompanionAlreadyFilled(partnerHwnd, monIdx)) {
+        AutoSlot_EnsureRestoredForSnap(partnerHwnd, monIdx)
+        ok := WM_SnapPairGaplessRects(monIdx, axis, newHwnd, newPane, partnerHwnd, partnerPane)
+        if (!ok)
+            return ""
+    }
+    ; Last resort: crude outer-rect place when gapless still leaves partner full.
+    if (AutoSlot_CompanionAlreadyFilled(partnerHwnd, monIdx)) {
+        rects := WM_ComputeSnapPairPaneRects(monIdx, axis)
+        if (rects.Count > 0) {
+            AutoSlot_EnsureRestoredForSnap(partnerHwnd, monIdx)
+            AutoSlot_EnsureRestoredForSnap(newHwnd, monIdx)
+            pRect := rects[partnerPane]
+            tRect := rects[newPane]
+            AutoSlot_MoveHwndToRect(partnerHwnd, pRect[1], pRect[2], pRect[3], pRect[4])
+            AutoSlot_MoveHwndToRect(newHwnd, tRect[1], tRect[2], tRect[3], tRect[4])
+            Sleep 80
+        }
+        if (AutoSlot_CompanionAlreadyFilled(partnerHwnd, monIdx))
+            return ""
+    }
     ; Close-fill skips strict validate (gapless already applied); new-window place keeps it.
     if (!acceptUnvalidated) {
         if (!WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd))
@@ -1826,6 +1933,48 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     AutoSlot_RegisterSnapPair(newHwnd, partnerHwnd)
     AutoSlot_ActivateHwnd(newHwnd)
     return newPane
+}
+
+; Demax OS-maximized and work-area-filled windows so 50/50 MoveWindow sticks.
+AutoSlot_EnsureRestoredForSnap(hwnd, monIdx := 0) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    changed := false
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = 1 || mm = -1) {
+            WinRestore "ahk_id " hwnd
+            Sleep 80
+            changed := true
+        }
+        ; Restore-from-minimized often lands maximized — second pass.
+        if (WinGetMinMax("ahk_id " hwnd) = 1) {
+            WinRestore "ahk_id " hwnd
+            Sleep 80
+            changed := true
+        }
+    } catch {
+    }
+    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(hwnd, monIdx)) {
+        try {
+            MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+            axis := WM_GetSnapSplitAxis(monIdx)
+            ; Nudge off full work-area along the snap axis so gapless sizing sticks.
+            if (axis = "h") {
+                half := wl + Max(200, (wr - wl) // 2)
+                okMove := AutoSlot_MoveHwndToRect(hwnd, wl, wt, half, wb)
+            } else {
+                half := wt + Max(200, (wb - wt) // 2)
+                okMove := AutoSlot_MoveHwndToRect(hwnd, wl, wt, wr, half)
+            }
+            if (okMove) {
+                Sleep 50
+                changed := true
+            }
+        } catch {
+        }
+    }
+    return changed
 }
 
 ; --- Toast / undo modal ------------------------------------------------------
@@ -1955,20 +2104,52 @@ AutoSlot_ShowUndoModal(paneLabel := "") {
 
 ; --- Fill-on-close (background → freed slot) ---------------------------------
 
-; True when hwnd still belongs to a living 50/50 pair (must not be relocated by fill).
+; True when hwnd still belongs to a living *visible* 50/50 pair (must not be relocated by fill).
+; Minimized members are no longer active pair participants — stale registry must not block Y/fill.
 AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd) {
     global g_AutoSlotSnapPairs
     if (!hwnd || !g_AutoSlotSnapPairs.Has(hwnd))
         return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1) {
+            AutoSlot_UnregisterSnapPair(hwnd)
+            return false
+        }
+    } catch {
+    }
     partner := g_AutoSlotSnapPairs[hwnd]
-    return !!(partner && DllCall("IsWindow", "ptr", partner))
+    if (!partner || !DllCall("IsWindow", "ptr", partner)) {
+        AutoSlot_UnregisterSnapPair(hwnd)
+        return false
+    }
+    try {
+        if (WinGetMinMax("ahk_id " partner) = -1) {
+            AutoSlot_UnregisterSnapPair(hwnd)
+            return false
+        }
+    } catch {
+    }
+    return true
 }
 
-; True when hwnd's home monitor has another window in F11 fullscreen (hwnd is covered there).
+; True when a *visible* hwnd's home monitor has another window in F11 fullscreen
+; (hwnd is covered there). Minimized candidates are never "covered" — they live on
+; the taskbar. Normal AutoSlot maximized / work-area windows are NOT F11 (Chrome
+; work-area fill was a false positive that blocked every covered background).
 AutoSlot_BackgroundCandCoveredByF11(hwnd) {
     global g_AutoSlotHwndMon
     if (!hwnd)
         return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            return false
+    } catch {
+    }
+    try {
+        if (!DllCall("IsWindowVisible", "ptr", hwnd))
+            return false
+    } catch {
+    }
     monIdx := 0
     if (g_AutoSlotHwndMon.Has(hwnd))
         monIdx := g_AutoSlotHwndMon[hwnd]
@@ -1981,6 +2162,9 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
             if (!other || other = hwnd)
                 continue
             if (AutoSlot_GetHwndMonitorIndex(other) != monIdx)
+                continue
+            ; Slotted max / work-area fill is capacity, not F11 cover.
+            if (AutoSlot_CompanionAlreadyFilled(other, monIdx))
                 continue
             try {
                 if (WM_WindowIsF11Fullscreen(other))
@@ -2114,7 +2298,8 @@ AutoSlot_BeginPlaceFreeze() {
 ; Promote background into free capacity: empty → up to two 50/50 (or one max);
 ; half → SnapPair one background with residual (else heal). No undo modal.
 ; Policy uses non-filled count so maximized-behind does not block heal/fill.
-AutoSlot_FillMonitorFromBackground(monIdx) {
+; forceImport: true for explicit Ctrl+Alt+Win+Y (ignore place freeze / fill cooldown).
+AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return "noop"
@@ -2128,8 +2313,9 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
 
-    ; Place freeze / claim cooldown: companion heal only (no background import).
-    blockImport := AutoSlot_PlaceFreezeActive() || AutoSlot_FillCooldownActive(monIdx)
+    ; Place freeze / claim cooldown: companion heal only (no background import),
+    ; unless the user explicitly requested fill (Y).
+    blockImport := !forceImport && (AutoSlot_PlaceFreezeActive() || AutoSlot_FillCooldownActive(monIdx))
 
     if (part.nonFilled.Length = 1) {
         residual := part.nonFilled[1].hwnd
@@ -2137,6 +2323,23 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
             return "noop"
         if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
             return "ok"
+        ; Half + maximized/work-area on same monitor: 50/50 them (do not heal the half
+        ; into a second full window — that was skipping Y after a partial snap).
+        if (part.filled.Length >= 1 && !blockImport) {
+            filledHwnd := part.filled[1].hwnd
+            if (filledHwnd && filledHwnd != residual && !AutoSlot_IsClipAngelHwnd(filledHwnd)) {
+                g_AutoSlotRecent[residual] := A_TickCount
+                AutoSlot_PruneRecent()
+                pane := AutoSlot_SnapPair(residual, filledHwnd, monIdx, true)
+                g_AutoSlotUndo := 0
+                if (pane != "") {
+                    AutoSlot_RememberHwndMon(residual)
+                    AutoSlot_RememberHwndMon(filledHwnd)
+                    AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+                    return "ok"
+                }
+            }
+        }
         ; Closing one half of a pair: maximize the leftover to both slots first.
         ; Only import a background companion if heal fails (do not keep residual as a half).
         if (AutoSlot_HealLoneCompanion(monIdx))
@@ -2159,8 +2362,31 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
         return "ok"
     }
 
-    ; No non-filled windows — already full if anything is maximized; else truly empty.
-    if (part.filled.Length >= 1)
+    ; Lone maximized / work-area fill = half-full (1 of 2 slots) — SnapPair background in place.
+    if (part.filled.Length = 1) {
+        residual := part.filled[1].hwnd
+        if (AutoSlot_IsClipAngelHwnd(residual))
+            return "noop"
+        if (blockImport)
+            return "noop"
+        residualRows := [{ hwnd: residual }]
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows)
+        if (!cand)
+            return "noop"
+        g_AutoSlotRecent[cand] := A_TickCount
+        AutoSlot_PruneRecent()
+        pane := AutoSlot_SnapPair(cand, residual, monIdx, true)
+        g_AutoSlotUndo := 0
+        if (pane = "")
+            return "noop"
+        AutoSlot_RememberHwndMon(cand)
+        AutoSlot_RememberHwndMon(residual)
+        AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+        return "ok"
+    }
+
+    ; Multiple filled, no free half — nothing to import.
+    if (part.filled.Length >= 2)
         return "ok"
 
     ; Empty monitor — fill both slots when two candidates exist.
@@ -2210,6 +2436,71 @@ AutoSlot_FillMonitorFromBackground(monIdx) {
 }
 
 ; --- Placement ---------------------------------------------------------------
+
+; Place a user-picked background hwnd into free AutoSlot capacity (empty → max,
+; one free half → 50/50 with residual). Returns true if placed into a slot.
+; Used by Ctrl+Alt+Win+6 list open when AutoSlot is ON.
+AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
+    global g_AutoSlotRecent, g_AutoSlotUndo
+    if (!AutoSlot_IsEnabled() || !hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if (MonitorGetCount() <= 1)
+        return false
+    if (AutoSlot_IsClipAngelHwnd(hwnd) || AutoSlot_IsExcludedExeOrTitle(hwnd))
+        return false
+    ; Stale pair from a previous 50/50 must not block this explicit pick.
+    AutoSlot_UnregisterSnapPair(hwnd)
+    AutoSlot_ForgetHwndMon(hwnd)
+    g_AutoSlotRecent[hwnd] := A_TickCount
+    AutoSlot_PruneRecent()
+
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    emptyMon := 0
+    emptyOrder := 0
+    halfMon := 0
+    halfOrder := 0
+    halfPartner := 0
+    loop ordinalCount {
+        order := A_Index
+        monIdx := AutoSlot_GetMonitorIndexByOrder(order)
+        if (!monIdx || AutoSlot_MonitorHasShownClipAngel(monIdx))
+            continue
+        part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
+        used := part.filled.Length + part.nonFilled.Length
+        if (used = 0) {
+            if (!emptyMon) {
+                emptyMon := monIdx
+                emptyOrder := order
+            }
+            continue
+        }
+        if (used = 1 && !halfMon) {
+            halfMon := monIdx
+            halfOrder := order
+            halfPartner := part.filled.Length = 1 ? part.filled[1].hwnd : part.nonFilled[1].hwnd
+        }
+    }
+    if (emptyMon) {
+        if (!AutoSlot_MaximizeOnMonitor(hwnd, emptyMon, false))
+            return false
+        AutoSlot_ClaimMonitor(emptyMon)
+        AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_Toast("ℹ️ Opened → M" emptyOrder " (maximized)")
+        return true
+    }
+    if (halfMon && halfPartner) {
+        pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon, true)
+        if (pane = "")
+            return false
+        g_AutoSlotUndo := 0
+        AutoSlot_ClaimMonitor(halfMon)
+        AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_RememberHwndMon(halfPartner)
+        AutoSlot_Toast("ℹ️ Opened → M" halfOrder " (50/50)")
+        return true
+    }
+    return false
+}
 
 ; First ordinal monitor with exactly one occupant (excl. hwnd). One maximized
 ; window counts as half-full — the other half-slot is still available.

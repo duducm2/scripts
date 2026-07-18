@@ -1101,6 +1101,37 @@ WM_EnumerateOpenHwndsOnMonitor(mon) {
     return out
 }
 
+; True when hwnd already occupies a slot (maximized / work-area fill / 50/50 half).
+; Tile background must not relocate these.
+WM_WindowIsAlreadySlotted(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    monIdx := WM_GetHwndMonitorIndex(hwnd)
+    if (monIdx < 1)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = 1)
+            return true
+    } catch {
+    }
+    try {
+        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect) {
+            l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
+            r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
+            if (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
+                return true
+        }
+    } catch {
+    }
+    companion := 0
+    try companion := WM_FindStrictSnapCompanion(hwnd, monIdx)
+    catch
+        companion := 0
+    return !!companion
+}
+
 ; Tile organize: user apps on script monitors; skip noise, indicators, and background exclude list.
 ; Does not skip the foreground window — organize should include every unobstructed app the user sees.
 WM_TilePassesOrganizeGates(hwnd) {
@@ -1135,6 +1166,8 @@ WM_TilePassesOrganizeGates(hwnd) {
 
 WM_TileCandidateRegister(&seen, &candidates, hwnd, priority, homeMon, &counters, counterKey) {
     if (!hwnd || seen.Has(hwnd) || homeMon < 1)
+        return false
+    if (WM_WindowIsAlreadySlotted(hwnd))
         return false
     seen[hwnd] := true
     candidates.Push({ hwnd: hwnd, priority: priority, homeMon: homeMon, order: candidates.Length })

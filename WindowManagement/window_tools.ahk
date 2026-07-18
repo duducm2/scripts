@@ -67,10 +67,38 @@ WM_WindowTools_OnTileBackground(*) {
     try foreBeforeScan := WinGetID("A")
     global g_WM_BackgroundScanBannerTick
     g_WM_BackgroundScanBannerTick := A_TickCount
+    ; AutoSlot ON: fill free slots only — never move windows already in slots.
+    autoslotOn := false
+    try autoslotOn := !!AutoSlot_IsEnabled()
+    catch
+        autoslotOn := false
+    if (autoslotOn) {
+        StandardLoadingBar_Show("Filling free AutoSlot slots...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: 0 })
+        try {
+            result := AutoSlot_RunTileBackground()
+            if (!result.ok) {
+                if (result.HasProp("noBackground") && result.noBackground)
+                    WM_PresentNoBackgroundWindowsEmpty(result.message)
+                else {
+                    StandardLoadingBar_Update(result.message, BANNER_ACCENT_INFO)
+                    StandardLoadingBar_Hide(4500)
+                }
+                return
+            }
+            StandardLoadingBar_Update(result.message, BANNER_ACCENT_SUCCESS)
+            StandardLoadingBar_Hide(2000)
+        } catch as err {
+            StandardLoadingBar_Update("Slot fill failed: " err.Message, BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(4000)
+        }
+        return
+    }
     StandardLoadingBar_Show("Scanning hidden windows...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0 })
     try {
-        result := WM_TileBackgroundWindowsPerMonitor(3, foreBeforeScan)
+        ; AutoSlot OFF: legacy tile, but skip already-slotted windows and cap 2/mon.
+        result := WM_TileBackgroundWindowsPerMonitor(2, foreBeforeScan)
         if (!result.ok) {
             if (result.HasProp("noBackground") && result.noBackground)
                 WM_PresentNoBackgroundWindowsEmpty(result.message)
@@ -201,7 +229,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Tile background (CAW+Y; ≤12 total, ≤3/monitor)  [4] Exit F11 fullscreen (CAW+P)  [5] AutoSlot: " autoSlotLabel "  [Esc] Cancel",
+        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Fill free slots (CAW+Y; slotted stay)  [4] Exit F11 fullscreen (CAW+P)  [5] AutoSlot: " autoSlotLabel "  [Esc] Cancel",
         true,
         false,
         false)

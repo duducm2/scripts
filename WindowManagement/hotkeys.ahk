@@ -34,7 +34,7 @@
 }
 
 ; =============================================================================
-; Window tools (maximize lone / hidden list / tile background / exit F11 fullscreen)
+; Window tools (maximize lone / hidden list / fill free slots / exit F11 fullscreen)
 ; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], 6=[2], Y=[3], P=[4]; X=Snap 50/50 (not in menu)
 ; =============================================================================
 ^!#z:: WM_WindowTools_OnMaximizeLonely()
