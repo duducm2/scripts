@@ -384,6 +384,17 @@ AutoSlot_RegisterSnapPair(a, b) {
     global g_AutoSlotSnapPairs
     if (!a || !b || a = b)
         return
+    ; Clear stale reverse links (e.g. C→A) before re-pairing A↔B.
+    if (g_AutoSlotSnapPairs.Has(a)) {
+        old := g_AutoSlotSnapPairs[a]
+        if (old && old != b && g_AutoSlotSnapPairs.Has(old) && g_AutoSlotSnapPairs[old] = a)
+            g_AutoSlotSnapPairs.Delete(old)
+    }
+    if (g_AutoSlotSnapPairs.Has(b)) {
+        old := g_AutoSlotSnapPairs[b]
+        if (old && old != a && g_AutoSlotSnapPairs.Has(old) && g_AutoSlotSnapPairs[old] = b)
+            g_AutoSlotSnapPairs.Delete(old)
+    }
     g_AutoSlotSnapPairs[a] := b
     g_AutoSlotSnapPairs[b] := a
     AutoSlot_RememberHwndMon(a)
@@ -505,11 +516,22 @@ AutoSlot_BeginSwapQuiet(ms := 0) {
     if (ms < 1)
         ms := AutoSlot_SWAP_QUIET_MS
     g_AutoSlotSwapQuietUntil := A_TickCount + ms
+    ; Catch-up rearrange after quiet — requests during quiet are otherwise lost.
+    SetTimer(AutoSlot_PostQuietRearrange, -(ms + AutoSlot_REARRANGE_MS))
 }
 
 AutoSlot_SwapQuietActive() {
     global g_AutoSlotSwapQuietUntil
     return g_AutoSlotSwapQuietUntil > 0 && A_TickCount < g_AutoSlotSwapQuietUntil
+}
+
+; Fired after SwapQuiet expires; heals/fills underfilled ordinals missed during quiet.
+AutoSlot_PostQuietRearrange(*) {
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
+        return
+    if (AutoSlot_SwapQuietActive())
+        return
+    AutoSlot_RearrangeUnderfilled()
 }
 
 AutoSlot_ScheduleRearrange(excludeHwnd := 0) {
@@ -527,6 +549,12 @@ AutoSlot_ProcessRearrange(*) {
     global g_AutoSlotRearrangePending, g_AutoSlotRearrangeExclude
     if (!g_AutoSlotRearrangePending)
         return
+    ; Quiet started after this timer was armed — drop; PostQuietRearrange will catch up.
+    if (AutoSlot_SwapQuietActive()) {
+        g_AutoSlotRearrangePending := false
+        g_AutoSlotRearrangeExclude := 0
+        return
+    }
     g_AutoSlotRearrangePending := false
     excludeHwnd := g_AutoSlotRearrangeExclude
     g_AutoSlotRearrangeExclude := 0
@@ -1647,6 +1675,14 @@ AutoSlot_OnSwapF(*) {
     for monIdx, _ in claimed
         AutoSlot_ClaimMonitor(monIdx)
     AutoSlot_ActivateHwnd(mover)
+    ; [F] ends the swap: clear quiet + claim cooldown so vacated monitors fill now.
+    ; (ScheduleRearrange no-ops while quiet; ClaimMonitor would also block import 1.5s.)
+    global g_AutoSlotSwapQuietUntil, g_AutoSlotFillCooldown
+    g_AutoSlotSwapQuietUntil := 0
+    for monIdx, _ in claimed {
+        if (g_AutoSlotFillCooldown.Has(monIdx))
+            g_AutoSlotFillCooldown.Delete(monIdx)
+    }
     ; Heal/fill what is now foreground on vacated monitors (ReplaceSkip blocks re-promote).
     try AutoSlot_ScheduleRearrange(mover)
     catch {
