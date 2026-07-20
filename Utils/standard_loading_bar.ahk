@@ -398,12 +398,16 @@ StandardLoadingBar_HideNow(*) {
     StandardLoadingBar_Hide(0)
 }
 
-; Hard-max dismiss for passive banners that missed their normal hide.
+; Hard-max dismiss for any banner that missed its normal hide (passive or keys).
 StandardLoadingBar_ForceHideWatchdog(*) {
     global g_StandardLoadingBarForceHideTimerArmed, g_StandardLoadingBarGui, g_StandardLoadingBarIsKeysOverlay
     g_StandardLoadingBarForceHideTimerArmed := false
-    if (g_StandardLoadingBarIsKeysOverlay)
+    if (g_StandardLoadingBarIsKeysOverlay) {
+        try StandardLoadingBar_CloseKeysOverlay()
+        catch {
+        }
         return
+    }
     if (!IsObject(g_StandardLoadingBarGui))
         return
     StandardLoadingBar_Hide(0)
@@ -423,16 +427,25 @@ StandardLoadingBar_ArmForceHide(maxMs := 0) {
 
 StandardLoadingBar_Hide(delayMs := 0) {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
-        g_StandardLoadingBarBorderGui, g_StandardLoadingBarHideTimerArmed
+        g_StandardLoadingBarBorderGui, g_StandardLoadingBarHideTimerArmed, STANDARD_LOADING_BAR_FORCE_HIDE_MS
     if (delayMs > 0) {
         try SetTimer(StandardLoadingBar_HideNow, 0)
         catch {
         }
         SetTimer(StandardLoadingBar_HideNow, -delayMs)
         g_StandardLoadingBarHideTimerArmed := true
+        ; Hard ceiling so a missed HideNow / failed Destroy cannot leave the banner for minutes.
+        forceMs := delayMs + 2000
+        if (forceMs < STANDARD_LOADING_BAR_FORCE_HIDE_MS)
+            forceMs := STANDARD_LOADING_BAR_FORCE_HIDE_MS
+        StandardLoadingBar_ArmForceHide(forceMs)
         return
     }
-    StandardLoadingBar_CancelHideTimers()
+    ; Cancel HideNow only first — keep force-hide until destroy succeeds (re-armed on failure).
+    try SetTimer(StandardLoadingBar_HideNow, 0)
+    catch {
+    }
+    g_StandardLoadingBarHideTimerArmed := false
     StandardLoadingBar_StopActiveMonitorTracking()
     StandardLoadingBar_StopTimedProgress()
     if (g_StandardLoadingBarIsKeysOverlay) {
@@ -440,18 +453,62 @@ StandardLoadingBar_Hide(delayMs := 0) {
         return
     }
     SetTimer(StandardLoadingBar_Tick, 0)
+    guiObj := g_StandardLoadingBarGui
+    borderObj := g_StandardLoadingBarBorderGui
+    guiHwnd := 0
+    borderHwnd := 0
     try {
-        if IsObject(g_StandardLoadingBarGui)
-            g_StandardLoadingBarGui.Destroy()
+        if IsObject(guiObj)
+            guiHwnd := Integer(guiObj.Hwnd)
     } catch {
     }
+    try {
+        if IsObject(borderObj)
+            borderHwnd := Integer(borderObj.Hwnd)
+    } catch {
+    }
+    try {
+        if IsObject(guiObj)
+            guiObj.Destroy()
+    } catch {
+    }
+    try {
+        if IsObject(borderObj)
+            borderObj.Destroy()
+    } catch {
+    }
+    ; Fallback if Gui.Destroy left an AlwaysOnTop window alive.
+    if (guiHwnd && WinExist("ahk_id " guiHwnd)) {
+        try WinHide("ahk_id " guiHwnd)
+        catch {
+        }
+        try DllCall("user32\DestroyWindow", "ptr", guiHwnd)
+        catch {
+        }
+    }
+    if (borderHwnd && WinExist("ahk_id " borderHwnd)) {
+        try WinHide("ahk_id " borderHwnd)
+        catch {
+        }
+        try DllCall("user32\DestroyWindow", "ptr", borderHwnd)
+        catch {
+        }
+    }
+    stillLive := (guiHwnd && WinExist("ahk_id " guiHwnd))
+    if (stillLive) {
+        ; Keep references and retry — do not orphan an AlwaysOnTop window.
+        g_StandardLoadingBarGui := guiObj
+        g_StandardLoadingBarBorderGui := borderObj
+        StandardLoadingBar_ArmForceHide(1000)
+        return
+    }
+    try SetTimer(StandardLoadingBar_ForceHideWatchdog, 0)
+    catch {
+    }
+    global g_StandardLoadingBarForceHideTimerArmed
+    g_StandardLoadingBarForceHideTimerArmed := false
     g_StandardLoadingBarGui := 0
     g_StandardLoadingBarValue := 0
-    try {
-        if IsObject(g_StandardLoadingBarBorderGui)
-            g_StandardLoadingBarBorderGui.Destroy()
-    } catch {
-    }
     g_StandardLoadingBarBorderGui := 0
 }
 
