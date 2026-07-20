@@ -148,11 +148,10 @@ class D2C_FlowManager {
         if (!WinActive("ahk_id " targetHwnd))
             WinWaitActive("ahk_id " targetHwnd, , 0.3)
         Sleep 60
-        Send("^v")
-        return true
+        return ClipAngel_SendTopListItem(targetHwnd)
     }
 
-    ; [W] Pick a visible window from modal list, activate it, paste clipboard (Ctrl+V), end flow.
+    ; [W] Pick a visible window from modal list, activate it, paste Clip Angel top item, end flow.
     OnSubmitW(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
