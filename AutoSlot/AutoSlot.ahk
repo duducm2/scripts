@@ -59,6 +59,7 @@ global g_AutoSlotSwapQuietUntil := 0
 global g_AutoSlotSwapDisplaced := []
 global g_AutoSlotSwapMoverHwnd := 0
 global g_AutoSlotReplaceSkip := Map()
+global g_AutoSlotJustRestored := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -79,6 +80,7 @@ AutoSlot_SWAP_QUIET_MS := 2500
 AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
 AutoSlot_REPLACE_SKIP_TTL_MS := 600000
+AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered auto-place for this long
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -658,10 +660,17 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         return
     if (!AutoSlot_IsEnabled())
         return
-    ; MINIMIZEEND fires on restore — not a minimize; skip to avoid false heal/rearrange.
-    if (event = AutoSlot_EVENT_SYSTEM_MINIMIZEEND)
-        return
     hwnd := Integer(hwnd)
+    ; MINIMIZEEND fires when a window is restored from the taskbar, not when it minimizes.
+    ; Arm a short guard so the subsequent EVENT_OBJECT_SHOW does not auto-place the window.
+    ; Also clear any stale replace-skip so the window is available as a Y/fill candidate
+    ; next time it is minimized again.
+    if (event = AutoSlot_EVENT_SYSTEM_MINIMIZEEND) {
+        global g_AutoSlotJustRestored
+        g_AutoSlotJustRestored[hwnd] := A_TickCount
+        g_AutoSlotReplaceSkip.Delete(hwnd)
+        return
+    }
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
     partner := g_AutoSlotSnapPairs.Has(hwnd) ? g_AutoSlotSnapPairs[hwnd] : 0
     if (!cached && !AutoSlot_IsMinimizeRearrangeCandidate(hwnd))
@@ -672,6 +681,9 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     ; must not leave a stale pair that blocks later Y/fill (skipPartner).
     AutoSlot_UnregisterSnapPair(hwnd)
     AutoSlot_ForgetHwndMon(hwnd)
+    ; User-initiated minimize clears the [F]-swap replace-skip so the window becomes
+    ; available again as a background candidate for Ctrl+Alt+Win+Y.
+    g_AutoSlotReplaceSkip.Delete(hwnd)
     if (partnerHwnd && monIdx >= 1) {
         p := partnerHwnd
         m := monIdx
@@ -840,7 +852,7 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
 }
 
 AutoSlot_Schedule(hwnd) {
-    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon
+    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon, g_AutoSlotJustRestored
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || MonitorGetCount() <= 1)
@@ -848,6 +860,13 @@ AutoSlot_Schedule(hwnd) {
     ; Already tracked — ignore SHOW spam from activation, not a new window.
     if (g_AutoSlotHwndMon.Has(hwnd))
         return
+    ; Recently restored from taskbar — the SHOW event is from the restore animation,
+    ; not a new window opening. Skip auto-placement for the guard duration.
+    if (g_AutoSlotJustRestored.Has(hwnd)) {
+        if (A_TickCount - g_AutoSlotJustRestored[hwnd] < AutoSlot_RESTORE_GUARD_MS)
+            return
+        g_AutoSlotJustRestored.Delete(hwnd)
+    }
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
         return
     if (g_AutoSlotPending.Has(hwnd))
