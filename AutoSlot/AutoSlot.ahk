@@ -694,9 +694,10 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     ; Also clear any stale replace-skip so the window is available as a Y/fill candidate
     ; next time it is minimized again.
     if (event = AutoSlot_EVENT_SYSTEM_MINIMIZEEND) {
-        global g_AutoSlotJustRestored
+        global g_AutoSlotJustRestored, g_AutoSlotReplaceSkip
         g_AutoSlotJustRestored[hwnd] := A_TickCount
-        g_AutoSlotReplaceSkip.Delete(hwnd)
+        if (g_AutoSlotReplaceSkip.Has(hwnd))
+            g_AutoSlotReplaceSkip.Delete(hwnd)
         return
     }
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
@@ -711,7 +712,9 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     AutoSlot_ForgetHwndMon(hwnd)
     ; User-initiated minimize clears the [F]-swap replace-skip so the window becomes
     ; available again as a background candidate for Ctrl+Alt+Win+Y.
-    g_AutoSlotReplaceSkip.Delete(hwnd)
+    global g_AutoSlotReplaceSkip
+    if (g_AutoSlotReplaceSkip.Has(hwnd))
+        g_AutoSlotReplaceSkip.Delete(hwnd)
     if (partnerHwnd && monIdx >= 1) {
         p := partnerHwnd
         m := monIdx
