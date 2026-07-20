@@ -62,6 +62,8 @@ global g_AutoSlotReplaceSkip := Map()
 global g_AutoSlotJustRestored := Map()
 global g_AutoSlotLastToastMsg := ""
 global g_AutoSlotLastToastTick := 0
+global g_AutoSlotWasF11 := Map()          ; snap-pair hwnd → true while (or after) F11 fullscreen
+global g_AutoSlotF11RestorePending := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -408,13 +410,23 @@ AutoSlot_RegisterSnapPair(a, b) {
 }
 
 AutoSlot_UnregisterSnapPair(hwnd) {
-    global g_AutoSlotSnapPairs
+    global g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (!hwnd || !g_AutoSlotSnapPairs.Has(hwnd))
         return
     partner := g_AutoSlotSnapPairs[hwnd]
     g_AutoSlotSnapPairs.Delete(hwnd)
     if (partner && g_AutoSlotSnapPairs.Has(partner) && g_AutoSlotSnapPairs[partner] = hwnd)
         g_AutoSlotSnapPairs.Delete(partner)
+    if (g_AutoSlotWasF11.Has(hwnd))
+        g_AutoSlotWasF11.Delete(hwnd)
+    if (g_AutoSlotF11RestorePending.Has(hwnd))
+        g_AutoSlotF11RestorePending.Delete(hwnd)
+    if (partner) {
+        if (g_AutoSlotWasF11.Has(partner))
+            g_AutoSlotWasF11.Delete(partner)
+        if (g_AutoSlotF11RestorePending.Has(partner))
+            g_AutoSlotF11RestorePending.Delete(partner)
+    }
 }
 
 AutoSlot_PairSuppressActive(hwnd) {
@@ -439,11 +451,29 @@ AutoSlot_OnLocationChange(hWinEventHook, event, hwnd, idObject, idChild, idEvent
     if (!AutoSlot_IsEnabled())
         return
     hwnd := Integer(hwnd)
-    global g_AutoSlotSnapPairs, g_AutoSlotPairMaxPending
+    global g_AutoSlotSnapPairs, g_AutoSlotPairMaxPending, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (!g_AutoSlotSnapPairs.Has(hwnd))
         return
     if (AutoSlot_PairSuppressActive(hwnd))
         return
+
+    ; Track F11 on snap-pair members: enter → remember; exit → restore 50/50 (not 2-slot + bg companion).
+    isF11 := false
+    try isF11 := !!WM_WindowIsF11Fullscreen(hwnd)
+    catch
+        isF11 := false
+    if (isF11) {
+        g_AutoSlotWasF11[hwnd] := true
+        return
+    }
+    if (g_AutoSlotWasF11.Has(hwnd)) {
+        if (g_AutoSlotF11RestorePending.Has(hwnd))
+            return
+        g_AutoSlotF11RestorePending[hwnd] := true
+        SetTimer(() => AutoSlot_ProcessF11ExitRestore(hwnd), -AutoSlot_PAIR_MAX_DEBOUNCE_MS)
+        return
+    }
+
     try {
         if (WinGetMinMax("ahk_id " hwnd) != 1)
             return
@@ -454,6 +484,61 @@ AutoSlot_OnLocationChange(hWinEventHook, event, hwnd, idObject, idChild, idEvent
         return
     g_AutoSlotPairMaxPending[hwnd] := true
     SetTimer(() => AutoSlot_ProcessPairedMaximizePending(hwnd), -AutoSlot_PAIR_MAX_DEBOUNCE_MS)
+}
+
+AutoSlot_ProcessF11ExitRestore(hwnd) {
+    global g_AutoSlotF11RestorePending, g_AutoSlotWasF11
+    if (g_AutoSlotF11RestorePending.Has(hwnd))
+        g_AutoSlotF11RestorePending.Delete(hwnd)
+    if (g_AutoSlotWasF11.Has(hwnd))
+        g_AutoSlotWasF11.Delete(hwnd)
+    if (AutoSlot_SwapQuietActive())
+        return
+    AutoSlot_RestoreSnapPairAfterF11(hwnd)
+}
+
+; After F11 on one half of a 50/50 pair: snap both back instead of leaving one maximized
+; (2 slots) with the companion stuck in the background.
+AutoSlot_RestoreSnapPairAfterF11(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!AutoSlot_IsEnabled() || !hwnd)
+        return false
+    if (!g_AutoSlotSnapPairs.Has(hwnd))
+        return false
+    partner := g_AutoSlotSnapPairs[hwnd]
+    if (!partner || !DllCall("IsWindow", "ptr", partner)) {
+        AutoSlot_UnregisterSnapPair(hwnd)
+        return false
+    }
+    ; Still F11 (transient event) — keep the mark and wait.
+    try {
+        if (WM_WindowIsF11Fullscreen(hwnd)) {
+            global g_AutoSlotWasF11
+            g_AutoSlotWasF11[hwnd] := true
+            return false
+        }
+    } catch {
+    }
+    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx < 1)
+        monIdx := AutoSlot_GetHwndMonitorIndex(partner)
+    if (monIdx < 1)
+        return false
+
+    AutoSlot_PairSuppressMark(hwnd, AutoSlot_RECENT_MS)
+    AutoSlot_PairSuppressMark(partner, AutoSlot_RECENT_MS)
+    AutoSlot_ClearPairMaxPending(hwnd)
+    AutoSlot_ClearPairMaxPending(partner)
+    pane := AutoSlot_SnapPair(hwnd, partner, monIdx, true)
+    if (pane = "")
+        return false
+    AutoSlot_RememberHwndMon(hwnd)
+    AutoSlot_RememberHwndMon(partner)
+    AutoSlot_ClaimMonitor(monIdx)
+    order := AutoSlot_OrderForMonitorIndex(monIdx)
+    label := order > 0 ? order : monIdx
+    AutoSlot_Toast("ℹ️ Restored 50/50 → M" label)
+    return true
 }
 
 AutoSlot_ProcessPairedMaximizePending(hwnd) {
@@ -467,13 +552,23 @@ AutoSlot_ProcessPairedMaximizePending(hwnd) {
 
 ; When hwnd is (or became) maximized, maximize its registered 50/50 companion.
 AutoSlot_OnPairedMaximize(hwnd) {
-    global g_AutoSlotSnapPairs
+    global g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (!AutoSlot_IsEnabled() || !hwnd)
         return false
     if (AutoSlot_SwapQuietActive())
         return false
     if (AutoSlot_PairSuppressActive(hwnd))
         return false
+    ; F11 enter/exit owns this hwnd — do not maximize the companion on top of fullscreen.
+    if (g_AutoSlotWasF11.Has(hwnd) || g_AutoSlotF11RestorePending.Has(hwnd))
+        return false
+    try {
+        if (WM_WindowIsF11Fullscreen(hwnd)) {
+            g_AutoSlotWasF11[hwnd] := true
+            return false
+        }
+    } catch {
+    }
     if (!g_AutoSlotSnapPairs.Has(hwnd))
         return false
     partner := g_AutoSlotSnapPairs[hwnd]
@@ -657,7 +752,7 @@ AutoSlot_RunTileBackground() {
 }
 
 AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
-    global g_AutoSlotHwndMon
+    global g_AutoSlotHwndMon, g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
@@ -673,6 +768,24 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
     ; monitor look empty and SnapPair/Maximize imported backgrounds on top of it.
     if (AutoSlot_IsClipAngelHwnd(hwnd))
         return
+
+    ; Backup F11-exit detection when LOCATIONCHANGE did not schedule restore.
+    if (g_AutoSlotSnapPairs.Has(hwnd)) {
+        isF11 := false
+        try isF11 := !!WM_WindowIsF11Fullscreen(hwnd)
+        catch
+            isF11 := false
+        if (isF11) {
+            g_AutoSlotWasF11[hwnd] := true
+            return
+        }
+        if (g_AutoSlotWasF11.Has(hwnd) && !g_AutoSlotF11RestorePending.Has(hwnd)) {
+            g_AutoSlotF11RestorePending[hwnd] := true
+            SetTimer(() => AutoSlot_ProcessF11ExitRestore(hwnd), -AutoSlot_PAIR_MAX_DEBOUNCE_MS)
+            return
+        }
+    }
+
     if (!AutoSlot_IsOccupancyCandidate(hwnd))
         return
     oldMon := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
