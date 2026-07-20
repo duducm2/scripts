@@ -177,8 +177,8 @@ AutoSlot_Init() {
         "UInt", 0,
         "Ptr")
 
-    ; Minimize start/end → clear snap pair, heal leftover companion, rearrange/fill.
-    g_AutoSlotMinHookCb := CallbackCreate(AutoSlot_OnMinimizeEnd, "F", 7)
+    ; Minimize start → clear snap pair, heal leftover companion, rearrange/fill.
+    g_AutoSlotMinHookCb := CallbackCreate(AutoSlot_OnMinimize, "F", 7)
     g_AutoSlotMinHook := DllCall("user32\SetWinEventHook",
         "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZESTART,
         "UInt", AutoSlot_EVENT_SYSTEM_MINIMIZEEND,
@@ -651,12 +651,15 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
         AutoSlot_ScheduleRearrange(hwnd)
 }
 
-; After minimize: clear pair registry, heal leftover companion, then rearrange/fill.
-AutoSlot_OnMinimizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+; On minimize start: clear pair registry, heal leftover companion, then rearrange/fill.
+AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_AutoSlotHwndMon, g_AutoSlotSnapPairs
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
+        return
+    ; MINIMIZEEND fires on restore — not a minimize; skip to avoid false heal/rearrange.
+    if (event = AutoSlot_EVENT_SYSTEM_MINIMIZEEND)
         return
     hwnd := Integer(hwnd)
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
@@ -837,10 +840,13 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
 }
 
 AutoSlot_Schedule(hwnd) {
-    global g_AutoSlotPending, g_AutoSlotRecent
+    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || MonitorGetCount() <= 1)
+        return
+    ; Already tracked — ignore SHOW spam from activation, not a new window.
+    if (g_AutoSlotHwndMon.Has(hwnd))
         return
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
         return
