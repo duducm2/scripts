@@ -192,9 +192,34 @@ StandardLoadingBar_TrackActiveMonitorTick() {
 StandardLoadingBar_Show(state := "Working...", barColor := BANNER_ACCENT_INTERMEDIATE, options := "") {
     global g_StandardLoadingBarGui, g_StandardLoadingBarValue, g_StandardLoadingBarIsKeysOverlay,
         g_StandardLoadingBarBorderGui
+    ; Capture prior HWNDs so a failed Hide cannot leave an AlwaysOnTop orphan under a new banner.
+    oldGuiHwnd := 0
+    oldBorderHwnd := 0
+    try {
+        if IsObject(g_StandardLoadingBarGui)
+            oldGuiHwnd := Integer(g_StandardLoadingBarGui.Hwnd)
+    } catch {
+    }
+    try {
+        if IsObject(g_StandardLoadingBarBorderGui)
+            oldBorderHwnd := Integer(g_StandardLoadingBarBorderGui.Hwnd)
+    } catch {
+    }
     try StandardLoadingBar_CloseKeysOverlay()
     ; Hide(0) also cancels replaceable hide / force-hide watchdogs from a prior banner.
     try StandardLoadingBar_Hide(0)
+    for hwndKill in [oldGuiHwnd, oldBorderHwnd] {
+        if (hwndKill && WinExist("ahk_id " hwndKill)) {
+            try WinHide("ahk_id " hwndKill)
+            catch {
+            }
+            try DllCall("user32\DestroyWindow", "ptr", hwndKill)
+            catch {
+            }
+        }
+    }
+    g_StandardLoadingBarGui := 0
+    g_StandardLoadingBarBorderGui := 0
     passive := options && options.HasProp("passive") && options.passive
     centerOnHwnd := options && options.HasProp("centerOnHwnd") ? options.centerOnHwnd : 0
     textWidth := options && options.HasProp("textWidth") ? options.textWidth : 0

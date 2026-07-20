@@ -60,6 +60,8 @@ global g_AutoSlotSwapDisplaced := []
 global g_AutoSlotSwapMoverHwnd := 0
 global g_AutoSlotReplaceSkip := Map()
 global g_AutoSlotJustRestored := Map()
+global g_AutoSlotLastToastMsg := ""
+global g_AutoSlotLastToastTick := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -81,6 +83,7 @@ AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
 AutoSlot_REPLACE_SKIP_TTL_MS := 600000
 AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered auto-place for this long
+AutoSlot_TOAST_DEBOUNCE_MS := 4000  ; identical toast text — avoid hide-timer reset spam
 AutoSlot_MAX_ORDINAL := 4
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
@@ -371,6 +374,9 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     }
     if (healed) {
         AutoSlot_RememberHwndMon(companion)
+        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-toast in a loop.
+        AutoSlot_PairSuppressMark(companion, AutoSlot_RECENT_MS)
+        AutoSlot_ClaimMonitor(monIdx)
         order := AutoSlot_OrderForMonitorIndex(monIdx)
         label := order > 0 ? order : monIdx
         AutoSlot_Toast("ℹ️ Companion maximized → M" label)
@@ -864,17 +870,29 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
             return false
         l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
         r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
-        ; Geometry is authoritative: OS-max flag alone can stick on a half-sized window
-        ; after a failed demax (Explorer mm=1 at half height was counted as filled:2).
         workW := wr - wl
         workH := wb - wt
         if (workW < 1 || workH < 1)
             return false
         w := r - l
         h := b - t
+        ; OS-maximized: trust flag unless the window is clearly a half-pane (stale max bit).
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = 1) {
+                if (w >= Round(workW * 0.60) && h >= Round(workH * 0.60))
+                    return true
+            }
+        } catch {
+        }
+        ; Exact work-area match (±8).
         if (Abs(l - wl) <= 8 && Abs(t - wt) <= 8 && Abs(r - wr) <= 8 && Abs(b - wb) <= 8)
             return true
-        ; Near-full work area (≥90% both axes) counts as 2-slot presentation.
+        ; Overlap with work area ≥90% both axes (handles chrome/shadow outside work rect).
+        ovW := Min(r, wr) - Max(l, wl)
+        ovH := Min(b, wb) - Max(t, wt)
+        if (ovW >= Round(workW * 0.90) && ovH >= Round(workH * 0.90))
+            return true
+        ; Near-full outer size aligned near top-left.
         return (w >= Round(workW * 0.90) && h >= Round(workH * 0.90)
         && Abs(l - wl) <= 24 && Abs(t - wt) <= 24)
     } catch {
@@ -2044,8 +2062,14 @@ AutoSlot_EnsureRestoredForSnap(hwnd, monIdx := 0) {
 ; --- Toast / undo modal ------------------------------------------------------
 
 AutoSlot_Toast(msg) {
+    global g_AutoSlotLastToastMsg, g_AutoSlotLastToastTick
     if (msg = "")
         return
+    ; Re-showing the same toast resets hide timers and looks "stuck" for minutes.
+    if (msg = g_AutoSlotLastToastMsg && A_TickCount - g_AutoSlotLastToastTick < AutoSlot_TOAST_DEBOUNCE_MS)
+        return
+    g_AutoSlotLastToastMsg := msg
+    g_AutoSlotLastToastTick := A_TickCount
     try ShowCenteredOverlay_Utils(msg, 1800, BANNER_ACCENT_INFO)
     catch {
     }
@@ -2341,6 +2365,9 @@ AutoSlot_HealLoneCompanion(monIdx) {
         }
     }
     if (healed) {
+        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-toast in a loop.
+        AutoSlot_PairSuppressMark(companion, AutoSlot_RECENT_MS)
+        AutoSlot_ClaimMonitor(monIdx)
         order := AutoSlot_OrderForMonitorIndex(monIdx)
         label := order > 0 ? order : monIdx
         AutoSlot_Toast("ℹ️ Companion maximized → M" label)
