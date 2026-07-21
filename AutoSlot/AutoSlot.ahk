@@ -2520,6 +2520,11 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
                 if (pane != "") {
                     AutoSlot_RememberHwndMon(residual)
                     AutoSlot_RememberHwndMon(filledHwnd)
+                    ; Suppress the snap's own move/location events + claim cooldown so this
+                    ; fill does not immediately re-trigger itself (stuck "Slot filled" loop).
+                    AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
+                    AutoSlot_PairSuppressMark(filledHwnd, AutoSlot_RECENT_MS)
+                    AutoSlot_ClaimMonitor(monIdx)
                     AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
                     return "ok"
                 }
@@ -2543,6 +2548,11 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
             return "noop"
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_RememberHwndMon(residual)
+        ; Suppress the snap's own move/location events + claim cooldown so this fill
+        ; does not immediately re-trigger itself (stuck "Slot filled" loop).
+        AutoSlot_PairSuppressMark(cand, AutoSlot_RECENT_MS)
+        AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
+        AutoSlot_ClaimMonitor(monIdx)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
         return "ok"
     }
@@ -2566,6 +2576,11 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
             return "noop"
         AutoSlot_RememberHwndMon(cand)
         AutoSlot_RememberHwndMon(residual)
+        ; Suppress the snap's own move/location events + claim cooldown so this fill
+        ; does not immediately re-trigger itself (stuck "Slot filled" loop).
+        AutoSlot_PairSuppressMark(cand, AutoSlot_RECENT_MS)
+        AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
+        AutoSlot_ClaimMonitor(monIdx)
         AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
         return "ok"
     }
@@ -2591,6 +2606,9 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         if (pane != "") {
             AutoSlot_RememberHwndMon(cand1)
             AutoSlot_RememberHwndMon(cand2)
+            AutoSlot_PairSuppressMark(cand1, AutoSlot_RECENT_MS)
+            AutoSlot_PairSuppressMark(cand2, AutoSlot_RECENT_MS)
+            AutoSlot_ClaimMonitor(monIdx)
             AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
             return "ok"
         }
@@ -2612,10 +2630,15 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         g_AutoSlotUndo := 0
         if (pane != "") {
             AutoSlot_RememberHwndMon(cand2)
+            AutoSlot_PairSuppressMark(cand1, AutoSlot_RECENT_MS)
+            AutoSlot_PairSuppressMark(cand2, AutoSlot_RECENT_MS)
+            AutoSlot_ClaimMonitor(monIdx)
             AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
             return "ok"
         }
     }
+    AutoSlot_PairSuppressMark(cand1, AutoSlot_RECENT_MS)
+    AutoSlot_ClaimMonitor(monIdx)
     AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
     return "ok"
 }
