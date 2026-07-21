@@ -1174,8 +1174,10 @@ AutoSlot_IsFileDialogHwnd(hwnd) {
     return false
 }
 
-; Teams share UI: classic sharing bar, share-content picker, short floating toolbar,
-; and new presenter toolbar (teams-share.md: AutomationId presenter-toolbar-container).
+; Teams overlay UI that must not be auto-slotted / resized: classic sharing bar,
+; share-content picker, short floating toolbar, presenter toolbar
+; (teams-share.md: presenter-toolbar-container), and meeting compact view
+; (teams-compact-window.md: "Meeting compact view | …").
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (!hwnd)
         return false
@@ -1196,6 +1198,12 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     ; Classic floating sharing control bar.
     if (InStr(t, "sharing control bar |")
     || InStr(t, "barra de controle de compartilhamento"))
+        return true
+
+    ; Meeting compact view (floating mini meeting window).
+    if (InStr(t, "meeting compact view")
+    || InStr(t, "modo de exibição compacto da reunião")
+    || InStr(t, "modo de exibicao compacto da reuniao"))
         return true
 
     ; Share-content / share-screen picker (before sharing starts).
