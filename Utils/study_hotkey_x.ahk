@@ -30,7 +30,6 @@
                 try Send("^End")
             }
         }
-        StudyTopic_StartBlackoutCountdown(hwnd)
         return
     }
     ShowStudyTopicSelector()

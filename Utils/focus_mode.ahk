@@ -261,7 +261,7 @@ ToggleFocusMode() {
     global g_FocusModeOn, g_FocusModeOverlays
 
     ; Treat non-empty overlay array as active even if WinExist fails on some setups (Dpi/multi-monitor),
-    ; so #!+Y always tears down auto-blackout state instead of calling EnableFocusMode() by mistake.
+    ; so #!+Y always tears down focus-mode state instead of calling EnableFocusMode() by mistake.
     hasOverlayRefs := IsObject(g_FocusModeOverlays) && g_FocusModeOverlays.Length > 0
     actualState := g_FocusModeOn || hasOverlayRefs
 

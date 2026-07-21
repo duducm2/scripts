@@ -38,13 +38,12 @@ global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
 global g_StudyTopicEscPollPrev := false   ; edge-detect Esc for StudyTopicSelector_EscapePoll (parity with ShowAiModelSelector)
-global STUDY_TOPIC_BLACKOUT_DELAY_MS := 3000
 ; Study Topic QuickLook: strict bounded waits + shared layout (false = legacy 2s WinWait + inline scroll).
 global STUDY_TOPIC_QL_STRICT_LAYOUT := true
 global g_QuickLookDeferredLayoutScroll := true
 global g_QuickLookDeferredLayoutPath := ""
 
-; PDF focus monitoring for automatic blackout cancellation (Win+Alt+Shift+X)
+; PDF focus monitoring for focus-mode relocate/disable (#!+Y)
 global g_PdfFocusMonitorTimer := false
 global g_PdfFocusTrackedHwnd := 0
 global g_PdfFocusLossMode := "Immediate"      ; "Immediate" or "Debounced"
@@ -139,63 +138,7 @@ StopPdfFocusMonitor() {
     g_PdfFocusTrackedHwnd := 0
 }
 
-StudyTopic_GetBlackoutKeepMonitorIndex() {
-    try return MonitorGetPrimary()
-    catch
-        return 1
-}
-
-; Shared countdown flag for FocusBlackoutWatcher (Study Topic path clears without setting).
-BlackoutCountdown_Begin() {
-    global g_FocusBlackoutWatcherCountdownActive
-    g_FocusBlackoutWatcherCountdownActive := true
-}
-
-BlackoutCountdown_End() {
-    global g_FocusBlackoutWatcherCountdownActive
-    g_FocusBlackoutWatcherCountdownActive := false
-}
-
-StudyTopic_CancelBlackoutCountdown(targetHwnd := 0, *) {
-    global g_FocusBlackoutWatcherDeniedHwnd
-    BlackoutCountdown_End()
-    if (targetHwnd && WinExist("ahk_id " . targetHwnd))
-        g_FocusBlackoutWatcherDeniedHwnd := targetHwnd
-    else {
-        fg := WinExist("A")
-        if (fg)
-            g_FocusBlackoutWatcherDeniedHwnd := fg
-    }
-    StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_Hide(0)
-}
-
-; Apply blackout using foreground at timeout (user may juggle monitors during the 3s banner).
-StudyTopic_ApplyBlackoutCountdownTimeout(targetHwnd := 0, pdfFocusLossMode := "Debounced") {
-    global g_BlackoutSuppressedUntil, g_FocusModeOn
-
-    BlackoutCountdown_End()
-
-    fg := WinExist("A")
-    if (!fg && targetHwnd && WinExist("ahk_id " . targetHwnd))
-        fg := targetHwnd
-    if (!fg)
-        return
-
-    if (Blackout_IsSuppressed())
-        return
-
-    keepIdx := GetActiveMonitorIndex()
-    if (!keepIdx)
-        keepIdx := StudyTopic_GetBlackoutKeepMonitorIndex()
-    if (g_FocusModeOn)
-        FocusMode_SetKeepMonitor(keepIdx)
-    else
-        EnableFocusMode(keepIdx)
-    StartPdfFocusMonitor(fg, pdfFocusLossMode)
-}
-
-; --- Blackout suppression logic ---
+; --- Blackout suppression logic (Outlook reminder banners, etc.) ---
 global g_BlackoutSuppressedUntil := 0
 global BLACKOUT_SUPPRESS_MS := 7 * 60 * 1000
 
@@ -206,202 +149,12 @@ Blackout_IsSuppressed() {
     return (g_BlackoutSuppressedUntil - A_TickCount) > 0
 }
 
-; D key handler: suppress all blackout banners for BLACKOUT_SUPPRESS_MS; reset dwell for post-suppress window.
+; D key handler: suppress blackout-related banners for BLACKOUT_SUPPRESS_MS.
 Blackout_Disable7Min(*) {
-    global g_BlackoutSuppressedUntil, g_FocusBlackoutWatcherDwellStartTick
+    global g_BlackoutSuppressedUntil
     g_BlackoutSuppressedUntil := A_TickCount + BLACKOUT_SUPPRESS_MS
-    g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-    BlackoutCountdown_End()
-    FocusBlackoutWatcher_DebugLog("Blackout_Disable7Min until=" . g_BlackoutSuppressedUntil . " tick=" . A_TickCount .
-        " remaining=" . (g_BlackoutSuppressedUntil - A_TickCount))
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
-}
-
-StudyTopic_StartBlackoutCountdown(targetHwnd) {
-    if (!targetHwnd || !WinExist("ahk_id " . targetHwnd))
-        return
-    if (Blackout_IsSuppressed()) {
-        BlackoutCountdown_End()
-        return
-    }
-    BlackoutCountdown_Begin()
-    global g_FocusBlackoutWatcherDwellStartTick
-    g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-    StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_Hide(0)
-    Sleep 50
-    cancelCb := StudyTopic_CancelBlackoutCountdown.Bind(targetHwnd)
-    keyCallbacks := Map("N", cancelCb, "*Escape", cancelCb)
-    keyCallbacks["D"] := Blackout_Disable7Min
-    timeoutCb := StudyTopic_ApplyBlackoutCountdownTimeout.Bind(, "Immediate")
-    StandardLoadingBar_ShowWithKeys(
-        "⏳ Blacking out secondary monitors in 3s",
-        keyCallbacks,
-        STUDY_TOPIC_BLACKOUT_DELAY_MS,
-        0,
-        timeoutCb,
-        BANNER_BLACKOUT_BORDER,
-        420,
-        17,
-        BANNER_BLACKOUT_BORDER,
-        false,
-        "[N] Cancel blackout    [D] Disable for 7 min",
-        true,
-        true,
-        true,
-        BANNER_BLACKOUT_PANEL)
-}
-
-; Focus dwell watcher: after continuous foreground on one window, offer same blackout banner as Study Topic (#!+X).
-global g_FocusBlackoutWatcherStarted := false
-global g_FocusBlackoutWatcherLastHwnd := 0
-global g_FocusBlackoutWatcherDwellStartTick := 0
-global g_FocusBlackoutWatcherDeniedHwnd := 0
-global g_FocusBlackoutWatcherCountdownActive := false
-global FOCUS_BLACKOUT_DWELL_MS := 20000
-global FOCUS_BLACKOUT_DEBUG_LOG := false
-
-FocusBlackoutWatcher_DebugLog(message) {
-    global FOCUS_BLACKOUT_DEBUG_LOG
-    if (!FOCUS_BLACKOUT_DEBUG_LOG)
-        return
-    try {
-        FileAppend "[FBW] " . message . "`n", A_ScriptDir "\focus_blackout_debug.log", "UTF-8"
-    } catch {
-    }
-}
-
-FocusBlackoutWatcher_OnCancel(hwnd, *) {
-    StudyTopic_CancelBlackoutCountdown(hwnd)
-}
-
-FocusBlackoutWatcher_OnBlackoutTimeout(hwnd, *) {
-    StudyTopic_ApplyBlackoutCountdownTimeout(, "Immediate")
-}
-
-FocusBlackoutWatcher_StartCountdown(hwnd) {
-    global g_FocusBlackoutWatcherDwellStartTick
-    if (!hwnd || !WinExist("ahk_id " . hwnd))
-        return
-    if (Blackout_IsSuppressed()) {
-        BlackoutCountdown_End()
-        FocusBlackoutWatcher_DebugLog("StartCountdown skipped (suppressed)")
-        return
-    }
-    BlackoutCountdown_Begin()
-    g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-    FocusBlackoutWatcher_DebugLog("StartCountdown for hwnd " . hwnd)
-    StandardLoadingBar_CloseKeysOverlay()
-    StandardLoadingBar_Hide(0)
-    Sleep 50
-    cancelCb := FocusBlackoutWatcher_OnCancel.Bind(hwnd)
-    keyCallbacks := Map("N", cancelCb, "*Escape", cancelCb)
-    keyCallbacks["D"] := Blackout_Disable7Min
-    timeoutCb := FocusBlackoutWatcher_OnBlackoutTimeout.Bind(hwnd)  ; hwnd unused at apply; foreground at timeout wins
-    StandardLoadingBar_ShowWithKeys(
-        "⏳ Blacking out secondary monitors in 3s",
-        keyCallbacks,
-        STUDY_TOPIC_BLACKOUT_DELAY_MS,
-        0,
-        timeoutCb,
-        BANNER_BLACKOUT_BORDER,
-        420,
-        17,
-        BANNER_BLACKOUT_BORDER,
-        false,
-        "[N] Cancel blackout    [D] Disable for 7 min",
-        true,
-        true,
-        true,
-        BANNER_BLACKOUT_PANEL)
-}
-
-FocusBlackoutWatcher_Tick() {
-    global g_FocusBlackoutWatcherLastHwnd, g_FocusBlackoutWatcherDwellStartTick
-    global g_FocusBlackoutWatcherDeniedHwnd, g_FocusBlackoutWatcherCountdownActive, FOCUS_BLACKOUT_DWELL_MS
-    global g_FocusModeOn, g_FocusModeActiveMonitor, g_FocusModeTrackedWindow
-
-    try {
-        if (MonitorGetCount() <= 1)
-            return
-    } catch {
-        return
-    }
-
-    try {
-        hwnd := WinExist("A")
-        if (!hwnd) {
-            g_FocusBlackoutWatcherLastHwnd := 0
-            FocusBlackoutWatcher_DebugLog("No active window")
-            return
-        }
-
-        if (g_FocusBlackoutWatcherDeniedHwnd && hwnd != g_FocusBlackoutWatcherDeniedHwnd) {
-            FocusBlackoutWatcher_DebugLog("Reset denied hwnd (user switched window)")
-            g_FocusBlackoutWatcherDeniedHwnd := 0
-        }
-
-        if (hwnd != g_FocusBlackoutWatcherLastHwnd) {
-            FocusBlackoutWatcher_DebugLog("Window changed. Reset dwell timer.")
-            g_FocusBlackoutWatcherLastHwnd := hwnd
-            g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-            return
-        }
-
-        ; Suppression before countdown-active so dwell resets even if the flag was left set (e.g. Esc).
-        if (Blackout_IsSuppressed()) {
-            BlackoutCountdown_End()
-            FocusBlackoutWatcher_DebugLog("Blackout suppressed. Reset dwell timer.")
-            g_FocusBlackoutWatcherDwellStartTick := A_TickCount
-            return
-        }
-
-        if (g_FocusBlackoutWatcherCountdownActive) {
-            FocusBlackoutWatcher_DebugLog("Countdown already active")
-            return
-        }
-
-        if (g_FocusBlackoutWatcherDeniedHwnd && hwnd = g_FocusBlackoutWatcherDeniedHwnd) {
-            FocusBlackoutWatcher_DebugLog("Blackout denied for this hwnd")
-            return
-        }
-
-        if (g_FocusModeOn && g_FocusModeActiveMonitor) {
-            curMon := GetActiveMonitorIndex()
-            if (curMon && curMon = g_FocusModeActiveMonitor) {
-                FocusBlackoutWatcher_DebugLog("Focus mode already on for this monitor")
-                return
-            }
-        }
-
-        elapsed := (A_TickCount - g_FocusBlackoutWatcherDwellStartTick)
-        if (elapsed >= FOCUS_BLACKOUT_DWELL_MS) {
-            FocusBlackoutWatcher_DebugLog("Dwell met (" . elapsed . " ms). Starting blackout countdown for hwnd " .
-                hwnd)
-            FocusBlackoutWatcher_StartCountdown(hwnd)
-            return
-        }
-        FocusBlackoutWatcher_DebugLog("Dwell not yet met: " . elapsed . " ms")
-    } catch as e {
-        FocusBlackoutWatcher_DebugLog("tick error: " . e.Message)
-    }
-}
-
-FocusBlackoutWatcher_Start() {
-    global g_FocusBlackoutWatcherStarted
-    if (g_FocusBlackoutWatcherStarted)
-        return
-    g_FocusBlackoutWatcherStarted := true
-    SetTimer(FocusBlackoutWatcher_Tick, 200)
-}
-
-FocusBlackoutWatcher_Stop() {
-    global g_FocusBlackoutWatcherStarted
-    if (!g_FocusBlackoutWatcherStarted)
-        return
-    SetTimer(FocusBlackoutWatcher_Tick, 0)
-    g_FocusBlackoutWatcherStarted := false
 }
 
 ; YouTube focus session (Win+Alt+Shift+H): toggle on/off; SMTC for Spotify play/pause (not toggle).

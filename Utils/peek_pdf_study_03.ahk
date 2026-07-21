@@ -200,7 +200,6 @@ QuickLook_DeferredLayoutAfterStart(*) {
         extra := gate["fallback"] ? 2 : 0
     }
     QuickLook_ApplyStudyLayout(hwnd, scrollToEnd, extra)
-    StudyTopic_StartBlackoutCountdown(hwnd)
 }
 
 ; Legacy open path (STUDY_TOPIC_QL_STRICT_LAYOUT := false).
@@ -228,7 +227,6 @@ QuickLook_OpenPath_Legacy(path, scrollToEnd := true) {
             QuickLook_ClickWindowCenter(hwnd)
             if (scrollToEnd)
                 QuickLook_ScrollToEnd(hwnd, gateUsedFallback ? 2 : 0)
-            StudyTopic_StartBlackoutCountdown(hwnd)
         }
     }
 }
@@ -310,7 +308,6 @@ QuickLook_OpenPath(path, scrollToEnd := true) {
     QuickLook_WaitForViewerReady(hwnd, 3000)
     extraScroll := gate["fallback"] ? 2 : 0
     QuickLook_ApplyStudyLayout(hwnd, scrollToEnd, extraScroll)
-    StudyTopic_StartBlackoutCountdown(hwnd)
 }
 
 ; Open a specific PDF in PowerToys Peek and run WaitAndConfigure. Caller must validate pdfPath and exe exist.
@@ -338,7 +335,6 @@ PeekPdf_OpenPath(pdfPath, skipGoToLastPage := false) {
             WinWaitActive("ahk_id " hwnd, , 1)
         } catch {
         }
-        StudyTopic_StartBlackoutCountdown(hwnd)
     }
 }
 
