@@ -90,7 +90,7 @@ cheatSheets["OUTLOOK.EXE"] := "
     
     📅 Meeting request (reading pane or popped-out invitation - same shortcuts)
     ✅ [A][A]ccept meeting invitation
-    ❌ [D][D]ecline meeting (confirmation first)
+    ❌ [D][D]ecline meeting silently (no email; confirmation first)
     📌 [Alt+F] Follow (updates from organizer)
     ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
     
@@ -177,7 +177,7 @@ cheatSheets["OutlookMessage"] := "
     Outlook - Message (Shift)
     📅 Meeting invitation (same shortcuts as main Mail reading pane)
     ✅ [A][A]ccept meeting invitation
-    ❌ [D][D]ecline meeting (confirmation first)
+    ❌ [D][D]ecline meeting silently (no email; confirmation first)
     📌 [Alt+F] Follow (updates from organizer)
     ❓ [T][T]entative (More options …) - when a meeting request is open, runs before [T]o / Required
     📅 Canceled meeting (Remove event)

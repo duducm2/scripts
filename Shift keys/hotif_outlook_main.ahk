@@ -638,8 +638,8 @@ SelectExplorerSidebarFirstPinned() {
 +D:: {
     if !OutlookMeeting_ConfirmDecline()
         return
-    if !OutlookMeeting_ClickDecline()
-        ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
+    if !OutlookMeeting_DeclineSilently()
+        ShowCenteredOverlay_Utils("❌ Outlook: Decline silently not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ; Message inspector-specific hotkeys (Subject/To/Body)
@@ -700,8 +700,8 @@ SelectExplorerSidebarFirstPinned() {
 +D:: {
     if !OutlookMeeting_ConfirmDecline()
         return
-    if !OutlookMeeting_ClickDecline()
-        ShowCenteredOverlay_Utils("❌ Outlook: Decline the meeting not found", 1200, BANNER_ACCENT_ERROR)
+    if !OutlookMeeting_DeclineSilently()
+        ShowCenteredOverlay_Utils("❌ Outlook: Decline silently not found", 1200, BANNER_ACCENT_ERROR)
 }
 
 ; Canceled meeting — Button "Remove event" (Shift+E); no confirmation (see outlook-remove-evet.md).

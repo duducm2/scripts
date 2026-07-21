@@ -475,6 +475,81 @@ OutlookMeeting_ClickMoreOptionsThen(menuItemName) {
     return false
 }
 
+; Opens "More options" (…) → expands a submenu parent → clicks a child MenuItem.
+; Used for silent responses: Respond without email → Decline silently (see outlook.md).
+OutlookMeeting_ClickMoreOptionsSubmenu(parentItemName, childItemName) {
+    try {
+        hwnd := WinExist("A")
+        root := OutlookMail_RootElementForHwnd(hwnd)
+        if !root
+            return false
+        pane := root.FindFirst({ AutomationId: "Skip to message-region" })
+        searchRoot := pane ? pane : root
+        moreBtn := ""
+        try moreBtn := searchRoot.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+        if !moreBtn
+            try moreBtn := root.FindFirst({ Name: "More options", ControlType: "Button", matchmode: "Substring" })
+        if !moreBtn
+            return false
+        try moreBtn.SetFocus()
+        Sleep 50
+        try moreBtn.Click()
+        catch {
+            try moreBtn.Invoke()
+        }
+        Sleep 120
+
+        ; Parent item (e.g. "Respond without email") carries a submenu (chevron).
+        parent := ""
+        try parent := root.FindFirst({ Name: parentItemName, ControlType: "MenuItem" })
+        if !parent
+            try parent := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: parentItemName, ControlType: "MenuItem" })
+        if !parent
+            try parent := root.FindFirst({ Name: parentItemName, matchmode: "Substring", ControlType: "MenuItem" })
+        if !parent
+            return false
+        try parent.SetFocus()
+        Sleep 40
+        expanded := false
+        try {
+            parent.ExpandCollapsePattern.Expand()
+            expanded := true
+        }
+        if !expanded {
+            try parent.Click()
+            catch {
+                try parent.Invoke()
+            }
+        }
+        Sleep 150
+
+        ; Child item (e.g. "Decline silently") in the opened submenu.
+        child := ""
+        try child := UIA.ElementFromHandle(WinExist("A")).FindFirst({ Name: childItemName, ControlType: "MenuItem" })
+        if !child
+            try child := root.FindFirst({ Name: childItemName, ControlType: "MenuItem" })
+        if !child
+            try child := root.FindFirst({ Name: childItemName, matchmode: "Substring", ControlType: "MenuItem" })
+        if !child
+            return false
+        try child.SetFocus()
+        Sleep 40
+        try child.Click()
+        catch {
+            try child.Invoke()
+        }
+        return true
+    } catch {
+    }
+    return false
+}
+
+; Decline a meeting invitation without sending a response:
+; More options → Respond without email → Decline silently.
+OutlookMeeting_DeclineSilently() {
+    return OutlookMeeting_ClickMoreOptionsSubmenu("Respond without email", "Decline silently")
+}
+
 OutlookMail_EnsureNavigationPaneVisible() {
     Outlook_ActivateMainWindow()
     try {
