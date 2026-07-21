@@ -2684,8 +2684,19 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
     return false
 }
 
-; First ordinal monitor with exactly one occupant (excl. hwnd). One maximized
-; window counts as half-full — the other half-slot is still available.
+; Partner to 50/50 a new window with on monIdx, ignoring windows hidden behind a
+; maximized one: one visible maximized/work-area window = a free half; else one lone half.
+; Two filled (2 maximized) or two half-panes = genuinely full → 0.
+AutoSlot_MonitorFreeHalfPartner(monIdx, excludeHwnd := 0) {
+    part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
+    if (part.filled.Length = 1)
+        return part.filled[1].hwnd
+    if (part.filled.Length = 0 && part.nonFilled.Length = 1)
+        return part.nonFilled[1].hwnd
+    return 0
+}
+
+; First ordinal monitor with a free half-slot (lone maximized or single half-pane).
 AutoSlot_FindHalfFullMonitor(excludeHwnd := 0) {
     ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
     loop ordinalCount {
@@ -2693,18 +2704,17 @@ AutoSlot_FindHalfFullMonitor(excludeHwnd := 0) {
         monIdx := AutoSlot_GetMonitorIndexByOrder(order)
         if (!monIdx)
             continue
-        others := AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd)
-        if (others.Length = 1)
-            return { order: order, monIdx: monIdx, partner: others[1].hwnd }
+        partner := AutoSlot_MonitorFreeHalfPartner(monIdx, excludeHwnd)
+        if (partner)
+            return { order: order, monIdx: monIdx, partner: partner }
     }
     return 0
 }
 
-AutoSlot_TrySnapOnMonitor(hwnd, monIdx, orderLabel := 0) {
-    others := AutoSlot_OccupancyOnMonitor(monIdx, hwnd)
-    if (others.Length != 1)
+; Snap a new window with an explicit partner (partner demaximizes to a half via SnapPair).
+AutoSlot_TrySnapNewWithPartner(hwnd, monIdx, partner, orderLabel := 0) {
+    if (!partner || partner = hwnd)
         return false
-    partner := others[1].hwnd
     pane := AutoSlot_SnapPair(hwnd, partner, monIdx)
     if (pane = "")
         return false
@@ -2730,6 +2740,7 @@ AutoSlot_Place(hwnd) {
     AutoSlot_BeginPlaceFreeze()
 
     ; Empty-monitor-first: never 50/50 on an occupied screen when any ordinal is empty.
+    ; Empty = no filled and no half occupant (windows hidden behind a maximized one do not count).
     emptyOrder := 0
     emptyMon := 0
 
@@ -2738,8 +2749,8 @@ AutoSlot_Place(hwnd) {
         monIdx := AutoSlot_GetMonitorIndexByOrder(order)
         if (!monIdx)
             continue
-        others := AutoSlot_OccupancyOnMonitor(monIdx, hwnd)
-        if (others.Length = 0) {
+        part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
+        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
             emptyOrder := order
             emptyMon := monIdx
             break
@@ -2755,14 +2766,17 @@ AutoSlot_Place(hwnd) {
         return
     }
 
-    ; Prefer partitioning the origin slot when it has exactly one resident (incl. maximized).
+    ; Prefer partitioning the origin slot when it has a free half (incl. lone maximized).
     originMon := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (originMon >= 1 && AutoSlot_TrySnapOnMonitor(hwnd, originMon))
-        return
+    if (originMon >= 1) {
+        partner := AutoSlot_MonitorFreeHalfPartner(originMon, hwnd)
+        if (partner && AutoSlot_TrySnapNewWithPartner(hwnd, originMon, partner))
+            return
+    }
 
-    ; Half-slots remain open on any monitor with a single window (maximized = 1 of 2 slots).
+    ; Half-slots remain open on any monitor with a single visible window (maximized = 1 of 2 slots).
     half := AutoSlot_FindHalfFullMonitor(hwnd)
-    if (IsObject(half) && AutoSlot_TrySnapOnMonitor(hwnd, half.monIdx, half.order))
+    if (IsObject(half) && AutoSlot_TrySnapNewWithPartner(hwnd, half.monIdx, half.partner, half.order))
         return
 
     if (AutoSlot_MaximizeInPlace(hwnd))
