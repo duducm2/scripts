@@ -1124,6 +1124,9 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
         return false
     }
     t := StrLower(title)
+    ; Microsoft Teams screen-sharing control bar (floating toolbar) — never auto-slot / resize.
+    if (InStr(t, "sharing control bar |"))
+        return true
     if (InStr(t, "windowmanagement.ahk"))
         return true
     if (InStr(t, "autohotkey") && InStr(class, "ahk"))
