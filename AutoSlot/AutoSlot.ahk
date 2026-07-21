@@ -1092,8 +1092,8 @@ AutoSlot_IsSameScriptPid(hwnd) {
 }
 
 ; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel,
-; file dialogs (Open/Save/Browse), and Win+Shift+S screen clip / Snipping Tool
-; (must not be auto-slotted or resized).
+; file dialogs (Open/Save/Browse), Teams share UI, and Win+Shift+S screen clip /
+; Snipping Tool (must not be auto-slotted or resized).
 ; ClipAngel is fully excluded — never auto-slotted / 50/50'd and never counted as occupancy.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
@@ -1122,15 +1122,15 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     ; Open/Save/Browse file dialogs — never auto-slot / resize / count as occupancy.
     if (AutoSlot_IsFileDialogHwnd(hwnd))
         return true
+    ; Teams share picker / sharing control bar / presenter toolbar — never resize.
+    if (AutoSlot_IsTeamsShareUiHwnd(hwnd))
+        return true
     try {
         title := WinGetTitle(hwnd)
     } catch {
         return false
     }
     t := StrLower(title)
-    ; Microsoft Teams screen-sharing control bar (floating toolbar) — never auto-slot / resize.
-    if (InStr(t, "sharing control bar |"))
-        return true
     if (InStr(t, "windowmanagement.ahk"))
         return true
     if (InStr(t, "autohotkey") && InStr(class, "ahk"))
@@ -1170,6 +1170,62 @@ AutoSlot_IsFileDialogHwnd(hwnd) {
         "Guardar como", "Guardar", "Explorar"] {
         if (InStr(title, needle))
             return true
+    }
+    return false
+}
+
+; Teams share UI: classic sharing bar, share-content picker, short floating toolbar,
+; and new presenter toolbar (teams-share.md: AutomationId presenter-toolbar-container).
+AutoSlot_IsTeamsShareUiHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+    } catch {
+        return false
+    }
+    if (exe != "ms-teams.exe" && exe != "teams.exe" && exe != "msteams.exe")
+        return false
+
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+    }
+    t := StrLower(title)
+
+    ; Classic floating sharing control bar.
+    if (InStr(t, "sharing control bar |")
+    || InStr(t, "barra de controle de compartilhamento"))
+        return true
+
+    ; Share-content / share-screen picker (before sharing starts).
+    for needle in ["share content", "share screen", "share your screen", "present now",
+        "compartilhar conteúdo", "compartilhar conteudo", "compartilhar tela",
+        "iniciar compartilhamento"] {
+        if (InStr(t, needle))
+            return true
+    }
+
+    ; Floating toolbar sized window — new Teams often titles the bar like the meeting
+    ; ("Teams meeting | Microsoft Teams") without the classic "Sharing control bar |" prefix.
+    h := 0
+    try {
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+            h := NumGet(rect, 12, "int") - NumGet(rect, 4, "int")
+    } catch {
+        h := 0
+    }
+    if (h > 0 && h <= 280)
+        return true
+
+    ; Active-share presenter toolbar (teams-share.md: AutomationId presenter-toolbar-container).
+    ; May be a separate HWND or the meeting window while sharing — either must not be resized.
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (root && root.FindFirst({ AutomationId: "presenter-toolbar-container" }))
+            return true
+    } catch {
     }
     return false
 }
