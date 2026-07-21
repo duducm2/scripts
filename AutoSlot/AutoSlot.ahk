@@ -2330,6 +2330,20 @@ AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd) {
         }
     } catch {
     }
+    ; Partner maximized / work-area filled (e.g. after F11 exit) is no longer a live
+    ; 50/50 member — break the stale pair so this companion can fill the free half-slot.
+    try {
+        if (WinGetMinMax("ahk_id " partner) = 1) {
+            AutoSlot_UnregisterSnapPair(hwnd)
+            return false
+        }
+    } catch {
+    }
+    partnerMon := AutoSlot_GetHwndMonitorIndex(partner)
+    if (partnerMon >= 1 && AutoSlot_CompanionAlreadyFilled(partner, partnerMon)) {
+        AutoSlot_UnregisterSnapPair(hwnd)
+        return false
+    }
     return true
 }
 
@@ -2379,7 +2393,8 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 }
 
 ; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
-AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0) {
+; forceImport: explicit user fill (Y) — bypass the [F] replace-skip like the Ctrl+Alt+Win+6 path.
+AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
     occupied := Map()
     for row in occupancyRows {
         if (row.hwnd)
@@ -2414,7 +2429,8 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0) {
         if (AutoSlot_IsExcludedExeOrTitle(hwnd))
             continue
         ; [F] replace: do not re-promote minimized displaced windows into freed slots.
-        if (AutoSlot_ReplaceSkipActive(hwnd))
+        ; Explicit user fill (Y) overrides this, matching the Ctrl+Alt+Win+6 place path.
+        if (!forceImport && AutoSlot_ReplaceSkipActive(hwnd))
             continue
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
         if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))
@@ -2551,7 +2567,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         if (blockImport)
             return "noop"
         residualRows := [{ hwnd: residual }]
-        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows)
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows, 0, forceImport)
         if (!cand)
             return "noop"
         g_AutoSlotRecent[cand] := A_TickCount
@@ -2574,7 +2590,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         if (blockImport)
             return "noop"
         residualRows := [{ hwnd: residual }]
-        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows)
+        cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows, 0, forceImport)
         if (!cand)
             return "noop"
         g_AutoSlotRecent[cand] := A_TickCount
@@ -2597,10 +2613,10 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     if (blockImport)
         return "noop"
     others := []
-    cand1 := AutoSlot_PickBackgroundCandidate(monIdx, others)
+    cand1 := AutoSlot_PickBackgroundCandidate(monIdx, others, 0, forceImport)
     if (!cand1)
         return "noop"
-    cand2 := AutoSlot_PickBackgroundCandidate(monIdx, others, cand1)
+    cand2 := AutoSlot_PickBackgroundCandidate(monIdx, others, cand1, forceImport)
     if (cand2) {
         g_AutoSlotRecent[cand1] := A_TickCount
         g_AutoSlotRecent[cand2] := A_TickCount
@@ -2623,7 +2639,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     ; Still one free half-slot after maximize — fill it now (same pass; claim cooldown
     ; would otherwise block rearrange from importing the second background).
     if (!cand2)
-        cand2 := AutoSlot_PickBackgroundCandidate(monIdx, [{ hwnd: cand1 }], cand1)
+        cand2 := AutoSlot_PickBackgroundCandidate(monIdx, [{ hwnd: cand1 }], cand1, forceImport)
     if (cand2) {
         g_AutoSlotRecent[cand2] := A_TickCount
         AutoSlot_PruneRecent()
