@@ -1091,9 +1091,9 @@ AutoSlot_IsSameScriptPid(hwnd) {
     return Integer(pid) = Integer(DllCall("GetCurrentProcessId", "uint"))
 }
 
-; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel (place-only),
+; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel,
 ; and Win+Shift+S screen clip / Snipping Tool (must not be auto-slotted or resized).
-; ClipAngel stays place-excluded so it is never auto-slotted / 50/50'd; occupancy uses a narrower skip.
+; ClipAngel is fully excluded — never auto-slotted / 50/50'd and never counted as occupancy.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
@@ -1131,16 +1131,9 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     return false
 }
 
-; Occupancy skip: same as place-exclude, except shown ClipAngel counts as filling the monitor
-; (otherwise rearrange/fill treats the monitor as empty and snaps backgrounds over it).
+; Occupancy skip: Clip Angel is fully ignored — never counts as a slot occupant, so
+; rearrange/fill arranges real windows as if it is not there.
 AutoSlot_IsOccupancySkipExeOrTitle(hwnd) {
-    if (!hwnd)
-        return false
-    try {
-        if (StrLower(WinGetProcessName("ahk_id " hwnd)) = "clipangel.exe")
-            return false
-    } catch {
-    }
     return AutoSlot_IsExcludedExeOrTitle(hwnd)
 }
 
@@ -1150,30 +1143,6 @@ AutoSlot_IsClipAngelHwnd(hwnd) {
     try return StrLower(WinGetProcessName("ahk_id " hwnd)) = "clipangel.exe"
     catch
         return false
-}
-
-; True when a shown (non-minimized) Clip Angel window sits on monIdx.
-AutoSlot_MonitorHasShownClipAngel(monIdx) {
-    if (monIdx < 1)
-        return false
-    try {
-        for hwnd in WinGetList("ahk_exe ClipAngel.exe") {
-            if (!hwnd || !AutoSlot_IsClipAngelHwnd(hwnd))
-                continue
-            try {
-                if (WinGetMinMax("ahk_id " hwnd) = -1)
-                    continue
-                if (!DllCall("IsWindowVisible", "ptr", hwnd))
-                    continue
-            } catch {
-                continue
-            }
-            if (AutoSlot_GetHwndMonitorIndex(hwnd) = monIdx)
-                return true
-        }
-    } catch {
-    }
-    return false
 }
 
 AutoSlot_IsDesktopOrTaskbarClass(cls) {
@@ -1210,9 +1179,7 @@ AutoSlot_IsEligibleNewWindow(hwnd) {
 AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd := 0) {
     if (!hwnd)
         return false
-    ; Never drop Clip Angel from occupancy via excludeHwnd — rearrange after its own
-    ; maximize used to treat the monitor as empty and fill backgrounds over it.
-    if (excludeHwnd && hwnd = excludeHwnd && !AutoSlot_IsClipAngelHwnd(hwnd))
+    if (excludeHwnd && hwnd = excludeHwnd)
         return false
     try {
         if (WinGetMinMax("ahk_id " hwnd) = -1)
@@ -2472,8 +2439,6 @@ AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
 AutoSlot_HealLoneCompanion(monIdx) {
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
-    if (AutoSlot_MonitorHasShownClipAngel(monIdx))
-        return false
     part := AutoSlot_PartitionOccupancy(monIdx)
     if (part.nonFilled.Length != 1)
         return false
@@ -2522,9 +2487,6 @@ AutoSlot_BeginPlaceFreeze() {
 AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
-        return "noop"
-    ; Clip Angel owns the monitor for quick use — do not import/snap backgrounds over it.
-    if (AutoSlot_MonitorHasShownClipAngel(monIdx))
         return "noop"
     part := AutoSlot_PartitionOccupancy(monIdx)
     if (part.nonFilled.Length >= 2)
@@ -2683,7 +2645,7 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
     loop ordinalCount {
         order := A_Index
         monIdx := AutoSlot_GetMonitorIndexByOrder(order)
-        if (!monIdx || AutoSlot_MonitorHasShownClipAngel(monIdx))
+        if (!monIdx)
             continue
         part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
         used := part.filled.Length + part.nonFilled.Length
