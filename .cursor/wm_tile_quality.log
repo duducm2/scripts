@@ -175,3 +175,23 @@ eligible=5 hidden=0 visible=4 openOnMon=1 skipReject=349 skipNoMon=0
 selected=5 planned=5 tiled=4 unassigned=0 failed=1
 issues: tile_short:1
   FAIL hwnd=262996 mon=1 title=YouTube - ASMR Opening Subscriber Gifts! (Soft Spoken only)…
+=== WM tile quality 20260721105838 final ===
+eligible=2 hidden=0 visible=0 openOnMon=2 skipReject=438 skipNoMon=0
+selected=2 planned=2 tiled=1 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=197320 mon=2 title=Windows Shell Experience Host
+=== WM tile quality 20260721161811 final ===
+eligible=3 hidden=2 visible=0 openOnMon=1 skipReject=434 skipNoMon=0
+selected=3 planned=3 tiled=2 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=197320 mon=3 title=Windows Shell Experience Host
+=== WM tile quality 20260721161828 final ===
+eligible=1 hidden=0 visible=1 openOnMon=0 skipReject=434 skipNoMon=0
+selected=1 planned=1 tiled=0 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=197320 mon=1 title=Windows Shell Experience Host
+=== WM tile quality 20260721161841 final ===
+eligible=1 hidden=0 visible=1 openOnMon=0 skipReject=434 skipNoMon=0
+selected=1 planned=1 tiled=0 unassigned=0 failed=1
+issues: tile_short:1
+  FAIL hwnd=197320 mon=1 title=Windows Shell Experience Host
