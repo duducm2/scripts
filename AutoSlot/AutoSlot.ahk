@@ -1092,7 +1092,8 @@ AutoSlot_IsSameScriptPid(hwnd) {
 }
 
 ; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel,
-; and Win+Shift+S screen clip / Snipping Tool (must not be auto-slotted or resized).
+; file dialogs (Open/Save/Browse), and Win+Shift+S screen clip / Snipping Tool
+; (must not be auto-slotted or resized).
 ; ClipAngel is fully excluded — never auto-slotted / 50/50'd and never counted as occupancy.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
@@ -1118,6 +1119,9 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     }
     if (class = "autohotkeygui")
         return true
+    ; Open/Save/Browse file dialogs — never auto-slot / resize / count as occupancy.
+    if (AutoSlot_IsFileDialogHwnd(hwnd))
+        return true
     try {
         title := WinGetTitle(hwnd)
     } catch {
@@ -1131,6 +1135,42 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
         return true
     if (InStr(t, "autohotkey") && InStr(class, "ahk"))
         return true
+    return false
+}
+
+; Lightweight file-dialog detect (no UIA — WindowManagement does not load UIA-v2).
+; Same identity as Shift keys IsFileDialogActive: class #32770 + namespace tree or Open/Save title.
+AutoSlot_IsFileDialogHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        if (WinGetClass("ahk_id " hwnd) != "#32770")
+            return false
+    } catch {
+        return false
+    }
+    try {
+        txt := WinGetText("ahk_id " hwnd)
+        if (InStr(txt, "Namespace Tree Control")
+        || InStr(txt, "Controle da Árvore de Namespace")
+        || InStr(txt, "Controle da Arvore de Namespace"))
+            return true
+    } catch {
+    }
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    if (title = "")
+        return false
+    ; EN / PT-BR / PT titles used by common Open/Save/Browse dialogs.
+    for needle in ["Save As", "Open", "Browse", "Select File", "Choose File",
+        "Salvar como", "Abrir", "Procurar", "Selecionar arquivo",
+        "Guardar como", "Guardar", "Explorar"] {
+        if (InStr(title, needle))
+            return true
+    }
     return false
 }
 
