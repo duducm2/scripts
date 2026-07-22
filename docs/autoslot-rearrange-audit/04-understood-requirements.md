@@ -102,7 +102,7 @@ Mark each as **intended** or **wrong**:
 - [okay] **Lone maximized = free half** for fill-on-close, rearrange, and Y
 - [okay] **Heal often silent**; **fill always toasted** (INFO)
 - [okay] **Restore from minimize does not Place**
-- [okay] **Y / Ctrl+6 may free-half SnapPair**; Place must not
+- [okay] **Y / Ctrl+6 may free-half SniapPair**; Place must not
 - [okay] Cap **2 × ordinal (max 8)** and exclusion of ClipAngel / dialogs / Teams chrome from occupancy
 
 ---
