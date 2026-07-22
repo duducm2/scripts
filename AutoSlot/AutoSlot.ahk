@@ -2857,7 +2857,7 @@ AutoSlot_Place(hwnd) {
     AutoSlot_RememberHwndMon(hwnd)
     AutoSlot_BeginPlaceFreeze()
 
-    ; Empty-monitor-first: never 50/50 on an occupied screen when any ordinal is empty.
+    ; Empty-monitor-only: never 50/50 / demax existing slotted windows for a new open.
     ; Empty = no filled and no half occupant (windows hidden behind a maximized one do not count).
     emptyOrder := 0
     emptyMon := 0
@@ -2884,19 +2884,7 @@ AutoSlot_Place(hwnd) {
         return
     }
 
-    ; Prefer partitioning the origin slot when it has a free half (incl. lone maximized).
-    originMon := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (originMon >= 1) {
-        partner := AutoSlot_MonitorFreeHalfPartner(originMon, hwnd)
-        if (partner && AutoSlot_TrySnapNewWithPartner(hwnd, originMon, partner))
-            return
-    }
-
-    ; Half-slots remain open on any monitor with a single visible window (maximized = 1 of 2 slots).
-    half := AutoSlot_FindHalfFullMonitor(hwnd)
-    if (IsObject(half) && AutoSlot_TrySnapNewWithPartner(hwnd, half.monIdx, half.partner, half.order))
-        return
-
+    ; All ordinals occupied — maximize in place; do not move/shrink slotted windows.
     if (AutoSlot_MaximizeInPlace(hwnd))
         msg := "ℹ️ Grid full — maximized"
     AutoSlot_Toast(msg)
