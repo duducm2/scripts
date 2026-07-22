@@ -663,8 +663,7 @@ AutoSlot_ProcessRearrange(*) {
 }
 
 ; Heal/fill every underfilled ordinal monitor (same policy as fill-on-close).
-; Counts non-filled occupants only — maximized-behind must not block heal/fill.
-; Lone maximized = half-full (free half-slot for background SnapPair).
+; Lone maximized = half-full even if covered non-filled windows sit behind it.
 AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
@@ -674,16 +673,17 @@ AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
         if (!monIdx)
             continue
         part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
-        if (part.nonFilled.Length >= 2)
+        ; Genuinely full: two half-panes with no filled, or two+ maximized.
+        if (part.filled.Length >= 2)
             continue
-        if (part.nonFilled.Length = 0 && part.filled.Length >= 2)
-            continue  ; no free slot
-        if (part.nonFilled.Length = 0 && part.filled.Length = 0) {
+        if (part.filled.Length = 0 && part.nonFilled.Length >= 2)
+            continue
+        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
             if (AutoSlot_FillCooldownActive(monIdx))
                 continue
             AutoSlot_FillMonitorFromBackground(monIdx)
-        } else if (part.nonFilled.Length = 1 || (part.nonFilled.Length = 0 && part.filled.Length = 1)) {
-            ; Half (unfilled) or lone maximized — Fill SnapPairs / heals.
+        } else if (AutoSlot_MonitorFreeHalfPartner(monIdx, excludeHwnd)) {
+            ; Lone maximized (ignore covered behind) or single half — Fill SnapPairs / heals.
             AutoSlot_FillMonitorFromBackground(monIdx)
         }
     }
@@ -708,18 +708,18 @@ AutoSlot_RunTileBackground() {
         if (!monIdx)
             continue
         part := AutoSlot_PartitionOccupancy(monIdx)
-        if (part.nonFilled.Length >= 2 || (part.nonFilled.Length = 0 && part.filled.Length >= 2)) {
-            skippedFull++
+        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
+            emptyMons.Push(monIdx)
             continue
         }
-        if (part.nonFilled.Length = 0 && part.filled.Length = 0)
-            emptyMons.Push(monIdx)
-        else
-            halfMons.Push(monIdx)  ; nonFilled=1 or lone maximized
+        ; Lone maximized counts as free half even with covered windows behind it.
+        if (AutoSlot_MonitorFreeHalfPartner(monIdx)) {
+            halfMons.Push(monIdx)
+            continue
+        }
+        skippedFull++
     }
     for monIdx in emptyMons {
-        beforeNon := 0
-        beforeFilled := 0
         result := AutoSlot_FillMonitorFromBackground(monIdx, true)
         if (result != "ok")
             continue
@@ -2482,10 +2482,15 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
         if (!forceImport && AutoSlot_ReplaceSkipActive(hwnd))
             continue
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
-        if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))
-            continue
-        if (AutoSlot_BackgroundCandCoveredByF11(hwnd))
-            continue
+        ; Explicit Y matches Ctrl+Alt+Win+6: clear stale pair and allow the pick.
+        if (!forceImport) {
+            if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))
+                continue
+            if (AutoSlot_BackgroundCandCoveredByF11(hwnd))
+                continue
+        } else {
+            AutoSlot_UnregisterSnapPair(hwnd)
+        }
         return hwnd
     }
     return 0
@@ -2571,8 +2576,12 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
         return "noop"
     part := AutoSlot_PartitionOccupancy(monIdx)
-    if (part.nonFilled.Length >= 2)
+    ; True 50/50 (two halves, no filled) is full — but lone maximized with covered
+    ; nonFilled behind it still has a free half-slot.
+    if (part.filled.Length = 0 && part.nonFilled.Length >= 2)
         return "stale"
+    if (part.filled.Length >= 2)
+        return "ok"
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
