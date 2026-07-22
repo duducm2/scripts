@@ -73,7 +73,8 @@ WM_WindowTools_OnTileBackground(*) {
     catch
         autoslotOn := false
     if (autoslotOn) {
-        StandardLoadingBar_Show("Filling free AutoSlot slots...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        ; AutoSlot rearrange mode: INFO accent throughout (not yellow/green).
+        StandardLoadingBar_Show("Filling free AutoSlot slots...", BANNER_ACCENT_INFO, { passive: false,
             centerOnHwnd: 0 })
         try {
             result := AutoSlot_RunTileBackground()
@@ -86,7 +87,7 @@ WM_WindowTools_OnTileBackground(*) {
                 }
                 return
             }
-            StandardLoadingBar_Update(result.message, BANNER_ACCENT_SUCCESS)
+            StandardLoadingBar_Update(result.message, BANNER_ACCENT_INFO)
             StandardLoadingBar_Hide(2000)
         } catch as err {
             StandardLoadingBar_Update("Slot fill failed: " err.Message, BANNER_ACCENT_ERROR)
