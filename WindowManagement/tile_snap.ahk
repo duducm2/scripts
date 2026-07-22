@@ -562,15 +562,20 @@ WM_WaitValidateSnapBipartitionStrict(monIdx, primaryHwnd, partnerHwnd := 0) {
 }
 
 WM_SnapPairGaplessRects(monIdx, axis, targetHwnd, targetPane, partnerHwnd, partnerPane) {
-    rects := WM_ComputeSnapPairPaneRects(monIdx, axis)
-    if (rects.Count = 0)
-        return false
-    tRect := rects[targetPane]
-    pRect := rects[partnerPane]
-    ; Partner first, target last — target remains the last mutated window (log: partner must not stay FG).
-    ok2 := WM_MoveHwndToRectGapless(partnerHwnd, monIdx, pRect[1], pRect[2], pRect[3], pRect[4])
-    ok1 := WM_MoveHwndToRectGapless(targetHwnd, monIdx, tRect[1], tRect[2], tRect[3], tRect[4])
-    return ok1 && ok2
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        rects := WM_ComputeSnapPairPaneRects(monIdx, axis)
+        if (rects.Count = 0)
+            return false
+        tRect := rects[targetPane]
+        pRect := rects[partnerPane]
+        ; Partner first, target last — target remains the last mutated window (log: partner must not stay FG).
+        ok2 := WM_MoveHwndToRectGapless(partnerHwnd, monIdx, pRect[1], pRect[2], pRect[3], pRect[4])
+        ok1 := WM_MoveHwndToRectGapless(targetHwnd, monIdx, tRect[1], tRect[2], tRect[3], tRect[4])
+        return ok1 && ok2
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
+    }
 }
 
 WM_FindStrictSnapCompanion(hwnd, monIdx) {

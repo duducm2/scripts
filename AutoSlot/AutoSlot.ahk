@@ -1268,10 +1268,15 @@ AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom) {
 AutoSlot_MaximizeHwnd(hwnd) {
     if !hwnd
         return
+    StandardLoadingBar_BusyAllMonitors_Begin()
     try {
-        WinMaximize "ahk_id " hwnd
-    } catch {
-        try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd
+        try {
+            WinMaximize "ahk_id " hwnd
+        } catch {
+            try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd
+        }
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
     }
 }
 
@@ -1293,12 +1298,17 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx, scheduleRearrange := true) {
         return false
     if (!AutoSlot_PrepareHwnd(hwnd))
         return false
-    MonitorGet monIdx, &left, &top, &right, &bottom
-    AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
-    AutoSlot_MaximizeHwnd(hwnd)
-    AutoSlot_ActivateHwnd(hwnd)
-    ; scheduleRearrange kept for call-site compat; auto background import is disabled.
-    return true
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        MonitorGet monIdx, &left, &top, &right, &bottom
+        AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
+        AutoSlot_MaximizeHwnd(hwnd)
+        AutoSlot_ActivateHwnd(hwnd)
+        ; scheduleRearrange kept for call-site compat; auto background import is disabled.
+        return true
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
+    }
 }
 
 ; --- Foreground monitor swap (suite move-to-monitor) -------------------------
@@ -1665,6 +1675,15 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
     if (!wantSwap)
         return false
 
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        return AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role)
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
+    }
+}
+
+AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
     displaced := []
     if (dest.kind = "pair") {
         displaced.Push(dest.a)
@@ -1769,9 +1788,14 @@ AutoSlot_TryForegroundSwap(hwnd, sourceMon, destMon) {
 AutoSlot_MaximizeInPlace(hwnd) {
     if (!AutoSlot_PrepareHwnd(hwnd))
         return false
-    AutoSlot_MaximizeHwnd(hwnd)
-    AutoSlot_ActivateHwnd(hwnd)
-    return true
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        AutoSlot_MaximizeHwnd(hwnd)
+        AutoSlot_ActivateHwnd(hwnd)
+        return true
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
+    }
 }
 
 ; 50/50 via tile_snap gapless APIs (same engine as ^!#x / WM_SnapHalfPairActiveWindow).
@@ -1806,6 +1830,16 @@ AutoSlot_SnapPair(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
     if (AutoSlot_IsClipAngelHwnd(newHwnd) || AutoSlot_IsClipAngelHwnd(partnerHwnd))
         return ""
 
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        return AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated)
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
+    }
+}
+
+AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false) {
+    global g_AutoSlotUndo
     partnerState := AutoSlot_CapturePartnerState(partnerHwnd)
     partnerWasMax := IsObject(partnerState) ? partnerState.wasMaximized : false
     if (!partnerWasMax) {

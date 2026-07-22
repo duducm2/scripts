@@ -319,39 +319,44 @@ MoveWinToMonitor(mon) {
             return
     }
 
-    WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
+    StandardLoadingBar_BusyAllMonitors_Begin()
+    try {
+        WMAutomation_SuppressCursorCentering("move_window_to_monitor", 800)
 
-    ; Obtain monitor work area
-    MonitorGet mon, &left, &top, &right, &bottom
+        ; Obtain monitor work area
+        MonitorGet mon, &left, &top, &right, &bottom
 
-    ; Ensure window can be moved (restore if maximised/minimised)
-    state := WinGetMinMax(hwnd) ; 1=min,2=max,0=normal
-    if (state != 0) {
-        WinRestore hwnd
-        Sleep 100
-    }
+        ; Ensure window can be moved (restore if maximised/minimised)
+        state := WinGetMinMax(hwnd) ; 1=min,2=max,0=normal
+        if (state != 0) {
+            WinRestore hwnd
+            Sleep 100
+        }
 
-    width := right - left
-    height := bottom - top
+        width := right - left
+        height := bottom - top
 
-    ; First try the native WinMove (returns 1 on success, 0 on failure)
-    ok := 0
-    try ok := WinMove(hwnd, left, top, width, height)
-    catch {
+        ; First try the native WinMove (returns 1 on success, 0 on failure)
         ok := 0
-    }
+        try ok := WinMove(hwnd, left, top, width, height)
+        catch {
+            ok := 0
+        }
 
-    ; Fallback to MoveWindow API if WinMove fails
-    if !ok {
-        DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
-    }
+        ; Fallback to MoveWindow API if WinMove fails
+        if !ok {
+            DllCall("MoveWindow", "ptr", hwnd, "int", left, "int", top, "int", width, "int", height, "int", true)
+        }
 
-    ; Finally maximise so Windows treats it as maximised on that monitor
-    WinMaximize hwnd
+        ; Finally maximise so Windows treats it as maximised on that monitor
+        WinMaximize hwnd
 
-    ; Heal source companion and ensure moved window is foreground + cursor centered.
-    WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1)
-    try AutoSlot_ScheduleRearrange(hwnd)
-    catch {
+        ; Heal source companion and ensure moved window is foreground + cursor centered.
+        WM_AfterLeavingMonitor(hwnd, sourceMon, companionHwnd, mon, -1)
+        try AutoSlot_ScheduleRearrange(hwnd)
+        catch {
+        }
+    } finally {
+        StandardLoadingBar_BusyAllMonitors_End()
     }
 }

@@ -946,3 +946,159 @@ StandardLoadingBar_KeysTimeoutFired(timeoutCallback) {
     }
     StandardLoadingBar_CloseKeysOverlay()
 }
+
+; =============================================================================
+; All-monitors busy Loading Indication (nestable Begin/End)
+; Visual only — does not block input. Separate from the single-monitor bar.
+; =============================================================================
+global g_BusyAllMonitorsDepth := 0
+global g_BusyAllMonitorsOverlays := []   ; [{ overlay: Gui, border: Gui|0 }, ...]
+global g_BusyAllMonitorsValue := 0
+global g_BusyAllMonitorsTickTimer := ""
+global g_BusyAllMonitorsForceTimerArmed := false
+global STANDARD_BUSY_ALL_MONITORS_FORCE_MS := 5000
+
+StandardLoadingBar_BusyAllMonitors_Begin(state := "⏳ Arranging window...") {
+    global g_BusyAllMonitorsDepth, g_BusyAllMonitorsOverlays, g_BusyAllMonitorsValue
+    global g_BusyAllMonitorsTickTimer, g_BusyAllMonitorsForceTimerArmed, g_StandardLoadingBarIsKeysOverlay
+
+    g_BusyAllMonitorsDepth += 1
+    if (g_BusyAllMonitorsDepth > 1)
+        return
+
+    ; Do not fight an interactive keys overlay (e.g. undo modal).
+    if (g_StandardLoadingBarIsKeysOverlay)
+        return
+
+    StandardLoadingBar_BusyAllMonitors_DestroyOverlays()
+    g_BusyAllMonitorsOverlays := []
+    g_BusyAllMonitorsValue := 0
+
+    barColor := BANNER_ACCENT_INTERMEDIATE
+    fontSize := 17
+    alpha := 235
+    borderWidth := 6
+    n := 0
+    try n := MonitorGetCount()
+    catch
+        n := 0
+    loop n {
+        monIdx := A_Index
+        try {
+            MonitorGetWorkArea(monIdx, &ml, &mt, &mr, &mb)
+        } catch {
+            continue
+        }
+        monitorWidth := mr - ml
+        barWidth := Min(900, Max(360, Floor(monitorWidth * 0.6)))
+        overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        overlayGui.BackColor := "1E1E2E"
+        overlayGui.MarginX := 16
+        overlayGui.MarginY := 10
+        overlayGui.SetFont("s" . fontSize . " cFFFFFF", "Segoe UI")
+        overlayGui.Add("Text", "w" . barWidth . " Center", state)
+        progressOpts := "w" . barWidth . " h10 c" . barColor . " Background45475A Smooth vBusyProg"
+        overlayGui.Add("Progress", progressOpts, 0)
+        overlayGui.Show("AutoSize Hide")
+        overlayGui.GetPos(, , &gw, &gh)
+        guiX := Round(ml + (monitorWidth - gw) / 2)
+        if (guiX < ml)
+            guiX := ml
+        if (guiX + gw > mr)
+            guiX := mr - gw
+        guiY := mt + 40
+
+        borderGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+        borderGui.BackColor := barColor
+        borderGui.Show("NA x" . (guiX - borderWidth) . " y" . (guiY - borderWidth) . " w" . (gw + 2 * borderWidth) .
+        " h" . (gh + 2 * borderWidth))
+        overlayGui.Show("x" . guiX . " y" . guiY . " NA")
+        try WinSetTransparent(alpha, overlayGui)
+        catch {
+        }
+        g_BusyAllMonitorsOverlays.Push({ overlay: overlayGui, border: borderGui })
+    }
+
+    if (g_BusyAllMonitorsOverlays.Length > 0) {
+        g_BusyAllMonitorsTickTimer := SetTimer(StandardLoadingBar_BusyAllMonitors_Tick, 40)
+        if (!g_BusyAllMonitorsForceTimerArmed) {
+            g_BusyAllMonitorsForceTimerArmed := true
+            SetTimer(StandardLoadingBar_BusyAllMonitors_ForceClear, -STANDARD_BUSY_ALL_MONITORS_FORCE_MS)
+        }
+    }
+}
+
+StandardLoadingBar_BusyAllMonitors_End() {
+    global g_BusyAllMonitorsDepth
+    if (g_BusyAllMonitorsDepth <= 0) {
+        g_BusyAllMonitorsDepth := 0
+        return
+    }
+    g_BusyAllMonitorsDepth -= 1
+    if (g_BusyAllMonitorsDepth > 0)
+        return
+    StandardLoadingBar_BusyAllMonitors_Clear()
+}
+
+StandardLoadingBar_BusyAllMonitors_Clear() {
+    global g_BusyAllMonitorsDepth, g_BusyAllMonitorsTickTimer, g_BusyAllMonitorsForceTimerArmed
+    g_BusyAllMonitorsDepth := 0
+    try SetTimer(StandardLoadingBar_BusyAllMonitors_Tick, 0)
+    catch {
+    }
+    g_BusyAllMonitorsTickTimer := ""
+    try SetTimer(StandardLoadingBar_BusyAllMonitors_ForceClear, 0)
+    catch {
+    }
+    g_BusyAllMonitorsForceTimerArmed := false
+    StandardLoadingBar_BusyAllMonitors_DestroyOverlays()
+}
+
+StandardLoadingBar_BusyAllMonitors_ForceClear(*) {
+    global g_BusyAllMonitorsForceTimerArmed
+    g_BusyAllMonitorsForceTimerArmed := false
+    StandardLoadingBar_BusyAllMonitors_Clear()
+}
+
+StandardLoadingBar_BusyAllMonitors_DestroyOverlays() {
+    global g_BusyAllMonitorsOverlays
+    if (!IsObject(g_BusyAllMonitorsOverlays))
+        g_BusyAllMonitorsOverlays := []
+    for item in g_BusyAllMonitorsOverlays {
+        try {
+            if (IsObject(item) && IsObject(item.overlay))
+                item.overlay.Destroy()
+        } catch {
+        }
+        try {
+            if (IsObject(item) && IsObject(item.border))
+                item.border.Destroy()
+        } catch {
+        }
+    }
+    g_BusyAllMonitorsOverlays := []
+}
+
+StandardLoadingBar_BusyAllMonitors_Tick() {
+    global g_BusyAllMonitorsOverlays, g_BusyAllMonitorsValue, g_BusyAllMonitorsDepth
+    if (g_BusyAllMonitorsDepth <= 0 || !IsObject(g_BusyAllMonitorsOverlays) || g_BusyAllMonitorsOverlays.Length = 0) {
+        try SetTimer(StandardLoadingBar_BusyAllMonitors_Tick, 0)
+        catch {
+        }
+        return
+    }
+    try {
+        g_BusyAllMonitorsValue += 4
+        if (g_BusyAllMonitorsValue > 100)
+            g_BusyAllMonitorsValue := 0
+        for item in g_BusyAllMonitorsOverlays {
+            try item.overlay["BusyProg"].Value := g_BusyAllMonitorsValue
+            catch {
+            }
+        }
+    } catch {
+        try SetTimer(StandardLoadingBar_BusyAllMonitors_Tick, 0)
+        catch {
+        }
+    }
+}
