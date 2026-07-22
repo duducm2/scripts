@@ -14,18 +14,19 @@ Default is ON when the ini is missing.
 
 ## New-window placement
 
-Capacity model: **2 slots per ordinal monitor** (up to 8). A single maximized window uses one full-screen presentation but only **one** slot — the other half-slot stays available for 50/50 (via **Y** or Ctrl+6, not on open).
+Capacity model: **2 slots per ordinal monitor** (up to 8). A single maximized window uses one full-screen presentation but only **one** slot — the other half-slot stays available for 50/50 on open (and via **Y** / Ctrl+6).
 
 On show (multi-monitor only):
 
 | Condition                                    | Action                                           |
 | -------------------------------------------- | ------------------------------------------------ |
 | Any empty ordinal (0 visible excl. new hwnd) | Maximize new window onto the first empty monitor |
-| No empty ordinal                             | Maximize new window in place (“grid full”)       |
+| No empty; free half (lone max / lone half)   | 50/50 SnapPair with that partner (ordinal order) |
+| No empty and no free half                    | Maximize new window in place (“grid full”)       |
 
-Place never 50/50 or demaximizes existing slotted windows. During Place freeze, automatic companion heal on close/minimize still runs; background import does not (and is never automatic).
+During Place freeze, automatic companion heal on close/minimize still runs; background import does not (and is never automatic).
 
-After a successful 50/50 snap (from Y / Ctrl+6 / explicit snap), a **2-second** interactive banner may offer **[M]** undo where that path still uses the undo modal.
+After a successful 50/50 snap (from Place / Y / Ctrl+6 / explicit snap), a **2-second** interactive banner may offer **[M]** undo where that path still uses the undo modal.
 
 Maximizing one half of a registered 50/50 pair **does not** maximize the companion — the pair is unregistered and the other half stays. Closing or minimizing one half still **heals** (maximizes) the leftover companion.
 

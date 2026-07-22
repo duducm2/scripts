@@ -13,7 +13,7 @@
 | Rule                       | Understood meaning                                                                 |
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | Grid                       | **2 slots** per ordinal monitor; up to **4** ordinals → **8** max                  |
-| Lone maximized / work-area | Counts as **1 slot**; free half available for Y / Ctrl+6                           |
+| Lone maximized / work-area | Counts as **1 slot**; free half available for Place / Y / Ctrl+6                   |
 | Behind maximized           | Do not make the monitor “full” for free-half checks                                |
 | Exclusions                 | ClipAngel, tool windows, dialogs/Teams chrome, own PID — not moved / not occupancy |
 
@@ -21,12 +21,12 @@
 
 ## 2. When a window is **created** (Place)
 
-| Requirement   | Understood                            |
-| ------------- | ------------------------------------- |
-| Empty ordinal | Maximize onto first empty             |
-| No empty      | Maximize in place (“grid full”)       |
-| Must not      | 50/50 or demax existing slots on open |
-| Feedback      | INFO toast                            |
+| Requirement   | Understood                                                   |
+| ------------- | ------------------------------------------------------------ |
+| Empty ordinal | Maximize onto first empty                                    |
+| Free half     | 50/50 SnapPair with partner (first free half, ordinal order) |
+| No empty/half | Maximize in place (“grid full”)                              |
+| Feedback      | INFO toast                                                   |
 
 ---
 
@@ -81,7 +81,7 @@
 
 ## 8. Please verify (checklist)
 
-- [okay] Place empty-only
+- [okay] Place empty then free-half 50/50 then MaximizeInPlace
 - [okay] No auto background import on close/move/minimize
 - [okay] Y is sole scan-fill from background
 - [okay] Maximize half does not maximize companion

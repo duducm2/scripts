@@ -8,7 +8,8 @@
 ;
 ; Placement (MonitorGetCount() > 1 only); 2 slots per ordinal monitor (max 8):
 ;   1) First empty ordinal → maximize onto it
-;   2) Else maximize new window in place ("grid full") — never 50/50 on open
+;   2) Else first free half (lone max / lone half-pane) → 50/50 SnapPair
+;   3) Else maximize new window in place ("grid full")
 ;
 ; Close / minimize: heal leftover snap companion only (silent). No automatic
 ; background import — user fills free slots with Ctrl+Alt+Win+Y (forceImport).
@@ -2458,7 +2459,7 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
         if (!monIdx)
             continue
         part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
-        ; Same empty / free-half policy as AutoSlot_Place (lone max ignores covered behind).
+        ; Same empty / free-half policy as AutoSlot_Place (empty first, then free half).
         if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
             if (!emptyMon) {
                 emptyMon := monIdx
@@ -2552,8 +2553,8 @@ AutoSlot_Place(hwnd) {
     AutoSlot_RememberHwndMon(hwnd)
     AutoSlot_BeginPlaceFreeze()
 
-    ; Empty-monitor-only: never 50/50 / demax existing slotted windows for a new open.
     ; Empty = no filled and no half occupant (windows hidden behind a maximized one do not count).
+    ; Free half = lone maximized/work-area or lone half-pane → SnapPair (ordinal order).
     emptyOrder := 0
     emptyMon := 0
 
@@ -2579,7 +2580,18 @@ AutoSlot_Place(hwnd) {
         return
     }
 
-    ; All ordinals occupied — maximize in place; do not move/shrink slotted windows.
+    half := AutoSlot_FindHalfFullMonitor(hwnd)
+    if (IsObject(half) && half.partner) {
+        if (AutoSlot_TrySnapNewWithPartner(hwnd, half.monIdx, half.partner, half.order)) {
+            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_RememberHwndMon(half.partner)
+            msg := "ℹ️ Auto-slotted → M" half.order " (50/50)"
+            AutoSlot_Toast(msg)
+            return
+        }
+    }
+
+    ; No empty ordinal and no free half — maximize in place.
     if (AutoSlot_MaximizeInPlace(hwnd))
         msg := "ℹ️ Grid full — maximized"
     AutoSlot_Toast(msg)
