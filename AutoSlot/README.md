@@ -4,83 +4,51 @@ Optional auto-positioning for newly opened windows on multi-monitor setups. Incl
 
 Detection and placement policy live in this folder. **50/50 snaps reuse** the gapless algorithm in `WindowManagement\tile_snap.ahk` (same engine as `Ctrl+Alt+Win+X`).
 
-AutoSlot ignores **AutoHotkeyGUI** windows, AutoHotkey host processes, and windows owned by this script’s PID (prompts, selectors, overlays). They stay where they opened and do not count toward monitor occupancy or fill-on-close. ToolWindow loading banners were already skipped via `WS_EX_TOOLWINDOW`.
+AutoSlot ignores **AutoHotkeyGUI** windows, AutoHotkey host processes, and windows owned by this script’s PID (prompts, selectors, overlays). They stay where they opened and do not count toward monitor occupancy. ToolWindow loading banners were already skipped via `WS_EX_TOOLWINDOW`.
 
 ## Enable / disable
 
-From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF. The banner title and footer show the current state. Preference is stored in `assets/data/wm_autoslot.ini` (`[AutoSlot] Enabled=1|0`) and applied without reloading hooks: when OFF, place and fill-on-close are no-ops.
+From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF. The banner title and footer show the current state. Preference is stored in `assets/data/wm_autoslot.ini` (`[AutoSlot] Enabled=1|0`) and applied without reloading hooks: when OFF, place and Y-fill are no-ops.
 
 Default is ON when the ini is missing.
 
 ## New-window placement
 
-Capacity model: **2 slots per ordinal monitor** (up to 8). A single maximized window uses one full-screen presentation but only **one** slot — the other half-slot stays available for 50/50.
+Capacity model: **2 slots per ordinal monitor** (up to 8). A single maximized window uses one full-screen presentation but only **one** slot — the other half-slot stays available for 50/50 (via **Y** or Ctrl+6, not on open).
 
 On show (multi-monitor only):
 
-| Condition                                            | Action                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------- |
-| Any empty ordinal (0 visible excl. new hwnd)         | Maximize new window onto the first empty monitor        |
-| No empty; **origin** has exactly 1 other             | 50/50 on origin — partner keeps its pane/side           |
-| No empty; origin full; another monitor has exactly 1 | 50/50 on that half-full monitor (incl. maximized-alone) |
-| All ordinals have 2+ windows                         | Maximize new window in place (“grid full”)              |
+| Condition                                    | Action                                           |
+| -------------------------------------------- | ------------------------------------------------ |
+| Any empty ordinal (0 visible excl. new hwnd) | Maximize new window onto the first empty monitor |
+| No empty ordinal                             | Maximize new window in place (“grid full”)       |
 
-Empty monitors always win over 50/50. Origin is preferred before any remote half-full so unrelated layouts are not reshaped when the origin can partition. During Place, fill-on-close will not SnapPair a background window into a half-full monitor (heal-only under place freeze).
+Place never 50/50 or demaximizes existing slotted windows. During Place freeze, automatic companion heal on close/minimize still runs; background import does not (and is never automatic).
 
-After a successful 50/50 snap, a **2-second** interactive banner (`StandardLoadingBar_ShowWithKeys`) offers **[M]** to maximize the new window on ordinal monitor 2 and restore the partner to its pre-snap state. Timeout keeps the snap.
+After a successful 50/50 snap (from Y / Ctrl+6 / explicit snap), a **2-second** interactive banner may offer **[M]** undo where that path still uses the undo modal.
 
-Maximizing either half of a registered 50/50 pair (Win+Up, title-bar, or script maximize) also maximizes the companion so no orphaned half-pane remains. Disabled when AutoSlot is OFF.
+Maximizing one half of a registered 50/50 pair **does not** maximize the companion — the pair is unregistered and the other half stays. Closing or minimizing one half still **heals** (maximizes) the leftover companion.
 
 ## Foreground monitor swap
 
-When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) **or** snap (`Ctrl+Alt+Win+X` → `WM_SnapHalfPairActiveWindow`) may **swap whole-monitor foreground layouts**. For snap, the cursor’s monitor is preferred as the swap target when it differs from the source (so an occupied 50/50 under the cursor can exchange). Manual drag does not swap.
+When AutoSlot is ON, suite move-to-monitor (`Ctrl+Alt+Win+A/S/D/F` → `MoveWinToMonitor`) **or** snap (`Ctrl+Alt+Win+X`) may **swap whole-monitor foreground layouts**. Manual drag does not swap.
 
-| Active window on source                            | Destination foreground                      | Result                                                                                                             |
-| -------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Full (maximized / work-area fill) or lone unfilled | Two half-slot windows                       | Active maximizes on dest; the pair keeps panes on source                                                           |
-| Half of a pair                                     | Two half-slot windows                       | Active maximizes on dest; the pair moves to source (leftover companion stays behind)                               |
-| Full, lone unfilled, or half of a pair             | One window (maximized **or** lone “single”) | Active maximizes on dest; former dest window goes to source (50/50 with leftover companion if any, else maximized) |
+After a successful swap, an INFO toast reports the exchange. There is **no** `[F]` replace option. To fill freed capacity from background, use **Ctrl+Alt+Win+Y**.
 
-After a successful swap, a **2-second** Interactive Input banner (`❓`, progress) offers **[F]** to **replace**: minimize the displaced destination window(s) and **block fill/rearrange from promoting them** back into a freed slot until the user restores those windows (or a long TTL expires). Timeout / Esc keeps them placed on the source monitor (true swap). Rearrange/fill is quieted through the banner window so background promote does not fight the exchange.
+## Close / minimize (heal only)
 
-Classification notes: a maximized / work-area-filled mover is always treated as **full** even if covered extras share its monitor. A one-slot mover is classified via its real 50/50 companion (strict snap / opposite-pane / geometric non-filled others) — maximized windows behind do not abort the swap. **Start and end halves are equivalent** (left/top vs right/bottom): pane detection uses the visible frame with center fallback, pair fallback follows the monitor split axis, and half→full places the incoming window into the vacated pane. A destination with **2+** occupancy candidates is treated as a **pair** (best opposite-pane duo, else the first two) so stray third windows do not skip the swap.
+When a window closes or minimizes:
 
-## Fill empty slot on close
+- Snap pair is cleared; leftover companion is **healed** (maximized) when applicable — silent.
+- **No** automatic background promote onto empty/half monitors.
 
-When a window closes and leaves a monitor empty or with exactly one **non-filled** (non-maximized) window, free capacity is filled from eligible background windows (toward **2 slots × ordinal monitors, max 8**). Maximized / work-area-filled windows behind a 50/50 pair are ignored for this count, so closing one half still maximizes the leftover companion.
+## Fill free slots (Ctrl+Alt+Win+Y) — only background import
 
-| Non-filled after close | Action                                                             |
-| ---------------------- | ------------------------------------------------------------------ |
-| 0 (truly empty)        | Two backgrounds → 50/50; one → maximize; none → noop               |
-| 0 + lone maximized     | Background → 50/50 with the maximized window (free half-slot)      |
-| 0 + 2+ maximized       | No-op                                                              |
-| 1                      | Maximize residual to both slots; if heal fails, background → 50/50 |
-| 2+                     | No-op                                                              |
-
-Empty-monitor / half-slot background candidates skip windows that still have a living 50/50 snap-pair partner, and windows whose home monitor has another window in **F11 fullscreen** (so an F11-covered companion is not stolen into another slot). True minimized / unrelated background windows remain eligible.
-
-Only the monitor that lost the window is considered. No undo modal on this path. Companions already maximized/work-area-filled skip work when there is no import. Restoring a background window is marked recent so the new-window placer does not run again on the same HWND. Background import is suppressed during Place freeze and for a monitor recently claimed by new-window placement (companion heal still runs). If occupancy still shows 2+ **non-filled** windows briefly (e.g. Chrome closing), fill retries once (~400 ms) before giving up.
-
-## Rearrange on move / minimize
-
-After a window changes slots (manual drag end, suite move-to-monitor, AutoSlot relocate/maximize, or **minimize**), underfilled ordinal monitors are filled the same way as fill-on-close so windows that were behind a minimized/moved window can take foreground slots (non-filled count; maximized-behind ignored):
-
-| Non-filled   | Action                                               |
-| ------------ | ---------------------------------------------------- |
-| 0 (empty)    | Two backgrounds → 50/50; one → maximize              |
-| 0 + lone max | Background → 50/50 with maximized (free half-slot)   |
-| 1            | Maximize residual; if heal fails, background → 50/50 |
-| 2+           | No-op                                                |
-
-Cap remains **2 slots × ordinal monitors (max 8)**. Already-visible windows are **not** reshuffled between monitors — only background promote and residual companion heal. Debounced (~350 ms). Disabled when AutoSlot is OFF. Windows minimized via **[F] replace** stay fill-skipped until the user restores them.
-
-## Fill free slots hotkey (Ctrl+Alt+Win+Y)
-
-When AutoSlot is ON, **Ctrl+Alt+Win+Y** (Window tools **[3]**) fills free ordinal capacity from background: empty monitors first, then half-slots including a **lone maximized** window (50/50 in place). Existing 50/50 pairs and multi-filled monitors are not reshuffled. When AutoSlot is OFF, the legacy background tile runs with at most **2 per monitor** and still skips already-slotted windows.
+When AutoSlot is ON, **Ctrl+Alt+Win+Y** (Window tools **[3]**) is the **only** path that imports background windows into free ordinal capacity: empty monitors first, then half-slots including a **lone maximized** window (50/50 in place). Existing 50/50 pairs and multi-filled monitors are not reshuffled. When AutoSlot is OFF, the legacy background tile runs with at most **2 per monitor** and still skips already-slotted windows.
 
 ## Background list open (Ctrl+Alt+Win+6)
 
-When AutoSlot is ON, picking a window from the hidden-background list (**Ctrl+Alt+Win+6** / Window tools **[2]**) places it into free capacity: empty ordinal → maximize; one free half (lone max/half) → 50/50 with the residual. If no free slot (or AutoSlot OFF), it restores in place as before. Close mode is unchanged.
+When AutoSlot is ON, picking a window from the hidden-background list places it into free capacity: empty ordinal → maximize; one free half → 50/50. If no free slot (or AutoSlot OFF), it restores in place.
 
 ## Disable
 
@@ -97,5 +65,3 @@ Reload `WindowManagement.ahk`.
 1. Remove the `#include` line above from `WindowManagement.ahk`.
 2. Delete the `AutoSlot\` folder.
 3. Reload `WindowManagement.ahk`.
-
-`tile_snap.ahk` is unchanged by removal; no other modules reference AutoSlot symbols.

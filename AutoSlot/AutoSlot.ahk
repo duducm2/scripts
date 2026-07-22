@@ -4,26 +4,19 @@
 ; Detection/placement policy is self-contained. 50/50 placement reuses the
 ; proven gapless snap APIs from WindowManagement\tile_snap.ahk (same as ^!#x).
 ; After a successful snap, a 2s ShowWithKeys modal offers [M] undo.
-; On window close, fills the freed monitor slot from background windows.
 ; Delete: remove the #include in WindowManagement.ahk + this folder (see README).
 ;
 ; Placement (MonitorGetCount() > 1 only); 2 slots per ordinal monitor (max 8):
 ;   1) First empty ordinal → maximize onto it
-;   2) Else origin has exactly 1 other (max or half) → 50/50 on origin
-;   3) Else first half-full ordinal anywhere → 50/50 (maximized still has a free half-slot)
-;   4) Else maximize new window in place
+;   2) Else maximize new window in place ("grid full") — never 50/50 on open
 ;
-; Fill-on-close (same multi-monitor gate):
-;   Shell destroy primary (WinEvent deduped) → debounce/cooldown → occupancy 0/1
-;   empty → two backgrounds 50/50 or one maximize; half → SnapPair bg else heal.
-;   Place freeze / claim cooldown → heal-only (no background import).
+; Close / minimize: heal leftover snap companion only (silent). No automatic
+; background import — user fills free slots with Ctrl+Alt+Win+Y (forceImport).
 ;
-; Rearrange-on-move / minimize (same fill/heal rules, no visible reshuffle):
-;   MOVESIZEEND / MINIMIZEEND / suite leave / MaximizeOnMonitor → debounced RearrangeUnderfilled.
+; Maximizing one half of a 50/50 pair does NOT maximize the companion (pair breaks).
 ;
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
-;   Full/halfAlone/half↔pair; full/halfAlone/half↔full|single.
-;   After swap: 2s ShowWithKeys [F] replaces (minimizes + fill-skip displaced).
+;   Full/halfAlone/half↔pair; full/halfAlone/half↔full|single. Toast + quiet only.
 ;
 ; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
 ; =============================================================================
@@ -56,9 +49,6 @@ global g_AutoSlotMinHookCb := 0
 global g_AutoSlotRearrangePending := false
 global g_AutoSlotRearrangeExclude := 0
 global g_AutoSlotSwapQuietUntil := 0
-global g_AutoSlotSwapDisplaced := []
-global g_AutoSlotSwapMoverHwnd := 0
-global g_AutoSlotReplaceSkip := Map()
 global g_AutoSlotJustRestored := Map()
 global g_AutoSlotLastToastMsg := ""
 global g_AutoSlotLastToastTick := 0
@@ -83,7 +73,6 @@ AutoSlot_REARRANGE_MS := 350
 AutoSlot_SWAP_QUIET_MS := 2500
 AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
-AutoSlot_REPLACE_SKIP_TTL_MS := 600000
 AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered auto-place for this long
 AutoSlot_TOAST_DEBOUNCE_MS := 4000  ; identical toast text — avoid hide-timer reset spam
 AutoSlot_MAX_ORDINAL := 4
@@ -338,10 +327,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
     AutoSlot_ScheduleHealOnly(monIdx)
-    ; Mid-swap: do not import backgrounds onto vacated monitors; PostQuietRearrange catches up.
-    ; HealKnownCompanion timers above still maximize a leftover snap partner.
-    if (!AutoSlot_SwapQuietActive())
-        AutoSlot_ScheduleFill(monIdx)
+    ; No automatic background import — user fills with Ctrl+Alt+Win+Y.
     ; Late heal for unregistered 50/50 (no snap pair) once zombie HWNDs drop out.
     lateMon := monIdx
     SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
@@ -386,7 +372,7 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     return healed
 }
 
-; --- 50/50 pair registry (maximize either side → maximize companion) ----------
+; --- 50/50 pair registry (maximize one half → unregister pair; heal on close) -
 
 AutoSlot_RegisterSnapPair(a, b) {
     global g_AutoSlotSnapPairs
@@ -550,7 +536,8 @@ AutoSlot_ProcessPairedMaximizePending(hwnd) {
     AutoSlot_OnPairedMaximize(hwnd)
 }
 
-; When hwnd is (or became) maximized, maximize its registered 50/50 companion.
+; When hwnd is (or became) maximized, break the 50/50 pair — do NOT maximize the companion.
+; User may maximize one half for focus; leftover half stays. Ctrl+Alt+Win+Y fills free capacity.
 AutoSlot_OnPairedMaximize(hwnd) {
     global g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (!AutoSlot_IsEnabled() || !hwnd)
@@ -559,7 +546,6 @@ AutoSlot_OnPairedMaximize(hwnd) {
         return false
     if (AutoSlot_PairSuppressActive(hwnd))
         return false
-    ; F11 enter/exit owns this hwnd — do not maximize the companion on top of fullscreen.
     if (g_AutoSlotWasF11.Has(hwnd) || g_AutoSlotF11RestorePending.Has(hwnd))
         return false
     try {
@@ -571,37 +557,14 @@ AutoSlot_OnPairedMaximize(hwnd) {
     }
     if (!g_AutoSlotSnapPairs.Has(hwnd))
         return false
-    partner := g_AutoSlotSnapPairs[hwnd]
-    if (!partner || !DllCall("IsWindow", "ptr", partner)) {
-        AutoSlot_UnregisterSnapPair(hwnd)
-        return false
-    }
     try {
         if (WinGetMinMax("ahk_id " hwnd) != 1)
             return false
     } catch {
         return false
     }
-    monIdx := AutoSlot_GetHwndMonitorIndex(partner)
-    if (monIdx < 1)
-        monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(partner, monIdx))
-        return false
-
-    AutoSlot_PairSuppressMark(hwnd)
-    AutoSlot_PairSuppressMark(partner)
-    healed := false
-    try healed := !!WM_MaximizeHwndBackground(partner)
-    catch
-        healed := false
-    if (!healed) {
-        try {
-            AutoSlot_MaximizeHwnd(partner)
-            healed := true
-        } catch {
-        }
-    }
-    return healed
+    AutoSlot_UnregisterSnapPair(hwnd)
+    return true
 }
 
 AutoSlot_ClearPairMaxPending(hwnd) {
@@ -610,15 +573,13 @@ AutoSlot_ClearPairMaxPending(hwnd) {
         g_AutoSlotPairMaxPending.Delete(hwnd)
 }
 
-; --- Rearrange underfilled slots after a move --------------------------------
+; --- Swap quiet (no post-quiet background import) ----------------------------
 
 AutoSlot_BeginSwapQuiet(ms := 0) {
     global g_AutoSlotSwapQuietUntil
     if (ms < 1)
         ms := AutoSlot_SWAP_QUIET_MS
     g_AutoSlotSwapQuietUntil := A_TickCount + ms
-    ; Catch-up rearrange after quiet — requests during quiet are otherwise lost.
-    SetTimer(AutoSlot_PostQuietRearrange, -(ms + AutoSlot_REARRANGE_MS))
 }
 
 AutoSlot_SwapQuietActive() {
@@ -626,67 +587,16 @@ AutoSlot_SwapQuietActive() {
     return g_AutoSlotSwapQuietUntil > 0 && A_TickCount < g_AutoSlotSwapQuietUntil
 }
 
-; Fired after SwapQuiet expires; heals/fills underfilled ordinals missed during quiet.
-AutoSlot_PostQuietRearrange(*) {
-    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
-        return
-    if (AutoSlot_SwapQuietActive())
-        return
-    AutoSlot_RearrangeUnderfilled()
-}
-
+; Kept as no-ops so older call sites (suite leave) do not import backgrounds.
+; Background fill is Ctrl+Alt+Win+Y only (RunTileBackground / forceImport).
 AutoSlot_ScheduleRearrange(excludeHwnd := 0) {
-    global g_AutoSlotRearrangePending, g_AutoSlotRearrangeExclude
-    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
-        return
-    if (AutoSlot_SwapQuietActive())
-        return
-    g_AutoSlotRearrangeExclude := excludeHwnd
-    g_AutoSlotRearrangePending := true
-    SetTimer(AutoSlot_ProcessRearrange, -AutoSlot_REARRANGE_MS)
 }
 
 AutoSlot_ProcessRearrange(*) {
-    global g_AutoSlotRearrangePending, g_AutoSlotRearrangeExclude
-    if (!g_AutoSlotRearrangePending)
-        return
-    ; Quiet started after this timer was armed — drop; PostQuietRearrange will catch up.
-    if (AutoSlot_SwapQuietActive()) {
-        g_AutoSlotRearrangePending := false
-        g_AutoSlotRearrangeExclude := 0
-        return
-    }
-    g_AutoSlotRearrangePending := false
-    excludeHwnd := g_AutoSlotRearrangeExclude
-    g_AutoSlotRearrangeExclude := 0
-    AutoSlot_RearrangeUnderfilled(excludeHwnd)
 }
 
-; Heal/fill every underfilled ordinal monitor (same policy as fill-on-close).
-; Lone maximized = half-full even if covered non-filled windows sit behind it.
+; Former auto rearrange/fill-on-move — disabled. Y uses RunTileBackground instead.
 AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
-    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
-        return
-    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
-    loop ordinalCount {
-        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
-        if (!monIdx)
-            continue
-        part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
-        ; Genuinely full: two half-panes with no filled, or two+ maximized.
-        if (part.filled.Length >= 2)
-            continue
-        if (part.filled.Length = 0 && part.nonFilled.Length >= 2)
-            continue
-        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
-            if (AutoSlot_FillCooldownActive(monIdx))
-                continue
-            AutoSlot_FillMonitorFromBackground(monIdx)
-        } else if (AutoSlot_MonitorFreeHalfPartner(monIdx, excludeHwnd)) {
-            ; Lone maximized (ignore covered behind) or single half — Fill SnapPairs / heals.
-            AutoSlot_FillMonitorFromBackground(monIdx)
-        }
-    }
 }
 
 ; Ctrl+Alt+Win+Y when AutoSlot ON: fill underfilled ordinal slots from background only
@@ -788,19 +698,10 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
 
     if (!AutoSlot_IsOccupancyCandidate(hwnd))
         return
-    oldMon := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
-    newMon := AutoSlot_GetHwndMonitorIndex(hwnd)
     AutoSlot_RememberHwndMon(hwnd)
-    changedMon := (oldMon >= 1 && newMon >= 1 && oldMon != newMon)
-    becameMax := false
-    try becameMax := (WinGetMinMax("ahk_id " hwnd) = 1)
-    catch
-        becameMax := false
-    if (changedMon || becameMax)
-        AutoSlot_ScheduleRearrange(hwnd)
 }
 
-; On minimize start: clear pair registry, heal leftover companion, then rearrange/fill.
+; On minimize start: clear pair registry, heal leftover companion (no background import).
 AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_AutoSlotHwndMon, g_AutoSlotSnapPairs
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
@@ -810,13 +711,9 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
     hwnd := Integer(hwnd)
     ; MINIMIZEEND fires when a window is restored from the taskbar, not when it minimizes.
     ; Arm a short guard so the subsequent EVENT_OBJECT_SHOW does not auto-place the window.
-    ; Also clear any stale replace-skip so the window is available as a Y/fill candidate
-    ; next time it is minimized again.
     if (event = AutoSlot_EVENT_SYSTEM_MINIMIZEEND) {
-        global g_AutoSlotJustRestored, g_AutoSlotReplaceSkip
+        global g_AutoSlotJustRestored
         g_AutoSlotJustRestored[hwnd] := A_TickCount
-        if (g_AutoSlotReplaceSkip.Has(hwnd))
-            g_AutoSlotReplaceSkip.Delete(hwnd)
         return
     }
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
@@ -825,25 +722,14 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         return
     monIdx := cached >= 1 ? cached : 0
     partnerHwnd := partner
-    ; Always break the 50/50 link when one side minimizes — place freeze / swap quiet
-    ; must not leave a stale pair that blocks later Y/fill (skipPartner).
+    ; Always break the 50/50 link when one side minimizes.
     AutoSlot_UnregisterSnapPair(hwnd)
     AutoSlot_ForgetHwndMon(hwnd)
-    ; User-initiated minimize clears the [F]-swap replace-skip so the window becomes
-    ; available again as a background candidate for Ctrl+Alt+Win+Y.
-    global g_AutoSlotReplaceSkip
-    if (g_AutoSlotReplaceSkip.Has(hwnd))
-        g_AutoSlotReplaceSkip.Delete(hwnd)
     if (partnerHwnd && monIdx >= 1) {
         p := partnerHwnd
         m := monIdx
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
     }
-    if (AutoSlot_SwapQuietActive())
-        return
-    ; Rearrange may import background; skip only while swap-quiet. Place freeze still
-    ; allows heal above; Y uses forceImport and does not depend on this path.
-    AutoSlot_ScheduleRearrange(hwnd)
 }
 
 ; Like IsOccupancyCandidate but allows iconic (minMax = -1).
@@ -870,6 +756,7 @@ AutoSlot_IsMinimizeRearrangeCandidate(hwnd) {
 }
 
 ; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
+; Auto ScheduleFill is disabled; Claim still used after Place / heal / Y fill.
 AutoSlot_ClaimMonitor(monIdx) {
     global g_AutoSlotFillPending, g_AutoSlotFillCooldown
     if (monIdx < 1)
@@ -906,71 +793,17 @@ AutoSlot_ProcessHealOnly(monIdx) {
         g_AutoSlotFillCooldown[monIdx] := A_TickCount
 }
 
+; Auto fill-on-close disabled — no-op (Y uses RunTileBackground / FillMonitorFromBackground).
 AutoSlot_ScheduleFill(monIdx) {
-    global g_AutoSlotFillPending
-    if (!AutoSlot_IsEnabled())
-        return
-    if (monIdx < 1 || MonitorGetCount() <= 1)
-        return
-    ; Claim cooldown: block background promote, still allow companion heal.
-    if (AutoSlot_FillCooldownActive(monIdx)) {
-        AutoSlot_ScheduleHealOnly(monIdx)
-        return
-    }
-    if (g_AutoSlotFillPending.Has(monIdx))
-        return
-    g_AutoSlotFillPending[monIdx] := true
-    SetTimer(() => AutoSlot_ProcessFillPending(monIdx), -AutoSlot_DEBOUNCE_MS)
 }
 
 AutoSlot_ProcessFillPending(monIdx) {
-    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
-    if (g_AutoSlotFillPending.Has(monIdx))
-        g_AutoSlotFillPending.Delete(monIdx)
-    if (!AutoSlot_IsEnabled())
-        return
-    ; Place may have claimed this monitor after the timer was armed — heal only.
-    if (AutoSlot_FillCooldownActive(monIdx)) {
-        if (AutoSlot_HealLoneCompanion(monIdx))
-            g_AutoSlotFillCooldown[monIdx] := A_TickCount
-        return
-    }
-    result := AutoSlot_FillMonitorFromBackground(monIdx)
-    if (result = "stale") {
-        AutoSlot_ScheduleFillRetry(monIdx)
-        return
-    }
-    if (result = "ok")
-        g_AutoSlotFillCooldown[monIdx] := A_TickCount
 }
 
 AutoSlot_ScheduleFillRetry(monIdx) {
-    global g_AutoSlotFillRetry
-    if (!AutoSlot_IsEnabled() || monIdx < 1)
-        return
-    if (g_AutoSlotFillRetry.Has(monIdx))
-        return
-    g_AutoSlotFillRetry[monIdx] := true
-    SetTimer(() => AutoSlot_ProcessFillRetry(monIdx), -AutoSlot_FILL_RETRY_MS)
 }
 
 AutoSlot_ProcessFillRetry(monIdx) {
-    global g_AutoSlotFillRetry, g_AutoSlotFillCooldown
-    if (g_AutoSlotFillRetry.Has(monIdx))
-        g_AutoSlotFillRetry.Delete(monIdx)
-    if (!AutoSlot_IsEnabled())
-        return
-    if (AutoSlot_FillCooldownActive(monIdx)) {
-        if (AutoSlot_HealLoneCompanion(monIdx))
-            g_AutoSlotFillCooldown[monIdx] := A_TickCount
-        return
-    }
-    result := AutoSlot_FillMonitorFromBackground(monIdx)
-    ; One retry only — no further stale reschedule.
-    if (result = "ok")
-        g_AutoSlotFillCooldown[monIdx] := A_TickCount
-    else if (result = "stale")
-        AutoSlot_HealLoneCompanion(monIdx)  ; no-op if still 2+; heals if dead HWND cleared to 1
 }
 
 AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
@@ -1463,12 +1296,7 @@ AutoSlot_MaximizeOnMonitor(hwnd, monIdx, scheduleRearrange := true) {
     AutoSlot_MoveHwndToRect(hwnd, left, top, right, bottom)
     AutoSlot_MaximizeHwnd(hwnd)
     AutoSlot_ActivateHwnd(hwnd)
-    ; Never rearrange because Clip Angel moved/maximized (see OnMoveSizeEnd).
-    if (scheduleRearrange && !AutoSlot_IsClipAngelHwnd(hwnd)) {
-        try AutoSlot_ScheduleRearrange(hwnd)
-        catch {
-        }
-    }
+    ; scheduleRearrange kept for call-site compat; auto background import is disabled.
     return true
 }
 
@@ -1786,114 +1614,8 @@ AutoSlot_ForgetHwndMon(hwnd) {
         g_AutoSlotHwndMon.Delete(hwnd)
 }
 
-; True while [F]-replaced hwnd must not be fill/rearrange-promoted (clears if restored).
-AutoSlot_ReplaceSkipActive(hwnd) {
-    global g_AutoSlotReplaceSkip
-    if (!hwnd || !g_AutoSlotReplaceSkip.Has(hwnd))
-        return false
-    if (!DllCall("IsWindow", "ptr", hwnd)) {
-        g_AutoSlotReplaceSkip.Delete(hwnd)
-        return false
-    }
-    if (A_TickCount - g_AutoSlotReplaceSkip[hwnd] > AutoSlot_REPLACE_SKIP_TTL_MS) {
-        g_AutoSlotReplaceSkip.Delete(hwnd)
-        return false
-    }
-    minMax := 0
-    try minMax := WinGetMinMax("ahk_id " hwnd)
-    catch
-        minMax := 0
-    ; User restored the window — allow promote again.
-    if (minMax != -1) {
-        try {
-            if (!WM_WindowIsTaskbarMinimized(hwnd)) {
-                g_AutoSlotReplaceSkip.Delete(hwnd)
-                return false
-            }
-        } catch {
-            g_AutoSlotReplaceSkip.Delete(hwnd)
-            return false
-        }
-    }
-    return true
-}
-
-AutoSlot_MarkReplaceSkip(hwnd) {
-    global g_AutoSlotReplaceSkip
-    if (hwnd)
-        g_AutoSlotReplaceSkip[hwnd] := A_TickCount
-}
-
-AutoSlot_ClearSwapDisplaced() {
-    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
-    g_AutoSlotSwapDisplaced := []
-    g_AutoSlotSwapMoverHwnd := 0
-}
-
-AutoSlot_OnSwapF(*) {
-    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd, g_AutoSlotHwndMon
-    displaced := g_AutoSlotSwapDisplaced
-    mover := g_AutoSlotSwapMoverHwnd
-    AutoSlot_ClearSwapDisplaced()
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
-    claimed := Map()
-    for h in displaced {
-        if (!h || !DllCall("IsWindow", "ptr", h))
-            continue
-        monIdx := 0
-        if (g_AutoSlotHwndMon.Has(h))
-            monIdx := g_AutoSlotHwndMon[h]
-        if (monIdx < 1)
-            monIdx := AutoSlot_GetHwndMonitorIndex(h)
-        try WinMinimize("ahk_id " h)
-        catch {
-        }
-        AutoSlot_UnregisterSnapPair(h)
-        AutoSlot_MarkReplaceSkip(h)
-        AutoSlot_ForgetHwndMon(h)
-        if (monIdx >= 1)
-            claimed[monIdx] := true
-    }
-    for monIdx, _ in claimed
-        AutoSlot_ClaimMonitor(monIdx)
-    AutoSlot_ActivateHwnd(mover)
-    ; [F] ends the swap: clear quiet + claim cooldown so vacated monitors fill now.
-    ; (ScheduleRearrange no-ops while quiet; ClaimMonitor would also block import 1.5s.)
-    global g_AutoSlotSwapQuietUntil, g_AutoSlotFillCooldown
-    g_AutoSlotSwapQuietUntil := 0
-    for monIdx, _ in claimed {
-        if (g_AutoSlotFillCooldown.Has(monIdx))
-            g_AutoSlotFillCooldown.Delete(monIdx)
-    }
-    ; Heal/fill what is now foreground on vacated monitors (ReplaceSkip blocks re-promote).
-    try AutoSlot_ScheduleRearrange(mover)
-    catch {
-    }
-}
-
-AutoSlot_OnSwapTimeout(*) {
-    global g_AutoSlotSwapMoverHwnd
-    mover := g_AutoSlotSwapMoverHwnd
-    AutoSlot_ClearSwapDisplaced()
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
-    AutoSlot_ActivateHwnd(mover)
-}
-
 AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
-    global g_AutoSlotSwapDisplaced, g_AutoSlotSwapMoverHwnd
-    g_AutoSlotSwapDisplaced := displacedHwnds
-    g_AutoSlotSwapMoverHwnd := moverHwnd
-    ; Keep heal/pair-max/rearrange gated for the whole Interactive Input window.
+    ; Quiet heal/pair events briefly; no [F] replace — user fills with Y if needed.
     AutoSlot_BeginSwapQuiet(AutoSlot_SWAP_MODAL_MS + 500)
     for h in displacedHwnds {
         if (h) {
@@ -1912,30 +1634,7 @@ AutoSlot_ShowSwapModal(srcLabel, dstLabel, moverHwnd, displacedHwnds) {
     catch {
     }
     AutoSlot_ActivateHwnd(moverHwnd)
-    keyCallbacks := Map("F", AutoSlot_OnSwapF)
-    try {
-        ; Interactive Input: ❓ + intermediate accent; progress countdown; overlay owns focus
-        ; after MEH chord (preserveUserFocus false). Key F = replace (minimize displaced).
-        StandardLoadingBar_ShowWithKeys(
-            "❓ Swapped M" srcLabel " ↔ M" dstLabel " (2s)",
-            keyCallbacks,
-            AutoSlot_SWAP_MODAL_MS,
-            0,
-            AutoSlot_OnSwapTimeout,
-            BANNER_ACCENT_INTERMEDIATE,
-            480,
-            17,
-            "",
-            true,
-            "[F] Replace (minimize displaced)",
-            true,
-            true,
-            false
-        )
-    } catch {
-        AutoSlot_ClearSwapDisplaced()
-        AutoSlot_Toast("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel)
-    }
+    AutoSlot_Toast("ℹ️ Swapped M" srcLabel " ↔ M" dstLabel)
     AutoSlot_ActivateHwnd(moverHwnd)
 }
 
@@ -2446,7 +2145,7 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 }
 
 ; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
-; forceImport: explicit user fill (Y) — bypass the [F] replace-skip like the Ctrl+Alt+Win+6 path.
+; forceImport: explicit user fill (Y / Ctrl+6) — ignore place freeze / fill cooldown.
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
     occupied := Map()
     for row in occupancyRows {
@@ -2480,10 +2179,6 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
         if (occupied.Has(hwnd))
             continue
         if (AutoSlot_IsExcludedExeOrTitle(hwnd))
-            continue
-        ; [F] replace: do not re-promote minimized displaced windows into freed slots.
-        ; Explicit user fill (Y) overrides this, matching the Ctrl+Alt+Win+6 place path.
-        if (!forceImport && AutoSlot_ReplaceSkipActive(hwnd))
             continue
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
         ; Explicit Y matches Ctrl+Alt+Win+6: clear stale pair and allow the pick.
