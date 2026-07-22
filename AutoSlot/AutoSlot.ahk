@@ -338,7 +338,10 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
     AutoSlot_ScheduleHealOnly(monIdx)
-    AutoSlot_ScheduleFill(monIdx)
+    ; Mid-swap: do not import backgrounds onto vacated monitors; PostQuietRearrange catches up.
+    ; HealKnownCompanion timers above still maximize a leftover snap partner.
+    if (!AutoSlot_SwapQuietActive())
+        AutoSlot_ScheduleFill(monIdx)
     ; Late heal for unregistered 50/50 (no snap pair) once zombie HWNDs drop out.
     lateMon := monIdx
     SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
@@ -1047,8 +1050,12 @@ AutoSlot_ProcessPending(hwnd) {
         return
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
         return
-    if (!AutoSlot_IsEligibleNewWindow(hwnd))
+    if (!AutoSlot_IsEligibleNewWindow(hwnd)) {
+        ; Schedule may have cached HwndMon before eligibility — drop it so destroy
+        ; of Teams/#32770/etc. does not spuriously heal/fill.
+        AutoSlot_ForgetHwndMon(hwnd)
         return
+    }
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
     AutoSlot_RememberHwndMon(hwnd)
@@ -2756,18 +2763,21 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
         if (!monIdx)
             continue
         part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
-        used := part.filled.Length + part.nonFilled.Length
-        if (used = 0) {
+        ; Same empty / free-half policy as AutoSlot_Place (lone max ignores covered behind).
+        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
             if (!emptyMon) {
                 emptyMon := monIdx
                 emptyOrder := order
             }
             continue
         }
-        if (used = 1 && !halfMon) {
-            halfMon := monIdx
-            halfOrder := order
-            halfPartner := part.filled.Length = 1 ? part.filled[1].hwnd : part.nonFilled[1].hwnd
+        if (!halfMon) {
+            partner := AutoSlot_MonitorFreeHalfPartner(monIdx, hwnd)
+            if (partner) {
+                halfMon := monIdx
+                halfOrder := order
+                halfPartner := partner
+            }
         }
     }
     if (emptyMon) {
