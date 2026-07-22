@@ -376,12 +376,9 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     }
     if (healed) {
         AutoSlot_RememberHwndMon(companion)
-        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-toast in a loop.
+        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-trigger in a loop.
         AutoSlot_PairSuppressMark(companion, AutoSlot_RECENT_MS)
         AutoSlot_ClaimMonitor(monIdx)
-        order := AutoSlot_OrderForMonitorIndex(monIdx)
-        label := order > 0 ? order : monIdx
-        AutoSlot_Toast("ℹ️ Companion maximized → M" label)
     }
     return healed
 }
@@ -2546,12 +2543,9 @@ AutoSlot_HealLoneCompanion(monIdx) {
         }
     }
     if (healed) {
-        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-toast in a loop.
+        ; Suppress MoveSizeEnd/paired-max rearrange so heal does not re-trigger in a loop.
         AutoSlot_PairSuppressMark(companion, AutoSlot_RECENT_MS)
         AutoSlot_ClaimMonitor(monIdx)
-        order := AutoSlot_OrderForMonitorIndex(monIdx)
-        label := order > 0 ? order : monIdx
-        AutoSlot_Toast("ℹ️ Companion maximized → M" label)
     }
     return healed
 }
