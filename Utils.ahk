@@ -137,6 +137,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\gemini_paste_helpers.ahk
 
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
+#include %A_ScriptDir%\lib\GeminiEnterprise.ahk
 
 ; [Utils module] Post-dictation visible-window paste picker -> Utils\dictation_visible_paste.ahk
 #include %A_ScriptDir%\Utils\dictation_visible_paste.ahk

@@ -5,7 +5,7 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false)
+#HotIf WinActive("ahk_exe chrome.exe") && IsConsumerGeminiChromeTitle(WinGetTitle("A"))
 
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
@@ -476,4 +476,3 @@ ShowGeminiModelSelector() {
     ; Enable Escape hotkey
     Hotkey("Escape", HandleGeminiModelSelectorEscape, "On")
 }
-

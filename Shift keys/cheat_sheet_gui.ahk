@@ -59,6 +59,14 @@ GetCheatSheetText() {
         siteKey := ""
         if (hwnd) {
             try {
+                if (GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast") || GeminiEnterprise_IsEnterpriseHwnd(hwnd, "full")
+                || GeminiEnterprise_TryUiaFingerprint(hwnd))
+                    siteKey := "Gemini Enterprise"
+            } catch {
+            }
+        }
+        if (siteKey = "" && hwnd) {
+            try {
                 if (CopilotWeb_IsCopilotHwnd(hwnd, "fast") || CopilotWeb_IsCopilotHwnd(hwnd, "full")
                 || CopilotWeb_TryUiaFingerprint(hwnd))
                     siteKey := "Copilot Web"
@@ -155,7 +163,9 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Mercado Livre"
     if (key = "" && IsShopeeActive())
         key := "Shopee"
-    if InStr(chromeTitle, "gemini", false)
+    if InStr(chromeTitle, "Gemini Enterprise", false)
+        key := "Gemini Enterprise"
+    if (key = "" && IsConsumerGeminiChromeTitle(chromeTitle))
         key := "Gemini"
     if (key = "" && (InStr(chromeTitle, "M365 Copilot", false) || InStr(chromeTitle, "Chat | M365 Copilot", false)))
         key := "Copilot Web"

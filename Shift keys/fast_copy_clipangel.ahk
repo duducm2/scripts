@@ -204,7 +204,7 @@ FastCopyMode_SendPasteAndWaitForReadCycle(isGeminiSession := false) {
 FastCopyMode_IsGeminiActiveInChrome() {
     ; #region agent log
     try {
-        return (WinActive("ahk_exe chrome.exe") && InStr(WinGetTitle("A"), "gemini", false))
+        return (WinActive("ahk_exe chrome.exe") && IsConsumerGeminiChromeTitle(WinGetTitle("A")))
     } catch {
         return false
     }
@@ -350,8 +350,10 @@ FastCopyMode_IsGeminiHwnd(hwnd) {
             return false
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
-        if (InStr(title, "gemini", false))
+        if (IsConsumerGeminiChromeTitle(title))
             return true
+        if (GeminiEnterprise_TitleMatches(title) || GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast"))
+            return false
         ; Fallback: title can be generic; verify by finding the Gemini prompt field via UIA.
         try {
             uia := UIA_Browser("ahk_id " hwnd)
@@ -566,7 +568,7 @@ FastCopyMode_PasteScreenshotQueue(queue) {
             cls := ""
             title := ""
         }
-        isGeminiSession := (proc = "chrome.exe" && InStr(title, "gemini", false))
+        isGeminiSession := (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title))
         cachedGeminiUia := ""
         if (isGeminiSession) {
             try {

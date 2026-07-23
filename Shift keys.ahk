@@ -255,6 +255,12 @@ global g_WikipediaScrollHistory := []
 #include %A_ScriptDir%\Shift keys\hotif_copilot_web.ahk
 
 ;-------------------------------------------------------------------
+; Gemini Enterprise (Chrome) — same Shift mnemonics as Gemini / Copilot
+;-------------------------------------------------------------------
+; [SK module] Gemini Enterprise Chrome hotkeys -> Shift keys\hotif_gemini_enterprise.ahk
+#include %A_ScriptDir%\Shift keys\hotif_gemini_enterprise.ahk
+
+;-------------------------------------------------------------------
 ; Google Maps Shortcuts (Chrome)
 ;-------------------------------------------------------------------
 ; [SK module] Google Maps Chrome hotkeys -> Shift keys\hotif_google_maps.ahk

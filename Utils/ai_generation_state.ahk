@@ -50,7 +50,7 @@ Gemini_HasGeneratingStopButton() {
             if (!hwnd || !WinExist("ahk_id " hwnd))
                 continue
             try {
-                if (InStr(WinGetTitle("ahk_id " hwnd), "gemini", false) = 0)
+                if (!IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)))
                     continue
             } catch {
                 continue

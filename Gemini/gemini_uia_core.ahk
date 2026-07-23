@@ -85,12 +85,12 @@ GeminiHasMoreOptionsForResponse(uia) {
     return allMoreOptionsButtons.Length > 0
 }
 
-; Find Gemini browser window (case-insensitive contains match for "gemini")
+; Find consumer Gemini browser window (excludes Gemini Enterprise)
 GetGeminiWindowHwnd() {
     try {
         for hwnd in WinGetList("ahk_exe chrome.exe") {
             try {
-                if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false)
+                if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd))
                     return hwnd
             } catch {
                 ; Silently skip invalid windows

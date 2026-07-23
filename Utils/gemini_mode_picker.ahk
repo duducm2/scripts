@@ -17,7 +17,7 @@ global GEMINI_MODE_PICKER_LABEL_WAIT_MS := 500
 FindGeminiChromeHwnd() {
     for hwnd in WinGetList("ahk_exe chrome.exe") {
         try {
-            if InStr(WinGetTitle("ahk_id " hwnd), "gemini", false)
+            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd))
                 return hwnd
         } catch {
         }
