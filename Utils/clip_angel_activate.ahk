@@ -63,10 +63,12 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     return true
 }
 
-; After native Alt+P / Alt+B open: one settle timer, one maximize+foreground gate (no poll / multi-pass).
-; Efficiency canon: hotkey returns immediately; MoveWindowToMonitor restores — calling it repeatedly = flicker loop.
-CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 300
+; After native Alt+P / Alt+B open: short settle, one maximize gate, one retry if needed.
+; Efficiency canon: hotkey returns immediately; same-monitor path skips MoveWindow+Sleep.
+CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 50
+CLIPANGEL_NATIVE_OPEN_RETRY_MS := 100
 global g_ClipAngelNativeOpenTargetMon := 0
+global g_ClipAngelNativeOpenRetryArmed := false
 
 ; Monitor under the mouse — where the user is looking.
 ClipAngel_GetMonitorIndexFromCursor() {
@@ -110,7 +112,7 @@ ClipAngel_IsForegroundLayoutOk(hwnd, targetMon) {
 
 ; Capture look-at monitor; replace any pending settle timer (second Alt+P/B does not stack layouts).
 ClipAngel_EnsureForegroundAfterNativeOpen() {
-    global g_ClipAngelNativeOpenTargetMon
+    global g_ClipAngelNativeOpenTargetMon, g_ClipAngelNativeOpenRetryArmed
     targetMon := ClipAngel_GetMonitorIndexFromCursor()
     if (!targetMon || targetMon < 1) {
         try targetMon := MonitorGetPrimary()
@@ -118,12 +120,13 @@ ClipAngel_EnsureForegroundAfterNativeOpen() {
             targetMon := 1
     }
     g_ClipAngelNativeOpenTargetMon := targetMon
+    g_ClipAngelNativeOpenRetryArmed := false
     SetTimer(ClipAngel_ApplyForegroundMaximizeOnce, -CLIPANGEL_NATIVE_OPEN_SETTLE_MS)
 }
 
-; One layout+activate if gate fails; no inner poll loop.
+; One layout+activate if gate fails; one short retry if still not ok.
 ClipAngel_ApplyForegroundMaximizeOnce(*) {
-    global g_ClipAngelNativeOpenTargetMon
+    global g_ClipAngelNativeOpenTargetMon, g_ClipAngelNativeOpenRetryArmed
     targetMon := g_ClipAngelNativeOpenTargetMon
     hwnd := ClipAngel_MainHwnd()
     if !hwnd
@@ -139,7 +142,12 @@ ClipAngel_ApplyForegroundMaximizeOnce(*) {
     catch {
     }
     ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
-    ClipAngel_EnsureWindowActive(hwnd, 400)
+    if ClipAngel_IsForegroundLayoutOk(hwnd, targetMon)
+        return
+    if (!g_ClipAngelNativeOpenRetryArmed) {
+        g_ClipAngelNativeOpenRetryArmed := true
+        SetTimer(ClipAngel_ApplyForegroundMaximizeOnce, -CLIPANGEL_NATIVE_OPEN_RETRY_MS)
+    }
 }
 
 ; =============================================================================

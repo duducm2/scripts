@@ -638,7 +638,22 @@ ClipAngel_EnsureWindowActive(hwnd, timeoutMs := 800) {
     return WinActive("ahk_id " hwnd)
 }
 
+; True when outer size is a tiny bar (Alt+P toggle) — ignores minimized (caller decides).
+ClipAngel_IsTinyLayout(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        WinGetPos(, , &w, &h, "ahk_id " hwnd)
+        if (w > 0 && h > 0 && (w < CLIPANGEL_MIN_LAYOUT_WIDTH || h < CLIPANGEL_MIN_LAYOUT_HEIGHT))
+            return true
+    } catch {
+        return true
+    }
+    return false
+}
+
 ; Move to monitor work area and maximize; re-activate if layout steals focus.
+; Same-monitor warm path: maximize/activate only (skip MoveWindowToMonitor + Sleep 80).
 ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
     if !hwnd
         return false
@@ -652,9 +667,37 @@ ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
         catch
             targetMon := 1
     }
+    curMon := 0
+    try curMon := GetAhkMonitorIndexFromHwnd(hwnd)
+    catch
+        curMon := 0
+    sameMon := (curMon >= 1 && curMon = targetMon)
+    mm := 0
+    try mm := WinGetMinMax("ahk_id " hwnd)
+    catch
+        mm := 0
+    iconic := (mm = -1) || DllCall("IsIconic", "ptr", hwnd)
+
+    if (sameMon) {
+        ; Already maximized on target — activate only.
+        if (mm = 1 && !ClipAngel_IsTinyLayout(hwnd))
+            return ClipAngel_EnsureWindowActive(hwnd, 150)
+        try {
+            if (iconic || mm = 1)
+                WinRestore("ahk_id " hwnd)
+        } catch {
+        }
+        try WinShow("ahk_id " hwnd)
+        catch {
+        }
+        ; Tiny after restore → full move path below.
+        if (!ClipAngel_IsTinyLayout(hwnd)) {
+            TryMaximizeWindow(hwnd)
+            return ClipAngel_EnsureWindowActive(hwnd, 150)
+        }
+    }
+
     MoveWindowToMonitor(hwnd, targetMon)
-    if !WinActive("ahk_id " hwnd)
-        ClipAngel_EnsureWindowActive(hwnd)
     TryMaximizeWindow(hwnd)
     return ClipAngel_EnsureWindowActive(hwnd)
 }
