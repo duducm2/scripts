@@ -273,7 +273,15 @@ class D2C_FlowManager {
             ClipAngel_LeaveFavoritesFilter(clipHwnd)
             priorSendLevel := A_SendLevel
             SendLevel 0
-            SendInput "{F4}"
+            SendInput "{Tab}"
+            Sleep 100
+            SendInput "^a"
+            Sleep 100
+            SendInput "^c"
+            Sleep 100
+            SendInput "{F10}"
+            Sleep 100
+            SendInput "{Up}"
             Sleep 100
             SendInput "{F4}"
             SendLevel priorSendLevel
