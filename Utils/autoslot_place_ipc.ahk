@@ -8,6 +8,9 @@
 
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 
+QL_AUTOSLOT_PLACE_MS_1 := 700
+QL_AUTOSLOT_PLACE_MS_2 := 1800
+
 ; Queue hwnd for AutoSlot free-capacity place (empty max / free half 50/50).
 ; WindowManagement AutoSlot_CheckPlaceRequest polls and runs TryPlaceBackgroundHwnd.
 AutoSlot_RequestPlaceCrossProcess(hwnd) {
@@ -28,4 +31,28 @@ AutoSlot_RequestPlaceCrossProcess(hwnd) {
         return false
     }
     return true
+}
+
+; After study layout: defer place until QL finishes load/size settle (two passes).
+; Re-resolves ahk_exe QuickLook.exe each fire so stale hwnds are not used.
+QuickLook_ScheduleAutoSlotPlace(*) {
+    SetTimer(QuickLook_DeferredAutoSlotPlacePass1, 0)
+    SetTimer(QuickLook_DeferredAutoSlotPlacePass2, 0)
+    SetTimer(QuickLook_DeferredAutoSlotPlacePass1, -QL_AUTOSLOT_PLACE_MS_1)
+    SetTimer(QuickLook_DeferredAutoSlotPlacePass2, -QL_AUTOSLOT_PLACE_MS_2)
+}
+
+QuickLook_DeferredAutoSlotPlacePass1(*) {
+    QuickLook_FireAutoSlotPlace()
+}
+
+QuickLook_DeferredAutoSlotPlacePass2(*) {
+    QuickLook_FireAutoSlotPlace()
+}
+
+QuickLook_FireAutoSlotPlace(*) {
+    hwnd := WinExist("ahk_exe QuickLook.exe")
+    if (!hwnd)
+        return
+    AutoSlot_RequestPlaceCrossProcess(hwnd)
 }

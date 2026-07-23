@@ -216,6 +216,25 @@ AutoSlot_CheckPlaceRequest(*) {
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
     AutoSlot_TryPlaceBackgroundHwnd(hwnd)
+    if (WinExist("ahk_id " hwnd)) {
+        h := hwnd
+        SetTimer(() => AutoSlot_VerifyPlaceOrRetry(h), -800)
+    }
+}
+
+; Second pass if QL undid maximize/move after load (skip if already filled or still 50/50).
+AutoSlot_VerifyPlaceOrRetry(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
+        return
+    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(hwnd, monIdx))
+        return
+    if (g_AutoSlotSnapPairs.Has(hwnd))
+        return
+    AutoSlot_TryPlaceBackgroundHwnd(hwnd)
 }
 
 AutoSlot_OnDisplayChange(*) {

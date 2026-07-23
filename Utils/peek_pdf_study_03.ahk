@@ -166,8 +166,8 @@ QuickLook_ScrollToEnd(hwnd, extraRetries := 0) {
     }
 }
 
-; Focus QuickLook, optional scroll-to-end, then request AutoSlot free-capacity place
-; (empty max / free half). Placement runs in WindowManagement via IPC when needed.
+; Focus QuickLook, optional scroll-to-end, then schedule deferred AutoSlot place
+; (QL often resets size after document paint — immediate place does not stick).
 QuickLook_ApplyStudyLayout(hwnd, scrollToEnd := true, extraScrollRetries := 0) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
@@ -180,7 +180,7 @@ QuickLook_ApplyStudyLayout(hwnd, scrollToEnd := true, extraScrollRetries := 0) {
     QuickLook_ClickWindowCenter(hwnd)
     if (scrollToEnd)
         QuickLook_ScrollToEnd(hwnd, extraScrollRetries)
-    try AutoSlot_RequestPlaceCrossProcess(hwnd)
+    try QuickLook_ScheduleAutoSlotPlace()
     catch {
     }
     return true
