@@ -29,8 +29,28 @@ $+s:: {
 }
 
 $+m:: {
-    try ShowGeminiEnterpriseModelSelector()
-    catch {
+    try {
+        if (GeminiEnterprise_IsModelSelected(GEMINI_ENTERPRISE_DEEP_MODEL)) {
+            GeminiEnterprise_ReturnToComposer()
+            return
+        }
+        ok := GeminiEnterprise_RunWithBusyBanner("⏳ Selecting 3.1 Pro… Don't move the mouse", (*) =>
+            GeminiEnterprise_SelectDeepReasoningModel())
+        if (ok)
+            GeminiEnterprise_ReturnToComposer()
+        else
+            ShowCenteredOverlay_Utils("Could not select 3.1 Pro", 2200, BANNER_ACCENT_ERROR)
+    } catch {
+    }
+}
+
+$+a:: {
+    try {
+        ok := GeminiEnterprise_RunWithBusyBanner(
+            "⏳ 3.1 Pro + Create images + Bosch prompt… Don't move the mouse", GeminiEnterprise_ShiftArt)
+        if !ok
+            ShowCenteredOverlay_Utils("Create images / art prompt failed", 2200, BANNER_ACCENT_ERROR)
+    } catch {
     }
 }
 
@@ -79,7 +99,12 @@ $+p:: {
 ; Shift+H: strip human reminders after last --- (keep divider + blank lines)
 $+h:: {
     try {
-        if !GeminiEnterprise_StripComposerHumanReminders()
+        reason := ""
+        if GeminiEnterprise_StripComposerHumanReminders(&reason)
+            return
+        if (reason = "empty")
+            ShowCenteredOverlay_Utils("Could not read prompt text", 2200, BANNER_ACCENT_ERROR)
+        else
             ShowCenteredOverlay_Utils("No --- human-reminder divider found", 2200, BANNER_ACCENT_ERROR)
     } catch {
     }

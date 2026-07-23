@@ -27,8 +27,10 @@
             return
         }
         if (proc = "chrome.exe" && GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast")) {
-            ; Enterprise feed scroll not implemented yet — fall through to generic path if any.
-        } else if (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title)) {
+            GeminiEnterprise_ScrollFeedToBottom(hwnd)
+            return
+        }
+        if (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title)) {
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }

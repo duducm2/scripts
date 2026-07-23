@@ -6,21 +6,14 @@ GEMINI_ENTERPRISE_TITLE_NEEDLE := "Gemini Enterprise"
 GEMINI_ENTERPRISE_MENU_WAIT_MS := 2000
 GEMINI_ENTERPRISE_MENU_POLL_MS := 80
 GEMINI_ENTERPRISE_UIA_SETTLE_MS := 120
+GEMINI_ENTERPRISE_SCROLL_SETTLE_MS := 350
+GEMINI_ENTERPRISE_DEEP_MODEL := "3.1 Pro"
 
 global g_GeminiEnterpriseCachedHwnd := 0
 global g_GeminiEnterpriseHotkeyActive := false
 global g_GeminiEnterpriseCachedTitle := ""
 global g_GeminiEnterprise_ForegroundHookHandle := 0
 global g_GeminiEnterprise_ForegroundHookCallback := 0
-
-global g_GeminiEnterpriseModelSelectorGui := false
-global g_GeminiEnterpriseModelSelectorActive := false
-global g_GeminiEnterpriseModelHotkeyHandlers := []
-global g_GeminiEnterpriseModelCharSequence := ["1", "2", "3", "4"]
-global g_GeminiEnterpriseModels := [{ name: "Auto", description: "Gemini chooses the best fit" }, { name: "3.1 Pro",
-    description: "State-of-the-art reasoning" }, { name: "3.5 Flash", description: "Frontier intelligence built for speed" }, { name: "2.5 Pro",
-        description: "Solves complex problems" }
-]
 
 ; Consumer Gemini title: contains "gemini" but is not Enterprise (avoids false HotIf).
 IsConsumerGeminiChromeTitle(title) {
@@ -518,6 +511,50 @@ GeminiEnterprise_OpenModelSelector(uia := 0) {
     return true
 }
 
+GeminiEnterprise_GetModelSelectorLabel(btn) {
+    if (!IsObject(btn))
+        return ""
+    label := ""
+    try label := btn.Name
+    if (label != "" && !InStr(label, "Choose model", false))
+        return label
+    try {
+        for child in btn.FindAll({ ControlType: "Text" }) {
+            n := ""
+            try n := child.Name
+            if (n != "" && !InStr(n, "Choose model", false))
+                return n
+        }
+    } catch {
+    }
+    ; Parent group may hold the visible model name (e.g. "Auto", "3.1 Pro").
+    try {
+        parent := btn.Parent
+        if (IsObject(parent)) {
+            for child in parent.FindAll({ ControlType: "Text" }) {
+                n := ""
+                try n := child.Name
+                if (n != "" && !InStr(n, "Choose model", false))
+                    return n
+            }
+        }
+    } catch {
+    }
+    return label
+}
+
+GeminiEnterprise_IsModelSelected(modelName, uia := 0) {
+    if (!modelName)
+        return false
+    if (!uia)
+        uia := GeminiEnterprise_GetActiveUia()
+    btn := GeminiEnterprise_FindChooseModelButton(uia)
+    if (!btn)
+        return false
+    label := GeminiEnterprise_GetModelSelectorLabel(btn)
+    return (label != "" && InStr(label, modelName, false))
+}
+
 GeminiEnterprise_SelectModelByName(modelName, hwnd := 0) {
     if (!modelName)
         return false
@@ -526,6 +563,8 @@ GeminiEnterprise_SelectModelByName(modelName, hwnd := 0) {
     uia := GeminiEnterprise_ReadRootFromHwnd(hwnd)
     if (!IsObject(uia))
         return false
+    if (GeminiEnterprise_IsModelSelected(modelName, uia))
+        return true
     if (!GeminiEnterprise_OpenModelSelector(uia))
         return false
     item := GeminiEnterprise_WaitForMenuItemByNames([modelName], GEMINI_ENTERPRISE_MENU_WAIT_MS, hwnd)
@@ -540,6 +579,10 @@ GeminiEnterprise_SelectModelByName(modelName, hwnd := 0) {
     if (!item)
         return false
     return GeminiEnterprise_ClickUiaElement(item)
+}
+
+GeminiEnterprise_SelectDeepReasoningModel(hwnd := 0) {
+    return GeminiEnterprise_SelectModelByName(GEMINI_ENTERPRISE_DEEP_MODEL, hwnd)
 }
 
 GeminiEnterprise_TrySubmit(uia := 0) {
@@ -584,7 +627,40 @@ GeminiEnterprise_WaitForGenerationComplete(timeoutMs := 300000) {
     }
 }
 
-GeminiEnterprise_ComposerGetText(hwnd := 0) {
+; ProseMirror often lacks Value/TextPattern — clipboard read after focus is primary.
+GeminiEnterprise_ComposerGetTextViaClipboard(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!hwnd)
+        return ""
+    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+    if (!IsObject(root) || !GeminiEnterprise_FocusComposer(root, false))
+        return ""
+    Sleep 60
+    saved := ClipboardAll()
+    try {
+        A_Clipboard := ""
+        Send "^a"
+        Sleep 40
+        Send "^c"
+        if !ClipWait(1, 1)
+            return ""
+        text := A_Clipboard
+        if (Type(text) != "String")
+            text := ""
+        text := Trim(text)
+        if (text = "" || InStr(text, "Ask anything", false))
+            return ""
+        return text
+    } finally {
+        Sleep 40
+        try A_Clipboard := saved
+        catch {
+        }
+    }
+}
+
+GeminiEnterprise_ComposerGetTextViaUia(hwnd := 0) {
     try {
         if (!hwnd)
             hwnd := WinExist("A")
@@ -606,152 +682,112 @@ GeminiEnterprise_ComposerGetText(hwnd := 0) {
                 return text
         } catch {
         }
-        ; Fallback: concatenate text children under ProseMirror (skip placeholder).
-        try {
-            out := ""
-            for child in pf.FindAll({ ControlType: "Text" }) {
-                n := ""
-                try n := child.Name
-                if (n = "" || InStr(n, "Ask anything", false) || n = "`n")
-                    continue
-                out .= n
-            }
-            if (out != "")
-                return Trim(out)
-        } catch {
-        }
     } catch {
     }
     return ""
 }
 
-GeminiEnterprise_StripComposerHumanReminders() {
+GeminiEnterprise_ComposerGetText(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    text := GeminiEnterprise_ComposerGetTextViaClipboard(hwnd)
+    if (text != "")
+        return text
+    return GeminiEnterprise_ComposerGetTextViaUia(hwnd)
+}
+
+; reason: "" on success; "empty" if unreadable; "nodivider" if no --- block.
+GeminiEnterprise_StripComposerHumanReminders(&reason := "") {
+    reason := ""
     hwnd := WinExist("A")
     text := GeminiEnterprise_ComposerGetText(hwnd)
-    if (text = "")
+    if (text = "") {
+        reason := "empty"
         return false
+    }
     newText := StripPromptHumanReminders(text)
-    if (newText = "")
+    if (newText = "") {
+        reason := "nodivider"
         return false
+    }
     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
     if (IsObject(root))
         GeminiEnterprise_FocusComposer(root, false)
-    return ReplaceFocusedEditWithText(newText)
+    if !ReplaceFocusedEditWithText(newText) {
+        reason := "empty"
+        return false
+    }
+    return true
 }
 
-; --- Model selector wizard (Shift+M) ----------------------------------------
-
-CleanupGeminiEnterpriseModelSelector() {
-    global g_GeminiEnterpriseModelSelectorActive, g_GeminiEnterpriseModelSelectorGui
-    global g_GeminiEnterpriseModelHotkeyHandlers
-    g_GeminiEnterpriseModelSelectorActive := false
-    for handler in g_GeminiEnterpriseModelHotkeyHandlers {
-        try Hotkey(handler.char, handler.handler, "Off")
-        catch {
-        }
-    }
-    g_GeminiEnterpriseModelHotkeyHandlers := []
-    if (IsObject(g_GeminiEnterpriseModelSelectorGui)) {
-        try g_GeminiEnterpriseModelSelectorGui.Destroy()
-        catch {
-        }
-        g_GeminiEnterpriseModelSelectorGui := false
-    }
-}
-
-CreateGeminiEnterpriseModelHandler(char) {
-    return (*) => HandleGeminiEnterpriseModelSelection(char)
-}
-
-HandleGeminiEnterpriseModelSelection(char) {
-    global g_GeminiEnterpriseModelSelectorActive, g_GeminiEnterpriseModels
-    global g_GeminiEnterpriseModelCharSequence
-    if (!g_GeminiEnterpriseModelSelectorActive)
-        return
-    modelIndex := -1
-    for idx, ch in g_GeminiEnterpriseModelCharSequence {
-        if (ch = char) {
-            modelIndex := idx
-            break
-        }
-    }
-    if (modelIndex < 1 || modelIndex > g_GeminiEnterpriseModels.Length)
-        return
-    modelInfo := g_GeminiEnterpriseModels[modelIndex]
-    if (!IsObject(modelInfo))
-        return
-    modelName := ""
-    try modelName := modelInfo.name
-    if (modelName = "")
-        return
-    try CleanupGeminiEnterpriseModelSelector()
-    catch {
-    }
-    hwnd := WinExist("A")
-    ok := GeminiEnterprise_RunWithBusyBanner("🔄 Switching model to " modelName "…", (*) =>
-        GeminiEnterprise_SelectModelByName(modelName, hwnd), hwnd)
-    if (ok) {
-        try GeminiEnterprise_FocusComposer(GeminiEnterprise_GetActiveUia(), false)
-        GeminiEnterprise_ReturnToComposer()
-    } else
-        ShowCenteredOverlay_Utils("❌ Could not select model: " . modelName, 2800, BANNER_ACCENT_ERROR)
-}
-
-ShowGeminiEnterpriseModelSelector() {
-    global g_GeminiEnterpriseModelSelectorGui, g_GeminiEnterpriseModelSelectorActive
-    global g_GeminiEnterpriseModelHotkeyHandlers, g_GeminiEnterpriseModels
-    global g_GeminiEnterpriseModelCharSequence
-    if (!IsObject(g_GeminiEnterpriseModels) || g_GeminiEnterpriseModels.Length = 0)
-        return
-    if (g_GeminiEnterpriseModelSelectorActive && IsObject(g_GeminiEnterpriseModelSelectorGui)) {
-        try g_GeminiEnterpriseModelSelectorGui.Show()
-        return
-    }
-    CleanupGeminiEnterpriseModelSelector()
-
-    lines := "Gemini Enterprise — Choose model`n`n"
-    charIndex := 0
-    for model in g_GeminiEnterpriseModels {
-        if (charIndex < g_GeminiEnterpriseModelCharSequence.Length) {
-            char := g_GeminiEnterpriseModelCharSequence[charIndex + 1]
-            desc := ""
-            try desc := model.description
-            lines .= "[" char "] " model.name
-            if (desc != "")
-                lines .= " — " desc
-            lines .= "`n"
-            charIndex++
-        }
-    }
-    lines .= "`n[Esc] Close"
-
-    g_GeminiEnterpriseModelSelectorGui := Gui("+AlwaysOnTop +ToolWindow +E0x08000000", "Gemini Enterprise Model")
-    g_GeminiEnterpriseModelSelectorGui.SetFont("s14", "Segoe UI")
-    g_GeminiEnterpriseModelSelectorGui.MarginX := 10
-    g_GeminiEnterpriseModelSelectorGui.MarginY := 5
-    g_GeminiEnterpriseModelSelectorGui.AddEdit("w420 h180 ReadOnly VScroll", lines)
-    closeBtn := g_GeminiEnterpriseModelSelectorGui.AddButton("w100 Default Center", "Close")
-    closeBtn.OnEvent("Click", (*) => CleanupGeminiEnterpriseModelSelector())
-    g_GeminiEnterpriseModelSelectorGui.OnEvent("Close", (*) => CleanupGeminiEnterpriseModelSelector())
-    g_GeminiEnterpriseModelSelectorGui.OnEvent("Escape", (*) => CleanupGeminiEnterpriseModelSelector())
-
+GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!hwnd)
+        return false
     try {
-        MouseGetPos(&mx, &my)
-        g_GeminiEnterpriseModelSelectorGui.Show("NA w440 h230 x" (mx + 12) " y" (my + 12))
-    } catch {
-        g_GeminiEnterpriseModelSelectorGui.Show("NA w440 h230")
-    }
-
-    g_GeminiEnterpriseModelSelectorActive := true
-    g_GeminiEnterpriseModelHotkeyHandlers := []
-    charIndex := 0
-    for model in g_GeminiEnterpriseModels {
-        if (charIndex < g_GeminiEnterpriseModelCharSequence.Length) {
-            char := g_GeminiEnterpriseModelCharSequence[charIndex + 1]
-            handler := CreateGeminiEnterpriseModelHandler(char)
-            try Hotkey(char, handler, "On")
-            g_GeminiEnterpriseModelHotkeyHandlers.Push({ char: char, handler: handler })
-            charIndex++
+        uia := UIA_Browser("ahk_id " hwnd)
+        try {
+            ; Prefer last message-like content in main panel when present.
+            panel := GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "main-panel" }])
+            scope := IsObject(panel) ? panel : uia
+            msgs := 0
+            try msgs := scope.FindAll({ ControlType: "ListItem", ClassName: "conversation-container", matchmode: "Substring" })
+            catch {
+            }
+            if (!msgs || !msgs.Length) {
+                try msgs := scope.FindAll({ ClassName: "ucs-chat", matchmode: "Substring" })
+                catch {
+                }
+            }
+            if (msgs && msgs.Length > 0) {
+                try msgs[msgs.Length].ScrollIntoView()
+                catch {
+                }
+            }
+        } catch {
         }
+        rw := 0
+        try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+        catch
+            rw := 0
+        if (rw) {
+            try ControlSend "{Blind}^{End}", , "ahk_id " rw
+            catch {
+                Send "^{End}"
+            }
+        } else {
+            Send "^{End}"
+        }
+        Sleep GEMINI_ENTERPRISE_SCROLL_SETTLE_MS
+        pf := GeminiEnterprise_FindComposer(uia)
+        if (pf) {
+            try pf.ScrollIntoView()
+            catch {
+            }
+        }
+        return true
+    } catch {
+        return false
     }
+}
+
+; Shift+A: 3.1 Pro + Create images + bosch-brand-image (strip reminders).
+GeminiEnterprise_ShiftArt() {
+    hwnd := WinExist("A")
+    if (!GeminiEnterprise_SelectDeepReasoningModel(hwnd))
+        return false
+    Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+    if !GeminiEnterprise_ClickCreateImages()
+        return false
+    promptText := GetPromptText("bosch-brand-image")
+    if (InStr(promptText, "[PROMPT FILE MISSING:"))
+        return false
+    stripped := StripPromptHumanReminders(promptText)
+    if (stripped != "")
+        promptText := stripped
+    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+    if (IsObject(root))
+        GeminiEnterprise_FocusComposer(root, false)
+    return ReplaceFocusedEditWithText(promptText)
 }

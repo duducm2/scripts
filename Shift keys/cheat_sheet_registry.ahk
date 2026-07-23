@@ -1068,13 +1068,17 @@ cheatSheets["Gemini Enterprise"] := "
     📂 [D]Toggle nav [D]rawer (Menu)
     💬 [N][N]ew chat
     🔍 [S][S]earch
-    🔄 [M]Choose [M]odel (Auto / 3.1 Pro / 3.5 Flash / 2.5 Pro)
+    🔄 [M]Select 3.1 Pro (no-op if already active)
+    🎨 [A][A]rt: 3.1 Pro + Create images + bosch-brand-image (strip reminders)
     🛠️ [T]Select [T]ools
     🖼️ [I]Create images (Tools menu; opens if needed)
     🔬 [E]Deep r[E]search (Tools menu; opens if needed)
     ⌨️ [P]Focus[P]rompt field
     ✂️ [H]Strip [H]uman reminders (keep --- + blank lines)
     🔔 [Enter / Ctrl+Enter]Submit (chime if Stop control appears)
+    
+    === Alt (ahk) ===
+    ⬇️ [U] Scroll AI feed to bottom — same idea as Cursor
 )"
 
 ; --- M365 Copilot web (Chrome) — same Shift keys as Gemini -----------------
