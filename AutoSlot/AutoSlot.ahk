@@ -283,6 +283,11 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
             partner := 0
     }
 
+    ; Premature WinEvent DESTROY: hwnd still a visible occupant — do not unpair / heal
+    ; (would maximize the companion over a still-living 50/50 half).
+    if (!fromShell && DllCall("IsWindow", "ptr", hwnd) && AutoSlot_IsOccupancyCandidate(hwnd))
+        return
+
     AutoSlot_UnregisterSnapPair(hwnd)
 
     if (MonitorGetCount() <= 1)
@@ -320,7 +325,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
 
     g_AutoSlotLastDestroyHwnd := hwnd
     g_AutoSlotLastDestroyTick := A_TickCount
-    ; Closing one half of a registered pair → maximize that partner (bypass occupancy races).
+    ; Closing one half of a registered pair → maximize that partner when alone.
     if (partner) {
         p := partner
         m := monIdx
@@ -336,6 +341,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
 }
 
 ; Maximize a known leftover companion after its snap-pair partner closed.
+; Abort if another living occupant remains (false destroy left the other half on the monitor).
 AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     if (!companion || !DllCall("IsWindow", "ptr", companion))
         return false
@@ -347,6 +353,9 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
         return false
     if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
         return true
+    part := AutoSlot_PartitionOccupancy(monIdx, companion)
+    if (part.filled.Length + part.nonFilled.Length >= 1)
+        return false
     healed := false
     try healed := !!WM_MaximizeHwndBackground(companion)
     catch

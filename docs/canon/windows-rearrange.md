@@ -39,6 +39,8 @@ When one window of a 50/50 pair **closes** or **minimizes**:
 - Snap pair is cleared.
 - Leftover companion is **healed** (maximized) when applicable — **intentional**.
 - Heal only when the monitor has a **true lone half** (no filled occupant). Do not maximize a half beside an already-filled window (would stack two fulls).
+- **`HealKnownCompanion`** also aborts if any other living occupant remains on that monitor (guards false/premature DESTROY that would bury the other half behind a maximized companion).
+- Premature WinEvent **`EVENT_OBJECT_DESTROY`** while the hwnd is still a visible occupancy candidate is ignored (no unregister / no heal); shell `WINDOWDESTROYED` remains the primary real-close path.
 - **No** automatic background import onto empty/half monitors.
 
 ---
