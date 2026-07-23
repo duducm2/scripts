@@ -769,6 +769,9 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
         try name := focused.Name
         catch {
         }
+        ; DataGrid row Edit cells (e.g. VisualWeight Row N) — Enter still pastes the clip.
+        if (type = 50004 && RegExMatch(name, "i)(?:Row|Linha)\s*\d+"))
+            return true
         ; ComboBox / Edit / Document — filters, search, preview, edit-clip UI.
         if (type = 50003 || type = 50004 || type = 50030)
             return false
@@ -791,6 +794,15 @@ ClipAngel_IsListPasteEnterContext(hwnd := 0) {
 
 ; Down N (optional), native Enter to paste selected clip, then minimize Clip Angel.
 ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
+    ; Alt+1–5 leave Alt logically down; without release, Enter becomes Alt+Enter (paste file).
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd) {
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        if (dataGrid)
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+    }
     if (downCount > 0) {
         loop downCount
             Send "{Down}"

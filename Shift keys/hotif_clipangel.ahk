@@ -24,7 +24,7 @@ global g_ClipAngelFileTypes := [{ name: "img", index: 1, navKey: "I", navCount: 
 ; Character sequence for file type assignment (5 types)
 global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 
-#HotIf WinActive("ClipAngel")
+#HotIf WinActive("ahk_exe ClipAngel.exe")
 
 ; Shift + C : Select filtered content and copy
 +c:: {
@@ -563,7 +563,7 @@ ShowClipAngelFilterSelector() {
 ; Shift + Y : Open file type filter selector (Quick Wizard)
 +y:: {
     ; Only show selector if ClipAngel is active
-    if WinActive("ClipAngel") {
+    if WinActive("ahk_exe ClipAngel.exe") {
         ShowClipAngelFilterSelector()
     }
 }
