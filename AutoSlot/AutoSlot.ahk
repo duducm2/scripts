@@ -78,7 +78,14 @@ AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered au
 AutoSlot_TOAST_DEBOUNCE_MS := 4000  ; identical toast text — avoid hide-timer reset spam
 AutoSlot_PLACE_REQUEST_POLL_MS := 200
 AutoSlot_MAX_ORDINAL := 4
+; Must match Utils\autoslot_place_ipc.ahk
+AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
+AutoSlot_STICKY_PLACE_MS := 400
+AutoSlot_STICKY_PLACE_MAX := 12
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
+global g_AutoSlotPlaceMsg := 0
+global g_AutoSlotStickyHwnd := 0
+global g_AutoSlotStickyAttempts := 0
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
@@ -189,8 +196,23 @@ AutoSlot_Init() {
         "Ptr")
 
     OnMessage(0x007E, AutoSlot_OnDisplayChange)  ; WM_DISPLAYCHANGE
+    global g_AutoSlotPlaceMsg
+    g_AutoSlotPlaceMsg := DllCall("RegisterWindowMessage", "str", AUTOSLOT_PLACE_MSG_NAME, "uint")
+    if (g_AutoSlotPlaceMsg)
+        OnMessage(g_AutoSlotPlaceMsg, AutoSlot_OnPlaceHwndMsg)
     AutoSlot_SeedHwndMonFromOccupancy()
     SetTimer(AutoSlot_CheckPlaceRequest, AutoSlot_PLACE_REQUEST_POLL_MS)
+}
+
+; PostMessage from Shift keys / Utils (lParam = hwnd to place). Preferred over file IPC.
+AutoSlot_OnPlaceHwndMsg(wParam, lParam, msg, hwnd) {
+    target := 0
+    try target := Integer(lParam)
+    catch
+        target := 0
+    if (target)
+        AutoSlot_HandlePlaceRequest(target)
+    return 0
 }
 
 ; Consume cross-process place requests (e.g. Study Topic QuickLook from Shift keys).
@@ -211,30 +233,108 @@ AutoSlot_CheckPlaceRequest(*) {
     try hwnd := Integer(raw)
     catch
         hwnd := 0
+    if (hwnd)
+        AutoSlot_HandlePlaceRequest(hwnd)
+}
+
+; Shared by PostMessage + file poll. QL gets sticky re-place (BeginShow.PositionWindow undoes size).
+AutoSlot_HandlePlaceRequest(hwnd) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
-    AutoSlot_TryPlaceBackgroundHwnd(hwnd)
-    if (WinExist("ahk_id " hwnd)) {
-        h := hwnd
-        SetTimer(() => AutoSlot_VerifyPlaceOrRetry(h), -800)
+    placed := AutoSlot_TryPlaceBackgroundHwnd(hwnd)
+    if (!WinExist("ahk_id " hwnd))
+        return
+    if (placed && AutoSlot_IsQuickLookHwnd(hwnd)) {
+        AutoSlot_ArmStickyPlace(hwnd)
+        return
+    }
+    h := hwnd
+    SetTimer(() => AutoSlot_VerifyPlaceOrRetry(h), -800)
+}
+
+AutoSlot_IsQuickLookHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    try return StrLower(WinGetProcessName("ahk_id " hwnd)) = "quicklook.exe"
+    catch
+        return false
+}
+
+; True when place geometry looks settled (full or still a half-pane). SnapPairs alone is not enough —
+; QuickLook can keep the pair map entry while PositionWindow restores preferred size.
+AutoSlot_PlaceLooksSettled(hwnd) {
+    global g_AutoSlotSnapPairs
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return true
+    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(hwnd, monIdx))
+        return true
+    if (!g_AutoSlotSnapPairs.Has(hwnd) || monIdx < 1)
+        return false
+    try {
+        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
+        workW := wr - wl
+        if (workW < 1)
+            return false
+        rect := Buffer(16, 0)
+        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+            return false
+        w := NumGet(rect, 8, "int") - NumGet(rect, 0, "int")
+        ; Half pane ≈ 40–60% of work width (gapless snap).
+        return (w >= Round(workW * 0.38) && w <= Round(workW * 0.62))
+    } catch {
+        return false
     }
 }
 
-; Second pass if QL undid maximize/move after load (skip if already filled or still 50/50).
+; Second pass if QL undid maximize/move after load (skip only when geometry settled).
 AutoSlot_VerifyPlaceOrRetry(hwnd) {
-    global g_AutoSlotSnapPairs
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
-    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
-    if (monIdx >= 1 && AutoSlot_CompanionAlreadyFilled(hwnd, monIdx))
-        return
-    if (g_AutoSlotSnapPairs.Has(hwnd))
+    if (AutoSlot_PlaceLooksSettled(hwnd))
         return
     AutoSlot_TryPlaceBackgroundHwnd(hwnd)
+    if (AutoSlot_IsQuickLookHwnd(hwnd) && !AutoSlot_PlaceLooksSettled(hwnd))
+        AutoSlot_ArmStickyPlace(hwnd)
+}
+
+; Re-apply place while QuickLook fights external resize (until maximized / half sticks).
+AutoSlot_ArmStickyPlace(hwnd) {
+    global g_AutoSlotStickyHwnd, g_AutoSlotStickyAttempts
+    if (!hwnd)
+        return
+    g_AutoSlotStickyHwnd := Integer(hwnd)
+    g_AutoSlotStickyAttempts := 0
+    SetTimer(AutoSlot_StickyPlaceTick, 0)
+    SetTimer(AutoSlot_StickyPlaceTick, -AutoSlot_STICKY_PLACE_MS)
+}
+
+AutoSlot_StickyPlaceTick(*) {
+    global g_AutoSlotStickyHwnd, g_AutoSlotStickyAttempts
+    hwnd := g_AutoSlotStickyHwnd
+    if (!hwnd || !WinExist("ahk_id " hwnd)) {
+        g_AutoSlotStickyHwnd := 0
+        return
+    }
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1) {
+        g_AutoSlotStickyHwnd := 0
+        return
+    }
+    if (AutoSlot_PlaceLooksSettled(hwnd)) {
+        g_AutoSlotStickyHwnd := 0
+        return
+    }
+    g_AutoSlotStickyAttempts += 1
+    if (g_AutoSlotStickyAttempts > AutoSlot_STICKY_PLACE_MAX) {
+        g_AutoSlotStickyHwnd := 0
+        return
+    }
+    AutoSlot_TryPlaceBackgroundHwnd(hwnd)
+    SetTimer(AutoSlot_StickyPlaceTick, -AutoSlot_STICKY_PLACE_MS)
 }
 
 AutoSlot_OnDisplayChange(*) {
@@ -1443,8 +1543,11 @@ AutoSlot_MaximizeHwnd(hwnd) {
         try {
             WinMaximize "ahk_id " hwnd
         } catch {
-            try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd
         }
+        ; Always reinforce with SC_MAXIMIZE. WinMaximize rarely throws; WPF apps
+        ; (QuickLook) need WM_SYSCOMMAND so WindowState=Maximized and PositionWindow
+        ; will not undo the size after document load.
+        try PostMessage 0x0112, 0xF030, , , "ahk_id " hwnd
     } finally {
         StandardLoadingBar_BusyAllMonitors_End()
     }

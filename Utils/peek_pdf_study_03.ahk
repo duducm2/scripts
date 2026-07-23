@@ -167,7 +167,7 @@ QuickLook_ScrollToEnd(hwnd, extraRetries := 0) {
 }
 
 ; Focus QuickLook, optional scroll-to-end, then schedule deferred AutoSlot place
-; (QL often resets size after document paint — immediate place does not stick).
+; (QL PositionWindow undoes size unless Maximized — sticky place lives in AutoSlot).
 QuickLook_ApplyStudyLayout(hwnd, scrollToEnd := true, extraScrollRetries := 0) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
