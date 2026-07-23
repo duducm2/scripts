@@ -26,6 +26,8 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 2. Else **free half** (lone maximized or lone half-pane) → **50/50 SnapPair** with that partner; first such monitor in ordinal order (**M1**, then M2, …). After register, both hwnds get **PairSuppress** so settle `LOCATIONCHANGE` (stale OS-max bit) does not immediately unpair.
 3. Else → **leave as-is** (“grid full”) — do not maximize over true full monitors (two filled or an existing 50/50 pair); window stays where the OS opened it.
 
+**SHOW vs CREATE:** Shell `WINDOWCREATED` always may Place. `EVENT_OBJECT_SHOW` uses `AutoSlot_ScheduleFromShow` — if the hwnd already shares its monitor with another occupant (e.g. a 50/50 half activated by **`^!#q/w/e/r`**), it only remembers the hwnd and does **not** Place/maximize. Cycle activate must never yank a half onto an empty ordinal.
+
 Feedback: INFO toast on successful empty/half place. After SnapPair, optional **[M]** undo modal where that path still uses it. Grid-full is silent.
 
 ---

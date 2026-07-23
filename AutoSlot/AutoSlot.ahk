@@ -187,6 +187,7 @@ AutoSlot_Init() {
         "Ptr")
 
     OnMessage(0x007E, AutoSlot_OnDisplayChange)  ; WM_DISPLAYCHANGE
+    AutoSlot_SeedHwndMonFromOccupancy()
 }
 
 AutoSlot_OnDisplayChange(*) {
@@ -209,7 +210,7 @@ AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         return
     hwnd := Integer(hwnd)
     if (event = AutoSlot_EVENT_OBJECT_SHOW)
-        AutoSlot_Schedule(hwnd)
+        AutoSlot_ScheduleFromShow(hwnd)
     else if (event = AutoSlot_EVENT_OBJECT_DESTROY)
         AutoSlot_OnDestroy(hwnd, false)  ; secondary; skip if shell just handled same hwnd
 }
@@ -874,6 +875,45 @@ AutoSlot_Schedule(hwnd) {
     AutoSlot_RememberHwndMon(hwnd)
     g_AutoSlotPending[hwnd] := true
     SetTimer(() => AutoSlot_ProcessPending(hwnd), -AutoSlot_DEBOUNCE_MS)
+}
+
+; SHOW-only: activation of an existing co-occupant (e.g. 50/50 half via ^!#q/w/e/r)
+; must not Place/maximize. Shell WINDOWCREATED still uses AutoSlot_Schedule directly.
+AutoSlot_ScheduleFromShow(hwnd) {
+    global g_AutoSlotHwndMon
+    if (!AutoSlot_IsEnabled())
+        return
+    if (!hwnd || MonitorGetCount() <= 1)
+        return
+    if (g_AutoSlotHwndMon.Has(hwnd))
+        return
+    monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx >= 1) {
+        others := AutoSlot_PartitionOccupancy(monIdx, hwnd)
+        if (others.filled.Length + others.nonFilled.Length >= 1) {
+            ; Already sharing this monitor — track for later SHOW spam; do not Place.
+            AutoSlot_RememberHwndMon(hwnd)
+            return
+        }
+    }
+    AutoSlot_Schedule(hwnd)
+}
+
+; Post-reload: track current occupants so cycle activate cannot Place existing layouts.
+AutoSlot_SeedHwndMonFromOccupancy() {
+    if (MonitorGetCount() <= 1)
+        return
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    loop ordinalCount {
+        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
+        if (!monIdx)
+            continue
+        part := AutoSlot_PartitionOccupancy(monIdx)
+        for row in part.filled
+            AutoSlot_RememberHwndMon(row.hwnd)
+        for row in part.nonFilled
+            AutoSlot_RememberHwndMon(row.hwnd)
+    }
 }
 
 AutoSlot_ProcessPending(hwnd) {
@@ -1904,6 +1944,8 @@ AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false)
         g_AutoSlotUndo := 0
     }
     AutoSlot_RegisterSnapPair(newHwnd, partnerHwnd)
+    AutoSlot_RememberHwndMon(newHwnd)
+    AutoSlot_RememberHwndMon(partnerHwnd)
     ; Mute LOCATIONCHANGE settle (stale MinMax=1) so Place 50/50 is not immediately unpaired.
     AutoSlot_ClearPairMaxPending(newHwnd)
     AutoSlot_ClearPairMaxPending(partnerHwnd)

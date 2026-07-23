@@ -860,6 +860,12 @@ WM_SnapHalfPairActiveWindow() {
         try AutoSlot_RegisterSnapPair(targetHwnd, partnerHwnd)
         catch {
         }
+        try AutoSlot_RememberHwndMon(targetHwnd)
+        catch {
+        }
+        try AutoSlot_RememberHwndMon(partnerHwnd)
+        catch {
+        }
     }
 
     ; If the hotkey target stayed on the snap monitor and the partner was imported from
