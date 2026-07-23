@@ -33,7 +33,17 @@
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
 ; Ctrl+Alt+Win+4 - AI Text Optimizer (same as Win+Alt+Shift+U then L, 4)
-^!#4:: GeminiNavigateFocusAndPasteFirstSnippet(GetAioptPromptText(), true)
+; Routes via ResolveGlobalAICompanion (Enterprise / Copilot / consumer Gemini).
+^!#4:: {
+    prompt := GetAioptPromptText()
+    companion := ResolveGlobalAICompanion()
+    if (companion = "enterprise")
+        GeminiEnterprise_NavigateFocusAndPaste(prompt, true)
+    else if (companion = "copilot")
+        CopilotWeb_NavigateFocusAndPaste(prompt, true)
+    else
+        GeminiNavigateFocusAndPasteFirstSnippet(prompt, true)
+}
 
 ; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
 ^!#2:: QuickUpdateScripts()

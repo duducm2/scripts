@@ -1,4 +1,6 @@
-# Dictation → Gemini → Cursor Flow
+# Dictation → Companion AI → Cursor Flow
+
+> **Companion routing:** At work the paste/submit target may be **Gemini Enterprise** or **M365 Copilot**, not only consumer Gemini. See [global-ai-companion-routing.md](global-ai-companion-routing.md). Banner labels use `{AI_PROVIDER}` / `GetGlobalAIProviderLabel()`.
 
 1. **Start dictation** with **Win+Alt+Shift+0** (`~#!+0`).
 2. **Finish dictating** (second press of `~#!+0` or stop manually).

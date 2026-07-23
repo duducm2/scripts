@@ -61,10 +61,10 @@ class GeminiAsyncReadAloud {
         this.StartCallback := ""
         ; EnsureReady/Connect block on CreateFile until a pipe server exists — stalls the main thread and never reaches Launch.
         ; Only enqueue when IPC is enabled and we already have a pipe (#!+p and similar never touch this).
-        ; Skip Python IPC on work — global AI routes to Copilot web, not Gemini.
+        ; Python IPC is only for consumer Gemini — not Copilot or Gemini Enterprise.
         queuedTask := false
         pipeOpen := GeminiIPC_HasOpenPipe()
-        if (GEMINI_USE_PYTHON_IPC && pipeOpen && !UseCopilotWebForGlobalAI())
+        if (GEMINI_USE_PYTHON_IPC && pipeOpen && ResolveGlobalAICompanion() = "gemini")
             queuedTask := GeminiQueueBackgroundTask("ReadAloud", Map("geminiHwnd", this.GeminiHwnd, "originalHwnd",
                 this.OriginalHwnd, "copyFirst", this.CopyFirst ? 1 : 0, "useTrashTab", this.UseTrashTab ? 1 : 0))
         if (queuedTask is Map && queuedTask.Has("taskId")) {
