@@ -812,6 +812,30 @@ ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
+; Down N (optional), F10 → select-all → copy preview text, then minimize Clip Angel.
+ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd) {
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        if (dataGrid)
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+    }
+    if (downCount > 0) {
+        loop downCount
+            Send "{Down}"
+        Sleep 150
+    }
+    Send "{F10}"
+    Sleep 150
+    Send "^a"
+    Sleep 150
+    Send "^c"
+    Sleep 100
+    ClipAngel_CloseAndRestoreFocus(0)
+}
+
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {

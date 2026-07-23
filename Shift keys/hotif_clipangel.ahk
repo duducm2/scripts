@@ -110,58 +110,12 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Ctrl + 1–5 : Down N, F10, Select All, Copy (150ms between each step)
-^1:: {
-    Send "{F10}"
-    Sleep 150
-    Send "^a"
-    Sleep 150
-    Send "^c"
-}
-^2:: {
-    Send "{Down 1}"
-    Sleep 150
-    Send "{F10}"
-    Sleep 150
-    Send "^a"
-    Sleep 150
-    Send "^c"
-    Sleep 150
-    Send "{F10}"
-}
-^3:: {
-    Send "{Down 2}"
-    Sleep 150
-    Send "{F10}"
-    Sleep 150
-    Send "^a"
-    Sleep 150
-    Send "^c"
-    Sleep 150
-    Send "{F10}"
-}
-^4:: {
-    Send "{Down 3}"
-    Sleep 150
-    Send "{F10}"
-    Sleep 150
-    Send "^a"
-    Sleep 150
-    Send "^c"
-    Sleep 150
-    Send "{F10}"
-}
-^5:: {
-    Send "{Down 4}"
-    Sleep 150
-    Send "{F10}"
-    Sleep 150
-    Send "^a"
-    Sleep 150
-    Send "^c"
-    Sleep 150
-    Send "{F10}"
-}
+; Ctrl + 1–5 : Down N, F10, Select All, Copy, then minimize.
+^1:: ClipAngel_SelectClipCopyThenMinimize(0)
+^2:: ClipAngel_SelectClipCopyThenMinimize(1)
+^3:: ClipAngel_SelectClipCopyThenMinimize(2)
+^4:: ClipAngel_SelectClipCopyThenMinimize(3)
+^5:: ClipAngel_SelectClipCopyThenMinimize(4)
 
 ; =============================================================================
 ; ClipAngel Filter Selector Functions
