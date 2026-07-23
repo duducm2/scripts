@@ -152,47 +152,10 @@ global g_ClipAngelLastFgHwnd := 0
 ; Default false here (Utils hosts); Shift keys hotif_clipangel toggles it for the filter selector.
 global g_ClipAngelFilterSelectorActive := false
 
-; #region agent log
-ClipAngel_DebugLog(hypothesisId, location, message, dataObj := "") {
-    try {
-        path := A_ScriptDir "\debug-be5edc.log"
-        ts := A_TickCount
-        dataStr := "{}"
-        if (IsObject(dataObj)) {
-            parts := []
-            for k, v in dataObj {
-                vv := v
-                if (vv = true)
-                    vv := "true"
-                else if (vv = false)
-                    vv := "false"
-                else if (vv is String)
-                    vv := '"' StrReplace(StrReplace(vv, "\", "\\"), '"', '\"') '"'
-                parts.Push('"' k '":' vv)
-            }
-            dataStr := "{" . ArrayJoinComma(parts) . "}"
-        }
-        line := '{"sessionId":"be5edc","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataStr ',"timestamp":' ts ',"runId":"pre-fix"}`n'
-        FileAppend(line, path, "UTF-8")
-    } catch {
-    }
-}
-ArrayJoinComma(arr) {
-    out := ""
-    for i, s in arr
-        out .= (i > 1 ? "," : "") s
-    return out
-}
-; #endregion
-
 ClipAngel_InitAutoMinimizeOnDeactivate() {
     global g_ClipAngelFgHook, g_ClipAngelFgHookCb
-    if (g_ClipAngelFgHook) {
-        ; #region agent log
-        ClipAngel_DebugLog("A", "clip_angel_activate.ahk:Init", "init_already_hooked", Map("hook", g_ClipAngelFgHook))
-        ; #endregion
+    if (g_ClipAngelFgHook)
         return
-    }
     g_ClipAngelFgHookCb := CallbackCreate(ClipAngel_ForegroundHookProc, "F", 7)
     g_ClipAngelFgHook := DllCall("user32\SetWinEventHook",
         "UInt", 0x0003,  ; EVENT_SYSTEM_FOREGROUND
@@ -203,13 +166,6 @@ ClipAngel_InitAutoMinimizeOnDeactivate() {
         "UInt", 0,
         "UInt", 0,
         "Ptr")
-    ; #region agent log
-    ClipAngel_DebugLog("A", "clip_angel_activate.ahk:Init", "init_result", Map(
-        "hook", g_ClipAngelFgHook + 0,
-        "cb", g_ClipAngelFgHookCb + 0,
-        "script", A_ScriptName
-    ))
-    ; #endregion
     if (!g_ClipAngelFgHook) {
         try CallbackFree(g_ClipAngelFgHookCb)
         catch {
@@ -222,11 +178,6 @@ ClipAngel_InitAutoMinimizeOnDeactivate() {
 ClipAngel_ForegroundHookProc(hHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_ClipAngelLastFgHwnd
     g_ClipAngelLastFgHwnd := hwnd
-    ; #region agent log
-    ; Throttle: only log when ClipAngel.exe exists (avoid flood).
-    if (WinExist("ahk_exe ClipAngel.exe"))
-        ClipAngel_DebugLog("B", "clip_angel_activate.ahk:FgHook", "fg_event", Map("hwnd", hwnd + 0))
-    ; #endregion
     ; -0 is treated as period 0 (disable timer). Must use -1 for next-tick once.
     SetTimer(ClipAngel_OnForegroundChanged, -1)
 }
@@ -250,78 +201,34 @@ ClipAngel_FgIsClipAngelExe(hwnd) {
 
 ; Schedule or cancel debounced minimize when foreground changes.
 ClipAngel_OnForegroundChanged(*) {
-    global g_ClipAngelAutomationBusy, g_ClipAngelFilterSelectorActive, g_ClipAngelLastFgHwnd
-    ; #region agent log
-    ClipAngel_DebugLog("C", "clip_angel_activate.ahk:OnFgChanged", "entered", Map())
-    ; #endregion
-    skip := ClipAngel_ShouldSkipAutoMinimize()
-    ca := ClipAngel_MainHwnd()
-    shown := ca ? ClipAngel_IsWindowShown(ca) : false
-    fg := g_ClipAngelLastFgHwnd
-    if (!fg)
-        fg := WinExist("A")
-    fgExe := ""
-    try fgExe := StrLower(WinGetProcessName("ahk_id " fg))
-    catch
-        fgExe := ""
-    sameCa := (fg = ca)
-    isCaExe := ClipAngel_FgIsClipAngelExe(fg)
-    ; #region agent log
-    ClipAngel_DebugLog("C", "clip_angel_activate.ahk:OnFgChanged", "evaluate", Map(
-        "skip", skip,
-        "busy", !!g_ClipAngelAutomationBusy,
-        "filter", !!g_ClipAngelFilterSelectorActive,
-        "ca", ca + 0,
-        "shown", !!shown,
-        "fg", fg + 0,
-        "fgExe", fgExe,
-        "sameCa", !!sameCa,
-        "isCaExe", !!isCaExe
-    ))
-    ; #endregion
-    if (skip) {
-        SetTimer(ClipAngel_AutoMinimizeTick, 0)
-        return
-    }
-    if (!ca || !shown) {
-        SetTimer(ClipAngel_AutoMinimizeTick, 0)
-        return
-    }
-    if (sameCa || isCaExe) {
-        SetTimer(ClipAngel_AutoMinimizeTick, 0)
-        return
-    }
-    ; #region agent log
-    ClipAngel_DebugLog("D", "clip_angel_activate.ahk:OnFgChanged", "schedule_minimize", Map("debounceMs",
-        CLIPANGEL_AUTO_MINIMIZE_DEBOUNCE_MS))
-    ; #endregion
-    SetTimer(ClipAngel_AutoMinimizeTick, -CLIPANGEL_AUTO_MINIMIZE_DEBOUNCE_MS)
-}
-
-ClipAngel_AutoMinimizeTick(*) {
     if (ClipAngel_ShouldSkipAutoMinimize()) {
-        ; #region agent log
-        ClipAngel_DebugLog("E", "clip_angel_activate.ahk:Tick", "tick_skip_busy", Map())
-        ; #endregion
+        SetTimer(ClipAngel_AutoMinimizeTick, 0)
         return
     }
     ca := ClipAngel_MainHwnd()
     if (!ca || !ClipAngel_IsWindowShown(ca)) {
-        ; #region agent log
-        ClipAngel_DebugLog("E", "clip_angel_activate.ahk:Tick", "tick_skip_not_shown", Map("ca", ca + 0))
-        ; #endregion
+        SetTimer(ClipAngel_AutoMinimizeTick, 0)
         return
     }
-    fg := WinExist("A")
+    global g_ClipAngelLastFgHwnd
+    fg := g_ClipAngelLastFgHwnd
+    if (!fg)
+        fg := WinExist("A")
     if (fg = ca || ClipAngel_FgIsClipAngelExe(fg)) {
-        ; #region agent log
-        ClipAngel_DebugLog("E", "clip_angel_activate.ahk:Tick", "tick_skip_still_ca", Map("fg", fg + 0))
-        ; #endregion
+        SetTimer(ClipAngel_AutoMinimizeTick, 0)
         return
     }
-    ok := ClipAngel_HideWindow(ca)
-    ; #region agent log
-    ClipAngel_DebugLog("E", "clip_angel_activate.ahk:Tick", "tick_hide", Map("ca", ca + 0, "ok", !!ok, "stillShown", !!
-        ClipAngel_IsWindowShown(ca)))
-    ; #endregion
+    SetTimer(ClipAngel_AutoMinimizeTick, -CLIPANGEL_AUTO_MINIMIZE_DEBOUNCE_MS)
+}
+
+ClipAngel_AutoMinimizeTick(*) {
+    if (ClipAngel_ShouldSkipAutoMinimize())
+        return
+    ca := ClipAngel_MainHwnd()
+    if (!ca || !ClipAngel_IsWindowShown(ca))
+        return
+    fg := WinExist("A")
+    if (fg = ca || ClipAngel_FgIsClipAngelExe(fg))
+        return
+    ClipAngel_HideWindow(ca)
 }
