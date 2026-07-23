@@ -716,7 +716,7 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
     AutoSlot_RememberHwndMon(hwnd)
 }
 
-; On minimize start: clear pair registry, heal leftover companion (no background import).
+; On minimize start: clear pair registry, heal leftover companion (parity with destroy).
 AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_AutoSlotHwndMon, g_AutoSlotSnapPairs
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
@@ -731,20 +731,43 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         g_AutoSlotJustRestored[hwnd] := A_TickCount
         return
     }
+
     cached := g_AutoSlotHwndMon.Has(hwnd) ? g_AutoSlotHwndMon[hwnd] : 0
-    partner := g_AutoSlotSnapPairs.Has(hwnd) ? g_AutoSlotSnapPairs[hwnd] : 0
-    if (!cached && !AutoSlot_IsMinimizeRearrangeCandidate(hwnd))
+    partnerHwnd := 0
+    partnerMon := 0
+    if (g_AutoSlotSnapPairs.Has(hwnd)) {
+        partnerHwnd := g_AutoSlotSnapPairs[hwnd]
+        if (partnerHwnd && partnerHwnd != hwnd && DllCall("IsWindow", "ptr", partnerHwnd)) {
+            partnerMon := AutoSlot_GetHwndMonitorIndex(partnerHwnd)
+            if (partnerMon < 1 && g_AutoSlotHwndMon.Has(partnerHwnd))
+                partnerMon := g_AutoSlotHwndMon[partnerHwnd]
+        } else
+            partnerHwnd := 0
+    }
+    if (!cached && !partnerHwnd && !AutoSlot_IsMinimizeRearrangeCandidate(hwnd))
         return
+
     monIdx := cached >= 1 ? cached : 0
-    partnerHwnd := partner
+    if (monIdx < 1)
+        monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
+    if (monIdx < 1 && partnerMon >= 1)
+        monIdx := partnerMon
+
     ; Always break the 50/50 link when one side minimizes.
     AutoSlot_UnregisterSnapPair(hwnd)
     AutoSlot_ForgetHwndMon(hwnd)
-    if (partnerHwnd && monIdx >= 1) {
+    if (monIdx < 1 || MonitorGetCount() <= 1)
+        return
+
+    if (partnerHwnd) {
         p := partnerHwnd
         m := monIdx
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
+        SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
+    AutoSlot_ScheduleHealOnly(monIdx)
+    lateMon := monIdx
+    SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
 }
 
 ; Like IsOccupancyCandidate but allows iconic (minMax = -1).
@@ -900,8 +923,10 @@ AutoSlot_ScheduleFromShow(hwnd) {
     if (monIdx >= 1) {
         others := AutoSlot_PartitionOccupancy(monIdx, hwnd)
         if (others.filled.Length + others.nonFilled.Length >= 1) {
-            ; Already sharing this monitor — track for later SHOW spam; do not Place.
-            AutoSlot_RememberHwndMon(hwnd)
+            ; Already sharing this monitor — do not Place. Cache only eligible
+            ; occupants (Teams/#32770 chrome must not seed HwndMon → false heal).
+            if (AutoSlot_IsEligibleNewWindow(hwnd) || AutoSlot_IsOccupancyCandidate(hwnd))
+                AutoSlot_RememberHwndMon(hwnd)
             return
         }
     }

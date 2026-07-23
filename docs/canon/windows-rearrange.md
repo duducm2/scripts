@@ -26,7 +26,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 2. Else **free half** (lone maximized or lone half-pane) → **50/50 SnapPair** with that partner; first such monitor in ordinal order (**M1**, then M2, …). After register, both hwnds get **PairSuppress** so settle `LOCATIONCHANGE` (stale OS-max bit) does not immediately unpair.
 3. Else → **leave as-is** (“grid full”) — do not maximize over true full monitors (two filled or an existing 50/50 pair); window stays where the OS opened it.
 
-**SHOW vs CREATE:** Shell `WINDOWCREATED` always may Place. `EVENT_OBJECT_SHOW` uses `AutoSlot_ScheduleFromShow` — if the hwnd already shares its monitor with another occupant (e.g. a 50/50 half activated by **`^!#q/w/e/r`**), it only remembers the hwnd and does **not** Place/maximize. Cycle activate must never yank a half onto an empty ordinal.
+**SHOW vs CREATE:** Shell `WINDOWCREATED` always may Place. `EVENT_OBJECT_SHOW` uses `AutoSlot_ScheduleFromShow` — if the hwnd already shares its monitor with another occupant (e.g. a 50/50 half activated by **`^!#q/w/e/r`**), it does **not** Place/maximize. It only **`RememberHwndMon`** when the hwnd is an eligible / occupancy candidate (Teams/#32770 chrome is not cached, so dismiss cannot false-heal a lone half). Cycle activate must never yank a half onto an empty ordinal. Manual **`^!#x`** 50/50 also applies **PairSuppress** after register (same settle mute as Place).
 
 Feedback: INFO toast on successful empty/half place. After SnapPair, optional **[M]** undo modal where that path still uses it. Grid-full is silent.
 
@@ -38,6 +38,7 @@ When one window of a 50/50 pair **closes** or **minimizes**:
 
 - Snap pair is cleared.
 - Leftover companion is **healed** (maximized) when applicable — **intentional**.
+- Minimize heal matches destroy: resolve monitor via cache → live → partner; dual `HealKnownCompanion` + `ScheduleHealOnly` / late `HealLoneCompanion` (occupancy gates still block false maximize).
 - Heal only when the monitor has a **true lone half** (no filled occupant). Do not maximize a half beside an already-filled window (would stack two fulls).
 - **`HealKnownCompanion`** also aborts if any other living occupant remains on that monitor (guards false/premature DESTROY that would bury the other half behind a maximized companion).
 - Premature WinEvent **`EVENT_OBJECT_DESTROY`** while the hwnd is still a visible occupancy candidate is ignored (no unregister / no heal); shell `WINDOWDESTROYED` remains the primary real-close path.

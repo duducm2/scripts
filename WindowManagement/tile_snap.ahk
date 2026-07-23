@@ -866,6 +866,19 @@ WM_SnapHalfPairActiveWindow() {
         try AutoSlot_RememberHwndMon(partnerHwnd)
         catch {
         }
+        ; Mute LOCATIONCHANGE settle (stale MinMax=1) — same as Place SnapPair_Impl.
+        try AutoSlot_ClearPairMaxPending(targetHwnd)
+        catch {
+        }
+        try AutoSlot_ClearPairMaxPending(partnerHwnd)
+        catch {
+        }
+        try AutoSlot_PairSuppressMark(targetHwnd, AutoSlot_RECENT_MS)
+        catch {
+        }
+        try AutoSlot_PairSuppressMark(partnerHwnd, AutoSlot_RECENT_MS)
+        catch {
+        }
     }
 
     ; If the hotkey target stayed on the snap monitor and the partner was imported from
