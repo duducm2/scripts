@@ -11,6 +11,7 @@
 #Include %A_ScriptDir%\..\..\Utils.ahk
 
 ; Smoke: missing provider functions or unset Copilot needles surface here with #Warn.
+_ := ResolveGlobalAICompanion()
 _ := GetGlobalAIProviderLabel()
 _ := UseCopilotWebForGlobalAI()
 _ := CopilotWeb_UrlIsChat("")

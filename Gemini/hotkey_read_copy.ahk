@@ -16,7 +16,10 @@ GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
 ; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
 #!+o:: {
     try {
-        if UseCopilotWebForGlobalAI()
+        companion := ResolveGlobalAICompanion()
+        if (companion = "enterprise")
+            return GeminiEnterprise_FocusPromptOnly()
+        if (companion = "copilot")
             return CopilotWeb_TriggerReadAloud()
         ; Standard behavior: operate on the currently active Gemini tab.
         GeminiTriggerReadAloud()
@@ -97,7 +100,12 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
 #!+p:: {
     try {
         t0 := A_TickCount
-        if UseCopilotWebForGlobalAI() {
+        companion := ResolveGlobalAICompanion()
+        if (companion = "enterprise") {
+            GeminiEnterprise_FocusPromptOnly()
+            return
+        }
+        if (companion = "copilot") {
             if (!CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
                 ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF",
                     22)
@@ -202,7 +210,10 @@ handleTriggerCopilotReadAloud(wParam, lParam, msg, hwnd) {
 ; TTS from selection – Win+Alt+Shift+7: copy selection, send "repeat exactly" to Gemini, then trigger read aloud
 ; =============================================================================
 #!+7:: {
-    if UseCopilotWebForGlobalAI()
+    companion := ResolveGlobalAICompanion()
+    if (companion = "enterprise")
+        return GeminiEnterprise_FocusPromptOnly()
+    if (companion = "copilot")
         return (CopilotAsyncTTS()).Start()
     (GeminiAsyncTTS()).Start()
 }

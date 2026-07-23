@@ -86,15 +86,40 @@ if (!IsSet(COPILOT_WEB_URL_NEEDLE))
 if (!IsSet(COPILOT_WEB_TITLE_NEEDLE))
     global COPILOT_WEB_TITLE_NEEDLE := ""
 
-; Provider routing (Gemini personal / Copilot work). env.ahk may override COPILOT_WEB_* URLs/needles only.
+; Provider routing: personal = Gemini; work = Enterprise if open (or default), else Copilot.
+; GetGeminiEnterpriseWindowHwnd is defined in GeminiEnterprise.ahk (included after this file).
+
+ResolveGlobalAICompanion() {
+    global IS_WORK_ENVIRONMENT
+    if (!IS_WORK_ENVIRONMENT)
+        return "gemini"
+    ; Prefer Enterprise whenever it is open; default launch target at work is also Enterprise.
+    try {
+        if (GetGeminiEnterpriseWindowHwnd())
+            return "enterprise"
+    } catch {
+    }
+    try {
+        if (GetCopilotWebWindowHwnd())
+            return "copilot"
+    } catch {
+    }
+    return "enterprise"
+}
 
 UseCopilotWebForGlobalAI() {
-    global IS_WORK_ENVIRONMENT
-    return IS_WORK_ENVIRONMENT
+    return ResolveGlobalAICompanion() = "copilot"
 }
 
 GetGlobalAIProviderLabel() {
-    return UseCopilotWebForGlobalAI() ? "Copilot" : "Gemini"
+    switch ResolveGlobalAICompanion() {
+        case "enterprise":
+            return "Gemini Enterprise"
+        case "copilot":
+            return "Copilot"
+        default:
+            return "Gemini"
+    }
 }
 
 CopilotWeb_GetLaunchUrl() {

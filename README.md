@@ -64,7 +64,7 @@ scripts/
 ### Dependencies and environment
 
 - **env.ahk (required, not in repo):** Copy from `env.ahk.example` on each machine. Must define `IS_WORK_ENVIRONMENT` (boolean). Scripts use it for paths and app sets (personal vs work). If you use `Act.ahk`, env.ahk must also define `GetScriptPath(scriptName)` returning a path or command to run that script (e.g. `GetScriptPath("Shift keys.ahk")`). env.ahk is listed in `.gitignore`. After `git pull`, diff your local `env.ahk` against `env.ahk.example` for new blocks.
-- **Global AI provider:** Auto-selected via `IS_WORK_ENVIRONMENT` in `lib/CopilotWeb.ahk` — Gemini on personal, M365 Copilot web on work. Optional `COPILOT_WEB_*` URL/title overrides in env.ahk if your tenant differs. Do **not** define `UseCopilotWebForGlobalAI` or `GetGlobalAIProviderLabel` in env.ahk (they live in `lib/CopilotWeb.ahk`; duplicates break Act at startup).
+- **Global AI provider:** `ResolveGlobalAICompanion()` in `lib/CopilotWeb.ahk` — Gemini on personal; at work prefers **Gemini Enterprise** when that window is open (or as the default open target), otherwise M365 Copilot web. Optional `COPILOT_WEB_*` URL/title overrides in env.ahk if your tenant differs. Do **not** define `UseCopilotWebForGlobalAI`, `GetGlobalAIProviderLabel`, or `ResolveGlobalAICompanion` in env.ahk (they live in `lib/CopilotWeb.ahk`; duplicates break Act at startup).
 
 **Checklist when switching machines or after `git pull`:**
 

@@ -74,7 +74,10 @@ InitializeGeminiFirstTime() {
 ; Hotkey: Win+Alt+Shift+I
 ; =============================================================================
 #!+i:: {
-    if UseCopilotWebForGlobalAI()
+    companion := ResolveGlobalAICompanion()
+    if (companion = "enterprise")
+        return GeminiEnterprise_OpenOrFocus()
+    if (companion = "copilot")
         return CopilotWeb_OpenOrFocus()
     t0 := A_TickCount
     SetTitleMatchMode(2)

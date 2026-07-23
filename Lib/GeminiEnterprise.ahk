@@ -3,10 +3,13 @@
 
 GEMINI_ENTERPRISE_URL_NEEDLE := "vertexaisearch.cloud.google.com"
 GEMINI_ENTERPRISE_TITLE_NEEDLE := "Gemini Enterprise"
+GEMINI_ENTERPRISE_LAUNCH_URL := "https://vertexaisearch.cloud.google.com/"
 GEMINI_ENTERPRISE_MENU_WAIT_MS := 2000
 GEMINI_ENTERPRISE_MENU_POLL_MS := 80
 GEMINI_ENTERPRISE_UIA_SETTLE_MS := 120
 GEMINI_ENTERPRISE_SCROLL_SETTLE_MS := 350
+GEMINI_ENTERPRISE_FIRST_LAUNCH_WAIT_MS := 2500
+GEMINI_ENTERPRISE_ACTIVATE_WAIT_MS := 2000
 GEMINI_ENTERPRISE_DEEP_MODEL := "3.1 Pro"
 
 global g_GeminiEnterpriseCachedHwnd := 0
@@ -280,6 +283,167 @@ GeminiEnterprise_PlayFocusedChime(minIntervalMs := 400) {
     lastChimeTick := now
     ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
     return true
+}
+
+GetGeminiEnterpriseWindowHwnd() {
+    global g_GeminiEnterpriseCachedHwnd
+    if (g_GeminiEnterpriseCachedHwnd && WinExist("ahk_id " g_GeminiEnterpriseCachedHwnd)) {
+        if (GeminiEnterprise_IsEnterpriseHwnd(g_GeminiEnterpriseCachedHwnd, "fast"))
+            return g_GeminiEnterpriseCachedHwnd
+    }
+    GeminiEnterprise_InvalidateCache()
+    hwnd := WinExist("A")
+    if (GeminiEnterprise_IsEnterpriseHwnd(hwnd, "full")) {
+        GeminiEnterprise_CacheHwnd(hwnd)
+        return hwnd
+    }
+    try {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (GeminiEnterprise_IsEnterpriseHwnd(h, "full")) {
+                GeminiEnterprise_CacheHwnd(h)
+                return h
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+GeminiEnterprise_GetLaunchUrl() {
+    return GEMINI_ENTERPRISE_LAUNCH_URL
+}
+
+GeminiEnterprise_ActivateWindow(hwnd, timeoutMs := GEMINI_ENTERPRISE_ACTIVATE_WAIT_MS) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    return WinWaitActive("ahk_id " hwnd, , timeoutMs // 1000)
+}
+
+GeminiEnterprise_WaitForComposerDiscoverable(uia, timeoutMs := 500) {
+    start := A_TickCount
+    while (A_TickCount - start < timeoutMs) {
+        if (GeminiEnterprise_FindComposer(uia))
+            return true
+        Sleep 25
+    }
+    return !!GeminiEnterprise_FindComposer(uia)
+}
+
+; Open/focus Enterprise and put caret in the prompt (global companion #!+I path).
+GeminiEnterprise_OpenOrFocus() {
+    SetTitleMatchMode(2)
+    hwnd := GetGeminiEnterpriseWindowHwnd()
+    if (hwnd) {
+        alreadyActive := false
+        try alreadyActive := WinActive("ahk_id " hwnd)
+        if (!alreadyActive) {
+            if !GeminiEnterprise_ActivateWindow(hwnd)
+                return false
+        }
+        root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+        if (!root) {
+            ShowCenteredOverlay_Utils("❌ Error: Could not attach to Gemini Enterprise window.", 2000,
+                BANNER_ACCENT_ERROR)
+            return false
+        }
+        if (!alreadyActive && WinActive("ahk_id " hwnd))
+            GeminiEnterprise_WaitForComposerDiscoverable(root)
+        if (WinActive("ahk_id " hwnd))
+            GeminiEnterprise_FocusComposer(root, true)
+        GeminiEnterprise_CacheHwnd(hwnd)
+        GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
+        return true
+    }
+    GeminiEnterprise_InvalidateCache()
+    try {
+        StandardLoadingBar_Show("📤 Opening Gemini Enterprise...", BANNER_ACCENT_INTERMEDIATE)
+        Run 'chrome.exe --new-window "' GeminiEnterprise_GetLaunchUrl() '"'
+        if !WinWaitActive("ahk_exe chrome.exe", , 8) {
+            StandardLoadingBar_Hide(0)
+            return false
+        }
+        Sleep GEMINI_ENTERPRISE_FIRST_LAUNCH_WAIT_MS
+        hwnd := GetGeminiEnterpriseWindowHwnd()
+        if (!hwnd)
+            hwnd := WinExist("A")
+        if (!hwnd) {
+            StandardLoadingBar_Hide(0)
+            return false
+        }
+        root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+        if (!root) {
+            StandardLoadingBar_Hide(0)
+            return false
+        }
+        GeminiEnterprise_WaitForComposerDiscoverable(root, 4000)
+        if (WinActive("ahk_id " hwnd))
+            GeminiEnterprise_FocusComposer(root, true)
+        GeminiEnterprise_CacheHwnd(hwnd)
+        GeminiEnterprise_RefreshHotkeyContext(hwnd, true)
+        StandardLoadingBar_Hide(0)
+        return true
+    } catch {
+        StandardLoadingBar_Hide(0)
+        return false
+    }
+}
+
+; For companion hotkeys that cannot be transposed yet: same as open/focus prompt.
+GeminiEnterprise_FocusPromptOnly() {
+    return GeminiEnterprise_OpenOrFocus()
+}
+
+; Navigate to Enterprise, focus composer, paste snippet (optional text or Clip Angel top item).
+GeminiEnterprise_NavigateFocusAndPaste(optionalPromptText := "", autoSubmit := false) {
+    SetTitleMatchMode(2)
+    hwnd := GetGeminiEnterpriseWindowHwnd()
+    if (!hwnd) {
+        Run 'chrome.exe --new-window "' GeminiEnterprise_GetLaunchUrl() '"'
+        if !WinWaitActive("ahk_exe chrome.exe", , 5)
+            return 0
+        Sleep GEMINI_ENTERPRISE_FIRST_LAUNCH_WAIT_MS
+        hwnd := GetGeminiEnterpriseWindowHwnd()
+        if (!hwnd)
+            hwnd := WinExist("A")
+    }
+    if (!hwnd)
+        return 0
+    WinActivate("ahk_id " hwnd)
+    WinWaitActive("ahk_id " hwnd, , 2)
+    Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        Sleep 80
+        GeminiEnterprise_FocusComposer(uia, false)
+    } catch {
+        return 0
+    }
+    WinActivate("ahk_id " hwnd)
+    WinWaitActive("ahk_id " hwnd, , 2)
+    Sleep 150
+    if (optionalPromptText != "")
+        InsertText(optionalPromptText)
+    else
+        ClipAngel_SendTopListItem(hwnd)
+    Sleep 250
+    GeminiEnterprise_PlayFocusedChime()
+    if (autoSubmit) {
+        Sleep 1000
+        try {
+            uia := UIA_Browser("ahk_id " hwnd)
+            GeminiEnterprise_TrySubmit(uia)
+        } catch {
+            Send "{Enter}"
+        }
+    }
+    if (hwnd)
+        GeminiEnterprise_CacheHwnd(hwnd)
+    return hwnd
 }
 
 ; --- Finders -----------------------------------------------------------------

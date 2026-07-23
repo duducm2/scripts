@@ -27,6 +27,7 @@ class D2C_FlowManager {
         this.OriginHwnd := 0
         this.GeminiHwnd := 0
         this.CursorHwnd := 0
+        this.CompanionId := ""
         this.MonitorTimer := ""
         this.MonitorRetryCount := 0
         this.MonitorMaxRetries := 300 ; 150s
@@ -337,7 +338,12 @@ class D2C_FlowManager {
             optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)
         }
 
-        if (UseCopilotWebForGlobalAI()) {
+        this.CompanionId := ResolveGlobalAICompanion()
+        if (this.CompanionId = "enterprise") {
+            this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste(optionalSnippet, false)
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
+        } else if (this.CompanionId = "copilot") {
             this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste(optionalSnippet, false)
             if (!this.GeminiHwnd)
                 this.GeminiHwnd := GetCopilotWebWindowHwnd()
@@ -350,7 +356,21 @@ class D2C_FlowManager {
         }
 
         if (autoSubmit) {
-            if (UseCopilotWebForGlobalAI()) {
+            if (this.CompanionId = "enterprise") {
+                Sleep 1000
+                endTick := A_TickCount + 5000
+                while (A_TickCount < endTick) {
+                    if (GeminiEnterprise_ComposerGetText(this.GeminiHwnd) != "")
+                        break
+                    Sleep 200
+                }
+                try {
+                    uia := UIA_Browser("ahk_id " this.GeminiHwnd)
+                    GeminiEnterprise_TrySubmit(uia)
+                } catch {
+                    Send("{Enter}")
+                }
+            } else if (this.CompanionId = "copilot") {
                 Sleep 1000 ; Pre-enter delay
                 endTick := A_TickCount + 5000
                 while (A_TickCount < endTick) {
@@ -402,14 +422,18 @@ class D2C_FlowManager {
         }
 
         btn := ""
-        useCopilot := UseCopilotWebForGlobalAI()
-        buttonNames := useCopilot ? ["Stop generating"] : ["Stop streaming", "Interromper transmissão", "Stop response"]
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        buttonNames := ["Stop streaming", "Interromper transmissão", "Stop response"]
         root := 0
         try {
-            if (useCopilot) {
+            if (companion = "copilot") {
                 root := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
                 if (root)
                     btn := CopilotWeb_FindStopGenerating(root)
+            } else if (companion = "enterprise") {
+                root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
+                if (root)
+                    btn := GeminiEnterprise_FindStopButton(root)
             } else {
                 root := UIA.ElementFromHandle(this.GeminiHwnd)
                 for n in buttonNames {
@@ -439,9 +463,13 @@ class D2C_FlowManager {
             loop 4 {
                 Sleep 200
                 try {
-                    if (useCopilot) {
+                    if (companion = "copilot") {
                         copRoot := CopilotWeb_ReadRootFromHwnd(this.GeminiHwnd)
                         if (copRoot && CopilotWeb_FindStopGenerating(copRoot))
+                            isTrulyGone := false
+                    } else if (companion = "enterprise") {
+                        geRoot := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
+                        if (geRoot && GeminiEnterprise_FindStopButton(geRoot))
                             isTrulyGone := false
                     } else {
                         for n in buttonNames {
@@ -575,7 +603,7 @@ class D2C_FlowManager {
         this.HasCopiedForThisResponse := true
 
         aiLabel := GetGlobalAIProviderLabel()
-        useCopilot := UseCopilotWebForGlobalAI()
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
         PlayPreMovementWarning(aiLabel)
 
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
@@ -600,6 +628,24 @@ class D2C_FlowManager {
             }
         }
 
+        ; Enterprise: copy/read-aloud not transposed yet — focus prompt only.
+        if (companion = "enterprise") {
+            try {
+                root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
+                if (IsObject(root))
+                    GeminiEnterprise_FocusComposer(root, true)
+            } catch {
+            }
+            if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
+                .OriginHwnd
+            )) {
+                WinActivate("ahk_id " this.OriginHwnd)
+                if (!WinActive("ahk_id " this.OriginHwnd))
+                    WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
+            }
+            return
+        }
+
         ; Y / R / C / timeout: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
         clipBefore := A_Clipboard
         seqBefore := Clipboard_GetSequenceNumber()
@@ -607,6 +653,7 @@ class D2C_FlowManager {
         WM_COPY_LAST_COPILOT := 0x8005
         WM_TRIGGER_READ_ALOUD := 0x8004
         WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
+        useCopilot := (companion = "copilot")
         wmCopy := useCopilot ? WM_COPY_LAST_COPILOT : WM_COPY_LAST_GEMINI
         wmRead := useCopilot ? WM_TRIGGER_COPILOT_READ_ALOUD : WM_TRIGGER_READ_ALOUD
         targetHwnd := GetGeminiScriptMsgTargetHwnd()
