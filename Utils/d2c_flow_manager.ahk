@@ -274,6 +274,8 @@ class D2C_FlowManager {
             priorSendLevel := A_SendLevel
             SendLevel 0
             SendInput "{F4}"
+            Sleep 100
+            SendInput "{F4}"
             SendLevel priorSendLevel
 
             StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
