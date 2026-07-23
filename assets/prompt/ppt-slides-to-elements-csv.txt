@@ -1,15 +1,22 @@
 Task:
-Take a slides CSV (output from ppt-content-to-slides-csv, Stage 1) and produce an elements CSV. One row = one compositable image asset for a single slide. Each row must include an image_gen_prompt for an image-generation AI.
+Take a slides CSV (output from ppt-content-to-slides-csv, Stage 1) and produce an elements CSV. One row = one compositable element for a single slide. Rows are either PowerPoint-native text (no image) or image assets (with image_gen_prompt).
 
 This is Stage 2 of a two-stage PowerPoint workflow. Stage 1 plans the deck; Stage 2 decomposes each slide into isolated visual elements.
 
-CRITICAL — text_to_render MUST appear inside image_gen_prompt:
-- Keep both columns: text_to_render (spreadsheet column) and image_gen_prompt (paste at image-gen time).
-- For every row, copy the text_to_render cell verbatim into the image_gen_prompt line that starts with Text to render:
-- The human pastes ONLY image_gen_prompt — never text_to_render separately.
-- If you put text only in text_to_render but omit it from image_gen_prompt, the output is WRONG. Reject and fix before delivering.
+CRITICAL — text-only vs image rows:
+- Text-only element_types (leave image_gen_prompt EMPTY): title, subtitle, section_label, bullet_group, body_text_block.
+- These are PowerPoint-native text: populate text_to_render and assembly_notes; do NOT write an image_gen_prompt.
+- callout is image-capable (the only text-adjacent type that may get an image_gen_prompt).
+- All other element_types require a non-empty image_gen_prompt using the four-part template below.
 
-CRITICAL — image_gen_prompt is subject and framing only for visual style. The human supplies style separately (brand prompts, JSON, reference images). Human style inputs are absolute authority.
+CRITICAL — text_to_render MUST appear inside image_gen_prompt (image rows only):
+- Keep both columns: text_to_render (spreadsheet column) and image_gen_prompt (paste at image-gen time).
+- For every IMAGE row, copy the text_to_render cell verbatim into the image_gen_prompt line that starts with Text to render:
+- The human pastes ONLY image_gen_prompt for image generation — never text_to_render separately.
+- If an image row puts text only in text_to_render but omits it from image_gen_prompt, the output is WRONG. Reject and fix before delivering.
+- Text-only rows: skip this sync; image_gen_prompt stays empty.
+
+CRITICAL — image_gen_prompt is subject and framing only for visual style (except human aesthetic comments). Brand prompts, JSON, and reference images the human attaches at image-gen time remain absolute authority for style packs. Do not invent aesthetic when the human did not provide aesthetic comments.
 
 Before processing:
 
@@ -19,7 +26,8 @@ Before processing:
 Inputs:
 
 - Slides CSV: <paste or attach output from ppt-content-to-slides-csv>
-- Optional assembly notes: <placement on slide only — not colors or illustration style>
+- Optional assembly notes: <placement on slide only>
+- Optional aesthetic comments: <if present, fold into Subject for image rows; if absent, keep Subject depiction general>
 
 Column schema (authoritative — use exactly these columns in this order):
 
@@ -33,8 +41,8 @@ Column definitions:
 - element_type: One of: title, subtitle, section_label, bullet_group, body_text_block, metric_card, chart_bar, chart_line, chart_pie, icon_badge, illustration, diagram, timeline_segment, process_step, persona_card, comparison_column, callout, divider_line, decorative_shape.
 - position_region: Placement hint — e.g. top, top_left, top_center, center, bottom_right, full_width_band, left_column, right_column.
 - size_hint: One of: small, medium, large, full_width, full_height.
-- text_to_render: Literal text that must appear in the image. Empty cell when no text. Same value must appear on the Text to render: line inside image_gen_prompt.
-- image_gen_prompt: Four-part template below. Must embed text_to_render verbatim.
+- text_to_render: Literal text for the element. Empty cell when no text. For image rows, the same value must appear on the Text to render: line inside image_gen_prompt. For text-only rows, this is the PowerPoint text to place.
+- image_gen_prompt: Empty for text-only types (title, subtitle, section_label, bullet_group, body_text_block). For image types: four-part template below, with text_to_render embedded verbatim.
 - assembly_notes: How to place this element on the slide.
 
 Decomposition rules:
@@ -44,15 +52,21 @@ Decomposition rules:
 3. Respect decomposition_hints and visual_intent from the slides CSV.
 4. For chart_focus or metric_dashboard slides, separate chart or metric_card elements — one chart per element.
 5. Use data_points from the parent slide row for chart Subject lines.
-6. Populate text_to_render for any element whose image must show specific words, labels, dates, timeline entries, bullets, or data callouts — then copy that cell verbatim into image_gen_prompt.
+6. Text-only types (title, subtitle, section_label, bullet_group, body_text_block): fill text_to_render; leave image_gen_prompt empty.
+7. Image types: populate text_to_render when the image must show specific words, labels, dates, timeline entries, bullets, or data callouts — then copy that cell verbatim into image_gen_prompt.
 
-image_gen_prompt template (MANDATORY — every row uses exactly these four parts in this order):
+image_gen_prompt template (MANDATORY for IMAGE rows only — exactly these four parts in this order):
 
-Part 1 — copy verbatim:
-HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style.
+Part 1 — concrete draw instruction (FIRST — image models must see this immediately):
+Subject: [Concrete instruction of what to draw — object, scene, chart, diagram, or visual composition. Not a vague short label. If the human provided aesthetic comments in this message or optional notes, include that aesthetic here. If no human aesthetic comments, keep the depiction general — do not invent colors, fonts, materials, lighting, or brand style. Do NOT put the full text_to_render string only here.]
 
-Part 2 — brief label only (do NOT put the full text_to_render here):
-Subject: [element type + short label, e.g. Titanic timeline, Q4 Results title, horizontal bar chart]
+Examples of good Subject lines:
+- Subject: Draw a horizontal timeline of the Titanic voyage with three marked events along a single axis.
+- Subject: Draw a horizontal bar chart comparing regional share: EMEA, APAC, Americas.
+- Subject: Draw an isolated side-view illustration of the Titanic ocean liner at sea.
+
+Part 2 — copy verbatim:
+HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below except aesthetic comments the human explicitly included in Subject. Do not invent or substitute a different style.
 
 Part 3 — COPY FROM text_to_render COLUMN (mechanical sync):
 Text to render: [paste exact contents of text_to_render cell for this row, character for character]
@@ -63,39 +77,46 @@ Framing: isolated element only, not a full slide; [aspect ratio hint].
 
 Join all four parts into one image_gen_prompt cell, separated by spaces (single paragraph). No fifth part.
 
-WRONG vs RIGHT (timeline example):
+WRONG vs RIGHT (timeline example — image row):
 
 text_to_render cell: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking
 
+WRONG image_gen_prompt (Subject buried / too subtle):
+... HUMAN STYLE AUTHORITY: ... Subject: Titanic timeline. Text to render: ...
+
 WRONG image_gen_prompt (missing Text to render line):
-... Subject: Titanic timeline. Framing: isolated element only, not a full slide; wide horizontal strip.
+Subject: Draw a horizontal Titanic voyage timeline. Framing: isolated element only, not a full slide; wide horizontal strip.
 
 WRONG image_gen_prompt (text only in Subject, paraphrased):
-... Subject: Titanic timeline with departure, iceberg, and sinking dates. Framing: ...
+Subject: Draw a Titanic timeline with departure, iceberg, and sinking dates. Framing: ...
 
-RIGHT image_gen_prompt:
-... Subject: Titanic timeline. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.
+RIGHT image_gen_prompt (Subject first, concrete draw instruction):
+Subject: Draw a horizontal timeline of the Titanic voyage with three marked events along a single axis. HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below except aesthetic comments the human explicitly included in Subject. Do not invent or substitute a different style. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.
 
 Pre-output row check (run for EVERY row before writing CSV):
 
-1. Read text_to_render cell for this row.
-2. If non-empty: confirm image_gen_prompt contains Text to render: followed by the identical string.
-3. If empty: confirm image_gen_prompt contains Text to render: none
-4. If check fails, fix the row before output.
+1. If element_type is title, subtitle, section_label, bullet_group, or body_text_block: confirm image_gen_prompt is empty; skip checks 2–4.
+2. Read text_to_render cell for this image row.
+3. If non-empty: confirm image_gen_prompt contains Text to render: followed by the identical string.
+4. If empty: confirm image_gen_prompt contains Text to render: none
+5. Confirm image_gen_prompt starts with Subject: and contains HUMAN STYLE AUTHORITY, Text to render:, Framing:
+6. If check fails, fix the row before output.
 
 FORBIDDEN in image_gen_prompt:
 
-- Colors, hex codes, palettes, brand names, fonts, illustration-style adjectives, materials, lighting, backgrounds, quality rules
+- Invented colors, hex codes, palettes, brand names, fonts, illustration-style adjectives, materials, lighting, backgrounds, quality rules (allowed only when the human supplied those aesthetic comments)
 - Putting timeline labels, titles, or bullet text only in Subject without the Text to render: line
 - Paraphrasing or shortening text_to_render inside image_gen_prompt
+- Vague Subject labels that do not clearly state what to draw (e.g. only "Titanic timeline" or "Q4 chart")
 
 Validation (before output):
 
 - Every slide_id in elements exists in the input slides CSV.
 - No duplicate element_id values.
-- Every image_gen_prompt contains all four parts: HUMAN STYLE AUTHORITY, Subject:, Text to render:, Framing:
-- For every row where text_to_render is non-empty, image_gen_prompt contains that exact string after Text to render:
-- No forbidden style language.
+- Text-only types have empty image_gen_prompt.
+- Every non-empty image_gen_prompt contains all four parts in order: Subject:, HUMAN STYLE AUTHORITY, Text to render:, Framing:
+- For every image row where text_to_render is non-empty, image_gen_prompt contains that exact string after Text to render:
+- No invented forbidden style language.
 
 Output (CRITICAL — read before responding):
 
@@ -108,10 +129,10 @@ Put the CSV inside a fenced code block labeled csv. Example:
 
 ```csv
 element_id;slide_id;element_order;element_type;position_region;size_hint;text_to_render;image_gen_prompt;assembly_notes
-EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Q4 Results title. Text to render: Q4 Results. Framing: isolated element only, not a full slide; wide horizontal strip.";Place in top third, horizontally centered
-EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: horizontal bar chart — EMEA 42%, APAC 31%, Americas 27%. Text to render: none. Framing: isolated element only, not a full slide; landscape rectangle.";Below title, ~80% slide width, centered
-EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic ship illustration. Text to render: none. Framing: isolated element only, not a full slide; landscape crop.";Center of slide, dominant visual
-EL_SLIDE_004_01;SLIDE_004;1;timeline_segment;center;large;1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking;"HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below. Do not invent or substitute a different style. Subject: Titanic timeline. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.";Center of slide
+EL_SLIDE_001_01;SLIDE_001;1;title;top_center;large;Q4 Results;;Place in top third, horizontally centered — PowerPoint native text
+EL_SLIDE_002_02;SLIDE_002;2;chart_bar;center;large;;"Subject: Draw a horizontal bar chart comparing regional share for EMEA, APAC, and Americas. HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below except aesthetic comments the human explicitly included in Subject. Do not invent or substitute a different style. Text to render: none. Framing: isolated element only, not a full slide; landscape rectangle.";Below title, ~80% slide width, centered
+EL_SLIDE_003_01;SLIDE_003;1;illustration;center;large;;"Subject: Draw an isolated side-view illustration of the Titanic ocean liner at sea. HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below except aesthetic comments the human explicitly included in Subject. Do not invent or substitute a different style. Text to render: none. Framing: isolated element only, not a full slide; landscape crop.";Center of slide, dominant visual
+EL_SLIDE_004_01;SLIDE_004;1;timeline_segment;center;large;1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking;"Subject: Draw a horizontal timeline of the Titanic voyage with three marked events along a single axis. HUMAN STYLE AUTHORITY: Any style requirements, brand prompts, JSON files, reference images, or instructions the human provided before or with this message define ALL visual style — colors, typography, illustration style, realism, materials, lighting, backgrounds, and quality rules. They override and replace any conflicting wording below except aesthetic comments the human explicitly included in Subject. Do not invent or substitute a different style. Text to render: 1912 Apr 10 — Departure | 1912 Apr 14 — Iceberg | 1912 Apr 15 — Sinking. Framing: isolated element only, not a full slide; wide horizontal strip.";Center of slide
 ```
 
 Rules for the code block contents:
@@ -120,7 +141,7 @@ Rules for the code block contents:
 2. Inside the block: raw plain text only. Never escape characters with backslashes.
 3. No markdown escaping anywhere — not in headers, IDs, or cell text.
 4. Underscores are literal: write element_id, not element\_id.
-5. Quote image_gen_prompt fields because they contain semicolons.
+5. Quote image_gen_prompt fields when non-empty because they contain semicolons. Text-only rows leave that cell empty (no quotes needed).
 6. One row per line (header on line 1).
 
 ---
@@ -129,24 +150,32 @@ Human reminders (for the person sending this prompt — do not include in AI out
 Before you send (Stage 2):
 
 📎 Attach or paste the slides CSV from Stage 1 (ppt-content-to-slides-csv.txt output)
-📐 Optional: assembly notes for placement on slide only — not colors or illustration style
+📐 Optional: assembly notes for placement on slide
+🎨 Optional: aesthetic comments — if you want Subject to include a specific look; otherwise Subject stays general
 
 After the AI responds:
 
 💾 Save the CSV as elements.csv (or similar)
 🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc)
-✅ Spot-check: for any row with text in text_to_render, open image_gen_prompt and confirm Text to render: line matches exactly
+✅ Spot-check image rows: for any non-empty image_gen_prompt with text in text_to_render, confirm Text to render: line matches exactly
+✅ Spot-check text rows: title/subtitle/section_label/bullet_group/body_text_block have empty image_gen_prompt
 
-For each element image (repeat per CSV row):
+For text-only rows (title, subtitle, section_label, bullet_group, body_text_block):
+
+📝 Place text_to_render as native PowerPoint text using position_region, size_hint, and assembly_notes
+🚫 Skip image generation for these rows
+
+For each IMAGE element (repeat per CSV row with non-empty image_gen_prompt):
 
 1️⃣ Paste your style prompt and attachments FIRST in the same message (e.g. bosch-brand-image.txt + JSON + reference image — or any other style pack)
 2️⃣ Paste image_gen_prompt only — it already contains Text to render: with all labels/timeline text
-👑 Your style attachments define ALL visual style
+👑 Your style attachments define ALL visual style (plus any aesthetic the Stage 2 AI folded into Subject from your comments)
 🧩 Assemble in PowerPoint using position_region, size_hint, and assembly_notes
 
 Quick reference — full workflow:
 
 📋 Stage 1 (s): raw content → slides.csv
 🧩 Stage 2 (e): slides.csv → elements.csv
-🎨 Image gen: style pack first, then image_gen_prompt from each row
-📊 PowerPoint: place images using assembly_notes
+📝 Text rows: paste text_to_render into PowerPoint
+🎨 Image gen: style pack first, then image_gen_prompt from each image row
+📊 PowerPoint: place text + images using assembly_notes
