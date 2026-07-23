@@ -55,10 +55,11 @@ Maximizing one half of a registered pair **unregisters** the pair and **does not
 
 ## Explicit fill
 
-| Action                                    | Behavior                                                                                                                                                                                          |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ctrl+Alt+Win+Y** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window. |
-| **Ctrl+Alt+Win+6** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path.                                               |
+| Action                                    | Behavior                                                                                                                                                                                                                          |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ctrl+Alt+Win+Y** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window.                                 |
+| **Ctrl+Alt+Win+6** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path.                                                                               |
+| **Study Topic QuickLook** (`#!+X` / open) | After `QuickLook_ApplyStudyLayout`, **`AutoSlot_RequestPlaceCrossProcess`** → `TryPlaceBackgroundHwnd` (same empty / free-half policy). Shift keys uses `.cursor\autoslot_place_request` IPC; WindowManagement AutoSlot polls it. |
 
 ---
 

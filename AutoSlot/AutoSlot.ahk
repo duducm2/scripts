@@ -76,7 +76,9 @@ AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
 AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered auto-place for this long
 AutoSlot_TOAST_DEBOUNCE_MS := 4000  ; identical toast text — avoid hide-timer reset spam
+AutoSlot_PLACE_REQUEST_POLL_MS := 200
 AutoSlot_MAX_ORDINAL := 4
+global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
@@ -188,6 +190,32 @@ AutoSlot_Init() {
 
     OnMessage(0x007E, AutoSlot_OnDisplayChange)  ; WM_DISPLAYCHANGE
     AutoSlot_SeedHwndMonFromOccupancy()
+    SetTimer(AutoSlot_CheckPlaceRequest, AutoSlot_PLACE_REQUEST_POLL_MS)
+}
+
+; Consume cross-process place requests (e.g. Study Topic QuickLook from Shift keys).
+AutoSlot_CheckPlaceRequest(*) {
+    global g_AutoSlotPlaceRequestFile
+    if (!FileExist(g_AutoSlotPlaceRequestFile))
+        return
+    raw := ""
+    try raw := Trim(FileRead(g_AutoSlotPlaceRequestFile, "UTF-8"))
+    catch
+        raw := ""
+    try FileDelete(g_AutoSlotPlaceRequestFile)
+    catch {
+    }
+    if (raw = "")
+        return
+    hwnd := 0
+    try hwnd := Integer(raw)
+    catch
+        hwnd := 0
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return
+    if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
+        return
+    AutoSlot_TryPlaceBackgroundHwnd(hwnd)
 }
 
 AutoSlot_OnDisplayChange(*) {

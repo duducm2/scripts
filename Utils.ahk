@@ -190,6 +190,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Win+Alt+Shift+Arrow five-step hotkeys -> Utils\mouse_jump_hotkeys.ahk
 #include %A_ScriptDir%\Utils\mouse_jump_hotkeys.ahk
 
+; [Utils module] Cross-process AutoSlot place request (Study Topic QuickLook) -> Utils\autoslot_place_ipc.ahk
+#include %A_ScriptDir%\Utils\autoslot_place_ipc.ahk
+
 ; [Utils module] Peek PDF / QuickLook study helpers (part 1) -> Utils\peek_pdf_study_01.ahk
 #include %A_ScriptDir%\Utils\peek_pdf_study_01.ahk
 ; [Utils module] Peek PDF / QuickLook study helpers (part 2) -> Utils\peek_pdf_study_02.ahk
