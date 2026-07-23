@@ -30,7 +30,7 @@ Workbench for documenting and later fixing Windows rearrangement problems in Aut
 | 0f   | Done    | [`05-y-only-fill.md`](05-y-only-fill.md)                         | Y-only background fill policy (UX 1/3/5/8)                                     |
 | 1–4  | Planned | TBD placeholders                                                 | Not authoritative; see canon for current policy                                |
 
-Note: auto fill-on-close / rearrange-import was removed in favor of Y-only (`05-y-only-fill.md`); older findings in `00` may describe pre-change behavior. Place free-half on open and all-monitor busy overlays came later — see canon.
+Note: auto fill-on-close / rearrange-import was removed in favor of Y-only (`05-y-only-fill.md`); older findings in `00` may describe pre-change behavior. Place free-half on open, all-monitor busy overlays, and **Y lone-half → maximize** (not BG 50/50) came later — see canon.
 
 ## Related
 

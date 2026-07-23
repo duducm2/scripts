@@ -50,8 +50,8 @@ Maximizing one half of a registered pair **unregisters** the pair and **does not
 
 | Action                                    | Behavior                                                                                                                      |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| **Ctrl+Alt+Win+Y** / Window tools **[3]** | **Only** full background→slot scan fill (`forceImport`): empty ordinals first, then free halves (including lone max → 50/50). |
-| **Ctrl+Alt+Win+6** open                   | Places the **chosen** background HWND into empty / free half (not a full scan).                                               |
+| **Ctrl+Alt+Win+Y** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window. |
+| **Ctrl+Alt+Win+6** open | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path. |
 
 ---
 
@@ -82,7 +82,7 @@ Rearrange INFO toasts / Y-fill loading use `BANNER_ACCENT_INFO`.
 | New window                 | Empty → max; else free half → 50/50; else MaximizeInPlace |
 | Close / minimize of a pair | Heal leftover companion; no BG import                     |
 | Maximize one half          | Unregister pair; companion unchanged                      |
-| Y / menu [3]               | Background scan fill                                      |
+| Y / menu [3]               | Empty → BG; lone half → maximize; lone max → 50/50 BG     |
 | Ctrl+6 open                | Chosen HWND into free capacity                            |
 | Suite move / ^!#x          | May swap FG layouts                                       |
 

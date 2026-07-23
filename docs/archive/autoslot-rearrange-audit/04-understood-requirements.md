@@ -64,7 +64,7 @@
 
 | Action                      | Understood                                                            |
 | --------------------------- | --------------------------------------------------------------------- |
-| Ctrl+Alt+Win+Y / menu `[3]` | **Only** full background→slot fill (empty then halves, `forceImport`) |
+| Ctrl+Alt+Win+Y / menu `[3]` | Free-capacity fill: empty → BG; lone half → maximize; lone max → 50/50 BG (`forceImport`) |
 | Ctrl+Alt+Win+6 open         | Place chosen window into empty / free half                            |
 
 ---

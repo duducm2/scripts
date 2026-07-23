@@ -27,7 +27,7 @@
 | **Move / maximize end**     | Remembers monitor only                            | **No** rearrange import                                   | —                      |
 | **Minimize**                | Unregister pair; heal companion                   | Heal only; **no** background import                       | Heal silent            |
 | **Maximize one 50/50 half** | `OnPairedMaximize`                                | Unregister pair; companion **unchanged**                  | —                      |
-| **Explicit Y / menu `[3]`** | `RunTileBackground` → Fill `forceImport`          | Empty then halves from background                         | INFO bar + slot toasts |
+| **Explicit Y / menu `[3]`** | `RunTileBackground` → Fill `forceImport`          | Empty → BG; lone half → maximize; lone max → 50/50 BG | INFO bar + slot toasts |
 | **Ctrl+6 open**             | `TryPlaceBackgroundHwnd`                          | Empty / free-half place of chosen HWND                    | INFO on success        |
 | **Foreground swap**         | `TryForegroundSwap` + quiet + toast               | Layouts exchange; **no** `[F]`                            | INFO swap toast        |
 
