@@ -14,7 +14,12 @@
 ; =============================================================================
 #!+6::
 {
-    WinMinimize "A"
+    ; Clip Angel (and other transient UIs) can leave no valid foreground briefly;
+    ; AHK v2 throws on WinMinimize "A" when the target is gone.
+    hwnd := WinExist("A")
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    try WinMinimize("ahk_id " hwnd)
 }
 
 ; =============================================================================
