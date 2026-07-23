@@ -3,7 +3,8 @@
 
 GEMINI_ENTERPRISE_URL_NEEDLE := "vertexaisearch.cloud.google.com"
 GEMINI_ENTERPRISE_TITLE_NEEDLE := "Gemini Enterprise"
-GEMINI_ENTERPRISE_LAUNCH_URL := "https://vertexaisearch.cloud.google.com/"
+GEMINI_ENTERPRISE_LAUNCH_URL :=
+    "https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92?pli=1"
 GEMINI_ENTERPRISE_MENU_WAIT_MS := 2000
 GEMINI_ENTERPRISE_MENU_POLL_MS := 80
 GEMINI_ENTERPRISE_UIA_SETTLE_MS := 120
