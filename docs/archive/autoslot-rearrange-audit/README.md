@@ -1,10 +1,22 @@
-# AutoSlot rearrange audit
+# AutoSlot rearrange audit — ARCHIVED
+
+**Do not treat this folder as current policy.**
+
+Current Windows Rearrange behavior is documented in:
+
+**[`docs/canon/windows-rearrange.md`](../../canon/windows-rearrange.md)**
+
+This workbench is historical (findings, risks, pre/post Y-only notes). Some artifacts may predate free-half Place or other later changes. Prefer the canon + [`AutoSlot/AutoSlot.ahk`](../../../AutoSlot/AutoSlot.ahk) when implementing or explaining behavior.
+
+---
+
+# Original audit README (historical)
 
 Workbench for documenting and later fixing Windows rearrangement problems in AutoSlot / WindowManagement.
 
 **Method:** static code analysis only. No runtime instrumentation, debug banners, or UI output added to identify bugs.
 
-**Primary surface:** [`AutoSlot/AutoSlot.ahk`](../../AutoSlot/AutoSlot.ahk) plus WM call sites in WindowManagement.
+**Primary surface:** [`AutoSlot/AutoSlot.ahk`](../../../AutoSlot/AutoSlot.ahk) plus WM call sites in WindowManagement.
 
 ## Steps
 
@@ -16,15 +28,12 @@ Workbench for documenting and later fixing Windows rearrangement problems in Aut
 | 0d   | Done    | [`03-main-risks.md`](03-main-risks.md)                           | Pinpoint main risks of rearrange                                               |
 | 0e   | Done    | [`04-understood-requirements.md`](04-understood-requirements.md) | Understood requirements for your revision                                      |
 | 0f   | Done    | [`05-y-only-fill.md`](05-y-only-fill.md)                         | Y-only background fill policy (UX 1/3/5/8)                                     |
-| 1    | Planned | `01-timer-consolidation` (TBD)                                   | Collapse overlapping fill/heal/rearrange timer pipelines                       |
-| 2    | Planned | `02-toast-policy` (TBD)                                          | Reduce rearrange banner noise without losing mode identity                     |
-| 3    | Planned | `03-occupancy-perf` (TBD)                                        | Cut repeated occupancy / background enumeration cost                           |
-| 4    | Planned | `04-policy-alignment` (TBD)                                      | Align Place vs Y vs rearrange/fill-on-close semantics and docs                 |
+| 1–4  | Planned | TBD placeholders                                                 | Not authoritative; see canon for current policy                                |
 
-Later fix steps are placeholders only; do not implement until a dedicated plan is approved. Note: auto fill-on-close / rearrange-import was removed in favor of Y-only (`05-y-only-fill.md`); older findings in `00` may describe pre-change behavior.
+Note: auto fill-on-close / rearrange-import was removed in favor of Y-only (`05-y-only-fill.md`); older findings in `00` may describe pre-change behavior. Place free-half on open and all-monitor busy overlays came later — see canon.
 
 ## Related
 
-- [`docs/standard_information_display.md`](../standard_information_display.md) — AutoSlot rearrange accent (`BANNER_ACCENT_INFO`)
-- [`AutoSlot/README.md`](../../AutoSlot/README.md) — feature overview
-- [`05-y-only-fill.md`](05-y-only-fill.md) — current background-import policy
+- [`docs/canon/windows-rearrange.md`](../../canon/windows-rearrange.md) — **current** policy
+- [`docs/standard_information_display.md`](../../standard_information_display.md) — banners
+- [`AutoSlot/README.md`](../../../AutoSlot/README.md) — enablement overview
