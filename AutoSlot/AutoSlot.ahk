@@ -1904,6 +1904,11 @@ AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false)
         g_AutoSlotUndo := 0
     }
     AutoSlot_RegisterSnapPair(newHwnd, partnerHwnd)
+    ; Mute LOCATIONCHANGE settle (stale MinMax=1) so Place 50/50 is not immediately unpaired.
+    AutoSlot_ClearPairMaxPending(newHwnd)
+    AutoSlot_ClearPairMaxPending(partnerHwnd)
+    AutoSlot_PairSuppressMark(newHwnd, AutoSlot_RECENT_MS)
+    AutoSlot_PairSuppressMark(partnerHwnd, AutoSlot_RECENT_MS)
     AutoSlot_ActivateHwnd(newHwnd)
     return newPane
 }
@@ -2248,10 +2253,13 @@ AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
 }
 
 ; Maximize the sole non-filled window on monIdx (ignores maximized-behind).
+; Never heal a half beside an already-filled window (would stack two fulls).
 AutoSlot_HealLoneCompanion(monIdx) {
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
     part := AutoSlot_PartitionOccupancy(monIdx)
+    if (part.filled.Length >= 1)
+        return false
     if (part.nonFilled.Length != 1)
         return false
     companion := part.nonFilled[1].hwnd

@@ -23,7 +23,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 `AutoSlot_Place` (shell create / show → debounced):
 
 1. **Empty ordinal** → maximize new window onto the first empty monitor (ordinal order).
-2. Else **free half** (lone maximized or lone half-pane) → **50/50 SnapPair** with that partner; first such monitor in ordinal order (**M1**, then M2, …).
+2. Else **free half** (lone maximized or lone half-pane) → **50/50 SnapPair** with that partner; first such monitor in ordinal order (**M1**, then M2, …). After register, both hwnds get **PairSuppress** so settle `LOCATIONCHANGE` (stale OS-max bit) does not immediately unpair.
 3. Else → **leave as-is** (“grid full”) — do not maximize over true full monitors (two filled or an existing 50/50 pair); window stays where the OS opened it.
 
 Feedback: INFO toast on successful empty/half place. After SnapPair, optional **[M]** undo modal where that path still uses it. Grid-full is silent.
@@ -36,6 +36,7 @@ When one window of a 50/50 pair **closes** or **minimizes**:
 
 - Snap pair is cleared.
 - Leftover companion is **healed** (maximized) when applicable — **intentional**.
+- Heal only when the monitor has a **true lone half** (no filled occupant). Do not maximize a half beside an already-filled window (would stack two fulls).
 - **No** automatic background import onto empty/half monitors.
 
 ---
