@@ -341,7 +341,8 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
 }
 
 ; Maximize a known leftover companion after its snap-pair partner closed.
-; Abort if another living occupant remains (false destroy left the other half on the monitor).
+; Abort only if another *uncovered* occupant remains (living 50/50 peer / filled).
+; Covered-behind noise must not block heal.
 AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     if (!companion || !DllCall("IsWindow", "ptr", companion))
         return false
@@ -353,9 +354,12 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
         return false
     if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
         return true
-    part := AutoSlot_PartitionOccupancy(monIdx, companion)
-    if (part.filled.Length + part.nonFilled.Length >= 1)
-        return false
+    ; Full-monitor uncovered set (includes companion); any other visible peer blocks.
+    uncovered := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(monIdx))
+    for row in uncovered {
+        if (row.hwnd && row.hwnd != companion)
+            return false
+    }
     healed := false
     try healed := !!WM_MaximizeHwndBackground(companion)
     catch
@@ -1306,6 +1310,47 @@ AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd := 0) {
         }
     }
     return rows
+}
+
+; Keep rows whose centers are not inside a higher z-order row's rect (WinGetList order).
+; Same heuristic as GetVisibleWindowsOnMonitor — buried noise must not block heal.
+AutoSlot_OccupancyRowsUncovered(rows) {
+    uncovered := []
+    if (!IsObject(rows))
+        return uncovered
+    for row in rows {
+        if (!IsObject(row) || !row.HasProp("hwnd") || !row.hwnd)
+            continue
+        cx := (row.left + row.right) // 2
+        cy := (row.top + row.bottom) // 2
+        covered := false
+        for u in uncovered {
+            if (cx >= u.left && cx <= u.right && cy >= u.top && cy <= u.bottom) {
+                covered := true
+                break
+            }
+        }
+        if (!covered)
+            uncovered.Push(row)
+    }
+    return uncovered
+}
+
+; Partition uncovered occupancy on monIdx (optional excludeHwnd).
+AutoSlot_PartitionUncoveredOccupancy(monIdx, excludeHwnd := 0) {
+    nonFilled := []
+    filled := []
+    rows := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd))
+    for row in rows {
+        h := row.hwnd
+        if (!h)
+            continue
+        if (AutoSlot_CompanionAlreadyFilled(h, monIdx))
+            filled.Push(row)
+        else
+            nonFilled.Push(row)
+    }
+    return { nonFilled: nonFilled, filled: filled }
 }
 
 ; --- Geometry / move ---------------------------------------------------------
@@ -2328,12 +2373,12 @@ AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
     return { nonFilled: nonFilled, filled: filled }
 }
 
-; Maximize the sole non-filled window on monIdx (ignores maximized-behind).
-; Never heal a half beside an already-filled window (would stack two fulls).
+; Maximize the sole uncovered non-filled window on monIdx.
+; Covered-behind rows are ignored; never heal beside an uncovered filled window.
 AutoSlot_HealLoneCompanion(monIdx) {
     if (monIdx < 1 || monIdx > MonitorGetCount())
         return false
-    part := AutoSlot_PartitionOccupancy(monIdx)
+    part := AutoSlot_PartitionUncoveredOccupancy(monIdx)
     if (part.filled.Length >= 1)
         return false
     if (part.nonFilled.Length != 1)
