@@ -24,9 +24,9 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 
 1. **Empty ordinal** → maximize new window onto the first empty monitor (ordinal order).
 2. Else **free half** (lone maximized or lone half-pane) → **50/50 SnapPair** with that partner; first such monitor in ordinal order (**M1**, then M2, …).
-3. Else → **MaximizeInPlace** (“grid full”) — do not demax true full monitors (two filled or an existing 50/50 pair).
+3. Else → **leave as-is** (“grid full”) — do not maximize over true full monitors (two filled or an existing 50/50 pair); window stays where the OS opened it.
 
-Feedback: INFO toast. After SnapPair, optional **[M]** undo modal where that path still uses it.
+Feedback: INFO toast on successful empty/half place. After SnapPair, optional **[M]** undo modal where that path still uses it. Grid-full is silent.
 
 ---
 
@@ -48,10 +48,10 @@ Maximizing one half of a registered pair **unregisters** the pair and **does not
 
 ## Explicit fill
 
-| Action                                    | Behavior                                                                                                                      |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Action                                    | Behavior                                                                                                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Ctrl+Alt+Win+Y** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window. |
-| **Ctrl+Alt+Win+6** open | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path. |
+| **Ctrl+Alt+Win+6** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path.                                               |
 
 ---
 
@@ -77,14 +77,14 @@ Rearrange INFO toasts / Y-fill loading use `BANNER_ACCENT_INFO`.
 
 ## Scenario map (quick)
 
-| Scenario                   | Outcome                                                   |
-| -------------------------- | --------------------------------------------------------- |
-| New window                 | Empty → max; else free half → 50/50; else MaximizeInPlace |
-| Close / minimize of a pair | Heal leftover companion; no BG import                     |
-| Maximize one half          | Unregister pair; companion unchanged                      |
-| Y / menu [3]               | Empty → BG; lone half → maximize; lone max → 50/50 BG     |
-| Ctrl+6 open                | Chosen HWND into free capacity                            |
-| Suite move / ^!#x          | May swap FG layouts                                       |
+| Scenario                   | Outcome                                               |
+| -------------------------- | ----------------------------------------------------- |
+| New window                 | Empty → max; else free half → 50/50; else leave as-is |
+| Close / minimize of a pair | Heal leftover companion; no BG import                 |
+| Maximize one half          | Unregister pair; companion unchanged                  |
+| Y / menu [3]               | Empty → BG; lone half → maximize; lone max → 50/50 BG |
+| Ctrl+6 open                | Chosen HWND into free capacity                        |
+| Suite move / ^!#x          | May swap FG layouts                                   |
 
 ---
 

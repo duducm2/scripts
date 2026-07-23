@@ -9,7 +9,7 @@
 ; Placement (MonitorGetCount() > 1 only); 2 slots per ordinal monitor (max 8):
 ;   1) First empty ordinal → maximize onto it
 ;   2) Else first free half (lone max / lone half-pane) → 50/50 SnapPair
-;   3) Else maximize new window in place ("grid full")
+;   3) Else leave as-is ("grid full" — do not maximize over existing windows)
 ;
 ; Close / minimize: heal leftover snap companion only (silent). No automatic
 ; background import — user fills free slots with Ctrl+Alt+Win+Y (forceImport).
@@ -1789,19 +1789,6 @@ AutoSlot_TryForegroundSwap_Impl(hwnd, sourceMon, destMon, mover, dest, role) {
     return true
 }
 
-AutoSlot_MaximizeInPlace(hwnd) {
-    if (!AutoSlot_PrepareHwnd(hwnd))
-        return false
-    StandardLoadingBar_BusyAllMonitors_Begin()
-    try {
-        AutoSlot_MaximizeHwnd(hwnd)
-        AutoSlot_ActivateHwnd(hwnd)
-        return true
-    } finally {
-        StandardLoadingBar_BusyAllMonitors_End()
-    }
-}
-
 ; 50/50 via tile_snap gapless APIs (same engine as ^!#x / WM_SnapHalfPairActiveWindow).
 ; Returns pane name the new window was placed into, or "".
 ; On success, stashes undo context in g_AutoSlotUndo (partner pre-snap state).
@@ -2634,10 +2621,8 @@ AutoSlot_Place(hwnd) {
         }
     }
 
-    ; No empty ordinal and no free half — maximize in place.
-    if (AutoSlot_MaximizeInPlace(hwnd))
-        msg := "ℹ️ Grid full — maximized"
-    AutoSlot_Toast(msg)
+    ; No empty ordinal and no free half — leave window as the OS opened it
+    ; (do not maximize over an existing pair / full monitor).
 }
 
 ; Auto-execute when #included.
