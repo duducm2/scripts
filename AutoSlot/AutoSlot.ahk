@@ -1556,6 +1556,62 @@ AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd := 0) {
     return rows
 }
 
+; One WinGetList for the whole desktop; bucket occupancy rows by monitor index.
+; Place / TryPlace empty+half search use this once (avoid N+M full enumerations).
+AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
+    byMon := Map()
+    count := 0
+    try count := MonitorGetCount()
+    catch
+        count := 0
+    if (count < 1)
+        return byMon
+    monTargets := Map()
+    loop count {
+        monIdx := A_Index
+        byMon[monIdx] := []
+        try {
+            MonitorGet monIdx, &ml, &mt, &mr, &mb
+            cx := (ml + mr) // 2
+            cy := (mt + mb) // 2
+            point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+            hTarget := Integer(DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr"))
+            monTargets[hTarget] := monIdx
+        } catch {
+        }
+    }
+    for hwnd in WinGetList() {
+        if (!AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd))
+            continue
+        try {
+            rect := Buffer(16, 0)
+            if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+                continue
+            left := NumGet(rect, 0, "int")
+            top := NumGet(rect, 4, "int")
+            right := NumGet(rect, 8, "int")
+            bottom := NumGet(rect, 12, "int")
+            wcx := (left + right) // 2
+            wcy := (top + bottom) // 2
+            wPoint := (wcy & 0xFFFFFFFF) << 32 | (wcx & 0xFFFFFFFF)
+            hMon := Integer(DllCall("MonitorFromPoint", "int64", wPoint, "uint", 2, "ptr"))
+            if (!monTargets.Has(hMon))
+                continue
+            monIdx := monTargets[hMon]
+            byMon[monIdx].Push({
+                hwnd: hwnd,
+                left: left,
+                top: top,
+                right: right,
+                bottom: bottom
+            })
+        } catch {
+            continue
+        }
+    }
+    return byMon
+}
+
 ; Keep rows whose centers are not inside a higher z-order row's rect (WinGetList order).
 ; Same heuristic as GetVisibleWindowsOnMonitor — buried noise must not block heal.
 AutoSlot_OccupancyRowsUncovered(rows) {
@@ -2631,10 +2687,12 @@ AutoSlot_OccupancyHasRecent(occupancyRows) {
 }
 
 ; Split occupancy into non-filled (half-slot) vs filled (maximized / work-area).
-AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
+AutoSlot_PartitionOccupancyRows(rows, monIdx) {
     nonFilled := []
     filled := []
-    for row in AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd) {
+    if (!IsObject(rows))
+        rows := []
+    for row in rows {
         h := row.hwnd
         if (!h)
             continue
@@ -2644,6 +2702,21 @@ AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
             nonFilled.Push(row)
     }
     return { nonFilled: nonFilled, filled: filled }
+}
+
+AutoSlot_PartitionOccupancy(monIdx, excludeHwnd := 0) {
+    return AutoSlot_PartitionOccupancyRows(AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd), monIdx)
+}
+
+; Free-half partner from an already-partitioned occupancy (no re-scan).
+AutoSlot_FreeHalfPartnerFromPart(part) {
+    if (!IsObject(part))
+        return 0
+    if (part.filled.Length = 1)
+        return part.filled[1].hwnd
+    if (part.filled.Length = 0 && part.nonFilled.Length = 1)
+        return part.nonFilled[1].hwnd
+    return 0
 }
 
 ; Maximize the sole uncovered non-filled window on monIdx.
@@ -2879,6 +2952,7 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
     AutoSlot_PruneRecent()
 
     ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
     emptyMon := 0
     emptyOrder := 0
     halfMon := 0
@@ -2889,7 +2963,8 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
         monIdx := AutoSlot_GetMonitorIndexByOrder(order)
         if (!monIdx)
             continue
-        part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
+        rows := snap.Has(monIdx) ? snap[monIdx] : []
+        part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
         ; Same empty / free-half policy as AutoSlot_Place (empty first, then free half).
         if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
             if (!emptyMon) {
@@ -2899,7 +2974,7 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
             continue
         }
         if (!halfMon) {
-            partner := AutoSlot_MonitorFreeHalfPartner(monIdx, hwnd)
+            partner := AutoSlot_FreeHalfPartnerFromPart(part)
             if (partner) {
                 halfMon := monIdx
                 halfOrder := order
@@ -2934,12 +3009,7 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
 ; else one lone half. Two filled or two half-panes = genuinely full → 0.
 ; Note: nonFilled rows behind a lone max are ignored (treated as covered), matching Place/Y.
 AutoSlot_MonitorFreeHalfPartner(monIdx, excludeHwnd := 0) {
-    part := AutoSlot_PartitionOccupancy(monIdx, excludeHwnd)
-    if (part.filled.Length = 1)
-        return part.filled[1].hwnd
-    if (part.filled.Length = 0 && part.nonFilled.Length = 1)
-        return part.nonFilled[1].hwnd
-    return 0
+    return AutoSlot_FreeHalfPartnerFromPart(AutoSlot_PartitionOccupancy(monIdx, excludeHwnd))
 }
 
 ; First ordinal monitor with a free half-slot (lone maximized or single half-pane).
@@ -2987,24 +3057,39 @@ AutoSlot_Place(hwnd) {
     AutoSlot_RememberHwndMon(hwnd)
     AutoSlot_BeginPlaceFreeze()
 
-    ; Empty = no filled and no half occupant (windows hidden behind a maximized one do not count).
-    ; Free half = lone maximized/work-area or lone half-pane → SnapPair (ordinal order).
+    ; One desktop occupancy walk for empty + free-half search (H1).
+    snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
     emptyOrder := 0
     emptyMon := 0
+    halfOrder := 0
+    halfMon := 0
+    halfPartner := 0
 
     loop ordinalCount {
         order := A_Index
         monIdx := AutoSlot_GetMonitorIndexByOrder(order)
         if (!monIdx)
             continue
-        part := AutoSlot_PartitionOccupancy(monIdx, hwnd)
+        rows := snap.Has(monIdx) ? snap[monIdx] : []
+        part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
         if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
-            emptyOrder := order
-            emptyMon := monIdx
-            break
+            if (!emptyMon) {
+                emptyOrder := order
+                emptyMon := monIdx
+            }
+            continue
+        }
+        if (!halfPartner) {
+            partner := AutoSlot_FreeHalfPartnerFromPart(part)
+            if (partner) {
+                halfOrder := order
+                halfMon := monIdx
+                halfPartner := partner
+            }
         }
     }
-    AutoSlot_PerfLog(hwnd, "Place_after_empty_scan", "ms=" (A_TickCount - t0) " emptyMon=" emptyMon)
+    AutoSlot_PerfLog(hwnd, "Place_after_occ_scan", "ms=" (A_TickCount - t0) " emptyMon=" emptyMon
+    " halfPartner=" halfPartner)
 
     if (emptyMon) {
         tMax := A_TickCount
@@ -3019,16 +3104,12 @@ AutoSlot_Place(hwnd) {
         return
     }
 
-    tHalf := A_TickCount
-    half := AutoSlot_FindHalfFullMonitor(hwnd)
-    AutoSlot_PerfLog(hwnd, "Place_after_half_scan", "ms=" (A_TickCount - tHalf)
-    " partner=" (IsObject(half) && half.partner ? half.partner : 0))
-    if (IsObject(half) && half.partner) {
+    if (halfMon && halfPartner) {
         tSnap := A_TickCount
-        if (AutoSlot_TrySnapNewWithPartner(hwnd, half.monIdx, half.partner, half.order)) {
+        if (AutoSlot_TrySnapNewWithPartner(hwnd, halfMon, halfPartner, halfOrder)) {
             AutoSlot_RememberHwndMon(hwnd)
-            AutoSlot_RememberHwndMon(half.partner)
-            msg := "ℹ️ Auto-slotted → M" half.order " (50/50)"
+            AutoSlot_RememberHwndMon(halfPartner)
+            msg := "ℹ️ Auto-slotted → M" halfOrder " (50/50)"
             AutoSlot_Toast(msg)
             AutoSlot_PerfLog(hwnd, "Place_exit", "path=snap total=" (A_TickCount - t0)
             " snapMs=" (A_TickCount - tSnap))
