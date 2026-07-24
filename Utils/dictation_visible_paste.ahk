@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Utils module: dictation_visible_paste.ahk
 ; Post-dictation visible-window picker: select a window and paste clipboard (Ctrl+V).
-; Also: [R] add to AutoSlot ignore list, [I] manage ignore list (autoslot_user_excludes).
+; Also: [R] ignore process (exe) for AutoSlot, [I] manage ignore list (autoslot_user_excludes).
 ; =============================================================================
 
 global g_DictationVisiblePasteGui := false
