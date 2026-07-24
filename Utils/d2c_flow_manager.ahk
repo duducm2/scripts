@@ -139,28 +139,22 @@ class D2C_FlowManager {
     }
 
     ; Shared by menu [W] and #!+L global hotkey.
-    ; Pastes Clip Angel's currently selected clip (not OS clipboard / not forced Row 0).
+    ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
     PasteClipboardToVisibleWindow(originHwnd := 0) {
         if (!originHwnd)
             try originHwnd := WinGetID("A")
-        ; Hold automation busy across the picker so auto-minimize does not race.
-        if !ClipAngel_TryAcquireAutomationLock()
+        targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
+        if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
             return false
-        try {
-            targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
-            if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
-                return false
-            try WinActivate("ahk_id " targetHwnd)
-            if (!WinActive("ahk_id " targetHwnd))
-                WinWaitActive("ahk_id " targetHwnd, , 0.3)
-            Sleep 60
-            return ClipAngel_SendSelectedListItem(targetHwnd, true)
-        } finally {
-            ClipAngel_ReleaseAutomationLock()
-        }
+        try WinActivate("ahk_id " targetHwnd)
+        if (!WinActive("ahk_id " targetHwnd))
+            WinWaitActive("ahk_id " targetHwnd, , 0.3)
+        Sleep 60
+        Send "^v"
+        return true
     }
 
-    ; [W] Pick a visible window, paste Clip Angel selected clip, end flow.
+    ; [W] Pick a visible window, paste OS clipboard (^v), end flow.
     OnSubmitW(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
