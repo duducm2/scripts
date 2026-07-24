@@ -147,14 +147,6 @@ class D2C_FlowManager {
         if !ClipAngel_TryAcquireAutomationLock()
             return false
         try {
-            ; #region agent log
-            try {
-                FileAppend(
-                    '{"sessionId":"be5edc","runId":"post-fix","hypothesisId":"E","location":"d2c_flow_manager.ahk:PasteVisible","message":"before_selector","timestamp":' A_TickCount ',"data":{"clipLen":' StrLen(
-                        A_Clipboard) '}}`n', A_ScriptDir "\debug-be5edc.log", "UTF-8")
-            } catch {
-            }
-            ; #endregion
             targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
             if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
                 return false
@@ -162,14 +154,6 @@ class D2C_FlowManager {
             if (!WinActive("ahk_id " targetHwnd))
                 WinWaitActive("ahk_id " targetHwnd, , 0.3)
             Sleep 60
-            ; #region agent log
-            try {
-                FileAppend(
-                    '{"sessionId":"be5edc","runId":"post-fix","hypothesisId":"E","location":"d2c_flow_manager.ahk:PasteVisible","message":"after_selector","timestamp":' A_TickCount ',"data":{"clipLen":' StrLen(
-                        A_Clipboard) ',"target":' (targetHwnd + 0) '}}`n', A_ScriptDir "\debug-be5edc.log", "UTF-8")
-            } catch {
-            }
-            ; #endregion
             return ClipAngel_SendSelectedListItem(targetHwnd, true)
         } finally {
             ClipAngel_ReleaseAutomationLock()
