@@ -958,8 +958,8 @@ global g_BusyAllMonitorsTickTimer := ""
 global g_BusyAllMonitorsForceTimerArmed := false
 global STANDARD_BUSY_ALL_MONITORS_FORCE_MS := 5000
 ; PERF A/B (H3): true = skip all-monitors "Arranging window…" overlays (Begin/End no-op).
-; Set false and reload WindowManagement to restore. Geometry/place logic unchanged.
-global STANDARD_BUSY_ALL_MONITORS_DISABLED := true
+; Keep false so rearrange shows the busy banner. Geometry/place logic unchanged.
+global STANDARD_BUSY_ALL_MONITORS_DISABLED := false
 
 StandardLoadingBar_BusyAllMonitors_Begin(state := "⏳ Arranging window...") {
     global g_BusyAllMonitorsDepth, g_BusyAllMonitorsOverlays, g_BusyAllMonitorsValue

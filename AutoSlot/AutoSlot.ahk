@@ -54,6 +54,10 @@ global g_AutoSlotF11RestorePending := Map()
 ; Shared background rows for one Ctrl+Alt+Win+Y pass (avoid re-enumerating per monitor).
 global g_AutoSlotYBgRows := 0
 global g_AutoSlotYBgActive := false
+; Perf log: hwnd → origin tick for delta ms (Schedule / Place phases).
+global g_AutoSlotPerfOrigin := Map()
+; H10: eligibility retry attempt count per hwnd (ProcessPending miss → delayed re-try).
+global g_AutoSlotEligRetry := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -81,6 +85,10 @@ AutoSlot_MAX_ORDINAL := 4
 AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
 AutoSlot_STICKY_PLACE_MS := 400
 AutoSlot_STICKY_PLACE_MAX := 12
+; Temporary Place timing log → .cursor\autoslot_perf.log (set false when done diagnosing).
+AutoSlot_PERF_LOG := true
+; H10: after eligibility miss, re-try ProcessPending at these delays (ms from each miss).
+AutoSlot_ELIG_RETRY_MS := [300, 800, 1500]
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 global g_AutoSlotPlaceMsg := 0
 global g_AutoSlotStickyHwnd := 0
@@ -88,6 +96,39 @@ global g_AutoSlotStickyAttempts := 0
 AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
+
+; --- Perf log (temporary; AutoSlot_PERF_LOG) ---------------------------------
+
+AutoSlot_PerfLogPath() {
+    return A_ScriptDir "\.cursor\autoslot_perf.log"
+}
+
+AutoSlot_PerfLog(hwnd, phase, detail := "") {
+    if (!AutoSlot_PERF_LOG)
+        return
+    global g_AutoSlotPerfOrigin
+    now := A_TickCount
+    hwnd := Integer(hwnd)
+    if (!g_AutoSlotPerfOrigin.Has(hwnd))
+        g_AutoSlotPerfOrigin[hwnd] := now
+    delta := now - g_AutoSlotPerfOrigin[hwnd]
+    stamp := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
+    line := stamp " +" delta "ms hwnd=" hwnd " " phase
+    if (detail != "")
+        line .= " " detail
+    path := AutoSlot_PerfLogPath()
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        FileAppend(line "`n", path, "UTF-8")
+    } catch {
+    }
+}
+
+AutoSlot_PerfClearOrigin(hwnd) {
+    global g_AutoSlotPerfOrigin
+    if (hwnd && g_AutoSlotPerfOrigin.Has(hwnd))
+        g_AutoSlotPerfOrigin.Delete(hwnd)
+}
 
 ; --- Enable / persist --------------------------------------------------------
 
@@ -242,6 +283,7 @@ AutoSlot_HandlePlaceRequest(hwnd) {
         return
     if (!AutoSlot_IsEnabled() || MonitorGetCount() <= 1)
         return
+    AutoSlot_PerfLog(hwnd, "HandlePlaceRequest", "ipc")
     placed := AutoSlot_TryPlaceBackgroundHwnd(hwnd)
     if (!WinExist("ahk_id " hwnd))
         return
@@ -344,9 +386,10 @@ AutoSlot_OnShellHook(wParam, lParam, *) {
     if (!lParam)
         return 0
     hwnd := Integer(lParam)
-    if (wParam = AutoSlot_HSHELL_WINDOWCREATED)
+    if (wParam = AutoSlot_HSHELL_WINDOWCREATED) {
+        AutoSlot_PerfLog(hwnd, "ShellCREATED")
         AutoSlot_Schedule(hwnd)
-    else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED)
+    } else if (wParam = AutoSlot_HSHELL_WINDOWDESTROYED)
         AutoSlot_OnDestroy(hwnd, true)  ; shell is primary fill trigger
     return 0
 }
@@ -1020,19 +1063,28 @@ AutoSlot_Schedule(hwnd) {
     if (!hwnd || MonitorGetCount() <= 1)
         return
     ; Already tracked — ignore SHOW spam from activation, not a new window.
-    if (g_AutoSlotHwndMon.Has(hwnd))
+    if (g_AutoSlotHwndMon.Has(hwnd)) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "already_tracked")
         return
+    }
     ; Recently restored from taskbar — the SHOW event is from the restore animation,
     ; not a new window opening. Skip auto-placement for the guard duration.
     if (g_AutoSlotJustRestored.Has(hwnd)) {
-        if (A_TickCount - g_AutoSlotJustRestored[hwnd] < AutoSlot_RESTORE_GUARD_MS)
+        if (A_TickCount - g_AutoSlotJustRestored[hwnd] < AutoSlot_RESTORE_GUARD_MS) {
+            AutoSlot_PerfLog(hwnd, "Schedule_skip", "restore_guard")
             return
+        }
         g_AutoSlotJustRestored.Delete(hwnd)
     }
-    if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
+    if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "recent")
         return
-    if (g_AutoSlotPending.Has(hwnd))
+    }
+    if (g_AutoSlotPending.Has(hwnd)) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "pending")
         return
+    }
+    AutoSlot_PerfLog(hwnd, "Schedule", "debounce=" AutoSlot_DEBOUNCE_MS)
     AutoSlot_RememberHwndMon(hwnd)
     g_AutoSlotPending[hwnd] := true
     SetTimer(() => AutoSlot_ProcessPending(hwnd), -AutoSlot_DEBOUNCE_MS)
@@ -1046,8 +1098,10 @@ AutoSlot_ScheduleFromShow(hwnd) {
         return
     if (!hwnd || MonitorGetCount() <= 1)
         return
-    if (g_AutoSlotHwndMon.Has(hwnd))
+    if (g_AutoSlotHwndMon.Has(hwnd)) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "already_tracked")
         return
+    }
     monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
     if (monIdx >= 1) {
         others := AutoSlot_PartitionOccupancy(monIdx, hwnd)
@@ -1056,9 +1110,11 @@ AutoSlot_ScheduleFromShow(hwnd) {
             ; occupants (Teams/#32770 chrome must not seed HwndMon → false heal).
             if (AutoSlot_IsEligibleNewWindow(hwnd) || AutoSlot_IsOccupancyCandidate(hwnd))
                 AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "occupied_mon=" monIdx)
             return
         }
     }
+    AutoSlot_PerfLog(hwnd, "ScheduleFromShow", "→Schedule")
     AutoSlot_Schedule(hwnd)
 }
 
@@ -1079,24 +1135,64 @@ AutoSlot_SeedHwndMonFromOccupancy() {
     }
 }
 
+; H10: after eligibility miss, retry Place a few times instead of one-shot abandon.
+AutoSlot_ScheduleEligRetry(hwnd) {
+    global g_AutoSlotEligRetry
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    attempt := g_AutoSlotEligRetry.Has(hwnd) ? Integer(g_AutoSlotEligRetry[hwnd]) : 0
+    if (attempt >= AutoSlot_ELIG_RETRY_MS.Length) {
+        AutoSlot_PerfLog(hwnd, "EligRetry_giveup", "attempts=" attempt)
+        try g_AutoSlotEligRetry.Delete(hwnd)
+        catch {
+        }
+        return
+    }
+    delay := AutoSlot_ELIG_RETRY_MS[attempt + 1]
+    g_AutoSlotEligRetry[hwnd] := attempt + 1
+    AutoSlot_PerfLog(hwnd, "EligRetry_arm", "attempt=" (attempt + 1) " delay=" delay)
+    h := hwnd
+    SetTimer(() => AutoSlot_ProcessEligRetry(h), -delay)
+}
+
+AutoSlot_ProcessEligRetry(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    AutoSlot_PerfLog(hwnd, "EligRetry_fire")
+    AutoSlot_ProcessPending(hwnd)
+}
+
+AutoSlot_ClearEligRetry(hwnd) {
+    global g_AutoSlotEligRetry
+    if (hwnd && g_AutoSlotEligRetry.Has(hwnd))
+        g_AutoSlotEligRetry.Delete(hwnd)
+}
+
 AutoSlot_ProcessPending(hwnd) {
     global g_AutoSlotPending, g_AutoSlotRecent
     if (g_AutoSlotPending.Has(hwnd))
         g_AutoSlotPending.Delete(hwnd)
+    AutoSlot_PerfLog(hwnd, "ProcessPending_enter")
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
     if (MonitorGetCount() <= 1)
         return
-    if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS)
+    if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS) {
+        AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "recent")
         return
+    }
     if (!AutoSlot_IsEligibleNewWindow(hwnd)) {
         ; Schedule may have cached HwndMon before eligibility — drop it so destroy
         ; of Teams/#32770/etc. does not spuriously heal/fill.
         AutoSlot_ForgetHwndMon(hwnd)
+        AutoSlot_PerfLog(hwnd, "ProcessPending_elig_fail")
+        AutoSlot_ScheduleEligRetry(hwnd)
         return
     }
+    AutoSlot_ClearEligRetry(hwnd)
+    AutoSlot_PerfLog(hwnd, "ProcessPending_elig_ok")
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
     AutoSlot_RememberHwndMon(hwnd)
@@ -2867,6 +2963,8 @@ AutoSlot_Place(hwnd) {
     if (ordinalCount < 2)
         return
 
+    AutoSlot_PerfLog(hwnd, "Place_enter")
+    t0 := A_TickCount
     g_AutoSlotUndo := 0
     msg := ""
     AutoSlot_RememberHwndMon(hwnd)
@@ -2889,29 +2987,44 @@ AutoSlot_Place(hwnd) {
             break
         }
     }
+    AutoSlot_PerfLog(hwnd, "Place_after_empty_scan", "ms=" (A_TickCount - t0) " emptyMon=" emptyMon)
 
     if (emptyMon) {
+        tMax := A_TickCount
         if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon)) {
             AutoSlot_ClaimMonitor(emptyMon)
             msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
         }
+        AutoSlot_PerfLog(hwnd, "Place_maximize_done", "ms=" (A_TickCount - tMax))
         AutoSlot_Toast(msg)
+        AutoSlot_PerfLog(hwnd, "Place_exit", "path=maximize total=" (A_TickCount - t0))
+        AutoSlot_PerfClearOrigin(hwnd)
         return
     }
 
+    tHalf := A_TickCount
     half := AutoSlot_FindHalfFullMonitor(hwnd)
+    AutoSlot_PerfLog(hwnd, "Place_after_half_scan", "ms=" (A_TickCount - tHalf)
+    " partner=" (IsObject(half) && half.partner ? half.partner : 0))
     if (IsObject(half) && half.partner) {
+        tSnap := A_TickCount
         if (AutoSlot_TrySnapNewWithPartner(hwnd, half.monIdx, half.partner, half.order)) {
             AutoSlot_RememberHwndMon(hwnd)
             AutoSlot_RememberHwndMon(half.partner)
             msg := "ℹ️ Auto-slotted → M" half.order " (50/50)"
             AutoSlot_Toast(msg)
+            AutoSlot_PerfLog(hwnd, "Place_exit", "path=snap total=" (A_TickCount - t0)
+            " snapMs=" (A_TickCount - tSnap))
+            AutoSlot_PerfClearOrigin(hwnd)
             return
         }
+        AutoSlot_PerfLog(hwnd, "Place_snap_failed", "ms=" (A_TickCount - tSnap))
     }
 
     ; No empty ordinal and no free half — leave window as the OS opened it
     ; (do not maximize over an existing pair / full monitor).
+    AutoSlot_PerfLog(hwnd, "Place_exit", "path=leave total=" (A_TickCount - t0))
+    AutoSlot_PerfClearOrigin(hwnd)
 }
 
 ; Auto-execute when #included.
