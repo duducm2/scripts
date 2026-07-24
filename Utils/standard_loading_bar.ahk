@@ -957,10 +957,17 @@ global g_BusyAllMonitorsValue := 0
 global g_BusyAllMonitorsTickTimer := ""
 global g_BusyAllMonitorsForceTimerArmed := false
 global STANDARD_BUSY_ALL_MONITORS_FORCE_MS := 5000
+; PERF A/B (H3): true = skip all-monitors "Arranging window…" overlays (Begin/End no-op).
+; Set false and reload WindowManagement to restore. Geometry/place logic unchanged.
+global STANDARD_BUSY_ALL_MONITORS_DISABLED := true
 
 StandardLoadingBar_BusyAllMonitors_Begin(state := "⏳ Arranging window...") {
     global g_BusyAllMonitorsDepth, g_BusyAllMonitorsOverlays, g_BusyAllMonitorsValue
     global g_BusyAllMonitorsTickTimer, g_BusyAllMonitorsForceTimerArmed, g_StandardLoadingBarIsKeysOverlay
+    global STANDARD_BUSY_ALL_MONITORS_DISABLED
+
+    if (STANDARD_BUSY_ALL_MONITORS_DISABLED)
+        return
 
     g_BusyAllMonitorsDepth += 1
     if (g_BusyAllMonitorsDepth > 1)
@@ -1029,7 +1036,9 @@ StandardLoadingBar_BusyAllMonitors_Begin(state := "⏳ Arranging window...") {
 }
 
 StandardLoadingBar_BusyAllMonitors_End() {
-    global g_BusyAllMonitorsDepth
+    global g_BusyAllMonitorsDepth, STANDARD_BUSY_ALL_MONITORS_DISABLED
+    if (STANDARD_BUSY_ALL_MONITORS_DISABLED)
+        return
     if (g_BusyAllMonitorsDepth <= 0) {
         g_BusyAllMonitorsDepth := 0
         return
