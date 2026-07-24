@@ -28,13 +28,9 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 
 **SHOW vs CREATE:** Shell `WINDOWCREATED` always may Place. `EVENT_OBJECT_SHOW` uses `AutoSlot_ScheduleFromShow` — if the hwnd already shares its monitor with another occupant (e.g. a 50/50 half activated by **`^!#q/w/e/r`**), it does **not** Place/maximize. It only **`RememberHwndMon`** when the hwnd is an eligible / occupancy candidate (Teams/#32770 chrome is not cached, so dismiss cannot false-heal a lone half). Cycle activate must never yank a half onto an empty ordinal. Manual **`^!#x`** 50/50 also applies **PairSuppress** after register (same settle mute as Place).
 
-### Eligibility settle (required)
+**Eligibility retry (required for Place latency):** After the debounce, `AutoSlot_ProcessPending` calls `AutoSlot_IsEligibleNewWindow`. Many apps (browsers, etc.) open with an empty title / not-yet-ready HWND, so the first check fails. **Do not** one-shot abandon on that miss: `ForgetHwndMon` and **retry** Place via `AutoSlot_ScheduleEligRetry` at **300 / 800 / 1500 ms** (`AutoSlot_ELIG_RETRY_MS`). Giving up after a single miss was the regression that made new windows sit ~3–4 s (or until a later SHOW) before rearranging; with retries, Place recovers as soon as the window becomes eligible.
 
-After the Place debounce, `ProcessPending` requires `AutoSlot_IsEligibleNewWindow` (visible, titled, not tool-window chrome, etc.). New apps often fail that check briefly (empty title).
-
-- On miss: clear premature `HwndMon`, then **retry** Place at **300 / 800 / 1500 ms** (`AutoSlot_ELIG_RETRY_MS` → `AutoSlot_ScheduleEligRetry`). Do **not** one-shot abandon.
-- **Anti-regression:** One-shot “elig fail → return” left windows sitting until a later SHOW (felt like 3–4 s lag). Do not restore that pattern for “efficiency.”
-- Disabling Busy-all-monitors overlays does **not** fix Place latency; keep rearrange banners on.
+**Do not “fix” Place delay by removing busy banners.** `StandardLoadingBar_BusyAllMonitors_*` (“Arranging window…”) is intentional feedback during maximize/snap/swap. Disabling it does not fix eligibility/Place timing and must not be treated as a performance improvement.
 
 Feedback: INFO toast on successful empty/half place. After SnapPair, optional **[M]** undo modal where that path still uses it. Grid-full is silent.
 
@@ -84,7 +80,6 @@ While AutoSlot / WindowManagement resizes or snaps (Place maximize/SnapPair, hea
 - `StandardLoadingBar_BusyAllMonitors_Begin` / `_End`
 - Default message: arranging-window loading indication on **every** monitor
 - Visual only (does not block input)
-- **Keep enabled** — this is the intended rearrange indicator; do not disable for perceived speed (`STANDARD_BUSY_ALL_MONITORS_DISABLED` stays false).
 
 See [`docs/canon/standard_information_display.md`](standard_information_display.md).
 
@@ -112,5 +107,3 @@ When changing or explaining Windows rearrangement:
 1. Read **this canon** and the code paths above.
 2. Do **not** treat archived audit docs or old plans as current policy unless the task is historical analysis.
 3. Do not reintroduce automatic background import on close/move/minimize unless the user explicitly requests it.
-4. Keep Place **eligibility retries** (300 / 800 / 1500 ms). Do not one-shot abandon on `IsEligibleNewWindow` failure.
-5. Keep Busy-all-monitors rearrange banners enabled; they are not a Place latency fix.
