@@ -54,9 +54,9 @@ global g_AutoSlotF11RestorePending := Map()
 ; Shared background rows for one Ctrl+Alt+Win+Y pass (avoid re-enumerating per monitor).
 global g_AutoSlotYBgRows := 0
 global g_AutoSlotYBgActive := false
-; Perf log: hwnd → origin tick for delta ms (Schedule / Place phases).
+; Perf log: hwnd → origin tick for delta ms (Schedule / Place phases). Off unless diagnosing.
 global g_AutoSlotPerfOrigin := Map()
-; H10: eligibility retry attempt count per hwnd (ProcessPending miss → delayed re-try).
+; Eligibility retry attempt count per hwnd (ProcessPending miss → delayed re-try — required Place settle).
 global g_AutoSlotEligRetry := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
@@ -85,9 +85,10 @@ AutoSlot_MAX_ORDINAL := 4
 AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
 AutoSlot_STICKY_PLACE_MS := 400
 AutoSlot_STICKY_PLACE_MAX := 12
-; Temporary Place timing log → .cursor\autoslot_perf.log (set false when done diagnosing).
-AutoSlot_PERF_LOG := true
-; H10: after eligibility miss, re-try ProcessPending at these delays (ms from each miss).
+; Optional Place timing log → .cursor\autoslot_perf.log (leave false in normal use).
+AutoSlot_PERF_LOG := false
+; After eligibility miss, re-try ProcessPending at these delays (ms). Required Place settle —
+; do not remove (one-shot abandon caused multi-second waits until a later SHOW).
 AutoSlot_ELIG_RETRY_MS := [300, 800, 1500]
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 global g_AutoSlotPlaceMsg := 0
@@ -97,7 +98,7 @@ AutoSlot_HSHELL_WINDOWCREATED := 1
 AutoSlot_HSHELL_WINDOWDESTROYED := 2
 AutoSlot_UNDO_MODAL_MS := 2000
 
-; --- Perf log (temporary; AutoSlot_PERF_LOG) ---------------------------------
+; --- Perf log (optional; AutoSlot_PERF_LOG) ----------------------------------
 
 AutoSlot_PerfLogPath() {
     return A_ScriptDir "\.cursor\autoslot_perf.log"
@@ -1135,7 +1136,8 @@ AutoSlot_SeedHwndMonFromOccupancy() {
     }
 }
 
-; H10: after eligibility miss, retry Place a few times instead of one-shot abandon.
+; After eligibility miss, retry Place a few times instead of one-shot abandon.
+; Required Place settle — see docs/canon/windows-rearrange.md (Eligibility settle).
 AutoSlot_ScheduleEligRetry(hwnd) {
     global g_AutoSlotEligRetry
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
@@ -1185,7 +1187,8 @@ AutoSlot_ProcessPending(hwnd) {
     }
     if (!AutoSlot_IsEligibleNewWindow(hwnd)) {
         ; Schedule may have cached HwndMon before eligibility — drop it so destroy
-        ; of Teams/#32770/etc. does not spuriously heal/fill.
+        ; of Teams/#32770/etc. does not spuriously heal/fill. Then retry (do not
+        ; one-shot abandon — that left windows unplaced until a later SHOW).
         AutoSlot_ForgetHwndMon(hwnd)
         AutoSlot_PerfLog(hwnd, "ProcessPending_elig_fail")
         AutoSlot_ScheduleEligRetry(hwnd)

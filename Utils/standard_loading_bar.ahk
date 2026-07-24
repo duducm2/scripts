@@ -957,8 +957,8 @@ global g_BusyAllMonitorsValue := 0
 global g_BusyAllMonitorsTickTimer := ""
 global g_BusyAllMonitorsForceTimerArmed := false
 global STANDARD_BUSY_ALL_MONITORS_FORCE_MS := 5000
-; PERF A/B (H3): true = skip all-monitors "Arranging window…" overlays (Begin/End no-op).
-; Keep false so rearrange shows the busy banner. Geometry/place logic unchanged.
+; Intended rearrange indicator (BusyAllMonitors). Keep false — do not disable for
+; “speed”; Place latency is settled via eligibility retries, not by hiding banners.
 global STANDARD_BUSY_ALL_MONITORS_DISABLED := false
 
 StandardLoadingBar_BusyAllMonitors_Begin(state := "⏳ Arranging window...") {
