@@ -6,13 +6,14 @@
 
 ## Changes
 
-| Canon                | Change                                                                                                                        |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites             |
-| Repeated enumeration | `Ctrl+Alt+Win+Y` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list |
-| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                          |
-| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)              |
-| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                  |
+| Canon                | Change                                                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                      |
+| Repeated enumeration | `Ctrl+Alt+Win+Y` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list          |
+| Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search |
+| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                   |
+| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                       |
+| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                           |
 
 ## Place latency fix (keep this)
 
