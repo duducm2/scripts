@@ -518,15 +518,16 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     g_AutoSlotLastDestroyHwnd := hwnd
     g_AutoSlotLastDestroyTick := A_TickCount
     ; Closing one half of a registered pair → maximize that partner when alone.
-    ; Debounce + one retry for zombie HWND races (efficiency: no third late HealLone —
-    ; ScheduleHealOnly already runs HealLoneCompanion).
+    ; Debounce + retry + late lone-heal for zombie HWND races (canon late HealLone).
     if (partner) {
         p := partner
-        m := monIdx
+        m := (partnerMon >= 1) ? partnerMon : monIdx
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
-    AutoSlot_ScheduleHealOnly(monIdx)
+    healMon := (partnerMon >= 1) ? partnerMon : monIdx
+    AutoSlot_ScheduleHealOnly(healMon)
+    SetTimer(() => AutoSlot_HealLoneCompanion(healMon), -(AutoSlot_FILL_RETRY_MS + 200))
     ; No automatic background import — user fills with Ctrl+Alt+Win+Y.
 }
 
@@ -534,6 +535,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
 ; Abort only if another *uncovered* occupant remains (living 50/50 peer / filled).
 ; Covered-behind noise must not block heal.
 AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
+    global g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick
     if (!companion || !DllCall("IsWindow", "ptr", companion))
         return false
     if (AutoSlot_IsClipAngelHwnd(companion))
@@ -545,10 +547,17 @@ AutoSlot_HealKnownCompanion(companion, monIdx := 0) {
     if (AutoSlot_CompanionAlreadyFilled(companion, monIdx))
         return true
     ; Full-monitor uncovered set (includes companion); any other visible peer blocks.
+    ; Skip the just-closed HWND while it may still linger in occupancy.
+    skipHwnd := 0
+    if (g_AutoSlotLastDestroyHwnd && A_TickCount - g_AutoSlotLastDestroyTick < AutoSlot_DESTROY_DEDUP_MS)
+        skipHwnd := g_AutoSlotLastDestroyHwnd
     uncovered := AutoSlot_OccupancyRowsUncovered(AutoSlot_OccupancyOnMonitor(monIdx))
     for row in uncovered {
-        if (row.hwnd && row.hwnd != companion)
-            return false
+        if (!row.hwnd || row.hwnd = companion)
+            continue
+        if (skipHwnd && row.hwnd = skipHwnd)
+            continue
+        return false
     }
     healed := false
     try healed := !!WM_MaximizeHwndBackground(companion)
@@ -954,11 +963,13 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
 
     if (partnerHwnd) {
         p := partnerHwnd
-        m := monIdx
+        m := (partnerMon >= 1) ? partnerMon : monIdx
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
-    AutoSlot_ScheduleHealOnly(monIdx)
+    healMon := (partnerMon >= 1) ? partnerMon : monIdx
+    AutoSlot_ScheduleHealOnly(healMon)
+    SetTimer(() => AutoSlot_HealLoneCompanion(healMon), -(AutoSlot_FILL_RETRY_MS + 200))
 }
 
 ; Like IsOccupancyCandidate but allows iconic (minMax = -1).
