@@ -184,7 +184,7 @@
     }
 }
 
-; Shift + I : Immerse — header Play (proximity to Explore/Shuffle/Follow/More/Popular) then fullscreen
+; Shift + I : Immerse — header Play (main entity region, then proximity) then fullscreen
 +i:: {
     try {
         StandardLoadingBar_Show("⏳ Immersing — finding header Play…", BANNER_ACCENT_INTERMEDIATE, {
@@ -196,21 +196,24 @@
             ShowCenteredOverlay_Utils("❌ Spotify UIA root not found", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        StandardLoadingBar_Update("⏳ Immersing — scoring Play by anchors…", BANNER_ACCENT_INTERMEDIATE)
-        playBtn := FindHeaderPlayByProximity(spot)
+        StandardLoadingBar_Update("⏳ Immersing — locating header Play…", BANNER_ACCENT_INTERMEDIATE)
+        playBtn := FindHeaderPlayButton(spot)
         if (!playBtn) {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Header Play button not found", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        StandardLoadingBar_Update("⏳ Immersing — activating Play…", BANNER_ACCENT_INTERMEDIATE)
-        activated := ActivateElement(playBtn)
-        if (!activated) {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Failed to activate header Play", 2000, BANNER_ACCENT_ERROR)
-            return
+        ; Already playing this context (header shows Pause) — skip click so we don't pause.
+        if (!IsHeaderPauseLike(playBtn)) {
+            StandardLoadingBar_Update("⏳ Immersing — activating Play…", BANNER_ACCENT_INTERMEDIATE)
+            activated := ActivateElement(playBtn)
+            if (!activated) {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("❌ Failed to activate header Play", 2000, BANNER_ACCENT_ERROR)
+                return
+            }
+            Sleep(250)
         }
-        Sleep(250)
         StandardLoadingBar_Update("⏳ Immersing — entering fullscreen…", BANNER_ACCENT_INTERMEDIATE)
         fsOk := SpotifyToggleFullscreen()
         StandardLoadingBar_Hide(0)
@@ -501,7 +504,8 @@ CollectHeaderPlayAnchors(root) {
     if (!root)
         return anchors
 
-    ; Buttons: Explore …, Enable Shuffle for … (not …Popular), Follow/Following, More options for …
+    ; Buttons: Explore …, Enable Shuffle for … (not …Popular), Follow/Following,
+    ; More options for … (exclude track-row "… by Artist").
     try {
         btns := root.FindAll({ Type: 50000 })
         if (btns && btns.Length) {
@@ -516,7 +520,7 @@ CollectHeaderPlayAnchors(root) {
                         anchors.Push(b)
                     else if (nm = "Follow" || nm = "Following")
                         anchors.Push(b)
-                    else if (RegExMatch(nm, "i)^More options for "))
+                    else if (RegExMatch(nm, "i)^More options for ") && !InStr(nm, " by "))
                         anchors.Push(b)
                 } catch {
                     continue
@@ -545,8 +549,41 @@ CollectHeaderPlayAnchors(root) {
     return anchors
 }
 
-; Exact Name "Play" primary buttons (excludes "Play Track…", track rows, etc.).
-CollectExactPlayCandidates(root) {
+; Header Play/Pause name: bare or entity-qualified (EN + PT).
+IsHeaderPlayPauseName(nm) {
+    if (!nm)
+        return false
+    return !!RegExMatch(nm, "i)^(Play|Pause|Reproduzir|Pausar)(\s|$)")
+}
+
+IsHeaderPauseLike(el) {
+    try {
+        nm := el.Name
+        if (!nm)
+            return false
+        return !!RegExMatch(nm, "i)^(Pause|Pausar)(\s|$)")
+    } catch {
+        return false
+    }
+}
+
+IsHeaderPlayPausePrimary(el) {
+    try {
+        nm := el.Name
+        if (!IsHeaderPlayPauseName(nm))
+            return false
+        cn := ""
+        try cn := el.ClassName
+        if (cn != "" && !InStr(cn, "legacy-button-primary"))
+            return false
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Primary Play/Pause buttons (entity-qualified or bare). Excludes track-row plays (no primary class).
+CollectHeaderPlayCandidates(root) {
     candidates := []
     if (!root)
         return candidates
@@ -555,13 +592,8 @@ CollectExactPlayCandidates(root) {
         if (btns && btns.Length) {
             for b in btns {
                 try {
-                    if (b.Name != "Play")
-                        continue
-                    cn := ""
-                    try cn := b.ClassName
-                    if (cn != "" && !InStr(cn, "legacy-button-primary"))
-                        continue
-                    candidates.Push(b)
+                    if (IsHeaderPlayPausePrimary(b))
+                        candidates.Push(b)
                 } catch {
                     continue
                 }
@@ -570,6 +602,48 @@ CollectExactPlayCandidates(root) {
     } catch {
     }
     return candidates
+}
+
+; Main content entity group, e.g. "best cartoon songs - playlist by DON | Spotify".
+FindMainEntityGroup(root) {
+    if (!root)
+        return ""
+    try {
+        groups := root.FindAll({ Type: 50026 })
+        if (groups && groups.Length) {
+            for g in groups {
+                try {
+                    nm := g.Name
+                    if (nm && RegExMatch(nm, "i)\| Spotify$"))
+                        return g
+                } catch {
+                    continue
+                }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+; First primary Play/Pause button inside a subtree (typically the entity action bar).
+FindHeaderPlayInGroup(group) {
+    if (!group)
+        return ""
+    candidates := CollectHeaderPlayCandidates(group)
+    if (!candidates.Length)
+        return ""
+    ; Prefer entity-qualified names ("Play Playlist") over bare "Play"/"Pause".
+    for c in candidates {
+        try {
+            nm := c.Name
+            if (nm && RegExMatch(nm, "i)^(Play|Pause|Reproduzir|Pausar)\s+\S"))
+                return c
+        } catch {
+            continue
+        }
+    }
+    return candidates[1]
 }
 
 UiaElementCenter(el) {
@@ -601,12 +675,12 @@ HeaderPlayProximityScore(candidate, anchors) {
     return score
 }
 
-; Pick the Name="Play" button closest (by inverse-dist² sum) to header anchors. Needs ≥2 anchors.
+; Pick the primary Play/Pause closest (by inverse-dist² sum) to header anchors. Needs ≥2 anchors.
 FindHeaderPlayByProximity(root) {
     anchors := CollectHeaderPlayAnchors(root)
     if (anchors.Length < 2)
         return ""
-    candidates := CollectExactPlayCandidates(root)
+    candidates := CollectHeaderPlayCandidates(root)
     if (!candidates.Length)
         return ""
     best := ""
@@ -619,6 +693,19 @@ FindHeaderPlayByProximity(root) {
         }
     }
     return best
+}
+
+; Two-tier: main entity group first, then proximity fallback.
+FindHeaderPlayButton(root) {
+    if (!root)
+        return ""
+    mainGroup := FindMainEntityGroup(root)
+    if (mainGroup) {
+        btn := FindHeaderPlayInGroup(mainGroup)
+        if (btn)
+            return btn
+    }
+    return FindHeaderPlayByProximity(root)
 }
 
 ; --- text utils ---
