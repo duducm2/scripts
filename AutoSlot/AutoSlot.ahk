@@ -29,9 +29,7 @@ global g_AutoSlotPending := Map()
 global g_AutoSlotRecent := Map()
 global g_AutoSlotGui := 0
 global g_AutoSlotUndo := 0
-global g_AutoSlotFillPending := Map()
 global g_AutoSlotHealPending := Map()
-global g_AutoSlotFillRetry := Map()
 global g_AutoSlotHwndMon := Map()
 global g_AutoSlotFillCooldown := Map()
 global g_AutoSlotLastDestroyHwnd := 0
@@ -47,14 +45,15 @@ global g_AutoSlotMoveHook := 0
 global g_AutoSlotMoveHookCb := 0
 global g_AutoSlotMinHook := 0
 global g_AutoSlotMinHookCb := 0
-global g_AutoSlotRearrangePending := false
-global g_AutoSlotRearrangeExclude := 0
 global g_AutoSlotSwapQuietUntil := 0
 global g_AutoSlotJustRestored := Map()
 global g_AutoSlotLastToastMsg := ""
 global g_AutoSlotLastToastTick := 0
 global g_AutoSlotWasF11 := Map()          ; snap-pair hwnd → true while (or after) F11 fullscreen
 global g_AutoSlotF11RestorePending := Map()
+; Shared background rows for one Ctrl+Alt+Win+Y pass (avoid re-enumerating per monitor).
+global g_AutoSlotYBgRows := 0
+global g_AutoSlotYBgActive := false
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -70,13 +69,13 @@ AutoSlot_FILL_RETRY_MS := 400
 AutoSlot_DESTROY_DEDUP_MS := 250
 AutoSlot_PAIR_MAX_DEBOUNCE_MS := 120
 AutoSlot_PAIR_SUPPRESS_MS := 500
-AutoSlot_REARRANGE_MS := 350
 AutoSlot_SWAP_QUIET_MS := 2500
 AutoSlot_SWAP_MODAL_MS := 2000
 AutoSlot_SWAP_PAIR_SUPPRESS_MS := 3500
 AutoSlot_RESTORE_GUARD_MS := 4000   ; MINIMIZEEND → suppress SHOW-triggered auto-place for this long
 AutoSlot_TOAST_DEBOUNCE_MS := 4000  ; identical toast text — avoid hide-timer reset spam
-AutoSlot_PLACE_REQUEST_POLL_MS := 200
+; File IPC fallback for cross-process place (PostMessage preferred); slow poll only.
+AutoSlot_PLACE_REQUEST_POLL_MS := 1000
 AutoSlot_MAX_ORDINAL := 4
 ; Must match Utils\autoslot_place_ipc.ahk
 AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
@@ -473,18 +472,16 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     g_AutoSlotLastDestroyHwnd := hwnd
     g_AutoSlotLastDestroyTick := A_TickCount
     ; Closing one half of a registered pair → maximize that partner when alone.
+    ; Debounce + one retry for zombie HWND races (efficiency: no third late HealLone —
+    ; ScheduleHealOnly already runs HealLoneCompanion).
     if (partner) {
         p := partner
         m := monIdx
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_DEBOUNCE_MS)
-        ; Second pass after destroy HWND clears from occupancy lists.
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
     AutoSlot_ScheduleHealOnly(monIdx)
     ; No automatic background import — user fills with Ctrl+Alt+Win+Y.
-    ; Late heal for unregistered 50/50 (no snap pair) once zombie HWNDs drop out.
-    lateMon := monIdx
-    SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
 }
 
 ; Maximize a known leftover companion after its snap-pair partner closed.
@@ -745,22 +742,15 @@ AutoSlot_SwapQuietActive() {
     return g_AutoSlotSwapQuietUntil > 0 && A_TickCount < g_AutoSlotSwapQuietUntil
 }
 
-; Kept as no-ops so older call sites (suite leave) do not import backgrounds.
-; Background fill is Ctrl+Alt+Win+Y only (RunTileBackground / forceImport).
-AutoSlot_ScheduleRearrange(excludeHwnd := 0) {
-}
-
-AutoSlot_ProcessRearrange(*) {
-}
-
-; Former auto rearrange/fill-on-move — disabled. Y uses RunTileBackground instead.
-AutoSlot_RearrangeUnderfilled(excludeHwnd := 0) {
-}
+; Kept as no-ops so older call sites do not import backgrounds — removed; Y-only fill.
+; (ScheduleRearrange / ScheduleFill stubs deleted in efficiency pass.)
 
 ; Ctrl+Alt+Win+Y when AutoSlot ON: fill underfilled ordinal slots from background only
 ; (never relocates windows already occupying slots). Returns { ok, message }.
 ; Prefer empty monitors before splitting a lone maximized (half-slot).
+; One background enumeration for the whole pass (efficiency-canon §3).
 AutoSlot_RunTileBackground() {
+    global g_AutoSlotYBgRows, g_AutoSlotYBgActive
     if (!AutoSlot_IsEnabled())
         return { ok: false, message: "AutoSlot is OFF" }
     if (MonitorGetCount() <= 1)
@@ -787,24 +777,30 @@ AutoSlot_RunTileBackground() {
         }
         skippedFull++
     }
-    for monIdx in emptyMons {
-        result := AutoSlot_FillMonitorFromBackground(monIdx, true)
-        if (result != "ok")
-            continue
-        filled++
-    }
-    for monIdx in halfMons {
-        part := AutoSlot_PartitionOccupancy(monIdx)
-        beforeNon := part.nonFilled.Length
-        beforeFilled := part.filled.Length
-        result := AutoSlot_FillMonitorFromBackground(monIdx, true)
-        if (result != "ok")
-            continue
-        after := AutoSlot_PartitionOccupancy(monIdx)
-        if (beforeNon = 1 && after.nonFilled.Length = 0 && after.filled.Length > beforeFilled)
-            healed++
-        else
-            filled++
+    bgRows := []
+    try bgRows := WM_CollectBackgroundWindows()
+    catch
+        bgRows := []
+    g_AutoSlotYBgRows := bgRows
+    g_AutoSlotYBgActive := true
+    try {
+        for monIdx in emptyMons {
+            result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+            if (result = "ok")
+                filled++
+            else if (result = "healed")
+                healed++
+        }
+        for monIdx in halfMons {
+            result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+            if (result = "healed")
+                healed++
+            else if (result = "ok")
+                filled++
+        }
+    } finally {
+        g_AutoSlotYBgActive := false
+        g_AutoSlotYBgRows := 0
     }
     total := filled + healed
     if (total = 0) {
@@ -917,8 +913,6 @@ AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         SetTimer(() => AutoSlot_HealKnownCompanion(p, m), -AutoSlot_FILL_RETRY_MS)
     }
     AutoSlot_ScheduleHealOnly(monIdx)
-    lateMon := monIdx
-    SetTimer(() => AutoSlot_HealLoneCompanion(lateMon), -(AutoSlot_FILL_RETRY_MS + 200))
 }
 
 ; Like IsOccupancyCandidate but allows iconic (minMax = -1).
@@ -944,15 +938,12 @@ AutoSlot_IsMinimizeRearrangeCandidate(hwnd) {
     return true
 }
 
-; Place claimed this monitor — suppress deferred background fill (companion heal still allowed).
-; Auto ScheduleFill is disabled; Claim still used after Place / heal / Y fill.
+; Place claimed this monitor — claim cooldown still used after Place / heal / Y fill.
 AutoSlot_ClaimMonitor(monIdx) {
-    global g_AutoSlotFillPending, g_AutoSlotFillCooldown
+    global g_AutoSlotFillCooldown
     if (monIdx < 1)
         return
     g_AutoSlotFillCooldown[monIdx] := A_TickCount
-    if (g_AutoSlotFillPending.Has(monIdx))
-        g_AutoSlotFillPending.Delete(monIdx)
 }
 
 AutoSlot_FillCooldownActive(monIdx) {
@@ -980,19 +971,6 @@ AutoSlot_ProcessHealOnly(monIdx) {
         return
     if (AutoSlot_HealLoneCompanion(monIdx))
         g_AutoSlotFillCooldown[monIdx] := A_TickCount
-}
-
-; Auto fill-on-close disabled — no-op (Y uses RunTileBackground / FillMonitorFromBackground).
-AutoSlot_ScheduleFill(monIdx) {
-}
-
-AutoSlot_ProcessFillPending(monIdx) {
-}
-
-AutoSlot_ScheduleFillRetry(monIdx) {
-}
-
-AutoSlot_ProcessFillRetry(monIdx) {
 }
 
 AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
@@ -2448,7 +2426,9 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 
 ; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
 ; forceImport: explicit user fill (Y / Ctrl+6) — ignore place freeze / fill cooldown.
+; When g_AutoSlotYBgActive, reuse g_AutoSlotYBgRows (one collect per Y pass); consume picked hwnds.
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
+    global g_AutoSlotYBgActive, g_AutoSlotYBgRows
     occupied := Map()
     for row in occupancyRows {
         if (row.hwnd)
@@ -2468,30 +2448,54 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
         occupied[Integer(excludeExtra)] := true
     }
     rows := []
-    try rows := WM_CollectBackgroundWindows()
-    catch
-        return 0
-    for row in rows {
+    reuseY := g_AutoSlotYBgActive && IsObject(g_AutoSlotYBgRows)
+    if (reuseY)
+        rows := g_AutoSlotYBgRows
+    else {
+        try rows := WM_CollectBackgroundWindows()
+        catch
+            return 0
+    }
+    i := 1
+    while (i <= rows.Length) {
+        row := rows[i]
         hwnd := 0
         try hwnd := Integer(row.hwnd)
-        catch
+        catch {
+            i++
             continue
-        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        }
+        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+            if (reuseY)
+                rows.RemoveAt(i)
+            else
+                i++
             continue
-        if (occupied.Has(hwnd))
+        }
+        if (occupied.Has(hwnd)) {
+            i++
             continue
-        if (AutoSlot_IsExcludedExeOrTitle(hwnd))
+        }
+        if (AutoSlot_IsExcludedExeOrTitle(hwnd)) {
+            i++
             continue
+        }
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
         ; Explicit Y matches Ctrl+Alt+Win+6: clear stale pair and allow the pick.
         if (!forceImport) {
-            if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd))
+            if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd)) {
+                i++
                 continue
-            if (AutoSlot_BackgroundCandCoveredByF11(hwnd))
+            }
+            if (AutoSlot_BackgroundCandCoveredByF11(hwnd)) {
+                i++
                 continue
+            }
         } else {
             AutoSlot_UnregisterSnapPair(hwnd)
         }
+        if (reuseY)
+            rows.RemoveAt(i)
         return hwnd
     }
     return 0
@@ -2626,7 +2630,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         if (AutoSlot_HealLoneCompanion(monIdx)) {
             if (forceImport)
                 AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
-            return "ok"
+            return "healed"
         }
         if (blockImport || forceImport)
             return "noop"

@@ -747,10 +747,6 @@ WM_AfterLeavingMonitor(movedHwnd, sourceMonIdx, companionHwnd, destMonIdx, snapP
     }
     WM_EnsureForegroundHwnd(activateHwnd)
     WM_MaybeCenterMouse(activateHwnd, "after_leaving_monitor", true)
-    ; AutoSlot background import is Y-only; ScheduleRearrange is a no-op.
-    try AutoSlot_ScheduleRearrange(movedHwnd)
-    catch {
-    }
 }
 
 WM_SnapHalfPairActiveWindow() {

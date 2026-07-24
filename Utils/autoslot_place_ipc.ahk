@@ -42,6 +42,7 @@ AutoSlot_FindWindowManagementHwnd() {
 
 ; Queue hwnd for AutoSlot free-capacity place (empty max / free half 50/50).
 ; Prefer PostMessage (reliable on Google Drive paths); file is fallback only.
+; Consumer polls the file at most every AutoSlot_PLACE_REQUEST_POLL_MS (1000 ms).
 AutoSlot_RequestPlaceCrossProcess(hwnd) {
     if (!hwnd)
         return false
