@@ -162,10 +162,14 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
-        this.PasteClipboardToVisibleWindow(this.OriginHwnd)
-        global g_D2C_DictationSubmitMenuCycleFinished
-        g_D2C_DictationSubmitMenuCycleFinished := true
-        this.Reset()
+        if (this.PasteClipboardToVisibleWindow(this.OriginHwnd)) {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+            return
+        }
+        ; Picker cancelled — restore submit menu; keep OriginHwnd.
+        this.PromptForGeminiSubmit()
     }
 
     ; Paste dictated text into the active window and end the D2C flow (menu [V]).
@@ -252,6 +256,13 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         HideDictationIndicator()
 
+        if !ClipAngel_TryAcquireAutomationLock() {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+            return
+        }
+
         StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
         try {
             ; Use the origin window (what the user was looking at) to decide the target monitor for ClipAngel.
@@ -261,7 +272,7 @@ class D2C_FlowManager {
             originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
 
             ActivateClipAngelWithFocusCorrection(true, originMon, true)
-            clipHwnd := WinExist("ClipAngel")
+            clipHwnd := ClipAngel_MainHwnd()
             if (!clipHwnd) {
                 StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
                 return
@@ -294,6 +305,7 @@ class D2C_FlowManager {
             StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
         } finally {
             StandardLoadingBar_Hide(350)
+            ClipAngel_ReleaseAutomationLock()
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()

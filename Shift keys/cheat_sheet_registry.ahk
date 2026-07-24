@@ -637,17 +637,17 @@ cheatSheets["ClipAngel.exe"] := "
     💾 [S][S]ave as file
     🔗 [M][M]erge clips
     🔍 [Y]File t[Y]pe filter (Quick Wizard)
-    ⌨️ [Alt+1] [S]elect current item
-    ⌨️ [Alt+2] [M]ove down once and select
-    ⌨️ [Alt+3] [M]ove down twice and select
-    ⌨️ [Alt+4] [M]ove down three times and select
-    ⌨️ [Alt+5] [M]ove down four times and select
+    ⌨️ [Alt+1] Paste current item, then minimize
+    ⌨️ [Alt+2] Down 1, paste, then minimize
+    ⌨️ [Alt+3] Down 2, paste, then minimize
+    ⌨️ [Alt+4] Down 3, paste, then minimize
+    ⌨️ [Alt+5] Down 4, paste, then minimize
     📋 [Alt+Enter] Paste [F]ile (Clip menu)
-    📋 [Ctrl+1] Tab, Select All, Copy
-    📋 [Ctrl+2] Down 1, Tab, Select All, Copy
-    📋 [Ctrl+3] Down 2, Tab, Select All, Copy
-    📋 [Ctrl+4] Down 3, Tab, Select All, Copy
-    📋 [Ctrl+5] Down 4, Tab, Select All, Copy
+    📋 [Ctrl+1] F10, Select All, Copy, then minimize
+    📋 [Ctrl+2] Down 1, F10, Select All, Copy, then minimize
+    📋 [Ctrl+3] Down 2, F10, Select All, Copy, then minimize
+    📋 [Ctrl+4] Down 3, F10, Select All, Copy, then minimize
+    📋 [Ctrl+5] Down 4, F10, Select All, Copy, then minimize
 )"  ; end ClipAngel
 
 ; --- Figma -----------------------------------------------------------------
@@ -1158,7 +1158,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
     
-    [Alt+P] Ope clip angel
+    [Alt+P] Open clip angel
     
     === CURSOR ===
     [Win+Alt+Shift+N] > Context file browser (paste path)
