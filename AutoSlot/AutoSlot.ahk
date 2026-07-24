@@ -56,7 +56,7 @@ global g_AutoSlotYBgRows := 0
 global g_AutoSlotYBgActive := false
 ; Perf log: hwnd → origin tick for delta ms (Schedule / Place phases). Off unless diagnosing.
 global g_AutoSlotPerfOrigin := Map()
-; Eligibility retry attempt count per hwnd (ProcessPending miss → delayed re-try — required Place settle).
+; Eligibility settle: hwnd → first-miss tick (dense ~100 ms polls until budget).
 global g_AutoSlotEligRetry := Map()
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
@@ -87,9 +87,11 @@ AutoSlot_STICKY_PLACE_MS := 400
 AutoSlot_STICKY_PLACE_MAX := 12
 ; Optional Place timing log → .cursor\autoslot_perf.log (leave false in normal use).
 AutoSlot_PERF_LOG := false
-; After eligibility miss, re-try ProcessPending at these delays (ms). Required Place settle —
-; do not remove (one-shot abandon caused multi-second waits until a later SHOW).
-AutoSlot_ELIG_RETRY_MS := [300, 800, 1500]
+; Eligibility settle after IsEligibleNewWindow miss: poll every POLL_MS until BUDGET_MS
+; from first miss (empty title / HWND not ready). Do not one-shot abandon; do not use
+; sparse 300/800/1500 gaps (those reintroduced multi-second Place lag).
+AutoSlot_ELIG_RETRY_POLL_MS := 100
+AutoSlot_ELIG_RETRY_BUDGET_MS := 2000
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 global g_AutoSlotPlaceMsg := 0
 global g_AutoSlotStickyHwnd := 0
@@ -1058,7 +1060,8 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
 }
 
 AutoSlot_Schedule(hwnd) {
-    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon, g_AutoSlotJustRestored
+    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon, g_AutoSlotJustRestored,
+        g_AutoSlotEligRetry
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || MonitorGetCount() <= 1)
@@ -1066,6 +1069,11 @@ AutoSlot_Schedule(hwnd) {
     ; Already tracked — ignore SHOW spam from activation, not a new window.
     if (g_AutoSlotHwndMon.Has(hwnd)) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "already_tracked")
+        return
+    }
+    ; Eligibility settle owns this hwnd — do not arm a parallel debounce.
+    if (g_AutoSlotEligRetry.Has(hwnd)) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "elig_retry")
         return
     }
     ; Recently restored from taskbar — the SHOW event is from the restore animation,
@@ -1085,8 +1093,8 @@ AutoSlot_Schedule(hwnd) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "pending")
         return
     }
+    ; Pending only — RememberHwndMon after eligibility OK (ProcessPending), not here.
     AutoSlot_PerfLog(hwnd, "Schedule", "debounce=" AutoSlot_DEBOUNCE_MS)
-    AutoSlot_RememberHwndMon(hwnd)
     g_AutoSlotPending[hwnd] := true
     SetTimer(() => AutoSlot_ProcessPending(hwnd), -AutoSlot_DEBOUNCE_MS)
 }
@@ -1094,13 +1102,17 @@ AutoSlot_Schedule(hwnd) {
 ; SHOW-only: activation of an existing co-occupant (e.g. 50/50 half via ^!#q/w/e/r)
 ; must not Place/maximize. Shell WINDOWCREATED still uses AutoSlot_Schedule directly.
 AutoSlot_ScheduleFromShow(hwnd) {
-    global g_AutoSlotHwndMon
+    global g_AutoSlotHwndMon, g_AutoSlotEligRetry
     if (!AutoSlot_IsEnabled())
         return
     if (!hwnd || MonitorGetCount() <= 1)
         return
     if (g_AutoSlotHwndMon.Has(hwnd)) {
         AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "already_tracked")
+        return
+    }
+    if (g_AutoSlotEligRetry.Has(hwnd)) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "elig_retry")
         return
     }
     monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
@@ -1136,30 +1148,32 @@ AutoSlot_SeedHwndMonFromOccupancy() {
     }
 }
 
-; After eligibility miss, retry Place a few times instead of one-shot abandon.
-; Required Place settle — see docs/canon/windows-rearrange.md (Eligibility settle).
+; Dense eligibility settle: ~100 ms polls from first miss until budget (~2 s).
+; Required — see docs/canon/windows-rearrange.md (Eligibility settle).
 AutoSlot_ScheduleEligRetry(hwnd) {
     global g_AutoSlotEligRetry
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return
-    attempt := g_AutoSlotEligRetry.Has(hwnd) ? Integer(g_AutoSlotEligRetry[hwnd]) : 0
-    if (attempt >= AutoSlot_ELIG_RETRY_MS.Length) {
-        AutoSlot_PerfLog(hwnd, "EligRetry_giveup", "attempts=" attempt)
-        try g_AutoSlotEligRetry.Delete(hwnd)
-        catch {
-        }
+    now := A_TickCount
+    if (!g_AutoSlotEligRetry.Has(hwnd))
+        g_AutoSlotEligRetry[hwnd] := now
+    start := Integer(g_AutoSlotEligRetry[hwnd])
+    elapsed := now - start
+    if (elapsed >= AutoSlot_ELIG_RETRY_BUDGET_MS) {
+        AutoSlot_PerfLog(hwnd, "EligRetry_giveup", "elapsed=" elapsed)
+        AutoSlot_ClearEligRetry(hwnd)
         return
     }
-    delay := AutoSlot_ELIG_RETRY_MS[attempt + 1]
-    g_AutoSlotEligRetry[hwnd] := attempt + 1
-    AutoSlot_PerfLog(hwnd, "EligRetry_arm", "attempt=" (attempt + 1) " delay=" delay)
+    AutoSlot_PerfLog(hwnd, "EligRetry_arm", "poll=" AutoSlot_ELIG_RETRY_POLL_MS " elapsed=" elapsed)
     h := hwnd
-    SetTimer(() => AutoSlot_ProcessEligRetry(h), -delay)
+    SetTimer(() => AutoSlot_ProcessEligRetry(h), -AutoSlot_ELIG_RETRY_POLL_MS)
 }
 
 AutoSlot_ProcessEligRetry(hwnd) {
-    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+        AutoSlot_ClearEligRetry(hwnd)
         return
+    }
     AutoSlot_PerfLog(hwnd, "EligRetry_fire")
     AutoSlot_ProcessPending(hwnd)
 }
@@ -1177,19 +1191,19 @@ AutoSlot_ProcessPending(hwnd) {
     AutoSlot_PerfLog(hwnd, "ProcessPending_enter")
     if (!AutoSlot_IsEnabled())
         return
-    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+        AutoSlot_ClearEligRetry(hwnd)
         return
+    }
     if (MonitorGetCount() <= 1)
         return
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS) {
         AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "recent")
+        AutoSlot_ClearEligRetry(hwnd)
         return
     }
     if (!AutoSlot_IsEligibleNewWindow(hwnd)) {
-        ; Schedule may have cached HwndMon before eligibility — drop it so destroy
-        ; of Teams/#32770/etc. does not spuriously heal/fill. Then retry (do not
-        ; one-shot abandon — that left windows unplaced until a later SHOW).
-        AutoSlot_ForgetHwndMon(hwnd)
+        ; Do not Remember until eligible. Dense poll until title/HWND ready (budget).
         AutoSlot_PerfLog(hwnd, "ProcessPending_elig_fail")
         AutoSlot_ScheduleEligRetry(hwnd)
         return

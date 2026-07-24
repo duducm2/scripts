@@ -20,12 +20,13 @@
 
 **Root cause:** `ProcessPending` failed `IsEligibleNewWindow` once (empty title / HWND not ready), called `ForgetHwndMon`, and **returned with no retry**. Place only happened later via another SHOW (or never felt timely).
 
-**Required fix (maintained):** `AutoSlot_ScheduleEligRetry` — on eligibility miss, retry at **300 / 800 / 1500 ms** (`AutoSlot_ELIG_RETRY_MS` in `AutoSlot/AutoSlot.ahk`). Do **not** revert to one-shot abandon.
+**Required fix (maintained):** `AutoSlot_ScheduleEligRetry` — on eligibility miss, **dense ~100 ms polls** until eligible or **~2 s** from first miss (`AutoSlot_ELIG_RETRY_POLL_MS` / `AutoSlot_ELIG_RETRY_BUDGET_MS`). `Schedule` is pending-only (no `RememberHwndMon` before elig OK; coalesce while settle armed). Do **not** revert to one-shot abandon or sparse 300/800/1500 delays.
 
 **Anti-patterns (do not repeat):**
 
 - Setting `STANDARD_BUSY_ALL_MONITORS_DISABLED := true` to “speed up” rearrange — removes the arranging indicator without fixing Place timing.
-- Removing eligibility retries in the name of fewer timers — reintroduces the multi-second sit-then-snap regression.
+- Removing eligibility settle or reverting to sparse 300/800/1500 delays — reintroduces multi-second sit-then-snap lag.
+- Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
 - Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
 
 Optional diagnose: `AutoSlot_PERF_LOG := true` → `.cursor/autoslot_perf.log` (`ProcessPending_elig_fail`, `EligRetry_*`, `Place_*` phases). Turn off when done.
@@ -40,4 +41,4 @@ Y-only background import, Place empty/half rules, heal-on-close/minimize, no pai
 - Close/minimize: companion still heals; no background import
 - Suite leave: no `ScheduleRearrange` call
 - Cross-process place: PostMessage first; file poll still works slowly
-- New window Place: eligibility miss retries; no multi-second dead wait from one-shot abandon
+- New window Place: dense eligibility settle (~100 ms); Place soon after title ready; no multi-second dead wait from one-shot abandon or sparse retry gaps
