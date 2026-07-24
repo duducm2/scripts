@@ -177,11 +177,11 @@ WM_GetEstimatedVisibleFrameForMonitor(hwnd, monIdx, &left, &top, &right, &bottom
     return true
 }
 
-WM_LogicalPointFromPhysical(x, y, &lx, &ly) {
+WM_LogicalPointFromPhysical(hwnd, x, y, &lx, &ly) {
     pt := Buffer(8, 0)
     NumPut("int", x, pt, 0)
     NumPut("int", y, pt, 4)
-    if DllCall("user32\PhysicalToLogicalPointForPerMonitorDPI", "ptr", pt, "int", 1) {
+    if (hwnd && DllCall("user32\PhysicalToLogicalPointForPerMonitorDPI", "ptr", hwnd, "ptr", pt)) {
         lx := NumGet(pt, 0, "int")
         ly := NumGet(pt, 4, "int")
         return true
@@ -201,10 +201,10 @@ WM_GetDwmExtendedFrameLogical(hwnd, &left, &top, &right, &bottom) {
     pxR := NumGet(rc, 8, "int"), pxB := NumGet(rc, 12, "int")
     if (pxR <= pxL || pxB <= pxT)
         return false
-    WM_LogicalPointFromPhysical(pxL, pxT, &c1x, &c1y)
-    WM_LogicalPointFromPhysical(pxR, pxT, &c2x, &c2y)
-    WM_LogicalPointFromPhysical(pxL, pxB, &c3x, &c3y)
-    WM_LogicalPointFromPhysical(pxR, pxB, &c4x, &c4y)
+    WM_LogicalPointFromPhysical(hwnd, pxL, pxT, &c1x, &c1y)
+    WM_LogicalPointFromPhysical(hwnd, pxR, pxT, &c2x, &c2y)
+    WM_LogicalPointFromPhysical(hwnd, pxL, pxB, &c3x, &c3y)
+    WM_LogicalPointFromPhysical(hwnd, pxR, pxB, &c4x, &c4y)
     left := Min(c1x, c2x, c3x, c4x)
     top := Min(c1y, c2y, c3y, c4y)
     right := Max(c1x, c2x, c3x, c4x)
@@ -318,11 +318,13 @@ WM_GaplessFrameAligned(hwnd, monIdx, targetLeft, targetTop, targetRight, targetB
     edge := WM_GetDpiScaledEdgeForMonitor(monIdx)
     WM_GetSnapInnerWorkArea(monIdx, &iwl, &iwt, &iwr, &iwb)
     tol := WM_SNAP_STRICT_EDGE_TOL
+    ; Shared gutter edge: keep tol below gap so panes cannot validate while overlapping.
+    midTol := Min(tol, Max(0, WM_SNAP_PAIR_GAP - 1))
     boundTol := Max(tol, edge)
-    leftTol := (targetLeft <= iwl + 1) ? boundTol : tol
-    topTol := (targetTop <= iwt + 1) ? boundTol : tol
-    rightTol := (targetRight >= iwr - 1) ? boundTol : tol
-    bottomTol := (targetBottom >= iwb - 1) ? boundTol : tol
+    leftTol := (targetLeft <= iwl + 1) ? boundTol : midTol
+    topTol := (targetTop <= iwt + 1) ? boundTol : midTol
+    rightTol := (targetRight >= iwr - 1) ? boundTol : midTol
+    bottomTol := (targetBottom >= iwb - 1) ? boundTol : midTol
     return (Abs(fl - targetLeft) <= leftTol && Abs(ft - targetTop) <= topTol
     && Abs(fr - targetRight) <= rightTol && Abs(fb - targetBottom) <= bottomTol)
 }
@@ -442,6 +444,8 @@ WM_ClassifySnapPane(axis, wl, wt, wr, wb, left, top, right, bottom, &pane, &pane
 WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, edgeTol := 0) {
     g := WM_SNAP_PAIR_GAP
     tol := WM_SNAP_STRICT_EDGE_TOL
+    ; Shared gutter edge: keep tol below gap so panes cannot validate while overlapping.
+    midTol := Min(tol, Max(0, g - 1))
     boundTol := edgeTol > 0 ? Max(tol, edgeTol) : tol
     if (axis = "h") {
         halfW := (wr - wl - g) // 2
@@ -450,8 +454,8 @@ WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, ed
         if (Abs(top - wt) > boundTol || Abs(bottom - wb) > boundTol)
             return false
         if (pane = "start")
-            return (Abs(left - wl) <= boundTol && Abs(right - startEdge) <= tol)
-        return (Abs(left - endEdge) <= tol && Abs(right - wr) <= boundTol)
+            return (Abs(left - wl) <= boundTol && Abs(right - startEdge) <= midTol)
+        return (Abs(left - endEdge) <= midTol && Abs(right - wr) <= boundTol)
     }
     halfH := (wb - wt - g) // 2
     startEdge := wt + halfH
@@ -459,8 +463,8 @@ WM_SnapPaneEdgesAligned(axis, wl, wt, wr, wb, left, top, right, bottom, pane, ed
     if (Abs(left - wl) > boundTol || Abs(right - wr) > boundTol)
         return false
     if (pane = "start")
-        return (Abs(top - wt) <= boundTol && Abs(bottom - startEdge) <= tol)
-    return (Abs(top - endEdge) <= tol && Abs(bottom - wb) <= boundTol)
+        return (Abs(top - wt) <= boundTol && Abs(bottom - startEdge) <= midTol)
+    return (Abs(top - endEdge) <= midTol && Abs(bottom - wb) <= boundTol)
 }
 
 WM_TryClassifySnapPartnerPane(monIdx, axis, wl, wt, wr, wb, hwnd, oppPane, &paneSize, edgeTol := 0) {
