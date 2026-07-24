@@ -228,7 +228,9 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Same-monitor fast path:** [`ClipAngel_ApplyLayoutOnMonitor`](../Utils/clip_angel_favorite.ahk) skips `MoveWindowToMonitor` (restore + Sleep 80 + WinMove) when the hwnd is already on the target monitor and not a tiny bar — maximize + short activate (150 ms) only; already-maximized → activate only.
 - **Native Alt+P/B settle:** [`CLIPANGEL_NATIVE_OPEN_SETTLE_MS`](../Utils/clip_angel_activate.ahk) **50** (not 300); if the foreground/max gate still fails after one layout, **one** retry at **100** ms (`g_ClipAngelNativeOpenRetryArmed`). Hotkey still returns immediately.
 - **Do not** change global `MoveWindowToMonitor` (Peek and others keep the restore settle). Cross-monitor or tiny-bar opens still use the full move+max path.
-- **Rollback:** restore settle 300 / remove fast path in `ClipAngel_ApplyLayoutOnMonitor` if maximize races on a specific DPI/monitor setup.
+- **UIA root reuse:** [`ClipAngel_LeaveFavoritesFilter`](../Utils/clip_angel_favorite.ahk) resolves `ElementFromHandle` once and passes `root` into MarkFilter / Shift+P / Row0 helpers (avoids re-attach every 15 ms poll). [`ClipAngel_WaitForListReady`](../Utils/clip_angel_favorite.ahk) layouts once (re-layout only if `NeedsLayoutCorrection`) and reuses `root` in `IsListReady`.
+- **Condition waits over fixed Sleep:** D2C `[O]` uses `ClipWait` after `^c` and [`ClipAngel_UiaWaitPreviewFocused`](../Utils/clip_angel_favorite.ahk) after `F10` (not 5× Sleep 100). Ctrl+1–5 copy path same pattern. [`ClipAngel_HideWindow`](../Utils/clip_angel_favorite.ahk) polls iconic/hidden (~100 ms @ 15 ms) instead of Sleep 50×2.
+- **Rollback:** restore settle 300 / remove fast path in `ClipAngel_ApplyLayoutOnMonitor` if maximize races on a specific DPI/monitor setup; restore fixed Sleep chains / per-poll layout in LeaveFavoritesFilter / WaitForListReady / HideWindow if CA UI races appear.
 
 ---
 

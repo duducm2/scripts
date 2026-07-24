@@ -171,15 +171,26 @@ ClipAngel_HideWindow(hwnd) {
     } catch {
         return false
     }
-    Sleep 50
-    if !ClipAngel_IsWindowShown(hwnd)
+    if ClipAngel_WaitUntilHidden(hwnd, 100)
         return true
     try {
         WinMinimize("ahk_id " hwnd)
     } catch {
         return false
     }
-    Sleep 50
+    return ClipAngel_WaitUntilHidden(hwnd, 100)
+}
+
+; Poll until minimized/hidden (replaces fixed Sleep 50 after WinMinimize).
+ClipAngel_WaitUntilHidden(hwnd, timeoutMs := 100) {
+    if !hwnd
+        return true
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if !ClipAngel_IsWindowShown(hwnd)
+            return true
+        Sleep 15
+    }
     return !ClipAngel_IsWindowShown(hwnd)
 }
 
@@ -702,11 +713,11 @@ ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon := 0) {
     return ClipAngel_EnsureWindowActive(hwnd)
 }
 
-ClipAngel_IsListReady(&outHwnd := 0) {
+ClipAngel_IsListReady(&outHwnd := 0, root := 0) {
     outHwnd := ClipAngel_MainHwnd()
     if !outHwnd
         return false
-    dataGrid := ClipAngel_UiaGetDataGrid(outHwnd)
+    dataGrid := ClipAngel_UiaGetDataGrid(outHwnd, root)
     if !dataGrid
         return false
     return ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row 0" }) ? true : false
@@ -716,18 +727,34 @@ ClipAngel_IsListReady(&outHwnd := 0) {
 ; activateOnRetry: false when paste target must keep foreground (#!+1 / ^!b).
 ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activateOnRetry := true) {
     deadline := A_TickCount + timeoutMs
-    hwnd := 0
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd) {
+        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+    }
+    root := 0
+    if (hwnd) {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
     while (A_TickCount < deadline) {
-        if ClipAngel_IsListReady(&hwnd) {
+        if ClipAngel_IsListReady(&hwnd, root) {
             ClipAngel_UiaEnsureRow0Selected(hwnd, false)
             return true
         }
-        if hwnd := ClipAngel_MainHwnd()
+        hwnd := ClipAngel_MainHwnd()
+        if (hwnd && ClipAngel_NeedsLayoutCorrection(hwnd))
             ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+        if (hwnd && !root) {
+            try root := UIA.ElementFromHandle(hwnd)
+            catch
+                root := 0
+        }
         Sleep CLIPANGEL_UIA_POLL_MS
     }
     if hwnd := ClipAngel_MainHwnd() {
-        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+        if ClipAngel_NeedsLayoutCorrection(hwnd)
+            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
         ClipAngel_UiaEnsureRow0Selected(hwnd, true)
         return ClipAngel_IsListReady()
     }
@@ -851,8 +878,31 @@ ClipAngel_SelectClipPasteThenMinimize(downCount := 0) {
             Send "{Down}"
     }
     Send "{Enter}"
-    Sleep 100
     ClipAngel_CloseAndRestoreFocus(0)
+}
+
+; Poll until richTextBox has keyboard focus (after F10 toggle to preview).
+ClipAngel_UiaWaitPreviewFocused(hwnd, timeoutMs := 150, root := 0) {
+    if !hwnd
+        return false
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            return false
+    }
+    if !root
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        preview := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
+        try {
+            if (preview && preview.HasKeyboardFocus)
+                return true
+        } catch {
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    return false
 }
 
 ; Down N (optional), F10 → select-all → copy preview text, then minimize Clip Angel.
@@ -860,22 +910,38 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     hwnd := ClipAngel_MainHwnd()
+    root := 0
+    dataGrid := 0
     if (hwnd) {
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if (dataGrid)
-            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
     }
     if (downCount > 0) {
         loop downCount
             Send "{Down}"
-        Sleep 150
+        ; Only brief settle if grid lost focus after Down.
+        if (dataGrid) {
+            focused := false
+            try focused := dataGrid.HasKeyboardFocus
+            catch {
+            }
+            if !focused
+                Sleep 40
+        }
     }
     Send "{F10}"
-    Sleep 150
+    if (hwnd)
+        ClipAngel_UiaWaitPreviewFocused(hwnd, 150, root)
     Send "^a"
-    Sleep 150
+    Sleep 40
     Send "^c"
-    Sleep 100
+    try ClipWait(0.3)
+    catch {
+    }
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
@@ -972,9 +1038,13 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
 
 ; target: "first" = top grid row (Row 0 / newest), "last" = last row returned by UIA FindAll
 ; (virtualized lists may only expose visible rows - use "first" for reliable top-clip behavior).
-ClipAngel_UiaGetMarkFilterValue(hwnd) {
+ClipAngel_UiaGetMarkFilterValue(hwnd, root := 0) {
     try {
-        root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return ""
+        }
         mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
         return mf ? mf.Value : ""
     } catch {
@@ -983,11 +1053,15 @@ ClipAngel_UiaGetMarkFilterValue(hwnd) {
 }
 
 ; MarkFilter combo: leave "favorite" (or any non-all) for "all marks" via dropdown (fast fallback).
-ClipAngel_UiaSetMarkFilterAllMarks(hwnd) {
+ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root := 0) {
     if !hwnd
         return false
     try {
-        root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return false
+        }
         mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
         if !mf
             return false
@@ -1000,21 +1074,25 @@ ClipAngel_UiaSetMarkFilterAllMarks(hwnd) {
         Sleep 30
         Send "{Tab}"
         Sleep 30
-        return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+        return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
     } catch {
         return false
     }
 }
 
 ; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
-ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220) {
-    if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
+    if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
         return true
     if !WinActive("ahk_id " hwnd)
         ClipAngel_EnsureWindowActive(hwnd, 200)
     ClipAngel_ReleaseChordModifiersForSend()
     try {
-        root := UIA.ElementFromHandle(hwnd)
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if dataGrid
             try dataGrid.SetFocus()
@@ -1025,22 +1103,26 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220) {
     SendInput "+p"
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks") {
+        if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks") {
             SendLevel priorSendLevel
             return true
         }
         Sleep 15
     }
     SendLevel priorSendLevel
-    return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd))) = "all marks")
+    return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
 }
 
 ; ^Home first; full UIA row-0 only if still not selected.
-ClipAngel_FastEnsureRow0(hwnd) {
-    if ClipAngel_UiaIsRow0Selected(hwnd)
+ClipAngel_FastEnsureRow0(hwnd, root := 0) {
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
+    if ClipAngel_UiaIsRow0Selected(hwnd, root)
         return true
     try {
-        root := UIA.ElementFromHandle(hwnd)
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if dataGrid
             try dataGrid.SetFocus()
@@ -1052,14 +1134,14 @@ ClipAngel_FastEnsureRow0(hwnd) {
     SendInput "^{Home}"
     deadline := A_TickCount + 180
     while (A_TickCount < deadline) {
-        if ClipAngel_UiaIsRow0Selected(hwnd) {
+        if ClipAngel_UiaIsRow0Selected(hwnd, root) {
             SendLevel priorSendLevel
             return true
         }
         Sleep 15
     }
     SendLevel priorSendLevel
-    if ClipAngel_UiaIsRow0Selected(hwnd)
+    if ClipAngel_UiaIsRow0Selected(hwnd, root)
         return true
     return ClipAngel_UiaEnsureRow0Selected(hwnd, true)
 }
@@ -1069,35 +1151,43 @@ ClipAngel_LeaveFavoritesFilter(hwnd) {
     result := Map("method", "none", "ok", false, "before", "", "after", "", "row0Selected", false)
     if !hwnd
         return result
-    result["before"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        root := 0
+    result["before"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
     if (StrLower(Trim(result["before"])) = "all marks") {
         result["ok"] := true
         result["method"] := "already_all_marks"
         result["after"] := result["before"]
-        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd)
+        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
         return result
     }
-    if ClipAngel_NativeSendShiftP(hwnd) {
+    if ClipAngel_NativeSendShiftP(hwnd, 220, root) {
         result["ok"] := true
         result["method"] := "native_shift_p"
-        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
-        result["row0Selected"] := ClipAngel_UiaIsRow0Selected(hwnd) || ClipAngel_FastEnsureRow0(hwnd)
+        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+        result["row0Selected"] := ClipAngel_UiaIsRow0Selected(hwnd, root) || ClipAngel_FastEnsureRow0(hwnd, root)
         return result
     }
-    if ClipAngel_UiaSetMarkFilterAllMarks(hwnd) {
+    if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root) {
         result["ok"] := true
         result["method"] := "uia_combo"
-        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
-        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd)
+        result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
+        result["row0Selected"] := ClipAngel_FastEnsureRow0(hwnd, root)
         return result
     }
-    result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd)
+    result["after"] := ClipAngel_UiaGetMarkFilterValue(hwnd, root)
     return result
 }
 
-ClipAngel_UiaIsRow0Selected(hwnd) {
+ClipAngel_UiaIsRow0Selected(hwnd, root := 0) {
     try {
-        root := UIA.ElementFromHandle(hwnd)
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return false
+        }
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if !dataGrid
             return false

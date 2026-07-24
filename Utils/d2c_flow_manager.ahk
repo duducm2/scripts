@@ -288,15 +288,17 @@ class D2C_FlowManager {
             priorSendLevel := A_SendLevel
             SendLevel 0
             SendInput "{Tab}"
-            Sleep 100
+            Sleep 40
             SendInput "^a"
-            Sleep 100
+            Sleep 40
             SendInput "^c"
-            Sleep 100
+            try ClipWait(0.3)
+            catch {
+            }
             SendInput "{F10}"
-            Sleep 100
+            ClipAngel_UiaWaitPreviewFocused(clipHwnd, 150)
             SendInput "{Up}"
-            Sleep 100
+            Sleep 40
             SendInput "{F4}"
             SendLevel priorSendLevel
 
