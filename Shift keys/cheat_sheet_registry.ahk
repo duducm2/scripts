@@ -1257,7 +1257,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === GENERAL ===
     [Win+Alt+Shift+U] > Quick string shortcuts
-    [Win+Alt+Shift+L] > Paste clipboard to window (visible-window picker; same as D2C [W])
+    [Win+Alt+Shift+L] > Paste Clip Angel selected clip to window (visible-window picker; same as D2C [W])
     [Ctrl+Alt+Win+4] > Send AI Text Optimizer prompt to {AI_PROVIDER} (same as Win+Alt+Shift+U then L, 4)
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)

@@ -19,7 +19,7 @@
     }
 }
 
-; Win+Alt+Shift+L — paste current clipboard to a picked visible window (same as D2C menu [W])
+; Win+Alt+Shift+L — paste Clip Angel selected clip to a picked visible window (same as D2C menu [W])
 #!+l:: {
     mgr := D2C_FlowManager.GetInstance()
     if (mgr.CurrentPhase = "PromptingSubmit") {

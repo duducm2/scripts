@@ -935,6 +935,194 @@ ClipAngel_SendTopListItem(priorHwnd := 0) {
     return ok
 }
 
+; Paste the currently selected Clip Angel row (no ^{Home}). Used by #!+L after editing a clip —
+; forcing Row 0 would re-target raw dictation still on the OS clipboard / newest ingest.
+; alreadyLocked=true when caller holds g_ClipAngelAutomationBusy (e.g. across the window picker).
+ClipAngel_SendSelectedListItem(priorHwnd := 0, alreadyLocked := false) {
+    if (!alreadyLocked && !ClipAngel_TryAcquireAutomationLock())
+        return false
+    priorHwnd := ClipAngel_ResolvePriorHwnd(priorHwnd)
+    ok := false
+    savedClip := ClipboardAll()
+    clipSynced := false
+    try {
+        ; #region agent log
+        ClipAngel_DebugLogSelected("A", "entry", priorHwnd)
+        ; #endregion
+        ClipAngel_WaitChordModifiersReleased()
+        ClipAngel_ReleaseChordModifiersForSend()
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd {
+            ShowCenteredOverlay_Utils("❌ Clip Angel não está em execução.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        ; Sync OS clipboard to CA preview BEFORE show — otherwise Clip Angel's monitor
+        ; ingests leftover dictation as a new Row 0 and steals the paste target.
+        preview := ClipAngel_UiaGetPreviewText(hwnd)
+        if (preview != "") {
+            try {
+                A_Clipboard := preview
+                ClipWait 0.4
+                clipSynced := true
+            } catch {
+                clipSynced := false
+            }
+        }
+        ; #region agent log
+        ClipAngel_DebugLogSelected("A", "after_clip_sync", priorHwnd)
+        ; #endregion
+        targetMon := 0
+        if (priorHwnd) {
+            try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+            catch
+                targetMon := 0
+        }
+        ; #region agent log
+        ClipAngel_DebugLogSelected("A", "before_layout", priorHwnd)
+        ; #endregion
+        ; activate:=false — avoid focus churn; ^!b is handled by Clip Angel into the foreground target.
+        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false)
+        ; #region agent log
+        ClipAngel_DebugLogSelected("A", "after_layout", priorHwnd)
+        ; #endregion
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd)
+        if (dataGrid)
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd)
+        ; #region agent log
+        ClipAngel_DebugLogSelected("B", "after_grid_focus", priorHwnd)
+        ; #endregion
+        ClipAngel_ReleaseChordModifiersForSend()
+        if (priorHwnd)
+            ClipAngel_EnsureWindowActive(priorHwnd)
+        ; #region agent log
+        ClipAngel_DebugLogSelected("C", "before_paste_keys", priorHwnd)
+        ; #endregion
+        SendInput "^!b"
+        Sleep CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS
+        ; #region agent log
+        ClipAngel_DebugLogSelected("D", "after_paste_keys", priorHwnd)
+        ; #endregion
+        ok := true
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel paste failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        ok := false
+    } finally {
+        if (clipSynced) {
+            try A_Clipboard := savedClip
+            catch {
+            }
+        }
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+        ; #region agent log
+        ClipAngel_DebugLogSelected("E", "after_close", priorHwnd)
+        ; #endregion
+        if (!alreadyLocked)
+            ClipAngel_ReleaseAutomationLock()
+    }
+    return ok
+}
+
+; Preview pane text for the clip currently shown in Clip Angel (works while minimized).
+ClipAngel_UiaGetPreviewText(hwnd) {
+    if !hwnd
+        return ""
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return ""
+        el := ClipAngel_UiaFindFirst(root, { AutomationId: "richTextBox" })
+        if !el
+            el := ClipAngel_UiaFindFirst(root, { AutomationId: "urlTextBox" })
+        if !el
+            return ""
+        try {
+            v := el.Value
+            if (v != "")
+                return String(v)
+        } catch {
+        }
+        try return String(el.Name)
+        catch {
+        }
+    } catch {
+    }
+    return ""
+}
+
+; #region agent log
+; Debug: fingerprint OS clipboard + Clip Angel Row 0 / focus (no plaintext content).
+ClipAngel_DebugFp(s) {
+    if (s = "")
+        return "0:0"
+    n := StrLen(s)
+    h := 2166136261
+    i := 1
+    while (i <= n && i <= 64) {
+        h := (h * 16777619) ^ Ord(SubStr(s, i, 1))
+        i += 1
+    }
+    return n ":" Format("{:08x}", h & 0xFFFFFFFF)
+}
+ClipAngel_DebugLogSelected(hypothesisId, step, priorHwnd := 0) {
+    try {
+        path := A_ScriptDir "\debug-be5edc.log"
+        clipFp := ""
+        try clipFp := ClipAngel_DebugFp(A_Clipboard)
+        catch
+            clipFp := "err"
+        hwnd := ClipAngel_MainHwnd()
+        shown := hwnd ? !!ClipAngel_IsWindowShown(hwnd) : false
+        ; Write step marker first so UIA failures still leave a trail.
+        FileAppend('{"sessionId":"be5edc","runId":"post-fix","hypothesisId":"' hypothesisId '","location":"clip_angel_favorite.ahk:SendSelected","message":"' step '_begin","timestamp":' A_TickCount ',"data":{"clipFp":"' clipFp '","shown":' (
+            shown ? "true" : "false") ',"prior":' (priorHwnd + 0) ',"hwnd":' (hwnd + 0) '}}`n', path, "UTF-8")
+        row0Fp := ""
+        focusFp := ""
+        focusType := 0
+        try {
+            if (hwnd) {
+                root := UIA.ElementFromHandle(hwnd)
+                dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+                if (dataGrid) {
+                    row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                    rn := ""
+                    try rn := row0.Name
+                    catch {
+                    }
+                    row0Fp := ClipAngel_DebugFp(rn)
+                    title := ""
+                    if (row0) {
+                        tc := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title " rn })
+                        if (!tc && rn = "Row 0")
+                            tc := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+                        try title := tc ? tc.Value : ""
+                        catch {
+                        }
+                        if (title != "")
+                            row0Fp := ClipAngel_DebugFp(String(title))
+                    }
+                }
+            }
+            fe := UIA.GetFocusedElement()
+            if (fe) {
+                try focusType := fe.Type
+                catch {
+                }
+                fn := ""
+                try fn := fe.Name
+                catch {
+                }
+                focusFp := ClipAngel_DebugFp(fn)
+            }
+        } catch {
+        }
+        line := '{"sessionId":"be5edc","runId":"post-fix","hypothesisId":"' hypothesisId '","location":"clip_angel_favorite.ahk:SendSelected","message":"' step '","timestamp":' A_TickCount ',"data":{"clipFp":"' clipFp '","row0Fp":"' row0Fp '","focusFp":"' focusFp '","focusType":' focusType ',"shown":' (
+            shown ? "true" : "false") ',"prior":' (priorHwnd + 0) ',"hwnd":' (hwnd + 0) '}}`n'
+        FileAppend(line, path, "UTF-8")
+    } catch {
+    }
+}
+; #endregion
+
 ; Paste N top-list items in order. Opens once, incremental paste between items, minimizes + restores prior focus at end.
 ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
     if (!IsInteger(count))

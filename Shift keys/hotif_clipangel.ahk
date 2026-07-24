@@ -525,4 +525,3 @@ ShowClipAngelFilterSelector() {
 #HotIf
 ; Only Shift keys owns this hook (Utils is shared across processes).
 ClipAngel_InitAutoMinimizeOnDeactivate()
-
