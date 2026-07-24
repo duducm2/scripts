@@ -19,7 +19,9 @@
     }
 }
 
-; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W])
+; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
+; In the picker: slot key = paste; [R] then slot = add window to AutoSlot ignore list;
+; [I] = manage/remove ignore entries (assets/data/autoslot_user_excludes.ini).
 #!+l:: {
     mgr := D2C_FlowManager.GetInstance()
     if (mgr.CurrentPhase = "PromptingSubmit") {

@@ -1143,6 +1143,12 @@ AutoSlot_IsSameScriptPid(hwnd) {
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
+    ; User ignore list from #!+L R (persisted autoslot_user_excludes.ini).
+    try {
+        if (AutoSlot_UserExcludeMatch(hwnd))
+            return true
+    } catch {
+    }
     try {
         exe := StrLower(WinGetProcessName("ahk_id " hwnd))
     } catch {

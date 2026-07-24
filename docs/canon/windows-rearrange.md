@@ -14,7 +14,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 - **More than one** monitor.
 - Capacity: **2 slots** per ordinal monitor; up to **4** ordinals → **8** max.
 - Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Y / Ctrl+6). Windows hidden behind a maximized window do not fill the free half.
-- Exclusions: ClipAngel, tool windows, dialog/Teams chrome noise, AutoHotkey GUIs / own PID — not moved and not occupancy.
+- Exclusions: ClipAngel, tool windows, dialog/Teams chrome noise, AutoHotkey GUIs / own PID — not moved and not occupancy. User ignore list via **Win+Alt+Shift+L** → **[R]** add / **[I]** manage (`assets/data/autoslot_user_excludes.ini`) has the same gate effect.
 
 ---
 

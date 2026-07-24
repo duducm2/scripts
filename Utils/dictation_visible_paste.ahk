@@ -1,11 +1,12 @@
 ; =============================================================================
 ; Utils module: dictation_visible_paste.ahk
 ; Post-dictation visible-window picker: select a window and paste clipboard (Ctrl+V).
+; Also: [R] add to AutoSlot ignore list, [I] manage ignore list (autoslot_user_excludes).
 ; =============================================================================
 
 global g_DictationVisiblePasteGui := false
 global g_DictationVisiblePasteActive := false
-global g_DictationVisiblePasteResult := ""   ; "" = waiting, 0 = cancel, integer = hwnd
+global g_DictationVisiblePasteResult := ""   ; "" = waiting, 0 = cancel, integer = hwnd, "manage" = open ignore list
 global g_DictationVisiblePasteKeyMap := Map()
 global g_DictationVisiblePasteHotkeyHandlers := []
 global g_DictationVisiblePasteKeysPollTimer := ""
@@ -16,9 +17,14 @@ global g_DictationVisiblePasteLastCharActionKey := ""
 global g_DictationVisiblePasteLastCharActionTick := 0
 global g_DictationVisiblePasteTrackTimer := ""
 global g_DictationVisiblePasteLastForegroundMonitorIdx := 0
+; Overflow slot keys — R/I reserved for ignore rearrange / manage ignore list.
 global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d",
-    "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    "e", "f", "g", "h", "j", "k", "l", "m", "n", "o", "p", "q", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
+global g_DictationVisiblePasteMode := "paste"  ; "paste" | "exclude"
+global g_DictationVisiblePasteHeaderCtrl := false
+global g_DictationVisiblePasteHintCtrl := false
+global g_DictationVisiblePasteEscHintCtrl := false
 
 global DICTATION_VISIBLE_PASTE_COL_COUNT := 4
 global DICTATION_VISIBLE_PASTE_ROW_COUNT := 2
@@ -547,6 +553,10 @@ Dictation_VisiblePasteStartKeysPoll(windows) {
         g_DictationVisiblePasteKeysPollCallbacks[slotChar] := Dictation_VisiblePasteHandleChar.Bind(slotChar)
         g_DictationVisiblePasteKeysPollPrev[slotChar] := Dictation_VisiblePasteKeyDown(slotChar)
     }
+    g_DictationVisiblePasteKeysPollCallbacks["r"] := Dictation_VisiblePasteArmExcludeMode
+    g_DictationVisiblePasteKeysPollPrev["r"] := Dictation_VisiblePasteKeyDown("r")
+    g_DictationVisiblePasteKeysPollCallbacks["i"] := Dictation_VisiblePasteOpenIgnoreManage
+    g_DictationVisiblePasteKeysPollPrev["i"] := Dictation_VisiblePasteKeyDown("i")
     if (g_DictationVisiblePasteKeysPollCallbacks.Count > 0)
         g_DictationVisiblePasteKeysPollTimer := SetTimer(Dictation_VisiblePasteKeysPoll, 50)
 }
@@ -592,10 +602,67 @@ Dictation_VisiblePasteBindHotkeys(windows) {
         if (Dictation_IsDigitSlotChar(slotChar))
             Dictation_VisiblePasteRegisterHotkey("$*Numpad" . slotChar, Dictation_VisiblePasteHandleChar.Bind(slotChar))
     }
+    Dictation_VisiblePasteRegisterHotkey("$*r", Dictation_VisiblePasteArmExcludeMode)
+    Dictation_VisiblePasteRegisterHotkey("$*i", Dictation_VisiblePasteOpenIgnoreManage)
     try HotIf()
     catch {
     }
     Dictation_VisiblePasteStartKeysPoll(windows)
+}
+
+Dictation_VisiblePasteUpdateModeChrome() {
+    global g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
+        g_DictationVisiblePasteEscHintCtrl
+    if (g_DictationVisiblePasteMode = "exclude") {
+        try g_DictationVisiblePasteHeaderCtrl.Text := "=== PICK WINDOW TO IGNORE ==="
+        catch {
+        }
+        try g_DictationVisiblePasteHintCtrl.Text := ">>> slot key = ADD TO IGNORE LIST <<<"
+        catch {
+        }
+        try g_DictationVisiblePasteEscHintCtrl.Text := "[ESC] Cancel"
+        catch {
+        }
+    } else {
+        try g_DictationVisiblePasteHeaderCtrl.Text := "=== VISIBLE WINDOWS ==="
+        catch {
+        }
+        try g_DictationVisiblePasteHintCtrl.Text :=
+            ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list <<<"
+        catch {
+        }
+        try g_DictationVisiblePasteEscHintCtrl.Text := "[ESC] Cancel"
+        catch {
+        }
+    }
+}
+
+Dictation_VisiblePasteArmExcludeMode(*) {
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteMode
+    if (!g_DictationVisiblePasteActive)
+        return
+    if (!Dictation_VisiblePasteTryConsumeCharAction("r"))
+        return
+    try {
+        g_DictationVisiblePasteMode := "exclude"
+        Dictation_VisiblePasteUpdateModeChrome()
+    } finally {
+        Dictation_VisiblePasteReleaseCharActionLock()
+    }
+}
+
+Dictation_VisiblePasteOpenIgnoreManage(*) {
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
+    if (!g_DictationVisiblePasteActive)
+        return
+    if (!Dictation_VisiblePasteTryConsumeCharAction("i"))
+        return
+    try {
+        g_DictationVisiblePasteResult := "manage"
+        Dictation_VisiblePasteClose()
+    } finally {
+        Dictation_VisiblePasteReleaseCharActionLock()
+    }
 }
 
 Dictation_VisiblePasteGuiHasWindow(gui := unset) {
@@ -686,7 +753,9 @@ Dictation_VisiblePasteAssignKeys(slots) {
 }
 
 Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
-    global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
+    global g_DictationVisiblePasteGui, g_DictationVisiblePasteActive, g_DictationVisiblePasteResult,
+        g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
+        g_DictationVisiblePasteEscHintCtrl
     global DICTATION_VISIBLE_PASTE_COL_COUNT, DICTATION_VISIBLE_PASTE_ROW_COUNT,
         DICTATION_VISIBLE_PASTE_KEY_FONT, DICTATION_VISIBLE_PASTE_TITLE_FONT, DICTATION_VISIBLE_PASTE_HEADER_FONT,
         DICTATION_VISIBLE_PASTE_MON_LABEL_FONT
@@ -720,7 +789,8 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
     g_DictationVisiblePasteGui.MarginX := marginX
     g_DictationVisiblePasteGui.MarginY := marginY
     g_DictationVisiblePasteGui.SetFont("s" . DICTATION_VISIBLE_PASTE_HEADER_FONT . " cCDD6F4 Bold", "Segoe UI")
-    g_DictationVisiblePasteGui.Add("Text", "w" . contentW . " Center", "=== VISIBLE WINDOWS ===")
+    g_DictationVisiblePasteHeaderCtrl := g_DictationVisiblePasteGui.Add("Text", "w" . contentW . " Center",
+        "=== VISIBLE WINDOWS ===")
 
     gridStartY := marginY + 34
     monRowY := gridStartY
@@ -819,13 +889,16 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
     }
 
     g_DictationVisiblePasteGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY . " w" . contentW . " Center",
-        ">>> slot key = GO + PASTE <<<")
-    g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (footerY + 24) . " w" . contentW . " Center",
+    g_DictationVisiblePasteHintCtrl := g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY .
+        " w" . contentW . " Center",
+        ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list <<<")
+    g_DictationVisiblePasteEscHintCtrl := g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (footerY + 24) .
+    " w" . contentW . " Center",
     "[ESC] Cancel")
     g_DictationVisiblePasteGui.OnEvent("Escape", Dictation_VisiblePasteCancel)
     g_DictationVisiblePasteActive := true
     g_DictationVisiblePasteResult := ""
+    g_DictationVisiblePasteMode := "paste"
     Dictation_VisiblePasteBindHotkeys(windows)
     try {
         #InputLevel 10
@@ -843,10 +916,16 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
 }
 
 Dictation_VisiblePasteClose() {
-    global g_DictationVisiblePasteActive, g_DictationVisiblePasteGui, g_DictationVisiblePasteHotkeyHandlers
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteGui, g_DictationVisiblePasteHotkeyHandlers,
+        g_DictationVisiblePasteMode, g_DictationVisiblePasteHeaderCtrl, g_DictationVisiblePasteHintCtrl,
+        g_DictationVisiblePasteEscHintCtrl
     if (!g_DictationVisiblePasteActive && !Dictation_VisiblePasteGuiHasWindow())
         return
     g_DictationVisiblePasteActive := false
+    g_DictationVisiblePasteMode := "paste"
+    g_DictationVisiblePasteHeaderCtrl := false
+    g_DictationVisiblePasteHintCtrl := false
+    g_DictationVisiblePasteEscHintCtrl := false
     Dictation_VisiblePasteStopMonitorTracking()
     Dictation_VisiblePasteUnregisterAllThumbnails()
     g_DictationVisiblePasteKeyMap := Map()
@@ -870,7 +949,8 @@ Dictation_VisiblePasteCancel(*) {
 }
 
 Dictation_VisiblePasteHandleChar(char, *) {
-    global g_DictationVisiblePasteActive, g_DictationVisiblePasteKeyMap, g_DictationVisiblePasteResult
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteKeyMap, g_DictationVisiblePasteResult,
+        g_DictationVisiblePasteMode
     if (!g_DictationVisiblePasteActive)
         return
     if (!Dictation_VisiblePasteTryConsumeCharAction(char))
@@ -881,6 +961,12 @@ Dictation_VisiblePasteHandleChar(char, *) {
             hwnd := g_DictationVisiblePasteKeyMap.Get(StrLower(char), "")
         if (!hwnd || !WinExist("ahk_id " hwnd))
             return
+        if (g_DictationVisiblePasteMode = "exclude") {
+            AutoSlot_AddUserExcludeFromHwnd(hwnd)
+            g_DictationVisiblePasteResult := 0
+            Dictation_VisiblePasteClose()
+            return
+        }
         g_DictationVisiblePasteResult := hwnd
         Dictation_VisiblePasteClose()
     } finally {
@@ -924,8 +1010,12 @@ Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
         }
     } catch {
     }
-    result := (g_DictationVisiblePasteResult = "") ? 0 : Integer(g_DictationVisiblePasteResult)
+    result := g_DictationVisiblePasteResult
     Dictation_VisiblePasteClose()
     try A_Clipboard := clipBackup
-    return result
+    if (result = "manage") {
+        AutoSlot_ShowUserExcludeManageUI()
+        return 0
+    }
+    return (result = "") ? 0 : Integer(result)
 }

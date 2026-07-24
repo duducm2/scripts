@@ -139,6 +139,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
 #include %A_ScriptDir%\lib\GeminiEnterprise.ahk
 
+; [Utils module] AutoSlot user ignore list (#!+L R/I) -> Utils\autoslot_user_excludes.ahk
+#include %A_ScriptDir%\Utils\autoslot_user_excludes.ahk
+
 ; [Utils module] Post-dictation visible-window paste picker -> Utils\dictation_visible_paste.ahk
 #include %A_ScriptDir%\Utils\dictation_visible_paste.ahk
 
