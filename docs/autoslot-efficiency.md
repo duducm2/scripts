@@ -23,3 +23,7 @@ Y-only background import, Place empty/half rules, heal-on-close/minimize, no pai
 - Close/minimize: companion still heals; no background import
 - Suite leave: no `ScheduleRearrange` call
 - Cross-process place: PostMessage first; file poll still works slowly
+
+## Place latency (2026-07-24 follow-up)
+
+**Do not** remove Place **eligibility retries** (`AutoSlot_ELIG_RETRY_MS` 300 / 800 / 1500 ms) in the name of efficiency. One-shot abandon on `IsEligibleNewWindow` failure caused multi-second waits until a later SHOW. Retries are required Place settle; they do not conflict with Y one-scan or the slower file IPC poll. Canon: [`docs/canon/windows-rearrange.md`](canon/windows-rearrange.md) § Eligibility settle. Keep Busy-all-monitors rearrange banners enabled.

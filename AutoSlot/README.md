@@ -25,7 +25,7 @@ From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF
 | Move to monitor           | Ctrl+Alt+Win+A/S/D/F                                                          |
 | User ignore list          | Win+Alt+Shift+L → **[R]** add / **[I]** manage (`autoslot_user_excludes.ini`) |
 
-Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Y**: lone half + free slot → maximize that window; lone max → 50/50 with background. Details and busy overlays: canon doc above.
+Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). After debounce, Place may **retry eligibility** briefly (300 / 800 / 1500 ms) when a new window is not yet titled — required; do not one-shot abandon (see canon). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Y**: lone half + free slot → maximize that window; lone max → 50/50 with background. Busy-all-monitors rearrange banners stay on.
 
 User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore; **[I]** opens a digit-remove list.
 
