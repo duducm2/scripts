@@ -204,12 +204,18 @@ These wrap `StandardLoadingBar_*` with preset styles:
 | 199–205 | `ShowCenteredOverlay` wrapper (Show + Hide with duration) |
 | 254–255 | Usage (Information Only)                                  |
 
+### Spotify.ahk
+
+| Context                | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#!+s` / `OpenSpotify` | **Thin include** of `Utils\standard_loading_bar.ahk` only (plus no-op `Utils_EnsureGlobalEscapeHotkey` stub — do not `#include` full Utils.ahk). Deferred Loading Indication (`SpotifyBanner_Arm` after 400 ms) so the fast activate path stays silent; milestones via `SpotifyBanner_Set`; success `✅ Spotify is open` (only if bar appeared) or failure `❌ Spotify did not open (N attempts, Ns) - <phase>` via `SpotifyBanner_Result` (Information Only + `BANNER_ACCENT_SUCCESS` / `BANNER_ACCENT_ERROR`). Bounded by `SPOTIFY_OPEN_RETRIES` (3) and `SPOTIFY_OPEN_TOTAL_BUDGET_MS` (24 s); re-entrancy guard self-expires after `SPOTIFY_OPEN_GUARD_MAX_MS`. No auto-retry after the final failure. |
+
 ## Lifecycle and Best Practices
 
 1. **Show → Update → Hide** – Call `Show` at start, `Update` at milestones, `Hide` in all exit paths (including `try`/`finally` and error branches).
 2. **Delayed hide** – Use `Hide(delayMs)` to show a final message briefly before hiding.
 3. **Keys overlay** – `ShowWithKeys` registers hotkeys; `CloseKeysOverlay` or `Hide(0)` unregisters and destroys.
-4. **Include Utils** – Scripts that use the bar must include `Utils.ahk` (`#Include %A_ScriptDir%\Utils.ahk`).
+4. **Include Utils** – Scripts that use the bar normally include `Utils.ahk` (`#Include %A_ScriptDir%\Utils.ahk`). **Thin-include exception:** standalone scripts that must not host Utils hotkeys / a second global Escape hook (e.g. `Spotify.ahk`) may `#include %A_ScriptDir%\Utils\standard_loading_bar.ahk` alone and provide a no-op `Utils_EnsureGlobalEscapeHotkey()` stub when they only need `Show` / `Update` / `Hide` (not `ShowWithKeys`).
 5. **No stuck bar** – Ensure every code path that calls `Show` eventually calls `Hide`.
 6. **Font size 17** – Use default `fontSize` 17 for all new banners; only `ShowSingleCharTabBanner_Utils` keeps 72.
 7. **Emoji** – Start every banner message with an appropriate emoji (e.g. ⏳ loading, ✅ done, ❌ error, ❓ user input).
