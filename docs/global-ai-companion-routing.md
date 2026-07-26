@@ -51,7 +51,7 @@ flowchart TD
 | Win+Alt+Shift+P      | Copy last message                   | Copy last response            | Prompt focus only                                                     |
 | Win+Alt+Shift+7      | Selection → TTS pipeline            | Copilot TTS pipeline          | Prompt focus only                                                     |
 | Win+Alt+Shift+8      | Pronunciation lookup                | Copilot pronunciation         | Prompt focus only                                                     |
-| Ctrl+Alt+Win+4       | AI Text Optimizer → Gemini          | Same → Copilot                | Same → Enterprise                                                     |
+| Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2    | Same → Copilot                | Same → Enterprise                                                     |
 | Ctrl+Alt+Win+L / D2C | Paste/submit + monitor              | Copilot paste/submit          | Enterprise paste/submit; post-response copy/read-aloud → prompt focus |
 
 Entry points: [`Gemini/gemini_open.ahk`](../Gemini/gemini_open.ahk), [`Gemini/hotkey_read_copy.ahk`](../Gemini/hotkey_read_copy.ahk), [`Gemini/hotkey_pronunciation.ahk`](../Gemini/hotkey_pronunciation.ahk), [`Utils/utility_shortcuts.ahk`](../Utils/utility_shortcuts.ahk), [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk).

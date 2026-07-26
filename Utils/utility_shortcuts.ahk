@@ -34,17 +34,50 @@
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; Ctrl+Alt+Win+4 - AI Text Optimizer (same as Win+Alt+Shift+U then L, 4)
-; Routes via ResolveGlobalAICompanion (Enterprise / Copilot / consumer Gemini).
-^!#4:: {
-    prompt := GetAioptPromptText()
+; Ctrl+Alt+Win+4 - toggle Chrome tab 1 <-> 2 on the resolved AI companion
+; (Enterprise / Copilot / consumer Gemini via ResolveGlobalAICompanion).
+^!#4:: ToggleAICompanionChromeTab()
+
+ToggleAICompanionChromeTab() {
+    global g_GeminiToggleTab
     companion := ResolveGlobalAICompanion()
-    if (companion = "enterprise")
-        GeminiEnterprise_NavigateFocusAndPaste(prompt, true)
-    else if (companion = "copilot")
-        CopilotWeb_NavigateFocusAndPaste(prompt, true)
-    else
-        GeminiNavigateFocusAndPasteFirstSnippet(prompt, true)
+    hwnd := 0
+    label := "Gemini"
+    switch companion {
+        case "enterprise":
+            hwnd := GetGeminiEnterpriseWindowHwnd()
+            label := "Gemini Enterprise"
+        case "copilot":
+            hwnd := GetCopilotWebWindowHwnd()
+            label := "Copilot"
+        default:
+            hwnd := FindGeminiChromeHwnd()
+            label := "Gemini"
+    }
+    if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ " . label . " is not open.", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    WinActivate("ahk_id " hwnd)
+    if !WinWaitActive("ahk_id " hwnd, , 2) {
+        ShowCenteredOverlay_Utils("❌ Could not activate " . label . ".", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    ; Prefer UIA: if on tab 1 go to 2, otherwise go to 1. Fall back to remembered flip.
+    targetTab := (g_GeminiToggleTab = 1) ? 2 : 1
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        tabInfo := GetChromeActiveTabIndex(uia)
+        if (tabInfo && tabInfo.index)
+            targetTab := (tabInfo.index = 1) ? 2 : 1
+    } catch {
+    }
+
+    Send("^" . targetTab)
+    Sleep 120
+    g_GeminiToggleTab := targetTab
+    ShowSingleCharTabBanner_Utils(targetTab)
 }
 
 ; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
