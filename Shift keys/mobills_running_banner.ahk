@@ -100,24 +100,38 @@ Mobills_FindPagerOnce(uia, dir, context) {
             btn := Mobills_FindPagerByMonthHeader(uia, dir)
         if !btn
             btn := Mobills_FindPagerByName(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByStructure(uia, dir)
     } else if (context = "accounts") {
         btn := Mobills_FindPagerByPath(uia, dir, context)
         if !btn
             btn := Mobills_FindPagerByName(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByStructure(uia, dir)
     } else if (context = "budgets") {
-        ; Budgets: ONLY use the known arrow buttons by index (avoid misclicking "Next").
-        btn := Mobills_FindPagerByPath(uia, dir, context)
+        ; Budgets: Prefer the arrows next to the month/year header.
+        btn := Mobills_FindMonthNavByMonthYear(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByPath(uia, dir, context)
     } else if (context = "planning") {
-        btn := Mobills_FindPagerByPath(uia, dir, context)
+        btn := Mobills_FindMonthNavByMonthYear(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByPath(uia, dir, context)
         if !btn
             btn := Mobills_FindPagerByName(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByStructure(uia, dir)
     } else {
-        ; Generic fallback: try name -> month header -> legacy path
-        btn := Mobills_FindPagerByName(uia, dir)
+        ; Generic fallback: try name -> month header -> legacy path -> structure
+        btn := Mobills_FindMonthNavByMonthYear(uia, dir)
+        if !btn
+            btn := Mobills_FindPagerByName(uia, dir)
         if !btn
             btn := Mobills_FindPagerByMonthHeader(uia, dir)
         if !btn
             btn := Mobills_FindPagerByPath(uia, dir, context)
+        if !btn
+            btn := Mobills_FindPagerByStructure(uia, dir)
     }
     return btn
 }
@@ -148,6 +162,36 @@ Mobills_VerifyPagerMissing(dir, context, uiaCurrent := 0) {
     } catch {
     }
 
+    ; Gate 1: Shadow DOM & iFrame Inspection
+    ; Traverse embedded Document/iFrame elements
+    try {
+        if uiaCurrent {
+            docs := uiaCurrent.FindAll({ Type: "Document" })
+            for , doc in docs {
+                if doc {
+                    btn := Mobills_FindPagerOnce(doc, dir, context)
+                    if btn
+                        return btn
+                }
+            }
+        }
+    } catch {
+    }
+
+    ; Gate 2: Dynamic Rendering & Async State Handling
+    ; Trigger scroll-to-bottom to force lazy-loaded navigation elements
+    try {
+        Send "{End}"
+        Sleep 400
+        uiaScroll := TryAttachBrowser()
+        if uiaScroll {
+            btn := Mobills_FindPagerOnce(uiaScroll, dir, context)
+            if btn
+                return btn
+        }
+    } catch {
+    }
+
     ; Layer 3 (budgets only): re-attach + long wait + ONLY the known i:7/i:8 buttons.
     if (context = "budgets") {
         try {
@@ -170,7 +214,7 @@ Mobills_Navigate(dir) {
     try {
         uia := TryAttachBrowser()
         if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            MsgBox "Gate 0 Failure: Could not attach to the browser window.", "Mobills Navigation", "IconX"
             return
         }
 
@@ -196,12 +240,14 @@ Mobills_Navigate(dir) {
         if verifiedBtn {
             if Mobills_ClickPager(verifiedBtn)
                 return
-            MsgBox "Pager control was found but could not be clicked.", "Mobills Navigation", "IconX"
+            MsgBox "Gate 3 Failure: Pager control was found but could not be clicked (Visibility/Interactivity).",
+                "Mobills Navigation", "IconX"
             return
         }
 
-        MsgBox "Could not find the " . ((dir = "Prev") ? "previous" : "next") .
-        " page/month control (verified missing).", "Mobills Navigation", "IconX"
+        MsgBox "Extraction Failure: Could not find the " . ((dir = "Prev") ? "previous" : "next") .
+        " page/month control.`nFailed all gates (Shadow DOM, Async scroll, Structure fallback).", "Mobills Navigation",
+        "IconX"
     } catch Error as e {
         MsgBox "Error navigating Mobills:`n" e.Message, "Mobills Error", "IconX"
     } finally {

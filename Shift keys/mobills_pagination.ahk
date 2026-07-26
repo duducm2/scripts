@@ -29,10 +29,25 @@ Mobills_GetContext(uia) {
 
 Mobills_IsDisabled(el) {
     try {
+        ; Gate 3: Visibility & Interactivity Checks
+        if !el.GetPropertyValue(UIA.Property.IsEnabled)
+            return true
+
+        if el.GetPropertyValue(UIA.Property.IsOffscreen)
+            return true
+
         cls := ""
         try cls := el.GetPropertyValue(UIA.Property.ClassName)
         if (cls != "" && InStr(cls, "Mui-disabled"))
             return true
+
+        ; Check aria-hidden or other attributes if possible
+        try {
+            ariaHidden := el.GetPropertyValue(UIA.Property.AriaProperties)
+            if (ariaHidden != "" && InStr(ariaHidden, "hidden=true"))
+                return true
+        } catch {
+        }
     } catch {
     }
     return false
@@ -143,6 +158,58 @@ Mobills_FindPagerByName(uia, dir) {
     return ""
 }
 
+Mobills_FindPagerByStructure(uia, dir) {
+    ; Gate 4: Fallback Spatial & Structural Discovery
+    ; Look for Group named "pagination navigation" or similar
+    try {
+        navGroup := uia.FindElement({ Name: "pagination navigation", Type: "Group", matchmode: "Substring" })
+        if navGroup {
+            buttons := navGroup.FindAll({ Type: "Button" })
+            if (IsObject(buttons) && buttons.Length > 0) {
+                if (dir = "Prev") {
+                    btn := buttons[1]
+                    if !Mobills_IsDisabled(btn)
+                        return btn
+                } else {
+                    btn := buttons[buttons.Length]
+                    if !Mobills_IsDisabled(btn)
+                        return btn
+                }
+            }
+        }
+    } catch {
+    }
+
+    ; Look for List -> ListItem -> Button with Pagination classes
+    try {
+        lists := uia.FindAll({ Type: "List" })
+        if IsObject(lists) {
+            for , lst in lists {
+                try {
+                    cls := lst.GetPropertyValue(UIA.Property.ClassName)
+                    if InStr(cls, "Pagination") {
+                        buttons := lst.FindAll({ Type: "Button" })
+                        if (IsObject(buttons) && buttons.Length > 0) {
+                            if (dir = "Prev") {
+                                btn := buttons[1]
+                                if !Mobills_IsDisabled(btn)
+                                    return btn
+                            } else {
+                                btn := buttons[buttons.Length]
+                                if !Mobills_IsDisabled(btn)
+                                    return btn
+                            }
+                        }
+                    }
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
 Mobills_FindPagerByMonthHeader(uia, dir) {
     grp := ""
     try grp := FindMonthGroup(uia)
@@ -222,17 +289,30 @@ Mobills_FindMonthNavByMonthYear(uia, dir) {
     if !monthEl
         return ""
 
-    ; Header container is usually a Group near the month label.
-    header := ""
-    try header := monthEl.WalkTree("p", { Type: "Group" })
-    if !header
-        return ""
-
     ; Use the month element bounds as the anchor; choose closest button left/right on the same row.
     try mPos := monthEl.Location
+
+    ; Search for buttons in a broader scope (e.g., the parent of the parent)
+    header := ""
+    try header := monthEl.WalkTree("p", { Type: "Group" })
+    if header {
+        try {
+            parentHeader := UIA.TreeWalkerTrue.GetParentElement(header)
+            if parentHeader
+                header := parentHeader
+        } catch {
+        }
+    }
+
     buttons := ""
-    try buttons := header.FindAll({ Type: "Button" })
-    if !buttons
+    if header {
+        try buttons := header.FindAll({ Type: "Button" })
+    }
+    if (!IsObject(buttons) || buttons.Length = 0) {
+        ; Fallback to all buttons in the document if header search fails
+        try buttons := uia.FindAll({ Type: "Button" })
+    }
+    if (!IsObject(buttons) || buttons.Length = 0)
         return ""
 
     best := ""
