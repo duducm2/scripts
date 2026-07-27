@@ -30,7 +30,36 @@
 - Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
 - Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
 
-Optional diagnose: `AutoSlot_PERF_LOG := true` → `.cursor/autoslot_perf.log` (`ProcessPending_elig_fail`, `EligRetry_*`, `Place_*` phases). Turn off when done.
+Optional diagnose: perf log → `.cursor/autoslot_perf.log`. **Auto-on at work** (`IS_WORK_ENVIRONMENT`); force on personal with env `AUTOSLOT_PERF_LOG=1`; disable with `AUTOSLOT_PERF_LOG=0`. Reload WindowManagement = fresh log (truncated). See **Work debugging** below.
+
+## Work debugging
+
+Use this when rearrange feels slow on the work PC but not at home.
+
+**Log path:** `<scripts-repo>\.cursor\autoslot_perf.log`  
+(e.g. `C:\Users\fie7ca\Documents\01 - Scripts\.cursor\autoslot_perf.log`)
+
+**Enable:** Sync latest repo, reload `WindowManagement.ahk`. Logging turns on automatically on work. First line should be `session_start env=work …`.
+
+**Test protocol:**
+
+1. Reload WindowManagement (fresh log).
+2. Open 3–5 windows that felt slow (Notepad/Explorer baseline, browser tab, Teams if used, worst offender).
+3. Copy `autoslot_perf.log` to personal and paste/attach in chat for analysis.
+
+**Log interpretation:**
+
+| Pattern                                                                        | Likely cause                                                    |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Large gap `ShellCREATED` → `ProcessPending_elig_ok` with many `EligRetry_fire` | App slow to get title (eligibility settle)                      |
+| `ProcessPending_elig_fail reason=excluded` repeating                           | Window wrongly excluded; never Places                           |
+| `ScheduleFromShow_skip occupied_mon=N`                                         | SHOW path blocked                                               |
+| `HandlePlaceRequest ipc path=file` without `ShellCREATED`                      | Cross-process / QL file IPC (1 s poll)                          |
+| `Place_after_occ_scan` with high `hwndTotal` / `teamsUiaMs`                    | Desktop enumeration or Teams UIA during occupancy               |
+| `Place_exit path=snap` with high `snapMs`                                      | Snap validate / demax path                                      |
+| High `total=` but low `occBuildMs`                                             | Delay is **before** Place (debounce/eligibility), not occupancy |
+
+**Turn off after diagnosis:** set user env `AUTOSLOT_PERF_LOG=0` or sync when the debug pass is merged off.
 
 ## Unchanged policy
 
