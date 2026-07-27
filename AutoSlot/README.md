@@ -25,7 +25,7 @@ From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF
 | Move to monitor           | Ctrl+Alt+Win+A/S/D/F                                                          |
 | User ignore list          | Win+Alt+Shift+L → **[R]** add / **[I]** manage (`autoslot_user_excludes.ini`) |
 
-Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: lone half + free slot → maximize that window; lone max / empty → fill from hidden or visible-unslotted background. Details and busy overlays: canon doc above.
+Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: empty / lone max → fill from hidden or visible-unslotted background; lone half → 50/50 with BG when candidates exist, else maximize. Details and busy overlays: canon doc above.
 
 User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore by **process exe**; **[I]** opens a digit-remove list.
 
