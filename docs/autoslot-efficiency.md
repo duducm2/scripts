@@ -30,7 +30,7 @@
 - Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
 - Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
 
-Optional diagnose: perf log → `.cursor/autoslot_perf.log`. **Auto-on at work** (`IS_WORK_ENVIRONMENT`); force on personal with env `AUTOSLOT_PERF_LOG=1`; disable with `AUTOSLOT_PERF_LOG=0`. Reload WindowManagement = fresh log (truncated). See **Work debugging** below.
+Optional diagnose: perf log → `.cursor/autoslot_perf.log`. **Auto-on at work** (`IS_WORK_ENVIRONMENT`). **Personal:** create empty `.cursor/autoslot_perf_debug` or set env `AUTOSLOT_PERF_LOG=1`. Disable: `AUTOSLOT_PERF_LOG=0`. Reload WindowManagement = fresh log (truncated). See **Work debugging** below.
 
 ## Work debugging
 
@@ -39,7 +39,12 @@ Use this when rearrange feels slow on the work PC but not at home.
 **Log path:** `<scripts-repo>\.cursor\autoslot_perf.log`  
 (e.g. `C:\Users\fie7ca\Documents\01 - Scripts\.cursor\autoslot_perf.log`)
 
-**Enable:** Sync latest repo, reload `WindowManagement.ahk`. Logging turns on automatically on work. First line should be `session_start env=work …`.
+**Enable:**
+
+- **Work:** sync latest repo, reload `WindowManagement.ahk` (automatic).
+- **Personal (dry run):** create empty file `.cursor/autoslot_perf_debug` in the scripts repo, then reload WindowManagement.
+
+First line after reload must be `session_start env=work …` or `env=personal …`. If you only see an old `ShellCREATED` line with no `session_start`, logging was off on that reload — enable as above and reload again.
 
 **Test protocol:**
 
