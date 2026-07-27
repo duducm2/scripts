@@ -1,7 +1,8 @@
 ; =============================================================================
 ; Utils module: autoslot_user_excludes.ahk
-; Persisted user AutoSlot ignore list (exe|title needles). Used by #!+L R/I and
-; AutoSlot_IsExcludedExeOrTitle (no place/fill/occupancy — same effect as ClipAngel).
+; Persisted user AutoSlot ignore list (process exe, like ClipAngel). Used by
+; #!+L R/I and AutoSlot_IsExcludedExeOrTitle (no place/fill/occupancy).
+; Bare title substrings still work if typed manually in the ini.
 ; =============================================================================
 
 global g_AutoSlotUserExcludes := []
@@ -22,11 +23,34 @@ AutoSlot_UserExcludes_ArrJoin(arr, sep := "`n") {
     return out
 }
 
-AutoSlot_UserExcludes_Register(&list, &seen, needle) {
+; Collapse exe|title → exe; leave bare title needles unchanged.
+AutoSlot_UserExcludes_NormalizeNeedle(needle) {
     n := Trim(needle)
     if (n = "")
+        return ""
+    if (InStr(n, "|")) {
+        parts := StrSplit(n, "|", , 2)
+        exePart := Trim(parts[1])
+        if (exePart != "")
+            return exePart
+        return parts.Length > 1 ? Trim(parts[2]) : ""
+    }
+    return n
+}
+
+; Dedup key: for exe-looking needles use lowercase exe; else full needle.
+AutoSlot_UserExcludes_DedupKey(needle) {
+    n := AutoSlot_UserExcludes_NormalizeNeedle(needle)
+    if (n = "")
+        return ""
+    return StrLower(n)
+}
+
+AutoSlot_UserExcludes_Register(&list, &seen, needle) {
+    n := AutoSlot_UserExcludes_NormalizeNeedle(needle)
+    if (n = "")
         return
-    key := StrLower(n)
+    key := AutoSlot_UserExcludes_DedupKey(n)
     if (seen.Has(key))
         return
     seen[key] := true
@@ -50,7 +74,7 @@ AutoSlot_UserExcludes_ParseDiskEntries(raw) {
 AutoSlot_UserExcludes_WriteList(list) {
     path := AutoSlot_UserExcludes_IniPath()
     try DirCreate(A_ScriptDir "\assets\data")
-    lines := ["[Excludes]", "; One entry per line: title substring, or exe|title (preferred)"]
+    lines := ["[Excludes]", "; One entry per line: process exe (preferred), or title substring"]
     for n in list
         lines.Push(n)
     try FileDelete(path)
@@ -77,6 +101,22 @@ AutoSlot_UserExcludes_Init() {
     }
     for entry in AutoSlot_UserExcludes_ParseDiskEntries(raw)
         AutoSlot_UserExcludes_Register(&list, &seen, entry)
+    ; Persist normalized form (exe|title → exe) when disk still has legacy lines.
+    needsRewrite := false
+    for line in StrSplit(raw, "`n", "`r") {
+        line := Trim(line)
+        if (line = "" || SubStr(line, 1, 1) = ";" || line = "[Excludes]" || SubStr(line, 1, 1) = "[")
+            continue
+        if (InStr(line, "|")) {
+            needsRewrite := true
+            break
+        }
+    }
+    if (needsRewrite) {
+        try AutoSlot_UserExcludes_WriteList(list)
+        catch {
+        }
+    }
     g_AutoSlotUserExcludes := list
     g_AutoSlotUserExcludesReady := true
 }
@@ -87,26 +127,24 @@ AutoSlot_UserExcludes_Ensure() {
         AutoSlot_UserExcludes_Init()
 }
 
+; [R] picks: process name only (ClipAngel-style whole-app ignore).
 AutoSlot_UserExcludes_FormatNeedle(title, exe := "") {
-    title := Trim(title)
     exe := Trim(exe)
-    if (title = "" && exe = "")
-        return ""
-    if (exe != "" && title != "")
-        return exe . "|" . title
-    return title != "" ? title : exe
+    if (exe != "")
+        return exe
+    return Trim(title)
 }
 
 AutoSlot_UserExcludes_NeedleToTitleExe(needle) {
-    needle := Trim(needle)
-    if (InStr(needle, "|")) {
-        parts := StrSplit(needle, "|", , 2)
-        return { title: Trim(parts[2]), exe: Trim(parts[1]) }
-    }
+    needle := AutoSlot_UserExcludes_NormalizeNeedle(needle)
+    if (needle = "")
+        return { title: "", exe: "" }
+    if (InStr(StrLower(needle), ".exe"))
+        return { title: "", exe: needle }
     return { title: needle, exe: "" }
 }
 
-; Match hwnd against persisted user ignore needles (exe|title or substring).
+; Match hwnd against persisted user ignore needles (exe preferred; title substring OK).
 AutoSlot_UserExcludeMatch(hwnd) {
     global g_AutoSlotUserExcludes
     if (!hwnd)
@@ -127,23 +165,18 @@ AutoSlot_UserExcludeMatch(hwnd) {
     t := StrLower(title)
     e := StrLower(exe)
     for needle in g_AutoSlotUserExcludes {
-        n := Trim(needle)
+        n := AutoSlot_UserExcludes_NormalizeNeedle(needle)
         if (n = "")
             continue
-        if (InStr(n, "|")) {
-            parts := StrSplit(n, "|", , 2)
-            exeNeedle := StrLower(Trim(parts[1]))
-            titleNeedle := parts.Length > 1 ? StrLower(Trim(parts[2])) : ""
-            if (exeNeedle != "" && e != "" && InStr(e, exeNeedle)) {
-                if (titleNeedle = "" || (t != "" && InStr(t, titleNeedle)))
-                    return true
-            }
+        nLower := StrLower(n)
+        ; Exe-scoped (ClipAngel-style): exact process name match.
+        if (InStr(nLower, ".exe")) {
+            if (e != "" && e = nLower)
+                return true
             continue
         }
-        nLower := StrLower(n)
+        ; Manual title-only needle.
         if (t != "" && InStr(t, nLower))
-            return true
-        if (e != "" && InStr(e, nLower))
             return true
     }
     return false
@@ -152,30 +185,32 @@ AutoSlot_UserExcludeMatch(hwnd) {
 AutoSlot_UserExcludes_IsNeedlePresent(needle) {
     global g_AutoSlotUserExcludes
     AutoSlot_UserExcludes_Ensure()
-    key := StrLower(Trim(needle))
+    key := AutoSlot_UserExcludes_DedupKey(needle)
     if (key = "")
         return false
     for n in g_AutoSlotUserExcludes {
-        if (StrLower(Trim(n)) = key)
+        if (AutoSlot_UserExcludes_DedupKey(n) = key)
             return true
     }
     return false
 }
 
-; Add hwnd to user ignore list. Returns true on new save.
+; Add hwnd to user ignore list (exe only). Returns true on new save.
 AutoSlot_AddUserExcludeFromHwnd(hwnd) {
     global g_AutoSlotUserExcludes
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
-    title := ""
     exe := ""
-    try title := WinGetTitle(hwnd)
-    catch {
-        title := ""
-    }
     try exe := WinGetProcessName("ahk_id " hwnd)
     catch {
         exe := ""
+    }
+    title := ""
+    if (exe = "") {
+        try title := WinGetTitle(hwnd)
+        catch {
+            title := ""
+        }
     }
     needle := AutoSlot_UserExcludes_FormatNeedle(title, exe)
     if (needle = "")
@@ -234,10 +269,10 @@ AutoSlot_RemoveUserExcludeByNeedle(needle) {
     if (needle = "")
         return false
     AutoSlot_UserExcludes_Ensure()
-    key := StrLower(needle)
+    key := AutoSlot_UserExcludes_DedupKey(needle)
     idx := 0
     for i, n in g_AutoSlotUserExcludes {
-        if (StrLower(Trim(n)) = key) {
+        if (AutoSlot_UserExcludes_DedupKey(n) = key) {
             idx := i
             break
         }

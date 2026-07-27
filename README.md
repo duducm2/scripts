@@ -49,17 +49,17 @@ scripts/
 
 **Script inventory:**
 
-| Script               | Purpose                                                              | Main includes                                         | Notes                                 |
-| -------------------- | -------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------- |
-| Act.ahk              | Bootstrap, git pull, launch scripts                                  | env, Utils                                            | Requires `GetScriptPath()` in env.ahk |
-| Shift keys.ahk       | Global shortcuts, UIA, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp | env, vendor/UIA-v2, Utils, infra/ipc/ShiftKeysIPC     | `WaitForButton()` defined here        |
-| Utils.ahk            | Shared utilities, overlays, hotstrings, MEH hotkeys                  | env, vendor/UIA-v2                                    | Used by almost all scripts            |
-| WindowManagement.ahk | Move/maximize/minimize, multi-monitor, cursor halo                   | env, lib/GeminiToCursorBridge, Utils, infra/ipc/WMIPC |                                       |
-| AppLaunchers.ahk     | App launch, Wikipedia, Pomodoro, Cursor                              | env, vendor/UIA-v2, Utils, infra/ipc/AppLauncherIPC   |                                       |
-| Gemini.ahk           | Gemini flows (prompt, copy, read aloud, model toggle)                | vendor/UIA-v2, env, Utils                             |                                       |
-| Microsoft Teams.ahk  | Meeting/chat, mic/camera state                                       | env, vendor/UIA-v2, Utils                             |                                       |
-| Outlook.ahk          | Outlook helpers                                                      | env, vendor/UIA-v2, Utils                             |                                       |
-| Spotify.ahk          | Media, volume                                                        | env, Utils; lib/SpotifyWASAPI                         |                                       |
+| Script               | Purpose                                                              | Main includes                                                            | Notes                                 |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------- |
+| Act.ahk              | Bootstrap, git pull, launch scripts                                  | env, Utils                                                               | Requires `GetScriptPath()` in env.ahk |
+| Shift keys.ahk       | Global shortcuts, UIA, Spotify/ChatGPT/Gemini/Outlook/Teams/WhatsApp | env, vendor/UIA-v2, Utils, infra/ipc/ShiftKeysIPC                        | `WaitForButton()` defined here        |
+| Utils.ahk            | Shared utilities, overlays, hotstrings, MEH hotkeys                  | env, vendor/UIA-v2                                                       | Used by almost all scripts            |
+| WindowManagement.ahk | Move/maximize/minimize, multi-monitor, cursor halo                   | env, lib/GeminiToCursorBridge, Utils, infra/ipc/WMIPC                    |                                       |
+| AppLaunchers.ahk     | App launch, Wikipedia, Pomodoro, Cursor                              | env, vendor/UIA-v2, Utils, infra/ipc/AppLauncherIPC                      |                                       |
+| Gemini.ahk           | Gemini flows (prompt, copy, read aloud, model toggle)                | vendor/UIA-v2, env, Utils                                                |                                       |
+| Microsoft Teams.ahk  | Meeting/chat, mic/camera state                                       | env, vendor/UIA-v2, Utils                                                |                                       |
+| Outlook.ahk          | Outlook helpers                                                      | env, vendor/UIA-v2, Utils                                                |                                       |
+| Spotify.ahk          | Media, volume, open/activate (`#!+s`)                                | env, vendor/UIA-v2, Utils/standard_loading_bar (thin), lib/SpotifyWASAPI | No full Utils.ahk (Escape-host risk)  |
 
 ### Dependencies and environment
 

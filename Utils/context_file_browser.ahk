@@ -58,7 +58,7 @@ ContextBrowser_EnsureGlobals() {
     global g_ContextBrowserFileIndex, g_ContextBrowserFilterTyping, g_ContextBrowserSuppressFilterKillFocus
     global g_ContextBrowserEntryPathLabel
     if !IsSet(CONTEXT_ROOT)
-        CONTEXT_ROOT := A_ScriptDir "\docs\context"
+        CONTEXT_ROOT := Context_ResolveRootPath()
     if !IsSet(g_ContextBrowserActive)
         g_ContextBrowserActive := false
     if !IsSet(g_ContextBrowserGui)
@@ -102,10 +102,38 @@ ContextBrowser_ShowError(msg, durationMs := 2500) {
     ShowCenteredOverlay_Utils(msg, durationMs, BANNER_ACCENT_ERROR)
 }
 
+; Resolves env-specific docs\context\work|personal via GetContextRootPath when available.
+Context_ResolveRootPath() {
+    try {
+        return GetContextRootPath()
+    } catch {
+    }
+    envName := "personal"
+    try {
+        if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+            envName := "work"
+    } catch {
+    }
+    return A_ScriptDir "\docs\context\" envName
+}
+
 Context_GetRoot() {
     ContextBrowser_EnsureGlobals()
     global CONTEXT_ROOT
+    CONTEXT_ROOT := Context_ResolveRootPath()
     return CONTEXT_ROOT
+}
+
+; True if dir is the current env root or a subdirectory of it.
+Context_IsUnderRoot(dir) {
+    if (dir = "")
+        return false
+    root := RTrim(Context_GetRoot(), "\")
+    d := RTrim(dir, "\")
+    if (StrLower(d) = StrLower(root))
+        return true
+    prefix := StrLower(root) "\"
+    return (SubStr(StrLower(d), 1, StrLen(prefix)) = prefix)
 }
 
 Context_IsAtRoot(dir) {
@@ -1221,7 +1249,9 @@ ShowContextBrowser() {
         return
     }
 
-    if (g_ContextBrowserLastDir != "" && DirExist(g_ContextBrowserLastDir))
+    ; Drop lastDir from the other env (or a stale path) so work/personal never mix.
+    if (g_ContextBrowserLastDir != "" && DirExist(g_ContextBrowserLastDir) && Context_IsUnderRoot(
+        g_ContextBrowserLastDir))
         g_ContextBrowserCurrentDir := g_ContextBrowserLastDir
     else
         g_ContextBrowserCurrentDir := root

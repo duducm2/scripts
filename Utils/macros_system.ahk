@@ -13,7 +13,7 @@
 global g_Macros := []
 global g_MacroCharMap := Map()  ; Maps character to macro function
 global g_ProgrammaticDictationStop := false  ; Skip ~#!+0 when script sends #!+0 programmatically
-global g_GeminiToggleTab := 1  ; Last Gemini tab chosen by ^!#4 (UIA-synced); other code may still assume 1/2 toggle state
+global g_GeminiToggleTab := 1  ; Last tab chosen by ^!#4 ToggleAICompanionChromeTab (UIA-synced when possible)
 
 ; Register a macro
 RegisterMacro(func, title, char := "") {
@@ -282,4 +282,3 @@ GetHandyProcessPath() {
     }
     return ""
 }
-

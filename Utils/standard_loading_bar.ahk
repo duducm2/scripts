@@ -3,6 +3,11 @@
 ; Standard loading bar show/update/hide lifecycle
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
+;
+; Thin-include consumer: Spotify.ahk includes this file alone (not full Utils.ahk)
+; and provides a no-op Utils_EnsureGlobalEscapeHotkey() stub. Keep any NEW external
+; symbol references shim-able the same way so standalone scripts do not need to
+; pull in print_screen_escape / hotstrings / utility_shortcuts.
 ; =============================================================================
 
 ; =============================================================================

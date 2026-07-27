@@ -1,0 +1,1 @@
+C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\piano\mnemonics-piano.md

@@ -11,6 +11,15 @@
 #include vendor\UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\lib\SpotifyWASAPI.ahk
+; Thin include: Show/Update/Hide only. Do NOT #include full Utils.ahk (would inject
+; unrelated hotkeys / a second global Escape host — see Act.ahk comment).
+#include %A_ScriptDir%\Utils\standard_loading_bar.ahk
+
+; standard_loading_bar.ahk references this only on its keys-overlay paths, which Spotify
+; never uses. Stub keeps load-time resolution valid without importing the global Escape
+; hook from Utils\print_screen_escape.ahk (a second Escape host breaks modals - see Act.ahk 121).
+Utils_EnsureGlobalEscapeHotkey() {
+}
 
 ; --- Feature: use WASAPI for Ctrl+Volume (no window activation). Set false to use legacy activate+send.
 global AL_USE_WASAPI := true
@@ -35,28 +44,120 @@ global SPOTIFY_MIN_WINDOW_SIZE := 200
 global SPOTIFY_OPEN_WAIT_SEC := 12
 global SPOTIFY_OPEN_RETRIES := 3
 global SPOTIFY_VERIFY_SETTLE_MS := 200
+global SPOTIFY_OPEN_TOTAL_BUDGET_MS := 24000
+global SPOTIFY_FIRST_ATTEMPT_WAIT_SEC := 10
+global SPOTIFY_RETRY_WAIT_SEC := 6
+global SPOTIFY_OPEN_GUARD_MAX_MS := 45000
+global SPOTIFY_BANNER_DELAY_MS := 400
+global SPOTIFY_RESPONSIVE_TIMEOUT_MS := 300
+; Optional open diagnosis → .cursor\spotify_open_quality.log (leave false in normal use).
+global SPOTIFY_OPEN_DEBUG := false
+
+global g_SpotifyOpenInProgress := false
+global g_SpotifyOpenStartTick := 0
+global g_SpotifyBannerVisible := false
+global g_SpotifyBannerArmText := ""
+global g_SpotifyBannerTimerArmed := false
+global g_SpotifyOpenLastPhase := ""
+global g_SpotifyOpenLastAttempt := 0
+global g_SpotifyOpenDeadline := 0
 
 OpenSpotify() {
-    loop SPOTIFY_OPEN_RETRIES {
-        if SpotifyOpenAttempt(A_Index)
+    global g_SpotifyOpenInProgress, g_SpotifyOpenStartTick, g_SpotifyOpenLastPhase
+    global g_SpotifyOpenLastAttempt, g_SpotifyOpenDeadline, g_SpotifyBannerVisible
+
+    ; Self-expiring re-entrancy guard: a crashed run cannot permanently disable #!+s.
+    if (g_SpotifyOpenInProgress) {
+        if (g_SpotifyOpenStartTick > 0 && (A_TickCount - g_SpotifyOpenStartTick) < SPOTIFY_OPEN_GUARD_MAX_MS) {
+            SpotifyBanner_Result("⏳ Already opening Spotify...", BANNER_ACCENT_INTERMEDIATE, 900)
             return
-        if (A_Index < SPOTIFY_OPEN_RETRIES)
-            Sleep 400
+        }
+        g_SpotifyOpenInProgress := false
     }
-    SpotifyShowOpenFailure()
+
+    g_SpotifyOpenInProgress := true
+    g_SpotifyOpenStartTick := A_TickCount
+    g_SpotifyOpenLastPhase := "start"
+    g_SpotifyOpenLastAttempt := 0
+    g_SpotifyOpenDeadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
+    succeeded := false
+    try {
+        SpotifyBanner_Arm("⏳ Opening Spotify...")
+        SpotifyOpenDebugLog("begin")
+        loop SPOTIFY_OPEN_RETRIES {
+            g_SpotifyOpenLastAttempt := A_Index
+            if (A_TickCount >= g_SpotifyOpenDeadline) {
+                g_SpotifyOpenLastPhase := "budget_exhausted"
+                break
+            }
+            if SpotifyOpenAttempt(A_Index, g_SpotifyOpenDeadline) {
+                succeeded := true
+                g_SpotifyOpenLastPhase := "ok"
+                SpotifyOpenDebugLog("success", GetSpotifyMainHwnd())
+                break
+            }
+            if (A_Index < SPOTIFY_OPEN_RETRIES && A_TickCount < g_SpotifyOpenDeadline)
+                SpotifySleepBudget(400, g_SpotifyOpenDeadline)
+        }
+        if (succeeded) {
+            ; Brief success only when the deferred loading bar actually appeared.
+            if (g_SpotifyBannerVisible)
+                SpotifyBanner_Result("✅ Spotify is open", BANNER_ACCENT_SUCCESS, 700)
+            else
+                SpotifyBanner_Cancel()
+        } else {
+            SpotifyShowOpenFailure()
+        }
+    } finally {
+        ; Never Hide after Result — it already replaced the loading bar with a delayed
+        ; Information Only banner. Only clear a still-visible loading bar (e.g. exception).
+        try SetTimer(SpotifyBanner_ShowDeferred, 0)
+        catch {
+        }
+        global g_SpotifyBannerTimerArmed, g_SpotifyBannerArmText
+        g_SpotifyBannerTimerArmed := false
+        g_SpotifyBannerArmText := ""
+        if (g_SpotifyBannerVisible) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            g_SpotifyBannerVisible := false
+        }
+        g_SpotifyOpenInProgress := false
+        g_SpotifyOpenStartTick := 0
+    }
 }
 
 ; One open cycle: launch/restore as needed, then quality-gate on a usable foreground window.
-SpotifyOpenAttempt(attempt := 1) {
-    hwnd := GetSpotifyMainHwnd()
-    if hwnd > 0 && SpotifyActivateAndVerify(hwnd)
-        return true
+SpotifyOpenAttempt(attempt := 1, deadline := 0) {
+    global g_SpotifyOpenLastPhase
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
 
-    SpotifyLaunchForAttempt(attempt)
-    return SpotifyWaitActivateAndVerify(SPOTIFY_OPEN_WAIT_SEC)
+    hwnd := GetSpotifyMainHwnd()
+    if hwnd > 0 {
+        g_SpotifyOpenLastPhase := "activate_existing"
+        SpotifyBanner_Set("🔄 Spotify: verifying...")
+        SpotifyOpenDebugLog("activate_existing", hwnd, attempt)
+        if SpotifyActivateAndVerify(hwnd, deadline)
+            return true
+    }
+
+    waitSec := (attempt = 1) ? SPOTIFY_FIRST_ATTEMPT_WAIT_SEC : SPOTIFY_RETRY_WAIT_SEC
+    g_SpotifyOpenLastPhase := "launch"
+    SpotifyBanner_Set("⏳ Spotify: launching (attempt " attempt "/" SPOTIFY_OPEN_RETRIES ")...")
+    SpotifyOpenDebugLog("launch", 0, attempt)
+    SpotifyLaunchForAttempt(attempt, deadline)
+    if (A_TickCount >= deadline) {
+        g_SpotifyOpenLastPhase := "budget_exhausted"
+        return false
+    }
+    g_SpotifyOpenLastPhase := "wait_window"
+    SpotifyBanner_Set("🔄 Spotify: waiting for window...")
+    return SpotifyWaitActivateAndVerify(waitSec, deadline)
 }
 
-; Quality gate: main Spotify window exists, is usable, and is the active foreground window.
+; Quality gate: main Spotify window exists, is usable, responsive, and is the active foreground window.
 SpotifyIsOpenedAndActive(hwnd := 0) {
     if !hwnd
         hwnd := GetSpotifyMainHwnd()
@@ -64,44 +165,62 @@ SpotifyIsOpenedAndActive(hwnd := 0) {
         return false
     if !SpotifyIsUsableMainWindow(hwnd)
         return false
+    if !SpotifyIsWindowResponsive(hwnd)
+        return false
     return WinActive("ahk_id " hwnd)
 }
 
-SpotifyActivateAndVerify(hwnd) {
+SpotifyActivateAndVerify(hwnd, deadline := 0) {
+    global g_SpotifyOpenLastPhase
     if !(hwnd is Integer) || hwnd <= 0
         return false
-    if !SpotifyActivateWindow(hwnd)
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
+    g_SpotifyOpenLastPhase := "activate"
+    SpotifyBanner_Set("🔄 Spotify: verifying...")
+    if !SpotifyActivateWindow(hwnd, 3, 300, deadline)
         return false
-    Sleep SPOTIFY_VERIFY_SETTLE_MS
+    SpotifySleepBudget(SPOTIFY_VERIFY_SETTLE_MS, deadline)
     current := GetSpotifyMainHwnd()
     if current
         hwnd := current
+    ; Hung window at final verify fails the attempt (escalate) instead of reporting success.
+    if !SpotifyIsWindowResponsive(hwnd)
+        return false
     return SpotifyIsOpenedAndActive(hwnd)
 }
 
-SpotifyWaitActivateAndVerify(timeoutSec := 12) {
-    hwnd := SpotifyWaitForMainHwnd(timeoutSec)
-    if hwnd > 0 && SpotifyActivateAndVerify(hwnd)
+SpotifyWaitActivateAndVerify(timeoutSec := 12, deadline := 0) {
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
+    remainingMs := deadline - A_TickCount
+    if (remainingMs <= 0)
+        return false
+    cappedSec := Min(timeoutSec, Ceil(remainingMs / 1000.0))
+    hwnd := SpotifyWaitForMainHwnd(cappedSec, deadline)
+    if hwnd > 0 && SpotifyActivateAndVerify(hwnd, deadline)
         return true
     ; Window may appear slightly after ProcessWait; one short re-check before failing the attempt.
-    Sleep 400
+    SpotifySleepBudget(400, deadline)
     hwnd := GetSpotifyMainHwnd()
-    return hwnd > 0 && SpotifyActivateAndVerify(hwnd)
+    return hwnd > 0 && SpotifyActivateAndVerify(hwnd, deadline)
 }
 
 ; Escalating launch methods per retry (shortcut/exe path may move between installs).
-SpotifyLaunchForAttempt(attempt := 1) {
+SpotifyLaunchForAttempt(attempt := 1, deadline := 0) {
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
     if (attempt = 1) {
         if SpotifyProcessExists()
             SpotifyLaunchRestore()
         else
-            SpotifyLaunchFresh()
+            SpotifyLaunchFresh(deadline)
         return
     }
     if (attempt = 2) {
         Run("spotify:")
         if !SpotifyProcessExists()
-            SpotifyLaunchFresh()
+            SpotifyLaunchFresh(deadline)
         return
     }
     exe := SpotifyResolveExePath()
@@ -111,18 +230,16 @@ SpotifyLaunchForAttempt(attempt := 1) {
         Run(link)
     else
         Run("shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
-    try
-        ProcessWait("Spotify.exe", Min(SPOTIFY_OPEN_WAIT_SEC, 8))
-    catch {
-        ;
-    }
+    SpotifyProcessWaitBudget(Min(SPOTIFY_OPEN_WAIT_SEC, 8), deadline)
 }
 
 SpotifyProcessExists() {
     return ProcessExist("Spotify.exe") > 0
 }
 
-SpotifyLaunchFresh() {
+SpotifyLaunchFresh(deadline := 0) {
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
     link := GetSpotifyShortcutPath()
     if (link != "")
         Run(link)
@@ -130,11 +247,7 @@ SpotifyLaunchFresh() {
         Run('"' exe '"')
     else
         Run("shell:AppsFolder\SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify")
-    try
-        ProcessWait("Spotify.exe", SPOTIFY_OPEN_WAIT_SEC)
-    catch {
-        ;
-    }
+    SpotifyProcessWaitBudget(SPOTIFY_FIRST_ATTEMPT_WAIT_SEC, deadline)
 }
 
 ; Process running but no main window (tray-only / crashed UI): restore via shortcut or spotify: URI.
@@ -173,13 +286,20 @@ SpotifyResolveExePath() {
     return ""
 }
 
-SpotifyWaitForMainHwnd(timeoutSec := 12) {
-    deadline := A_TickCount + (timeoutSec * 1000)
+SpotifyWaitForMainHwnd(timeoutSec := 12, deadline := 0) {
+    if (!deadline)
+        deadline := A_TickCount + (timeoutSec * 1000)
+    localDeadline := A_TickCount + (timeoutSec * 1000)
+    if (localDeadline > deadline)
+        localDeadline := deadline
     loop {
         hwnd := GetSpotifyMainHwnd()
-        if hwnd > 0
-            return hwnd
-        if (A_TickCount >= deadline)
+        if hwnd > 0 {
+            ; Hung window counts as not ready yet during wait (keep waiting to deadline).
+            if SpotifyIsWindowResponsive(hwnd)
+                return hwnd
+        }
+        if (A_TickCount >= localDeadline)
             break
         Sleep 200
     }
@@ -187,13 +307,20 @@ SpotifyWaitForMainHwnd(timeoutSec := 12) {
 }
 
 SpotifyShowOpenFailure() {
-    ToolTip("Could not open Spotify")
-    SetTimer(() => ToolTip(), -2000)
+    global g_SpotifyOpenLastPhase, g_SpotifyOpenLastAttempt, g_SpotifyOpenStartTick
+    elapsedSec := g_SpotifyOpenStartTick > 0 ? Round((A_TickCount - g_SpotifyOpenStartTick) / 1000) : 0
+    attempts := g_SpotifyOpenLastAttempt > 0 ? g_SpotifyOpenLastAttempt : SPOTIFY_OPEN_RETRIES
+    phase := g_SpotifyOpenLastPhase != "" ? g_SpotifyOpenLastPhase : "unknown"
+    SpotifyOpenDebugLog("failure")
+    msg := "❌ Spotify did not open (" attempts " attempts, " elapsedSec "s) - " phase
+    SpotifyBanner_Result(msg, BANNER_ACCENT_ERROR, 2500)
 }
 
-SpotifyActivateWindow(hwnd, attempts := 3, waitMs := 300) {
+SpotifyActivateWindow(hwnd, attempts := 3, waitMs := 300, deadline := 0) {
     if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
         return false
+    if (!deadline)
+        deadline := A_TickCount + SPOTIFY_OPEN_TOTAL_BUDGET_MS
     try {
         pid := WinGetPID("ahk_id " hwnd)
         if (pid is Integer) && pid > 0
@@ -210,35 +337,39 @@ SpotifyActivateWindow(hwnd, attempts := 3, waitMs := 300) {
         originalState := ""
     }
     loop attempts {
+        if (A_TickCount >= deadline)
+            return false
+        remainingWaitMs := Min(waitMs, Max(50, deadline - A_TickCount))
+        waitSec := remainingWaitMs / 1000
         try {
             if (originalState = -1) {
                 WinRestore(hwnd)
-                Sleep 100
+                SpotifySleepBudget(100, deadline)
             }
             WinActivate(hwnd)
-            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitSec)
                 return true
         } catch {
         }
         try {
             if (originalState = -1) {
                 DllCall("ShowWindow", "Ptr", hwnd, "Int", 9)
-                Sleep 100
+                SpotifySleepBudget(100, deadline)
             }
             DllCall("SetForegroundWindow", "Ptr", hwnd)
-            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitSec)
                 return true
         } catch {
         }
         try {
             DllCall("BringWindowToTop", "Ptr", hwnd)
-            Sleep 100
+            SpotifySleepBudget(100, deadline)
             WinActivate(hwnd)
-            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitMs / 1000)
+            if WinActive("ahk_id " hwnd) || WinWaitActive("ahk_id " hwnd, , waitSec)
                 return true
         } catch {
         }
-        Sleep 200
+        SpotifySleepBudget(200, deadline)
     }
     return false
 }
@@ -247,6 +378,8 @@ SpotifyIsUsableMainWindow(hwnd) {
     if !(hwnd is Integer) || hwnd <= 0
         return false
     if !DllCall("IsWindowVisible", "Ptr", hwnd)
+        return false
+    if SpotifyIsWindowCloaked(hwnd)
         return false
     try {
         WinGetPos(, , &w, &h, "ahk_id " hwnd)
@@ -258,23 +391,186 @@ SpotifyIsUsableMainWindow(hwnd) {
     return true
 }
 
-; Main Spotify UI HWND (visible, sized); prefers title containing "Spotify". Returns 0 if none.
+; DWMWA_CLOAKED = 14: UWP/Electron cloaked helpers are not a usable main UI.
+SpotifyIsWindowCloaked(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    cloaked := 0
+    try {
+        hr := DllCall("dwmapi\DwmGetWindowAttribute", "Ptr", hwnd, "UInt", 14, "Int*", &cloaked, "UInt", 4)
+        if (hr != 0)
+            return false
+    } catch {
+        return false
+    }
+    return cloaked != 0
+}
+
+; SendMessageTimeout WM_NULL + IsHungAppWindow; false when unresponsive within timeout.
+SpotifyIsWindowResponsive(hwnd, timeoutMs := 0) {
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    if (!timeoutMs)
+        timeoutMs := SPOTIFY_RESPONSIVE_TIMEOUT_MS
+    try {
+        if DllCall("IsHungAppWindow", "Ptr", hwnd)
+            return false
+    } catch {
+        ;
+    }
+    result := 0
+    ; SMTO_ABORTIFHUNG = 0x0002
+    ok := DllCall("SendMessageTimeout", "Ptr", hwnd, "UInt", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0002, "UInt",
+        timeoutMs, "Ptr*", &result)
+    return ok != 0
+}
+
+; Main Spotify UI HWND (visible, sized, not cloaked); prefers title containing "Spotify",
+; then largest area among usable candidates. Returns 0 if none.
 GetSpotifyMainHwnd() {
     bestWithTitle := 0
+    bestWithTitleArea := 0
     bestAny := 0
+    bestAnyArea := 0
     for hwnd in WinGetList("ahk_exe Spotify.exe") {
         if !SpotifyIsUsableMainWindow(hwnd)
             continue
+        area := 0
+        try {
+            WinGetPos(, , &w, &h, "ahk_id " hwnd)
+            area := w * h
+        } catch {
+            area := 0
+        }
         try title := WinGetTitle(hwnd)
         catch
             title := ""
         if InStr(title, "Spotify") {
-            if !bestWithTitle
+            if (area > bestWithTitleArea) {
+                bestWithTitleArea := area
                 bestWithTitle := hwnd
-        } else if !bestAny
+            }
+        } else if (area > bestAnyArea) {
+            bestAnyArea := area
             bestAny := hwnd
+        }
     }
     return bestWithTitle ? bestWithTitle : bestAny
+}
+
+; --- Deferred Loading Indication (silent on the fast path) -------------------
+
+SpotifyBanner_Arm(text) {
+    global g_SpotifyBannerArmText, g_SpotifyBannerTimerArmed, g_SpotifyBannerVisible
+    g_SpotifyBannerArmText := text
+    g_SpotifyBannerVisible := false
+    try SetTimer(SpotifyBanner_ShowDeferred, 0)
+    catch {
+    }
+    SetTimer(SpotifyBanner_ShowDeferred, -SPOTIFY_BANNER_DELAY_MS)
+    g_SpotifyBannerTimerArmed := true
+}
+
+SpotifyBanner_ShowDeferred(*) {
+    global g_SpotifyBannerArmText, g_SpotifyBannerTimerArmed, g_SpotifyBannerVisible
+    g_SpotifyBannerTimerArmed := false
+    if (g_SpotifyBannerVisible)
+        return
+    text := g_SpotifyBannerArmText != "" ? g_SpotifyBannerArmText : "⏳ Opening Spotify..."
+    try {
+        StandardLoadingBar_Show(text, BANNER_ACCENT_INTERMEDIATE)
+        g_SpotifyBannerVisible := true
+    } catch {
+        ToolTip(text)
+        SetTimer(() => ToolTip(), -2000)
+    }
+}
+
+SpotifyBanner_Set(text) {
+    global g_SpotifyBannerArmText, g_SpotifyBannerVisible
+    g_SpotifyBannerArmText := text
+    if (!g_SpotifyBannerVisible)
+        return
+    try StandardLoadingBar_Update(text, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+}
+
+; Disarm timer, clear visible flag, then show Information Only result (order matters so
+; a later Cancel / finally cannot kill the result banner mid-display).
+SpotifyBanner_Result(text, accent, ms := 1500) {
+    global g_SpotifyBannerTimerArmed, g_SpotifyBannerVisible, g_SpotifyBannerArmText
+    try SetTimer(SpotifyBanner_ShowDeferred, 0)
+    catch {
+    }
+    g_SpotifyBannerTimerArmed := false
+    g_SpotifyBannerVisible := false
+    g_SpotifyBannerArmText := ""
+    try {
+        StandardLoadingBar_Show(text, accent, { passive: true, centerOnHwnd: 0, textWidth: 500, fontSize: 17,
+            passiveBgColor: accent })
+        if (ms < 1)
+            ms := 1
+        StandardLoadingBar_Hide(ms)
+        StandardLoadingBar_ArmForceHide()
+    } catch {
+        ToolTip(text)
+        SetTimer(() => ToolTip(), -Min(ms, 3000))
+    }
+}
+
+SpotifyBanner_Cancel() {
+    global g_SpotifyBannerTimerArmed, g_SpotifyBannerVisible, g_SpotifyBannerArmText
+    try SetTimer(SpotifyBanner_ShowDeferred, 0)
+    catch {
+    }
+    g_SpotifyBannerTimerArmed := false
+    g_SpotifyBannerArmText := ""
+    if (g_SpotifyBannerVisible) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+    g_SpotifyBannerVisible := false
+}
+
+; Sleep that respects the open deadline (returns early when budget exhausted).
+SpotifySleepBudget(ms, deadline) {
+    if (ms <= 0)
+        return
+    remaining := deadline - A_TickCount
+    if (remaining <= 0)
+        return
+    Sleep Min(ms, remaining)
+}
+
+SpotifyProcessWaitBudget(timeoutSec, deadline) {
+    remainingMs := deadline - A_TickCount
+    if (remainingMs <= 0)
+        return
+    cappedSec := Min(timeoutSec, Max(1, Ceil(remainingMs / 1000.0)))
+    try
+        ProcessWait("Spotify.exe", cappedSec)
+    catch {
+        ;
+    }
+}
+
+SpotifyOpenDebugLog(phase, hwnd := 0, attempt := 0) {
+    global SPOTIFY_OPEN_DEBUG, g_SpotifyOpenStartTick, g_SpotifyOpenLastPhase, g_SpotifyOpenLastAttempt
+    if (!SPOTIFY_OPEN_DEBUG)
+        return
+    elapsed := g_SpotifyOpenStartTick > 0 ? (A_TickCount - g_SpotifyOpenStartTick) : 0
+    if (!attempt)
+        attempt := g_SpotifyOpenLastAttempt
+    stamp := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
+    line := stamp " +" elapsed "ms phase=" phase " last=" g_SpotifyOpenLastPhase " attempt=" attempt " hwnd=" hwnd
+    path := A_ScriptDir "\.cursor\spotify_open_quality.log"
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        FileAppend(line "`n", path, "UTF-8")
+    } catch {
+    }
 }
 
 ; Returns path to Spotify shortcut (Start Menu or Programs) or "" for Store-only. No hardcoded user paths.
