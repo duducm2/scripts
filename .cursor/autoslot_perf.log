@@ -44,3 +44,17 @@
 2026-07-27 09:31:59 +281ms hwnd=721462 ScheduleFromShow_skip occupied_mon=3 via=tracked
 2026-07-27 09:32:01 +0ms hwnd=786998 ScheduleFromShow_skip occupied_mon=4 via=tracked
 2026-07-27 09:32:01 +250ms hwnd=786998 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:37:17 +0ms hwnd=3410062 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:17 +0ms hwnd=1509722 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:18 +0ms hwnd=10357058 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:18 +0ms hwnd=3475598 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:20 +139422ms hwnd=5638464 ShellCREATED
+2026-07-27 09:37:20 +139422ms hwnd=5638464 Schedule_skip single_monitor
+2026-07-27 09:37:20 +139438ms hwnd=5638464 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:43 +0ms hwnd=1967814 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:43 +0ms hwnd=67202 ShellCREATED
+2026-07-27 09:37:43 +0ms hwnd=67202 Schedule_skip single_monitor
+2026-07-27 09:37:43 +15ms hwnd=67202 ScheduleFromShow_skip single_monitor
+2026-07-27 09:37:44 +0ms hwnd=65768 ScheduleFromShow_skip single_monitor
+2026-07-27 09:38:09 +25422ms hwnd=65768 ScheduleFromShow_skip single_monitor
+2026-07-27 09:38:10 +0ms hwnd=2033350 ScheduleFromShow_skip single_monitor

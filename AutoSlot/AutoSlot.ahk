@@ -127,6 +127,10 @@ AutoSlot_PerfLogPath() {
 AutoSlot_PerfLog(hwnd, phase, detail := "") {
     if (!AutoSlot_PERF_LOG)
         return
+    ; Routine SHOW occupied skips flood the log and FileAppend can starve Place timers on work PCs.
+    if (phase = "ScheduleFromShow_skip" && (InStr(detail, "occupied_mon=")
+    || detail = "already_tracked" || detail = "pending" || detail = "elig_retry"))
+        return
     global g_AutoSlotPerfOrigin
     now := A_TickCount
     hwnd := Integer(hwnd)
@@ -2600,12 +2604,13 @@ AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false)
             tRect := rects[newPane]
             AutoSlot_MoveHwndToRect(partnerHwnd, pRect[1], pRect[2], pRect[3], pRect[4])
             AutoSlot_MoveHwndToRect(newHwnd, tRect[1], tRect[2], tRect[3], tRect[4])
-            Sleep 80
+            Sleep 25
         }
         if (AutoSlot_CompanionAlreadyFilled(partnerHwnd, monIdx))
             return ""
     }
-    ; Close-fill skips strict validate (gapless already applied); new-window place keeps it.
+    ; Close-fill / Place skip strict validate wait (gapless already applied). Manual ^!#x
+    ; still uses WM_WaitValidateSnapBipartitionStrict via tile_snap.
     if (!acceptUnvalidated) {
         if (!WM_WaitValidateSnapBipartitionStrict(monIdx, newHwnd, partnerHwnd))
             return ""
@@ -2634,6 +2639,7 @@ AutoSlot_SnapPair_Impl(newHwnd, partnerHwnd, monIdx, acceptUnvalidated := false)
 }
 
 ; Demax OS-maximized and work-area-filled windows so 50/50 MoveWindow sticks.
+; Short sleeps: long 80/80/50 stacks made partner shrink visibly long before the new pane moved.
 AutoSlot_EnsureRestoredForSnap(hwnd, monIdx := 0) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
@@ -2642,13 +2648,13 @@ AutoSlot_EnsureRestoredForSnap(hwnd, monIdx := 0) {
         mm := WinGetMinMax("ahk_id " hwnd)
         if (mm = 1 || mm = -1) {
             WinRestore "ahk_id " hwnd
-            Sleep 80
+            Sleep 25
             changed := true
         }
         ; Restore-from-minimized often lands maximized — second pass.
         if (WinGetMinMax("ahk_id " hwnd) = 1) {
             WinRestore "ahk_id " hwnd
-            Sleep 80
+            Sleep 25
             changed := true
         }
     } catch {
@@ -2666,7 +2672,7 @@ AutoSlot_EnsureRestoredForSnap(hwnd, monIdx := 0) {
                 okMove := AutoSlot_MoveHwndToRect(hwnd, wl, wt, wr, half)
             }
             if (okMove) {
-                Sleep 50
+                Sleep 15
                 changed := true
             }
         } catch {
@@ -3329,10 +3335,12 @@ AutoSlot_FindHalfFullMonitor(excludeHwnd := 0) {
 }
 
 ; Snap a new window with an explicit partner (partner demaximizes to a half via SnapPair).
+; acceptUnvalidated: skip WaitValidate poll (up to ~400 ms) — gapless already placed both panes;
+; the strict wait made "partner shrinks, then long pause, then new window" feel on work PCs.
 AutoSlot_TrySnapNewWithPartner(hwnd, monIdx, partner, orderLabel := 0) {
     if (!partner || partner = hwnd)
         return false
-    pane := AutoSlot_SnapPair(hwnd, partner, monIdx)
+    pane := AutoSlot_SnapPair(hwnd, partner, monIdx, true)
     if (pane = "")
         return false
     AutoSlot_ClaimMonitor(monIdx)

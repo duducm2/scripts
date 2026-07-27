@@ -22,7 +22,7 @@
 
 **Root cause:** WinEvent `EVENT_OBJECT_SHOW` re-entered during `AutoSlot_Place` and ran full `PartitionOccupancy` → `OccupancyOnMonitor` per callback, starving Place.
 
-**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW. **SHOW defer:** WinEvent queues SHOW to `AutoSlot_ProcessShowPending` (50 ms, batch 12) so debounce timers are not starved by SHOW storms.
+**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW. **SHOW defer:** WinEvent queues SHOW to `AutoSlot_ProcessShowPending` (50 ms, batch 12) so debounce timers are not starved by SHOW storms. **Snap feel:** Place 50/50 uses `acceptUnvalidated` (skip ~400 ms strict validate poll) + shorter `EnsureRestoredForSnap` sleeps — avoids “partner shrinks, pause, then new window”. **Perf log:** do not FileAppend routine `ScheduleFromShow_skip occupied_mon=…` (spam starved Place on work).
 
 ## Place latency fix (keep this)
 
@@ -63,18 +63,19 @@ First line after reload must be `session_start env=work …` or `env=personal �
 
 **Log interpretation:**
 
-| Pattern                                                                        | Likely cause                                                    |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Large gap `ShellCREATED` → `ProcessPending_elig_ok` with many `EligRetry_fire` | App slow to get title (eligibility settle)                      |
-| `ProcessPending_elig_fail reason=excluded` repeating                           | Window wrongly excluded; never Places                           |
-| `ScheduleFromShow_skip occupied_mon=N`                                         | SHOW path blocked                                               |
-| `HandlePlaceRequest ipc path=file` without `ShellCREATED`                      | Cross-process / QL file IPC (1 s poll)                          |
-| `Place_after_occ_scan` with high `hwndTotal` / `teamsUiaMs`                    | Desktop enumeration or Teams UIA during occupancy               |
-| `Place_enter` → `Place_freeze_done` gap 20+ s, low internal `ms=`              | SHOW reentrancy during Place (fixed by Critical + SHOW defer)   |
-| `ScheduleFromShow_skip place_active` during Place                              | Expected — SHOW deferred until Place completes                  |
-| `ScheduleFromShow_skip occupied_mon=N via=cache`                               | Fast occupied path (cache hit)                                  |
-| `Place_exit path=snap` with high `snapMs`                                      | Snap validate / demax path                                      |
-| High `total=` but low `occBuildMs`                                             | Delay is **before** Place (debounce/eligibility), not occupancy |
+| Pattern                                                                        | Likely cause                                                      |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Large gap `ShellCREATED` → `ProcessPending_elig_ok` with many `EligRetry_fire` | App slow to get title (eligibility settle)                        |
+| `ProcessPending_elig_fail reason=excluded` repeating                           | Window wrongly excluded; never Places                             |
+| `ScheduleFromShow_skip occupied_mon=N`                                         | SHOW path blocked                                                 |
+| `HandlePlaceRequest ipc path=file` without `ShellCREATED`                      | Cross-process / QL file IPC (1 s poll)                            |
+| `Place_after_occ_scan` with high `hwndTotal` / `teamsUiaMs`                    | Desktop enumeration or Teams UIA during occupancy                 |
+| `Place_enter` → `Place_freeze_done` gap 20+ s, low internal `ms=`              | SHOW reentrancy during Place (fixed by Critical + SHOW defer)     |
+| `ScheduleFromShow_skip place_active` during Place                              | Expected — SHOW deferred until Place completes                    |
+| `ScheduleFromShow_skip occupied_mon=N via=cache`                               | Fast occupied path (cache hit)                                    |
+| `Place_exit path=snap` with high `snapMs`                                      | Snap demax Sleeps / validate wait (Place now skips validate poll) |
+| Flood of `ScheduleFromShow_skip occupied_mon=` then late ProcessPending        | FileAppend storm (routine occupied skips no longer logged)        |
+| High `total=` but low `occBuildMs`                                             | Delay is **before** Place (debounce/eligibility), not occupancy   |
 
 **Turn off after diagnosis:** set user env `AUTOSLOT_PERF_LOG=0` or sync when the debug pass is merged off.
 
