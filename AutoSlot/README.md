@@ -4,7 +4,7 @@ Optional auto-positioning for newly opened windows on multi-monitor setups. Incl
 
 **Authoritative behavior:** [`docs/canon/windows-rearrange.md`](../docs/canon/windows-rearrange.md) — read that before changing Place, heal, fill, or swap logic.
 
-**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — one-scan fill (`Ctrl+Alt+Win+6`), place-request poll, dense eligibility settle, and the **2026-07-27 work-PC latency fix** (SHOW reentrancy, occupancy cache, SHOW queue). Do not one-shot abandon eligibility or sparse 300/800/1500 retries.
+**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — one-scan fill (`Ctrl+Alt+Win+6`: hidden + visible unslotted), place-request poll, dense eligibility settle, and the **2026-07-27 work-PC latency fix** (SHOW reentrancy, occupancy cache, SHOW queue). Do not one-shot abandon eligibility or sparse 300/800/1500 retries.
 
 Detection/placement live in this folder. **50/50 snaps** reuse `WindowManagement\tile_snap.ahk` (same engine as `Ctrl+Alt+Win+X`).
 
@@ -25,7 +25,7 @@ From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF
 | Move to monitor           | Ctrl+Alt+Win+A/S/D/F                                                          |
 | User ignore list          | Win+Alt+Shift+L → **[R]** add / **[I]** manage (`autoslot_user_excludes.ini`) |
 
-Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: lone half + free slot → maximize that window; lone max → 50/50 with background. Details and busy overlays: canon doc above.
+Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: lone half + free slot → maximize that window; lone max / empty → fill from hidden or visible-unslotted background. Details and busy overlays: canon doc above.
 
 User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore by **process exe**; **[I]** opens a digit-remove list.
 

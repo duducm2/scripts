@@ -58,15 +58,15 @@ Key helpers: `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical`, `AutoSlot_Queue
 
 ## Efficiency pass (2026-07-24)
 
-| Canon                | Change                                                                                                                                                                                 |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                                                                      |
-| Repeated enumeration | `Ctrl+Alt+Win+6` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list                                                          |
-| Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search                                                 |
-| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                                                                   |
-| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                                                                       |
-| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                                                                           |
-| Place reentrancy     | `Critical` + `g_AutoSlotPlaceDepth` during Place; SHOW deferred while Place active; occupied-mon check uses cache / tracked / early-exit scan (not full `PartitionOccupancy` per SHOW) |
+| Canon                | Change                                                                                                                                                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                                                                                                                      |
+| Repeated enumeration | `Ctrl+Alt+Win+6` collects fill candidates **once** per pass (`AutoSlot_CollectFillCandidates` → `g_AutoSlotYBgRows`: hidden first, then visible unslotted); picks consume from that list; one QC backfill for remaining empty/lone-max |
+| Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search                                                                                                 |
+| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                                                                                                                   |
+| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                                                                                                                       |
+| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                                                                                                                           |
+| Place reentrancy     | `Critical` + `g_AutoSlotPlaceDepth` during Place; SHOW deferred while Place active; occupied-mon check uses cache / tracked / early-exit scan (not full `PartitionOccupancy` per SHOW)                                                 |
 
 ---
 
@@ -88,7 +88,7 @@ Explicit fill only (Ctrl+Alt+Win+6) for background import, Place empty/half rule
 
 ## Verification
 
-- Fill (Ctrl+Alt+Win+6): same fill outcomes; ideally one background collect per press
+- Fill (Ctrl+Alt+Win+6): same fill outcomes; ideally one background collect per press; visible unslotted floats fill empty/lone-max; QC backfill once if needed
 - Close/minimize: companion still heals; no background import
 - Suite leave: no `ScheduleRearrange` call
 - Cross-process place: PostMessage first; file poll still works slowly

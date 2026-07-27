@@ -870,19 +870,112 @@ AutoSlot_SwapQuietActive() {
 ; Ctrl+Alt+Win+6 when AutoSlot ON: fill underfilled ordinal slots from background only
 ; (never relocates windows already occupying slots). Returns { ok, message }.
 ; Prefer empty monitors before splitting a lone maximized (half-slot).
-; One background enumeration for the whole pass (efficiency-canon §3).
-AutoSlot_RunTileBackground() {
-    global g_AutoSlotYBgRows, g_AutoSlotYBgActive
-    if (!AutoSlot_IsEnabled())
-        return { ok: false, message: "AutoSlot is OFF" }
-    if (MonitorGetCount() <= 1)
-        return { ok: false, message: "Need more than one monitor for slot fill" }
-    filled := 0
-    healed := 0
-    skippedFull := 0
+; Candidates: hidden first, then visible unslotted. One collect + optional QC backfill.
+
+; HWNDs that currently occupy AutoSlot slots on ordinal monitors (stay put during fill).
+; Extras beyond 2 slots / covered-behind a lone max are NOT slotted.
+AutoSlot_BuildSlottedHwndSet() {
+    slotted := Map()
     ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    loop ordinalCount {
+        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
+        if (!monIdx)
+            continue
+        part := AutoSlot_PartitionOccupancy(monIdx)
+        if (part.filled.Length >= 1) {
+            for row in part.filled {
+                if (row.hwnd)
+                    slotted[Integer(row.hwnd)] := true
+            }
+            ; nonFilled behind a filled window do not occupy the free half — not slotted.
+            continue
+        }
+        if (part.nonFilled.Length = 1) {
+            if (part.nonFilled[1].hwnd)
+                slotted[Integer(part.nonFilled[1].hwnd)] := true
+            continue
+        }
+        if (part.nonFilled.Length >= 2) {
+            n := Min(2, part.nonFilled.Length)
+            loop n {
+                h := part.nonFilled[A_Index].hwnd
+                if (h)
+                    slotted[Integer(h)] := true
+            }
+        }
+    }
+    return slotted
+}
+
+; Fill candidates: hidden (minimized/covered) first, then visible unslotted floats.
+; List-open (Ctrl+Alt+Win+Y) keeps WM_CollectBackgroundWindows only.
+AutoSlot_CollectFillCandidates() {
+    hiddenRows := []
+    try hiddenRows := WM_CollectBackgroundWindows()
+    catch
+        hiddenRows := []
+    slotted := AutoSlot_BuildSlottedHwndSet()
+    seen := Map()
+    rows := []
+    for row in hiddenRows {
+        hwnd := 0
+        try hwnd := Integer(row.hwnd)
+        catch
+            continue
+        if (!hwnd || seen.Has(hwnd))
+            continue
+        seen[hwnd] := true
+        rows.Push(row)
+    }
+    hiddenCount := rows.Length
+    foreHwnd := 0
+    try foreHwnd := Integer(WinGetID("A"))
+    catch
+        foreHwnd := 0
+    unslottedCount := 0
+    try {
+        for hwnd in WinGetList() {
+            try hwnd := Integer(hwnd)
+            catch
+                continue
+            if (!hwnd || seen.Has(hwnd))
+                continue
+            if (foreHwnd && hwnd = foreHwnd)
+                continue
+            if (slotted.Has(hwnd))
+                continue
+            if (!AutoSlot_IsOccupancyCandidate(hwnd))
+                continue
+            title := ""
+            exe := ""
+            try title := WinGetTitle(hwnd)
+            catch
+                continue
+            if (title = "")
+                continue
+            try exe := WinGetProcessName("ahk_id " hwnd)
+            catch
+                exe := ""
+            try {
+                if (WM_BackgroundTitleIsExcluded(title, exe))
+                    continue
+            } catch {
+            }
+            rows.Push({ hwnd: hwnd, title: title, exe: exe })
+            seen[hwnd] := true
+            unslottedCount++
+        }
+    } catch {
+    }
+    return { rows: rows, hiddenCount: hiddenCount, unslottedCount: unslottedCount }
+}
+
+AutoSlot_ClassifyFillCapacity() {
     emptyMons := []
     halfMons := []
+    loneMaxMons := []
+    skippedFull := 0
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
     loop ordinalCount {
         monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
         if (!monIdx)
@@ -892,19 +985,76 @@ AutoSlot_RunTileBackground() {
             emptyMons.Push(monIdx)
             continue
         }
-        ; Lone maximized counts as free half even with covered windows behind it.
-        if (AutoSlot_MonitorFreeHalfPartner(monIdx)) {
+        partner := AutoSlot_MonitorFreeHalfPartner(monIdx)
+        if (partner) {
             halfMons.Push(monIdx)
+            if (AutoSlot_CompanionAlreadyFilled(partner, monIdx))
+                loneMaxMons.Push(monIdx)
             continue
         }
         skippedFull++
     }
-    bgRows := []
-    try bgRows := WM_CollectBackgroundWindows()
-    catch
-        bgRows := []
+    return {
+        emptyMons: emptyMons,
+        halfMons: halfMons,
+        loneMaxMons: loneMaxMons,
+        skippedFull: skippedFull,
+        ordinalCount: ordinalCount
+    }
+}
+
+AutoSlot_FillQualityLogPath() {
+    return A_ScriptDir "\.cursor\autoslot_fill_quality.log"
+}
+
+AutoSlot_WriteFillQualityLog(stats) {
+    path := AutoSlot_FillQualityLogPath()
+    try {
+        DirCreate(A_ScriptDir "\.cursor")
+        stamp := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
+        line := stamp
+            . " pass=" stats.pass
+            . " empty=" stats.empty
+            . " half=" stats.half
+            . " loneMax=" stats.loneMax
+            . " skippedFull=" stats.skippedFull
+            . " hidden=" stats.hidden
+            . " unslotted=" stats.unslotted
+            . " candLeft=" stats.candLeft
+            . " filled=" stats.filled
+            . " healed=" stats.healed
+            . " remainEmpty=" stats.remainEmpty
+            . " remainLoneMax=" stats.remainLoneMax
+            . "`n"
+        FileAppend(line, path, "UTF-8")
+    } catch {
+    }
+}
+
+AutoSlot_RunTileBackground() {
+    global g_AutoSlotYBgRows, g_AutoSlotYBgActive
+    if (!AutoSlot_IsEnabled())
+        return { ok: false, message: "AutoSlot is OFF" }
+    if (MonitorGetCount() <= 1)
+        return { ok: false, message: "Need more than one monitor for slot fill" }
+
+    cap := AutoSlot_ClassifyFillCapacity()
+    emptyMons := cap.emptyMons
+    halfMons := cap.halfMons
+    loneMaxMons := cap.loneMaxMons
+    skippedFull := cap.skippedFull
+    ordinalCount := cap.ordinalCount
+
+    collect := AutoSlot_CollectFillCandidates()
+    bgRows := collect.rows
+    hiddenCount := collect.hiddenCount
+    unslottedCount := collect.unslottedCount
+    candAtStart := bgRows.Length
+
     g_AutoSlotYBgRows := bgRows
     g_AutoSlotYBgActive := true
+    filled := 0
+    healed := 0
     try {
         for monIdx in emptyMons {
             result := AutoSlot_FillMonitorFromBackground(monIdx, true)
@@ -920,17 +1070,76 @@ AutoSlot_RunTileBackground() {
             else if (result = "ok")
                 filled++
         }
+
+        capAfter := AutoSlot_ClassifyFillCapacity()
+        candLeft := IsObject(g_AutoSlotYBgRows) ? g_AutoSlotYBgRows.Length : 0
+        AutoSlot_WriteFillQualityLog({
+            pass: "first",
+            empty: emptyMons.Length,
+            half: halfMons.Length,
+            loneMax: loneMaxMons.Length,
+            skippedFull: skippedFull,
+            hidden: hiddenCount,
+            unslotted: unslottedCount,
+            candLeft: candLeft,
+            filled: filled,
+            healed: healed,
+            remainEmpty: capAfter.emptyMons.Length,
+            remainLoneMax: capAfter.loneMaxMons.Length
+        })
+
+        ; QC backfill: empty + lone-max only (not lone-half — canon maximizes residual).
+        if (candLeft > 0 && (capAfter.emptyMons.Length > 0 || capAfter.loneMaxMons.Length > 0)) {
+            filledBefore := filled
+            healedBefore := healed
+            for monIdx in capAfter.emptyMons {
+                result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+                if (result = "ok")
+                    filled++
+                else if (result = "healed")
+                    healed++
+            }
+            for monIdx in capAfter.loneMaxMons {
+                result := AutoSlot_FillMonitorFromBackground(monIdx, true)
+                if (result = "healed")
+                    healed++
+                else if (result = "ok")
+                    filled++
+            }
+            capFinal := AutoSlot_ClassifyFillCapacity()
+            AutoSlot_WriteFillQualityLog({
+                pass: "backfill",
+                empty: capAfter.emptyMons.Length,
+                half: capAfter.halfMons.Length,
+                loneMax: capAfter.loneMaxMons.Length,
+                skippedFull: capAfter.skippedFull,
+                hidden: hiddenCount,
+                unslotted: unslottedCount,
+                candLeft: IsObject(g_AutoSlotYBgRows) ? g_AutoSlotYBgRows.Length : 0,
+                filled: filled - filledBefore,
+                healed: healed - healedBefore,
+                remainEmpty: capFinal.emptyMons.Length,
+                remainLoneMax: capFinal.loneMaxMons.Length
+            })
+        }
     } finally {
         g_AutoSlotYBgActive := false
         g_AutoSlotYBgRows := 0
     }
+
     total := filled + healed
     if (total = 0) {
         if (skippedFull >= ordinalCount && emptyMons.Length = 0 && halfMons.Length = 0)
             return { ok: false, message: "All ordinal slots full — nothing to fill" }
+        if (candAtStart = 0) {
+            if (halfMons.Length > 0 && emptyMons.Length = 0)
+                return { ok: false, message: "Could not expand or fill free half-slots" }
+            return { ok: false, noBackground: true,
+                message: "No background windows to fill free slots (visible floats may already be slotted or excluded)" }
+        }
         if (halfMons.Length > 0 && emptyMons.Length = 0)
             return { ok: false, message: "Could not expand or fill free half-slots" }
-        return { ok: false, noBackground: true, message: "No background windows to fill free slots" }
+        return { ok: false, message: "Could not place into free slots" }
     }
     if (filled = 0 && healed > 0)
         msg := "Expanded " healed " half-window(s) to full monitor"
@@ -3011,7 +3220,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     label := order > 0 ? order : monIdx
 
     ; Place freeze / claim cooldown: companion heal only (no background import),
-    ; unless the user explicitly requested fill (Y).
+    ; unless the user explicitly requested fill (Ctrl+Alt+Win+6).
     blockImport := !forceImport && (AutoSlot_PlaceFreezeActive() || AutoSlot_FillCooldownActive(monIdx))
 
     if (part.nonFilled.Length = 1) {
@@ -3045,7 +3254,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
             return "noop"
         }
         ; Lone half + free slot on this monitor: expand residual to both slots (maximize).
-        ; Do not import a background companion into that free half — Y fills by expanding.
+        ; Do not import a background companion into that free half — fill expands.
         if (AutoSlot_HealLoneCompanion(monIdx)) {
             if (forceImport)
                 AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
