@@ -13,7 +13,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 - AutoSlot **ON** (Window tools **Win+Alt+Shift+W** → **[5]**; preference in `assets/data/wm_autoslot.ini`).
 - **More than one** monitor.
 - Capacity: **2 slots** per ordinal monitor; up to **4** ordinals → **8** max.
-- Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Y / Ctrl+6). Windows hidden behind a maximized window do not fill the free half.
+- Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Ctrl+Alt+Win+6 fill / Ctrl+Alt+Win+Y list). Windows hidden behind a maximized window do not fill the free half.
 - Exclusions: ClipAngel, tool windows, dialog/Teams chrome noise, AutoHotkey GUIs / own PID — not moved and not occupancy. User ignore list via **Win+Alt+Shift+L** → **[R]** add / **[I]** manage (`assets/data/autoslot_user_excludes.ini`) has the same gate effect.
 
 ---
@@ -59,11 +59,11 @@ Maximizing one half of a registered pair **unregisters** the pair and **does not
 
 ## Explicit fill
 
-| Action                                    | Behavior                                                                                                                                                                                                                                                                                                |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ctrl+Alt+Win+Y** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window.                                                                                                       |
-| **Ctrl+Alt+Win+6** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+6 path.                                                                                                                                                     |
-| **Study Topic QuickLook** (`#!+X` / open) | After layout, **`QuickLook_ScheduleAutoSlotPlace`** (deferred ~400 / 1200 / 2500 / 4000 ms; PostMessage + file IPC) → `TryPlaceBackgroundHwnd`; AutoSlot **sticky-retries** until max/half geometry sticks (QL `PositionWindow` undoes size unless Maximized). Same empty / free-half policy as Ctrl+6. |
+| Action                                    | Behavior                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ctrl+Alt+Win+6** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty ordinals → import from background; **lone half + free slot → maximize that window** (both slots); lone maximized → 50/50 with a background window.                                                                                                                         |
+| **Ctrl+Alt+Win+Y** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). Lone half still pairs with the chosen window via Place/Ctrl+Y path.                                                                                                                                                                       |
+| **Study Topic QuickLook** (`#!+X` / open) | After layout, **`QuickLook_ScheduleAutoSlotPlace`** (deferred ~400 / 1200 / 2500 / 4000 ms; PostMessage + file IPC) → `TryPlaceBackgroundHwnd`; AutoSlot **sticky-retries** until max/half geometry sticks (QL `PositionWindow` undoes size unless Maximized). Same empty / free-half policy as Ctrl+Alt+Win+Y list open. |
 
 ---
 
@@ -83,7 +83,7 @@ While AutoSlot / WindowManagement resizes or snaps (Place maximize/SnapPair, hea
 
 See [`docs/canon/standard_information_display.md`](standard_information_display.md).
 
-Rearrange INFO toasts / Y-fill loading use `BANNER_ACCENT_INFO`.
+Rearrange INFO toasts / fill loading use `BANNER_ACCENT_INFO`.
 
 ---
 
@@ -94,8 +94,8 @@ Rearrange INFO toasts / Y-fill loading use `BANNER_ACCENT_INFO`.
 | New window                 | Empty → max; else free half → 50/50; else leave as-is |
 | Close / minimize of a pair | Heal leftover companion; no BG import                 |
 | Maximize one half          | Unregister pair; companion unchanged                  |
-| Y / menu [3]               | Empty → BG; lone half → maximize; lone max → 50/50 BG |
-| Ctrl+6 open                | Chosen HWND into free capacity                        |
+| Ctrl+Alt+Win+6 / menu [3]  | Empty → BG; lone half → maximize; lone max → 50/50 BG |
+| Ctrl+Alt+Win+Y open        | Chosen HWND into free capacity                        |
 | Suite move / ^!#x          | May swap FG layouts                                   |
 
 ---

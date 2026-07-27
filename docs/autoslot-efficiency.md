@@ -61,7 +61,7 @@ Key helpers: `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical`, `AutoSlot_Queue
 | Canon                | Change                                                                                                                                                                                 |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                                                                      |
-| Repeated enumeration | `Ctrl+Alt+Win+Y` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list                                                          |
+| Repeated enumeration | `Ctrl+Alt+Win+6` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list                                                          |
 | Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search                                                 |
 | Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                                                                   |
 | Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                                                                       |
@@ -84,11 +84,11 @@ Useful patterns: large gap before `ProcessPending_elig_ok` (eligibility settle);
 
 ## Unchanged policy
 
-Y-only background import, Place empty/half rules, heal-on-close/minimize, no paired auto-max, no swap `[F]`. Busy-all-monitors arranging banner stays on during maximize/snap/swap.
+Explicit fill only (Ctrl+Alt+Win+6) for background import, Place empty/half rules, heal-on-close/minimize, no paired auto-max, no swap `[F]`. Busy-all-monitors arranging banner stays on during maximize/snap/swap.
 
 ## Verification
 
-- Y: same fill outcomes; ideally one background collect per press
+- Fill (Ctrl+Alt+Win+6): same fill outcomes; ideally one background collect per press
 - Close/minimize: companion still heals; no background import
 - Suite leave: no `ScheduleRearrange` call
 - Cross-process place: PostMessage first; file poll still works slowly

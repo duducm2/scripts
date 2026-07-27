@@ -12,7 +12,7 @@
 ;   3) Else leave as-is ("grid full" — do not maximize over existing windows)
 ;
 ; Close / minimize: heal leftover snap companion only (silent). No automatic
-; background import — user fills free slots with Ctrl+Alt+Win+Y (forceImport).
+; background import — user fills free slots with Ctrl+Alt+Win+6 (forceImport).
 ;
 ; Maximizing one half of a 50/50 pair does NOT maximize the companion (pair breaks).
 ;
@@ -51,7 +51,7 @@ global g_AutoSlotLastToastMsg := ""
 global g_AutoSlotLastToastTick := 0
 global g_AutoSlotWasF11 := Map()          ; snap-pair hwnd → true while (or after) F11 fullscreen
 global g_AutoSlotF11RestorePending := Map()
-; Shared background rows for one Ctrl+Alt+Win+Y pass (avoid re-enumerating per monitor).
+; Shared background rows for one Ctrl+Alt+Win+6 pass (avoid re-enumerating per monitor).
 global g_AutoSlotYBgRows := 0
 global g_AutoSlotYBgActive := false
 ; Perf log: hwnd → origin tick for delta ms (Schedule / Place phases). Off unless diagnosing.
@@ -595,7 +595,7 @@ AutoSlot_OnDestroy(hwnd, fromShell := false) {
     healMon := (partnerMon >= 1) ? partnerMon : monIdx
     AutoSlot_ScheduleHealOnly(healMon)
     SetTimer(() => AutoSlot_HealLoneCompanion(healMon), -(AutoSlot_FILL_RETRY_MS + 200))
-    ; No automatic background import — user fills with Ctrl+Alt+Win+Y.
+    ; No automatic background import — user fills with Ctrl+Alt+Win+6.
 }
 
 ; Maximize a known leftover companion after its snap-pair partner closed.
@@ -814,7 +814,7 @@ AutoSlot_ProcessPairedMaximizePending(hwnd) {
 }
 
 ; When hwnd is (or became) maximized, break the 50/50 pair — do NOT maximize the companion.
-; User may maximize one half for focus; leftover half stays. Ctrl+Alt+Win+Y fills free capacity.
+; User may maximize one half for focus; leftover half stays. Ctrl+Alt+Win+6 fills free capacity.
 AutoSlot_OnPairedMaximize(hwnd) {
     global g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
     if (!AutoSlot_IsEnabled() || !hwnd)
@@ -864,10 +864,10 @@ AutoSlot_SwapQuietActive() {
     return g_AutoSlotSwapQuietUntil > 0 && A_TickCount < g_AutoSlotSwapQuietUntil
 }
 
-; Kept as no-ops so older call sites do not import backgrounds — removed; Y-only fill.
+; Kept as no-ops so older call sites do not import backgrounds — removed; explicit fill only (Ctrl+Alt+Win+6).
 ; (ScheduleRearrange / ScheduleFill stubs deleted in efficiency pass.)
 
-; Ctrl+Alt+Win+Y when AutoSlot ON: fill underfilled ordinal slots from background only
+; Ctrl+Alt+Win+6 when AutoSlot ON: fill underfilled ordinal slots from background only
 ; (never relocates windows already occupying slots). Returns { ok, message }.
 ; Prefer empty monitors before splitting a lone maximized (half-slot).
 ; One background enumeration for the whole pass (efficiency-canon §3).
@@ -2827,8 +2827,8 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 }
 
 ; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
-; forceImport: explicit user fill (Y / Ctrl+6) — ignore place freeze / fill cooldown.
-; When g_AutoSlotYBgActive, reuse g_AutoSlotYBgRows (one collect per Y pass); consume picked hwnds.
+; forceImport: explicit user fill (Ctrl+Alt+Win+6) — ignore place freeze / fill cooldown.
+; When g_AutoSlotYBgActive, reuse g_AutoSlotYBgRows (one collect per fill pass); consume picked hwnds.
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
     global g_AutoSlotYBgActive, g_AutoSlotYBgRows
     occupied := Map()
@@ -2883,7 +2883,7 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
             continue
         }
         ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
-        ; Explicit Y matches Ctrl+Alt+Win+6: clear stale pair and allow the pick.
+        ; Explicit fill (Ctrl+Alt+Win+6) matches list open (Ctrl+Alt+Win+Y): clear stale pair and allow the pick.
         if (!forceImport) {
             if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd)) {
                 i++
@@ -2994,7 +2994,7 @@ AutoSlot_BeginPlaceFreeze() {
 
 ; Promote free capacity: empty → import up to two; lone maximized → SnapPair BG;
 ; lone half + free slot → maximize residual (Y does not 50/50 a BG into that half).
-; forceImport: true for explicit Ctrl+Alt+Win+Y (ignore place freeze / fill cooldown).
+; forceImport: true for explicit Ctrl+Alt+Win+6 (ignore place freeze / fill cooldown).
 AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (monIdx < 1 || monIdx > MonitorGetCount() || MonitorGetCount() <= 1)
@@ -3163,7 +3163,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
 
 ; Place a user-picked background hwnd into free AutoSlot capacity (empty → max,
 ; one free half → 50/50 with residual). Returns true if placed into a slot.
-; Used by Ctrl+Alt+Win+6 list open when AutoSlot is ON.
+; Used by Ctrl+Alt+Win+Y list open when AutoSlot is ON.
 AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
     global g_AutoSlotRecent, g_AutoSlotUndo
     if (!AutoSlot_IsEnabled() || !hwnd || !WinExist("ahk_id " hwnd))

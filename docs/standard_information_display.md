@@ -195,7 +195,7 @@ These wrap `StandardLoadingBar_*` with preset styles:
 
 #### AutoSlot rearrangement accent
 
-**Window rearrangement** (AutoSlot place, companion heal, Ctrl+Alt+Win+Y / `#!+w` **[3]** background fill when AutoSlot is ON, monitor-swap result toasts) uses **`BANNER_ACCENT_INFO`** for both Loading Indication and Information Only, so rearrange feedback is visually distinct from generic yellow loading elsewhere in the suite. Failures still use `BANNER_ACCENT_ERROR`. Background import is **Y-only** (no auto fill-on-close / rearrange-import). Interactive undo key prompts may keep `BANNER_ACCENT_INTERMEDIATE`; result lines go through `AutoSlot_Toast` → INFO. Non-rearrange confirmations (e.g. AutoSlot toggle ON) may still use `BANNER_ACCENT_SUCCESS`.
+**Window rearrangement** (AutoSlot place, companion heal, Ctrl+Alt+Win+6 / `#!+w` **[3]** background fill when AutoSlot is ON, monitor-swap result toasts) uses **`BANNER_ACCENT_INFO`** for both Loading Indication and Information Only, so rearrange feedback is visually distinct from generic yellow loading elsewhere in the suite. Failures still use `BANNER_ACCENT_ERROR`. Background import is **explicit fill only (Ctrl+Alt+Win+6)** (no auto fill-on-close / rearrange-import). Interactive undo key prompts may keep `BANNER_ACCENT_INTERMEDIATE`; result lines go through `AutoSlot_Toast` → INFO. Non-rearrange confirmations (e.g. AutoSlot toggle ON) may still use `BANNER_ACCENT_SUCCESS`.
 
 ### Microsoft Teams.ahk
 

@@ -141,8 +141,8 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
 ;    - Ctrl+Alt+Win+X: Snap 50/50 pair (DWM gapless placement with margin + gutter)
 ;    - Ctrl+Alt+Win+Z: Window tools [1] maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-;    - Ctrl+Alt+Win+6: Window tools [2] hidden background window list (also Win+Alt+Shift+W → 2)
-;    - Ctrl+Alt+Win+Y: Window tools [3] tile background windows (also Win+Alt+Shift+W → 3)
+;    - Ctrl+Alt+Win+6: Window tools [3] tile background windows (also Win+Alt+Shift+W → 3)
+;    - Ctrl+Alt+Win+Y: Window tools [2] hidden background window list (also Win+Alt+Shift+W → 2)
 ;    - Ctrl+Alt+Win+P: Window tools [4] exit F11 fullscreen (also Win+Alt+Shift+W → 4)
 ;
 ; 6. ALT-TAB ALTERNATIVES
