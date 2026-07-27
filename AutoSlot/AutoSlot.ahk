@@ -61,6 +61,11 @@ global g_AutoSlotEligRetry := Map()
 ; Last BuildOccupancyByMonitor perf stats (hwndTotal, candidates, teamsUia*, buildMs).
 global g_AutoSlotPerfOccLast := Map()
 global g_AutoSlotPerfOccActive := false
+; Place critical section depth (WinEvent SHOW must not re-enter during Place).
+global g_AutoSlotPlaceDepth := 0
+; Cached BuildOccupancyByMonitor snapshot for SHOW occupied checks.
+global g_AutoSlotOccSnap := 0
+global g_AutoSlotOccSnapTick := 0
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -99,6 +104,7 @@ AutoSlot_PERF_LOG := _envPerf = "1"
 ; sparse 300/800/1500 gaps (those reintroduced multi-second Place lag).
 AutoSlot_ELIG_RETRY_POLL_MS := 100
 AutoSlot_ELIG_RETRY_BUDGET_MS := 2000
+AutoSlot_OCC_CACHE_MS := 150
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 global g_AutoSlotPlaceMsg := 0
 global g_AutoSlotStickyHwnd := 0
@@ -178,6 +184,21 @@ AutoSlot_PerfSessionStart() {
             " elig_budget=" AutoSlot_ELIG_RETRY_BUDGET_MS)
     } catch {
     }
+}
+
+; --- Place critical (block WinEvent SHOW reentrancy during Place) ------------
+
+AutoSlot_BeginPlaceCritical() {
+    global g_AutoSlotPlaceDepth
+    Critical "On"
+    g_AutoSlotPlaceDepth += 1
+}
+
+AutoSlot_EndPlaceCritical() {
+    global g_AutoSlotPlaceDepth
+    g_AutoSlotPlaceDepth := Max(0, g_AutoSlotPlaceDepth - 1)
+    if (g_AutoSlotPlaceDepth = 0)
+        Critical "Off"
 }
 
 ; --- Enable / persist --------------------------------------------------------
@@ -1169,7 +1190,7 @@ AutoSlot_Schedule(hwnd) {
 ; SHOW-only: activation of an existing co-occupant (e.g. 50/50 half via ^!#q/w/e/r)
 ; must not Place/maximize. Shell WINDOWCREATED still uses AutoSlot_Schedule directly.
 AutoSlot_ScheduleFromShow(hwnd) {
-    global g_AutoSlotHwndMon, g_AutoSlotEligRetry
+    global g_AutoSlotHwndMon, g_AutoSlotEligRetry, g_AutoSlotPlaceDepth
     if (!AutoSlot_IsEnabled()) {
         AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "disabled")
         return
@@ -1182,6 +1203,10 @@ AutoSlot_ScheduleFromShow(hwnd) {
         AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "single_monitor")
         return
     }
+    if (g_AutoSlotPlaceDepth > 0) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "place_active")
+        return
+    }
     if (g_AutoSlotHwndMon.Has(hwnd)) {
         AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "already_tracked")
         return
@@ -1192,13 +1217,30 @@ AutoSlot_ScheduleFromShow(hwnd) {
     }
     monIdx := AutoSlot_GetHwndMonitorIndex(hwnd)
     if (monIdx >= 1) {
-        others := AutoSlot_PartitionOccupancy(monIdx, hwnd)
-        if (others.filled.Length + others.nonFilled.Length >= 1) {
+        cacheHit := AutoSlot_MonitorOccupiedFromCache(monIdx, hwnd)
+        occupied := false
+        via := ""
+        if (cacheHit = "yes") {
+            occupied := true
+            via := "cache"
+        } else if (cacheHit != "no") {
+            if (AutoSlot_MonitorHasTrackedOccupant(monIdx, hwnd)) {
+                occupied := true
+                via := "tracked"
+            } else if (AutoSlot_MonitorHasOtherOccupant(monIdx, hwnd)) {
+                occupied := true
+                via := "scan"
+            }
+        }
+        if (occupied) {
             ; Already sharing this monitor — do not Place. Cache only eligible
             ; occupants (Teams/#32770 chrome must not seed HwndMon → false heal).
             if (AutoSlot_IsEligibleNewWindow(hwnd) || AutoSlot_IsOccupancyCandidate(hwnd))
                 AutoSlot_RememberHwndMon(hwnd)
-            AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "occupied_mon=" monIdx)
+            detail := "occupied_mon=" monIdx
+            if (via != "")
+                detail .= " via=" via
+            AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", detail)
             return
         }
     }
@@ -1301,8 +1343,13 @@ AutoSlot_ProcessPending(hwnd) {
     AutoSlot_PerfLog(hwnd, "ProcessPending_elig_ok")
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
-    AutoSlot_RememberHwndMon(hwnd)
-    AutoSlot_Place(hwnd)
+    AutoSlot_BeginPlaceCritical()
+    try {
+        AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_Place(hwnd)
+    } finally {
+        AutoSlot_EndPlaceCritical()
+    }
 }
 
 AutoSlot_PruneRecent() {
@@ -1682,10 +1729,63 @@ AutoSlot_OccupancyOnMonitor(monIdx, excludeHwnd := 0) {
     return rows
 }
 
+; SHOW occupied gate: "yes" / "no" from fresh cache, "" if stale.
+AutoSlot_MonitorOccupiedFromCache(monIdx, excludeHwnd := 0) {
+    global g_AutoSlotOccSnap, g_AutoSlotOccSnapTick
+    if (!IsObject(g_AutoSlotOccSnap) || A_TickCount - g_AutoSlotOccSnapTick > AutoSlot_OCC_CACHE_MS)
+        return ""
+    rows := g_AutoSlotOccSnap.Has(monIdx) ? g_AutoSlotOccSnap[monIdx] : []
+    for row in rows {
+        if (IsObject(row) && row.hwnd && row.hwnd != excludeHwnd)
+            return "yes"
+    }
+    return "no"
+}
+
+AutoSlot_MonitorHasTrackedOccupant(monIdx, excludeHwnd := 0) {
+    global g_AutoSlotHwndMon
+    for h, m in g_AutoSlotHwndMon {
+        if (h = excludeHwnd || m != monIdx)
+            continue
+        if (DllCall("IsWindow", "ptr", h))
+            return true
+    }
+    return false
+}
+
+; Early-exit WinGetList: any other occupancy candidate on monIdx (no partition).
+AutoSlot_MonitorHasOtherOccupant(monIdx, excludeHwnd := 0) {
+    if (monIdx < 1 || monIdx > MonitorGetCount())
+        return false
+    MonitorGet monIdx, &ml, &mt, &mr, &mb
+    cx := (ml + mr) // 2
+    cy := (mt + mb) // 2
+    point64 := (cy & 0xFFFFFFFF) << 32 | (cx & 0xFFFFFFFF)
+    hTarget := DllCall("MonitorFromPoint", "int64", point64, "uint", 2, "ptr")
+    for hwnd in WinGetList() {
+        if (!AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd))
+            continue
+        try {
+            rect := Buffer(16, 0)
+            if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+                continue
+            wcx := (NumGet(rect, 0, "int") + NumGet(rect, 8, "int")) // 2
+            wcy := (NumGet(rect, 4, "int") + NumGet(rect, 12, "int")) // 2
+            wPoint := (wcy & 0xFFFFFFFF) << 32 | (wcx & 0xFFFFFFFF)
+            hMon := DllCall("MonitorFromPoint", "int64", wPoint, "uint", 2, "ptr")
+            if (Integer(hMon) = Integer(hTarget))
+                return true
+        } catch {
+            continue
+        }
+    }
+    return false
+}
+
 ; One WinGetList for the whole desktop; bucket occupancy rows by monitor index.
 ; Place / TryPlace empty+half search use this once (avoid N+M full enumerations).
 AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
-    global g_AutoSlotPerfOccLast, g_AutoSlotPerfOccActive
+    global g_AutoSlotPerfOccLast, g_AutoSlotPerfOccActive, g_AutoSlotOccSnap, g_AutoSlotOccSnapTick
     byMon := Map()
     count := 0
     try count := MonitorGetCount()
@@ -1755,6 +1855,8 @@ AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
         g_AutoSlotPerfOccLast["buildMs"] := A_TickCount - tBuild
         g_AutoSlotPerfOccActive := false
     }
+    g_AutoSlotOccSnap := byMon
+    g_AutoSlotOccSnapTick := A_TickCount
     return byMon
 }
 
@@ -3097,57 +3199,62 @@ AutoSlot_TryPlaceBackgroundHwnd(hwnd) {
     g_AutoSlotRecent[hwnd] := A_TickCount
     AutoSlot_PruneRecent()
 
-    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
-    snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
-    emptyMon := 0
-    emptyOrder := 0
-    halfMon := 0
-    halfOrder := 0
-    halfPartner := 0
-    loop ordinalCount {
-        order := A_Index
-        monIdx := AutoSlot_GetMonitorIndexByOrder(order)
-        if (!monIdx)
-            continue
-        rows := snap.Has(monIdx) ? snap[monIdx] : []
-        part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
-        ; Same empty / free-half policy as AutoSlot_Place (empty first, then free half).
-        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
-            if (!emptyMon) {
-                emptyMon := monIdx
-                emptyOrder := order
+    AutoSlot_BeginPlaceCritical()
+    try {
+        ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+        snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
+        emptyMon := 0
+        emptyOrder := 0
+        halfMon := 0
+        halfOrder := 0
+        halfPartner := 0
+        loop ordinalCount {
+            order := A_Index
+            monIdx := AutoSlot_GetMonitorIndexByOrder(order)
+            if (!monIdx)
+                continue
+            rows := snap.Has(monIdx) ? snap[monIdx] : []
+            part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
+            ; Same empty / free-half policy as AutoSlot_Place (empty first, then free half).
+            if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
+                if (!emptyMon) {
+                    emptyMon := monIdx
+                    emptyOrder := order
+                }
+                continue
             }
-            continue
-        }
-        if (!halfMon) {
-            partner := AutoSlot_FreeHalfPartnerFromPart(part)
-            if (partner) {
-                halfMon := monIdx
-                halfOrder := order
-                halfPartner := partner
+            if (!halfMon) {
+                partner := AutoSlot_FreeHalfPartnerFromPart(part)
+                if (partner) {
+                    halfMon := monIdx
+                    halfOrder := order
+                    halfPartner := partner
+                }
             }
         }
+        if (emptyMon) {
+            if (!AutoSlot_MaximizeOnMonitor(hwnd, emptyMon, false))
+                return false
+            AutoSlot_ClaimMonitor(emptyMon)
+            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_Toast("ℹ️ Opened → M" emptyOrder " (maximized)")
+            return true
+        }
+        if (halfMon && halfPartner) {
+            pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon, true)
+            if (pane = "")
+                return false
+            g_AutoSlotUndo := 0
+            AutoSlot_ClaimMonitor(halfMon)
+            AutoSlot_RememberHwndMon(hwnd)
+            AutoSlot_RememberHwndMon(halfPartner)
+            AutoSlot_Toast("ℹ️ Opened → M" halfOrder " (50/50)")
+            return true
+        }
+        return false
+    } finally {
+        AutoSlot_EndPlaceCritical()
     }
-    if (emptyMon) {
-        if (!AutoSlot_MaximizeOnMonitor(hwnd, emptyMon, false))
-            return false
-        AutoSlot_ClaimMonitor(emptyMon)
-        AutoSlot_RememberHwndMon(hwnd)
-        AutoSlot_Toast("ℹ️ Opened → M" emptyOrder " (maximized)")
-        return true
-    }
-    if (halfMon && halfPartner) {
-        pane := AutoSlot_SnapPair(hwnd, halfPartner, halfMon, true)
-        if (pane = "")
-            return false
-        g_AutoSlotUndo := 0
-        AutoSlot_ClaimMonitor(halfMon)
-        AutoSlot_RememberHwndMon(hwnd)
-        AutoSlot_RememberHwndMon(halfPartner)
-        AutoSlot_Toast("ℹ️ Opened → M" halfOrder " (50/50)")
-        return true
-    }
-    return false
 }
 
 ; Partner to 50/50 a new window with on monIdx, ignoring windows hidden behind a
@@ -3196,94 +3303,100 @@ AutoSlot_Place(hwnd) {
     if (ordinalCount < 2)
         return
 
-    AutoSlot_PerfLog(hwnd, "Place_enter")
-    t0 := A_TickCount
-    g_AutoSlotUndo := 0
-    msg := ""
-    AutoSlot_RememberHwndMon(hwnd)
-    AutoSlot_BeginPlaceFreeze()
-    AutoSlot_PerfLog(hwnd, "Place_freeze_done", "ms=" (A_TickCount - t0))
+    AutoSlot_BeginPlaceCritical()
+    try {
+        AutoSlot_PerfLog(hwnd, "Place_enter")
+        t0 := A_TickCount
+        g_AutoSlotUndo := 0
+        msg := ""
+        AutoSlot_RememberHwndMon(hwnd)
+        AutoSlot_BeginPlaceFreeze()
+        AutoSlot_PerfLog(hwnd, "Place_freeze_done", "ms=" (A_TickCount - t0))
 
-    ; One desktop occupancy walk for empty + free-half search (H1).
-    snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
-    emptyOrder := 0
-    emptyMon := 0
-    halfOrder := 0
-    halfMon := 0
-    halfPartner := 0
+        ; One desktop occupancy walk for empty + free-half search (H1).
+        snap := AutoSlot_BuildOccupancyByMonitor(hwnd)
+        emptyOrder := 0
+        emptyMon := 0
+        halfOrder := 0
+        halfMon := 0
+        halfPartner := 0
 
-    loop ordinalCount {
-        order := A_Index
-        monIdx := AutoSlot_GetMonitorIndexByOrder(order)
-        if (!monIdx)
-            continue
-        rows := snap.Has(monIdx) ? snap[monIdx] : []
-        part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
-        if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
-            if (!emptyMon) {
-                emptyOrder := order
-                emptyMon := monIdx
+        loop ordinalCount {
+            order := A_Index
+            monIdx := AutoSlot_GetMonitorIndexByOrder(order)
+            if (!monIdx)
+                continue
+            rows := snap.Has(monIdx) ? snap[monIdx] : []
+            part := AutoSlot_PartitionOccupancyRows(rows, monIdx)
+            if (part.filled.Length = 0 && part.nonFilled.Length = 0) {
+                if (!emptyMon) {
+                    emptyOrder := order
+                    emptyMon := monIdx
+                }
+                continue
             }
-            continue
-        }
-        if (!halfPartner) {
-            partner := AutoSlot_FreeHalfPartnerFromPart(part)
-            if (partner) {
-                halfOrder := order
-                halfMon := monIdx
-                halfPartner := partner
+            if (!halfPartner) {
+                partner := AutoSlot_FreeHalfPartnerFromPart(part)
+                if (partner) {
+                    halfOrder := order
+                    halfMon := monIdx
+                    halfPartner := partner
+                }
             }
         }
-    }
-    occDetail := "ms=" (A_TickCount - t0) " emptyMon=" emptyMon " halfPartner=" halfPartner
-    if (AutoSlot_PERF_LOG) {
-        global g_AutoSlotPerfOccLast
-        if (IsObject(g_AutoSlotPerfOccLast) && g_AutoSlotPerfOccLast.Count) {
-            occDetail .= " hwndTotal=" g_AutoSlotPerfOccLast["hwndTotal"]
-                . " candidates=" g_AutoSlotPerfOccLast["candidates"]
-                . " teamsUiaCalls=" g_AutoSlotPerfOccLast["teamsUiaCalls"]
-                . " teamsUiaMs=" g_AutoSlotPerfOccLast["teamsUiaMs"]
-                . " occBuildMs=" g_AutoSlotPerfOccLast["buildMs"]
+        occDetail := "ms=" (A_TickCount - t0) " emptyMon=" emptyMon " halfPartner=" halfPartner
+        if (AutoSlot_PERF_LOG) {
+            global g_AutoSlotPerfOccLast
+            if (IsObject(g_AutoSlotPerfOccLast) && g_AutoSlotPerfOccLast.Count) {
+                occDetail .= " hwndTotal=" g_AutoSlotPerfOccLast["hwndTotal"]
+                    . " candidates=" g_AutoSlotPerfOccLast["candidates"]
+                    . " teamsUiaCalls=" g_AutoSlotPerfOccLast["teamsUiaCalls"]
+                    . " teamsUiaMs=" g_AutoSlotPerfOccLast["teamsUiaMs"]
+                    . " occBuildMs=" g_AutoSlotPerfOccLast["buildMs"]
+            }
         }
-    }
-    AutoSlot_PerfLog(hwnd, "Place_after_occ_scan", occDetail)
+        AutoSlot_PerfLog(hwnd, "Place_after_occ_scan", occDetail)
 
-    if (emptyMon) {
-        tMax := A_TickCount
-        tBanner := A_TickCount
-        if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon)) {
-            AutoSlot_ClaimMonitor(emptyMon)
-            msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
-        }
-        bannerMs := A_TickCount - tBanner
-        AutoSlot_PerfLog(hwnd, "Place_maximize_done", "ms=" (A_TickCount - tMax) " banner_ms=" bannerMs)
-        AutoSlot_Toast(msg)
-        AutoSlot_PerfLog(hwnd, "Place_exit", "path=maximize total=" (A_TickCount - t0) " banner_ms=" bannerMs)
-        AutoSlot_PerfClearOrigin(hwnd)
-        return
-    }
-
-    if (halfMon && halfPartner) {
-        tSnap := A_TickCount
-        tBanner := A_TickCount
-        if (AutoSlot_TrySnapNewWithPartner(hwnd, halfMon, halfPartner, halfOrder)) {
+        if (emptyMon) {
+            tMax := A_TickCount
+            tBanner := A_TickCount
+            if (AutoSlot_MaximizeOnMonitor(hwnd, emptyMon)) {
+                AutoSlot_ClaimMonitor(emptyMon)
+                msg := "ℹ️ Auto-slotted → M" emptyOrder " (maximized)"
+            }
             bannerMs := A_TickCount - tBanner
-            AutoSlot_RememberHwndMon(hwnd)
-            AutoSlot_RememberHwndMon(halfPartner)
-            msg := "ℹ️ Auto-slotted → M" halfOrder " (50/50)"
+            AutoSlot_PerfLog(hwnd, "Place_maximize_done", "ms=" (A_TickCount - tMax) " banner_ms=" bannerMs)
             AutoSlot_Toast(msg)
-            AutoSlot_PerfLog(hwnd, "Place_exit", "path=snap total=" (A_TickCount - t0)
-            " snapMs=" (A_TickCount - tSnap) " banner_ms=" bannerMs)
+            AutoSlot_PerfLog(hwnd, "Place_exit", "path=maximize total=" (A_TickCount - t0) " banner_ms=" bannerMs)
             AutoSlot_PerfClearOrigin(hwnd)
             return
         }
-        AutoSlot_PerfLog(hwnd, "Place_snap_failed", "ms=" (A_TickCount - tSnap) " banner_ms=" (A_TickCount - tBanner))
-    }
 
-    ; No empty ordinal and no free half — leave window as the OS opened it
-    ; (do not maximize over an existing pair / full monitor).
-    AutoSlot_PerfLog(hwnd, "Place_exit", "path=leave total=" (A_TickCount - t0))
-    AutoSlot_PerfClearOrigin(hwnd)
+        if (halfMon && halfPartner) {
+            tSnap := A_TickCount
+            tBanner := A_TickCount
+            if (AutoSlot_TrySnapNewWithPartner(hwnd, halfMon, halfPartner, halfOrder)) {
+                bannerMs := A_TickCount - tBanner
+                AutoSlot_RememberHwndMon(hwnd)
+                AutoSlot_RememberHwndMon(halfPartner)
+                msg := "ℹ️ Auto-slotted → M" halfOrder " (50/50)"
+                AutoSlot_Toast(msg)
+                AutoSlot_PerfLog(hwnd, "Place_exit", "path=snap total=" (A_TickCount - t0)
+                " snapMs=" (A_TickCount - tSnap) " banner_ms=" bannerMs)
+                AutoSlot_PerfClearOrigin(hwnd)
+                return
+            }
+            AutoSlot_PerfLog(hwnd, "Place_snap_failed", "ms=" (A_TickCount - tSnap) " banner_ms=" (A_TickCount -
+                tBanner))
+        }
+
+        ; No empty ordinal and no free half — leave window as the OS opened it
+        ; (do not maximize over an existing pair / full monitor).
+        AutoSlot_PerfLog(hwnd, "Place_exit", "path=leave total=" (A_TickCount - t0))
+        AutoSlot_PerfClearOrigin(hwnd)
+    } finally {
+        AutoSlot_EndPlaceCritical()
+    }
 }
 
 ; Auto-execute when #included.
