@@ -88,10 +88,12 @@ AutoSlot_MAX_ORDINAL := 4
 AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
 AutoSlot_STICKY_PLACE_MS := 400
 AutoSlot_STICKY_PLACE_MAX := 12
-; Place timing log → .cursor\autoslot_perf.log. Auto-on at work; force with env AUTOSLOT_PERF_LOG=1.
+; Place timing log → .cursor\autoslot_perf.log. Auto-on at work; personal: env AUTOSLOT_PERF_LOG=1
+; or empty file .cursor\autoslot_perf_debug (gitignored). Disable: AUTOSLOT_PERF_LOG=0.
 _envPerf := Trim(EnvGet("AUTOSLOT_PERF_LOG"))
 AutoSlot_PERF_LOG := _envPerf = "1"
     || (_envPerf != "0" && IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+    || (_envPerf != "0" && FileExist(A_ScriptDir "\.cursor\autoslot_perf_debug"))
 ; Eligibility settle after IsEligibleNewWindow miss: poll every POLL_MS until BUDGET_MS
 ; from first miss (empty title / HWND not ready). Do not one-shot abandon; do not use
 ; sparse 300/800/1500 gaps (those reintroduced multi-second Place lag).
@@ -128,7 +130,10 @@ AutoSlot_PerfLog(hwnd, phase, detail := "") {
     try {
         DirCreate(A_ScriptDir "\.cursor")
         FileAppend(line "`n", path, "UTF-8")
-    } catch {
+    } catch as err {
+        try OutputDebug("AutoSlot_PerfLog failed: " err.Message " phase=" phase)
+        catch {
+        }
     }
 }
 
@@ -1116,10 +1121,18 @@ AutoSlot_CompanionAlreadyFilled(hwnd, monIdx) {
 AutoSlot_Schedule(hwnd) {
     global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHwndMon, g_AutoSlotJustRestored,
         g_AutoSlotEligRetry
-    if (!AutoSlot_IsEnabled())
+    if (!AutoSlot_IsEnabled()) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "disabled")
         return
-    if (!hwnd || MonitorGetCount() <= 1)
+    }
+    if (!hwnd) {
+        AutoSlot_PerfLog(0, "Schedule_skip", "invalid_hwnd")
         return
+    }
+    if (MonitorGetCount() <= 1) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "single_monitor")
+        return
+    }
     ; Already tracked — ignore SHOW spam from activation, not a new window.
     if (g_AutoSlotHwndMon.Has(hwnd)) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "already_tracked")
@@ -1157,10 +1170,18 @@ AutoSlot_Schedule(hwnd) {
 ; must not Place/maximize. Shell WINDOWCREATED still uses AutoSlot_Schedule directly.
 AutoSlot_ScheduleFromShow(hwnd) {
     global g_AutoSlotHwndMon, g_AutoSlotEligRetry
-    if (!AutoSlot_IsEnabled())
+    if (!AutoSlot_IsEnabled()) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "disabled")
         return
-    if (!hwnd || MonitorGetCount() <= 1)
+    }
+    if (!hwnd) {
+        AutoSlot_PerfLog(0, "ScheduleFromShow_skip", "invalid_hwnd")
         return
+    }
+    if (MonitorGetCount() <= 1) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "single_monitor")
+        return
+    }
     if (g_AutoSlotHwndMon.Has(hwnd)) {
         AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "already_tracked")
         return
@@ -1243,14 +1264,19 @@ AutoSlot_ProcessPending(hwnd) {
     if (g_AutoSlotPending.Has(hwnd))
         g_AutoSlotPending.Delete(hwnd)
     AutoSlot_PerfLog(hwnd, "ProcessPending_enter")
-    if (!AutoSlot_IsEnabled())
+    if (!AutoSlot_IsEnabled()) {
+        AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "disabled")
         return
+    }
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+        AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "invalid_hwnd")
         AutoSlot_ClearEligRetry(hwnd)
         return
     }
-    if (MonitorGetCount() <= 1)
+    if (MonitorGetCount() <= 1) {
+        AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "single_monitor")
         return
+    }
     if (g_AutoSlotRecent.Has(hwnd) && A_TickCount - g_AutoSlotRecent[hwnd] < AutoSlot_RECENT_MS) {
         AutoSlot_PerfLog(hwnd, "ProcessPending_skip", "recent")
         AutoSlot_ClearEligRetry(hwnd)
