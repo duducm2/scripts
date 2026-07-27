@@ -6,14 +6,23 @@
 
 ## Changes
 
-| Canon                | Change                                                                                                                                 |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                      |
-| Repeated enumeration | `Ctrl+Alt+Win+Y` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list          |
-| Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search |
-| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                   |
-| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                       |
-| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                           |
+| Canon                | Change                                                                                                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dead paths           | Removed no-op `ScheduleRearrange` / `ScheduleFill` / `ProcessFill*` / `RearrangeUnderfilled` and suite call sites                                                                      |
+| Repeated enumeration | `Ctrl+Alt+Win+Y` collects `WM_CollectBackgroundWindows` **once** per pass (`g_AutoSlotYBgRows`); picks consume from that list                                                          |
+| Place occupancy      | `AutoSlot_Place` / `TryPlaceBackgroundHwnd` use **one** `WinGetList` snapshot (`BuildOccupancyByMonitor`) for empty + free-half search                                                 |
+| Heal accounting      | Fill returns `"healed"` for lone-half expand so Y need not re-partition before/after                                                                                                   |
+| Polling / file IPC   | Place-request file poll slowed **200 ms → 1000 ms** (PostMessage remains preferred; file is Shift keys fallback)                                                                       |
+| Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                                                                           |
+| Place reentrancy     | `Critical` + `g_AutoSlotPlaceDepth` during Place; SHOW deferred while Place active; occupied-mon check uses cache / tracked / early-exit scan (not full `PartitionOccupancy` per SHOW) |
+
+## Place reentrancy fix (keep this)
+
+**Symptom (work log):** `Place_enter` then 20+ s wall gap before `Place_freeze_done`, while internal `ms=797`. `ProcessPending_elig_ok` without `Place_enter` on sibling hwnds. SHOW storm: dozens of `ScheduleFromShow_skip occupied_mon=N`.
+
+**Root cause:** WinEvent `EVENT_OBJECT_SHOW` re-entered during `AutoSlot_Place` and ran full `PartitionOccupancy` → `OccupancyOnMonitor` per callback, starving Place.
+
+**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW.
 
 ## Place latency fix (keep this)
 
@@ -61,6 +70,9 @@ First line after reload must be `session_start env=work …` or `env=personal �
 | `ScheduleFromShow_skip occupied_mon=N`                                         | SHOW path blocked                                               |
 | `HandlePlaceRequest ipc path=file` without `ShellCREATED`                      | Cross-process / QL file IPC (1 s poll)                          |
 | `Place_after_occ_scan` with high `hwndTotal` / `teamsUiaMs`                    | Desktop enumeration or Teams UIA during occupancy               |
+| `Place_enter` → `Place_freeze_done` gap 20+ s, low internal `ms=`              | SHOW reentrancy during Place (fixed by Critical + SHOW defer)   |
+| `ScheduleFromShow_skip place_active` during Place                              | Expected — SHOW deferred until Place completes                  |
+| `ScheduleFromShow_skip occupied_mon=N via=cache`                               | Fast occupied path (cache hit)                                  |
 | `Place_exit path=snap` with high `snapMs`                                      | Snap validate / demax path                                      |
 | High `total=` but low `occBuildMs`                                             | Delay is **before** Place (debounce/eligibility), not occupancy |
 
