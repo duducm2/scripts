@@ -1,11 +1,145 @@
-﻿2026-07-27 09:31:57 +0ms session_start env=personal computer=EDUARDO monitors=1 debounce=250 elig_poll=100 elig_budget=2000
-2026-07-27 09:31:57 +0ms hwnd=591550 ScheduleFromShow_skip single_monitor
-2026-07-27 09:31:58 +250ms hwnd=591550 ScheduleFromShow_skip single_monitor
-2026-07-27 09:31:59 +0ms hwnd=66094 ScheduleFromShow_skip single_monitor
-2026-07-27 09:31:59 +0ms hwnd=394080 ScheduleFromShow_skip single_monitor
-2026-07-27 09:31:59 +250ms hwnd=394080 ScheduleFromShow_skip single_monitor
-2026-07-27 09:32:00 +0ms hwnd=657062 ScheduleFromShow_skip single_monitor
-2026-07-27 09:32:00 +266ms hwnd=657062 ScheduleFromShow_skip single_monitor
-2026-07-27 09:32:01 +0ms hwnd=591546 ScheduleFromShow_skip single_monitor
-2026-07-27 09:32:01 +0ms hwnd=526696 ScheduleFromShow_skip single_monitor
-2026-07-27 09:32:01 +0ms hwnd=983940 ScheduleFromShow_skip single_monitor
+﻿2026-07-27 09:27:42 +0ms session_start env=work computer=CA-C-00806 monitors=4 debounce=250 elig_poll=100 elig_budget=2000
+2026-07-27 09:27:43 +0ms hwnd=1314116 ScheduleFromShow_skip occupied_mon=4 via=scan
+2026-07-27 09:27:43 +609ms hwnd=1314116 ScheduleFromShow_skip occupied_mon=4 via=scan
+2026-07-27 09:27:47 +0ms hwnd=463126 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:47 +0ms hwnd=397384 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:47 +0ms hwnd=463344 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:27:47 +0ms hwnd=790240 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:47 +0ms hwnd=2163108 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:27:47 +0ms hwnd=594196 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:48 +0ms hwnd=330516 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:48 +265ms hwnd=330516 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:48 +0ms hwnd=396052 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:49 +0ms hwnd=659732 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:27:49 +0ms hwnd=2294180 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:49 +0ms hwnd=786810 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:27:49 +266ms hwnd=396052 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:27:49 +0ms hwnd=393782 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:52 +0ms hwnd=132100 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:27:58 +0ms hwnd=725454 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:59 +593ms hwnd=725454 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:59 +0ms hwnd=790990 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:59 +250ms hwnd=790990 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:27:59 +0ms hwnd=856526 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:00 +281ms hwnd=856526 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:00 +0ms hwnd=462540 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:00 +0ms hwnd=200590 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:01 +0ms hwnd=201186 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:01 +0ms hwnd=397346 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:02 +1547ms hwnd=201186 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:02 +0ms hwnd=266722 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:02 +1797ms hwnd=397346 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:02 +250ms hwnd=266722 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:03 +0ms hwnd=397570 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:04 +1438ms hwnd=397570 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:04 +0ms hwnd=463106 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:05 +250ms hwnd=463106 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:06 +0ms hwnd=528642 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:06 +266ms hwnd=528642 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:09 +0ms hwnd=594178 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:09 +265ms hwnd=594178 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:09 +0ms hwnd=266740 ShellCREATED
+2026-07-27 09:28:09 +0ms hwnd=266740 Schedule debounce=250
+2026-07-27 09:28:09 +16ms hwnd=266740 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:09 +0ms hwnd=528076 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:09 +0ms hwnd=266358 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:10 +266ms hwnd=266740 ProcessPending_enter
+2026-07-27 09:28:10 +266ms hwnd=266740 ProcessPending_elig_ok
+2026-07-27 09:28:10 +281ms hwnd=266740 Place_enter
+2026-07-27 09:28:10 +297ms hwnd=266740 Place_freeze_done ms=0
+2026-07-27 09:28:10 +0ms hwnd=2165738 ScheduleFromShow_skip place_active
+2026-07-27 09:28:10 +0ms hwnd=397552 ScheduleFromShow_skip place_active
+2026-07-27 09:28:10 +0ms hwnd=397794 ScheduleFromShow_skip place_active
+2026-07-27 09:28:10 +0ms hwnd=2231274 ScheduleFromShow_skip place_active
+2026-07-27 09:28:10 +1078ms hwnd=266740 Place_after_occ_scan ms=781 emptyMon=0 halfPartner=330084 hwndTotal=24 candidates=9 teamsUiaCalls=0 teamsUiaMs=0 occBuildMs=766
+2026-07-27 09:28:10 +0ms hwnd=332046 ScheduleFromShow_skip place_active
+2026-07-27 09:28:10 +0ms hwnd=266742 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=266556 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=463330 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=397050 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=459286 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=1117894 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=524886 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +0ms hwnd=1183430 ScheduleFromShow_skip place_active
+2026-07-27 09:28:11 +1969ms hwnd=266740 Place_exit path=snap total=1672 snapMs=875 banner_ms=859
+2026-07-27 09:28:11 +1859ms hwnd=266358 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:12 +0ms hwnd=786874 ShellCREATED
+2026-07-27 09:28:12 +0ms hwnd=786874 Schedule debounce=250
+2026-07-27 09:28:12 +15ms hwnd=786874 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:12 +0ms hwnd=987598 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:12 +0ms hwnd=332092 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:13 +1609ms hwnd=786874 ProcessPending_enter
+2026-07-27 09:28:13 +1609ms hwnd=786874 ProcessPending_elig_ok
+2026-07-27 09:28:13 +1625ms hwnd=786874 Place_enter
+2026-07-27 09:28:13 +0ms hwnd=397582 ScheduleFromShow_skip place_active
+2026-07-27 09:28:13 +0ms hwnd=594160 ScheduleFromShow_skip place_active
+2026-07-27 09:28:13 +0ms hwnd=2427882 ScheduleFromShow_skip place_active
+2026-07-27 09:28:13 +0ms hwnd=463118 ScheduleFromShow_skip place_active
+2026-07-27 09:28:13 +1687ms hwnd=786874 Place_freeze_done ms=0
+2026-07-27 09:28:14 +2375ms hwnd=786874 Place_after_occ_scan ms=688 emptyMon=0 halfPartner=133450 hwndTotal=25 candidates=10 teamsUiaCalls=0 teamsUiaMs=0 occBuildMs=688
+2026-07-27 09:28:14 +0ms hwnd=2493418 ScheduleFromShow_skip place_active
+2026-07-27 09:28:14 +0ms hwnd=590422 ScheduleFromShow_skip place_active
+2026-07-27 09:28:14 +0ms hwnd=266054 ScheduleFromShow_skip place_active
+2026-07-27 09:28:14 +0ms hwnd=528654 ScheduleFromShow_skip place_active
+2026-07-27 09:28:15 +0ms hwnd=1311572 ScheduleFromShow_skip place_active
+2026-07-27 09:28:15 +0ms hwnd=462034 ScheduleFromShow_skip place_active
+2026-07-27 09:28:15 +0ms hwnd=1377108 ScheduleFromShow_skip place_active
+2026-07-27 09:28:15 +3203ms hwnd=786874 Place_exit path=snap total=1516 snapMs=828 banner_ms=796
+2026-07-27 09:28:15 +3172ms hwnd=332092 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:16 +0ms hwnd=397628 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:16 +265ms hwnd=397628 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:24 +0ms hwnd=723728 ScheduleFromShow →Schedule
+2026-07-27 09:28:24 +0ms hwnd=723728 Schedule debounce=250
+2026-07-27 09:28:24 +0ms hwnd=1053134 ScheduleFromShow →Schedule
+2026-07-27 09:28:25 +0ms hwnd=917946 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:25 +47ms hwnd=917946 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:25 +187ms hwnd=1053134 Schedule debounce=250
+2026-07-27 09:28:26 +1297ms hwnd=1053134 ProcessPending_enter
+2026-07-27 09:28:26 +1297ms hwnd=1053134 ProcessPending_skip invalid_hwnd
+2026-07-27 09:28:26 +1391ms hwnd=723728 ProcessPending_enter
+2026-07-27 09:28:26 +0ms hwnd=332248 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:26 +1516ms hwnd=723728 ProcessPending_skip invalid_hwnd
+2026-07-27 09:28:27 +766ms hwnd=332248 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:28 +0ms hwnd=528490 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:30 +0ms hwnd=1445146 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:31 +688ms hwnd=1445146 ScheduleFromShow_skip occupied_mon=1 via=tracked
+2026-07-27 09:28:33 +0ms hwnd=2951938 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:33 +0ms hwnd=2951938 ShellCREATED
+2026-07-27 09:28:33 +0ms hwnd=2818210 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:33 +0ms hwnd=594026 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:33 +125ms hwnd=2951938 Schedule_skip already_tracked
+2026-07-27 09:28:34 +0ms hwnd=462946 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:34 +0ms hwnd=1442548 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:34 +0ms hwnd=594038 ScheduleFromShow →Schedule
+2026-07-27 09:28:34 +0ms hwnd=331662 ScheduleFromShow →Schedule
+2026-07-27 09:28:34 +0ms hwnd=463320 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:34 +42078ms hwnd=132100 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:34 +0ms hwnd=659562 ScheduleFromShow →Schedule
+2026-07-27 09:28:34 +62ms hwnd=659562 Schedule debounce=250
+2026-07-27 09:28:34 +109ms hwnd=659562 ScheduleFromShow →Schedule
+2026-07-27 09:28:34 +156ms hwnd=659562 Schedule_skip pending
+2026-07-27 09:28:34 +0ms hwnd=659574 ScheduleFromShow →Schedule
+2026-07-27 09:28:35 +63ms hwnd=659574 Schedule debounce=250
+2026-07-27 09:28:35 +500ms hwnd=331662 Schedule debounce=250
+2026-07-27 09:28:35 +390ms hwnd=659562 ProcessPending_enter
+2026-07-27 09:28:35 +437ms hwnd=659562 ProcessPending_skip invalid_hwnd
+2026-07-27 09:28:35 +735ms hwnd=594038 Schedule debounce=250
+2026-07-27 09:28:35 +375ms hwnd=659574 ProcessPending_enter
+2026-07-27 09:28:35 +407ms hwnd=659574 ProcessPending_skip invalid_hwnd
+2026-07-27 09:28:35 +922ms hwnd=331662 ProcessPending_enter
+2026-07-27 09:28:35 +922ms hwnd=331662 ProcessPending_skip invalid_hwnd
+2026-07-27 09:28:39 +46687ms hwnd=132100 ScheduleFromShow_skip occupied_mon=3 via=tracked
+2026-07-27 09:28:45 +0ms hwnd=921858 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:45 +0ms hwnd=1508084 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:45 +281ms hwnd=921858 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:53 +0ms hwnd=987394 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:53 +250ms hwnd=987394 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:53 +0ms hwnd=1052930 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:53 +8140ms hwnd=1508084 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:53 +265ms hwnd=1052930 ScheduleFromShow_skip occupied_mon=2 via=tracked
+2026-07-27 09:28:54 +0ms hwnd=920306 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:56 +2000ms hwnd=920306 ScheduleFromShow_skip occupied_mon=4 via=tracked
+2026-07-27 09:28:58 +0ms hwnd=1576260 ScheduleFromShow →Schedule
+2026-07-27 09:28:58 +0ms hwnd=1576260 Schedule debounce=250
+2026-07-27 09:28:59 +921ms hwnd=1576260 ProcessPending_enter
+2026-07-27 09:28:59 +921ms hwnd=1576260 ProcessPending_skip invalid_hwnd
