@@ -22,7 +22,7 @@
 
 **Root cause:** WinEvent `EVENT_OBJECT_SHOW` re-entered during `AutoSlot_Place` and ran full `PartitionOccupancy` → `OccupancyOnMonitor` per callback, starving Place.
 
-**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW.
+**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW. **SHOW defer:** WinEvent queues SHOW to `AutoSlot_ProcessShowPending` (50 ms, batch 12) so debounce timers are not starved by SHOW storms.
 
 ## Place latency fix (keep this)
 

@@ -66,6 +66,9 @@ global g_AutoSlotPlaceDepth := 0
 ; Cached BuildOccupancyByMonitor snapshot for SHOW occupied checks.
 global g_AutoSlotOccSnap := 0
 global g_AutoSlotOccSnapTick := 0
+; SHOW coalescing: WinEvent must not run ScheduleFromShow synchronously (blocks debounce timers).
+global g_AutoSlotShowPending := Map()
+global g_AutoSlotShowTimerArmed := false
 
 AutoSlot_EVENT_OBJECT_DESTROY := 0x8001
 AutoSlot_EVENT_OBJECT_SHOW := 0x8002
@@ -105,6 +108,8 @@ AutoSlot_PERF_LOG := _envPerf = "1"
 AutoSlot_ELIG_RETRY_POLL_MS := 100
 AutoSlot_ELIG_RETRY_BUDGET_MS := 2000
 AutoSlot_OCC_CACHE_MS := 150
+AutoSlot_SHOW_DEFER_MS := 50
+AutoSlot_SHOW_BATCH_MAX := 12
 global g_AutoSlotPlaceRequestFile := A_ScriptDir "\.cursor\autoslot_place_request"
 global g_AutoSlotPlaceMsg := 0
 global g_AutoSlotStickyHwnd := 0
@@ -471,7 +476,7 @@ AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread
         return
     hwnd := Integer(hwnd)
     if (event = AutoSlot_EVENT_OBJECT_SHOW)
-        AutoSlot_ScheduleFromShow(hwnd)
+        AutoSlot_QueueScheduleFromShow(hwnd)
     else if (event = AutoSlot_EVENT_OBJECT_DESTROY)
         AutoSlot_OnDestroy(hwnd, false)  ; secondary; skip if shell just handled same hwnd
 }
@@ -1181,6 +1186,10 @@ AutoSlot_Schedule(hwnd) {
         AutoSlot_PerfLog(hwnd, "Schedule_skip", "pending")
         return
     }
+    if (!DllCall("IsWindow", "ptr", hwnd)) {
+        AutoSlot_PerfLog(hwnd, "Schedule_skip", "invalid_hwnd")
+        return
+    }
     ; Pending only — RememberHwndMon after eligibility OK (ProcessPending), not here.
     AutoSlot_PerfLog(hwnd, "Schedule", "debounce=" AutoSlot_DEBOUNCE_MS)
     g_AutoSlotPending[hwnd] := true
@@ -1189,6 +1198,41 @@ AutoSlot_Schedule(hwnd) {
 
 ; SHOW-only: activation of an existing co-occupant (e.g. 50/50 half via ^!#q/w/e/r)
 ; must not Place/maximize. Shell WINDOWCREATED still uses AutoSlot_Schedule directly.
+; Queued from WinEvent — see AutoSlot_QueueScheduleFromShow (do not call synchronously from hook).
+AutoSlot_QueueScheduleFromShow(hwnd) {
+    global g_AutoSlotShowPending, g_AutoSlotShowTimerArmed
+    if (!hwnd)
+        return
+    g_AutoSlotShowPending[Integer(hwnd)] := true
+    if (!g_AutoSlotShowTimerArmed) {
+        g_AutoSlotShowTimerArmed := true
+        SetTimer(AutoSlot_ProcessShowPending, -AutoSlot_SHOW_DEFER_MS)
+    }
+}
+
+AutoSlot_ProcessShowPending(*) {
+    global g_AutoSlotShowPending, g_AutoSlotShowTimerArmed
+    g_AutoSlotShowTimerArmed := false
+    if (!g_AutoSlotShowPending.Count)
+        return
+    rest := Map()
+    n := 0
+    for hwnd, _ in g_AutoSlotShowPending {
+        if (n >= AutoSlot_SHOW_BATCH_MAX) {
+            rest[hwnd] := true
+            continue
+        }
+        n += 1
+        if (DllCall("IsWindow", "ptr", hwnd))
+            AutoSlot_ScheduleFromShow(hwnd)
+    }
+    g_AutoSlotShowPending := rest
+    if (g_AutoSlotShowPending.Count) {
+        g_AutoSlotShowTimerArmed := true
+        SetTimer(AutoSlot_ProcessShowPending, -AutoSlot_SHOW_DEFER_MS)
+    }
+}
+
 AutoSlot_ScheduleFromShow(hwnd) {
     global g_AutoSlotHwndMon, g_AutoSlotEligRetry, g_AutoSlotPlaceDepth
     if (!AutoSlot_IsEnabled()) {
@@ -1197,6 +1241,10 @@ AutoSlot_ScheduleFromShow(hwnd) {
     }
     if (!hwnd) {
         AutoSlot_PerfLog(0, "ScheduleFromShow_skip", "invalid_hwnd")
+        return
+    }
+    if (!DllCall("IsWindow", "ptr", hwnd)) {
+        AutoSlot_PerfLog(hwnd, "ScheduleFromShow_skip", "invalid_hwnd")
         return
     }
     if (MonitorGetCount() <= 1) {

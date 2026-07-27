@@ -143,3 +143,9 @@
 2026-07-27 09:28:58 +0ms hwnd=1576260 Schedule debounce=250
 2026-07-27 09:28:59 +921ms hwnd=1576260 ProcessPending_enter
 2026-07-27 09:28:59 +921ms hwnd=1576260 ProcessPending_skip invalid_hwnd
+2026-07-27 09:35:01 +0ms hwnd=5638464 ShellCREATED
+2026-07-27 09:35:01 +0ms hwnd=5638464 Schedule_skip single_monitor
+2026-07-27 09:35:01 +16ms hwnd=5638464 ScheduleFromShow_skip single_monitor
+2026-07-27 09:35:02 +1297ms hwnd=5638464 ShellCREATED
+2026-07-27 09:35:02 +1297ms hwnd=5638464 Schedule_skip single_monitor
+2026-07-27 09:35:02 +1313ms hwnd=5638464 ScheduleFromShow_skip single_monitor
