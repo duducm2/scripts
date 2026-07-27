@@ -1,10 +1,62 @@
-# AutoSlot efficiency pass
+# AutoSlot efficiency and work-PC Place latency
 
-**Date:** 2026-07-24  
+**Date:** 2026-07-24 (efficiency pass); **2026-07-27** (work-PC latency fix)  
 **Canon:** [`docs/efficiency-canon.md`](efficiency-canon.md) (§3 repeated enumeration / polling, §4 single authority, §9 temp-file IPC)  
-**Place latency (required behavior):** [`docs/canon/windows-rearrange.md`](canon/windows-rearrange.md) — eligibility retry.
+**Place behavior:** [`docs/canon/windows-rearrange.md`](canon/windows-rearrange.md)
 
-## Changes
+## Work-PC latency fix (2026-07-27)
+
+### Symptom
+
+On a **4-monitor work PC** with a busy desktop, opening a new window felt **~3–4 s slow**: the foreground partner would shrink first, then a long pause, then the new window finally snapped in. The same scripts felt fine at home.
+
+### How we diagnosed it
+
+1. Added optional perf logging (`AutoSlot_PerfLog` → `.cursor/autoslot_perf.log`) and enabled it on the work machine during testing.
+2. Reproduced with Notepad, Explorer, browser tabs, and the worst offenders; copied the log to the personal repo for analysis.
+3. Correlated log phases (`ShellCREATED`, `ProcessPending_*`, `Place_*`, `ScheduleFromShow_*`) with wall-clock gaps vs internal `ms=` timings.
+
+**Teams UIA was ruled out:** occupancy scans on work showed `teamsUiaCalls=0`; Teams presenter-toolbar detection was not the bottleneck.
+
+### Root causes (stacked)
+
+| Issue                                        | Evidence in log                                                                                                                       | Fix                                                                                                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Eligibility one-shot abandon**             | `ProcessPending_elig_fail` with no follow-up Place until a later SHOW                                                                 | Dense **~100 ms** eligibility settle (`AutoSlot_ScheduleEligRetry`, **~2 s** budget)                                                                  |
+| **Double occupancy scan in Place**           | Two `WinGetList` passes per Place                                                                                                     | Single `BuildOccupancyByMonitor` snapshot per Place                                                                                                   |
+| **WinEvent SHOW reentrancy during Place**    | `Place_enter` → `Place_freeze_done` **20+ s** wall gap with internal `ms≈797`; sibling `ProcessPending_elig_ok` without `Place_enter` | `Critical` + `g_AutoSlotPlaceDepth`; defer SHOW while Place active                                                                                    |
+| **SHOW storm + full partition per callback** | Dozens of `ScheduleFromShow_skip occupied_mon=N`                                                                                      | **150 ms** occupancy cache, `g_AutoSlotHwndMon`, `MonitorHasOtherOccupant` early-exit — not `PartitionOccupancy` on every SHOW                        |
+| **SHOW blocking debounce timers**            | CREATE → `ProcessPending` **~4.6 s** vs ~250 ms at home                                                                               | Queue SHOW: `AutoSlot_QueueScheduleFromShow` (**50 ms**, batch **12**)                                                                                |
+| **Perf log FileAppend storm**                | Flood of routine occupied-skip lines starved the main thread                                                                          | Removed routine occupied-skip logging from the hot path                                                                                               |
+| **Snap “thinking” feel**                     | High `snapMs`, partner demax before new window visible                                                                                | Place 50/50: `acceptUnvalidated` (skip ~400 ms validate poll); shorter `EnsureRestoredForSnap` sleeps via `AutoSlot_TrySnapNewWithPartner(..., true)` |
+
+### Result after fixes
+
+Healthy path on work: `Place_enter` → `Place_freeze_done` in **~16 ms**; total snap **~1.5–1.7 s** (occupancy ~700 ms + snap ~850 ms). User confirmed the lag was resolved.
+
+### Constants (do not revert casually)
+
+```ahk
+AutoSlot_ELIG_RETRY_POLL_MS := 100
+AutoSlot_ELIG_RETRY_BUDGET_MS := 2000
+AutoSlot_OCC_CACHE_MS := 150
+AutoSlot_SHOW_DEFER_MS := 50
+AutoSlot_SHOW_BATCH_MAX := 12
+```
+
+Key helpers: `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical`, `AutoSlot_QueueScheduleFromShow`, `AutoSlot_MonitorOccupiedFromCache`, `MonitorHasTrackedOccupant`, `MonitorHasOtherOccupant`, `BuildOccupancyByMonitor` (writes `g_AutoSlotOccSnap`).
+
+### Anti-patterns (do not repeat)
+
+- Setting `STANDARD_BUSY_ALL_MONITORS_DISABLED := true` to “speed up” rearrange — removes feedback without fixing Place timing.
+- Removing eligibility settle or reverting to sparse 300/800/1500 delays — reintroduces multi-second sit-then-snap lag.
+- Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
+- Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
+- Running full `PartitionOccupancy` on every WinEvent SHOW on a busy multi-monitor desktop.
+
+---
+
+## Efficiency pass (2026-07-24)
 
 | Canon                | Change                                                                                                                                                                                 |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -16,68 +68,19 @@
 | Timer pile-up        | Destroy/minimize: dropped redundant late `HealLoneCompanion` (covered by `ScheduleHealOnly`)                                                                                           |
 | Place reentrancy     | `Critical` + `g_AutoSlotPlaceDepth` during Place; SHOW deferred while Place active; occupied-mon check uses cache / tracked / early-exit scan (not full `PartitionOccupancy` per SHOW) |
 
-## Place reentrancy fix (keep this)
+---
 
-**Symptom (work log):** `Place_enter` then 20+ s wall gap before `Place_freeze_done`, while internal `ms=797`. `ProcessPending_elig_ok` without `Place_enter` on sibling hwnds. SHOW storm: dozens of `ScheduleFromShow_skip occupied_mon=N`.
+## Optional diagnosis
 
-**Root cause:** WinEvent `EVENT_OBJECT_SHOW` re-entered during `AutoSlot_Place` and ran full `PartitionOccupancy` → `OccupancyOnMonitor` per callback, starving Place.
+Perf logging is **off by default**. To trace Place timing on any machine:
 
-**Required fix (maintained):** `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical` wrap `Place`, `TryPlaceBackgroundHwnd`, and post-elig `ProcessPending`. `ScheduleFromShow` returns immediately when `g_AutoSlotPlaceDepth > 0`. Occupied-mon gate: fresh `BuildOccupancyByMonitor` cache (**150 ms**), else `g_AutoSlotHwndMon` scan, else `MonitorHasOtherOccupant` early-exit — **not** `PartitionOccupancy` on every SHOW. **SHOW defer:** WinEvent queues SHOW to `AutoSlot_ProcessShowPending` (50 ms, batch 12) so debounce timers are not starved by SHOW storms. **Snap feel:** Place 50/50 uses `acceptUnvalidated` (skip ~400 ms strict validate poll) + shorter `EnsureRestoredForSnap` sleeps — avoids “partner shrinks, pause, then new window”. **Perf log:** do not FileAppend routine `ScheduleFromShow_skip occupied_mon=…` (spam starved Place on work).
+1. Set user env **`AUTOSLOT_PERF_LOG=1`**.
+2. Reload `WindowManagement.ahk` (log truncates on reload; first line is `session_start`).
+3. Reproduce slow opens; inspect `<scripts-repo>\.cursor\autoslot_perf.log`.
 
-## Place latency fix (keep this)
+Useful patterns: large gap before `ProcessPending_elig_ok` (eligibility settle); `Place_enter` → `Place_freeze_done` wall gap with low internal `ms=` (SHOW reentrancy — should not recur after the fix); high `total=` with low occupancy `ms=` (delay before Place, not scan cost).
 
-**Symptom after efficiency-era Place/SHOW hardening:** new windows waited ~3–4 s before rearrange (previously ~1–2 s). Busy-all-monitors banners were **not** the cause.
-
-**Root cause:** `ProcessPending` failed `IsEligibleNewWindow` once (empty title / HWND not ready), called `ForgetHwndMon`, and **returned with no retry**. Place only happened later via another SHOW (or never felt timely).
-
-**Required fix (maintained):** `AutoSlot_ScheduleEligRetry` — on eligibility miss, **dense ~100 ms polls** until eligible or **~2 s** from first miss (`AutoSlot_ELIG_RETRY_POLL_MS` / `AutoSlot_ELIG_RETRY_BUDGET_MS`). `Schedule` is pending-only (no `RememberHwndMon` before elig OK; coalesce while settle armed). Do **not** revert to one-shot abandon or sparse 300/800/1500 delays.
-
-**Anti-patterns (do not repeat):**
-
-- Setting `STANDARD_BUSY_ALL_MONITORS_DISABLED := true` to “speed up” rearrange — removes the arranging indicator without fixing Place timing.
-- Removing eligibility settle or reverting to sparse 300/800/1500 delays — reintroduces multi-second sit-then-snap lag.
-- Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
-- Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
-
-Optional diagnose: perf log → `.cursor/autoslot_perf.log`. **Auto-on at work** (`IS_WORK_ENVIRONMENT`). **Personal:** create empty `.cursor/autoslot_perf_debug` or set env `AUTOSLOT_PERF_LOG=1`. Disable: `AUTOSLOT_PERF_LOG=0`. Reload WindowManagement = fresh log (truncated). See **Work debugging** below.
-
-## Work debugging
-
-Use this when rearrange feels slow on the work PC but not at home.
-
-**Log path:** `<scripts-repo>\.cursor\autoslot_perf.log`  
-(e.g. `C:\Users\fie7ca\Documents\01 - Scripts\.cursor\autoslot_perf.log`)
-
-**Enable:**
-
-- **Work:** sync latest repo, reload `WindowManagement.ahk` (automatic).
-- **Personal (dry run):** create empty file `.cursor/autoslot_perf_debug` in the scripts repo, then reload WindowManagement.
-
-First line after reload must be `session_start env=work …` or `env=personal …`. If you only see an old `ShellCREATED` line with no `session_start`, logging was off on that reload — enable as above and reload again.
-
-**Test protocol:**
-
-1. Reload WindowManagement (fresh log).
-2. Open 3–5 windows that felt slow (Notepad/Explorer baseline, browser tab, Teams if used, worst offender).
-3. Copy `autoslot_perf.log` to personal and paste/attach in chat for analysis.
-
-**Log interpretation:**
-
-| Pattern                                                                        | Likely cause                                                      |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Large gap `ShellCREATED` → `ProcessPending_elig_ok` with many `EligRetry_fire` | App slow to get title (eligibility settle)                        |
-| `ProcessPending_elig_fail reason=excluded` repeating                           | Window wrongly excluded; never Places                             |
-| `ScheduleFromShow_skip occupied_mon=N`                                         | SHOW path blocked                                                 |
-| `HandlePlaceRequest ipc path=file` without `ShellCREATED`                      | Cross-process / QL file IPC (1 s poll)                            |
-| `Place_after_occ_scan` with high `hwndTotal` / `teamsUiaMs`                    | Desktop enumeration or Teams UIA during occupancy                 |
-| `Place_enter` → `Place_freeze_done` gap 20+ s, low internal `ms=`              | SHOW reentrancy during Place (fixed by Critical + SHOW defer)     |
-| `ScheduleFromShow_skip place_active` during Place                              | Expected — SHOW deferred until Place completes                    |
-| `ScheduleFromShow_skip occupied_mon=N via=cache`                               | Fast occupied path (cache hit)                                    |
-| `Place_exit path=snap` with high `snapMs`                                      | Snap demax Sleeps / validate wait (Place now skips validate poll) |
-| Flood of `ScheduleFromShow_skip occupied_mon=` then late ProcessPending        | FileAppend storm (routine occupied skips no longer logged)        |
-| High `total=` but low `occBuildMs`                                             | Delay is **before** Place (debounce/eligibility), not occupancy   |
-
-**Turn off after diagnosis:** set user env `AUTOSLOT_PERF_LOG=0` or sync when the debug pass is merged off.
+---
 
 ## Unchanged policy
 
@@ -90,3 +93,4 @@ Y-only background import, Place empty/half rules, heal-on-close/minimize, no pai
 - Suite leave: no `ScheduleRearrange` call
 - Cross-process place: PostMessage first; file poll still works slowly
 - New window Place: dense eligibility settle (~100 ms); Place soon after title ready; no multi-second dead wait from one-shot abandon or sparse retry gaps
+- Work PC: Place completes in ~1–2 s total; no 20+ s freeze during snap

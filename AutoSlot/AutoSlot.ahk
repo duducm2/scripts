@@ -58,9 +58,6 @@ global g_AutoSlotYBgActive := false
 global g_AutoSlotPerfOrigin := Map()
 ; Eligibility settle: hwnd → first-miss tick (dense ~100 ms polls until budget).
 global g_AutoSlotEligRetry := Map()
-; Last BuildOccupancyByMonitor perf stats (hwndTotal, candidates, teamsUia*, buildMs).
-global g_AutoSlotPerfOccLast := Map()
-global g_AutoSlotPerfOccActive := false
 ; Place critical section depth (WinEvent SHOW must not re-enter during Place).
 global g_AutoSlotPlaceDepth := 0
 ; Cached BuildOccupancyByMonitor snapshot for SHOW occupied checks.
@@ -96,12 +93,8 @@ AutoSlot_MAX_ORDINAL := 4
 AUTOSLOT_PLACE_MSG_NAME := "EDU_AutoSlot_PlaceHwnd"
 AutoSlot_STICKY_PLACE_MS := 400
 AutoSlot_STICKY_PLACE_MAX := 12
-; Place timing log → .cursor\autoslot_perf.log. Auto-on at work; personal: env AUTOSLOT_PERF_LOG=1
-; or empty file .cursor\autoslot_perf_debug (gitignored). Disable: AUTOSLOT_PERF_LOG=0.
-_envPerf := Trim(EnvGet("AUTOSLOT_PERF_LOG"))
-AutoSlot_PERF_LOG := _envPerf = "1"
-    || (_envPerf != "0" && IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
-    || (_envPerf != "0" && FileExist(A_ScriptDir "\.cursor\autoslot_perf_debug"))
+; Perf log (off by default): set env AUTOSLOT_PERF_LOG=1 → .cursor\autoslot_perf.log
+AutoSlot_PERF_LOG := Trim(EnvGet("AUTOSLOT_PERF_LOG")) = "1"
 ; Eligibility settle after IsEligibleNewWindow miss: poll every POLL_MS until BUDGET_MS
 ; from first miss (empty title / HWND not ready). Do not one-shot abandon; do not use
 ; sparse 300/800/1500 gaps (those reintroduced multi-second Place lag).
@@ -126,10 +119,6 @@ AutoSlot_PerfLogPath() {
 
 AutoSlot_PerfLog(hwnd, phase, detail := "") {
     if (!AutoSlot_PERF_LOG)
-        return
-    ; Routine SHOW occupied skips flood the log and FileAppend can starve Place timers on work PCs.
-    if (phase = "ScheduleFromShow_skip" && (InStr(detail, "occupied_mon=")
-    || detail = "already_tracked" || detail = "pending" || detail = "elig_retry"))
         return
     global g_AutoSlotPerfOrigin
     now := A_TickCount
@@ -1378,16 +1367,7 @@ AutoSlot_ProcessPending(hwnd) {
     }
     if (!AutoSlot_IsEligibleNewWindow(hwnd)) {
         ; Do not Remember until eligible. Dense poll until title/HWND ready (budget).
-        reason := AutoSlot_EligFailReason(hwnd)
-        exe := ""
-        titleLen := 0
-        try {
-            exe := StrLower(WinGetProcessName("ahk_id " hwnd))
-            titleLen := StrLen(WinGetTitle("ahk_id " hwnd))
-        } catch {
-        }
-        AutoSlot_PerfLog(hwnd, "ProcessPending_elig_fail",
-            "reason=" reason " exe=" exe " title_len=" titleLen)
+        AutoSlot_PerfLog(hwnd, "ProcessPending_elig_fail")
         AutoSlot_ScheduleEligRetry(hwnd)
         return
     }
@@ -1506,7 +1486,6 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
 ; (teams-share.md: presenter-toolbar-container), and meeting compact view
 ; (teams-compact-window.md: "Meeting compact view | …").
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
-    global g_AutoSlotPerfOccLast, g_AutoSlotPerfOccActive
     if (!hwnd)
         return false
     try {
@@ -1558,16 +1537,8 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     ; Active-share presenter toolbar (teams-share.md: AutomationId presenter-toolbar-container).
     ; May be a separate HWND or the meeting window while sharing — either must not be resized.
     try {
-        tUia := AutoSlot_PERF_LOG ? A_TickCount : 0
         root := UIA.ElementFromHandle(hwnd)
-        hit := root && root.FindFirst({ AutomationId: "presenter-toolbar-container" })
-        if (AutoSlot_PERF_LOG && g_AutoSlotPerfOccActive) {
-            g_AutoSlotPerfOccLast["teamsUiaCalls"] := (g_AutoSlotPerfOccLast.Has("teamsUiaCalls")
-                ? g_AutoSlotPerfOccLast["teamsUiaCalls"] : 0) + 1
-            g_AutoSlotPerfOccLast["teamsUiaMs"] := (g_AutoSlotPerfOccLast.Has("teamsUiaMs")
-                ? g_AutoSlotPerfOccLast["teamsUiaMs"] : 0) + (A_TickCount - tUia)
-        }
-        if (hit)
+        if (root && root.FindFirst({ AutomationId: "presenter-toolbar-container" }))
             return true
     } catch {
     }
@@ -1617,34 +1588,6 @@ AutoSlot_IsEligibleNewWindow(hwnd) {
         return false
     }
     return true
-}
-
-; Why IsEligibleNewWindow failed (perf log detail only).
-AutoSlot_EligFailReason(hwnd) {
-    if (!hwnd)
-        return "no_hwnd"
-    try {
-        if (!DllCall("IsWindowVisible", "ptr", hwnd))
-            return "not_visible"
-        if (DllCall("GetParent", "ptr", hwnd))
-            return "has_parent"
-        if (WinGetMinMax("ahk_id " hwnd) = -1)
-            return "minimized"
-        exStyle := DllCall("GetWindowLongPtr", "ptr", hwnd, "int", -20, "ptr")
-        if (exStyle & 0x00000080)
-            return "toolwindow"
-        class := WinGetClass(hwnd)
-        if (AutoSlot_IsDesktopOrTaskbarClass(class))
-            return "desktop_class"
-        title := WinGetTitle(hwnd)
-        if (title = "")
-            return "empty_title"
-        if (AutoSlot_IsExcludedExeOrTitle(hwnd))
-            return "excluded"
-    } catch {
-        return "error"
-    }
-    return "ok"
 }
 
 AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd := 0) {
@@ -1837,7 +1780,7 @@ AutoSlot_MonitorHasOtherOccupant(monIdx, excludeHwnd := 0) {
 ; One WinGetList for the whole desktop; bucket occupancy rows by monitor index.
 ; Place / TryPlace empty+half search use this once (avoid N+M full enumerations).
 AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
-    global g_AutoSlotPerfOccLast, g_AutoSlotPerfOccActive, g_AutoSlotOccSnap, g_AutoSlotOccSnapTick
+    global g_AutoSlotOccSnap, g_AutoSlotOccSnapTick
     byMon := Map()
     count := 0
     try count := MonitorGetCount()
@@ -1845,16 +1788,6 @@ AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
         count := 0
     if (count < 1)
         return byMon
-    tBuild := AutoSlot_PERF_LOG ? A_TickCount : 0
-    if (AutoSlot_PERF_LOG) {
-        g_AutoSlotPerfOccLast := Map()
-        g_AutoSlotPerfOccLast["hwndTotal"] := 0
-        g_AutoSlotPerfOccLast["candidates"] := 0
-        g_AutoSlotPerfOccLast["teamsUiaCalls"] := 0
-        g_AutoSlotPerfOccLast["teamsUiaMs"] := 0
-        g_AutoSlotPerfOccLast["buildMs"] := 0
-        g_AutoSlotPerfOccActive := true
-    }
     monTargets := Map()
     loop count {
         monIdx := A_Index
@@ -1870,13 +1803,9 @@ AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
         }
     }
     hwndList := WinGetList()
-    if (AutoSlot_PERF_LOG)
-        g_AutoSlotPerfOccLast["hwndTotal"] := hwndList.Length
     for hwnd in hwndList {
         if (!AutoSlot_IsOccupancyCandidate(hwnd, excludeHwnd))
             continue
-        if (AutoSlot_PERF_LOG)
-            g_AutoSlotPerfOccLast["candidates"]++
         try {
             rect := Buffer(16, 0)
             if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
@@ -1902,10 +1831,6 @@ AutoSlot_BuildOccupancyByMonitor(excludeHwnd := 0) {
         } catch {
             continue
         }
-    }
-    if (AutoSlot_PERF_LOG) {
-        g_AutoSlotPerfOccLast["buildMs"] := A_TickCount - tBuild
-        g_AutoSlotPerfOccActive := false
     }
     g_AutoSlotOccSnap := byMon
     g_AutoSlotOccSnapTick := A_TickCount
@@ -3401,16 +3326,6 @@ AutoSlot_Place(hwnd) {
             }
         }
         occDetail := "ms=" (A_TickCount - t0) " emptyMon=" emptyMon " halfPartner=" halfPartner
-        if (AutoSlot_PERF_LOG) {
-            global g_AutoSlotPerfOccLast
-            if (IsObject(g_AutoSlotPerfOccLast) && g_AutoSlotPerfOccLast.Count) {
-                occDetail .= " hwndTotal=" g_AutoSlotPerfOccLast["hwndTotal"]
-                    . " candidates=" g_AutoSlotPerfOccLast["candidates"]
-                    . " teamsUiaCalls=" g_AutoSlotPerfOccLast["teamsUiaCalls"]
-                    . " teamsUiaMs=" g_AutoSlotPerfOccLast["teamsUiaMs"]
-                    . " occBuildMs=" g_AutoSlotPerfOccLast["buildMs"]
-            }
-        }
         AutoSlot_PerfLog(hwnd, "Place_after_occ_scan", occDetail)
 
         if (emptyMon) {

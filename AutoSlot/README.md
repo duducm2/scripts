@@ -4,7 +4,7 @@ Optional auto-positioning for newly opened windows on multi-monitor setups. Incl
 
 **Authoritative behavior:** [`docs/canon/windows-rearrange.md`](../docs/canon/windows-rearrange.md) — read that before changing Place, heal, Y-fill, or swap logic.
 
-**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — Y one-scan fill, place-request poll, and **dense eligibility settle** (~100 ms polls / ~2 s budget; do not one-shot abandon or sparse 300/800/1500).
+**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — Y one-scan fill, place-request poll, dense eligibility settle, and the **2026-07-27 work-PC latency fix** (SHOW reentrancy, occupancy cache, SHOW queue). Do not one-shot abandon eligibility or sparse 300/800/1500 retries.
 
 Detection/placement live in this folder. **50/50 snaps** reuse `WindowManagement\tile_snap.ahk` (same engine as `Ctrl+Alt+Win+X`).
 
