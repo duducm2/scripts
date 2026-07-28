@@ -873,31 +873,7 @@ AutoSlot_SwapQuietActive() {
 ; Candidates: hidden first, then visible unslotted. One collect + optional QC backfill.
 
 ; HWNDs that currently occupy AutoSlot slots on ordinal monitors (stay put during fill).
-; Extras beyond 2 slots / covered-behind a lone max / random dual floats are NOT slotted.
-AutoSlot_LooksLikeHalfPane(hwnd, monIdx) {
-    if (!hwnd || monIdx < 1)
-        return false
-    try {
-        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
-        rect := Buffer(16, 0)
-        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
-            return false
-        l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
-        r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
-        workW := wr - wl
-        workH := wb - wt
-        if (workW < 1 || workH < 1)
-            return false
-        w := r - l
-        h := b - t
-        ; True AutoSlot 50/50: roughly half work width, tall enough to be a pane.
-        return (w >= Round(workW * 0.35) && w <= Round(workW * 0.65)
-        && h >= Round(workH * 0.50))
-    } catch {
-        return false
-    }
-}
-
+; Covered-behind a lone max are NOT slotted. Up to 2 uncovered occupants per ordinal are.
 AutoSlot_BuildSlottedHwndSet() {
     slotted := Map()
     ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
@@ -919,15 +895,11 @@ AutoSlot_BuildSlottedHwndSet() {
             continue
         }
         if (part.nonFilled.Length >= 2) {
-            marked := 0
-            for row in part.nonFilled {
-                if (marked >= 2)
-                    break
-                h := row.hwnd
-                if (!h || !AutoSlot_LooksLikeHalfPane(h, monIdx))
-                    continue
-                slotted[Integer(h)] := true
-                marked++
+            n := Min(2, part.nonFilled.Length)
+            loop n {
+                h := part.nonFilled[A_Index].hwnd
+                if (h)
+                    slotted[Integer(h)] := true
             }
         }
     }
@@ -973,7 +945,7 @@ AutoSlot_FillOrderLabel(monIdx) {
 }
 
 ; Fill candidates: hidden (minimized/covered) first, then visible unslotted floats.
-; List-open (Ctrl+Alt+Win+Y) keeps WM_CollectBackgroundWindows only.
+; Never include already-slotted hwnds. List-open (Ctrl+Alt+Win+Y) stays hidden-only.
 AutoSlot_CollectFillCandidates() {
     hiddenRows := []
     try hiddenRows := WM_CollectBackgroundWindows()
@@ -988,6 +960,8 @@ AutoSlot_CollectFillCandidates() {
         catch
             continue
         if (!hwnd || seen.Has(hwnd))
+            continue
+        if (slotted.Has(hwnd))
             continue
         seen[hwnd] := true
         rows.Push(row)
@@ -1032,7 +1006,7 @@ AutoSlot_CollectFillCandidates() {
         }
     } catch {
     }
-    return { rows: rows, hiddenCount: hiddenCount, unslottedCount: unslottedCount }
+    return { rows: rows, hiddenCount: hiddenCount, unslottedCount: unslottedCount, slotted: slotted }
 }
 
 AutoSlot_ClassifyFillCapacity() {
@@ -3176,6 +3150,7 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 ; excludeExtra: optional hwnd or Map/Array of hwnds already chosen (for dual-slot empty fill).
 ; forceImport: explicit user fill (Ctrl+Alt+Win+6) — ignore place freeze / fill cooldown.
 ; When g_AutoSlotYBgActive, reuse g_AutoSlotYBgRows (one collect per fill pass); consume picked hwnds.
+; Never returns an already-slotted hwnd (defense if candidate pool is stale).
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
     global g_AutoSlotYBgActive, g_AutoSlotYBgRows
     occupied := Map()
@@ -3196,6 +3171,7 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
     } else if (excludeExtra) {
         occupied[Integer(excludeExtra)] := true
     }
+    slotted := AutoSlot_BuildSlottedHwndSet()
     rows := []
     reuseY := g_AutoSlotYBgActive && IsObject(g_AutoSlotYBgRows)
     if (reuseY)
@@ -3221,7 +3197,7 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
                 i++
             continue
         }
-        if (occupied.Has(hwnd)) {
+        if (occupied.Has(hwnd) || slotted.Has(hwnd)) {
             i++
             continue
         }
@@ -3340,9 +3316,8 @@ AutoSlot_BeginPlaceFreeze() {
 }
 
 ; Promote free capacity: empty → import up to two; lone maximized → SnapPair BG;
-; lone half + forceImport → SnapPair BG when candidates exist, else maximize residual.
-; Decisions use UNCOVERED occupancy — windows hidden behind a max do not steal the
-; free-half path (that was blocking BG import when exactly one covered hwnd sat behind).
+; lone half + forceImport → SnapPair BG when candidates exist (no heal-only; no local half↔max reshuffle).
+; Decisions use UNCOVERED occupancy — windows hidden behind a max do not steal the free-half path.
 ; forceImport: true for explicit Ctrl+Alt+Win+6 (ignore place freeze / fill cooldown).
 AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
     global g_AutoSlotRecent, g_AutoSlotUndo
@@ -3355,6 +3330,9 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         return "stale"
     if (part.filled.Length >= 2)
         return "ok"
+    ; Explicit fill: half + max already on the same monitor = both slots occupied — do not reshuffle.
+    if (forceImport && part.filled.Length >= 1 && part.nonFilled.Length >= 1)
+        return "stale"
 
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     label := order > 0 ? order : monIdx
@@ -3369,7 +3347,7 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
             return "noop"
         if (AutoSlot_CompanionAlreadyFilled(residual, monIdx))
             return "ok"
-        ; Uncovered half + maximized/work-area on same monitor: 50/50 them.
+        ; Non-forceImport only: uncovered half + maximized on same monitor → 50/50 them.
         if (part.filled.Length >= 1) {
             if (!blockImport) {
                 filledHwnd := part.filled[1].hwnd
@@ -3391,30 +3369,25 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
             }
             return "noop"
         }
-        ; Lone half + free slot: explicit fill prefers showing a BG companion; else maximize.
+        ; Lone half + free slot: explicit fill imports BG only (no expand-only heal).
         residualRows := [{ hwnd: residual }]
         if (forceImport && !blockImport) {
             cand := AutoSlot_PickBackgroundCandidate(monIdx, residualRows, 0, true)
-            if (cand) {
-                g_AutoSlotRecent[cand] := A_TickCount
-                AutoSlot_PruneRecent()
-                pane := AutoSlot_SnapPair(cand, residual, monIdx, true)
-                g_AutoSlotUndo := 0
-                if (pane != "") {
-                    AutoSlot_RememberHwndMon(cand)
-                    AutoSlot_RememberHwndMon(residual)
-                    AutoSlot_PairSuppressMark(cand, AutoSlot_RECENT_MS)
-                    AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
-                    AutoSlot_ClaimMonitor(monIdx)
-                    AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
-                    return "ok"
-                }
-            }
-            if (AutoSlot_HealLoneCompanion(monIdx)) {
-                AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
-                return "healed"
-            }
-            return "noop"
+            if (!cand)
+                return "noop"
+            g_AutoSlotRecent[cand] := A_TickCount
+            AutoSlot_PruneRecent()
+            pane := AutoSlot_SnapPair(cand, residual, monIdx, true)
+            g_AutoSlotUndo := 0
+            if (pane = "")
+                return "noop"
+            AutoSlot_RememberHwndMon(cand)
+            AutoSlot_RememberHwndMon(residual)
+            AutoSlot_PairSuppressMark(cand, AutoSlot_RECENT_MS)
+            AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
+            AutoSlot_ClaimMonitor(monIdx)
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+            return "ok"
         }
         if (AutoSlot_HealLoneCompanion(monIdx))
             return "healed"
