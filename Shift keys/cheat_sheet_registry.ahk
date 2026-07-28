@@ -1158,6 +1158,10 @@ GLOBAL_CHEAT_SHEET_RAW := "
     Letters available: W
     [Alt+Shift+W] > available (not bound in AHK; freed from former CAW+Y placeholder)
     
+    === AVAILABLE PRIMARY (Win+Alt+Shift) SLOTS ===
+    Digits available: 7
+    [Win+Alt+Shift+7] > available (not bound in AHK; freed from former TTS-from-selection)
+    
     === MAIN KEY COMBINATIONS ===
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
@@ -1180,7 +1184,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
     [Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
     [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
-    [Win+Alt+Shift+7] > Copy selected text and read aloud ({AI_PROVIDER})
     
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)

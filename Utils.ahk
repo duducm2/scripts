@@ -244,5 +244,3 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; Handy model hotkeys and language flag: AppLaunchers.ahk only (after #!+C / ^!#9 / ^!#b are registered).
 HandyAi_ConfigureProcessOwnership()
-
-; Win+Alt+Shift+7 is defined in Gemini.ahk (TTS from selection: repeat exactly + read aloud).

@@ -49,7 +49,6 @@ flowchart TD
 | Win+Alt+Shift+I      | Open/focus consumer Gemini + prompt | Open/focus Copilot + composer | Open/focus Enterprise + prompt                                        |
 | Win+Alt+Shift+O      | Read aloud last message             | Read aloud                    | Prompt focus only (no TTS UIA yet)                                    |
 | Win+Alt+Shift+P      | Copy last message                   | Copy last response            | Prompt focus only                                                     |
-| Win+Alt+Shift+7      | Selection → TTS pipeline            | Copilot TTS pipeline          | Prompt focus only                                                     |
 | Win+Alt+Shift+8      | Pronunciation lookup                | Copilot pronunciation         | Prompt focus only                                                     |
 | Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2    | Same → Copilot                | Same → Enterprise                                                     |
 | Ctrl+Alt+Win+L / D2C | Paste/submit + monitor              | Copilot paste/submit          | Enterprise paste/submit; post-response copy/read-aloud → prompt focus |

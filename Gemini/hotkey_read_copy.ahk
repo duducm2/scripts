@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Gemini module: hotkey_read_copy.ahk
-; #!+O/#!+P/#!+7 and CopyLastGeminiMessageToClipboard
+; #!+O/#!+P and CopyLastGeminiMessageToClipboard
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
@@ -204,16 +204,4 @@ handleTriggerCopilotReadAloud(wParam, lParam, msg, hwnd) {
         return CopilotWeb_TriggerReadAloud(copyFirst, { originalHwnd: lp, copilotHwnd: copHwnd ? copHwnd : 0,
             alreadyActive: true })
     return CopilotWeb_TriggerReadAloud(copyFirst)
-}
-
-; =============================================================================
-; TTS from selection – Win+Alt+Shift+7: copy selection, send "repeat exactly" to Gemini, then trigger read aloud
-; =============================================================================
-#!+7:: {
-    companion := ResolveGlobalAICompanion()
-    if (companion = "enterprise")
-        return GeminiEnterprise_FocusPromptOnly()
-    if (companion = "copilot")
-        return (CopilotAsyncTTS()).Start()
-    (GeminiAsyncTTS()).Start()
 }

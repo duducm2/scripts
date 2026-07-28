@@ -903,7 +903,7 @@ class CopilotAsyncReadAloud {
     }
 }
 
-; --- TTS from selection (#!+7) ---
+; --- TTS from selection (GeminiAsyncTTS / CopilotAsyncTTS; no global hotkey — Win+Alt+Shift+7 freed) ---
 class CopilotAsyncTTS {
     static TTSPrompt :=
         "Repeat the following text exactly as it is. Do not add any introduction, explanation, or markdown formatting. Just output the text itself:`n`n"

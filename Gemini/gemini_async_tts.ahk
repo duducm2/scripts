@@ -6,7 +6,8 @@
 ; =============================================================================
 
 ; =============================================================================
-; GeminiAsyncTTS – copy selection, send "repeat exactly" to Gemini, then trigger read aloud (Win+Alt+Shift+7)
+; GeminiAsyncTTS – copy selection, send "repeat exactly" to Gemini, then trigger read aloud
+; (formerly Win+Alt+Shift+7; chord freed — call class directly if rebinding)
 ; =============================================================================
 class GeminiAsyncTTS {
     static TTSPrompt :=
