@@ -1154,6 +1154,10 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (model slot 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (model slot 1)
     
+    === AVAILABLE Alt+Shift SLOTS ===
+    Letters available: W
+    [Alt+Shift+W] > available (not bound in AHK; freed from former CAW+Y placeholder)
+    
     === MAIN KEY COMBINATIONS ===
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
@@ -1268,7 +1272,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+.] > Clip Angel (copy, paste, and quit)
     
     === COMMAND PALETTE ===
-    [Win+Ctrl+Alt+Y] > Command Palette - File search
     [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
     
     === SHORTCUTS ===
@@ -1288,7 +1291,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · →] > Right Arrow
     [ZMK L0 · P] hold > Alt+Shift+S
     [ZMK L0 · P] tap 1× > Alt+Shift+Q — jump mouse to middle
-    [ZMK L0 · P] tap 2× > Alt+Shift+W
+    [ZMK L0 · P] tap 2× > Ctrl+Alt+Win+Y — window tools [2]
     [ZMK L0 · P] tap 3× > Ctrl+Alt+Win+M — Command Palette bookmark
     [ZMK L0 · L] hold > Ctrl+Alt+Win+L — {AI_PROVIDER} D2C direct submit (Utils.ahk)
     [ZMK L0 · L] tap 1× > Win+Alt+Shift+0 — start/stop dictation

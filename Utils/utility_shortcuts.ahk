@@ -96,23 +96,12 @@ ToggleAICompanionChromeTab() {
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)
 
-!+W::
-{
-    Sleep 50
-    ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
-    ; SendInput is more reliable for complex modifier combinations
-    SendInput "#^!y"
-
-}
-
 #^!m::
 {
-    ; Send Alt+Shift+W again
     ; Small delay to ensure previous key release is complete
     Sleep 50
 
-    ; Send Win+Ctrl+Alt+Y using SendInput for better reliability
-    ; SendInput is more reliable for complex modifier combinations
+    ; Send Win+Ctrl+Alt+M using SendInput for better reliability
     SendInput "#^!m"
 
     ; Show message box
