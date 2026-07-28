@@ -1158,10 +1158,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     Letters available: W
     [Alt+Shift+W] > available (not bound in AHK; freed from former CAW+Y placeholder)
     
-    === AVAILABLE PRIMARY (Win+Alt+Shift) SLOTS ===
-    Digits available: 7
-    [Win+Alt+Shift+7] > available (not bound in AHK; freed from former TTS-from-selection)
-    
     === MAIN KEY COMBINATIONS ===
     [Symbol Layer] Win+Alt+Shift - Primary combination
     [Window Management] Ctrl+Alt+Win - Secondary combination
@@ -1178,6 +1174,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === CLIP ANGEL ===
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
+    [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file then hide
     
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > Opens {AI_PROVIDER}

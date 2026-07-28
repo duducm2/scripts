@@ -1,9 +1,12 @@
 ; =============================================================================
 ; AppLaunchers module: hotkey_clipangel.ahk
-; #!+. Clip Angel paste and favorite flow
+; #!+. Clip Angel paste and favorite flow; #!+7 tap/hold edit / paste-file
 ; Extracted verbatim from AppLaunchers.ahk; loaded via #include into the
 ; AppLaunchers.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
+
+; Hold threshold matches ZMK hold-tap tapping-term-ms = 200.
+CLIPANGEL_WAS7_HOLD_MS := 200
 
 ; =============================================================================
 ; Send specific key combinations
@@ -20,6 +23,47 @@
     Send("!q")
     Sleep(200)
     ClipAngel_CloseAndRestoreFocus(0)
+}
+
+; =============================================================================
+; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Paste file then hide
+; =============================================================================
+#!+7::
+{
+    priorHwnd := 0
+    try priorHwnd := WinGetID("A")
+    catch {
+    }
+
+    pressTime := A_TickCount
+    KeyWait "7", "T0.2"
+    isHold := (A_TickCount - pressTime) >= CLIPANGEL_WAS7_HOLD_MS
+
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+
+    if !ActivateClipAngelWithFocusCorrection(true) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if !isHold {
+        SendInput "{F4}"
+        return
+    }
+
+    try {
+        if !ClipAngel_InvokePasteEnter(hwnd)
+            ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
+    } finally {
+        ClipAngel_CloseAndRestoreFocus(priorHwnd)
+    }
 }
 
 ; =============================================================================
