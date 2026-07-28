@@ -177,6 +177,7 @@ QuickLook_ApplyStudyLayout(hwnd, scrollToEnd := true, extraScrollRetries := 0) {
         WinWaitActive("ahk_id " hwnd, , 1)
     } catch {
     }
+    TryMaximizeWindow(hwnd)
     QuickLook_ClickWindowCenter(hwnd)
     if (scrollToEnd)
         QuickLook_ScrollToEnd(hwnd, extraScrollRetries)
