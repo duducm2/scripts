@@ -27,9 +27,8 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
 
 ; Teams chrome hard-exclude: sharing control bar + meeting compact view.
 ; Gate: Teams exe or class TeamsWebView. Chat / full meeting stay eligible.
-; Compact often has Win32 title like "{name} | Microsoft Teams" (no compact prefix) —
-; then UIA Name / "Maximize meeting window" (teams-compact-view.md) is required.
-; Do not ignore whole ms-teams.exe via #!+L [R].
+; Win32 titles often omit chrome prefixes — use short height + UIA fingerprints
+; (teams-sharing-control-bar.md / teams-compact-view.md). Do not ignore whole ms-teams.exe.
 WM_IsTeamsChromeHwnd(hwnd) {
     if (!hwnd)
         return false
@@ -49,26 +48,37 @@ WM_IsTeamsChromeHwnd(hwnd) {
     catch {
     }
     t := StrLower(title)
-    ; Sharing control bar (no trailing "|" — WM title excludes parse "|" as exe|title).
+    ; Chat is never chrome.
+    if (InStr(t, "chat |") || InStr(t, "bate-papo |"))
+        return false
+    ; --- Title fingerprints (when Win32 title is correct) ---
     if (InStr(t, "sharing control bar")
-    || InStr(t, "barra de controle de compartilhamento"))
+    || InStr(t, "barra de controle de compartilhamento")
+    || InStr(t, "screen sharing toolbar")
+    || InStr(t, "barra de compartilhamento"))
         return true
-    ; Meeting compact view (when Win32 title carries the prefix).
     if (InStr(t, "meeting compact view")
     || InStr(t, "modo de exibição compacto da reunião")
     || InStr(t, "modo de exibicao compacto da reuniao"))
         return true
-    ; Share-content / share-screen picker.
     for needle in ["share content", "share screen", "share your screen", "present now",
         "compartilhar conteúdo", "compartilhar conteudo", "compartilhar tela",
         "iniciar compartilhamento"] {
         if (InStr(t, needle))
             return true
     }
-    ; Chat is never chrome — skip UIA.
-    if (InStr(t, "chat |") || InStr(t, "bate-papo |"))
-        return false
-    ; Compact view UIA fallback (Win32 title often looks like a normal meeting).
+    ; Sharing control bar is a short floating strip (often missing the classic title).
+    h := 0
+    try {
+        rect := Buffer(16, 0)
+        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
+            h := NumGet(rect, 12, "int") - NumGet(rect, 4, "int")
+    } catch {
+        h := 0
+    }
+    if (h > 0 && h <= 280)
+        return true
+    ; UIA: Name + unique buttons when Win32 title looks like a normal meeting / is empty.
     try {
         root := UIA.ElementFromHandle(hwnd)
         if (root) {
@@ -76,12 +86,19 @@ WM_IsTeamsChromeHwnd(hwnd) {
             try uName := StrLower(root.Name)
             catch {
             }
-            if (InStr(uName, "meeting compact view")
+            if (InStr(uName, "sharing control bar")
+            || InStr(uName, "barra de controle de compartilhamento")
+            || InStr(uName, "meeting compact view")
             || InStr(uName, "modo de exibição compacto da reunião")
-            || InStr(uName, "modo de exibicao compacto da reuniao")
-            || InStr(uName, "sharing control bar")
-            || InStr(uName, "barra de controle de compartilhamento"))
+            || InStr(uName, "modo de exibicao compacto da reuniao"))
                 return true
+            ; Share bar (teams-sharing-control-bar.md)
+            if (root.FindFirst({ Name: "You're sharing your screen" })
+            || root.FindFirst({ Name: "Você está compartilhando a tela" })
+            || root.FindFirst({ Name: "Voce esta compartilhando a tela" })
+            || root.FindFirst({ Name: "Dragger" }))
+                return true
+            ; Compact view (teams-compact-view.md)
             if (root.FindFirst({ Name: "Maximize meeting window" })
             || root.FindFirst({ Name: "Maximizar janela da reunião" })
             || root.FindFirst({ Name: "Maximizar janela da reuniao" }))

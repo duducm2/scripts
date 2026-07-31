@@ -1903,12 +1903,11 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
 ; Teams chrome that must not be auto-slotted / occupancy / fill:
 ; sharing control bar (teams-sharing-control-bar.md), meeting compact view
 ; (teams-compact-view.md). Chat (teams-chat.md) and meeting (teams-meeting.md) stay eligible.
-; Title + compact UIA path is shared via WM_IsTeamsChromeHwnd (tile/move/cycle too).
+; Primary path: WM_IsTeamsChromeHwnd (titles, short height, UIA). Secondary: untitled share chrome.
 ; Do not ignore whole ms-teams.exe via #!+L [R] — that also blocks chat/meeting.
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (!hwnd)
         return false
-    ; Shared hard-coded chrome (titles + compact UIA "Maximize meeting window").
     try {
         if (WM_IsTeamsChromeHwnd(hwnd))
             return true
@@ -1929,15 +1928,7 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     }
     t := StrLower(title)
 
-    ; Chat | … | Microsoft Teams and normal meeting titles ({name} | Microsoft Teams)
-    ; are eligible — never reject them via short-height / UIA heuristics.
-    ; Compact was already caught above (title prefix or Maximize meeting window).
-    if (InStr(t, "chat |"))
-        return false
-    if (InStr(t, "| microsoft teams"))
-        return false
-
-    ; Floating toolbar without classic title (short height).
+    ; Short floating strip — apply before "normal meeting" allow so share bar is never re-admitted.
     h := 0
     try {
         rect := Buffer(16, 0)
@@ -1948,6 +1939,12 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     }
     if (h > 0 && h <= 280)
         return true
+
+    ; Chat / normal meeting (tall) stay eligible.
+    if (InStr(t, "chat |"))
+        return false
+    if (InStr(t, "| microsoft teams"))
+        return false
 
     ; Presenter toolbar AutomationId (separate HWND or untitled share chrome).
     try {
