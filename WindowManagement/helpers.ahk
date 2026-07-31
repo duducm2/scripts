@@ -27,8 +27,9 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
 
 ; Teams chrome hard-exclude: sharing control bar + meeting compact view only.
 ; Chat (teams-chat.md) and full meeting (teams-meeting.md) MUST stay eligible.
-; Compact often shares a meeting-like Win32 title — distinguish via UIA
-; "Maximize meeting window" only (never short-height on titled meetings).
+; Do NOT FindFirst into meeting trees on the hot path — that stalls Place and looks
+; like the meeting is ignored. Compact without a title prefix is detected via
+; UIA root.Name only (dump Name still has "Meeting compact view | …").
 WM_IsTeamsChromeHwnd(hwnd) {
     if (!hwnd)
         return false
@@ -59,13 +60,13 @@ WM_IsTeamsChromeHwnd(hwnd) {
     || InStr(t, "modo de exibicao compacto da reuniao"))
         return true
 
-    ; --- Eligible surfaces: never height/UIA-exclude ---
+    ; --- Eligible by Win32 title (no UIA tree walk) ---
     if (InStr(t, "chat |") || InStr(t, "bate-papo |"))
         return false
 
-    ; Normal meeting title ({name} | Microsoft Teams) without chrome prefix.
-    ; Compact may look identical — only then use UIA Maximize button.
-    if (InStr(t, "| microsoft teams")) {
+    ; Meeting-like title: allow unless UIA *root Name* says compact/share (cheap).
+    ; Never FindFirst here — full meeting trees are huge and block rearrange.
+    if (InStr(t, "| microsoft teams") || t = "microsoft teams") {
         try {
             root := UIA.ElementFromHandle(hwnd)
             if (root) {
@@ -75,19 +76,17 @@ WM_IsTeamsChromeHwnd(hwnd) {
                 }
                 if (InStr(uName, "meeting compact view")
                 || InStr(uName, "modo de exibição compacto da reunião")
-                || InStr(uName, "modo de exibicao compacto da reuniao"))
-                    return true
-                if (root.FindFirst({ Name: "Maximize meeting window" })
-                || root.FindFirst({ Name: "Maximizar janela da reunião" })
-                || root.FindFirst({ Name: "Maximizar janela da reuniao" }))
+                || InStr(uName, "modo de exibicao compacto da reuniao")
+                || InStr(uName, "sharing control bar")
+                || InStr(uName, "barra de controle de compartilhamento"))
                     return true
             }
         } catch {
         }
-        return false  ; full meeting — participate in rearrange
+        return false
     }
 
-    ; Untitled / nonstandard Teams HWND: share bar is a short strip or has share UIA.
+    ; Untitled / nonstandard Teams HWND only: short share strip or UIA Name chrome.
     h := 0
     try {
         rect := Buffer(16, 0)
@@ -111,14 +110,13 @@ WM_IsTeamsChromeHwnd(hwnd) {
             || InStr(uName, "modo de exibição compacto da reunião")
             || InStr(uName, "modo de exibicao compacto da reuniao"))
                 return true
-            if (root.FindFirst({ Name: "You're sharing your screen" })
-            || root.FindFirst({ Name: "Você está compartilhando a tela" })
-            || root.FindFirst({ Name: "Voce esta compartilhando a tela" }))
-                return true
-            if (root.FindFirst({ Name: "Maximize meeting window" })
-            || root.FindFirst({ Name: "Maximizar janela da reunião" })
-            || root.FindFirst({ Name: "Maximizar janela da reuniao" }))
-                return true
+            ; Share bar button — only on untitled/short path (not on titled meetings).
+            if (h > 0 && h <= 400) {
+                if (root.FindFirst({ Name: "You're sharing your screen" })
+                || root.FindFirst({ Name: "Você está compartilhando a tela" })
+                || root.FindFirst({ Name: "Voce esta compartilhando a tela" }))
+                    return true
+            }
         }
     } catch {
     }
