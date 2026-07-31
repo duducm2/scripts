@@ -26,7 +26,7 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 }
 
 ; =============================================================================
-; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Paste file then hide
+; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Alt+P (non-favorites) then Paste file then hide
 ; =============================================================================
 #!+7::
 {
@@ -44,23 +44,29 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
 
-    if !ActivateClipAngelWithFocusCorrection(true) {
-        ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-
     if !isHold {
+        if !ActivateClipAngelWithFocusCorrection(true) {
+            ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        if !ClipAngel_MainHwnd() {
+            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
         SendInput "{F4}"
         return
     }
 
+    ; Hold: Alt+P opens non-favorite list (ActivateClipAngelWithFocusCorrection keeps last view, often Alt+B favorites).
     try {
+        ClipAngel_ActivateNativeFirstClip(priorHwnd)
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd {
+            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+            return
+        }
+        ClipAngel_EnsureWindowActive(hwnd)
+        ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
         if !ClipAngel_InvokePasteEnter(hwnd)
             ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
     } finally {
