@@ -872,30 +872,6 @@ AutoSlot_SwapQuietActive() {
 ; Prefer empty monitors before splitting a lone maximized (half-slot).
 ; Candidates: hidden first, then visible unslotted. One collect + optional QC backfill.
 
-; Rough half-pane geometry (used only to detect a true free-half already taken beside a max).
-AutoSlot_LooksLikeHalfPane(hwnd, monIdx) {
-    if (!hwnd || monIdx < 1)
-        return false
-    try {
-        MonitorGetWorkArea monIdx, &wl, &wt, &wr, &wb
-        rect := Buffer(16, 0)
-        if !DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
-            return false
-        l := NumGet(rect, 0, "int"), t := NumGet(rect, 4, "int")
-        r := NumGet(rect, 8, "int"), b := NumGet(rect, 12, "int")
-        workW := wr - wl
-        workH := wb - wt
-        if (workW < 1 || workH < 1)
-            return false
-        w := r - l
-        h := b - t
-        return (w >= Round(workW * 0.35) && w <= Round(workW * 0.65)
-        && h >= Round(workH * 0.50))
-    } catch {
-        return false
-    }
-}
-
 ; HWNDs that currently occupy AutoSlot slots on ordinal monitors (stay put during fill).
 ; Covered-behind a lone max are NOT slotted. Up to 2 uncovered occupants per ordinal are.
 AutoSlot_BuildSlottedHwndSet() {
@@ -966,6 +942,77 @@ AutoSlot_FillCandPreview(rows, maxN := 3) {
 AutoSlot_FillOrderLabel(monIdx) {
     order := AutoSlot_OrderForMonitorIndex(monIdx)
     return order > 0 ? order : monIdx
+}
+
+; True when any fill-candidate window center already lies on monIdx (same-monitor affinity).
+AutoSlot_FillHasSameMonCandidate(monIdx, rows) {
+    if (monIdx < 1 || !IsObject(rows))
+        return false
+    for row in rows {
+        hwnd := 0
+        try hwnd := Integer(row.hwnd)
+        catch
+            continue
+        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+            continue
+        if (AutoSlot_GetHwndMonitorIndex(hwnd) = monIdx)
+            return true
+    }
+    ; Also occupancy extras on this monitor (covered behind a max, not yet in rows).
+    try {
+        for occ in AutoSlot_OccupancyOnMonitor(monIdx) {
+            if (!occ.hwnd)
+                continue
+            if (AutoSlot_CompanionAlreadyFilled(occ.hwnd, monIdx))
+                continue
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; Split halfMons: monitors with a local BG/extra first, then the rest (ordinal preserved within each).
+AutoSlot_OrderHalfMonsSameMonFirst(halfMons, bgRows) {
+    sameFirst := []
+    rest := []
+    for monIdx in halfMons {
+        if (AutoSlot_FillHasSameMonCandidate(monIdx, bgRows))
+            sameFirst.Push(monIdx)
+        else
+            rest.Push(monIdx)
+    }
+    out := []
+    for monIdx in sameFirst
+        out.Push(monIdx)
+    for monIdx in rest
+        out.Push(monIdx)
+    return out
+}
+
+; After BG imports: expand any remaining lone half to full monitor (global expansion rule).
+AutoSlot_ExpandUnderfilledAfterFill() {
+    expanded := 0
+    ordinalCount := Min(MonitorGetCount(), AutoSlot_MAX_ORDINAL)
+    loop ordinalCount {
+        monIdx := AutoSlot_GetMonitorIndexByOrder(A_Index)
+        if (!monIdx)
+            continue
+        part := AutoSlot_PartitionUncoveredOccupancy(monIdx)
+        ; Lone half (not lone max — max already fills the visual monitor).
+        if (part.filled.Length != 0 || part.nonFilled.Length != 1)
+            continue
+        residual := part.nonFilled[1].hwnd
+        if (!residual || AutoSlot_IsClipAngelHwnd(residual))
+            continue
+        if (AutoSlot_HealLoneCompanion(monIdx)) {
+            order := AutoSlot_OrderForMonitorIndex(monIdx)
+            label := order > 0 ? order : monIdx
+            AutoSlot_Toast("ℹ️ Slot filled → M" label " (maximized)")
+            expanded++
+        }
+    }
+    return expanded
 }
 
 ; Fill candidates: same hidden pool as Ctrl+Alt+Win+Y first, then visible unslotted floats.
@@ -1147,6 +1194,9 @@ AutoSlot_RunTileBackground() {
     filled := 0
     healed := 0
     monResults := []
+    ; Prefer free-half monitors that already host a BG/extra (same-monitor pair) before
+    ; ordinal steal to another monitor (Scenario A before Scenario B).
+    halfMonsOrdered := AutoSlot_OrderHalfMonsSameMonFirst(halfMons, bgRows)
     try {
         for monIdx in emptyMons {
             result := AutoSlot_FillMonitorFromBackground(monIdx, true)
@@ -1156,7 +1206,7 @@ AutoSlot_RunTileBackground() {
             else if (result = "healed")
                 healed++
         }
-        for monIdx in halfMons {
+        for monIdx in halfMonsOrdered {
             result := AutoSlot_FillMonitorFromBackground(monIdx, true)
             monResults.Push("M" AutoSlot_FillOrderLabel(monIdx) "=" result)
             if (result = "healed")
@@ -1189,13 +1239,14 @@ AutoSlot_RunTileBackground() {
             reason: ""
         })
 
-        ; QC backfill: remaining empty / lone-max / lone-half (BG snap may still apply).
+        ; QC backfill: remaining empty / free-half (BG snap may still apply).
         needBackfill := candLeft > 0 && (capAfter.emptyMons.Length > 0
             || capAfter.loneMaxMons.Length > 0 || capAfter.halfMons.Length > 0)
         if (needBackfill) {
             filledBefore := filled
             healedBefore := healed
             bfResults := []
+            bfHalf := AutoSlot_OrderHalfMonsSameMonFirst(capAfter.halfMons, g_AutoSlotYBgRows)
             for monIdx in capAfter.emptyMons {
                 result := AutoSlot_FillMonitorFromBackground(monIdx, true)
                 bfResults.Push("M" AutoSlot_FillOrderLabel(monIdx) "=" result)
@@ -1204,7 +1255,7 @@ AutoSlot_RunTileBackground() {
                 else if (result = "healed")
                     healed++
             }
-            for monIdx in capAfter.halfMons {
+            for monIdx in bfHalf {
                 result := AutoSlot_FillMonitorFromBackground(monIdx, true)
                 bfResults.Push("M" AutoSlot_FillOrderLabel(monIdx) "=" result)
                 if (result = "healed")
@@ -1233,6 +1284,30 @@ AutoSlot_RunTileBackground() {
                 mons: bfMons,
                 preview: candPreview,
                 reason: ""
+            })
+        }
+
+        ; Global expansion: lone half with free second slot → maximize (after BG imports).
+        expanded := AutoSlot_ExpandUnderfilledAfterFill()
+        if (expanded > 0) {
+            healed += expanded
+            AutoSlot_WriteFillQualityLog({
+                pass: "expand",
+                empty: 0,
+                half: 0,
+                loneMax: 0,
+                skippedFull: skippedFull,
+                hidden: hiddenCount,
+                unslotted: unslottedCount,
+                cand: candAtStart,
+                candLeft: IsObject(g_AutoSlotYBgRows) ? g_AutoSlotYBgRows.Length : 0,
+                filled: 0,
+                healed: expanded,
+                remainEmpty: 0,
+                remainLoneMax: 0,
+                mons: "",
+                preview: candPreview,
+                reason: "expand_lone_half"
             })
         }
     } finally {
@@ -3174,6 +3249,7 @@ AutoSlot_BackgroundCandCoveredByF11(hwnd) {
 ; forceImport: explicit user fill (Ctrl+Alt+Win+6) — ignore place freeze / fill cooldown.
 ; When g_AutoSlotYBgActive, reuse g_AutoSlotYBgRows (one collect per fill pass); consume picked hwnds.
 ; Never returns an already-slotted hwnd (defense if candidate pool is stale).
+; Prefer candidates whose window center is already on monIdx (same-monitor pairing).
 AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, forceImport := false) {
     global g_AutoSlotYBgActive, g_AutoSlotYBgRows
     occupied := Map()
@@ -3204,47 +3280,56 @@ AutoSlot_PickBackgroundCandidate(monIdx, occupancyRows, excludeExtra := 0, force
         catch
             return 0
     }
-    i := 1
-    while (i <= rows.Length) {
-        row := rows[i]
-        hwnd := 0
-        try hwnd := Integer(row.hwnd)
-        catch {
-            i++
-            continue
-        }
-        if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+    ; Two passes: same-monitor first, then any remaining candidate.
+    loop 2 {
+        preferSame := (A_Index = 1 && monIdx >= 1)
+        i := 1
+        while (i <= rows.Length) {
+            row := rows[i]
+            hwnd := 0
+            try hwnd := Integer(row.hwnd)
+            catch {
+                i++
+                continue
+            }
+            if (!hwnd || !DllCall("IsWindow", "ptr", hwnd)) {
+                if (reuseY)
+                    rows.RemoveAt(i)
+                else
+                    i++
+                continue
+            }
+            if (occupied.Has(hwnd) || slotted.Has(hwnd)) {
+                i++
+                continue
+            }
+            if (AutoSlot_IsExcludedExeOrTitle(hwnd)) {
+                i++
+                continue
+            }
+            if (preferSame) {
+                homeMon := AutoSlot_GetHwndMonitorIndex(hwnd)
+                if (homeMon != monIdx) {
+                    i++
+                    continue
+                }
+            }
+            if (!forceImport) {
+                if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd)) {
+                    i++
+                    continue
+                }
+                if (AutoSlot_BackgroundCandCoveredByF11(hwnd)) {
+                    i++
+                    continue
+                }
+            } else {
+                AutoSlot_UnregisterSnapPair(hwnd)
+            }
             if (reuseY)
                 rows.RemoveAt(i)
-            else
-                i++
-            continue
+            return hwnd
         }
-        if (occupied.Has(hwnd) || slotted.Has(hwnd)) {
-            i++
-            continue
-        }
-        if (AutoSlot_IsExcludedExeOrTitle(hwnd)) {
-            i++
-            continue
-        }
-        ; Do not steal F11-covered / still-paired 50/50 companions into another slot.
-        ; Explicit fill (Ctrl+Alt+Win+6) matches list open (Ctrl+Alt+Win+Y): clear stale pair and allow the pick.
-        if (!forceImport) {
-            if (AutoSlot_BackgroundCandHasLivingSnapPartner(hwnd)) {
-                i++
-                continue
-            }
-            if (AutoSlot_BackgroundCandCoveredByF11(hwnd)) {
-                i++
-                continue
-            }
-        } else {
-            AutoSlot_UnregisterSnapPair(hwnd)
-        }
-        if (reuseY)
-            rows.RemoveAt(i)
-        return hwnd
     }
     return 0
 }
@@ -3371,12 +3456,26 @@ AutoSlot_FillMonitorFromBackground(monIdx, forceImport := false) {
         if (part.filled.Length >= 1) {
             filledHwnd := part.filled[1].hwnd
             if (forceImport) {
-                ; True half beside max = both slots taken — do not import or reshuffle.
-                if (AutoSlot_LooksLikeHalfPane(residual, monIdx))
-                    return "stale"
-                ; Extra/float beside max: still import Y-list BG beside the max (no half↔max snap).
+                ; Same-monitor pair (Scenario A): snap the on-monitor extra with the max.
+                ; Do not leave stale when residual is already a half — that is the desired 50/50.
                 if (blockImport || AutoSlot_IsClipAngelHwnd(filledHwnd))
                     return "noop"
+                if (filledHwnd && filledHwnd != residual && !AutoSlot_IsClipAngelHwnd(residual)) {
+                    g_AutoSlotRecent[residual] := A_TickCount
+                    AutoSlot_PruneRecent()
+                    pane := AutoSlot_SnapPair(residual, filledHwnd, monIdx, true)
+                    g_AutoSlotUndo := 0
+                    if (pane != "") {
+                        AutoSlot_RememberHwndMon(residual)
+                        AutoSlot_RememberHwndMon(filledHwnd)
+                        AutoSlot_PairSuppressMark(residual, AutoSlot_RECENT_MS)
+                        AutoSlot_PairSuppressMark(filledHwnd, AutoSlot_RECENT_MS)
+                        AutoSlot_ClaimMonitor(monIdx)
+                        AutoSlot_Toast("ℹ️ Slot filled → M" label " (50/50)")
+                        return "ok"
+                    }
+                }
+                ; Residual not pairable — import a different BG beside the max.
                 excludeRows := [{ hwnd: filledHwnd }, { hwnd: residual }]
                 cand := AutoSlot_PickBackgroundCandidate(monIdx, excludeRows, 0, true)
                 if (!cand)

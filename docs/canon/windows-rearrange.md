@@ -59,11 +59,11 @@ Maximizing one half of a registered pair **unregisters** the pair and **does not
 
 ## Explicit fill
 
-| Action                                    | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Ctrl+Alt+Win+6** / Window tools **[3]** | Full free-capacity fill (`forceImport`): empty → import BG; lone half → 50/50 with BG when candidates exist (**no** expand-only heal); lone maximized → 50/50 with BG (partner demaxes **in place**). **Already-slotted windows never relocate** to another monitor. No on-monitor half↔max reshuffle — if both are present, still import BG beside the max. Candidates match **Ctrl+Alt+Win+Y** hidden list first, then visible unslotted. QC: `.cursor/autoslot_fill_quality.log`. |
-| **Ctrl+Alt+Win+Y** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). List remains **hidden-only**. Lone half still pairs with the chosen window via Place/Ctrl+Y path.                                                                                                                                                                                                                                                                                                    |
-| **Study Topic QuickLook** (`#!+X` / open) | After layout, **`QuickLook_ScheduleAutoSlotPlace`** (deferred ~400 / 1200 / 2500 / 4000 ms; PostMessage + file IPC) → `TryPlaceBackgroundHwnd`; AutoSlot **sticky-retries** until max/half geometry sticks (QL `PositionWindow` undoes size unless Maximized). Same empty / free-half policy as Ctrl+Alt+Win+Y list open.                                                                                                                                                            |
+| Action                                    | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ctrl+Alt+Win+6** / Window tools **[3]** | Free-capacity fill (`forceImport`): empty → import BG; **same-monitor extras pair first** (e.g. Teams behind/beside Excel on M3 → 50/50 there before stealing BG to another ordinal free half); then remaining free halves in ordinal order. Lone half with no BG → after BG pass, **expand to full monitor**. Already-slotted pairs are not relocated across monitors. Candidates: Y-list/hidden first, then visible unslotted. QC: `.cursor/autoslot_fill_quality.log`. |
+| **Ctrl+Alt+Win+Y** open                   | Places the **chosen** background HWND into empty / free half (not a full scan). List remains **hidden-only**. Lone half still pairs with the chosen window via Place/Ctrl+Y path.                                                                                                                                                                                                                                                                                         |
+| **Study Topic QuickLook** (`#!+X` / open) | After layout, **`QuickLook_ScheduleAutoSlotPlace`** (deferred ~400 / 1200 / 2500 / 4000 ms; PostMessage + file IPC) → `TryPlaceBackgroundHwnd`; AutoSlot **sticky-retries** until max/half geometry sticks (QL `PositionWindow` undoes size unless Maximized). Same empty / free-half policy as Ctrl+Alt+Win+Y list open.                                                                                                                                                 |
 
 ---
 
@@ -89,14 +89,14 @@ Rearrange INFO toasts / fill loading use `BANNER_ACCENT_INFO`.
 
 ## Scenario map (quick)
 
-| Scenario                   | Outcome                                                 |
-| -------------------------- | ------------------------------------------------------- |
-| New window                 | Empty → max; else free half → 50/50; else leave as-is   |
-| Close / minimize of a pair | Heal leftover companion; no BG import                   |
-| Maximize one half          | Unregister pair; companion unchanged                    |
-| Ctrl+Alt+Win+6 / menu [3]  | Empty/lone-max/lone-half → import BG only; slotted stay |
-| Ctrl+Alt+Win+Y open        | Chosen HWND into free capacity                          |
-| Suite move / ^!#x          | May swap FG layouts                                     |
+| Scenario                   | Outcome                                                                |
+| -------------------------- | ---------------------------------------------------------------------- |
+| New window                 | Empty → max; else free half → 50/50; else leave as-is                  |
+| Close / minimize of a pair | Heal leftover companion; no BG import                                  |
+| Maximize one half          | Unregister pair; companion unchanged                                   |
+| Ctrl+Alt+Win+6 / menu [3]  | Same-mon BG pair first; then ordinal fill; expand leftover lone halves |
+| Ctrl+Alt+Win+Y open        | Chosen HWND into free capacity                                         |
+| Suite move / ^!#x          | May swap FG layouts                                                    |
 
 ---
 

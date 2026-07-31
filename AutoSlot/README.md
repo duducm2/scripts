@@ -25,7 +25,7 @@ From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF
 | Move to monitor           | Ctrl+Alt+Win+A/S/D/F                                                          |
 | User ignore list          | Win+Alt+Shift+L → **[R]** add / **[I]** manage (`autoslot_user_excludes.ini`) |
 
-Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: import background into free capacity only — already-slotted windows stay put (partner may demax in place for 50/50). Lone half with no BG → no change. Details and busy overlays: canon doc above.
+Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: prefer same-monitor background pairing, then fill other free halves; leftover lone halves expand to full. Already-slotted pairs stay on their monitor. Details and busy overlays: canon doc above.
 
 User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore by **process exe**; **[I]** opens a digit-remove list.
 
