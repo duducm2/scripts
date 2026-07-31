@@ -1900,10 +1900,10 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     return false
 }
 
-; Teams overlay UI that must not be auto-slotted / resized: classic sharing bar,
-; share-content picker, short floating toolbar, presenter toolbar
-; (teams-share.md: presenter-toolbar-container), and meeting compact view
-; (teams-compact-window.md: "Meeting compact view | …").
+; Teams chrome that must not be auto-slotted / occupancy / fill:
+; sharing control bar (teams-sharing-control-bar.md), meeting compact view
+; (teams-compact-view.md). Chat (teams-chat.md) and meeting (teams-meeting.md) stay eligible.
+; Do not ignore whole ms-teams.exe via #!+L [R] — that also blocks chat/meeting.
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (!hwnd)
         return false
@@ -1921,27 +1921,39 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     }
     t := StrLower(title)
 
-    ; Classic floating sharing control bar.
+    ; --- Hard exclude by title (UIA dumps) ---
+    ; Sharing control bar | Microsoft Teams
     if (InStr(t, "sharing control bar |")
     || InStr(t, "barra de controle de compartilhamento"))
         return true
 
-    ; Meeting compact view (floating mini meeting window).
+    ; Meeting compact view | … | Microsoft Teams
     if (InStr(t, "meeting compact view")
     || InStr(t, "modo de exibição compacto da reunião")
     || InStr(t, "modo de exibicao compacto da reuniao"))
         return true
 
     ; Share-content / share-screen picker (before sharing starts).
+    sharePicker := false
     for needle in ["share content", "share screen", "share your screen", "present now",
         "compartilhar conteúdo", "compartilhar conteudo", "compartilhar tela",
         "iniciar compartilhamento"] {
-        if (InStr(t, needle))
-            return true
+        if (InStr(t, needle)) {
+            sharePicker := true
+            break
+        }
     }
+    if (sharePicker)
+        return true
 
-    ; Floating toolbar sized window — new Teams often titles the bar like the meeting
-    ; ("Teams meeting | Microsoft Teams") without the classic "Sharing control bar |" prefix.
+    ; Chat | … | Microsoft Teams and normal meeting titles ({name} | Microsoft Teams)
+    ; are eligible — never reject them via short-height / UIA heuristics.
+    if (InStr(t, "chat |"))
+        return false
+    if (InStr(t, "| microsoft teams"))
+        return false
+
+    ; Floating toolbar without classic title (short height).
     h := 0
     try {
         rect := Buffer(16, 0)
@@ -1953,8 +1965,7 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (h > 0 && h <= 280)
         return true
 
-    ; Active-share presenter toolbar (teams-share.md: AutomationId presenter-toolbar-container).
-    ; May be a separate HWND or the meeting window while sharing — either must not be resized.
+    ; Presenter toolbar AutomationId (separate HWND or untitled share chrome).
     try {
         root := UIA.ElementFromHandle(hwnd)
         if (root && root.FindFirst({ AutomationId: "presenter-toolbar-container" }))
