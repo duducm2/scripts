@@ -12,6 +12,16 @@ GEMINI_ENTERPRISE_SCROLL_SETTLE_MS := 350
 GEMINI_ENTERPRISE_FIRST_LAUNCH_WAIT_MS := 2500
 GEMINI_ENTERPRISE_ACTIVATE_WAIT_MS := 2000
 GEMINI_ENTERPRISE_DEEP_MODEL := "3.1 Pro"
+GEMINI_ENTERPRISE_ASYNC_POLL_MS := 500
+GEMINI_ENTERPRISE_ASYNC_MAX_RETRIES := 60
+GEMINI_ENTERPRISE_COPY_MAX_RETRIES := 3
+GEMINI_ENTERPRISE_COPY_RETRY_SLEEP_MS := 400
+GEMINI_ENTERPRISE_STREAM_GONE_VERIFY_MS := 200
+GEMINI_ENTERPRISE_STREAM_GONE_LOOPS := 4
+GEMINI_ENTERPRISE_POST_COPY_SYNC_TIMEOUT_MS := 2000
+GEMINI_ENTERPRISE_CLIPBOARD_POLL_MS := 10
+; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt".
+GEMINI_ENTERPRISE_COPY_RESPONSE_NAMES := ["Copy response", "Copy Response", "Copy message", "Copy", "Copiar"]
 
 global g_GeminiEnterpriseCachedHwnd := 0
 global g_GeminiEnterpriseHotkeyActive := false
@@ -792,6 +802,201 @@ GeminiEnterprise_WaitForGenerationComplete(timeoutMs := 300000) {
     }
 }
 
+; --- Copy last response + async streaming monitor (#!+8 pronunciation) ----------
+
+GeminiEnterprise_IsCopyResponseButton(name) {
+    if (!name)
+        return false
+    if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
+        return false
+    for n in GEMINI_ENTERPRISE_COPY_RESPONSE_NAMES {
+        if (name = n)
+            return true
+    }
+    if (InStr(name, "Copy response", false) = 1 || InStr(name, "Copy Response", false) = 1)
+        return true
+    if (InStr(name, "Copy message", false) = 1)
+        return true
+    return false
+}
+
+GeminiEnterprise_GetCopyButtonsArray(uia) {
+    out := []
+    if (!IsObject(uia))
+        return out
+    scope := uia
+    usedPanel := false
+    try {
+        panel := GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "main-panel" }])
+        if (IsObject(panel)) {
+            scope := panel
+            usedPanel := true
+        }
+    } catch {
+    }
+    try {
+        allButtons := scope.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (GeminiEnterprise_IsCopyResponseButton(button.Name))
+                out.Push(button)
+        }
+    } catch {
+    }
+    if (out.Length = 0 && usedPanel) {
+        try {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (GeminiEnterprise_IsCopyResponseButton(button.Name))
+                    out.Push(button)
+            }
+        } catch {
+        }
+    }
+    return out
+}
+
+GeminiEnterprise_GetLastCopyButton(uia) {
+    arr := GeminiEnterprise_GetCopyButtonsArray(uia)
+    if (arr.Length = 0)
+        return 0
+    lastEl := 0
+    lastTop := ""
+    for btn in arr {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : arr[arr.Length]
+}
+
+GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) {
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    try {
+        SetTitleMatchMode(2)
+        if (!enterpriseHwnd)
+            enterpriseHwnd := GetGeminiEnterpriseWindowHwnd()
+        if (!enterpriseHwnd)
+            return false
+        if (!alreadyActive) {
+            if !GeminiEnterprise_ActivateWindow(enterpriseHwnd)
+                return false
+            Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        }
+        GeminiEnterprise_ScrollFeedToBottom(enterpriseHwnd)
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " enterpriseHwnd)
+        Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        copyBtn := GeminiEnterprise_GetLastCopyButton(uia)
+        if (!copyBtn)
+            return false
+        A_Clipboard := ""
+        if (!GeminiEnterprise_ClickUiaElement(copyBtn)) {
+            try copyBtn.Click()
+            catch {
+                return false
+            }
+        }
+        if !ClipWait(2)
+            return false
+        if (playChimeAndNotify) {
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            ShowCenteredOverlay_Utils("Copied!", 800, BANNER_ACCENT_SUCCESS)
+        }
+        if (restoreWindow)
+            Send "!{Tab}"
+        else {
+            root := GeminiEnterprise_ReadRootFromHwnd(enterpriseHwnd)
+            if (IsObject(root))
+                GeminiEnterprise_FocusComposer(root, false)
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+GeminiEnterprise_CopyLastMessageWithRetry(options := "", enterpriseHwnd := 0, maxRetries :=
+    GEMINI_ENTERPRISE_COPY_MAX_RETRIES) {
+    baseDelay := GEMINI_ENTERPRISE_COPY_RETRY_SLEEP_MS
+    loop maxRetries {
+        if (GeminiEnterprise_CopyLastMessageToClipboard(options, enterpriseHwnd))
+            return true
+        if (A_Index < maxRetries)
+            Sleep baseDelay * (1 << (A_Index - 1))
+    }
+    return false
+}
+
+GeminiEnterpriseBackgroundSetTimer(task, callback, periodMs := GEMINI_ENTERPRISE_ASYNC_POLL_MS) {
+    GeminiEnterpriseBackgroundStopTimer(task)
+    task.TimerCallback := callback
+    SetTimer(task.TimerCallback, periodMs)
+}
+
+GeminiEnterpriseBackgroundStopTimer(task) {
+    cb := ""
+    try cb := task.TimerCallback
+    catch
+        cb := ""
+    if (cb)
+        SetTimer(cb, 0)
+    try task.TimerCallback := ""
+}
+
+GeminiEnterprise_VerifyStreamingStopped(enterpriseHwnd) {
+    loop GEMINI_ENTERPRISE_STREAM_GONE_LOOPS {
+        Sleep GEMINI_ENTERPRISE_STREAM_GONE_VERIFY_MS
+        root := GeminiEnterprise_ReadRootFromHwnd(enterpriseHwnd)
+        if (!root)
+            return true
+        try {
+            if (!GeminiEnterprise_FindStopButton(root))
+                continue
+            return false
+        } catch {
+            return true
+        }
+    }
+    return true
+}
+
+GeminiEnterprise_MonitorStreamingTransition(task, onCompleteCallback) {
+    task.RetryCount++
+    if (task.RetryCount > task.MaxRetries) {
+        GeminiEnterpriseBackgroundStopTimer(task)
+        return "timeout"
+    }
+    if (!task.EnterpriseHwnd || !WinExist("ahk_id " task.EnterpriseHwnd)) {
+        GeminiEnterpriseBackgroundStopTimer(task)
+        return "unavailable"
+    }
+    uia := GeminiEnterprise_ReadRootFromHwnd(task.EnterpriseHwnd)
+    if (!uia)
+        return "unavailable"
+    if (GeminiEnterprise_FindStopButton(uia)) {
+        task.ButtonEverFound := true
+        return "streaming"
+    }
+    if (!task.ButtonEverFound)
+        return "waiting"
+    if (!GeminiEnterprise_VerifyStreamingStopped(task.EnterpriseHwnd))
+        return "streaming"
+    GeminiEnterpriseBackgroundStopTimer(task)
+    onCompleteCallback.Call()
+    return "completed"
+}
+
 ; ProseMirror often lacks Value/TextPattern — clipboard read after focus is primary.
 GeminiEnterprise_ComposerGetTextViaClipboard(hwnd := 0) {
     if (!hwnd)
@@ -955,4 +1160,177 @@ GeminiEnterprise_ShiftArt() {
     if (IsObject(root))
         GeminiEnterprise_FocusComposer(root, false)
     return ReplaceFocusedEditWithText(promptText)
+}
+
+; --- Async pronunciation lookup (Win+Alt+Shift+8) -------------------------------
+
+class GeminiEnterpriseAsyncLookup {
+    __New(lang, selectedText := "", preCopiedText := "") {
+        this.Lang := lang
+        this.PreCopiedText := preCopiedText
+        this.OriginalHwnd := 0
+        this.EnterpriseHwnd := 0
+        this.RetryCount := 0
+        this.MaxRetries := GEMINI_ENTERPRISE_ASYNC_MAX_RETRIES
+        this.ButtonEverFound := false
+        if (selectedText != "")
+            this.PreCopiedText := selectedText
+    }
+
+    Start() {
+        this.OriginalHwnd := WinExist("A")
+        if !this.OriginalHwnd
+            return
+        StandardLoadingBar_Show("⏳ Loading…", BANNER_ACCENT_INTERMEDIATE)
+        clipOk := false
+        if (this.PreCopiedText != "") {
+            A_Clipboard := this.PreCopiedText
+            clipOk := true
+        } else {
+            A_Clipboard := ""
+            clipOk := TryCopySelectionToClipboard_QuickLookAware()
+        }
+        if !clipOk {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Copy failed (no clipboard text).", 2400, BANNER_ACCENT_ERROR)
+            return
+        }
+        SetTitleMatchMode(2)
+        this.EnterpriseHwnd := GetGeminiEnterpriseWindowHwnd()
+        if !this.EnterpriseHwnd {
+            GeminiEnterprise_OpenOrFocus()
+            this.EnterpriseHwnd := GetGeminiEnterpriseWindowHwnd()
+        }
+        if !this.EnterpriseHwnd {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        if !GeminiEnterprise_ActivateWindow(this.EnterpriseHwnd) {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        try uia := UIA_Browser("ahk_id " this.EnterpriseHwnd)
+        catch {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        Sleep 300
+        if (!GeminiEnterprise_FocusComposer(uia, false)) {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        promptName := this.Lang ? "pronunciation-lookup-" . this.Lang : "pronunciation-lookup"
+        lookupLangTitle := Map("pt", "Português brasileiro", "en", "English", "de", "Deutsch")
+        lead := ""
+        if (this.Lang != "" && lookupLangTitle.Has(this.Lang))
+            lead :=
+                "Answer preamble (mandatory): The very first line of your reply must be exactly this language label (so the reader sees which lookup mode was used):`n"
+                . lookupLangTitle[this.Lang]
+                .
+                "`nThe second line must be blank. After that, follow every instruction below—including the seven sections—with no section titles or markdown headings for those sections (this preamble is the only allowed title line).`n`n"
+        searchString := lead . RTrim(GetPromptText(promptName), "`r`n")
+        A_Clipboard := searchString . "`n`nContent: " . A_Clipboard
+        Sleep 100
+        Send("^a")
+        Sleep 500
+        Send("^v")
+        Sleep 500
+        Send("{Enter}")
+        Sleep 300
+        origHwnd := this.OriginalHwnd
+        try {
+            if WinExist("ahk_id " origHwnd) {
+                WinActivate("ahk_id " origHwnd)
+                WinWaitActive("ahk_id " origHwnd, , 1)
+            }
+        } catch {
+        }
+        this.RetryCount := 0
+        GeminiEnterpriseBackgroundSetTimer(this, this.CheckCompletion.Bind(this), GEMINI_ENTERPRISE_ASYNC_POLL_MS)
+    }
+
+    CheckCompletion() {
+        state := GeminiEnterprise_MonitorStreamingTransition(this, this.OnStreamingCompleted.Bind(this))
+        if (state = "timeout")
+            StandardLoadingBar_Hide(0)
+    }
+
+    OnStreamingCompleted() {
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-completion.wav")
+        catch {
+        }
+        this.RetrieveResponse()
+    }
+
+    RetrieveResponse() {
+        try WinActivate("ahk_id " this.EnterpriseHwnd)
+        catch {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        if !WinWaitActive("ahk_exe chrome.exe", , 2) {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        copyOpt := { restoreWindow: false, playChimeAndNotify: false, alreadyActive: true }
+        seqBefore := Clipboard_GetSequenceNumber()
+        if !GeminiEnterprise_CopyLastMessageWithRetry(copyOpt, this.EnterpriseHwnd) {
+            StandardLoadingBar_Hide(0)
+            return
+        }
+        syncElapsed := 0
+        while (syncElapsed < GEMINI_ENTERPRISE_POST_COPY_SYNC_TIMEOUT_MS) {
+            if (Clipboard_GetSequenceNumber() != seqBefore)
+                break
+            Sleep GEMINI_ENTERPRISE_CLIPBOARD_POLL_MS
+            syncElapsed += GEMINI_ENTERPRISE_CLIPBOARD_POLL_MS
+        }
+        bannerText := A_Clipboard
+        origHwnd := this.OriginalHwnd
+        if (origHwnd && WinExist("ahk_id " origHwnd)) {
+            try {
+                WinActivate("ahk_id " origHwnd)
+                if (!WinActive("ahk_id " origHwnd))
+                    WinWaitActive("ahk_id " origHwnd, , 0.5)
+            } catch {
+            }
+        }
+        StandardLoadingBar_Hide(0)
+        if (!bannerText || StrLen(Trim(bannerText)) = 0)
+            return
+        state := "ℹ " . bannerText
+        closeNoOp(*) {
+        }
+        closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
+        StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
+            BANNER_ACCENT_INTERMEDIATE, 600, 17, "", false,
+            "[Enter] [E] [Esc] Close", true)
+    }
+}
+
+GeminiEnterpriseHotkey_ShowPronunciationLanguagePicker(selectedText) {
+    onSelect(lang) {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        if (lang != "")
+            (GeminiEnterpriseAsyncLookup(lang, selectedText)).Start()
+    }
+    onTimeout() {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        StandardLoadingBar_Show("⏳ Detecting language…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 450, fontSize: 17 })
+        lang := DetectLang_AhkFallback(selectedText)
+        if !(lang = "pt" || lang = "en" || lang = "de")
+            lang := "en"
+        (GeminiEnterpriseAsyncLookup(lang, selectedText)).Start()
+    }
+    keyCallbacks := Map(
+        "1", (*) => onSelect("pt"),
+        "2", (*) => onSelect("en"),
+        "3", (*) => onSelect("de"),
+        "*Escape", (*) => onSelect("")
+    )
+    StandardLoadingBar_ShowWithKeys("❓ Auto-detect in 2s — press to override", keyCallbacks, 2000, 0, onTimeout,
+        BANNER_ACCENT_INTERMEDIATE,
+        450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
 }

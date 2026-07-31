@@ -65,11 +65,9 @@ GeminiHotkey_ShowPronunciationLanguagePicker(selectedText) {
     ; HealthCheck/SendRequest can delay or starve the picker timer so the banner never appears.
     ; Daemon warm-up happens inside GeminiIPC_DetectLang → EnsureReady on timeout path.
     companion := ResolveGlobalAICompanion()
-    if (companion = "enterprise") {
-        GeminiEnterprise_FocusPromptOnly()
-        return
-    }
-    if (companion = "copilot")
+    if (companion = "enterprise")
+        SetTimer(GeminiEnterpriseHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
+    else if (companion = "copilot")
         SetTimer(CopilotHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
     else
         SetTimer(GeminiHotkey_ShowPronunciationLanguagePicker.Bind(selectedText), -1)
