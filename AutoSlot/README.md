@@ -2,9 +2,9 @@
 
 Optional auto-positioning for newly opened windows on multi-monitor setups. Included from `WindowManagement.ahk`.
 
-**Authoritative behavior:** [`docs/canon/windows-rearrange.md`](../docs/canon/windows-rearrange.md) — read that before changing Place, heal, fill, or swap logic.
+**Authoritative behavior:** [`docs/canon/windows-rearrange.md`](../docs/canon/windows-rearrange.md) — read that before changing Place, heal, fill, swap, or **Teams chrome** logic.
 
-**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — one-scan fill (`Ctrl+Alt+Win+6`: hidden + visible unslotted), place-request poll, dense eligibility settle, and the **2026-07-27 work-PC latency fix** (SHOW reentrancy, occupancy cache, SHOW queue). Do not one-shot abandon eligibility or sparse 300/800/1500 retries.
+**Efficiency / Place latency:** [`docs/autoslot-efficiency.md`](../docs/autoslot-efficiency.md) — one-scan fill (`Ctrl+Alt+Win+6`: hidden + visible unslotted), place-request poll, dense eligibility settle, the **2026-07-27 work-PC latency fix**, and the **Teams chrome / no-FindFirst** rule. Do not one-shot abandon eligibility or sparse 300/800/1500 retries.
 
 Detection/placement live in this folder. **50/50 snaps** reuse `WindowManagement\tile_snap.ahk` (same engine as `Ctrl+Alt+Win+X`).
 
@@ -27,7 +27,7 @@ From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF
 
 Place: empty monitor → maximize; else free half → 50/50; else leave as-is (do not cover). Close/minimize of a pair **heals** (maximizes) the leftover companion. **Ctrl+Alt+Win+6**: prefer same-monitor background pairing, then fill other free halves; leftover lone halves expand to full. Already-slotted pairs stay on their monitor. Details and busy overlays: canon doc above.
 
-User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore by **process exe**; **[I]** opens a digit-remove list. Do **not** ignore `ms-teams.exe` for chrome — that blocks chat and meeting too. `WM_IsTeamsChromeHwnd` excludes only share bar / compact (Win32 title or UIA **root Name**). Meeting-like titles (`… | Microsoft Teams`) are allow-listed with **no UIA FindFirst** (deep tree walks stalled Place). Chat is allow-listed the same way.
+User ignore list (via **#!+L**): same effect as built-in ClipAngel exclusion — no place/fill/occupancy. **[R]** arms pick-to-ignore by **process exe**; **[I]** opens a digit-remove list. **Teams:** see canon [Teams windows](../docs/canon/windows-rearrange.md#teams-windows) — chat + meeting participate; share bar + compact hard-excluded via `WM_IsTeamsChromeHwnd`. Do **not** add `ms-teams.exe` via **[R]**.
 
 ## Disable module
 

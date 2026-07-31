@@ -53,6 +53,21 @@ Key helpers: `AutoSlot_BeginPlaceCritical` / `EndPlaceCritical`, `AutoSlot_Queue
 - Remembering hwnd in `Schedule` before eligibility OK — races with SHOW skips and settle.
 - Treating file IPC poll **1000 ms** as the normal-window Place delay — that poll only affects cross-process / QL file fallback, not shell CREATE/SHOW Place.
 - Running full `PartitionOccupancy` on every WinEvent SHOW on a busy multi-monitor desktop.
+- **`UIA.FindFirst` on Teams meeting/chat trees inside `WM_IsTeamsChromeHwnd` / occupancy / Place** — deep Accessibility walks stall Place so the meeting looks “ignored.” For meeting-like titles, allow-list with **root Name only** (see canon [Teams windows](canon/windows-rearrange.md#teams-windows)). Presenter-toolbar FindFirst on every occupancy row was separately ruled out for the 2026-07-27 work-PC lag (`teamsUiaCalls=0`); the chrome-gate FindFirst is a different, confirmed Place stall.
+
+---
+
+## Teams chrome gate (2026-07-31)
+
+Hard-exclude sharing control bar + meeting compact view without excluding chat/meeting. Working design:
+
+- Shared helper `WM_IsTeamsChromeHwnd` (helpers.ahk) → AutoSlot + tile/move/cycle.
+- Title-first chrome; chat + `… | Microsoft Teams` allow-listed.
+- Compact/share on meeting-like titles: UIA **root Name** only — **no FindFirst**.
+- Untitled short HWND: height ≤280 (+ optional short-window share button).
+- Never persist `ms-teams.exe` via `#!+L` **[R]** for this purpose.
+
+Full policy table and wiring: [`docs/canon/windows-rearrange.md#teams-windows`](canon/windows-rearrange.md#teams-windows).
 
 ---
 

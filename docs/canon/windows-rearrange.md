@@ -14,7 +14,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 - **More than one** monitor.
 - Capacity: **2 slots** per ordinal monitor; up to **4** ordinals → **8** max.
 - Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Ctrl+Alt+Win+6 fill / Ctrl+Alt+Win+Y list). Windows hidden behind a maximized window do not fill the free half.
-- Exclusions: ClipAngel, tool windows, dialog noise, AutoHotkey GUIs / own PID — not moved and not occupancy. **Teams:** chat and meeting are allow-listed (participate). **Sharing control bar** and **meeting compact view** are hard-excluded via `WM_IsTeamsChromeHwnd` (chrome titles; compact also via UIA `Maximize meeting window` when Win32 title looks like a meeting; untitled share strip via short height / share UIA). Do **not** add `ms-teams.exe` via **Win+Alt+Shift+L** → **[R]** (that also blocks chat/meeting). User ignore list: **[R]** add / **[I]** manage (`assets/data/autoslot_user_excludes.ini`).
+- Exclusions: ClipAngel, tool windows, dialog noise, AutoHotkey GUIs / own PID — not moved and not occupancy. **Teams:** see [Teams windows](#teams-windows) below (chat + meeting participate; share bar + compact hard-excluded). User ignore list: **Win+Alt+Shift+L** → **[R]** / **[I]** (`assets/data/autoslot_user_excludes.ini`) — do **not** add `ms-teams.exe` via **[R]** to hide chrome.
 
 ---
 
@@ -100,10 +100,46 @@ Rearrange INFO toasts / fill loading use `BANNER_ACCENT_INFO`.
 
 ---
 
+## Teams windows
+
+**Code:** [`WM_IsTeamsChromeHwnd`](../../WindowManagement/helpers.ahk) (shared by tile/move/cycle via `WM_IsExcludedIndicatorWindow` and by AutoSlot via `AutoSlot_IsTeamsShareUiHwnd`).  
+**UIA dumps (reference):** `teams-chat.md`, `teams-meeting.md`, `teams-sharing-control-bar.md`, `teams-compact-view.md` (repo root).
+
+### Policy
+
+| Surface              | Manage with AutoSlot / rearrange? | Fingerprint                                                                                                                         |
+| -------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Chat                 | **Yes**                           | Win32 / UIA title `Chat \| … \| Microsoft Teams` (PT: `Bate-papo \|`)                                                               |
+| Meeting              | **Yes**                           | `{name} \| Microsoft Teams` (e.g. `test \| Microsoft Teams`)                                                                        |
+| Sharing control bar  | **No**                            | Title `Sharing control bar \| …` (PT variants); or untitled short strip (height ≤280); or UIA root Name / short-window share button |
+| Meeting compact view | **No**                            | Title `Meeting compact view \| …` (PT compact strings); or UIA **root Name** containing that prefix                                 |
+
+Do **not** ignore whole `ms-teams.exe` via `#!+L` **[R]** — exe matching blocks chat and meeting too. Built-in chrome rules replace that hammer.
+
+### Detection rules (do not regress)
+
+1. **Title-first chrome** — `sharing control bar`, `meeting compact view` (+ PT). No trailing `|` in WM background title needles: `WM_BackgroundTitleIsExcluded` treats `|` as `exe|title`, so `"Sharing control bar |"` never matched.
+2. **Allow-list chat** — `Chat |` / `Bate-papo |` → never chrome (no height / no tree walk).
+3. **Allow-list meeting-like titles** — `… | Microsoft Teams` (and bare `Microsoft Teams`) → **eligible** unless UIA **root Name** alone says compact or share. **Never `FindFirst` into the meeting tree on this path.**
+4. **Untitled / odd Teams HWND only** — short height (≤280) and optional short-window share-button FindFirst (height ≤400).
+
+### Why FindFirst was removed from the meeting path
+
+Deep UIA `FindFirst` (e.g. `Maximize meeting window`) on every Place/occupancy/tile check walked the full meeting Accessibility tree. That stalled Place so the meeting looked “ignored” even when the exclude logic intended to allow it. Compact is still caught when Win32 title or **root Name** carries `Meeting compact view | …` (as in the dump). Prefer root Name over tree search.
+
+### Wiring
+
+- Place / fill / occupancy: `AutoSlot_IsExcludedExeOrTitle` → `AutoSlot_IsTeamsShareUiHwnd` → `WM_IsTeamsChromeHwnd`
+- Tile / move / cycle / visible lists: `WM_IsExcludedIndicatorWindow` → `WM_IsTeamsChromeHwnd`
+- Y-list / background title filter: default needles `Sharing control bar`, `Meeting compact view` (no trailing `|`)
+
+---
+
 ## AI rule
 
 When changing or explaining Windows rearrangement:
 
-1. Read **this canon** and the code paths above.
+1. Read **this canon** and the code paths above (including **Teams windows** before changing Teams excludes).
 2. Do **not** treat archived audit docs or old plans as current policy unless the task is historical analysis.
 3. Do not reintroduce automatic background import on close/move/minimize unless the user explicitly requests it.
+4. Do not reintroduce UIA `FindFirst` on meeting-like Teams titles in the rearrange hot path.
