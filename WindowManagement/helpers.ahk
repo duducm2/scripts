@@ -25,8 +25,75 @@ TryActivateWindow_WM(winSpec, errorMessage := "❌ Error: Target window not foun
     }
 }
 
-; Handy, Clip Angel, Win+Shift+S clip UI, and WindowManagement identity: skip for
-; per-monitor cycling, move-to-monitor, tile, and auto-cursor.
+; Teams chrome hard-exclude: sharing control bar + meeting compact view.
+; Gate: Teams exe or class TeamsWebView. Chat / full meeting stay eligible.
+; Compact often has Win32 title like "{name} | Microsoft Teams" (no compact prefix) —
+; then UIA Name / "Maximize meeting window" (teams-compact-view.md) is required.
+; Do not ignore whole ms-teams.exe via #!+L [R].
+WM_IsTeamsChromeHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    exe := ""
+    class := ""
+    title := ""
+    try exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+    catch {
+    }
+    try class := WinGetClass("ahk_id " hwnd)
+    catch {
+    }
+    isTeamsExe := (exe = "ms-teams.exe" || exe = "teams.exe" || exe = "msteams.exe")
+    if (!isTeamsExe && class != "TeamsWebView")
+        return false
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+    }
+    t := StrLower(title)
+    ; Sharing control bar (no trailing "|" — WM title excludes parse "|" as exe|title).
+    if (InStr(t, "sharing control bar")
+    || InStr(t, "barra de controle de compartilhamento"))
+        return true
+    ; Meeting compact view (when Win32 title carries the prefix).
+    if (InStr(t, "meeting compact view")
+    || InStr(t, "modo de exibição compacto da reunião")
+    || InStr(t, "modo de exibicao compacto da reuniao"))
+        return true
+    ; Share-content / share-screen picker.
+    for needle in ["share content", "share screen", "share your screen", "present now",
+        "compartilhar conteúdo", "compartilhar conteudo", "compartilhar tela",
+        "iniciar compartilhamento"] {
+        if (InStr(t, needle))
+            return true
+    }
+    ; Chat is never chrome — skip UIA.
+    if (InStr(t, "chat |") || InStr(t, "bate-papo |"))
+        return false
+    ; Compact view UIA fallback (Win32 title often looks like a normal meeting).
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (root) {
+            uName := ""
+            try uName := StrLower(root.Name)
+            catch {
+            }
+            if (InStr(uName, "meeting compact view")
+            || InStr(uName, "modo de exibição compacto da reunião")
+            || InStr(uName, "modo de exibicao compacto da reuniao")
+            || InStr(uName, "sharing control bar")
+            || InStr(uName, "barra de controle de compartilhamento"))
+                return true
+            if (root.FindFirst({ Name: "Maximize meeting window" })
+            || root.FindFirst({ Name: "Maximizar janela da reunião" })
+            || root.FindFirst({ Name: "Maximizar janela da reuniao" }))
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+; Handy, Clip Angel, Win+Shift+S clip UI, Teams chrome, and WindowManagement identity:
+; skip for per-monitor cycling, move-to-monitor, tile, and auto-cursor.
 WM_IsExcludedIndicatorWindow(hwnd) {
     if (!hwnd)
         return false
@@ -38,6 +105,8 @@ WM_IsExcludedIndicatorWindow(hwnd) {
     if (exe = "handy.exe" || exe = "clipangel.exe")
         return true
     if (exe = "screenclippinghost.exe" || exe = "snippingtool.exe" || exe = "screensketch.exe")
+        return true
+    if (WM_IsTeamsChromeHwnd(hwnd))
         return true
     try {
         title := WinGetTitle(hwnd)

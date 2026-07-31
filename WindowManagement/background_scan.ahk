@@ -9,8 +9,9 @@ WM_BackgroundTitleExcludes_Init() {
     global g_WM_BackgroundTitleExcludes, g_WM_BackgroundTitleExcludesReady
     list := []
     seen := Map()
+    ; No trailing "|" — WM_BackgroundTitleIsExcluded treats "|" as exe|title format.
     for needle in ["IT Workplace", "Drafts Monitor", "Form1", "Screenpresso",
-        "Sharing control bar |", "Meeting compact view",
+        "Sharing control bar", "Meeting compact view",
         "barra de controle de compartilhamento", "modo de exibição compacto da reunião"]
         WM_BackgroundTitleExcludes_Register(&list, &seen, needle)
     path := WM_BackgroundTitleExcludes_IniPath()

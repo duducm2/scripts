@@ -1903,10 +1903,18 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
 ; Teams chrome that must not be auto-slotted / occupancy / fill:
 ; sharing control bar (teams-sharing-control-bar.md), meeting compact view
 ; (teams-compact-view.md). Chat (teams-chat.md) and meeting (teams-meeting.md) stay eligible.
+; Title + compact UIA path is shared via WM_IsTeamsChromeHwnd (tile/move/cycle too).
 ; Do not ignore whole ms-teams.exe via #!+L [R] — that also blocks chat/meeting.
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (!hwnd)
         return false
+    ; Shared hard-coded chrome (titles + compact UIA "Maximize meeting window").
+    try {
+        if (WM_IsTeamsChromeHwnd(hwnd))
+            return true
+    } catch {
+    }
+
     try {
         exe := StrLower(WinGetProcessName("ahk_id " hwnd))
     } catch {
@@ -1921,33 +1929,9 @@ AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     }
     t := StrLower(title)
 
-    ; --- Hard exclude by title (UIA dumps) ---
-    ; Sharing control bar | Microsoft Teams
-    if (InStr(t, "sharing control bar |")
-    || InStr(t, "barra de controle de compartilhamento"))
-        return true
-
-    ; Meeting compact view | … | Microsoft Teams
-    if (InStr(t, "meeting compact view")
-    || InStr(t, "modo de exibição compacto da reunião")
-    || InStr(t, "modo de exibicao compacto da reuniao"))
-        return true
-
-    ; Share-content / share-screen picker (before sharing starts).
-    sharePicker := false
-    for needle in ["share content", "share screen", "share your screen", "present now",
-        "compartilhar conteúdo", "compartilhar conteudo", "compartilhar tela",
-        "iniciar compartilhamento"] {
-        if (InStr(t, needle)) {
-            sharePicker := true
-            break
-        }
-    }
-    if (sharePicker)
-        return true
-
     ; Chat | … | Microsoft Teams and normal meeting titles ({name} | Microsoft Teams)
     ; are eligible — never reject them via short-height / UIA heuristics.
+    ; Compact was already caught above (title prefix or Maximize meeting window).
     if (InStr(t, "chat |"))
         return false
     if (InStr(t, "| microsoft teams"))
