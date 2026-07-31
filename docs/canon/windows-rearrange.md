@@ -14,7 +14,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 - **More than one** monitor.
 - Capacity: **2 slots** per ordinal monitor; up to **4** ordinals → **8** max.
 - Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Ctrl+Alt+Win+6 fill / Ctrl+Alt+Win+Y list). Windows hidden behind a maximized window do not fill the free half.
-- Exclusions: ClipAngel, tool windows, dialog noise, AutoHotkey GUIs / own PID — not moved and not occupancy. **Teams:** chat (`Chat | … | Microsoft Teams`) and meeting (`{name} | Microsoft Teams`) are eligible; **sharing control bar** and **meeting compact view** are hard-excluded via `WM_IsTeamsChromeHwnd` (Win32 title + UIA fallback for compact when title looks like a meeting) for tile/move/cycle and AutoSlot Place/fill/occupancy — not by ignoring whole `ms-teams.exe`. User ignore list via **Win+Alt+Shift+L** → **[R]** add / **[I]** manage (`assets/data/autoslot_user_excludes.ini`) has the same gate effect — do **not** add `ms-teams.exe` via **[R]** to hide chrome (that also blocks chat/meeting).
+- Exclusions: ClipAngel, tool windows, dialog noise, AutoHotkey GUIs / own PID — not moved and not occupancy. **Teams:** chat and meeting are allow-listed (participate). **Sharing control bar** and **meeting compact view** are hard-excluded via `WM_IsTeamsChromeHwnd` (chrome titles; compact also via UIA `Maximize meeting window` when Win32 title looks like a meeting; untitled share strip via short height / share UIA). Do **not** add `ms-teams.exe` via **Win+Alt+Shift+L** → **[R]** (that also blocks chat/meeting). User ignore list: **[R]** add / **[I]** manage (`assets/data/autoslot_user_excludes.ini`).
 
 ---
 

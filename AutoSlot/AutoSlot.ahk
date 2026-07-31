@@ -1900,60 +1900,16 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
     return false
 }
 
-; Teams chrome that must not be auto-slotted / occupancy / fill:
-; sharing control bar (teams-sharing-control-bar.md), meeting compact view
-; (teams-compact-view.md). Chat (teams-chat.md) and meeting (teams-meeting.md) stay eligible.
-; Primary path: WM_IsTeamsChromeHwnd (titles, short height, UIA). Secondary: untitled share chrome.
-; Do not ignore whole ms-teams.exe via #!+L [R] — that also blocks chat/meeting.
+; Teams chrome that must not be auto-slotted / occupancy / fill.
+; Authority: WM_IsTeamsChromeHwnd (chat + full meeting eligible; share bar + compact excluded).
 AutoSlot_IsTeamsShareUiHwnd(hwnd) {
     if (!hwnd)
         return false
     try {
-        if (WM_IsTeamsChromeHwnd(hwnd))
-            return true
-    } catch {
-    }
-
-    try {
-        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+        return WM_IsTeamsChromeHwnd(hwnd)
     } catch {
         return false
     }
-    if (exe != "ms-teams.exe" && exe != "teams.exe" && exe != "msteams.exe")
-        return false
-
-    title := ""
-    try title := WinGetTitle("ahk_id " hwnd)
-    catch {
-    }
-    t := StrLower(title)
-
-    ; Short floating strip — apply before "normal meeting" allow so share bar is never re-admitted.
-    h := 0
-    try {
-        rect := Buffer(16, 0)
-        if DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect)
-            h := NumGet(rect, 12, "int") - NumGet(rect, 4, "int")
-    } catch {
-        h := 0
-    }
-    if (h > 0 && h <= 280)
-        return true
-
-    ; Chat / normal meeting (tall) stay eligible.
-    if (InStr(t, "chat |"))
-        return false
-    if (InStr(t, "| microsoft teams"))
-        return false
-
-    ; Presenter toolbar AutomationId (separate HWND or untitled share chrome).
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        if (root && root.FindFirst({ AutomationId: "presenter-toolbar-container" }))
-            return true
-    } catch {
-    }
-    return false
 }
 
 ; Occupancy skip: Clip Angel is fully ignored — never counts as a slot occupant, so
