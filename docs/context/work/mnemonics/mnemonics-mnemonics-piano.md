@@ -1,1 +1,1 @@
-C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\piano\mnemonics-piano.mds
+C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\Piano\mnemonics-piano.md
