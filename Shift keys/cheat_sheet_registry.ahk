@@ -684,6 +684,7 @@ cheatSheets["Gmail"] := "
     📰 [U][U]pdates
     💬 [F][F]orums
     📬 [R]Toggle [R]ead status
+    📬 [E]Select all visible + mark r[E]ad + deselect
     ⬅️ [P][P]revious conversation
     ➡️ [N][N]ext conversation
     📦 [A][A]rchive conversation

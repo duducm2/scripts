@@ -5,6 +5,73 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
+Gmail_ToggleReadStatus(uia) {
+    readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
+    unreadPattern := "i)^(Mark as unread|Marcar como n[oÃ³] lida|Marcar como n[oÃ³] lido)$"
+    if (btn := WaitForButton(uia, readPattern, 1000)) {
+        btn.Invoke()
+        return true
+    }
+    if (btn := WaitForButton(uia, unreadPattern, 1000)) {
+        btn.Invoke()
+        return true
+    }
+    return false
+}
+
+Gmail_CheckboxToggleState(el) {
+    try {
+        if el.GetPropertyValue(UIA.Property.IsTogglePatternAvailable)
+            return el.TogglePattern.CurrentToggleState
+    } catch {
+    }
+    return -1
+}
+
+; Set toolbar master Select checkbox: wantChecked 1=select all, 0=deselect.
+; Screen Click("left") does not toggle this control; TogglePattern does.
+Gmail_SetMasterSelect(uia, wantChecked) {
+    selectBtn := 0
+    try selectBtn := uia.FindElement({ Name: "Select", Type: "Button" })
+    if (!selectBtn)
+        return false
+
+    checkbox := 0
+    try checkbox := selectBtn.FindElement({ Type: "CheckBox" })
+
+    if (checkbox) {
+        if (Gmail_CheckboxToggleState(checkbox) = wantChecked)
+            return true
+
+        try {
+            if checkbox.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                checkbox.TogglePattern.Toggle()
+                Sleep 150
+                if (Gmail_CheckboxToggleState(checkbox) = wantChecked)
+                    return true
+            }
+        } catch {
+        }
+
+        try {
+            checkbox.ControlClick("left")
+            Sleep 150
+            if (Gmail_CheckboxToggleState(checkbox) = wantChecked)
+                return true
+        } catch {
+        }
+    }
+
+    ; Fallback: Gmail *a select-all / *n deselect-all
+    try {
+        Send(wantChecked ? "{*}a" : "{*}n")
+        Sleep 200
+        return true
+    } catch {
+    }
+    return false
+}
+
 #HotIf WinActive("Gmail")
 
 ; Shift + I : Go to main inbox - Inbox
@@ -64,21 +131,34 @@
     {
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300
-
-        ; Regex patterns for the buttons (English & Portuguese)
-        readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
-        unreadPattern := "i)^(Mark as unread|Marcar como n[oÃ³] lida|Marcar como n[oÃ³] lido)$"
-
-        ; Prefer clicking "Mark as read" if present; otherwise "Mark as unread"
-        if (btn := WaitForButton(uia, readPattern, 1000)) {
-            btn.Invoke()
-        }
-        else if (btn := WaitForButton(uia, unreadPattern, 1000)) {
-            btn.Invoke()
-        }
-        else {
+        if (!Gmail_ToggleReadStatus(uia))
             MsgBox "Could not find a 'Mark as read' or 'Mark as unread' button."
+    }
+    catch Error as e {
+        MsgBox "An error occurred: " e.Message
+    }
+}
+
+; Shift + E : Select all visible, mark read/unread, then deselect
++e::
+{
+    try {
+        uia := UIA_Browser("ahk_exe chrome.exe")
+        Sleep 300
+
+        if (!Gmail_SetMasterSelect(uia, 1)) {
+            MsgBox "Could not find the 'Select' checkbox."
+            return
         }
+
+        Sleep 400
+        if (!Gmail_ToggleReadStatus(uia)) {
+            MsgBox "Could not find a 'Mark as read' or 'Mark as unread' button."
+            return
+        }
+
+        Sleep 300
+        Gmail_SetMasterSelect(uia, 0)
     }
     catch Error as e {
         MsgBox "An error occurred: " e.Message
@@ -158,4 +238,3 @@
         MsgBox "An error occurred: " e.Message
     }
 }
-
