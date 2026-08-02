@@ -863,6 +863,14 @@ CursorShortcutMenu_ActionFetch(*) {
     ClickHidePanelButton()
 }
 
+; Ctrl + 2 : Ensure Files Explorer focus, then native Copy Path
+$^2:: {
+    editorHwnd := WinExist("A")
+    if !Editor_FocusIsInFilesExplorer(editorHwnd)
+        Editor_EnsureFilesExplorerSidebarFocused(editorHwnd)
+    Send "^2"
+}
+
 ; Ctrl + 5 : Context menu navigation sequence
 ^5::
 {

@@ -362,7 +362,7 @@ cheatSheets["Cursor.exe"] := "
     
     === Ctrl (no other modifiers) ===
     🎯 [1] Remove clustering and focus on the code (ahk)
-    📁 [2] Copy path (cursor)
+    📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
     📊 [3] CSV: Edit CSV
     💾 [4] CSV: Apply changes to source file and save
     📋 [5] MarkDown Enhanced: Export in PDF format. 
@@ -472,7 +472,7 @@ cheatSheets["Code.exe"] := "
     
     === Ctrl (no other modifiers) ===
     🎯 [1] Remove clustering and focus on the code (ahk)
-    📁 [2] Copy path (VS Code)
+    📁 [2] Copy path — Explorer then Ctrl+2 (ahk)
     📊 [3] CSV: Edit CSV
     💾 [4] CSV: Apply changes to source file and save
     📋 [5] MarkDown Enhanced: Export in PDF format. 
