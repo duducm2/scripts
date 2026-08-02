@@ -317,6 +317,13 @@
     FileDialog_SaveAsCsvUtf8()
 }
 
+; Shift + I : Import CSV — Open → Load → close Queries pane
++i:: {
+    if !IsFileDialogActive()
+        return
+    FileDialog_ImportCsvLoad()
+}
+
 #HotIf
 
 ; --- File Dialog helpers (CSV UTF-8 save flow) ---------------------------------
@@ -629,6 +636,244 @@ FileDialog_SaveAsCsvUtf8() {
         FileDialog_ClickSaveButton(root)
         Sleep 200
         FileDialog_HandlePostSaveDialogs()
+    } catch {
+    }
+}
+
+; --- File Dialog helpers (Import CSV → Load → close Queries) -------------------
+
+FileDialog_ClickOpenButton(root) {
+    actionBtn := 0
+    try actionBtn := root.FindFirst({ Type: "SplitButton", AutomationId: "1" })
+    catch {
+        actionBtn := 0
+    }
+    if !actionBtn {
+        try actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
+        catch {
+            actionBtn := 0
+        }
+    }
+    if !actionBtn {
+        for name in ["Open", "Abrir"] {
+            try actionBtn := root.FindFirst({ Type: "SplitButton", Name: name })
+            catch {
+                actionBtn := 0
+            }
+            if !actionBtn {
+                try actionBtn := root.FindFirst({ Type: "Button", Name: name })
+                catch {
+                    actionBtn := 0
+                }
+            }
+            if actionBtn
+                break
+        }
+    }
+    if actionBtn && FileDialog_InvokeButton(actionBtn)
+        return true
+    Send "!o"
+    return true
+}
+
+FileDialog_FindLoadButton(root) {
+    for name in ["Load", "Carregar"] {
+        try {
+            btn := root.FindFirst({ Type: "Button", Name: name })
+            if btn
+                return btn
+        } catch {
+        }
+    }
+    return 0
+}
+
+FileDialog_WaitAndClickLoad(timeoutMs := 15000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        ; Prefer ImportFromTextDialog AutomationId (Excel text import preview).
+        try {
+            excelHwnd := WinExist("ahk_exe EXCEL.EXE")
+            if excelHwnd {
+                excelRoot := UIA.ElementFromHandle(excelHwnd)
+                importDlg := 0
+                try importDlg := excelRoot.FindFirst({ AutomationId: "ImportFromTextDialog" })
+                catch {
+                    importDlg := 0
+                }
+                if importDlg {
+                    loadBtn := FileDialog_FindLoadButton(importDlg)
+                    if loadBtn && FileDialog_InvokeButton(loadBtn)
+                        return true
+                }
+                ; Fallback: Load/Carregar anywhere under Excel window.
+                loadBtn := FileDialog_FindLoadButton(excelRoot)
+                if loadBtn && FileDialog_InvokeButton(loadBtn)
+                    return true
+            }
+        } catch {
+        }
+
+        ; Also try active window if focus moved to the import dialog.
+        try {
+            activeHwnd := WinExist("A")
+            if activeHwnd {
+                activeRoot := UIA.ElementFromHandle(activeHwnd)
+                loadBtn := FileDialog_FindLoadButton(activeRoot)
+                if loadBtn && FileDialog_InvokeButton(loadBtn)
+                    return true
+            }
+        } catch {
+        }
+
+        Sleep 250
+    }
+    return false
+}
+
+FileDialog_CloseQueriesPaneViaCom() {
+    try {
+        xl := ComObjActive("Excel.Application")
+    } catch {
+        return false
+    }
+    for barName in ["Queries and Connections", "Consultas e Conexões"] {
+        try {
+            bar := xl.CommandBars(barName)
+            if bar {
+                bar.Visible := false
+                return true
+            }
+        } catch {
+        }
+    }
+    return false
+}
+
+FileDialog_CloseQueriesPaneViaUia() {
+    excelHwnd := WinExist("ahk_exe EXCEL.EXE")
+    if !excelHwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(excelHwnd)
+        optionsBtn := 0
+        for name in ["Task Pane Options", "Opções do Painel de Tarefas", "Opcoes do Painel de Tarefas"] {
+            try optionsBtn := root.FindFirst({ Type: "MenuItem", Name: name })
+            catch {
+                optionsBtn := 0
+            }
+            if !optionsBtn {
+                try optionsBtn := root.FindFirst({ Type: "MenuItem", Name: name, matchmode: "Substring" })
+                catch {
+                    optionsBtn := 0
+                }
+            }
+            if optionsBtn
+                break
+        }
+        if !optionsBtn
+            return false
+        if !FileDialog_InvokeButton(optionsBtn)
+            return false
+        Sleep 200
+        ; Menu may be under desktop / foreground after expand.
+        menuRoot := root
+        try {
+            desktop := UIA.GetRootElement()
+            if desktop
+                menuRoot := desktop
+        } catch {
+        }
+        for name in ["Close", "Fechar"] {
+            closeItem := 0
+            try closeItem := menuRoot.FindFirst({ Type: "MenuItem", Name: name })
+            catch {
+                closeItem := 0
+            }
+            if !closeItem {
+                try closeItem := menuRoot.FindFirst({ Type: "Button", Name: name })
+                catch {
+                    closeItem := 0
+                }
+            }
+            if closeItem && FileDialog_InvokeButton(closeItem)
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
+FileDialog_QueriesPaneVisible(root) {
+    try {
+        pane := root.FindFirst({ Type: "Pane", Name: "Queries & Connections", matchmode: "Substring" })
+        if pane
+            return true
+    } catch {
+    }
+    try {
+        pane := root.FindFirst({ Type: "Pane", Name: "Consultas", matchmode: "Substring" })
+        if pane
+            return true
+    } catch {
+    }
+    try {
+        custom := root.FindFirst({ Name: "Queries & Connections", matchmode: "Substring" })
+        if custom
+            return true
+    } catch {
+    }
+    try {
+        custom := root.FindFirst({ Name: "Consultas e Conexões", matchmode: "Substring" })
+        if custom
+            return true
+    } catch {
+    }
+    return false
+}
+
+FileDialog_CloseQueriesPane(timeoutMs := 10000) {
+    deadline := A_TickCount + timeoutMs
+    sawPane := false
+    while (A_TickCount < deadline) {
+        excelHwnd := WinExist("ahk_exe EXCEL.EXE")
+        if excelHwnd {
+            try {
+                root := UIA.ElementFromHandle(excelHwnd)
+                if FileDialog_QueriesPaneVisible(root) {
+                    sawPane := true
+                    if FileDialog_CloseQueriesPaneViaCom()
+                        return true
+                    if FileDialog_CloseQueriesPaneViaUia()
+                        return true
+                } else if sawPane {
+                    return true  ; pane disappeared after a close attempt
+                }
+            } catch {
+            }
+        }
+        Sleep 250
+    }
+    ; Final COM attempt even if UIA never saw the pane name.
+    if FileDialog_CloseQueriesPaneViaCom()
+        return true
+    return false
+}
+
+FileDialog_ImportCsvLoad() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        ; Import dialog uses Files of type (1136), not Save-as FileTypeControlHost.
+        ; Still allow Open on any file dialog with an Open/Save primary button.
+        FileDialog_ClickOpenButton(root)
+        Sleep 300
+        if !FileDialog_WaitAndClickLoad()
+            return
+        Sleep 400
+        FileDialog_CloseQueriesPane()
     } catch {
     }
 }
