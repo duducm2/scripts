@@ -869,6 +869,7 @@ $^2:: {
     if !Editor_FocusIsInFilesExplorer(editorHwnd)
         Editor_EnsureFilesExplorerSidebarFocused(editorHwnd)
     Send "^2"
+    ShowCenteredOverlay_Utils("✅ Path copied", 1400, BANNER_ACCENT_SUCCESS)
 }
 
 ; Ctrl + 5 : Context menu navigation sequence
