@@ -865,15 +865,50 @@ FileDialog_ImportCsvLoad() {
     if !hwnd
         return
     try {
+        StandardLoadingBar_Show("⏳ Importing CSV…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: hwnd, textWidth: 480 })
+    } catch {
+    }
+    try {
         root := UIA.ElementFromHandle(hwnd)
         ; Import dialog uses Files of type (1136), not Save-as FileTypeControlHost.
-        ; Still allow Open on any file dialog with an Open/Save primary button.
+        try StandardLoadingBar_Update("⏳ Opening file…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
         FileDialog_ClickOpenButton(root)
         Sleep 300
-        if !FileDialog_WaitAndClickLoad()
+
+        try StandardLoadingBar_Update("⏳ Waiting for Load dialog…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+        if !FileDialog_WaitAndClickLoad() {
+            try StandardLoadingBar_Update("❌ Load dialog not found", BANNER_ACCENT_ERROR)
+            catch {
+            }
+            try StandardLoadingBar_Hide(800)
+            catch {
+            }
             return
+        }
+
+        try StandardLoadingBar_Update("⏳ Closing Queries pane…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
         Sleep 400
         FileDialog_CloseQueriesPane()
+
+        try StandardLoadingBar_Update("✅ CSV imported", BANNER_ACCENT_SUCCESS)
+        catch {
+        }
+        try StandardLoadingBar_Hide(600)
+        catch {
+        }
     } catch {
+        try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
+        catch {
+        }
+        try StandardLoadingBar_Hide(800)
+        catch {
+        }
     }
 }
