@@ -58,7 +58,7 @@ StudyTopicSelector_ShowCategoryPhase() {
     g_StudyTopicSelectorGui.MarginY := 15
 
     g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 Study material (QuickLook)")
+    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 Study material")
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
@@ -544,7 +544,7 @@ StudyTopicSelector_BackFromTopic(*) {
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 }
 
-; [6] Technique: open studies/technique/README.md in QuickLook (single file).
+; [6] Technique: open technique README on GitHub in a new Chrome window (no scroll-to-end).
 StudyTopicSelector_SelectTechnique(*) {
     global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopics
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
@@ -553,8 +553,7 @@ StudyTopicSelector_SelectTechnique(*) {
         return
     StudyTopicSelector_Close()
     topic := g_StudyTopics[0]
-    relPath := StudyTopic_GetRelPath(topic, "mnemonics")
-    StudyTopic_OpenRepoRelativeMarkdown(relPath, true)
+    StudyTopic_OpenGithubInChrome(StudyTopic_GetUrl(topic, "mnemonics"), false)
 }
 
 StudyTopicSelector_SelectMnemonics(*) {
@@ -585,8 +584,8 @@ StudyTopicSelector_HandleKey(key) {
         return
 
     topic := g_StudyTopics[selection]
-    relPath := StudyTopic_GetRelPath(topic, category)
-    StudyTopic_OpenRepoRelativeMarkdown(relPath, category != "plans")
+    url := StudyTopic_GetUrl(topic, category)
+    StudyTopic_OpenGithubInChrome(url, category = "mnemonics")
 }
 
 StudyTopicSelector_Cancel(*) {

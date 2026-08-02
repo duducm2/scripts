@@ -11,23 +11,39 @@
 ; =============================================================================
 
 ; Study topics for Win+Alt+Shift+X selector. Paths are relative to notes repo (GetNotesRepoPath()).
+; mnemonicsUrl / plansUrl: GitHub blob URLs (links.md). Menu [1]/[2]/[6] open via Chrome --new-window.
 ; plansPath values match filenames in the notes repo (see studies/*/ *-plan.md, plan-english.md, learning-techniques.md).
 global g_StudyTopics := Map(
     0, { name: "Technique (how to create studies)", mnemonicsPath: "\studies\technique\README.md",
-        plansPath: "\studies\technique\plans.md" },
+        plansPath: "\studies\technique\plans.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/technique/README.md",
+        plansUrl: "" },
     1, { name: "Skills", mnemonicsPath: "\studies\skills\mnemonics-skills.md",
-        plansPath: "\studies\skills\skills-plan.md" },
+        plansPath: "\studies\skills\skills-plan.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/skills/mnemonics-skills.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/skills/skills-plan.md" },
     2, { name: "Science", mnemonicsPath: "\studies\science\mnemonics-science.md",
-        plansPath: "\studies\science\science-plan.md" },
+        plansPath: "\studies\science\science-plan.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/science/mnemonics-science.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/science/science-plan.md" },
     3, { name: "Piano", mnemonicsPath: "\studies\piano\mnemonics-piano.md",
-        plansPath: "\studies\piano\piano-plan.md" },
+        plansPath: "\studies\piano\piano-plan.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/Piano/mnemonics-piano.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/Piano/piano-plan.md" },
     4, { name: "English", mnemonicsPath: "\studies\english\mnemonics-english.md",
-        plansPath: "\studies\english\plan-english.md" },
+        plansPath: "\studies\english\plan-english.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/English/mnemonics-english.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/English/english-plan.md" },
     5, { name: "Communication", mnemonicsPath: "\studies\communication\mnemonics-communication.md",
-        plansPath: "\studies\communication\communication-plan.md" },
+        plansPath: "\studies\communication\communication-plan.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/Communication/mnemonics-communication.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/Communication/communication-plan.md" },
     6, { name: "German", mnemonicsPath: "\studies\german\mnemonics-german.md",
-        plansPath: "\studies\german\german-plan.md" },
-    7, { name: "Entertainment", mnemonicsPath: "", plansPath: "\studies\entertainment\entertainment-plan.md" }
+        plansPath: "\studies\german\german-plan.md",
+        mnemonicsUrl: "https://github.com/duducm2/my-notes/blob/main/studies/german/mnemonics-german.md",
+        plansUrl: "https://github.com/duducm2/my-notes/blob/main/studies/german/german-plan.md" },
+    7, { name: "Entertainment", mnemonicsPath: "", plansPath: "\studies\entertainment\entertainment-plan.md",
+        mnemonicsUrl: "", plansUrl: "" }
 )
 #include %A_ScriptDir%\lib\study\StudyArticleLink.ahk
 #include %A_ScriptDir%\lib\study\StudyFavoriteLink.ahk
@@ -272,6 +288,73 @@ StudyTopic_GetRelPath(topic, category) {
     if (category = "plans")
         return topic.plansPath
     return topic.mnemonicsPath
+}
+
+StudyTopic_GetUrl(topic, category) {
+    if (category = "plans")
+        return topic.plansUrl
+    return topic.mnemonicsUrl
+}
+
+; Open GitHub study URL in a new Chrome window. scrollToEnd: Mnemonics only (^{End} after load).
+StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
+    url := Trim(url)
+    if (url = "") {
+        try ShowCenteredOverlay_Utils("⚠ No GitHub URL configured for this topic.", 3000, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+
+    beforeMap := Map()
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe")
+            beforeMap[hwnd] := true
+    } catch {
+    }
+
+    if (!StudyLink_OpenUrlInChrome(url, true)) {
+        try ShowCenteredOverlay_Utils("❌ Could not open Chrome.", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    if (!scrollToEnd)
+        return true
+
+    newHwnd := 0
+    deadline := A_TickCount + 8000
+    while (A_TickCount < deadline) {
+        try {
+            for hwnd in WinGetList("ahk_exe chrome.exe") {
+                if !beforeMap.Has(hwnd) {
+                    newHwnd := hwnd
+                    break
+                }
+            }
+        } catch {
+        }
+        if (newHwnd)
+            break
+        Sleep 100
+    }
+
+    if (!newHwnd) {
+        try ShowCenteredOverlay_Utils("⚠ Chrome window opened but could not scroll to end.", 3000,
+            BANNER_ACCENT_INTERMEDIATE)
+        return true
+    }
+
+    try {
+        WinActivate("ahk_id " newHwnd)
+        WinWaitActive("ahk_id " newHwnd, , 3)
+    } catch {
+    }
+    ; Brief wait for GitHub markdown to paint before Ctrl+End.
+    Sleep 1200
+    try {
+        ControlSend "{Blind}^{End}", , "ahk_id " newHwnd
+    } catch {
+        try Send "^{End}"
+    }
+    return true
 }
 
 ; Opens notes-repo-relative path in QuickLook (PDF sibling → .md). Returns false on failure.
