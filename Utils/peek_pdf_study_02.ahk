@@ -488,7 +488,8 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
     for num, topic in g_StudyTopics {
         n := Integer(num)
-        if (g_StudyTopicSelectorCategory = "mnemonics" && (n = 0 || topic.mnemonicsPath = ""))
+        ; [0] Technique is category [6] only — omit from Mnemonics and Plans topic lists.
+        if (n = 0 || (g_StudyTopicSelectorCategory = "mnemonics" && topic.mnemonicsPath = ""))
             continue
         g_StudyTopicSelectorGui.Add("Text", "w300", "[" . num . "] " . topic.name)
     }
@@ -496,7 +497,7 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Backspace back | Esc cancel" :
-        "Press 0-7 | Backspace back | Esc cancel"
+        "Press 1-7 | Backspace back | Esc cancel"
     g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
 
     try {
@@ -508,7 +509,6 @@ StudyTopicSelector_ShowTopicPhase() {
 
     g_StudyTopicSelectorPhase := "topic"
     if (g_StudyTopicSelectorCategory = "plans") {
-        Hotkey("0", StudyTopicSelector_HandleKey, "On")
         Hotkey("1", StudyTopicSelector_HandleKey, "On")
         Hotkey("2", StudyTopicSelector_HandleKey, "On")
         Hotkey("3", StudyTopicSelector_HandleKey, "On")
@@ -544,7 +544,7 @@ StudyTopicSelector_BackFromTopic(*) {
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 }
 
-; [1] Technique: open studies/technique/README.md in QuickLook (single file). Technique plans: [3] Plans then [0].
+; [6] Technique: open studies/technique/README.md in QuickLook (single file).
 StudyTopicSelector_SelectTechnique(*) {
     global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopics
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
