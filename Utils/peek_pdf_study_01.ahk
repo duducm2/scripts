@@ -574,7 +574,11 @@ StudyTopicSelector_PositionGuiLikeOutlook(gui) {
     StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
     ; Avoid "NA": if focus stays in QuickLook, Esc is consumed there first (ShowAiModelSelector comment).
     gui.Show("x" . cx . " y" . cy)
-    try WinActivate(gui.Hwnd)
+    try {
+        if StudyTopicSelector_GuiHasWindow(gui)
+            WinActivate(gui.Hwnd)
+    } catch {
+    }
 }
 
 StudyTopicSelector_StopActiveMonitorTracking() {
@@ -585,38 +589,43 @@ StudyTopicSelector_StopActiveMonitorTracking() {
 ; Use Show("AutoSize Hide") then Show("x y") like StudyTopicSelector_PositionGuiLikeOutlook — Move() alone can mis-center across mixed-DPI monitors.
 StudyTopicSelector_RepositionToActiveMonitor(forMonitorIdx := 0) {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive
-    if (!IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd)
-        return
-    idx := forMonitorIdx
-    if (idx < 1 || idx > MonitorGetCount())
-        idx := GetMonitorIndexForForeground_StandardBar()
-    MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
     try {
+        if (!StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui))
+            return
+        idx := forMonitorIdx
+        if (idx < 1 || idx > MonitorGetCount())
+            idx := GetMonitorIndexForForeground_StandardBar()
+        MonitorGetWorkArea(idx, &ml, &mt, &mr, &mb)
         g_StudyTopicSelectorGui.Show("AutoSize Hide")
         g_StudyTopicSelectorGui.GetPos(, , &gw, &gh)
-    } catch {
-        return
-    }
-    StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
-    try {
+        StudyTopicSelector_ComputeCenterTopLeftInWorkArea(ml, mt, mr, mb, gw, gh, &cx, &cy)
         g_StudyTopicSelectorGui.Show("x" . cx . " y" . cy)
-        if (g_StudyTopicSelectorActive)
+        if (g_StudyTopicSelectorActive && StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui))
             try WinActivate(g_StudyTopicSelectorGui.Hwnd)
     } catch {
+        StudyTopicSelector_StopActiveMonitorTracking()
+        try StudyTopicSelector_ForceReset()
     }
 }
 
 ; Follow foreground window's monitor while the selector is open (parity with StandardLoadingBar trackActiveMonitor).
 StudyTopicSelector_TrackActiveMonitorTick() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorLastForegroundMonitorIdx
-    if (!g_StudyTopicSelectorActive || !IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd) {
+    try {
+        if (!g_StudyTopicSelectorActive || !StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui)) {
+            StudyTopicSelector_StopActiveMonitorTracking()
+            if (g_StudyTopicSelectorActive)
+                StudyTopicSelector_ForceReset()
+            return
+        }
+        newIdx := GetMonitorIndexForForeground_StandardBar()
+        if (newIdx != g_StudyTopicSelectorLastForegroundMonitorIdx) {
+            StudyTopicSelector_RepositionToActiveMonitor(newIdx)
+            g_StudyTopicSelectorLastForegroundMonitorIdx := newIdx
+        }
+    } catch {
         StudyTopicSelector_StopActiveMonitorTracking()
-        return
-    }
-    newIdx := GetMonitorIndexForForeground_StandardBar()
-    if (newIdx != g_StudyTopicSelectorLastForegroundMonitorIdx) {
-        StudyTopicSelector_RepositionToActiveMonitor(newIdx)
-        g_StudyTopicSelectorLastForegroundMonitorIdx := newIdx
+        try StudyTopicSelector_ForceReset()
     }
 }
 

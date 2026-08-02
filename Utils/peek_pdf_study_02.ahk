@@ -8,7 +8,7 @@
 StudyTopicSelector_BindRobustEscape() {
     global g_StudyTopicSelectorGui, g_OnEscapePressed, g_StudyTopicEscPollPrev
     SetTimer(StudyTopicSelector_EscapePoll, 0)
-    if (!IsObject(g_StudyTopicSelectorGui) || !g_StudyTopicSelectorGui.Hwnd)
+    if (!StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui))
         return
     Hotkey("$*Escape", StudyTopicSelector_EscapeFromHotkey, "On")
     global g_OnEscapePressed
@@ -45,10 +45,22 @@ StudyTopicSelector_SafeDestroyGui(gui) {
     }
 }
 
+; AHK v2: after Destroy(), IsObject(gui) is still true but reading .Hwnd throws "Gui has no window".
+StudyTopicSelector_GuiHasWindow(gui) {
+    if !IsObject(gui)
+        return false
+    try
+        return !!gui.Hwnd
+    catch
+        return false
+}
+
 ; Category menu (Technique README / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
 StudyTopicSelector_ShowCategoryPhase() {
-    global g_StudyTopicSelectorGui, g_StudyTopics
+    global g_StudyTopicSelectorGui, g_StudyTopics, g_StudyTopicSelectorActive,
+        g_StudyTopicSelectorLastForegroundMonitorIdx
 
+    StudyTopicSelector_StopActiveMonitorTracking()
     StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
 
@@ -77,8 +89,8 @@ StudyTopicSelector_ShowCategoryPhase() {
     } catch {
     }
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
-    global g_StudyTopicSelectorActive
     g_StudyTopicSelectorActive := true
+    g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
@@ -88,13 +100,13 @@ StudyTopicSelector_ShowCategoryPhase() {
     Hotkey("6", StudyTopicSelector_SelectTechnique, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
     StudyTopicSelector_BindRobustEscape()
-
+    SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
 }
 
 ; After closing Manage Links GUI (Esc) or finishing Open Link from submenu — main category Gui still exists.
 StudyTopicSelector_ResumeSelectorEscapeAfterLinks(*) {
     global g_StudyTopicSelectorActive, g_StudyTopicSelectorGui
-    if (g_StudyTopicSelectorActive && IsObject(g_StudyTopicSelectorGui) && g_StudyTopicSelectorGui.Hwnd)
+    if (g_StudyTopicSelectorActive && StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui))
         StudyTopicSelector_BindRobustEscape()
 }
 
@@ -457,17 +469,17 @@ ShowStudyTopicSelector() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
         g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx
 
-    if (g_StudyTopicSelectorActive)
-        return
+    if (g_StudyTopicSelectorActive) {
+        if (StudyTopicSelector_GuiHasWindow(g_StudyTopicSelectorGui))
+            return
+        ; Sticky Active after a Gui destroy race — clear and reopen.
+        StudyTopicSelector_ForceReset()
+    }
 
     g_StudyTopicSelectorCategory := ""
     g_StudyTopicSelectorPhase := "category"
 
     StudyTopicSelector_ShowCategoryPhase()
-
-    StudyTopicSelector_StopActiveMonitorTracking()
-    g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
-    SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
 }
 
 StudyTopicSelector_ShowTopicPhase() {
@@ -492,6 +504,8 @@ StudyTopicSelector_RebuildTopicPhase() {
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
         return
 
+    ; Pause tracker across destroy/recreate so .Hwnd is never read on a destroyed Gui.
+    StudyTopicSelector_StopActiveMonitorTracking()
     StudyTopicSelector_UnbindDigitHotkeys()
     try Hotkey("Backspace", "Off")
 
@@ -549,6 +563,8 @@ StudyTopicSelector_RebuildTopicPhase() {
     Hotkey("r", StudyTopicSelector_ArmRemove, "On")
     Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "On")
     StudyTopicSelector_BindRobustEscape()
+    if (g_StudyTopicSelectorActive)
+        SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
 }
 
 StudyTopicSelector_BackFromTopic(*) {
@@ -695,43 +711,52 @@ StudyTopicSelector_Cancel(*) {
     StudyTopicSelector_Close()
 }
 
-; Tear-down order aligned with ShowAiModelSelector close (Utils\handy_selector_hotkey.ahk).
-StudyTopicSelector_Close() {
+; Always completes teardown even if Active was already false or Gui already destroyed (retry-safe).
+StudyTopicSelector_ForceReset() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
         g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyFavoriteLinksGui,
         g_StudyLinkSubmenuGui, g_StudyTopicSelectorPendingRemove
 
-    if (!g_StudyTopicSelectorActive)
-        return
-    StudyTopicSelector_UnbindRobustEscape()
     g_StudyTopicSelectorActive := false
     g_StudyTopicSelectorPhase := ""
     g_StudyTopicSelectorCategory := ""
     g_StudyTopicSelectorPendingRemove := false
-
-    StudyTopicSelector_StopActiveMonitorTracking()
     g_StudyTopicSelectorLastForegroundMonitorIdx := 0
 
-    StudyTopicSelector_UnbindCategoryHotkeys()
-    StudyTopicSelector_UnbindDigitHotkeys()
+    try StudyTopicSelector_StopActiveMonitorTracking()
+    try StudyTopicSelector_UnbindRobustEscape()
+    try StudyTopicSelector_UnbindCategoryHotkeys()
+    try StudyTopicSelector_UnbindDigitHotkeys()
     try Hotkey("Backspace", "Off")
     catch {
     }
-    Utils_EnsureGlobalEscapeHotkey()
-    StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
+    try Utils_EnsureGlobalEscapeHotkey()
+    catch {
+    }
+    try StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
+    try StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := false
-    StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
+    try StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
     g_StudyArticleLinksGui := false
-    StudyTopicSelector_SafeDestroyGui(g_StudyFavoriteLinksGui)
+    try StudyTopicSelector_SafeDestroyGui(g_StudyFavoriteLinksGui)
     g_StudyFavoriteLinksGui := false
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
+    try StudyTopicSelector_SafeDestroyGui(g_StudyLinkSubmenuGui)
     g_StudyLinkSubmenuGui := ""
     loop 9 {
         try Hotkey(String(A_Index), "Off")
     }
     try Hotkey("Escape", "Off")
+    catch {
+    }
+}
+
+; Tear-down order aligned with ShowAiModelSelector close (Utils\handy_selector_hotkey.ahk).
+StudyTopicSelector_Close() {
+    global g_StudyTopicSelectorActive
+    if (!g_StudyTopicSelectorActive)
+        return
+    StudyTopicSelector_ForceReset()
 }
 
 PeekPdf_GetIniPath() {
