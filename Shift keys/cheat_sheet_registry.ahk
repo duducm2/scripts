@@ -822,6 +822,7 @@ cheatSheets["FileDialog"] := "
     📌 [P][P]inned item (first in sidebar)
     💻 [T][T]his PC (sidebar)
     📝 [M]File na[M]e field
+    💾 [U]Save CSV [U]TF-8
     ✅ [O][O]pen/Save button
     ❌ [C][C]ancel button
 )"
