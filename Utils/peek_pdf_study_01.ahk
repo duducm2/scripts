@@ -54,6 +54,9 @@ global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
 global g_StudyTopicSelectorLastForegroundMonitorIdx := 0   ; for trackActiveMonitor-style follow (standard_information_display.md)
 global g_StudyTopicEscPollPrev := false   ; edge-detect Esc for StudyTopicSelector_EscapePoll (parity with ShowAiModelSelector)
+global g_StudyTopicSelectorPendingRemove := false
+; category ("mnemonics"|"plans") → Array of { name, url }; filled on first StudyLinks_GetEntries.
+global g_StudyLinksCache := Map()
 ; Study Topic QuickLook: strict bounded waits + shared layout (false = legacy 2s WinWait + inline scroll).
 global STUDY_TOPIC_QL_STRICT_LAYOUT := true
 global g_QuickLookDeferredLayoutScroll := true
@@ -296,6 +299,174 @@ StudyTopic_GetUrl(topic, category) {
     return topic.mnemonicsUrl
 }
 
+; Dynamic Mnemonics/Plans lists — shares study_links.ini with [Links] API keys; uses [Mnemonics]/[Plans].
+StudyLinks_GetIniPath() {
+    return A_ScriptDir "\assets\data\study_links.ini"
+}
+
+StudyLinks_SectionName(category) {
+    return (category = "plans") ? "Plans" : "Mnemonics"
+}
+
+StudyLinks_SeedFromTopics(category) {
+    global g_StudyTopics
+    entries := []
+    for num, topic in g_StudyTopics {
+        n := Integer(num)
+        if (n = 0)
+            continue
+        if (category = "mnemonics") {
+            url := topic.mnemonicsUrl
+            if (url = "" && topic.mnemonicsPath = "")
+                continue
+            if (url = "")
+                continue
+            entries.Push({ name: topic.name, url: url })
+        } else {
+            ; Include Entertainment even with empty URL (placeholder).
+            entries.Push({ name: topic.name, url: topic.plansUrl })
+        }
+    }
+    return entries
+}
+
+StudyLinks_ParseSection(raw) {
+    entries := []
+    byKey := Map()
+    maxKey := 0
+    for line in StrSplit(raw, "`n", "`r") {
+        line := Trim(line)
+        if (line = "" || SubStr(line, 1, 1) = ";")
+            continue
+        eq := InStr(line, "=")
+        if (!eq)
+            continue
+        keyStr := Trim(SubStr(line, 1, eq - 1))
+        val := Trim(SubStr(line, eq + 1))
+        if (!RegExMatch(keyStr, "^\d+$"))
+            continue
+        k := Integer(keyStr)
+        pipe := InStr(val, "|")
+        if (pipe) {
+            name := Trim(SubStr(val, 1, pipe - 1))
+            url := Trim(SubStr(val, pipe + 1))
+        } else {
+            name := val
+            url := ""
+        }
+        byKey[k] := { name: name, url: url }
+        if (k > maxKey)
+            maxKey := k
+    }
+    loop maxKey {
+        if byKey.Has(A_Index)
+            entries.Push(byKey[A_Index])
+    }
+    return entries
+}
+
+StudyLinks_GetEntries(category) {
+    global g_StudyLinksCache
+    if (category != "mnemonics" && category != "plans")
+        return []
+    if g_StudyLinksCache.Has(category)
+        return g_StudyLinksCache[category]
+
+    iniPath := StudyLinks_GetIniPath()
+    section := StudyLinks_SectionName(category)
+    raw := ""
+    try raw := IniRead(iniPath, section)
+    catch {
+        raw := ""
+    }
+    if (raw = "" || raw = "ERROR") {
+        entries := StudyLinks_SeedFromTopics(category)
+        StudyLinks_SaveEntries(category, entries)
+        return g_StudyLinksCache[category]
+    }
+    entries := StudyLinks_ParseSection(raw)
+    if (entries.Length = 0) {
+        entries := StudyLinks_SeedFromTopics(category)
+        StudyLinks_SaveEntries(category, entries)
+        return g_StudyLinksCache[category]
+    }
+    g_StudyLinksCache[category] := entries
+    return entries
+}
+
+StudyLinks_SaveEntries(category, entries) {
+    global g_StudyLinksCache
+    if (category != "mnemonics" && category != "plans")
+        return false
+    iniPath := StudyLinks_GetIniPath()
+    section := StudyLinks_SectionName(category)
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    try IniDelete(iniPath, section)
+    catch {
+    }
+    idx := 0
+    for entry in entries {
+        idx += 1
+        line := entry.name . "|" . entry.url
+        try IniWrite(line, iniPath, section, String(idx))
+        catch {
+        }
+    }
+    g_StudyLinksCache[category] := entries
+    return true
+}
+
+StudyLinks_AddEntry(category, name, url) {
+    name := Trim(name)
+    url := Trim(url)
+    if (name = "" || url = "")
+        return false
+    entries := StudyLinks_GetEntries(category)
+    ; Cap: 1-9 + letters excluding reserved a (add) / r (remove).
+    if (entries.Length >= 33) {
+        try ShowCenteredOverlay_Utils("⚠ Study link list is full (max 33).", 3000, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    entries.Push({ name: name, url: url })
+    return StudyLinks_SaveEntries(category, entries)
+}
+
+StudyLinks_RemoveEntry(category, index) {
+    entries := StudyLinks_GetEntries(category)
+    if (index < 1 || index > entries.Length)
+        return false
+    entries.RemoveAt(index)
+    return StudyLinks_SaveEntries(category, entries)
+}
+
+; Item letters skip a (add) and r (remove).
+StudyLinks_ItemLetters() {
+    return "bcdefghijklmnopqstuvwxyz"
+}
+
+StudyLinks_IndexFromKey(key) {
+    key := StrLower(Trim(key))
+    if (RegExMatch(key, "^[1-9]$"))
+        return Integer(key)
+    letters := StudyLinks_ItemLetters()
+    pos := InStr(letters, key, true)
+    if (pos)
+        return 9 + pos
+    return 0
+}
+
+StudyLinks_LabelForIndex(index) {
+    if (index >= 1 && index <= 9)
+        return String(index)
+    letters := StudyLinks_ItemLetters()
+    offset := index - 9
+    if (offset >= 1 && offset <= StrLen(letters))
+        return SubStr(letters, offset, 1)
+    return String(index)
+}
+
 ; Open GitHub study URL in a new Chrome window. scrollToEnd: Mnemonics only (^{End} after load).
 StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
     url := Trim(url)
@@ -460,8 +631,11 @@ StudyTopicSelector_UnbindCategoryHotkeys() {
 }
 
 StudyTopicSelector_UnbindDigitHotkeys() {
-    loop 8 {
+    loop 10 {
         try Hotkey(String(A_Index - 1), "Off")
+    }
+    loop 26 {
+        try Hotkey(Chr(96 + A_Index), "Off")
     }
 }
 

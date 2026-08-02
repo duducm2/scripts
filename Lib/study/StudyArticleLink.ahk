@@ -4,12 +4,7 @@
 global g_StudyArticleLinksGui := false
 
 StudyArticleLink_IsValidHttpUrl(url) {
-    u := Trim(url)
-    if (u = "")
-        return false
-    if (SubStr(u, 1, 11) = "javascript:")
-        return false
-    return (SubStr(u, 1, 7) = "http://" || SubStr(u, 1, 8) = "https://")
+    return StudyLink_IsValidHttpUrl(url)
 }
 
 ; Chrome address bar: F6 focus, copy URL to clipboard (keyboard only).
@@ -81,12 +76,14 @@ StudyTopicSelector_ManageArticleLinks(*) {
     g_StudyArticleLinksGui.Add("Text", "w400", "Current article link: " . StudyLink_FormatLinkLabel(artResult))
     g_StudyArticleLinksGui.Add("Text", "w400", "[1] Open article link")
     g_StudyArticleLinksGui.Add("Text", "w400", "[2] Set article link (Chrome address bar)")
+    g_StudyArticleLinksGui.Add("Text", "w400", "[3] Set article link manually")
     g_StudyArticleLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyArticleLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyArticleLinksGui.Add("Text", "w400 Center", "Press 1-2 | Esc to cancel")
+    g_StudyArticleLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyArticleLinksGui)
     Hotkey("1", StudyTopicSelector_ManageArticleLinks_Open, "On")
     Hotkey("2", StudyTopicSelector_ManageArticleLinks_Set, "On")
+    Hotkey("3", StudyTopicSelector_ManageArticleLinks_SetManual, "On")
     Hotkey("Escape", StudyTopicSelector_ManageArticleLinksEsc, "On")
     g_StudyArticleLinksGui.Show()
 }
@@ -129,4 +126,10 @@ StudyTopicSelector_ManageArticleLinks_Set(*) {
     } catch as e {
         ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
     }
+}
+
+; [3] Set article link manually (InputBox → StudyLink_Set API)
+StudyTopicSelector_ManageArticleLinks_SetManual(*) {
+    StudyTopicSelector_Close()
+    StudyLink_SetFromManualInput(STUDYLINK_KEY_ARTICLE, "article link")
 }

@@ -4,23 +4,16 @@ Configure the **Google Apps Script** backend and **MacroDroid** for study links.
 
 ## Study material menu (main)
 
-Open via Study Topic selector (QuickLook flow). Keys **1–6**:
+Open via Study Topic selector. Keys **1–6**:
 
-| Key | Module | Action |
-
-| --- | ---------------- | --------------------------------------- |
-
-| 1 | — | Mnemonics |
-
-| 2 | — | Plans |
-
-| 3 | YouTube subtopic | Manage Study Subtopic Link → inner 1–2 |
-
-| 4 | Article link | Manage Study Article Link → inner 1–2 |
-
-| 5 | Favorite link | Manage Study Favorite Link → inner 1–2 |
-
-| 6 | Technique | QuickLook `studies/technique/README.md` |
+| Key | Module           | Action                                                                                                       |
+| --- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1   | —                | Mnemonics (links in `assets/data/study_links.ini` `[Mnemonics]`; in-menu `a` add / `r` remove)               |
+| 2   | —                | Plans (links in `assets/data/study_links.ini` `[Plans]`; in-menu `a` add / `r` remove)                       |
+| 3   | YouTube subtopic | Manage Study Subtopic Link → inner `1` open / `2` automate (Share) / `3` manual InputBox → `StudyLink_Set`   |
+| 4   | Article link     | Manage Study Article Link → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set`  |
+| 5   | Favorite link    | Manage Study Favorite Link → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set` |
+| 6   | Technique        | Chrome → technique README on GitHub                                                                          |
 
 ## API keys (same web app URL)
 
@@ -220,7 +213,7 @@ if (url != "")
 
 ## Module 6 — Technique
 
-Study Topic → **`[6] Technique`** opens the technique README in QuickLook (`StudyTopicSelector_SelectTechnique` in `Utils.ahk`). No StudyLink API.
+Study Topic → **`[6] Technique`** opens the technique README on GitHub in a new Chrome window (`StudyTopicSelector_SelectTechnique`). No StudyLink API.
 
 ---
 

@@ -32,12 +32,14 @@ StudyTopicSelector_ManageFavoriteLinks(*) {
     g_StudyFavoriteLinksGui.Add("Text", "w400", "Current favorite link: " . StudyLink_FormatLinkLabel(favResult))
     g_StudyFavoriteLinksGui.Add("Text", "w400", "[1] Open favorite link")
     g_StudyFavoriteLinksGui.Add("Text", "w400", "[2] Set favorite link (Chrome address bar)")
+    g_StudyFavoriteLinksGui.Add("Text", "w400", "[3] Set favorite link manually")
     g_StudyFavoriteLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyFavoriteLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyFavoriteLinksGui.Add("Text", "w400 Center", "Press 1-2 | Esc to cancel")
+    g_StudyFavoriteLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyFavoriteLinksGui)
     Hotkey("1", StudyTopicSelector_ManageFavoriteLinks_Open, "On")
     Hotkey("2", StudyTopicSelector_ManageFavoriteLinks_Set, "On")
+    Hotkey("3", StudyTopicSelector_ManageFavoriteLinks_SetManual, "On")
     Hotkey("Escape", StudyTopicSelector_ManageFavoriteLinksEsc, "On")
     g_StudyFavoriteLinksGui.Show()
 }
@@ -72,7 +74,8 @@ StudyTopicSelector_ManageFavoriteLinks_Set(*) {
             if setOk
                 ShowCenteredOverlay_Utils("✅ Favorite link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
             else
-                ShowCenteredOverlay_Utils("❌ Could not save the favorite link (API failed).", 3500, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Could not save the favorite link (API failed).", 3500, BANNER_ACCENT_ERROR
+                )
         } else {
             ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the URL.", 2500,
                 BANNER_ACCENT_ERROR)
@@ -80,4 +83,10 @@ StudyTopicSelector_ManageFavoriteLinks_Set(*) {
     } catch as e {
         ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
     }
+}
+
+; [3] Set favorite link manually (InputBox → StudyLink_Set API)
+StudyTopicSelector_ManageFavoriteLinks_SetManual(*) {
+    StudyTopicSelector_Close()
+    StudyLink_SetFromManualInput(STUDYLINK_KEY_FAVORITE, "favorite link")
 }

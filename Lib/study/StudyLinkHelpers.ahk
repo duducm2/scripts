@@ -250,6 +250,50 @@ StudyLink_OpenUrlInChrome(url, newWindow := false) {
     return true
 }
 
+StudyLink_IsValidHttpUrl(url) {
+    u := Trim(url)
+    if (u = "")
+        return false
+    if (SubStr(u, 1, 11) = "javascript:")
+        return false
+    return (SubStr(u, 1, 7) = "http://" || SubStr(u, 1, 8) = "https://")
+}
+
+; Prompt for a URL (clipboard prefill when valid) and POST via StudyLink_Set.
+StudyLink_SetFromManualInput(studyKey, successLabel := "link") {
+    defaultUrl := ""
+    try {
+        clip := Trim(A_Clipboard)
+        if StudyLink_IsValidHttpUrl(clip)
+            defaultUrl := clip
+    } catch {
+    }
+
+    ib := InputBox("Paste or type the URL:", "Set " . successLabel . " manually", "w500 h120", defaultUrl)
+    if (ib.Result != "OK") {
+        try ShowCenteredOverlay_Utils("⚠ Manual set cancelled.", 2000, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    url := Trim(ib.Value)
+    if (url = "") {
+        try ShowCenteredOverlay_Utils("⚠ URL cannot be empty.", 2500, BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    if !StudyLink_IsValidHttpUrl(url) {
+        try ShowCenteredOverlay_Utils("❌ URL must start with http:// or https://", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    StandardLoadingBar_Show("Saving " . successLabel . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    setOk := StudyLink_Set(studyKey, url)
+    try StandardLoadingBar_Hide(0)
+    if setOk
+        ShowCenteredOverlay_Utils("✅ " . successLabel . " saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("❌ Could not save the " . successLabel . " (API failed).", 3500, BANNER_ACCENT_ERROR)
+    return setOk
+}
+
 ; True when POST response indicates the link was saved (see StudyLink_Set).
 StudyLink_ResponseIndicatesSetSuccess(response) {
     if (SubStr(response, 1, 6) = "ERROR:")
@@ -348,8 +392,8 @@ StudyLink_RunFunctionalTest() {
     result["setOk"] := yt.setOk && art.setOk && fav.setOk
     result["getOk"] := yt.getOk && art.getOk && fav.getOk
     result["setMsg"] := result["setOk"] ? "PASSED (YouTube + article + favorite)" : "FAILED"
-    result["getMsg"] := result["getOk"] ? "PASSED (YouTube + article + favorite)" : "FAILED"
-    return result
+        result["getMsg"] := result["getOk"] ? "PASSED (YouTube + article + favorite)" : "FAILED"
+            return result
 }
 
 StudyLink_Open(studyKey) {

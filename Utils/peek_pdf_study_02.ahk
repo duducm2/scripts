@@ -130,13 +130,15 @@ StudyTopicSelector_ManageLinks(*) {
         StudyLink_PlayApiSuccessSound()
     g_StudyLinksGui.Add("Text", "w400", "Current YouTube link: " . StudyLink_FormatLinkLabel(ytResult))
     g_StudyLinksGui.Add("Text", "w400", "[1] Open YouTube link")
-    g_StudyLinksGui.Add("Text", "w400", "[2] Set YouTube link")
+    g_StudyLinksGui.Add("Text", "w400", "[2] Set YouTube link (Share + timestamp)")
+    g_StudyLinksGui.Add("Text", "w400", "[3] Set YouTube link manually")
     g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
     g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-2 | Esc to cancel")
+    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinksGui)
     Hotkey("1", StudyTopicSelector_ManageLinks_Open, "On")
     Hotkey("2", StudyTopicSelector_ManageLinks_Set, "On")
+    Hotkey("3", StudyTopicSelector_ManageLinks_SetManual, "On")
     Hotkey("Escape", StudyTopicSelector_ManageLinksEsc, "On")
     g_StudyLinksGui.Show()
 }
@@ -445,6 +447,12 @@ StudyTopicSelector_ManageLinks_Set(*) {
     }
 }
 
+; [3] Set YouTube link manually (InputBox → StudyLink_Set API)
+StudyTopicSelector_ManageLinks_SetManual(*) {
+    StudyTopicSelector_Close()
+    StudyLink_SetFromManualInput(STUDYLINK_KEY_YOUTUBE, "YouTube link")
+}
+
 ShowStudyTopicSelector() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
         g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx
@@ -463,16 +471,33 @@ ShowStudyTopicSelector() {
 }
 
 StudyTopicSelector_ShowTopicPhase() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase,
-        g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorPendingRemove
 
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
         return
 
     StudyTopicSelector_UnbindCategoryHotkeys()
     try Hotkey("Backspace", StudyTopicSelector_Cancel, "Off")
+    g_StudyTopicSelectorPendingRemove := false
+    g_StudyTopicSelectorPhase := "topic"
+    StudyTopicSelector_RebuildTopicPhase()
+}
+
+; Re-render topic list while phase == "topic" (open, after add/remove, clear pending-remove).
+StudyTopicSelector_RebuildTopicPhase() {
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx,
+        g_StudyTopicSelectorPendingRemove
+
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
+        return
+
+    StudyTopicSelector_UnbindDigitHotkeys()
+    try Hotkey("Backspace", "Off")
 
     catLabel := (g_StudyTopicSelectorCategory = "plans") ? "Plans" : "Mnemonics"
+    entries := StudyLinks_GetEntries(g_StudyTopicSelectorCategory)
+
     StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
 
@@ -481,24 +506,32 @@ StudyTopicSelector_ShowTopicPhase() {
     g_StudyTopicSelectorGui.MarginX := 20
     g_StudyTopicSelectorGui.MarginY := 15
 
+    titleText := g_StudyTopicSelectorPendingRemove
+        ? "📚 " . catLabel . " — pick to REMOVE"
+            : "📚 " . catLabel . " — topic"
     g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 " . catLabel . " — topic")
-    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
+    g_StudyTopicSelectorGui.Add("Text", "w360 Center", titleText)
+    g_StudyTopicSelectorGui.Add("Text", "w360 h1 Background45475A")
 
     g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    for num, topic in g_StudyTopics {
-        n := Integer(num)
-        ; [0] Technique is category [6] only — omit from Mnemonics and Plans topic lists.
-        if (n = 0 || (g_StudyTopicSelectorCategory = "mnemonics" && topic.mnemonicsPath = ""))
-            continue
-        g_StudyTopicSelectorGui.Add("Text", "w300", "[" . num . "] " . topic.name)
+    if (entries.Length = 0) {
+        g_StudyTopicSelectorGui.SetFont("s11 c6C7086", "Segoe UI")
+        g_StudyTopicSelectorGui.Add("Text", "w360 Center", "(no entries — press a to add)")
+    } else {
+        for i, entry in entries {
+            if (i > 33)
+                break
+            label := StudyLinks_LabelForIndex(i)
+            g_StudyTopicSelectorGui.Add("Text", "w360", "[" . label . "] " . entry.name)
+        }
     }
 
-    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
+    g_StudyTopicSelectorGui.Add("Text", "w360 h1 Background45475A y+10")
     g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    footerHint := (g_StudyTopicSelectorCategory = "mnemonics") ? "Press 1-6 | Backspace back | Esc cancel" :
-        "Press 1-7 | Backspace back | Esc cancel"
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", footerHint)
+    footerHint := g_StudyTopicSelectorPendingRemove
+        ? "Press item key to remove | Esc/Backspace cancel remove"
+            : "1-9 / b-z open | a add | r remove | Backspace back | Esc cancel"
+    g_StudyTopicSelectorGui.Add("Text", "w360 Center", footerHint)
 
     try {
         g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
@@ -507,33 +540,28 @@ StudyTopicSelector_ShowTopicPhase() {
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
-    g_StudyTopicSelectorPhase := "topic"
-    if (g_StudyTopicSelectorCategory = "plans") {
-        Hotkey("1", StudyTopicSelector_HandleKey, "On")
-        Hotkey("2", StudyTopicSelector_HandleKey, "On")
-        Hotkey("3", StudyTopicSelector_HandleKey, "On")
-        Hotkey("4", StudyTopicSelector_HandleKey, "On")
-        Hotkey("5", StudyTopicSelector_HandleKey, "On")
-        Hotkey("6", StudyTopicSelector_HandleKey, "On")
-        Hotkey("7", StudyTopicSelector_HandleKey, "On")
-    } else {
-        Hotkey("1", StudyTopicSelector_HandleKey, "On")
-        Hotkey("2", StudyTopicSelector_HandleKey, "On")
-        Hotkey("3", StudyTopicSelector_HandleKey, "On")
-        Hotkey("4", StudyTopicSelector_HandleKey, "On")
-        Hotkey("5", StudyTopicSelector_HandleKey, "On")
-        Hotkey("6", StudyTopicSelector_HandleKey, "On")
+    count := Min(entries.Length, 33)
+    loop count {
+        label := StudyLinks_LabelForIndex(A_Index)
+        Hotkey(label, StudyTopicSelector_HandleKey, "On")
     }
+    Hotkey("a", StudyTopicSelector_AddEntry, "On")
+    Hotkey("r", StudyTopicSelector_ArmRemove, "On")
     Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "On")
     StudyTopicSelector_BindRobustEscape()
 }
 
 StudyTopicSelector_BackFromTopic(*) {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
-        g_StudyTopicSelectorLastForegroundMonitorIdx
+        g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyTopicSelectorPendingRemove
 
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
         return
+    if (g_StudyTopicSelectorPendingRemove) {
+        g_StudyTopicSelectorPendingRemove := false
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
     StudyTopicSelector_UnbindDigitHotkeys()
     try Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "Off")
     g_StudyTopicSelectorCategory := ""
@@ -572,23 +600,98 @@ StudyTopicSelector_SelectPlans(*) {
     StudyTopicSelector_ShowTopicPhase()
 }
 
-StudyTopicSelector_HandleKey(key) {
-    global g_StudyTopicSelectorActive, g_StudyTopics, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory
+StudyTopicSelector_ArmRemove(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorPendingRemove
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
+        return
+    g_StudyTopicSelectorPendingRemove := true
+    StudyTopicSelector_RebuildTopicPhase()
+}
+
+StudyTopicSelector_AddEntry(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+        g_StudyTopicSelectorPendingRemove
 
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
         return
-    selection := Integer(key)
-    category := g_StudyTopicSelectorCategory
-    StudyTopicSelector_Close()
-    if (!g_StudyTopics.Has(selection))
+    g_StudyTopicSelectorPendingRemove := false
+    StudyTopicSelector_UnbindDigitHotkeys()
+    StudyTopicSelector_UnbindRobustEscape()
+
+    catLabel := (g_StudyTopicSelectorCategory = "plans") ? "Plans" : "Mnemonics"
+    nameBox := InputBox("Name for the new " . catLabel . " entry:", "Add study link", "w400 h120")
+    if (nameBox.Result != "OK") {
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        try ShowCenteredOverlay_Utils("⚠ Name cannot be empty.", 2500, BANNER_ACCENT_INTERMEDIATE)
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
+
+    urlBox := InputBox("GitHub (or http) URL:", "Add study link — URL", "w500 h120")
+    if (urlBox.Result != "OK") {
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
+    url := Trim(urlBox.Value)
+    if (url = "" || !(SubStr(url, 1, 7) = "http://" || SubStr(url, 1, 8) = "https://")) {
+        try ShowCenteredOverlay_Utils("❌ URL must start with http:// or https://", 3000, BANNER_ACCENT_ERROR)
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
+
+    if StudyLinks_AddEntry(g_StudyTopicSelectorCategory, name, url)
+        try ShowCenteredOverlay_Utils("✅ Added: " . name, 2000, BANNER_ACCENT_SUCCESS)
+    StudyTopicSelector_RebuildTopicPhase()
+}
+
+StudyTopicSelector_HandleKey(thisHotkey := "") {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+        g_StudyTopicSelectorPendingRemove
+
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
         return
 
-    topic := g_StudyTopics[selection]
-    url := StudyTopic_GetUrl(topic, category)
+    key := thisHotkey
+    if (key = "")
+        key := A_ThisHotkey
+    ; Strip optional $* / modifiers if present (defensive).
+    key := RegExReplace(key, "^[\$\*]*", "")
+    key := StrLower(key)
+
+    idx := StudyLinks_IndexFromKey(key)
+    if (idx < 1)
+        return
+
+    category := g_StudyTopicSelectorCategory
+    entries := StudyLinks_GetEntries(category)
+    if (idx > entries.Length)
+        return
+
+    if (g_StudyTopicSelectorPendingRemove) {
+        removedName := entries[idx].name
+        g_StudyTopicSelectorPendingRemove := false
+        if StudyLinks_RemoveEntry(category, idx)
+            try ShowCenteredOverlay_Utils("✅ Removed: " . removedName, 2000, BANNER_ACCENT_SUCCESS)
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
+
+    StudyTopicSelector_Close()
+    url := entries[idx].url
     StudyTopic_OpenGithubInChrome(url, category = "mnemonics")
 }
 
 StudyTopicSelector_Cancel(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorPendingRemove
+    if (g_StudyTopicSelectorActive && g_StudyTopicSelectorPhase = "topic" && g_StudyTopicSelectorPendingRemove) {
+        g_StudyTopicSelectorPendingRemove := false
+        StudyTopicSelector_RebuildTopicPhase()
+        return
+    }
     StudyTopicSelector_Close()
 }
 
@@ -596,7 +699,7 @@ StudyTopicSelector_Cancel(*) {
 StudyTopicSelector_Close() {
     global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
         g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyFavoriteLinksGui,
-        g_StudyLinkSubmenuGui
+        g_StudyLinkSubmenuGui, g_StudyTopicSelectorPendingRemove
 
     if (!g_StudyTopicSelectorActive)
         return
@@ -604,6 +707,7 @@ StudyTopicSelector_Close() {
     g_StudyTopicSelectorActive := false
     g_StudyTopicSelectorPhase := ""
     g_StudyTopicSelectorCategory := ""
+    g_StudyTopicSelectorPendingRemove := false
 
     StudyTopicSelector_StopActiveMonitorTracking()
     g_StudyTopicSelectorLastForegroundMonitorIdx := 0
