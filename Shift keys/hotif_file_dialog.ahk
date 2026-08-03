@@ -317,7 +317,7 @@
     FileDialog_SaveAsCsvUtf8()
 }
 
-; Shift + I : Import CSV — Open → Load → close Queries pane → normalize columns (Shift+N)
+; Shift + I : Import CSV — Open → Load → close Queries → promote generic headers → normalize columns
 +i:: {
     if !IsFileDialogActive()
         return
@@ -897,15 +897,23 @@ FileDialog_ImportCsvLoad() {
         Sleep 400
         FileDialog_CloseQueriesPane()
 
-        try StandardLoadingBar_Update("✅ CSV imported — normalizing columns…", BANNER_ACCENT_SUCCESS)
+        try StandardLoadingBar_Update("✅ CSV imported — fixing headers & columns…", BANNER_ACCENT_SUCCESS)
         catch {
         }
         try StandardLoadingBar_Hide(400)
         catch {
         }
-        ; Same as Excel Shift+N: autofit, cap wide columns, zoom row 1
         Sleep 300
+        ; #region agent log
+        Excel_DebugLog("A", "FileDialog_ImportCsvLoad:prePromote", "about to promote+normalize")
+        ; #endregion
+        ; Promote Column1/Column2/… → first data row as headers (no-op if already real names)
+        Excel_PromoteGenericHeaders()
+        ; Same as Excel Shift+N: autofit, cap wide columns, zoom row 1
         Excel_NormalizeColumnWidths()
+        ; #region agent log
+        Excel_DebugLog("A", "FileDialog_ImportCsvLoad:postNormalize", "promote+normalize finished")
+        ; #endregion
     } catch {
         try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
         catch {
