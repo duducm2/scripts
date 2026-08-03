@@ -904,16 +904,10 @@ FileDialog_ImportCsvLoad() {
         catch {
         }
         Sleep 300
-        ; #region agent log
-        Excel_DebugLog("A", "FileDialog_ImportCsvLoad:prePromote", "about to promote+normalize")
-        ; #endregion
-        ; Promote Column1/Column2/… → first data row as headers (no-op if already real names)
+        ; Promote Column1/Column2/… → real header row (no-op if already real names)
         Excel_PromoteGenericHeaders()
         ; Same as Excel Shift+N: autofit, cap wide columns, zoom row 1
         Excel_NormalizeColumnWidths()
-        ; #region agent log
-        Excel_DebugLog("A", "FileDialog_ImportCsvLoad:postNormalize", "promote+normalize finished")
-        ; #endregion
     } catch {
         try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
         catch {

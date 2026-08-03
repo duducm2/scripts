@@ -161,30 +161,6 @@ Excel_RemoveRows(iterations := 8) {
     SendText dateStr
 }
 
-; #region agent log
-Excel_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        dataStr := ""
-        if (IsObject(data)) {
-            for k, v in data {
-                try vStr := StrReplace(String(v), "\", "\\")
-                catch {
-                    vStr := "?"
-                }
-                vStr := StrReplace(vStr, '"', '\"')
-                vStr := StrReplace(vStr, "`n", " ")
-                vStr := StrReplace(vStr, "`r", "")
-                dataStr .= (dataStr = "" ? "" : ",") . '"' . k . '":"' . vStr . '"'
-            }
-        }
-        line := '{"sessionId":"932474","hypothesisId":"' . hypothesisId . '","location":"' . location
-            . '","message":"' . message . '","data":{' . dataStr . '},"timestamp":' . A_TickCount . '}`n'
-        FileAppend(line, A_ScriptDir "\debug-932474.log", "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 ; Convert 1-based column index to A1 letter(s) (1 -> A, 27 -> AA).
 Excel_ColLetter(col) {
     s := ""
@@ -239,19 +215,14 @@ Excel_HeadersLookGeneric(headers) {
     return generic * 2 >= nonEmpty
 }
 
-; If table/sheet headers are Column1/Column2/…, promote first data row to headers.
+; If table/sheet headers are Column1/Column2/…, promote real header row into the table.
+; After CSV Load, a junk ColumnN data row may sit above the real names — scan past it.
 ; Silent no-op when headers are not generic. MsgBox only on unexpected COM errors mid-promote.
 Excel_PromoteGenericHeaders() {
-    ; #region agent log
-    Excel_DebugLog("A", "Excel_PromoteGenericHeaders:entry", "promote entered")
-    ; #endregion
     try {
         xl := ComObjActive("Excel.Application")
         ws := xl.ActiveSheet
-    } catch Error as err {
-        ; #region agent log
-        Excel_DebugLog("B", "Excel_PromoteGenericHeaders:comFail", "ComObjActive failed", Map("err", err.Message))
-        ; #endregion
+    } catch {
         return
     }
 
@@ -260,67 +231,38 @@ Excel_PromoteGenericHeaders() {
         try loCount := ws.ListObjects.Count
         catch {
         }
-        ; #region agent log
-        Excel_DebugLog("D", "Excel_PromoteGenericHeaders:sheetState", "sheet state", Map("listObjects", loCount,
-            "sheet", ws.Name))
-        ; #endregion
         if (loCount >= 1) {
             lo := ws.ListObjects(1)
             colCount := lo.ListColumns.Count
             headers := []
-            headerSample := ""
-            loop colCount {
-                hName := lo.ListColumns(A_Index).Name
-                headers.Push(hName)
-                if (A_Index <= 5)
-                    headerSample .= (headerSample = "" ? "" : "|") . hName
-            }
-            looksGeneric := Excel_HeadersLookGeneric(headers)
-            ; #region agent log
-            Excel_DebugLog("C", "Excel_PromoteGenericHeaders:detectTable", "table header detect", Map(
-                "colCount", colCount, "looksGeneric", looksGeneric, "sample", headerSample))
-            ; #endregion
-            if (!looksGeneric)
+            loop colCount
+                headers.Push(lo.ListColumns(A_Index).Name)
+            if (!Excel_HeadersLookGeneric(headers))
                 return
             body := lo.DataBodyRange
             bodyRows := 0
             try bodyRows := body.Rows.Count
             catch {
             }
-            ; #region agent log
-            Excel_DebugLog("D", "Excel_PromoteGenericHeaders:body", "databody", Map("bodyRows", bodyRows, "hasBody",
-                body ? 1 : 0))
-            ; #endregion
             if (!body || bodyRows < 1)
                 return
             hdrRow := lo.HeaderRowRange.Row
             startCol := lo.Range.Column
             ; First body row may be junk Column1 values; real headers can be on a later row
             headerSourceRow := 0
-            scanSample := ""
             loop bodyRows {
                 r := hdrRow + A_Index
                 cell1 := Excel_CellText(ws, r, startCol)
-                if (A_Index <= 3)
-                    scanSample .= (scanSample = "" ? "" : "|") . ("r" . r . "=" . cell1)
                 if (cell1 != "" && !Excel_IsGenericColumnHeader(cell1)) {
                     headerSourceRow := r
                     break
                 }
             }
-            ; #region agent log
-            Excel_DebugLog("H", "Excel_PromoteGenericHeaders:scan", "scan body for real header row", Map(
-                "hdrRow", hdrRow, "bodyRows", bodyRows, "headerSourceRow", headerSourceRow, "scanSample",
-                scanSample, "runId", "post-fix4"))
-            ; #endregion
             if (headerSourceRow = 0)
                 return
-            firstDataSample := ""
             applied := 0
             loop colCount {
                 newName := Excel_CellText(ws, headerSourceRow, startCol + A_Index - 1)
-                if (A_Index <= 5)
-                    firstDataSample .= (firstDataSample = "" ? "" : "|") . newName
                 if (newName != "" && !Excel_IsGenericColumnHeader(newName)) {
                     lo.ListColumns(A_Index).Name := newName
                     applied++
@@ -328,63 +270,58 @@ Excel_PromoteGenericHeaders() {
             }
             ; Delete body rows from first through header-source (junk + header-as-data)
             listRowsToDelete := headerSourceRow - hdrRow
-            deleted := 0
             if (applied > 0 && listRowsToDelete > 0) {
                 loop listRowsToDelete {
-                    try {
-                        lo.ListRows(1).Delete()
-                        deleted++
-                    } catch {
+                    try lo.ListRows(1).Delete()
+                    catch {
                         break
                     }
                 }
             }
-            ; #region agent log
-            Excel_DebugLog("E", "Excel_PromoteGenericHeaders:tableDone", "promoted table headers", Map(
-                "fromRow", firstDataSample, "applied", applied, "listRowsToDelete", listRowsToDelete, "deleted",
-                deleted, "runId", "post-fix4"))
-            ; #endregion
             return
         }
 
         ur := ws.UsedRange
-        if (!ur || ur.Rows.Count < 2) {
-            ; #region agent log
-            Excel_DebugLog("D", "Excel_PromoteGenericHeaders:noUr", "no usedrange or too few rows", Map(
-                "hasUr", ur ? 1 : 0, "rows", ur ? ur.Rows.Count : 0))
-            ; #endregion
+        if (!ur || ur.Rows.Count < 2)
             return
-        }
         colCount := ur.Columns.Count
         startCol := ur.Column
         startRow := ur.Row
+        rowCount := ur.Rows.Count
         headers := []
-        headerSample := ""
-        loop colCount {
-            hName := ws.Cells(startRow, startCol + A_Index - 1).Value
-            headers.Push(hName)
-            if (A_Index <= 5)
-                headerSample .= (headerSample = "" ? "" : "|") . hName
-        }
-        looksGeneric := Excel_HeadersLookGeneric(headers)
-        ; #region agent log
-        Excel_DebugLog("C", "Excel_PromoteGenericHeaders:detectRange", "range header detect", Map(
-            "colCount", colCount, "looksGeneric", looksGeneric, "sample", headerSample))
-        ; #endregion
-        if (!looksGeneric)
+        loop colCount
+            headers.Push(Excel_CellText(ws, startRow, startCol + A_Index - 1))
+        if (!Excel_HeadersLookGeneric(headers))
             return
+        headerSourceRow := 0
+        loop rowCount - 1 {
+            r := startRow + A_Index
+            cell1 := Excel_CellText(ws, r, startCol)
+            if (cell1 != "" && !Excel_IsGenericColumnHeader(cell1)) {
+                headerSourceRow := r
+                break
+            }
+        }
+        if (headerSourceRow = 0)
+            return
+        applied := 0
         loop colCount {
             c := startCol + A_Index - 1
-            ws.Cells(startRow, c).Value := ws.Cells(startRow + 1, c).Value
+            newName := Excel_CellText(ws, headerSourceRow, c)
+            if (newName != "" && !Excel_IsGenericColumnHeader(newName)) {
+                ws.Range(Excel_ColLetter(c) . startRow).Value2 := newName
+                applied++
+            }
         }
-        ws.Rows(startRow + 1).Delete()
-        ; #region agent log
-        Excel_DebugLog("E", "Excel_PromoteGenericHeaders:rangeDone", "promoted range headers")
-        ; #endregion
+        if (applied > 0) {
+            ; Delete from row under header through header-source row (bottom-up)
+            r := headerSourceRow
+            while (r > startRow) {
+                ws.Rows(r).Delete()
+                r--
+            }
+        }
     } catch Error as err {
-        ; #region agent log
-        Excel_DebugLog("E", "Excel_PromoteGenericHeaders:error", "promote threw", Map("err", err.Message))
-        ; #endregion
         MsgBox("Could not promote generic headers:`n" err.Message)
     }
 }
