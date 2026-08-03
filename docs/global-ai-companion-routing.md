@@ -48,7 +48,7 @@ flowchart TD
 | -------------------- | ----------------------------------- | ----------------------------- | --------------------------------------------------------------------- |
 | Win+Alt+Shift+I      | Open/focus consumer Gemini + prompt | Open/focus Copilot + composer | Open/focus Enterprise + prompt                                        |
 | Win+Alt+Shift+O      | Read aloud last message             | Read aloud                    | Prompt focus only (no TTS UIA yet)                                    |
-| Win+Alt+Shift+P      | Copy last message                   | Copy last response            | Prompt focus only                                                     |
+| Win+Alt+Shift+P      | Copy last message                   | Copy last response            | Copy last response                                                    |
 | Win+Alt+Shift+8      | Pronunciation lookup                | Copilot pronunciation         | Enterprise pronunciation (picker → submit → banner)                   |
 | Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2    | Same → Copilot                | Same → Enterprise                                                     |
 | Ctrl+Alt+Win+L / D2C | Paste/submit + monitor              | Copilot paste/submit          | Enterprise paste/submit; post-response copy/read-aloud → prompt focus |
@@ -57,7 +57,7 @@ Entry points: [`Gemini/gemini_open.ahk`](../Gemini/gemini_open.ahk), [`Gemini/ho
 
 ### Enterprise “prompt focus only”
 
-Until chat-response UIA exists for Enterprise **read aloud / TTS / `#\!+P` copy**, those chords **do not** silently fall back to Copilot when Enterprise is the resolved companion. They activate Enterprise and focus the omnibar/composer (same idea as I), with the ready chime. **`#\!+8` pronunciation** uses Enterprise copy-last-response UIA (`GeminiEnterpriseAsyncLookup`) and is full parity with Gemini/Copilot.
+Until chat-response UIA exists for Enterprise **read aloud / TTS**, `#\!+O` **does not** silently fall back to Copilot when Enterprise is the resolved companion. It activates Enterprise and focuses the omnibar/composer (same idea as I), with the ready chime. **`#\!+P` copy** and **`#\!+8` pronunciation** use Enterprise copy-last-response UIA (`GeminiEnterprise_CopyLastMessageToClipboard` / `GeminiEnterpriseAsyncLookup`) and are full parity with Gemini/Copilot.
 
 ## Shift keys (separate from the global resolver)
 

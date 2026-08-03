@@ -102,7 +102,14 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
         t0 := A_TickCount
         companion := ResolveGlobalAICompanion()
         if (companion = "enterprise") {
-            GeminiEnterprise_FocusPromptOnly()
+            if (!GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
+                ShowNotification("Copy failed – ensure Gemini Enterprise is open and has a response", 2500, "FF6666",
+                    "FFFFFF", 22)
+            else if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
+                root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+                if (IsObject(root))
+                    GeminiEnterprise_FocusComposer(root, true)
+            }
             return
         }
         if (companion = "copilot") {
