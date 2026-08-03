@@ -317,7 +317,7 @@
     FileDialog_SaveAsCsvUtf8()
 }
 
-; Shift + I : Import CSV — Open → Load → close Queries pane
+; Shift + I : Import CSV — Open → Load → close Queries pane → normalize columns (Shift+N)
 +i:: {
     if !IsFileDialogActive()
         return
@@ -897,12 +897,15 @@ FileDialog_ImportCsvLoad() {
         Sleep 400
         FileDialog_CloseQueriesPane()
 
-        try StandardLoadingBar_Update("✅ CSV imported", BANNER_ACCENT_SUCCESS)
+        try StandardLoadingBar_Update("✅ CSV imported — normalizing columns…", BANNER_ACCENT_SUCCESS)
         catch {
         }
-        try StandardLoadingBar_Hide(600)
+        try StandardLoadingBar_Hide(400)
         catch {
         }
+        ; Same as Excel Shift+N: autofit, cap wide columns, zoom row 1
+        Sleep 300
+        Excel_NormalizeColumnWidths()
     } catch {
         try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
         catch {
