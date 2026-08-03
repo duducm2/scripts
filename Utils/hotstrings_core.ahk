@@ -265,6 +265,11 @@ GetPromptText(key) {
     InsertText(GetPromptText("unstructured-to-csv"))
 }
 
+:o:howtocsv::
+{
+    InsertText(GetPromptText("howto-steps-csv"))
+}
+
 :o:protscreencsv::
 {
     InsertText(GetPromptText("proto-content-to-screens-csv"))
@@ -355,6 +360,8 @@ InitHotstringsCheatSheet() {
     "🔍 Upscale image (resolution + sharp text)")
     RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
     "📋 Fill CSV from unstructured text")
+    RegisterHotstring(":o:howtocsv", GetPromptText("howto-steps-csv"), "Prompts",
+    "📝 How-to steps CSV", "h")
 
     ; Hotstrings: emails
     RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")

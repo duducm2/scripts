@@ -1,0 +1,145 @@
+Task:
+
+Convert a requested how-to into a step-by-step guide as CSV. One row = one actionable step. Do not generate images or slides.
+
+
+
+Use this when the user wants a reusable procedure — e.g. how to do something in Power BI, add a signature in Outlook, configure a setting, or any other multi-step task.
+
+
+
+Before processing:
+
+
+
+1. Confirm the topic / goal is present (short description, pasted notes, screenshots notes, or attached files).
+
+2. If the topic is missing, stop and ask the user to provide it.
+
+
+
+Inputs:
+
+
+
+- Topic / goal: <what the user wants to learn or accomplish>
+
+- Optional context: <app/product version, OS, constraints, language, audience skill level>
+
+- Optional source material: <paste or attach notes, docs, screenshots descriptions>
+
+
+
+Column schema (authoritative — use exactly these columns in this order):
+
+
+
+step_id;step_order;title;instruction;ui_location;notes
+
+
+
+Column definitions:
+
+
+
+- step_id: Stable primary key. Format STEP_001, STEP_002, etc.
+
+- step_order: Integer display order, 1-based, contiguous.
+
+- title: Short step name (a few words).
+
+- instruction: What to do in this step — clear, imperative, one main action.
+
+- ui_location: Where in the UI / app this happens (e.g. Outlook > File > Options > Mail). Leave empty if not applicable.
+
+- notes: Optional tips, warnings, prerequisites, or expected result. Leave empty if not needed.
+
+
+
+Processing rules:
+
+
+
+1. Break the how-to into discrete, ordered steps a reader can follow without guessing.
+
+2. Prefer 5–20 steps unless the topic clearly needs fewer or more.
+
+3. One primary action per step. Split compound actions across multiple rows.
+
+4. step_id must be unique and stable. step_order must be contiguous starting at 1.
+
+5. Prefer concrete UI paths and control names over vague wording ("click around until…").
+
+6. Do not invent product features or menu paths you are unsure of; put uncertainty in notes.
+
+7. If source material is provided, prefer it over general knowledge when they conflict.
+
+8. Use semicolon as the field separator.
+
+
+
+Output (CRITICAL — read before responding):
+
+
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+
+
+
+WRONG (do not output): step\_id, STEP\_001
+
+RIGHT: step_id, STEP_001
+
+
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+
+
+```csv
+
+step_id;step_order;title;instruction;ui_location;notes
+
+STEP_001;1;Open Outlook options;Open Outlook and go to File then Options;Outlook > File > Options;Desktop Outlook, not web
+
+STEP_002;2;Open Signatures;In Mail, click Signatures;Outlook > File > Options > Mail > Signatures;Opens the Signatures and Stationery dialog
+
+STEP_003;3;Create signature;Click New, name it, and paste your signature content;Signatures and Stationery > E-mail Signature;Use HTML if you need logo/formatting
+
+```
+
+
+
+Rules for the code block contents:
+
+
+
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+
+4. Underscores are literal: write step_id, not step\_id.
+
+5. The backslash character must not appear unless it is real data in a cell.
+
+6. Use the exact column names and order defined above.
+
+7. One row per line inside the code block (header on line 1, each data row on its own line).
+
+8. Quote fields only when required by CSV rules (semicolons inside a cell), not to "protect" underscores.
+
+---
+Human reminders (for the person sending this prompt — do not include in AI output):
+
+Before you send:
+
+📎 Fill in Topic / goal (what you want a step-by-step for)
+🎯 Optional: app/version, OS, language, skill level
+📄 Optional: paste or attach source notes/docs
+
+After the AI responds:
+
+💾 Save the CSV as howto-steps.csv (or similar)
+🔧 After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector → E, or type mdunesc). Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. step\_id → step_id)
