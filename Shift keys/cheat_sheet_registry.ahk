@@ -1143,7 +1143,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === AVAILABLE SECONDARY (Ctrl+Alt+Win) SLOTS ===
     [Ctrl+Alt+Win+N] > TEMPORARY — M365 Copilot auto-continue: send "continue", wait for Stop generating, loop (toggle off with same chord)
     [Ctrl+Alt+Win+O] > Evidence search loop — CSV row substring → PDF find; stop saves not-found rows to data/evidence_not_found.csv + 10s report (VSCodeEvidenceSearch.ahk; toggle)
-    Letters available: T, U
+    Letters available: T
+    [Ctrl+Alt+Win+Y] > RESERVED — PowerToys Command Palette bookmarks (show); not bound in AHK
     Shift+CAW: A/S/D/F/Q/W/E/R (+B debug, +Z/+G/+Numpad1 fallbacks) — see === WINDOW MANAGEMENT === below
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
     [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
@@ -1224,7 +1225,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
     [Win+Alt+Shift+M] > Maximizes the current window
-    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], Y=[2], 6=[3], P=[4]
+    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], U=[2], 6=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
     [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)
     [Ctrl+Alt+Shift+C] > Switch to second previous window (Alt+Tab twice; MEH+C; WindowManagement.ahk)
@@ -1235,7 +1236,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
     [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
     [Ctrl+Alt+Win+6] > Window tools [3]: fill free AutoSlot slots from background (AutoSlot ON; slotted windows stay); else tile bg ≤2/mon skipping slotted (also Win+Alt+Shift+W → 3)
-    [Ctrl+Alt+Win+Y] > Window tools [2]: hidden background list — open into free AutoSlot half/empty (AutoSlot ON) or restore in place (OFF); close mode arms with list UI (also Win+Alt+Shift+W → 2)
+    [Ctrl+Alt+Win+U] > Window tools [2]: hidden background list — open into free AutoSlot half/empty (AutoSlot ON) or restore in place (OFF); close mode arms with list UI (also Win+Alt+Shift+W → 2)
     [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
     [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
     [Ctrl+Alt+Win+S] > Move window to monitor 2
@@ -1261,6 +1262,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+Shift+B] > DEV: log taskbar-minimized background window scan (WindowManagement.ahk)
     
     === COMMAND PALETTE BOOKMARKS ===
+    [Ctrl+Alt+Win+Y] > Show bookmarks (PowerToys Command Palette; not bound in AHK)
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
     
     === GENERAL ===
@@ -1295,7 +1297,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · →] > Right Arrow
     [ZMK L0 · P] hold > Alt+Shift+S
     [ZMK L0 · P] tap 1× > Alt+Shift+Q — jump mouse to middle
-    [ZMK L0 · P] tap 2× > Ctrl+Alt+Win+Y — window tools [2]
+    [ZMK L0 · P] tap 2× > Ctrl+Alt+Win+Y — PowerToys Command Palette bookmarks (show)
     [ZMK L0 · P] tap 3× > Ctrl+Alt+Win+M — Command Palette bookmark
     [ZMK L0 · L] hold > Ctrl+Alt+Win+L — {AI_PROVIDER} D2C direct submit (Utils.ahk)
     [ZMK L0 · L] tap 1× > Win+Alt+Shift+0 — start/stop dictation
@@ -1318,7 +1320,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · X thumb] hold > Win+Alt+Shift+X — Peek PDF / set PDF path
     [ZMK L0 · X thumb] tap 1× > Win+Alt+Shift+I — open {AI_PROVIDER}
     [ZMK L0 · X thumb] tap 2× > Ctrl+Alt+Win+6 — window tools [3]
-    [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+Y — window tools [2]
+    [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+U — window tools [2]
     [ZMK L0 · E thumb] hold > Win+Shift+E
     [ZMK L0 · E thumb] tap 1× > Context menu
     [ZMK L0 · E thumb] tap 2× > Ctrl+Alt+Win+B — Handy Parakeet Unified English

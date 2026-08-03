@@ -230,7 +230,7 @@ WM_WindowTools_ShowMenu() {
         17,
         "",
         false,
-        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+6)  [3] Fill free slots (CAW+Y; slotted stay)  [4] Exit F11 fullscreen (CAW+P)  [5] AutoSlot: " autoSlotLabel "  [Esc] Cancel",
+        "[1] Maximize lone (CAW+Z)  [2] Hidden list (CAW+U)  [3] Fill free slots (CAW+6; slotted stay)  [4] Exit F11 fullscreen (CAW+P)  [5] AutoSlot: " autoSlotLabel "  [Esc] Cancel",
         true,
         false,
         false)

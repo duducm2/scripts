@@ -40,12 +40,12 @@
 
 ; =============================================================================
 ; Window tools (maximize lone / hidden list / fill free slots / exit F11 fullscreen)
-; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], Y=[2], 6=[3], P=[4]; X=Snap 50/50 (not in menu)
+; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], U=[2], 6=[3], P=[4]; X=Snap 50/50 (not in menu)
 ; Ctrl+Alt+Win+6: sole AutoSlot background→slot fill (no auto fill on close/move).
 ; =============================================================================
 ^!#z:: WM_WindowTools_OnMaximizeLonely()
 ^!#6:: WM_WindowTools_OnTileBackground()
-^!#y:: WM_WindowTools_OnShowMinimizedList()
+^!#u:: WM_WindowTools_OnShowMinimizedList()
 ^!#p:: WM_WindowTools_OnExitF11Fullscreen()
 ^!#x:: WM_SnapHalfPairActiveWindow()
 #!+w:: WM_WindowTools_ShowMenu()
