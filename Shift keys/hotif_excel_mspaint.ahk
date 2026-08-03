@@ -162,7 +162,7 @@ Excel_RemoveRows(iterations := 8) {
 }
 
 ; Helper: Autofit used columns, then cap any width greater than maxWidth to cappedWidth.
-; Ends on A1 (Ctrl+Home equivalent). Uses Excel COM — no ribbon/QAT keystrokes.
+; Ends by selecting row 1 (A through last used column) and Alt, 0, 6 (Zoom to Selection).
 Excel_NormalizeColumnWidths(maxWidth := 15, cappedWidth := 5) {
     ShowSmallLoadingIndicator_ChatGPT("Normalizing column widths...")
     try {
@@ -177,18 +177,28 @@ Excel_NormalizeColumnWidths(maxWidth := 15, cappedWidth := 5) {
         ur.Columns.AutoFit()
         colCount := ur.Columns.Count
         startCol := ur.Column
+        lastCol := startCol + colCount - 1
         loop colCount {
             col := ws.Columns(startCol + A_Index - 1)
             if (col.ColumnWidth > maxWidth)
                 col.ColumnWidth := cappedWidth
         }
+        ; First cell, then first row across used columns
         ws.Range("A1").Select()
+        ws.Range(ws.Cells(1, 1), ws.Cells(1, lastCol)).Select()
     } catch Error as err {
         HideSmallLoadingIndicator_ChatGPT()
         MsgBox("Could not normalize column widths:`n" err.Message)
         return
     }
     HideSmallLoadingIndicator_ChatGPT()
+    ; QAT: Zoom to Selection (Alt, 0, 6)
+    Sleep 100
+    Send "{Alt}"
+    Sleep 100
+    Send "0"
+    Sleep 100
+    Send "6"
 }
 
 ; Shift + N : Narrow oversized columns (autofit, then cap width >15 → 5)
