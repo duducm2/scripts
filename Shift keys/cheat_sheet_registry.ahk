@@ -1151,8 +1151,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
     [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
     [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
-    [Ctrl+Alt+Win+7] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 7 chord fails on keyboard)
-    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+7)
+    [Ctrl+Alt+Win+4] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 4 chord fails on keyboard)
+    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+4)
     [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (model slot 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (model slot 1)
@@ -1265,7 +1265,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === GENERAL ===
     [Win+Alt+Shift+U] > Quick string shortcuts
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible-window picker; same as D2C [W])
-    [Ctrl+Alt+Win+4] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
+    [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)
     [Win+Alt+Shift+→] > Show square selector (right direction)
@@ -1298,8 +1298,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · P] tap 3× > Ctrl+Alt+Win+M — Command Palette bookmark
     [ZMK L0 · L] hold > Ctrl+Alt+Win+L — {AI_PROVIDER} D2C direct submit (Utils.ahk)
     [ZMK L0 · L] tap 1× > Win+Alt+Shift+0 — start/stop dictation
-    [ZMK L0 · L] tap 2× > Ctrl+Alt+Win+4 — toggle {AI_PROVIDER} tab 1 <-> 2
-    [ZMK L0 · L] tap 3× > Ctrl+Alt+Win+7 — mark last clip favorite
+    [ZMK L0 · L] tap 2× > Ctrl+Alt+Win+4 — mark last clip favorite
+    [ZMK L0 · L] tap 3× > Ctrl+Alt+Win+7 — toggle {AI_PROVIDER} tab 1 <-> 2
     [ZMK L0 · ;] hold > Ctrl+Shift+V — paste plain text
     [ZMK L0 · ;] tap 1× > Win+Alt+Shift+1 — Clip Angel top item
     [ZMK L0 · ;] tap 2× > Ctrl+Alt+B

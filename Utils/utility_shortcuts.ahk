@@ -34,9 +34,9 @@
 ; Ctrl+Alt+Win+L - direct D2C submit path (paste + Enter, then monitor)
 ^!#L:: D2C_FlowManager.GetInstance().StartFromHotstring()
 
-; Ctrl+Alt+Win+4 - toggle Chrome tab 1 <-> 2 on the resolved AI companion
+; Ctrl+Alt+Win+7 - toggle Chrome tab 1 <-> 2 on the resolved AI companion
 ; (Enterprise / Copilot / consumer Gemini via ResolveGlobalAICompanion).
-^!#4:: ToggleAICompanionChromeTab()
+^!#7:: ToggleAICompanionChromeTab()
 
 ToggleAICompanionChromeTab() {
     global g_GeminiToggleTab
@@ -87,7 +87,7 @@ ToggleAICompanionChromeTab() {
 #InputLevel 10
 #UseHook
 ^!#5:: CleanClipboard()
-^!#7:: MarkLastClipAsFavorite()
+^!#4:: MarkLastClipAsFavorite()
 ^!#j:: MarkLastClipAsFavorite()
 #UseHook False
 #InputLevel 0
