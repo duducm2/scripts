@@ -467,7 +467,7 @@ StudyLinks_LabelForIndex(index) {
     return String(index)
 }
 
-; Open GitHub study URL in a new Chrome window. scrollToEnd: Mnemonics only (^{End} after load).
+; Open GitHub study URL in a new Chrome window. scrollToEnd: Mnemonics only (wait load then ^{End}).
 StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
     url := Trim(url)
     if (url = "") {
@@ -490,40 +490,121 @@ StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
     if (!scrollToEnd)
         return true
 
-    newHwnd := 0
-    deadline := A_TickCount + 8000
-    while (A_TickCount < deadline) {
-        try {
-            for hwnd in WinGetList("ahk_exe chrome.exe") {
-                if !beforeMap.Has(hwnd) {
-                    newHwnd := hwnd
-                    break
+    StandardLoadingBar_Show("⏳ Opening study page…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try {
+        newHwnd := 0
+        deadline := A_TickCount + 8000
+        while (A_TickCount < deadline) {
+            try {
+                for hwnd in WinGetList("ahk_exe chrome.exe") {
+                    if !beforeMap.Has(hwnd) {
+                        newHwnd := hwnd
+                        break
+                    }
                 }
+            } catch {
             }
-        } catch {
+            if (newHwnd)
+                break
+            Sleep 100
         }
-        if (newHwnd)
-            break
-        Sleep 100
-    }
 
-    if (!newHwnd) {
-        try ShowCenteredOverlay_Utils("⚠ Chrome window opened but could not scroll to end.", 3000,
-            BANNER_ACCENT_INTERMEDIATE)
+        if (!newHwnd) {
+            try ShowCenteredOverlay_Utils("⚠ Chrome window opened but could not scroll to end.", 3000,
+                BANNER_ACCENT_INTERMEDIATE)
+            return true
+        }
+
+        StudyTopic_WaitChromeReadyAndScroll(newHwnd, url)
         return true
+    } finally {
+        try StandardLoadingBar_Hide(0)
     }
+}
+
+; Match expected study URL once Chrome has navigated (ignore query/hash differences).
+StudyTopic_UrlMatchFragment(expectedUrl) {
+    expectedUrl := Trim(expectedUrl)
+    if (expectedUrl = "")
+        return ""
+    ; Prefer path after host so http/https and www variants still match.
+    if RegExMatch(expectedUrl, "i)^https?://[^/]+(/.*)$", &m)
+        return m[1]
+    return expectedUrl
+}
+
+; Wait until Chrome shows the target URL and reload-button idle, then ^{End} with retries.
+StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl) {
+    if (!chromeHwnd)
+        return false
 
     try {
-        WinActivate("ahk_id " newHwnd)
-        WinWaitActive("ahk_id " newHwnd, , 3)
+        WinActivate("ahk_id " chromeHwnd)
+        WinWaitActive("ahk_id " chromeHwnd, , 3)
     } catch {
     }
-    ; Brief wait for GitHub markdown to paint before Ctrl+End.
-    Sleep 1200
+
+    try UIA.ActivateChromiumAccessibility("ahk_id " chromeHwnd, 300)
+    catch {
+    }
+
+    uia := 0
+    try uia := UIA_Browser("ahk_id " chromeHwnd)
+    catch {
+        uia := 0
+    }
+
+    fragment := StudyTopic_UrlMatchFragment(expectedUrl)
+    try StandardLoadingBar_Update("⏳ Waiting for page…", BANNER_ACCENT_INTERMEDIATE)
+
+    urlReady := false
+    if IsObject(uia) && fragment != "" {
+        urlDeadline := A_TickCount + 10000
+        while (A_TickCount < urlDeadline) {
+            cur := ""
+            try cur := uia.GetCurrentURL()
+            catch {
+                cur := ""
+            }
+            if (cur != "" && InStr(cur, fragment)) {
+                urlReady := true
+                break
+            }
+            Sleep 120
+        }
+    }
+
+    if IsObject(uia) {
+        try uia.WaitPageLoad("", 8000, 400)
+        catch {
+        }
+    } else if (!urlReady) {
+        ; No UIA: fall back to a short settle so ^{End} is not instant on blank chrome.
+        Sleep 1500
+    }
+
+    try StandardLoadingBar_Update("⏳ Scrolling to end…", BANNER_ACCENT_INTERMEDIATE)
     try {
-        ControlSend "{Blind}^{End}", , "ahk_id " newHwnd
+        WinActivate("ahk_id " chromeHwnd)
+        WinWaitActive("ahk_id " chromeHwnd, , 2)
     } catch {
-        try Send "^{End}"
+    }
+    ; Click page center so focus is in the document, not the address bar.
+    try {
+        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " chromeHwnd)
+        if (ww > 0 && wh > 0)
+            Click wx + ww // 2, wy + wh // 2
+    } catch {
+    }
+    Sleep 200
+
+    loop 3 {
+        try ControlSend "{Blind}^{End}", , "ahk_id " chromeHwnd
+        catch {
+            try Send "^{End}"
+        }
+        if (A_Index < 3)
+            Sleep 350
     }
     return true
 }
