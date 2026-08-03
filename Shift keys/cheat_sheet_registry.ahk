@@ -866,6 +866,7 @@ cheatSheets["EXCEL.EXE"] := "
     ➕ [A][A]dd multiple rows (10 rows)
     🗑️ [R][R]ow removal workflow (remove row, down arrow, repeat 5-7 times)
     📅 [P]Type [P]revious day date
+    📏 [N][N]arrow oversized columns (autofit, cap >15→5)
 )"
 
 ; --- Power BI ------------------------------------------------------------

@@ -161,3 +161,37 @@ Excel_RemoveRows(iterations := 8) {
     SendText dateStr
 }
 
+; Helper: Autofit used columns, then cap any width greater than maxWidth to cappedWidth.
+; Ends on A1 (Ctrl+Home equivalent). Uses Excel COM — no ribbon/QAT keystrokes.
+Excel_NormalizeColumnWidths(maxWidth := 15, cappedWidth := 5) {
+    ShowSmallLoadingIndicator_ChatGPT("Normalizing column widths...")
+    try {
+        xl := ComObjActive("Excel.Application")
+        ws := xl.ActiveSheet
+        ur := ws.UsedRange
+        if (!ur) {
+            HideSmallLoadingIndicator_ChatGPT()
+            MsgBox("No used range on the active sheet.")
+            return
+        }
+        ur.Columns.AutoFit()
+        colCount := ur.Columns.Count
+        startCol := ur.Column
+        loop colCount {
+            col := ws.Columns(startCol + A_Index - 1)
+            if (col.ColumnWidth > maxWidth)
+                col.ColumnWidth := cappedWidth
+        }
+        ws.Range("A1").Select()
+    } catch Error as err {
+        HideSmallLoadingIndicator_ChatGPT()
+        MsgBox("Could not normalize column widths:`n" err.Message)
+        return
+    }
+    HideSmallLoadingIndicator_ChatGPT()
+}
+
+; Shift + N : Narrow oversized columns (autofit, then cap width >15 → 5)
++n:: {
+    Excel_NormalizeColumnWidths()
+}
