@@ -321,19 +321,81 @@ Explorer_EnsureItemsViewFocusPreserveSelection() {
 ; Shift + N : New folder - New Folder
 +n:: Send("^+n")
 
-; Shift + H : Create a shortcut - sHortcut
-+h::
-{
-    ; Ensure focus is in the file list so the keystrokes hit the right target
-    EnsureItemsViewFocus()
-    Sleep 100
-    Send "{Alt}"
-    Sleep 50
-    Send "{Enter}"
-    Sleep 100
-    Send "{Down}"
-    Sleep 50
-    Send "{Enter}"
+; Shift + H : Open Create Shortcut wizard in the current folder (paste URL/path, name, Enter)
++h:: Explorer_OpenCreateShortcutWizard()
+
+Explorer_GetActiveFolderPath() {
+    explorerHwnd := WinExist("A")
+    if !explorerHwnd
+        return ""
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (window.hwnd = explorerHwnd)
+                    return window.Document.Folder.Self.Path
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return ""
+}
+
+Explorer_UniqueNewShortcutPlaceholder(folder) {
+    baseName := "New Shortcut"
+    candidate := folder "\" baseName ".lnk"
+    if !FileExist(candidate)
+        return candidate
+    i := 2
+    loop {
+        candidate := folder "\" baseName " (" i ").lnk"
+        if !FileExist(candidate)
+            return candidate
+        i++
+    }
+}
+
+Explorer_OpenCreateShortcutWizard() {
+    folder := Explorer_GetActiveFolderPath()
+    if (folder = "" || !DirExist(folder)) {
+        MsgBox("Create Shortcut needs a normal filesystem folder (not This PC / Libraries / virtual views).",
+            "Shift+H (Create Shortcut)", "IconX")
+        return
+    }
+
+    placeholder := Explorer_UniqueNewShortcutPlaceholder(folder)
+    try {
+        ; NewLinkHere needs a true 0-byte placeholder (FileAppend UTF-8 may write a BOM).
+        f := FileOpen(placeholder, "w", "UTF-8-RAW")
+        if !f
+            throw Error("FileOpen failed")
+        f.Close()
+    } catch as e {
+        MsgBox("Could not create placeholder shortcut file:`n" e.Message, "Shift+H (Create Shortcut)", "IconX")
+        return
+    }
+
+    ; Quote rundll32.exe; never quote the placeholder path (NewLinkHere fails silently if quoted).
+    rundll := A_WinDir "\System32\rundll32.exe"
+    pid := 0
+    try {
+        Run('"' rundll '" appwiz.cpl,NewLinkHere ' placeholder, folder, , &pid)
+    } catch as e {
+        try FileDelete(placeholder)
+        MsgBox("Could not open Create Shortcut wizard:`n" e.Message, "Shift+H (Create Shortcut)", "IconX")
+        return
+    }
+
+    ; Wait for the wizard window from this rundll32; clean up orphan .lnk if it never appears.
+    if (!pid || !WinWait("ahk_pid " pid, , 2)) {
+        try FileDelete(placeholder)
+        MsgBox("Create Shortcut wizard did not open.`nPlaceholder file was removed.",
+            "Shift+H (Create Shortcut)", "IconX")
+        return
+    }
+    WinActivate("ahk_pid " pid)
+    WinWaitActive("ahk_pid " pid, , 1)
 }
 
 ; Shift + C : Copy as path - Copy

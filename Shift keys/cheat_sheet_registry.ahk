@@ -586,7 +586,7 @@ cheatSheets["explorer.exe"] := "
     🔍 [S][S]earch bar
     📍 [A][A]ddress bar
     📁 [N][N]ew Folder²
-    🔗 [H]Create s[H]ortcut
+    🔗 [H]Create s[H]ortcut wizard (paste URL/path)
     📋 [C][C]opy as path
     📤 [R]Sha[R]e file
     📌 [P][P]inned item (first in sidebar)
