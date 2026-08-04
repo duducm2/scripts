@@ -215,49 +215,14 @@ GetPromptText(key) {
     InsertText(GetPromptText("mtask"))
 }
 
-:o:flog::
-{
-    InsertText(GetPromptText("flog"))
-}
-
 :o:aiopt::
 {
     InsertText(GetPromptText("aiopt"))
 }
 
-:o:cplant::
-{
-    InsertText(GetPromptText("cplant"))
-}
-
-:o:cascadeplan::
-{
-    InsertText(GetPromptText("cascade-plan"))
-}
-
-:o:aibrapid::
-{
-    InsertText(GetPromptText("aib-rapid-fire-template"))
-}
-
-:o:pptslide::
-{
-    InsertText(GetPromptText("slide-creation"))
-}
-
-:o:pptslideref::
-{
-    InsertText(GetPromptText("slide-creation-with-ref"))
-}
-
 :o:boschimg::
 {
     InsertText(GetPromptText("bosch-brand-image"))
-}
-
-:o:imgupscale::
-{
-    InsertText(GetPromptText("image-upscale"))
 }
 
 :o:csvfill::
@@ -334,19 +299,8 @@ InitHotstringsCheatSheet() {
     ; General prompts from assets/prompt/*.txt (same source as GetPromptText / direct :o: triggers).
     RegisterHotstring(":o:cgrammar", GetPromptText("grammar"), "Prompts", "✏️ Grammar & Spelling Corrector")
     RegisterHotstring(":o:mtask", GetPromptText("mtask"), "Prompts", "🔲 Convert to Task")
-    RegisterHotstring(":o:flog", GetPromptText("flog"), "Prompts", "🍽️ Food Log Dictation")
     RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
-    RegisterHotstring(":o:cplan", GetPromptText("markdown-plan"), "Prompts",
-    "📋 Technical Architect & Code Planner")
-    RegisterHotstring(":o:cplant", GetPromptText("cplant"), "Prompts", "📝 Plan File Template")
-    RegisterHotstring(":o:cascadeplan", GetPromptText("cascade-plan"), "Prompts",
-    "🔁 Low-context cascade plan (1 step/run)")
     InitTechniquePromptHotstrings()
-    RegisterHotstring(":o:aibrapid", GetPromptText("aib-rapid-fire-template"), "Prompts",
-    "📜 Junior AI: ⚡ rapid-fire template")
-    RegisterHotstring(":o:pptslide", GetPromptText("slide-creation"), "Prompts", "📊 Create PowerPoint slide")
-    RegisterHotstring(":o:pptslideref", GetPromptText("slide-creation-with-ref"), "Prompts",
-    "📊 Create PowerPoint slide (reference)")
     RegisterHotstring(":o:pptdeckcsv", GetPromptText("ppt-content-to-slides-csv"), "Prompts",
     "📊 PPT stage 1: content to slides CSV", "s")
     RegisterHotstring(":o:pptelemcsv", GetPromptText("ppt-slides-to-elements-csv"), "Prompts",
@@ -356,8 +310,6 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:protoelemcsv", GetPromptText("proto-screens-to-elements-csv"), "Prompts",
     "🧩 Prototype stage 2: screens to elements CSV", "f")
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
-    RegisterHotstring(":o:imgupscale", GetPromptText("image-upscale"), "Prompts",
-    "🔍 Upscale image (resolution + sharp text)")
     RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
     "📋 Fill CSV from unstructured text")
     RegisterHotstring(":o:howtocsv", GetPromptText("howto-steps-csv"), "Prompts",
