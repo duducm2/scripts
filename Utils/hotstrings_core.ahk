@@ -32,27 +32,9 @@ Utils_CheckHotstringSelectorCloseRequest() {
     }
 }
 
-; Trigger only on Space or Tab, not Enter or punctuation
-Hotstring("EndChars", " `t")
-
 RegisterHotstring(trigger, expansion, category := "", title := "", char := "") {
     global g_hotstrings
     g_hotstrings.Push({ trigger: trigger, expansion: expansion, category: category, title: title, char: char })
-}
-
-GetHotstringsCheatSheetText() {
-    global g_hotstrings
-    if (!IsSet(g_hotstrings) || g_hotstrings.Length = 0)
-        return ""
-    txt := ""
-    for hs in g_hotstrings {
-        line := "[" hs.trigger "] > " hs.expansion
-        if (txt = "")
-            txt := line
-        else
-            txt := txt . "`n" . line
-    }
-    return txt
 }
 
 ; Safe paste insertion to avoid app shortcuts and re-triggers
@@ -118,66 +100,6 @@ InsertFiles_IsAiChatForeground() {
     }
 }
 
-; ----------------------
-; Define hotstrings below
-; (same triggers, now using InsertText)
-; ----------------------
-
-:o:myl::
-{
-    InsertText("my links")
-}
-
-:o:gintegra::
-{
-    InsertText("GS_UX core team_UX and CIP Integration")
-}
-
-:o:gdash::
-{
-    InsertText("GS_E&S_CIP Dashboard research and design")
-}
-
-:o:opex-cim-journey-mapping::
-{
-    InsertText("opex-cim-journey-mapping")
-}
-
-:o:gb2c::
-{
-    InsertText("GS_B2C_Credit_Management_Strategy_UI_Mentoring")
-}
-
-:o:gug::
-{
-    InsertText("GS_UX Core Team_Monitoring for B2C in Brazil")
-}
-
-:o:gpm::
-{
-    InsertText("project management LA")
-}
-
-:o:guxcip::
-{
-    InsertText("UX and CIP")
-}
-
-:o:gtrain::
-{
-    InsertText("GS_UX core team_Trainings Management")
-}
-
-:o:gbp::
-{
-    InsertText("GS_B2C_Portals and Key Accounts Process POC")
-}
-
-:o:gbpm::
-{
-    InsertText("BPM")
-}
-
 GetPromptDir() {
     return A_ScriptDir "\assets\prompt"
 }
@@ -193,61 +115,6 @@ GetPromptText(key) {
     } catch {
         return "[PROMPT FILE MISSING: " key "]"
     }
-}
-
-:o:cgrammar::
-{
-    InsertText(GetPromptText("grammar"))
-}
-
-:o:ebosch::
-{
-    InsertText("eduardo.figueiredo@br.bosch.com")
-}
-
-:o:egoogle::
-{
-    InsertText("edu.evangelista.figueiredo@gmail.com")
-}
-
-:o:mtask::
-{
-    InsertText(GetPromptText("mtask"))
-}
-
-:o:aiopt::
-{
-    InsertText(GetPromptText("aiopt"))
-}
-
-:o:boschimg::
-{
-    InsertText(GetPromptText("bosch-brand-image"))
-}
-
-:o:csvfill::
-{
-    InsertText(GetPromptText("unstructured-to-csv"))
-}
-
-:o:howtocsv::
-{
-    InsertText(GetPromptText("howto-steps-csv"))
-}
-
-:o:protscreencsv::
-{
-    InsertText(GetPromptText("proto-content-to-screens-csv"))
-}
-
-:o:protoelemcsv::
-{
-    InsertText(GetPromptText("proto-screens-to-elements-csv"))
-}
-
-:o:mdunesc::
-{
-    UnescapeMarkdownClipboard()
 }
 
 ; MyNotes technique prompts: live repo path first, then mirror under prompt\technique (synced by aux\Sync-MyNotesTechniquePrompts.ps1).
@@ -296,7 +163,7 @@ InitTechniquePromptHotstrings() {
 ; Register hotstrings for cheat sheet display
 ; ----------------------
 InitHotstringsCheatSheet() {
-    ; General prompts from assets/prompt/*.txt (same source as GetPromptText / direct :o: triggers).
+    ; Panel registry for #!+U (Win+Alt+Shift+U). IDs are labels only; no typed :o: expanders.
     RegisterHotstring(":o:cgrammar", GetPromptText("grammar"), "Prompts", "✏️ Grammar & Spelling Corrector")
     RegisterHotstring(":o:mtask", GetPromptText("mtask"), "Prompts", "🔲 Convert to Task")
     RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
