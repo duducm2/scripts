@@ -51,8 +51,16 @@ Outlook_ClickEndTime_1200PM() {
     ClickOutlookByIdThenNameClass("4355", "12:00 PM", "AfxWndW", "Button")
 }
 
-; Shift + S : Start date (combo) - Start Date
+; Shift + S : Save (Event form commands)
 +S:: {
+    Appt_RunWithLoading("Save", (*) => (
+        Appt_ClickInCommandBar([{ Name: "Save", ControlType: "Button" }])
+        || (ShowCenteredOverlay_Utils("❌ Appointment: Save not found", 1400, BANNER_ACCENT_ERROR), false)
+    ))
+}
+
+; Shift + D : Start date (combo) - Start Date
++D:: {
     isNew := false
     try isNew := IsNewOutlookActive()
 
@@ -354,8 +362,8 @@ Appt_ToggleOrClickAny(criteriaList) {
     ))
 }
 
-; Shift + D : Current date header button
-+D:: {
+; Shift + F : Current date header button
++F:: {
     if !IsNewOutlookActive()
         return
     Appt_RunWithLoading("Date", (*) => (

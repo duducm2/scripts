@@ -138,7 +138,8 @@ cheatSheets["OutlookReminder"] := "
 cheatSheets["OutlookAppointment"] := "
 (
     Outlook - Appointment (Shift)
-    📅 [S][S]tart date (popover)
+    💾 [S][S]ave
+    📅 [D]Start [D]ate (popover)
     🕐 [T]Start [T]ime (popover)
     🕐 [E][E]nd time (popover)
     ☑️ [A][A]ll-day toggle (popover)
@@ -160,7 +161,7 @@ cheatSheets["OutlookAppointment"] := "
     
     🗓️ Prev day [K] / Next day [L]
     🧭 [Y]Today
-    📆 [D]ate header
+    📆 [F]Date header
     🧑‍🤝‍🧑 Sc[H]eduler / Scheduling assistant
     ⚙️ Optio[N]s (scheduler view)
     🌐 Time [Z]one
