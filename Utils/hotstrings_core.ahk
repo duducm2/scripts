@@ -167,6 +167,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:cgrammar", GetPromptText("grammar"), "Prompts", "✏️ Grammar & Spelling Corrector")
     RegisterHotstring(":o:mtask", GetPromptText("mtask"), "Prompts", "🔲 Convert to Task")
     RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
+    RegisterHotstring(":o:handoff", GetPromptText("handoff-summary"), "Prompts",
+    "📝 Summarize for Handoff", "r")
     InitTechniquePromptHotstrings()
     RegisterHotstring(":o:pptdeckcsv", GetPromptText("ppt-content-to-slides-csv"), "Prompts",
     "📊 PPT stage 1: content to slides CSV", "s")

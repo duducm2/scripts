@@ -1,0 +1,9 @@
+Summarize the context of our conversation and the work we've done so far. I need a clear, concise handoff document so that in the future, another AI agent can read it and immediately continue from where we stopped.
+
+Include:
+- The main objective of the task
+- What has been completed or implemented so far
+- Key technical decisions or constraints identified
+- What is currently pending or blocked
+
+Format it as a single block of text or markdown that I can easily copy and paste.
