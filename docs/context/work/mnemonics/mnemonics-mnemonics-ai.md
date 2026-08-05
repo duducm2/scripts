@@ -1,1 +1,1 @@
-C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\AI\mnemonics-ai.md
+C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\studies\AI\mnemonics-ai-robot.md
