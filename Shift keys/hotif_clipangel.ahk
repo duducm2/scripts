@@ -67,6 +67,14 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 ; Shift + M : Merge clips
 +m:: Send "^!j"
 
+; Shift + I : Clip > Import clips (opens file picker; keep ClipAngel open)
++i:: {
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    if !ClipAngel_InvokeImportClips()
+        ShowCenteredOverlay_Utils("❌ Clip Angel Import clips failed", 1500, BANNER_ACCENT_ERROR)
+}
+
 ; Alt + 1–5 : Move down (N-1), Enter to paste selected clip into prior text field, then minimize.
 !1:: ClipAngel_SelectClipPasteThenMinimize(0)
 !2:: ClipAngel_SelectClipPasteThenMinimize(1)

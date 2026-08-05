@@ -638,6 +638,7 @@ cheatSheets["ClipAngel.exe"] := "
     ✏️ [E][E]dit Text (F4)
     💾 [S][S]ave as file
     🔗 [M][M]erge clips
+    📥 [I][I]mport clips
     🔍 [Y]File t[Y]pe filter (Quick Wizard)
     ⌨️ [Alt+1] Paste current item, then minimize
     ⌨️ [Alt+2] Down 1, paste, then minimize

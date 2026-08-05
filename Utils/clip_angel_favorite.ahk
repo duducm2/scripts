@@ -379,6 +379,50 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
     }
 }
 
+; Clip menu — second-to-last item (Import clips). Opens the file picker; keep ClipAngel open.
+ClipAngel_InvokeImportClipsViaKeyboard() {
+    Send "{Alt}"
+    Sleep 80
+    Send "c"
+    Sleep 80
+    Send "{End}"
+    Sleep 80
+    Send "{Up}"
+    Sleep 80
+    Send "{Enter}"
+    return true
+}
+
+; Clip > Import clips
+ClipAngel_InvokeImportClips(hwnd := 0) {
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return ClipAngel_InvokeImportClipsViaKeyboard()
+        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if !clipMenu
+            return ClipAngel_InvokeImportClipsViaKeyboard()
+        if !ClipAngel_UiaInvokeElement(clipMenu)
+            return ClipAngel_InvokeImportClipsViaKeyboard()
+        Sleep 120
+        desktop := 0
+        try desktop := UIA.GetRootElement()
+        searchRoots := [root]
+        if desktop
+            searchRoots.Push(desktop)
+        importItem := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Import clips" })
+        if !importItem
+            return ClipAngel_InvokeImportClipsViaKeyboard()
+        return ClipAngel_UiaInvokeElement(importItem)
+    } catch {
+        return ClipAngel_InvokeImportClipsViaKeyboard()
+    }
+}
+
 ClipAngel_UiaResolveRow0(dataGrid) {
     if !dataGrid
         return 0
