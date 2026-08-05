@@ -554,20 +554,38 @@ StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl := "") {
     }
 
     try StandardLoadingBar_Update("⏳ Scrolling to end…", BANNER_ACCENT_INTERMEDIATE)
-    ; Focus page content so ^{End} / scroll patterns land on the document.
-    try {
-        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " chromeHwnd)
-        if (ww > 0 && wh > 0)
-            Click wx + ww // 2, wy + wh // 2
-    } catch {
-    }
-    Sleep 150
+    ; Focus page content without mouse (center click can hit images/links).
+    StudyTopic_ChromeFocusDocument(chromeHwnd, uia)
 
     confirmed := StudyTopic_ChromeConfirmScrollToEnd(chromeHwnd, uia, 8000)
     if (!confirmed) {
         try ShowCenteredOverlay_Utils("⚠ Could not confirm scroll to end.", 2500, BANNER_ACCENT_INTERMEDIATE)
     }
     return true
+}
+
+; Move keyboard focus into the page document (no Click — avoids navigating image/link hits).
+StudyTopic_ChromeFocusDocument(chromeHwnd, uia) {
+    if IsObject(uia) {
+        try {
+            doc := uia.GetCurrentDocumentElement()
+            if IsObject(doc) {
+                doc.SetFocus()
+                Sleep 80
+                return true
+            }
+        } catch {
+        }
+    }
+    if (chromeHwnd) {
+        try {
+            ControlFocus "Chrome_RenderWidgetHostHWND1", "ahk_id " chromeHwnd
+            Sleep 80
+            return true
+        } catch {
+        }
+    }
+    return false
 }
 
 ; Read document vertical scroll %; -1 if unavailable.
