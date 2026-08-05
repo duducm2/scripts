@@ -522,98 +522,9 @@ StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
     }
 }
 
-; Match expected study URL once Chrome has navigated (ignore query/hash differences).
-StudyTopic_UrlMatchFragment(expectedUrl) {
-    expectedUrl := Trim(expectedUrl)
-    if (expectedUrl = "")
-        return ""
-    ; Prefer path after host so http/https and www variants still match.
-    if RegExMatch(expectedUrl, "i)^https?://[^/]+(/.*)$", &m)
-        return m[1]
-    return expectedUrl
-}
-
-StudyTopic_ChromeGetDocument(uia) {
-    if !IsObject(uia)
-        return 0
-    try
-        return uia.GetCurrentDocumentElement()
-    catch
-        return 0
-}
-
-StudyTopic_ChromeContentSampleSize(doc) {
-    if !IsObject(doc)
-        return 0
-    n := 0
-    try n := StrLen(Trim(doc.Name))
-    catch {
-        n := 0
-    }
-    if (n > 0)
-        return n
-    try {
-        ; Fall back to bounding height as a coarse “content present” signal.
-        r := doc.GetPropertyValue(UIA.Property.BoundingRectangle)
-        if IsObject(r) && r.Has(3)
-            return Integer(r[3])
-        if IsObject(r) && r.Length >= 4
-            return Integer(r[4] - r[2])
-    } catch {
-    }
-    return 0
-}
-
-StudyTopic_ChromeGetScrollVerticalPercent(doc) {
-    if !IsObject(doc)
-        return -1.0
-    try {
-        if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
-            p := doc.GetPropertyValue(UIA.Property.ScrollVerticalScrollPercent)
-            if (p >= 0)
-                return p + 0.0
-        }
-    } catch {
-    }
-    return -1.0
-}
-
-StudyTopic_ChromeScrollViaUIA(doc) {
-    if !IsObject(doc)
-        return false
-    try {
-        if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
-            doc.ScrollPattern.SetScrollPercent(-1, 100)
-            return true
-        }
-    } catch {
-    }
-    return false
-}
-
-StudyTopic_ChromeScrollViaKeystroke(hwnd) {
-    if (!hwnd)
-        return false
-    try {
-        WinActivate("ahk_id " hwnd)
-        WinWaitActive("ahk_id " hwnd, , 1)
-    } catch {
-    }
-    try {
-        ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-        return true
-    } catch {
-        try {
-            Send "^{End}"
-            return true
-        } catch {
-            return false
-        }
-    }
-}
-
-; Wait for URL + page load + content stable, then scroll until bottom verified (or 20s budget).
-StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl) {
+; Wait for Chrome page load (reload-button gate), then one-shot scroll to end.
+; expectedUrl kept for call-site compatibility; load state is the gate.
+StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl := "") {
     if (!chromeHwnd)
         return false
 
@@ -633,124 +544,41 @@ StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl) {
         uia := 0
     }
 
-    fragment := StudyTopic_UrlMatchFragment(expectedUrl)
     try StandardLoadingBar_Update("⏳ Waiting for page…", BANNER_ACCENT_INTERMEDIATE)
-
-    urlReady := false
-    if IsObject(uia) && fragment != "" {
-        urlDeadline := A_TickCount + 12000
-        while (A_TickCount < urlDeadline) {
-            cur := ""
-            try cur := uia.GetCurrentURL()
-            catch {
-                cur := ""
-            }
-            if (cur != "" && InStr(cur, fragment)) {
-                urlReady := true
-                break
-            }
-            Sleep 120
-        }
-    }
-
     if IsObject(uia) {
-        try uia.WaitPageLoad("", 12000, 500)
+        try uia.WaitPageLoad("", 12000, 300)
         catch {
         }
-    } else if (!urlReady) {
+    } else {
         Sleep 1500
     }
 
-    ; Content-stable gate: document exists and sample size steady for two polls.
-    try StandardLoadingBar_Update("⏳ Waiting for content…", BANNER_ACCENT_INTERMEDIATE)
-    if IsObject(uia) {
-        contentDeadline := A_TickCount + 8000
-        lastSize := -1
-        stableHits := 0
-        while (A_TickCount < contentDeadline) {
-            doc := StudyTopic_ChromeGetDocument(uia)
-            if !IsObject(doc) {
-                stableHits := 0
-                lastSize := -1
-                Sleep 400
-                continue
-            }
-            sz := StudyTopic_ChromeContentSampleSize(doc)
-            if (sz > 0 && sz = lastSize) {
-                stableHits += 1
-                if (stableHits >= 2)
-                    break
-            } else {
-                stableHits := 0
-            }
-            lastSize := sz
-            Sleep 400
-        }
-    }
-
     try StandardLoadingBar_Update("⏳ Scrolling to end…", BANNER_ACCENT_INTERMEDIATE)
-    try {
-        WinActivate("ahk_id " chromeHwnd)
-        WinWaitActive("ahk_id " chromeHwnd, , 2)
-    } catch {
-    }
-    ; One focus click into the document (not every loop).
-    try {
-        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " chromeHwnd)
-        if (ww > 0 && wh > 0)
-            Click wx + ww // 2, wy + wh // 2
-    } catch {
-    }
-    Sleep 200
-
-    deadline := A_TickCount + 20000
-    lastPct := -2.0
-    stableHits := 0
-    unknownEndCycles := 0
-    sawNearBottom := false
-    confirmed := false
-
-    while (A_TickCount < deadline) {
-        doc := IsObject(uia) ? StudyTopic_ChromeGetDocument(uia) : 0
-        StudyTopic_ChromeScrollViaUIA(doc)
-        StudyTopic_ChromeScrollViaKeystroke(chromeHwnd)
-        Sleep 400
-        doc := IsObject(uia) ? StudyTopic_ChromeGetDocument(uia) : 0
-        pct := StudyTopic_ChromeGetScrollVerticalPercent(doc)
-
-        if (pct >= 95.0) {
-            confirmed := true
-            sawNearBottom := true
-            break
-        }
-        if (pct >= 0) {
-            if (pct >= 90.0)
-                sawNearBottom := true
-            if (Abs(pct - lastPct) < 0.5) {
-                stableHits += 1
-                if (stableHits >= 2 && pct >= 90.0) {
-                    confirmed := true
-                    break
-                }
-            } else {
-                stableHits := 0
+    scrolled := false
+    if IsObject(uia) {
+        try {
+            doc := uia.GetCurrentDocumentElement()
+            if IsObject(doc) && doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable) {
+                doc.ScrollPattern.SetScrollPercent(-1, 100)
+                scrolled := true
             }
-            lastPct := pct
-            unknownEndCycles := 0
-        } else {
-            ; No scroll % available: count End cycles, then one settle End.
-            unknownEndCycles += 1
-            if (unknownEndCycles >= 2) {
-                Sleep 600
-                StudyTopic_ChromeScrollViaKeystroke(chromeHwnd)
-                confirmed := true  ; best effort when UIA % missing
-                break
+        } catch {
+        }
+    }
+    if (!scrolled) {
+        try {
+            ControlSend "{Blind}^{End}", , "ahk_id " chromeHwnd
+            scrolled := true
+        } catch {
+            try {
+                Send "^{End}"
+                scrolled := true
+            } catch {
             }
         }
     }
-
-    if (!confirmed && !sawNearBottom) {
-        try ShowCenteredOverlay_Utils("⚠ Could not confirm scroll to end.", 2500, BANNER_ACCENT_INTERMEDIATE)
+    if (!scrolled) {
+        try ShowCenteredOverlay_Utils("⚠ Could not scroll to end.", 2500, BANNER_ACCENT_INTERMEDIATE)
     }
     return true
 }
