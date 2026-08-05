@@ -138,7 +138,7 @@ cheatSheets["OutlookReminder"] := "
 cheatSheets["OutlookAppointment"] := "
 (
     Outlook - Appointment (Shift)
-    💾 [S][S]ave
+    💾 [S][S]ave / Send
     📅 [D]Start [D]ate (popover)
     🕐 [T]Start [T]ime (popover)
     🕐 [E][E]nd time (popover)

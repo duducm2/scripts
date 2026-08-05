@@ -51,11 +51,14 @@ Outlook_ClickEndTime_1200PM() {
     ClickOutlookByIdThenNameClass("4355", "12:00 PM", "AfxWndW", "Button")
 }
 
-; Shift + S : Save (Event form commands)
+; Shift + S : prefer Send (meeting), else Save (Event form commands)
 +S:: {
-    Appt_RunWithLoading("Save", (*) => (
-        Appt_ClickInCommandBar([{ Name: "Save", ControlType: "Button" }])
-        || (ShowCenteredOverlay_Utils("❌ Appointment: Save not found", 1400, BANNER_ACCENT_ERROR), false)
+    Appt_RunWithLoading("Send/Save", (*) => (
+        Appt_ClickInCommandBar([{ Name: "Send", ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Send", ControlType: "Button" }])
+        || Appt_ClickInCommandBar([{ Name: "Save", ControlType: "Button" }])
+        || Appt_ClickAny([{ Name: "Save", ControlType: "Button" }])
+        || (ShowCenteredOverlay_Utils("❌ Appointment: Send/Save not found", 1400, BANNER_ACCENT_ERROR), false)
     ))
 }
 

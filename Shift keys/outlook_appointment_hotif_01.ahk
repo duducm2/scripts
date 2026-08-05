@@ -476,8 +476,8 @@ Appt_FindCommandBar() {
     try {
         tb := root.FindFirst({ ControlType: "ToolBar" })
         if tb {
-            ; Prefer a toolbar that contains Save.
-            if tb.FindFirst({ Name: "Save", ControlType: "Button" })
+            ; Prefer a toolbar that contains Save or Send (meeting invites often show Send only).
+            if tb.FindFirst({ Name: "Save", ControlType: "Button" }) || tb.FindFirst({ Name: "Send", ControlType: "Button" })
                 return tb
         }
     } catch {
