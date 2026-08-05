@@ -522,7 +522,7 @@ StudyTopic_OpenGithubInChrome(url, scrollToEnd := false) {
     }
 }
 
-; Wait for Chrome page load (reload-button gate), then one-shot scroll to end.
+; Wait for Chrome page load (reload-button gate), then scroll to end with verification.
 ; expectedUrl kept for call-site compatibility; load state is the gate.
 StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl := "") {
     if (!chromeHwnd)
@@ -554,33 +554,127 @@ StudyTopic_WaitChromeReadyAndScroll(chromeHwnd, expectedUrl := "") {
     }
 
     try StandardLoadingBar_Update("⏳ Scrolling to end…", BANNER_ACCENT_INTERMEDIATE)
-    scrolled := false
-    if IsObject(uia) {
-        try {
-            doc := uia.GetCurrentDocumentElement()
-            if IsObject(doc) && doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable) {
-                doc.ScrollPattern.SetScrollPercent(-1, 100)
-                scrolled := true
-            }
-        } catch {
-        }
+    ; Focus page content so ^{End} / scroll patterns land on the document.
+    try {
+        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " chromeHwnd)
+        if (ww > 0 && wh > 0)
+            Click wx + ww // 2, wy + wh // 2
+    } catch {
     }
-    if (!scrolled) {
-        try {
-            ControlSend "{Blind}^{End}", , "ahk_id " chromeHwnd
-            scrolled := true
-        } catch {
-            try {
-                Send "^{End}"
-                scrolled := true
-            } catch {
-            }
-        }
-    }
-    if (!scrolled) {
-        try ShowCenteredOverlay_Utils("⚠ Could not scroll to end.", 2500, BANNER_ACCENT_INTERMEDIATE)
+    Sleep 150
+
+    confirmed := StudyTopic_ChromeConfirmScrollToEnd(chromeHwnd, uia, 8000)
+    if (!confirmed) {
+        try ShowCenteredOverlay_Utils("⚠ Could not confirm scroll to end.", 2500, BANNER_ACCENT_INTERMEDIATE)
     }
     return true
+}
+
+; Read document vertical scroll %; -1 if unavailable.
+StudyTopic_ChromeGetScrollVerticalPercent(doc) {
+    if !IsObject(doc)
+        return -1.0
+    try {
+        if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+            p := doc.GetPropertyValue(UIA.Property.ScrollVerticalScrollPercent)
+            if (p >= 0)
+                return p + 0.0
+        }
+    } catch {
+    }
+    return -1.0
+}
+
+StudyTopic_ChromeScrollViaUIA(doc) {
+    if !IsObject(doc)
+        return false
+    try {
+        if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+            doc.ScrollPattern.SetScrollPercent(-1, 100)
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+StudyTopic_ChromeScrollViaKeystroke(hwnd) {
+    if (!hwnd)
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 1)
+    } catch {
+    }
+    try {
+        ControlSend "{Blind}^{End}", , "ahk_id " hwnd
+        return true
+    } catch {
+        try {
+            Send "^{End}"
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
+; Attempt UIA jump + ^{End} fallback until scroll % >= 95, or (no %) two settled End cycles.
+StudyTopic_ChromeConfirmScrollToEnd(chromeHwnd, uia, timeoutMs := 8000) {
+    deadline := A_TickCount + timeoutMs
+    lastPct := -2.0
+    stableHits := 0
+    unknownCycles := 0
+    attempt := 0
+
+    while (A_TickCount < deadline) {
+        attempt += 1
+        doc := 0
+        if IsObject(uia) {
+            try doc := uia.GetCurrentDocumentElement()
+            catch {
+                doc := 0
+            }
+        }
+
+        ; Prefer UIA jump; always keystroke after first miss so focus/lazy content recovers.
+        didUia := StudyTopic_ChromeScrollViaUIA(doc)
+        if (!didUia || attempt > 1)
+            StudyTopic_ChromeScrollViaKeystroke(chromeHwnd)
+
+        Sleep 350
+
+        doc := 0
+        if IsObject(uia) {
+            try doc := uia.GetCurrentDocumentElement()
+            catch {
+                doc := 0
+            }
+        }
+        pct := StudyTopic_ChromeGetScrollVerticalPercent(doc)
+
+        if (pct >= 95.0)
+            return true
+
+        if (pct >= 0) {
+            ; Near bottom and no longer moving (lazy grow finished).
+            if (pct >= 90.0 && Abs(pct - lastPct) < 0.5) {
+                stableHits += 1
+                if (stableHits >= 2)
+                    return true
+            } else {
+                stableHits := 0
+            }
+            lastPct := pct
+            unknownCycles := 0
+        } else {
+            ; No scroll %: treat two successful End cycles as confirmed.
+            unknownCycles += 1
+            if (unknownCycles >= 2)
+                return true
+        }
+    }
+    return false
 }
 
 ; Opens notes-repo-relative path in QuickLook (PDF sibling → .md). Returns false on failure.
