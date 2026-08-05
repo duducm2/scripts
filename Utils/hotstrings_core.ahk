@@ -181,6 +181,8 @@ InitHotstringsCheatSheet() {
     RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
     RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
     "📋 Fill CSV from unstructured text")
+    RegisterHotstring(":o:clipangel", GetPromptText("clipangel-cac"), "Prompts",
+    "📎 ClipAngel .cac export", "c")
     RegisterHotstring(":o:howtocsv", GetPromptText("howto-steps-csv"), "Prompts",
     "📝 How-to steps CSV", "h")
 
