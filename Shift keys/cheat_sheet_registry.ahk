@@ -585,6 +585,7 @@ cheatSheets["explorer.exe"] := "
     📄 [F]Select first [F]ile
     🔍 [S][S]earch bar
     📍 [A][A]ddress bar
+    🖥️ [D]Go to [D]esktop
     📁 [N][N]ew Folder²
     🔗 [H]Create s[H]ortcut wizard (paste URL/path)
     📋 [C][C]opy as path
@@ -819,6 +820,7 @@ cheatSheets["FileDialog"] := "
     📄 [F]Select first [F]ile
     🔍 [S][S]earch bar
     📍 [A][A]ddress bar
+    🖥️ [D]Go to [D]esktop
     📁 [N][N]ew Folder
     📌 [P][P]inned item (first in sidebar)
     💻 [T][T]his PC (sidebar)

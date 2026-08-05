@@ -112,6 +112,70 @@
     Send "!d"
 }
 
+; Shift + D : Navigate to Desktop - Desktop
++d:: {
+    if !IsFileDialogActive()
+        return
+    FileDialog_NavigateToDesktop()
+}
+
+FileDialog_FocusAddressBar() {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        addressBar := root.FindFirst({ Type: "Edit", Name: "Address:" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "Edit", Name: "Endereço:" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "ComboBox", AutomationId: "1001" })
+        if !addressBar
+            addressBar := root.FindFirst({ Type: "Edit", ClassName: "Edit" })
+
+        if (addressBar) {
+            addressBar.SetFocus()
+            Sleep 50
+            Send "^a"
+            return true
+        }
+    } catch Error {
+    }
+    Send "!d"
+    Sleep 50
+    return false
+}
+
+FileDialog_FocusItemsView() {
+    try {
+        root := UIA.ElementFromHandle(WinExist("A"))
+        itemsList := root.FindFirst({ Type: "List", ClassName: "UIItemsView" })
+        if !itemsList
+            itemsList := root.FindFirst({ Type: "List", Name: "Items View" })
+        if !itemsList
+            itemsList := root.FindFirst({ Type: "List", AutomationId: "ItemsView" })
+
+        if itemsList {
+            itemsList.SetFocus()
+            Sleep 120
+            Send "{Home}"
+            EnsureFocus()
+            return
+        }
+    } catch Error {
+    }
+    Send "+{Tab}"
+    Sleep 120
+    Send "{Home}"
+    EnsureFocus()
+}
+
+FileDialog_NavigateToDesktop() {
+    FileDialog_FocusAddressBar()
+    Sleep 50
+    SendText(A_Desktop)
+    Send "{Enter}"
+    Sleep 200
+    FileDialog_FocusItemsView()
+}
+
 ; Shift + N : New folder - New Folder
 +n:: {
     if !IsFileDialogActive()

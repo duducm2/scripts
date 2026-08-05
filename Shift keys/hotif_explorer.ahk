@@ -318,6 +318,40 @@ Explorer_EnsureItemsViewFocusPreserveSelection() {
 ; Shift + A : Focus address bar - Address
 +a:: Send "!d"
 
+; Shift + D : Navigate to Desktop - Desktop
++d:: Explorer_NavigateToDesktop()
+
+Explorer_NavigateToDesktop() {
+    explorerHwnd := WinExist("A")
+    navigated := false
+    if explorerHwnd {
+        try {
+            shell := ComObject("Shell.Application")
+            for window in shell.Windows {
+                try {
+                    if (window.hwnd = explorerHwnd) {
+                        window.Navigate(A_Desktop)
+                        navigated := true
+                        break
+                    }
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+
+    if !navigated {
+        Send "!d"
+        Sleep 50
+        SendText(A_Desktop)
+        Send "{Enter}"
+    }
+
+    Sleep 200
+    EnsureItemsViewFocus()
+}
+
 ; Shift + N : New folder - New Folder
 +n:: Send("^+n")
 
