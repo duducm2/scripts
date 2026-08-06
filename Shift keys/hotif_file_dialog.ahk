@@ -555,6 +555,59 @@ FileDialog_SelectCsvUtf8(root) {
     return InStr(curVal, "CSV UTF-8", false)
 }
 
+FileDialog_SelectPdf(root) {
+    typeCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "FileTypeControlHost" })
+    if !typeCombo
+        return false
+
+    curVal := ""
+    try curVal := typeCombo.Value
+    catch {
+    }
+    if InStr(curVal, "PDF", false)
+        return true
+
+    try {
+        try typeCombo.ExpandCollapsePattern.Expand()
+        catch {
+            dropBtn := typeCombo.FindFirst({ Type: "Button", AutomationId: "DropDown" })
+            if dropBtn
+                FileDialog_InvokeButton(dropBtn)
+        }
+        Sleep 150
+        item := root.FindFirst({ Type: "ListItem", Name: "PDF", matchmode: "Substring" })
+        if !item
+            item := typeCombo.FindFirst({ Type: "ListItem", Name: "PDF", matchmode: "Substring" })
+        if item {
+            try item.SelectionItemPattern.Select()
+            catch {
+                try item.Click()
+                catch {
+                }
+            }
+            Sleep 100
+            try curVal := typeCombo.Value
+            catch {
+            }
+            if InStr(curVal, "PDF", false)
+                return true
+        }
+    } catch {
+    }
+
+    ; Fallback: Alt+T focuses Save as type; type filter text.
+    Send "!t"
+    Sleep 80
+    Send "pdf"
+    Sleep 80
+    Send "{Enter}"
+    Sleep 120
+    try curVal := typeCombo.Value
+    catch {
+    }
+    return InStr(curVal, "PDF", false)
+}
+
 FileDialog_ClickSaveButton(root) {
     actionBtn := root.FindFirst({ Type: "Button", AutomationId: "1" })
     if !actionBtn {

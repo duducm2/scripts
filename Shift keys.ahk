@@ -165,6 +165,14 @@ global g_WikipediaScrollHistory := []
 #HotIf
 
 ;-------------------------------------------------------------------
+; PowerPoint Shortcuts
+;-------------------------------------------------------------------
+; [SK module] PowerPoint hotkeys -> Shift keys\hotif_powerpoint.ahk
+; Depends on FileDialog_* helpers from hotif_file_dialog.ahk (included later).
+#include %A_ScriptDir%\Shift keys\hotif_powerpoint.ahk
+#HotIf
+
+;-------------------------------------------------------------------
 ; Power BI Shortcuts
 ;-------------------------------------------------------------------
 ; [SK module] Power BI hotkeys -> Shift keys\hotif_powerbi.ahk

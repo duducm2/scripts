@@ -875,6 +875,13 @@ cheatSheets["EXCEL.EXE"] := "
     📏 [N][N]arrow oversized columns (autofit, cap >15→5, zoom row 1)
 )"
 
+; --- PowerPoint --------------------------------------------------------
+cheatSheets["POWERPNT.EXE"] := "
+(
+    PowerPoint (Shift)
+    📄 [P]Save as [P]DF (F12 → PDF → Save)
+)"
+
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
