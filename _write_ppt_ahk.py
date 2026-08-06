@@ -1,10 +1,17 @@
-; =============================================================================
-; Shift keys module: hotif_powerpoint.ahk
-; PowerPoint hotkeys
-; Loaded via #include into the Shift keys.ahk process.
-; =============================================================================
+# -*- coding: utf-8 -*-
+from pathlib import Path
 
-; ppFixedFormatTypePDF = 2; ppFixedFormatIntentScreen = 1; ppSaveAsPDF = 32
+path = Path(
+    r"C:\Users\eduev\Meu Drive\17 - Projects\scripts\Shift keys\hotif_powerpoint.ahk"
+)
+
+content = r"""`; =============================================================================
+`; Shift keys module: hotif_powerpoint.ahk
+`; PowerPoint hotkeys
+`; Loaded via #include into the Shift keys.ahk process.
+`; =============================================================================
+
+`; ppFixedFormatTypePDF = 2; ppFixedFormatIntentScreen = 1; ppSaveAsPDF = 32
 
 PowerPoint_GetActivePresentation() {
     try {
@@ -22,7 +29,7 @@ PowerPoint_IsCloudOrNonLocalPath(path) {
         return true
     if InStr(path, "sharepoint.com", false) || InStr(path, ".sharepoint.", false)
         return true
-    ; WebDAV-style SharePoint / OneDrive UNC often fails with ExportAsFixedFormat too.
+    `; WebDAV-style SharePoint / OneDrive UNC often fails with ExportAsFixedFormat too.
     if RegExMatch(path, "i)^\\\\[^\\]+\.sharepoint\.com\\")
         return true
     return false
@@ -34,7 +41,7 @@ PowerPoint_NormalizeFolder(path) {
     return RTrim(path, "\/")
 }
 
-; Prefer a real local folder. SharePoint/OneDrive http(s) Path breaks COM export on work PCs.
+`; Prefer a real local folder. SharePoint/OneDrive http(s) Path breaks COM export on work PCs.
 PowerPoint_ResolveExportFolder(pres) {
     candidates := []
 
@@ -63,37 +70,37 @@ PowerPoint_ResolveExportFolder(pres) {
             return { folder: c, cloudFallback: false }
     }
 
-    ; Unsaved, or cloud-only Path/FullName (typical work OneDrive/SharePoint open).
+    `; Unsaved, or cloud-only Path/FullName (typical work OneDrive/SharePoint open).
     return { folder: A_Desktop, cloudFallback: true }
 }
 
 PowerPoint_PdfOutputPath(pres, folder) {
     name := "Presentation"
     try {
-        n := pres.Name
+        n := __PRES__.Name
         if (n != "")
             name := n
     } catch {
     }
     name := RegExReplace(name, "i)\.(pptx|ppt|pptm|ppsx|pps)$", "")
-    ; Strip characters illegal in Windows file names (SharePoint titles can be odd).
+    `; Strip characters illegal in Windows file names (SharePoint titles can be odd).
     name := RegExReplace(name, '[<>:"/\\|?*]', "_")
     return folder "\" name ".pdf"
 }
 
 PowerPoint_TryExportPdf(pres, outPath) {
-    ; Intent 1 = ppFixedFormatIntentScreen (some tenants reject bare 2-arg calls).
+    `; Intent 1 = ppFixedFormatIntentScreen (some tenants reject bare 2-arg calls).
     try {
-        pres.ExportAsFixedFormat(outPath, 2, 1)
+        __PRES__.ExportAsFixedFormat(outPath, 2, 1)
         return { ok: true, err: "" }
     } catch Error as e1 {
         try {
-            pres.ExportAsFixedFormat(outPath, 2)
+            __PRES__.ExportAsFixedFormat(outPath, 2)
             return { ok: true, err: "" }
         } catch Error as e2 {
             try {
-                ; Last COM attempt: SaveAs PDF (may open PDF as active doc on some builds).
-                pres.SaveAs(outPath, 32)
+                `; Last COM attempt: SaveAs PDF (may open PDF as active doc on some builds).
+                __PRES__.SaveAs(outPath, 32)
                 return { ok: true, err: "" }
             } catch Error as e3 {
                 return { ok: false, err: e1.Message "`n" e2.Message "`n" e3.Message }
@@ -128,7 +135,7 @@ PowerPoint_SaveAsPdf() {
         return
     }
 
-    ; Primary folder failed (permissions / sync): retry Desktop once if we hadn't already.
+    `; Primary folder failed (permissions / sync): retry Desktop once if we hadn't already.
     if (targetFolder != A_Desktop) {
         deskPath := PowerPoint_PdfOutputPath(pres, A_Desktop)
         deskResult := PowerPoint_TryExportPdf(pres, deskPath)
@@ -143,12 +150,28 @@ PowerPoint_SaveAsPdf() {
     ShowCenteredOverlay_Utils("❌ PDF export failed`n" outPath "`n" result.err, 3500, BANNER_ACCENT_ERROR)
 }
 
-;-------------------------------------------------------------------
-; PowerPoint Shortcuts
-;-------------------------------------------------------------------
+`;-------------------------------------------------------------------
+`; PowerPoint Shortcuts
+`;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF via COM (local folder; Desktop if cloud/unsaved)
+`; Shift + P : Save as PDF via COM (local folder; Desktop if cloud/unsaved)
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
+"""
+
+# Use placeholder to avoid write-tool corrupting "pres." member access in earlier attempts
+content = content.replace("__PRES__", "pres")
+# Turn escaped AHK comments back: we used `; so Python raw string keeps backtick — strip leading backticks on comments
+lines = []
+for line in content.splitlines(True):
+    if line.startswith("`;"):
+        line = ";" + line[2:]
+    elif "`;" in line:
+        line = line.replace("`;", ";")
+    lines.append(line)
+text = "".join(lines)
+
+path.write_text(text, encoding="utf-8", newline="\n")
+print(f"Wrote {path} ({len(text)} bytes)")
