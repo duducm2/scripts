@@ -217,7 +217,7 @@ PowerPoint_CloudHintSegments(cloudHint) {
         part := Trim(PowerPoint_UrlDecode(part))
         if (part = "" || StrLen(part) < 3)
             continue
-        if RegExMatch(part, "i)^(sites|teams|personal|documents|shared documents|_/)$")
+        if RegExMatch(part, "i)^(sites|teams|personal|documents|shared documents|forms|_layouts|r)$")
             continue
         if RegExMatch(part, "i)\.(pptx|ppt|pptm|ppsx|pps)$")
             continue
@@ -226,12 +226,32 @@ PowerPoint_CloudHintSegments(cloudHint) {
     return segs
 }
 
-PowerPoint_ScoreLocalHit(fullPath, segments) {
+PowerPoint_PresentationBaseName(pres) {
+    fileName := PowerPoint_PresentationFileName(pres)
+    if (fileName = "")
+        return ""
+    return RegExReplace(fileName, "i)\.(pptx|ppt|pptm|ppsx|pps)$", "")
+}
+
+; Prefer the open deck when several same-named .pptx exist (e.g. SNB vs Piloto).
+PowerPoint_ScoreLocalHit(fullPath, segments, baseName) {
     score := 0
     pathLower := StrLower(fullPath)
+    parentDir := ""
+    parentName := ""
+    SplitPath(fullPath, , &parentDir)
+    parentDir := PowerPoint_NormalizeFolder(parentDir)
+    if (parentDir != "")
+        SplitPath(parentDir, &parentName)
+
+    ; Strong signal: ...\august-presentation-to-rafael\august-presentation-to-rafael.pptx
+    if (baseName != "" && parentName != "" && (StrLower(parentName) = StrLower(baseName)))
+        score += 1000
+
+    ; Weight longer URL path segments higher (unique folder names beat generic ones).
     for seg in segments {
         if InStr(pathLower, StrLower(seg))
-            score += 1
+            score += 10 + StrLen(seg)
     }
     return score
 }
@@ -241,23 +261,61 @@ PowerPoint_FindLocalFolderByFileName(pres, cloudHint := "") {
     fileName := PowerPoint_PresentationFileName(pres)
     if (fileName = "")
         return ""
+    baseName := PowerPoint_PresentationBaseName(pres)
 
     roots := PowerPoint_GetOneDriveSearchRoots()
     if (roots.Length = 0)
         return ""
 
+    if (cloudHint = "") {
+        try cloudHint := String(pres.FullName)
+        catch {
+            try cloudHint := String(pres.Path)
+            catch {
+            }
+        }
+    }
     segments := PowerPoint_CloudHintSegments(cloudHint)
+
+    ; Pass 1: require parent folder name == presentation base name
+    ; (…\august-presentation-to-rafael\august-presentation-to-rafael.pptx)
+    bestPath := PowerPoint_PickBestPptxHit(roots, fileName, segments, baseName, true)
+    if (bestPath = "")
+        bestPath := PowerPoint_PickBestPptxHit(roots, fileName, segments, baseName, false)
+
+    if (bestPath = "" || !FileExist(bestPath))
+        return ""
+    SplitPath(bestPath, , &dir)
+    dir := PowerPoint_NormalizeFolder(dir)
+    if (dir != "" && DirExist(dir))
+        return dir
+    return ""
+}
+
+PowerPoint_PickBestPptxHit(roots, fileName, segments, baseName, requireParentMatch) {
     bestPath := ""
     bestScore := -1
     bestTime := 0
     hitCount := 0
-
     for root in roots {
         try {
             loop files, root "\" fileName, "FR" {
                 hitCount += 1
                 full := A_LoopFileFullPath
-                score := PowerPoint_ScoreLocalHit(full, segments)
+                parentDir := ""
+                parentName := ""
+                SplitPath(full, , &parentDir)
+                parentDir := PowerPoint_NormalizeFolder(parentDir)
+                if (parentDir != "")
+                    SplitPath(parentDir, &parentName)
+                if (requireParentMatch) {
+                    if (baseName = "" || parentName = "" || (StrLower(parentName) != StrLower(baseName))) {
+                        if (hitCount >= 80)
+                            break 2
+                        continue
+                    }
+                }
+                score := PowerPoint_ScoreLocalHit(full, segments, baseName)
                 mtime := 0
                 try mtime := FileGetTime(full, "M")
                 catch {
@@ -267,21 +325,13 @@ PowerPoint_FindLocalFolderByFileName(pres, cloudHint := "") {
                     bestTime := mtime
                     bestPath := full
                 }
-                if (hitCount >= 40)
+                if (hitCount >= 80)
                     break 2
             }
         } catch {
         }
     }
-
-    ; Prefer URL segment matches; if none match, fall back to newest hit.
-    if (bestPath = "" || !FileExist(bestPath))
-        return ""
-    SplitPath(bestPath, , &dir)
-    dir := PowerPoint_NormalizeFolder(dir)
-    if (dir != "" && DirExist(dir))
-        return dir
-    return ""
+    return bestPath
 }
 
 ; Map https SharePoint/OneDrive file/folder URL to a local directory that exists.
