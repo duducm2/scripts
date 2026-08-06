@@ -124,7 +124,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` in [`Shift keys/hotif_editor_02.ahk`](../Shift%20keys/hotif_editor_02.ahk)) as **Git Stash and Pull**: re-sends **Alt+S** (native **Git: Stash**), sleeps **150ms**, sends **Enter** for an empty stash message, sleeps **150ms**, then sends **Shift+P** (existing Git Pull chord). Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` in [`Shift keys/hotif_editor_02.ahk`](../Shift%20keys/hotif_editor_02.ahk)) as **Git Stash and Pull**: re-sends **Alt+S** (native **Git: Stash**), sleeps **150ms**, sends **Enter** for an empty stash message, sleeps **150ms**, then sends **Shift+P** (native **Git: Pull** — no AHK remap). Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
 
 ### Special resolution (not only `exe` match)
 

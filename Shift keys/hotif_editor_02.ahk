@@ -691,8 +691,7 @@ Editor_QuickCommit() {
 ; Shift + Y : Zen mode - Zen
 +y:: Send "+z"
 
-; Shift + P : Git Pull - Pull
-+p:: Send "+c"
+; Shift + P : Git Pull — native in Cursor/VS Code (no AHK remap)
 
 ; Shift + V : Git Commit - Commit
 +v:: Send "+v"
@@ -700,7 +699,7 @@ Editor_QuickCommit() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; Alt + S : Git Stash and Pull (native Alt+S + Enter, then Shift+P pull)
+; Alt + S : Git Stash and Pull (native Alt+S + Enter, then native Shift+P pull)
 $!s:: {
     Send "!s"
     Sleep 150
