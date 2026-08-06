@@ -562,6 +562,63 @@ FileDialog_SelectCsvUtf8(root) {
     return InStr(curVal, "CSV UTF-8", false)
 }
 
+; True only for real PDF save types (e.g. "PDF (_.pdf)"), not BMP / Bitmap.
+FileDialog_IsPdfSaveType(val) {
+    if (val = "")
+        return false
+    if InStr(val, "BMP", false) || InStr(val, "Bitmap", false)
+    || InStr(val, "Mapa de bits", false)
+        return false
+    ; Require PDF label plus .pdf extension hint (Office shows PDF (_.pdf) / PDF (*.pdf)).
+    return InStr(val, "PDF", false) && InStr(val, ".pdf", false)
+}
+
+FileDialog_FindPdfTypeListItem(scope) {
+    if !scope
+        return 0
+    try {
+        for item in scope.FindAll({ Type: "ListItem" }) {
+            name := ""
+            try name := item.Name
+            catch {
+                continue
+            }
+            if FileDialog_IsPdfSaveType(name) || RegExMatch(name, "i)^PDF\b")
+                return item
+        }
+    } catch {
+    }
+    return 0
+}
+
+FileDialog_TrySelectPdfListItem(typeCombo, root) {
+    try {
+        try typeCombo.ExpandCollapsePattern.Expand()
+        catch {
+            dropBtn := typeCombo.FindFirst({ Type: "Button", AutomationId: "DropDown" })
+            if dropBtn
+                FileDialog_InvokeButton(dropBtn)
+        }
+        Sleep 150
+        item := FileDialog_FindPdfTypeListItem(typeCombo)
+        if !item
+            item := FileDialog_FindPdfTypeListItem(root)
+        if !item
+            return false
+        try item.SelectionItemPattern.Select()
+        catch {
+            try item.Click()
+            catch {
+                return false
+            }
+        }
+        Sleep 100
+        return true
+    } catch {
+    }
+    return false
+}
+
 FileDialog_SelectPdf(root) {
     typeCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "FileTypeControlHost" })
     if !typeCombo
@@ -571,48 +628,37 @@ FileDialog_SelectPdf(root) {
     try curVal := typeCombo.Value
     catch {
     }
-    if InStr(curVal, "PDF", false)
+    if FileDialog_IsPdfSaveType(curVal)
         return true
 
-    try {
-        try typeCombo.ExpandCollapsePattern.Expand()
-        catch {
-            dropBtn := typeCombo.FindFirst({ Type: "Button", AutomationId: "DropDown" })
-            if dropBtn
-                FileDialog_InvokeButton(dropBtn)
-        }
-        Sleep 150
-        item := root.FindFirst({ Type: "ListItem", Name: "PDF", matchmode: "Substring" })
-        if !item
-            item := typeCombo.FindFirst({ Type: "ListItem", Name: "PDF", matchmode: "Substring" })
-        if item {
-            try item.SelectionItemPattern.Select()
-            catch {
-                try item.Click()
-                catch {
-                }
-            }
-            Sleep 100
-            try curVal := typeCombo.Value
-            catch {
-            }
-            if InStr(curVal, "PDF", false)
-                return true
-        }
-    } catch {
+    FileDialog_TrySelectPdfListItem(typeCombo, root)
+    try curVal := typeCombo.Value
+    catch {
     }
+    if FileDialog_IsPdfSaveType(curVal)
+        return true
 
-    ; Fallback: Alt+T focuses Save as type; type filter text.
+    ; Fallback: Alt+T → type "PDF" prefix (not "pdf"); reject BMP via IsPdfSaveType.
     Send "!t"
     Sleep 80
-    Send "pdf"
+    Send "^a"
+    Sleep 40
+    SendText("PDF")
     Sleep 80
     Send "{Enter}"
     Sleep 120
     try curVal := typeCombo.Value
     catch {
     }
-    return InStr(curVal, "PDF", false)
+    if FileDialog_IsPdfSaveType(curVal)
+        return true
+
+    ; Last try: expand and pick the PDF list item again after keyboard filter.
+    FileDialog_TrySelectPdfListItem(typeCombo, root)
+    try curVal := typeCombo.Value
+    catch {
+    }
+    return FileDialog_IsPdfSaveType(curVal)
 }
 
 FileDialog_ClickSaveButton(root) {
