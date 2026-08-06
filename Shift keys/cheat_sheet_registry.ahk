@@ -847,6 +847,7 @@ cheatSheets["Command Palette"] := "
     ⌨️ [S]Precise [S]earch
     ⌨️ [I][I]nsert Favorite (Add)
     ⌨️ [D][E]xclude Favorite
+    ✏️ [E][E]dit Favorite
     🌐 [Enter] Open web bookmark in new Chrome window
     ⌨️ [Ctrl+1] [S]elect current item
     ⌨️ [Ctrl+2] [M]ove down once and select
@@ -1292,6 +1293,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === COMMAND PALETTE ===
     [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
+    [Shift+E] > Command Palette (active): edit favorite (Ctrl+K → Editar favorito)
     
     === SHORTCUTS ===
     [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)

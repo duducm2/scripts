@@ -87,6 +87,9 @@ $Enter:: CommandPalette_ActivateSelectedItem()
     Send "{Enter}"
 }
 
+; Shift + E : Edit favorite (Ctrl+K → UIA walk → Enter)
++e:: CommandPalette_EditFavoriteSelected()
+
 ; Ctrl + 1 : Trigger Enter
 ^1:: CommandPalette_SelectNthAndActivate(0)
 
