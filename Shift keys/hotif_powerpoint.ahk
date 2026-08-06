@@ -484,45 +484,60 @@ PowerPoint_TryExportPdf(pres, outPath) {
     }
 }
 
-PowerPoint_MovePdfToFolder(srcPdf, destFolder) {
-    if (srcPdf = "" || destFolder = "" || !FileExist(srcPdf) || !DirExist(destFolder))
+; Local non-OneDrive temp folder (work Desktop is often under OneDrive too).
+PowerPoint_StagingDir() {
+    dir := A_Temp "\ShiftKeysPptPdf"
+    try {
+        if !DirExist(dir)
+            DirCreate(dir)
+    } catch {
+    }
+    return dir
+}
+
+PowerPoint_VerifyPdfFile(path, minBytes := 256) {
+    if (path = "" || !FileExist(path))
+        return false
+    try {
+        return FileGetSize(path) >= minBytes
+    } catch {
+        return false
+    }
+}
+
+PowerPoint_WaitForPdfFile(path, timeoutMs := 8000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if PowerPoint_VerifyPdfFile(path)
+            return true
+        Sleep 200
+    }
+    return PowerPoint_VerifyPdfFile(path)
+}
+
+; Copy verified file into dest folder; only succeed if dest exists with real size.
+PowerPoint_CopyPdfToFolder(srcPdf, destFolder) {
+    if (srcPdf = "" || destFolder = "" || !PowerPoint_VerifyPdfFile(srcPdf) || !DirExist(destFolder))
         return ""
     SplitPath(srcPdf, &fileName)
     destPdf := destFolder "\" fileName
     if (PowerPoint_NormalizeFolder(srcPdf) = PowerPoint_NormalizeFolder(destPdf))
-        return destPdf
+        return PowerPoint_VerifyPdfFile(destPdf) ? destPdf : ""
+
     try {
         if FileExist(destPdf)
             FileDelete(destPdf)
     } catch {
     }
-    try {
-        FileMove(srcPdf, destPdf, 1)
-        if FileExist(destPdf) {
-            ; OneDrive sometimes leaves a ghost/source copy — force-clear source.
-            if FileExist(srcPdf) {
-                try FileDelete(srcPdf)
-                catch {
-                }
-            }
-            return destPdf
-        }
-    } catch {
+
+    try FileCopy(srcPdf, destPdf, 1)
+    catch {
     }
-    try {
-        FileCopy(srcPdf, destPdf, 1)
-        if FileExist(destPdf) {
-            try FileDelete(srcPdf)
-            catch {
-            }
-            return destPdf
-        }
-    } catch {
-    }
+    if PowerPoint_WaitForPdfFile(destPdf)
+        return destPdf
     return ""
 }
 
-; Delete same-named Desktop leftover after a successful sync-folder save.
 PowerPoint_ClearDesktopLeftoverPdf(pres, keptPath := "") {
     deskPdf := PowerPoint_PdfOutputPath(pres, A_Desktop)
     if (deskPdf = "" || !FileExist(deskPdf))
@@ -538,6 +553,7 @@ PowerPoint_ClearDesktopLeftoverPdf(pres, keptPath := "") {
     }
 }
 
+; Always export to local TEMP first, verify size, then copy beside the presentation.
 PowerPoint_SaveAsPdf() {
     pres := PowerPoint_GetActivePresentation()
     if !pres {
@@ -548,39 +564,11 @@ PowerPoint_SaveAsPdf() {
     resolved := PowerPoint_ResolveExportFolder(pres)
     targetFolder := resolved.folder
     syncFolder := resolved.syncFolder
-    cloudFallback := resolved.cloudFallback
-
-    outPath := PowerPoint_PdfOutputPath(pres, targetFolder)
-    if (outPath = "" || targetFolder = "") {
-        ShowCenteredOverlay_Utils("❌ Could not resolve PDF path", 2200, BANNER_ACCENT_ERROR)
-        return
-    }
-
     deskNorm := PowerPoint_NormalizeFolder(A_Desktop)
-    result := PowerPoint_TryExportPdf(pres, outPath)
 
-    ; If we already wrote next to the deck (not Desktop), clear any Desktop leftover and done.
-    if (result.ok && (PowerPoint_NormalizeFolder(targetFolder) != deskNorm)) {
-        PowerPoint_ClearDesktopLeftoverPdf(pres, outPath)
-        ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
-        return
-    }
-
-    ; Ensure a Desktop-staged PDF exists, then move it into the sync folder.
-    deskPath := PowerPoint_PdfOutputPath(pres, A_Desktop)
-    if (result.ok && (PowerPoint_NormalizeFolder(targetFolder) = deskNorm)) {
-        deskPath := outPath
-    } else {
-        deskResult := PowerPoint_TryExportPdf(pres, deskPath)
-        if !deskResult.ok {
-            ShowCenteredOverlay_Utils("❌ PDF export failed`n" deskPath "`n" result.err "`n" deskResult.err, 3500,
-                BANNER_ACCENT_ERROR)
-            return
-        }
-    }
-
-    moveTarget := syncFolder
-    if (moveTarget = "" || (PowerPoint_NormalizeFolder(moveTarget) = deskNorm)) {
+    if ((targetFolder = "" || PowerPoint_NormalizeFolder(targetFolder) = deskNorm) && syncFolder != "")
+        targetFolder := syncFolder
+    if (targetFolder = "" || PowerPoint_NormalizeFolder(targetFolder) = deskNorm) {
         hint := ""
         try hint := String(pres.FullName)
         catch {
@@ -588,25 +576,48 @@ PowerPoint_SaveAsPdf() {
             catch {
             }
         }
-        moveTarget := PowerPoint_FindLocalFolderByFileName(pres, hint)
+        byName := PowerPoint_FindLocalFolderByFileName(pres, hint)
+        if (byName != "" && DirExist(byName))
+            targetFolder := byName
     }
-    if (PowerPoint_NormalizeFolder(moveTarget) = deskNorm)
-        moveTarget := ""
+    if (targetFolder = "" || !DirExist(targetFolder))
+        targetFolder := A_Desktop
 
-    if (moveTarget != "" && DirExist(moveTarget)) {
-        moved := PowerPoint_MovePdfToFolder(deskPath, moveTarget)
-        if (moved != "") {
-            PowerPoint_ClearDesktopLeftoverPdf(pres, moved)
-            ShowCenteredOverlay_Utils("📄 Moved PDF to sync folder`n" moved, 2800, BANNER_ACCENT_SUCCESS)
-            return
-        }
-        ShowCenteredOverlay_Utils("📄 PDF on Desktop (move failed)`n" deskPath "`n→ " moveTarget, 3200,
-            BANNER_ACCENT_INTERMEDIATE)
+    stageDir := PowerPoint_StagingDir()
+    stagePath := PowerPoint_PdfOutputPath(pres, stageDir)
+    try {
+        if FileExist(stagePath)
+            FileDelete(stagePath)
+    } catch {
+    }
+
+    result := PowerPoint_TryExportPdf(pres, stagePath)
+    if !result.ok || !PowerPoint_WaitForPdfFile(stagePath) {
+        ShowCenteredOverlay_Utils("❌ PDF export failed in temp`n" stagePath "`n" result.err, 3500, BANNER_ACCENT_ERROR)
         return
     }
 
-    ShowCenteredOverlay_Utils("📄 Left on Desktop — could not resolve sync folder`n" deskPath, 3200,
-        BANNER_ACCENT_INTERMEDIATE)
+    if (PowerPoint_NormalizeFolder(targetFolder) = PowerPoint_NormalizeFolder(stageDir)) {
+        ShowCenteredOverlay_Utils("📄 Saved PDF (temp)`n" stagePath, 2800, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+
+    placed := PowerPoint_CopyPdfToFolder(stagePath, targetFolder)
+    if (placed = "") {
+        ShowCenteredOverlay_Utils("❌ Could not place PDF in deck folder`n" targetFolder "`nKept here:`n" stagePath, 4500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if !PowerPoint_WaitForPdfFile(placed) {
+        ShowCenteredOverlay_Utils("❌ PDF vanished after copy`n" placed "`nKept temp:`n" stagePath, 4500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    try FileDelete(stagePath)
+    catch {
+    }
+    PowerPoint_ClearDesktopLeftoverPdf(pres, placed)
+    ShowCenteredOverlay_Utils("📄 Saved PDF`n" placed, 2800, BANNER_ACCENT_SUCCESS)
 }
 
 ;-------------------------------------------------------------------
@@ -614,7 +625,7 @@ PowerPoint_SaveAsPdf() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF via COM (sync folder when possible; else Desktop then move)
+; Shift + P : Save as PDF (temp verify, then copy beside deck)
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
