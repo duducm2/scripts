@@ -3,8 +3,26 @@
 ; PowerPoint hotkeys
 ; Loaded via #include into the Shift keys.ahk process.
 ; =============================================================================
-; First COM Desktop export (UI→COM switch): ExportAsFixedFormat(outPath, 2),
-; SaveAs(..., 32) fallback. Always Windows Desktop — never presentation Path.
+;
+; Shift+P — Save as PDF on Desktop (working approach)
+; ----------------------------------------------------
+; No Save As UI. PowerPoint COM only.
+;
+; Flow:
+;   1. ComObjActive("PowerPoint.Application").ActivePresentation
+;   2. outPath := A_Desktop "\" <presentation Name without .pptx> ".pdf"
+;      (A_Desktop = Windows Desktop; ignore pres.Path / SharePoint URLs)
+;   3. pres.ExportAsFixedFormat(outPath, 2)   ; ppFixedFormatTypePDF
+;   4. On throw → pres.SaveAs(outPath, 32)    ; ppSaveAsPDF fallback
+;
+; Why this shape:
+;   - F12 / FileTypeControlHost type-ahead often picked BMP instead of PDF.
+;   - Writing beside SharePoint/OneDrive paths (https://…) failed on work PCs.
+;   - Desktop-only COM export is fast and keeps the .pptx open (ExportAsFixedFormat).
+;
+; Cheat sheet: cheatSheets["POWERPNT.EXE"] in cheat_sheet_registry.ahk
+;
+; =============================================================================
 
 ; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
 
