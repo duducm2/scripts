@@ -4,44 +4,23 @@
 ; Loaded via #include into the Shift keys.ahk process.
 ; =============================================================================
 
-PowerPoint_IsSaveAsDialogTitle(title) {
-    return InStr(title, "Save As")
-    || InStr(title, "Salvar como")
-    || InStr(title, "Guardar como")
-}
-
-PowerPoint_WaitSaveAsDialog(timeoutMs := 5000) {
-    deadline := A_TickCount + timeoutMs
-    prevMatchMode := A_TitleMatchMode
-    SetTitleMatchMode 2
+; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
+PowerPoint_GetActivePresentation() {
     try {
-        while (A_TickCount < deadline) {
-            hwnd := WinExist("ahk_class #32770")
-            if hwnd {
-                title := ""
-                try title := WinGetTitle("ahk_id " hwnd)
-                catch {
-                }
-                if PowerPoint_IsSaveAsDialogTitle(title)
-                    return hwnd
-            }
-            for str in ["Save As", "Salvar como", "Guardar como"] {
-                hwnd := WinExist(str " ahk_class #32770")
-                if hwnd
-                    return hwnd
-            }
-            Sleep 100
-        }
-    } finally {
-        SetTitleMatchMode prevMatchMode
+        pp := ComObjActive("PowerPoint.Application")
+        return pp.ActivePresentation
+    } catch {
     }
     return 0
 }
 
-PowerPoint_GetActivePresentationFolder() {
+PowerPoint_GetActivePresentationFolder(pres := 0) {
+    if !pres
+        pres := PowerPoint_GetActivePresentation()
+    if !pres
+        return ""
     try {
-        pp := ComObjActive("PowerPoint.Application")
-        path := pp.ActivePresentation.Path
+        path := pres.Path
         if (path != "")
             return path
     } catch {
@@ -49,33 +28,51 @@ PowerPoint_GetActivePresentationFolder() {
     return ""
 }
 
+PowerPoint_PdfOutputPath(pres, folder) {
+    name := "Presentation"
+    try {
+        n := pres.Name
+        if (n != "")
+            name := n
+    } catch {
+    }
+    name := RegExReplace(name, "i)\.(pptx|ppt|pptm|ppsx|pps)$", "")
+    return folder "\" name ".pdf"
+}
+
 PowerPoint_SaveAsPdf() {
-    targetFolder := PowerPoint_GetActivePresentationFolder()
+    pres := PowerPoint_GetActivePresentation()
+    if !pres {
+        ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    targetFolder := PowerPoint_GetActivePresentationFolder(pres)
     if (targetFolder = "")
         targetFolder := A_Desktop
 
-    Send "{F12}"
-    hwnd := PowerPoint_WaitSaveAsDialog(5000)
-    if !hwnd
+    outPath := PowerPoint_PdfOutputPath(pres, targetFolder)
+    if (outPath = "" || targetFolder = "") {
+        ShowCenteredOverlay_Utils("❌ Could not resolve PDF path", 2200, BANNER_ACCENT_ERROR)
         return
-
-    try WinActivate("ahk_id " hwnd)
-    catch {
     }
-    Sleep 150
 
     try {
-        FileDialog_NavigateToFolder(targetFolder)
-        Sleep 100
-        ; Folder change can rebuild dialog controls — refresh UIA root.
-        root := UIA.ElementFromHandle(hwnd)
-        if !FileDialog_SelectPdf(root)
-            return
-        Sleep 80
-        FileDialog_ClickSaveButton(root)
-        Sleep 200
-        FileDialog_HandlePostSaveDialogs()
+        ; ExportAsFixedFormat keeps the .pptx open; does not switch active format.
+        ; FixedFormatType 2 = ppFixedFormatTypePDF
+        pres.ExportAsFixedFormat(outPath, 2)
+        ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
+        return
     } catch {
+    }
+
+    try {
+        ; Fallback: SaveAs with ppSaveAsPDF = 32
+        pres.SaveAs(outPath, 32)
+        ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
+        return
+    } catch Error as err {
+        ShowCenteredOverlay_Utils("❌ PDF export failed`n" err.Message, 2800, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -84,7 +81,7 @@ PowerPoint_SaveAsPdf() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF (same folder, or Desktop if unsaved)
+; Shift + P : Save as PDF via COM (same folder, or Desktop if unsaved)
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
