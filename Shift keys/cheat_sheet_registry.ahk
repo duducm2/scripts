@@ -879,9 +879,8 @@ cheatSheets["EXCEL.EXE"] := "
 cheatSheets["POWERPNT.EXE"] := "
 (
     PowerPoint (Shift)
-    📄 [P]Save as [P]DF on Desktop
+    📄 [P]Save as [P]DF on Desktop (F12)
 )"
-
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
 (
