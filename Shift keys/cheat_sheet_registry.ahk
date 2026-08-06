@@ -879,7 +879,7 @@ cheatSheets["EXCEL.EXE"] := "
 cheatSheets["POWERPNT.EXE"] := "
 (
     PowerPoint (Shift)
-    📄 [P]Save as [P]DF via COM (local folder; Desktop if cloud/unsaved)
+    📄 [P]Save as [P]DF via COM (sync folder; Desktop then move if cloud)
 )"
 
 ; --- Power BI ------------------------------------------------------------

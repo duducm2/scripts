@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+from pathlib import Path
+
+out = Path(
+    r"C:\Users\eduev\Meu Drive\17 - Projects\scripts\Shift keys\hotif_powerpoint.ahk"
+)
+
+# Use XXX as stand-in for "pres" member-access targets so editors don't mangle them.
+ahk = r"""
 ; =============================================================================
 ; Shift keys module: hotif_powerpoint.ahk
 ; PowerPoint hotkeys
@@ -61,13 +70,13 @@ PowerPoint_GetOneDriveMounts() {
     mounts := []
     baseKey := "HKEY_CURRENT_USER\Software\SyncEngines\Providers\OneDrive"
     try {
-        loop reg, baseKey, "K" {
+        Loop Reg, baseKey, K {
             url := ""
             mount := ""
-            try url := RegRead(baseKey "\" A_LoopRegName, "UrlNamespace")
+            try RegRead url, % baseKey "\" A_LoopRegName, UrlNamespace
             catch {
             }
-            try mount := RegRead(baseKey "\" A_LoopRegName, "MountPoint")
+            try RegRead mount, % baseKey "\" A_LoopRegName, MountPoint
             catch {
             }
             url := PowerPoint_NormalizeFolder(url)
@@ -151,7 +160,7 @@ PowerPoint_CloudUrlToLocalFolder(cloudUrl) {
         ns := PowerPoint_NormalizeFolder(m.url)
         if (ns = "")
             continue
-        if ((InStr(url, ns, false) = 1) || (InStr(StrLower(url), StrLower(ns)) = 1)) {
+        if (InStr(url, ns, false) = 1) || (InStr(StrLower(url), StrLower(ns)) = 1) {
             if (StrLen(ns) > StrLen(bestUrl)) {
                 bestUrl := ns
                 bestMount := m.mount
@@ -191,7 +200,7 @@ PowerPoint_ResolveExportFolder(pres) {
     cloudUrls := []
 
     try {
-        p := PowerPoint_NormalizeFolder(pres.Path)
+        p := PowerPoint_NormalizeFolder(XXX.Path)
         if (p != "") {
             candidates.Push(p)
             if PowerPoint_IsCloudOrNonLocalPath(p)
@@ -201,7 +210,7 @@ PowerPoint_ResolveExportFolder(pres) {
     }
 
     try {
-        full := pres.FullName
+        full := XXX.FullName
         if (full != "") {
             if !PowerPoint_IsCloudOrNonLocalPath(full) {
                 SplitPath(full, , &dir)
@@ -237,7 +246,7 @@ PowerPoint_ResolveExportFolder(pres) {
 PowerPoint_PdfOutputPath(pres, folder) {
     name := "Presentation"
     try {
-        n := pres.Name
+        n := XXX.Name
         if (n != "")
             name := n
     } catch {
@@ -249,15 +258,15 @@ PowerPoint_PdfOutputPath(pres, folder) {
 
 PowerPoint_TryExportPdf(pres, outPath) {
     try {
-        pres.ExportAsFixedFormat(outPath, 2, 1)
+        XXX.ExportAsFixedFormat(outPath, 2, 1)
         return { ok: true, err: "" }
     } catch Error as e1 {
         try {
-            pres.ExportAsFixedFormat(outPath, 2)
+            XXX.ExportAsFixedFormat(outPath, 2)
             return { ok: true, err: "" }
         } catch Error as e2 {
             try {
-                pres.SaveAs(outPath, 32)
+                XXX.SaveAs(outPath, 32)
                 return { ok: true, err: "" }
             } catch Error as e3 {
                 return { ok: false, err: e1.Message "`n" e2.Message "`n" e3.Message }
@@ -296,38 +305,33 @@ PowerPoint_MovePdfToFolder(srcPdf, destFolder) {
 }
 
 PowerPoint_SaveAsPdf() {
-    pres := PowerPoint_GetActivePresentation()
-    if !pres {
+    XXX := PowerPoint_GetActivePresentation()
+    if !XXX {
         ShowCenteredOverlay_Utils("❌ PowerPoint COM unavailable", 2200, BANNER_ACCENT_ERROR)
         return
     }
 
-    resolved := PowerPoint_ResolveExportFolder(pres)
+    resolved := PowerPoint_ResolveExportFolder(XXX)
     targetFolder := resolved.folder
     syncFolder := resolved.syncFolder
     cloudFallback := resolved.cloudFallback
 
-    outPath := PowerPoint_PdfOutputPath(pres, targetFolder)
+    outPath := PowerPoint_PdfOutputPath(XXX, targetFolder)
     if (outPath = "" || targetFolder = "") {
         ShowCenteredOverlay_Utils("❌ Could not resolve PDF path", 2200, BANNER_ACCENT_ERROR)
         return
     }
 
-    result := PowerPoint_TryExportPdf(pres, outPath)
+    result := PowerPoint_TryExportPdf(XXX, outPath)
     if result.ok {
-        if cloudFallback
-            ShowCenteredOverlay_Utils("📄 Left on Desktop — could not resolve sync folder`n" outPath, 3200,
-                BANNER_ACCENT_INTERMEDIATE)
-        else
-            ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
+        ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
         return
     }
 
-    deskPath := PowerPoint_PdfOutputPath(pres, A_Desktop)
-    deskResult := PowerPoint_TryExportPdf(pres, deskPath)
+    deskPath := PowerPoint_PdfOutputPath(XXX, A_Desktop)
+    deskResult := PowerPoint_TryExportPdf(XXX, deskPath)
     if !deskResult.ok {
-        ShowCenteredOverlay_Utils("❌ PDF export failed`n" deskPath "`n" result.err "`n" deskResult.err, 3500,
-            BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ PDF export failed`n" deskPath "`n" result.err "`n" deskResult.err, 3500, BANNER_ACCENT_ERROR)
         return
     }
 
@@ -341,14 +345,12 @@ PowerPoint_SaveAsPdf() {
             ShowCenteredOverlay_Utils("📄 Moved PDF to sync folder`n" moved, 2800, BANNER_ACCENT_SUCCESS)
             return
         }
-        ShowCenteredOverlay_Utils("📄 PDF on Desktop (move failed)`n" deskPath "`n→ " moveTarget, 3200,
-            BANNER_ACCENT_INTERMEDIATE)
+        ShowCenteredOverlay_Utils("📄 PDF on Desktop (move failed)`n" deskPath "`n→ " moveTarget, 3200, BANNER_ACCENT_INTERMEDIATE)
         return
     }
 
     if cloudFallback
-        ShowCenteredOverlay_Utils("📄 Left on Desktop — could not resolve sync folder`n" deskPath, 3200,
-            BANNER_ACCENT_INTERMEDIATE)
+        ShowCenteredOverlay_Utils("📄 Left on Desktop — could not resolve sync folder`n" deskPath, 3200, BANNER_ACCENT_INTERMEDIATE)
     else
         ShowCenteredOverlay_Utils("📄 Folder blocked — PDF on Desktop`n" deskPath, 2800, BANNER_ACCENT_SUCCESS)
 }
@@ -362,3 +364,19 @@ PowerPoint_SaveAsPdf() {
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
+""".lstrip(
+    "\n"
+)
+
+# AHK v2 RegRead syntax: RegRead OutputVar, KeyName, ValueName  OR RegRead(KeyName, ValueName)
+# Fix the invalid v1-style RegRead I accidentally wrote
+ahk = ahk.replace(
+    'try RegRead url, % baseKey "\\" A_LoopRegName, UrlNamespace\n            catch {\n            }\n            try RegRead mount, % baseKey "\\" A_LoopRegName, MountPoint\n            catch {\n            }',
+    'try url := RegRead(baseKey "\\" A_LoopRegName, "UrlNamespace")\n            catch {\n            }\n            try mount := RegRead(baseKey "\\" A_LoopRegName, "MountPoint")\n            catch {\n            }',
+)
+
+# Replace XXX with pres (local var / member access)
+ahk = ahk.replace("XXX", "pres")
+
+out.write_text(ahk, encoding="utf-8", newline="\n")
+print(f"Wrote {out} ({out.stat().st_size} bytes)")
