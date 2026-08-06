@@ -434,6 +434,7 @@ cheatSheets["Cursor.exe"] := "
     📄 [R] Refresh preview
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
+    💾 [S][S]tash (Git) then Enter (ahk)
     
     === Ctrl+Shift ===
     📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
@@ -545,6 +546,7 @@ cheatSheets["Code.exe"] := "
     📄 [R] Refresh preview
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
+    💾 [S][S]tash (Git) then Enter (ahk)
     
     === Ctrl+Shift ===
     📝 [Ctrl+Shift+L] Select all identical words ([L]ines)

@@ -122,6 +122,10 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 | `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                          |
 | `Mobills`            | Chrome title contains `Mobills`.                                                                                                                   |
 
+### Editor Alt+S stash (Cursor / VS Code)
+
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` in [`Shift keys/hotif_editor_02.ahk`](../Shift%20keys/hotif_editor_02.ahk)): it re-sends **Alt+S** so the native **Git: Stash** user keybinding runs, sleeps **150ms**, then sends **Enter** to accept an empty stash message. Listed on both overlays as `💾 [S][S]tash (Git) then Enter (ahk)`.
+
 ### Special resolution (not only `exe` match)
 
 - **Chrome (`chrome.exe`):** Site-specific keys are chosen via **`PickChromeAppSheetKey()`** in [`Shift keys/cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk) (sequential overwrites, same semantics as the former `if` chain). The generic `chrome.exe` sheet may be appended for combined display.
@@ -179,7 +183,7 @@ Guidelines (not strict rules) for consistency across applications.
 ### Primary conventions
 
 - **`N`** - **New**: New chat, new document, new file, new tab, new item
-- **`S`** - **Search**: Search, find, seek
+- **`S`** - **Search**: Search, find, seek. In editor Git chords (e.g. Cursor/VS Code **Alt+S**), **`S`** = **Stash** (context override; app-specific meanings are OK).
 - **`C`** - **Copy**: Copy, clipboard operations
 - **`P`** - **Prompt/Input**: Prompt field, input focus, paste
 - **`F`** - **Fullscreen/Focus**: Fullscreen mode, focus actions, find

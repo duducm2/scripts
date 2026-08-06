@@ -700,6 +700,13 @@ Editor_QuickCommit() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
+; Alt + S : Git Stash, then confirm empty message (native Alt+S + Enter)
+$!s:: {
+    Send "!s"
+    Sleep 150
+    Send "{Enter}"
+}
+
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
 ; Global variable to store the user's push decision ("push" | "dont_push" | "")
