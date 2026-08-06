@@ -705,7 +705,7 @@ $!s:: {
     Sleep 150
     Send "{Enter}"
     Sleep 150
-    Send "+p"
+    Send "+c"
 }
 
 ; Global variable for commit push selector target window
