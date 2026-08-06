@@ -189,13 +189,20 @@ FileDialog_FocusFileNameField() {
     Send "!n"  ; Alt+N is a common shortcut for file name field
 }
 
-FileDialog_NavigateToDesktop() {
+FileDialog_NavigateToFolder(path) {
+    if (path = "")
+        return false
     FileDialog_FocusAddressBar()
     Sleep 50
-    SendText(A_Desktop)
+    SendText(path)
     Send "{Enter}"
     Sleep 200
     FileDialog_FocusFileNameField()
+    return true
+}
+
+FileDialog_NavigateToDesktop() {
+    FileDialog_NavigateToFolder(A_Desktop)
 }
 
 ; Shift + N : New folder - New Folder

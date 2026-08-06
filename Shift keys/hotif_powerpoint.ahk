@@ -38,7 +38,22 @@ PowerPoint_WaitSaveAsDialog(timeoutMs := 5000) {
     return 0
 }
 
+PowerPoint_GetActivePresentationFolder() {
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+        path := pp.ActivePresentation.Path
+        if (path != "")
+            return path
+    } catch {
+    }
+    return ""
+}
+
 PowerPoint_SaveAsPdf() {
+    targetFolder := PowerPoint_GetActivePresentationFolder()
+    if (targetFolder = "")
+        targetFolder := A_Desktop
+
     Send "{F12}"
     hwnd := PowerPoint_WaitSaveAsDialog(5000)
     if !hwnd
@@ -50,6 +65,9 @@ PowerPoint_SaveAsPdf() {
     Sleep 150
 
     try {
+        FileDialog_NavigateToFolder(targetFolder)
+        Sleep 100
+        ; Folder change can rebuild dialog controls — refresh UIA root.
         root := UIA.ElementFromHandle(hwnd)
         if !FileDialog_SelectPdf(root)
             return
@@ -66,7 +84,7 @@ PowerPoint_SaveAsPdf() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF (F12 → select PDF → Save → confirm overwrite)
+; Shift + P : Save as PDF (same folder, or Desktop if unsaved)
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
