@@ -175,11 +175,24 @@ PowerPoint_GetOneDriveSearchRoots() {
         }
     }
 
-    try {
-        loop files, A_UserProfile "\OneDrive*", "D" {
-            addRoot(A_LoopFileFullPath)
+    ; A_UserProfile is not built-in on this AHK build — use USERPROFILE / Desktop parent.
+    profile := ""
+    try profile := EnvGet("USERPROFILE")
+    catch {
+    }
+    if (profile = "" || !DirExist(profile)) {
+        try SplitPath(A_Desktop, , &profile)
+        catch {
+            profile := ""
         }
-    } catch {
+    }
+    if (profile != "" && DirExist(profile)) {
+        try {
+            loop files, profile "\OneDrive*", "D" {
+                addRoot(A_LoopFileFullPath)
+            }
+        } catch {
+        }
     }
     return roots
 }
