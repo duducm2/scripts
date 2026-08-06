@@ -3,6 +3,8 @@
 ; PowerPoint hotkeys
 ; Loaded via #include into the Shift keys.ahk process.
 ; =============================================================================
+; Desktop PDF via COM: export to local TEMP (reliable), verify, then copy to Desktop.
+; Direct Desktop ExportAsFixedFormat often returns OK with no file on OneDrive/work PCs.
 
 ; ppFixedFormatTypePDF = 2; ppFixedFormatIntentScreen = 1; ppSaveAsPDF = 32
 
@@ -15,7 +17,7 @@ PowerPoint_GetActivePresentation() {
     return 0
 }
 
-PowerPoint_PdfDesktopPath(pres) {
+PowerPoint_PdfBaseName(pres) {
     name := "Presentation"
     try {
         n := pres.Name
@@ -25,7 +27,9 @@ PowerPoint_PdfDesktopPath(pres) {
     }
     name := RegExReplace(name, "i)\.(pptx|ppt|pptm|ppsx|pps)$", "")
     name := RegExReplace(name, '[<>:"/\\|?*]', "_")
-    return A_Desktop "\" name ".pdf"
+    if (name = "")
+        name := "Presentation"
+    return name
 }
 
 PowerPoint_TryExportPdf(pres, outPath) {
@@ -47,6 +51,16 @@ PowerPoint_TryExportPdf(pres, outPath) {
     }
 }
 
+PowerPoint_FileLooksValid(path) {
+    if !FileExist(path)
+        return false
+    try {
+        return FileGetSize(path) > 0
+    } catch {
+        return false
+    }
+}
+
 PowerPoint_SaveAsPdf() {
     pres := PowerPoint_GetActivePresentation()
     if !pres {
@@ -54,13 +68,50 @@ PowerPoint_SaveAsPdf() {
         return
     }
 
-    outPath := PowerPoint_PdfDesktopPath(pres)
-    result := PowerPoint_TryExportPdf(pres, outPath)
+    baseName := PowerPoint_PdfBaseName(pres)
+    destPath := A_Desktop "\" baseName ".pdf"
+    stageDir := A_Temp "\ShiftKeysPptPdf"
+    stagePath := stageDir "\" baseName ".pdf"
+
+    try DirCreate(stageDir)
+    catch {
+    }
+    try FileDelete(stagePath)
+    catch {
+    }
+
+    result := PowerPoint_TryExportPdf(pres, stagePath)
     if !result.ok {
-        ShowCenteredOverlay_Utils("❌ PDF export failed`n" outPath "`n" result.err, 3500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ PDF export failed`n" stagePath "`n" result.err, 3500, BANNER_ACCENT_ERROR)
         return
     }
-    ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
+    if !PowerPoint_FileLooksValid(stagePath) {
+        ShowCenteredOverlay_Utils("❌ COM said OK but no PDF in TEMP`n" stagePath "`nDesktop target:`n" destPath, 4000,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+
+    try FileDelete(destPath)
+    catch {
+    }
+    try {
+        FileCopy(stagePath, destPath, true)
+    } catch Error as eCopy {
+        ShowCenteredOverlay_Utils("❌ PDF ready in TEMP but Desktop copy failed`n" destPath "`n" eCopy.Message, 4000,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+    if !PowerPoint_FileLooksValid(destPath) {
+        ShowCenteredOverlay_Utils("❌ TEMP PDF ok, but missing on Desktop`n" destPath "`nTEMP:`n" stagePath, 4000,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+
+    try FileDelete(stagePath)
+    catch {
+    }
+
+    ShowCenteredOverlay_Utils("📄 Saved PDF`n" destPath, 2200, BANNER_ACCENT_SUCCESS)
 }
 
 ;-------------------------------------------------------------------
@@ -68,7 +119,7 @@ PowerPoint_SaveAsPdf() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF on Desktop
+; Shift + P : Save as PDF on Desktop (COM → TEMP → Desktop)
 +p:: PowerPoint_SaveAsPdf()
 
 #HotIf
