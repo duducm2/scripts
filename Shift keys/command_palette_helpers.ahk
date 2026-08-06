@@ -103,7 +103,7 @@ CommandPalette_SelectNthAndActivate(downCount := 0) {
     CommandPalette_ActivateSelectedItem()
 }
 
-; Open Ctrl+K context menu and activate "Editar favorito" / "Edit favorite".
+; Open Ctrl+K context menu and activate "Editar favorito" / "Edit bookmark".
 ; Focus stays on ContextFilterBox, so use Name FindFirst (not focus-walk / full FindAll).
 CommandPalette_EditFavoriteSelected() {
     Send "^k"
@@ -139,7 +139,7 @@ CommandPalette_FindEditFavoriteElement() {
         return 0
     try {
         root := UIA.ElementFromHandle(hwnd)
-        for name in ["Editar favorito", "Edit favorite"] {
+        for name in ["Editar favorito", "Edit bookmark", "Edit favorite"] {
             try {
                 el := root.FindFirst({ Name: name, matchmode: "Substring", cs: false })
                 if el
@@ -147,11 +147,13 @@ CommandPalette_FindEditFavoriteElement() {
             } catch {
             }
         }
-        try {
-            el := root.FindFirst({ Name: "favorit", matchmode: "Substring", cs: false })
-            if CommandPalette_ElementLooksLikeEditFavorite(el)
-                return el
-        } catch {
+        for stem in ["favorit", "bookmark"] {
+            try {
+                el := root.FindFirst({ Name: stem, matchmode: "Substring", cs: false })
+                if CommandPalette_ElementLooksLikeEditFavorite(el)
+                    return el
+            } catch {
+            }
         }
     } catch {
     }
@@ -163,12 +165,12 @@ CommandPalette_ElementLooksLikeEditFavorite(el) {
         return false
     nm := ""
     try nm := el.Name
-    if RegExMatch(nm, "i)(edit|editar)") && RegExMatch(nm, "i)favorit")
+    if RegExMatch(nm, "i)(edit|editar)") && RegExMatch(nm, "i)(favorit|bookmark)")
         return true
     haystack := nm
     try haystack .= " " el.GetPropertyValue(UIA.Property.HelpText)
     try haystack .= " " el.AutomationId
-    return RegExMatch(haystack, "i)(edit|editar)") && RegExMatch(haystack, "i)favorit")
+    return RegExMatch(haystack, "i)(edit|editar)") && RegExMatch(haystack, "i)(favorit|bookmark)")
 }
 
 CommandPalette_ActivateMenuElement(el) {

@@ -1293,7 +1293,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === COMMAND PALETTE ===
     [Shift+D] > Command Palette (active): exclude current bookmark (confirm)
-    [Shift+E] > Command Palette (active): edit favorite (Ctrl+K → Editar favorito)
+    [Shift+E] > Command Palette (active): edit favorite (Ctrl+K → Editar favorito / Edit bookmark)
     
     === SHORTCUTS ===
     [Win+Alt+Shift+A] > Show app-specific shortcuts (quick press)

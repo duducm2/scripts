@@ -281,5 +281,5 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 
 - **Do not** walk menu items via `UIA.GetFocusedElement` after Ctrl+K — focus stays on `ContextFilterBox` (Edit/50004); `elFound` stays empty for the whole Down loop.
 - **Do not** poll with repeated full-tree `FindAll` (Button + MenuItem + ListItem) per Down step — that is §3 “full UIA tree scans” on a hotkey path.
-- **Do:** `Send "^k"` → bounded deadline (~1500 ms) with short Sleep (~40 ms); each tick **`FindFirst`** Name substring `"Editar favorito"` / `"Edit favorite"` (then one `"favorit"` + edit-stem check); **`InvokePattern`/`Click`** when found. Send `{Down}` only while FindFirst still misses (lazy populate), capped (~12).
+- **Do:** `Send "^k"` → bounded deadline (~1500 ms) with short Sleep (~40 ms); each tick **`FindFirst`** Name substring `"Editar favorito"` / `"Edit bookmark"` (then `"favorit"`/`"bookmark"` + edit-stem check); **`InvokePattern`/`Click`** when found. Send `{Down}` only while FindFirst still misses (lazy populate), capped (~12).
 - **Rollback:** restore prior focus-walk / multi-`FindAll` loop in [`command_palette_helpers.ahk`](../Shift keys/command_palette_helpers.ahk) only if FindFirst misses localized labels on a specific PowerToys build.
