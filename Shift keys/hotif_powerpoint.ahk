@@ -194,10 +194,49 @@ PowerPoint_GetOneDriveSearchRoots() {
         } catch {
         }
     }
+
+    ; If Desktop itself lives under OneDrive (common at work), its parent is a sync root.
+    try {
+        deskParent := ""
+        SplitPath(A_Desktop, , &deskParent)
+        deskParent := PowerPoint_NormalizeFolder(deskParent)
+        if InStr(deskParent, "OneDrive", false)
+            addRoot(deskParent)
+    } catch {
+    }
     return roots
 }
 
-; Find local folder of the deck by searching sync roots for its exact filename.
+PowerPoint_CloudHintSegments(cloudHint) {
+    segs := []
+    if (cloudHint = "")
+        return segs
+    hint := PowerPoint_NormalizeCloudUrl(cloudHint)
+    hint := RegExReplace(hint, "i)^https?://", "")
+    for part in StrSplit(hint, ["/", "\"]) {
+        part := Trim(PowerPoint_UrlDecode(part))
+        if (part = "" || StrLen(part) < 3)
+            continue
+        if RegExMatch(part, "i)^(sites|teams|personal|documents|shared documents|_/)$")
+            continue
+        if RegExMatch(part, "i)\.(pptx|ppt|pptm|ppsx|pps)$")
+            continue
+        segs.Push(part)
+    }
+    return segs
+}
+
+PowerPoint_ScoreLocalHit(fullPath, segments) {
+    score := 0
+    pathLower := StrLower(fullPath)
+    for seg in segments {
+        if InStr(pathLower, StrLower(seg))
+            score += 1
+    }
+    return score
+}
+
+; Find local folder of the deck by AHK recursive search (no PowerShell).
 PowerPoint_FindLocalFolderByFileName(pres, cloudHint := "") {
     fileName := PowerPoint_PresentationFileName(pres)
     if (fileName = "")
@@ -207,93 +246,38 @@ PowerPoint_FindLocalFolderByFileName(pres, cloudHint := "") {
     if (roots.Length = 0)
         return ""
 
-    rootsFile := A_Temp "\ppt_onedrive_roots.txt"
-    hitsFile := A_Temp "\ppt_onedrive_hits.txt"
-    psFile := A_Temp "\ppt_find_pptx.ps1"
-    try FileDelete(rootsFile)
-    catch {
-    }
-    try FileDelete(hitsFile)
-    catch {
-    }
-    try FileDelete(psFile)
-    catch {
+    segments := PowerPoint_CloudHintSegments(cloudHint)
+    bestPath := ""
+    bestScore := -1
+    bestTime := 0
+    hitCount := 0
+
+    for root in roots {
+        try {
+            loop files, root "\" fileName, "FR" {
+                hitCount += 1
+                full := A_LoopFileFullPath
+                score := PowerPoint_ScoreLocalHit(full, segments)
+                mtime := 0
+                try mtime := FileGetTime(full, "M")
+                catch {
+                }
+                if ((score > bestScore) || (score = bestScore && mtime > bestTime)) {
+                    bestScore := score
+                    bestTime := mtime
+                    bestPath := full
+                }
+                if (hitCount >= 40)
+                    break 2
+            }
+        } catch {
+        }
     }
 
-    rootText := ""
-    for r in roots
-        rootText .= r "`n"
-    try FileAppend(rootText, rootsFile)
-    catch {
+    ; Prefer URL segment matches; if none match, fall back to newest hit.
+    if (bestPath = "" || !FileExist(bestPath))
         return ""
-    }
-
-    ; PowerShell: exact-name search under sync roots; prefer URL path-segment matches.
-    script := (
-        "$fileName = @'`n"
-        fileName
-        "`n'@`n"
-        "$fileName = $fileName.Trim()`n"
-        "$roots = Get-Content -LiteralPath $env:TEMP\ppt_onedrive_roots.txt -ErrorAction SilentlyContinue`n"
-        "$hint = @'`n"
-        cloudHint
-        "`n'@`n"
-        "$hint = $hint.Trim()`n"
-        "$hits = New-Object System.Collections.Generic.List[object]`n"
-        "$deadline = (Get-Date).AddSeconds(40)`n"
-        "foreach ($root in $roots) {`n"
-        "  if ((Get-Date) -gt $deadline) { break }`n"
-        "  if (-not $root) { continue }`n"
-        "  if (-not (Test-Path -LiteralPath $root)) { continue }`n"
-        "  try {`n"
-        "    foreach ($path in [System.IO.Directory]::EnumerateFiles($root, $fileName, 'AllDirectories')) {`n"
-        "      $hits.Add([PSCustomObject]@{ FullName = $path; LastWriteTime = (Get-Item -LiteralPath $path).LastWriteTime })`n"
-        "      if ($hits.Count -ge 8) { break }`n"
-        "      if ((Get-Date) -gt $deadline) { break }`n"
-        "    }`n"
-        "  } catch {}`n"
-        "  if ($hits.Count -ge 8) { break }`n"
-        "}`n"
-        "if ($hits.Count -eq 0) { exit 0 }`n"
-        "$scored = foreach ($h in $hits) {`n"
-        "  $score = 0`n"
-        "  if ($hint) {`n"
-        "    $parts = ($hint -replace 'https?://','' -split '[/\\\\]') | Where-Object { $_ -and $_.Length -gt 2 }`n"
-        "    foreach ($p in $parts) {`n"
-        "      try { $dec = [Uri]::UnescapeDataString(($p -replace '\+',' ')) } catch { $dec = $p }`n"
-        "      if ($dec -and $h.FullName -like ('*' + $dec + '*')) { $score++ }`n"
-        "    }`n"
-        "  }`n"
-        "  [PSCustomObject]@{ Path = $h.FullName; Score = $score; Time = $h.LastWriteTime }`n"
-        "}`n"
-        "$best = $scored | Sort-Object Score, Time -Descending | Select-Object -First 1`n"
-        "if ($best) { Set-Content -LiteralPath $env:TEMP\ppt_onedrive_hits.txt -Value $best.Path }`n"
-    )
-    try {
-        FileAppend(script, psFile)
-        RunWait('powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' psFile '"', , "Hide")
-    } catch {
-    }
-
-    found := ""
-    try {
-        if FileExist(hitsFile)
-            found := Trim(FileRead(hitsFile))
-    } catch {
-    }
-    try FileDelete(rootsFile)
-    catch {
-    }
-    try FileDelete(hitsFile)
-    catch {
-    }
-    try FileDelete(psFile)
-    catch {
-    }
-
-    if (found = "" || !FileExist(found))
-        return ""
-    SplitPath(found, , &dir)
+    SplitPath(bestPath, , &dir)
     dir := PowerPoint_NormalizeFolder(dir)
     if (dir != "" && DirExist(dir))
         return dir
@@ -455,6 +439,8 @@ PowerPoint_MovePdfToFolder(srcPdf, destFolder) {
         return ""
     SplitPath(srcPdf, &fileName)
     destPdf := destFolder "\" fileName
+    if (PowerPoint_NormalizeFolder(srcPdf) = PowerPoint_NormalizeFolder(destPdf))
+        return destPdf
     try {
         if FileExist(destPdf)
             FileDelete(destPdf)
@@ -462,8 +448,15 @@ PowerPoint_MovePdfToFolder(srcPdf, destFolder) {
     }
     try {
         FileMove(srcPdf, destPdf, 1)
-        if FileExist(destPdf)
+        if FileExist(destPdf) {
+            ; OneDrive sometimes leaves a ghost/source copy — force-clear source.
+            if FileExist(srcPdf) {
+                try FileDelete(srcPdf)
+                catch {
+                }
+            }
             return destPdf
+        }
     } catch {
     }
     try {
@@ -477,6 +470,22 @@ PowerPoint_MovePdfToFolder(srcPdf, destFolder) {
     } catch {
     }
     return ""
+}
+
+; Delete same-named Desktop leftover after a successful sync-folder save.
+PowerPoint_ClearDesktopLeftoverPdf(pres, keptPath := "") {
+    deskPdf := PowerPoint_PdfOutputPath(pres, A_Desktop)
+    if (deskPdf = "" || !FileExist(deskPdf))
+        return
+    if (keptPath != "" && (PowerPoint_NormalizeFolder(deskPdf) = PowerPoint_NormalizeFolder(keptPath)))
+        return
+    try FileDelete(deskPdf)
+    catch {
+        Sleep 200
+        try FileDelete(deskPdf)
+        catch {
+        }
+    }
 }
 
 PowerPoint_SaveAsPdf() {
@@ -500,8 +509,9 @@ PowerPoint_SaveAsPdf() {
     deskNorm := PowerPoint_NormalizeFolder(A_Desktop)
     result := PowerPoint_TryExportPdf(pres, outPath)
 
-    ; If we already wrote next to the deck (not Desktop), done.
+    ; If we already wrote next to the deck (not Desktop), clear any Desktop leftover and done.
     if (result.ok && (PowerPoint_NormalizeFolder(targetFolder) != deskNorm)) {
+        PowerPoint_ClearDesktopLeftoverPdf(pres, outPath)
         ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
         return
     }
@@ -536,6 +546,7 @@ PowerPoint_SaveAsPdf() {
     if (moveTarget != "" && DirExist(moveTarget)) {
         moved := PowerPoint_MovePdfToFolder(deskPath, moveTarget)
         if (moved != "") {
+            PowerPoint_ClearDesktopLeftoverPdf(pres, moved)
             ShowCenteredOverlay_Utils("📄 Moved PDF to sync folder`n" moved, 2800, BANNER_ACCENT_SUCCESS)
             return
         }
