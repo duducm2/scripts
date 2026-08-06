@@ -894,6 +894,7 @@ cheatSheets["Power BI"] := "
     📊 [U][U]pdate (Close and Apply)
     📊 [E]New M[E]asure
     🔄 [Y]Refresh (read[Y])
+    📤 [Q][Q]uick Publish
     📊 [H]Build visual ([H]andle)
     📊 [J]Format visual (ad[J]ust)
     ⬆️ [B][B]ring forward

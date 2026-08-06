@@ -750,6 +750,48 @@
     }
 }
 
+; Shift + Q : Publish (Click Home tab, then Publish button)
++q:: {
+    try {
+        win := WinExist("A")
+        root := UIA.ElementFromHandle(win)
+
+        ; Click the Home tab
+        homeTab := root.FindFirst({ Type: "50019", Name: "Home", AutomationId: "home" })
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", Name: "Home" })
+        }
+        if !homeTab {
+            homeTab := root.FindFirst({ Type: "50019", AutomationId: "home" })
+        }
+
+        if homeTab {
+            homeTab.Click()
+            Sleep 200
+        } else {
+            MsgBox "Could not find the 'Home' tab.", "Power BI", "IconX"
+            return
+        }
+
+        ; Click the Publish button
+        publishBtn := root.FindFirst({ Type: "50000", Name: "Publish", AutomationId: "publish" })
+        if !publishBtn {
+            publishBtn := root.FindFirst({ Type: "50000", AutomationId: "publish" })
+        }
+        if !publishBtn {
+            publishBtn := root.FindFirst({ Type: "50000", Name: "Publish" })
+        }
+
+        if publishBtn {
+            publishBtn.Click()
+        } else {
+            MsgBox "Could not find the 'Publish' button.", "Power BI", "IconX"
+        }
+    } catch Error as e {
+        MsgBox "Error triggering Publish: " e.Message, "Power BI Error", "IconX"
+    }
+}
+
 ; Shift + B : Bring forward (Click Format tab, then click button 10 times)
 +b:: {
     try {
@@ -1293,4 +1335,3 @@
     Sleep 100
     Send "{Enter}"
 }
-
