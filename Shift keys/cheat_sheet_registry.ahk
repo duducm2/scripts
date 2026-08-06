@@ -415,7 +415,7 @@ cheatSheets["Cursor.exe"] := "
     ❌ [Z]Close all editors (end [Z]one) (ahk)
     🤖 [A][A]I models switch (ahk)
     🧘 [Y]Zen mode (tranquilit[Y]) (cursor)
-    ⬇️ [P][P]ull (Git) then Enter (ahk)
+    ⬇️ [P][P]ull (Git) (cursor)
     ✅ [V]Commit (Git sa[V]e) (cursor)
     ⬆️ [B]Push (Git pu[B]lish) (cursor)
     ✅ [J] Quick commit — generic timestamp, commit + push (ahk)
@@ -434,7 +434,7 @@ cheatSheets["Cursor.exe"] := "
     📄 [R] Refresh preview
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
-    💾 [S][S]tash (Git) then Enter (ahk)
+    💾 [S][S]tash and Pull (Git) (ahk)
     
     === Ctrl+Shift ===
     📝 [Ctrl+Shift+L] Select all identical words ([L]ines)
@@ -526,7 +526,7 @@ cheatSheets["Code.exe"] := "
     ❌ [Z]Close all editors (end [Z]one) (ahk)
     🤖 [A][A]I models switch (ahk)
     🧘 [Y]Zen mode (tranquilit[Y])
-    ⬇️ [P][P]ull (Git) then Enter (ahk)
+    ⬇️ [P][P]ull (Git)
     ✅ [V]Commit (Git)
     ⬆️ [B]Push (Git)
     ✅ [J] Quick commit — generic timestamp, commit + push (ahk)
@@ -546,7 +546,7 @@ cheatSheets["Code.exe"] := "
     📄 [R] Refresh preview
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
-    💾 [S][S]tash (Git) then Enter (ahk)
+    💾 [S][S]tash and Pull (Git) (ahk)
     
     === Ctrl+Shift ===
     📝 [Ctrl+Shift+L] Select all identical words ([L]ines)

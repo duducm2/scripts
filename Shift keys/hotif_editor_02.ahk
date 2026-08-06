@@ -691,12 +691,8 @@ Editor_QuickCommit() {
 ; Shift + Y : Zen mode - Zen
 +y:: Send "+z"
 
-; Shift + P : Git Pull, then confirm prompt (Send +c + Enter)
-$+p:: {
-    Send "+c"
-    Sleep 150
-    Send "{Enter}"
-}
+; Shift + P : Git Pull - Pull
++p:: Send "+c"
 
 ; Shift + V : Git Commit - Commit
 +v:: Send "+v"
@@ -704,11 +700,13 @@ $+p:: {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; Alt + S : Git Stash, then confirm empty message (native Alt+S + Enter)
+; Alt + S : Git Stash and Pull (native Alt+S + Enter, then Shift+P pull)
 $!s:: {
     Send "!s"
     Sleep 150
     Send "{Enter}"
+    Sleep 150
+    Send "+p"
 }
 
 ; Global variable for commit push selector target window
