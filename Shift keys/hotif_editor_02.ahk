@@ -691,8 +691,12 @@ Editor_QuickCommit() {
 ; Shift + Y : Zen mode - Zen
 +y:: Send "+z"
 
-; Shift + P : Git Pull - Pull
-+p:: Send "+c"
+; Shift + P : Git Pull, then confirm prompt (Send +c + Enter)
+$+p:: {
+    Send "+c"
+    Sleep 150
+    Send "{Enter}"
+}
 
 ; Shift + V : Git Commit - Commit
 +v:: Send "+v"

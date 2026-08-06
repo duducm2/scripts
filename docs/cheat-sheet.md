@@ -122,9 +122,12 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 | `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                          |
 | `Mobills`            | Chrome title contains `Mobills`.                                                                                                                   |
 
-### Editor Alt+S stash (Cursor / VS Code)
+### Editor Git auto-Enter (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` in [`Shift keys/hotif_editor_02.ahk`](../Shift%20keys/hotif_editor_02.ahk)): it re-sends **Alt+S** so the native **Git: Stash** user keybinding runs, sleeps **150ms**, then sends **Enter** to accept an empty stash message. Listed on both overlays as `💾 [S][S]tash (Git) then Enter (ahk)`.
+AHK wrappers in [`Shift keys/hotif_editor_02.ahk`](../Shift%20keys/hotif_editor_02.ahk) (Sleep **150ms**, then **Enter**):
+
+- **Alt+S** (`$!s`): re-sends **Alt+S** so native **Git: Stash** runs, then Enter (empty stash message). Overlay: `💾 [S][S]tash (Git) then Enter (ahk)`.
+- **Shift+P** (`$+p`): sends **Shift+C** (existing pull path), then Enter. Overlay: `⬇️ [P][P]ull (Git) then Enter (ahk)`.
 
 ### Special resolution (not only `exe` match)
 
