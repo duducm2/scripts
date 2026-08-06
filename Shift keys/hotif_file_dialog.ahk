@@ -143,70 +143,7 @@ FileDialog_FocusAddressBar() {
     return false
 }
 
-FileDialog_FocusItemsView() {
-    try {
-        root := UIA.ElementFromHandle(WinExist("A"))
-        itemsList := root.FindFirst({ Type: "List", ClassName: "UIItemsView" })
-        if !itemsList
-            itemsList := root.FindFirst({ Type: "List", Name: "Items View" })
-        if !itemsList
-            itemsList := root.FindFirst({ Type: "List", AutomationId: "ItemsView" })
-
-        if itemsList {
-            itemsList.SetFocus()
-            Sleep 120
-            Send "{Home}"
-            EnsureFocus()
-            return
-        }
-    } catch Error {
-    }
-    Send "+{Tab}"
-    Sleep 120
-    Send "{Home}"
-    EnsureFocus()
-}
-
-FileDialog_NavigateToDesktop() {
-    FileDialog_FocusAddressBar()
-    Sleep 50
-    SendText(A_Desktop)
-    Send "{Enter}"
-    Sleep 200
-    FileDialog_FocusItemsView()
-}
-
-; Shift + N : New folder - New Folder
-+n:: {
-    if !IsFileDialogActive()
-        return
-    Send "^+n"
-}
-
-; Shift + P : Select first pinned item in sidebar - Pinned item
-+p:: {
-    if !IsFileDialogActive()
-        return
-    SelectExplorerSidebarFirstPinned()
-}
-
-; Shift + T : Select "This PC" / "Este computador" in sidebar - This PC
-+t:: {
-    if !IsFileDialogActive()
-        return
-    SelectExplorerSidebarFirstPinned()
-    Sleep 200
-    Send "{End}"
-    Send "{Up}"
-    Send "{Up}"
-    Send "{Up}"
-    Send "{Up}"
-}
-
-; Shift + M : Focus file name edit field - Name
-+m:: {
-    if !IsFileDialogActive()
-        return
+FileDialog_FocusFileNameField() {
     try {
         root := UIA.ElementFromHandle(WinExist("A"))
 
@@ -250,6 +187,49 @@ FileDialog_NavigateToDesktop() {
     }
     ; Fallback: Try to focus using keyboard navigation
     Send "!n"  ; Alt+N is a common shortcut for file name field
+}
+
+FileDialog_NavigateToDesktop() {
+    FileDialog_FocusAddressBar()
+    Sleep 50
+    SendText(A_Desktop)
+    Send "{Enter}"
+    Sleep 200
+    FileDialog_FocusFileNameField()
+}
+
+; Shift + N : New folder - New Folder
++n:: {
+    if !IsFileDialogActive()
+        return
+    Send "^+n"
+}
+
+; Shift + P : Select first pinned item in sidebar - Pinned item
++p:: {
+    if !IsFileDialogActive()
+        return
+    SelectExplorerSidebarFirstPinned()
+}
+
+; Shift + T : Select "This PC" / "Este computador" in sidebar - This PC
++t:: {
+    if !IsFileDialogActive()
+        return
+    SelectExplorerSidebarFirstPinned()
+    Sleep 200
+    Send "{End}"
+    Send "{Up}"
+    Send "{Up}"
+    Send "{Up}"
+    Send "{Up}"
+}
+
+; Shift + M : Focus file name edit field - Name
++m:: {
+    if !IsFileDialogActive()
+        return
+    FileDialog_FocusFileNameField()
 }
 
 ; Shift + O : Click Insert/Open/Save button - Open/Save
