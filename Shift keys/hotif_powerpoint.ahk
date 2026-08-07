@@ -27,9 +27,23 @@
 ; COM ShapeRange.Align: msoAlignCenters (1) + msoAlignMiddles (4),
 ; RelativeTo = msoTrue (-1) → align to slide edges.
 ;
+; Shape pack (L/R/T/B/H/V/D/Y/G/U/F/K/E/W/Q)
+; ----------------------------------------------
+; All COM-only via ShapeRange.Align / Distribute / ZOrder / Group.
+; RelativeTo = msoTrue (-1) = relative to slide edges.
+;
+; msoAlignLefts=0  Centers=1  Rights=2  Tops=3  Middles=4  Bottoms=5
+; msoDistributeHorizontally=0  Vertically=1
+; msoBringToFront=0  msoSendToBack=1  msoBringForward=2  msoSendBackward=3
+; msoTrue=-1
+;
 ; =============================================================================
 
 ; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
+
+;-------------------------------------------------------------------
+; Shared COM helpers
+;-------------------------------------------------------------------
 
 PowerPoint_GetActivePresentation() {
     try {
@@ -39,6 +53,97 @@ PowerPoint_GetActivePresentation() {
     }
     return 0
 }
+
+PowerPoint_GetShapeRange() {
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+        return pp.ActiveWindow.Selection.ShapeRange
+    } catch {
+    }
+    return 0
+}
+
+PowerPoint_Align(cmd) {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select a shape first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.Align(cmd, -1)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Align failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+PowerPoint_Distribute(cmd) {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select shapes first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.Distribute(cmd, -1)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Distribute failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+PowerPoint_ZOrder(cmd) {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select a shape first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.ZOrder(cmd)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Z-order failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+PowerPoint_Group() {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select shapes first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.Group()
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Group failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+PowerPoint_Ungroup() {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select a group first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.Ungroup()
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Ungroup failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+PowerPoint_Duplicate() {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Select a shape first", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    try {
+        sr.Duplicate()
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Duplicate failed`n" e.Message, 2200, BANNER_ACCENT_ERROR)
+    }
+}
+
+;-------------------------------------------------------------------
+; PDF export
+;-------------------------------------------------------------------
 
 PowerPoint_PdfOutputPath(pres, folder) {
     name := "Presentation"
@@ -67,8 +172,6 @@ PowerPoint_SaveAsPdf() {
     }
 
     try {
-        ; ExportAsFixedFormat keeps the .pptx open; does not switch active format.
-        ; FixedFormatType 2 = ppFixedFormatTypePDF
         pres.ExportAsFixedFormat(outPath, 2)
         ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
         return
@@ -76,7 +179,6 @@ PowerPoint_SaveAsPdf() {
     }
 
     try {
-        ; Fallback: SaveAs with ppSaveAsPDF = 32
         pres.SaveAs(outPath, 32)
         ShowCenteredOverlay_Utils("📄 Saved PDF`n" outPath, 2200, BANNER_ACCENT_SUCCESS)
         return
@@ -85,15 +187,21 @@ PowerPoint_SaveAsPdf() {
     }
 }
 
-; msoAlignCenters = 1; msoAlignMiddles = 4; msoTrue = -1
+;-------------------------------------------------------------------
+; Center on slide (Shift+C)
+;-------------------------------------------------------------------
+
 PowerPoint_CenterOnSlide() {
+    sr := PowerPoint_GetShapeRange()
+    if !sr {
+        ShowCenteredOverlay_Utils("❌ Center failed — select a shape first", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
     try {
-        pp := ComObjActive("PowerPoint.Application")
-        sr := pp.ActiveWindow.Selection.ShapeRange
         sr.Align(1, -1)
         sr.Align(4, -1)
     } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Center failed — select a shape first`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ Center failed`n" e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
 
@@ -102,10 +210,33 @@ PowerPoint_CenterOnSlide() {
 ;-------------------------------------------------------------------
 #HotIf WinActive("ahk_exe POWERPNT.EXE") && WinGetClass("A") != "#32770"
 
-; Shift + P : Save as PDF on Desktop via COM
+; --- PDF ---
 +p:: PowerPoint_SaveAsPdf()
 
-; Shift + C : Center selected shape(s) on slide
-+c:: PowerPoint_CenterOnSlide()
+; --- Align (relative to slide) ---
++c:: PowerPoint_CenterOnSlide()          ; Center (H+V)
++l:: PowerPoint_Align(0)                 ; Left
++r:: PowerPoint_Align(2)                 ; Right
++t:: PowerPoint_Align(3)                 ; Top
++b:: PowerPoint_Align(5)                 ; Bottom
++h:: PowerPoint_Align(1)                 ; Horizontal center only
++v:: PowerPoint_Align(4)                 ; Vertical middle only
+
+; --- Distribute (relative to slide) ---
++d:: PowerPoint_Distribute(0)            ; Distribute Horizontally
++y:: PowerPoint_Distribute(1)            ; Distribute Vertically
+
+; --- Group / Ungroup ---
++g:: PowerPoint_Group()                  ; Group
++u:: PowerPoint_Ungroup()                ; Ungroup
+
+; --- Z-order ---
++f:: PowerPoint_ZOrder(0)                ; bring to Front
++k:: PowerPoint_ZOrder(1)                ; send to bacK
++e:: PowerPoint_ZOrder(2)                ; bring forward (onE step)
++w:: PowerPoint_ZOrder(3)                ; send backWard
+
+; --- Duplicate ---
++q:: PowerPoint_Duplicate()              ; clo-Q-ne / duplicate
 
 #HotIf

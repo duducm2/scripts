@@ -882,6 +882,21 @@ cheatSheets["POWERPNT.EXE"] := "
     PowerPoint (Shift)
     📄 [P]Save as [P]DF on Desktop (COM)
     🎯 [C]enter on slide (center + middle)
+    ⬅️ [L]Align [L]eft
+    ➡️ [R]Align [R]ight
+    ⬆️ [T]Align [T]op
+    ⬇️ [B]Align [B]ottom
+    ↔️ [H]Align center [H]orizontal
+    ↕️ [V]Align center [V]ertical
+    📏 [D][D]istribute horizontal
+    📏 [Y]Distribute verticall[Y]
+    🔗 [G][G]roup
+    🔓 [U][U]ngroup
+    ⬆️ [F]Bring to [F]ront
+    ⬇️ [K]Send to bac[K]
+    ☝️ [E]Bring forward (on[E] step)
+    👇 [W]Send back[W]ard
+    📋 [Q]Duplicate (clo[Q]ne)
 )"
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "
