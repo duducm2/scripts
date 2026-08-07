@@ -881,6 +881,7 @@ cheatSheets["POWERPNT.EXE"] := "
 (
     PowerPoint (Shift)
     📄 [P]Save as [P]DF on Desktop (COM)
+    🎯 [C]enter on slide (center + middle)
 )"
 ; --- Power BI ------------------------------------------------------------
 cheatSheets["Power BI"] := "

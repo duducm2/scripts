@@ -22,6 +22,11 @@
 ;
 ; Cheat sheet: cheatSheets["POWERPNT.EXE"] in cheat_sheet_registry.ahk
 ;
+; Shift+C — Center selected shape(s) on slide
+; ---------------------------------------------
+; COM ShapeRange.Align: msoAlignCenters (1) + msoAlignMiddles (4),
+; RelativeTo = msoTrue (-1) → align to slide edges.
+;
 ; =============================================================================
 
 ; ppFixedFormatTypePDF = 2; ppSaveAsPDF = 32
@@ -80,6 +85,18 @@ PowerPoint_SaveAsPdf() {
     }
 }
 
+; msoAlignCenters = 1; msoAlignMiddles = 4; msoTrue = -1
+PowerPoint_CenterOnSlide() {
+    try {
+        pp := ComObjActive("PowerPoint.Application")
+        sr := pp.ActiveWindow.Selection.ShapeRange
+        sr.Align(1, -1)
+        sr.Align(4, -1)
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Center failed — select a shape first`n" e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
 ;-------------------------------------------------------------------
 ; PowerPoint Shortcuts
 ;-------------------------------------------------------------------
@@ -87,5 +104,8 @@ PowerPoint_SaveAsPdf() {
 
 ; Shift + P : Save as PDF on Desktop via COM
 +p:: PowerPoint_SaveAsPdf()
+
+; Shift + C : Center selected shape(s) on slide
++c:: PowerPoint_CenterOnSlide()
 
 #HotIf
