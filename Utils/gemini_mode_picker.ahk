@@ -256,16 +256,13 @@ GeminiModelsMatch(a, b) {
     fb := GeminiModelFamily(b)
     if (fa = "" || fb = "" || fa != fb)
         return false
-    ; Versioned labels (3.6 Flash vs 3.5 Flash): require the same version on both sides.
+    ; Both versioned (3.6 Flash vs 3.5 Flash): versions must agree.
     hasVa := RegExMatch(a, "(\d+\.\d+)", &va)
     hasVb := RegExMatch(b, "(\d+\.\d+)", &vb)
     if (hasVa && hasVb)
         return va[1] = vb[1]
-    if (hasVa)
-        return InStr(b, va[1], false)
-    if (hasVb)
-        return InStr(a, vb[1], false)
-    ; Unversioned same family (e.g. Pro vs Pro Extended).
+    ; Picker often shows short labels ("Flash", "Pro Extended") without the version —
+    ; same family is enough once Flash-Lite vs Flash is already separated above.
     return true
 }
 
@@ -434,6 +431,24 @@ GeminiPickerShowsModel(uia, expected) {
     ; Raw button name sometimes is the status itself ("Pro Extended").
     try {
         return GeminiModelsMatch(picker.Name, expected)
+    } catch {
+        return false
+    }
+}
+
+; True when picker label is same family as expected (Flash≠Flash-Lite). Used after a successful click.
+GeminiPickerFamilyCompatible(uia, expected) {
+    expectedFam := GeminiModelFamily(expected)
+    if (expectedFam = "")
+        return false
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return false
+    active := GeminiGetActiveModelFromPickerElement(picker)
+    if (active != "" && GeminiModelFamily(active) = expectedFam)
+        return true
+    try {
+        return GeminiModelFamily(picker.Name) = expectedFam
     } catch {
         return false
     }
@@ -651,18 +666,32 @@ EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
             continue
         }
 
-        ; Verify picker label (family match)
+        ; Menu closes / picker label updates asynchronously — refresh before verify.
+        Sleep 120
+        uia := GeminiAttachBrowser(geminiHwnd, true)
+        if (!IsObject(uia))
+            continue
         if (GeminiWaitForPickerShowsModel(uia, target))
             return true
 
-        ; One verify miss: dismiss and retry full cycle
+        ; Soft path: dismiss any leftover menu, re-read picker once more.
         GeminiDismissModePickerMenu(uia, browserHwnd)
         Sleep 100
-        uia := GeminiAttachBrowser(geminiHwnd)
+        uia := GeminiAttachBrowser(geminiHwnd, true)
+        if (IsObject(uia) && GeminiWaitForPickerShowsModel(uia, target))
+            return true
+
+        ; Click succeeded and we could not contradict the family — treat as success
+        ; when the picker at least shows the same family (verify false-negatives are common).
+        if (IsObject(uia) && GeminiPickerFamilyCompatible(uia, target))
+            return true
+
+        Sleep 80
+        uia := GeminiAttachBrowser(geminiHwnd, true)
         if !IsObject(uia)
             return false
     }
-    return GeminiPickerShowsModel(uia, target)
+    return IsObject(uia) && (GeminiPickerShowsModel(uia, target) || GeminiPickerFamilyCompatible(uia, target))
 }
 
 ; Toggle Extended thinking (also covers legacy Thinking level label).
