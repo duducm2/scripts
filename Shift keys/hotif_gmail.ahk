@@ -5,6 +5,9 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
+; Shift+E: *a / Mark as read (UIA FindFirst) / *n. Set false to restore UIA select + Sleep path.
+global GMAIL_USE_FAST_BULK_READ := true
+
 Gmail_ToggleReadStatus(uia) {
     readPattern := "i)^(Mark as read|Marcar como lida|Marcar como lido)$"
     unreadPattern := "i)^(Mark as unread|Marcar como n[oÃ³] lida|Marcar como n[oÃ³] lido)$"
@@ -15,6 +18,38 @@ Gmail_ToggleReadStatus(uia) {
     if (btn := WaitForButton(uia, unreadPattern, 1000)) {
         btn.Invoke()
         return true
+    }
+    return false
+}
+
+; Bounded FindFirst poll for Mark as read only (no unread toggle; avoids WaitForButton FindAll).
+Gmail_WaitInvokeMarkAsRead(uia, timeoutMs := 1000) {
+    static names := ["Mark as read", "Marcar como lida", "Marcar como lido"]
+    if !IsObject(uia)
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        for name in names {
+            try {
+                btn := uia.FindFirst({ Name: name, Type: "Button", cs: false })
+                if !btn
+                    continue
+                try {
+                    if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+                        btn.Invoke()
+                        return true
+                    }
+                } catch {
+                }
+                try {
+                    btn.Click()
+                    return true
+                } catch {
+                }
+            } catch {
+            }
+        }
+        Sleep 40
     }
     return false
 }
@@ -139,10 +174,32 @@ Gmail_SetMasterSelect(uia, wantChecked) {
     }
 }
 
-; Shift + E : Select all visible, mark read/unread, then deselect
+; Shift + E : Select all visible, mark read, then deselect
 +e::
 {
+    global GMAIL_USE_FAST_BULK_READ
     try {
+        if (GMAIL_USE_FAST_BULK_READ) {
+            KeyWait "Shift"
+            hwnd := WinExist("A")
+            if !(hwnd is Integer && hwnd > 0) {
+                MsgBox "Could not resolve the Gmail window."
+                return
+            }
+            uia := UIA_Browser("ahk_id " hwnd)
+            Send "{*}a"
+            marked := false
+            try {
+                marked := Gmail_WaitInvokeMarkAsRead(uia)
+            } finally {
+                Send "{*}n"
+            }
+            if (!marked)
+                MsgBox "Could not find a 'Mark as read' button."
+            return
+        }
+
+        ; Legacy: UIA master select + fixed sleeps (GMAIL_USE_FAST_BULK_READ := false)
         uia := UIA_Browser("ahk_exe chrome.exe")
         Sleep 300
 
