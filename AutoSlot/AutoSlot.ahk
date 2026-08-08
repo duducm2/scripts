@@ -1838,8 +1838,9 @@ AutoSlot_IsSameScriptPid(hwnd) {
 
 ; Handy overlays, WindowManagement identity, suite AHK GUIs/prompts, ClipAngel,
 ; Win32 common dialogs (#32770), browser PiP, system/shell noise titles, Teams share UI,
-; and Win+Shift+S screen clip / Snipping Tool (must not be auto-slotted or resized).
-; ClipAngel is fully excluded — never auto-slotted / 50/50'd and never counted as occupancy.
+; Win+Shift+S screen clip / Snipping Tool, and PowerPoint slide show / Presenter View
+; (must not be auto-slotted or resized). ClipAngel is fully excluded — never
+; auto-slotted / 50/50'd and never counted as occupancy.
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
@@ -1872,6 +1873,10 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
         return true
     ; All Win32 common dialogs (MessageBox, Open/Save, Confirm, Print, Properties, etc.).
     if (class = "#32770")
+        return true
+    ; PowerPoint: keep only the main edit frame (PPTFrameClass).
+    ; Slide show (screenClass) and Presenter View (PodiumParent) stay out of Place/occupancy/fill.
+    if (exe = "powerpnt.exe" && class != "" && class != "pptframeclass")
         return true
     ; Teams share picker / sharing control bar / presenter toolbar — never resize.
     if (AutoSlot_IsTeamsShareUiHwnd(hwnd))
