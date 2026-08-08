@@ -219,13 +219,13 @@ GeminiGetActiveModelFromPickerElement(picker) {
     }
     if (raw = "")
         return ""
-    if RegExMatch(raw, "i)currently\s+(.+)$", &m) {
-        norm := GeminiNormalizeModelLabel(Trim(m[1]))
-        if (norm != "")
-            return norm
-    }
-    ; Modern button labels may be plain "Pro Extended", "Flash-Lite", "1.5 Pro", etc.
-    return GeminiNormalizeModelLabel(raw)
+    label := raw
+    if RegExMatch(raw, "i)currently\s+(.+)$", &m)
+        label := Trim(m[1])
+    ; Keep versioned UI text (e.g. "3.6 Flash"); only fall back to family canonical if unrecognized.
+    if (GeminiModelFamily(label) != "")
+        return label
+    return GeminiNormalizeModelLabel(label)
 }
 
 ; Stable family key for version-tolerant compares (flash-lite / flash / pro / extended-thinking).
@@ -245,49 +245,93 @@ GeminiModelFamily(name) {
 }
 
 GeminiModelsMatch(a, b) {
-    fa := GeminiModelFamily(a)
-    fb := GeminiModelFamily(b)
-    if (fa != "" && fb != "" && fa = fb)
-        return true
     a := Trim(a)
     b := Trim(b)
-    return (a != "" && b != "" && (a = b || InStr(a, b, false) || InStr(b, a, false)))
+    if (a = "" || b = "")
+        return false
+    ; Exact (case-insensitive) — never use loose InStr (Flash ⊆ Flash-Lite).
+    if (StrLower(a) = StrLower(b))
+        return true
+    fa := GeminiModelFamily(a)
+    fb := GeminiModelFamily(b)
+    if (fa = "" || fb = "" || fa != fb)
+        return false
+    ; Versioned labels (3.6 Flash vs 3.5 Flash): require the same version on both sides.
+    hasVa := RegExMatch(a, "(\d+\.\d+)", &va)
+    hasVb := RegExMatch(b, "(\d+\.\d+)", &vb)
+    if (hasVa && hasVb)
+        return va[1] = vb[1]
+    if (hasVa)
+        return InStr(b, va[1], false)
+    if (hasVb)
+        return InStr(a, vb[1], false)
+    ; Unversioned same family (e.g. Pro vs Pro Extended).
+    return true
+}
+
+GeminiMenuItemMatchesTarget(itemName, targetName) {
+    return GeminiModelsMatch(itemName, targetName)
 }
 
 FindGeminiModelMenuItem(uia, modelName) {
     if !IsObject(uia)
         return 0
-    needles := GeminiModelMenuNeedles(modelName)
+    target := Trim(modelName)
+    if (target = "")
+        return 0
+    needles := GeminiModelMenuNeedles(target)
     if (needles.Length = 0)
         return 0
+    ; Pass 1: exact Name match only (mm:3 equals, case-insensitive).
     for needle in needles {
         if (needle = "")
             continue
         for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem", 50000, "Button"] {
             try {
                 el := uia.FindFirst({ Type: typeSpec, Name: needle, mm: 3, cs: 0 })
-                if el
-                    return el
             } catch {
+                el := 0
             }
+            if (!el)
+                continue
+            try itemName := Trim(el.Name)
+            catch {
+                itemName := ""
+            }
+            if (GeminiMenuItemMatchesTarget(itemName, target))
+                return el
+        }
+    }
+    ; Pass 2: substring FindFirst, but reject Flash↔Flash-Lite / family mismatches.
+    for needle in needles {
+        if (needle = "")
+            continue
+        for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem", 50000, "Button"] {
             try {
                 el := uia.FindFirst({ Type: typeSpec, Name: needle, mm: 2, cs: 0 })
-                if el
-                    return el
             } catch {
+                el := 0
             }
+            if (!el)
+                continue
+            try itemName := Trim(el.Name)
+            catch {
+                itemName := ""
+            }
+            if (GeminiMenuItemMatchesTarget(itemName, target))
+                return el
         }
     }
     return 0
 }
 
-; Gate D: scan all candidate rows and pick best family / substring match.
+; Gate D: scan all candidate rows; exact name wins; reject family / version mismatches.
 FindGeminiModelMenuItemByScan(uia, modelName) {
     if !IsObject(uia)
         return 0
-    family := GeminiModelFamily(modelName)
-    exp := GeminiNormalizeModelLabel(modelName)
     raw := Trim(modelName)
+    if (raw = "")
+        return 0
     bestEl := 0
     bestScore := 0
     for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem", 50000, "Button"] {
@@ -306,60 +350,46 @@ FindGeminiModelMenuItemByScan(uia, modelName) {
             }
             if (fullName = "")
                 continue
-            score := 0
-            if (exp != "" && (fullName = exp || InStr(fullName, exp, false)))
-                score += 50
-            if (raw != "" && InStr(fullName, raw, false))
-                score += 40
-            itemFam := GeminiModelFamily(fullName)
-            if (family != "" && itemFam = family)
-                score += 30
+            if (!GeminiMenuItemMatchesTarget(fullName, raw))
+                continue
+            score := (StrLower(fullName) = StrLower(raw)) ? 100 : 60
             if (score > bestScore) {
                 bestScore := score
                 bestEl := mi
             }
         }
-        if (bestEl && bestScore >= 30)
+        if (bestEl && bestScore >= 100)
             return bestEl
     }
-    return (bestScore >= 20) ? bestEl : 0
+    return (bestScore >= 60) ? bestEl : 0
 }
 
 GeminiModelMenuNeedles(modelName) {
     needles := []
     raw := Trim(modelName)
-    if (raw != "")
-        needles.Push(raw)
-    norm := GeminiNormalizeModelLabel(raw)
-    if (norm != "" && norm != raw)
-        needles.Push(norm)
+    if (raw = "")
+        return needles
+    ; Exact INI/UI string first — never bare "Flash" (matches Flash-Lite).
+    needles.Push(raw)
     family := GeminiModelFamily(raw)
     if (family = "flash-lite") {
-        needles.Push("1.5 Flash-Lite")
-        needles.Push("3.1 Flash-Lite")
-        needles.Push("Flash-Lite")
-    } else if (family = "flash") {
-        needles.Push("1.5 Flash")
-        needles.Push("3.5 Flash")
-        needles.Push("3.1 Flash")
-        needles.Push("Flash")
-    } else if (family = "pro") {
-        needles.Push("1.5 Pro")
-        needles.Push("3.1 Pro")
-        needles.Push("Pro")
+        if (StrLower(raw) != "flash-lite")
+            needles.Push("Flash-Lite")
     } else if (family = "extended-thinking") {
-        needles.Push("Extended thinking")
-        needles.Push("Thinking level")
+        if (StrLower(raw) != "extended thinking")
+            needles.Push("Extended thinking")
+        if (StrLower(raw) != "thinking level")
+            needles.Push("Thinking level")
     }
-    ; De-dupe while preserving order.
+    ; flash / pro: exact raw only (no cross-version aliases).
     out := []
     seen := Map()
     for n in needles {
-        key := StrLower(n)
-        if seen.Has(key)
+        key := StrLower(Trim(n))
+        if (key = "" || seen.Has(key))
             continue
         seen[key] := true
-        out.Push(n)
+        out.Push(Trim(n))
     }
     return out
 }
@@ -561,10 +591,11 @@ EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
     if (GeminiModelFamily(expected) = "extended-thinking")
         return EnsureGeminiExtendedThinkingToggle(geminiHwnd)
 
-    target := GeminiNormalizeModelLabel(expected)
+    ; Keep the INI/UI string (e.g. "3.6 Flash"); do not fold versions to "1.5 Flash".
+    target := Trim(expected)
     if (target = "")
-        target := Trim(expected)
-    if (target = "")
+        return false
+    if (GeminiModelFamily(target) = "" && GeminiNormalizeModelLabel(target) = "")
         return false
 
     uia := GeminiAttachBrowser(geminiHwnd)

@@ -317,12 +317,6 @@ AiCompanionModelSelector_AddEntry(*) {
         return
     }
 
-    tagBox := InputBox("Role tag (optional): blank = list only, f = Fast, d = Deep",
-        "Add AI model — role", "w440 h120")
-    roleTag := ""
-    if (tagBox.Result = "OK")
-        roleTag := StrLower(Trim(tagBox.Value))
-
     cfg := AiCompanionModels_Load(companion)
     if (cfg.models.Length >= AiCompanionModels_MaxSlots()) {
         try ShowCenteredOverlay_Utils("❌ Model list is full.", 2500, BANNER_ACCENT_ERROR)
@@ -330,7 +324,7 @@ AiCompanionModelSelector_AddEntry(*) {
         return
     }
 
-    if AiCompanionModels_AddModel(companion, name, roleTag)
+    if AiCompanionModels_AddModel(companion, name, "")
         try ShowCenteredOverlay_Utils("✅ Added: " . name, 2000, BANNER_ACCENT_SUCCESS)
     AiCompanionModelSelector_Rebuild()
 }
