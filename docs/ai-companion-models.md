@@ -51,7 +51,7 @@ Keys per section:
 - `Deep=` — exact UIA-visible label for Shift+M (and Art flows that select Deep)
 - `Models=` — pipe-separated extra list entries for Shift+L
 
-Obsolete consumer names (e.g. `3.1 Flash-Lite`, `Thinking level`) are migrated on load to the current labeling when possible.
+**Persistence:** Fast/Deep are written as typed and are **not** rewritten on reload. The only automatic rename is list entry `Thinking level` → `Extended thinking` (obsolete toggle label). First-time empty sections still seed defaults from code.
 
 ## Apply paths
 

@@ -29,17 +29,11 @@ AiCompanionModels_DefaultConfig(companion) {
     return { fast: "", deep: "", models: [] }
 }
 
-; Map obsolete personal-Gemini labels to the current 1.5 / Extended thinking set.
+; Optional Models-list cleanup only. Never rewrite Fast/Deep — users set those via Shift+L f/d.
 AiCompanionModels_MigrateObsoleteGeminiName(name) {
     name := Trim(name)
     if (name = "")
         return ""
-    if (name = "3.1 Flash-Lite" || name = "Flash-Lite")
-        return "1.5 Flash-Lite"
-    if (name = "3.5 Flash" || name = "3.1 Flash")
-        return "1.5 Flash"
-    if (name = "3.1 Pro" || name = "Pro")
-        return "1.5 Pro"
     if (name = "Thinking level")
         return "Extended thinking"
     return name
@@ -47,16 +41,14 @@ AiCompanionModels_MigrateObsoleteGeminiName(name) {
 
 AiCompanionModels_MigrateObsoleteGeminiConfig(fast, deep, models) {
     migrated := false
-    newFast := AiCompanionModels_MigrateObsoleteGeminiName(fast)
-    newDeep := AiCompanionModels_MigrateObsoleteGeminiName(deep)
-    if (newFast != Trim(fast) || newDeep != Trim(deep))
-        migrated := true
+    ; Preserve Fast/Deep exactly as stored (do not map 3.1 Pro → 1.5 Pro, etc.).
+    newFast := Trim(fast)
+    newDeep := Trim(deep)
     newModels := []
     for name in models {
         mapped := AiCompanionModels_MigrateObsoleteGeminiName(name)
         if (mapped != name)
             migrated := true
-        ; De-dupe after migration.
         already := false
         for existing in newModels {
             if (existing = mapped) {
