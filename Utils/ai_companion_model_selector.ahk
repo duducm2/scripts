@@ -62,13 +62,45 @@ AiCompanionModelSelector_PositionGui(gui) {
 }
 
 AiCompanionModelSelector_UnbindKeys() {
+    ; Clear caller #HotIf (Gemini/Enterprise/Copilot) so Off applies to globally registered modal keys.
+    try HotIf()
+    catch {
+    }
     loop 10 {
-        try Hotkey(String(A_Index - 1), "Off")
+        dig := String(A_Index - 1)
+        try Hotkey(dig, "Off")
+        try Hotkey("$*" . dig, "Off")
     }
     loop 26 {
-        try Hotkey(Chr(96 + A_Index), "Off")
+        letter := Chr(96 + A_Index)
+        try Hotkey(letter, "Off")
+        try Hotkey("$*" . letter, "Off")
     }
     try Hotkey("Escape", "Off")
+    catch {
+    }
+    try Hotkey("$*Escape", "Off")
+    catch {
+    }
+    try HotIf()
+    catch {
+    }
+}
+
+AiCompanionModelSelector_BindKeys(count) {
+    ; Register as GLOBAL while modal is open (modal focus fails companion #HotIf).
+    try HotIf()
+    catch {
+    }
+    loop count {
+        label := AiCompanionModels_LabelForIndex(A_Index)
+        try Hotkey("$*" . label, AiCompanionModelSelector_HandleKey, "On")
+    }
+    try Hotkey("$*a", AiCompanionModelSelector_AddEntry, "On")
+    try Hotkey("$*r", AiCompanionModelSelector_ArmRemove, "On")
+    try Hotkey("$*f", AiCompanionModelSelector_SetFast, "On")
+    try Hotkey("$*d", AiCompanionModelSelector_SetDeep, "On")
+    try HotIf()
     catch {
     }
 }
@@ -78,7 +110,15 @@ AiCompanionModelSelector_BindRobustEscape() {
     SetTimer(AiCompanionModelSelector_EscapePoll, 0)
     if (!AiCompanionModelSelector_GuiHasWindow(g_AiCompanionModelSelectorGui))
         return
-    Hotkey("$*Escape", AiCompanionModelSelector_EscapeFromHotkey, "On")
+    try HotIf()
+    catch {
+    }
+    try Hotkey("$*Escape", AiCompanionModelSelector_EscapeFromHotkey, "On")
+    catch {
+    }
+    try HotIf()
+    catch {
+    }
     g_OnEscapePressed := AiCompanionModelSelector_GlobalEscapeCallback
     Utils_EnsureGlobalEscapeHotkey()
     g_AiCompanionModelEscPollPrev := false
@@ -89,7 +129,13 @@ AiCompanionModelSelector_UnbindRobustEscape() {
     global g_OnEscapePressed, g_AiCompanionModelEscPollPrev
     SetTimer(AiCompanionModelSelector_EscapePoll, 0)
     g_AiCompanionModelEscPollPrev := false
+    try HotIf()
+    catch {
+    }
     try Hotkey("$*Escape", AiCompanionModelSelector_EscapeFromHotkey, "Off")
+    catch {
+    }
+    try HotIf()
     catch {
     }
     g_OnEscapePressed := ""
@@ -224,14 +270,7 @@ AiCompanionModelSelector_Rebuild() {
     g_AiCompanionModelSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     count := Min(cfg.models.Length, maxSlots)
-    loop count {
-        label := AiCompanionModels_LabelForIndex(A_Index)
-        Hotkey(label, AiCompanionModelSelector_HandleKey, "On")
-    }
-    Hotkey("a", AiCompanionModelSelector_AddEntry, "On")
-    Hotkey("r", AiCompanionModelSelector_ArmRemove, "On")
-    Hotkey("f", AiCompanionModelSelector_SetFast, "On")
-    Hotkey("d", AiCompanionModelSelector_SetDeep, "On")
+    AiCompanionModelSelector_BindKeys(count)
     AiCompanionModelSelector_BindRobustEscape()
     if (g_AiCompanionModelSelectorActive)
         SetTimer(AiCompanionModelSelector_TrackActiveMonitorTick, 115)
@@ -245,6 +284,14 @@ AiCompanionModelSelector_ArmRemove(*) {
     AiCompanionModelSelector_Rebuild()
 }
 
+AiCompanionModelSelector_SuspendGuiForInput() {
+    global g_AiCompanionModelSelectorGui
+    ; AlwaysOnTop modal covers AHK InputBox unless we tear it down first.
+    AiCompanionModelSelector_StopMonitorTracking()
+    AiCompanionModelSelector_SafeDestroyGui(g_AiCompanionModelSelectorGui)
+    g_AiCompanionModelSelectorGui := false
+}
+
 AiCompanionModelSelector_AddEntry(*) {
     global g_AiCompanionModelSelectorActive, g_AiCompanionModelSelectorCompanion,
         g_AiCompanionModelSelectorPendingRemove
@@ -254,6 +301,7 @@ AiCompanionModelSelector_AddEntry(*) {
     g_AiCompanionModelSelectorPendingRemove := false
     AiCompanionModelSelector_UnbindKeys()
     AiCompanionModelSelector_UnbindRobustEscape()
+    AiCompanionModelSelector_SuspendGuiForInput()
 
     companion := g_AiCompanionModelSelectorCompanion
     nameBox := InputBox("Exact UIA-visible model name:", "Add AI model — " .
@@ -314,6 +362,7 @@ AiCompanionModelSelector_SetRoleFromInput(role) {
     companion := g_AiCompanionModelSelectorCompanion
     AiCompanionModelSelector_UnbindKeys()
     AiCompanionModelSelector_UnbindRobustEscape()
+    AiCompanionModelSelector_SuspendGuiForInput()
 
     current := (role = "fast") ? AiCompanionModels_GetFast(companion) : AiCompanionModels_GetDeep(companion)
     roleLabel := (role = "fast") ? "Fast" : "Deep"
