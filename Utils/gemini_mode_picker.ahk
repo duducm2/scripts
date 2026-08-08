@@ -5,14 +5,17 @@
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
-; --- Gemini mode picker (3.1 Flash-Lite / 3.5 Flash / 3.1 Pro), mouse + UIA ----
+; --- Gemini mode picker (1.5 Flash-Lite / 1.5 Flash / 1.5 Pro + Extended thinking) ----
 ; UI tree reference: gemini-no-context-menu.md
+; Family matching absorbs renames (1.5 / 3.1 / plain Flash-Lite, Pro Extended, etc.).
 
-global GEMINI_MODEL_CANONICAL_NAMES := ["3.1 Flash-Lite", "3.5 Flash", "3.1 Pro"]
+global GEMINI_MODEL_CANONICAL_NAMES := ["1.5 Flash-Lite", "1.5 Flash", "1.5 Pro", "Extended thinking",
+    "3.1 Flash-Lite", "3.5 Flash", "3.1 Pro", "Thinking level"]
 global GEMINI_MODE_PICKER_NAME_SUBSTR := "Open mode picker"
 global GEMINI_MODE_MENU_WAIT_MS := 450
 global GEMINI_MODE_MENU_POLL_MS := 40
-global GEMINI_MODE_PICKER_LABEL_WAIT_MS := 500
+global GEMINI_MODE_PICKER_LABEL_WAIT_MS := 700
+global GEMINI_MODEL_SELECT_MAX_CYCLES := 2
 
 FindGeminiChromeHwnd() {
     for hwnd in WinGetList("ahk_exe chrome.exe") {
@@ -180,44 +183,185 @@ FindGeminiModePickerButton(uia) {
         } catch {
         }
     }
+    ; Modern labels: "Pro Extended", "Flash-Lite", "1.5 Flash", etc. (no "Open mode picker" prefix).
+    for typeSpec in [50000, "Button"] {
+        try {
+            buttons := uia.FindAll({ Type: typeSpec })
+        } catch {
+            continue
+        }
+        if !IsObject(buttons)
+            continue
+        for btn in buttons {
+            try {
+                n := Trim(btn.Name)
+            } catch {
+                continue
+            }
+            if (n = "")
+                continue
+            if RegExMatch(n, "i)mode\s*picker|currently\s+")
+                return btn
+            if (GeminiModelFamily(n) != "" && !RegExMatch(n, "i)microphone|Upload|tools|Search|Main menu"))
+                return btn
+        }
+    }
     return 0
 }
 
 GeminiGetActiveModelFromPickerElement(picker) {
     if !IsObject(picker)
         return ""
-    try {
-        if RegExMatch(picker.Name, "i)currently\s+(.+)$", &m) {
-            norm := GeminiNormalizeModelLabel(Trim(m[1]))
-            if (norm != "")
-                return norm
-        }
-    } catch {
+    raw := ""
+    try raw := Trim(picker.Name)
+    catch {
+        raw := ""
     }
+    if (raw = "")
+        return ""
+    if RegExMatch(raw, "i)currently\s+(.+)$", &m) {
+        norm := GeminiNormalizeModelLabel(Trim(m[1]))
+        if (norm != "")
+            return norm
+    }
+    ; Modern button labels may be plain "Pro Extended", "Flash-Lite", "1.5 Pro", etc.
+    return GeminiNormalizeModelLabel(raw)
+}
+
+; Stable family key for version-tolerant compares (flash-lite / flash / pro / extended-thinking).
+GeminiModelFamily(name) {
+    name := Trim(name)
+    if (name = "")
+        return ""
+    if RegExMatch(name, "i)extended\s*thinking|thinking\s*level")
+        return "extended-thinking"
+    if RegExMatch(name, "i)Flash-Lite|Flash Lite")
+        return "flash-lite"
+    if RegExMatch(name, "i)\bPro\b")
+        return "pro"
+    if RegExMatch(name, "i)\bFlash\b")
+        return "flash"
     return ""
+}
+
+GeminiModelsMatch(a, b) {
+    fa := GeminiModelFamily(a)
+    fb := GeminiModelFamily(b)
+    if (fa != "" && fb != "" && fa = fb)
+        return true
+    a := Trim(a)
+    b := Trim(b)
+    return (a != "" && b != "" && (a = b || InStr(a, b, false) || InStr(b, a, false)))
 }
 
 FindGeminiModelMenuItem(uia, modelName) {
     if !IsObject(uia)
         return 0
-    exp := GeminiNormalizeModelLabel(modelName)
-    if (exp = "")
+    needles := GeminiModelMenuNeedles(modelName)
+    if (needles.Length = 0)
         return 0
-    for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem"] {
-        try {
-            el := uia.FindFirst({ Type: typeSpec, Name: exp, mm: 3, cs: 0 })
-            if el
-                return el
-        } catch {
-        }
-        try {
-            el := uia.FindFirst({ Type: typeSpec, Name: exp, mm: 2, cs: 0 })
-            if el
-                return el
-        } catch {
+    for needle in needles {
+        if (needle = "")
+            continue
+        for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem", 50000, "Button"] {
+            try {
+                el := uia.FindFirst({ Type: typeSpec, Name: needle, mm: 3, cs: 0 })
+                if el
+                    return el
+            } catch {
+            }
+            try {
+                el := uia.FindFirst({ Type: typeSpec, Name: needle, mm: 2, cs: 0 })
+                if el
+                    return el
+            } catch {
+            }
         }
     }
     return 0
+}
+
+; Gate D: scan all candidate rows and pick best family / substring match.
+FindGeminiModelMenuItemByScan(uia, modelName) {
+    if !IsObject(uia)
+        return 0
+    family := GeminiModelFamily(modelName)
+    exp := GeminiNormalizeModelLabel(modelName)
+    raw := Trim(modelName)
+    bestEl := 0
+    bestScore := 0
+    for typeSpec in [50011, "MenuItem", 50008, "RadioButton", 50003, "ListItem", 50000, "Button"] {
+        try {
+            items := uia.FindAll({ Type: typeSpec })
+        } catch {
+            continue
+        }
+        if !IsObject(items)
+            continue
+        for mi in items {
+            try {
+                fullName := Trim(mi.Name)
+            } catch {
+                continue
+            }
+            if (fullName = "")
+                continue
+            score := 0
+            if (exp != "" && (fullName = exp || InStr(fullName, exp, false)))
+                score += 50
+            if (raw != "" && InStr(fullName, raw, false))
+                score += 40
+            itemFam := GeminiModelFamily(fullName)
+            if (family != "" && itemFam = family)
+                score += 30
+            if (score > bestScore) {
+                bestScore := score
+                bestEl := mi
+            }
+        }
+        if (bestEl && bestScore >= 30)
+            return bestEl
+    }
+    return (bestScore >= 20) ? bestEl : 0
+}
+
+GeminiModelMenuNeedles(modelName) {
+    needles := []
+    raw := Trim(modelName)
+    if (raw != "")
+        needles.Push(raw)
+    norm := GeminiNormalizeModelLabel(raw)
+    if (norm != "" && norm != raw)
+        needles.Push(norm)
+    family := GeminiModelFamily(raw)
+    if (family = "flash-lite") {
+        needles.Push("1.5 Flash-Lite")
+        needles.Push("3.1 Flash-Lite")
+        needles.Push("Flash-Lite")
+    } else if (family = "flash") {
+        needles.Push("1.5 Flash")
+        needles.Push("3.5 Flash")
+        needles.Push("3.1 Flash")
+        needles.Push("Flash")
+    } else if (family = "pro") {
+        needles.Push("1.5 Pro")
+        needles.Push("3.1 Pro")
+        needles.Push("Pro")
+    } else if (family = "extended-thinking") {
+        needles.Push("Extended thinking")
+        needles.Push("Thinking level")
+    }
+    ; De-dupe while preserving order.
+    out := []
+    seen := Map()
+    for n in needles {
+        key := StrLower(n)
+        if seen.Has(key)
+            continue
+        seen[key] := true
+        out.Push(n)
+    }
+    return out
 }
 
 GeminiWaitForModelMenuItem(uia, modelName, timeoutMs := 0) {
@@ -228,6 +372,9 @@ GeminiWaitForModelMenuItem(uia, modelName, timeoutMs := 0) {
         el := FindGeminiModelMenuItem(uia, modelName)
         if el
             return el
+        el := FindGeminiModelMenuItemByScan(uia, modelName)
+        if el
+            return el
         Sleep GEMINI_MODE_MENU_POLL_MS
     }
     return 0
@@ -236,34 +383,66 @@ GeminiWaitForModelMenuItem(uia, modelName, timeoutMs := 0) {
 GeminiWaitForPickerShowsModel(uia, expected, timeoutMs := 0) {
     if (timeoutMs <= 0)
         timeoutMs := GEMINI_MODE_PICKER_LABEL_WAIT_MS
-    exp := GeminiNormalizeModelLabel(expected)
-    if (exp = "")
+    if (Trim(expected) = "")
         return false
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        picker := FindGeminiModePickerButton(uia)
-        if (picker && GeminiGetActiveModelFromPickerElement(picker) = exp)
+        if (GeminiPickerShowsModel(uia, expected))
             return true
         Sleep GEMINI_MODE_MENU_POLL_MS
     }
     return false
 }
 
+GeminiPickerShowsModel(uia, expected) {
+    picker := FindGeminiModePickerButton(uia)
+    if !picker
+        return false
+    active := GeminiGetActiveModelFromPickerElement(picker)
+    if (GeminiModelsMatch(active, expected))
+        return true
+    ; Raw button name sometimes is the status itself ("Pro Extended").
+    try {
+        return GeminiModelsMatch(picker.Name, expected)
+    } catch {
+        return false
+    }
+}
+
 GeminiNormalizeModelLabel(name) {
     if (name = "")
         return ""
-    for canonical in GEMINI_MODEL_CANONICAL_NAMES {
-        if (name = canonical || RegExMatch(name, "i)^" . RegExReplace(canonical, "\.", "\.") . "(\s|$)"))
-            return canonical
-    }
-    ; Picker button suffix after "currently" (e.g. Flash-Lite, Flash, Pro)
-    if RegExMatch(name, "i)Flash-Lite")
-        return "3.1 Flash-Lite"
-    if RegExMatch(name, "i)\bFlash\b") && !RegExMatch(name, "i)Flash-Lite")
-        return "3.5 Flash"
-    if RegExMatch(name, "i)\bPro\b")
-        return "3.1 Pro"
+    fam := GeminiModelFamily(name)
+    if (fam = "extended-thinking")
+        return "Extended thinking"
+    if (fam = "flash-lite")
+        return "1.5 Flash-Lite"
+    if (fam = "pro")
+        return "1.5 Pro"
+    if (fam = "flash")
+        return "1.5 Flash"
     return ""
+}
+
+; Click a menu item: prefer Invoke, then mouse/ControlClick stack.
+GeminiActivateModelMenuItem(el, browserHwnd, uia) {
+    if !IsObject(el)
+        return false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)) {
+            el.SelectionItemPattern.Select()
+            return true
+        }
+    } catch {
+    }
+    return GeminiMouseClickElement(el, browserHwnd, uia, true)
 }
 
 GetGeminiActiveModelFromPickerOnly(uia) {
@@ -376,36 +555,87 @@ GeminiOpenModePickerMenu(uia, picker := "", browserHwnd := 0) {
     return GeminiMouseClickElement(picker, browserHwnd, uia, true)
 }
 
+; Quality gates: already-selected → UIA Invoke → mouse stack → scan+click; verify picker each cycle.
 EnsureGeminiModelViaMenu(expected, geminiHwnd := 0) {
-    exp := GeminiNormalizeModelLabel(expected)
-    if (exp = "")
+    global GEMINI_MODEL_SELECT_MAX_CYCLES
+    if (GeminiModelFamily(expected) = "extended-thinking")
+        return EnsureGeminiExtendedThinkingToggle(geminiHwnd)
+
+    target := GeminiNormalizeModelLabel(expected)
+    if (target = "")
+        target := Trim(expected)
+    if (target = "")
         return false
+
     uia := GeminiAttachBrowser(geminiHwnd)
     if !IsObject(uia)
         return false
     browserHwnd := geminiHwnd ? geminiHwnd : GeminiGetBrowserHwndFromUia(uia)
-    picker := FindGeminiModePickerButton(uia)
-    if !picker
-        return false
-    if (GeminiGetActiveModelFromPickerElement(picker) = exp)
-        return true
-    if (!GeminiOpenModePickerMenu(uia, picker, browserHwnd)) {
+    cycles := GEMINI_MODEL_SELECT_MAX_CYCLES > 0 ? GEMINI_MODEL_SELECT_MAX_CYCLES : 2
+
+    loop cycles {
+        ; Gate A — picker already shows family
+        if (GeminiPickerShowsModel(uia, target))
+            return true
+
+        picker := FindGeminiModePickerButton(uia)
+        if !picker {
+            uia := GeminiAttachBrowser(geminiHwnd)
+            if !IsObject(uia)
+                return false
+            picker := FindGeminiModePickerButton(uia)
+            if !picker
+                return false
+        }
+
+        if (!GeminiOpenModePickerMenu(uia, picker, browserHwnd)) {
+            GeminiDismissModePickerMenu(uia, browserHwnd)
+            continue
+        }
+
+        ; Gate B — FindFirst needles + Invoke/Select
+        targetBtn := GeminiWaitForModelMenuItem(uia, target)
+        clicked := false
+        if (targetBtn)
+            clicked := GeminiActivateModelMenuItem(targetBtn, browserHwnd, uia)
+
+        ; Gate C — mouse/ControlClick stack if Invoke path failed
+        if (!clicked && targetBtn)
+            clicked := GeminiMouseClickElement(targetBtn, browserHwnd, uia, true)
+
+        ; Gate D — reopen scan by family / substring
+        if (!clicked) {
+            scanBtn := FindGeminiModelMenuItemByScan(uia, target)
+            if (scanBtn) {
+                clicked := GeminiActivateModelMenuItem(scanBtn, browserHwnd, uia)
+                if (!clicked)
+                    clicked := GeminiMouseClickElement(scanBtn, browserHwnd, uia, true)
+            }
+        }
+
+        if (!clicked) {
+            GeminiDismissModePickerMenu(uia, browserHwnd)
+            Sleep 80
+            uia := GeminiAttachBrowser(geminiHwnd, true)
+            continue
+        }
+
+        ; Verify picker label (family match)
+        if (GeminiWaitForPickerShowsModel(uia, target))
+            return true
+
+        ; One verify miss: dismiss and retry full cycle
         GeminiDismissModePickerMenu(uia, browserHwnd)
-        return false
+        Sleep 100
+        uia := GeminiAttachBrowser(geminiHwnd)
+        if !IsObject(uia)
+            return false
     }
-    targetBtn := GeminiWaitForModelMenuItem(uia, exp)
-    if !targetBtn {
-        GeminiDismissModePickerMenu(uia, browserHwnd)
-        return false
-    }
-    if (!GeminiMouseClickElement(targetBtn, browserHwnd, uia, true)) {
-        GeminiDismissModePickerMenu(uia, browserHwnd)
-        return false
-    }
-    return GeminiWaitForPickerShowsModel(uia, exp)
+    return GeminiPickerShowsModel(uia, target)
 }
 
-EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
+; Toggle Extended thinking (also covers legacy Thinking level label).
+EnsureGeminiExtendedThinkingToggle(geminiHwnd := 0) {
     uia := GeminiAttachBrowser(geminiHwnd)
     if !IsObject(uia)
         return false
@@ -415,14 +645,12 @@ EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
         GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    deadline := A_TickCount + GEMINI_MODE_MENU_WAIT_MS
+    deadline := A_TickCount + Max(GEMINI_MODE_MENU_WAIT_MS, 800)
     thinkingItem := 0
     while (A_TickCount < deadline) {
-        try {
-            thinkingItem := uia.FindFirst({ Name: "Thinking level", mm: 2, cs: 0, Type: 50011 })
-        } catch {
-            thinkingItem := 0
-        }
+        thinkingItem := FindGeminiModelMenuItem(uia, "Extended thinking")
+        if !thinkingItem
+            thinkingItem := FindGeminiModelMenuItemByScan(uia, "Extended thinking")
         if thinkingItem
             break
         Sleep GEMINI_MODE_MENU_POLL_MS
@@ -431,9 +659,22 @@ EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
         GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
-    if (!GeminiMouseClickElement(thinkingItem, browserHwnd, uia, true)) {
+    ok := GeminiActivateModelMenuItem(thinkingItem, browserHwnd, uia)
+    if (!ok)
+        ok := GeminiMouseClickElement(thinkingItem, browserHwnd, uia, true)
+    if (!ok) {
         GeminiDismissModePickerMenu(uia, browserHwnd)
         return false
     }
+    ; Toggle may leave menu open or close it; dismiss so composer is usable.
+    Sleep 120
+    try GeminiDismissModePickerMenu(uia, browserHwnd)
+    catch {
+    }
     return true
+}
+
+; Back-compat alias
+EnsureGeminiThinkingLevelMenuOpen(geminiHwnd := 0) {
+    return EnsureGeminiExtendedThinkingToggle(geminiHwnd)
 }

@@ -21,12 +21,53 @@ AiCompanionModels_IsValidCompanion(companion) {
 
 AiCompanionModels_DefaultConfig(companion) {
     if (companion = AI_COMPANION_GEMINI)
-        return { fast: "3.1 Flash-Lite", deep: "3.1 Pro", models: ["3.5 Flash", "Thinking level"] }
+        return { fast: "1.5 Flash-Lite", deep: "1.5 Pro", models: ["1.5 Flash", "Extended thinking"] }
     if (companion = AI_COMPANION_ENTERPRISE)
         return { fast: "", deep: "3.1 Pro", models: [] }
     if (companion = AI_COMPANION_COPILOT)
         return { fast: "", deep: "Think deeper", models: [] }
     return { fast: "", deep: "", models: [] }
+}
+
+; Map obsolete personal-Gemini labels to the current 1.5 / Extended thinking set.
+AiCompanionModels_MigrateObsoleteGeminiName(name) {
+    name := Trim(name)
+    if (name = "")
+        return ""
+    if (name = "3.1 Flash-Lite" || name = "Flash-Lite")
+        return "1.5 Flash-Lite"
+    if (name = "3.5 Flash" || name = "3.1 Flash")
+        return "1.5 Flash"
+    if (name = "3.1 Pro" || name = "Pro")
+        return "1.5 Pro"
+    if (name = "Thinking level")
+        return "Extended thinking"
+    return name
+}
+
+AiCompanionModels_MigrateObsoleteGeminiConfig(fast, deep, models) {
+    migrated := false
+    newFast := AiCompanionModels_MigrateObsoleteGeminiName(fast)
+    newDeep := AiCompanionModels_MigrateObsoleteGeminiName(deep)
+    if (newFast != Trim(fast) || newDeep != Trim(deep))
+        migrated := true
+    newModels := []
+    for name in models {
+        mapped := AiCompanionModels_MigrateObsoleteGeminiName(name)
+        if (mapped != name)
+            migrated := true
+        ; De-dupe after migration.
+        already := false
+        for existing in newModels {
+            if (existing = mapped) {
+                already := true
+                break
+            }
+        }
+        if (!already && mapped != "")
+            newModels.Push(mapped)
+    }
+    return { fast: newFast, deep: newDeep, models: newModels, migrated: migrated }
 }
 
 AiCompanionModels_ParseModelsPipe(raw) {
@@ -104,6 +145,14 @@ AiCompanionModels_Load(companion) {
     if (Trim(deep) = "")
         deep := defaults.deep
     models := AiCompanionModels_ParseModelsPipe(modelsRaw)
+    if (companion = AI_COMPANION_GEMINI) {
+        mig := AiCompanionModels_MigrateObsoleteGeminiConfig(fast, deep, models)
+        fast := mig.fast
+        deep := mig.deep
+        models := mig.models
+        if (mig.migrated)
+            AiCompanionModels_Save(companion, fast, deep, models)
+    }
     cfg := { fast: Trim(fast), deep: Trim(deep), models: models }
     g_AiCompanionModelsCache[companion] := cfg
     return cfg
@@ -231,6 +280,14 @@ AiCompanionModels_DisplayName(companion) {
     return companion
 }
 
+AiCompanionModels_IsGeminiThinkingToggleName(modelName) {
+    modelName := Trim(modelName)
+    if (modelName = "")
+        return false
+    return (modelName = "Thinking level" || modelName = "Extended thinking"
+        || RegExMatch(modelName, "i)extended\s*thinking|thinking\s*level"))
+}
+
 ; Apply a model by exact UIA-visible name for the active companion window.
 AiCompanionModels_Apply(companion, modelName) {
     modelName := Trim(modelName)
@@ -271,12 +328,11 @@ AiCompanionModels_ApplyGemini(modelName) {
 
         StandardLoadingBar_Show("🔄 Switching Gemini model…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: geminiHwnd })
         try {
-            if (modelName = "Thinking level") {
-                StandardLoadingBar_Update("🔄 Opening Thinking level…", BANNER_ACCENT_INTERMEDIATE)
-                opened := EnsureGeminiThinkingLevelMenuOpen(geminiHwnd)
+            if (AiCompanionModels_IsGeminiThinkingToggleName(modelName)) {
+                StandardLoadingBar_Update("🔄 Toggling Extended thinking…", BANNER_ACCENT_INTERMEDIATE)
+                opened := EnsureGeminiExtendedThinkingToggle(geminiHwnd)
                 if (opened) {
-                    StandardLoadingBar_Update("✅ Thinking level opened — set level manually",
-                        BANNER_ACCENT_INTERMEDIATE)
+                    StandardLoadingBar_Update("✅ Extended thinking toggled", BANNER_ACCENT_INTERMEDIATE)
                     StandardLoadingBar_Hide(700)
                     return true
                 }
@@ -284,8 +340,6 @@ AiCompanionModels_ApplyGemini(modelName) {
                 return false
             }
             verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
-            if (!verified)
-                verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
             if (verified) {
                 isGeminiFastModel := modelName
                 StandardLoadingBar_Update("✅ " . modelName . " model verified", BANNER_ACCENT_INTERMEDIATE)

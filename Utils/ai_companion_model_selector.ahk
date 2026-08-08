@@ -191,9 +191,9 @@ AiCompanionModelSelector_Rebuild() {
     g_AiCompanionModelSelectorGui.Add("Text", "w400 h1 Background45475A")
 
     g_AiCompanionModelSelectorGui.SetFont("s12 cA6E3A1", "Segoe UI")
-    g_AiCompanionModelSelectorGui.Add("Text", "w400", "[f] Fast: " . fastLabel)
+    g_AiCompanionModelSelectorGui.Add("Text", "w400", "[f] Set Fast: " . fastLabel)
     g_AiCompanionModelSelectorGui.SetFont("s12 c89B4FA", "Segoe UI")
-    g_AiCompanionModelSelectorGui.Add("Text", "w400", "[d] Deep: " . deepLabel)
+    g_AiCompanionModelSelectorGui.Add("Text", "w400", "[d] Set Deep: " . deepLabel)
     g_AiCompanionModelSelectorGui.Add("Text", "w400 h1 Background45475A y+8")
 
     g_AiCompanionModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
@@ -214,7 +214,7 @@ AiCompanionModelSelector_Rebuild() {
     g_AiCompanionModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
     footerHint := g_AiCompanionModelSelectorPendingRemove
         ? "Press item key to remove | Esc cancel remove"
-            : "1-9 / letters select | a add | r remove | f Fast | d Deep | Esc cancel"
+            : "1-9 / letters select | a add | r remove | f set Fast | d set Deep | Esc cancel"
     g_AiCompanionModelSelectorGui.Add("Text", "w400 Center", footerHint)
 
     try g_AiCompanionModelSelectorGui.OnEvent("Escape", AiCompanionModelSelector_GuiEscape)
@@ -230,8 +230,8 @@ AiCompanionModelSelector_Rebuild() {
     }
     Hotkey("a", AiCompanionModelSelector_AddEntry, "On")
     Hotkey("r", AiCompanionModelSelector_ArmRemove, "On")
-    Hotkey("f", AiCompanionModelSelector_SelectFast, "On")
-    Hotkey("d", AiCompanionModelSelector_SelectDeep, "On")
+    Hotkey("f", AiCompanionModelSelector_SetFast, "On")
+    Hotkey("d", AiCompanionModelSelector_SetDeep, "On")
     AiCompanionModelSelector_BindRobustEscape()
     if (g_AiCompanionModelSelectorActive)
         SetTimer(AiCompanionModelSelector_TrackActiveMonitorTick, 115)
@@ -287,24 +287,18 @@ AiCompanionModelSelector_AddEntry(*) {
     AiCompanionModelSelector_Rebuild()
 }
 
-AiCompanionModelSelector_SelectFast(*) {
-    global g_AiCompanionModelSelectorActive, g_AiCompanionModelSelectorCompanion,
-        g_AiCompanionModelSelectorPendingRemove
-    if (!g_AiCompanionModelSelectorActive)
-        return
-    if (g_AiCompanionModelSelectorPendingRemove) {
-        g_AiCompanionModelSelectorPendingRemove := false
-        AiCompanionModelSelector_Rebuild()
-        return
-    }
-    companion := g_AiCompanionModelSelectorCompanion
-    AiCompanionModelSelector_Close()
-    AiCompanionModels_SelectRole(companion, "fast")
+AiCompanionModelSelector_SetFast(*) {
+    AiCompanionModelSelector_SetRoleFromInput("fast")
 }
 
-AiCompanionModelSelector_SelectDeep(*) {
+AiCompanionModelSelector_SetDeep(*) {
+    AiCompanionModelSelector_SetRoleFromInput("deep")
+}
+
+AiCompanionModelSelector_SetRoleFromInput(role) {
     global g_AiCompanionModelSelectorActive, g_AiCompanionModelSelectorCompanion,
         g_AiCompanionModelSelectorPendingRemove
+
     if (!g_AiCompanionModelSelectorActive)
         return
     if (g_AiCompanionModelSelectorPendingRemove) {
@@ -312,9 +306,39 @@ AiCompanionModelSelector_SelectDeep(*) {
         AiCompanionModelSelector_Rebuild()
         return
     }
+
+    role := StrLower(Trim(role))
+    if (role != "fast" && role != "deep")
+        return
+
     companion := g_AiCompanionModelSelectorCompanion
-    AiCompanionModelSelector_Close()
-    AiCompanionModels_SelectRole(companion, "deep")
+    AiCompanionModelSelector_UnbindKeys()
+    AiCompanionModelSelector_UnbindRobustEscape()
+
+    current := (role = "fast") ? AiCompanionModels_GetFast(companion) : AiCompanionModels_GetDeep(companion)
+    roleLabel := (role = "fast") ? "Fast" : "Deep"
+    nameBox := InputBox(
+        "Exact UIA-visible " . roleLabel . " model name:`n(Shift+Q / Shift+M use this value)",
+        "Set " . roleLabel . " — " . AiCompanionModels_DisplayName(companion),
+        "w460 h140",
+        current)
+    if (nameBox.Result != "OK") {
+        AiCompanionModelSelector_Rebuild()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        try ShowCenteredOverlay_Utils("⚠ Name cannot be empty.", 2500, BANNER_ACCENT_INTERMEDIATE)
+        AiCompanionModelSelector_Rebuild()
+        return
+    }
+
+    if (AiCompanionModels_SetRole(companion, role, name)) {
+        try ShowCenteredOverlay_Utils("✅ " . roleLabel . " set: " . name, 2000, BANNER_ACCENT_SUCCESS)
+    } else {
+        try ShowCenteredOverlay_Utils("❌ Could not save " . roleLabel . " name", 2200, BANNER_ACCENT_ERROR)
+    }
+    AiCompanionModelSelector_Rebuild()
 }
 
 AiCompanionModelSelector_HandleKey(thisHotkey := "") {
