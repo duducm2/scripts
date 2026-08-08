@@ -10,9 +10,6 @@
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false
 
-; Last known Gemini model name (updated by AiCompanionModels_ApplyGemini)
-isGeminiFastModel := "3.1 Flash-Lite"
-
 ; Shift + D : Toggle the Main menu button (drawer) using fast state-based pattern
 +d:: {
     ToggleGeminiDrawer()

@@ -31,6 +31,8 @@ Related helpers:
 - `GetGlobalAIProviderLabel()` → `"Gemini"` / `"Copilot"` / `"Gemini Enterprise"` (cheat sheet `{AI_PROVIDER}`).
 - `UseCopilotWebForGlobalAI()` → `true` only when resolver returns `"copilot"` (legacy binary call sites).
 
+**See also:** [AI companion models (Shift+M / Q / L)](ai-companion-models.md) — Fast/Deep INI roles and the shared model list.
+
 **Do not** redefine `ResolveGlobalAICompanion`, `GetGlobalAIProviderLabel`, or `UseCopilotWebForGlobalAI` in `env.ahk` (duplicates break Act at startup). Optional `COPILOT_WEB_*` URL/title overrides in `env.ahk` remain valid for Copilot only.
 
 ```mermaid

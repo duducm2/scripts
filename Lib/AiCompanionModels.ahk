@@ -201,6 +201,8 @@ AiCompanionModels_SetRole(companion, role, modelName) {
     return false
 }
 
+; Append to Models list. roleTag is optional API sugar ("f"/"d"); Shift+L add uses "".
+; Fast/Deep roles are normally set via Shift+L f/d → AiCompanionModels_SetRole.
 AiCompanionModels_AddModel(companion, modelName, roleTag := "") {
     cfg := AiCompanionModels_Load(companion)
     modelName := Trim(modelName)
@@ -303,7 +305,6 @@ AiCompanionModels_Apply(companion, modelName) {
 }
 
 AiCompanionModels_ApplyGemini(modelName) {
-    global isGeminiFastModel
     try {
         SetTitleMatchMode(2)
         geminiHwnd := 0
@@ -341,7 +342,6 @@ AiCompanionModels_ApplyGemini(modelName) {
             }
             verified := EnsureGeminiModelViaMenu(modelName, geminiHwnd)
             if (verified) {
-                isGeminiFastModel := modelName
                 StandardLoadingBar_Update("✅ " . modelName . " model verified", BANNER_ACCENT_INTERMEDIATE)
                 try FocusGeminiAskFieldForHwnd(geminiHwnd, false)
                 StandardLoadingBar_Hide(700)
