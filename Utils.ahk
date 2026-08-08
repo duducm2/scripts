@@ -150,6 +150,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Post-dictation visible-window paste picker -> Utils\dictation_visible_paste.ahk
 #include %A_ScriptDir%\Utils\dictation_visible_paste.ahk
 
+; [Utils module] Paste field mapping (dynamic app -> text field focus) -> Utils\paste_field_mapping.ahk
+#include %A_ScriptDir%\Utils\paste_field_mapping.ahk
+
 ; [Utils module] D2C_FlowManager dictation-Gemini-Cursor state machine -> Utils\d2c_flow_manager.ahk
 #include %A_ScriptDir%\Utils\d2c_flow_manager.ahk
 

@@ -140,6 +140,8 @@ class D2C_FlowManager {
 
     ; Shared by menu [W] and #!+L global hotkey.
     ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
+    ; If exe+title has a saved main field (paste_field_mappings.ini), focus it first.
+    ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
     PasteClipboardToVisibleWindow(originHwnd := 0) {
         if (!originHwnd)
             try originHwnd := WinGetID("A")
@@ -150,7 +152,11 @@ class D2C_FlowManager {
         if (!WinActive("ahk_id " targetHwnd))
             WinWaitActive("ahk_id " targetHwnd, , 0.3)
         Sleep 60
+        hadMapping := PasteField_TryFocusMappedField(targetHwnd)
         Send "^v"
+        Sleep 80
+        if (!hadMapping)
+            PasteField_PromptSaveMainField(targetHwnd)
         return true
     }
 
