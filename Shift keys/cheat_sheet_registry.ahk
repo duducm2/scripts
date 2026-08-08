@@ -1303,7 +1303,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === GENERAL ===
     [Win+Alt+Shift+U] > Quick string shortcuts
-    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible-window picker; same as D2C [W])
+    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Peek PDF (tap) / Set PDF path (hold 700ms+)

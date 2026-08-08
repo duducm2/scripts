@@ -96,17 +96,21 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 
 ## Hotkeys
 
-| Hotkey                  | Role                                                                                                            |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `~#!+0`                 | Start dictation (first press); stop dictation (second press). If stopped manually, sets “Send to Gemini?” path. |
-| `Ctrl+Alt+Win+L`        | Direct paste+Enter to Gemini (no dictation).                                                                    |
-| `#!+L`                  | Paste OS clipboard (`^v`) to a picked visible window (same as D2C submit menu **[W]**).                         |
-| `#!+U` then **L** twice | Same from hotstring selector.                                                                                   |
+| Hotkey                  | Role                                                                                                                                                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `~#!+0`                 | Start dictation (first press); stop dictation (second press). If stopped manually, sets “Send to Gemini?” path.                                                                                                                                         |
+| `Ctrl+Alt+Win+L`        | Direct paste+Enter to Gemini (no dictation).                                                                                                                                                                                                            |
+| `#!+L`                  | Paste OS clipboard (`^v`) to a picked visible window (same as D2C submit menu **[W]**). Focuses a learned main text field when saved; otherwise prompts **Y**/**N** to persist the focused field. See [paste-field-mapping.md](paste-field-mapping.md). |
+| `#!+U` then **L** twice | Same from hotstring selector.                                                                                                                                                                                                                           |
 
 ## Files and entry points
 
 - **Utils.ahk**: `~#!+0`, `DictationGeminiConfirm_*`, `GeminiDelayedSubmitFlow`, `GeminiFinalizeSubmit`, `Dictation_ShowVisiblePasteSelector`, `CursorTransfer_ShowWindowSelector`, `CursorTransfer_ActivateFocusPaste` (optional second arg restores focus to the anchored window after paste + Enter).
 - **Gemini.ahk**: `GeminiDelayedSubmitMonitor` (response done detection), “Copy response?” banner, Copy/Read/Transfer actions.
+
+## Related
+
+- [paste-field-mapping.md](paste-field-mapping.md) — learn-and-persist main text field for `#!+L` / D2C **[W]**.
 
 ## Happy path (no cancel)
 
