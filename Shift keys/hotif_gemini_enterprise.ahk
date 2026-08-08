@@ -29,18 +29,20 @@ $+s:: {
 }
 
 $+m:: {
-    try {
-        if (GeminiEnterprise_IsModelSelected(GEMINI_ENTERPRISE_DEEP_MODEL)) {
-            GeminiEnterprise_ReturnToComposer()
-            return
-        }
-        ok := GeminiEnterprise_RunWithBusyBanner("⏳ Selecting 3.1 Pro… Don't move the mouse", (*) =>
-            GeminiEnterprise_SelectDeepReasoningModel())
-        if (ok)
-            GeminiEnterprise_ReturnToComposer()
-        else
-            ShowCenteredOverlay_Utils("Could not select 3.1 Pro", 2200, BANNER_ACCENT_ERROR)
-    } catch {
+    try AiCompanionModels_SelectRole(AI_COMPANION_ENTERPRISE, "deep")
+    catch {
+    }
+}
+
+$+q:: {
+    try AiCompanionModels_SelectRole(AI_COMPANION_ENTERPRISE, "fast")
+    catch {
+    }
+}
+
+$+l:: {
+    try ShowAiCompanionModelSelector(AI_COMPANION_ENTERPRISE)
+    catch {
     }
 }
 

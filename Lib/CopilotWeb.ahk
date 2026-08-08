@@ -1650,10 +1650,17 @@ CopilotWeb_WaitForModelMenu(uia := 0, timeoutMs := 0, hwnd := 0) {
     return IsObject(cur) && CopilotWeb_DeepReasoningMenuReady(cur)
 }
 
-; After Think deeper click — wait until label shows deep reasoning or model menu is gone.
+; After model click — wait until label matches Deep (INI / needles) or model menu is gone.
 CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 400) {
     if (!hwnd)
         hwnd := WinExist("A")
+    deepName := "Think deeper"
+    try {
+        fromIni := AiCompanionModels_GetDeep(AI_COMPANION_COPILOT)
+        if (fromIni != "")
+            deepName := fromIni
+    } catch {
+    }
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         uia := CopilotWeb_ReadRootFromHwnd(hwnd)
@@ -1662,13 +1669,114 @@ CopilotWeb_WaitForModelSelectionSettled(hwnd := 0, timeoutMs := 400) {
             continue
         }
         btn := CopilotWeb_FindModelSelectorButton(uia)
-        if (btn && CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn)))
+        if (btn && CopilotWeb_ModelLabelMatches(CopilotWeb_GetModelSelectorLabel(btn), deepName, "deep"))
             return true
         if (!CopilotWeb_DeepReasoningMenuReady(uia) && CopilotWeb_FindSourcesButton(uia))
             return true
         Sleep 80
     }
     return true
+}
+
+; True when the model-selector label matches a configured name (Deep uses needle fallback).
+CopilotWeb_ModelLabelMatches(label, modelName, role := "") {
+    label := Trim(label)
+    modelName := Trim(modelName)
+    if (label = "" || modelName = "")
+        return false
+    if (InStr(label, modelName, false) || InStr(modelName, label, false))
+        return true
+    role := StrLower(Trim(role))
+    if (role = "deep" || CopilotWeb_IsDeepReasoningModelName(modelName))
+        return CopilotWeb_IsDeepReasoningModelName(label)
+    return false
+}
+
+CopilotWeb_FindMenuItemByExactOrSubstringName(uia, modelName) {
+    if (!IsObject(uia) || modelName = "")
+        return 0
+    for typeSpec in [UIA_Copilot_ControlType_RadioButton, "RadioButton", UIA_Copilot_ControlType_MenuItem,
+        "MenuItem", UIA_Copilot_ControlType_ListItem, "ListItem", UIA_Copilot_ControlType_Button, "Button"] {
+        try {
+            el := uia.FindFirst({ Name: modelName, Type: typeSpec })
+            if (el)
+                return el
+        } catch {
+        }
+        try {
+            el := uia.FindFirst({ Name: modelName, Type: typeSpec, matchmode: "Substring" })
+            if (el)
+                return el
+        } catch {
+        }
+    }
+    return CopilotWeb_FindCapabilityByNames(uia, [modelName])
+}
+
+CopilotWeb_WaitForNamedModelMenuItem(hwnd, modelName, timeoutMs := 0) {
+    global COPILOT_MODEL_MENU_WAIT_MS, COPILOT_MODEL_MENU_POLL_MS
+    if (timeoutMs <= 0)
+        timeoutMs := COPILOT_MODEL_MENU_WAIT_MS
+    if (!hwnd)
+        hwnd := WinExist("A")
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+        if (IsObject(uia)) {
+            item := CopilotWeb_FindMenuItemByExactOrSubstringName(uia, modelName)
+            if (item)
+                return item
+            ; Deep nickname: needle scoring while menu is open.
+            if (CopilotWeb_IsDeepReasoningModelName(modelName) || CopilotWeb_DeepReasoningMenuReady(uia)) {
+                deepItem := CopilotWeb_FindDeepReasoningMenuItem(uia)
+                if (deepItem && (CopilotWeb_IsDeepReasoningModelName(modelName) || modelName = ""))
+                    return deepItem
+            }
+        }
+        Sleep COPILOT_MODEL_MENU_POLL_MS
+    }
+    uia := CopilotWeb_ReadRootFromHwnd(hwnd)
+    if !IsObject(uia)
+        return 0
+    item := CopilotWeb_FindMenuItemByExactOrSubstringName(uia, modelName)
+    if (item)
+        return item
+    if (CopilotWeb_IsDeepReasoningModelName(modelName))
+        return CopilotWeb_FindDeepReasoningMenuItem(uia)
+    return 0
+}
+
+; Select any Copilot web model by UIA-visible name (opens model menu if needed).
+CopilotWeb_SelectModelByName(modelName, uia := 0) {
+    modelName := Trim(modelName)
+    if (modelName = "")
+        return false
+    hwnd := WinExist("A")
+    if (!uia)
+        uia := CopilotWeb_GetBoundUia(hwnd)
+    if (!IsObject(uia))
+        return false
+    btn := CopilotWeb_FindModelSelectorButton(uia)
+    if (!btn)
+        return false
+    label := CopilotWeb_GetModelSelectorLabel(btn)
+    if (CopilotWeb_ModelLabelMatches(label, modelName))
+        return true
+    if (!CopilotWeb_ClickUiaElement(btn))
+        return false
+    item := CopilotWeb_WaitForNamedModelMenuItem(hwnd, modelName)
+    if (!item) {
+        ; Fallback: deep needle path when waiting for Deep / Think deeper.
+        if (CopilotWeb_WaitForModelMenu(uia, 0, hwnd) && CopilotWeb_IsDeepReasoningModelName(modelName)) {
+            uia := CopilotWeb_RefreshBoundUia(hwnd)
+            item := CopilotWeb_FindDeepReasoningMenuItem(uia)
+        }
+    }
+    if (item && CopilotWeb_ClickUiaElement(item))
+        return true
+    Send "{Escape}"
+    CopilotWeb_ShowErrorAfterBanner("❌ Model not found: " . modelName)
+    return false
 }
 
 ; Shift+A: Think deeper then Generate an image, paste bosch-brand-image, strip human reminders.
@@ -1689,34 +1797,16 @@ CopilotWeb_ShiftArt() {
     return ReplaceFocusedEditWithText(promptText)
 }
 
+; Select configured Deep model (INI), with Think-deeper needle fallback.
 CopilotWeb_OpenModelSelector(uia := 0) {
-    hwnd := WinExist("A")
-    if (!uia)
-        uia := CopilotWeb_GetBoundUia(hwnd)
-    if (!IsObject(uia))
-        return false
-    btn := CopilotWeb_FindModelSelectorButton(uia)
-    if (!btn)
-        return false
-    ; Already on Think deeper (label text child) — do not open the menu.
-    if (CopilotWeb_IsDeepReasoningModelName(CopilotWeb_GetModelSelectorLabel(btn)))
-        return true
-    if (!CopilotWeb_ClickUiaElement(btn))
-        return false
-    if (!CopilotWeb_WaitForModelMenu(uia, 0, hwnd)) {
-        Send "{Escape}"
-        CopilotWeb_ShowErrorAfterBanner("❌ Deep reasoning model not found")
-        return false
+    deepName := "Think deeper"
+    try {
+        fromIni := AiCompanionModels_GetDeep(AI_COMPANION_COPILOT)
+        if (fromIni != "")
+            deepName := fromIni
+    } catch {
     }
-    uia := CopilotWeb_RefreshBoundUia(hwnd)
-    if (!IsObject(uia))
-        return false
-    item := CopilotWeb_FindDeepReasoningMenuItem(uia)
-    if (item && CopilotWeb_ClickUiaElement(item))
-        return true
-    Send "{Escape}"
-    CopilotWeb_ShowErrorAfterBanner("❌ Deep reasoning model not found")
-    return false
+    return CopilotWeb_SelectModelByName(deepName, uia)
 }
 
 CopilotWeb_FindSourcesButton(uia) {

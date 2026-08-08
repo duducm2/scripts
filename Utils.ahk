@@ -139,6 +139,11 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
 #include %A_ScriptDir%\lib\GeminiEnterprise.ahk
 
+; [Lib] Per-companion Fast/Deep/Models INI + apply helpers
+#include %A_ScriptDir%\lib\AiCompanionModels.ahk
+; [Utils] Shared Shift+L AI companion model list selector
+#include %A_ScriptDir%\Utils\ai_companion_model_selector.ahk
+
 ; [Utils module] AutoSlot user ignore list (#!+L R/I) -> Utils\autoslot_user_excludes.ahk
 #include %A_ScriptDir%\Utils\autoslot_user_excludes.ahk
 

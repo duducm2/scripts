@@ -757,7 +757,14 @@ GeminiEnterprise_SelectModelByName(modelName, hwnd := 0) {
 }
 
 GeminiEnterprise_SelectDeepReasoningModel(hwnd := 0) {
-    return GeminiEnterprise_SelectModelByName(GEMINI_ENTERPRISE_DEEP_MODEL, hwnd)
+    modelName := GEMINI_ENTERPRISE_DEEP_MODEL
+    try {
+        fromIni := AiCompanionModels_GetDeep(AI_COMPANION_ENTERPRISE)
+        if (fromIni != "")
+            modelName := fromIni
+    } catch {
+    }
+    return GeminiEnterprise_SelectModelByName(modelName, hwnd)
 }
 
 GeminiEnterprise_TrySubmit(uia := 0) {

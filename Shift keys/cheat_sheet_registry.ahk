@@ -1079,7 +1079,9 @@ cheatSheets["Gemini"] := "
     📂 [D]Toggle the[D]rawer
     💬 [N][N]ew chat
     🔍 [S][S]earch
-    🔄 [M]Change[M]odel
+    🔄 [M]Select [M]Deep model (no-op if already active)
+    ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
+    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f Fast; d Deep)
     🛠️ [T][T]ools
     🖼️ [I]Create [I]mage (Tools menu; opens if needed)
     🔬 [E]Deep r[E]search (Tools menu; opens if needed)
@@ -1102,8 +1104,10 @@ cheatSheets["Gemini Enterprise"] := "
     📂 [D]Toggle nav [D]rawer (Menu)
     💬 [N][N]ew chat
     🔍 [S][S]earch
-    🔄 [M]Select 3.1 Pro (no-op if already active)
-    🎨 [A][A]rt: 3.1 Pro + Create images + bosch-brand-image (strip reminders)
+    🔄 [M]Select [M]Deep model (no-op if already active)
+    ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
+    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f Fast; d Deep)
+    🎨 [A][A]rt: Deep + Create images + bosch-brand-image (strip reminders)
     🛠️ [T]Select [T]ools
     🖼️ [I]Create images (Tools menu; opens if needed)
     🔬 [E]Deep r[E]search (Tools menu; opens if needed)
@@ -1122,8 +1126,10 @@ cheatSheets["Copilot Web"] := "
     📂 [D]Toggle nav [D]rawer
     💬 [N][N]ew chat
     🔍 [S][S]earch (nav drawer)
-    🔄 [M]Select Think deeper (no-op if already active)
-    🎨 [A][A]rt: Think deeper + Generate image + bosch-brand-image (strip reminders)
+    🔄 [M]Select [M]Deep model (no-op if already active)
+    ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
+    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f Fast; d Deep)
+    🎨 [A][A]rt: Deep + Generate image + bosch-brand-image (strip reminders)
     🛠️ [T]Add/manage sources (Tools menu)
     🖼️ [I]Add capabilities → Generate an image
     🔬 [E]Add capabilities → Research a topic
