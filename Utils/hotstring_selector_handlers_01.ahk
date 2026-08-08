@@ -68,7 +68,7 @@ HandleHotstringChar(char) {
         }
         g_HotstringGeminiArmed := true
         ; Show banner when entering Gemini mode (same pattern as Project Selector "Entering Selection Mode").
-        HotstringGeminiBanner_Show("âŒ¨ Entering Gemini Mode - Select prompt")
+        HotstringGeminiBanner_Show("âŒ¨ Entering " . GetGlobalAIProviderLabel() . " Mode - Select prompt")
         SetTimer(HotstringGeminiBanner_Hide, -1500)  ; Hide banner after 1.5 s
         SetTimer(DisarmHotstringGeminiMode, -4000)
         return
@@ -193,72 +193,78 @@ HandleHotstringChar(char) {
     }
 
     if (expansion != "") {
+        ; Capture before Cleanup clears category (R→Prompts path strips after paste).
+        wasPromptsCategory := (g_UtilitySelectorCategory = "Prompts")
         ; Cleanup first (closes GUI, disables hotkeys)
         CleanupHotstringSelector()
 
         if (useGemini) {
-            ; L+Prompt selection: redirect to Gemini (focus prompt field, paste, do NOT submit).
-            HotstringGeminiBanner_Show("ðŸ“¤ Gemini: inserting prompt...")
+            companion := ResolveGlobalAICompanion()
+            aiLabel := GetGlobalAIProviderLabel()
+            HotstringGeminiBanner_Show("ðŸ“¤ " . aiLabel . ": inserting prompt...")
             try {
-                SetTitleMatchMode(2)
-                geminiHwnd := 0
-                try {
-                    for hwnd in WinGetList("ahk_exe chrome.exe") {
-                        try {
-                            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
-                                geminiHwnd := hwnd
-                                break
-                            }
-                        } catch {
-                            ; Skip invalid windows
-                        }
+                if (companion = "enterprise") {
+                    GeminiEnterprise_NavigateFocusAndPaste(expansion, false)
+                    try ReplaceComposerWithStrippedReminders(expansion)
+                    catch {
                     }
-                } catch {
-                    ; Ignore WinGetList errors
-                }
-
-                if (geminiHwnd) {
-                    WinActivate("ahk_id " geminiHwnd)
-                    WinWaitActive("ahk_id " geminiHwnd, , 2)
+                } else if (companion = "copilot") {
+                    CopilotWeb_NavigateFocusAndPaste(expansion, false)
+                    try ReplaceComposerWithStrippedReminders(expansion)
+                    catch {
+                    }
                 } else {
-                    ; Per your preference: fallback to any Chrome window if Gemini isn't found.
-                    WinActivate("ahk_exe chrome.exe")
-                    WinWaitActive("ahk_exe chrome.exe", , 2)
-                }
+                    SetTitleMatchMode(2)
+                    geminiHwnd := 0
+                    try {
+                        for hwnd in WinGetList("ahk_exe chrome.exe") {
+                            try {
+                                if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
+                                    geminiHwnd := hwnd
+                                    break
+                                }
+                            } catch {
+                            }
+                        }
+                    } catch {
+                    }
 
-                ; Explicitly target Gemini tabs based on character:
-                ; - L+1/2/3  -> Tab 2 (right Gemini tab, temporary prompts)
-                ; - L+4/5/Q/W/E/R/T/A -> Tab 1 (left Gemini tab, main workflow)
-                if (char = "1" || char = "2" || char = "3") {
-                    ; Chrome convention: Ctrl+2 selects the second tab in the window.
-                    Send("^2")
-                    Sleep 120
-                    ShowSingleCharTabBanner_Utils(2)
-                } else if (char = "4" || char = "5"
-                    || char = "q" || char = "Q"
-                    || char = "w" || char = "W"
-                    || char = "e" || char = "E"
-                    || char = "r" || char = "R"
-                    || char = "t" || char = "T"
-                    || char = "a" || char = "A") {
-                    ; Ensure Tab 1 is active before inserting the prompt.
-                    Send("^1")
-                    Sleep 120
-                    ShowSingleCharTabBanner_Utils(1)
-                }
+                    if (geminiHwnd) {
+                        WinActivate("ahk_id " geminiHwnd)
+                        WinWaitActive("ahk_id " geminiHwnd, , 2)
+                    } else {
+                        WinActivate("ahk_exe chrome.exe")
+                        WinWaitActive("ahk_exe chrome.exe", , 2)
+                    }
 
-                ; Focus the Gemini prompt field (shared helper; no chime â€” paste path plays its own sound).
-                try {
-                    uia := UIA_Browser()
-                    Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
-                } catch {
-                    ; If focus fails, we still attempt to paste (user can click manually).
-                }
+                    if (char = "1" || char = "2" || char = "3") {
+                        Send("^2")
+                        Sleep 120
+                        ShowSingleCharTabBanner_Utils(2)
+                    } else if (char = "4" || char = "5"
+                        || char = "q" || char = "Q"
+                        || char = "w" || char = "W"
+                        || char = "e" || char = "E"
+                        || char = "r" || char = "R"
+                        || char = "t" || char = "T"
+                        || char = "a" || char = "A") {
+                        Send("^1")
+                        Sleep 120
+                        ShowSingleCharTabBanner_Utils(1)
+                    }
 
-                ; Paste the text (do NOT send Enter)
-                InsertText(expansion)
-                ; Same sound as when opening Gemini (focus/paste feedback)
-                ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+                    try {
+                        uia := UIA_Browser()
+                        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+                    } catch {
+                    }
+
+                    InsertText(expansion)
+                    ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+                    try ReplaceComposerWithStrippedReminders(expansion)
+                    catch {
+                    }
+                }
             } finally {
                 HotstringGeminiBanner_Hide()
             }
@@ -268,7 +274,10 @@ HandleHotstringChar(char) {
         ; Standard behavior: paste into current active text field.
         ; Small delay to ensure target window has focus before pasting
         Sleep 150
-        InsertText(expansion)
+        if (wasPromptsCategory)
+            PasteStrippedPromptOfferReminders(expansion)
+        else
+            InsertText(expansion)
     }
 }
 

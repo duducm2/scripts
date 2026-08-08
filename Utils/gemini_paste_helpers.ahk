@@ -197,6 +197,30 @@ GeminiPromptFieldGetTextFromUia(uia) {
     return ""
 }
 
+Gemini_StripComposerHumanReminders() {
+    try {
+        uia := UIA_Browser()
+        text := GeminiPromptFieldGetTextFromUia(uia)
+        if (text = "")
+            return false
+        newText := StripPromptHumanReminders(text)
+        if (newText = "")
+            return false
+        phase := ""
+        if !Gemini_FocusPromptWithChime(uia, { playChime: false }, &phase) {
+            pf := FindGeminiPromptField(uia)
+            if pf {
+                try pf.SetFocus()
+                catch {
+                }
+            }
+        }
+        return ReplaceFocusedEditWithText(newText)
+    } catch {
+        return false
+    }
+}
+
 Gemini_TrySubmitOnce(uia, fallback := "enter") {
     if (!IsObject(uia))
         return false
