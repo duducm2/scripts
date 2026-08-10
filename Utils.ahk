@@ -153,6 +153,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Paste field mapping (dynamic app -> text field focus) -> Utils\paste_field_mapping.ahk
 #include %A_ScriptDir%\Utils\paste_field_mapping.ahk
 
+; [Utils module] Shared Jump-to-Chat logic for Teams -> Utils\teams_jump_to_chat.ahk
+#include %A_ScriptDir%\Utils\teams_jump_to_chat.ahk
+
 ; [Utils module] D2C_FlowManager dictation-Gemini-Cursor state machine -> Utils\d2c_flow_manager.ahk
 #include %A_ScriptDir%\Utils\d2c_flow_manager.ahk
 

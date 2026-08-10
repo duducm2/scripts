@@ -76,17 +76,17 @@ class D2C_FlowManager {
             "E", this.OnSubmitE.Bind(this),
             "F", this.OnSubmitF.Bind(this),
             "O", this.OnSubmitO.Bind(this),
+            "M", this.OnSubmitM.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
-        aiLabel := GetGlobalAIProviderLabel()
         StandardLoadingBar_ShowWithKeys(
-            "❓ Send to " . aiLabel . "? (5s)",
+            "❓ Send dictation? (5s)",
             keyCallbacks,
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnSubmitTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 560, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [N] Cancel",
+            BANNER_ACCENT_INTERMEDIATE, 720, 17, "", true,
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams  [N] Cancel",
             true,
             true,
             true
@@ -324,6 +324,48 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
+    }
+
+    ; [M] Prompt for Teams contact, jump to chat, paste dictated text (no Enter).
+    OnSubmitM(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PastingToTeams"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+        clipSaved := ClipboardAll()
+
+        try {
+            contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
+            if (contact = "") {
+                return
+            }
+
+            if (!TeamsJumpToChat(contact)) {
+                return
+            }
+
+            A_Clipboard := ""
+            A_Clipboard := messageText
+            if (!ClipWait(2)) {
+                ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
+                return
+            }
+
+            Sleep 100
+            Send "^v"
+        } finally {
+            A_Clipboard := clipSaved
+            if (ClipWait(1)) {
+            }
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
     }
 
     OnSubmitTimeout(*) {

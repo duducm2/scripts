@@ -538,63 +538,12 @@ RunTeams() {
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
     if contact = ""
         return
-    ; Phase 1.1: capture global state and restore in finally
-    oldWinDelay := A_WinDelay
-    oldKeyDelay := A_KeyDelay
-    oldControlDelay := A_ControlDelay
     clipSaved := ClipboardAll()
     try {
-        SetWinDelay 0
-        SetKeyDelay 0, 0
-        SetControlDelay 0
-
-        ; Resolve an actual Teams hwnd and activate it robustly.
-        hwndTeams := ResolveTeamsMainHwnd()
-        if (hwndTeams <= 0) {
-            RunTeams()
-            waitStart := A_TickCount
-            while ((A_TickCount - waitStart) < 15000) {
-                hwndTeams := ResolveTeamsMainHwnd()
-                if (hwndTeams > 0)
-                    break
-                Sleep 150
-            }
-        }
-        if (hwndTeams <= 0) {
-            try ShowCenteredOverlay(WinGetID("A"), "❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-
-        if !ActivateWindowWithRetry(hwndTeams, TEAMS_ACTIVATION_ATTEMPTS, TEAMS_ACTIVATION_WAIT_MS) {
-            ShowCenteredOverlay(WinGetID("A"), "❌ Could not activate Teams window.", 2500, BANNER_ACCENT_ERROR)
-            return
-        }
-
-        ; Hotkey modifiers can still be physically down; release them before navigation sends.
-        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
-
-        Send "^g"
-        Sleep 100
-        loop 5 {
-            A_Clipboard := contact
-            if ClipWait(2) && (A_Clipboard = contact)
-                break
-            if A_Index = 5 {
-                ShowCenteredOverlay(WinGetID("A"), "❌ CLIPBOARD ERROR - TRY AGAIN", 3000, BANNER_ACCENT_ERROR)
-                return
-            }
-            Sleep 100
-        }
-        Send "^v"
-        Sleep 200
-        Sleep 600
-        Send "{Enter}"
+        TeamsJumpToChat(contact)
     } finally {
         A_Clipboard := clipSaved
         if (ClipWait(1)) {
         }
-        SetWinDelay oldWinDelay
-        SetKeyDelay oldKeyDelay, 0
-        SetControlDelay oldControlDelay
     }
 }

@@ -5,7 +5,7 @@
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
-; Dictation: "Send to Gemini?" confirmation banner (5s, Y to confirm; uses standard loading indicator)
+; Dictation: "Send dictation?" confirmation banner (5s, Y to confirm; uses standard loading indicator)
 ; =============================================================================
 ; DEPRECATED: Use D2C_FlowManager
 DEPRECATED_DictationGeminiConfirm_Show() {
@@ -89,4 +89,3 @@ DEPRECATED_DictationGeminiConfirm_ShowAndWait() {
     true,
     true)
 }
-
