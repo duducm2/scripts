@@ -708,50 +708,9 @@ $!s:: {
     Send "+c"
 }
 
-; Alt+E Open File: native alt+e = Edit mnemonic; UIA menu+Down leaked keys to other apps (Spotify).
-; Relay: Ctrl+Shift+F12 -> workbench.action.files.openFile (user keybindings in Cursor + VS Code).
-; #region agent log
-Editor_DebugLog(hypothesisId, location, message, dataMap := "") {
-    try {
-        logPath := A_ScriptDir "\debug-52d006.log"
-        ts := A_TickCount
-        dataStr := "{}"
-        if (IsObject(dataMap)) {
-            dataStr := "{"
-            first := true
-            for k, v in dataMap {
-                if !first
-                    dataStr .= ","
-                first := false
-                if (Type(v) = "String") {
-                    vv := StrReplace(v, "\", "\\")
-                    vv := StrReplace(vv, "`n", " ")
-                    vv := StrReplace(vv, "`r", "")
-                    vv := StrReplace(vv, '"', '\"')
-                    dataStr .= '"' k '":"' vv '"'
-                } else {
-                    dataStr .= '"' k '":' v
-                }
-            }
-            dataStr .= "}"
-        }
-        line := '{"sessionId":"52d006","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataStr ',"timestamp":' ts ',"runId":"post-fix3"}'
-        FileAppend(line "`n", logPath)
-    } catch {
-    }
-}
-; #endregion
-
-; Alt + E : Open File via Ctrl+Shift+F12 relay (keeps keys inside the editor)
-$!e:: {
-    ; #region agent log
-    Editor_DebugLog("G", "hotif_editor_02.ahk:$!e", "hotkey_fired", Map("exe", WinGetProcessName("A"), "title", WinGetTitle("A")))
-    ; #endregion
-    Send "^+{F12}"
-    ; #region agent log
-    Editor_DebugLog("G", "hotif_editor_02.ahk:$!e", "relay_sent", Map("chord", "ctrl+shift+f12"))
-    ; #endregion
-}
+; Alt+E Open File: native alt+e hits Edit mnemonic, so AHK relays to Ctrl+Shift+F12.
+; User keybindings (Cursor + VS Code): ctrl+shift+f12 -> workbench.action.files.openFile
+$!e:: Send "^+{F12}"
 
 ; Global variable for commit push selector target window
 global gCommitPushTargetWin := 0
