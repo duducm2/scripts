@@ -3,6 +3,25 @@
 ; Shared Jump-to-Chat logic for WhatsApp (Web / Desktop)
 ; =============================================================================
 
+WhatsAppJump_ShowLoading(state) {
+    StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
+        fontSize: 17,
+        trackActiveMonitor: true
+    })
+}
+
+WhatsAppJump_UpdateLoading(state) {
+    global g_StandardLoadingBarGui
+    if IsObject(g_StandardLoadingBarGui)
+        StandardLoadingBar_Update(state)
+    else
+        WhatsAppJump_ShowLoading(state)
+}
+
+WhatsAppJump_HideLoading() {
+    StandardLoadingBar_Hide(0)
+}
+
 ; Returns true if WhatsApp is active and ready for keyboard shortcuts.
 ; Cold-starts settle ~2s after the window appears so the SPA can accept Alt+K.
 WhatsAppJump_ActivateOrOpen() {
@@ -12,10 +31,12 @@ WhatsAppJump_ActivateOrOpen() {
         SetTitleMatchMode(2)
         wasOpen := WinExist("WhatsApp")
         if (wasOpen) {
+            WhatsAppJump_UpdateLoading("⏳ Activating WhatsApp...")
             WinActivate("WhatsApp")
             if !WinWaitActive("WhatsApp", , 3) {
                 WinActivate("WhatsApp")
                 if !WinWaitActive("WhatsApp", , 2) {
+                    WhatsAppJump_HideLoading()
                     ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
                     return false
                 }
@@ -23,13 +44,16 @@ WhatsAppJump_ActivateOrOpen() {
             return true
         }
 
+        WhatsAppJump_UpdateLoading("⏳ Opening WhatsApp...")
         if (IS_WORK_ENVIRONMENT) {
             Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
         } else {
             Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
         }
 
+        WhatsAppJump_UpdateLoading("⏳ Waiting for WhatsApp...")
         if !WinWait("WhatsApp", , 30) {
+            WhatsAppJump_HideLoading()
             ShowCenteredOverlay_Utils("❌ WhatsApp did not start in time.", 2000, BANNER_ACCENT_ERROR)
             return false
         }
@@ -37,11 +61,13 @@ WhatsAppJump_ActivateOrOpen() {
         if !WinWaitActive("WhatsApp", , 5) {
             WinActivate("WhatsApp")
             if !WinWaitActive("WhatsApp", , 3) {
+                WhatsAppJump_HideLoading()
                 ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
         }
         ; SPA / Chrome App needs time before Alt+K and paste work.
+        WhatsAppJump_UpdateLoading("⏳ WhatsApp loading...")
         Sleep 2000
         WinActivate("WhatsApp")
         Sleep 150
@@ -52,7 +78,9 @@ WhatsAppJump_ActivateOrOpen() {
 }
 
 ; Opens search, pastes contact, Enter to select chat only. Does not paste the message.
-WhatsAppJumpToChat(contact) {
+; keepBarVisible: when true (D2C [Z]), leave the Loading Indication up for the caller to continue/hide.
+WhatsAppJumpToChat(contact, keepBarVisible := false) {
+    WhatsAppJump_ShowLoading("⏳ Opening WhatsApp...")
     if (!WhatsAppJump_ActivateOrOpen())
         return false
 
@@ -69,6 +97,7 @@ WhatsAppJumpToChat(contact) {
         Sleep 80
 
         ; Ensure WhatsApp still has focus before search (InputBox may have stolen it).
+        WhatsAppJump_UpdateLoading("⏳ Focusing WhatsApp...")
         prevTitleMode := A_TitleMatchMode
         try {
             SetTitleMatchMode(2)
@@ -82,6 +111,7 @@ WhatsAppJumpToChat(contact) {
         Sleep 100
 
         ; Alt+K is the WhatsApp search shortcut (Shift keys maps Shift+S to this)
+        WhatsAppJump_UpdateLoading("⏳ Searching contact...")
         Send "!k"
         Sleep 250
 
@@ -91,6 +121,7 @@ WhatsAppJumpToChat(contact) {
             if ClipWait(2) && (A_Clipboard = contact)
                 break
             if A_Index = 5 {
+                WhatsAppJump_HideLoading()
                 ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - TRY AGAIN", 3000, BANNER_ACCENT_ERROR)
                 return false
             }
@@ -99,10 +130,13 @@ WhatsAppJumpToChat(contact) {
 
         Send "^v"
         Sleep 300
+        WhatsAppJump_UpdateLoading("⏳ Opening chat...")
         Send "{Enter}"
         ; Let the chat composer take focus before caller pastes the message.
         Sleep 700
 
+        if (!keepBarVisible)
+            WhatsAppJump_HideLoading()
         return true
     } finally {
         SetWinDelay oldWinDelay

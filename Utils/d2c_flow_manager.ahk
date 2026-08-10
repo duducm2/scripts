@@ -445,13 +445,16 @@ class D2C_FlowManager {
                 return
             }
 
-            if (!WhatsAppJumpToChat(contact)) {
+            ; keepBarVisible so Loading Indication continues through paste.
+            if (!WhatsAppJumpToChat(contact, true)) {
                 return
             }
 
+            WhatsAppJump_UpdateLoading("⏳ Pasting message...")
             A_Clipboard := ""
             A_Clipboard := messageText
             if (!ClipWait(2)) {
+                WhatsAppJump_HideLoading()
                 ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
                 return
             }
@@ -460,7 +463,10 @@ class D2C_FlowManager {
             Send "^v"
             ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
             Sleep 350
+            StandardLoadingBar_Update("✅ Message ready in WhatsApp")
+            Sleep 400
         } finally {
+            WhatsAppJump_HideLoading()
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
             }
