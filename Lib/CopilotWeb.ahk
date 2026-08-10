@@ -2175,10 +2175,24 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
         try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
         catch
             rw := 0
+        ; Nested overflow often ignores document Ctrl+End — focus render widget, then End + wheel bursts.
         if (rw) {
-            try ControlSend "{Blind}^{End}", , "ahk_id " rw
-            catch {
-                Send "^{End}"
+            try {
+                ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd, , , , "NA"
+                Sleep 40
+                ControlSend "{Blind}^{End}", , "ahk_id " rw
+            } catch {
+                try ControlSend "{Blind}^{End}", , "ahk_id " rw
+                catch {
+                    Send "^{End}"
+                }
+            }
+            loop 3 {
+                try ControlSend "{WheelDown 80}", , "ahk_id " rw
+                catch {
+                }
+                if (A_Index < 3)
+                    Sleep 50
             }
         } else {
             Send "^{End}"

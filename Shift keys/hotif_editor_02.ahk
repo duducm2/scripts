@@ -1339,7 +1339,6 @@ CancelCommit(ctrl, *) {
 ; Keys must go to Chrome_RenderWidgetHostHWND1 so they hit the page, not the top-level frame.
 GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
     ; FindFirst throws when missing — use per-attempt try so fallbacks run (efficiency-canon: avoid aborted ladders).
-    did := ""
     doc := 0
     try doc := scope.FindFirst({ Type: UIA.Type.Document, Name: "Google Gemini" })
     catch
@@ -1356,10 +1355,8 @@ GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
     }
     if (doc) {
         try {
-            if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+            if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable))
                 doc.ScrollPattern.SetScrollPercent(100, -1)
-                did := "document_SetScrollPercent_v100"
-            }
         } catch {
         }
     }
@@ -1367,28 +1364,28 @@ GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
     try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
     catch
         rw := 0
-    if (did = "" && rw) {
-        try {
-            ControlSend "{Blind}^{End}", , "ahk_id " rw
-            did := "ControlSend_RenderWidget_CtrlEnd"
-        } catch {
-        }
-    }
-    if (did = "") {
-        try {
-            ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-            did := "ControlSend_Root_CtrlEnd"
-        } catch {
-            did := "ControlSend_failed"
-        }
-    }
-    ; Overflow divs often ignore UIA + Ctrl+End — wheel on Chromium surface (single HWND resolve).
+    ; Always Ctrl+End even after SetScrollPercent — nested overflow often ignores document scroll.
     if (rw) {
         try {
             ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd, , , , "NA"
             Sleep 40
-            ControlSend "{WheelDown 120}", , "ahk_id " rw
+            ControlSend "{Blind}^{End}", , "ahk_id " rw
         } catch {
+            try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
+            catch {
+            }
+        }
+        ; Overflow divs often ignore UIA + Ctrl+End — multi-burst wheel for lazy layout.
+        loop 3 {
+            try ControlSend "{WheelDown 80}", , "ahk_id " rw
+            catch {
+            }
+            if (A_Index < 3)
+                Sleep 50
+        }
+    } else {
+        try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
+        catch {
         }
     }
 }
@@ -1405,13 +1402,10 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
             }
         }
         GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd)
-        if (!blocks || blocks.Length = 0) {
-            pf := FindGeminiPromptField(uia)
-            if (pf) {
-                try {
-                    pf.ScrollIntoView()
-                } catch {
-                }
+        pf := FindGeminiPromptField(uia)
+        if (pf) {
+            try pf.ScrollIntoView()
+            catch {
             }
         }
     } catch {
