@@ -207,6 +207,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Desktop to Recycle Bin macro -> Utils\desktop_recycle.ahk
 #include %A_ScriptDir%\Utils\desktop_recycle.ahk
 
+; [Utils module] Cut newest Desktop item (#!+O) -> Utils\desktop_cut_newest.ahk
+#include %A_ScriptDir%\Utils\desktop_cut_newest.ahk
+
 ; [Utils module] Mouse jump helpers and prediction squares -> Utils\mouse_jump_arrows.ahk
 #include %A_ScriptDir%\Utils\mouse_jump_arrows.ahk
 

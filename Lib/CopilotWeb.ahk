@@ -781,7 +781,7 @@ CopilotWeb_TriggerReadAloud(copyFirst := true, options := "") {
     return (CopilotAsyncReadAloud(copyFirst, options)).Start()
 }
 
-; --- Async read aloud (D2C R / WM_TRIGGER_COPILOT_READ_ALOUD; #!+o is empty) ---
+; --- Async read aloud (D2C R / WM_TRIGGER_COPILOT_READ_ALOUD) ---
 class CopilotAsyncReadAloud {
     __New(copyFirst := true, options := "") {
         this.CopyFirst := copyFirst

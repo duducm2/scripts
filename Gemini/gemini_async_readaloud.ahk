@@ -6,7 +6,7 @@
 ; =============================================================================
 
 ; =============================================================================
-; GeminiAsyncReadAloud – async read aloud / pause / resume (D2C R / IPC / TTS; #!+O is empty)
+; GeminiAsyncReadAloud – async read aloud / pause / resume (D2C R / IPC / TTS)
 ; =============================================================================
 class GeminiAsyncReadAloud {
     __New(copyFirst := true, useTrashTab := false, options := "") {

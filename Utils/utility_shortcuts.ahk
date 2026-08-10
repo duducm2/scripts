@@ -95,6 +95,8 @@ ToggleAICompanionChromeTab() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
+; Win+Alt+Shift+O - cut newest Desktop item (file/folder), restore previous window
+#!+o:: DesktopCutNewest_Trigger()
 ; Ctrl+Alt+Win+9 / +B - Handy Nemotron Portuguese / Parakeet Unified English (slots 2 and 1)
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)
 ^!#b:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_ENGLISH)

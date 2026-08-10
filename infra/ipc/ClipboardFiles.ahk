@@ -73,7 +73,17 @@ Clipboard_ContainsFilePath(expectedPath) {
     return false
 }
 
+; Put paths on the clipboard as CF_HDROP (Copy). For Cut (move), use Clipboard_CutFiles.
 Clipboard_SetFiles(paths) {
+    return Clipboard_SetFilesEx(paths, false)
+}
+
+; CF_HDROP + Preferred DropEffect = DROPEFFECT_MOVE (2) so paste moves instead of copies.
+Clipboard_CutFiles(paths) {
+    return Clipboard_SetFilesEx(paths, true)
+}
+
+Clipboard_SetFilesEx(paths, asCut := false) {
     if (!paths || paths.Length = 0)
         return false
 
@@ -86,8 +96,10 @@ Clipboard_SetFiles(paths) {
     }
 
     hMem := 0
+    hEffect := 0
     opened := false
-    transferred := false
+    transferredDrop := false
+    transferredEffect := false
     try {
         hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UPtr", dropFilesOffset + (totalChars * 2), "Ptr")
         if (!hMem)
@@ -105,6 +117,17 @@ Clipboard_SetFiles(paths) {
         }
         DllCall("GlobalUnlock", "Ptr", hMem)
 
+        if (asCut) {
+            hEffect := DllCall("GlobalAlloc", "UInt", 0x42, "UPtr", 4, "Ptr")
+            if (!hEffect)
+                return false
+            pEffect := DllCall("GlobalLock", "Ptr", hEffect, "Ptr")
+            if (!pEffect)
+                return false
+            NumPut("UInt", 2, pEffect, 0) ; DROPEFFECT_MOVE
+            DllCall("GlobalUnlock", "Ptr", hEffect)
+        }
+
         if !DllCall("OpenClipboard", "Ptr", 0, "Int")
             return false
         opened := true
@@ -112,8 +135,16 @@ Clipboard_SetFiles(paths) {
             return false
         if !DllCall("SetClipboardData", "UInt", 15, "Ptr", hMem, "Ptr")
             return false
-        transferred := true
+        transferredDrop := true
         hMem := 0
+
+        if (asCut) {
+            fmt := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect", "UInt")
+            if (!fmt || !DllCall("SetClipboardData", "UInt", fmt, "Ptr", hEffect, "Ptr"))
+                return false
+            transferredEffect := true
+            hEffect := 0
+        }
         return true
     } catch {
         return false
@@ -121,8 +152,11 @@ Clipboard_SetFiles(paths) {
         if (opened) {
             try DllCall("CloseClipboard")
         }
-        if (hMem && !transferred) {
+        if (hMem && !transferredDrop) {
             try DllCall("GlobalFree", "Ptr", hMem)
+        }
+        if (hEffect && !transferredEffect) {
+            try DllCall("GlobalFree", "Ptr", hEffect)
         }
     }
 }

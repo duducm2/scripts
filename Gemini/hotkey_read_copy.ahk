@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Gemini module: hotkey_read_copy.ahk
-; #!+P, empty #!+O stub, CopyLastGeminiMessageToClipboard, and read-aloud IPC
+; #!+P, CopyLastGeminiMessageToClipboard, and read-aloud IPC
+; (Win+Alt+Shift+O lives in Utils: DesktopCutNewest_Trigger)
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
@@ -8,13 +9,9 @@
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Reusable launcher: activate Gemini asynchronously, handle Pause/Resume, then optionally
-; copy the last message and trigger read aloud (D2C R / IPC / TTS / delayed submit — not #!+O).
+; copy the last message and trigger read aloud (D2C R / IPC / TTS / delayed submit).
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
     return (GeminiAsyncReadAloud(copyFirst, useTrashTab, options)).Start()
-}
-
-; Win+Alt+Shift+O : intentionally empty (user-facing read aloud is D2C R / WM_TRIGGER_READ_ALOUD)
-#!+o:: {
 }
 
 ; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.

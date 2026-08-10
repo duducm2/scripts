@@ -1222,6 +1222,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
     [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
     
+    === DESKTOP ===
+    [Win+Alt+Shift+O] > Cut newest Desktop item (file/folder), then return to previous window
+    
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
     [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)

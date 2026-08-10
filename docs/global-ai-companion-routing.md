@@ -49,7 +49,6 @@ flowchart TD
 | Chord                | Gemini (personal)                   | Copilot (work)                | Gemini Enterprise (work)                                              |
 | -------------------- | ----------------------------------- | ----------------------------- | --------------------------------------------------------------------- |
 | Win+Alt+Shift+I      | Open/focus consumer Gemini + prompt | Open/focus Copilot + composer | Open/focus Enterprise + prompt                                        |
-| Win+Alt+Shift+O      | Disabled (empty hotkey stub)        | Same                          | Same                                                                  |
 | Win+Alt+Shift+P      | Copy last message                   | Copy last response            | Copy last response                                                    |
 | Win+Alt+Shift+8      | Pronunciation lookup                | Copilot pronunciation         | Enterprise pronunciation (picker → submit → banner)                   |
 | Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2    | Same → Copilot                | Same → Enterprise                                                     |
@@ -57,9 +56,9 @@ flowchart TD
 
 Entry points: [`Gemini/gemini_open.ahk`](../Gemini/gemini_open.ahk), [`Gemini/hotkey_read_copy.ahk`](../Gemini/hotkey_read_copy.ahk), [`Gemini/hotkey_pronunciation.ahk`](../Gemini/hotkey_pronunciation.ahk), [`Utils/utility_shortcuts.ahk`](../Utils/utility_shortcuts.ahk), [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk).
 
-### Read aloud (not via `#\!+O`)
+### Read aloud (D2C / IPC)
 
-`#\!+O` is an **empty stub** (no user-facing action). Read aloud still runs via D2C **R** / `WM_TRIGGER_READ_ALOUD` (and Copilot’s `WM_TRIGGER_COPILOT_READ_ALOUD`), plus TTS / delayed-submit monitors calling `GeminiTriggerReadAloud` / `CopilotWeb_TriggerReadAloud`.
+`#\!+O` is a **Utils** Desktop chord (cut newest Desktop item), not an AI companion action. Read aloud runs via D2C **R** / `WM_TRIGGER_READ_ALOUD` (and Copilot’s `WM_TRIGGER_COPILOT_READ_ALOUD`), plus TTS / delayed-submit monitors calling `GeminiTriggerReadAloud` / `CopilotWeb_TriggerReadAloud`.
 
 Until chat-response UIA exists for Enterprise **read aloud / TTS**, those programmatic paths do **not** silently fall back to Copilot when Enterprise is the resolved companion. Enterprise may focus the omnibar/composer instead (prompt-only). **`#\!+P` copy** and **`#\!+8` pronunciation** use Enterprise copy-last-response UIA (`GeminiEnterprise_CopyLastMessageToClipboard` / `GeminiEnterpriseAsyncLookup`) and are full parity with Gemini/Copilot.
 
