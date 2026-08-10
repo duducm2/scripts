@@ -174,6 +174,12 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Shared Jump-to-Chat logic for WhatsApp -> Utils\whatsapp_jump_to_chat.ahk
 #include %A_ScriptDir%\Utils\whatsapp_jump_to_chat.ahk
 
+; [Utils module] Spotify Immersion (Shift+I + D2C [P]) -> Utils\spotify_immerse.ahk
+#include %A_ScriptDir%\Utils\spotify_immerse.ahk
+
+; [Utils module] Dictation → Spotify search + immerse -> Utils\spotify_dictation_play.ahk
+#include %A_ScriptDir%\Utils\spotify_dictation_play.ahk
+
 ; [Utils module] Dictation clipboard cleanup countdown -> Utils\dictation_cleanup.ahk
 #include %A_ScriptDir%\Utils\dictation_cleanup.ahk
 

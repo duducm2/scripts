@@ -79,6 +79,7 @@ class D2C_FlowManager {
             "M", this.OnSubmitM.Bind(this),
             "K", this.OnSubmitK.Bind(this),
             "Z", this.OnSubmitZ.Bind(this),
+            "P", this.OnSubmitP.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -87,8 +88,8 @@ class D2C_FlowManager {
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnSubmitTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 850, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [N] Cancel",
+            BANNER_ACCENT_INTERMEDIATE, 920, 17, "", true,
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [N] Cancel",
             true,
             true,
             true
@@ -470,6 +471,27 @@ class D2C_FlowManager {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
             }
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [P] Open Spotify, Ctrl+K search, paste dictation, Enter, then immerse (play + fullscreen).
+    OnSubmitP(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "PlayingOnSpotify"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+
+        try {
+            SpotifyDictation_PlayFromClipboard(messageText)
+        } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()
