@@ -3,48 +3,6 @@
 ; Send dictation? [P] — open Spotify, Ctrl+K search, type query, Enter, immerse
 ; =============================================================================
 
-; #region agent log
-SpotifyDictation_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        dataStr := "{}"
-        if (data is Map) {
-            parts := ""
-            for k, v in data {
-                if (parts != "")
-                    parts .= ","
-                if (v is String) {
-                    vv := StrReplace(v, "\", "\\")
-                    vv := StrReplace(vv, "`"", "\`"")
-                    vv := StrReplace(vv, "`n", "\n")
-                    vv := StrReplace(vv, "`r", "")
-                    parts .= "`"" k "`":`"" vv "`""
-                } else
-                    parts .= "`"" k "`":" v
-            }
-            dataStr := "{" parts "}"
-        }
-        line := "{`"sessionId`":`"79788c`",`"hypothesisId`":`"" hypothesisId "`",`"location`":`"" location "`",`"message`":`"" message "`",`"data`":" dataStr ",`"timestamp`":" A_TickCount ",`"runId`":`"post-fix`"}`n"
-        FileAppend(line, A_ScriptDir "\debug-79788c.log", "UTF-8")
-    } catch {
-    }
-}
-SpotifyDictation_DebugActive(hypothesisId, location, message) {
-    try {
-        hwnd := WinExist("A")
-        title := "", proc := ""
-        try title := WinGetTitle("ahk_id " hwnd)
-        try proc := WinGetProcessName("ahk_id " hwnd)
-        SpotifyDictation_DebugLog(hypothesisId, location, message, Map(
-            "hwnd", hwnd,
-            "proc", proc,
-            "title", SubStr(title, 1, 80),
-            "clipLen", StrLen(A_Clipboard)
-        ))
-    } catch {
-    }
-}
-; #endregion
-
 SpotifyDictation_ResolveMainHwnd() {
     bestWithTitle := 0
     bestWithTitleArea := 0
@@ -216,25 +174,15 @@ SpotifyDictation_OpenSearchUntilFocused(hwnd, maxAttempts := 8) {
         Send "^k"
         Sleep 500
         if (SpotifyDictation_IsSearchEditFocused()) {
-            ; #region agent log
-            SpotifyDictation_DebugLog("I", "spotify_dictation_play.ahk:search_gate", "search edit focused", Map(
-                "attempt", A_Index
-            ))
-            ; #endregion
             Sleep 200
             return true
         }
         Sleep 350
     }
-    ; #region agent log
-    SpotifyDictation_DebugLog("I", "spotify_dictation_play.ahk:search_gate", "search edit NOT focused", Map(
-        "attempt", maxAttempts
-    ))
-    ; #endregion
     return false
 }
 
-; Type query into Spotify (ControlSendText proven; bare ControlSend "v" reached search).
+; Type query into Spotify (ControlSendText — Electron ignores window-level Ctrl+V / SendText).
 SpotifyDictation_TypeSearchQuery(hwnd, messageText) {
     StandardLoadingBar_Update("⏳ Typing search query...")
     if (hwnd > 0) {
@@ -321,14 +269,6 @@ SpotifyDictation_ActivateOrOpen() {
     readyTimeout := coldStart ? 45000 : 10000
     neededStreak := coldStart ? 10 : 3  ; cold ≈ 2s consecutive ready samples
     readyHwnd := SpotifyDictation_WaitUntilUiReady(hwnd, readyTimeout, neededStreak, openStart)
-    ; #region agent log
-    SpotifyDictation_DebugLog("G", "spotify_dictation_play.ahk:ActivateOrOpen:ready", "UI ready wait finished", Map(
-        "coldStart", coldStart ? 1 : 0,
-        "readyOk", readyHwnd > 0 ? 1 : 0,
-        "waitMs", A_TickCount - openStart,
-        "neededStreak", neededStreak
-    ))
-    ; #endregion
     if (readyHwnd <= 0) {
         StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("❌ Spotify UI did not become ready in time.", 2500, BANNER_ACCENT_ERROR)
@@ -340,13 +280,6 @@ SpotifyDictation_ActivateOrOpen() {
 ; End-to-end: open Spotify → Ctrl+K (gated) → type → Enter → immerse.
 ; Loading Indication stays visible for the whole open/search/type path.
 SpotifyDictation_PlayFromClipboard(messageText) {
-    ; #region agent log
-    SpotifyDictation_DebugLog("A", "spotify_dictation_play.ahk:PlayFromClipboard:entry", "messageText snapshot", Map(
-        "msgLen", StrLen(messageText),
-        "msgPreview", SubStr(messageText, 1, 40),
-        "clipLenAtEntry", StrLen(A_Clipboard)
-    ))
-    ; #endregion
     StandardLoadingBar_Show("⏳ Opening Spotify — please wait...", BANNER_ACCENT_INTERMEDIATE, {
         fontSize: 17,
         trackActiveMonitor: true
@@ -356,16 +289,9 @@ SpotifyDictation_PlayFromClipboard(messageText) {
     barOwned := true
     try {
         if (!SpotifyDictation_ActivateOrOpen()) {
-            ; #region agent log
-            SpotifyDictation_DebugLog("D", "spotify_dictation_play.ahk:ActivateOrOpen", "activate_or_open_failed", Map(
-                "ok", 0))
-            ; #endregion
             barOwned := false
             return false
         }
-        ; #region agent log
-        SpotifyDictation_DebugLog("D", "spotify_dictation_play.ahk:ActivateOrOpen", "activate_or_open_ok", Map("ok", 1))
-        ; #endregion
 
         Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
         Sleep 80
@@ -376,7 +302,6 @@ SpotifyDictation_PlayFromClipboard(messageText) {
             WinWaitActive("ahk_id " hwnd, , 2)
         }
 
-        ; Keep loading bar visible (ControlSendText does not need the overlay hidden).
         if (!SpotifyDictation_OpenSearchUntilFocused(hwnd, 8)) {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Spotify search field did not accept focus", 2500, BANNER_ACCENT_ERROR)
@@ -384,27 +309,10 @@ SpotifyDictation_PlayFromClipboard(messageText) {
             return false
         }
 
-        ; #region agent log
-        SpotifyDictation_DebugActive("B", "spotify_dictation_play.ahk:after_search_gate", "search gate passed")
-        SpotifyDictation_DebugLog("H", "spotify_dictation_play.ahk:before_paste", "about to ControlSendText", Map(
-            "msgLen", StrLen(messageText),
-            "method", "controlsendtext_gated",
-            "hwnd", hwnd
-        ))
-        ; #endregion
-
         try {
             SpotifyDictation_TypeSearchQuery(hwnd, messageText)
             Sleep 500
-            ; #region agent log
-            SpotifyDictation_DebugActive("C", "spotify_dictation_play.ahk:after_paste", "after ControlSendText")
-            ; #endregion
-        } catch as pasteErr {
-            ; #region agent log
-            SpotifyDictation_DebugLog("H", "spotify_dictation_play.ahk:paste_exception", "exception during type", Map(
-                "err", SubStr(pasteErr.Message, 1, 120)
-            ))
-            ; #endregion
+        } catch {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Could not type into Spotify search", 2200, BANNER_ACCENT_ERROR)
             barOwned := false

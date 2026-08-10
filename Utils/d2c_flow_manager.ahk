@@ -488,18 +488,6 @@ class D2C_FlowManager {
         HideDictationIndicator()
 
         messageText := A_Clipboard
-        ; #region agent log
-        try {
-            FileAppend(
-                "{`"sessionId`":`"79788c`",`"hypothesisId`":`"A`",`"location`":`"d2c_flow_manager.ahk:OnSubmitP`",`"message`":`"OnSubmitP clipboard snapshot`",`"data`":{`"msgLen`":" StrLen(
-                    messageText) ",`"msgPreview`":`"" SubStr(StrReplace(StrReplace(messageText, "\", "\\"), "`"", "\`""
-                    ), 1, 40) "`"},`"timestamp`":" A_TickCount ",`"runId`":`"pre-fix`"}`n",
-                A_ScriptDir "\debug-79788c.log",
-                "UTF-8"
-            )
-        } catch {
-        }
-        ; #endregion
 
         try {
             SpotifyDictation_PlayFromClipboard(messageText)
