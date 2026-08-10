@@ -366,6 +366,51 @@ Excel_NormalizeColumnWidths(maxWidth := 15, cappedWidth := 5) {
     Send "6"
 }
 
+; After CSV Load: autofit, cap widths >20 → 20, wrap text, center H/V on imported table.
+; Soft no-op on COM failure so a successful import is not undone.
+Excel_FormatImportedTable(maxWidth := 20) {
+    try {
+        xl := ComObjActive("Excel.Application")
+        ws := xl.ActiveSheet
+    } catch {
+        return
+    }
+    try {
+        tableRange := 0
+        loCount := 0
+        try loCount := ws.ListObjects.Count
+        catch {
+        }
+        if (loCount >= 1) {
+            try tableRange := ws.ListObjects(1).Range
+            catch {
+                tableRange := 0
+            }
+        }
+        if (!tableRange) {
+            try tableRange := ws.UsedRange
+            catch {
+                tableRange := 0
+            }
+        }
+        if (!tableRange)
+            return
+        tableRange.Columns.AutoFit()
+        colCount := tableRange.Columns.Count
+        startCol := tableRange.Column
+        loop colCount {
+            col := ws.Columns(startCol + A_Index - 1)
+            if (col.ColumnWidth > maxWidth)
+                col.ColumnWidth := maxWidth
+        }
+        tableRange.WrapText := true
+        tableRange.HorizontalAlignment := -4108  ; xlCenter
+        tableRange.VerticalAlignment := -4108    ; xlCenter
+        tableRange.Select()
+    } catch {
+    }
+}
+
 ; After CSV Load: paint entire sheet dark gray, clear fill on imported table only.
 ; Soft no-op on COM failure so a successful import is not undone.
 Excel_ShadeOutsideImportedTable(color := 0x505050) {
