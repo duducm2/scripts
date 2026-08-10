@@ -432,6 +432,7 @@ cheatSheets["Cursor.exe"] := "
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
     📄 [R] Refresh preview
+    📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
     💾 [S][S]tash and Pull (Git) (ahk)
@@ -544,6 +545,7 @@ cheatSheets["Code.exe"] := "
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
     📄 [R] Refresh preview
+    📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
     📂 [O] File: New F[O]lder
     💾 [S][S]tash and Pull (Git) (ahk)
