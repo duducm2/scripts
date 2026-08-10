@@ -708,145 +708,49 @@ $!s:: {
     Send "+c"
 }
 
-; Click File on the workbench menu bar, then exact "Open File..." (not "Open Active File…").
-Editor_InvokeMenuItem(el) {
-    if !IsObject(el)
-        return false
+; Alt+E Open File: native alt+e = Edit mnemonic; UIA menu+Down leaked keys to other apps (Spotify).
+; Relay: Ctrl+Shift+F12 -> workbench.action.files.openFile (user keybindings in Cursor + VS Code).
+; #region agent log
+Editor_DebugLog(hypothesisId, location, message, dataMap := "") {
     try {
-        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-            el.Invoke()
-            return true
-        }
-    } catch {
-    }
-    try {
-        el.Click()
-        return true
-    } catch {
-    }
-    try {
-        el.InvokePattern.Invoke()
-        return true
-    } catch {
-    }
-    return false
-}
-
-Editor_FindMenuItemExact(root, exactNames, typeNames := ["MenuItem", "Button", "ListItem"]) {
-    if !IsObject(root)
-        return 0
-    for typeName in typeNames {
-        for exactName in exactNames {
-            try {
-                el := root.FindFirst({ Name: exactName, ControlType: typeName })
-                if el
-                    return el
-            } catch {
-            }
-        }
-    }
-    ; Exact scan — avoids substring false positives (e.g. Open Active File…).
-    for typeName in typeNames {
-        try {
-            items := root.FindAll({ ControlType: typeName })
-        } catch {
-            continue
-        }
-        for item in items {
-            n := ""
-            try n := item.Name
-            if (n = "")
-                continue
-            for exactName in exactNames {
-                if (n = exactName)
-                    return item
-            }
-        }
-    }
-    return 0
-}
-
-Editor_OpenFileViaMenuBar() {
-    hwnd := WinExist("A")
-    if !hwnd
-        return false
-    try {
-        root := UIA.ElementFromHandle(hwnd)
-        if !root
-            return false
-
-        fileScope := root
-        try {
-            menuBar := root.FindFirst({ ControlType: "MenuBar" })
-            if menuBar
-                fileScope := menuBar
-        } catch {
-        }
-
-        fileItem := Editor_FindMenuItemExact(fileScope, ["File"])
-        if !fileItem && (fileScope != root)
-            fileItem := Editor_FindMenuItemExact(root, ["File"])
-        if !fileItem
-            return false
-
-        expanded := false
-        try {
-            if fileItem.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable) {
-                pat := fileItem.ExpandCollapsePattern
-                if (pat.ExpandCollapseState = UIA.ExpandCollapseState.Collapsed) {
-                    pat.Expand()
-                    expanded := true
+        logPath := A_ScriptDir "\debug-52d006.log"
+        ts := A_TickCount
+        dataStr := "{}"
+        if (IsObject(dataMap)) {
+            dataStr := "{"
+            first := true
+            for k, v in dataMap {
+                if !first
+                    dataStr .= ","
+                first := false
+                if (Type(v) = "String") {
+                    vv := StrReplace(v, "\", "\\")
+                    vv := StrReplace(vv, "`n", " ")
+                    vv := StrReplace(vv, "`r", "")
+                    vv := StrReplace(vv, '"', '\"')
+                    dataStr .= '"' k '":"' vv '"'
                 } else {
-                    expanded := true
+                    dataStr .= '"' k '":' v
                 }
             }
-        } catch {
+            dataStr .= "}"
         }
-        if !expanded {
-            if !Editor_InvokeMenuItem(fileItem)
-                return false
-        }
-        Sleep 200
-
-        openNames := ["Open File...", "Open File…"]
-        openItem := Editor_FindMenuItemExact(root, openNames)
-        if !openItem {
-            try {
-                desk := UIA.GetRootElement()
-                openItem := Editor_FindMenuItemExact(desk, openNames)
-            } catch {
-            }
-        }
-        if !openItem {
-            ; Menu may be a separate popup HWND (#32768) or Electron popup.
-            try {
-                for popupHwnd in WinGetList("ahk_class #32768") {
-                    try {
-                        popupRoot := UIA.ElementFromHandle(popupHwnd)
-                        openItem := Editor_FindMenuItemExact(popupRoot, openNames)
-                        if openItem
-                            break
-                    } catch {
-                    }
-                }
-            } catch {
-            }
-        }
-        if !openItem
-            return false
-
-        return Editor_InvokeMenuItem(openItem)
+        line := '{"sessionId":"52d006","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataStr ',"timestamp":' ts ',"runId":"post-fix3"}'
+        FileAppend(line "`n", logPath)
     } catch {
-        return false
     }
 }
+; #endregion
 
-; Alt + E : File Open via menu bar UIA (native alt+e = Edit mnemonic; palette text is ambiguous)
+; Alt + E : Open File via Ctrl+Shift+F12 relay (keeps keys inside the editor)
 $!e:: {
-    if !Editor_OpenFileViaMenuBar() {
-        ToolTip "Alt+E: File → Open File… not found"
-        SetTimer(() => ToolTip(), -1800)
-    }
+    ; #region agent log
+    Editor_DebugLog("G", "hotif_editor_02.ahk:$!e", "hotkey_fired", Map("exe", WinGetProcessName("A"), "title", WinGetTitle("A")))
+    ; #endregion
+    Send "^+{F12}"
+    ; #region agent log
+    Editor_DebugLog("G", "hotif_editor_02.ahk:$!e", "relay_sent", Map("chord", "ctrl+shift+f12"))
+    ; #endregion
 }
 
 ; Global variable for commit push selector target window
