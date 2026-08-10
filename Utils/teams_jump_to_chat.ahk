@@ -183,3 +183,143 @@ TeamsJumpToChat(contact) {
         SetControlDelay oldControlDelay
     }
 }
+
+; Prefer a dedicated chat window; skip meeting / share-bar chrome.
+TeamsJump_ResolveChatHwnd() {
+    for proc in TeamsJump_Processes() {
+        for hwnd in WinGetList("ahk_exe " proc) {
+            try {
+                title := WinGetTitle(hwnd)
+                if (!title)
+                    continue
+                if InStr(title, "Sharing control bar |")
+                    continue
+                if InStr(title, "Microsoft Teams meeting") || InStr(title, "Reunião do Microsoft Teams")
+                    continue
+                if InStr(title, "Modo de exibição compacto da reunião")
+                    continue
+                if InStr(title, "Chat |") || InStr(title, "Bate-papo |")
+                    return hwnd
+                if (RegExMatch(title, "i)\| Microsoft Teams$") || title = "Microsoft Teams")
+                    return hwnd
+            } catch {
+                continue
+            }
+        }
+    }
+    return TeamsJump_ResolveMainHwnd()
+}
+
+TeamsJump_ComposerNameCandidates() {
+    return [
+        "Type a message",
+        "Type a message...",
+        "Digite uma mensagem",
+        "Digite uma mensagem...",
+        "Start a new message",
+        "Iniciar uma nova mensagem",
+        "Message",
+        "Mensagem"
+    ]
+}
+
+; Attach UIA root for Teams (Chromium-first, then HWND root).
+TeamsJump_AttachUiaRoot(hwnd) {
+    if (!hwnd)
+        return 0
+    try {
+        root := UIA.ElementFromChromium("ahk_id " hwnd, 500)
+        if (root)
+            return root
+    } catch {
+    }
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        if (uia)
+            return uia
+    } catch {
+    }
+    try {
+        return UIA.ElementFromHandle(hwnd)
+    } catch {
+        return 0
+    }
+}
+
+; Focus the chat compose Edit/Document. Returns true if focus likely succeeded.
+TeamsJump_FocusComposer(hwnd) {
+    if (!hwnd)
+        return false
+    focused := PasteField_TryFocusMappedField(hwnd)
+    root := TeamsJump_AttachUiaRoot(hwnd)
+    if (!root)
+        return focused
+    names := TeamsJump_ComposerNameCandidates()
+    types := ["Edit", "Document"]
+    for typeName in types {
+        for name in names {
+            el := 0
+            try el := root.FindFirst({ Name: name, Type: typeName })
+            catch {
+                el := 0
+            }
+            if (!el) {
+                try el := root.FindFirst({ Name: name, matchmode: "Substring", Type: typeName })
+                catch {
+                    el := 0
+                }
+            }
+            if (el && PasteField_SetFocusWithFallback(el))
+                return true
+        }
+    }
+    ; Last resort: any Edit whose name looks like a message box.
+    try {
+        edits := root.FindAll({ Type: "Edit" })
+        for el in edits {
+            n := ""
+            try n := el.Name
+            nLower := StrLower(n)
+            if (InStr(nLower, "message") || InStr(nLower, "mensagem") || InStr(nLower, "type a") || InStr(nLower,
+                "digite")) {
+                if (PasteField_SetFocusWithFallback(el))
+                    return true
+            }
+        }
+    } catch {
+    }
+    return focused
+}
+
+; Activate Teams chat, focus composer via UIA, paste clipboard. Never presses Enter to send.
+TeamsJump_PasteToComposer() {
+    if (!CheckAndOpenOutlookTeams(false, true))
+        return false
+
+    hwnd := TeamsJump_ResolveChatHwnd()
+    if (hwnd <= 0) {
+        TeamsJump_Run()
+        waitStart := A_TickCount
+        while ((A_TickCount - waitStart) < 15000) {
+            hwnd := TeamsJump_ResolveChatHwnd()
+            if (hwnd > 0)
+                break
+            Sleep 150
+        }
+    }
+    if (hwnd <= 0) {
+        ShowCenteredOverlay_Utils("❌ Teams chat window not found.", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if (!TeamsJump_ActivateWindowWithRetry(hwnd, 3, 300)) {
+        ShowCenteredOverlay_Utils("❌ Could not activate Teams chat.", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+    Sleep 80
+    TeamsJump_FocusComposer(hwnd)
+    Sleep 60
+    Send "^v"
+    return true
+}
