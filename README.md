@@ -73,7 +73,7 @@ scripts/
 3. `powershell -File infra\ipc\Verify-EnvAhk.ps1` (or let `Act.ahk` run it automatically before loading Utils).
 4. Diff local `env.ahk` against `env.ahk.example` for new blocks.
 5. Run `Act.ahk`.
-6. Smoke test AI hotkeys (`#!+p` copy, `#!+o` read aloud): personal should use Gemini; work should use M365 Copilot web.
+6. Smoke test AI hotkeys (`#!+p` copy; read aloud via D2C **R** / IPC — `#!+o` is empty): personal should use Gemini; work should use M365 Copilot web.
 
 - **Utils.ahk:** Shared core for overlays (`StandardLoadingBar_*`, `ShowCenteredOverlay_Utils`), hotstrings, `FindGeminiPromptField`, path/config helpers, and many MEH hotkeys. See [docs/standard_information_display.md](docs/standard_information_display.md) for the banner/loading API and [docs/efficiency-canon.md](docs/efficiency-canon.md) for strategic guidelines.
 - **UIA-v2:** Git submodule at [vendor/UIA-v2/](vendor/UIA-v2/) ([Descolada/UIA-v2](https://github.com/Descolada/UIA-v2)). After clone, run `git submodule update --init vendor/UIA-v2` if `Lib/UIA.ahk` is missing. See [vendor/UIA-v2/README.md](vendor/UIA-v2/README.md). Use `UIA.ahk` and `UIA_Browser.ahk` for browser/window automation; no pixel/image matching for dynamic UIs.

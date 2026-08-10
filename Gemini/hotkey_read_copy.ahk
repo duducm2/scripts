@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Gemini module: hotkey_read_copy.ahk
-; #!+O/#!+P and CopyLastGeminiMessageToClipboard
+; #!+P, empty #!+O stub, CopyLastGeminiMessageToClipboard, and read-aloud IPC
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
@@ -8,24 +8,13 @@
 ; --- Hotkeys ----------------------------------------------------------------
 
 ; Reusable launcher: activate Gemini asynchronously, handle Pause/Resume, then optionally
-; copy the last message and trigger read aloud without holding the hotkey thread open.
+; copy the last message and trigger read aloud (D2C R / IPC / TTS / delayed submit — not #!+O).
 GeminiTriggerReadAloud(copyFirst := true, useTrashTab := false, options := "") {
     return (GeminiAsyncReadAloud(copyFirst, useTrashTab, options)).Start()
 }
 
-; Win+Alt+Shift+O : Read aloud the last message in Gemini (or Pause/Resume if already reading)
+; Win+Alt+Shift+O : intentionally empty (user-facing read aloud is D2C R / WM_TRIGGER_READ_ALOUD)
 #!+o:: {
-    try {
-        companion := ResolveGlobalAICompanion()
-        if (companion = "enterprise")
-            return GeminiEnterprise_FocusPromptOnly()
-        if (companion = "copilot")
-            return CopilotWeb_TriggerReadAloud()
-        ; Standard behavior: operate on the currently active Gemini tab.
-        GeminiTriggerReadAloud()
-    } catch Error as e {
-        ;
-    }
 }
 
 ; Copy last Gemini message to clipboard. Used by #!+p and by async pronunciation flow.
@@ -137,7 +126,7 @@ WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
 ; Stop any running delayed-submit monitor (e.g. when user chose S or N at 6s dictation confirm). Sent from Utils.ahk.
 WM_STOP_DELAYED_SUBMIT_MONITOR := 0x8003
 ; Trigger read aloud from another script (e.g. D2C "Copy response?" R). Send does not trigger hotkeys in another script.
-; wParam: 1 = caller already copied (skip Copy in Gemini). lParam: anchored original hwnd for focus restore (0 = resolve like #!+o).
+; wParam: 1 = caller already copied (skip Copy in Gemini). lParam: anchored original hwnd for focus restore (0 = resolve default).
 WM_TRIGGER_READ_ALOUD := 0x8004
 ; Work environment: M365 Copilot web (Chrome) copy / read-aloud IPC from Utils D2C_FlowManager.
 WM_COPY_LAST_COPILOT := 0x8005
@@ -159,7 +148,7 @@ handleStopDelayedSubmitMonitor(*) {
 }
 handleTriggerReadAloud(wParam, lParam, msg, hwnd) {
     ; wParam 1: D2C already ran WM_COPY_LAST_GEMINI; skip internal Copy click, open Listen only.
-    ; lParam: anchored original hwnd from dictation D2C (0 = resolve like local #!+o).
+    ; lParam: anchored original hwnd from dictation D2C (0 = resolve default).
     wp := Integer(wParam)
     lp := Integer(lParam)
     copyFirst := !(wp = 1)

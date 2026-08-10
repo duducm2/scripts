@@ -6,7 +6,7 @@
 ; =============================================================================
 
 ; =============================================================================
-; GeminiAsyncReadAloud – async read aloud / pause / resume (Win+Alt+Shift+O)
+; GeminiAsyncReadAloud – async read aloud / pause / resume (D2C R / IPC / TTS; #!+O is empty)
 ; =============================================================================
 class GeminiAsyncReadAloud {
     __New(copyFirst := true, useTrashTab := false, options := "") {
@@ -50,7 +50,7 @@ class GeminiAsyncReadAloud {
         if (this.GeminiHwnd && WinActive("ahk_id " this.GeminiHwnd))
             return this.TryStartReadAloud(false)
         ; IPC queue + pipe connect can block the calling thread (CreateFile on pipe waits for server).
-        ; Defer so Win+Alt+Shift+O returns immediately like copy (#!+p); timers run the blocking work.
+        ; Defer so the caller (IPC / TTS / delayed submit) returns immediately like copy (#!+p); timers run the blocking work.
         this.StartCallback := this.DeferredQueueAndLaunch.Bind(this)
         SetTimer(this.StartCallback, -1)
         return true
@@ -155,7 +155,7 @@ class GeminiAsyncReadAloud {
                 this.Fail()
                 return false
             }
-            ; Only show "Switching to Gemini" when another window is foreground — not when already in Gemini (#!+o).
+            ; Only show "Switching to Gemini" when another window is foreground — not when already in Gemini.
             if (!WinActive("ahk_id " this.GeminiHwnd)) {
                 ; Loading Indication (not Hands off overlay): per standard_information_display.md
                 StandardLoadingBar_Show("⏳ Switching to Gemini…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: this.GeminiHwnd ?
@@ -361,7 +361,7 @@ class GeminiAsyncReadAloud {
                     ShowNotification(this.CopyFirst ? "Copied & Reading aloud" : "Reading aloud", 800, "FFFF00",
                         "000000", 24)
                     ; As soon as read-aloud is confirmed (Pause), return focus to the window that was active at hotkey
-                    ; time (#!+o, dictation R, TTS, …). Do not leave keyboard focus in Gemini unless there is nowhere else to go.
+                    ; time (dictation R, TTS, …). Do not leave keyboard focus in Gemini unless there is nowhere else to go.
                     orig := this.OriginalHwnd
                     if (orig && orig != this.GeminiHwnd && WinExist("ahk_id " orig))
                         this.RestoreOriginalFocus()

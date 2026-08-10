@@ -30,7 +30,7 @@ try Hotkey("#!+X", "Off")
 ; [Gemini module] Small loading indicator and WaitForButton helpers -> Gemini\loading_wait.ahk
 #include %A_ScriptDir%\Gemini\loading_wait.ahk
 
-; [Gemini module] #!+O/#!+P and CopyLastGeminiMessageToClipboard -> Gemini\hotkey_read_copy.ahk
+; [Gemini module] #!+P, empty #!+O stub, copy helper, read-aloud IPC -> Gemini\hotkey_read_copy.ahk
 #include %A_ScriptDir%\Gemini\hotkey_read_copy.ahk
 
 ; [Gemini module] Language picker and #!+8 pronunciation hotkey -> Gemini\hotkey_pronunciation.ahk

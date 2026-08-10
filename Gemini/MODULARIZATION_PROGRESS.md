@@ -32,7 +32,7 @@ Baseline rollback ref: `5eeb9a31` (pre-modularization `Gemini.ahk`)
 | `gemini_delayed_submit.ahk`  | 222    | `GeminiDelayedSubmitMonitor` and start/stop helpers      |
 | `background_helpers.ahk`     | 200    | `ShowNotification`, background timers, copy chime        |
 | `gemini_async_lookup.ahk`    | 199    | `GeminiAsyncLookup` pronunciation async class            |
-| `hotkey_read_copy.ahk`       | 208    | `#!+O` / `#!+P` / `#!+7` and copy helper                 |
+| `hotkey_read_copy.ahk`       | 208    | `#!+P`, empty `#!+O` stub, copy helper, read-aloud IPC   |
 | `gemini_async_tts.ahk`       | 133    | `GeminiAsyncTTS` class and `GeminiQueueBackgroundTask`   |
 | `gemini_open.ahk`            | 135    | `InitializeGeminiFirstTime` and `#!+I` open/focus        |
 | `loading_wait.ahk`           | 82     | Small loading indicator and `WaitForButton` helpers      |

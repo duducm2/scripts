@@ -1220,7 +1220,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
     [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
-    [Win+Alt+Shift+O] > Read aloud the last message in {AI_PROVIDER}
     [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
     
     === HANDY DICTATION ===
