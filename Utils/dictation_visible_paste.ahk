@@ -1,12 +1,13 @@
 ; =============================================================================
 ; Utils module: dictation_visible_paste.ahk
 ; Post-dictation visible-window picker: select a window and paste clipboard (Ctrl+V).
-; Also: [R] ignore process (exe) for AutoSlot, [I] manage ignore list (autoslot_user_excludes).
+; Also: [R] ignore process (exe) for AutoSlot, [I] manage ignore list (autoslot_user_excludes),
+; [M] manage main text-field mappings (paste_field_mappings.ini).
 ; =============================================================================
 
 global g_DictationVisiblePasteGui := false
 global g_DictationVisiblePasteActive := false
-global g_DictationVisiblePasteResult := ""   ; "" = waiting, 0 = cancel, integer = hwnd, "manage" = open ignore list
+global g_DictationVisiblePasteResult := ""   ; "" = waiting, 0 = cancel, integer = hwnd, "manage" = ignore list, "manage_fields" = main fields
 global g_DictationVisiblePasteKeyMap := Map()
 global g_DictationVisiblePasteHotkeyHandlers := []
 global g_DictationVisiblePasteKeysPollTimer := ""
@@ -17,9 +18,9 @@ global g_DictationVisiblePasteLastCharActionKey := ""
 global g_DictationVisiblePasteLastCharActionTick := 0
 global g_DictationVisiblePasteTrackTimer := ""
 global g_DictationVisiblePasteLastForegroundMonitorIdx := 0
-; Overflow slot keys — R/I reserved for ignore rearrange / manage ignore list.
+; Overflow slot keys — R/I/M reserved (ignore rearrange / manage ignore / manage main fields).
 global g_DictationVisiblePasteCharSequence := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d",
-    "e", "f", "g", "h", "j", "k", "l", "m", "n", "o", "p", "q", "s", "t", "u", "v", "w", "x", "y", "z"]
+    "e", "f", "g", "h", "j", "k", "l", "n", "o", "p", "q", "s", "t", "u", "v", "w", "x", "y", "z"]
 global g_DictationVisiblePasteThumbnails := []  ; [{ thumbId, sourceHwnd }]
 global g_DictationVisiblePasteMode := "paste"  ; "paste" | "exclude"
 global g_DictationVisiblePasteHeaderCtrl := false
@@ -557,6 +558,8 @@ Dictation_VisiblePasteStartKeysPoll(windows) {
     g_DictationVisiblePasteKeysPollPrev["r"] := Dictation_VisiblePasteKeyDown("r")
     g_DictationVisiblePasteKeysPollCallbacks["i"] := Dictation_VisiblePasteOpenIgnoreManage
     g_DictationVisiblePasteKeysPollPrev["i"] := Dictation_VisiblePasteKeyDown("i")
+    g_DictationVisiblePasteKeysPollCallbacks["m"] := Dictation_VisiblePasteOpenMainFieldsManage
+    g_DictationVisiblePasteKeysPollPrev["m"] := Dictation_VisiblePasteKeyDown("m")
     if (g_DictationVisiblePasteKeysPollCallbacks.Count > 0)
         g_DictationVisiblePasteKeysPollTimer := SetTimer(Dictation_VisiblePasteKeysPoll, 50)
 }
@@ -628,7 +631,7 @@ Dictation_VisiblePasteUpdateModeChrome() {
         catch {
         }
         try g_DictationVisiblePasteHintCtrl.Text :=
-            ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list <<<"
+            ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list   [M] Main fields <<<"
         catch {
         }
         try g_DictationVisiblePasteEscHintCtrl.Text := "[ESC] Cancel"
@@ -659,6 +662,20 @@ Dictation_VisiblePasteOpenIgnoreManage(*) {
         return
     try {
         g_DictationVisiblePasteResult := "manage"
+        Dictation_VisiblePasteClose()
+    } finally {
+        Dictation_VisiblePasteReleaseCharActionLock()
+    }
+}
+
+Dictation_VisiblePasteOpenMainFieldsManage(*) {
+    global g_DictationVisiblePasteActive, g_DictationVisiblePasteResult
+    if (!g_DictationVisiblePasteActive)
+        return
+    if (!Dictation_VisiblePasteTryConsumeCharAction("m"))
+        return
+    try {
+        g_DictationVisiblePasteResult := "manage_fields"
         Dictation_VisiblePasteClose()
     } finally {
         Dictation_VisiblePasteReleaseCharActionLock()
@@ -891,7 +908,7 @@ Dictation_VisiblePasteShowModal(gridData, centerOnHwnd := 0) {
     g_DictationVisiblePasteGui.SetFont("s12 cCDD6F4", "Segoe UI")
     g_DictationVisiblePasteHintCtrl := g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . footerY .
         " w" . contentW . " Center",
-        ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list <<<")
+        ">>> slot key = GO + PASTE   [R] Ignore rearrange   [I] Manage ignore list   [M] Main fields <<<")
     g_DictationVisiblePasteEscHintCtrl := g_DictationVisiblePasteGui.Add("Text", "x" . marginX . " y" . (footerY + 24) .
     " w" . contentW . " Center",
     "[ESC] Cancel")
@@ -1015,6 +1032,10 @@ Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
     try A_Clipboard := clipBackup
     if (result = "manage") {
         AutoSlot_ShowUserExcludeManageUI()
+        return 0
+    }
+    if (result = "manage_fields") {
+        PasteField_ShowMappingsManageUI()
         return 0
     }
     return (result = "") ? 0 : Integer(result)

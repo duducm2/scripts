@@ -4,11 +4,17 @@
 ; Before paste: focus saved field via UIA when exe+title match an INI entry.
 ; After paste (no mapping): Interactive Input Y/N to save the focused field.
 ; Persistent store: assets/data/paste_field_mappings.ini
+; Manage UI: #!+L [M] ListView to delete saved mappings.
 ; =============================================================================
 
 global g_PasteFieldMappingsCache := []
 global g_PasteFieldMappingsCacheReady := false
 global g_PasteFieldLearnPromptBusy := false
+global g_PasteFieldManageResult := ""
+global g_PasteFieldManageGui := false
+global g_PasteFieldManageLv := false
+global g_PasteFieldManageList := []
+global g_PasteFieldManageHotkeysBound := false
 
 PasteField_MappingsIniPath() {
     return A_ScriptDir "\assets\data\paste_field_mappings.ini"
@@ -310,6 +316,265 @@ PasteField_SaveMapping(hwnd, signature) {
     }
     PasteField_InvalidateCache()
     return true
+}
+
+; Rewrite INI as contiguous [Mapping_1]…[Mapping_N] (required after mid-list deletes).
+PasteField_WriteAllMappings(list) {
+    path := PasteField_MappingsIniPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    try FileDelete(path)
+    catch {
+    }
+    if (!IsObject(list) || list.Length = 0) {
+        PasteField_InvalidateCache()
+        return true
+    }
+    try {
+        idx := 1
+        for mapping in list {
+            section := "Mapping_" . idx
+            IniWrite(mapping.HasProp("exe") ? mapping.exe : "", path, section, "Exe")
+            IniWrite(mapping.HasProp("titleNeedle") ? mapping.titleNeedle : "", path, section, "TitleNeedle")
+            IniWrite(mapping.HasProp("name") ? mapping.name : "", path, section, "Name")
+            IniWrite(mapping.HasProp("automationId") ? mapping.automationId : "", path, section, "AutomationId")
+            IniWrite(mapping.HasProp("className") ? mapping.className : "", path, section, "ClassName")
+            typeStr := ""
+            if (mapping.HasProp("type"))
+                typeStr := String(mapping.type)
+            IniWrite(typeStr, path, section, "Type")
+            uiaAttach := "element"
+            if (mapping.HasProp("uiaAttach") && mapping.uiaAttach != "")
+                uiaAttach := mapping.uiaAttach
+            IniWrite(uiaAttach, path, section, "UiaAttach")
+            idx += 1
+        }
+    } catch {
+        PasteField_InvalidateCache()
+        return false
+    }
+    PasteField_InvalidateCache()
+    return true
+}
+
+; Remove 1-based list index; rewrite remaining as Mapping_1…N.
+PasteField_RemoveMappingAt(index) {
+    list := PasteField_LoadMappings()
+    index := Integer(index)
+    if (index < 1 || index > list.Length)
+        return false
+    newList := []
+    for i, mapping in list {
+        if (i = index)
+            continue
+        newList.Push(mapping)
+    }
+    return PasteField_WriteAllMappings(newList)
+}
+
+; Remove several 1-based indices in one rewrite (any order).
+PasteField_RemoveMappingsAt(indices) {
+    if (!IsObject(indices) || indices.Length = 0)
+        return false
+    remove := Map()
+    for idx in indices {
+        n := Integer(idx)
+        if (n >= 1)
+            remove[n] := true
+    }
+    if (remove.Count = 0)
+        return false
+    list := PasteField_LoadMappings()
+    newList := []
+    for i, mapping in list {
+        if (remove.Has(i))
+            continue
+        newList.Push(mapping)
+    }
+    if (newList.Length = list.Length)
+        return false
+    return PasteField_WriteAllMappings(newList)
+}
+
+PasteField_ManageFieldLabel(mapping) {
+    if (!IsObject(mapping))
+        return ""
+    name := Trim(mapping.HasProp("name") ? mapping.name : "")
+    if (name != "")
+        return name
+    aid := Trim(mapping.HasProp("automationId") ? mapping.automationId : "")
+    if (aid != "")
+        return aid
+    return Trim(mapping.HasProp("className") ? mapping.className : "")
+}
+
+PasteField_ManageTruncate(text, maxLen := 72) {
+    t := String(text)
+    if (StrLen(t) <= maxLen)
+        return t
+    return SubStr(t, 1, maxLen - 1) . "…"
+}
+
+PasteField_ManagePopulateLv() {
+    global g_PasteFieldManageLv, g_PasteFieldManageList
+    if (!IsObject(g_PasteFieldManageLv))
+        return
+    g_PasteFieldManageLv.Delete()
+    for mapping in g_PasteFieldManageList {
+        exe := mapping.HasProp("exe") ? mapping.exe : ""
+        title := mapping.HasProp("titleNeedle") ? mapping.titleNeedle : ""
+        field := PasteField_ManageFieldLabel(mapping)
+        g_PasteFieldManageLv.Add("", exe, PasteField_ManageTruncate(title, 80),
+        PasteField_ManageTruncate(field, 80))
+    }
+    try g_PasteFieldManageLv.ModifyCol(1, 140)
+    try g_PasteFieldManageLv.ModifyCol(2, 280)
+    try g_PasteFieldManageLv.ModifyCol(3, 260)
+}
+
+PasteField_ManageUnbindHotkeys() {
+    global g_PasteFieldManageHotkeysBound, g_PasteFieldManageGui
+    if (!g_PasteFieldManageHotkeysBound)
+        return
+    hwnd := 0
+    if (IsObject(g_PasteFieldManageGui)) {
+        try hwnd := g_PasteFieldManageGui.Hwnd
+        catch {
+            hwnd := 0
+        }
+    }
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+        }
+        try Hotkey("Delete", PasteField_ManageOnDelete, "Off")
+        catch {
+        }
+        try Hotkey("Escape", PasteField_ManageOnDone, "Off")
+        catch {
+        }
+        try HotIf()
+        catch {
+        }
+    }
+    g_PasteFieldManageHotkeysBound := false
+}
+
+PasteField_ManageCloseGui() {
+    global g_PasteFieldManageGui, g_PasteFieldManageLv, g_PasteFieldManageList
+    PasteField_ManageUnbindHotkeys()
+    if (IsObject(g_PasteFieldManageGui)) {
+        try g_PasteFieldManageGui.Destroy()
+        catch {
+        }
+    }
+    g_PasteFieldManageGui := false
+    g_PasteFieldManageLv := false
+    g_PasteFieldManageList := []
+}
+
+PasteField_ManageOnDone(*) {
+    global g_PasteFieldManageResult, g_PasteFieldManageGui
+    if (g_PasteFieldManageResult != "")
+        return
+    g_PasteFieldManageResult := "done"
+    if (IsObject(g_PasteFieldManageGui)) {
+        try g_PasteFieldManageGui.Hide()
+        catch {
+        }
+    }
+}
+
+PasteField_ManageOnDelete(*) {
+    global g_PasteFieldManageLv, g_PasteFieldManageList
+    if (!IsObject(g_PasteFieldManageLv))
+        return
+    indices := []
+    row := 0
+    while (row := g_PasteFieldManageLv.GetNext(row))
+        indices.Push(row)
+    if (indices.Length = 0)
+        return
+    labels := []
+    for idx in indices {
+        if (idx >= 1 && idx <= g_PasteFieldManageList.Length) {
+            m := g_PasteFieldManageList[idx]
+            lab := (m.HasProp("exe") ? m.exe : "")
+            if (m.HasProp("titleNeedle") && m.titleNeedle != "")
+                lab .= " — " . m.titleNeedle
+            labels.Push(PasteField_ManageTruncate(lab, 50))
+        }
+    }
+    if (!PasteField_RemoveMappingsAt(indices)) {
+        ShowCenteredOverlay_Utils("❌ Failed to remove mapping", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    g_PasteFieldManageList := PasteField_LoadMappings()
+    if (labels.Length = 1)
+        ShowCenteredOverlay_Utils("✅ Removed: " . labels[1], 1800, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("✅ Removed " . labels.Length . " mappings", 1800, BANNER_ACCENT_SUCCESS)
+    if (g_PasteFieldManageList.Length = 0) {
+        PasteField_ManageOnDone()
+        return
+    }
+    PasteField_ManagePopulateLv()
+}
+
+; Blocking ListView: select rows, Delete removes, Esc/Close dismisses.
+PasteField_ShowMappingsManageUI() {
+    global g_PasteFieldManageResult, g_PasteFieldManageGui, g_PasteFieldManageLv,
+        g_PasteFieldManageList, g_PasteFieldManageHotkeysBound
+    PasteField_InvalidateCache()
+    list := PasteField_LoadMappings()
+    if (list.Length = 0) {
+        ShowCenteredOverlay_Utils("ℹ️ No main field mappings", 2200, BANNER_ACCENT_INFO)
+        return
+    }
+
+    PasteField_ManageCloseGui()
+    g_PasteFieldManageResult := ""
+    g_PasteFieldManageList := list
+
+    gui := Gui("+AlwaysOnTop +ToolWindow", "Main text field mappings")
+    gui.SetFont("s10", "Segoe UI")
+    gui.Add("Text", "w700", "Select a mapping and press Delete (or the button). Esc closes.")
+    lv := gui.Add("ListView", "w700 h420 Multi", ["Exe", "Title", "Field"])
+    gui.Add("Button", "w100 Section", "Delete").OnEvent("Click", PasteField_ManageOnDelete)
+    gui.Add("Button", "w100 ys", "Close").OnEvent("Click", PasteField_ManageOnDone)
+    gui.OnEvent("Close", PasteField_ManageOnDone)
+    gui.OnEvent("Escape", PasteField_ManageOnDone)
+
+    g_PasteFieldManageGui := gui
+    g_PasteFieldManageLv := lv
+    PasteField_ManagePopulateLv()
+
+    try {
+        HotIfWinActive("ahk_id " gui.Hwnd)
+        Hotkey("Delete", PasteField_ManageOnDelete, "On")
+        Hotkey("Escape", PasteField_ManageOnDone, "On")
+        HotIf()
+        g_PasteFieldManageHotkeysBound := true
+    } catch {
+        g_PasteFieldManageHotkeysBound := false
+    }
+
+    gui.Show()
+    try lv.Focus()
+    catch {
+    }
+
+    start := A_TickCount
+    while (g_PasteFieldManageResult = "") {
+        if ((A_TickCount - start) >= 300000) {
+            g_PasteFieldManageResult := "done"
+            break
+        }
+        Sleep 50
+    }
+    g_PasteFieldManageResult := ""
+    PasteField_ManageCloseGui()
 }
 
 PasteField_CloseLearnPrompt() {

@@ -109,7 +109,7 @@ GitInRepoOrFail(notesFolder, "pull", 900000)
 StandardLoadingBar_Update("🚀 Launching apps...")
 Sleep 10000
 
-; Start QuickLook (study viewer) based on the current environment in env.ahk
+; Start QuickLookThat's interesting (study viewer) based on the current environment in env.ahk
 quicklookExe := GetQuickLookExePath()
 if (quicklookExe)
     Run quicklookExe
