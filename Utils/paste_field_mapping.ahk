@@ -537,21 +537,20 @@ PasteField_ShowMappingsManageUI() {
     g_PasteFieldManageResult := ""
     g_PasteFieldManageList := list
 
-    gui := Gui("+AlwaysOnTop +ToolWindow", "Main text field mappings")
-    gui.SetFont("s10", "Segoe UI")
-    gui.Add("Text", "w700", "Select a mapping and press Delete (or the button). Esc closes.")
-    lv := gui.Add("ListView", "w700 h420 Multi", ["Exe", "Title", "Field"])
-    gui.Add("Button", "w100 Section", "Delete").OnEvent("Click", PasteField_ManageOnDelete)
-    gui.Add("Button", "w100 ys", "Close").OnEvent("Click", PasteField_ManageOnDone)
-    gui.OnEvent("Close", PasteField_ManageOnDone)
-    gui.OnEvent("Escape", PasteField_ManageOnDone)
+    ; Avoid local name "gui" — conflicts with a global `gui` in the loaded script set (AHK v2).
+    g_PasteFieldManageGui := Gui("+AlwaysOnTop +ToolWindow", "Main text field mappings")
+    g_PasteFieldManageGui.SetFont("s10", "Segoe UI")
+    g_PasteFieldManageGui.Add("Text", "w700", "Select a mapping and press Delete (or the button). Esc closes.")
+    g_PasteFieldManageLv := g_PasteFieldManageGui.Add("ListView", "w700 h420 Multi", ["Exe", "Title", "Field"])
+    g_PasteFieldManageGui.Add("Button", "w100 Section", "Delete").OnEvent("Click", PasteField_ManageOnDelete)
+    g_PasteFieldManageGui.Add("Button", "w100 ys", "Close").OnEvent("Click", PasteField_ManageOnDone)
+    g_PasteFieldManageGui.OnEvent("Close", PasteField_ManageOnDone)
+    g_PasteFieldManageGui.OnEvent("Escape", PasteField_ManageOnDone)
 
-    g_PasteFieldManageGui := gui
-    g_PasteFieldManageLv := lv
     PasteField_ManagePopulateLv()
 
     try {
-        HotIfWinActive("ahk_id " gui.Hwnd)
+        HotIfWinActive("ahk_id " g_PasteFieldManageGui.Hwnd)
         Hotkey("Delete", PasteField_ManageOnDelete, "On")
         Hotkey("Escape", PasteField_ManageOnDone, "On")
         HotIf()
@@ -560,8 +559,8 @@ PasteField_ShowMappingsManageUI() {
         g_PasteFieldManageHotkeysBound := false
     }
 
-    gui.Show()
-    try lv.Focus()
+    g_PasteFieldManageGui.Show()
+    try g_PasteFieldManageLv.Focus()
     catch {
     }
 
