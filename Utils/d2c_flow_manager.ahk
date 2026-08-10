@@ -394,6 +394,8 @@ class D2C_FlowManager {
 
             Sleep 100
             Send "^v"
+            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
+            Sleep 350
         } finally {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
@@ -454,8 +456,10 @@ class D2C_FlowManager {
                 return
             }
 
-            Sleep 100
+            Sleep 200
             Send "^v"
+            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
+            Sleep 350
         } finally {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
