@@ -12,6 +12,8 @@ Learn-and-persist **main text fields** for windows reached via the visible-windo
 
 Core logic: [`Utils/paste_field_mapping.ahk`](../Utils/paste_field_mapping.ahk). Wired from [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) (`PasteClipboardToVisibleWindow`). Hotkey: [`Utils/utility_shortcuts.ahk`](../Utils/utility_shortcuts.ahk). Included from [`Utils.ahk`](../Utils.ahk) before the D2C module.
 
+Dictation **[W]** uses the same deferred focus+paste path as `#!+L` so INI-mapped main fields apply reliably after leaving the Send dictation? overlay.
+
 ## How to use
 
 ### First time (learn)

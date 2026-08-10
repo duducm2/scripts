@@ -143,22 +143,50 @@ class D2C_FlowManager {
     ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
     ; If exe+title has a saved main field (paste_field_mappings.ini), focus it first.
     ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
-    PasteClipboardToVisibleWindow(originHwnd := 0) {
+    PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
         if (!originHwnd)
             try originHwnd := WinGetID("A")
         targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
         if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
             return false
+
+        SetTimer(this._FinishDeferredPaste.Bind(this, targetHwnd, onDone), -50)
+        return true
+    }
+
+    _FinishDeferredPaste(targetHwnd, onDone) {
+        if (!WinExist("ahk_id " targetHwnd)) {
+            if (onDone)
+                onDone.Call()
+            return
+        }
+
         try WinActivate("ahk_id " targetHwnd)
         if (!WinActive("ahk_id " targetHwnd))
             WinWaitActive("ahk_id " targetHwnd, , 0.3)
         Sleep 60
-        hadMapping := PasteField_TryFocusMappedField(targetHwnd)
+
+        mappingResult := PasteField_FocusMappedField(targetHwnd)
+        if (mappingResult.hasMapping && !mappingResult.focused) {
+            loop 2 {
+                try WinActivate("ahk_id " targetHwnd)
+                Sleep 40
+                mappingResult := PasteField_FocusMappedField(targetHwnd)
+                if (mappingResult.focused)
+                    break
+            }
+        }
+
+        try WinActivate("ahk_id " targetHwnd)
+        Sleep 40
         Send "^v"
         Sleep 80
-        if (!hadMapping)
+
+        if (!mappingResult.hasMapping)
             PasteField_PromptSaveMainField(targetHwnd)
-        return true
+
+        if (onDone)
+            onDone.Call()
     }
 
     ; [W] Pick a visible window, paste OS clipboard (^v), end flow.
@@ -169,14 +197,19 @@ class D2C_FlowManager {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
-        if (this.PasteClipboardToVisibleWindow(this.OriginHwnd)) {
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
+
+        onDone := this._OnSubmitWDone.Bind(this)
+        if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone)) {
             return
         }
         ; Picker cancelled — restore submit menu; keep OriginHwnd.
         this.PromptForGeminiSubmit()
+    }
+
+    _OnSubmitWDone() {
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
     }
 
     ; Paste dictated text into the active window and end the D2C flow (menu [V]).

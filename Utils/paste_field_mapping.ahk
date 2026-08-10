@@ -239,6 +239,15 @@ PasteField_TryFocusMappedField(hwnd) {
     return true
 }
 
+; Lookup + focus. Returns { hasMapping: bool, focused: bool }.
+PasteField_FocusMappedField(hwnd) {
+    mapping := PasteField_FindMapping(hwnd)
+    if (!mapping)
+        return { hasMapping: false, focused: false }
+    focused := PasteField_FocusFromMapping(hwnd, mapping)
+    return { hasMapping: true, focused: !!focused }
+}
+
 PasteField_CaptureFocusedFieldSignature() {
     if (!IsSet(UIA))
         return ""
