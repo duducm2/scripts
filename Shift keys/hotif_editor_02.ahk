@@ -1331,77 +1331,13 @@ CancelCommit(ctrl, *) {
     }
 }
 
-; Gemini (Chrome): scroll the conversation pane to the bottom (last assistant block or prompt field).
-; Uses UIA AutomationId prefix from the page tree (model-response-message-content*); see gemini-tree.md.
-
-; After ScrollIntoView on a message node, still scroll the real viewport (nested scroller / Chrome).
-; UIA SetScrollPercent: first arg is vertical %, second horizontal (see UIA.ahk); vertical bottom = (100, -1).
-; Keys must go to Chrome_RenderWidgetHostHWND1 so they hit the page, not the top-level frame.
-GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd) {
-    ; FindFirst throws when missing — use per-attempt try so fallbacks run (efficiency-canon: avoid aborted ladders).
-    doc := 0
-    try doc := scope.FindFirst({ Type: UIA.Type.Document, Name: "Google Gemini" })
-    catch
-        doc := 0
-    if (!doc) {
-        try doc := scope.FindFirst({ Type: "Document" })
-        catch
-            doc := 0
-    }
-    if (!doc) {
-        try doc := uia.FindFirst({ Type: "Document" })
-        catch
-            doc := 0
-    }
-    if (doc) {
-        try {
-            if (doc.GetPropertyValue(UIA.Property.IsScrollPatternAvailable))
-                doc.ScrollPattern.SetScrollPercent(100, -1)
-        } catch {
-        }
-    }
-    rw := 0
-    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-    catch
-        rw := 0
-    ; Always Ctrl+End even after SetScrollPercent — nested overflow often ignores document scroll.
-    if (rw) {
-        try {
-            ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd, , , , "NA"
-            Sleep 40
-            ControlSend "{Blind}^{End}", , "ahk_id " rw
-        } catch {
-            try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-            catch {
-            }
-        }
-        ; Overflow divs often ignore UIA + Ctrl+End — multi-burst wheel for lazy layout.
-        loop 3 {
-            try ControlSend "{WheelDown 80}", , "ahk_id " rw
-            catch {
-            }
-            if (A_Index < 3)
-                Sleep 50
-        }
-    } else {
-        try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-        catch {
-        }
-    }
-}
-
+; Gemini (Chrome): scroll the conversation pane to the bottom (JS-first shared helper).
+; Trade-off / fallback documented in Lib/ChromeChatScroll.ahk.
 GeminiScrollFeedToBottom_Chrome(hwnd) {
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        scope := FastCopyMode_GetGeminiSearchRoot(uia)
-        blocks := scope.FindAll({ AutomationId: "model-response-message-content", matchmode: "Substring" })
-        if (blocks && blocks.Length > 0) {
-            try {
-                blocks[blocks.Length].ScrollIntoView()
-            } catch {
-            }
-        }
-        GeminiScroll_ApplyGeminiViewportBottom(uia, scope, hwnd)
+        uia := ChromeChat_ScrollFeedToBottomFast(hwnd)
+        if (!IsObject(uia))
+            return
         pf := FindGeminiPromptField(uia)
         if (pf) {
             try pf.ScrollIntoView()

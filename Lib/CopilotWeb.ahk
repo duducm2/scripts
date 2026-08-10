@@ -2161,43 +2161,9 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
     if (!hwnd)
         return false
     try {
-        uia := UIA_Browser("ahk_id " hwnd)
-        try {
-            msgs := uia.FindAll({ ClassName: "fai-CopilotMessage", matchmode: "Substring" })
-            if (msgs && msgs.Length > 0) {
-                try msgs[msgs.Length].ScrollIntoView()
-                catch {
-                }
-            }
-        } catch {
-        }
-        rw := 0
-        try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-        catch
-            rw := 0
-        ; Nested overflow often ignores document Ctrl+End — focus render widget, then End + wheel bursts.
-        if (rw) {
-            try {
-                ControlClick "Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd, , , , "NA"
-                Sleep 40
-                ControlSend "{Blind}^{End}", , "ahk_id " rw
-            } catch {
-                try ControlSend "{Blind}^{End}", , "ahk_id " rw
-                catch {
-                    Send "^{End}"
-                }
-            }
-            loop 3 {
-                try ControlSend "{WheelDown 80}", , "ahk_id " rw
-                catch {
-                }
-                if (A_Index < 3)
-                    Sleep 50
-            }
-        } else {
-            Send "^{End}"
-        }
-        Sleep COPILOT_WEB_SCROLL_SETTLE_MS
+        uia := ChromeChat_ScrollFeedToBottomFast(hwnd)
+        if (!IsObject(uia))
+            return false
         pf := CopilotWeb_FindComposer(uia)
         if (pf) {
             try pf.ScrollIntoView()

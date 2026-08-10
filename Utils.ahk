@@ -136,6 +136,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Gemini navigate/focus/paste helpers (D2C, legacy dictation) -> Utils\gemini_paste_helpers.ahk
 #include %A_ScriptDir%\Utils\gemini_paste_helpers.ahk
 
+; [Lib] Chrome chat feed scroll-to-bottom (JS-first) — before companion libs that call it
+#include %A_ScriptDir%\lib\ChromeChatScroll.ahk
+
 #include %A_ScriptDir%\lib\CopilotWeb.ahk
 #include %A_ScriptDir%\lib\GeminiEnterprise.ahk
 
