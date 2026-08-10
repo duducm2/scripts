@@ -1,7 +1,9 @@
 ; =============================================================================
 ; Utils module: paste_field_mapping.ahk
 ; Learn-and-persist window → main text field mappings for Win+Alt+Shift+L.
-; Before paste: focus saved field via UIA when exe+title match an INI entry.
+; Before paste: focus saved field via UIA when a mapping matches.
+; Match gates: (1) exe + title needle, (2) same exe + strict UIA field identity
+;   (AutomationId or ClassName+Type) when the title changed.
 ; After paste (no mapping): Interactive Input Y/N to save the focused field.
 ; Persistent store: assets/data/paste_field_mappings.ini
 ; Manage UI: #!+L [M] ListView to delete saved mappings.
@@ -144,7 +146,7 @@ PasteField_DetectUiaAttach(hwnd) {
     return PasteField_IsChromiumClass(cls) ? "browser" : "element"
 }
 
-; First INI mapping matching this window's exe + title needle.
+; Mapping for hwnd: title gate first, then strict UIA field identity (same exe).
 PasteField_FindMapping(hwnd) {
     if (!hwnd)
         return ""
@@ -155,13 +157,55 @@ PasteField_FindMapping(hwnd) {
     if (!exe)
         return ""
     exeLower := StrLower(exe)
+    sameExe := []
     for mapping in PasteField_LoadMappings() {
-        if (StrLower(mapping.exe) != exeLower)
-            continue
+        if (StrLower(mapping.exe) = exeLower)
+            sameExe.Push(mapping)
+    }
+    if (sameExe.Length = 0)
+        return ""
+
+    ; Pass 1 — title gate (no UIA). Empty needle matches any title for this exe.
+    for mapping in sameExe {
         needle := Trim(mapping.titleNeedle)
-        if (needle != "" && !InStr(title, needle, false))
+        if (needle = "" || InStr(title, needle, false))
+            return mapping
+    }
+
+    ; Pass 2 — strict UIA gate (AutomationId or ClassName+Type). Prefer AutomationId rows.
+    aidCandidates := []
+    cnCandidates := []
+    for mapping in sameExe {
+        aid := Trim(mapping.automationId)
+        cn := Trim(mapping.className)
+        typeVal := Trim(String(mapping.HasProp("type") ? mapping.type : ""))
+        if (aid != "")
+            aidCandidates.Push(mapping)
+        else if (cn != "" && typeVal != "")
+            cnCandidates.Push(mapping)
+    }
+    candidates := []
+    for mapping in aidCandidates
+        candidates.Push(mapping)
+    for mapping in cnCandidates
+        candidates.Push(mapping)
+    if (candidates.Length = 0)
+        return ""
+
+    rootsByAttach := Map()
+    for mapping in candidates {
+        attach := mapping.uiaAttach = "browser" ? "browser" : "element"
+        root := 0
+        if (rootsByAttach.Has(attach))
+            root := rootsByAttach[attach]
+        else {
+            root := PasteField_AttachRoot(hwnd, attach)
+            rootsByAttach[attach] := root
+        }
+        if (!root)
             continue
-        return mapping
+        if (PasteField_FindElementFromMapping(root, mapping, true))
+            return mapping
     }
     return ""
 }
@@ -182,25 +226,46 @@ PasteField_AttachRoot(hwnd, uiaAttach) {
     }
 }
 
-PasteField_FocusFromMapping(hwnd, mapping) {
-    if (!hwnd || !IsObject(mapping))
-        return false
-    aid := Trim(mapping.automationId)
-    name := Trim(mapping.name)
-    cn := Trim(mapping.className)
-    typeVal := Trim(String(mapping.type))
+; Find UIA element for a mapping under root.
+; strictUiq=false: AutomationId → Name(+Type) → ClassName(+Type) (focus path).
+; strictUiq=true: AutomationId(+Type) only, else ClassName AND Type; never Name.
+PasteField_FindElementFromMapping(root, mapping, strictUiq := false) {
+    if (!root || !IsObject(mapping))
+        return 0
+    aid := Trim(mapping.HasProp("automationId") ? mapping.automationId : "")
+    name := Trim(mapping.HasProp("name") ? mapping.name : "")
+    cn := Trim(mapping.HasProp("className") ? mapping.className : "")
+    typeVal := Trim(String(mapping.HasProp("type") ? mapping.type : ""))
     typeArg := ""
     if (typeVal != "")
         typeArg := IsInteger(typeVal) ? Integer(typeVal) : typeVal
-    if (aid = "" && name = "" && cn = "")
-        return false
 
-    root := PasteField_AttachRoot(hwnd, mapping.uiaAttach)
-    if (!root)
-        return false
+    if (strictUiq) {
+        el := 0
+        if (aid != "") {
+            try {
+                if (typeArg != "")
+                    el := root.FindFirst({ AutomationId: aid, Type: typeArg })
+                else
+                    el := root.FindFirst({ AutomationId: aid })
+            } catch {
+                el := 0
+            }
+            return el ? el : 0
+        }
+        if (cn != "" && typeArg != "") {
+            try el := root.FindFirst({ ClassName: cn, Type: typeArg })
+            catch {
+                el := 0
+            }
+        }
+        return el ? el : 0
+    }
+
+    if (aid = "" && name = "" && cn = "")
+        return 0
 
     el := 0
-    ; Prefer AutomationId, then Name+Type, then ClassName+Type.
     try {
         if (aid != "") {
             if (typeArg != "")
@@ -231,6 +296,21 @@ PasteField_FocusFromMapping(hwnd, mapping) {
             el := 0
         }
     }
+    return el ? el : 0
+}
+
+PasteField_FocusFromMapping(hwnd, mapping) {
+    if (!hwnd || !IsObject(mapping))
+        return false
+    aid := Trim(mapping.HasProp("automationId") ? mapping.automationId : "")
+    name := Trim(mapping.HasProp("name") ? mapping.name : "")
+    cn := Trim(mapping.HasProp("className") ? mapping.className : "")
+    if (aid = "" && name = "" && cn = "")
+        return false
+    root := PasteField_AttachRoot(hwnd, mapping.uiaAttach)
+    if (!root)
+        return false
+    el := PasteField_FindElementFromMapping(root, mapping, false)
     if (!el)
         return false
     return PasteField_SetFocusWithFallback(el)
