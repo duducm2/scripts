@@ -236,11 +236,67 @@ AutoSlot_SetEnabled(on) {
 
 ; --- Init --------------------------------------------------------------------
 
+; Act / #SingleInstance reload can deliver shell/WinEvent callbacks while maps are unset.
+AutoSlot_EnsureMaps() {
+    global g_AutoSlotPending, g_AutoSlotRecent, g_AutoSlotHealPending, g_AutoSlotHwndMon
+    global g_AutoSlotFillCooldown, g_AutoSlotSnapPairs, g_AutoSlotMaxCompanionSuppress
+    global g_AutoSlotPairMaxPending, g_AutoSlotJustRestored, g_AutoSlotWasF11
+    global g_AutoSlotF11RestorePending, g_AutoSlotPerfOrigin, g_AutoSlotEligRetry
+    global g_AutoSlotShowPending, g_AutoSlotShowTimerArmed, g_AutoSlotPlaceDepth
+    global g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick, g_AutoSlotPlaceFreezeUntil
+    global g_AutoSlotSwapQuietUntil, g_AutoSlotLastToastMsg, g_AutoSlotLastToastTick
+    if (!IsSet(g_AutoSlotPending) || !(g_AutoSlotPending is Map))
+        g_AutoSlotPending := Map()
+    if (!IsSet(g_AutoSlotRecent) || !(g_AutoSlotRecent is Map))
+        g_AutoSlotRecent := Map()
+    if (!IsSet(g_AutoSlotHealPending) || !(g_AutoSlotHealPending is Map))
+        g_AutoSlotHealPending := Map()
+    if (!IsSet(g_AutoSlotHwndMon) || !(g_AutoSlotHwndMon is Map))
+        g_AutoSlotHwndMon := Map()
+    if (!IsSet(g_AutoSlotFillCooldown) || !(g_AutoSlotFillCooldown is Map))
+        g_AutoSlotFillCooldown := Map()
+    if (!IsSet(g_AutoSlotSnapPairs) || !(g_AutoSlotSnapPairs is Map))
+        g_AutoSlotSnapPairs := Map()
+    if (!IsSet(g_AutoSlotMaxCompanionSuppress) || !(g_AutoSlotMaxCompanionSuppress is Map))
+        g_AutoSlotMaxCompanionSuppress := Map()
+    if (!IsSet(g_AutoSlotPairMaxPending) || !(g_AutoSlotPairMaxPending is Map))
+        g_AutoSlotPairMaxPending := Map()
+    if (!IsSet(g_AutoSlotJustRestored) || !(g_AutoSlotJustRestored is Map))
+        g_AutoSlotJustRestored := Map()
+    if (!IsSet(g_AutoSlotWasF11) || !(g_AutoSlotWasF11 is Map))
+        g_AutoSlotWasF11 := Map()
+    if (!IsSet(g_AutoSlotF11RestorePending) || !(g_AutoSlotF11RestorePending is Map))
+        g_AutoSlotF11RestorePending := Map()
+    if (!IsSet(g_AutoSlotPerfOrigin) || !(g_AutoSlotPerfOrigin is Map))
+        g_AutoSlotPerfOrigin := Map()
+    if (!IsSet(g_AutoSlotEligRetry) || !(g_AutoSlotEligRetry is Map))
+        g_AutoSlotEligRetry := Map()
+    if (!IsSet(g_AutoSlotShowPending) || !(g_AutoSlotShowPending is Map))
+        g_AutoSlotShowPending := Map()
+    if (!IsSet(g_AutoSlotShowTimerArmed))
+        g_AutoSlotShowTimerArmed := false
+    if (!IsSet(g_AutoSlotPlaceDepth))
+        g_AutoSlotPlaceDepth := 0
+    if (!IsSet(g_AutoSlotLastDestroyHwnd))
+        g_AutoSlotLastDestroyHwnd := 0
+    if (!IsSet(g_AutoSlotLastDestroyTick))
+        g_AutoSlotLastDestroyTick := 0
+    if (!IsSet(g_AutoSlotPlaceFreezeUntil))
+        g_AutoSlotPlaceFreezeUntil := 0
+    if (!IsSet(g_AutoSlotSwapQuietUntil))
+        g_AutoSlotSwapQuietUntil := 0
+    if (!IsSet(g_AutoSlotLastToastMsg))
+        g_AutoSlotLastToastMsg := ""
+    if (!IsSet(g_AutoSlotLastToastTick))
+        g_AutoSlotLastToastTick := 0
+}
+
 AutoSlot_Init() {
     global g_AutoSlotHook, g_AutoSlotHookCb, g_AutoSlotShellMsg, g_AutoSlotGui
     global g_AutoSlotLocHook, g_AutoSlotLocHookCb, g_AutoSlotMoveHook, g_AutoSlotMoveHookCb
     global g_AutoSlotMinHook, g_AutoSlotMinHookCb
-    if (g_AutoSlotHook || g_AutoSlotShellMsg)
+    AutoSlot_EnsureMaps()
+    if ((IsSet(g_AutoSlotHook) && g_AutoSlotHook) || (IsSet(g_AutoSlotShellMsg) && g_AutoSlotShellMsg))
         return
 
     AutoSlot_LoadEnabled()
@@ -453,6 +509,7 @@ AutoSlot_OnDisplayChange(*) {
 }
 
 AutoSlot_OnShellHook(wParam, lParam, *) {
+    AutoSlot_EnsureMaps()
     if (!lParam)
         return 0
     hwnd := Integer(lParam)
@@ -465,6 +522,7 @@ AutoSlot_OnShellHook(wParam, lParam, *) {
 }
 
 AutoSlot_OnWinEvent(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    AutoSlot_EnsureMaps()
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     hwnd := Integer(hwnd)
@@ -525,6 +583,7 @@ AutoSlot_DestroyLooksInteresting(hwnd) {
 ; fromShell: true for HSHELL_WINDOWDESTROYED (primary). WinEvent skips if same hwnd just armed.
 AutoSlot_OnDestroy(hwnd, fromShell := false) {
     global g_AutoSlotHwndMon, g_AutoSlotLastDestroyHwnd, g_AutoSlotLastDestroyTick, g_AutoSlotSnapPairs
+    AutoSlot_EnsureMaps()
     if (!hwnd)
         return
 
@@ -709,6 +768,7 @@ AutoSlot_PairSuppressMark(hwnd, ms := 0) {
 }
 
 AutoSlot_OnLocationChange(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+    AutoSlot_EnsureMaps()
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
@@ -1366,6 +1426,7 @@ AutoSlot_RunTileBackground() {
 
 AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_AutoSlotHwndMon, g_AutoSlotSnapPairs, g_AutoSlotWasF11, g_AutoSlotF11RestorePending
+    AutoSlot_EnsureMaps()
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
@@ -1407,6 +1468,7 @@ AutoSlot_OnMoveSizeEnd(hWinEventHook, event, hwnd, idObject, idChild, idEventThr
 ; On minimize start: clear pair registry, heal leftover companion (parity with destroy).
 AutoSlot_OnMinimize(hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
     global g_AutoSlotHwndMon, g_AutoSlotSnapPairs
+    AutoSlot_EnsureMaps()
     if (idObject != AutoSlot_OBJID_WINDOW || !hwnd)
         return
     if (!AutoSlot_IsEnabled())
@@ -1613,6 +1675,7 @@ AutoSlot_Schedule(hwnd) {
 ; Queued from WinEvent — see AutoSlot_QueueScheduleFromShow (do not call synchronously from hook).
 AutoSlot_QueueScheduleFromShow(hwnd) {
     global g_AutoSlotShowPending, g_AutoSlotShowTimerArmed
+    AutoSlot_EnsureMaps()
     if (!hwnd)
         return
     g_AutoSlotShowPending[Integer(hwnd)] := true
@@ -1624,6 +1687,7 @@ AutoSlot_QueueScheduleFromShow(hwnd) {
 
 AutoSlot_ProcessShowPending(*) {
     global g_AutoSlotShowPending, g_AutoSlotShowTimerArmed
+    AutoSlot_EnsureMaps()
     g_AutoSlotShowTimerArmed := false
     if (!g_AutoSlotShowPending.Count)
         return
@@ -3803,5 +3867,6 @@ AutoSlot_Place(hwnd) {
     }
 }
 
-; Auto-execute when #included.
-AutoSlot_Init()
+; Defer init until WindowManagement finishes the rest of auto-exec and Act's
+; window churn settles — avoids unset-map races from early shell/WinEvent floods.
+SetTimer(AutoSlot_Init, -500)

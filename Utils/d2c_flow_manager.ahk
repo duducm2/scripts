@@ -340,8 +340,9 @@ class D2C_FlowManager {
         clipSaved := ClipboardAll()
 
         try {
-            contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
-            if (contact = "") {
+            ib := InputBox("Enter a Teams contact name:", "Jump to Chat")
+            contact := Trim(ib.Value)
+            if (ib.Result = "Cancel" || contact = "") {
                 return
             }
 

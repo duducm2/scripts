@@ -153,9 +153,6 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Paste field mapping (dynamic app -> text field focus) -> Utils\paste_field_mapping.ahk
 #include %A_ScriptDir%\Utils\paste_field_mapping.ahk
 
-; [Utils module] Shared Jump-to-Chat logic for Teams -> Utils\teams_jump_to_chat.ahk
-#include %A_ScriptDir%\Utils\teams_jump_to_chat.ahk
-
 ; [Utils module] D2C_FlowManager dictation-Gemini-Cursor state machine -> Utils\d2c_flow_manager.ahk
 #include %A_ScriptDir%\Utils\d2c_flow_manager.ahk
 
@@ -169,6 +166,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] CheckAndOpenOutlookTeams prompt helper -> Utils\outlook_teams_check.ahk
 #include %A_ScriptDir%\Utils\outlook_teams_check.ahk
+
+; [Utils module] Shared Jump-to-Chat logic for Teams -> Utils\teams_jump_to_chat.ahk
+; After outlook_teams_check (uses CheckAndOpenOutlookTeams). No TeamsContext include.
+#include %A_ScriptDir%\Utils\teams_jump_to_chat.ahk
 
 ; [Utils module] Dictation clipboard cleanup countdown -> Utils\dictation_cleanup.ahk
 #include %A_ScriptDir%\Utils\dictation_cleanup.ahk

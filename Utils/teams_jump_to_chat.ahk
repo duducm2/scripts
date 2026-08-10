@@ -1,13 +1,19 @@
 ; =============================================================================
 ; Utils module: teams_jump_to_chat.ahk
 ; Shared Jump-to-Chat logic for Teams
+; Do NOT #include Lib\TeamsContext.ahk here — that file is already included by
+; Microsoft Teams.ahk and Shift keys\teams_predicates.ahk; a second include
+; redefines class TeamsContextCache and aborts Act reloads.
 ; =============================================================================
 
-#include %A_ScriptDir%\Lib\TeamsContext.ahk
+; Local process list (same as TEAMS_PROCESSES in Lib\TeamsContext.ahk).
+TeamsJump_Processes() {
+    return ["ms-teams.exe", "Teams.exe", "MSTeams.exe"]
+}
 
 ; Returns a visible Teams HWND suitable for generic navigation (chat/search), or 0.
 TeamsJump_ResolveMainHwnd() {
-    for proc in TEAMS_PROCESSES {
+    for proc in TeamsJump_Processes() {
         for hwnd in WinGetList("ahk_exe " proc) {
             try {
                 title := WinGetTitle(hwnd)
