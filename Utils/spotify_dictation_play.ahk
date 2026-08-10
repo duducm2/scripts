@@ -165,7 +165,9 @@ SpotifyDictation_PlayFromClipboard(messageText) {
             Sleep 100
         }
         Send "^v"
-        Sleep 250
+        ; Wait for Spotify search suggestions to populate before confirming with Enter.
+        StandardLoadingBar_Update("⏳ Waiting for search suggestions...")
+        Sleep 900
         Send "{Enter}"
 
         ; Let search → entity page settle before header Play UIA.
