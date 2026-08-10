@@ -368,7 +368,7 @@ FileDialog_NavigateToDesktop() {
     FileDialog_SaveAsCsvUtf8()
 }
 
-; Shift + I : Import CSV — Open → Load → close Queries → promote generic headers → normalize columns
+; Shift + I : Import CSV — Open → Load → close Queries → promote headers → normalize columns → shade outside table
 +i:: {
     if !IsFileDialogActive()
         return
@@ -790,7 +790,7 @@ FileDialog_SaveAsCsvUtf8() {
     }
 }
 
-; --- File Dialog helpers (Import CSV → Load → close Queries) -------------------
+; --- File Dialog helpers (Import CSV → Load → close Queries → shade outside) ---
 
 FileDialog_ClickOpenButton(root) {
     actionBtn := 0
@@ -1058,6 +1058,8 @@ FileDialog_ImportCsvLoad() {
         Excel_PromoteGenericHeaders()
         ; Same as Excel Shift+N: autofit, cap wide columns, zoom row 1
         Excel_NormalizeColumnWidths()
+        ; Dark surround: entire sheet gray, imported table fill cleared
+        Excel_ShadeOutsideImportedTable()
     } catch {
         try StandardLoadingBar_Update("❌ Import failed", BANNER_ACCENT_ERROR)
         catch {
