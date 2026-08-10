@@ -50,17 +50,7 @@
 ; =============================================================================
 #!+z::
 {
-    SetTitleMatchMode(2)
-    if WinExist("WhatsApp") {
-        WinActivate("WhatsApp")
-        CenterMouse()
-    } else {
-        if (IS_WORK_ENVIRONMENT) {
-            Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
-        } else {
-            Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
-        }
-        WinWaitActive("WhatsApp")
+    if (WhatsAppJump_ActivateOrOpen()) {
         CenterMouse()
     }
 }

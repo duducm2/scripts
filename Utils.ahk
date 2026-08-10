@@ -171,6 +171,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; After outlook_teams_check (uses CheckAndOpenOutlookTeams). No TeamsContext include.
 #include %A_ScriptDir%\Utils\teams_jump_to_chat.ahk
 
+; [Utils module] Shared Jump-to-Chat logic for WhatsApp -> Utils\whatsapp_jump_to_chat.ahk
+#include %A_ScriptDir%\Utils\whatsapp_jump_to_chat.ahk
+
 ; [Utils module] Dictation clipboard cleanup countdown -> Utils\dictation_cleanup.ahk
 #include %A_ScriptDir%\Utils\dictation_cleanup.ahk
 
