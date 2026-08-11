@@ -70,6 +70,11 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     Excel_ImportCsvFromClipboardPath()
 }
 
+; Shift + U : F12 Save As ← clipboard path → CSV UTF-8 save pipeline
++u:: {
+    Excel_SaveCsvUtf8FromClipboardPath()
+}
+
 ; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns)
 +v:: {
     Excel_AddMultipleRows()    ; Add multiple rows first
@@ -564,6 +569,48 @@ Excel_ImportCsvFromClipboardPath() {
     catch {
     }
     FileDialog_ImportCsvLoad()
+}
+
+; Clipboard holds CSV path → F12 Save As → paste → FileDialog_SaveAsCsvUtf8.
+Excel_SaveCsvUtf8FromClipboardPath() {
+    hwndExcel := WinExist("A")
+    try {
+        StandardLoadingBar_Show("⏳ Opening Save As…", BANNER_ACCENT_INTERMEDIATE, {
+            passive: false, centerOnHwnd: hwndExcel, textWidth: 480 })
+    } catch {
+    }
+    Send "{F12}"
+    try StandardLoadingBar_Update("⏳ Waiting for file dialog…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    dlgHwnd := Excel_WaitForFileDialog()
+    if !dlgHwnd {
+        try StandardLoadingBar_Update("❌ File dialog not found", BANNER_ACCENT_ERROR)
+        catch {
+        }
+        try StandardLoadingBar_Hide(800)
+        catch {
+        }
+        return
+    }
+    try StandardLoadingBar_Update("⏳ Pasting CSV path…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    try WinActivate("ahk_id " dlgHwnd)
+    catch {
+    }
+    Sleep 200
+    FileDialog_FocusFileNameField()
+    Sleep 50
+    Send "^v"
+    Sleep 300
+    try StandardLoadingBar_Update("⏳ Saving CSV UTF-8…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    try StandardLoadingBar_Hide(200)
+    catch {
+    }
+    FileDialog_SaveAsCsvUtf8()
 }
 
 ; Shift + N : Narrow oversized columns (autofit, then cap width >15 → 5)
