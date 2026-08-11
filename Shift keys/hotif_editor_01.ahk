@@ -848,6 +848,9 @@ CursorShortcutMenu_ActionFetch(*) {
 ; Alt + H : Same as Ctrl+H; when Windows Explorer opens, open file and close Explorer
 !h:: Editor_SmartNavReveal("open")
 
+; Alt + 6 : Reveal in Explorer then Share on OneDrive (copy link, close Explorer)
+!6:: Editor_SmartNavReveal("share")
+
 ; Ctrl + 1 : Remove clustering and focus on the code
 ^1 up::
 {

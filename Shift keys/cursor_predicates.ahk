@@ -928,6 +928,8 @@ Editor_SmartNavRevealShowSuccess(explorerAction, expectedBasename := "") {
         msg := "✅ File copied to clipboard"
     else if (explorerAction = "open")
         msg := "✅ File opened"
+    else if (explorerAction = "share")
+        msg := "✅ OneDrive share link copied"
     name := Editor_NormalizeRevealBasename(expectedBasename)
     if (name != "" && Editor_IsPlausibleRevealBasename(name))
         msg .= ": " name
@@ -1115,15 +1117,54 @@ Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename := "", timeoutSec :=
     }
 }
 
+Editor_ShareFromWindowsExplorerAndReturn(editorHwnd, expectedBasename := "", timeoutSec := 4.0, preRevealHwnds := "") {
+    explorerHwnd := 0
+    try {
+        explorerHwnd := Editor_WaitForActiveExplorerWindow(timeoutSec, expectedBasename, editorHwnd, preRevealHwnds)
+        if (!explorerHwnd) {
+            Editor_SmartNavRevealShowExplorerTimeout("Share")
+            return false
+        }
+
+        if (!Editor_EnsureRevealItemSelected(explorerHwnd, expectedBasename)) {
+            try Explorer_EnsureItemsViewFocusPreserveSelection()
+            catch {
+            }
+        }
+
+        Editor_SmartNavLoadingUpdate("⏳ Sharing on OneDrive…", editorHwnd)
+        if !Explorer_CopyOneDriveShareLink_BoschGroup()
+            return false
+
+        try WinClose("ahk_id " explorerHwnd)
+        explorerHwnd := 0
+        return true
+    } catch {
+        Editor_SmartNavRevealShowExplorerTimeout("Share")
+        return false
+    } finally {
+        if (explorerHwnd) {
+            try WinClose("ahk_id " explorerHwnd)
+            catch {
+            }
+        }
+        if (editorHwnd) {
+            try WinActivate("ahk_id " editorHwnd)
+        }
+    }
+}
+
 Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename := "", preRevealHwnds := "") {
     if (explorerAction = "copy")
         return Editor_CopyFromWindowsExplorerAndReturn(editorHwnd, expectedBasename, 2.5, preRevealHwnds)
     if (explorerAction = "open")
         return Editor_OpenFromWindowsExplorer(editorHwnd, expectedBasename, 2.5, preRevealHwnds)
+    if (explorerAction = "share")
+        return Editor_ShareFromWindowsExplorerAndReturn(editorHwnd, expectedBasename, 4.0, preRevealHwnds)
     return true
 }
 
-; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy/open in Windows Explorer).
+; Smart navigation - Editor → Explorer, Explorer → Reveal in Explorer (optional copy/open/share in Windows Explorer).
 Editor_SmartNavReveal(explorerAction := "") {
     global g_EditorSmartNavLastTick, EDITOR_SMARTNAV_MIN_INTERVAL_MS, EDITOR_COPY_USE_EDITOR_FASTPATH
     global EDITOR_SMARTNAV_USE_LOADING_BAR
@@ -1159,7 +1200,7 @@ Editor_SmartNavReveal(explorerAction := "") {
             SendLevel 0
             SendInput "^h"
 
-            if (explorerAction = "copy" || explorerAction = "open")
+            if (explorerAction = "copy" || explorerAction = "open" || explorerAction = "share")
                 ok := Editor_SmartNavRevealAfterSendH(editorHwnd, explorerAction, expectedBasename, preExplorers)
             else
                 ok := true

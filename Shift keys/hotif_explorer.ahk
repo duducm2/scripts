@@ -449,7 +449,9 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
     ;   3) Full permissions: Link settings -> "People in Bosch Group" -> Apply
     ;      Limited sharing: skip settings (main banner) or Back from single-option Link settings
     ;   4) Copy link and confirm clipboard changed
+    ; Returns true on success, false on failure.
 
+    shareOk := false
     try {
         ; Ensure focus and file selection in ItemsView before opening the context menu.
         Explorer_EnsureItemsViewFocusPreserveSelection()
@@ -506,11 +508,13 @@ Explorer_CopyOneDriveShareLink_BoschGroup() {
         try WinClose("ahk_id " shareHwnd)
         catch {
         }
+        shareOk := true
     } catch Error as e {
         MsgBox("Share macro failed:`n" e.Message, "Shift+R (Share file)", "IconX")
     } finally {
         HideSmallLoadingIndicator_ChatGPT()
     }
+    return shareOk
 }
 
 OneDriveShare_WaitForShareDialogHwnd(timeout := 20000) {

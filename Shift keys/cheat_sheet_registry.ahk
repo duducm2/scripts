@@ -431,6 +431,7 @@ cheatSheets["Cursor.exe"] := "
     📌 [P] [P]in current tab
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
+    📤 [6] Share in OneDrive — Reveal + share link (ahk)
     📄 [R] Refresh preview
     📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
@@ -544,6 +545,7 @@ cheatSheets["Code.exe"] := "
     📌 [P] [P]in current tab
     📋 [I] Reveal in Explorer + copy file (ahk)
     📂 [H] Reveal in Explorer + open file (ahk)
+    📤 [6] Share in OneDrive — Reveal + share link (ahk)
     📄 [R] Refresh preview
     📄 [E] File: Op[E]n File (ahk)
     📄 [F] File: New [F]ile
