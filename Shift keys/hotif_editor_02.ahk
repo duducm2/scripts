@@ -927,6 +927,8 @@ GetEmojiByNumber(numberText) {
     emojiMap[4] := "✅"
     emojiMap[5] := "❓"
     emojiMap[6] := "ℹ️"
+    emojiMap[7] := "🟦"
+    emojiMap[8] := "🟧"
     return (emojiMap.Has(number)) ? emojiMap[number] : ""
 }
 
@@ -976,7 +978,7 @@ SubmitEmoji(ctrl, *) {
             ctrl.Gui.Destroy()
             SetTimer(() => InsertEmojiToTarget(emoji, targetWin), -75)
         } else {
-            MsgBox "Invalid selection. Please choose 1-6.", "Emoji Selector", "IconX"
+            MsgBox "Invalid selection. Please choose 1-8.", "Emoji Selector", "IconX"
         }
     }
 }
@@ -1000,7 +1002,7 @@ CancelEmoji(ctrl, *) {
 
         ; Add instruction text
         emojiGui.AddText("w350 Center",
-            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. ✅ Check`n5. ❓ Questions/Uncertain items`n6. ℹ️ Info/Notes`n`nType a number (1-6):"
+            "Select emoji to insert:`n`n1. 🔲 Tasks/Checklist items`n2. ⏳ Time-sensitive tasks`n3. ⚡ First priority`n4. ✅ Check`n5. ❓ Questions/Uncertain items`n6. ℹ️ Info/Notes`n7. 🟦 Blue`n8. 🟧 Orange`n`nType a number (1-8):"
         )
 
         ; Add input field with auto-submit functionality
@@ -1014,7 +1016,7 @@ CancelEmoji(ctrl, *) {
         emojiGui["EmojiInput"].OnEvent("Change", AutoSubmitEmoji)
 
         ; Show GUI and focus input
-        emojiGui.Show("w350 h200")
+        emojiGui.Show("w350 h240")
         emojiGui["EmojiInput"].Focus()
 
     } catch Error as e {

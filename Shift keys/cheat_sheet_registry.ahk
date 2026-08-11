@@ -192,7 +192,7 @@ cheatSheets["OutlookMessage"] := "
 cheatSheets["TeamsMeeting"] := "
 (
     Teams - Meeting (Shift)
-    💬 [C]Open [C]hat pane
+    💬 [C]Open [C]hat pane1
     ⛶ [M]aximize [M]eeting window
     👍 [R]eact / [R]eagir
     🎥 [J][J]oin now (camera + mic on)
