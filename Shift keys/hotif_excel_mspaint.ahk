@@ -65,7 +65,7 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     }
 }
 
-; Shift + I : From Text/CSV ← clipboard path → shared import pipeline
+; Shift + I : From Text/CSV ← clipboard path → shared import pipeline → Save CSV UTF-8
 +i:: {
     Excel_ImportCsvFromClipboardPath()
 }
@@ -569,6 +569,9 @@ Excel_ImportCsvFromClipboardPath() {
     catch {
     }
     FileDialog_ImportCsvLoad()
+    ; Same as Shift+U: F12 → paste clipboard path → CSV UTF-8
+    Sleep 400
+    Excel_SaveCsvUtf8FromClipboardPath()
 }
 
 ; Clipboard holds CSV path → F12 Save As → paste → FileDialog_SaveAsCsvUtf8.
