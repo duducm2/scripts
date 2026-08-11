@@ -386,17 +386,13 @@ class D2C_FlowManager {
                 return
             }
 
-            A_Clipboard := ""
-            A_Clipboard := messageText
-            if (!ClipWait(2)) {
-                ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - COULD NOT RESTORE DICTATION", 3000, BANNER_ACCENT_ERROR)
+            hwnd := TeamsJump_ResolveChatHwnd()
+            if (hwnd <= 0 || !TeamsJump_ActivateWindowWithRetry(hwnd, 3, 300)) {
+                ShowCenteredOverlay_Utils("❌ Could not activate Teams chat.", 2500, BANNER_ACCENT_ERROR)
                 return
             }
-
-            Sleep 100
-            Send "^v"
-            ; Let Ctrl+V finish reading the message before restoring the prior clipboard.
-            Sleep 350
+            ; Focus composer + paste with verify/retry (replaces blind ^v).
+            TeamsJump_PasteAndVerify(hwnd, messageText)
         } finally {
             A_Clipboard := clipSaved
             if (ClipWait(1)) {
@@ -417,8 +413,9 @@ class D2C_FlowManager {
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
+        messageText := A_Clipboard
         try {
-            TeamsJump_PasteToComposer()
+            TeamsJump_PasteToComposer(messageText)
         } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true

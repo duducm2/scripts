@@ -246,14 +246,25 @@ TeamsJump_AttachUiaRoot(hwnd) {
     }
 }
 
-; Focus the chat compose Edit/Document. Returns true if focus likely succeeded.
-TeamsJump_FocusComposer(hwnd) {
+; True when text looks like a composer placeholder name, not real typed content.
+TeamsJump_IsComposerPlaceholder(text) {
+    t := Trim(text)
+    if (t = "")
+        return true
+    for name in TeamsJump_ComposerNameCandidates() {
+        if (StrLower(t) = StrLower(name))
+            return true
+    }
+    return false
+}
+
+; Find the chat compose Edit/Document element, or 0.
+TeamsJump_FindComposer(hwnd) {
     if (!hwnd)
-        return false
-    focused := PasteField_TryFocusMappedField(hwnd)
+        return 0
     root := TeamsJump_AttachUiaRoot(hwnd)
     if (!root)
-        return focused
+        return 0
     names := TeamsJump_ComposerNameCandidates()
     types := ["Edit", "Document"]
     for typeName in types {
@@ -269,8 +280,8 @@ TeamsJump_FocusComposer(hwnd) {
                     el := 0
                 }
             }
-            if (el && PasteField_SetFocusWithFallback(el))
-                return true
+            if (el)
+                return el
         }
     }
     ; Last resort: any Edit whose name looks like a message box.
@@ -281,18 +292,129 @@ TeamsJump_FocusComposer(hwnd) {
             try n := el.Name
             nLower := StrLower(n)
             if (InStr(nLower, "message") || InStr(nLower, "mensagem") || InStr(nLower, "type a") || InStr(nLower,
-                "digite")) {
-                if (PasteField_SetFocusWithFallback(el))
-                    return true
-            }
+                "digite"))
+                return el
         }
     } catch {
     }
+    return 0
+}
+
+; Focus the chat compose Edit/Document. Returns true if focus likely succeeded.
+TeamsJump_FocusComposer(hwnd) {
+    if (!hwnd)
+        return false
+    focused := PasteField_TryFocusMappedField(hwnd)
+    el := TeamsJump_FindComposer(hwnd)
+    if (el && PasteField_SetFocusWithFallback(el))
+        return true
     return focused
 }
 
-; Activate Teams chat, focus composer via UIA, paste clipboard. Never presses Enter to send.
-TeamsJump_PasteToComposer() {
+; Read composer text via UIA Value/TextPattern; empty on failure / placeholder.
+TeamsJump_ComposerGetTextViaUia(hwnd) {
+    el := TeamsJump_FindComposer(hwnd)
+    if (!el)
+        return ""
+    try {
+        text := Trim(el.Value)
+        if (text != "" && !TeamsJump_IsComposerPlaceholder(text))
+            return text
+    } catch {
+    }
+    try {
+        text := Trim(el.TextPattern.DocumentRange.GetText(-1))
+        if (text != "" && !TeamsJump_IsComposerPlaceholder(text))
+            return text
+    } catch {
+    }
+    return ""
+}
+
+; Focus composer and copy selection (clipboard restored). Fallback when UIA Value is empty.
+TeamsJump_ComposerGetTextViaClipboard(hwnd) {
+    if (!hwnd)
+        return ""
+    if (!TeamsJump_FocusComposer(hwnd))
+        return ""
+    Sleep 60
+    saved := ClipboardAll()
+    try {
+        A_Clipboard := ""
+        Send "^a"
+        Sleep 40
+        Send "^c"
+        if !ClipWait(1, 1)
+            return ""
+        text := A_Clipboard
+        if (Type(text) != "String")
+            text := ""
+        text := Trim(text)
+        if (TeamsJump_IsComposerPlaceholder(text))
+            return ""
+        return text
+    } finally {
+        Sleep 40
+        try A_Clipboard := saved
+        catch {
+        }
+    }
+}
+
+TeamsJump_ComposerGetText(hwnd) {
+    if (!hwnd)
+        hwnd := WinExist("A")
+    text := TeamsJump_ComposerGetTextViaUia(hwnd)
+    if (text != "")
+        return text
+    return TeamsJump_ComposerGetTextViaClipboard(hwnd)
+}
+
+; Paste expectedText into focused composer; verify content landed; retry up to maxAttempts.
+TeamsJump_PasteAndVerify(hwnd, expectedText, maxAttempts := 3) {
+    expected := Trim(expectedText)
+    if (!hwnd || expected = "") {
+        ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    loop maxAttempts {
+        if (!WinExist("ahk_id " hwnd)) {
+            ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        if (!WinActive("ahk_id " hwnd)) {
+            if (!TeamsJump_ActivateWindowWithRetry(hwnd, 2, 300)) {
+                Sleep 100
+                continue
+            }
+        }
+        A_Clipboard := ""
+        A_Clipboard := expected
+        if (!ClipWait(2) || Trim(A_Clipboard) != expected) {
+            Sleep 100
+            continue
+        }
+        TeamsJump_FocusComposer(hwnd)
+        Sleep 60
+        Send "^v"
+        Sleep 200
+        got := TeamsJump_ComposerGetText(hwnd)
+        if (got != "" && InStr(got, expected))
+            return true
+        Sleep 150
+    }
+    ShowCenteredOverlay_Utils("❌ Teams paste failed - composer empty", 3000, BANNER_ACCENT_ERROR)
+    return false
+}
+
+; Activate Teams chat, focus composer via UIA, paste + verify. Never presses Enter to send.
+; expectedText: fixed message to paste (default = current A_Clipboard at call time).
+TeamsJump_PasteToComposer(expectedText := "") {
+    if (expectedText = "")
+        expectedText := A_Clipboard
+    if (Type(expectedText) != "String")
+        expectedText := ""
+
     if (!CheckAndOpenOutlookTeams(false, true))
         return false
 
@@ -318,8 +440,5 @@ TeamsJump_PasteToComposer() {
 
     Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
     Sleep 80
-    TeamsJump_FocusComposer(hwnd)
-    Sleep 60
-    Send "^v"
-    return true
+    return TeamsJump_PasteAndVerify(hwnd, expectedText)
 }
