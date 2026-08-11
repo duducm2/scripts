@@ -870,6 +870,7 @@ cheatSheets["EXCEL.EXE"] := "
     Excel (Shift)
     ⚪ [W]Select [W]hite Color
     ✏️ [E]Enable [E]diting
+    📥 [I][I]mport CSV (clipboard path → From Text/CSV → format → shade)
     📊 [C][C]SV to columns (semicolon delimited)
     📋 [V]Quickly [V]aste and extract CSV
     ➕ [A][A]dd multiple rows (10 rows)

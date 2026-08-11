@@ -65,6 +65,11 @@ Excel_CSVToColumns(autoSelectSemicolon := false) {
     }
 }
 
+; Shift + I : From Text/CSV ← clipboard path → shared import pipeline
++i:: {
+    Excel_ImportCsvFromClipboardPath()
+}
+
 ; Shift + V : Quickly paste and extract CSV (Paste, CSV to columns)
 +v:: {
     Excel_AddMultipleRows()    ; Add multiple rows first
@@ -445,6 +450,120 @@ Excel_ShadeOutsideImportedTable(color := 0x505050) {
         tableRange.Select()
     } catch {
     }
+}
+
+; Open Data → From Text/CSV (ExecuteMso, then UIA name fallback).
+Excel_OpenFromTextCsv() {
+    try {
+        xl := ComObjActive("Excel.Application")
+        xl.CommandBars.ExecuteMso("PowerQueryNewFromTextCsv")
+        return true
+    } catch {
+    }
+    excelHwnd := WinExist("ahk_exe EXCEL.EXE")
+    if !excelHwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(excelHwnd)
+        for name in ["From Text/CSV", "De Texto/CSV", "Texto/CSV"] {
+            btn := 0
+            try btn := WaitForButton(root, name, 1500)
+            catch {
+                btn := 0
+            }
+            if btn {
+                try {
+                    btn.Invoke()
+                    return true
+                } catch {
+                }
+                try {
+                    btn.Click()
+                    return true
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+; Wait for Excel's file-open dialog (#32770).
+Excel_WaitForFileDialog(timeoutMs := 15000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        hwnd := 0
+        try hwnd := WinExist("ahk_class #32770 ahk_exe EXCEL.EXE")
+        catch {
+            hwnd := 0
+        }
+        if !hwnd {
+            try {
+                for id in WinGetList("ahk_class #32770") {
+                    try {
+                        if (WinGetProcessName("ahk_id " id) = "EXCEL.EXE") {
+                            hwnd := id
+                            break
+                        }
+                    } catch {
+                    }
+                }
+            } catch {
+            }
+        }
+        if hwnd
+            return hwnd
+        Sleep 200
+    }
+    return 0
+}
+
+; Clipboard holds CSV path → From Text/CSV → paste → FileDialog_ImportCsvLoad.
+Excel_ImportCsvFromClipboardPath() {
+    hwndExcel := WinExist("A")
+    try {
+        StandardLoadingBar_Show("⏳ Opening From Text/CSV…", BANNER_ACCENT_INTERMEDIATE, {
+            passive: false, centerOnHwnd: hwndExcel, textWidth: 480 })
+    } catch {
+    }
+    if !Excel_OpenFromTextCsv() {
+        try StandardLoadingBar_Update("❌ From Text/CSV not found", BANNER_ACCENT_ERROR)
+        catch {
+        }
+        try StandardLoadingBar_Hide(800)
+        catch {
+        }
+        return
+    }
+    try StandardLoadingBar_Update("⏳ Waiting for file dialog…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    dlgHwnd := Excel_WaitForFileDialog()
+    if !dlgHwnd {
+        try StandardLoadingBar_Update("❌ File dialog not found", BANNER_ACCENT_ERROR)
+        catch {
+        }
+        try StandardLoadingBar_Hide(800)
+        catch {
+        }
+        return
+    }
+    try StandardLoadingBar_Update("⏳ Pasting CSV path…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    try WinActivate("ahk_id " dlgHwnd)
+    catch {
+    }
+    Sleep 200
+    FileDialog_FocusFileNameField()
+    Sleep 50
+    Send "^v"
+    Sleep 300
+    try StandardLoadingBar_Hide(200)
+    catch {
+    }
+    FileDialog_ImportCsvLoad()
 }
 
 ; Shift + N : Narrow oversized columns (autofit, then cap width >15 → 5)
