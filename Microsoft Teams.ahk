@@ -530,9 +530,58 @@ RunTeams() {
 ; =============================================================================
 ; Start New Conversation
 ; Hotkey: Win+Alt+Shift+R
+; 1× = Teams jump to chat; 2× within 400ms = WhatsApp jump to chat
 ; Original File: Microsoft Teams - New conversation.ahk
 ; =============================================================================
-#!+r:: {
+global Teams_R_DoubleTapArmed := false
+global Teams_R_LastPressTick := 0
+global Teams_R_DoubleTapThresholdMs := 400  ; Matches ZMK tapping-term-ms for tap-dance
+global Teams_R_DoubleTapTimer := 0
+global Teams_R_DoubleTapOverlayGui := ""
+
+Teams_R_DoubleTap_ShowOverlay() {
+    global Teams_R_DoubleTapOverlayGui
+    if (Teams_R_DoubleTapOverlayGui) {
+        Teams_R_DoubleTapOverlayGui.Destroy()
+        Teams_R_DoubleTapOverlayGui := ""
+    }
+    Teams_R_DoubleTapOverlayGui := Gui("+ToolWindow +AlwaysOnTop -Caption +E0x20 -DPIScale", "Teams_R_DoubleTapOverlay"
+    )
+    Teams_R_DoubleTapOverlayGui.BackColor := "2980B9"
+    WinSetTransColor("2980B9", Teams_R_DoubleTapOverlayGui.Hwnd)
+    Teams_R_DoubleTapOverlayGui.SetFont("s11 w700 cWhite", "Segoe UI")
+    ovlW := 300, ovlH := 36
+    Teams_R_DoubleTapOverlayGui.Add("Text", "x12 y8 w276 h20 0x200 Background2980B9 Center",
+        "Tap again → WhatsApp")
+    mon := 0
+    try mon := MonitorGetPrimary()
+    MonitorGetWorkArea(mon, &mlx, &mty, &mrx, &mby)
+    ovlX := mlx + ((mrx - mlx) - ovlW) // 2
+    ovlY := mty + 48
+    Teams_R_DoubleTapOverlayGui.Show("NoActivate x" ovlX " y" ovlY " w" ovlW " h" ovlH)
+}
+
+Teams_R_DoubleTap_HideOverlay() {
+    global Teams_R_DoubleTapOverlayGui
+    if (Teams_R_DoubleTapOverlayGui) {
+        Teams_R_DoubleTapOverlayGui.Destroy()
+        Teams_R_DoubleTapOverlayGui := ""
+    }
+}
+
+class Teams_R_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global Teams_R_DoubleTapArmed, Teams_R_DoubleTapTimer
+        if (!Teams_R_DoubleTapArmed)
+            return
+        Teams_R_DoubleTapArmed := false
+        Teams_R_DoubleTapTimer := 0
+        Teams_R_DoubleTap_HideOverlay()
+        Teams_StartNewConversationJump()
+    }
+}
+
+Teams_StartNewConversationJump() {
     if (!CheckAndOpenOutlookTeams(false, true))
         return
     contact := Trim(InputBox("Enter a Teams contact name:", "Jump to Chat").Value)
@@ -546,4 +595,44 @@ RunTeams() {
         if (ClipWait(1)) {
         }
     }
+}
+
+WhatsApp_StartNewConversationJump() {
+    contact := Trim(InputBox("Enter a WhatsApp contact name:", "Jump to Chat").Value)
+    if contact = ""
+        return
+    clipSaved := ClipboardAll()
+    try {
+        WhatsAppJumpToChat(contact)
+    } finally {
+        A_Clipboard := clipSaved
+        if (ClipWait(1)) {
+        }
+    }
+}
+
+#!+r:: {
+    global Teams_R_DoubleTapArmed, Teams_R_LastPressTick, Teams_R_DoubleTapThresholdMs,
+        Teams_R_DoubleTapTimer
+
+    now := A_TickCount
+    elapsed := (Teams_R_LastPressTick > 0) ? (now - Teams_R_LastPressTick) : 9999
+
+    if (Teams_R_DoubleTapArmed && elapsed >= 0 && elapsed < Teams_R_DoubleTapThresholdMs) {
+        Teams_R_DoubleTapArmed := false
+        Teams_R_LastPressTick := 0
+        if (Teams_R_DoubleTapTimer) {
+            SetTimer(Teams_R_DoubleTapTimer, 0)
+            Teams_R_DoubleTapTimer := 0
+        }
+        Teams_R_DoubleTap_HideOverlay()
+        WhatsApp_StartNewConversationJump()
+        return
+    }
+
+    Teams_R_LastPressTick := now
+    Teams_R_DoubleTapArmed := true
+    Teams_R_DoubleTap_ShowOverlay()
+    Teams_R_DoubleTapTimer := ObjBindMethod(Teams_R_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(Teams_R_DoubleTapTimer, -Teams_R_DoubleTapThresholdMs)
 }

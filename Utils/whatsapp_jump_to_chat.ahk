@@ -127,13 +127,115 @@ WhatsAppJump_ActivateHwnd(hwnd, timeoutSec := 5) {
     return !!WinWaitActive("ahk_id " hwnd, , 2)
 }
 
-; Returns true if WhatsApp is active and ready for keyboard shortcuts.
-; Cold-starts settle ~2s after the window appears so the SPA can accept Alt+K.
+; Shell gate: Unread/All filter tabs or Archived button (same anchors as hotif_whatsapp).
+WhatsAppJump_IsUiReady(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        if (!uia)
+            return false
+        try {
+            if (uia.FindElement({ Name: "Unread", AutomationId: "unread-filter", Type: "TabItem" }))
+                return true
+        } catch {
+        }
+        try {
+            if (uia.FindElement({ Name: "All", AutomationId: "all-filter", Type: "TabItem" }))
+                return true
+        } catch {
+        }
+        try {
+            if (uia.FindElement({ Name: "Archived ", Type: "Button" }))
+                return true
+        } catch {
+        }
+    } catch {
+    }
+    return false
+}
+
+; Poll until shell chrome is stable. Cold start uses longer timeout/streak than warm.
+WhatsAppJump_WaitUntilUiReady(initialHwnd := 0, timeoutMs := 25000, neededStreak := 2, openStart := 0) {
+    if (!openStart)
+        openStart := A_TickCount
+    deadline := A_TickCount + timeoutMs
+    readyStreak := 0
+    lastUpdate := 0
+    while (A_TickCount < deadline) {
+        hwnd := WhatsAppJump_FindHwnd()
+        if (hwnd <= 0 && initialHwnd > 0 && WinExist("ahk_id " initialHwnd))
+            hwnd := initialHwnd
+        elapsed := Round((A_TickCount - openStart) / 1000)
+        if ((A_TickCount - lastUpdate) >= 800) {
+            WhatsAppJump_UpdateLoading("⏳ Waiting until WhatsApp is fully ready... (" elapsed "s)")
+            lastUpdate := A_TickCount
+        }
+        if (hwnd > 0 && WhatsAppJump_IsUiReady(hwnd)) {
+            readyStreak += 1
+            if (readyStreak >= neededStreak) {
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 2)
+                WhatsAppJump_UpdateLoading("⏳ WhatsApp shell ready — finishing load...")
+                Sleep 600
+                return hwnd
+            }
+        } else {
+            readyStreak := 0
+        }
+        Sleep 200
+    }
+    return 0
+}
+
+; After Alt+K: is keyboard focus on the search Edit?
+WhatsAppJump_IsSearchEditFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (!fe)
+            return false
+        tp := 0
+        nm := ""
+        try tp := fe.Type
+        try nm := fe.Name
+        if (tp = 50004 || tp = "Edit")
+            return true
+        if (nm && RegExMatch(nm, "i)(search|buscar|pesquisar|encontrar)"))
+            return true
+    } catch {
+    }
+    return false
+}
+
+; Quality gate: Alt+K until search Edit is focused (retries). Returns true if focused.
+WhatsAppJump_OpenSearchUntilFocused(hwnd, maxAttempts := 8) {
+    loop maxAttempts {
+        WhatsAppJump_UpdateLoading("⏳ Opening search (attempt " A_Index "/" maxAttempts ")...")
+        if (hwnd > 0) {
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1)
+        }
+        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}{LCtrl Up}{RCtrl Up}"
+        Sleep 50
+        Send "!k"
+        Sleep 500
+        if (WhatsAppJump_IsSearchEditFocused()) {
+            Sleep 200
+            return true
+        }
+        Sleep 350
+    }
+    return false
+}
+
+; Returns true if WhatsApp is active and UI chrome is ready for keyboard shortcuts.
 WhatsAppJump_ActivateOrOpen() {
     global IS_WORK_ENVIRONMENT
     prevTitleMode := A_TitleMatchMode
     try {
         SetTitleMatchMode(2)
+        didColdStart := false
+        openStart := A_TickCount
         hwnd := WhatsAppJump_FindHwnd()
         if (hwnd) {
             WhatsAppJump_UpdateLoading("⏳ Activating WhatsApp...")
@@ -142,34 +244,38 @@ WhatsAppJump_ActivateOrOpen() {
                 ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
                 return false
             }
-            WhatsAppJump_HideLoading()
-            return true
-        }
-
-        WhatsAppJump_UpdateLoading("⏳ Opening WhatsApp...")
-        if (IS_WORK_ENVIRONMENT) {
-            Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
         } else {
-            Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+            didColdStart := true
+            WhatsAppJump_UpdateLoading("⏳ Opening WhatsApp...")
+            if (IS_WORK_ENVIRONMENT) {
+                Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
+            } else {
+                Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+            }
+
+            WhatsAppJump_UpdateLoading("⏳ Waiting for WhatsApp...")
+            hwnd := WhatsAppJump_WaitHwnd(30)
+            if !hwnd {
+                WhatsAppJump_HideLoading()
+                ShowCenteredOverlay_Utils("❌ WhatsApp did not start in time.", 2000, BANNER_ACCENT_ERROR)
+                return false
+            }
+            if !WhatsAppJump_ActivateHwnd(hwnd, 5) {
+                WhatsAppJump_HideLoading()
+                ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
+                return false
+            }
         }
 
-        WhatsAppJump_UpdateLoading("⏳ Waiting for WhatsApp...")
-        hwnd := WhatsAppJump_WaitHwnd(30)
+        ; Cold: 45s / streak 8; warm: 8s / streak 2 (SPA may still be hydrating).
+        timeoutMs := didColdStart ? 45000 : 8000
+        neededStreak := didColdStart ? 8 : 2
+        hwnd := WhatsAppJump_WaitUntilUiReady(hwnd, timeoutMs, neededStreak, openStart)
         if !hwnd {
             WhatsAppJump_HideLoading()
-            ShowCenteredOverlay_Utils("❌ WhatsApp did not start in time.", 2000, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ WhatsApp UI did not become ready in time.", 2500, BANNER_ACCENT_ERROR)
             return false
         }
-        if !WhatsAppJump_ActivateHwnd(hwnd, 5) {
-            WhatsAppJump_HideLoading()
-            ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
-        ; SPA / Chrome App needs time before Alt+K and paste work.
-        WhatsAppJump_UpdateLoading("⏳ WhatsApp loading...")
-        Sleep 2000
-        WinActivate("ahk_id " hwnd)
-        Sleep 150
         WhatsAppJump_HideLoading()
         return true
     } finally {
@@ -198,16 +304,19 @@ WhatsAppJumpToChat(contact, keepBarVisible := false) {
 
         ; ActivateOrOpen hides the bar on success; UpdateLoading recreates it for jump steps.
         WhatsAppJump_UpdateLoading("⏳ Focusing WhatsApp...")
-        if (hwnd := WhatsAppJump_FindHwnd()) {
+        hwnd := WhatsAppJump_FindHwnd()
+        if (hwnd) {
             WhatsAppJump_ActivateHwnd(hwnd, 2)
         }
         Sleep 100
 
-        ; Alt+K is the WhatsApp search shortcut (Shift keys maps Shift+S to this)
-        WhatsAppJump_UpdateLoading("⏳ Searching contact...")
-        Send "!k"
-        Sleep 250
+        if (!WhatsAppJump_OpenSearchUntilFocused(hwnd)) {
+            WhatsAppJump_HideLoading()
+            ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp search.", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
 
+        WhatsAppJump_UpdateLoading("⏳ Searching contact...")
         loop 5 {
             A_Clipboard := ""
             A_Clipboard := contact
