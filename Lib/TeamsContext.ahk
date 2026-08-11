@@ -67,6 +67,10 @@ IsTeamsMeetingTitle(title) {
         return true
     if InStr(title, "Modo de exibição compacto da reunião")
         return true
+    ; Pre-join / lobby (e.g. "Meeting join | … | Microsoft Teams")
+    if InStr(title, "Meeting join |") || InStr(title, "Ingressar na reunião |") || InStr(title,
+        "Entrar na reunião |")
+        return true
     return false
 }
 
@@ -127,6 +131,10 @@ TeamsResolveContextUncached(hwnd) {
     }
     if IsTeamsSharingBarTitle(title)
         return ""
+    ; Title first: pre-join is TeamsWebView and would otherwise fall through as chat
+    ; when the deep UIA toolbar probe misses/times out.
+    if IsTeamsMeetingTitle(title)
+        return "meeting"
     if TeamsHasMeetingToolbar(hwnd)
         return "meeting"
     if IsTeamsWebViewHwnd(hwnd) || TeamsTitleLooksLikeChat(title)
