@@ -701,6 +701,142 @@ Editor_WaitForGitOperationIdle(editorHwnd := 0, timeoutMs := 12000, &failReason 
     return false
 }
 
+Editor_EnsureQuickInputClosed(editorHwnd := 0, timeoutMs := 2000) {
+    if !Editor_IsQuickInputOpen(editorHwnd)
+        return true
+    Send "{Escape}"
+    return Editor_WaitForQuickInputClosed(editorHwnd, timeoutMs)
+}
+
+Editor_GetQuickInputPickItemsFromRoot(root) {
+    items := []
+    if !root
+        return items
+    qi := Editor_FindQuickInputFromRoot(root)
+    if !qi
+        return items
+    try {
+        tree := qi.FindFirst({ ClassName: "monaco-list", matchmode: "Substring" })
+        if tree {
+            for el in tree.FindAll({ Type: UIA.Type.TreeItem }) {
+                try {
+                    if el.Name
+                        items.Push(el)
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    if items.Length
+        return items
+    for type in [UIA.Type.TreeItem, UIA.Type.ListItem] {
+        try {
+            for el in qi.FindAll({ Type: type }) {
+                try {
+                    if el.Name
+                        items.Push(el)
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+    return items
+}
+
+Editor_GetQuickInputSelectedPickItem(root) {
+    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
+        try {
+            if el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+            && el.SelectionItemPattern.IsSelected
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+Editor_FindQuickInputCommandItem(root, exactName) {
+    if !root || exactName = ""
+        return 0
+    qi := Editor_FindQuickInputFromRoot(root)
+    searchRoots := []
+    if qi
+        searchRoots.Push(qi)
+    searchRoots.Push(root)
+    for sr in searchRoots {
+        for type in [UIA.Type.TreeItem, UIA.Type.ListItem] {
+            try {
+                el := sr.FindFirst({ Name: exactName, Type: type, matchmode: "Exact", cs: false })
+                if el
+                    return el
+            } catch {
+            }
+        }
+    }
+    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
+        try {
+            if (el.Name = exactName)
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+Editor_CountQuickInputExactMatches(root, exactName) {
+    count := 0
+    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
+        try {
+            if (el.Name = exactName)
+                count += 1
+        } catch {
+        }
+    }
+    return count
+}
+
+Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText) {
+    if !Editor_IsQuickInputOpen(editorHwnd)
+        return true
+    root := Editor_GitUiaRoot(editorHwnd)
+    qi := Editor_FindQuickInputFromRoot(root)
+    if qi && Editor_QuickInputHasFocusedEdit(qi) {
+        filter := ""
+        try filter := qi.FindFirst({ Type: UIA.Type.Edit }).Value
+        catch {
+            try filter := qi.FindFirst({ Type: UIA.Type.Edit }).Name
+            catch filter := ""
+        }
+        if (filter != commandText)
+            return true
+    }
+    return false
+}
+
+Editor_GitActivateQuickPickItem(el) {
+    if !el
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) {
+            el.SelectionItemPattern.Select()
+            Sleep 60
+            Send "{Enter}"
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        Sleep 60
+        Send "{Enter}"
+        return true
+    } catch {
+    }
+    return Editor_GitActivateElement(el)
+}
+
 Editor_GitActivateElement(el) {
     if !el
         return false
@@ -728,45 +864,13 @@ Editor_GitActivateElement(el) {
 
 ; Exact Name match — required when both "Git: Stash" and "Git: Stash (Include Untracked)" appear.
 Editor_FindQuickInputListItemExact(root, exactName) {
-    if !root || exactName = ""
-        return 0
-    searchRoots := []
-    qi := Editor_FindQuickInputFromRoot(root)
-    if qi
-        searchRoots.Push(qi)
-    searchRoots.Push(root)
-    for sr in searchRoots {
-        try {
-            el := sr.FindFirst({ Name: exactName, Type: UIA.Type.ListItem, matchmode: "Exact", cs: false })
-            if el
-                return el
-        } catch {
-        }
-        try {
-            el := sr.FindFirst({ Name: exactName, matchmode: "Exact", cs: false })
-            if el {
-                try {
-                    if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
-                        return el
-                } catch {
-                }
-                ct := 0
-                try ct := el.ControlType
-                catch {
-                    ct := 0
-                }
-                if (ct = UIA.Type.ListItem || ct = UIA.Type.TreeItem)
-                    return el
-            }
-        } catch {
-        }
-    }
-    return 0
+    return Editor_FindQuickInputCommandItem(root, exactName)
 }
 
-Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := "") {
+Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := "", requireExactPick := false) {
     if !editorHwnd
         editorHwnd := WinExist("A")
+    Editor_EnsureQuickInputClosed(editorHwnd)
     Send "^+p"
     if !Editor_WaitForStashQuickInput(editorHwnd, 4000) {
         Sleep 600
@@ -777,14 +881,35 @@ Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := 
     }
     Sleep 150
     SendText commandText
+    Sleep 120
     startTick := A_TickCount
-    deadline := A_TickCount + 3500
+    deadline := A_TickCount + 5000
     while (A_TickCount < deadline) {
         root := Editor_GitUiaRoot(editorHwnd)
         if root {
-            el := Editor_FindQuickInputListItemExact(root, commandText)
-            if el && Editor_GitActivateElement(el)
-                return true
+            el := Editor_FindQuickInputCommandItem(root, commandText)
+            if el && Editor_GitActivateQuickPickItem(el) {
+                Sleep 120
+                if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
+                    return true
+            }
+            sel := Editor_GetQuickInputSelectedPickItem(root)
+            if sel {
+                try selName := sel.Name
+                catch selName := ""
+                    if (selName = commandText) {
+                        Send "{Enter}"
+                        Sleep 120
+                        if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
+                            return true
+                    }
+            }
+            if !requireExactPick && Editor_CountQuickInputExactMatches(root, commandText) = 1 {
+                Send "{Enter}"
+                Sleep 120
+                if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
+                    return true
+            }
         }
         Editor_GitPollSleep(startTick)
     }
@@ -811,7 +936,7 @@ Editor_CompleteStashMessageDialog(editorHwnd, &failReason := "") {
 
 Editor_RunGitStash(editorHwnd, commandText, &failReason := "") {
     global g_EditorGitDidStashThisFlow
-    if !Editor_RunCommandPaletteGitCommand(commandText, editorHwnd, &failReason)
+    if !Editor_RunCommandPaletteGitCommand(commandText, editorHwnd, &failReason, true)
         return false
     g_EditorGitDidStashThisFlow := true
     return Editor_CompleteStashMessageDialog(editorHwnd, &failReason)
