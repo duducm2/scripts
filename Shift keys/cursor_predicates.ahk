@@ -538,7 +538,7 @@ Editor_GitStashAndPull() {
     Send "+p"
     if Editor_WaitForGitPullSettled(hwnd, hadPullPending) {
         try {
-            soundPath := A_ScriptDir . "\assets\sounds\quick-update-success.wav"
+            soundPath := A_ScriptDir . "\assets\sounds\pull-successful.wav"
             if FileExist(soundPath)
                 ScriptSoundPlay(soundPath, true)
         } catch {
