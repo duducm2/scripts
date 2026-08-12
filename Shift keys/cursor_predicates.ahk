@@ -687,9 +687,12 @@ Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
     }
     resultPath := A_Temp "\editor-git-" A_TickCount ".json"
     timeoutSec := Max(30, Round(timeoutMs / 1000))
-    cmd := 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ps1 '" -RepoDir "' repoDir
-        . '" -ResultPath "' resultPath '" -TimeoutSec ' timeoutSec
-    exitCode := RunWaitWithTimeout(cmd, repoDir, "Hide", timeoutMs)
+    ; Direct RunWait avoids RunWaitWithTimeout cmd.exe nesting breaking paths with spaces (-196608).
+    cmd := Format(
+        'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{1}" -RepoDir "{2}" -ResultPath "{3}" -TimeoutSec {4}',
+        ps1, repoDir, resultPath, timeoutSec)
+    Editor_GitDebugLogSimple("Editor_RunGitStashFetchPullScript", "cmd", "H4", "cmdLen", StrLen(cmd))
+    exitCode := RunWait(cmd, repoDir, "Hide")
     Editor_GitDebugLogSimple("Editor_RunGitStashFetchPullScript", "done", "H4", "exitCode", exitCode, "jsonExists",
         FileExist(resultPath) ? "yes" : "no")
     try {
