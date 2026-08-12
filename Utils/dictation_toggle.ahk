@@ -79,7 +79,7 @@ LogDebug(sessionId, runId, hypothesisId, location, message, data := "") {
 }
 
 ; Constants for dictation indicator
-global DICTATION_SQUARE_SIZE := 105  ; Flag height in px (150 minus 30%; aspect preserved)
+global DICTATION_SQUARE_SIZE := 50  ; Flag height in px (150 minus 30%; aspect preserved)
 global DICTATION_PULSE_INTERVAL := 50 ; Timer interval in ms (follow active window)
 
 ; Get the monitor that contains the active window
