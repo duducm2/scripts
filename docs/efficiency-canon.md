@@ -283,3 +283,14 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Do not** poll with repeated full-tree `FindAll` (Button + MenuItem + ListItem) per Down step — that is §3 “full UIA tree scans” on a hotkey path.
 - **Do:** `Send "^k"` → bounded deadline (~1500 ms) with short Sleep (~40 ms); each tick **`FindFirst`** Name substring `"Editar favorito"` / `"Edit bookmark"` (then `"favorit"`/`"bookmark"` + edit-stem check); **`InvokePattern`/`Click`** when found. Send `{Down}` only while FindFirst still misses (lazy populate), capped (~12).
 - **Rollback:** restore prior focus-walk / multi-`FindAll` loop in [`command_palette_helpers.ahk`](../Shift keys/command_palette_helpers.ahk) only if FindFirst misses localized labels on a specific PowerToys build.
+
+---
+
+## 20. Editor Git stash/fetch/pull (Alt+S, 2026)
+
+- **Do not** use native **Alt+S** or **Shift+P** for the macro path — basic stash omits untracked files; Shift+P only works when the user bound **Git: Pull** in keybindings and still fails on a dirty tree.
+- **Do** run **`Git: Stash (Include Untracked)`**, **`Git: Fetch`**, **`Git: Pull`**, and optional **`Git: Stash Pop`** via the command palette (`Editor_RunCommandPaletteGitCommand`); track `g_EditorGitDidStashThisFlow` for post-success pop.
+- **Do** detect working-tree blockers (`Editor_HasGitWorkingTreeBlocker`: _clean your repository working tree_, _commit your changes or stash_, _would be overwritten by merge_) and on pull failure **re-stash include-untracked + retry pull once** inside the same gate (`didRecovery` skips outer triple-retry).
+- **Do** use one **`Editor_GitUiaRoot`** per poll tick in **`Editor_GitPollUntil`** (50 ms for first 2 s, then 200 ms); **`FindFirst`** for `quick-input-widget`, `status.scm.1`, and Source Control tab — not full-tree **`FindAll({ Type: Group })`** on every 100 ms tick.
+- **Do not** treat working-tree blocker text as a hard error in idle wait (pull recovery needs to see it); hard alerts stay in **`Editor_HasGitErrorAlertFromRoot`** (error/fatal/conflict/failed/auth).
+- **Rollback:** revert git helpers in [`cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk) if palette command labels differ on a non-English VS Code/Cursor build.
