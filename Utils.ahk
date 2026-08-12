@@ -2,6 +2,7 @@
 #SingleInstance Force
 #include %A_ScriptDir%\env.ahk
 #include %A_ScriptDir%\lib\study\StudyLinkHelpers.ahk
+#include %A_ScriptDir%\Utils\git_cli.ahk
 
 global g_StudyLinkSubmenuGui := ""
 

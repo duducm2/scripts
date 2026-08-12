@@ -20,32 +20,6 @@ if FileExist(verifyPs1) {
 
 #Include %A_ScriptDir%\Utils.ahk
 
-; Run a command with a timeout.
-; Returns the process exit code, or 124 on timeout.
-RunWaitWithTimeout(cmd, workingDir := "", options := "", timeoutMs := 120000) {
-    ; AHK v2 ProcessWaitClose() does not return exit code; it returns 0 on success and PID on timeout.
-    ; Use PowerShell to enforce timeout and propagate the real ExitCode.
-    safeWorkDir := StrReplace(workingDir, "'", "''")
-    safeCmd := StrReplace(cmd, "'", "''")
-
-    ps := ""
-        . "$ErrorActionPreference='Stop';"
-        . "$cmd='" . safeCmd . "';"
-        . "$wd='" . safeWorkDir . "';"
-        . "$t=[int]" . timeoutMs . ";"
-        .
-        "$p=Start-Process -FilePath 'cmd.exe' -ArgumentList @('/v:on','/c',$cmd) -WorkingDirectory $wd -PassThru -WindowStyle Hidden;"
-        . "if(-not $p.WaitForExit($t)){try{$p.Kill()}catch{}; exit 124};"
-        . "exit $p.ExitCode"
-
-    ; RunWait returns the exit code of PowerShell, which we set to either 124 or the child's ExitCode.
-    try return RunWait("powershell.exe -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34) . ps . Chr(34),
-    workingDir, options)
-    catch as e {
-        return 1
-    }
-}
-
 GitInRepoOrFail(repoDir, gitArgs, timeoutMs := 120000) {
     ; Prevent silent hangs: disable interactive credential prompts (GCM + terminal),
     ; and allow longer operations on slow links.

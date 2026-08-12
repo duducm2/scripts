@@ -436,524 +436,10 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
     return false
 }
 
-; Delay after stash QuickInput is ready, before Enter (empty stash message).
-global EDITOR_GIT_STASH_STEP_MS := 400
-global EDITOR_GIT_FLOW_MAX_MS := 45000
-global EDITOR_GIT_STEP_TIMEOUT_MS := 12000
-global EDITOR_GIT_PULL_TIMEOUT_MS := 15000
-global g_EditorGitFlowDeadline := 0
-global g_EditorGitDidStashThisFlow := false
-global EDITOR_GIT_CMD_STASH := "Git: Stash"
-global EDITOR_GIT_CMD_STASH_UNTRACKED := "Git: Stash (Include Untracked)"
-global EDITOR_GIT_CMD_STASH_POP := "Git: Stash Pop"
-
-Editor_GitUiaRoot(editorHwnd := 0) {
-    try {
-        if !editorHwnd
-            editorHwnd := WinExist("A")
-        if !editorHwnd
-            return 0
-        return UIA.ElementFromHandle(editorHwnd)
-    } catch {
-        return 0
-    }
-}
-
-Editor_GitPollSleep(startTick) {
-    Sleep (A_TickCount - startTick < 2000 ? 50 : 200)
-}
-
-Editor_GitPollUntil(editorHwnd, timeoutMs, callback, pollLabel := "") {
-    global g_EditorGitFlowDeadline
-    startTick := A_TickCount
-    deadline := g_EditorGitFlowDeadline ? Min(startTick + timeoutMs, g_EditorGitFlowDeadline) : (startTick + timeoutMs)
-    lastBarUpdate := 0
-    while (A_TickCount < deadline) {
-        if Editor_GitFlowWatchdogExpired()
-            return false
-        root := Editor_GitUiaRoot(editorHwnd)
-        if (root && callback(root))
-            return true
-        if (pollLabel != "" && (A_TickCount - lastBarUpdate >= 1000)) {
-            elapsed := Round((A_TickCount - startTick) / 1000)
-            try StandardLoadingBar_Update(pollLabel " (" elapsed "s)", BANNER_ACCENT_INTERMEDIATE)
-            lastBarUpdate := A_TickCount
-        }
-        Editor_GitPollSleep(startTick)
-    }
-    return false
-}
-
-Editor_TextHasWorkingTreeBlocker(text) {
-    return RegExMatch(text,
-        "i)(clean your repository working tree|commit your changes or stash|would be overwritten by merge)")
-}
-
-Editor_HasGitWorkingTreeBlocker(editorHwnd := 0, root := 0) {
-    try {
-        if !root
-            root := Editor_GitUiaRoot(editorHwnd)
-        if !root
-            return false
-        for el in root.FindAll({ Type: UIA.Type.Text }) {
-            try {
-                name := el.Name
-                if (name = "")
-                    continue
-                if Editor_TextHasWorkingTreeBlocker(name)
-                    return true
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return false
-}
-
-Editor_GetScmSyncStatusNameFromRoot(root) {
-    if !root
-        return ""
-    try {
-        el := root.FindFirst({ AutomationId: "status.scm.1" })
-        if !el
-            return ""
-        return el.Name
-    } catch {
-        return ""
-    }
-}
-
-Editor_GetScmSyncStatusName(editorHwnd := 0) {
-    return Editor_GetScmSyncStatusNameFromRoot(Editor_GitUiaRoot(editorHwnd))
-}
-
-Editor_ParsePullBehindCount(syncName := "") {
-    if (syncName = "")
-        syncName := Editor_GetScmSyncStatusName()
-    if RegExMatch(syncName, "i)Pull\s+(\d+)\s+commit", &m)
-        return Integer(m[1])
-    return 0
-}
-
-Editor_IsGitPullPending(syncName := "") {
-    if (syncName = "")
-        syncName := Editor_GetScmSyncStatusName()
-    return RegExMatch(syncName, "i)Pull\s+\d+\s+commit")
-}
-
-Editor_GetScmPendingChangesCountFromRoot(root) {
-    if !root
-        return -1
-    try {
-        el := root.FindFirst({ Type: UIA.Type.TabItem, Name: "Source Control", matchmode: "Substring" })
-        if el {
-            name := el.Name
-            if RegExMatch(name, "i)(\d+)\s+pending\s+change", &m)
-                return Integer(m[1])
-            return 0
-        }
-    } catch {
-    }
-    return -1
-}
-
-Editor_GetScmPendingChangesCount(editorHwnd := 0) {
-    return Editor_GetScmPendingChangesCountFromRoot(Editor_GitUiaRoot(editorHwnd))
-}
-
-Editor_FindQuickInputFromRoot(root) {
-    if !root
-        return 0
-    try {
-        el := root.FindFirst({ ClassName: "quick-input-widget", matchmode: "Substring" })
-        if el
-            return el
-    } catch {
-    }
-    return 0
-}
-
-Editor_QuickInputHasFocusedEdit(quickInputEl) {
-    if !quickInputEl
-        return false
-    try {
-        edit := quickInputEl.FindFirst({ Type: UIA.Type.Edit })
-        if edit {
-            try {
-                if edit.GetPropertyValue(UIA.Property.HasKeyboardFocus)
-                    return true
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return false
-}
-
-Editor_IsQuickInputOpenFromRoot(root) {
-    return !!Editor_FindQuickInputFromRoot(root)
-}
-
-Editor_IsQuickInputOpen(editorHwnd := 0) {
-    return Editor_IsQuickInputOpenFromRoot(Editor_GitUiaRoot(editorHwnd))
-}
-
-Editor_WaitForQuickInputClosed(editorHwnd := 0, timeoutMs := 4000) {
-    return Editor_GitPollUntil(editorHwnd, timeoutMs, (root) => !Editor_IsQuickInputOpenFromRoot(root))
-}
-
-Editor_WaitForStashQuickInput(editorHwnd := 0, timeoutMs := 4000) {
-    return Editor_GitPollUntil(editorHwnd, timeoutMs, (root) => (
-        (qi := Editor_FindQuickInputFromRoot(root)) && Editor_QuickInputHasFocusedEdit(qi)))
-}
-
-Editor_IsGitSyncInProgressFromRoot(root) {
-    if !root
-        return false
-    try {
-        syncName := Editor_GetScmSyncStatusNameFromRoot(root)
-        if RegExMatch(syncName, "i)(fetching|pulling|syncing)")
-            return true
-        el := root.FindFirst({ ClassName: "monaco-status", matchmode: "Substring" })
-        if el {
-            try {
-                if RegExMatch(el.Name, "i)(fetching|pulling|syncing)")
-                    return true
-            } catch {
-            }
-        }
-        el := root.FindFirst({ ClassName: "statusbar-item", matchmode: "Substring" })
-        if el {
-            try {
-                if RegExMatch(el.Name, "i)(fetching|pulling|syncing)")
-                    return true
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return false
-}
-
-Editor_IsGitSyncInProgress(editorHwnd := 0) {
-    return Editor_IsGitSyncInProgressFromRoot(Editor_GitUiaRoot(editorHwnd))
-}
-
-Editor_HasGitErrorAlertFromRoot(root) {
-    if !root
-        return false
-    try {
-        for el in root.FindAll({ Type: UIA.Type.Text }) {
-            try {
-                if !InStr(el.ClassName, "monaco-alert")
-                    continue
-                name := el.Name
-                if Editor_TextHasWorkingTreeBlocker(name)
-                    continue
-                if RegExMatch(name, "i)(error|fatal|conflict|failed|authentication|permission|denied)")
-                    return true
-            } catch {
-            }
-        }
-    } catch {
-    }
-    return false
-}
-
-Editor_HasGitErrorAlert(editorHwnd := 0) {
-    return Editor_HasGitErrorAlertFromRoot(Editor_GitUiaRoot(editorHwnd))
-}
-
-Editor_GitFlowWatchdogExpired() {
-    global g_EditorGitFlowDeadline
-    return g_EditorGitFlowDeadline && (A_TickCount > g_EditorGitFlowDeadline)
-}
-
-Editor_GitFlowSnapshot(editorHwnd := 0) {
-    if !editorHwnd
-        editorHwnd := WinExist("A")
-    root := Editor_GitUiaRoot(editorHwnd)
-    syncName := Editor_GetScmSyncStatusNameFromRoot(root)
-    return Map(
-        "syncName", syncName,
-        "pullBehind", Editor_ParsePullBehindCount(syncName),
-        "pendingChanges", Editor_GetScmPendingChangesCountFromRoot(root),
-        "quickInputOpen", Editor_IsQuickInputOpenFromRoot(root),
-        "gitBusy", Editor_IsGitSyncInProgressFromRoot(root)
-    )
-}
-
-Editor_WaitForGitOperationIdle(editorHwnd := 0, timeoutMs := 12000, &failReason := "", pollLabel := "") {
-    ok := Editor_GitPollUntil(editorHwnd, timeoutMs, (root) => (
-        !Editor_IsQuickInputOpenFromRoot(root) && !Editor_IsGitSyncInProgressFromRoot(root)
-        && !Editor_HasGitErrorAlertFromRoot(root)), pollLabel)
-    if ok
-        return true
-    if Editor_GitFlowWatchdogExpired() {
-        failReason := "timed out (overall)"
-        return false
-    }
-    if Editor_HasGitErrorAlert(editorHwnd) {
-        failReason := "git error alert"
-        return false
-    }
-    failReason := "operation idle timeout"
-    return false
-}
-
-Editor_EnsureQuickInputClosed(editorHwnd := 0, timeoutMs := 2000) {
-    if !Editor_IsQuickInputOpen(editorHwnd)
-        return true
-    Send "{Escape}"
-    return Editor_WaitForQuickInputClosed(editorHwnd, timeoutMs)
-}
-
-Editor_GetQuickInputPickItemsFromRoot(root) {
-    items := []
-    if !root
-        return items
-    qi := Editor_FindQuickInputFromRoot(root)
-    if !qi
-        return items
-    try {
-        tree := qi.FindFirst({ ClassName: "monaco-list", matchmode: "Substring" })
-        if tree {
-            for el in tree.FindAll({ Type: UIA.Type.TreeItem }) {
-                try {
-                    if el.Name
-                        items.Push(el)
-                } catch {
-                }
-            }
-        }
-    } catch {
-    }
-    if items.Length
-        return items
-    for type in [UIA.Type.TreeItem, UIA.Type.ListItem] {
-        try {
-            for el in qi.FindAll({ Type: type }) {
-                try {
-                    if el.Name
-                        items.Push(el)
-                } catch {
-                }
-            }
-        } catch {
-        }
-    }
-    return items
-}
-
-Editor_GetQuickInputSelectedPickItem(root) {
-    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
-        try {
-            if el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-            && el.SelectionItemPattern.IsSelected
-                return el
-        } catch {
-        }
-    }
-    return 0
-}
-
-Editor_FindQuickInputCommandItem(root, exactName) {
-    if !root || exactName = ""
-        return 0
-    qi := Editor_FindQuickInputFromRoot(root)
-    searchRoots := []
-    if qi
-        searchRoots.Push(qi)
-    searchRoots.Push(root)
-    for sr in searchRoots {
-        for type in [UIA.Type.TreeItem, UIA.Type.ListItem] {
-            try {
-                el := sr.FindFirst({ Name: exactName, Type: type, matchmode: "Exact", cs: false })
-                if el
-                    return el
-            } catch {
-            }
-        }
-    }
-    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
-        try {
-            if (el.Name = exactName)
-                return el
-        } catch {
-        }
-    }
-    return 0
-}
-
-Editor_CountQuickInputExactMatches(root, exactName) {
-    count := 0
-    for el in Editor_GetQuickInputPickItemsFromRoot(root) {
-        try {
-            if (el.Name = exactName)
-                count += 1
-        } catch {
-        }
-    }
-    return count
-}
-
-Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText) {
-    if !Editor_IsQuickInputOpen(editorHwnd)
-        return true
-    root := Editor_GitUiaRoot(editorHwnd)
-    qi := Editor_FindQuickInputFromRoot(root)
-    if qi && Editor_QuickInputHasFocusedEdit(qi) {
-        filter := ""
-        try {
-            filter := qi.FindFirst({ Type: UIA.Type.Edit }).Value
-        } catch {
-            try {
-                filter := qi.FindFirst({ Type: UIA.Type.Edit }).Name
-            } catch {
-                filter := ""
-            }
-        }
-        if (filter != commandText)
-            return true
-    }
-    return false
-}
-
-Editor_GitActivateQuickPickItem(el) {
-    if !el
-        return false
-    try {
-        if el.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable) {
-            el.SelectionItemPattern.Select()
-            Sleep 60
-            Send "{Enter}"
-            return true
-        }
-    } catch {
-    }
-    try {
-        el.Click()
-        Sleep 60
-        Send "{Enter}"
-        return true
-    } catch {
-    }
-    return Editor_GitActivateElement(el)
-}
-
-Editor_GitActivateElement(el) {
-    if !el
-        return false
-    try {
-        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-            el.InvokePattern.Invoke()
-            return true
-        }
-    } catch {
-    }
-    try {
-        el.Click()
-        return true
-    } catch {
-    }
-    try {
-        el.SetFocus()
-        Sleep 40
-        Send "{Enter}"
-        return true
-    } catch {
-    }
-    return false
-}
-
-; Exact Name match — required when both "Git: Stash" and "Git: Stash (Include Untracked)" appear.
-Editor_FindQuickInputListItemExact(root, exactName) {
-    return Editor_FindQuickInputCommandItem(root, exactName)
-}
-
-Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := "", requireExactPick := false) {
-    if !editorHwnd
-        editorHwnd := WinExist("A")
-    Editor_EnsureQuickInputClosed(editorHwnd)
-    Send "^+p"
-    if !Editor_WaitForStashQuickInput(editorHwnd, 4000) {
-        Sleep 600
-        if !Editor_WaitForStashQuickInput(editorHwnd, 2000) {
-            failReason := "command palette did not open"
-            return false
-        }
-    }
-    Sleep 150
-    SendText commandText
-    Sleep 120
-    startTick := A_TickCount
-    deadline := A_TickCount + 5000
-    while (A_TickCount < deadline) {
-        root := Editor_GitUiaRoot(editorHwnd)
-        if root {
-            el := Editor_FindQuickInputCommandItem(root, commandText)
-            if el && Editor_GitActivateQuickPickItem(el) {
-                Sleep 120
-                if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
-                    return true
-            }
-            sel := Editor_GetQuickInputSelectedPickItem(root)
-            if sel {
-                selName := ""
-                try {
-                    selName := sel.Name
-                } catch {
-                    selName := ""
-                }
-                if (selName = commandText) {
-                    Send "{Enter}"
-                    Sleep 120
-                    if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
-                        return true
-                }
-            }
-            if !requireExactPick && Editor_CountQuickInputExactMatches(root, commandText) = 1 {
-                Send "{Enter}"
-                Sleep 120
-                if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
-                    return true
-            }
-        }
-        Editor_GitPollSleep(startTick)
-    }
-    failReason := "command not found in palette"
-    try Send "{Escape}"
-    return false
-}
-
-Editor_CompleteStashMessageDialog(editorHwnd, &failReason := "") {
-    global EDITOR_GIT_STASH_STEP_MS, EDITOR_GIT_STEP_TIMEOUT_MS
-    if !Editor_WaitForStashQuickInput(editorHwnd, 3000) {
-        Sleep 600
-        if !Editor_WaitForStashQuickInput(editorHwnd, 2000)
-            return true
-    }
-    Sleep EDITOR_GIT_STASH_STEP_MS
-    Send "{Enter}"
-    if !Editor_WaitForQuickInputClosed(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS) {
-        failReason := "stash dialog still open"
-        return false
-    }
-    return Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, &failReason, "⏳ Stashing changes")
-}
-
-Editor_RunGitStash(editorHwnd, commandText, &failReason := "") {
-    global g_EditorGitDidStashThisFlow
-    if !Editor_RunCommandPaletteGitCommand(commandText, editorHwnd, &failReason, true)
-        return false
-    g_EditorGitDidStashThisFlow := true
-    return Editor_CompleteStashMessageDialog(editorHwnd, &failReason)
-}
-
-Editor_RunStashIncludeUntracked(editorHwnd, &failReason := "") {
-    global EDITOR_GIT_CMD_STASH_UNTRACKED
-    return Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH_UNTRACKED, &failReason)
-}
+; =============================================================================
+; Alt+S — Git stash / fetch / pull via native CLI (Editor-GitStashFetchPull.ps1)
+; =============================================================================
+global EDITOR_GIT_CLI_TIMEOUT_MS := 120000
 
 Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
@@ -963,218 +449,267 @@ Editor_GitFlowFail(step, reason := "") {
     try StandardLoadingBar_Hide(1200)
 }
 
-Editor_GitGateStashVerify(editorHwnd, pendingBefore) {
-    if Editor_IsQuickInputOpen(editorHwnd)
-        return false
-    if Editor_HasGitWorkingTreeBlocker(editorHwnd)
-        return false
-    if (pendingBefore > 0) {
-        pendingNow := Editor_GetScmPendingChangesCount(editorHwnd)
-        if (pendingNow >= 0 && pendingNow < pendingBefore)
-            return true
-        if (pendingNow == 0)
-            return true
-        return false
+Editor_GetEditorProcessCommandLine(editorHwnd := 0) {
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    if !editorHwnd
+        return ""
+    pid := 0
+    try pid := WinGetPID("ahk_id " editorHwnd)
+    if !pid
+        return ""
+    cmd := ""
+    try {
+        locator := ComObject("WbemScripting.SWbemLocator")
+        svc := locator.ConnectServer(".", "root\cimv2")
+        for proc in svc.ExecQuery("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " pid) {
+            try cmd := proc.CommandLine
+            break
+        }
+    } catch {
     }
-    return true
+    return cmd ? cmd : ""
 }
 
-Editor_GitGateStash(editorHwnd, beforeSnapshot, &failReason := "") {
-    global EDITOR_GIT_STEP_TIMEOUT_MS, EDITOR_GIT_CMD_STASH, EDITOR_GIT_CMD_STASH_UNTRACKED
-    if Editor_GitFlowWatchdogExpired() {
-        failReason := "timed out (overall)"
-        return false
+Editor_DecodeFolderUri(uri) {
+    if (uri = "" || !InStr(uri, "file:"))
+        return ""
+    path := RegExReplace(uri, "i)^file://+", "")
+    path := StrReplace(path, "/", "\")
+    if RegExMatch(path, "^[A-Za-z]/")
+        path := SubStr(path, 1, 1) ":" SubStr(path, 2)
+    loop {
+        if !RegExMatch(path, "%([0-9A-Fa-f]{2})", &m)
+            break
+        path := StrReplace(path, m[0], Chr("0x" m[1]))
     }
-    pendingBefore := beforeSnapshot["pendingChanges"]
-    try StandardLoadingBar_Update("⏳ Stashing changes…", BANNER_ACCENT_INTERMEDIATE)
-    if !Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH, &failReason)
-        return false
-    verified := Editor_GitPollUntil(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, (root) => (
-        !Editor_IsQuickInputOpenFromRoot(root)
-        && !Editor_HasGitWorkingTreeBlocker(editorHwnd, root)
-        && (pendingBefore <= 0
-            || (pc := Editor_GetScmPendingChangesCountFromRoot(root)) >= 0 && (pc < pendingBefore || pc == 0))),
-    "⏳ Verifying stash")
-    if (!verified || !Editor_GitGateStashVerify(editorHwnd, pendingBefore)) && Editor_HasGitWorkingTreeBlocker(
-        editorHwnd) {
-        try StandardLoadingBar_Update("⏳ Stashing untracked changes…", BANNER_ACCENT_INTERMEDIATE)
-        if !Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH_UNTRACKED, &failReason)
-            return false
-        verified := Editor_GitPollUntil(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, (root) => (
-            !Editor_IsQuickInputOpenFromRoot(root)
-            && !Editor_HasGitWorkingTreeBlocker(editorHwnd, root)
-            && (pendingBefore <= 0
-                || (pc := Editor_GetScmPendingChangesCountFromRoot(root)) >= 0 && (pc < pendingBefore || pc == 0))),
-        "⏳ Verifying stash")
-    }
-    if verified && Editor_GitGateStashVerify(editorHwnd, pendingBefore)
-        return true
-    if Editor_HasGitWorkingTreeBlocker(editorHwnd) {
-        failReason := "working tree still dirty"
-        return false
-    }
-    failReason := failReason != "" ? failReason : "stash verification timeout"
-    return false
+    return path
 }
 
-Editor_GitGateFetchOnce(editorHwnd, beforeSnapshot, &failReason := "") {
-    global EDITOR_GIT_STEP_TIMEOUT_MS
-    syncBefore := beforeSnapshot["syncName"]
-    try StandardLoadingBar_Update("⏳ Fetching from remote…", BANNER_ACCENT_INTERMEDIATE)
-    if !Editor_RunCommandPaletteGitCommand("Git: Fetch", editorHwnd, &failReason)
-        return false
-    if !Editor_WaitForQuickInputClosed(editorHwnd, 4000) {
-        failReason := "command palette did not close"
-        return false
+Editor_ExtractFolderPathsFromCmdLine(cmdLine) {
+    paths := []
+    seen := Map()
+    if (cmdLine = "")
+        return paths
+    pos := 1
+    while RegExMatch(cmdLine, "i)--folder-uri\s+(\S+)", &m, pos) {
+        decoded := Editor_DecodeFolderUri(m[1])
+        if decoded && DirExist(decoded) && !seen.Has(decoded) {
+            seen[decoded] := true
+            paths.Push(decoded)
+        }
+        pos := m.Pos(0) + m.Len(0)
     }
-    fetchStart := A_TickCount
-    if !Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, &failReason, "⏳ Waiting for fetch") {
-        return false
+    pos := 1
+    while RegExMatch(cmdLine, '"([A-Za-z]:[^"]+)"', &m, pos) {
+        p := m[1]
+        if DirExist(p) && !seen.Has(p) {
+            seen[p] := true
+            paths.Push(p)
+        }
+        pos := m.Pos(0) + m.Len(0)
     }
-    syncAfter := Editor_GetScmSyncStatusName(editorHwnd)
-    if (syncAfter != syncBefore)
-        return true
-    if ((A_TickCount - fetchStart) >= 500) && !Editor_HasGitErrorAlert(editorHwnd)
-        return true
-    failReason := "fetch did not complete"
-    return false
+    return paths
 }
 
-Editor_GitGateFetch(editorHwnd, beforeSnapshot, &failReason := "") {
-    if Editor_GitGateFetchOnce(editorHwnd, beforeSnapshot, &failReason)
-        return true
-    if Editor_GitFlowWatchdogExpired() {
-        failReason := "timed out (overall)"
-        return false
+Editor_GetScmRepoBasenameFromStatusBar(editorHwnd := 0) {
+    try {
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return ""
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return ""
+        el := root.FindFirst({ AutomationId: "status.scm.0" })
+        if !el
+            return ""
+        if RegExMatch(el.Name, "^([^(]+)\s*\(Git\)", &m)
+            return Trim(m[1])
+    } catch {
     }
-    try StandardLoadingBar_Update("⏳ Retrying fetch…", BANNER_ACCENT_INTERMEDIATE)
-    return Editor_GitGateFetchOnce(editorHwnd, beforeSnapshot, &failReason)
+    return ""
 }
 
-Editor_GitRunPullCommand(editorHwnd, &failReason := "") {
-    global EDITOR_GIT_PULL_TIMEOUT_MS
-    if !Editor_RunCommandPaletteGitCommand("Git: Pull", editorHwnd, &failReason)
-        return false
-    if !Editor_WaitForQuickInputClosed(editorHwnd, 4000) {
-        failReason := "command palette did not close"
-        return false
+Editor_DeduplicatePaths(paths) {
+    out := []
+    seen := Map()
+    for p in paths {
+        if !p || seen.Has(p)
+            continue
+        seen[p] := true
+        out.Push(p)
     }
-    return Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_PULL_TIMEOUT_MS, &failReason, "⏳ Waiting for pull")
+    return out
 }
 
-Editor_GitPullOutcomeOk(pullBefore, editorHwnd) {
-    if (pullBefore <= 0)
-        return true
-    pullAfter := Editor_ParsePullBehindCount(Editor_GetScmSyncStatusName(editorHwnd))
-    if (pullAfter == 0 || !Editor_IsGitPullPending())
-        return true
-    if (pullAfter < pullBefore)
-        return true
-    return false
-}
-
-Editor_GitGatePullOnce(editorHwnd, &failReason := "", &didRecovery := false) {
-    pullBefore := Editor_ParsePullBehindCount(Editor_GetScmSyncStatusName(editorHwnd))
-    if (!pullBefore && Editor_IsGitPullPending())
-        pullBefore := 1
-    try StandardLoadingBar_Update("⏳ Pulling from remote…", BANNER_ACCENT_INTERMEDIATE)
-    if !Editor_GitRunPullCommand(editorHwnd, &failReason)
-        return false
-    if Editor_HasGitWorkingTreeBlocker(editorHwnd) {
-        didRecovery := true
-        try StandardLoadingBar_Update("⏳ Stashing untracked changes before pull…", BANNER_ACCENT_INTERMEDIATE)
-        if !Editor_RunStashIncludeUntracked(editorHwnd, &failReason)
-            return false
-        try StandardLoadingBar_Update("⏳ Retrying pull…", BANNER_ACCENT_INTERMEDIATE)
-        if !Editor_GitRunPullCommand(editorHwnd, &failReason)
-            return false
-    }
-    if Editor_HasGitErrorAlert(editorHwnd) {
-        failReason := "git error alert"
-        return false
-    }
-    if Editor_HasGitWorkingTreeBlocker(editorHwnd) {
-        failReason := "working tree still dirty"
-        return false
-    }
-    if Editor_GitPullOutcomeOk(pullBefore, editorHwnd)
-        return true
-    failReason := "pull count unchanged"
-    return false
-}
-
-Editor_GitGatePull(editorHwnd, &failReason := "") {
-    didRecovery := false
-    if Editor_GitGatePullOnce(editorHwnd, &failReason, &didRecovery)
-        return true
-    if didRecovery || Editor_GitFlowWatchdogExpired() {
-        if Editor_GitFlowWatchdogExpired()
-            failReason := "timed out (overall)"
-        return false
-    }
-    try StandardLoadingBar_Update("⏳ Retrying pull…", BANNER_ACCENT_INTERMEDIATE)
-    return Editor_GitGatePullOnce(editorHwnd, &failReason, &didRecovery)
-}
-
-Editor_GitPopStashAfterSuccess(editorHwnd) {
-    global g_EditorGitDidStashThisFlow, EDITOR_GIT_CMD_STASH_POP
-    if !g_EditorGitDidStashThisFlow
+Editor_AppendProjectRegistryPaths(&paths) {
+    if !IsSet(g_Projects) || !IsObject(g_Projects)
         return
-    try StandardLoadingBar_Update("⏳ Restoring stashed changes…", BANNER_ACCENT_INTERMEDIATE)
-    if !Editor_RunCommandPaletteGitCommand(EDITOR_GIT_CMD_STASH_POP, editorHwnd)
-        return
-    Editor_WaitForQuickInputClosed(editorHwnd, 4000)
-    popReason := ""
-    Editor_WaitForGitOperationIdle(editorHwnd, 8000, &popReason, "⏳ Applying stash pop")
-    if Editor_HasGitErrorAlert(editorHwnd) || Editor_HasGitWorkingTreeBlocker(editorHwnd) {
-        try ShowCenteredOverlay_Utils("ℹ Stashed changes remain on stack", 2200, BANNER_ACCENT_INFO)
+    try {
+        loop g_Projects.Length {
+            project := g_Projects[A_Index]
+            for key in ["path", "workPath"] {
+                p := ""
+                try {
+                    if IsObject(project) && project.HasProp(key)
+                        p := project.%key%
+                } catch {
+                }
+                if p && DirExist(p)
+                    paths.Push(p)
+            }
+        }
+    } catch {
     }
-    g_EditorGitDidStashThisFlow := false
+}
+
+Editor_PickGitRootByBasename(candidates, basename) {
+    if !basename
+        return ""
+    baseLow := StrLower(basename)
+    for p in candidates {
+        SplitPath p, , , &dirName
+        if (StrLower(dirName) = baseLow) {
+            top := GitCli_RevParseTopLevel(p)
+            if top
+                return top
+        }
+    }
+    return ""
+}
+
+Editor_ResolveGitRepoDir(editorHwnd := 0) {
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    if !editorHwnd
+        return ""
+    cmdLine := Editor_GetEditorProcessCommandLine(editorHwnd)
+    candidates := Editor_ExtractFolderPathsFromCmdLine(cmdLine)
+    Editor_AppendProjectRegistryPaths(&candidates)
+    candidates := Editor_DeduplicatePaths(candidates)
+    if !candidates.Length
+        return ""
+    if (candidates.Length = 1)
+        return GitCli_RevParseTopLevel(candidates[1])
+    basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
+    if basename {
+        picked := Editor_PickGitRootByBasename(candidates, basename)
+        if picked
+            return picked
+    }
+    for p in candidates {
+        top := GitCli_RevParseTopLevel(p)
+        if top
+            return top
+    }
+    return ""
+}
+
+Editor_UnescapeJsonString(s) {
+    s := StrReplace(s, '\n', "`n")
+    s := StrReplace(s, '\r', "`r")
+    s := StrReplace(s, '\t', "`t")
+    s := StrReplace(s, '\"', '"')
+    s := StrReplace(s, '\\', '\')
+    return s
+}
+
+Editor_ParseGitScriptJson(raw) {
+    result := Map(
+        "ok", false,
+        "failedStep", "",
+        "error", "",
+        "stashPopWarning", false
+    )
+    if RegExMatch(raw, '"ok"\s*:\s*(true|false)', &m)
+        result["ok"] := (m[1] = "true")
+    if RegExMatch(raw, '"failedStep"\s*:\s*"([^"]*)"', &m)
+        result["failedStep"] := m[1]
+    if RegExMatch(raw, '"error"\s*:\s*"((?:\\.|[^"\\])*)"', &m)
+        result["error"] := Editor_UnescapeJsonString(m[1])
+    if RegExMatch(raw, '"stashPopWarning"\s*:\s*(true|false)', &m)
+        result["stashPopWarning"] := (m[1] = "true")
+    return result
+}
+
+Editor_TruncateGitError(msg, maxLen := 180) {
+    msg := Trim(msg, "`r`n `t")
+    if (StrLen(msg) <= maxLen)
+        return msg
+    return SubStr(msg, 1, maxLen - 3) "..."
+}
+
+Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
+    global EDITOR_GIT_CLI_TIMEOUT_MS
+    if !timeoutMs
+        timeoutMs := EDITOR_GIT_CLI_TIMEOUT_MS
+    ps1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
+    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false)
+    if !FileExist(ps1) {
+        result["failedStep"] := "Script"
+        result["error"] := "Editor-GitStashFetchPull.ps1 not found"
+        return result
+    }
+    resultPath := A_Temp "\editor-git-" A_TickCount ".json"
+    timeoutSec := Max(30, Round(timeoutMs / 1000))
+    cmd := 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ps1 '" -RepoDir "' repoDir
+        . '" -ResultPath "' resultPath '" -TimeoutSec ' timeoutSec
+    exitCode := RunWaitWithTimeout(cmd, repoDir, "Hide", timeoutMs)
+    try {
+        if FileExist(resultPath) {
+            raw := FileRead(resultPath, "UTF-8")
+            FileDelete(resultPath)
+            if (raw != "") {
+                parsed := Editor_ParseGitScriptJson(raw)
+                if parsed
+                    return parsed
+            }
+        }
+    } catch {
+    }
+    if (exitCode = 124)
+        result["error"] := "timed out"
+    else if (exitCode != 0)
+        result["error"] := "git script exit " exitCode
+    return result
 }
 
 Editor_GitStashAndPull() {
-    global g_EditorGitFlowDeadline, EDITOR_GIT_FLOW_MAX_MS, g_EditorGitDidStashThisFlow
+    global EDITOR_GIT_CLI_TIMEOUT_MS
     hwnd := WinExist("A")
     if !hwnd
         return
-    g_EditorGitDidStashThisFlow := false
-    g_EditorGitFlowDeadline := A_TickCount + EDITOR_GIT_FLOW_MAX_MS
-    before := Editor_GitFlowSnapshot(hwnd)
-    failReason := ""
-    StandardLoadingBar_Show("⏳ Git stash, fetch, and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: hwnd
-    })
-    try {
-        if !Editor_GitGateStash(hwnd, before, &failReason) {
-            Editor_GitFlowFail("Stash", failReason)
-            return
-        }
-        if !Editor_GitGateFetch(hwnd, before, &failReason) {
-            Editor_GitFlowFail("Fetch", failReason)
-            return
-        }
-        if !Editor_GitGatePull(hwnd, &failReason) {
-            Editor_GitFlowFail("Pull", failReason)
-            return
-        }
-        Editor_GitPopStashAfterSuccess(hwnd)
-        StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
-        try {
-            soundPath := A_ScriptDir . "\assets\sounds\pull-successful.wav"
-            if FileExist(soundPath)
-                ScriptSoundPlay(soundPath, true)
-        } catch {
-        }
-        StandardLoadingBar_Hide(600)
-    } catch {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-    } finally {
-        g_EditorGitFlowDeadline := 0
-        g_EditorGitDidStashThisFlow := false
+    if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")) {
+        Editor_GitFlowFail("Git", "active window is not Cursor or VS Code")
+        return
     }
+    repoDir := Editor_ResolveGitRepoDir(hwnd)
+    if !repoDir {
+        Editor_GitFlowFail("Repo", "could not resolve git root for active editor")
+        return
+    }
+    StandardLoadingBar_Show("⏳ Git stash, fetch, and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: hwnd })
+    try StandardLoadingBar_Update("⏳ Running git in " repoDir, BANNER_ACCENT_INTERMEDIATE)
+    result := Editor_RunGitStashFetchPullScript(repoDir, EDITOR_GIT_CLI_TIMEOUT_MS)
+    if !result["ok"] {
+        step := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "Git"
+        err := result.Has("error") ? Editor_TruncateGitError(result["error"]) : "unknown error"
+        Editor_GitFlowFail(step, err)
+        return
+    }
+    if result.Has("stashPopWarning") && result["stashPopWarning"]
+        try ShowCenteredOverlay_Utils("ℹ Stashed changes remain on stack", 2200, BANNER_ACCENT_INFO)
+    StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
+    try {
+        soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
+        if FileExist(soundPath)
+            ScriptSoundPlay(soundPath, true)
+    } catch {
+    }
+    StandardLoadingBar_Hide(600)
 }
-
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
     try {
