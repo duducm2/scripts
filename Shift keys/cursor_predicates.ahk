@@ -529,19 +529,35 @@ Editor_GitStashAndPull() {
         return
     syncBefore := Editor_GetScmSyncStatusName(hwnd)
     hadPullPending := Editor_IsGitPullPending(syncBefore)
-    Send "!s"
-    if !Editor_WaitForStashQuickInput(hwnd)
-        Sleep 600
-    Sleep EDITOR_GIT_STASH_STEP_MS
-    Send "{Enter}"
-    Sleep 150
-    Send "+p"
-    if Editor_WaitForGitPullSettled(hwnd, hadPullPending) {
-        try {
-            soundPath := A_ScriptDir . "\assets\sounds\pull-successful.wav"
-            if FileExist(soundPath)
-                ScriptSoundPlay(soundPath, true)
-        } catch {
+    StandardLoadingBar_Show("⏳ Git stash and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: hwnd })
+    try {
+        Send "!s"
+        StandardLoadingBar_Update("⏳ Waiting for stash message…", BANNER_ACCENT_INTERMEDIATE)
+        if !Editor_WaitForStashQuickInput(hwnd)
+            Sleep 600
+        Sleep EDITOR_GIT_STASH_STEP_MS
+        StandardLoadingBar_Update("⏳ Stashing changes…", BANNER_ACCENT_INTERMEDIATE)
+        Send "{Enter}"
+        Sleep 150
+        StandardLoadingBar_Update("⏳ Pulling from remote…", BANNER_ACCENT_INTERMEDIATE)
+        Send "+p"
+        StandardLoadingBar_Update("⏳ Waiting for sync…", BANNER_ACCENT_INTERMEDIATE)
+        if Editor_WaitForGitPullSettled(hwnd, hadPullPending) {
+            StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
+            try {
+                soundPath := A_ScriptDir . "\assets\sounds\pull-successful.wav"
+                if FileExist(soundPath)
+                    ScriptSoundPlay(soundPath, true)
+            } catch {
+            }
+            StandardLoadingBar_Hide(600)
+        } else {
+            StandardLoadingBar_Update("❌ Pull did not complete in time", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1200)
+        }
+    } catch {
+        try StandardLoadingBar_Hide(0)
+        catch {
         }
     }
 }
