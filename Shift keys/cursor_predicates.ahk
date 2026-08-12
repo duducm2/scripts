@@ -440,6 +440,32 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
 ; Alt+S — Git stash / fetch / pull via native CLI (Editor-GitStashFetchPull.ps1)
 ; =============================================================================
 global EDITOR_GIT_CLI_TIMEOUT_MS := 120000
+global EDITOR_GIT_DEBUG_LOG := A_ScriptDir "\debug-023a5b.log"
+
+Editor_GitDebugLogSimple(location, message, hypothesisId := "", kv1 := "", val1 := "", kv2 := "", val2 := "", kv3 := "",
+    val3 := "") {
+    ; #region agent log
+    parts := []
+    if (kv1 != "")
+        parts.Push('"' kv1 '":"' StrReplace(String(val1), '"', '\"') '"')
+    if (kv2 != "")
+        parts.Push('"' kv2 '":"' StrReplace(String(val2), '"', '\"') '"')
+    if (kv3 != "")
+        parts.Push('"' kv3 '":"' StrReplace(String(val3), '"', '\"') '"')
+    body := "{}"
+    if parts.Length {
+        body := "{" parts[1]
+        loop parts.Length - 1
+            body .= "," parts[A_Index + 1]
+        body .= "}"
+    }
+    try {
+        FileAppend('{"sessionId":"023a5b","timestamp":' A_TickCount ',"location":"' location '","message":"' message
+            '","hypothesisId":"' hypothesisId '","data":' body '}`n', EDITOR_GIT_DEBUG_LOG, "UTF-8")
+    } catch {
+    }
+    ; #endregion
+}
 
 Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
@@ -588,11 +614,17 @@ Editor_ResolveGitRepoDir(editorHwnd := 0) {
     candidates := Editor_ExtractFolderPathsFromCmdLine(cmdLine)
     Editor_AppendProjectRegistryPaths(&candidates)
     candidates := Editor_DeduplicatePaths(candidates)
+    basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
+    Editor_GitDebugLogSimple("Editor_ResolveGitRepoDir", "candidates", "H2", "cmdLen", StrLen(cmdLine), "count",
+    candidates.Length, "basename", basename)
     if !candidates.Length
         return ""
-    if (candidates.Length = 1)
-        return GitCli_RevParseTopLevel(candidates[1])
-    basename := Editor_GetScmRepoBasenameFromStatusBar(editorHwnd)
+    if (candidates.Length = 1) {
+        top := GitCli_RevParseTopLevel(candidates[1])
+        Editor_GitDebugLogSimple("Editor_ResolveGitRepoDir", "single candidate", "H2", "candidate", candidates[1],
+            "top", top)
+        return top
+    }
     if basename {
         picked := Editor_PickGitRootByBasename(candidates, basename)
         if picked
@@ -646,6 +678,8 @@ Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
         timeoutMs := EDITOR_GIT_CLI_TIMEOUT_MS
     ps1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
     result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false)
+    Editor_GitDebugLogSimple("Editor_RunGitStashFetchPullScript", "start", "H3", "ps1", ps1, "exists", FileExist(ps1)
+        ? "yes" : "no")
     if !FileExist(ps1) {
         result["failedStep"] := "Script"
         result["error"] := "Editor-GitStashFetchPull.ps1 not found"
@@ -656,14 +690,19 @@ Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
     cmd := 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' ps1 '" -RepoDir "' repoDir
         . '" -ResultPath "' resultPath '" -TimeoutSec ' timeoutSec
     exitCode := RunWaitWithTimeout(cmd, repoDir, "Hide", timeoutMs)
+    Editor_GitDebugLogSimple("Editor_RunGitStashFetchPullScript", "done", "H4", "exitCode", exitCode, "jsonExists",
+        FileExist(resultPath) ? "yes" : "no")
     try {
         if FileExist(resultPath) {
             raw := FileRead(resultPath, "UTF-8")
             FileDelete(resultPath)
             if (raw != "") {
                 parsed := Editor_ParseGitScriptJson(raw)
-                if parsed
+                if parsed {
+                    Editor_GitDebugLogSimple("Editor_RunGitStashFetchPullScript", "parsed", "H4", "ok", parsed["ok"]
+                        ? "true" : "false", "failedStep", parsed["failedStep"])
                     return parsed
+                }
             }
         }
     } catch {
@@ -677,14 +716,24 @@ Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
 
 Editor_GitStashAndPull() {
     global EDITOR_GIT_CLI_TIMEOUT_MS
+    hasRunWait := "no"
+    try {
+        if Func("RunWaitWithTimeout")
+            hasRunWait := "yes"
+    } catch {
+    }
+    Editor_GitDebugLogSimple("Editor_GitStashAndPull", "entry", "H1", "scriptDir", A_ScriptDir, "hasRunWait",
+        hasRunWait)
     hwnd := WinExist("A")
     if !hwnd
         return
     if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")) {
+        Editor_GitDebugLogSimple("Editor_GitStashAndPull", "not editor", "H1")
         Editor_GitFlowFail("Git", "active window is not Cursor or VS Code")
         return
     }
     repoDir := Editor_ResolveGitRepoDir(hwnd)
+    Editor_GitDebugLogSimple("Editor_GitStashAndPull", "resolved repo", "H2", "repoDir", repoDir)
     if !repoDir {
         Editor_GitFlowFail("Repo", "could not resolve git root for active editor")
         return
