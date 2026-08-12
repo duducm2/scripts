@@ -699,7 +699,7 @@ Editor_QuickCommit() {
 ; Shift + B : Git Push - Push
 +b:: Send "+b"
 
-; Alt + S : Git Stash (include untracked), Fetch, and Pull — palette commands, dirty-tree auto-recovery
+; Alt + S : Git Stash (UIA palette pick), Fetch, Pull — include-untracked fallback on dirty tree
 $!s:: Editor_GitStashAndPull()
 
 ; Alt+E Open File: native alt+e hits Edit mnemonic, so AHK relays to Ctrl+Shift+F12.

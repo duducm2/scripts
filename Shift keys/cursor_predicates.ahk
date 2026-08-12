@@ -443,6 +443,7 @@ global EDITOR_GIT_STEP_TIMEOUT_MS := 12000
 global EDITOR_GIT_PULL_TIMEOUT_MS := 15000
 global g_EditorGitFlowDeadline := 0
 global g_EditorGitDidStashThisFlow := false
+global EDITOR_GIT_CMD_STASH := "Git: Stash"
 global EDITOR_GIT_CMD_STASH_UNTRACKED := "Git: Stash (Include Untracked)"
 global EDITOR_GIT_CMD_STASH_POP := "Git: Stash Pop"
 
@@ -700,26 +701,104 @@ Editor_WaitForGitOperationIdle(editorHwnd := 0, timeoutMs := 12000, &failReason 
     return false
 }
 
-Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0) {
-    Send "^+p"
-    if !Editor_WaitForStashQuickInput(editorHwnd)
-        Sleep 600
-    Sleep 150
-    SendText commandText
-    Sleep 100
-    Send "{Enter}"
+Editor_GitActivateElement(el) {
+    if !el
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            el.InvokePattern.Invoke()
+            return true
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    try {
+        el.SetFocus()
+        Sleep 40
+        Send "{Enter}"
+        return true
+    } catch {
+    }
+    return false
 }
 
-Editor_RunStashIncludeUntracked(editorHwnd, &failReason := "") {
-    global g_EditorGitDidStashThisFlow, EDITOR_GIT_STASH_STEP_MS, EDITOR_GIT_CMD_STASH_UNTRACKED
-    g_EditorGitDidStashThisFlow := true
-    Editor_RunCommandPaletteGitCommand(EDITOR_GIT_CMD_STASH_UNTRACKED, editorHwnd)
-    if !Editor_WaitForStashQuickInput(editorHwnd) {
+; Exact Name match — required when both "Git: Stash" and "Git: Stash (Include Untracked)" appear.
+Editor_FindQuickInputListItemExact(root, exactName) {
+    if !root || exactName = ""
+        return 0
+    searchRoots := []
+    qi := Editor_FindQuickInputFromRoot(root)
+    if qi
+        searchRoots.Push(qi)
+    searchRoots.Push(root)
+    for sr in searchRoots {
+        try {
+            el := sr.FindFirst({ Name: exactName, Type: UIA.Type.ListItem, matchmode: "Exact", cs: false })
+            if el
+                return el
+        } catch {
+        }
+        try {
+            el := sr.FindFirst({ Name: exactName, matchmode: "Exact", cs: false })
+            if el {
+                try {
+                    if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                        return el
+                } catch {
+                }
+                ct := 0
+                try ct := el.ControlType
+                catch {
+                    ct := 0
+                }
+                if (ct = UIA.Type.ListItem || ct = UIA.Type.TreeItem)
+                    return el
+            }
+        } catch {
+        }
+    }
+    return 0
+}
+
+Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := "") {
+    if !editorHwnd
+        editorHwnd := WinExist("A")
+    Send "^+p"
+    if !Editor_WaitForStashQuickInput(editorHwnd, 4000) {
         Sleep 600
         if !Editor_WaitForStashQuickInput(editorHwnd, 2000) {
-            failReason := "stash message input did not open"
+            failReason := "command palette did not open"
             return false
         }
+    }
+    Sleep 150
+    SendText commandText
+    startTick := A_TickCount
+    deadline := A_TickCount + 3500
+    while (A_TickCount < deadline) {
+        root := Editor_GitUiaRoot(editorHwnd)
+        if root {
+            el := Editor_FindQuickInputListItemExact(root, commandText)
+            if el && Editor_GitActivateElement(el)
+                return true
+        }
+        Editor_GitPollSleep(startTick)
+    }
+    failReason := "command not found in palette"
+    try Send "{Escape}"
+    return false
+}
+
+Editor_CompleteStashMessageDialog(editorHwnd, &failReason := "") {
+    global EDITOR_GIT_STASH_STEP_MS, EDITOR_GIT_STEP_TIMEOUT_MS
+    if !Editor_WaitForStashQuickInput(editorHwnd, 3000) {
+        Sleep 600
+        if !Editor_WaitForStashQuickInput(editorHwnd, 2000)
+            return true
     }
     Sleep EDITOR_GIT_STASH_STEP_MS
     Send "{Enter}"
@@ -727,10 +806,20 @@ Editor_RunStashIncludeUntracked(editorHwnd, &failReason := "") {
         failReason := "stash dialog still open"
         return false
     }
-    if !Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, &failReason, "⏳ Stashing changes") {
+    return Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, &failReason, "⏳ Stashing changes")
+}
+
+Editor_RunGitStash(editorHwnd, commandText, &failReason := "") {
+    global g_EditorGitDidStashThisFlow
+    if !Editor_RunCommandPaletteGitCommand(commandText, editorHwnd, &failReason)
         return false
-    }
-    return true
+    g_EditorGitDidStashThisFlow := true
+    return Editor_CompleteStashMessageDialog(editorHwnd, &failReason)
+}
+
+Editor_RunStashIncludeUntracked(editorHwnd, &failReason := "") {
+    global EDITOR_GIT_CMD_STASH_UNTRACKED
+    return Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH_UNTRACKED, &failReason)
 }
 
 Editor_GitFlowFail(step, reason := "") {
@@ -758,14 +847,14 @@ Editor_GitGateStashVerify(editorHwnd, pendingBefore) {
 }
 
 Editor_GitGateStash(editorHwnd, beforeSnapshot, &failReason := "") {
-    global EDITOR_GIT_STEP_TIMEOUT_MS
+    global EDITOR_GIT_STEP_TIMEOUT_MS, EDITOR_GIT_CMD_STASH, EDITOR_GIT_CMD_STASH_UNTRACKED
     if Editor_GitFlowWatchdogExpired() {
         failReason := "timed out (overall)"
         return false
     }
     pendingBefore := beforeSnapshot["pendingChanges"]
-    try StandardLoadingBar_Update("⏳ Stashing changes (include untracked)…", BANNER_ACCENT_INTERMEDIATE)
-    if !Editor_RunStashIncludeUntracked(editorHwnd, &failReason)
+    try StandardLoadingBar_Update("⏳ Stashing changes…", BANNER_ACCENT_INTERMEDIATE)
+    if !Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH, &failReason)
         return false
     verified := Editor_GitPollUntil(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, (root) => (
         !Editor_IsQuickInputOpenFromRoot(root)
@@ -773,6 +862,18 @@ Editor_GitGateStash(editorHwnd, beforeSnapshot, &failReason := "") {
         && (pendingBefore <= 0
             || (pc := Editor_GetScmPendingChangesCountFromRoot(root)) >= 0 && (pc < pendingBefore || pc == 0))),
     "⏳ Verifying stash")
+    if (!verified || !Editor_GitGateStashVerify(editorHwnd, pendingBefore)) && Editor_HasGitWorkingTreeBlocker(
+        editorHwnd) {
+        try StandardLoadingBar_Update("⏳ Stashing untracked changes…", BANNER_ACCENT_INTERMEDIATE)
+        if !Editor_RunGitStash(editorHwnd, EDITOR_GIT_CMD_STASH_UNTRACKED, &failReason)
+            return false
+        verified := Editor_GitPollUntil(editorHwnd, EDITOR_GIT_STEP_TIMEOUT_MS, (root) => (
+            !Editor_IsQuickInputOpenFromRoot(root)
+            && !Editor_HasGitWorkingTreeBlocker(editorHwnd, root)
+            && (pendingBefore <= 0
+                || (pc := Editor_GetScmPendingChangesCountFromRoot(root)) >= 0 && (pc < pendingBefore || pc == 0))),
+        "⏳ Verifying stash")
+    }
     if verified && Editor_GitGateStashVerify(editorHwnd, pendingBefore)
         return true
     if Editor_HasGitWorkingTreeBlocker(editorHwnd) {
@@ -787,7 +888,8 @@ Editor_GitGateFetchOnce(editorHwnd, beforeSnapshot, &failReason := "") {
     global EDITOR_GIT_STEP_TIMEOUT_MS
     syncBefore := beforeSnapshot["syncName"]
     try StandardLoadingBar_Update("⏳ Fetching from remote…", BANNER_ACCENT_INTERMEDIATE)
-    Editor_RunCommandPaletteGitCommand("Git: Fetch", editorHwnd)
+    if !Editor_RunCommandPaletteGitCommand("Git: Fetch", editorHwnd, &failReason)
+        return false
     if !Editor_WaitForQuickInputClosed(editorHwnd, 4000) {
         failReason := "command palette did not close"
         return false
@@ -818,7 +920,8 @@ Editor_GitGateFetch(editorHwnd, beforeSnapshot, &failReason := "") {
 
 Editor_GitRunPullCommand(editorHwnd, &failReason := "") {
     global EDITOR_GIT_PULL_TIMEOUT_MS
-    Editor_RunCommandPaletteGitCommand("Git: Pull", editorHwnd)
+    if !Editor_RunCommandPaletteGitCommand("Git: Pull", editorHwnd, &failReason)
+        return false
     if !Editor_WaitForQuickInputClosed(editorHwnd, 4000) {
         failReason := "command palette did not close"
         return false
@@ -885,7 +988,8 @@ Editor_GitPopStashAfterSuccess(editorHwnd) {
     if !g_EditorGitDidStashThisFlow
         return
     try StandardLoadingBar_Update("⏳ Restoring stashed changes…", BANNER_ACCENT_INTERMEDIATE)
-    Editor_RunCommandPaletteGitCommand(EDITOR_GIT_CMD_STASH_POP, editorHwnd)
+    if !Editor_RunCommandPaletteGitCommand(EDITOR_GIT_CMD_STASH_POP, editorHwnd)
+        return
     Editor_WaitForQuickInputClosed(editorHwnd, 4000)
     popReason := ""
     Editor_WaitForGitOperationIdle(editorHwnd, 8000, &popReason, "⏳ Applying stash pop")
