@@ -436,6 +436,116 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
     return false
 }
 
+; Delay after stash QuickInput is ready, before Enter (empty stash message).
+global EDITOR_GIT_STASH_STEP_MS := 400
+
+Editor_GetScmSyncStatusName(editorHwnd := 0) {
+    try {
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return ""
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return ""
+        el := root.FindFirst({ AutomationId: "status.scm.1" })
+        if !el
+            return ""
+        return el.Name
+    } catch {
+        return ""
+    }
+}
+
+Editor_IsGitPullPending(syncName := "") {
+    if (syncName = "")
+        syncName := Editor_GetScmSyncStatusName()
+    return RegExMatch(syncName, "i)Pull\s+\d+\s+commits")
+}
+
+Editor_QuickInputHasFocusedEdit(quickInputEl) {
+    if !quickInputEl
+        return false
+    try {
+        edits := quickInputEl.FindAll({ Type: UIA.Type.Edit })
+        if edits {
+            for edit in edits {
+                try {
+                    if edit.GetPropertyValue(UIA.Property.HasKeyboardFocus)
+                        return true
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return false
+}
+
+Editor_WaitForStashQuickInput(editorHwnd := 0, timeoutMs := 4000) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            if !editorHwnd
+                editorHwnd := WinExist("A")
+            if !editorHwnd
+                return false
+            root := UIA.ElementFromHandle(editorHwnd)
+            if !root
+                return false
+            for el in root.FindAll({ Type: UIA.Type.Group }) {
+                try {
+                    if !InStr(el.ClassName, "quick-input-widget")
+                        continue
+                    if Editor_QuickInputHasFocusedEdit(el)
+                        return true
+                } catch {
+                }
+            }
+        } catch {
+        }
+        Sleep 50
+    }
+    return false
+}
+
+Editor_WaitForGitPullSettled(editorHwnd := 0, hadPullPending := false, timeoutMs := 20000) {
+    if !hadPullPending {
+        Sleep 800
+        return true
+    }
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if !Editor_IsGitPullPending(Editor_GetScmSyncStatusName(editorHwnd))
+            return true
+        Sleep 200
+    }
+    return false
+}
+
+Editor_GitStashAndPull() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    syncBefore := Editor_GetScmSyncStatusName(hwnd)
+    hadPullPending := Editor_IsGitPullPending(syncBefore)
+    Send "!s"
+    if !Editor_WaitForStashQuickInput(hwnd)
+        Sleep 600
+    Sleep EDITOR_GIT_STASH_STEP_MS
+    Send "{Enter}"
+    Sleep 150
+    Send "+p"
+    if Editor_WaitForGitPullSettled(hwnd, hadPullPending) {
+        try {
+            soundPath := A_ScriptDir . "\assets\sounds\quick-update-success.wav"
+            if FileExist(soundPath)
+                ScriptSoundPlay(soundPath, true)
+        } catch {
+        }
+    }
+}
+
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
     try {

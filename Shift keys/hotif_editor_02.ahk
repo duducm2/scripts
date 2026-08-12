@@ -700,13 +700,7 @@ Editor_QuickCommit() {
 +b:: Send "+b"
 
 ; Alt + S : Git Stash and Pull (native Alt+S + Enter, then native Shift+P pull)
-$!s:: {
-    Send "!s"
-    Sleep 150
-    Send "{Enter}"
-    Sleep 150
-    Send "+c"
-}
+$!s:: Editor_GitStashAndPull()
 
 ; Alt+E Open File: native alt+e hits Edit mnemonic, so AHK relays to Ctrl+Shift+F12.
 ; User keybindings (Cursor + VS Code): ctrl+shift+f12 -> workbench.action.files.openFile
