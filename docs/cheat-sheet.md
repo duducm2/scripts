@@ -124,7 +124,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as **Git Stash, Fetch, and Pull** with **per-step quality gates**: shows a **Loading Indication** bar with milestone updates and elapsed seconds during waits; verifies stash (QuickInput closed + pending-changes drop), fetch (palette command + git idle + sync label change or noop), and pull (idle + pull-behind count cleared). **45s overall watchdog**; **one automatic retry** on fetch/pull failure; step-specific error banners on failure. On full success: **✅ Pull complete** + **`pull-successful.wav`**. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as **Git Stash, Fetch, and Pull** with **per-step quality gates**: shows a **Loading Indication** bar with milestone updates and elapsed seconds during waits; verifies stash (QuickInput closed + pending-changes drop), then runs **Git: Fetch** and **Git: Pull** via the **command palette** (not Shift+P — Shift+C in the editor is AHK-mapped to the palette). **45s overall watchdog**; **one automatic retry** on fetch/pull failure; step-specific error banners on failure. On full success: **✅ Pull complete** + **`pull-successful.wav`**. Manual **Shift+P** pull (native keybinding) remains separate. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
 
 ### Special resolution (not only `exe` match)
 

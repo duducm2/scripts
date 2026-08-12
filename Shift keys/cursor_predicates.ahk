@@ -750,6 +750,7 @@ Editor_GitGateStash(editorHwnd, beforeSnapshot, &failReason := "") {
 }
 
 Editor_GitGateFetchOnce(editorHwnd, beforeSnapshot, &failReason := "") {
+    global EDITOR_GIT_STEP_TIMEOUT_MS
     syncBefore := beforeSnapshot["syncName"]
     try StandardLoadingBar_Update("⏳ Fetching from remote…", BANNER_ACCENT_INTERMEDIATE)
     Editor_RunCommandPaletteGitCommand("Git: Fetch", editorHwnd)
@@ -787,7 +788,13 @@ Editor_GitGatePullOnce(editorHwnd, &failReason := "") {
     if (!pullBefore && Editor_IsGitPullPending())
         pullBefore := 1
     try StandardLoadingBar_Update("⏳ Pulling from remote…", BANNER_ACCENT_INTERMEDIATE)
-    Send "+p"
+    ; Use command palette (same as fetch) — do not Send "+p": Shift+C is AHK-mapped to the
+    ; palette (^+p), and Shift+P only works when the user bound Git: Pull there in keybindings.
+    Editor_RunCommandPaletteGitCommand("Git: Pull", editorHwnd)
+    if !Editor_WaitForQuickInputClosed(editorHwnd, 4000) {
+        failReason := "command palette did not close"
+        return false
+    }
     if !Editor_WaitForGitOperationIdle(editorHwnd, EDITOR_GIT_PULL_TIMEOUT_MS, &failReason, "⏳ Waiting for pull") {
         return false
     }
