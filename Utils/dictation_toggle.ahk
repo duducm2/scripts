@@ -9,6 +9,8 @@
 ; Dictation Indicator - Red pulsing inner square with yellow border
 ; Anchored to the top-center of the active window (clamped inside); falls back to
 ; active monitor work area. Follows focus/window moves via pulse timer. Toggles with Win+Alt+Shift+0.
+; While recording, a large language flag (Handy slot 1=EN, 2=PT, 3=EN+PT) sits left of the
+; square on that monitor and at top-center of every other monitor.
 ; =============================================================================
 
 ; Global variables for dictation indicator
@@ -34,6 +36,9 @@ global g_DictationSoundPlayed := false  ; Atomic test-and-set: one start chime p
 global g_DictationStartClipboardText := "" ; Track clipboard content at start to detect changes
 global g_DictationHotkeyOwnerHandle := 0 ; Named mutex handle for cross-process single-owner dictation hotkey
 global g_DictationHotkeyIsOwner := false ; True only in the single process that owns dictation hotkey handling
+global g_DictationFlagGuis := []  ; Recording-only language flags, one GUI per monitor
+global g_DictationFlagSlot := 0  ; Slot last shown on the recording flags (1-3)
+global g_DictationFlagFollowCache := ""  ; Skip redundant flag Move when square/slot/monitors unchanged
 
 ; Ensure only one script process handles the dictation hotkey logic.
 InitializeDictationHotkeyOwnership() {
@@ -87,6 +92,7 @@ global DICTATION_PULSE_MIN := 50      ; Minimum opacity (~20%)
 global DICTATION_PULSE_MAX := 255     ; Maximum opacity (100%)
 global DICTATION_PULSE_STEP := 15     ; Opacity change per tick
 global DICTATION_PULSE_INTERVAL := 50 ; Timer interval in ms (smooth animation)
+global DICTATION_FLAG_GAP := 8       ; px between language flag and red square
 
 ; Get the monitor that contains the active window
 ; Returns monitor index (1-based) or 0 if not found
@@ -185,6 +191,210 @@ GetDictationIndicatorScreenRect(&outX, &outY, &outW, &outH) {
     return true
 }
 
+; Active-window screen rect used to clamp the recording flag next to the square.
+; Returns false when there is no usable window (caller should use the monitor work area).
+GetDictationActiveWindowRect(&wl, &wt, &wr, &wb) {
+    hwnd := WinExist("A")
+    if (hwnd) {
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1)
+                hwnd := 0
+        } catch {
+            hwnd := 0
+        }
+    }
+    if (!hwnd)
+        return false
+    rect := Buffer(16, 0)
+    if (!DllCall("GetWindowRect", "ptr", hwnd, "ptr", rect))
+        return false
+    wl := NumGet(rect, 0, "int")
+    wt := NumGet(rect, 4, "int")
+    wr := NumGet(rect, 8, "int")
+    wb := NumGet(rect, 12, "int")
+    return (wr - wl >= 8 && wb - wt >= 8)
+}
+
+DictationFlag_MonitorIndexForPoint(x, y) {
+    monitorCount := MonitorGetCount()
+    loop monitorCount {
+        MonitorGet(A_Index, &ml, &mt, &mr, &mb)
+        if (x >= ml && x <= mr && y >= mt && y <= mb)
+            return A_Index
+    }
+    return GetDictationActiveMonitor()
+}
+
+DictationFlag_SlotLabel(slot) {
+    return (slot = 1) ? "EN" : (slot = 2) ? "PT" : (slot = 3) ? "EN+PT" : "?"
+}
+
+; Opaque recording-only flag. Do not use WS_EX_TRANSPARENT (+E0x20): it suppresses painting.
+DictationFlag_CreateGui(slot, imagePath) {
+    global DICTATION_SQUARE_SIZE
+
+    flagGui := Gui("+AlwaysOnTop -Caption +ToolWindow -DPIScale")
+    flagGui.BackColor := "313244"
+    flagGui.MarginX := 0
+    flagGui.MarginY := 0
+
+    usedPicture := false
+    if (imagePath != "") {
+        try {
+            flagGui.Add("Picture", "h" . DICTATION_SQUARE_SIZE . " w-1", imagePath)
+            usedPicture := true
+        } catch {
+            usedPicture := false
+        }
+    }
+    if !usedPicture {
+        flagGui.SetFont("s28 cFFFFFF Bold", "Segoe UI")
+        flagGui.Add("Text", "Center w" . DICTATION_SQUARE_SIZE . " h" . DICTATION_SQUARE_SIZE . " Background45475A",
+            DictationFlag_SlotLabel(slot))
+    }
+    flagGui.Show("AutoSize Hide")
+    return flagGui
+}
+
+DictationFlag_Hide() {
+    global g_DictationFlagGuis, g_DictationFlagSlot, g_DictationFlagFollowCache
+    for item in g_DictationFlagGuis {
+        try {
+            if IsObject(item.gui)
+                item.gui.Destroy()
+        } catch {
+        }
+    }
+    g_DictationFlagGuis := []
+    g_DictationFlagSlot := 0
+    g_DictationFlagFollowCache := ""
+}
+
+DictationFlag_MoveGui(flagGui, guiX, guiY) {
+    try {
+        flagGui.Move(guiX, guiY)
+        hwnd := flagGui.Hwnd
+        if (hwnd) {
+            ; SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE = 0x0001 | 0x0004 | 0x0010 = 0x0015
+            DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", 0, "Int", guiX, "Int", guiY, "Int", 0, "Int", 0,
+                "UInt", 0x0015)
+        }
+        flagGui.Show("NA")
+    } catch {
+    }
+}
+
+; Place the flag left of the red square (right if it would clip). Other monitors: top-center of work area.
+DictationFlag_RepositionAll() {
+    global g_DictationFlagGuis, g_DictationFlagSlot, g_DictationFlagFollowCache, DICTATION_FLAG_GAP
+    if (!g_DictationFlagGuis.Length)
+        return
+
+    GetDictationIndicatorScreenRect(&sx, &sy, &sw, &sh)
+    monitorCount := MonitorGetCount()
+    key := sx . "," . sy . "," . sw . "," . sh . "|" . g_DictationFlagSlot . "|" . monitorCount
+    if (key = g_DictationFlagFollowCache)
+        return
+    g_DictationFlagFollowCache := key
+
+    squareMon := DictationFlag_MonitorIndexForPoint(sx + sw // 2, sy + sh // 2)
+    hasWin := GetDictationActiveWindowRect(&wl, &wt, &wr, &wb)
+
+    for item in g_DictationFlagGuis {
+        flagGui := item.gui
+        monitorIdx := item.monitor
+        if !IsObject(flagGui)
+            continue
+
+        try {
+            MonitorGetWorkArea(monitorIdx, &ml, &mt, &mr, &mb)
+            flagGui.GetPos(, , &gw, &gh)
+        } catch {
+            continue
+        }
+
+        if (monitorIdx = squareMon) {
+            cl := hasWin ? wl : ml
+            ct := hasWin ? wt : mt
+            cr := hasWin ? wr : mr
+            cb := hasWin ? wb : mb
+            guiY := sy + (sh - gh) // 2
+            leftX := sx - DICTATION_FLAG_GAP - gw
+            if (leftX >= cl + 2) {
+                guiX := leftX
+            } else {
+                guiX := sx + sw + DICTATION_FLAG_GAP
+            }
+            if (guiX < cl + 2)
+                guiX := cl + 2
+            if (guiX + gw > cr - 2)
+                guiX := cr - gw - 2
+            if (guiY < ct + 2)
+                guiY := ct + 2
+            if (guiY + gh > cb - 2)
+                guiY := cb - gh - 2
+        } else {
+            guiX := ml + ((mr - ml) - gw) // 2
+            guiY := mt + 12
+        }
+        if (guiX < ml)
+            guiX := ml
+        if (guiY < mt)
+            guiY := mt
+        if (guiX + gw > mr)
+            guiX := mr - gw
+        if (guiY + gh > mb)
+            guiY := mb - gh
+
+        DictationFlag_MoveGui(flagGui, guiX, guiY)
+    }
+}
+
+; Show or refresh recording flags on every monitor from the persisted Handy slot.
+DictationFlag_ShowForRecording() {
+    global g_DictationFlagGuis, g_DictationFlagSlot
+
+    slot := 0
+    try slot := Handy_ReadPersistedAiModelSlotFromIni()
+    if (slot < 1 || slot > 3) {
+        DictationFlag_Hide()
+        return
+    }
+
+    monitorCount := MonitorGetCount()
+    if (monitorCount < 1) {
+        DictationFlag_Hide()
+        return
+    }
+
+    needRebuild := (slot != g_DictationFlagSlot) || (g_DictationFlagGuis.Length != monitorCount)
+    if (!needRebuild) {
+        for item in g_DictationFlagGuis {
+            try {
+                if !IsObject(item.gui) || !item.gui.Hwnd {
+                    needRebuild := true
+                    break
+                }
+            } catch {
+                needRebuild := true
+                break
+            }
+        }
+    }
+
+    if (needRebuild) {
+        DictationFlag_Hide()
+        g_DictationFlagSlot := slot
+        imagePath := LanguageFlag_GetImagePath(slot)
+        loop monitorCount {
+            flagGui := DictationFlag_CreateGui(slot, imagePath)
+            g_DictationFlagGuis.Push({ monitor: A_Index, gui: flagGui })
+        }
+    }
+
+    DictationFlag_RepositionAll()
+}
+
 ; Reposition indicator when the active window moves or focus changes (called from pulse timer).
 DictationIndicator_SyncPosition() {
     global g_DictationIndicatorGui, g_DictationFollowCache
@@ -192,13 +402,14 @@ DictationIndicator_SyncPosition() {
         return
     GetDictationIndicatorScreenRect(&sx, &sy, &sw, &sh)
     key := sx . "," . sy . "," . sw . "," . sh
-    if (key = g_DictationFollowCache)
-        return
-    g_DictationFollowCache := key
-    try {
-        g_DictationIndicatorGui.Show("NA x" . sx . " y" . sy . " w" . sw . " h" . sh)
-    } catch {
+    if (key != g_DictationFollowCache) {
+        g_DictationFollowCache := key
+        try {
+            g_DictationIndicatorGui.Show("NA x" . sx . " y" . sy . " w" . sw . " h" . sh)
+        } catch {
+        }
     }
+    DictationFlag_RepositionAll()
 }
 
 ; Show or update the dictation indicator: yellow border + red inner, anchored to active window (or work area fallback).
@@ -213,6 +424,7 @@ ShowDictationIndicator() {
         g_DictationFollowCache := ""
         DictationIndicator_SyncPosition()
         UpdateDictationIndicatorText("")
+        DictationFlag_ShowForRecording()
         return
     }
 
@@ -253,6 +465,7 @@ ShowDictationIndicator() {
     } catch {
         ; Ignore "target window not found" or similar errors
     }
+    DictationFlag_ShowForRecording()
 }
 
 ; Update indicator text (for status messages)
@@ -273,6 +486,7 @@ HideDictationIndicator() {
     global g_DictationIndicatorGui, g_DictationIndicatorText, g_DictationFollowCache
 
     g_DictationFollowCache := ""
+    DictationFlag_Hide()
     if (IsObject(g_DictationIndicatorGui)) {
         try {
             if (g_DictationIndicatorGui.Hwnd) {
