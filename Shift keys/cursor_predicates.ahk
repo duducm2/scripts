@@ -804,10 +804,14 @@ Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText) {
     qi := Editor_FindQuickInputFromRoot(root)
     if qi && Editor_QuickInputHasFocusedEdit(qi) {
         filter := ""
-        try filter := qi.FindFirst({ Type: UIA.Type.Edit }).Value
-        catch {
-            try filter := qi.FindFirst({ Type: UIA.Type.Edit }).Name
-            catch filter := ""
+        try {
+            filter := qi.FindFirst({ Type: UIA.Type.Edit }).Value
+        } catch {
+            try {
+                filter := qi.FindFirst({ Type: UIA.Type.Edit }).Name
+            } catch {
+                filter := ""
+            }
         }
         if (filter != commandText)
             return true
@@ -895,14 +899,18 @@ Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0, &failReason := 
             }
             sel := Editor_GetQuickInputSelectedPickItem(root)
             if sel {
-                try selName := sel.Name
-                catch selName := ""
-                    if (selName = commandText) {
-                        Send "{Enter}"
-                        Sleep 120
-                        if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
-                            return true
-                    }
+                selName := ""
+                try {
+                    selName := sel.Name
+                } catch {
+                    selName := ""
+                }
+                if (selName = commandText) {
+                    Send "{Enter}"
+                    Sleep 120
+                    if Editor_CommandPaletteSelectionSucceeded(editorHwnd, commandText)
+                        return true
+                }
             }
             if !requireExactPick && Editor_CountQuickInputExactMatches(root, commandText) = 1 {
                 Send "{Enter}"
