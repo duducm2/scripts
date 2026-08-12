@@ -777,9 +777,10 @@ ContextBrowser_StopLetterJump() {
     ModalListLetterJump_Stop(&g_ContextBrowserLetterHook)
 }
 
-ContextBrowser_DisableHotkeys() {
+ContextBrowser_DisableHotkeys(keepEnter := false) {
     try Hotkey("Backspace", "Off")
-    try Hotkey("Enter", "Off")
+    if (!keepEnter)
+        try Hotkey("Enter", "Off")
     try Hotkey("^Enter", "Off")
     try Hotkey("+Enter", "Off")
     try Hotkey("^c", "Off")
@@ -800,8 +801,10 @@ ContextBrowser_SetListNavigationHotkeysEnabled(enabled) {
         ContextBrowser_EnableHotkeys()
         ContextBrowser_StartLetterJump()
     } else {
+        ; Filter typing: keep Enter for first-match quick-select; leave other list hotkeys off.
         ContextBrowser_StopLetterJump()
-        ContextBrowser_DisableHotkeys()
+        ContextBrowser_DisableHotkeys(true)
+        try Hotkey("Enter", ContextBrowser_OnEnter, "On")
     }
 }
 
@@ -1086,11 +1089,12 @@ ContextBrowser_OnItemFocus(lv, guiEvent, *) {
 ContextBrowser_OnEnter(*) {
     ContextBrowser_EnsureGlobals()
     global g_ContextBrowserListView
-    if ContextBrowser_IsFilterFocused()
-        return
     if (!IsObject(g_ContextBrowserListView))
         return
-    ContextBrowser_OnSelectRow(ContextBrowser_GetListRowNum())
+    rowNum := ContextBrowser_GetListRowNum()
+    if (rowNum < 1)
+        return
+    ContextBrowser_OnSelectRow(rowNum)
 }
 
 ContextBrowser_RefreshView() {
@@ -1176,7 +1180,7 @@ ContextBrowser_CreateGui() {
     g_ContextBrowserEntryPathLabel := g_ContextBrowserGui.Add("Text", "xm w740 h28 +Wrap +Hidden", "")
     g_ContextBrowserGui.SetFont("s10", "Segoe UI")
     g_ContextBrowserGui.Add("Text", "xm",
-        "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+H explorer · Esc close"
+        "click path to jump · filter searches all context files · ↑↓ · letter jump · Enter attach (from filter: first match) · Shift+Enter text · Ctrl+Enter path · Ctrl+C copy · Ctrl+H explorer · Esc close"
     )
     g_ContextBrowserGui.OnEvent("Escape", HandleContextBrowserEscape)
     g_ContextBrowserGui.OnEvent("Close", (*) => CleanupContextBrowser())
