@@ -6,6 +6,8 @@ docs/aib-allow-runtime-debug.log
 .pytest_cache/
 .cursor/autoslot_perf.log
 .cursor/autoslot_fill_quality.log
+# Large installer/archive — exceeds GitHub 100MB limit
+Maono*.rar
 # Windows reserved device name — cannot be tracked by git; use infra/ipc/ instead
 aux/
 infra/aux/
