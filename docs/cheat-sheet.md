@@ -124,7 +124,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as **Git Stash and Pull**: re-sends **Alt+S** (native **Git: Stash**), **UIA-waits** for the stash-message QuickInput, sleeps **400ms**, sends **Enter** for an empty stash message, then sends **Shift+P** (native **Git: Pull**). When the status bar sync item (`status.scm.1`) no longer shows pending **Pull N commits**, plays **`quick-update-success.wav`** (respects global sound toggle). Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as **Git Stash and Pull**: re-sends **Alt+S** (native **Git: Stash**), **UIA-waits** for the stash-message QuickInput, sleeps **400ms**, sends **Enter** for an empty stash message, then sends **Shift+P** (native **Git: Pull**). When the status bar sync item (`status.scm.1`) no longer shows pending **Pull N commits**, plays **`pull-successful.wav`** (respects global sound toggle). Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
 
 ### Special resolution (not only `exe` match)
 
