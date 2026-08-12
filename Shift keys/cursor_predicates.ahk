@@ -523,13 +523,41 @@ Editor_WaitForGitPullSettled(editorHwnd := 0, hadPullPending := false, timeoutMs
     return false
 }
 
+Editor_RunCommandPaletteGitCommand(commandText, editorHwnd := 0) {
+    Send "^+p"
+    if !Editor_WaitForStashQuickInput(editorHwnd)
+        Sleep 600
+    Sleep 150
+    SendText commandText
+    Sleep 100
+    Send "{Enter}"
+}
+
+Editor_WaitForGitFetchSettled(editorHwnd := 0, timeoutMs := 8000) {
+    Sleep 800
+    deadline := A_TickCount + timeoutMs
+    lastName := Editor_GetScmSyncStatusName(editorHwnd)
+    stableCount := 0
+    while (A_TickCount < deadline) {
+        Sleep 200
+        name := Editor_GetScmSyncStatusName(editorHwnd)
+        if (name = lastName) {
+            stableCount++
+            if (stableCount >= 3)
+                return true
+        } else {
+            lastName := name
+            stableCount := 0
+        }
+    }
+    return true
+}
+
 Editor_GitStashAndPull() {
     hwnd := WinExist("A")
     if !hwnd
         return
-    syncBefore := Editor_GetScmSyncStatusName(hwnd)
-    hadPullPending := Editor_IsGitPullPending(syncBefore)
-    StandardLoadingBar_Show("⏳ Git stash and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: hwnd })
+    StandardLoadingBar_Show("⏳ Git stash, fetch, and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: hwnd })
     try {
         Send "!s"
         StandardLoadingBar_Update("⏳ Waiting for stash message…", BANNER_ACCENT_INTERMEDIATE)
@@ -539,6 +567,11 @@ Editor_GitStashAndPull() {
         StandardLoadingBar_Update("⏳ Stashing changes…", BANNER_ACCENT_INTERMEDIATE)
         Send "{Enter}"
         Sleep 150
+        StandardLoadingBar_Update("⏳ Fetching from remote…", BANNER_ACCENT_INTERMEDIATE)
+        Editor_RunCommandPaletteGitCommand("Git: Fetch", hwnd)
+        StandardLoadingBar_Update("⏳ Waiting for fetch…", BANNER_ACCENT_INTERMEDIATE)
+        Editor_WaitForGitFetchSettled(hwnd)
+        hadPullPending := Editor_IsGitPullPending(Editor_GetScmSyncStatusName(hwnd))
         StandardLoadingBar_Update("⏳ Pulling from remote…", BANNER_ACCENT_INTERMEDIATE)
         Send "+p"
         StandardLoadingBar_Update("⏳ Waiting for sync…", BANNER_ACCENT_INTERMEDIATE)
