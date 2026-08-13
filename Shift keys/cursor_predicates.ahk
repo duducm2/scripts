@@ -628,12 +628,12 @@ Editor_GitRobotTerminalCommand(repoDir, resultPath) {
         safe := StrReplace(repoDir, "'", "''")
         gitc := "git -C '" safe "'"
     }
-    out := StrReplace(resultPath, '"', "")
-    writeOk := 'cmd /c echo ok>"' out '"'
-    writeFail := 'cmd /c echo fail>"' out '"'
+    out := StrReplace(resultPath, "'", "''")
+    ; $? after git (not $LASTEXITCODE — that stays $null in some terminals and would mark success as fail).
+    ; Write ok as soon as pull succeeds so the chime does not depend on stash pop.
     return Format(
-        "$ok=$true; Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop; if ($LASTEXITCODE -ne 0) {{ $ok=$false }} }} else {{ Write-Host 'no stash to pop' }}; if ($ok) {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; {3} }} else {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; {4} }}",
-        gitc, msg, writeOk, writeFail)
+        "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if (-not $?) {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; [IO.File]::WriteAllText('{3}', 'fail'); }} else {{ Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if (-not $?) {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; [IO.File]::WriteAllText('{3}', 'fail'); }} else {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; [IO.File]::WriteAllText('{3}', 'ok'); Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop }} else {{ Write-Host 'no stash to pop' }} }} }}",
+        gitc, msg, out)
 }
 
 Editor_ParseGitRobotResultText(raw) {
@@ -683,8 +683,9 @@ Editor_GitRobotPollResult(*) {
     try {
         if FileExist(path) {
             raw := FileRead(path)
-            try FileDelete(path)
             outcome := Editor_ParseGitRobotResultText(raw)
+            if (outcome != "")
+                try FileDelete(path)
         }
     } catch {
     }
@@ -692,8 +693,8 @@ Editor_GitRobotPollResult(*) {
         return
     Editor_GitRobotStopPoll()
     if (outcome = "ok") {
-        StandardLoadingBar_Show("✅ Pull complete", BANNER_ACCENT_SUCCESS)
         Editor_GitPlayPullSuccessSound()
+        StandardLoadingBar_Show("✅ Pull complete", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(600)
     }
 }
