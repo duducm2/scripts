@@ -20,6 +20,19 @@ global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
 
+; #region agent log
+AudioBt_DebugLog(hypothesisId, location, message, dataJson := "{}") {
+    ts := DateDiff(A_NowUTC, "19700101000000", "Seconds") * 1000
+    loc := StrReplace(StrReplace(location, "\", "/"), '"', "'")
+    msg := StrReplace(StrReplace(message, "\", "/"), '"', "'")
+    line := '{"sessionId":"639bbd","runId":"pre-fix","hypothesisId":"' hypothesisId
+        . '","location":"' loc '","message":"' msg '","data":' dataJson ',"timestamp":' ts '}'
+    try FileAppend(line "`n", A_ScriptDir "\debug-639bbd.log", "UTF-8")
+    catch {
+    }
+}
+; #endregion
+
 AudioBt_RootItems() {
     return [{ key: "1", kind: "BT", title: "Bluetooth", detail: "Paired audio devices — connect / disconnect" }, { key: "2",
         kind: "In", title: "Input", detail: "Recording devices — default / enable / isolate" }, { key: "3", kind: "Out",
@@ -31,9 +44,7 @@ AudioBt_HintText() {
     global g_AudioBtMode
     if (g_AudioBtMode = "root")
         return "1/B Bluetooth   2/I Input   3/O Output   Enter open   Esc close"
-    if (g_AudioBtMode = "BT")
-        return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
-    return "1-9/0 select   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
+    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
 }
 
 AudioBt_ModeTitle() {
@@ -111,11 +122,21 @@ AudioBt_UnbindModalHotkeys() {
 
 AudioBt_BindOne(key, handler) {
     global g_AudioBtHotkeyHandlers
+    ok := false
+    errMsg := ""
     try {
         Hotkey(key, handler, "On")
         g_AudioBtHotkeyHandlers.Push({ key: key, handler: handler })
-    } catch {
+        ok := true
+    } catch as err {
+        errMsg := err.Message
     }
+    ; #region agent log
+    if (InStr(key, "x")) {
+        AudioBt_DebugLog("A", "audio_bt_menu.ahk:BindOne", "bind x key",
+            '{"key":"' key '","ok":' (ok ? 1 : 0) ',"err":"' StrReplace(errMsg, '"', "'") '"}')
+    }
+    ; #endregion
 }
 
 AudioBt_BindModalHotkeys() {
@@ -160,21 +181,13 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("Numpad0", AudioBt_SelectDigit.Bind(10))
         AudioBt_BindOne("Enter", AudioBt_OnDefault)
         AudioBt_BindOne("NumpadEnter", AudioBt_OnDefault)
-        AudioBt_BindOne("d", AudioBt_OnDisable)
-        AudioBt_BindOne("D", AudioBt_OnDisable)
-        AudioBt_BindOne("e", AudioBt_OnEnable)
-        AudioBt_BindOne("E", AudioBt_OnEnable)
-        AudioBt_BindOne("i", AudioBt_OnIsolate)
-        AudioBt_BindOne("I", AudioBt_OnIsolate)
-        AudioBt_BindOne("r", AudioBt_OnRefresh)
-        AudioBt_BindOne("R", AudioBt_OnRefresh)
+        AudioBt_BindOne("$*d", AudioBt_OnDisable)
+        AudioBt_BindOne("$*e", AudioBt_OnEnable)
+        AudioBt_BindOne("$*i", AudioBt_OnIsolate)
+        AudioBt_BindOne("$*r", AudioBt_OnRefresh)
+        AudioBt_BindOne("$*c", AudioBt_OnConnect)
+        AudioBt_BindOne("$*x", AudioBt_OnDisconnect)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
-        if (g_AudioBtMode = "BT") {
-            AudioBt_BindOne("c", AudioBt_OnConnect)
-            AudioBt_BindOne("C", AudioBt_OnConnect)
-            AudioBt_BindOne("x", AudioBt_OnDisconnect)
-            AudioBt_BindOne("X", AudioBt_OnDisconnect)
-        }
     }
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
 
@@ -182,6 +195,10 @@ AudioBt_BindModalHotkeys() {
     catch {
     }
     g_AudioBtHotkeysBound := true
+    ; #region agent log
+    AudioBt_DebugLog("A", "audio_bt_menu.ahk:BindModalHotkeys", "hotkeys bound",
+        '{"mode":"' g_AudioBtMode '","hwnd":' hwnd ',"count":' g_AudioBtHotkeyHandlers.Length '}')
+    ; #endregion
 }
 
 AudioBt_DestroyGui() {
@@ -295,7 +312,7 @@ AudioBt_Run(action, id := "") {
     outFile := A_Temp "\audiobt-out-" A_TickCount ".txt"
     cmd := 'powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "' ps1 '" -Action ' action
     if (id != "")
-        cmd .= " -Id '" id "'"
+        cmd .= ' -Id "' id '"'
     cmd .= ' -OutFile "' outFile '"'
     exitCode := 1
     try exitCode := RunWait(cmd, , "Hide")
@@ -504,20 +521,44 @@ AudioBt_OnRootActivate(*) {
 
 AudioBt_DoAction(action, requireBt := false) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root") {
+        ; #region agent log
+        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "early return gate",
+            '{"action":"' action '","active":' (g_AudioBtActive ? 1 : 0) ',"busy":' (g_AudioBtBusy ? 1 : 0)
+            . ',"mode":"' g_AudioBtMode '"}')
+        ; #endregion
         return
+    }
     row := AudioBt_SelectedRow()
     if (!IsObject(row)) {
+        ; #region agent log
+        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "no selected row",
+            '{"action":"' action '","mode":"' g_AudioBtMode '"}')
+        ; #endregion
         ShowNotification_WM("Select a device first")
         return
     }
     if (requireBt && row.canConnect != true && row.kind != "BT") {
+        ; #region agent log
+        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "requireBt rejected",
+            '{"action":"' action '","kind":"' row.kind '","canConnect":' (row.canConnect ? 1 : 0) '}')
+        ; #endregion
         ShowNotification_WM("Not a Bluetooth audio device")
         return
     }
     g_AudioBtBusy := true
     AudioBt_SetHint("Working: " . action . " — " . row.name)
+    ; #region agent log
+    AudioBt_DebugLog("C", "audio_bt_menu.ahk:DoAction", "run backend",
+        '{"action":"' action '","id":"' StrReplace(row.id, '"', "'") '","kind":"' row.kind
+        . '","name":"' StrReplace(row.name, '"', "'") '"}')
+    ; #endregion
     result := AudioBt_Run(action, row.id)
+    ; #region agent log
+    AudioBt_DebugLog("C", "audio_bt_menu.ahk:DoAction", "backend result",
+        '{"ok":' (result.ok ? 1 : 0) ',"exitCode":' result.exitCode ',"text":"' StrReplace(StrReplace(result.text,
+            "\", "/"), '"', "'") '"}')
+    ; #endregion
     msg := result.text
     if (SubStr(msg, 1, 3) = "OK`t")
         msg := SubStr(msg, 4)
@@ -548,6 +589,11 @@ AudioBt_OnConnect(*) {
 }
 
 AudioBt_OnDisconnect(*) {
+    ; #region agent log
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtActive
+    AudioBt_DebugLog("A", "audio_bt_menu.ahk:OnDisconnect", "X handler fired",
+        '{"mode":"' g_AudioBtMode '","active":' (g_AudioBtActive ? 1 : 0) ',"busy":' (g_AudioBtBusy ? 1 : 0) '}')
+    ; #endregion
     AudioBt_DoAction("disconnect", true)
 }
 

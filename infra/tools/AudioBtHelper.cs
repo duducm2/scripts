@@ -193,9 +193,28 @@ namespace AudioBt
         [DllImport("BluetoothAPIs.dll", SetLastError = true)]
         static extern uint BluetoothSetServiceState(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref Guid guidService, uint dwServiceFlags);
 
+        [DllImport("BluetoothAPIs.dll", SetLastError = true)]
+        static extern uint BluetoothGetDeviceInfo(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool DeviceIoControl(IntPtr hDevice, uint dwIoControlCode, ref ulong lpInBuffer, uint nInBufferSize,
+            IntPtr lpOutBuffer, uint nOutBufferSize, out uint lpBytesReturned, IntPtr lpOverlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static extern IntPtr CreateFile(string lpFileName, uint dwDesiredAccess, uint dwShareMode, IntPtr lpSecurityAttributes,
+            uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+
+        const uint IOCTL_BTH_DISCONNECT_DEVICE = 0x0041000C;
+        const uint GENERIC_READ = 0x80000000;
+        const uint GENERIC_WRITE = 0x40000000;
+        const uint FILE_SHARE_READ = 0x1;
+        const uint FILE_SHARE_WRITE = 0x2;
+        const uint OPEN_EXISTING = 3;
 
         public static string ListTsv()
         {
@@ -391,10 +410,21 @@ namespace AudioBt
                 BtDeviceInfo bt = ResolveBt(id);
                 if (bt == null)
                     return "ERR\tNot a paired Bluetooth audio device";
-                string err;
-                if (!SetBtServices(bt, false, out err))
-                    return "ERR\t" + Cell(err);
-                return "OK\tDisconnect requested: " + Cell(bt.Name);
+                string ioctlErr;
+                bool ioctlOk = DisconnectRadio(bt, out ioctlErr);
+                string svcErr;
+                bool svcOk = SetBtServices(bt, false, out svcErr);
+                if (!ioctlOk && !svcOk)
+                {
+                    string msg = ioctlErr;
+                    if (!string.IsNullOrEmpty(svcErr))
+                        msg = string.IsNullOrEmpty(msg) ? svcErr : msg + "; " + svcErr;
+                    if (string.IsNullOrEmpty(msg))
+                        msg = "Windows refused the Bluetooth disconnect";
+                    return "ERR\t" + Cell(msg);
+                }
+                System.Threading.Thread.Sleep(500);
+                return "OK\tDisconnected: " + Cell(bt.Name);
             }
             catch (Exception ex)
             {
@@ -874,39 +904,21 @@ namespace AudioBt
             return info;
         }
 
-        static bool SetBtServices(BtDeviceInfo bt, bool enable, out string err)
+        static bool ForEachRadio(Func<IntPtr, bool> fn)
         {
-            err = "";
             BLUETOOTH_FIND_RADIO_PARAMS rp = new BLUETOOTH_FIND_RADIO_PARAMS();
             rp.dwSize = (uint)Marshal.SizeOf(typeof(BLUETOOTH_FIND_RADIO_PARAMS));
             IntPtr hRadio;
             IntPtr hFindRadio = BluetoothFindFirstRadio(ref rp, out hRadio);
             if (hFindRadio == IntPtr.Zero)
-            {
-                err = "No Bluetooth radio found";
                 return false;
-            }
-            uint flags = enable ? BLUETOOTH_SERVICE_ENABLE : BLUETOOTH_SERVICE_DISABLE;
-            Guid[] services = new Guid[] { GuidA2dpSink, GuidHandsfree, GuidHeadset };
-            int ok = 0;
-            int attempts = 0;
-            uint lastCode = 0;
+            bool any = false;
             try
             {
                 do
                 {
-                    BLUETOOTH_DEVICE_INFO info = NewDeviceInfo();
-                    info.Address = bt.Address;
-                    foreach (Guid svc in services)
-                    {
-                        Guid g = svc;
-                        attempts++;
-                        uint code = BluetoothSetServiceState(hRadio, ref info, ref g, flags);
-                        lastCode = code;
-                        // 0 success; 1168 ERROR_NOT_FOUND = service not on this device
-                        if (code == 0)
-                            ok++;
-                    }
+                    if (fn(hRadio))
+                        any = true;
                     CloseHandle(hRadio);
                 }
                 while (BluetoothFindNextRadio(hFindRadio, out hRadio));
@@ -915,12 +927,91 @@ namespace AudioBt
             {
                 BluetoothFindRadioClose(hFindRadio);
             }
-            if (ok == 0 && attempts > 0 && lastCode != 0 && lastCode != 1168)
+            return any;
+        }
+
+        static bool DisconnectRadio(BtDeviceInfo bt, out string err)
+        {
+            err = "";
+            int lastWinErr = 0;
+            bool ok = false;
+            bool foundRadio = ForEachRadio(delegate (IntPtr hRadio)
             {
-                err = "BluetoothSetServiceState " + lastCode;
+                ulong addr = bt.Address;
+                uint bytes;
+                if (DeviceIoControl(hRadio, IOCTL_BTH_DISCONNECT_DEVICE, ref addr, 8, IntPtr.Zero, 0, out bytes, IntPtr.Zero))
+                {
+                    ok = true;
+                    return true;
+                }
+                lastWinErr = Marshal.GetLastWin32Error();
+                return false;
+            });
+            if (ok)
+                return true;
+
+            IntPtr hci = CreateFile(@"\\.\BthHci", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            if (hci != IntPtr.Zero && hci != new IntPtr(-1))
+            {
+                try
+                {
+                    ulong addr = bt.Address;
+                    uint bytes;
+                    if (DeviceIoControl(hci, IOCTL_BTH_DISCONNECT_DEVICE, ref addr, 8, IntPtr.Zero, 0, out bytes, IntPtr.Zero))
+                        return true;
+                    lastWinErr = Marshal.GetLastWin32Error();
+                }
+                finally
+                {
+                    CloseHandle(hci);
+                }
+            }
+
+            if (!foundRadio && lastWinErr == 0)
+                err = "No Bluetooth radio found";
+            else
+                err = "Disconnect IOCTL " + lastWinErr;
+            return false;
+        }
+
+        static bool SetBtServices(BtDeviceInfo bt, bool enable, out string err)
+        {
+            err = "";
+            uint flags = enable ? BLUETOOTH_SERVICE_ENABLE : BLUETOOTH_SERVICE_DISABLE;
+            Guid[] services = new Guid[] { GuidA2dpSink, GuidHandsfree, GuidHeadset };
+            int ok = 0;
+            uint lastCode = 0;
+            bool foundRadio = ForEachRadio(delegate (IntPtr hRadio)
+            {
+                BLUETOOTH_DEVICE_INFO info = NewDeviceInfo();
+                info.Address = bt.Address;
+                BluetoothGetDeviceInfo(hRadio, ref info);
+                info.Address = bt.Address;
+                foreach (Guid svc in services)
+                {
+                    Guid g = svc;
+                    uint code = BluetoothSetServiceState(hRadio, ref info, ref g, flags);
+                    lastCode = code;
+                    if (code == 0)
+                        ok++;
+                }
+                return ok > 0;
+            });
+            if (!foundRadio)
+            {
+                err = "No Bluetooth radio found";
                 return false;
             }
-            return true;
+            if (ok > 0)
+                return true;
+            if (lastCode == 0 || lastCode == 1168)
+            {
+                err = enable ? "No audio service to connect" : "No audio service to disconnect";
+                return false;
+            }
+            err = "BluetoothSetServiceState " + lastCode;
+            return false;
         }
     }
 }

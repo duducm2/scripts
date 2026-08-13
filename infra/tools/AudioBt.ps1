@@ -61,8 +61,25 @@ try {
     Write-AudioBtResult ("ERR`tFailed to load AudioBt helper: " + $_.Exception.Message) 1
 }
 
+if ($null -eq $Id) { $Id = "" }
+$Id = $Id.Trim().Trim("'").Trim('"')
+
 if ($Action -ne "list" -and [string]::IsNullOrWhiteSpace($Id)) {
     Write-AudioBtResult "ERR`tMissing -Id" 1
+}
+
+function Write-AudioBtDebug([string]$hypothesisId, [string]$location, [string]$message, [string]$dataJson) {
+    # #region agent log
+    try {
+        $logPath = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) "debug-639bbd.log"
+        $ts = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $line = '{"sessionId":"639bbd","runId":"pre-fix","hypothesisId":"' + $hypothesisId +
+            '","location":"' + $location + '","message":"' + $message + '","data":' + $dataJson +
+            ',"timestamp":' + $ts + '}'
+        Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8
+    } catch {
+    }
+    # #endregion
 }
 
 $result = switch ($Action) {
@@ -73,6 +90,13 @@ $result = switch ($Action) {
     "connect" { [AudioBt.Helper]::Connect($Id) }
     "disconnect" { [AudioBt.Helper]::Disconnect($Id) }
     "isolate" { [AudioBt.Helper]::Isolate($Id) }
+}
+
+if ($Action -eq "disconnect") {
+    $safeId = $Id.Replace('\', '/').Replace('"', "'")
+    $safeRes = if ($null -eq $result) { "" } else { $result.Replace('\', '/').Replace('"', "'") }
+    Write-AudioBtDebug "D" "AudioBt.ps1:disconnect" "helper returned" (
+        '{"id":"' + $safeId + '","result":"' + $safeRes + '"}')
 }
 
 if ($null -eq $result) {
