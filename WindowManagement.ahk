@@ -27,7 +27,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\project_selector_01.ahk  - project quick selector GUI (#!+L), part 1
 ; Optional (deletable): AutoSlot\AutoSlot.ahk — auto-position new windows (see AutoSlot\README.md)
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
-;   WindowManagement\project_selector_02.ahk  - project selector selection mode / preview, part 2
+;   WindowManagement\project_selector_02.ahk  - project selector preview / Copy-from-Gemini handlers
 ;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
 ; -----------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ; [WM module] Cursor AI composer focus -> WindowManagement\cursor_composer.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_composer.ahk
 
-; [WM module] Project selector selection mode and preview handlers -> WindowManagement\project_selector_02.ahk
+; [WM module] Project selector preview / Copy-from-Gemini handlers -> WindowManagement\project_selector_02.ahk
 #include %A_ScriptDir%\WindowManagement\project_selector_02.ahk
 ; [WM module] Cursor window selection (within project selector) -> WindowManagement\cursor_window_select.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_window_select.ahk

@@ -1191,7 +1191,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
     [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
     [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
-    [Ctrl+Alt+Win+1] > Cursor AI quick action (Project Selector + Selection Mode)
     [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
     [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
     [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
@@ -1357,7 +1356,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · .] tap 2× > Alt+F4 — close window
     [ZMK L0 · Left thumb] hold > Layer 1 (ONE)
     [ZMK L0 · Left thumb] tap 1× > Ctrl+Alt+Win+0 — Project Quick Selector
-    [ZMK L0 · Left thumb] tap 2× > Ctrl+Alt+Win+1 — Cursor AI quick action
     [ZMK L0 · Right thumb] hold > Layer 2 (TWO)
     [ZMK L0 · Right thumb] tap 1× > Win+Alt+Shift+U — quick string shortcuts
     [ZMK L0 · Right thumb] tap 2× > Win+Alt+Shift+Y — Focus Mode toggle

@@ -55,10 +55,6 @@ global g_CursorWindowMap := Map()  ; Maps character to window HWND
 global g_CursorWindowHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 global g_CursorWindowSelectorGui := false
 
-; Global variable for Selection Mode
-global g_SelectionModeActive := false
-global g_SelectionModeHotkeyHandlers := []  ; Store hotkey handlers for selection mode cleanup
-
 ; Global variables for Copy from Gemini mode (K in project selector)
 global g_CopyFromGeminiModeActive := false
 global g_CopyFromGeminiHotkeyHandlers := []
@@ -231,7 +227,7 @@ ProjectSelector_BindOneChar(char, handler) {
 }
 
 ProjectSelector_BindModalHotkeys() {
-    global g_ProjectSelectorGui, g_ProjectSelectorHotkeysBound, g_SelectionModeActive, g_ProjectHotkeyHandlers
+    global g_ProjectSelectorGui, g_ProjectSelectorHotkeysBound, g_ProjectHotkeyHandlers
     ProjectSelector_UnbindModalHotkeys()
     hwnd := 0
     try {
@@ -249,9 +245,7 @@ ProjectSelector_BindModalHotkeys() {
 
     resolved := ProjectSelector_ResolveProjectCharMap()
     for projectIndex, char in resolved.projectIndexToChar {
-        handler := g_SelectionModeActive
-            ? CreateSelectionModeProjectHandler(projectIndex)
-                : CreateProjectHandler(projectIndex)
+        handler := CreateProjectHandler(projectIndex)
         ProjectSelector_BindOneChar(char, handler)
     }
 
@@ -416,14 +410,10 @@ ProjectSelector_PromptChar(currentChar := "", excludeIndex := 0) {
 }
 
 ProjectSelector_OnListActivate(*) {
-    global g_SelectionModeActive
     idx := ProjectSelector_SelectedIndex()
     if (idx < 1)
         return
-    if (g_SelectionModeActive)
-        HandleSelectionModeProjectSelection(idx)
-    else
-        HandleProjectSelection(idx)
+    HandleProjectSelection(idx)
 }
 
 ProjectSelector_PathPickClose() {
@@ -706,7 +696,7 @@ ProjectSelector_OnDelete(*) {
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
     global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectSelectorLv, g_ProjectHotkeyHandlers,
-        g_SelectionModeActive, g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile,
+        g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile,
         g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer, g_OnEscapePressed
 
     g_ProjectSelectorActive := false
@@ -717,9 +707,6 @@ CleanupProjectSelector() {
     }
     try FileDelete(g_WM_SelectorCloseRequestFile)
     catch {
-    }
-    if (g_SelectionModeActive) {
-        CleanupSelectionMode()
     }
     if (g_CopyFromGeminiModeActive) {
         CleanupCopyFromGeminiMode()

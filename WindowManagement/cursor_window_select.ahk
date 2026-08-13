@@ -569,21 +569,7 @@ ShowProjectSelector() {
     }
 }
 
-; Ctrl+Alt+Win+1: close-M1 (Shift) + project selector (no Shift). * allows extra modifiers (CapsLock, etc.) so the chord
+; Ctrl+Alt+Win+Shift+1: close window on monitor 1. * allows extra modifiers (CapsLock, etc.) so the chord
 ; still matches on picky stacks; use ^!+#g / ^!+#z from the IDE monitor if this still does not fire.
 *^!+#1:: CloseWindowOnMonitor(1)
 *^!+#SC002:: CloseWindowOnMonitor(1)  ; US QWERTY top-row 1 scan code if character "1" binding differs
-^!#1:: {
-    global g_ProjectSelectorActive, g_ProjectSelectorGui
-
-    if (!g_ProjectSelectorActive || !IsObject(g_ProjectSelectorGui)) {
-        ShowProjectSelector()
-    }
-
-    if (!g_ProjectSelectorActive || !IsObject(g_ProjectSelectorGui)) {
-        try ShowNotification_WM("Project selector could not be opened.")
-        return
-    }
-
-    HandleSelectionModeTrigger()
-}

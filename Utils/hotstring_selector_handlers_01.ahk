@@ -67,7 +67,7 @@ HandleHotstringChar(char) {
             return
         }
         g_HotstringGeminiArmed := true
-        ; Show banner when entering Gemini mode (same pattern as Project Selector "Entering Selection Mode").
+        ; Show banner when entering Gemini mode.
         HotstringGeminiBanner_Show("âŒ¨ Entering " . GetGlobalAIProviderLabel() . " Mode - Select prompt")
         SetTimer(HotstringGeminiBanner_Hide, -1500)  ; Hide banner after 1.5 s
         SetTimer(DisarmHotstringGeminiMode, -4000)

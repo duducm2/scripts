@@ -1,97 +1,9 @@
 ; =============================================================================
 ; WindowManagement module: project_selector_02.ahk
-; Project selector selection mode and preview handlers
+; Project selector preview and Copy-from-Gemini handlers
 ; Extracted verbatim from WindowManagement.ahk; loaded via #include into the
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
-
-; Handler for project selection in Selection Mode
-HandleSelectionModeProjectSelection(index) {
-    global g_SelectionModeActive, g_Projects
-
-    if (!g_SelectionModeActive) {
-        return
-    }
-    ProjectData_Load()
-    if (index < 1 || index > g_Projects.Length) {
-        return
-    }
-    project := g_Projects[index]
-    if (project.name = "" && project.path = "" && project.workPath = "") {
-        return
-    }
-
-    ; Activate the project in Cursor and rely on ActivateCursorProject/FocusCursorAITextField
-    ; to handle AI sidebar visibility (only open if hidden, never toggle closed).
-    g_SelectionModeActive := false
-    projectPath := IS_WORK_ENVIRONMENT ? project.workPath : project.path
-    if (IS_WORK_ENVIRONMENT && projectPath = "") {
-        projectPath := project.path
-    }
-    if (projectPath = "" || !DirExist(projectPath)) {
-        ShowNotification_WM("Project folder not found: " . projectPath)
-        CleanupSelectionMode()
-        CleanupProjectSelector()
-        return
-    }
-
-    ; Best-effort: even if focusing the AI field reports a soft failure,
-    ; the Cursor window may still be usable. Suppress noisy failure toast.
-    ActivateCursorProject(projectPath)
-    CleanupSelectionMode()
-    CleanupProjectSelector()
-}
-
-; Factory function to create a handler for selection mode project selection
-CreateSelectionModeProjectHandler(index) {
-    return (*) => HandleSelectionModeProjectSelection(index)
-}
-
-; Handler for Selection Mode trigger (L key in project selector)
-HandleSelectionModeTrigger(*) {
-    global g_ProjectSelectorActive, g_SelectionModeActive
-
-    ; Only process if project selector is active
-    if (!g_ProjectSelectorActive) {
-        return
-    }
-
-    ShowNotification_WM("Entering Selection Mode - Select Project")
-    g_SelectionModeActive := true
-    ProjectSelector_BindModalHotkeys()
-}
-
-; Cleanup selection mode: disable hotkeys and reset state
-CleanupSelectionMode() {
-    global g_SelectionModeActive, g_SelectionModeHotkeyHandlers
-
-    ; Disable active flag
-    g_SelectionModeActive := false
-
-    ; Disable all selection mode character hotkeys
-    for handler in g_SelectionModeHotkeyHandlers {
-        try {
-            char := handler.char
-            ; Handle special VK codes for comma and period
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                ; Also disable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
-
-    ; Clear handlers array
-    g_SelectionModeHotkeyHandlers := []
-}
 
 ; Cleanup Copy from Gemini mode: disable hotkeys and reset state
 CleanupCopyFromGeminiMode() {
