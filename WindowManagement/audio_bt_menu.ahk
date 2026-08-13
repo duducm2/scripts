@@ -39,7 +39,7 @@ AudioBt_HelpRows() {
                                 command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
                                     meaning: "Connect a paired Bluetooth audio device (A2DP/HFP)." }, { key: "X",
                                         command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
-                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints." }, { key: "R",
+                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first." }, { key: "R",
                                                 command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "Esc",
                                                     command: "Back", meaning: "Back to the root menu." }
     ]
@@ -477,7 +477,7 @@ AudioBt_RefocusLv() {
     }
 }
 
-AudioBt_ActionBusyText(action, name) {
+AudioBt_ActionBusyText(action, row) {
     verb := ""
     switch action {
         case "disconnect": verb := "Disconnecting"
@@ -485,10 +485,11 @@ AudioBt_ActionBusyText(action, name) {
         case "default": verb := "Setting default"
         case "enable": verb := "Enabling"
         case "disable": verb := "Disabling"
-        case "isolate": verb := "Isolating"
+        case "isolate":
+            verb := InStr(row.state, "Disconnected") ? "Connecting and isolating" : "Isolating"
         default: verb := "Working"
     }
-    return "⏳ " . verb . " " . name . "…"
+    return "⏳ " . verb . " " . row.name . "…"
 }
 
 AudioBt_StripResult(text) {
@@ -618,7 +619,7 @@ AudioBt_DoAction(action, requireBt := false) {
         return
     }
     g_AudioBtBusy := true
-    AudioBt_BusyShow(AudioBt_ActionBusyText(action, row.name))
+    AudioBt_BusyShow(AudioBt_ActionBusyText(action, row))
     result := ""
     try {
         result := AudioBt_Run(action, row.id)

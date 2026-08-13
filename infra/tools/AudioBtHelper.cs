@@ -313,11 +313,22 @@ namespace AudioBt
         {
             try
             {
+                BtDeviceInfo bt = ResolveBt(id);
+                bool didConnect = false;
+                if (bt != null && !bt.Connected)
+                {
+                    string connectErr;
+                    if (!SetBtServices(bt, true, out connectErr))
+                        return "ERR\t" + Cell(connectErr);
+                    didConnect = true;
+                    if (!WaitForBtAudio(bt, 10000))
+                        return "ERR\tConnected but no audio endpoint appeared: " + Cell(bt.Name);
+                }
+
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 List<EndpointInfo> targets = new List<EndpointInfo>();
                 if (id != null && id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase))
                 {
-                    BtDeviceInfo bt = FindBt(id.Substring(3));
                     if (bt == null)
                         return "ERR\tBluetooth device not found";
                     foreach (EndpointInfo ep in endpoints)
@@ -371,7 +382,8 @@ namespace AudioBt
                     if ((ep.State & DEVICE_STATE_ACTIVE) != 0)
                         PolicySetVisible(ep.Id, false);
                 }
-                return "OK\tIsolated: " + Cell(names.ToString());
+                string prefix = didConnect ? "Connected and isolated: " : "Isolated: ";
+                return "OK\t" + prefix + Cell(names.ToString());
             }
             catch (Exception ex)
             {
@@ -737,6 +749,38 @@ namespace AudioBt
         static void EnsureVisible(string deviceId, bool visible)
         {
             PolicySetVisible(deviceId, visible);
+        }
+
+        static bool WaitForBtAudio(BtDeviceInfo bt, int timeoutMs)
+        {
+            DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+            while (true)
+            {
+                List<EndpointInfo> endpoints = CollectEndpoints();
+                foreach (EndpointInfo ep in endpoints)
+                {
+                    if (!EndpointMatchesBt(ep, bt))
+                        continue;
+                    if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                        continue;
+                    EnsureVisible(ep.Id, true);
+                    if ((ep.State & DEVICE_STATE_ACTIVE) != 0 || (ep.State & DEVICE_STATE_UNPLUGGED) == 0)
+                        return true;
+                }
+                if (DateTime.UtcNow >= deadline)
+                    return HasUsableBtEndpoint(bt);
+                System.Threading.Thread.Sleep(350);
+            }
+        }
+
+        static bool HasUsableBtEndpoint(BtDeviceInfo bt)
+        {
+            foreach (EndpointInfo ep in CollectEndpoints())
+            {
+                if (EndpointMatchesBt(ep, bt) && (ep.State & DEVICE_STATE_NOTPRESENT) == 0)
+                    return true;
+            }
+            return false;
         }
 
         static IntPtr CreatePolicyConfig()
