@@ -1,7 +1,7 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
 ; Win+Alt+Shift+9 quick-access menu for Bluetooth audio and Windows sound devices.
-; Root picker -> Bluetooth / Input / Output / Help submenus.
+; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
 ; =============================================================================
@@ -15,7 +15,9 @@ global g_AudioBtHotkeyHandlers := []
 global g_AudioBtRows := []
 global g_AudioBtAllRows := []
 global g_AudioBtBusy := false
-global g_AudioBtMode := "root"  ; root | BT | In | Out | help
+global g_AudioBtMode := "root"  ; root | BT | In | Out | help | ignore
+global g_AudioBtIgnoreItems := []
+global g_AudioBtIgnoreIds := Map()
 global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
@@ -24,7 +26,8 @@ AudioBt_RootItems() {
     return [{ key: "1", kind: "BT", title: "Bluetooth", detail: "Paired audio devices — connect / disconnect" }, { key: "2",
         kind: "In", title: "Input", detail: "Recording devices — default / enable / isolate" }, { key: "3", kind: "Out",
             title: "Output", detail: "Playback devices — default / enable / isolate" }, { key: "4", kind: "help",
-                title: "Help", detail: "Command meanings" }
+                title: "Help", detail: "Command meanings" }, { key: "5", kind: "ignore", title: "Ignored",
+                    detail: "Hidden devices — restore" }
     ]
 }
 
@@ -32,26 +35,33 @@ AudioBt_HelpRows() {
     return [{ key: "1 / B", command: "Bluetooth", meaning: "Bluetooth submenu: paired audio devices; connect/disconnect." }, { key: "2 / I",
         command: "Input", meaning: "Input submenu: recording devices; default / enable / isolate." }, { key: "3 / O",
             command: "Output", meaning: "Output submenu: playback devices; default / enable / isolate." }, { key: "4 / H",
-                command: "Help", meaning: "This help list." }, { key: "Enter", command: "Open", meaning: "Open the highlighted root item." }, { key: "Esc",
-                    command: "Close", meaning: "Close the menu." }, { key: "1-9 / 0", command: "Select", meaning: "Select that row in a device submenu." }, { key: "Enter",
-                        command: "Default", meaning: "Set the selected device as the Windows default (playback or recording)." }, { key: "D",
-                            command: "Disable", meaning: "Disable/block it (Sound Settings Disable)." }, { key: "E",
-                                command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
-                                    meaning: "Connect a paired Bluetooth audio device (A2DP/HFP)." }, { key: "X",
-                                        command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
-                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "R",
-                                                command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "Esc",
-                                                    command: "Back", meaning: "Back to the root menu." }
+                command: "Help", meaning: "This help list." }, { key: "5 / G", command: "Ignored",
+                    meaning: "Open hidden devices and restore them to the lists." }, { key: "Enter", command: "Open",
+                        meaning: "Open the highlighted root item." }, { key: "Esc",
+                            command: "Close", meaning: "Close the menu." }, { key: "1-9 / 0", command: "Select",
+                                meaning: "Select that row in a device submenu." }, { key: "Enter",
+                                    command: "Default", meaning: "Set the selected device as the Windows default (playback or recording)." }, { key: "D",
+                                        command: "Disable", meaning: "Disable/block it (Sound Settings Disable)." }, { key: "E",
+                                            command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
+                                                meaning: "Connect a paired Bluetooth audio device (A2DP/HFP)." }, { key: "X",
+                                                    command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
+                                                        command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "R",
+                                                            command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "N",
+                                                                command: "Ignore", meaning: "Hide the selected device from Bluetooth / Input / Output lists." }, { key: "Enter",
+                                                                    command: "Restore", meaning: "In the Ignored list, put the selected device back." }, { key: "Esc",
+                                                                        command: "Back", meaning: "Back to the root menu." }
     ]
 }
 
 AudioBt_HintText() {
     global g_AudioBtMode
     if (g_AudioBtMode = "root")
-        return "1/B Bluetooth   2/I Input   3/O Output   4/H Help   Enter open   Esc close"
+        return "1/B Bluetooth   2/I Input   3/O Output   4/H Help   5/G Ignored   Enter open   Esc close"
     if (g_AudioBtMode = "help")
         return "Esc back"
-    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
+    if (g_AudioBtMode = "ignore")
+        return "Enter restore   Esc back"
+    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   N ignore   R refresh   Esc back"
 }
 
 AudioBt_ModeTitle() {
@@ -61,12 +71,124 @@ AudioBt_ModeTitle() {
         case "In": return "Input devices"
         case "Out": return "Output devices"
         case "help": return "Help"
+        case "ignore": return "Ignored devices"
         default: return "Audio / Bluetooth"
     }
 }
 
 AudioBt_Ps1Path() {
     return A_ScriptDir "\infra\tools\AudioBt.ps1"
+}
+
+AudioBt_IgnoreIniPath() {
+    return A_ScriptDir "\assets\data\audio_bt_ignore.ini"
+}
+
+AudioBt_IgnoreIdKey(id) {
+    return StrLower(Trim(id))
+}
+
+AudioBt_IgnoreSanitize(text) {
+    s := Trim(text)
+    s := StrReplace(s, "`r", " ")
+    s := StrReplace(s, "`n", " ")
+    return s
+}
+
+AudioBt_IgnoreLoad() {
+    global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
+    g_AudioBtIgnoreItems := []
+    g_AudioBtIgnoreIds := Map()
+    path := AudioBt_IgnoreIniPath()
+    if !FileExist(path)
+        return
+    count := 0
+    try count := Integer(IniRead(path, "Ignore", "Count", "0"))
+    catch {
+        count := 0
+    }
+    loop count {
+        id := ""
+        kind := ""
+        name := ""
+        try id := Trim(IniRead(path, "Ignore", "Id" A_Index, ""))
+        catch {
+        }
+        try kind := Trim(IniRead(path, "Ignore", "Kind" A_Index, ""))
+        catch {
+        }
+        try name := Trim(IniRead(path, "Ignore", "Name" A_Index, ""))
+        catch {
+        }
+        if (id = "")
+            continue
+        key := AudioBt_IgnoreIdKey(id)
+        if (key = "" || g_AudioBtIgnoreIds.Has(key))
+            continue
+        g_AudioBtIgnoreIds[key] := true
+        g_AudioBtIgnoreItems.Push({ id: id, kind: kind, name: name })
+    }
+}
+
+AudioBt_IgnoreSave() {
+    global g_AudioBtIgnoreItems
+    path := AudioBt_IgnoreIniPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    lines := ["[Ignore]", "Count=" g_AudioBtIgnoreItems.Length]
+    for item in g_AudioBtIgnoreItems {
+        idx := A_Index
+        lines.Push("Id" idx "=" AudioBt_IgnoreSanitize(item.id))
+        lines.Push("Kind" idx "=" AudioBt_IgnoreSanitize(item.kind))
+        lines.Push("Name" idx "=" AudioBt_IgnoreSanitize(item.name))
+    }
+    text := ""
+    for line in lines
+        text .= line "`n"
+    try FileDelete(path)
+    catch {
+    }
+    FileAppend(text, path, "UTF-8")
+}
+
+AudioBt_IsIgnored(id) {
+    global g_AudioBtIgnoreIds
+    if !IsObject(g_AudioBtIgnoreIds)
+        AudioBt_IgnoreLoad()
+    key := AudioBt_IgnoreIdKey(id)
+    return key != "" && g_AudioBtIgnoreIds.Has(key)
+}
+
+AudioBt_IgnoreAdd(row) {
+    global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
+    if !IsObject(row)
+        return false
+    key := AudioBt_IgnoreIdKey(row.id)
+    if (key = "")
+        return false
+    if (g_AudioBtIgnoreIds.Has(key))
+        return false
+    g_AudioBtIgnoreIds[key] := true
+    g_AudioBtIgnoreItems.Push({ id: row.id, kind: row.kind, name: row.name })
+    AudioBt_IgnoreSave()
+    return true
+}
+
+AudioBt_IgnoreRemove(id) {
+    global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
+    key := AudioBt_IgnoreIdKey(id)
+    if (key = "" || !g_AudioBtIgnoreIds.Has(key))
+        return false
+    g_AudioBtIgnoreIds.Delete(key)
+    kept := []
+    for item in g_AudioBtIgnoreItems {
+        if (AudioBt_IgnoreIdKey(item.id) != key)
+            kept.Push(item)
+    }
+    g_AudioBtIgnoreItems := kept
+    AudioBt_IgnoreSave()
+    return true
 }
 
 AudioBt_OnEscape(*) {
@@ -171,9 +293,26 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("Numpad4", AudioBt_ShowHelp)
         AudioBt_BindOne("h", AudioBt_ShowHelp)
         AudioBt_BindOne("H", AudioBt_ShowHelp)
+        AudioBt_BindOne("5", AudioBt_ShowIgnored)
+        AudioBt_BindOne("Numpad5", AudioBt_ShowIgnored)
+        AudioBt_BindOne("g", AudioBt_ShowIgnored)
+        AudioBt_BindOne("G", AudioBt_ShowIgnored)
         AudioBt_BindOne("Enter", AudioBt_OnRootActivate)
         AudioBt_BindOne("NumpadEnter", AudioBt_OnRootActivate)
     } else if (g_AudioBtMode = "help") {
+        AudioBt_BindOne("Backspace", AudioBt_OnEscape)
+    } else if (g_AudioBtMode = "ignore") {
+        loop 9 {
+            dig := String(A_Index)
+            AudioBt_BindOne(dig, AudioBt_SelectDigit.Bind(A_Index))
+            AudioBt_BindOne("Numpad" . dig, AudioBt_SelectDigit.Bind(A_Index))
+        }
+        AudioBt_BindOne("0", AudioBt_SelectDigit.Bind(10))
+        AudioBt_BindOne("Numpad0", AudioBt_SelectDigit.Bind(10))
+        AudioBt_BindOne("Enter", AudioBt_OnUnignore)
+        AudioBt_BindOne("NumpadEnter", AudioBt_OnUnignore)
+        AudioBt_BindOne("Delete", AudioBt_OnUnignore)
+        AudioBt_BindOne("$*u", AudioBt_OnUnignore)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     } else {
         loop 9 {
@@ -191,6 +330,7 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("$*r", AudioBt_OnRefresh)
         AudioBt_BindOne("$*c", AudioBt_OnConnect)
         AudioBt_BindOne("$*x", AudioBt_OnDisconnect)
+        AudioBt_BindOne("$*n", AudioBt_OnIgnore)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     }
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
@@ -284,10 +424,16 @@ AudioBt_CreateGui(lvHeight := 360) {
     g_AudioBtGui := Gui("+AlwaysOnTop +ToolWindow", AudioBt_ModeTitle())
     g_AudioBtGui.SetFont("s10", "Segoe UI")
     g_AudioBtHint := g_AudioBtGui.Add("Text", "w720", AudioBt_HintText())
-    lvCols := (g_AudioBtMode = "help") ? ["Key", "Command", "Meaning"] : ["#", "Name", "State"]
+    if (g_AudioBtMode = "help")
+        lvCols := ["Key", "Command", "Meaning"]
+    else if (g_AudioBtMode = "ignore")
+        lvCols := ["#", "Name", "Kind"]
+    else
+        lvCols := ["#", "Name", "State"]
     g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", lvCols)
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
-    g_AudioBtGui.Add("Button", "w100 Section", (lvHeight < 200) ? "Close" : "Back").OnEvent("Click", AudioBt_OnEscape)
+    g_AudioBtGui.Add("Button", "w100 Section", (g_AudioBtMode = "root") ? "Close" : "Back").OnEvent("Click",
+        AudioBt_OnEscape)
     g_AudioBtGui.OnEvent("Close", (*) => AudioBt_Cleanup())
     g_AudioBtGui.OnEvent("Escape", AudioBt_OnEscape)
 
@@ -363,7 +509,7 @@ AudioBt_ParseList(text) {
 AudioBt_FilterRows(allRows, kind) {
     rows := []
     for row in allRows {
-        if (row.kind = kind)
+        if (row.kind = kind && !AudioBt_IsIgnored(row.id))
             rows.Push(row)
     }
     return rows
@@ -445,6 +591,30 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     try g_AudioBtLv.ModifyCol(3, 180)
     if (g_AudioBtRows.Length > 0)
         ListView_SelectRowFocused(g_AudioBtLv, selectRow)
+}
+
+AudioBt_PopulateIgnoredLv() {
+    global g_AudioBtLv, g_AudioBtRows, g_AudioBtIgnoreItems
+    g_AudioBtRows := g_AudioBtIgnoreItems
+    if (!IsObject(g_AudioBtLv))
+        return
+    g_AudioBtLv.Delete()
+    for row in g_AudioBtRows {
+        idx := A_Index
+        kind := row.kind
+        if (kind = "BT")
+            kind := "Bluetooth"
+        else if (kind = "In")
+            kind := "Input"
+        else if (kind = "Out")
+            kind := "Output"
+        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), row.name, kind)
+    }
+    try g_AudioBtLv.ModifyCol(1, 40)
+    try g_AudioBtLv.ModifyCol(2, 480)
+    try g_AudioBtLv.ModifyCol(3, 180)
+    if (g_AudioBtRows.Length > 0)
+        ListView_SelectRowFocused(g_AudioBtLv, 1)
 }
 
 AudioBt_SelectedIndex() {
@@ -549,7 +719,7 @@ AudioBt_FetchAll(showError := true) {
 
 AudioBt_Refresh(keepName := "", showError := true) {
     global g_AudioBtRows, g_AudioBtAllRows, g_AudioBtBusy, g_AudioBtMode
-    if (g_AudioBtMode = "root" || g_AudioBtMode = "help") {
+    if (g_AudioBtMode = "root" || g_AudioBtMode = "help" || g_AudioBtMode = "ignore") {
         g_AudioBtBusy := false
         return true
     }
@@ -612,6 +782,8 @@ AudioBt_OnRootActivate(*) {
     kind := items[idx].kind
     if (kind = "help")
         AudioBt_ShowHelp()
+    else if (kind = "ignore")
+        AudioBt_ShowIgnored()
     else
         AudioBt_OpenSubmenu(kind)
 }
@@ -629,9 +801,68 @@ AudioBt_ShowHelp(*) {
     AudioBt_RefocusLv()
 }
 
+AudioBt_ShowIgnored(*) {
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtActive, g_AudioBtRows
+    if (!g_AudioBtActive)
+        return
+    AudioBt_IgnoreLoad()
+    g_AudioBtMode := "ignore"
+    g_AudioBtBusy := false
+    AudioBt_CreateGui(360)
+    AudioBt_PopulateIgnoredLv()
+    AudioBt_SetHint(AudioBt_HintText())
+    AudioBt_RefocusLv()
+    if (g_AudioBtRows.Length = 0)
+        ShowCenteredOverlay_Utils("Ignore list is empty", 1400, BANNER_ACCENT_INTERMEDIATE)
+}
+
+AudioBt_OnIgnore(*) {
+    global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode, g_AudioBtAllRows
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help" || g_AudioBtMode =
+        "ignore")
+        return
+    row := AudioBt_SelectedRow()
+    if (!IsObject(row)) {
+        ShowNotification_WM("Select a device first")
+        return
+    }
+    if (AudioBt_IsIgnored(row.id)) {
+        ShowNotification_WM("Already ignored")
+        return
+    }
+    if !AudioBt_IgnoreAdd(row) {
+        ShowNotification_WM("Could not ignore that device")
+        return
+    }
+    g_AudioBtRows := AudioBt_FilterRows(g_AudioBtAllRows, g_AudioBtMode)
+    AudioBt_PopulateDeviceLv()
+    AudioBt_RefocusLv()
+    ShowCenteredOverlay_Utils("Ignored: " . row.name, 1400, BANNER_ACCENT_SUCCESS)
+}
+
+AudioBt_OnUnignore(*) {
+    global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode != "ignore")
+        return
+    row := AudioBt_SelectedRow()
+    if (!IsObject(row)) {
+        ShowNotification_WM("Select a device first")
+        return
+    }
+    name := row.name
+    if !AudioBt_IgnoreRemove(row.id) {
+        ShowNotification_WM("Could not restore that device")
+        return
+    }
+    AudioBt_PopulateIgnoredLv()
+    AudioBt_RefocusLv()
+    ShowCenteredOverlay_Utils("Restored: " . name, 1400, BANNER_ACCENT_SUCCESS)
+}
+
 AudioBt_DoAction(action, requireBt := false) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help")
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help" || g_AudioBtMode =
+        "ignore")
         return
     row := AudioBt_SelectedRow()
     if (!IsObject(row)) {
@@ -687,7 +918,8 @@ AudioBt_OnIsolate(*) {
 
 AudioBt_OnRefresh(*) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode, g_AudioBtAllRows
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help")
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help" || g_AudioBtMode =
+        "ignore")
         return
     row := AudioBt_SelectedRow()
     keep := IsObject(row) ? row.name : ""
@@ -707,6 +939,8 @@ AudioBt_OnListActivate(*) {
     global g_AudioBtMode
     if (g_AudioBtMode = "root")
         AudioBt_OnRootActivate()
+    else if (g_AudioBtMode = "ignore")
+        AudioBt_OnUnignore()
     else if (g_AudioBtMode != "help")
         AudioBt_OnDefault()
 }
@@ -716,7 +950,7 @@ AudioBt_ShowRoot() {
     g_AudioBtMode := "root"
     g_AudioBtBusy := false
     g_AudioBtRows := []
-    AudioBt_CreateGui(180)
+    AudioBt_CreateGui(220)
     AudioBt_PopulateRootLv()
     AudioBt_SetHint(AudioBt_HintText())
     try g_AudioBtLv.Focus()
@@ -743,6 +977,7 @@ AudioBt_Show() {
     } catch {
     }
     g_AudioBtCloseCheckTimer := SetTimer(AudioBt_CheckCloseRequest, 120)
+    AudioBt_IgnoreLoad()
     AudioBt_ShowRoot()
 }
 
