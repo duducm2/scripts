@@ -440,6 +440,7 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
 ; Alt+S — robot types git stash / fetch / pull in a new editor terminal
 ; =============================================================================
 global EDITOR_GIT_TERMINAL_READY_MS := 2500
+global EDITOR_GIT_ROBOT_TIMEOUT_MS := 120000
 
 Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
@@ -654,19 +655,49 @@ Editor_OpenNewEditorTerminal(editorHwnd, timeoutMs := 0) {
     return (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
 }
 
-Editor_GitRobotTerminalCommand(repoDir) {
+Editor_GitRobotTerminalCommand(repoDir, resultPath) {
     msg := "alt+s-" A_TickCount
     gitc := "git"
     if (repoDir != "") {
         safe := StrReplace(repoDir, "'", "''")
         gitc := "git -C '" safe "'"
     }
+    out := StrReplace(resultPath, "'", "''")
     return Format(
-        "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop }} else {{ Write-Host 'no stash to pop' }}; Write-Host '=== ROBOT done ===' -ForegroundColor Green",
-        gitc, msg)
+        "$ok=$true; Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop; if ($LASTEXITCODE -ne 0) {{ $ok=$false }} }} else {{ Write-Host 'no stash to pop' }}; if ($ok) {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; Set-Content -LiteralPath '{3}' -Value 'ok' }} else {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; Set-Content -LiteralPath '{3}' -Value 'fail' }}",
+        gitc, msg, out)
+}
+
+Editor_WaitForGitRobotResult(resultPath, timeoutMs := 0) {
+    global EDITOR_GIT_ROBOT_TIMEOUT_MS
+    if !timeoutMs
+        timeoutMs := EDITOR_GIT_ROBOT_TIMEOUT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            if FileExist(resultPath) {
+                raw := Trim(FileRead(resultPath, "UTF-8"), "`r`n `t")
+                try FileDelete(resultPath)
+                return raw
+            }
+        } catch {
+        }
+        Sleep 200
+    }
+    return ""
+}
+
+Editor_GitPlayPullSuccessSound() {
+    try {
+        soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
+        if FileExist(soundPath)
+            ScriptSoundPlay(soundPath, true)
+    } catch {
+    }
 }
 
 Editor_GitStashAndPull() {
+    global EDITOR_GIT_ROBOT_TIMEOUT_MS
     hwnd := WinExist("A")
     if !hwnd
         return
@@ -675,12 +706,8 @@ Editor_GitStashAndPull() {
         return
     }
     repoDir := Editor_ResolveGitRepoDir(hwnd)
-    try {
-        soundPath := A_ScriptDir "\assets\sounds\robots-are-working.wav"
-        if FileExist(soundPath)
-            ScriptSoundPlay(soundPath, true)
-    } catch {
-    }
+    resultPath := A_Temp "\editor-git-robot-" A_TickCount ".txt"
+    try FileDelete(resultPath)
     StandardLoadingBar_Show("🤖 Opening terminal…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: hwnd })
     if !Editor_OpenNewEditorTerminal(hwnd) {
@@ -689,10 +716,20 @@ Editor_GitStashAndPull() {
     }
     try StandardLoadingBar_Update("🤖 Typing git stash, fetch, pull…", BANNER_ACCENT_INTERMEDIATE)
     Sleep 120
-    SendText Editor_GitRobotTerminalCommand(repoDir)
+    SendText Editor_GitRobotTerminalCommand(repoDir, resultPath)
     Send "{Enter}"
-    StandardLoadingBar_Update("🤖 Watch the terminal — stash, fetch, pull", BANNER_ACCENT_INFO)
-    StandardLoadingBar_Hide(1800)
+    StandardLoadingBar_Update("🤖 Watch the terminal — stash, fetch, pull", BANNER_ACCENT_INTERMEDIATE)
+    outcome := Editor_WaitForGitRobotResult(resultPath, EDITOR_GIT_ROBOT_TIMEOUT_MS)
+    if (outcome = "ok") {
+        StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
+        Editor_GitPlayPullSuccessSound()
+        StandardLoadingBar_Hide(600)
+        return
+    }
+    if (outcome = "fail")
+        Editor_GitFlowFail("Git", "see terminal output")
+    else
+        Editor_GitFlowFail("Git", "timed out waiting for terminal")
 }
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {

@@ -124,7 +124,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as a **visible robot**: plays **`robots-are-working.wav`**, opens a **new editor terminal** (same as Shift+N), and types `git stash push -u` → `git fetch` → `git pull` → `git stash pop` (only if that Alt+S stash was created). Terminal prints `=== ROBOT … ===` for each step — watch that output. Does **not** use the command palette or a hidden git script. Manual **Shift+P** remains separate. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as a **visible robot**: opens a **new editor terminal** (same as Shift+N) and types `git stash push -u` → `git fetch` → `git pull` → `git stash pop` (only if that Alt+S stash was created). Terminal prints `=== ROBOT … ===` for each step. On full success: **✅ Pull complete** + **`pull-successful.wav`**. Does **not** use the command palette. Manual **Shift+P** remains separate. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
 
 ### Special resolution (not only `exe` match)
 
