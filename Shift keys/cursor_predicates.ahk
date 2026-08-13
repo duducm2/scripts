@@ -439,7 +439,7 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
 ; =============================================================================
 ; Alt+S — robot types git stash / fetch / pull in a new editor terminal
 ; =============================================================================
-global EDITOR_GIT_TERMINAL_READY_MS := 2500
+global EDITOR_GIT_TERMINAL_READY_MS := 800
 global EDITOR_GIT_ROBOT_TIMEOUT_MS := 120000
 
 Editor_GitFlowFail(step, reason := "") {
@@ -611,47 +611,11 @@ Editor_ResolveGitRepoDir(editorHwnd := 0) {
     return ""
 }
 
-Editor_EditorTerminalHasFocus() {
-    try {
-        el := UIA.GetFocusedElement()
-        if !el
-            return false
-        cur := el
-        loop 10 {
-            try {
-                n := "", c := "", id := ""
-                try n := cur.Name
-                try c := cur.ClassName
-                try id := cur.AutomationId
-                hay := n " " c " " id
-                if InStr(hay, "Terminal") || InStr(hay, "terminal") || InStr(hay, "xterm")
-                    return true
-            } catch {
-            }
-            try cur := cur.Parent
-            catch
-                break
-            if !cur
-                break
-        }
-    } catch {
-    }
-    return false
-}
-
-Editor_OpenNewEditorTerminal(editorHwnd, timeoutMs := 0) {
+Editor_OpenNewEditorTerminal(editorHwnd) {
     global EDITOR_GIT_TERMINAL_READY_MS
-    if !timeoutMs
-        timeoutMs := EDITOR_GIT_TERMINAL_READY_MS
     Editor_EnsureCursorWindowActive(editorHwnd)
     Send '^+"'
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        Sleep 80
-        if Editor_EditorTerminalHasFocus()
-            return true
-    }
-    ; New-terminal chord focuses the shell even when UIA misses xterm.
+    Sleep EDITOR_GIT_TERMINAL_READY_MS
     return (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
 }
 
@@ -663,9 +627,21 @@ Editor_GitRobotTerminalCommand(repoDir, resultPath) {
         gitc := "git -C '" safe "'"
     }
     out := StrReplace(resultPath, "'", "''")
+    writeOk := "[System.IO.File]::WriteAllText('" out "', 'ok')"
+    writeFail := "[System.IO.File]::WriteAllText('" out "', 'fail')"
     return Format(
-        "$ok=$true; Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop; if ($LASTEXITCODE -ne 0) {{ $ok=$false }} }} else {{ Write-Host 'no stash to pop' }}; if ($ok) {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; Set-Content -LiteralPath '{3}' -Value 'ok' }} else {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; Set-Content -LiteralPath '{3}' -Value 'fail' }}",
-        gitc, msg, out)
+        "$ok=$true; Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if ($LASTEXITCODE -ne 0) {{ $ok=$false }}; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop; if ($LASTEXITCODE -ne 0) {{ $ok=$false }} }} else {{ Write-Host 'no stash to pop' }}; if ($ok) {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; {3} }} else {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; {4} }}",
+        gitc, msg, writeOk, writeFail)
+}
+
+Editor_ParseGitRobotResultText(raw) {
+    compact := StrReplace(StrReplace(StrReplace(raw, Chr(0), ""), Chr(65279), ""), " ", "")
+    compact := Trim(compact, "`r`n `t")
+    if InStr(compact, "fail")
+        return "fail"
+    if InStr(compact, "ok")
+        return "ok"
+    return ""
 }
 
 Editor_WaitForGitRobotResult(resultPath, timeoutMs := 0) {
@@ -676,9 +652,11 @@ Editor_WaitForGitRobotResult(resultPath, timeoutMs := 0) {
     while (A_TickCount < deadline) {
         try {
             if FileExist(resultPath) {
-                raw := Trim(FileRead(resultPath, "UTF-8"), "`r`n `t")
+                raw := FileRead(resultPath)
                 try FileDelete(resultPath)
-                return raw
+                parsed := Editor_ParseGitRobotResultText(raw)
+                if (parsed != "")
+                    return parsed
             }
         } catch {
         }
@@ -708,28 +686,41 @@ Editor_GitStashAndPull() {
     repoDir := Editor_ResolveGitRepoDir(hwnd)
     resultPath := A_Temp "\editor-git-robot-" A_TickCount ".txt"
     try FileDelete(resultPath)
+    bannerClosed := false
     StandardLoadingBar_Show("🤖 Opening terminal…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: hwnd })
-    if !Editor_OpenNewEditorTerminal(hwnd) {
-        Editor_GitFlowFail("Terminal", "could not focus a new editor terminal")
-        return
+    try {
+        if !Editor_OpenNewEditorTerminal(hwnd) {
+            Editor_GitFlowFail("Terminal", "could not focus a new editor terminal")
+            bannerClosed := true
+            return
+        }
+        try StandardLoadingBar_Update("🤖 Typing git stash, fetch, pull…", BANNER_ACCENT_INTERMEDIATE)
+        Sleep 120
+        SendText Editor_GitRobotTerminalCommand(repoDir, resultPath)
+        Send "{Enter}"
+        StandardLoadingBar_Update("🤖 Watch the terminal — stash, fetch, pull", BANNER_ACCENT_INTERMEDIATE)
+        outcome := Editor_WaitForGitRobotResult(resultPath, EDITOR_GIT_ROBOT_TIMEOUT_MS)
+        if (outcome = "ok") {
+            StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
+            Editor_GitPlayPullSuccessSound()
+            StandardLoadingBar_Hide(600)
+            bannerClosed := true
+            return
+        }
+        if (outcome = "fail")
+            Editor_GitFlowFail("Git", "see terminal output")
+        else
+            Editor_GitFlowFail("Git", "timed out waiting for terminal")
+        bannerClosed := true
+    } catch {
+        try StandardLoadingBar_Hide(0)
+        bannerClosed := true
+    } finally {
+        if !bannerClosed {
+            try StandardLoadingBar_Hide(0)
+        }
     }
-    try StandardLoadingBar_Update("🤖 Typing git stash, fetch, pull…", BANNER_ACCENT_INTERMEDIATE)
-    Sleep 120
-    SendText Editor_GitRobotTerminalCommand(repoDir, resultPath)
-    Send "{Enter}"
-    StandardLoadingBar_Update("🤖 Watch the terminal — stash, fetch, pull", BANNER_ACCENT_INTERMEDIATE)
-    outcome := Editor_WaitForGitRobotResult(resultPath, EDITOR_GIT_ROBOT_TIMEOUT_MS)
-    if (outcome = "ok") {
-        StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
-        Editor_GitPlayPullSuccessSound()
-        StandardLoadingBar_Hide(600)
-        return
-    }
-    if (outcome = "fail")
-        Editor_GitFlowFail("Git", "see terminal output")
-    else
-        Editor_GitFlowFail("Git", "timed out waiting for terminal")
 }
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
