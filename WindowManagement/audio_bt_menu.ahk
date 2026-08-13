@@ -47,8 +47,8 @@ AudioBt_HelpRows() {
                                                     command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
                                                         command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "R",
                                                             command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "N",
-                                                                command: "Ignore", meaning: "Hide the selected device from Bluetooth / Input / Output lists." }, { key: "Enter",
-                                                                    command: "Restore", meaning: "In the Ignored list, put the selected device back." }, { key: "Esc",
+                                                                command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Enter",
+                                                                    command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Esc",
                                                                         command: "Back", meaning: "Back to the root menu." }
     ]
 }
@@ -84,8 +84,8 @@ AudioBt_IgnoreIniPath() {
     return A_ScriptDir "\assets\data\audio_bt_ignore.ini"
 }
 
-AudioBt_IgnoreIdKey(id) {
-    return StrLower(Trim(id))
+AudioBt_IgnoreEntryKey(id, kind) {
+    return StrLower(Trim(id)) "`t" Trim(kind)
 }
 
 AudioBt_IgnoreSanitize(text) {
@@ -95,6 +95,37 @@ AudioBt_IgnoreSanitize(text) {
     return s
 }
 
+AudioBt_IgnoreParseIni(raw) {
+    fields := Map()
+    count := 0
+    inSection := false
+    for line in StrSplit(raw, "`n", "`r") {
+        line := Trim(line)
+        if (line = "" || SubStr(line, 1, 1) = ";")
+            continue
+        if (SubStr(line, 1, 1) = "[") {
+            inSection := (StrLower(line) = "[ignore]")
+            continue
+        }
+        if (!inSection)
+            continue
+        eq := InStr(line, "=")
+        if (eq < 2)
+            continue
+        key := StrLower(Trim(SubStr(line, 1, eq - 1)))
+        val := Trim(SubStr(line, eq + 1))
+        if (key = "count") {
+            try count := Integer(val)
+            catch {
+                count := 0
+            }
+            continue
+        }
+        fields[key] := val
+    }
+    return { count: count, fields: fields }
+}
+
 AudioBt_IgnoreLoad() {
     global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
     g_AudioBtIgnoreItems := []
@@ -102,28 +133,21 @@ AudioBt_IgnoreLoad() {
     path := AudioBt_IgnoreIniPath()
     if !FileExist(path)
         return
-    count := 0
-    try count := Integer(IniRead(path, "Ignore", "Count", "0"))
+    raw := ""
+    try raw := FileRead(path, "UTF-8")
     catch {
-        count := 0
+        return
     }
-    loop count {
-        id := ""
-        kind := ""
-        name := ""
-        try id := Trim(IniRead(path, "Ignore", "Id" A_Index, ""))
-        catch {
-        }
-        try kind := Trim(IniRead(path, "Ignore", "Kind" A_Index, ""))
-        catch {
-        }
-        try name := Trim(IniRead(path, "Ignore", "Name" A_Index, ""))
-        catch {
-        }
+    parsed := AudioBt_IgnoreParseIni(raw)
+    loop parsed.count {
+        idx := A_Index
+        id := parsed.fields.Has("id" idx) ? Trim(parsed.fields["id" idx]) : ""
+        kind := parsed.fields.Has("kind" idx) ? Trim(parsed.fields["kind" idx]) : ""
+        name := parsed.fields.Has("name" idx) ? Trim(parsed.fields["name" idx]) : ""
         if (id = "")
             continue
-        key := AudioBt_IgnoreIdKey(id)
-        if (key = "" || g_AudioBtIgnoreIds.Has(key))
+        key := AudioBt_IgnoreEntryKey(id, kind)
+        if (key = "`t" || g_AudioBtIgnoreIds.Has(key))
             continue
         g_AudioBtIgnoreIds[key] := true
         g_AudioBtIgnoreItems.Push({ id: id, kind: kind, name: name })
@@ -152,21 +176,21 @@ AudioBt_IgnoreSave() {
     FileAppend(text, path, "UTF-8")
 }
 
-AudioBt_IsIgnored(id) {
+AudioBt_IsIgnored(id, kind) {
     global g_AudioBtIgnoreIds
     if !IsObject(g_AudioBtIgnoreIds)
         AudioBt_IgnoreLoad()
-    key := AudioBt_IgnoreIdKey(id)
-    return key != "" && g_AudioBtIgnoreIds.Has(key)
+    key := AudioBt_IgnoreEntryKey(id, kind)
+    return Trim(id) != "" && g_AudioBtIgnoreIds.Has(key)
 }
 
 AudioBt_IgnoreAdd(row) {
     global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
     if !IsObject(row)
         return false
-    key := AudioBt_IgnoreIdKey(row.id)
-    if (key = "")
+    if (Trim(row.id) = "")
         return false
+    key := AudioBt_IgnoreEntryKey(row.id, row.kind)
     if (g_AudioBtIgnoreIds.Has(key))
         return false
     g_AudioBtIgnoreIds[key] := true
@@ -175,15 +199,15 @@ AudioBt_IgnoreAdd(row) {
     return true
 }
 
-AudioBt_IgnoreRemove(id) {
+AudioBt_IgnoreRemove(id, kind) {
     global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
-    key := AudioBt_IgnoreIdKey(id)
-    if (key = "" || !g_AudioBtIgnoreIds.Has(key))
+    key := AudioBt_IgnoreEntryKey(id, kind)
+    if (Trim(id) = "" || !g_AudioBtIgnoreIds.Has(key))
         return false
     g_AudioBtIgnoreIds.Delete(key)
     kept := []
     for item in g_AudioBtIgnoreItems {
-        if (AudioBt_IgnoreIdKey(item.id) != key)
+        if (AudioBt_IgnoreEntryKey(item.id, item.kind) != key)
             kept.Push(item)
     }
     g_AudioBtIgnoreItems := kept
@@ -509,7 +533,7 @@ AudioBt_ParseList(text) {
 AudioBt_FilterRows(allRows, kind) {
     rows := []
     for row in allRows {
-        if (row.kind = kind && !AudioBt_IsIgnored(row.id))
+        if (row.kind = kind && !AudioBt_IsIgnored(row.id, row.kind))
             rows.Push(row)
     }
     return rows
@@ -826,7 +850,7 @@ AudioBt_OnIgnore(*) {
         ShowNotification_WM("Select a device first")
         return
     }
-    if (AudioBt_IsIgnored(row.id)) {
+    if (AudioBt_IsIgnored(row.id, row.kind)) {
         ShowNotification_WM("Already ignored")
         return
     }
@@ -850,7 +874,7 @@ AudioBt_OnUnignore(*) {
         return
     }
     name := row.name
-    if !AudioBt_IgnoreRemove(row.id) {
+    if !AudioBt_IgnoreRemove(row.id, row.kind) {
         ShowNotification_WM("Could not restore that device")
         return
     }
