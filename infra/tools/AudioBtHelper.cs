@@ -224,7 +224,7 @@ namespace AudioBt
                 List<BtDeviceInfo> btDevs = CollectBluetoothAudio();
                 int[] activeByFlow = CountActiveByFlow(endpoints);
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("id\tkind\tname\tstate\tisDefault\tcanConnect");
+                sb.AppendLine("id\tkind\tname\tstate\tisDefault\tcanConnect\tiso");
 
                 Dictionary<string, bool> seenBt = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
                 foreach (BtDeviceInfo bt in btDevs)
@@ -242,8 +242,15 @@ namespace AudioBt
                             break;
                         }
                     }
-                    if (BtIsIsolated(bt, endpoints, activeByFlow))
+                    bool isoOut = BtFlowIsolated(bt, endpoints, activeByFlow, eRender);
+                    bool isoIn = BtFlowIsolated(bt, endpoints, activeByFlow, eCapture);
+                    string iso = IsolatedFlowsCode(isoOut, isoIn);
+                    if (isoOut && isoIn)
                         state = "Connected · Isolated";
+                    else if (isoOut)
+                        state = "Connected · Isolated out";
+                    else if (isoIn)
+                        state = "Connected · Isolated in";
                     else if (isDef)
                         state = "Connected · Default";
                     else if (bt.Connected)
@@ -257,7 +264,7 @@ namespace AudioBt
                             }
                         }
                     }
-                    sb.AppendLine(Tsv("bt:" + bt.AddrHex, "BT", bt.Name, state, isDef ? "1" : "0", "1"));
+                    sb.AppendLine(Tsv("bt:" + bt.AddrHex, "BT", bt.Name, state, isDef ? "1" : "0", "1", iso));
                 }
 
                 foreach (EndpointInfo ep in endpoints)
@@ -265,8 +272,10 @@ namespace AudioBt
                     if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0 && !ep.IsBluetooth)
                         continue;
                     string kind = ep.Flow == eRender ? "Out" : "In";
-                    string state = StateLabel(ep, EndpointIsIsolated(ep, activeByFlow));
-                    sb.AppendLine(Tsv(ep.Id, kind, ep.Name, state, ep.IsDefault ? "1" : "0", ep.IsBluetooth ? "1" : "0"));
+                    bool isolated = EndpointIsIsolated(ep, activeByFlow);
+                    string state = StateLabel(ep, isolated);
+                    string iso = isolated ? kind : "";
+                    sb.AppendLine(Tsv(ep.Id, kind, ep.Name, state, ep.IsDefault ? "1" : "0", ep.IsBluetooth ? "1" : "0", iso));
                 }
                 return sb.ToString();
             }
@@ -483,14 +492,14 @@ namespace AudioBt
             return activeByFlow[ep.Flow] == 1;
         }
 
-        static bool BtIsIsolated(BtDeviceInfo bt, List<EndpointInfo> endpoints, int[] activeByFlow)
+        static bool BtFlowIsolated(BtDeviceInfo bt, List<EndpointInfo> endpoints, int[] activeByFlow, int flow)
         {
             if (bt == null || !bt.Connected)
                 return false;
             bool any = false;
             foreach (EndpointInfo ep in endpoints)
             {
-                if (!EndpointMatchesBt(ep, bt))
+                if (!EndpointMatchesBt(ep, bt) || ep.Flow != flow)
                     continue;
                 if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
                     continue;
@@ -501,6 +510,17 @@ namespace AudioBt
                     return false;
             }
             return any;
+        }
+
+        static string IsolatedFlowsCode(bool isoOut, bool isoIn)
+        {
+            if (isoOut && isoIn)
+                return "InOut";
+            if (isoOut)
+                return "Out";
+            if (isoIn)
+                return "In";
+            return "";
         }
 
         static string StateLabel(EndpointInfo ep, bool isolated)
@@ -518,9 +538,9 @@ namespace AudioBt
             return "Enabled";
         }
 
-        static string Tsv(string id, string kind, string name, string state, string isDefault, string canConnect)
+        static string Tsv(string id, string kind, string name, string state, string isDefault, string canConnect, string iso)
         {
-            return Cell(id) + "\t" + Cell(kind) + "\t" + Cell(name) + "\t" + Cell(state) + "\t" + isDefault + "\t" + canConnect;
+            return Cell(id) + "\t" + Cell(kind) + "\t" + Cell(name) + "\t" + Cell(state) + "\t" + isDefault + "\t" + canConnect + "\t" + Cell(iso);
         }
 
         static string Cell(string s)
