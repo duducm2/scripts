@@ -311,6 +311,41 @@ ProjectSelector_SelectedIndex() {
     return row ? Integer(row) : 0
 }
 
+ProjectSelector_SelectorHwnd() {
+    global g_ProjectSelectorGui
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    return hwnd
+}
+
+; AlwaysOnTop parent covers InputBox/DirSelect/MsgBox; drop it for the duration of those dialogs.
+ProjectSelector_DialogsBegin() {
+    global g_ProjectSelectorGui
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            g_ProjectSelectorGui.Opt("-AlwaysOnTop")
+    } catch {
+    }
+}
+
+ProjectSelector_DialogsEnd() {
+    global g_ProjectSelectorGui
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            g_ProjectSelectorGui.Opt("+AlwaysOnTop")
+    } catch {
+    }
+}
+
+ProjectSelector_InputBox(prompt, title, width := 420, defaultVal := "") {
+    return InputBox(prompt, title, "w" . width, defaultVal)
+}
+
 ProjectSelector_RefocusGui() {
     global g_ProjectSelectorGui, g_ProjectSelectorLv
     try {
@@ -357,7 +392,7 @@ ProjectSelector_PromptChar(currentChar := "", excludeIndex := 0) {
     prompt := "Unique character from the assignment pool."
     if (hint != "")
         prompt .= "`nAvailable: " . hint
-    result := InputBox(prompt, "Project character", "w520", currentChar)
+    result := ProjectSelector_InputBox(prompt, "Project character", 520, currentChar)
     if (result.Result != "OK")
         return ""
     ch := Trim(result.Value)
@@ -390,24 +425,29 @@ ProjectSelector_OnListActivate(*) {
 ProjectSelector_OnAdd(*) {
     global g_Projects
     ProjectData_Load()
-    nameBox := InputBox("Project name:", "Add project", "w420")
+    ProjectSelector_DialogsBegin()
+    nameBox := ProjectSelector_InputBox("Project name:", "Add project")
     if (nameBox.Result != "OK") {
+        ProjectSelector_DialogsEnd()
         ProjectSelector_RefocusGui()
         return
     }
     name := Trim(nameBox.Value)
     if (name = "") {
+        ProjectSelector_DialogsEnd()
         ShowNotification_WM("Name is required.")
         ProjectSelector_RefocusGui()
         return
     }
     ch := ProjectSelector_PromptChar()
     if (ch = "") {
+        ProjectSelector_DialogsEnd()
         ProjectSelector_RefocusGui()
         return
     }
     personalPath := DirSelect(, 0, "Select personal folder (optional if work path is set)")
     workPath := DirSelect(, 0, "Select work folder (optional if personal path is set)")
+    ProjectSelector_DialogsEnd()
     if ((personalPath = "" || !DirExist(personalPath)) && (workPath = "" || !DirExist(workPath))) {
         ShowNotification_WM("At least one existing folder is required.")
         ProjectSelector_RefocusGui()
@@ -438,19 +478,23 @@ ProjectSelector_OnEdit(*) {
     if (idx > g_Projects.Length)
         return
     project := g_Projects[idx]
-    nameBox := InputBox("Project name:", "Edit project", "w420", project.name)
+    ProjectSelector_DialogsBegin()
+    nameBox := ProjectSelector_InputBox("Project name:", "Edit project", 420, project.name)
     if (nameBox.Result != "OK") {
+        ProjectSelector_DialogsEnd()
         ProjectSelector_RefocusGui()
         return
     }
     name := Trim(nameBox.Value)
     if (name = "") {
+        ProjectSelector_DialogsEnd()
         ShowNotification_WM("Name is required.")
         ProjectSelector_RefocusGui()
         return
     }
     currentChar := project.HasProp("char") ? project.char : ""
     ch := ProjectSelector_PromptChar(currentChar, idx)
+    ProjectSelector_DialogsEnd()
     if (ch = "") {
         ProjectSelector_RefocusGui()
         return
@@ -488,8 +532,15 @@ ProjectSelector_OnDelete(*) {
         return
     project := g_Projects[idx]
     label := project.name != "" ? project.name : "(unnamed)"
-    if (MsgBox("Delete project '" . label . "'?`nThis frees its assigned character.",
-        "Delete project", "YesNo Icon! Default2") != "Yes") {
+    hwnd := ProjectSelector_SelectorHwnd()
+    msgOpts := "YesNo Icon! Default2"
+    if (hwnd)
+        msgOpts .= " Owner" . hwnd
+    ProjectSelector_DialogsBegin()
+    confirmed := (MsgBox("Delete project '" . label . "'?`nThis frees its assigned character.",
+        "Delete project", msgOpts) = "Yes")
+    ProjectSelector_DialogsEnd()
+    if (!confirmed) {
         ProjectSelector_RefocusGui()
         return
     }
