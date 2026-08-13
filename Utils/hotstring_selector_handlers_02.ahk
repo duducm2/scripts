@@ -197,13 +197,12 @@ UtilitySelector_PopulateLv() {
     if (g_UtilitySelectorCategory = "Prompts") {
         for prompt in PromptData_Sorted() {
             g_UtilitySelectorRows.Push(prompt)
-            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.author, prompt.filePath)
+            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.filePath)
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
         try g_HotstringSelectorLv.ModifyCol(2, 100)
-        try g_HotstringSelectorLv.ModifyCol(3, 280)
-        try g_HotstringSelectorLv.ModifyCol(4, 120)
-        try g_HotstringSelectorLv.ModifyCol(5, 280)
+        try g_HotstringSelectorLv.ModifyCol(3, 340)
+        try g_HotstringSelectorLv.ModifyCol(4, 330)
         return
     }
 

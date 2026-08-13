@@ -45,7 +45,7 @@ UtilitySelector_LvColumns() {
     if (g_UtilitySelectorMode = "top")
         return ["Char", "Category", "Count"]
     if (g_UtilitySelectorCategory = "Prompts")
-        return ["Char", "Category", "Name", "Author", "File"]
+        return ["Char", "Category", "Name", "File"]
     if (g_UtilitySelectorCategory = "Hotstrings")
         return ["Char", "Name", "Text"]
     if (g_UtilitySelectorCategory = "Projects")
