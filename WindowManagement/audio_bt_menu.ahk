@@ -1,6 +1,7 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
 ; Win+Alt+Shift+9 quick-access menu for Bluetooth audio and Windows sound devices.
+; Root picker -> Bluetooth / Input / Output submenus.
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
 ; =============================================================================
@@ -12,13 +13,37 @@ global g_AudioBtActive := false
 global g_AudioBtHotkeysBound := false
 global g_AudioBtHotkeyHandlers := []
 global g_AudioBtRows := []
+global g_AudioBtAllRows := []
 global g_AudioBtBusy := false
+global g_AudioBtMode := "root"  ; root | BT | In | Out
 global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
 
+AudioBt_RootItems() {
+    return [{ key: "1", kind: "BT", title: "Bluetooth", detail: "Paired audio devices — connect / disconnect" }, { key: "2",
+        kind: "In", title: "Input", detail: "Recording devices — default / enable / isolate" }, { key: "3", kind: "Out",
+            title: "Output", detail: "Playback devices — default / enable / isolate" }
+    ]
+}
+
 AudioBt_HintText() {
-    return "1-9/0 select   Enter default   D disable   E enable   C connect   X disconnect   I isolate   R refresh   Esc close"
+    global g_AudioBtMode
+    if (g_AudioBtMode = "root")
+        return "1/B Bluetooth   2/I Input   3/O Output   Enter open   Esc close"
+    if (g_AudioBtMode = "BT")
+        return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
+    return "1-9/0 select   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
+}
+
+AudioBt_ModeTitle() {
+    global g_AudioBtMode
+    switch g_AudioBtMode {
+        case "BT": return "Bluetooth devices"
+        case "In": return "Input devices"
+        case "Out": return "Output devices"
+        default: return "Audio / Bluetooth"
+    }
 }
 
 AudioBt_Ps1Path() {
@@ -26,9 +51,13 @@ AudioBt_Ps1Path() {
 }
 
 AudioBt_OnEscape(*) {
-    global g_AudioBtActive
+    global g_AudioBtActive, g_AudioBtMode
     if (!g_AudioBtActive)
         return false
+    if (g_AudioBtMode != "root") {
+        AudioBt_ShowRoot()
+        return true
+    }
     AudioBt_Cleanup()
     return true
 }
@@ -90,7 +119,7 @@ AudioBt_BindOne(key, handler) {
 }
 
 AudioBt_BindModalHotkeys() {
-    global g_AudioBtGui, g_AudioBtHotkeysBound
+    global g_AudioBtGui, g_AudioBtHotkeysBound, g_AudioBtMode
     AudioBt_UnbindModalHotkeys()
     hwnd := 0
     try {
@@ -106,27 +135,47 @@ AudioBt_BindModalHotkeys() {
         return
     }
 
-    loop 9 {
-        dig := String(A_Index)
-        AudioBt_BindOne(dig, AudioBt_SelectDigit.Bind(A_Index))
-        AudioBt_BindOne("Numpad" . dig, AudioBt_SelectDigit.Bind(A_Index))
+    if (g_AudioBtMode = "root") {
+        AudioBt_BindOne("1", AudioBt_OpenSubmenu.Bind("BT"))
+        AudioBt_BindOne("Numpad1", AudioBt_OpenSubmenu.Bind("BT"))
+        AudioBt_BindOne("b", AudioBt_OpenSubmenu.Bind("BT"))
+        AudioBt_BindOne("B", AudioBt_OpenSubmenu.Bind("BT"))
+        AudioBt_BindOne("2", AudioBt_OpenSubmenu.Bind("In"))
+        AudioBt_BindOne("Numpad2", AudioBt_OpenSubmenu.Bind("In"))
+        AudioBt_BindOne("i", AudioBt_OpenSubmenu.Bind("In"))
+        AudioBt_BindOne("I", AudioBt_OpenSubmenu.Bind("In"))
+        AudioBt_BindOne("3", AudioBt_OpenSubmenu.Bind("Out"))
+        AudioBt_BindOne("Numpad3", AudioBt_OpenSubmenu.Bind("Out"))
+        AudioBt_BindOne("o", AudioBt_OpenSubmenu.Bind("Out"))
+        AudioBt_BindOne("O", AudioBt_OpenSubmenu.Bind("Out"))
+        AudioBt_BindOne("Enter", AudioBt_OnRootActivate)
+        AudioBt_BindOne("NumpadEnter", AudioBt_OnRootActivate)
+    } else {
+        loop 9 {
+            dig := String(A_Index)
+            AudioBt_BindOne(dig, AudioBt_SelectDigit.Bind(A_Index))
+            AudioBt_BindOne("Numpad" . dig, AudioBt_SelectDigit.Bind(A_Index))
+        }
+        AudioBt_BindOne("0", AudioBt_SelectDigit.Bind(10))
+        AudioBt_BindOne("Numpad0", AudioBt_SelectDigit.Bind(10))
+        AudioBt_BindOne("Enter", AudioBt_OnDefault)
+        AudioBt_BindOne("NumpadEnter", AudioBt_OnDefault)
+        AudioBt_BindOne("d", AudioBt_OnDisable)
+        AudioBt_BindOne("D", AudioBt_OnDisable)
+        AudioBt_BindOne("e", AudioBt_OnEnable)
+        AudioBt_BindOne("E", AudioBt_OnEnable)
+        AudioBt_BindOne("i", AudioBt_OnIsolate)
+        AudioBt_BindOne("I", AudioBt_OnIsolate)
+        AudioBt_BindOne("r", AudioBt_OnRefresh)
+        AudioBt_BindOne("R", AudioBt_OnRefresh)
+        AudioBt_BindOne("Backspace", AudioBt_OnEscape)
+        if (g_AudioBtMode = "BT") {
+            AudioBt_BindOne("c", AudioBt_OnConnect)
+            AudioBt_BindOne("C", AudioBt_OnConnect)
+            AudioBt_BindOne("x", AudioBt_OnDisconnect)
+            AudioBt_BindOne("X", AudioBt_OnDisconnect)
+        }
     }
-    AudioBt_BindOne("0", AudioBt_SelectDigit.Bind(10))
-    AudioBt_BindOne("Numpad0", AudioBt_SelectDigit.Bind(10))
-    AudioBt_BindOne("Enter", AudioBt_OnDefault)
-    AudioBt_BindOne("NumpadEnter", AudioBt_OnDefault)
-    AudioBt_BindOne("d", AudioBt_OnDisable)
-    AudioBt_BindOne("D", AudioBt_OnDisable)
-    AudioBt_BindOne("e", AudioBt_OnEnable)
-    AudioBt_BindOne("E", AudioBt_OnEnable)
-    AudioBt_BindOne("c", AudioBt_OnConnect)
-    AudioBt_BindOne("C", AudioBt_OnConnect)
-    AudioBt_BindOne("x", AudioBt_OnDisconnect)
-    AudioBt_BindOne("X", AudioBt_OnDisconnect)
-    AudioBt_BindOne("i", AudioBt_OnIsolate)
-    AudioBt_BindOne("I", AudioBt_OnIsolate)
-    AudioBt_BindOne("r", AudioBt_OnRefresh)
-    AudioBt_BindOne("R", AudioBt_OnRefresh)
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
 
     try HotIf()
@@ -135,13 +184,27 @@ AudioBt_BindModalHotkeys() {
     g_AudioBtHotkeysBound := true
 }
 
+AudioBt_DestroyGui() {
+    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint
+    AudioBt_UnbindModalHotkeys()
+    if (IsObject(g_AudioBtGui)) {
+        try g_AudioBtGui.Destroy()
+        catch {
+        }
+        g_AudioBtGui := false
+    }
+    g_AudioBtLv := false
+    g_AudioBtHint := false
+}
+
 AudioBt_Cleanup() {
-    global g_AudioBtActive, g_AudioBtGui, g_AudioBtLv, g_AudioBtHint, g_AudioBtRows
+    global g_AudioBtActive, g_AudioBtRows, g_AudioBtAllRows
     global g_AudioBtOpenFile, g_AudioBtCloseRequestFile, g_AudioBtCloseCheckTimer
-    global g_OnEscapePressed, g_AudioBtBusy
+    global g_OnEscapePressed, g_AudioBtBusy, g_AudioBtMode
 
     g_AudioBtActive := false
     g_AudioBtBusy := false
+    g_AudioBtMode := "root"
     SetTimer(AudioBt_CheckCloseRequest, 0)
     g_AudioBtCloseCheckTimer := ""
     try FileDelete(g_AudioBtOpenFile)
@@ -151,22 +214,14 @@ AudioBt_Cleanup() {
     catch {
     }
 
-    AudioBt_UnbindModalHotkeys()
+    AudioBt_DestroyGui()
     if (g_OnEscapePressed = AudioBt_OnEscape)
         g_OnEscapePressed := ""
     try Utils_EnsureGlobalEscapeHotkey()
     catch {
     }
-
-    if (IsObject(g_AudioBtGui)) {
-        try g_AudioBtGui.Destroy()
-        catch {
-        }
-        g_AudioBtGui := false
-    }
-    g_AudioBtLv := false
-    g_AudioBtHint := false
     g_AudioBtRows := []
+    g_AudioBtAllRows := []
 }
 
 AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom) {
@@ -198,6 +253,39 @@ AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom) {
             break
         }
     }
+}
+
+AudioBt_CreateGui(lvHeight := 360) {
+    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint
+
+    AudioBt_DestroyGui()
+    AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
+    monitorWidth := monitorRight - monitorLeft
+    monitorHeight := monitorBottom - monitorTop
+
+    g_AudioBtGui := Gui("+AlwaysOnTop +ToolWindow", AudioBt_ModeTitle())
+    g_AudioBtGui.SetFont("s10", "Segoe UI")
+    g_AudioBtHint := g_AudioBtGui.Add("Text", "w720", AudioBt_HintText())
+    g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", ["#", "Name", "State"])
+    g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
+    g_AudioBtGui.Add("Button", "w100 Section", (lvHeight < 200) ? "Close" : "Back").OnEvent("Click", AudioBt_OnEscape)
+    g_AudioBtGui.OnEvent("Close", (*) => AudioBt_Cleanup())
+    g_AudioBtGui.OnEvent("Escape", AudioBt_OnEscape)
+
+    guiW := 750
+    guiH := lvHeight + 100
+    guiX := monitorLeft + (monitorWidth - guiW) // 2
+    guiY := monitorTop + (monitorHeight - guiH) // 2
+    if (guiX < monitorLeft + 20)
+        guiX := monitorLeft + 20
+    if (guiY < monitorTop + 20)
+        guiY := monitorTop + 20
+
+    g_AudioBtGui.Show("x" . guiX . " y" . guiY)
+    try g_AudioBtLv.Focus()
+    catch {
+    }
+    AudioBt_BindModalHotkeys()
 }
 
 AudioBt_Run(action, id := "") {
@@ -252,6 +340,15 @@ AudioBt_ParseList(text) {
     return rows
 }
 
+AudioBt_FilterRows(allRows, kind) {
+    rows := []
+    for row in allRows {
+        if (row.kind = kind)
+            rows.Push(row)
+    }
+    return rows
+}
+
 AudioBt_DigitLabel(index) {
     if (index >= 1 && index <= 9)
         return String(index)
@@ -260,7 +357,21 @@ AudioBt_DigitLabel(index) {
     return ""
 }
 
-AudioBt_PopulateLv(keepName := "") {
+AudioBt_PopulateRootLv() {
+    global g_AudioBtLv
+    if (!IsObject(g_AudioBtLv))
+        return
+    g_AudioBtLv.Delete()
+    for item in AudioBt_RootItems() {
+        g_AudioBtLv.Add("", item.key, item.title, item.detail)
+    }
+    try g_AudioBtLv.ModifyCol(1, 40)
+    try g_AudioBtLv.ModifyCol(2, 140)
+    try g_AudioBtLv.ModifyCol(3, 520)
+    ListView_SelectRowFocused(g_AudioBtLv, 1)
+}
+
+AudioBt_PopulateDeviceLv(keepName := "") {
     global g_AudioBtLv, g_AudioBtRows
     if (!IsObject(g_AudioBtLv))
         return
@@ -268,33 +379,38 @@ AudioBt_PopulateLv(keepName := "") {
     selectRow := 1
     for row in g_AudioBtRows {
         idx := A_Index
-        key := AudioBt_DigitLabel(idx)
-        g_AudioBtLv.Add("", key, row.kind, row.name, row.state)
+        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), row.name, row.state)
         if (keepName != "" && row.name = keepName)
             selectRow := idx
     }
     try g_AudioBtLv.ModifyCol(1, 40)
-    try g_AudioBtLv.ModifyCol(2, 50)
-    try g_AudioBtLv.ModifyCol(3, 420)
-    try g_AudioBtLv.ModifyCol(4, 180)
+    try g_AudioBtLv.ModifyCol(2, 480)
+    try g_AudioBtLv.ModifyCol(3, 180)
     if (g_AudioBtRows.Length > 0)
         ListView_SelectRowFocused(g_AudioBtLv, selectRow)
 }
 
 AudioBt_SelectedIndex() {
-    global g_AudioBtLv, g_AudioBtRows
-    if (!IsObject(g_AudioBtLv) || g_AudioBtRows.Length = 0)
+    global g_AudioBtLv, g_AudioBtRows, g_AudioBtMode
+    if (!IsObject(g_AudioBtLv))
         return 0
     rowNum := g_AudioBtLv.GetNext(0, "Focused")
     if (rowNum < 1)
         rowNum := g_AudioBtLv.GetNext(0)
+    if (g_AudioBtMode = "root") {
+        if (rowNum < 1 || rowNum > AudioBt_RootItems().Length)
+            return 0
+        return rowNum
+    }
     if (rowNum < 1 || rowNum > g_AudioBtRows.Length)
         return 0
     return rowNum
 }
 
 AudioBt_SelectedRow() {
-    global g_AudioBtRows
+    global g_AudioBtRows, g_AudioBtMode
+    if (g_AudioBtMode = "root")
+        return ""
     idx := AudioBt_SelectedIndex()
     if (idx < 1)
         return ""
@@ -310,8 +426,8 @@ AudioBt_SetHint(text) {
     }
 }
 
-AudioBt_Refresh(keepName := "", showError := true) {
-    global g_AudioBtRows, g_AudioBtBusy
+AudioBt_FetchAll(showError := true) {
+    global g_AudioBtAllRows, g_AudioBtBusy
     result := AudioBt_Run("list")
     if (!result.ok) {
         g_AudioBtBusy := false
@@ -326,25 +442,69 @@ AudioBt_Refresh(keepName := "", showError := true) {
         }
         return false
     }
-    g_AudioBtRows := AudioBt_ParseList(result.text)
-    AudioBt_PopulateLv(keepName)
+    g_AudioBtAllRows := AudioBt_ParseList(result.text)
+    return true
+}
+
+AudioBt_Refresh(keepName := "", showError := true) {
+    global g_AudioBtRows, g_AudioBtAllRows, g_AudioBtBusy, g_AudioBtMode
+    if (g_AudioBtMode = "root") {
+        g_AudioBtBusy := false
+        return true
+    }
+    if (!AudioBt_FetchAll(showError))
+        return false
+    g_AudioBtRows := AudioBt_FilterRows(g_AudioBtAllRows, g_AudioBtMode)
+    AudioBt_PopulateDeviceLv(keepName)
     AudioBt_SetHint(AudioBt_HintText())
     g_AudioBtBusy := false
     return true
 }
 
 AudioBt_SelectDigit(index, *) {
-    global g_AudioBtLv, g_AudioBtRows, g_AudioBtBusy
-    if (g_AudioBtBusy || !IsObject(g_AudioBtLv))
+    global g_AudioBtLv, g_AudioBtRows, g_AudioBtBusy, g_AudioBtMode
+    if (g_AudioBtBusy || !IsObject(g_AudioBtLv) || g_AudioBtMode = "root")
         return
     if (index < 1 || index > g_AudioBtRows.Length)
         return
     ListView_SelectRowFocused(g_AudioBtLv, index)
 }
 
+AudioBt_OpenSubmenu(kind, *) {
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtActive, g_AudioBtRows, g_AudioBtAllRows
+    if (!g_AudioBtActive)
+        return
+    g_AudioBtMode := kind
+    AudioBt_CreateGui(360)
+    AudioBt_SetHint("Loading " . AudioBt_ModeTitle() . "…")
+    g_AudioBtBusy := true
+    if (g_AudioBtAllRows.Length = 0) {
+        if (!AudioBt_FetchAll(true))
+            return
+    }
+    g_AudioBtRows := AudioBt_FilterRows(g_AudioBtAllRows, kind)
+    AudioBt_PopulateDeviceLv()
+    AudioBt_SetHint(AudioBt_HintText())
+    g_AudioBtBusy := false
+    try g_AudioBtLv.Focus()
+    catch {
+    }
+}
+
+AudioBt_OnRootActivate(*) {
+    global g_AudioBtMode
+    if (g_AudioBtMode != "root")
+        return
+    idx := AudioBt_SelectedIndex()
+    items := AudioBt_RootItems()
+    if (idx < 1 || idx > items.Length)
+        return
+    AudioBt_OpenSubmenu(items[idx].kind)
+}
+
 AudioBt_DoAction(action, requireBt := false) {
-    global g_AudioBtBusy, g_AudioBtActive
-    if (!g_AudioBtActive || g_AudioBtBusy)
+    global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
         return
     row := AudioBt_SelectedRow()
     if (!IsObject(row)) {
@@ -396,23 +556,41 @@ AudioBt_OnIsolate(*) {
 }
 
 AudioBt_OnRefresh(*) {
-    global g_AudioBtBusy, g_AudioBtActive
-    if (!g_AudioBtActive || g_AudioBtBusy)
+    global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode, g_AudioBtAllRows
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
         return
     row := AudioBt_SelectedRow()
     keep := IsObject(row) ? row.name : ""
     g_AudioBtBusy := true
+    g_AudioBtAllRows := []
     AudioBt_SetHint("Refreshing…")
     AudioBt_Refresh(keep)
     g_AudioBtBusy := false
 }
 
 AudioBt_OnListActivate(*) {
-    AudioBt_OnDefault()
+    global g_AudioBtMode
+    if (g_AudioBtMode = "root")
+        AudioBt_OnRootActivate()
+    else
+        AudioBt_OnDefault()
+}
+
+AudioBt_ShowRoot() {
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtRows
+    g_AudioBtMode := "root"
+    g_AudioBtBusy := false
+    g_AudioBtRows := []
+    AudioBt_CreateGui(140)
+    AudioBt_PopulateRootLv()
+    AudioBt_SetHint(AudioBt_HintText())
+    try g_AudioBtLv.Focus()
+    catch {
+    }
 }
 
 AudioBt_Show() {
-    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint, g_AudioBtActive
+    global g_AudioBtActive, g_AudioBtGui, g_AudioBtAllRows
     global g_OnEscapePressed, g_AudioBtOpenFile, g_AudioBtCloseCheckTimer, g_AudioBtBusy
 
     if (g_AudioBtActive && IsObject(g_AudioBtGui)) {
@@ -420,35 +598,9 @@ AudioBt_Show() {
         Sleep 50
     }
 
-    AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
-    monitorWidth := monitorRight - monitorLeft
-    monitorHeight := monitorBottom - monitorTop
-
-    g_AudioBtGui := Gui("+AlwaysOnTop +ToolWindow", "Audio / Bluetooth")
-    g_AudioBtGui.SetFont("s10", "Segoe UI")
-    g_AudioBtHint := g_AudioBtGui.Add("Text", "w720", "Loading devices…")
-    g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h360 -Multi", ["#", "Kind", "Name", "State"])
-    g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
-    g_AudioBtGui.Add("Button", "w100 Section", "Close").OnEvent("Click", AudioBt_OnEscape)
-    g_AudioBtGui.OnEvent("Close", AudioBt_OnEscape)
-    g_AudioBtGui.OnEvent("Escape", AudioBt_OnEscape)
-
-    guiW := 750
-    guiH := 460
-    guiX := monitorLeft + (monitorWidth - guiW) // 2
-    guiY := monitorTop + (monitorHeight - guiH) // 2
-    if (guiX < monitorLeft + 20)
-        guiX := monitorLeft + 20
-    if (guiY < monitorTop + 20)
-        guiY := monitorTop + 20
-
-    g_AudioBtGui.Show("x" . guiX . " y" . guiY)
-    try g_AudioBtLv.Focus()
-    catch {
-    }
-
+    g_AudioBtAllRows := []
+    g_AudioBtBusy := false
     g_AudioBtActive := true
-    g_AudioBtBusy := true
     g_OnEscapePressed := AudioBt_OnEscape
     try {
         DirCreate(A_ScriptDir "\.cursor")
@@ -456,8 +608,7 @@ AudioBt_Show() {
     } catch {
     }
     g_AudioBtCloseCheckTimer := SetTimer(AudioBt_CheckCloseRequest, 120)
-    AudioBt_BindModalHotkeys()
-    AudioBt_Refresh()
+    AudioBt_ShowRoot()
 }
 
 ; Win+Alt+Shift+9: Audio / Bluetooth quick selector (toggle)
