@@ -288,10 +288,7 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 
 ## 20. Editor Git stash/fetch/pull (Alt+S, 2026)
 
-- **Do not** drive stash/fetch/pull through the VS Code command palette or UIA quick-input picking on the hotkey path — fuzzy match, palette toggle, and TreeItem timing are unreliable.
-- **Do not** treat `git` exit 0 as success. Success means **behind-count 0** (`git rev-list --count HEAD..@{upstream}`) **and** any Alt+S stash restored (pop exit 0 and stash message gone). Stash-pop conflicts are a hard fail, not a warning + chime.
-- **Do** run [`infra/tools/Editor-GitStashFetchPull.ps1`](../infra/tools/Editor-GitStashFetchPull.ps1) with `-RepoDir` from **`Editor_ResolveGitRepoDir`** (process command line `--folder-uri` / quoted paths → optional `status.scm.0` basename for multi-root → `git rev-parse --show-toplevel` via [`Utils/git_cli.ahk`](../Utils/git_cli.ahk)).
-- **Do** preflight (branch not detached, no merge/rebase/cherry-pick, upstream exists), one `git stash push -u`, `git fetch`, `git pull --ff-only` (diverged branches fail instead of merging), then stash pop. Retry fetch+pull once if still behind. AHK re-checks behind-count before `✅ Pull complete` / `pull-successful.wav`.
-- **Do** use the same non-interactive git env as Act.ahk: `GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=Never`, bounded per-command timeout plus an AHK outer wait on the powershell process.
-- **Do** keep loading bar + `pull-successful.wav` in AHK; PS1 writes JSON (`ok`, `failedStep`, `error`, `behindCount`, `didStash`, `stashPopWarning`) for banners. Regression: [`infra/tools/Test-EditorGitStashFetchPull.ps1`](../infra/tools/Test-EditorGitStashFetchPull.ps1) (temp repos only).
-- **Rollback:** restore palette/UIA git block in [`cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk) only if CLI auth or repo resolution fails on a specific machine.
+- **Do not** hide git in a background PowerShell script or drive the command palette. The user must see a robot doing the work.
+- **Do** open a **new editor terminal** (same chord as Shift+N / `Ctrl+Shift+'`), play `robots-are-working.wav`, and **SendText** a PowerShell sequence: `git stash push -u` → `git fetch` → `git pull` → `git stash pop` only if that Alt+S stash is on top. `git -C` uses **`Editor_ResolveGitRepoDir`** when the workspace root is known.
+- **Do** print `=== ROBOT stash/fetch/pull/done ===` in the terminal so progress is visible. Watch the terminal for errors; do not celebrate a hidden exit code.
+- **Rollback:** restore [`infra/tools/Editor-GitStashFetchPull.ps1`](../infra/tools/Editor-GitStashFetchPull.ps1) CLI path in [`cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk) only if terminal typing is unreliable on a specific machine.

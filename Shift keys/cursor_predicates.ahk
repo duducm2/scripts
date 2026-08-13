@@ -437,9 +437,9 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
 }
 
 ; =============================================================================
-; Alt+S — Git stash / fetch / pull via native CLI (Editor-GitStashFetchPull.ps1)
+; Alt+S — robot types git stash / fetch / pull in a new editor terminal
 ; =============================================================================
-global EDITOR_GIT_CLI_TIMEOUT_MS := 120000
+global EDITOR_GIT_TERMINAL_READY_MS := 2500
 
 Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
@@ -610,139 +610,63 @@ Editor_ResolveGitRepoDir(editorHwnd := 0) {
     return ""
 }
 
-Editor_UnescapeJsonString(s) {
-    s := StrReplace(s, '\n', "`n")
-    s := StrReplace(s, '\r', "`r")
-    s := StrReplace(s, '\t', "`t")
-    s := StrReplace(s, '\"', '"')
-    s := StrReplace(s, '\\', '\')
-    return s
-}
-
-Editor_ParseGitScriptJson(raw) {
-    result := Map(
-        "ok", false,
-        "failedStep", "",
-        "error", "",
-        "stashPopWarning", false,
-        "didStash", false,
-        "behindCount", -1
-    )
-    if (raw = "")
-        return result
-    if RegExMatch(raw, '"ok"\s*:\s*(true|false)', &m)
-        result["ok"] := (m[1] = "true")
-    if RegExMatch(raw, '"failedStep"\s*:\s*"([^"]*)"', &m)
-        result["failedStep"] := m[1]
-    if RegExMatch(raw, '"error"\s*:\s*"((?:\\.|[^"\\])*)"', &m)
-        result["error"] := Editor_UnescapeJsonString(m[1])
-    if RegExMatch(raw, '"stashPopWarning"\s*:\s*(true|false)', &m)
-        result["stashPopWarning"] := (m[1] = "true")
-    if RegExMatch(raw, '"didStash"\s*:\s*(true|false)', &m)
-        result["didStash"] := (m[1] = "true")
-    if RegExMatch(raw, '"behindCount"\s*:\s*(-?\d+)', &m)
-        result["behindCount"] := Integer(m[1])
-    return result
-}
-
-Editor_TruncateGitError(msg, maxLen := 180) {
-    msg := Trim(msg, "`r`n `t")
-    if (StrLen(msg) <= maxLen)
-        return msg
-    return SubStr(msg, 1, maxLen - 3) "..."
-}
-
-Editor_ReadGitScriptResultFile(resultPath) {
-    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false, "didStash", false,
-        "behindCount", -1)
+Editor_EditorTerminalHasFocus() {
     try {
-        if !FileExist(resultPath)
-            return result
-        raw := FileRead(resultPath, "UTF-8")
-        try FileDelete(resultPath)
-        if (raw != "") {
-            parsed := Editor_ParseGitScriptJson(raw)
-            if parsed
-                return parsed
+        el := UIA.GetFocusedElement()
+        if !el
+            return false
+        cur := el
+        loop 10 {
+            try {
+                n := "", c := "", id := ""
+                try n := cur.Name
+                try c := cur.ClassName
+                try id := cur.AutomationId
+                hay := n " " c " " id
+                if InStr(hay, "Terminal") || InStr(hay, "terminal") || InStr(hay, "xterm")
+                    return true
+            } catch {
+            }
+            try cur := cur.Parent
+            catch
+                break
+            if !cur
+                break
         }
     } catch {
     }
-    return result
+    return false
 }
 
-Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
-    global EDITOR_GIT_CLI_TIMEOUT_MS
+Editor_OpenNewEditorTerminal(editorHwnd, timeoutMs := 0) {
+    global EDITOR_GIT_TERMINAL_READY_MS
     if !timeoutMs
-        timeoutMs := EDITOR_GIT_CLI_TIMEOUT_MS
-    ps1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
-    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false, "didStash", false,
-        "behindCount", -1)
-    if !FileExist(ps1) {
-        result["failedStep"] := "Script"
-        result["error"] := "Editor-GitStashFetchPull.ps1 not found"
-        return result
+        timeoutMs := EDITOR_GIT_TERMINAL_READY_MS
+    Editor_EnsureCursorWindowActive(editorHwnd)
+    Send '^+"'
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        Sleep 80
+        if Editor_EditorTerminalHasFocus()
+            return true
     }
-    resultPath := A_Temp "\editor-git-" A_TickCount ".json"
-    timeoutSec := Max(30, Round(timeoutMs / 1000))
-    ; Run powershell.exe directly (no cmd.exe) so repo paths with spaces stay intact.
-    cmd := Format(
-        'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{1}" -RepoDir "{2}" -ResultPath "{3}" -TimeoutSec {4}',
-        ps1, repoDir, resultPath, timeoutSec)
-    pid := 0
-    try pid := Run(cmd, repoDir, "Hide")
-    catch {
-        result["error"] := "failed to start git script"
-        return result
-    }
-    if !pid {
-        result["error"] := "failed to start git script"
-        return result
-    }
-    outerSec := Max(timeoutSec, timeoutSec * 5)
-    stillRunning := ProcessWaitClose(pid, outerSec)
-    if stillRunning {
-        try ProcessClose(pid)
-        result["error"] := "timed out"
-        parsed := Editor_ReadGitScriptResultFile(resultPath)
-        if parsed.Has("failedStep") && parsed["failedStep"] != ""
-            return parsed
-        return result
-    }
-    parsed := Editor_ReadGitScriptResultFile(resultPath)
-    if parsed.Has("ok") || parsed.Has("error")
-        return parsed
-    result["error"] := "git script produced no result"
-    return result
+    ; New-terminal chord focuses the shell even when UIA misses xterm.
+    return (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
 }
 
-Editor_GitQualityGatesPass(repoDir, result, &failStep, &failReason) {
-    failStep := "Git"
-    failReason := "quality gate failed"
-    if !IsObject(result) {
-        failReason := "missing git result"
-        return false
+Editor_GitRobotTerminalCommand(repoDir) {
+    msg := "alt+s-" A_TickCount
+    gitc := "git"
+    if (repoDir != "") {
+        safe := StrReplace(repoDir, "'", "''")
+        gitc := "git -C '" safe "'"
     }
-    if result.Has("stashPopWarning") && result["stashPopWarning"] {
-        failStep := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "StashPop"
-        failReason := result.Has("error") && result["error"] != "" ? result["error"] : "stash was not restored"
-        return false
-    }
-    if !result.Has("ok") || !result["ok"] {
-        failStep := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "Git"
-        failReason := result.Has("error") && result["error"] != "" ? result["error"] : "unknown error"
-        return false
-    }
-    behind := GitCli_BehindUpstreamCount(repoDir)
-    if (behind != 0) {
-        failStep := "Pull"
-        failReason := behind < 0 ? "could not verify upstream behind-count" : ("still behind " behind)
-        return false
-    }
-    return true
+    return Format(
+        "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop }} else {{ Write-Host 'no stash to pop' }}; Write-Host '=== ROBOT done ===' -ForegroundColor Green",
+        gitc, msg)
 }
 
 Editor_GitStashAndPull() {
-    global EDITOR_GIT_CLI_TIMEOUT_MS
     hwnd := WinExist("A")
     if !hwnd
         return
@@ -751,28 +675,24 @@ Editor_GitStashAndPull() {
         return
     }
     repoDir := Editor_ResolveGitRepoDir(hwnd)
-    if !repoDir {
-        Editor_GitFlowFail("Repo", "could not resolve git root for active editor")
-        return
-    }
-    StandardLoadingBar_Show("⏳ Git stash, fetch, and pull…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-        centerOnHwnd: hwnd })
-    try StandardLoadingBar_Update("⏳ Running git in " repoDir, BANNER_ACCENT_INTERMEDIATE)
-    result := Editor_RunGitStashFetchPullScript(repoDir, EDITOR_GIT_CLI_TIMEOUT_MS)
-    failStep := "Git"
-    failReason := ""
-    if !Editor_GitQualityGatesPass(repoDir, result, &failStep, &failReason) {
-        Editor_GitFlowFail(failStep, Editor_TruncateGitError(failReason))
-        return
-    }
-    StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
     try {
-        soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
+        soundPath := A_ScriptDir "\assets\sounds\robots-are-working.wav"
         if FileExist(soundPath)
             ScriptSoundPlay(soundPath, true)
     } catch {
     }
-    StandardLoadingBar_Hide(600)
+    StandardLoadingBar_Show("🤖 Opening terminal…", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: hwnd })
+    if !Editor_OpenNewEditorTerminal(hwnd) {
+        Editor_GitFlowFail("Terminal", "could not focus a new editor terminal")
+        return
+    }
+    try StandardLoadingBar_Update("🤖 Typing git stash, fetch, pull…", BANNER_ACCENT_INTERMEDIATE)
+    Sleep 120
+    SendText Editor_GitRobotTerminalCommand(repoDir)
+    Send "{Enter}"
+    StandardLoadingBar_Update("🤖 Watch the terminal — stash, fetch, pull", BANNER_ACCENT_INFO)
+    StandardLoadingBar_Hide(1800)
 }
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
