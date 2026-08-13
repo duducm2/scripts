@@ -455,6 +455,7 @@ AudioBt_CreateGui(lvHeight := 360) {
     else
         lvCols := ["#", "Name", "State"]
     g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", lvCols)
+    g_AudioBtLv.SetFont("s14", "Segoe UI")
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
     g_AudioBtGui.Add("Button", "w100 Section", (g_AudioBtMode = "root") ? "Close" : "Back").OnEvent("Click",
         AudioBt_OnEscape)
