@@ -20,19 +20,6 @@ global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
 
-; #region agent log
-AudioBt_DebugLog(hypothesisId, location, message, dataJson := "{}") {
-    ts := DateDiff(A_NowUTC, "19700101000000", "Seconds") * 1000
-    loc := StrReplace(StrReplace(location, "\", "/"), '"', "'")
-    msg := StrReplace(StrReplace(message, "\", "/"), '"', "'")
-    line := '{"sessionId":"639bbd","runId":"pre-fix","hypothesisId":"' hypothesisId
-        . '","location":"' loc '","message":"' msg '","data":' dataJson ',"timestamp":' ts '}'
-    try FileAppend(line "`n", A_ScriptDir "\debug-639bbd.log", "UTF-8")
-    catch {
-    }
-}
-; #endregion
-
 AudioBt_RootItems() {
     return [{ key: "1", kind: "BT", title: "Bluetooth", detail: "Paired audio devices — connect / disconnect" }, { key: "2",
         kind: "In", title: "Input", detail: "Recording devices — default / enable / isolate" }, { key: "3", kind: "Out",
@@ -122,21 +109,11 @@ AudioBt_UnbindModalHotkeys() {
 
 AudioBt_BindOne(key, handler) {
     global g_AudioBtHotkeyHandlers
-    ok := false
-    errMsg := ""
     try {
         Hotkey(key, handler, "On")
         g_AudioBtHotkeyHandlers.Push({ key: key, handler: handler })
-        ok := true
-    } catch as err {
-        errMsg := err.Message
+    } catch {
     }
-    ; #region agent log
-    if (InStr(key, "x")) {
-        AudioBt_DebugLog("A", "audio_bt_menu.ahk:BindOne", "bind x key",
-            '{"key":"' key '","ok":' (ok ? 1 : 0) ',"err":"' StrReplace(errMsg, '"', "'") '"}')
-    }
-    ; #endregion
 }
 
 AudioBt_BindModalHotkeys() {
@@ -195,10 +172,6 @@ AudioBt_BindModalHotkeys() {
     catch {
     }
     g_AudioBtHotkeysBound := true
-    ; #region agent log
-    AudioBt_DebugLog("A", "audio_bt_menu.ahk:BindModalHotkeys", "hotkeys bound",
-        '{"mode":"' g_AudioBtMode '","hwnd":' hwnd ',"count":' g_AudioBtHotkeyHandlers.Length '}')
-    ; #endregion
 }
 
 AudioBt_DestroyGui() {
@@ -231,6 +204,7 @@ AudioBt_Cleanup() {
     catch {
     }
 
+    AudioBt_BusyHide()
     AudioBt_DestroyGui()
     if (g_OnEscapePressed = AudioBt_OnEscape)
         g_OnEscapePressed := ""
@@ -443,6 +417,47 @@ AudioBt_SetHint(text) {
     }
 }
 
+AudioBt_BusyShow(state) {
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, { passive: false, centerOnHwnd: 0 })
+}
+
+AudioBt_BusyHide() {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+}
+
+AudioBt_RefocusLv() {
+    global g_AudioBtLv
+    try g_AudioBtLv.Focus()
+    catch {
+    }
+}
+
+AudioBt_ActionBusyText(action, name) {
+    verb := ""
+    switch action {
+        case "disconnect": verb := "Disconnecting"
+        case "connect": verb := "Connecting"
+        case "default": verb := "Setting default"
+        case "enable": verb := "Enabling"
+        case "disable": verb := "Disabling"
+        case "isolate": verb := "Isolating"
+        default: verb := "Working"
+    }
+    return "⏳ " . verb . " " . name . "…"
+}
+
+AudioBt_StripResult(text) {
+    msg := text
+    if (SubStr(msg, 1, 3) = "OK`t")
+        msg := SubStr(msg, 4)
+    else if (SubStr(msg, 1, 4) = "ERR`t")
+        msg := SubStr(msg, 5)
+    return Trim(msg)
+}
+
 AudioBt_FetchAll(showError := true) {
     global g_AudioBtAllRows, g_AudioBtBusy
     result := AudioBt_Run("list")
@@ -455,6 +470,8 @@ AudioBt_FetchAll(showError := true) {
                 msg := SubStr(msg, 5)
             if (msg = "")
                 msg := "Failed to list audio devices"
+            if (SubStr(msg, 1, 1) != "❌")
+                msg := "❌ " . msg
             ShowNotification_WM(msg)
         }
         return false
@@ -493,19 +510,28 @@ AudioBt_OpenSubmenu(kind, *) {
         return
     g_AudioBtMode := kind
     AudioBt_CreateGui(360)
-    AudioBt_SetHint("Loading " . AudioBt_ModeTitle() . "…")
-    g_AudioBtBusy := true
-    if (g_AudioBtAllRows.Length = 0) {
-        if (!AudioBt_FetchAll(true))
-            return
-    }
-    g_AudioBtRows := AudioBt_FilterRows(g_AudioBtAllRows, kind)
-    AudioBt_PopulateDeviceLv()
     AudioBt_SetHint(AudioBt_HintText())
-    g_AudioBtBusy := false
-    try g_AudioBtLv.Focus()
-    catch {
+    g_AudioBtBusy := true
+    needFetch := (g_AudioBtAllRows.Length = 0)
+    fetchFailed := false
+    if (needFetch)
+        AudioBt_BusyShow("⏳ Loading " . StrLower(AudioBt_ModeTitle()) . "…")
+    try {
+        if (needFetch && !AudioBt_FetchAll(false))
+            fetchFailed := true
+        else {
+            g_AudioBtRows := AudioBt_FilterRows(g_AudioBtAllRows, kind)
+            AudioBt_PopulateDeviceLv()
+            AudioBt_SetHint(AudioBt_HintText())
+        }
+    } finally {
+        g_AudioBtBusy := false
+        if (needFetch)
+            AudioBt_BusyHide()
+        AudioBt_RefocusLv()
     }
+    if (fetchFailed)
+        ShowNotification_WM("❌ Failed to list audio devices")
 }
 
 AudioBt_OnRootActivate(*) {
@@ -521,55 +547,34 @@ AudioBt_OnRootActivate(*) {
 
 AudioBt_DoAction(action, requireBt := false) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root") {
-        ; #region agent log
-        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "early return gate",
-            '{"action":"' action '","active":' (g_AudioBtActive ? 1 : 0) ',"busy":' (g_AudioBtBusy ? 1 : 0)
-            . ',"mode":"' g_AudioBtMode '"}')
-        ; #endregion
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
         return
-    }
     row := AudioBt_SelectedRow()
     if (!IsObject(row)) {
-        ; #region agent log
-        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "no selected row",
-            '{"action":"' action '","mode":"' g_AudioBtMode '"}')
-        ; #endregion
         ShowNotification_WM("Select a device first")
         return
     }
     if (requireBt && row.canConnect != true && row.kind != "BT") {
-        ; #region agent log
-        AudioBt_DebugLog("B", "audio_bt_menu.ahk:DoAction", "requireBt rejected",
-            '{"action":"' action '","kind":"' row.kind '","canConnect":' (row.canConnect ? 1 : 0) '}')
-        ; #endregion
         ShowNotification_WM("Not a Bluetooth audio device")
         return
     }
     g_AudioBtBusy := true
-    AudioBt_SetHint("Working: " . action . " — " . row.name)
-    ; #region agent log
-    AudioBt_DebugLog("C", "audio_bt_menu.ahk:DoAction", "run backend",
-        '{"action":"' action '","id":"' StrReplace(row.id, '"', "'") '","kind":"' row.kind
-        . '","name":"' StrReplace(row.name, '"', "'") '"}')
-    ; #endregion
-    result := AudioBt_Run(action, row.id)
-    ; #region agent log
-    AudioBt_DebugLog("C", "audio_bt_menu.ahk:DoAction", "backend result",
-        '{"ok":' (result.ok ? 1 : 0) ',"exitCode":' result.exitCode ',"text":"' StrReplace(StrReplace(result.text,
-            "\", "/"), '"', "'") '"}')
-    ; #endregion
-    msg := result.text
-    if (SubStr(msg, 1, 3) = "OK`t")
-        msg := SubStr(msg, 4)
-    else if (SubStr(msg, 1, 4) = "ERR`t")
-        msg := SubStr(msg, 5)
-    AudioBt_Refresh(row.name, false)
-    g_AudioBtBusy := false
-    if (result.ok)
-        ShowCenteredOverlay_Utils(msg = "" ? "Done" : msg, 1400, BANNER_ACCENT_SUCCESS)
+    AudioBt_BusyShow(AudioBt_ActionBusyText(action, row.name))
+    result := ""
+    try {
+        result := AudioBt_Run(action, row.id)
+        StandardLoadingBar_Update("⏳ Refreshing devices…", BANNER_ACCENT_INTERMEDIATE)
+        AudioBt_Refresh(row.name, false)
+    } finally {
+        g_AudioBtBusy := false
+        AudioBt_BusyHide()
+        AudioBt_RefocusLv()
+    }
+    msg := AudioBt_StripResult(IsObject(result) ? result.text : "")
+    if (IsObject(result) && result.ok)
+        ShowCenteredOverlay_Utils("✅ " . (msg = "" ? "Done" : msg), 1400, BANNER_ACCENT_SUCCESS)
     else
-        ShowNotification_WM(msg = "" ? "Action failed" : msg)
+        ShowNotification_WM("❌ " . (msg = "" ? "Action failed" : msg))
 }
 
 AudioBt_OnDefault(*) {
@@ -589,11 +594,6 @@ AudioBt_OnConnect(*) {
 }
 
 AudioBt_OnDisconnect(*) {
-    ; #region agent log
-    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtActive
-    AudioBt_DebugLog("A", "audio_bt_menu.ahk:OnDisconnect", "X handler fired",
-        '{"mode":"' g_AudioBtMode '","active":' (g_AudioBtActive ? 1 : 0) ',"busy":' (g_AudioBtBusy ? 1 : 0) '}')
-    ; #endregion
     AudioBt_DoAction("disconnect", true)
 }
 
@@ -609,9 +609,14 @@ AudioBt_OnRefresh(*) {
     keep := IsObject(row) ? row.name : ""
     g_AudioBtBusy := true
     g_AudioBtAllRows := []
-    AudioBt_SetHint("Refreshing…")
-    AudioBt_Refresh(keep)
-    g_AudioBtBusy := false
+    AudioBt_BusyShow("⏳ Refreshing devices…")
+    try {
+        AudioBt_Refresh(keep)
+    } finally {
+        g_AudioBtBusy := false
+        AudioBt_BusyHide()
+        AudioBt_RefocusLv()
+    }
 }
 
 AudioBt_OnListActivate(*) {
