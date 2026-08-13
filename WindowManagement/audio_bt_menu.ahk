@@ -39,7 +39,7 @@ AudioBt_HelpRows() {
                                 command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
                                     meaning: "Connect a paired Bluetooth audio device (A2DP/HFP)." }, { key: "X",
                                         command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
-                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first." }, { key: "R",
+                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints. If it is disconnected, connect first. Isolated rows show ★ and Isolated in State." }, { key: "R",
                                                 command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "Esc",
                                                     command: "Back", meaning: "Back to the root menu." }
     ]
@@ -412,7 +412,8 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     selectRow := 1
     for row in g_AudioBtRows {
         idx := A_Index
-        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), row.name, row.state)
+        displayName := InStr(row.state, "Isolated") ? "★ " . row.name : row.name
+        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), displayName, row.state)
         if (keepName != "" && row.name = keepName)
             selectRow := idx
     }

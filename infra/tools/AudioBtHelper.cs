@@ -222,6 +222,7 @@ namespace AudioBt
             {
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 List<BtDeviceInfo> btDevs = CollectBluetoothAudio();
+                int[] activeByFlow = CountActiveByFlow(endpoints);
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("id\tkind\tname\tstate\tisDefault\tcanConnect");
 
@@ -238,11 +239,14 @@ namespace AudioBt
                         if (ep.IsDefault && EndpointMatchesBt(ep, bt))
                         {
                             isDef = true;
-                            state = "Connected · Default";
                             break;
                         }
                     }
-                    if (bt.Connected && !isDef)
+                    if (BtIsIsolated(bt, endpoints, activeByFlow))
+                        state = "Connected · Isolated";
+                    else if (isDef)
+                        state = "Connected · Default";
+                    else if (bt.Connected)
                     {
                         foreach (EndpointInfo ep in endpoints)
                         {
@@ -261,7 +265,7 @@ namespace AudioBt
                     if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0 && !ep.IsBluetooth)
                         continue;
                     string kind = ep.Flow == eRender ? "Out" : "In";
-                    string state = StateLabel(ep);
+                    string state = StateLabel(ep, EndpointIsIsolated(ep, activeByFlow));
                     sb.AppendLine(Tsv(ep.Id, kind, ep.Name, state, ep.IsDefault ? "1" : "0", ep.IsBluetooth ? "1" : "0"));
                 }
                 return sb.ToString();
@@ -444,10 +448,67 @@ namespace AudioBt
             }
         }
 
-        static string StateLabel(EndpointInfo ep)
+        static bool IsCountableActive(EndpointInfo ep)
+        {
+            if (ep == null)
+                return false;
+            if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                return false;
+            if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                return false;
+            return (ep.State & DEVICE_STATE_ACTIVE) != 0;
+        }
+
+        static int[] CountActiveByFlow(List<EndpointInfo> endpoints)
+        {
+            int[] counts = new int[2];
+            foreach (EndpointInfo ep in endpoints)
+            {
+                if (IsCountableActive(ep) && (ep.Flow == eRender || ep.Flow == eCapture))
+                    counts[ep.Flow]++;
+            }
+            return counts;
+        }
+
+        static bool EndpointIsIsolated(EndpointInfo ep, int[] activeByFlow)
+        {
+            if (ep == null || !ep.IsDefault || activeByFlow == null)
+                return false;
+            if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                return false;
+            if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                return false;
+            if (ep.Flow != eRender && ep.Flow != eCapture)
+                return false;
+            return activeByFlow[ep.Flow] == 1;
+        }
+
+        static bool BtIsIsolated(BtDeviceInfo bt, List<EndpointInfo> endpoints, int[] activeByFlow)
+        {
+            if (bt == null || !bt.Connected)
+                return false;
+            bool any = false;
+            foreach (EndpointInfo ep in endpoints)
+            {
+                if (!EndpointMatchesBt(ep, bt))
+                    continue;
+                if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                    continue;
+                if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                    continue;
+                any = true;
+                if (!EndpointIsIsolated(ep, activeByFlow))
+                    return false;
+            }
+            return any;
+        }
+
+        static string StateLabel(EndpointInfo ep, bool isolated)
         {
             if ((ep.State & DEVICE_STATE_DISABLED) != 0)
                 return "Disabled";
+            if (isolated)
+                return "Isolated";
             if (ep.IsDefault)
                 return "Default";
             if ((ep.State & DEVICE_STATE_UNPLUGGED) != 0)
