@@ -1,16 +1,21 @@
-# Alt+S editor git flow: stash (with untracked fallback), fetch, pull, stash pop.
-# Writes JSON result to -ResultPath; exit 0 on success, 1 on failure.
+# Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
+# Success (ok=true / exit 0) only if every quality gate passes — never on git exit 0 alone.
+# Writes JSON result to -ResultPath.
+# -SkipPull is test-only: fetch then skip pull so the behind-count gate must fail.
 param(
     [Parameter(Mandatory = $true)]
     [string]$RepoDir,
     [Parameter(Mandatory = $true)]
     [string]$ResultPath,
-    [int]$TimeoutSec = 120
+    [int]$TimeoutSec = 120,
+    [switch]$SkipPull
 )
 
 $ErrorActionPreference = 'Continue'
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'Never'
+
+$stashMsg = "alt+s-auto-$(Get-Date -Format 'yyyyMMddHHmmss')-$PID"
 
 $result = [ordered]@{
     ok              = $false
@@ -18,6 +23,10 @@ $result = [ordered]@{
     stashPopWarning = $false
     failedStep      = ''
     error           = ''
+    behindCount     = -1
+    aheadCount      = -1
+    upstream        = ''
+    stashRef        = ''
     steps           = @()
 }
 
@@ -37,9 +46,15 @@ function Add-Step {
     $result.steps += [ordered]@{ name = $Name; ok = $Ok; detail = $Detail }
 }
 
-function Test-DirtyTreeMessage {
-    param([string]$Text)
-    return ($Text -match '(?i)clean your repository working tree|commit your changes or stash|would be overwritten by merge')
+function Fail-Step {
+    param([string]$Step, [string]$ErrorText)
+    $result.failedStep = $Step
+    $result.error = $ErrorText
+    if ($Step -eq 'StashPop') {
+        $result.stashPopWarning = $true
+    }
+    Add-Step $Step $false $ErrorText
+    Write-Result 1
 }
 
 function Invoke-GitRaw {
@@ -69,114 +84,196 @@ function Invoke-GitRaw {
         Ok       = ($code -eq 0)
         ExitCode = $code
         Output   = $combined
+        StdOut   = $stdout.Trim()
     }
-}
-
-function Test-GitStashOutputOk {
-    param([string]$Output, [int]$ExitCode)
-    if ($ExitCode -eq 0) { return $true }
-    return ($Output -match '(?i)Saved working directory|No local changes to save')
 }
 
 function Invoke-GitStep {
-    param(
-        [string]$StepName,
-        [string]$GitArgs,
-        [switch]$AllowStashPartialOk
-    )
+    param([string]$StepName, [string]$GitArgs)
     $r = Invoke-GitRaw $GitArgs
-    $ok = $r.Ok
-    if ($AllowStashPartialOk -and (Test-GitStashOutputOk $r.Output $r.ExitCode)) {
-        $ok = $true
-    }
     $detail = if ($r.Output) { $r.Output.Substring(0, [Math]::Min(500, $r.Output.Length)) } else { '' }
-    Add-Step $StepName $ok $detail
-    if (-not $ok -and $r.ExitCode -eq 124) {
-        $result.failedStep = $StepName
-        $result.error = $r.Output
-        Write-Result 1
+    Add-Step $StepName $r.Ok $detail
+    if (-not $r.Ok -and $r.ExitCode -eq 124) {
+        Fail-Step $StepName $r.Output
     }
-    $r | Add-Member -NotePropertyName StepOk -NotePropertyValue $ok -Force
+    $r | Add-Member -NotePropertyName StepOk -NotePropertyValue $r.Ok -Force
     return $r
 }
 
-function Test-WorkingTreeDirty {
+function Get-Porcelain {
     $r = Invoke-GitRaw 'status --porcelain'
     if (-not $r.Ok) {
-        $result.failedStep = 'Status'
-        $result.error = $r.Output
-        Write-Result 1
+        Fail-Step 'Status' $(if ($r.Output) { $r.Output } else { 'git status failed' })
     }
-    return ($r.Output -match '\S')
+    return $r.StdOut
 }
 
-function Invoke-StashIfNeeded {
-    param([switch]$IncludeUntracked)
-    if (-not (Test-WorkingTreeDirty)) {
-        Add-Step $(if ($IncludeUntracked) { 'stash-untracked-skip' } else { 'stash-skip' }) $true 'clean working tree'
-        return $false
+function Test-PorcelainBlocksPull {
+    param([string]$Porcelain)
+    if (-not $Porcelain) { return $false }
+    foreach ($line in ($Porcelain -split "`r?`n")) {
+        if ($line -notmatch '\S') { continue }
+        if ($line.StartsWith('!!')) { continue }
+        return $true
     }
-    $msg = if ($IncludeUntracked) { 'alt+s untracked' } else { 'alt+s auto' }
-    $args = if ($IncludeUntracked) { "stash push -u -m `"$msg`"" } else { "stash push -m `"$msg`"" }
-    $r = Invoke-GitStep $(if ($IncludeUntracked) { 'stash-untracked' } else { 'stash' }) $args -AllowStashPartialOk
-    if (-not $r.StepOk) {
-        $result.failedStep = $(if ($IncludeUntracked) { 'Stash (untracked)' } else { 'Stash' })
-        $result.error = $r.Output
-        Write-Result 1
+    return $false
+}
+
+function Get-StashListText {
+    $r = Invoke-GitRaw 'stash list'
+    if (-not $r.Ok) {
+        Fail-Step 'Stash' $(if ($r.Output) { $r.Output } else { 'git stash list failed' })
     }
-    $result.didStash = $true
-    return $true
+    return $r.StdOut
+}
+
+function Get-StashLineCount {
+    param([string]$Text)
+    if (-not $Text) { return 0 }
+    return @($Text -split "`r?`n" | Where-Object { $_ -match '\S' }).Count
+}
+
+function Update-AheadBehind {
+    $behind = Invoke-GitRaw 'rev-list --count HEAD..@{upstream}'
+    $ahead = Invoke-GitRaw 'rev-list --count @{upstream}..HEAD'
+    if ($behind.Ok -and $behind.StdOut -match '^\d+$') {
+        $result.behindCount = [int]$behind.StdOut
+    } else {
+        $result.behindCount = -1
+    }
+    if ($ahead.Ok -and $ahead.StdOut -match '^\d+$') {
+        $result.aheadCount = [int]$ahead.StdOut
+    } else {
+        $result.aheadCount = -1
+    }
+}
+
+function Test-RefExists {
+    param([string]$Ref)
+    $r = Invoke-GitRaw "rev-parse -q --verify $Ref"
+    return $r.Ok
 }
 
 if (-not (Test-Path -LiteralPath $RepoDir)) {
-    $result.failedStep = 'Repo'
-    $result.error = "Directory not found: $RepoDir"
-    Write-Result 1
+    Fail-Step 'Repo' "Directory not found: $RepoDir"
 }
 
-$top = Invoke-GitStep 'rev-parse' 'rev-parse --show-toplevel'
-if (-not $top.Ok) {
-    $result.failedStep = 'Repo'
-    $result.error = if ($top.Output) { $top.Output } else { 'Not a git repository' }
-    Write-Result 1
+$inside = Invoke-GitStep 'rev-parse' 'rev-parse --is-inside-work-tree'
+if (-not $inside.Ok -or ($inside.StdOut -ne 'true')) {
+    Fail-Step 'Repo' $(if ($inside.Output) { $inside.Output } else { 'Not a git repository' })
 }
 
-Invoke-StashIfNeeded | Out-Null
-if (Test-WorkingTreeDirty) {
-    Invoke-StashIfNeeded -IncludeUntracked | Out-Null
+$sym = Invoke-GitRaw 'symbolic-ref -q HEAD'
+if (-not $sym.Ok) {
+    Fail-Step 'Detached' 'HEAD is detached; checkout a branch before Alt+S'
+}
+Add-Step 'preflight-head' $true $sym.StdOut
+
+if (Test-RefExists 'MERGE_HEAD') {
+    Fail-Step 'Merge' 'merge in progress'
+}
+if ((Test-RefExists 'REBASE_HEAD') -or (Test-RefExists 'REBASE_MERGE') -or (Test-RefExists 'REBASE_APPLY')) {
+    Fail-Step 'Rebase' 'rebase in progress'
+}
+if (Test-RefExists 'CHERRY_PICK_HEAD') {
+    Fail-Step 'CherryPick' 'cherry-pick in progress'
+}
+Add-Step 'preflight-state' $true 'no merge/rebase/cherry-pick'
+
+$up = Invoke-GitRaw 'rev-parse --abbrev-ref --symbolic-full-name @{upstream}'
+if (-not $up.Ok -or -not $up.StdOut) {
+    Fail-Step 'Upstream' $(if ($up.Output) { $up.Output } else { 'no upstream branch' })
+}
+$result.upstream = $up.StdOut
+Add-Step 'preflight-upstream' $true $result.upstream
+Update-AheadBehind
+
+$porcelainBefore = Get-Porcelain
+$stashListBefore = Get-StashListText
+$dirty = Test-PorcelainBlocksPull $porcelainBefore
+
+if ($dirty) {
+    $push = Invoke-GitStep 'stash' "stash push -u -m `"$stashMsg`""
+    if ($push.Output -match '(?i)No local changes to save') {
+        Fail-Step 'Stash' 'stash reported no local changes but working tree was dirty'
+    }
+    if ($push.Output -notmatch '(?i)Saved working directory') {
+        Fail-Step 'Stash' $(if ($push.Output) { $push.Output } else { 'stash did not save working directory' })
+    }
+    $stashListAfter = Get-StashListText
+    if ((Get-StashLineCount $stashListAfter) -le (Get-StashLineCount $stashListBefore)) {
+        Fail-Step 'Stash' 'stash list did not grow'
+    }
+    $top = Invoke-GitRaw 'stash list -1'
+    if (-not $top.Ok -or ($top.StdOut -notmatch [regex]::Escape($stashMsg))) {
+        Fail-Step 'Stash' "new stash@{0} is not ours: $($top.StdOut)"
+    }
+    $result.didStash = $true
+    $result.stashRef = 'stash@{0}'
+    $afterStash = Get-Porcelain
+    if (Test-PorcelainBlocksPull $afterStash) {
+        Fail-Step 'Stash' "working tree still not pullable after stash: $afterStash"
+    }
+    Add-Step 'stash-gate' $true $stashMsg
+} else {
+    Add-Step 'stash-skip' $true 'clean working tree'
 }
 
 $fetch = Invoke-GitStep 'fetch' 'fetch'
 if (-not $fetch.Ok) {
-    $result.failedStep = 'Fetch'
-    $result.error = $fetch.Output
-    Write-Result 1
+    Fail-Step 'Fetch' $(if ($fetch.Output) { $fetch.Output } else { 'git fetch failed' })
 }
+Add-Step 'fetch-gate' $true 'fetch exit 0'
+Update-AheadBehind
 
-function Invoke-PullWithRecovery {
-    $pull = Invoke-GitStep 'pull' 'pull'
-    if ($pull.Ok) { return $pull }
-    if (Test-DirtyTreeMessage $pull.Output) {
-        Invoke-StashIfNeeded -IncludeUntracked | Out-Null
-        $retry = Invoke-GitStep 'pull-retry' 'pull'
-        if ($retry.Ok) { return $retry }
-        $result.failedStep = 'Pull'
-        $result.error = $retry.Output
-        Write-Result 1
+function Invoke-PullOnce {
+    param([string]$StepName)
+    if ($SkipPull) {
+        Add-Step $StepName $false 'skipped (test hook)'
+        return [pscustomobject]@{ Ok = $false; Output = 'SkipPull'; StepOk = $false }
     }
-    $result.failedStep = 'Pull'
-    $result.error = $pull.Output
-    Write-Result 1
+    return Invoke-GitStep $StepName 'pull --ff-only'
 }
 
-Invoke-PullWithRecovery | Out-Null
+function Test-BehindGatePass {
+    Update-AheadBehind
+    return ($result.behindCount -eq 0)
+}
+
+$pull = Invoke-PullOnce 'pull'
+if (-not (Test-BehindGatePass)) {
+    $retry = Invoke-GitStep 'fetch-retry' 'fetch'
+    if (-not $retry.Ok) {
+        Fail-Step 'Fetch' $(if ($retry.Output) { $retry.Output } else { 'git fetch retry failed' })
+    }
+    $pull = Invoke-PullOnce 'pull-retry'
+    if (-not (Test-BehindGatePass)) {
+        $why = if ($SkipPull) {
+            "still behind $($result.behindCount) (pull skipped)"
+        } elseif ($pull.Output) {
+            "still behind $($result.behindCount): $($pull.Output)"
+        } else {
+            "still behind $($result.behindCount) after pull --ff-only"
+        }
+        Fail-Step 'Pull' $why
+    }
+}
+Add-Step 'pull-gate' $true "behind=$($result.behindCount) ahead=$($result.aheadCount)"
 
 if ($result.didStash) {
-    $pop = Invoke-GitStep 'stash-pop' 'stash pop' -AllowStashPartialOk
-    if (-not $pop.StepOk) {
-        $result.stashPopWarning = $true
-        Add-Step 'stash-pop-warning' $false $pop.Output
+    $top = Invoke-GitRaw 'stash list -1'
+    if (-not $top.Ok -or ($top.StdOut -notmatch [regex]::Escape($stashMsg))) {
+        Fail-Step 'StashPop' "expected stash@{0} to be ours before pop: $($top.StdOut)"
     }
+    $pop = Invoke-GitStep 'stash-pop' 'stash pop stash@{0}'
+    if (-not $pop.Ok) {
+        Fail-Step 'StashPop' $(if ($pop.Output) { $pop.Output } else { 'git stash pop failed' })
+    }
+    $stashListAfterPop = Get-StashListText
+    if ($stashListAfterPop -match [regex]::Escape($stashMsg)) {
+        Fail-Step 'StashPop' "stash message still present after pop: $stashMsg"
+    }
+    Add-Step 'stash-pop-gate' $true 'stash restored'
 }
 
 $result.ok = $true

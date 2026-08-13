@@ -572,7 +572,8 @@ Editor_PickGitRootByBasename(candidates, basename) {
         return ""
     baseLow := StrLower(basename)
     for p in candidates {
-        SplitPath p, , , &dirName
+        folder := RTrim(p, "\")
+        SplitPath folder, &dirName
         if (StrLower(dirName) = baseLow) {
             top := GitCli_RevParseTopLevel(p)
             if top
@@ -623,8 +624,12 @@ Editor_ParseGitScriptJson(raw) {
         "ok", false,
         "failedStep", "",
         "error", "",
-        "stashPopWarning", false
+        "stashPopWarning", false,
+        "didStash", false,
+        "behindCount", -1
     )
+    if (raw = "")
+        return result
     if RegExMatch(raw, '"ok"\s*:\s*(true|false)', &m)
         result["ok"] := (m[1] = "true")
     if RegExMatch(raw, '"failedStep"\s*:\s*"([^"]*)"', &m)
@@ -633,6 +638,10 @@ Editor_ParseGitScriptJson(raw) {
         result["error"] := Editor_UnescapeJsonString(m[1])
     if RegExMatch(raw, '"stashPopWarning"\s*:\s*(true|false)', &m)
         result["stashPopWarning"] := (m[1] = "true")
+    if RegExMatch(raw, '"didStash"\s*:\s*(true|false)', &m)
+        result["didStash"] := (m[1] = "true")
+    if RegExMatch(raw, '"behindCount"\s*:\s*(-?\d+)', &m)
+        result["behindCount"] := Integer(m[1])
     return result
 }
 
@@ -643,12 +652,31 @@ Editor_TruncateGitError(msg, maxLen := 180) {
     return SubStr(msg, 1, maxLen - 3) "..."
 }
 
+Editor_ReadGitScriptResultFile(resultPath) {
+    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false, "didStash", false,
+        "behindCount", -1)
+    try {
+        if !FileExist(resultPath)
+            return result
+        raw := FileRead(resultPath, "UTF-8")
+        try FileDelete(resultPath)
+        if (raw != "") {
+            parsed := Editor_ParseGitScriptJson(raw)
+            if parsed
+                return parsed
+        }
+    } catch {
+    }
+    return result
+}
+
 Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
     global EDITOR_GIT_CLI_TIMEOUT_MS
     if !timeoutMs
         timeoutMs := EDITOR_GIT_CLI_TIMEOUT_MS
     ps1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
-    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false)
+    result := Map("ok", false, "failedStep", "Git", "error", "", "stashPopWarning", false, "didStash", false,
+        "behindCount", -1)
     if !FileExist(ps1) {
         result["failedStep"] := "Script"
         result["error"] := "Editor-GitStashFetchPull.ps1 not found"
@@ -656,28 +684,61 @@ Editor_RunGitStashFetchPullScript(repoDir, timeoutMs := 0) {
     }
     resultPath := A_Temp "\editor-git-" A_TickCount ".json"
     timeoutSec := Max(30, Round(timeoutMs / 1000))
-    ; Direct RunWait avoids RunWaitWithTimeout cmd.exe nesting breaking paths with spaces (-196608).
+    ; Run powershell.exe directly (no cmd.exe) so repo paths with spaces stay intact.
     cmd := Format(
         'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{1}" -RepoDir "{2}" -ResultPath "{3}" -TimeoutSec {4}',
         ps1, repoDir, resultPath, timeoutSec)
-    exitCode := RunWait(cmd, repoDir, "Hide")
-    try {
-        if FileExist(resultPath) {
-            raw := FileRead(resultPath, "UTF-8")
-            FileDelete(resultPath)
-            if (raw != "") {
-                parsed := Editor_ParseGitScriptJson(raw)
-                if parsed
-                    return parsed
-            }
-        }
-    } catch {
+    pid := 0
+    try pid := Run(cmd, repoDir, "Hide")
+    catch {
+        result["error"] := "failed to start git script"
+        return result
     }
-    if (exitCode = 124)
+    if !pid {
+        result["error"] := "failed to start git script"
+        return result
+    }
+    outerSec := Max(timeoutSec, timeoutSec * 5)
+    stillRunning := ProcessWaitClose(pid, outerSec)
+    if stillRunning {
+        try ProcessClose(pid)
         result["error"] := "timed out"
-    else if (exitCode != 0)
-        result["error"] := "git script exit " exitCode
+        parsed := Editor_ReadGitScriptResultFile(resultPath)
+        if parsed.Has("failedStep") && parsed["failedStep"] != ""
+            return parsed
+        return result
+    }
+    parsed := Editor_ReadGitScriptResultFile(resultPath)
+    if parsed.Has("ok") || parsed.Has("error")
+        return parsed
+    result["error"] := "git script produced no result"
     return result
+}
+
+Editor_GitQualityGatesPass(repoDir, result, &failStep, &failReason) {
+    failStep := "Git"
+    failReason := "quality gate failed"
+    if !IsObject(result) {
+        failReason := "missing git result"
+        return false
+    }
+    if result.Has("stashPopWarning") && result["stashPopWarning"] {
+        failStep := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "StashPop"
+        failReason := result.Has("error") && result["error"] != "" ? result["error"] : "stash was not restored"
+        return false
+    }
+    if !result.Has("ok") || !result["ok"] {
+        failStep := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "Git"
+        failReason := result.Has("error") && result["error"] != "" ? result["error"] : "unknown error"
+        return false
+    }
+    behind := GitCli_BehindUpstreamCount(repoDir)
+    if (behind != 0) {
+        failStep := "Pull"
+        failReason := behind < 0 ? "could not verify upstream behind-count" : ("still behind " behind)
+        return false
+    }
+    return true
 }
 
 Editor_GitStashAndPull() {
@@ -698,14 +759,12 @@ Editor_GitStashAndPull() {
         centerOnHwnd: hwnd })
     try StandardLoadingBar_Update("⏳ Running git in " repoDir, BANNER_ACCENT_INTERMEDIATE)
     result := Editor_RunGitStashFetchPullScript(repoDir, EDITOR_GIT_CLI_TIMEOUT_MS)
-    if !result["ok"] {
-        step := result.Has("failedStep") && result["failedStep"] != "" ? result["failedStep"] : "Git"
-        err := result.Has("error") ? Editor_TruncateGitError(result["error"]) : "unknown error"
-        Editor_GitFlowFail(step, err)
+    failStep := "Git"
+    failReason := ""
+    if !Editor_GitQualityGatesPass(repoDir, result, &failStep, &failReason) {
+        Editor_GitFlowFail(failStep, Editor_TruncateGitError(failReason))
         return
     }
-    if result.Has("stashPopWarning") && result["stashPopWarning"]
-        try ShowCenteredOverlay_Utils("ℹ Stashed changes remain on stack", 2200, BANNER_ACCENT_INFO)
     StandardLoadingBar_Update("✅ Pull complete", BANNER_ACCENT_SUCCESS)
     try {
         soundPath := A_ScriptDir "\assets\sounds\pull-successful.wav"
