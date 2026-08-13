@@ -1,49 +1,142 @@
 ; =============================================================================
 ; Utils module: project_data_cursor.ahk
-; Project data for Cursor window focus selector
-; Extracted verbatim from Utils.ahk; loaded via #include into the
-; Utils.ahk orchestrator / shared library entry point.
-; =============================================================================
-
-; =============================================================================
-; Project Data (for Cursor Window Focus Selector)
-; Ported from WindowManagement.ahk to ensure consistent key mapping
+; Shared project registry for WindowManagement / Utils / Shift keys.
+; Persistent store: assets/data/projects.ini
 ; =============================================================================
 
 ; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
 global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
-; Category display order (General first, Personal second, Work last)
-global g_ProjectCategories := ["General", "Personal", "Work"]
+global g_Projects := []
+global g_ProjectDataCacheReady := false
+global g_ProjectDataCacheMtime := ""
 
-; Global project list - must match WindowManagement.ahk for consistent key mapping
-; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
-global g_Projects := [
-    ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General" }, { name: "14-my-notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
-            category: "General" }, { name: "", path: "", workPath: "", category: "General" }, { name: "", path: "",
-                workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
-                ; Personal category
-                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal" }, { name: "AI Experiment",
-                    path: "C:\Users\eduev\Meu Drive\04 - Pós-graduação\01 - Mestrado\26-ai-experiment", workPath: "",
-                    category: "Personal" }, { name: "my-personal-repo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
-                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
-                        category: "Personal" }, { name: "",
-                            path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
-                                category: "Personal" },
-                            ; Work category
-                            { name: "dashboard-model-research", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder\dashboard-model-research",
-                                category: "Work" }, { name: "GS_UX core team_UX and CIP Integration", path: "",
-                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                    category: "Work" }, { name: "🪂 Avante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
-                                        category: "Work" }, { name: "Piloto PT B2B", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
-                                            category: "Work" }, { name: "Python ScripTs", path: "C:\Users\eduev\Meu Drive\17 - Projects\My-Python-Scripts",
-                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
-                                                category: "Work", char: "t" }, { name: "",
-                                                    path: "", workPath: "", category: "Work" }
-]
+ProjectData_IniPath() {
+    return A_ScriptDir "\assets\data\projects.ini"
+}
+
+ProjectData_IsValidChar(char) {
+    global g_ProjectCharSequence
+    if (char = "" || !IsObject(g_ProjectCharSequence))
+        return false
+    for c in g_ProjectCharSequence {
+        if (c = char)
+            return true
+    }
+    return false
+}
+
+ProjectData_NormalizeIniValue(val) {
+    if (val = "" || val = "ERROR")
+        return ""
+    return val
+}
+
+ProjectData_Invalidate() {
+    global g_Projects, g_ProjectDataCacheReady, g_ProjectDataCacheMtime
+    g_Projects := []
+    g_ProjectDataCacheReady := false
+    g_ProjectDataCacheMtime := ""
+}
+
+ProjectData_FileMtime() {
+    path := ProjectData_IniPath()
+    if (!FileExist(path))
+        return ""
+    mtime := ""
+    try mtime := FileGetTime(path, "M")
+    catch {
+        mtime := ""
+    }
+    return mtime
+}
+
+; Load projects from INI. Reloads when the file mtime changes (or force=true).
+ProjectData_Load(force := false) {
+    global g_Projects, g_ProjectDataCacheReady, g_ProjectDataCacheMtime
+    mtime := ProjectData_FileMtime()
+    if (!force && g_ProjectDataCacheReady && mtime = g_ProjectDataCacheMtime)
+        return g_Projects
+
+    list := []
+    taken := Map()
+    path := ProjectData_IniPath()
+    if (FileExist(path)) {
+        idx := 1
+        loop 200 {
+            section := "Project_" . idx
+            name := ""
+            try name := IniRead(path, section, "Name", "")
+            catch {
+                break
+            }
+            if (name = "ERROR")
+                break
+            charVal := ""
+            pathVal := ""
+            workPath := ""
+            try charVal := IniRead(path, section, "Char", "")
+            try pathVal := IniRead(path, section, "Path", "")
+            try workPath := IniRead(path, section, "WorkPath", "")
+            name := ProjectData_NormalizeIniValue(name)
+            charVal := StrLower(ProjectData_NormalizeIniValue(charVal))
+            pathVal := ProjectData_NormalizeIniValue(pathVal)
+            workPath := ProjectData_NormalizeIniValue(workPath)
+            if (name = "" && pathVal = "" && workPath = "") {
+                idx += 1
+                continue
+            }
+            if (!ProjectData_IsValidChar(charVal) || taken.Has(charVal))
+                charVal := ""
+            if (charVal != "")
+                taken[charVal] := true
+            list.Push({ name: name, char: charVal, path: pathVal, workPath: workPath })
+            idx += 1
+        }
+    }
+
+    g_Projects := list
+    g_ProjectDataCacheReady := true
+    g_ProjectDataCacheMtime := mtime
+    return g_Projects
+}
+
+; Rewrite INI as contiguous [Project_1]…[Project_N] and refresh the in-process cache.
+ProjectData_Save(list) {
+    global g_Projects, g_ProjectDataCacheReady, g_ProjectDataCacheMtime
+    path := ProjectData_IniPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    try FileDelete(path)
+    catch {
+    }
+    if (!IsObject(list) || list.Length = 0) {
+        g_Projects := []
+        g_ProjectDataCacheReady := true
+        g_ProjectDataCacheMtime := ProjectData_FileMtime()
+        return true
+    }
+    try {
+        idx := 1
+        for project in list {
+            section := "Project_" . idx
+            IniWrite(project.HasProp("name") ? project.name : "", path, section, "Name")
+            IniWrite(project.HasProp("char") ? project.char : "", path, section, "Char")
+            IniWrite(project.HasProp("path") ? project.path : "", path, section, "Path")
+            IniWrite(project.HasProp("workPath") ? project.workPath : "", path, section, "WorkPath")
+            idx += 1
+        }
+    } catch {
+        ProjectData_Invalidate()
+        return false
+    }
+    g_Projects := list
+    g_ProjectDataCacheReady := true
+    g_ProjectDataCacheMtime := ProjectData_FileMtime()
+    return true
+}
 
 ; Extract matching segments from project path for window title matching
 ; Cursor window titles have format: "filename - folder-name - Cursor" or "filename - path-segment - Cursor"
@@ -71,3 +164,5 @@ ExtractProjectMatchSegments(projectPath) {
 
     return matchSegments
 }
+
+ProjectData_Load()

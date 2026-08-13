@@ -97,40 +97,21 @@ CursorTransfer_GetProjectOrderForTitle(winTitle) {
 
 ; Build canonical project-index -> character mapping (same logic as standard project selector).
 CursorTransfer_BuildProjectIndexToChar() {
-    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
+    global g_Projects
+    ProjectData_Load()
     projectIndexToChar := Map()
-    projectIndexToCategory := Map()
+    taken := Map()
     loop g_Projects.Length {
         projectIndex := A_Index
         project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-    charIndex := 1
-    for category in g_ProjectCategories {
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category)
-                categoryProjectIndices.Push(projectIndex)
-        }
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-            if (charIndex > g_ProjectCharSequence.Length)
-                break
-            char := g_ProjectCharSequence[charIndex]
-            ; Keep parity with standard selector where 3 is reserved.
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length)
-                    break
-                char := g_ProjectCharSequence[charIndex]
-            }
-            projectIndexToChar[projectIndex] := char
-            charIndex++
+        if (project.name = "" && project.path = "" && project.workPath = "")
+            continue
+        if (!project.HasProp("char") || project.char = "")
+            continue
+        ch := project.char
+        if (ProjectData_IsValidChar(ch) && !taken.Has(ch)) {
+            projectIndexToChar[projectIndex] := ch
+            taken[ch] := true
         }
     }
     return projectIndexToChar
@@ -140,6 +121,7 @@ CursorTransfer_BuildProjectIndexToChar() {
 ; Uses longest matching path segment so "user-scripts" wins over "scripts" when both match.
 CursorTransfer_GetMatchingProjectIndexForTitle(winTitle) {
     global g_Projects
+    ProjectData_Load()
     if (!winTitle || !IsObject(g_Projects))
         return 0
     try {
@@ -202,6 +184,7 @@ CursorTransfer_IsUninformativeCursorTitle(winTitle) {
 ; Longest project path wins when multiple g_Projects paths appear in the same command line.
 CursorTransfer_GetMatchingProjectIndexByCmdLine(cmdLine) {
     global g_Projects
+    ProjectData_Load()
     if (!cmdLine || !IsObject(g_Projects))
         return 0
     cmdLow := StrLower(cmdLine)
@@ -255,6 +238,7 @@ CursorTransfer_GetProcessCommandLine(pid) {
 ; (Same PID often shares one command line - use longest path in cmd for disambiguation.)
 CursorTransfer_GetMatchingProjectIndex(hwnd, winTitle := "") {
     global g_Projects
+    ProjectData_Load()
     if (!IsObject(g_Projects))
         return 0
     pid := 0

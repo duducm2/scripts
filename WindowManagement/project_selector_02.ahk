@@ -12,6 +12,7 @@ HandleSelectionModeProjectSelection(index) {
     if (!g_SelectionModeActive) {
         return
     }
+    ProjectData_Load()
     if (index < 1 || index > g_Projects.Length) {
         return
     }
@@ -48,75 +49,16 @@ CreateSelectionModeProjectHandler(index) {
 
 ; Handler for Selection Mode trigger (L key in project selector)
 HandleSelectionModeTrigger(*) {
-    global g_ProjectSelectorActive, g_SelectionModeActive, g_Projects, g_ProjectCharSequence
-    global g_ProjectCategories, g_SelectionModeHotkeyHandlers, g_ProjectHotkeyHandlers
+    global g_ProjectSelectorActive, g_SelectionModeActive
 
     ; Only process if project selector is active
     if (!g_ProjectSelectorActive) {
         return
     }
 
-    ; Show banner
     ShowNotification_WM("Entering Selection Mode - Select Project")
-
-    ; Set selection mode active flag
     g_SelectionModeActive := true
-
-    ; Disable existing project hotkeys temporarily (but keep special keys like 'c', '3', 'l', Escape)
-    for handler in g_ProjectHotkeyHandlers {
-        try {
-            char := handler.char
-            ; Skip special keys: 'L' (selection mode), 'c' (cursor window), '3' (preview), Escape
-            if (char = "l" || char = "L" || char = "c" || char = "C" || char = "3") {
-                continue
-            }
-            ; Handle special VK codes for comma and period
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                ; Also disable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
-
-    resolved := ProjectSelector_ResolveProjectCharMap()
-    projectIndexToChar := resolved.projectIndexToChar
-
-    ; Clear selection mode handlers array
-    g_SelectionModeHotkeyHandlers := []
-
-    ; Enable hotkeys for selection mode using the same character mapping
-    for projectIndex, char in projectIndexToChar {
-        handler := CreateSelectionModeProjectHandler(projectIndex)
-
-        ; Store handler for cleanup
-        g_SelectionModeHotkeyHandlers.Push({ char: char, handler: handler })
-
-        ; Enable hotkey (handle special VK codes for comma and period)
-        try {
-            if (char = ",") {
-                Hotkey("vkBC", handler, "On")  ; VK code for comma
-            } else if (char = ".") {
-                Hotkey("vkBE", handler, "On")  ; VK code for period
-            } else {
-                Hotkey(char, handler, "On")
-                ; Also enable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), handler, "On")
-                }
-            }
-        } catch {
-            ; Silently ignore if we can't create hotkey
-        }
-    }
+    ProjectSelector_BindModalHotkeys()
 }
 
 ; Cleanup selection mode: disable hotkeys and reset state
@@ -253,7 +195,7 @@ CreateCopyFromGeminiProjectHandler(index) {
 ; Handler for Copy from Gemini mode trigger (K key in project selector)
 HandleCopyFromGeminiModeTrigger(*) {
     global g_ProjectSelectorActive, g_CopyFromGeminiModeActive, g_Projects, g_ProjectCharSequence
-    global g_ProjectCategories, g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers
+    global g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers
 
     ; #region agent log
     _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiModeTrigger", "K pressed", '{"selectorActive":' . (
@@ -495,4 +437,3 @@ HandlePreviewWindowSelection(*) {
         }
     }
 }
-

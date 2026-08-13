@@ -169,7 +169,7 @@ HandleCursorWindowSelectorEscape(*) {
 ; Show Cursor window selector sub-menu GUI
 ShowCursorWindowSelectorSubMenu() {
     global g_CursorWindowSelectorGui, g_CursorWindowMap, g_CursorWindowHotkeyHandlers
-    global g_ProjectCharSequence, g_ProjectSelectorActive, g_Projects, g_ProjectCategories
+    global g_ProjectCharSequence, g_ProjectSelectorActive, g_Projects
     global IS_WORK_ENVIRONMENT
 
     ; Only show if project selector is active
@@ -205,60 +205,9 @@ ShowCursorWindowSelectorSubMenu() {
         return
     }
 
-    ; Build project index to character mapping (same as ShowProjectSelector)
-    projectIndexToChar := Map()
-    projectIndexToCategory := Map()
-
-    ; Build map of project index to category
-    loop g_Projects.Length {
-        projectIndex := A_Index
-        project := g_Projects[projectIndex]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[projectIndex] := category
-    }
-
-    charIndex := 1
-
-    ; Assign characters sequentially within each category (same logic as ShowProjectSelector)
-    for category in g_ProjectCategories {
-        ; Find all project indices in this category
-        categoryProjectIndices := []
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-
-        ; Assign characters to projects in this category
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-
-            ; Check if we have a character available
-            if (charIndex > g_ProjectCharSequence.Length) {
-                break
-            }
-
-            char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - it's reserved for preview window activation
-            if (char = "3") {
-                charIndex++
-                if (charIndex > g_ProjectCharSequence.Length) {
-                    break
-                }
-                char := g_ProjectCharSequence[charIndex]
-            }
-
-            projectIndexToChar[projectIndex] := char
-            charIndex++
-        }
-    }
+    ProjectData_Load()
+    resolved := ProjectSelector_ResolveProjectCharMap()
+    projectIndexToChar := resolved.projectIndexToChar
 
     ; Helper function to check if a window title matches a project path
     WindowMatchesProject(winTitle, projectPath) {
@@ -349,21 +298,12 @@ ShowCursorWindowSelectorSubMenu() {
         ; Find next available character
         while (charIndex <= g_ProjectCharSequence.Length) {
             char := g_ProjectCharSequence[charIndex]
-
-            ; Skip character "3" - reserved for preview windows
-            if (char = "3") {
-                charIndex++
-                continue
-            }
-
-            ; Check if this character is already used
             if (!usedKeys.Has(char)) {
                 window.char := char
                 usedKeys[char] := true
                 charIndex++
                 break
             }
-
             charIndex++
         }
     }
@@ -527,10 +467,10 @@ HandleCursorWindowSelectionTrigger(*) {
     ShowCursorWindowSelectorSubMenu()
 }
 
-; Show project selector GUI
+; Show project selector GUI (ListView: char / Enter / double-click to open; Insert / F2 / Delete to manage)
 ShowProjectSelector() {
-    global g_ProjectSelectorGui, g_ProjectSelectorActive, g_Projects
-    global g_ProjectHotkeyHandlers
+    global g_ProjectSelectorGui, g_ProjectSelectorLv, g_ProjectSelectorActive
+    global g_OnEscapePressed, g_WM_SelectorOpenFile, g_WM_SelectorCloseCheckTimer
 
     ; Close existing GUI if open
     if (g_ProjectSelectorActive && IsObject(g_ProjectSelectorGui)) {
@@ -538,13 +478,9 @@ ShowProjectSelector() {
         Sleep 50
     }
 
-    ; Check if we have projects configured
-    if (g_Projects.Length = 0) {
-        ShowNotification_WM("No projects configured.")
-        return
-    }
+    ProjectData_Load()
 
-    ; Get monitor dimensions early for responsive sizing
+    ; Get monitor dimensions for centering
     activeWin := 0
     try {
         activeWin := WinGetID("A")
@@ -552,25 +488,19 @@ ShowProjectSelector() {
         activeWin := 0
     }
 
-    ; Default to primary monitor work area
     MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
 
-    ; If we have an active window, find which monitor contains its center
     if (activeWin && activeWin != 0) {
         rect := Buffer(16, 0)
         if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            ; Calculate window center
             winLeft := NumGet(rect, 0, "int")
             winTop := NumGet(rect, 4, "int")
             winRight := NumGet(rect, 8, "int")
             winBottom := NumGet(rect, 12, "int")
-
             centerX := winLeft + (winRight - winLeft) // 2
             centerY := winTop + (winBottom - winTop) // 2
-
-            ; Find which monitor contains the window center
             monitorCount := MonitorGetCount()
             loop monitorCount {
                 idx := A_Index
@@ -588,133 +518,36 @@ ShowProjectSelector() {
         }
     }
 
-    ; Create GUI - non-activating so it doesn't steal focus (match Hotstring U aesthetics)
-    g_ProjectSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x08000000", "Project Selector")
-    ; Use a distinct dark theme background (slightly bluish gray for contrast)
-    g_ProjectSelectorGui.BackColor := "BF092F"
-    g_ProjectSelectorGui.MarginX := 14
-    g_ProjectSelectorGui.MarginY := 10
-    fontSize := (monitorHeight < 800) ? 9 : 9
-    g_ProjectSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
+    ; Avoid local name "gui" — conflicts with a global `gui` in the loaded script set (AHK v2).
+    g_ProjectSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Project Selector")
+    g_ProjectSelectorGui.SetFont("s10", "Segoe UI")
+    g_ProjectSelectorGui.Add("Text", "w820",
+        "Char = open   Enter/double-click = open   Insert = add   F2 = rename   Delete = remove   Esc = close")
+    g_ProjectSelectorLv := g_ProjectSelectorGui.Add("ListView", "w820 h420 -Multi", ["Char", "Name", "Path", "WorkPath"])
+    g_ProjectSelectorLv.OnEvent("DoubleClick", ProjectSelector_OnListActivate)
+    g_ProjectSelectorGui.Add("Button", "w100 Section", "Add").OnEvent("Click", ProjectSelector_OnAdd)
+    g_ProjectSelectorGui.Add("Button", "w100 ys", "Edit name").OnEvent("Click", ProjectSelector_OnEdit)
+    g_ProjectSelectorGui.Add("Button", "w100 ys", "Delete").OnEvent("Click", ProjectSelector_OnDelete)
+    g_ProjectSelectorGui.Add("Button", "w100 ys", "Close").OnEvent("Click", HandleProjectEscape)
+    g_ProjectSelectorGui.OnEvent("Close", HandleProjectEscape)
+    g_ProjectSelectorGui.OnEvent("Escape", HandleProjectEscape)
 
-    ; Get categorized projects
-    categorized := GetCategorizedProjects()
+    ProjectSelector_PopulateLv()
 
-    resolved := ProjectSelector_ResolveProjectCharMap()
-    projectIndexToChar := resolved.projectIndexToChar
-    projectIndexToCategory := resolved.projectIndexToCategory
+    guiW := 850
+    guiH := 520
+    guiX := monitorLeft + (monitorWidth - guiW) // 2
+    guiY := monitorTop + (monitorHeight - guiH) // 2
+    if (guiX < monitorLeft + 20)
+        guiX := monitorLeft + 20
+    if (guiY < monitorTop + 20)
+        guiY := monitorTop + 20
 
-    ; Build display text with category headers (match Hotstring U: single-line "— Category —")
-    ; Also build RichEdit lines so we can emphasize mnemonic letters in both [key] and title.
-    displayText := ""
-    richLines := []
-
-    ; Display each category with header
-    for category in g_ProjectCategories {
-        ; Find all project indices in this category that have characters assigned
-        categoryProjectIndices := []
-        for projectIndex, char in projectIndexToChar {
-            if (projectIndexToCategory.Has(projectIndex) && projectIndexToCategory[projectIndex] = category) {
-                categoryProjectIndices.Push(projectIndex)
-            }
-        }
-
-        ; Skip if no projects in this category
-        if (categoryProjectIndices.Length = 0) {
-            continue
-        }
-
-        ; Add category header (compact single line)
-        displayText .= "— " . category . " —`n"
-        richLines.Push({ text: "— " . category . " —" })
-
-        ; Display projects in this category
-        for projectIndex in categoryProjectIndices {
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders (shouldn't happen, but safety check)
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                continue
-            }
-
-            ; Get assigned character
-            if (projectIndexToChar.Has(projectIndex)) {
-                char := projectIndexToChar[projectIndex]
-                displayText .= "[" . char . "] " . project.name . "`n"
-                richLines.Push({ text: "[" . char . "] " . project.name, key: char })
-            }
-        }
-
-        displayText .= "`n"  ; Space between categories
-        richLines.Push({ text: "" })
+    g_ProjectSelectorGui.Show("x" . guiX . " y" . guiY)
+    try g_ProjectSelectorLv.Focus()
+    catch {
     }
 
-    ; Commands section so [c], [3], [L], [K], [ESC] are always visible and grouped
-    displayText .= "— Commands —`n"
-    displayText .= "[c] Focus Cursor Window`n"
-    displayText .= "[3] Activate Preview Windows`n"
-    displayText .= "[L] Selection Mode`n"
-    displayText .= "[K] Copy from Gemini`n"
-    displayText .= "[ESC] Close"
-
-    richLines.Push({ text: "— Commands —" })
-    richLines.Push({ text: "[c] Focus Cursor Window", key: "c" })
-    richLines.Push({ text: "[3] Activate Preview Windows", key: "3" })
-    richLines.Push({ text: "[L] Selection Mode", key: "L" })
-    richLines.Push({ text: "[K] Copy from Gemini", key: "K" })
-    richLines.Push({ text: "[ESC] Close", key: "E" })
-
-    ; Calculate text dimensions: use 18px per line so Edit control fits all lines without scroll (14px was too small for font)
-    baseWidth := 400
-    textControlWidth := baseWidth - 20
-    lineCount := StrSplit(displayText, "`n").Length
-    lineHeight := 18
-    textControlHeight := lineCount * lineHeight
-    minHeight := 150
-    ; No maxHeight cap so all content (projects + Commands) is visible without scroll
-    if (textControlHeight < minHeight)
-        textControlHeight := minHeight
-
-    ; Title and separator (compact, match U)
-    g_ProjectSelectorGui.SetFont("s11 cCDD6F4 Bold", "Segoe UI")
-    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Project Selector")
-    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " h1 Background45475A")
-    g_ProjectSelectorGui.SetFont("s" . fontSize . " cCDD6F4", "Segoe UI")
-
-    ; Content: scrollable RichEdit (so mnemonic letter can be larger)
-    MnemonicRich_EnsureDll()
-    richCtrl := g_ProjectSelectorGui.Add("Custom",
-        "ClassRichEdit50W w" . textControlWidth . " h" . textControlHeight
-        . " +0x44 -E0x200 +VScroll -HScroll -Border Background1E1E2E")
-    try MnemonicRich_Render(richCtrl, richLines, fontSize, 6, "Segoe UI", "CDD6F4", "1E1E2E")
-
-    ; Footer hint (match U)
-    g_ProjectSelectorGui.SetFont("s9 c89B4FA", "Segoe UI")
-    g_ProjectSelectorGui.Add("Text", "w" . textControlWidth . " Center", "Press Escape to close.")
-
-    ; Total height: margins + title + separator + gap + content + hint + spacing (no button, match U)
-    totalHeight := 10 + 20 + 1 + 4 + textControlHeight + 6 + 18 + 10
-
-    ; Calculate center position for the GUI
-    marginX := 20
-    marginY := 20
-    guiX := monitorLeft + (monitorWidth - baseWidth) // 2
-    guiY := monitorTop + (monitorHeight - totalHeight) // 2
-
-    ; Ensure the GUI stays within monitor bounds
-    if (guiX < monitorLeft + marginX)
-        guiX := monitorLeft + marginX
-    if (guiY < monitorTop + marginY)
-        guiY := monitorTop + marginY
-    if (guiX + baseWidth > monitorLeft + monitorWidth - marginX)
-        guiX := monitorLeft + monitorWidth - baseWidth - marginX
-    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
-        guiY := monitorTop + monitorHeight - totalHeight - marginY
-
-    ; Show GUI centered on the active window's monitor
-    g_ProjectSelectorGui.Show("NA w" . baseWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
-
-    ; Set active flag and register Escape with Utils so Escape closes the selector (same process); file sentinel for cross-process Escape from Shift keys
     g_ProjectSelectorActive := true
     g_OnEscapePressed := HandleProjectEscape
     try {
@@ -724,72 +557,7 @@ ShowProjectSelector() {
     }
     g_WM_SelectorCloseCheckTimer := SetTimer(WM_CheckSelectorCloseRequest, 120)
 
-    ; Clear handlers array
-    g_ProjectHotkeyHandlers := []
-
-    ; Enable hotkeys using the same character mapping as display
-    for projectIndex, char in projectIndexToChar {
-        handler := CreateProjectHandler(projectIndex)
-
-        ; Store handler for cleanup
-        g_ProjectHotkeyHandlers.Push({ char: char, handler: handler })
-
-        ; Enable hotkey (handle special VK codes for comma and period)
-        try {
-            if (char = ",") {
-                Hotkey("vkBC", handler, "On")  ; VK code for comma
-            } else if (char = ".") {
-                Hotkey("vkBE", handler, "On")  ; VK code for period
-            } else {
-                Hotkey(char, handler, "On")
-                ; Also enable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), handler, "On")
-                }
-            }
-        } catch {
-            ; Silently ignore if we can't create hotkey
-        }
-    }
-
-    ; Enable hotkey for Cursor window selection (character "c")
-    try {
-        cursorWindowHandler := HandleCursorWindowSelectionTrigger
-        g_ProjectHotkeyHandlers.Push({ char: "c", handler: cursorWindowHandler })
-        Hotkey("c", cursorWindowHandler, "On")
-        Hotkey("C", cursorWindowHandler, "On")  ; Also enable uppercase
-    } catch {
-        ; Silently ignore if we can't create hotkey
-    }
-
-    ; Enable hotkey for preview window activation (character "3")
-    try {
-        previewHandler := HandlePreviewWindowSelection
-        g_ProjectHotkeyHandlers.Push({ char: "3", handler: previewHandler })
-        Hotkey("3", previewHandler, "On")
-    } catch {
-        ; Silently ignore if we can't create hotkey
-    }
-
-    ; Enable hotkey for Selection Mode (character "L")
-    try {
-        selectionModeHandler := HandleSelectionModeTrigger
-        g_ProjectHotkeyHandlers.Push({ char: "l", handler: selectionModeHandler })
-        Hotkey("l", selectionModeHandler, "On")
-        Hotkey("L", selectionModeHandler, "On")
-    } catch {
-    }
-
-    ; Enable hotkey for Copy from Gemini mode (character "K")
-    try {
-        copyFromGeminiHandler := HandleCopyFromGeminiModeTrigger
-        g_ProjectHotkeyHandlers.Push({ char: "k", handler: copyFromGeminiHandler })
-        Hotkey("k", copyFromGeminiHandler, "On")
-        Hotkey("K", copyFromGeminiHandler, "On")
-    } catch {
-    }
-
-    SetTimer(ProjectSelector_AutoCloseIfIdle, -3000)
+    ProjectSelector_BindModalHotkeys()
 }
 ; Ctrl+Alt+Win+0: Project Quick Selector (toggle: close if open, open if closed)
 ^!#0:: {

@@ -8,149 +8,42 @@
 ; =============================================================================
 ; Project Quick Selector
 ; Hotkey: Ctrl+Alt+Win+0 (see WindowManagement\cursor_window_select.ahk)
-; Displays a numbered list of projects and opens the selected folder in Cursor.
+; ListView of projects (char, name, paths) with add/edit/delete; opens the selected folder.
 ; =============================================================================
 
-; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
-global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
-    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
-
-; Category display order (General first, Personal second, Work last)
-global g_ProjectCategories := ["General", "Personal", "Work"]
+; Project list lives in assets/data/projects.ini (loaded by Utils\project_data_cursor.ahk).
 
 ProjectSelector_IsValidChar(char) {
-    global g_ProjectCharSequence
-    if (char = "" || !IsObject(g_ProjectCharSequence))
-        return false
-    for c in g_ProjectCharSequence {
-        if (c = char)
-            return true
-    }
-    return false
+    return ProjectData_IsValidChar(char)
 }
 
+; Map each project to its stored unique char. No category grouping or auto-fill.
 ProjectSelector_ResolveProjectCharMap() {
-    global g_Projects, g_ProjectCategories, g_ProjectCharSequence
+    global g_Projects
+    ProjectData_Load()
     projectIndexToChar := Map()
     taken := Map()
-
-    projectIndexToCategory := Map()
     loop g_Projects.Length {
         idx := A_Index
         project := g_Projects[idx]
-        category := project.HasProp("category") ? project.category : "Personal"
-        projectIndexToCategory[idx] := category
-    }
-
-    ; Pass 1: explicit hotkeys
-    for category in g_ProjectCategories {
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat != category)
-                continue
-            project := g_Projects[projectIndex]
-            if (project.name = "" && project.path = "" && project.workPath = "")
-                continue
-            if (project.HasProp("char") && project.char != "") {
-                ch := project.char
-                if (ch = "3")
-                    continue
-                if (ProjectSelector_IsValidChar(ch) && !taken.Has(ch)) {
-                    projectIndexToChar[projectIndex] := ch
-                    taken[ch] := true
-                }
-            }
+        if (project.name = "" && project.path = "" && project.workPath = "")
+            continue
+        if (!project.HasProp("char") || project.char = "")
+            continue
+        ch := project.char
+        if (ProjectSelector_IsValidChar(ch) && !taken.Has(ch)) {
+            projectIndexToChar[idx] := ch
+            taken[ch] := true
         }
     }
-
-    ; Pass 2: sequential assignment for remaining projects
-    charIndex := 1
-    for category in g_ProjectCategories {
-        for projectIndex, cat in projectIndexToCategory {
-            if (cat != category)
-                continue
-            if (projectIndexToChar.Has(projectIndex))
-                continue
-            project := g_Projects[projectIndex]
-
-            ; Skip empty placeholders but keep charIndex aligned with placeholders
-            if (project.name = "" && project.path = "" && project.workPath = "") {
-                charIndex++
-                continue
-            }
-
-            while (charIndex <= g_ProjectCharSequence.Length) {
-                ch := g_ProjectCharSequence[charIndex]
-                charIndex++
-                if (ch = "3")
-                    continue
-                if (taken.Has(ch))
-                    continue
-                projectIndexToChar[projectIndex] := ch
-                taken[ch] := true
-                break
-            }
-        }
-    }
-
-    return { projectIndexToChar: projectIndexToChar, projectIndexToCategory: projectIndexToCategory }
+    return { projectIndexToChar: projectIndexToChar }
 }
 
-; Global project list - add your projects here
-; Each project should have: name, path, workPath, and category ("General", "Personal", or "Work")
-global g_Projects := [
-    ; General category
-    { name: "Scripts", path: "C:\Users\eduev\Meu Drive\17 - Projects\scripts", workPath: "C:\Users\fie7ca\Documents\scripts",
-        category: "General", char: "s" }, { name: "14-my-Notes", path: "C:\Users\eduev\Meu Drive\17 - Projects\notes",
-            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes",
-            category: "General", char: "n" }, { name: "", path: "", workPath: "", category: "General" }, { name: "",
-                path: "",
-                workPath: "", category: "General" }, { name: "", path: "", workPath: "", category: "General" },
-                ; Personal category
-                { name: "ZMK Sofle", path: "C:\Users\eduev\Documents\ZMK\zmk-sofle", workPath: "", category: "Personal",
-                    char: "z" }, { name: "AI ExperIment",
-                        path: "C:\Users\eduev\Documents\Web projects\ai-experiments", workPath: "",
-                        category: "Personal", char: "i" }, { name: "my-personal-rePo", path: "C:\Users\eduev\Meu Drive\17 - Projects\my-personal-repo",
-                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\my-personal-repo",
-                            category: "Personal", char: "p" }, { name: "",
-                                path: "", workPath: "", category: "Personal" }, { name: "", path: "", workPath: "",
-                                    category: "Personal" },
-                                ; Work category
-                                { name: "GS_E&S_CIP Dashboard research and design workspace folder", path: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_E&S_CIP Dashboard research and design workspace folder",
-                                    category: "Work", char: "d" }, { name: "GS_UX core team_UX and CIP Integration",
-                                        path: "",
-                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\GS_UX core team_UX and CIP Integration",
-                                        category: "Work", char: "u" }, { name: "🪂 A vante", path: "", workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante",
-                                            category: "Work", char: "v" }, { name: "🪂 Avante – CapacitY", path: "",
-                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\General - GS_BDU_Team\00_UX_GS_Team\AM_Planning\Avante\Capacity",
-                                                category: "Work", char: "y" }, { name: "E&S Opex CIM Journey Mapping",
-                                                    path: "",
-                                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\opex-cim-journey-mapping",
-                                                    category: "Work", char: "o" }, { name: "boiler-plate", path: "",
-                                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\13 - General workspace\boiler-plate",
-                                                        category: "Work", char: "0" }, { name: "astra", path: "",
-                                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Projeto Astra",
-                                                            category: "Work", char: "a" }, { name: "Piloto PT B2B",
-                                                                path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
-                                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B",
-                                                                category: "Work", char: "b" }, { name: "Python ScripTs",
-                                                                    path: "C:\Users\eduev\Meu Drive\17 - Projects\My-Python-Scripts",
-                                                                    workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\17 - Python Scripts",
-                                                                    category: "Work", char: "t" }, { name: "BPM",
-                                                                        path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM",
-                                                                        workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM",
-                                                                        category: "Work", char: "m" }, { name: "SRS",
-                                                                            path: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - SNB BSTP",
-                                                                            workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - SNB BSTP",
-                                                                            category: "Work", char: "r" }, { name: "RISE",
-                                                                                path: "",
-                                                                                workPath: "C:\Users\fie7ca\OneDrive - Bosch Group\SO_BDO-DT-LA-Governança - Programa RISE",
-                                                                                category: "Work", char: "g" }
-]
-; TODO: Fill in workPath for each project above when configuring work environment
 ; Global variables for project selector
 global g_ProjectSelectorGui := false
+global g_ProjectSelectorLv := false
 global g_ProjectSelectorActive := false
+global g_ProjectSelectorHotkeysBound := false
 global g_ProjectHotkeyHandlers := []  ; Store hotkey handlers for cleanup
 
 ; Global variables for Cursor window selector (used within project selector)
@@ -279,40 +172,348 @@ ActivateCursorProject(projectPath) {
     return false
 }
 
-; Get categorized projects for display
-GetCategorizedProjects() {
-    global g_Projects
-    categorized := Map()
-    categorized["General"] := []
-    categorized["Personal"] := []
-    categorized["Work"] := []
+ProjectSelector_HotkeyName(char) {
+    if (char = ",")
+        return "vkBC"
+    if (char = ".")
+        return "vkBE"
+    return char
+}
 
-    if (!IsSet(g_Projects) || g_Projects.Length = 0) {
-        return categorized
+ProjectSelector_UnbindModalHotkeys() {
+    global g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_ProjectSelectorHotkeysBound
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
     }
-
-    for project in g_Projects {
-        category := project.HasProp("category") ? project.category : "Personal"
-        if (category = "General" || category = "Personal" || category = "Work") {
-            categorized[category].Push(project)
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
         }
     }
-
-    return categorized
+    for handler in g_ProjectHotkeyHandlers {
+        try Hotkey(handler.key, "Off")
+        catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
+        }
+    }
+    g_ProjectHotkeyHandlers := []
+    g_ProjectSelectorHotkeysBound := false
 }
-; One-shot: close project selector if still open (no project/command chosen in time)
-ProjectSelector_AutoCloseIfIdle() {
-    global g_ProjectSelectorActive
-    if (g_ProjectSelectorActive)
-        CleanupProjectSelector()
+
+ProjectSelector_BindOneChar(char, handler) {
+    global g_ProjectHotkeyHandlers
+    key := ProjectSelector_HotkeyName(char)
+    try {
+        Hotkey(key, handler, "On")
+        g_ProjectHotkeyHandlers.Push({ char: char, key: key, handler: handler })
+    } catch {
+    }
+    if (RegExMatch(char, "^[a-z]$")) {
+        upperKey := StrUpper(char)
+        try {
+            Hotkey(upperKey, handler, "On")
+            g_ProjectHotkeyHandlers.Push({ char: char, key: upperKey, handler: handler })
+        } catch {
+        }
+    }
+}
+
+ProjectSelector_BindModalHotkeys() {
+    global g_ProjectSelectorGui, g_ProjectSelectorHotkeysBound, g_SelectionModeActive, g_ProjectHotkeyHandlers
+    ProjectSelector_UnbindModalHotkeys()
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    if (!hwnd)
+        return
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
+    }
+
+    resolved := ProjectSelector_ResolveProjectCharMap()
+    for projectIndex, char in resolved.projectIndexToChar {
+        handler := g_SelectionModeActive
+            ? CreateSelectionModeProjectHandler(projectIndex)
+                : CreateProjectHandler(projectIndex)
+        ProjectSelector_BindOneChar(char, handler)
+    }
+
+    try {
+        Hotkey("Insert", ProjectSelector_OnAdd, "On")
+        g_ProjectHotkeyHandlers.Push({ char: "Insert", key: "Insert", handler: ProjectSelector_OnAdd })
+    } catch {
+    }
+    try {
+        Hotkey("F2", ProjectSelector_OnEdit, "On")
+        g_ProjectHotkeyHandlers.Push({ char: "F2", key: "F2", handler: ProjectSelector_OnEdit })
+    } catch {
+    }
+    try {
+        Hotkey("Delete", ProjectSelector_OnDelete, "On")
+        g_ProjectHotkeyHandlers.Push({ char: "Delete", key: "Delete", handler: ProjectSelector_OnDelete })
+    } catch {
+    }
+    try {
+        Hotkey("Enter", ProjectSelector_OnListActivate, "On")
+        g_ProjectHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: ProjectSelector_OnListActivate })
+    } catch {
+    }
+    try {
+        Hotkey("Escape", HandleProjectEscape, "On")
+        g_ProjectHotkeyHandlers.Push({ char: "Escape", key: "Escape", handler: HandleProjectEscape })
+    } catch {
+    }
+
+    try HotIf()
+    catch {
+    }
+    g_ProjectSelectorHotkeysBound := true
+}
+
+ProjectSelector_PopulateLv() {
+    global g_ProjectSelectorLv, g_Projects
+    if (!IsObject(g_ProjectSelectorLv))
+        return
+    ProjectData_Load()
+    g_ProjectSelectorLv.Delete()
+    for project in g_Projects {
+        ch := project.HasProp("char") ? project.char : ""
+        g_ProjectSelectorLv.Add("", ch, project.name, project.path, project.workPath)
+    }
+    try g_ProjectSelectorLv.ModifyCol(1, 50)
+    try g_ProjectSelectorLv.ModifyCol(2, 220)
+    try g_ProjectSelectorLv.ModifyCol(3, 280)
+    try g_ProjectSelectorLv.ModifyCol(4, 280)
+}
+
+ProjectSelector_SelectedIndex() {
+    global g_ProjectSelectorLv
+    if (!IsObject(g_ProjectSelectorLv))
+        return 0
+    row := 0
+    try row := g_ProjectSelectorLv.GetNext(0)
+    catch {
+        return 0
+    }
+    return row ? Integer(row) : 0
+}
+
+ProjectSelector_RefocusGui() {
+    global g_ProjectSelectorGui, g_ProjectSelectorLv
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            WinActivate("ahk_id " g_ProjectSelectorGui.Hwnd)
+    } catch {
+    }
+    try {
+        if (IsObject(g_ProjectSelectorLv))
+            g_ProjectSelectorLv.Focus()
+    } catch {
+    }
+}
+
+ProjectSelector_AvailableChars(excludeIndex := 0) {
+    global g_Projects, g_ProjectCharSequence
+    ProjectData_Load()
+    taken := Map()
+    loop g_Projects.Length {
+        if (A_Index = excludeIndex)
+            continue
+        project := g_Projects[A_Index]
+        if (project.HasProp("char") && project.char != "")
+            taken[project.char] := true
+    }
+    avail := []
+    for c in g_ProjectCharSequence {
+        if (!taken.Has(c))
+            avail.Push(c)
+    }
+    return avail
+}
+
+ProjectSelector_PromptChar(currentChar := "", excludeIndex := 0) {
+    avail := ProjectSelector_AvailableChars(excludeIndex)
+    if (avail.Length = 0 && (currentChar = "" || !ProjectSelector_IsValidChar(currentChar))) {
+        ShowNotification_WM("No free characters left. Delete a project first.")
+        return ""
+    }
+    hint := ""
+    for c in avail {
+        hint .= (hint = "" ? "" : " ") . c
+    }
+    prompt := "Unique character from the assignment pool."
+    if (hint != "")
+        prompt .= "`nAvailable: " . hint
+    result := InputBox(prompt, "Project character", "w520", currentChar)
+    if (result.Result != "OK")
+        return ""
+    ch := Trim(result.Value)
+    ch := StrLower(ch)
+    if (StrLen(ch) != 1 || !ProjectSelector_IsValidChar(ch)) {
+        ShowNotification_WM("Character must be one of the assignment pool keys.")
+        return ""
+    }
+    for c in avail {
+        if (c = ch)
+            return ch
+    }
+    if (ch = currentChar)
+        return ch
+    ShowNotification_WM("Character '" . ch . "' is already assigned.")
+    return ""
+}
+
+ProjectSelector_OnListActivate(*) {
+    global g_SelectionModeActive
+    idx := ProjectSelector_SelectedIndex()
+    if (idx < 1)
+        return
+    if (g_SelectionModeActive)
+        HandleSelectionModeProjectSelection(idx)
+    else
+        HandleProjectSelection(idx)
+}
+
+ProjectSelector_OnAdd(*) {
+    global g_Projects
+    ProjectData_Load()
+    nameBox := InputBox("Project name:", "Add project", "w420")
+    if (nameBox.Result != "OK") {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        ShowNotification_WM("Name is required.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    ch := ProjectSelector_PromptChar()
+    if (ch = "") {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    personalPath := DirSelect(, 0, "Select personal folder (optional if work path is set)")
+    workPath := DirSelect(, 0, "Select work folder (optional if personal path is set)")
+    if ((personalPath = "" || !DirExist(personalPath)) && (workPath = "" || !DirExist(workPath))) {
+        ShowNotification_WM("At least one existing folder is required.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    list := []
+    for project in g_Projects
+        list.Push(project)
+    list.Push({ name: name, char: ch, path: personalPath, workPath: workPath })
+    if (!ProjectData_Save(list)) {
+        ShowNotification_WM("Failed to save project.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    ProjectSelector_PopulateLv()
+    ProjectSelector_BindModalHotkeys()
+    ProjectSelector_RefocusGui()
+}
+
+ProjectSelector_OnEdit(*) {
+    global g_Projects, g_ProjectSelectorLv
+    idx := ProjectSelector_SelectedIndex()
+    if (idx < 1) {
+        ShowNotification_WM("Select a project to edit.")
+        return
+    }
+    ProjectData_Load()
+    if (idx > g_Projects.Length)
+        return
+    project := g_Projects[idx]
+    nameBox := InputBox("Project name:", "Edit project", "w420", project.name)
+    if (nameBox.Result != "OK") {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        ShowNotification_WM("Name is required.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    currentChar := project.HasProp("char") ? project.char : ""
+    ch := ProjectSelector_PromptChar(currentChar, idx)
+    if (ch = "") {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    list := []
+    loop g_Projects.Length {
+        item := g_Projects[A_Index]
+        if (A_Index = idx)
+            list.Push({ name: name, char: ch, path: item.path, workPath: item.workPath })
+        else
+            list.Push(item)
+    }
+    if (!ProjectData_Save(list)) {
+        ShowNotification_WM("Failed to save project.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    ProjectSelector_PopulateLv()
+    ProjectSelector_BindModalHotkeys()
+    try g_ProjectSelectorLv.Modify(idx, "Select Focus Vis")
+    catch {
+    }
+    ProjectSelector_RefocusGui()
+}
+
+ProjectSelector_OnDelete(*) {
+    global g_Projects
+    idx := ProjectSelector_SelectedIndex()
+    if (idx < 1) {
+        ShowNotification_WM("Select a project to delete.")
+        return
+    }
+    ProjectData_Load()
+    if (idx > g_Projects.Length)
+        return
+    project := g_Projects[idx]
+    label := project.name != "" ? project.name : "(unnamed)"
+    if (MsgBox("Delete project '" . label . "'?`nThis frees its assigned character.",
+        "Delete project", "YesNo Icon! Default2") != "Yes") {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    list := []
+    loop g_Projects.Length {
+        if (A_Index != idx)
+            list.Push(g_Projects[A_Index])
+    }
+    if (!ProjectData_Save(list)) {
+        ShowNotification_WM("Failed to save project list.")
+        ProjectSelector_RefocusGui()
+        return
+    }
+    ProjectSelector_PopulateLv()
+    ProjectSelector_BindModalHotkeys()
+    ProjectSelector_RefocusGui()
 }
 
 ; Cleanup project selector: destroy GUI, disable hotkeys, reset state
 CleanupProjectSelector() {
-    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_SelectionModeActive,
-        g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer
+    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectSelectorLv, g_ProjectHotkeyHandlers,
+        g_SelectionModeActive, g_CopyFromGeminiModeActive, g_WM_SelectorOpenFile,
+        g_WM_SelectorCloseRequestFile, g_WM_SelectorCloseCheckTimer, g_OnEscapePressed
 
-    SetTimer(ProjectSelector_AutoCloseIfIdle, 0)
     g_ProjectSelectorActive := false
     SetTimer(WM_CheckSelectorCloseRequest, 0)
     g_WM_SelectorCloseCheckTimer := ""
@@ -329,32 +530,10 @@ CleanupProjectSelector() {
         CleanupCopyFromGeminiMode()
     }
 
-    ; Disable all character hotkeys
-    for handler in g_ProjectHotkeyHandlers {
-        try {
-            char := handler.char
-            ; Handle special VK codes for comma and period
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                ; Also disable uppercase for lowercase letters
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
-            }
-        } catch {
-            ; Silently ignore errors
-        }
-    }
+    ProjectSelector_UnbindModalHotkeys()
 
     ; Unregister Escape callback so Utils forwards Escape again
     g_OnEscapePressed := ""
-
-    ; Clear handlers array
-    g_ProjectHotkeyHandlers := []
 
     ; Close and destroy GUI
     if (IsObject(g_ProjectSelectorGui)) {
@@ -365,6 +544,7 @@ CleanupProjectSelector() {
         }
         g_ProjectSelectorGui := false
     }
+    g_ProjectSelectorLv := false
 }
 
 ; Return the hwnd of a Cursor window whose title matches the project path, or 0. Does not activate.
@@ -593,6 +773,7 @@ HandleProjectSelection(index) {
     if (!g_ProjectSelectorActive) {
         return
     }
+    ProjectData_Load()
 
     ; Validate index
     if (index < 1 || index > g_Projects.Length) {

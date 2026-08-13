@@ -544,6 +544,9 @@ Editor_DeduplicatePaths(paths) {
 }
 
 Editor_AppendProjectRegistryPaths(&paths) {
+    try ProjectData_Load()
+    catch {
+    }
     if !IsSet(g_Projects) || !IsObject(g_Projects)
         return
     try {
