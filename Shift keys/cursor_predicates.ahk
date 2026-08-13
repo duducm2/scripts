@@ -621,19 +621,46 @@ Editor_OpenNewEditorTerminal(editorHwnd) {
     return (WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
 }
 
-Editor_GitRobotTerminalCommand(repoDir, resultPath) {
+Editor_GitQuotePs(s) {
+    return "'" StrReplace(s, "'", "''") "'"
+}
+
+; Write a real .ps1 so we never SendText doubled {{ }} from AHK Format (that aborted pull).
+Editor_GitWriteRobotScript(repoDir, resultPath) {
     msg := "alt+s-" A_TickCount
-    gitc := "git"
-    if (repoDir != "") {
-        safe := StrReplace(repoDir, "'", "''")
-        gitc := "git -C '" safe "'"
-    }
-    out := StrReplace(resultPath, "'", "''")
-    ; $? after git (not $LASTEXITCODE — that stays $null in some terminals and would mark success as fail).
-    ; Write ok as soon as pull succeeds so the chime does not depend on stash pop.
-    return Format(
-        "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan; {1} stash push -u -m '{2}'; Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan; {1} fetch; if (-not $?) {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; [IO.File]::WriteAllText('{3}', 'fail'); }} else {{ Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan; {1} pull; if (-not $?) {{ Write-Host '=== ROBOT failed ===' -ForegroundColor Red; [IO.File]::WriteAllText('{3}', 'fail'); }} else {{ Write-Host '=== ROBOT done ===' -ForegroundColor Green; [IO.File]::WriteAllText('{3}', 'ok'); Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan; if (({1} stash list -1) -match '{2}') {{ {1} stash pop }} else {{ Write-Host 'no stash to pop' }} }} }}",
-        gitc, msg, out)
+    gitc := (repoDir != "") ? ("git -C " Editor_GitQuotePs(repoDir)) : "git"
+    resQ := Editor_GitQuotePs(resultPath)
+    msgQ := Editor_GitQuotePs(msg)
+    script := ""
+    script .= "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan`r`n"
+    script .= gitc " stash push -u -m " msgQ "`r`n"
+    script .= "Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan`r`n"
+    script .= gitc " fetch`r`n"
+    script .= "if (-not $?) {`r`n"
+    script .= "  Write-Host '=== ROBOT failed ===' -ForegroundColor Red`r`n"
+    script .= "  [IO.File]::WriteAllText(" resQ ", 'fail')`r`n"
+    script .= "  exit 1`r`n"
+    script .= "}`r`n"
+    script .= "Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan`r`n"
+    script .= gitc " pull`r`n"
+    script .= "if (-not $?) {`r`n"
+    script .= "  Write-Host '=== ROBOT failed ===' -ForegroundColor Red`r`n"
+    script .= "  [IO.File]::WriteAllText(" resQ ", 'fail')`r`n"
+    script .= "  exit 1`r`n"
+    script .= "}`r`n"
+    script .= "Write-Host '=== ROBOT done ===' -ForegroundColor Green`r`n"
+    script .= "[IO.File]::WriteAllText(" resQ ", 'ok')`r`n"
+    script .= "Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan`r`n"
+    script .= "$top = " gitc " stash list -1`r`n"
+    script .= "if ($top -match [regex]::Escape(" msgQ ")) {`r`n"
+    script .= "  " gitc " stash pop`r`n"
+    script .= "} else {`r`n"
+    script .= "  Write-Host 'no stash to pop'`r`n"
+    script .= "}`r`n"
+    ps1Path := A_Temp "\editor-git-robot-" A_TickCount ".ps1"
+    try FileDelete(ps1Path)
+    FileAppend(script, ps1Path, "UTF-8-RAW")
+    return ps1Path
 }
 
 Editor_ParseGitRobotResultText(raw) {
@@ -716,7 +743,8 @@ Editor_GitStashAndPull() {
     try {
         Editor_OpenNewEditorTerminal(hwnd)
         Sleep 120
-        SendText Editor_GitRobotTerminalCommand(repoDir, resultPath)
+        ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath)
+        SendText("powershell -NoProfile -ExecutionPolicy Bypass -File " . Editor_GitQuotePs(ps1Path))
         Send "{Enter}"
     } finally {
         ; Never leave the opening banner up while git runs.
