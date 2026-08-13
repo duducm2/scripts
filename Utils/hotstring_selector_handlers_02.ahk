@@ -406,13 +406,6 @@ UtilitySelector_PromptsAdd() {
     category := Trim(catBox.Value)
     if (category = "")
         category := "General"
-    authorBox := UtilitySelector_InputBox("Author (optional):", "Prompt author")
-    if (authorBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    author := Trim(authorBox.Value)
     ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries)
     if (ch = "") {
         UtilitySelector_DialogsEnd()
@@ -429,7 +422,7 @@ UtilitySelector_PromptsAdd() {
     list := []
     for p in g_PromptEntries
         list.Push(p)
-    list.Push({ name: name, char: ch, category: category, author: author, filePath: PromptData_ToStoredPath(selected),
+    list.Push({ name: name, char: ch, category: category, author: "", filePath: PromptData_ToStoredPath(selected),
         source: "file" })
     if (!PromptData_Save(list)) {
         UtilitySelector_Notify("Failed to save prompt.")
@@ -478,13 +471,6 @@ UtilitySelector_PromptsEdit() {
     category := Trim(catBox.Value)
     if (category = "")
         category := "General"
-    authorBox := UtilitySelector_InputBox("Author (optional):", "Prompt author", 420, prompt.author)
-    if (authorBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    author := Trim(authorBox.Value)
     currentChar := prompt.HasProp("char") ? prompt.char : ""
     ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries, currentChar,
         listIndex)
@@ -505,7 +491,8 @@ UtilitySelector_PromptsEdit() {
     list := []
     loop g_PromptEntries.Length {
         if (A_Index = listIndex)
-            list.Push({ name: name, char: ch, category: category, author: author, filePath: filePath, source: source })
+            list.Push({ name: name, char: ch, category: category,
+                author: prompt.HasProp("author") ? prompt.author : "", filePath: filePath, source: source })
         else
             list.Push(g_PromptEntries[A_Index])
     }
