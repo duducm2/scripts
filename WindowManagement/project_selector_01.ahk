@@ -45,6 +45,10 @@ global g_ProjectSelectorLv := false
 global g_ProjectSelectorActive := false
 global g_ProjectSelectorHotkeysBound := false
 global g_ProjectHotkeyHandlers := []  ; Store hotkey handlers for cleanup
+global g_ProjectPathPickGui := false
+global g_ProjectPathPickPersonalEdit := false
+global g_ProjectPathPickWorkEdit := false
+global g_ProjectPathPickResult := ""
 
 ; Global variables for Cursor window selector (used within project selector)
 global g_CursorWindowMap := Map()  ; Maps character to window HWND
@@ -422,6 +426,126 @@ ProjectSelector_OnListActivate(*) {
         HandleProjectSelection(idx)
 }
 
+ProjectSelector_PathPickClose() {
+    global g_ProjectPathPickGui, g_ProjectPathPickPersonalEdit, g_ProjectPathPickWorkEdit
+    if (IsObject(g_ProjectPathPickGui)) {
+        try g_ProjectPathPickGui.Destroy()
+        catch {
+        }
+    }
+    g_ProjectPathPickGui := false
+    g_ProjectPathPickPersonalEdit := false
+    g_ProjectPathPickWorkEdit := false
+}
+
+ProjectSelector_PathPickOk(*) {
+    global g_ProjectPathPickResult
+    if (g_ProjectPathPickResult != "")
+        return
+    g_ProjectPathPickResult := "ok"
+}
+
+ProjectSelector_PathPickCancel(*) {
+    global g_ProjectPathPickResult
+    if (g_ProjectPathPickResult != "")
+        return
+    g_ProjectPathPickResult := "cancel"
+}
+
+ProjectSelector_PathPickBrowse(which, *) {
+    global g_ProjectPathPickGui, g_ProjectPathPickPersonalEdit, g_ProjectPathPickWorkEdit
+    start := ""
+    try {
+        if (which = "work")
+            start := Trim(g_ProjectPathPickWorkEdit.Value)
+        else
+            start := Trim(g_ProjectPathPickPersonalEdit.Value)
+    } catch {
+        start := ""
+    }
+    if (start != "" && !DirExist(start))
+        start := ""
+    try {
+        if (IsObject(g_ProjectPathPickGui))
+            g_ProjectPathPickGui.Opt("-AlwaysOnTop")
+    } catch {
+    }
+    folder := DirSelect(start, 0, (which = "work")
+        ? "Select work folder"
+        : "Select personal folder")
+    try {
+        if (IsObject(g_ProjectPathPickGui))
+            g_ProjectPathPickGui.Opt("+AlwaysOnTop")
+    } catch {
+    }
+    if (folder = "") {
+        try {
+            if (IsObject(g_ProjectPathPickGui))
+                WinActivate("ahk_id " g_ProjectPathPickGui.Hwnd)
+        } catch {
+        }
+        return
+    }
+    try {
+        if (which = "work")
+            g_ProjectPathPickWorkEdit.Value := folder
+        else
+            g_ProjectPathPickPersonalEdit.Value := folder
+    } catch {
+    }
+    try {
+        if (IsObject(g_ProjectPathPickGui))
+            WinActivate("ahk_id " g_ProjectPathPickGui.Hwnd)
+    } catch {
+    }
+}
+
+; Paste full paths and/or Browse. Returns {path, workPath} or "" if cancelled.
+ProjectSelector_PromptPaths(personalDefault := "", workDefault := "") {
+    global g_ProjectPathPickResult, g_ProjectPathPickGui, g_ProjectPathPickPersonalEdit, g_ProjectPathPickWorkEdit
+    ProjectSelector_PathPickClose()
+    g_ProjectPathPickResult := ""
+
+    g_ProjectPathPickGui := Gui("+AlwaysOnTop +ToolWindow", "Project folders")
+    g_ProjectPathPickGui.SetFont("s10", "Segoe UI")
+    g_ProjectPathPickGui.Add("Text", "w700",
+        "Paste a full path or Browse. At least one existing folder is required.")
+    g_ProjectPathPickGui.Add("Text", "xm w700", "Personal path:")
+    g_ProjectPathPickPersonalEdit := g_ProjectPathPickGui.Add("Edit", "w580 Section", personalDefault)
+    g_ProjectPathPickGui.Add("Button", "ys w100", "Browse").OnEvent("Click", ProjectSelector_PathPickBrowse.Bind(
+        "personal"))
+    g_ProjectPathPickGui.Add("Text", "xm w700", "Work path:")
+    g_ProjectPathPickWorkEdit := g_ProjectPathPickGui.Add("Edit", "w580 Section", workDefault)
+    g_ProjectPathPickGui.Add("Button", "ys w100", "Browse").OnEvent("Click", ProjectSelector_PathPickBrowse.Bind("work"
+    ))
+    g_ProjectPathPickGui.Add("Button", "xm w100 Section Default", "OK").OnEvent("Click", ProjectSelector_PathPickOk)
+    g_ProjectPathPickGui.Add("Button", "ys w100", "Cancel").OnEvent("Click", ProjectSelector_PathPickCancel)
+    g_ProjectPathPickGui.OnEvent("Close", ProjectSelector_PathPickCancel)
+    g_ProjectPathPickGui.OnEvent("Escape", ProjectSelector_PathPickCancel)
+    g_ProjectPathPickGui.Show()
+    try g_ProjectPathPickPersonalEdit.Focus()
+    catch {
+    }
+
+    while (g_ProjectPathPickResult = "")
+        Sleep 50
+
+    personal := ""
+    work := ""
+    try personal := Trim(g_ProjectPathPickPersonalEdit.Value)
+    catch {
+    }
+    try work := Trim(g_ProjectPathPickWorkEdit.Value)
+    catch {
+    }
+    result := g_ProjectPathPickResult
+    g_ProjectPathPickResult := ""
+    ProjectSelector_PathPickClose()
+    if (result != "ok")
+        return ""
+    return { path: personal, workPath: work }
+}
+
 ProjectSelector_OnAdd(*) {
     global g_Projects
     ProjectData_Load()
@@ -445,9 +569,14 @@ ProjectSelector_OnAdd(*) {
         ProjectSelector_RefocusGui()
         return
     }
-    personalPath := DirSelect(, 0, "Select personal folder (optional if work path is set)")
-    workPath := DirSelect(, 0, "Select work folder (optional if personal path is set)")
+    paths := ProjectSelector_PromptPaths()
     ProjectSelector_DialogsEnd()
+    if (!IsObject(paths)) {
+        ProjectSelector_RefocusGui()
+        return
+    }
+    personalPath := paths.path
+    workPath := paths.workPath
     if ((personalPath = "" || !DirExist(personalPath)) && (workPath = "" || !DirExist(workPath))) {
         ShowNotification_WM("At least one existing folder is required.")
         ProjectSelector_RefocusGui()
