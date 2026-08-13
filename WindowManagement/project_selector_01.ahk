@@ -452,14 +452,29 @@ ProjectSelector_PathPickCancel(*) {
     g_ProjectPathPickResult := "cancel"
 }
 
+ProjectSelector_NormalizePath(path) {
+    p := Trim(path)
+    loop 2 {
+        if (StrLen(p) < 2)
+            break
+        first := SubStr(p, 1, 1)
+        last := SubStr(p, -1)
+        if ((first = '"' && last = '"') || (first = "'" && last = "'"))
+            p := Trim(SubStr(p, 2, StrLen(p) - 2))
+        else
+            break
+    }
+    return p
+}
+
 ProjectSelector_PathPickBrowse(which, *) {
     global g_ProjectPathPickGui, g_ProjectPathPickPersonalEdit, g_ProjectPathPickWorkEdit
     start := ""
     try {
         if (which = "work")
-            start := Trim(g_ProjectPathPickWorkEdit.Value)
+            start := ProjectSelector_NormalizePath(g_ProjectPathPickWorkEdit.Value)
         else
-            start := Trim(g_ProjectPathPickPersonalEdit.Value)
+            start := ProjectSelector_NormalizePath(g_ProjectPathPickPersonalEdit.Value)
     } catch {
         start := ""
     }
@@ -509,7 +524,7 @@ ProjectSelector_PromptPaths(personalDefault := "", workDefault := "") {
     g_ProjectPathPickGui := Gui("+AlwaysOnTop +ToolWindow", "Project folders")
     g_ProjectPathPickGui.SetFont("s10", "Segoe UI")
     g_ProjectPathPickGui.Add("Text", "w700",
-        "Paste a full path or Browse. At least one existing folder is required.")
+        "Paste a full path (quotes optional) or Browse. At least one existing folder is required.")
     g_ProjectPathPickGui.Add("Text", "xm w700", "Personal path:")
     g_ProjectPathPickPersonalEdit := g_ProjectPathPickGui.Add("Edit", "w580 Section", personalDefault)
     g_ProjectPathPickGui.Add("Button", "ys w100", "Browse").OnEvent("Click", ProjectSelector_PathPickBrowse.Bind(
@@ -532,10 +547,10 @@ ProjectSelector_PromptPaths(personalDefault := "", workDefault := "") {
 
     personal := ""
     work := ""
-    try personal := Trim(g_ProjectPathPickPersonalEdit.Value)
+    try personal := ProjectSelector_NormalizePath(g_ProjectPathPickPersonalEdit.Value)
     catch {
     }
-    try work := Trim(g_ProjectPathPickWorkEdit.Value)
+    try work := ProjectSelector_NormalizePath(g_ProjectPathPickWorkEdit.Value)
     catch {
     }
     result := g_ProjectPathPickResult
