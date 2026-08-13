@@ -29,6 +29,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
 ;   WindowManagement\project_selector_02.ahk  - project selector preview / Copy-from-Gemini handlers
 ;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
+;   WindowManagement\audio_bt_menu.ahk        - Win+Alt+Shift+9 Bluetooth / audio device menu
 ; -----------------------------------------------------------------------------
 
 ; --- Environment (use env.ahk so personal vs work matches Act/Utils) --------
@@ -103,6 +104,8 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 #include %A_ScriptDir%\WindowManagement\project_selector_02.ahk
 ; [WM module] Cursor window selection (within project selector) -> WindowManagement\cursor_window_select.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_window_select.ahk
+; [WM module] Win+Alt+Shift+9 Bluetooth / audio device menu -> WindowManagement\audio_bt_menu.ahk
+#include %A_ScriptDir%\WindowManagement\audio_bt_menu.ahk
 ; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION
 ; =============================================================================
@@ -137,6 +140,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ;
 ; 5. BASIC WINDOW OPERATIONS
 ;    - Win+Alt+Shift+6: Minimize active window
+;    - Win+Alt+Shift+9: Audio / Bluetooth menu (default, enable/disable, connect, isolate)
 ;    - Win+Alt+Shift+M: Maximize active window
 ;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
 ;    - Ctrl+Alt+Win+X: Snap 50/50 pair (DWM gapless placement with margin + gutter)

@@ -130,6 +130,9 @@ Utils_GlobalEscapeHandler(*) {
         if (Utils_TryCloseViaSentinel(A_ScriptDir "\.cursor\wm_minimized_list_open",
             A_ScriptDir "\.cursor\wm_minimized_list_close_request"))
             return
+        if (Utils_TryCloseViaSentinel(A_ScriptDir "\.cursor\wm_audio_bt_open",
+            A_ScriptDir "\.cursor\wm_audio_bt_close_request"))
+            return
     } catch {
     }
 

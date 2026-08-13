@@ -87,6 +87,7 @@ WM_CheckSelectorCloseRequest() {
 WM_CleanupStaleEscapeSentinels() {
     global g_ProjectSelectorActive, g_WM_SelectorOpenFile, g_WM_SelectorCloseRequestFile
     global g_WM_MinimizedListActive, g_WM_MinimizedListOpenFile, g_WM_MinimizedListCloseRequestFile
+    global g_AudioBtActive, g_AudioBtOpenFile, g_AudioBtCloseRequestFile
     if (!g_ProjectSelectorActive) {
         try FileDelete(g_WM_SelectorOpenFile)
         catch {
@@ -101,6 +102,18 @@ WM_CleanupStaleEscapeSentinels() {
         }
         try FileDelete(g_WM_MinimizedListCloseRequestFile)
         catch {
+        }
+    }
+    if (!IsSet(g_AudioBtActive) || !g_AudioBtActive) {
+        if (IsSet(g_AudioBtOpenFile)) {
+            try FileDelete(g_AudioBtOpenFile)
+            catch {
+            }
+        }
+        if (IsSet(g_AudioBtCloseRequestFile)) {
+            try FileDelete(g_AudioBtCloseRequestFile)
+            catch {
+            }
         }
     }
 }

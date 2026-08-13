@@ -7,7 +7,7 @@
 
 ; =============================================================================
 ; Pomodoro Timer System - Local Timer with CSV Logging
-; (No global hotkey assigned; Win+Alt+Shift+9 is free.)
+; (No global hotkey assigned; Win+Alt+Shift+9 is Audio / Bluetooth menu in WindowManagement.ahk.)
 ; =============================================================================
 
 ; Global variables for Pomodoro timer management

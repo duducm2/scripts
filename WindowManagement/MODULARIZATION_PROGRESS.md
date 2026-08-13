@@ -14,7 +14,7 @@ Recipe: [`MODULARIZATION_RECIPE.md`](MODULARIZATION_RECIPE.md).
 
 Phase-2 baseline rollback ref: `c9d4ba714bef4f8c0915db6f1be466f9cdb62272`
 
-## Modules (13)
+## Modules (14)
 
 | Module                     | ~Lines | Feature                                           |
 | -------------------------- | ------ | ------------------------------------------------- |
@@ -31,6 +31,7 @@ Phase-2 baseline rollback ref: `c9d4ba714bef4f8c0915db6f1be466f9cdb62272`
 | `hotkeys.ahk`              | 84     | Global hotkey label bindings                      |
 | `globals.ahk`              | 57     | Globals + startup timers                          |
 | `helpers.ahk`              | 57     | Notifications, activation helpers                 |
+| `audio_bt_menu.ahk`        | ~480   | Win+Alt+Shift+9 Bluetooth / audio device menu     |
 
 ## Still inline in orchestrator
 
