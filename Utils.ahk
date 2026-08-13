@@ -90,7 +90,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; This script consolidates various utility hotkeys.
 ; -----------------------------------------------------------------------------
 
-; [Utils module] Hotstrings core (InitHotstringsCheatSheet) -> Utils\hotstrings_core.ahk
+; [Utils module] Hotstrings core (InsertText, prompt file helpers) -> Utils\hotstrings_core.ahk
 #include %A_ScriptDir%\Utils\hotstrings_core.ahk
 ; [Utils module] Strip prompt human reminders after --- (Shift+H Copilot/Gemini)
 #include %A_ScriptDir%\Utils\prompt_strip_reminders.ahk
@@ -195,6 +195,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] Project data for Cursor window focus selector -> Utils\project_data_cursor.ahk
 #include %A_ScriptDir%\Utils\project_data_cursor.ahk
+; [Utils module] Prompt registry for Utility Shortcuts -> Utils\prompt_data.ahk
+#include %A_ScriptDir%\Utils\prompt_data.ahk
+; [Utils module] Hotstring (pasteable string) registry for Utility Shortcuts -> Utils\hotstring_data.ahk
+#include %A_ScriptDir%\Utils\hotstring_data.ahk
 
 ; [Utils module] Global AI generation state U macro -> Utils\ai_generation_state.ahk
 #include %A_ScriptDir%\Utils\ai_generation_state.ahk
@@ -239,14 +243,13 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Modal ListView letter jump helpers -> Utils\modal_list_letter_jump.ahk
 #include %A_ScriptDir%\Utils\modal_list_letter_jump.ahk
 
-; [Utils module] Hotstring selector system core and BuildHotstringCharMap -> Utils\hotstring_selector_core.ahk
+; [Utils module] Hotstring selector system core -> Utils\hotstring_selector_core.ahk
 #include %A_ScriptDir%\Utils\hotstring_selector_core.ahk
 
 ; [Utils module] Context file browser (Win+Alt+Shift+N) -> Utils\context_file_browser.ahk
 #include %A_ScriptDir%\Utils\context_file_browser.ahk
 
-; One-shot: close Utility Shortcuts if still open (no expansion/macro chosen in time)
-; [Utils module] CleanupHotstringSelector and auto-close idle -> Utils\hotstring_selector_cleanup.ahk
+; [Utils module] CleanupHotstringSelector -> Utils\hotstring_selector_cleanup.ahk
 #include %A_ScriptDir%\Utils\hotstring_selector_cleanup.ahk
 
 ; [Utils module] HandleHotstringChar and Gemini paste helpers -> Utils\hotstring_selector_handlers_01.ahk

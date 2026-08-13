@@ -1,572 +1,709 @@
 ; =============================================================================
 ; Utils module: hotstring_selector_handlers_02.ahk
-; Hotstring selector utility category handlers
-; Extracted verbatim from Utils.ahk; loaded via #include into the
-; Utils.ahk orchestrator / shared library entry point.
+; Utility selector view switching, ListView populate, HotIfWinActive binds, CRUD
 ; =============================================================================
 
 HandleUtilitySelectorBack(*) {
     global g_HotstringSelectorActive, g_UtilitySelectorMode
     if (!g_HotstringSelectorActive)
         return
-    if (g_UtilitySelectorMode = "category") {
+    if (g_UtilitySelectorMode = "category")
         UtilitySelector_SwitchToTop()
-    }
 }
 
 UtilitySelector_SwitchToTop() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     g_UtilitySelectorMode := "top"
     g_UtilitySelectorCategory := ""
-    try UtilitySelector_RefreshUiAndHotkeys()
-    catch {
-    }
+    UtilitySelector_RebuildGui()
 }
 
 UtilitySelector_SwitchToCategory(category) {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     g_UtilitySelectorMode := "category"
     g_UtilitySelectorCategory := category
-    try UtilitySelector_RefreshUiAndHotkeys()
-    catch {
-    }
+    UtilitySelector_RebuildGui()
 }
 
-UtilitySelector_MapInternalCategoryToTop(internalCategory) {
-    if (internalCategory = "Files & Links")
-        return "Links"
-    if (internalCategory = "General")
-        return "General"
-    if (internalCategory = "Links")
-        return "Links"
-    if (internalCategory = "Hotstrings")
-        return "Hotstrings"
-    ; Unknown/legacy categories are folded into General now that top-level "Hot Strings" is removed.
-    if (internalCategory != "Prompts" && internalCategory != "Projects" && internalCategory != "Macros")
-        return "General"
-    return internalCategory
+UtilitySelector_HotkeyName(char) {
+    if (char = ",")
+        return "vkBC"
+    if (char = ".")
+        return "vkBE"
+    return char
 }
 
-UtilitySelector_GetAllowedCharsForCurrentView() {
-    global g_UtilitySelectorMode, g_UtilitySelectorCategory
-    global g_UtilityTopCategoryById, g_UtilitySelectorAllItems
-    allowed := Map()
-
-    if (g_UtilitySelectorMode = "top") {
-        for id, category in g_UtilityTopCategoryById {
-            allowed[id] := true
-        }
-        return allowed
+UtilitySelector_SelectorHwnd() {
+    global g_HotstringSelectorGui
+    hwnd := 0
+    try {
+        if (IsObject(g_HotstringSelectorGui))
+            hwnd := g_HotstringSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
     }
+    return hwnd
+}
 
-    ; Category view: enable only actionable items in the selected category.
-    ; (Empty placeholders are displayed but not bound.)
-    for item in g_UtilitySelectorAllItems {
-        if (item.category = g_UtilitySelectorCategory && !item.isEmpty) {
-            allowed[item.char] := true
+UtilitySelector_UnbindModalHotkeys() {
+    global g_HotstringSelectorGui, g_HotstringHotkeyHandlers, g_UtilitySelectorHotkeysBound
+    hwnd := UtilitySelector_SelectorHwnd()
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
         }
     }
-
-    ; Prompts view: enable Gemini modifier key 'L' workflow
-    if (g_UtilitySelectorCategory = "Prompts") {
-        allowed["l"] := true
-        allowed["L"] := true
-    }
-
-    return allowed
-}
-
-UtilitySelector_RebindHotkeys() {
-    global g_HotstringHotkeyHandlers, g_UtilitySelectorMode
-    allowed := UtilitySelector_GetAllowedCharsForCurrentView()
-
-    ; Disable previously-bound hotkeys
     for handler in g_HotstringHotkeyHandlers {
-        try {
-            key := handler.key
-            if (key = "vkBC") {
-                Hotkey("vkBC", "Off")
-            } else if (key = "vkBE") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(key, "Off")
-            }
-        } catch {
+        try Hotkey(handler.key, "Off")
+        catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
         }
     }
     g_HotstringHotkeyHandlers := []
-
-    ; Bind allowed character hotkeys
-    for char, _ in allowed {
-        handler := CreateHotstringCharHandler(char)
-        try {
-            if (char = ",") {
-                Hotkey("vkBC", handler, "On")
-                g_HotstringHotkeyHandlers.Push({ key: "vkBC", char: char, handler: handler })
-            } else if (char = ".") {
-                Hotkey("vkBE", handler, "On")
-                g_HotstringHotkeyHandlers.Push({ key: "vkBE", char: char, handler: handler })
-            } else {
-                Hotkey(char, handler, "On")
-                g_HotstringHotkeyHandlers.Push({ key: char, char: char, handler: handler })
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), handler, "On")
-                    g_HotstringHotkeyHandlers.Push({ key: StrUpper(char), char: char, handler: handler })
-                }
-            }
-        } catch {
-        }
-    }
-
-    ; Back navigation
-    if (g_UtilitySelectorMode = "category") {
-        try Hotkey("Backspace", HandleUtilitySelectorBack, "On")
-    } else {
-        try Hotkey("Backspace", "Off")
-    }
-
-    ; Escape always closes
-    Hotkey("Escape", HandleHotstringEscape, "On")
+    g_UtilitySelectorHotkeysBound := false
 }
 
-UtilitySelector_BuildTopLevelText() {
-    global g_UtilityTopCategories, g_UtilitySelectorAllItems
-    ; Count actionable items per category
-    counts := Map()
-    for cat in g_UtilityTopCategories
-        counts[cat] := 0
-    for item in g_UtilitySelectorAllItems {
-        if (!item.isEmpty && counts.Has(item.category)) {
-            counts[item.category] := counts[item.category] + 1
-        }
-    }
-
-    text := ""
-    text .= "[R] Prompts (" . counts["Prompts"] . ")`n"
-    text .= "[P] Projects (" . counts["Projects"] . ")`n"
-    text .= "[M] Macros (" . counts["Macros"] . ")`n"
-    text .= "[G] General (" . counts["General"] . ")`n"
-    text .= "[L] Links (" . counts["Links"] . ")`n"
-    text .= "[H] Hotstrings (" . counts["Hotstrings"] . ")`n"
-    text .= "[C] Context — paste file path`n"
-    text .= "`nPress R/P/M/G/L/H/C to open.`n"
-    return text
-}
-
-UtilitySelector_BuildTopLevelRich() {
-    global g_UtilityTopCategories, g_UtilitySelectorAllItems
-    counts := Map()
-    for cat in g_UtilityTopCategories
-        counts[cat] := 0
-    for item in g_UtilitySelectorAllItems {
-        if (!item.isEmpty && counts.Has(item.category)) {
-            counts[item.category] := counts[item.category] + 1
-        }
-    }
-
-    lines := []
-    lines.Push({ text: "[R] Prompts (" . counts["Prompts"] . ")", key: "r" })
-    lines.Push({ text: "[P] Projects (" . counts["Projects"] . ")", key: "p" })
-    lines.Push({ text: "[M] Macros (" . counts["Macros"] . ")", key: "m" })
-    lines.Push({ text: "[G] General (" . counts["General"] . ")", key: "g" })
-    lines.Push({ text: "[L] Links (" . counts["Links"] . ")", key: "l" })
-    lines.Push({ text: "[H] Hotstrings (" . counts["Hotstrings"] . ")", key: "h" })
-    lines.Push({ text: "[C] Context — paste file path", key: "c" })
-    lines.Push({ text: "" })
-    lines.Push({ text: "Press R/P/M/G/L/H/C to open." })
-    return lines
-}
-
-UtilitySelector_BuildCategoryText(isPortrait) {
-    global g_UtilitySelectorCategory, g_UtilitySelectorAllItems
-    ; Filter items for this category
-    items := []
-    for item in g_UtilitySelectorAllItems {
-        if (item.category = g_UtilitySelectorCategory)
-            items.Push(item)
-    }
-
-    header := "- " . g_UtilitySelectorCategory . " -`n"
-    if (items.Length = 0) {
-        return header . "(no items)`n`nBackspace = back | Esc = close"
-    }
-
-    if (isPortrait) {
-        text := header
-        for item in items {
-            if (item.HasProp("isSectionSpacer") && item.isSectionSpacer) {
-                text .= "`n"
-                continue
-            }
-            text .= item.text . "`n"
-        }
-        text .= "`nBackspace = back | Esc = close"
-        return text
-    }
-
-    ; Landscape: two columns; full-width for mnemonic subsection rows (same as Rich path)
-    PadString(str, width) {
-        len := StrLen(str)
-        if (len >= width)
-            return str
-        padding := width - len
-        spaces := ""
-        loop padding
-            spaces .= " "
-        return str . spaces
-    }
-
-    maxItemLength := 0
-    for item in items {
-        if (item.HasProp("isSectionHeader") && item.isSectionHeader)
-            continue
-        if (item.HasProp("isSectionSpacer") && item.isSectionSpacer)
-            continue
-        if (StrLen(item.text) > maxItemLength)
-            maxItemLength := StrLen(item.text)
-    }
-    columnWidth := maxItemLength + 2
-    if (columnWidth < 36)
-        columnWidth := 36
-    columnSpacing := "  "
-    fullWidth := columnWidth * 2 + StrLen(columnSpacing)
-
-    CenterStringInWidth(str, width) {
-        len := StrLen(str)
-        if (len >= width)
-            return SubStr(str, 1, width)
-        pad := width - len
-        left := pad // 2
-        right := pad - left
-        ls := ""
-        rs := ""
-        loop left
-            ls .= " "
-        loop right
-            rs .= " "
-        return ls . str . rs
-    }
-
-    text := header
-    i := 1
-    while (i <= items.Length) {
-        it := items[i]
-        if (it.HasProp("isSectionSpacer") && it.isSectionSpacer) {
-            text .= "`n"
-            i++
-            continue
-        }
-        if (it.HasProp("isSectionHeader") && it.isSectionHeader) {
-            text .= CenterStringInWidth(it.text, fullWidth) . "`n"
-            i++
-            continue
-        }
-        leftItem := it
-        i++
-        rightItem := ""
-        if (i <= items.Length) {
-            rit := items[i]
-            if (!(rit.HasProp("isSectionHeader") && rit.isSectionHeader) && !(rit.HasProp("isSectionSpacer") && rit.isSectionSpacer
-            ))
-                rightItem := rit, i++
-        }
-        leftText := PadString(leftItem.text, columnWidth)
-        rightText := (IsObject(rightItem) && rightItem.HasProp("text")) ? rightItem.text : ""
-        text .= leftText . columnSpacing . rightText . "`n"
-    }
-    text .= "`nBackspace = back | Esc = close"
-    return text
-}
-
-UtilitySelector_BuildCategoryRich(isPortrait) {
-    global g_UtilitySelectorCategory, g_UtilitySelectorAllItems
-    items := []
-    for item in g_UtilitySelectorAllItems {
-        if (item.category = g_UtilitySelectorCategory)
-            items.Push(item)
-    }
-
-    lines := []
-    lines.Push({ text: "- " . g_UtilitySelectorCategory . " -" })
-    if (items.Length = 0) {
-        lines.Push({ text: "(no items)" })
-        lines.Push({ text: "" })
-        lines.Push({ text: "Backspace = back | Esc = close" })
-        return lines
-    }
-
-    if (isPortrait) {
-        for item in items {
-            if (item.HasProp("isSectionSpacer") && item.isSectionSpacer) {
-                lines.Push({ text: "", key: "" })
-                continue
-            }
-            isSub := item.HasProp("isSectionHeader") && item.isSectionHeader
-            lines.Push({ text: item.text, key: item.isEmpty ? "" : item.char, isMnemonicSubsection: isSub })
-        }
-        lines.Push({ text: "" })
-        lines.Push({ text: "Backspace = back | Esc = close" })
-        return lines
-    }
-
-    ; Landscape: two columns; full-width rows for mnemonic subsection spacer/header inside Prompts
-    PadString(str, width) {
-        len := StrLen(str)
-        if (len >= width)
-            return str
-        padding := width - len
-        spaces := ""
-        loop padding
-            spaces .= " "
-        return str . spaces
-    }
-
-    CenterStringInWidth(str, width) {
-        len := StrLen(str)
-        if (len >= width)
-            return SubStr(str, 1, width)
-        pad := width - len
-        left := pad // 2
-        right := pad - left
-        ls := ""
-        rs := ""
-        loop left
-            ls .= " "
-        loop right
-            rs .= " "
-        return ls . str . rs
-    }
-
-    maxItemLength := 0
-    for item in items {
-        if (item.HasProp("isSectionHeader") && item.isSectionHeader)
-            continue
-        if (item.HasProp("isSectionSpacer") && item.isSectionSpacer)
-            continue
-        if (StrLen(item.text) > maxItemLength)
-            maxItemLength := StrLen(item.text)
-    }
-    columnWidth := maxItemLength + 2
-    if (columnWidth < 36)
-        columnWidth := 36
-    columnSpacing := "  "
-    fullWidth := columnWidth * 2 + StrLen(columnSpacing)
-
-    i := 1
-    while (i <= items.Length) {
-        it := items[i]
-        if (it.HasProp("isSectionSpacer") && it.isSectionSpacer) {
-            lines.Push({ text: "", key: "", keyRight: "", rightStartCharPos: 0 })
-            i++
-            continue
-        }
-        if (it.HasProp("isSectionHeader") && it.isSectionHeader) {
-            lines.Push({ text: CenterStringInWidth(it.text, fullWidth), key: "", keyRight: "", rightStartCharPos: 0,
-                isMnemonicSubsection: true })
-            i++
-            continue
-        }
-        leftItem := it
-        i++
-        rightItem := ""
-        if (i <= items.Length) {
-            rit := items[i]
-            if (!(rit.HasProp("isSectionHeader") && rit.isSectionHeader) && !(rit.HasProp("isSectionSpacer") && rit.isSectionSpacer
-            ))
-                rightItem := rit, i++
-        }
-        leftText := PadString(leftItem.text, columnWidth)
-        rightText := rightItem ? rightItem.text : ""
-        leftKey := leftItem.isEmpty ? "" : leftItem.char
-        rightKey := (IsObject(rightItem) && rightItem != "") ? (rightItem.isEmpty ? "" : rightItem.char) : ""
-        lineText := leftText . columnSpacing . rightText
-        rightStartCharPos := StrLen(leftText . columnSpacing) + 1
-        lines.Push({ text: lineText, key: leftKey, keyRight: rightKey, rightStartCharPos: rightStartCharPos })
-    }
-    lines.Push({ text: "" })
-    lines.Push({ text: "Backspace = back | Esc = close" })
-    return lines
-}
-
-UtilitySelector_BuildDisplayText(isPortrait) {
-    global g_UtilitySelectorMode
-    if (g_UtilitySelectorMode = "top")
-        return UtilitySelector_BuildTopLevelText()
-    return UtilitySelector_BuildCategoryText(isPortrait)
-}
-
-UtilitySelector_BuildDisplayRich(isPortrait) {
-    global g_UtilitySelectorMode
-    if (g_UtilitySelectorMode = "top")
-        return UtilitySelector_BuildTopLevelRich()
-    return UtilitySelector_BuildCategoryRich(isPortrait)
-}
-
-UtilitySelector_RefreshUiAndHotkeys() {
-    global g_HotstringSelectorGui, g_UtilitySelectorTitleCtrl, g_UtilitySelectorEditCtrl
-    global g_UtilitySelectorIsPortrait, g_UtilitySelectorMonitor
-    global g_UtilitySelectorMode, g_UtilitySelectorCategory
-
-    if (!IsObject(g_HotstringSelectorGui) || !IsObject(g_UtilitySelectorEditCtrl))
-        return
-
-    title := "Utility Shortcuts"
-    if (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory != "")
-        title := title . " - " . g_UtilitySelectorCategory
-
-    if (IsObject(g_UtilitySelectorTitleCtrl))
-        try g_UtilitySelectorTitleCtrl.Text := title
-
-    global g_UtilitySelectorFontSize
-    displayText := UtilitySelector_BuildDisplayText(g_UtilitySelectorIsPortrait)
-    displayLines := UtilitySelector_BuildDisplayRich(g_UtilitySelectorIsPortrait)
-    try MnemonicRich_Render(g_UtilitySelectorEditCtrl, displayLines, g_UtilitySelectorFontSize, 6, "Consolas", "CDD6F4",
-        "1E1E2E")
-
-    ; Resize based on new content (reuse existing sizing rules)
-    lineCount := 1
-    loop parse, displayText, "`n"
-        lineCount++
-    lineHeight := 18
-    textControlHeight := lineCount * lineHeight
-    minHeight := 150
-
-    monitorWidth := g_UtilitySelectorMonitor["width"]
-    monitorHeight := g_UtilitySelectorMonitor["height"]
-    monitorLeft := g_UtilitySelectorMonitor["left"]
-    monitorTop := g_UtilitySelectorMonitor["top"]
-
-    if (g_UtilitySelectorIsPortrait) {
-        maxHeightPercent := 0.85
-        maxHeight := Floor(monitorHeight * maxHeightPercent)
-        if (textControlHeight < minHeight)
-            textControlHeight := minHeight
-        if (textControlHeight > maxHeight)
-            textControlHeight := maxHeight
-        baseWidth := (monitorWidth < 800) ? 400 : (monitorWidth < 1200) ? 500 : 500
-        if (baseWidth > monitorWidth - 40)
-            baseWidth := monitorWidth - 40
-    } else {
-        maxHeightPercent := (monitorHeight < 800) ? 0.90 : 0.85
-        maxHeight := Floor(monitorHeight * maxHeightPercent)
-        if (textControlHeight < minHeight)
-            textControlHeight := minHeight
-        if (textControlHeight > maxHeight)
-            textControlHeight := maxHeight
-        baseWidth := (monitorWidth < 1200) ? 650 : (monitorWidth < 1920) ? 800 : 1000
-        if (baseWidth > monitorWidth - 40)
-            baseWidth := monitorWidth - 40
-    }
-
-    textControlWidth := baseWidth - 20
+UtilitySelector_BindOneChar(char, handler) {
+    global g_HotstringHotkeyHandlers
+    key := UtilitySelector_HotkeyName(char)
     try {
-        g_UtilitySelectorTitleCtrl.Move(, , textControlWidth)
-        g_UtilitySelectorEditCtrl.Move(, , textControlWidth, textControlHeight)
+        Hotkey(key, handler, "On")
+        g_HotstringHotkeyHandlers.Push({ char: char, key: key, handler: handler })
     } catch {
     }
-    global g_UtilitySelectorFooterCtrl
-    if (IsObject(g_UtilitySelectorFooterCtrl)) {
+    if (RegExMatch(char, "^[a-z]$")) {
+        upperKey := StrUpper(char)
         try {
-            g_UtilitySelectorEditCtrl.GetPos(, &ftEditY)
-            if (ftEditY > 0)
-                g_UtilitySelectorFooterCtrl.Move(, ftEditY + textControlHeight + 10, textControlWidth)
+            Hotkey(upperKey, handler, "On")
+            g_HotstringHotkeyHandlers.Push({ char: char, key: upperKey, handler: handler })
         } catch {
         }
     }
-
-    ; totalHeight: top-margin + title(s11) + gap + separator + gap + edit + gap + footer + bottom-margin
-    totalHeight := 10 + 24 + 10 + 1 + 10 + textControlHeight + 10 + 18 + 10
-    guiWidth := baseWidth
-
-    marginX := 20
-    marginY := 20
-    guiX := monitorLeft + (monitorWidth - guiWidth) // 2
-    guiY := monitorTop + (monitorHeight - totalHeight) // 2
-    if (guiX < monitorLeft + marginX)
-        guiX := monitorLeft + marginX
-    if (guiY < monitorTop + marginY)
-        guiY := monitorTop + marginY
-    if (guiX + guiWidth > monitorLeft + monitorWidth - marginX)
-        guiX := monitorLeft + monitorWidth - guiWidth - marginX
-    if (guiY + totalHeight > monitorTop + monitorHeight - marginY)
-        guiY := monitorTop + monitorHeight - totalHeight - marginY
-
-    try g_HotstringSelectorGui.Show("NA w" . guiWidth . " h" . totalHeight . " x" . guiX . " y" . guiY)
-
-    UtilitySelector_RebindHotkeys()
-    SetTimer(HotstringSelector_AutoCloseIfIdle, -g_HotstringSelectorAutoCloseMs)
 }
 
-; Triggers for InitTechniquePromptHotstrings - used to group Utility Shortcuts Prompts submenu.
-UtilitySelector_IsMnemonicTechniquePrompt(trigger) {
-    if (trigger = "")
-        return false
-    static mnemonic := Map(
-        ":o:mnemonic", true,
-        ":o:ytranscript", true,
-        ":o:readaloud", true,
-        ":o:revision", true,
-        ":o:storyreduction", true,
-        ":o:punctualbeast", true,
-        ":o:imgpreserve", true,
-    )
-    return mnemonic.Has(trigger)
-}
-
-; After global char sort: keep non-Prompts order; replace Prompts subsequence with general, subsection row, mnemonic technique.
-UtilitySelector_ReorderPromptsMnemonicsSection(&rebuilt) {
-    promptItems := []
-    for it in rebuilt {
-        if (IsObject(it) && it.HasProp("category") && it.category = "Prompts")
-            promptItems.Push(it)
-    }
-    if (promptItems.Length = 0)
+UtilitySelector_BindModalHotkeys() {
+    global g_HotstringSelectorGui, g_UtilitySelectorHotkeysBound, g_HotstringHotkeyHandlers
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilityTopCategoryById, g_UtilitySelectorRows
+    UtilitySelector_UnbindModalHotkeys()
+    hwnd := UtilitySelector_SelectorHwnd()
+    if (!hwnd)
         return
-
-    general := []
-    tech := []
-    for it in promptItems {
-        tr := it.HasProp("trigger") ? it.trigger : ""
-        if (UtilitySelector_IsMnemonicTechniquePrompt(tr))
-            tech.Push(it)
-        else
-            general.Push(it)
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
     }
 
-    ; Spacer + full-width header keep mnemonic prompts visually separate inside Prompts (same category).
-    mnemonicBanner := "  ━━━  Mnemonic technique (MyNotes)  ━━━"
-    newPromptSlice := []
-    if (tech.Length = 0) {
-        for it in promptItems
-            newPromptSlice.Push(it)
-    } else if (general.Length = 0) {
-        newPromptSlice.Push({ category: "Prompts", char: "", text: " ", isEmpty: true, isSectionSpacer: true })
-        newPromptSlice.Push({ category: "Prompts", char: "", text: mnemonicBanner, isEmpty: true, isSectionHeader: true })
-        for it in tech
-            newPromptSlice.Push(it)
+    if (g_UtilitySelectorMode = "top") {
+        for id, category in g_UtilityTopCategoryById {
+            handler := CreateHotstringCharHandler(id)
+            UtilitySelector_BindOneChar(id, handler)
+        }
     } else {
-        for it in general
-            newPromptSlice.Push(it)
-        newPromptSlice.Push({ category: "Prompts", char: "", text: " ", isEmpty: true, isSectionSpacer: true })
-        newPromptSlice.Push({ category: "Prompts", char: "", text: mnemonicBanner, isEmpty: true, isSectionHeader: true })
-        for it in tech
-            newPromptSlice.Push(it)
+        seen := Map()
+        for row in g_UtilitySelectorRows {
+            ch := row.HasProp("char") ? row.char : ""
+            if (ch = "" || seen.Has(ch))
+                continue
+            seen[ch] := true
+            UtilitySelector_BindOneChar(ch, CreateHotstringCharHandler(ch))
+        }
+        if (g_UtilitySelectorCategory = "Prompts") {
+            UtilitySelector_BindOneChar("l", CreateHotstringCharHandler("l"))
+        }
+        try {
+            Hotkey("Backspace", HandleUtilitySelectorBack, "On")
+            g_HotstringHotkeyHandlers.Push({ char: "Backspace", key: "Backspace", handler: HandleUtilitySelectorBack })
+        } catch {
+        }
+        if (g_UtilitySelectorCategory = "Prompts" || g_UtilitySelectorCategory = "Hotstrings") {
+            try {
+                Hotkey("Insert", UtilitySelector_OnAdd, "On")
+                g_HotstringHotkeyHandlers.Push({ char: "Insert", key: "Insert", handler: UtilitySelector_OnAdd })
+            } catch {
+            }
+            try {
+                Hotkey("F2", UtilitySelector_OnEdit, "On")
+                g_HotstringHotkeyHandlers.Push({ char: "F2", key: "F2", handler: UtilitySelector_OnEdit })
+            } catch {
+            }
+            try {
+                Hotkey("Delete", UtilitySelector_OnDelete, "On")
+                g_HotstringHotkeyHandlers.Push({ char: "Delete", key: "Delete", handler: UtilitySelector_OnDelete })
+            } catch {
+            }
+        }
     }
 
-    newRebuilt := []
-    inserted := false
-    for it in rebuilt {
-        if (!IsObject(it) || !it.HasProp("category") || it.category != "Prompts") {
-            newRebuilt.Push(it)
-            continue
-        }
-        if (!inserted) {
-            inserted := true
-            for np in newPromptSlice
-                newRebuilt.Push(np)
-        }
+    try {
+        Hotkey("Enter", UtilitySelector_OnListActivate, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: UtilitySelector_OnListActivate })
+    } catch {
     }
-    rebuilt.Length := 0
-    for x in newRebuilt
-        rebuilt.Push(x)
+    try {
+        Hotkey("Escape", HandleHotstringEscape, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "Escape", key: "Escape", handler: HandleHotstringEscape })
+    } catch {
+    }
+
+    try HotIf()
+    catch {
+    }
+    g_UtilitySelectorHotkeysBound := true
+}
+
+UtilitySelector_HintText() {
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    if (g_UtilitySelectorMode = "top")
+        return "Char = open category   Enter/double-click = open   Esc = close"
+    if (g_UtilitySelectorCategory = "Prompts")
+        return "Char = paste   Enter/double-click = paste   Insert = add   F2 = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
+    if (g_UtilitySelectorCategory = "Hotstrings")
+        return "Char = paste   Enter/double-click = paste   Insert = add   F2 = edit   Delete = remove   Backspace = back   Esc = close"
+    if (g_UtilitySelectorCategory = "Projects")
+        return "Char = paste name   Enter/double-click = paste name   Backspace = back   Esc = close"
+    return "Char = run   Enter/double-click = run   Backspace = back   Esc = close"
+}
+
+UtilitySelector_PopulateLv() {
+    global g_HotstringSelectorLv, g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRows
+    global g_UtilityTopCategories, g_UtilityTopCategoryById
+    if (!IsObject(g_HotstringSelectorLv))
+        return
+    g_HotstringSelectorLv.Delete()
+    g_UtilitySelectorRows := []
+
+    if (g_UtilitySelectorMode = "top") {
+        counts := Map("Prompts", PromptData_Load().Length, "Projects", UtilitySelector_ProjectRows().Length,
+        "Macros", UtilitySelector_MacroRows().Length, "Hotstrings", HotstringData_Load().Length)
+        idByCat := Map()
+        for id, cat in g_UtilityTopCategoryById
+            idByCat[cat] := id
+        for cat in g_UtilityTopCategories {
+            ch := idByCat.Has(cat) ? idByCat[cat] : ""
+            n := counts.Has(cat) ? counts[cat] : 0
+            g_UtilitySelectorRows.Push({ char: ch, category: cat, count: n })
+            g_HotstringSelectorLv.Add("", ch, cat, n)
+        }
+        try g_HotstringSelectorLv.ModifyCol(1, 50)
+        try g_HotstringSelectorLv.ModifyCol(2, 220)
+        try g_HotstringSelectorLv.ModifyCol(3, 80)
+        return
+    }
+
+    if (g_UtilitySelectorCategory = "Prompts") {
+        for prompt in PromptData_Sorted() {
+            g_UtilitySelectorRows.Push(prompt)
+            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.author, prompt.filePath)
+        }
+        try g_HotstringSelectorLv.ModifyCol(1, 50)
+        try g_HotstringSelectorLv.ModifyCol(2, 100)
+        try g_HotstringSelectorLv.ModifyCol(3, 280)
+        try g_HotstringSelectorLv.ModifyCol(4, 120)
+        try g_HotstringSelectorLv.ModifyCol(5, 280)
+        return
+    }
+
+    if (g_UtilitySelectorCategory = "Projects") {
+        for project in UtilitySelector_ProjectRows() {
+            g_UtilitySelectorRows.Push(project)
+            g_HotstringSelectorLv.Add("", project.HasProp("char") ? project.char : "", project.name)
+        }
+        try g_HotstringSelectorLv.ModifyCol(1, 50)
+        try g_HotstringSelectorLv.ModifyCol(2, 400)
+        return
+    }
+
+    if (g_UtilitySelectorCategory = "Hotstrings") {
+        HotstringData_Load()
+        global g_HotstringEntries
+        for item in g_HotstringEntries {
+            g_UtilitySelectorRows.Push(item)
+            g_HotstringSelectorLv.Add("", item.char, item.name, GetPreviewText(item.text, 80))
+        }
+        try g_HotstringSelectorLv.ModifyCol(1, 50)
+        try g_HotstringSelectorLv.ModifyCol(2, 260)
+        try g_HotstringSelectorLv.ModifyCol(3, 420)
+        return
+    }
+
+    if (g_UtilitySelectorCategory = "Macros") {
+        for row in UtilitySelector_MacroRows() {
+            g_UtilitySelectorRows.Push(row)
+            g_HotstringSelectorLv.Add("", row.char, row.title)
+        }
+        try g_HotstringSelectorLv.ModifyCol(1, 50)
+        try g_HotstringSelectorLv.ModifyCol(2, 500)
+    }
+}
+
+UtilitySelector_SelectedIndex() {
+    global g_HotstringSelectorLv
+    if (!IsObject(g_HotstringSelectorLv))
+        return 0
+    row := 0
+    try row := g_HotstringSelectorLv.GetNext(0)
+    catch {
+        return 0
+    }
+    return row ? Integer(row) : 0
+}
+
+UtilitySelector_OnListActivate(*) {
+    global g_UtilitySelectorMode, g_UtilitySelectorRows, g_UtilitySelectorCategory
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_UtilitySelectorRows.Length)
+        return
+    row := g_UtilitySelectorRows[idx]
+    if (g_UtilitySelectorMode = "top") {
+        if (row.HasProp("category") && row.category != "")
+            UtilitySelector_SwitchToCategory(row.category)
+        return
+    }
+    ch := row.HasProp("char") ? row.char : ""
+    if (ch = "")
+        return
+    HandleHotstringChar(ch)
+}
+
+UtilitySelector_DialogsBegin() {
+    global g_HotstringSelectorGui
+    try {
+        if (IsObject(g_HotstringSelectorGui))
+            g_HotstringSelectorGui.Opt("-AlwaysOnTop")
+    } catch {
+    }
+}
+
+UtilitySelector_DialogsEnd() {
+    global g_HotstringSelectorGui
+    try {
+        if (IsObject(g_HotstringSelectorGui))
+            g_HotstringSelectorGui.Opt("+AlwaysOnTop")
+    } catch {
+    }
+}
+
+UtilitySelector_InputBox(prompt, title, width := 420, defaultVal := "") {
+    return InputBox(prompt, title, "w" . width, defaultVal)
+}
+
+UtilitySelector_RefocusGui() {
+    global g_HotstringSelectorGui, g_HotstringSelectorLv
+    try {
+        if (IsObject(g_HotstringSelectorGui))
+            WinActivate("ahk_id " g_HotstringSelectorGui.Hwnd)
+    } catch {
+    }
+    try {
+        if (IsObject(g_HotstringSelectorLv))
+            g_HotstringSelectorLv.Focus()
+    } catch {
+    }
+}
+
+UtilitySelector_Notify(msg) {
+    ShowCenteredOverlay_Utils(msg, 1800, BANNER_ACCENT_ERROR)
+}
+
+UtilitySelector_AvailableChars(seqFn, isValidFn, entries, charProp := "char", excludeIndex := 0) {
+    taken := Map()
+    loop entries.Length {
+        if (A_Index = excludeIndex)
+            continue
+        item := entries[A_Index]
+        ch := item.HasProp("char") ? item.char : ""
+        if (ch != "")
+            taken[ch] := true
+    }
+    avail := []
+    for c in seqFn() {
+        if (!taken.Has(c) && isValidFn(c))
+            avail.Push(c)
+    }
+    return avail
+}
+
+UtilitySelector_PromptChar(seqFn, isValidFn, entries, currentChar := "", excludeIndex := 0) {
+    avail := UtilitySelector_AvailableChars(seqFn, isValidFn, entries, "char", excludeIndex)
+    if (avail.Length = 0 && (currentChar = "" || !isValidFn(currentChar))) {
+        UtilitySelector_Notify("No free characters left. Delete an item first.")
+        return ""
+    }
+    hint := ""
+    for c in avail
+        hint .= (hint = "" ? "" : " ") . c
+    prompt := "Unique character from the assignment pool."
+    if (hint != "")
+        prompt .= "`nAvailable: " . hint
+    result := UtilitySelector_InputBox(prompt, "Character", 520, currentChar)
+    if (result.Result != "OK")
+        return ""
+    ch := StrLower(Trim(result.Value))
+    if (StrLen(ch) != 1 || !isValidFn(ch)) {
+        UtilitySelector_Notify("Character must be one of the assignment pool keys.")
+        return ""
+    }
+    for c in avail {
+        if (c = ch)
+            return ch
+    }
+    if (ch = currentChar)
+        return ch
+    UtilitySelector_Notify("Character '" . ch . "' is already assigned.")
+    return ""
+}
+
+UtilitySelector_OnAdd(*) {
+    global g_UtilitySelectorCategory, g_PromptEntries, g_HotstringEntries
+    if (g_UtilitySelectorCategory = "Prompts")
+        UtilitySelector_PromptsAdd()
+    else if (g_UtilitySelectorCategory = "Hotstrings")
+        UtilitySelector_HotstringsAdd()
+}
+
+UtilitySelector_OnEdit(*) {
+    global g_UtilitySelectorCategory
+    if (g_UtilitySelectorCategory = "Prompts")
+        UtilitySelector_PromptsEdit()
+    else if (g_UtilitySelectorCategory = "Hotstrings")
+        UtilitySelector_HotstringsEdit()
+}
+
+UtilitySelector_OnDelete(*) {
+    global g_UtilitySelectorCategory
+    if (g_UtilitySelectorCategory = "Prompts")
+        UtilitySelector_PromptsDelete()
+    else if (g_UtilitySelectorCategory = "Hotstrings")
+        UtilitySelector_HotstringsDelete()
+}
+
+UtilitySelector_PromptsAdd() {
+    global g_PromptEntries
+    PromptData_Load()
+    UtilitySelector_DialogsBegin()
+    nameBox := UtilitySelector_InputBox("Prompt name:", "Add prompt")
+    if (nameBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_Notify("Name is required.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    catBox := UtilitySelector_InputBox("Category (e.g. General or Mnemonic):", "Prompt category", 420, "General")
+    if (catBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    category := Trim(catBox.Value)
+    if (category = "")
+        category := "General"
+    authorBox := UtilitySelector_InputBox("Author (optional):", "Prompt author")
+    if (authorBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    author := Trim(authorBox.Value)
+    ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries)
+    if (ch = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    startDir := A_ScriptDir "\assets\prompt\"
+    selected := FileSelect(1, startDir, "Select prompt file", "Text (*.txt)")
+    UtilitySelector_DialogsEnd()
+    if (selected = "") {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    list := []
+    for p in g_PromptEntries
+        list.Push(p)
+    list.Push({ name: name, char: ch, category: category, author: author, filePath: PromptData_ToStoredPath(selected),
+        source: "file" })
+    if (!PromptData_Save(list)) {
+        UtilitySelector_Notify("Failed to save prompt.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_RebuildPromptCharMap()
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    UtilitySelector_RefocusGui()
+}
+
+UtilitySelector_PromptsEdit() {
+    global g_PromptEntries, g_UtilitySelectorRows
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_UtilitySelectorRows.Length) {
+        UtilitySelector_Notify("Select a prompt to edit.")
+        return
+    }
+    row := g_UtilitySelectorRows[idx]
+    listIndex := row.HasProp("listIndex") ? row.listIndex : 0
+    PromptData_Load()
+    if (listIndex < 1 || listIndex > g_PromptEntries.Length)
+        return
+    prompt := g_PromptEntries[listIndex]
+    UtilitySelector_DialogsBegin()
+    nameBox := UtilitySelector_InputBox("Prompt name:", "Edit prompt", 420, prompt.name)
+    if (nameBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_Notify("Name is required.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    catBox := UtilitySelector_InputBox("Category (e.g. General or Mnemonic):", "Prompt category", 420, prompt.category)
+    if (catBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    category := Trim(catBox.Value)
+    if (category = "")
+        category := "General"
+    authorBox := UtilitySelector_InputBox("Author (optional):", "Prompt author", 420, prompt.author)
+    if (authorBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    author := Trim(authorBox.Value)
+    currentChar := prompt.HasProp("char") ? prompt.char : ""
+    ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries, currentChar,
+        listIndex)
+    if (ch = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    start := PromptData_ResolvePath(prompt)
+    selected := FileSelect(1, start, "Select prompt file", "Text (*.txt)")
+    UtilitySelector_DialogsEnd()
+    filePath := prompt.filePath
+    source := prompt.source
+    if (selected != "") {
+        filePath := PromptData_ToStoredPath(selected)
+        source := "file"
+    }
+    list := []
+    loop g_PromptEntries.Length {
+        if (A_Index = listIndex)
+            list.Push({ name: name, char: ch, category: category, author: author, filePath: filePath, source: source })
+        else
+            list.Push(g_PromptEntries[A_Index])
+    }
+    if (!PromptData_Save(list)) {
+        UtilitySelector_Notify("Failed to save prompt.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_RebuildPromptCharMap()
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    try g_HotstringSelectorLv.Modify(idx, "Select Focus Vis")
+    catch {
+    }
+    UtilitySelector_RefocusGui()
+}
+
+UtilitySelector_PromptsDelete() {
+    global g_PromptEntries, g_UtilitySelectorRows, g_HotstringSelectorLv
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_UtilitySelectorRows.Length) {
+        UtilitySelector_Notify("Select a prompt to delete.")
+        return
+    }
+    row := g_UtilitySelectorRows[idx]
+    listIndex := row.HasProp("listIndex") ? row.listIndex : 0
+    PromptData_Load()
+    if (listIndex < 1 || listIndex > g_PromptEntries.Length)
+        return
+    prompt := g_PromptEntries[listIndex]
+    label := prompt.name != "" ? prompt.name : "(unnamed)"
+    hwnd := UtilitySelector_SelectorHwnd()
+    msgOpts := "YesNo Icon! Default2"
+    if (hwnd)
+        msgOpts .= " Owner" . hwnd
+    UtilitySelector_DialogsBegin()
+    confirmed := (MsgBox("Delete prompt '" . label . "'?`nThe prompt file is not deleted.", "Delete prompt", msgOpts) =
+    "Yes")
+    UtilitySelector_DialogsEnd()
+    if (!confirmed) {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    list := []
+    loop g_PromptEntries.Length {
+        if (A_Index != listIndex)
+            list.Push(g_PromptEntries[A_Index])
+    }
+    if (!PromptData_Save(list)) {
+        UtilitySelector_Notify("Failed to save prompt list.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_RebuildPromptCharMap()
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    UtilitySelector_RefocusGui()
+}
+
+UtilitySelector_HotstringsAdd() {
+    global g_HotstringEntries
+    HotstringData_Load()
+    UtilitySelector_DialogsBegin()
+    nameBox := UtilitySelector_InputBox("Name:", "Add hotstring")
+    if (nameBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_Notify("Name is required.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    textBox := UtilitySelector_InputBox("Text to paste:", "Hotstring text", 520)
+    if (textBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    textVal := textBox.Value
+    ch := UtilitySelector_PromptChar(HotstringData_CharSequence, HotstringData_IsValidChar, g_HotstringEntries)
+    UtilitySelector_DialogsEnd()
+    if (ch = "") {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    list := []
+    for item in g_HotstringEntries
+        list.Push(item)
+    list.Push({ name: name, char: ch, text: textVal })
+    if (!HotstringData_Save(list)) {
+        UtilitySelector_Notify("Failed to save hotstring.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    UtilitySelector_RefocusGui()
+}
+
+UtilitySelector_HotstringsEdit() {
+    global g_HotstringEntries, g_UtilitySelectorRows, g_HotstringSelectorLv
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_HotstringEntries.Length) {
+        UtilitySelector_Notify("Select a hotstring to edit.")
+        return
+    }
+    HotstringData_Load()
+    if (idx > g_HotstringEntries.Length)
+        return
+    item := g_HotstringEntries[idx]
+    UtilitySelector_DialogsBegin()
+    nameBox := UtilitySelector_InputBox("Name:", "Edit hotstring", 420, item.name)
+    if (nameBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    name := Trim(nameBox.Value)
+    if (name = "") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_Notify("Name is required.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    textBox := UtilitySelector_InputBox("Text to paste:", "Hotstring text", 520, item.text)
+    if (textBox.Result != "OK") {
+        UtilitySelector_DialogsEnd()
+        UtilitySelector_RefocusGui()
+        return
+    }
+    textVal := textBox.Value
+    currentChar := item.HasProp("char") ? item.char : ""
+    ch := UtilitySelector_PromptChar(HotstringData_CharSequence, HotstringData_IsValidChar, g_HotstringEntries,
+        currentChar, idx)
+    UtilitySelector_DialogsEnd()
+    if (ch = "") {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    list := []
+    loop g_HotstringEntries.Length {
+        if (A_Index = idx)
+            list.Push({ name: name, char: ch, text: textVal })
+        else
+            list.Push(g_HotstringEntries[A_Index])
+    }
+    if (!HotstringData_Save(list)) {
+        UtilitySelector_Notify("Failed to save hotstring.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    try g_HotstringSelectorLv.Modify(idx, "Select Focus Vis")
+    catch {
+    }
+    UtilitySelector_RefocusGui()
+}
+
+UtilitySelector_HotstringsDelete() {
+    global g_HotstringEntries
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1) {
+        UtilitySelector_Notify("Select a hotstring to delete.")
+        return
+    }
+    HotstringData_Load()
+    if (idx > g_HotstringEntries.Length)
+        return
+    item := g_HotstringEntries[idx]
+    label := item.name != "" ? item.name : "(unnamed)"
+    hwnd := UtilitySelector_SelectorHwnd()
+    msgOpts := "YesNo Icon! Default2"
+    if (hwnd)
+        msgOpts .= " Owner" . hwnd
+    UtilitySelector_DialogsBegin()
+    confirmed := (MsgBox("Delete hotstring '" . label . "'?", "Delete hotstring", msgOpts) = "Yes")
+    UtilitySelector_DialogsEnd()
+    if (!confirmed) {
+        UtilitySelector_RefocusGui()
+        return
+    }
+    list := []
+    loop g_HotstringEntries.Length {
+        if (A_Index != idx)
+            list.Push(g_HotstringEntries[A_Index])
+    }
+    if (!HotstringData_Save(list)) {
+        UtilitySelector_Notify("Failed to save hotstring list.")
+        UtilitySelector_RefocusGui()
+        return
+    }
+    UtilitySelector_PopulateLv()
+    UtilitySelector_BindModalHotkeys()
+    UtilitySelector_RefocusGui()
 }

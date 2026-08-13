@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: hotstrings_core.ahk
-; Hotstrings core (InitHotstringsCheatSheet)
+; Hotstrings core (InsertText, prompt file helpers)
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
@@ -131,85 +131,4 @@ GetTechniquePromptFilePath(fileName) {
     return mirror
 }
 
-InitTechniquePromptHotstrings() {
-    ; Five files live in MyNotes: studies\technique\prompts (resolved via GetNotesRepoPath in env.ahk).
-    defs := [
-        ["story-prompt.txt", ":o:mnemonic", "📖 Creating mnemonic stories", "", "Reserved 3"],
-        ["video-transcription-prompt.txt", ":o:ytranscript", "🎬 Transcript Youtube Video", "", "Reserved 4"],
-        ["story-reduction-prompt.txt", ":o:storyreduction", "📝 Story reduction", "a", "Reserved 5"],
-        ["punctual-beast-append-prompt.txt", ":o:punctualbeast", "🧩 Punctual beast append", "p", "Reserved 6"],
-        ["image-background-preservation-prompt.txt", ":o:imgpreserve", "🛡️ Preserve background for image generation",
-            "g", "Reserved 7"],
-    ]
-    for row in defs {
-        fileName := row[1]
-        trigger := row[2]
-        title := row[3]
-        exChar := row[4]
-        reserved := row[5]
-        try {
-            body := ReadUtf8File(GetTechniquePromptFilePath(fileName))
-            if (exChar != "")
-                RegisterHotstring(trigger, body, "Prompts", title, exChar)
-            else
-                RegisterHotstring(trigger, body, "Prompts", title)
-        } catch {
-            RegisterHotstring("", "", "Prompts", reserved)
-        }
-    }
-}
-
-; ----------------------
-; Register hotstrings for cheat sheet display
-; ----------------------
-InitHotstringsCheatSheet() {
-    ; Panel registry for #!+U (Win+Alt+Shift+U). IDs are labels only; no typed :o: expanders.
-    RegisterHotstring(":o:cgrammar", GetPromptText("grammar"), "Prompts", "✏️ Grammar & Spelling Corrector")
-    RegisterHotstring(":o:mtask", GetPromptText("mtask"), "Prompts", "🔲 Convert to Task")
-    RegisterHotstring(":o:aiopt", GetPromptText("aiopt"), "Prompts", "🤖 AI Text Optimizer")
-    RegisterHotstring(":o:handoff", GetPromptText("handoff-summary"), "Prompts",
-    "📝 Summarize for Handoff", "r")
-    InitTechniquePromptHotstrings()
-    RegisterHotstring(":o:pptdeckcsv", GetPromptText("ppt-content-to-slides-csv"), "Prompts",
-    "📊 PPT stage 1: content to slides CSV", "s")
-    RegisterHotstring(":o:pptelemcsv", GetPromptText("ppt-slides-to-elements-csv"), "Prompts",
-    "🧩 PPT stage 2: slides to elements CSV", "e")
-    RegisterHotstring(":o:protscreencsv", GetPromptText("proto-content-to-screens-csv"), "Prompts",
-    "📱 Prototype stage 1: content to screens CSV", "w")
-    RegisterHotstring(":o:protoelemcsv", GetPromptText("proto-screens-to-elements-csv"), "Prompts",
-    "🧩 Prototype stage 2: screens to elements CSV", "f")
-    RegisterHotstring(":o:boschimg", GetPromptText("bosch-brand-image"), "Prompts", "🎨 Bosch brand-compliant image")
-    RegisterHotstring(":o:csvfill", GetPromptText("unstructured-to-csv"), "Prompts",
-    "📋 Fill CSV from unstructured text")
-    RegisterHotstring(":o:clipangel", GetPromptText("clipangel-cac"), "Prompts",
-    "📎 ClipAngel .cac export", "c")
-    RegisterHotstring(":o:howtocsv", GetPromptText("howto-steps-csv"), "Prompts",
-    "📝 How-to steps CSV", "h")
-
-    ; Hotstrings: emails
-    RegisterHotstring(":o:ebosch", "eduardo.figueiredo@br.bosch.com", "Hotstrings", "💼 Bosch Email")
-    RegisterHotstring(":o:egoogle", "edu.evangelista.figueiredo@gmail.com", "Hotstrings", "📧 Gmail")
-
-    ; Projects (Cursor workspaces) - keys align with Project Selector 2
-    RegisterHotstring(":o:gintegra", "GS_UX core team_UX and CIP Integration", "Projects", "🔄 UX and CIP Integration",
-        "u")
-    RegisterHotstring(":o:gdash", "GS_E&S_CIP Dashboard research and design", "Projects", "📊 CIP Dashboard", "d")
-    RegisterHotstring(":o:boiler-plate", "boiler-plate", "Projects", "🧱 boiler-plate", "0")
-    RegisterHotstring(":o:astra", "astra", "Projects", "⭐ astrA", "a")
-    RegisterHotstring(":o:opex-cim-journey-mapping", "opex-cim-journey-mapping", "Projects",
-        "E&S Opex CIM Journey Mapping",
-        "o")
-    RegisterHotstring(":o:gpilotb2b", "Piloto PT B2B", "Projects", "🧪 Piloto PT B2B", "b")
-    RegisterHotstring(":o:gpython", "17 - Python Scripts", "Projects", "🐍 Python Scripts", "t")
-    RegisterHotstring(":o:gbpm", "BPM", "Projects", "📌 BPM", "m")
-    RegisterHotstring(":o:gsrs", "SRS", "Projects", "📡 SRS", "r")
-    RegisterHotstring(":o:grise", "RISE", "Projects", "📈 RISE", "g")
-
-    ; Hotstrings (non-workspace "project-like" names)
-    RegisterHotstring(":o:myl", "my links", "Hotstrings", "🔗 my links", "m")
-    RegisterHotstring(":o:gpm", "project management LA", "Hotstrings", "📋 project management LA", "p")
-    RegisterHotstring(":o:guxcip", "UX and CIP", "Hotstrings", "🔗 UX and CIP", "x")
-    RegisterHotstring(":o:gtrain", "GS_UX core team_Trainings Management", "Hotstrings", "🎓 Trainings Management", "t"
-    )
-}
-InitHotstringsCheatSheet()
+; Prompts / Hotstrings / Projects for #!+U now live in INI (prompt_data.ahk, hotstring_data.ahk, projects.ini).

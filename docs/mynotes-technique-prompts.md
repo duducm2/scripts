@@ -1,6 +1,6 @@
 # MyNotes technique prompts (mnemonics)
 
-This document describes how the **five mnemonic / study technique prompt entries** are resolved from the **MyNotes** repository when available, mirrored into this scripts repo when desired, and exposed in AutoHotkey (hotstrings and **Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
+This document describes how the **mnemonic / study technique prompt entries** are resolved from the **MyNotes** repository when available, mirrored into this scripts repo when desired, and exposed in AutoHotkey (**Win+Alt+Shift+U** Utility Shortcuts → **Prompts**).
 
 The prompts are the single source of truth under the notes repo:
 
@@ -17,13 +17,13 @@ The prompts are the single source of truth under the notes repo:
 
 ## Resolution order (runtime)
 
-Implemented in [`env.ahk`](../env.ahk) and [`Utils.ahk`](../Utils.ahk):
+Implemented in [`env.ahk`](../env.ahk) and [`Utils/hotstrings_core.ahk`](../Utils/hotstrings_core.ahk) (`GetTechniquePromptFilePath`):
 
 1. **Environment override:** if `MYNOTES_TECHNIQUE_PROMPTS` is set to the full path of the `prompts` folder and that folder exists, it is used.
 2. Else **`GetNotesRepoPath()`** + `studies\technique\prompts` (work vs personal is chosen from `NOTES_REPO_PATH_WORK` / `NOTES_REPO_PATH_PERSONAL` and `IS_WORK_ENVIRONMENT`).
 3. Else the **other** machine’s notes root (if that clone exists), same subpath.
 
-`GetTechniquePromptFilePath()` in [`Utils.ahk`](../Utils.ahk) then resolves each file: **live MyNotes folder first**, then fallback **`A_ScriptDir\assets\prompt\technique\<filename>`**.
+`GetTechniquePromptFilePath()` then resolves each file: **live MyNotes folder first**, then fallback **`A_ScriptDir\assets\prompt\technique\<filename>`**.
 
 ---
 
@@ -50,26 +50,28 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 ---
 
-## The five registered files and hotstring triggers
+## The five registered files
 
-| File                                       | Hotstring           | Role (short)                                                             |
-| ------------------------------------------ | ------------------- | ------------------------------------------------------------------------ |
-| `story-prompt.txt`                         | `:o:mnemonic`       | Creating mnemonic stories                                                |
-| `video-transcription-prompt.txt`           | `:o:ytranscript`    | YouTube transcript workflow                                              |
-| `story-reduction-prompt.txt`               | `:o:storyreduction` | Story reduction                                                          |
-| `punctual-beast-append-prompt.txt`         | `:o:punctualbeast`  | Append isolated beasts or small punctual batches into open streets       |
-| `image-background-preservation-prompt.txt` | `:o:imgpreserve`    | Preserve the locked background while adding mnemonic foreground elements |
+| File                                       | Role (short)                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `story-prompt.txt`                         | Creating mnemonic stories                                                |
+| `video-transcription-prompt.txt`           | YouTube transcript workflow                                              |
+| `story-reduction-prompt.txt`               | Story reduction                                                          |
+| `punctual-beast-append-prompt.txt`         | Append isolated beasts or small punctual batches into open streets       |
+| `image-background-preservation-prompt.txt` | Preserve the locked background while adding mnemonic foreground elements |
 
-Registration lives in `InitTechniquePromptHotstrings()` in [`Utils.ahk`](../Utils.ahk).
+Registration lives in [`assets/data/prompts.ini`](../assets/data/prompts.ini): each technique row uses `Source=technique` and `FilePath=<basename>`. The Utility Shortcuts Prompts view loads the file **at paste time** via `PromptData_ReadBody()` in [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). Add/edit/delete of metadata is done in the Prompts ListView (Insert / F2 / Delete); the `.txt` file is never deleted.
+
+Prompts with no `---` divider paste in full. Prompts that use a last-line `---` divider still go through `PasteStrippedPromptOfferReminders` / `ReplaceComposerWithStrippedReminders`.
 
 ---
 
 ## Operational note
 
-After editing prompt files on disk, **reload** the AutoHotkey entry script (or restart scripts) if you do not use a workflow that reloads `Utils.ahk` automatically.
+Prompt **file contents** are read when you paste, so editing a `.txt` does not require a script reload. Adding or renaming entries in `prompts.ini` (or via the UI) is picked up the next time the selector opens (`PromptData_Load` reloads on file mtime).
 
 ---
 
 ## Utility Shortcuts (#!+U)
 
-Under **Prompts**, the five mnemonic-technique entries are grouped under a **Mnemonics technique** subsection in the selector UI (see `UtilitySelector_IsMnemonicTechniquePrompt` / reorder logic in [`Utils.ahk`](../Utils.ahk)).
+Under **Prompts**, entries are sorted by the INI `Category` attribute then `Name`. Migrated technique prompts use `Category=Mnemonic`; the other built-in prompts use `Category=General`.
