@@ -1,7 +1,7 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
 ; Win+Alt+Shift+9 quick-access menu for Bluetooth audio and Windows sound devices.
-; Root picker -> Bluetooth / Input / Output submenus.
+; Root picker -> Bluetooth / Input / Output / Help submenus.
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
 ; =============================================================================
@@ -15,7 +15,7 @@ global g_AudioBtHotkeyHandlers := []
 global g_AudioBtRows := []
 global g_AudioBtAllRows := []
 global g_AudioBtBusy := false
-global g_AudioBtMode := "root"  ; root | BT | In | Out
+global g_AudioBtMode := "root"  ; root | BT | In | Out | help
 global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
@@ -23,14 +23,34 @@ global g_AudioBtCloseCheckTimer := ""
 AudioBt_RootItems() {
     return [{ key: "1", kind: "BT", title: "Bluetooth", detail: "Paired audio devices — connect / disconnect" }, { key: "2",
         kind: "In", title: "Input", detail: "Recording devices — default / enable / isolate" }, { key: "3", kind: "Out",
-            title: "Output", detail: "Playback devices — default / enable / isolate" }
+            title: "Output", detail: "Playback devices — default / enable / isolate" }, { key: "4", kind: "help",
+                title: "Help", detail: "Command meanings" }
+    ]
+}
+
+AudioBt_HelpRows() {
+    return [{ key: "1 / B", command: "Bluetooth", meaning: "Bluetooth submenu: paired audio devices; connect/disconnect." }, { key: "2 / I",
+        command: "Input", meaning: "Input submenu: recording devices; default / enable / isolate." }, { key: "3 / O",
+            command: "Output", meaning: "Output submenu: playback devices; default / enable / isolate." }, { key: "4 / H",
+                command: "Help", meaning: "This help list." }, { key: "Enter", command: "Open", meaning: "Open the highlighted root item." }, { key: "Esc",
+                    command: "Close", meaning: "Close the menu." }, { key: "1-9 / 0", command: "Select", meaning: "Select that row in a device submenu." }, { key: "Enter",
+                        command: "Default", meaning: "Set the selected device as the Windows default (playback or recording)." }, { key: "D",
+                            command: "Disable", meaning: "Disable/block it (Sound Settings Disable)." }, { key: "E",
+                                command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
+                                    meaning: "Connect a paired Bluetooth audio device (A2DP/HFP)." }, { key: "X",
+                                        command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
+                                            command: "Isolate", meaning: "Enable this device, set it default, disable other active devices of the same flow (output vs input). On a Bluetooth row, isolate that headset's matching endpoints." }, { key: "R",
+                                                command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "Esc",
+                                                    command: "Back", meaning: "Back to the root menu." }
     ]
 }
 
 AudioBt_HintText() {
     global g_AudioBtMode
     if (g_AudioBtMode = "root")
-        return "1/B Bluetooth   2/I Input   3/O Output   Enter open   Esc close"
+        return "1/B Bluetooth   2/I Input   3/O Output   4/H Help   Enter open   Esc close"
+    if (g_AudioBtMode = "help")
+        return "Esc back"
     return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   R refresh   Esc back"
 }
 
@@ -40,6 +60,7 @@ AudioBt_ModeTitle() {
         case "BT": return "Bluetooth devices"
         case "In": return "Input devices"
         case "Out": return "Output devices"
+        case "help": return "Help"
         default: return "Audio / Bluetooth"
     }
 }
@@ -146,8 +167,14 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("Numpad3", AudioBt_OpenSubmenu.Bind("Out"))
         AudioBt_BindOne("o", AudioBt_OpenSubmenu.Bind("Out"))
         AudioBt_BindOne("O", AudioBt_OpenSubmenu.Bind("Out"))
+        AudioBt_BindOne("4", AudioBt_ShowHelp)
+        AudioBt_BindOne("Numpad4", AudioBt_ShowHelp)
+        AudioBt_BindOne("h", AudioBt_ShowHelp)
+        AudioBt_BindOne("H", AudioBt_ShowHelp)
         AudioBt_BindOne("Enter", AudioBt_OnRootActivate)
         AudioBt_BindOne("NumpadEnter", AudioBt_OnRootActivate)
+    } else if (g_AudioBtMode = "help") {
+        AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     } else {
         loop 9 {
             dig := String(A_Index)
@@ -257,7 +284,8 @@ AudioBt_CreateGui(lvHeight := 360) {
     g_AudioBtGui := Gui("+AlwaysOnTop +ToolWindow", AudioBt_ModeTitle())
     g_AudioBtGui.SetFont("s10", "Segoe UI")
     g_AudioBtHint := g_AudioBtGui.Add("Text", "w720", AudioBt_HintText())
-    g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", ["#", "Name", "State"])
+    lvCols := (g_AudioBtMode = "help") ? ["Key", "Command", "Meaning"] : ["#", "Name", "State"]
+    g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", lvCols)
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
     g_AudioBtGui.Add("Button", "w100 Section", (lvHeight < 200) ? "Close" : "Back").OnEvent("Click", AudioBt_OnEscape)
     g_AudioBtGui.OnEvent("Close", (*) => AudioBt_Cleanup())
@@ -359,6 +387,20 @@ AudioBt_PopulateRootLv() {
     try g_AudioBtLv.ModifyCol(1, 40)
     try g_AudioBtLv.ModifyCol(2, 140)
     try g_AudioBtLv.ModifyCol(3, 520)
+    ListView_SelectRowFocused(g_AudioBtLv, 1)
+}
+
+AudioBt_PopulateHelpLv() {
+    global g_AudioBtLv
+    if (!IsObject(g_AudioBtLv))
+        return
+    g_AudioBtLv.Delete()
+    for row in AudioBt_HelpRows() {
+        g_AudioBtLv.Add("", row.key, row.command, row.meaning)
+    }
+    try g_AudioBtLv.ModifyCol(1, 90)
+    try g_AudioBtLv.ModifyCol(2, 110)
+    try g_AudioBtLv.ModifyCol(3, 500)
     ListView_SelectRowFocused(g_AudioBtLv, 1)
 }
 
@@ -482,7 +524,7 @@ AudioBt_FetchAll(showError := true) {
 
 AudioBt_Refresh(keepName := "", showError := true) {
     global g_AudioBtRows, g_AudioBtAllRows, g_AudioBtBusy, g_AudioBtMode
-    if (g_AudioBtMode = "root") {
+    if (g_AudioBtMode = "root" || g_AudioBtMode = "help") {
         g_AudioBtBusy := false
         return true
     }
@@ -497,7 +539,7 @@ AudioBt_Refresh(keepName := "", showError := true) {
 
 AudioBt_SelectDigit(index, *) {
     global g_AudioBtLv, g_AudioBtRows, g_AudioBtBusy, g_AudioBtMode
-    if (g_AudioBtBusy || !IsObject(g_AudioBtLv) || g_AudioBtMode = "root")
+    if (g_AudioBtBusy || !IsObject(g_AudioBtLv) || g_AudioBtMode = "root" || g_AudioBtMode = "help")
         return
     if (index < 1 || index > g_AudioBtRows.Length)
         return
@@ -542,12 +584,29 @@ AudioBt_OnRootActivate(*) {
     items := AudioBt_RootItems()
     if (idx < 1 || idx > items.Length)
         return
-    AudioBt_OpenSubmenu(items[idx].kind)
+    kind := items[idx].kind
+    if (kind = "help")
+        AudioBt_ShowHelp()
+    else
+        AudioBt_OpenSubmenu(kind)
+}
+
+AudioBt_ShowHelp(*) {
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtActive, g_AudioBtRows
+    if (!g_AudioBtActive)
+        return
+    g_AudioBtMode := "help"
+    g_AudioBtBusy := false
+    g_AudioBtRows := []
+    AudioBt_CreateGui(360)
+    AudioBt_PopulateHelpLv()
+    AudioBt_SetHint(AudioBt_HintText())
+    AudioBt_RefocusLv()
 }
 
 AudioBt_DoAction(action, requireBt := false) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help")
         return
     row := AudioBt_SelectedRow()
     if (!IsObject(row)) {
@@ -603,7 +662,7 @@ AudioBt_OnIsolate(*) {
 
 AudioBt_OnRefresh(*) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode, g_AudioBtAllRows
-    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root")
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help")
         return
     row := AudioBt_SelectedRow()
     keep := IsObject(row) ? row.name : ""
@@ -623,7 +682,7 @@ AudioBt_OnListActivate(*) {
     global g_AudioBtMode
     if (g_AudioBtMode = "root")
         AudioBt_OnRootActivate()
-    else
+    else if (g_AudioBtMode != "help")
         AudioBt_OnDefault()
 }
 
@@ -632,7 +691,7 @@ AudioBt_ShowRoot() {
     g_AudioBtMode := "root"
     g_AudioBtBusy := false
     g_AudioBtRows := []
-    AudioBt_CreateGui(140)
+    AudioBt_CreateGui(180)
     AudioBt_PopulateRootLv()
     AudioBt_SetHint(AudioBt_HintText())
     try g_AudioBtLv.Focus()
