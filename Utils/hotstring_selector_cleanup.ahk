@@ -12,6 +12,9 @@ CleanupHotstringSelector() {
     global g_UtilitySelectorRows, g_OnEscapePressed
 
     g_HotstringSelectorActive := false
+    try SetTimer(UtilitySelector_StartIpc, 0)
+    catch {
+    }
 
     UtilitySelector_UnbindModalHotkeys()
 
@@ -36,12 +39,10 @@ CleanupHotstringSelector() {
     g_UtilitySelectorRows := []
     g_UtilitySelectorHotkeysBound := false
 
+    ; Hide and reuse; Destroy is expensive and forces a full Gui rebuild on the next #!+U.
     if (IsObject(g_HotstringSelectorGui)) {
-        try g_HotstringSelectorGui.Destroy()
+        try g_HotstringSelectorGui.Hide()
         catch {
         }
-        g_HotstringSelectorGui := false
     }
-    g_HotstringSelectorLv := false
-    g_HotstringSelectorHint := false
 }

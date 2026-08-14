@@ -170,15 +170,17 @@ UtilitySelector_HintText() {
 
 UtilitySelector_PopulateLv() {
     global g_HotstringSelectorLv, g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRows
-    global g_UtilityTopCategories, g_UtilityTopCategoryById
+    global g_UtilityTopCategories, g_UtilityTopCategoryById, g_PromptEntries, g_HotstringEntries
     if (!IsObject(g_HotstringSelectorLv))
         return
     g_HotstringSelectorLv.Delete()
     g_UtilitySelectorRows := []
 
     if (g_UtilitySelectorMode = "top") {
-        counts := Map("Prompts", PromptData_Load().Length, "Projects", UtilitySelector_ProjectRows().Length,
-        "Macros", UtilitySelector_MacroRows().Length, "Hotstrings", HotstringData_Load().Length)
+        PromptData_Load(false, true)
+        HotstringData_Load(false, true)
+        counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
+        "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id
@@ -195,6 +197,7 @@ UtilitySelector_PopulateLv() {
     }
 
     if (g_UtilitySelectorCategory = "Prompts") {
+        UtilitySelector_RebuildPromptCharMap()
         for prompt in PromptData_Sorted() {
             g_UtilitySelectorRows.Push(prompt)
             g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.filePath)
@@ -207,6 +210,7 @@ UtilitySelector_PopulateLv() {
     }
 
     if (g_UtilitySelectorCategory = "Projects") {
+        ProjectData_Load()
         for project in UtilitySelector_ProjectRows() {
             g_UtilitySelectorRows.Push(project)
             g_HotstringSelectorLv.Add("", project.HasProp("char") ? project.char : "", project.name)

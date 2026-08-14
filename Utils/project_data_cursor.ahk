@@ -53,8 +53,11 @@ ProjectData_FileMtime() {
 }
 
 ; Load projects from INI. Reloads when the file mtime changes (or force=true).
-ProjectData_Load(force := false) {
+; skipMtime: return in-memory cache without FileGetTime (hotkey path on Google Drive).
+ProjectData_Load(force := false, skipMtime := false) {
     global g_Projects, g_ProjectDataCacheReady, g_ProjectDataCacheMtime
+    if (!force && skipMtime && g_ProjectDataCacheReady)
+        return g_Projects
     mtime := ProjectData_FileMtime()
     if (!force && g_ProjectDataCacheReady && mtime = g_ProjectDataCacheMtime)
         return g_Projects

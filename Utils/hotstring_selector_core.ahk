@@ -7,6 +7,10 @@
 global g_HotstringSelectorGui := false
 global g_HotstringSelectorLv := false
 global g_HotstringSelectorHint := false
+global g_HotstringSelectorBtnAdd := false
+global g_HotstringSelectorBtnEdit := false
+global g_HotstringSelectorBtnDelete := false
+global g_HotstringSelectorGuiReady := false
 global g_HotstringSelectorActive := false
 global g_HotstringHotkeyHandlers := []
 global g_HotstringPromptCharMap := Map()
@@ -90,18 +94,16 @@ UtilitySelector_RebuildPromptCharMap() {
 
 UtilitySelector_MacroRows() {
     global g_Macros, g_MacroCharMap
-    BuildMacroCharMap()
+    if (!IsObject(g_MacroCharMap) || g_MacroCharMap.Count = 0)
+        BuildMacroCharMap()
     rows := []
     if (!IsSet(g_Macros))
         return rows
+    funcToChar := Map()
+    for c, fn in g_MacroCharMap
+        funcToChar[fn] := c
     for macro in g_Macros {
-        ch := ""
-        for c, fn in g_MacroCharMap {
-            if (fn = macro.func) {
-                ch := c
-                break
-            }
-        }
+        ch := funcToChar.Has(macro.func) ? funcToChar[macro.func] : ""
         rows.Push({ char: ch, title: macro.title, func: macro.func })
     }
     return rows
@@ -109,12 +111,32 @@ UtilitySelector_MacroRows() {
 
 UtilitySelector_ProjectRows() {
     rows := []
-    for project in ProjectData_Load(true) {
+    for project in ProjectData_Load(false, true) {
         if (project.name = "" && project.path = "" && project.workPath = "")
             continue
         rows.Push(project)
     }
     return rows
+}
+
+UtilitySelector_ProjectCountCached() {
+    global g_Projects, g_ProjectDataCacheReady
+    if (!g_ProjectDataCacheReady)
+        return UtilitySelector_ProjectRows().Length
+    n := 0
+    for project in g_Projects {
+        if (project.name = "" && project.path = "" && project.workPath = "")
+            continue
+        n++
+    }
+    return n
+}
+
+UtilitySelector_MacroCountCached() {
+    global g_Macros
+    if (!IsSet(g_Macros) || !IsObject(g_Macros))
+        return 0
+    return g_Macros.Length
 }
 
 GetPreviewText(text, maxLength := 60) {

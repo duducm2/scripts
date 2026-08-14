@@ -85,6 +85,8 @@ HandleHotstringChar(char) {
     }
 
     if (g_UtilitySelectorCategory = "Macros") {
+        if (!IsObject(g_MacroCharMap) || g_MacroCharMap.Count = 0)
+            BuildMacroCharMap()
         fn := g_MacroCharMap.Get(ch, "")
         if (fn = "")
             fn := g_MacroCharMap.Get(char, "")

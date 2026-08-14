@@ -13,19 +13,22 @@ PromptData_IniPath() {
 }
 
 ; Same assignment pool as g_HotstringCharSequence; 'l' is reserved for Gemini-arm in Prompts.
+global g_PromptCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+    "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "n", "m", ",", "."]
+global g_PromptCharValid := Map()
+for _promptChar in g_PromptCharSequence
+    g_PromptCharValid[_promptChar] := true
+
 PromptData_CharSequence() {
-    return ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
-        "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "n", "m", ",", "."]
+    global g_PromptCharSequence
+    return g_PromptCharSequence
 }
 
 PromptData_IsValidChar(char) {
+    global g_PromptCharValid
     if (char = "" || char = "l")
         return false
-    for c in PromptData_CharSequence() {
-        if (c = char)
-            return true
-    }
-    return false
+    return g_PromptCharValid.Has(char)
 }
 
 PromptData_NormalizeIniValue(val) {
@@ -94,8 +97,11 @@ PromptData_DefaultEntries() {
     ]
 }
 
-PromptData_Load(force := false) {
+; skipMtime: return in-memory cache without FileGetTime/IniRead (hotkey open on Google Drive).
+PromptData_Load(force := false, skipMtime := false) {
     global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
+    if (!force && skipMtime && g_PromptDataCacheReady)
+        return g_PromptEntries
     path := PromptData_IniPath()
     if (!FileExist(path)) {
         if (!PromptData_Save(PromptData_DefaultEntries()))

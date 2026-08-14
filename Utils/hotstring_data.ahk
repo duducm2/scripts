@@ -12,19 +12,22 @@ HotstringData_IniPath() {
     return A_ScriptDir "\assets\data\hotstrings.ini"
 }
 
+global g_HotstringDataCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z",
+    "x", "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+global g_HotstringDataCharValid := Map()
+for _hsChar in g_HotstringDataCharSequence
+    g_HotstringDataCharValid[_hsChar] := true
+
 HotstringData_CharSequence() {
-    return ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
-        "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
+    global g_HotstringDataCharSequence
+    return g_HotstringDataCharSequence
 }
 
 HotstringData_IsValidChar(char) {
+    global g_HotstringDataCharValid
     if (char = "")
         return false
-    for c in HotstringData_CharSequence() {
-        if (c = char)
-            return true
-    }
-    return false
+    return g_HotstringDataCharValid.Has(char)
 }
 
 HotstringData_NormalizeIniValue(val) {
@@ -60,8 +63,10 @@ HotstringData_DefaultEntries() {
     ]
 }
 
-HotstringData_Load(force := false) {
+HotstringData_Load(force := false, skipMtime := false) {
     global g_HotstringEntries, g_HotstringDataCacheReady, g_HotstringDataCacheMtime
+    if (!force && skipMtime && g_HotstringDataCacheReady)
+        return g_HotstringEntries
     path := HotstringData_IniPath()
     if (!FileExist(path)) {
         if (!HotstringData_Save(HotstringData_DefaultEntries()))
