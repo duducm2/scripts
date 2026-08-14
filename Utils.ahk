@@ -122,6 +122,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Handy UIA helper functions and ShowAiModelSelector support -> Utils\handy_uia_helpers.ahk
 #include %A_ScriptDir%\Utils\handy_uia_helpers.ahk
 
+; [Utils module] Send dictation? [R] Handy History last recording Play -> Utils\handy_replay_last.ahk
+#include %A_ScriptDir%\Utils\handy_replay_last.ahk
+
 ; [Utils module] SelectAiModelInHandy entry and pre-movement warning -> Utils\handy_selector_entry.ahk
 #include %A_ScriptDir%\Utils\handy_selector_entry.ahk
 
