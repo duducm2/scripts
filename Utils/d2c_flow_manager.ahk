@@ -23,6 +23,11 @@ class D2C_FlowManager {
     }
 
     Reset() {
+        try {
+            if (this.MonitorTimer)
+                SetTimer(this.MonitorTimer, 0)
+        } catch {
+        }
         this.CurrentPhase := "Idle"
         this.OriginHwnd := 0
         this.GeminiHwnd := 0
@@ -44,8 +49,10 @@ class D2C_FlowManager {
             return
         if (this.CurrentPhase = "PromptingSubmit")
             return
-        if (this.CurrentPhase != "Idle")
-            return
+        if (this.CurrentPhase != "Idle") {
+            try StandardLoadingBar_CloseKeysOverlay()
+            try StandardLoadingBar_Hide(0)
+        }
         this.Reset()
         this.OriginHwnd := 0
         try this.OriginHwnd := WinGetID("A")
@@ -480,18 +487,15 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
 
-        this.CurrentPhase := "ReplayingHandyRecording"
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
         HideDictationIndicator()
 
-        try {
-            HandyReplay_PlayLastRecording()
-        } finally {
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
-        }
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
+
+        HandyReplay_PlayLastRecording()
     }
 
     ; [P] Open Spotify, Ctrl+K search, paste dictation, Enter, then immerse (play + fullscreen).

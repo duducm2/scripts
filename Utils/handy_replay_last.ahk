@@ -17,66 +17,52 @@ HandyReplay_FindNamed(el, typeId, names) {
     return 0
 }
 
-HandyReplay_HistoryLoaded(el) {
-    if !el
-        return false
-    if HandyReplay_FindNamed(el, 50020, ["HISTORY", "HISTÓRICO"])
-        return true
-    if HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"])
-        return true
-    return false
-}
-
+; Always click sidebar History so the list refreshes after a new recording.
 HandyReplay_EnsureHistoryTab(hwnd) {
     global UIA
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    if (HandyReplay_HistoryLoaded(el))
-        return true
-    hist := HandyReplay_FindNamed(el, 50020, ["History", "Histórico"])
-    if !hist
-        return false
-    try hist.Click()
-    catch {
-        try hist.Invoke()
-        catch {
-            return false
-        }
-    }
-    Sleep 220
-    el2 := UIA.ElementFromHandle(hwnd)
-    return HandyReplay_HistoryLoaded(el2)
-}
-
-HandyReplay_WaitHistoryReady(hwnd, timeoutMs := 4000) {
-    global UIA
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
+    try {
         el := UIA.ElementFromHandle(hwnd)
-        if (el && HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"]))
-            return true
-        Sleep 120
+        if !el
+            return false
+        hist := HandyReplay_FindNamed(el, 50020, ["History", "Histórico"])
+        if !hist
+            return false
+        try hist.Click()
+        catch {
+            try hist.Invoke()
+            catch {
+                return false
+            }
+        }
+        Sleep 350
+        return true
+    } catch {
+        return false
     }
-    return false
 }
 
 HandyReplay_ClickFirstPlay(hwnd) {
     global UIA
-    el := UIA.ElementFromHandle(hwnd)
-    if !el
-        return false
-    play := HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"])
-    if !play
-        return false
-    try play.Click()
-    catch {
-        try play.Invoke()
-        catch {
-            return false
+    loop 2 {
+        try {
+            el := UIA.ElementFromHandle(hwnd)
+            play := el ? HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"]) : 0
+            if play {
+                try play.Click()
+                catch {
+                    try play.Invoke()
+                    catch {
+                        return false
+                    }
+                }
+                return true
+            }
+        } catch {
         }
+        if (A_Index = 1)
+            Sleep 250
     }
-    return true
+    return false
 }
 
 ; End-to-end: activate/launch Handy → History → first Play. Leaves Handy open.
@@ -100,13 +86,6 @@ HandyReplay_PlayLastRecording() {
         if (!HandyReplay_EnsureHistoryTab(hwnd)) {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Handy History tab not found.", 2200, BANNER_ACCENT_ERROR)
-            barOwned := false
-            return false
-        }
-
-        if (!HandyReplay_WaitHistoryReady(hwnd)) {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ No recording Play button in History.", 2200, BANNER_ACCENT_ERROR)
             barOwned := false
             return false
         }
