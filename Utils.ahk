@@ -171,6 +171,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] ToggleOutlookAndTeams macro -> Utils\toggle_outlook_teams.ahk
 #include %A_ScriptDir%\Utils\toggle_outlook_teams.ahk
 
+; [Utils module] Email note macro (Outlook work / Gmail personal) -> Utils\email_note_macro.ahk
+#include %A_ScriptDir%\Utils\email_note_macro.ahk
+
 ; [Utils module] CheckAndOpenOutlookTeams prompt helper -> Utils\outlook_teams_check.ahk
 #include %A_ScriptDir%\Utils\outlook_teams_check.ahk
 

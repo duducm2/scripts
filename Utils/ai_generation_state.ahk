@@ -122,6 +122,8 @@ InitMacros() {
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
     ; Toggle Outlook and Teams macro
     RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
+    ; Email note: new mail to both inboxes (work Outlook / personal Gmail)
+    RegisterMacro(EmailNote_Create, "📧 Email note (both inboxes)", "o")
     ; Clean the Clipboard macro (assigned to "P")
     RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
