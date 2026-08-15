@@ -7,37 +7,6 @@
 global EMAIL_NOTE_BOSCH := "eduardo.figueiredo@br.bosch.com"
 global EMAIL_NOTE_GMAIL := "edu.evangelista.figueiredo@gmail.com"
 
-; #region agent log
-EmailNote_DbgJsonStr(s) {
-    s := SubStr(s, 1, 80)
-    s := StrReplace(s, "\", "\\")
-    s := StrReplace(s, '"', "'")
-    s := StrReplace(s, "`n", " ")
-    s := StrReplace(s, "`r", "")
-    return s
-}
-EmailNote_Dbg(hypo, loc, msg, data := "{}") {
-    global g_EmailNoteDbgRun
-    runId := (IsSet(g_EmailNoteDbgRun) && g_EmailNoteDbgRun != "") ? g_EmailNoteDbgRun : "pre-fix"
-    try FileAppend('{"sessionId":"c18ca5","runId":"' runId '","hypothesisId":"' hypo '","location":"' loc '","message":"' msg
-        . '","data":' data ',"timestamp":' A_TickCount '}`n', A_ScriptDir "\debug-c18ca5.log", "UTF-8")
-    catch {
-    }
-}
-EmailNote_DbgWin(hwnd) {
-    t := "", cls := ""
-    try t := WinGetTitle("ahk_id " hwnd)
-    catch {
-    }
-    try cls := WinGetClass("ahk_id " hwnd)
-    catch {
-    }
-    return '{"hwnd":' Integer(hwnd) ',"hasCompose":' (InStr(t, "Compose Mail") ? 1 : 0) ',"hasGmail":' (InStr(t,
-        "Gmail")
-        ? 1 : 0) ',"title":"' EmailNote_DbgJsonStr(t) '","class":"' EmailNote_DbgJsonStr(cls) '"}'
-}
-; #endregion
-
 EmailNote_Create() {
     global IS_WORK_ENVIRONMENT
     try {
@@ -262,11 +231,6 @@ EmailNote_WaitUntilGmailInboxReady(initialHwnd := 0, timeoutMs := 15000, neededS
             if (readyStreak >= neededStreak) {
                 WinActivate("ahk_id " hwnd)
                 WinWaitActive("ahk_id " hwnd, , 2)
-                ; #region agent log
-                EmailNote_Dbg("B", "email_note_macro.ahk:WaitUntilGmailInboxReady", "inboxReady", '{"hwnd":'
-                    Integer(hwnd) ',"win":' EmailNote_DbgWin(hwnd) ',"hasComposeBtn":' (
-                        EmailNote_FindGmailComposeButton(hwnd) ? 1 : 0) '}')
-                ; #endregion
                 return hwnd
             }
         } else {
@@ -274,34 +238,24 @@ EmailNote_WaitUntilGmailInboxReady(initialHwnd := 0, timeoutMs := 15000, neededS
         }
         Sleep 200
     }
-    ; #region agent log
-    EmailNote_Dbg("B", "email_note_macro.ahk:WaitUntilGmailInboxReady", "inboxTimeout", '{"initial":' Integer(
-        initialHwnd) '}')
-    ; #endregion
     return 0
 }
 
 EmailNote_TriggerGmailCompose(hwnd) {
     btn := EmailNote_FindGmailComposeButton(hwnd)
-    usedBtn := 0
     if btn {
         try {
             btn.Invoke()
-            usedBtn := 1
+            return
         } catch {
             try {
                 btn.Click()
-                usedBtn := 1
+                return
             } catch {
             }
         }
     }
-    if (!usedBtn)
-        Send("c")
-    ; #region agent log
-    EmailNote_Dbg("B", "email_note_macro.ahk:TriggerGmailCompose", "triggered", '{"usedBtn":' usedBtn ',"active":'
-        EmailNote_DbgWin(WinExist("A")) '}')
-    ; #endregion
+    Send("c")
 }
 
 EmailNote_FindReadyGmailComposeHwnd(inboxHwnd := 0) {
@@ -322,7 +276,6 @@ EmailNote_WaitUntilGmailComposeReady(inboxHwnd := 0, timeoutMs := 15000, neededS
     deadline := A_TickCount + timeoutMs
     readyStreak := 0
     lastUpdate := 0
-    pollCount := 0
     while (A_TickCount < deadline) {
         elapsed := Round((A_TickCount - openStart) / 1000)
         if ((A_TickCount - lastUpdate) >= 800) {
@@ -330,18 +283,6 @@ EmailNote_WaitUntilGmailComposeReady(inboxHwnd := 0, timeoutMs := 15000, neededS
             lastUpdate := A_TickCount
         }
         hwnd := EmailNote_FindReadyGmailComposeHwnd(inboxHwnd)
-        pollCount += 1
-        pref := EmailNote_FindGmailHwnd(true)
-        if (pollCount = 1 || hwnd > 0 || Mod(pollCount, 15) = 0) {
-            rootPref := EmailNote_GmailUiaRoot(pref)
-            rootIn := EmailNote_GmailUiaRoot(inboxHwnd)
-            ; #region agent log
-            EmailNote_Dbg("C", "email_note_macro.ahk:WaitUntilGmailComposeReady", "poll", '{"poll":' pollCount
-                . ',"readyHwnd":' Integer(hwnd) ',"streak":' readyStreak ',"prefTo":' (EmailNote_FindGmailToField(
-                    rootPref) ? 1 : 0) ',"prefSub":' (EmailNote_FindGmailSubjectField(rootPref) ? 1 : 0) ',"inboxTo":' (
-                        EmailNote_FindGmailToField(rootIn) ? 1 : 0) ',"pref":' EmailNote_DbgWin(pref) '}')
-            ; #endregion
-        }
         if (hwnd > 0) {
             readyStreak += 1
             if (readyStreak >= neededStreak) {
@@ -354,9 +295,6 @@ EmailNote_WaitUntilGmailComposeReady(inboxHwnd := 0, timeoutMs := 15000, neededS
         }
         Sleep 200
     }
-    ; #region agent log
-    EmailNote_Dbg("D", "email_note_macro.ahk:WaitUntilGmailComposeReady", "timeout", '{"polls":' pollCount '}')
-    ; #endregion
     return 0
 }
 
@@ -389,8 +327,6 @@ EmailNote_FillGmailCompose(hwnd) {
 }
 
 EmailNote_CreateGmail() {
-    global g_EmailNoteDbgRun
-    g_EmailNoteDbgRun := "post-fix"
     barOwned := false
     try {
         StandardLoadingBar_Show("⏳ Opening compose...", BANNER_ACCENT_INTERMEDIATE, {
@@ -400,10 +336,6 @@ EmailNote_CreateGmail() {
         barOwned := true
 
         composeHwnd := EmailNote_FindReadyGmailComposeHwnd()
-        ; #region agent log
-        EmailNote_Dbg("A", "email_note_macro.ahk:CreateGmail", "start", '{"alreadyReady":' (composeHwnd ? 1 : 0)
-        . ',"active":' EmailNote_DbgWin(WinExist("A")) '}')
-        ; #endregion
         if (!composeHwnd) {
             StandardLoadingBar_Update("⏳ Activating Gmail...")
             if (!EmailNote_EnsureGmailActive()) {
@@ -421,15 +353,7 @@ EmailNote_CreateGmail() {
                 return
             }
             StandardLoadingBar_Update("⏳ Opening compose...")
-            ; #region agent log
-            EmailNote_Dbg("A", "email_note_macro.ahk:CreateGmail", "beforeSendC", '{"inbox":' EmailNote_DbgWin(
-                inboxHwnd) ',"active":' EmailNote_DbgWin(WinExist("A")) '}')
-            ; #endregion
             EmailNote_TriggerGmailCompose(inboxHwnd)
-            ; #region agent log
-            EmailNote_Dbg("B", "email_note_macro.ahk:CreateGmail", "afterSendC", '{"active":' EmailNote_DbgWin(WinExist(
-                "A")) '}')
-            ; #endregion
             composeHwnd := EmailNote_WaitUntilGmailComposeReady(inboxHwnd)
         } else {
             WinActivate("ahk_id " composeHwnd)
@@ -439,20 +363,12 @@ EmailNote_CreateGmail() {
         if (!composeHwnd) {
             StandardLoadingBar_Hide(0)
             barOwned := false
-            ; #region agent log
-            EmailNote_Dbg("E", "email_note_macro.ahk:CreateGmail", "composeNotReady", '{"active":' EmailNote_DbgWin(
-                WinExist("A")) '}')
-            ; #endregion
             ShowCenteredOverlay_Utils("❌ Email note: Gmail compose did not become ready", 2500, BANNER_ACCENT_ERROR)
             return
         }
 
         StandardLoadingBar_Update("⏳ Filling To...")
         ok := EmailNote_FillGmailCompose(composeHwnd)
-        ; #region agent log
-        EmailNote_Dbg("C", "email_note_macro.ahk:CreateGmail", "fillDone", '{"ok":' (ok ? 1 : 0) ',"compose":'
-        EmailNote_DbgWin(composeHwnd) '}')
-        ; #endregion
         StandardLoadingBar_Hide(0)
         barOwned := false
         if !ok
