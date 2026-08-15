@@ -123,8 +123,6 @@ InitMacros() {
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
     ; Toggle Sound
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
-    ; Global AI generation state: Cursor + Gemini (assigned to "U")
-    RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 AI working? (Cursor + Gemini)", "u")
 }
 
 InitMacros()
