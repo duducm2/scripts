@@ -22,6 +22,8 @@ Closing:
 - **Win+Alt+Shift+A** again toggles off the app or global sheet, and also closes the **Search cheat sheets** window if it is open.
 - Otherwise close the search window normally (e.g. title bar).
 
+On open, a **Loading Indication** (`StandardLoadingBar_Show`, yellow accent) appears immediately so the chord is acknowledged during hold detection and sheet resolve; it hides before the ListView overlay is shown. Close/toggle-off with the same hotkey does not show the bar.
+
 On open, the **search/filter field is focused** so you can type immediately.
 
 Both **app** (quick tap) and **global** (long hold) overlays use the same **ListView** shell in [`cheat_sheet_gui.ahk`](../Shift%20keys/cheat_sheet_gui.ahk):

@@ -557,6 +557,7 @@ ToggleShortcutHelp() {
         g_helpSearchEdit.Value := ""
         g_cheatSheetSuppressFilter := false
         CheatSheet_RefreshSheetListView(g_helpLv, g_cheatSheetAppRows)
+        CheatSheet_HideOpeningIndicator()
         CheatSheet_ShowSheetListView(g_helpGui, g_helpLv, g_helpSearchEdit)
         g_helpShown := true
     } catch {
@@ -586,11 +587,20 @@ ShowGlobalShortcutsHelp() {
         g_globalSearchEdit.Value := ""
         g_cheatSheetSuppressFilter := false
         CheatSheet_RefreshSheetListView(g_globalLv, g_cheatSheetGlobalRows)
+        CheatSheet_HideOpeningIndicator()
         CheatSheet_ShowSheetListView(g_globalGui, g_globalLv, g_globalSearchEdit)
         g_globalShown := true
     } catch {
         g_globalShown := false
     }
+}
+
+CheatSheet_ShowOpeningIndicator() {
+    try StandardLoadingBar_Show("⏳ Opening cheat sheet...", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+}
+
+CheatSheet_HideOpeningIndicator() {
+    try StandardLoadingBar_Hide(0)
 }
 
 ; ========== Hotkey with hold detection ====================================
@@ -617,21 +627,26 @@ ShowGlobalShortcutsHelp() {
         return
     }
 
-    ; No cheat sheet is open, determine which one to show based on hold time
-    static pressTime := 0
-    pressTime := A_TickCount
+    ; Loading Indication while waiting for tap vs hold and while resolving/building the overlay.
+    CheatSheet_ShowOpeningIndicator()
+    try {
+        static pressTime := 0
+        pressTime := A_TickCount
 
-    ; Wait for key release or timeout (increased to accommodate 1s+ holds)
-    KeyWait "a", "T1"  ; Wait max 1.5s for key release
+        ; Wait for key release or timeout (increased to accommodate 1s+ holds)
+        KeyWait "a", "T1"  ; Wait max 1.5s for key release
 
-    holdTime := A_TickCount - pressTime
+        holdTime := A_TickCount - pressTime
 
-    if (holdTime >= 700) {
-        ; Long hold (1s+) - show global shortcuts
-        ShowGlobalShortcutsHelp()
-    } else {
-        ; Quick press - show app-specific shortcuts
-        ToggleShortcutHelp()
+        if (holdTime >= 700) {
+            try StandardLoadingBar_Update("⏳ Opening global shortcuts...", BANNER_ACCENT_INTERMEDIATE)
+            ShowGlobalShortcutsHelp()
+        } else {
+            try StandardLoadingBar_Update("⏳ Opening app shortcuts...", BANNER_ACCENT_INTERMEDIATE)
+            ToggleShortcutHelp()
+        }
+    } finally {
+        CheatSheet_HideOpeningIndicator()
     }
 }
 
