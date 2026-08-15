@@ -116,25 +116,15 @@ Cursor_FindComposerIconAcrossInstances() {
 
 ; Initialize macros
 InitMacros() {
-    ; Quick Update to Your Scripts macro
-    RegisterMacro(QuickUpdateScripts, "⚡ Quick Update to Your Scripts")
-    ; Add specific word to Handy macroh
+    ; Add specific word to Handy
     RegisterMacro(AddWordToHandy, "➕ Add specific word to Handy")
-    ; Toggle Outlook and Teams macro
-    RegisterMacro(ToggleOutlookAndTeams, "🔄 Toggle Outlook & Teams")
     ; Email note: new mail to both inboxes (work Outlook / personal Gmail)
     RegisterMacro(EmailNote_Create, "📧 Email note (both inboxes)", "o")
-    ; Clean the Clipboard macro (assigned to "P")
-    RegisterMacro(CleanClipboard, "🧹 Clean the Clipboard", "p")
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
-    ; Toggle Sound macro
+    ; Toggle Sound
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
     ; Global AI generation state: Cursor + Gemini (assigned to "U")
     RegisterMacro(Cursor_FindComposerIconAcrossInstances, "🔍 AI working? (Cursor + Gemini)", "u")
-    ; Mark Last Clip as Favorite macro (assigned to "J")
-    RegisterMacro(MarkLastClipAsFavorite, "⭐ Mark Last Clip as Favorite", "j")
-    ; Move Desktop to Recycle Bin (assigned to "N") - red banner, Y/N confirm
-    RegisterMacro(DesktopToRecycle_Trigger, "🗑️ Move Desktop to Recycle Bin", "n")
 }
 
 InitMacros()

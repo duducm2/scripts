@@ -1191,12 +1191,12 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+G] > RESERVED — Handy: cancel dictation (define in Handy only; not bound in AHK)
     [Ctrl+Alt+Win+L] > {AI_PROVIDER} D2C direct submit (Utils.ahk; ZMK hold on L key)
     [Ctrl+Alt+Win+0] > Project Quick Selector (opens project folder in Cursor)
-    [Ctrl+Alt+Win+2] > Quick Update to Your Scripts (HotStrings macro)
-    [Ctrl+Alt+Win+3] > Toggle Outlook and Teams (HotStrings macro)
-    [Ctrl+Alt+Win+5] > Clean the Clipboard (HotStrings macro)
-    [Ctrl+Alt+Win+4] > Mark Last Clip as Favorite (HotStrings macro; same as Ctrl+Alt+Win+J if 4 chord fails on keyboard)
-    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (HotStrings macro; alternate for keyboards that ghost Ctrl+Alt+Win+4)
-    [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin (HotStrings macro)
+    [Ctrl+Alt+Win+2] > Quick Update to Your Scripts
+    [Ctrl+Alt+Win+3] > Toggle Outlook and Teams
+    [Ctrl+Alt+Win+5] > Clean the Clipboard
+    [Ctrl+Alt+Win+4] > Mark Last Clip as Favorite (same as Ctrl+Alt+Win+J if 4 chord fails on keyboard)
+    [Ctrl+Alt+Win+J] > Mark Last Clip as Favorite (alternate for keyboards that ghost Ctrl+Alt+Win+4)
+    [Ctrl+Alt+Win+8] > Moves Desktop to Recycle Bin
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (model slot 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (model slot 1)
     

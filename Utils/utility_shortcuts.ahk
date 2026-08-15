@@ -83,7 +83,7 @@ ToggleAICompanionChromeTab() {
     ShowSingleCharTabBanner_Utils(targetTab)
 }
 
-; Ctrl+Alt+Win+2..8 - same macros as HotStrings panel (Win+Alt+Shift+U); secondary triggers only
+; Ctrl+Alt+Win+2..8 / J — dedicated chords (not listed in #!+U Macros)
 ^!#2:: QuickUpdateScripts()
 ^!#3:: ToggleOutlookAndTeams()
 ; InputLevel 10 + hook so ZMK / firmware chords win over other low-level handlers.
