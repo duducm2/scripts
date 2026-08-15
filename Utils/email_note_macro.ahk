@@ -7,7 +7,7 @@
 global EMAIL_NOTE_BOSCH := "eduardo.figueiredo@br.bosch.com"
 global EMAIL_NOTE_GMAIL := "edu.evangelista.figueiredo@gmail.com"
 
-EmailNote_Create() {
+EmailNote_Create(subjectText := "") {
     global IS_WORK_ENVIRONMENT
     try {
         if (IS_WORK_ENVIRONMENT) {
@@ -22,8 +22,9 @@ EmailNote_Create() {
             Send("{Tab}")
             Sleep 80
             EmailNote_FocusOutlookSubjectIfNeeded()
+            EmailNote_TypeSubjectText(subjectText)
         } else {
-            EmailNote_CreateGmail()
+            EmailNote_CreateGmail(subjectText)
         }
     } catch Error as e {
         ShowCenteredOverlay_Utils("❌ Email note: " . e.Message, 2500, BANNER_ACCENT_ERROR)
@@ -298,7 +299,46 @@ EmailNote_WaitUntilGmailComposeReady(inboxHwnd := 0, timeoutMs := 15000, neededS
     return 0
 }
 
-EmailNote_FillGmailCompose(hwnd) {
+EmailNote_NormalizeSubject(subjectText) {
+    subjectText := Trim(subjectText)
+    subjectText := StrReplace(subjectText, "`r`n", " ")
+    subjectText := StrReplace(subjectText, "`n", " ")
+    subjectText := StrReplace(subjectText, "`r", " ")
+    return Trim(subjectText)
+}
+
+EmailNote_TypeSubjectText(subjectText) {
+    subjectText := EmailNote_NormalizeSubject(subjectText)
+    if (subjectText = "")
+        return
+    SendText(subjectText)
+}
+
+EmailNote_TypeGmailSubject(hwnd, subjectText) {
+    subjectText := EmailNote_NormalizeSubject(subjectText)
+    if (subjectText = "")
+        return
+    if (hwnd > 0) {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 2)
+    }
+    root := EmailNote_GmailUiaRoot(hwnd)
+    subEl := EmailNote_FindGmailSubjectField(root)
+    if subEl {
+        try subEl.SetFocus()
+        catch {
+        }
+        Sleep 80
+        try subEl.Value := subjectText
+        catch {
+            SendText(subjectText)
+        }
+        return
+    }
+    SendText(subjectText)
+}
+
+EmailNote_FillGmailCompose(hwnd, subjectText := "") {
     global EMAIL_NOTE_BOSCH, EMAIL_NOTE_GMAIL
     root := EmailNote_GmailUiaRoot(hwnd)
     if !root
@@ -316,17 +356,11 @@ EmailNote_FillGmailCompose(hwnd) {
     Sleep 80
     SendText(EMAIL_NOTE_BOSCH ", " EMAIL_NOTE_GMAIL)
     Sleep 80
-    root := EmailNote_GmailUiaRoot(hwnd)
-    subEl := EmailNote_FindGmailSubjectField(root)
-    if subEl {
-        try subEl.SetFocus()
-        catch {
-        }
-    }
+    EmailNote_TypeGmailSubject(hwnd, subjectText)
     return true
 }
 
-EmailNote_CreateGmail() {
+EmailNote_CreateGmail(subjectText := "") {
     barOwned := false
     try {
         StandardLoadingBar_Show("⏳ Opening compose...", BANNER_ACCENT_INTERMEDIATE, {
@@ -367,10 +401,11 @@ EmailNote_CreateGmail() {
             return
         }
 
-        StandardLoadingBar_Update("⏳ Filling To...")
-        ok := EmailNote_FillGmailCompose(composeHwnd)
         StandardLoadingBar_Hide(0)
         barOwned := false
+        WinActivate("ahk_id " composeHwnd)
+        WinWaitActive("ahk_id " composeHwnd, , 2)
+        ok := EmailNote_FillGmailCompose(composeHwnd, subjectText)
         if !ok
             return
     } catch Error as e {

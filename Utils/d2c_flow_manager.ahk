@@ -88,6 +88,7 @@ class D2C_FlowManager {
             "Z", this.OnSubmitZ.Bind(this),
             "P", this.OnSubmitP.Bind(this),
             "R", this.OnSubmitR.Bind(this),
+            "L", this.OnSubmitL.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -97,7 +98,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 920, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [N] Cancel",
             true,
             true,
             true
@@ -512,6 +513,26 @@ class D2C_FlowManager {
 
         try {
             SpotifyDictation_PlayFromClipboard(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [L] Email note: new mail to both inboxes, dictated text as Subject.
+    OnSubmitL(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "CreatingEmailNote"
+        StandardLoadingBar_CloseKeysOverlay()
+        messageText := A_Clipboard
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        try {
+            EmailNote_Create(messageText)
         } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
