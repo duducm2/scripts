@@ -326,6 +326,24 @@ GetMtaskPromptText() {
     return GetPromptText("mtask")
 }
 
+; Runtime prompt: instructions + live INI catalogs (accounts, expense/income categories).
+GetMobillsPromptText() {
+    body := GetPromptText("mobills-daily")
+    accounts := MobillsDaily_RenderIniCatalog(A_ScriptDir "\accounts.ini", "Accounts")
+    expenses := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-expenses.ini", "Expense categories")
+    incomes := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-income.ini", "Income categories")
+    extra := ""
+    if (accounts != "")
+        extra .= "`n`n" . accounts
+    if (expenses != "")
+        extra .= "`n`n" . expenses
+    if (incomes != "")
+        extra .= "`n`n" . incomes
+    extra .= "`n`nCredit card (always): Mercado Pago"
+    extra .= "`n`nDictation follows."
+    return body . extra
+}
+
 GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
     targetHwnd := GetGeminiScriptMsgTargetHwnd()

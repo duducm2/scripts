@@ -1174,6 +1174,10 @@ cheatSheets["Mobills"] := "
     💳 [X]Credit card e[X]pense
     🔄 [F]Funds trans[F]er
     🔘 [W][W]indow (Open button + type MAIN)
+    
+    --- Utils (not Shift) ---
+    💰 [Win+Alt+Shift+U] Macros [m] daily entry (Desktop MOBILLS_V1 file)
+    🎙️ Send dictation? [B] Mobills (preset + dictation → AI)
 )"
 
 ; Raw text for long-hold global cheat sheet (also used by SearchCheatSheets).
@@ -1232,6 +1236,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
+    Send dictation? [B] > Mobills daily preset + dictation to {AI_PROVIDER}; save MOBILLS_V1 file then #!+U Macros [m]
     [Ctrl+Alt+Win+G] > Cancel dictation (Handy — user-defined; reserved in cheat sheet, not in AHK)
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (picker slot 2; same as Win+Alt+Shift+C then 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)

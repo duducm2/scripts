@@ -206,6 +206,11 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Hotstring (pasteable string) registry for Utility Shortcuts -> Utils\hotstring_data.ahk
 #include %A_ScriptDir%\Utils\hotstring_data.ahk
 
+; [Lib] Mobills UIA helpers (daily entry) — before mobills_daily_entry
+#include %A_ScriptDir%\lib\MobillsUia.ahk
+; [Utils module] Mobills daily entry macro -> Utils\mobills_daily_entry.ahk
+#include %A_ScriptDir%\Utils\mobills_daily_entry.ahk
+
 ; [Utils module] Global AI generation state U macro -> Utils\ai_generation_state.ahk
 #include %A_ScriptDir%\Utils\ai_generation_state.ahk
 

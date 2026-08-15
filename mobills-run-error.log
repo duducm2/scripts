@@ -1,0 +1,12 @@
+﻿2026-08-15 20:55:45	Transaction #1
+Field: New menu
+Gate: Could not click + then Credit card expense
+Selectors attempted:
+  - AutomationId=action-button, Type=50000
+  - Name=New, Type=50000
+2026-08-15 20:56:03	Transaction #1
+Field: New menu
+Gate: Could not click + then Credit card expense
+Selectors attempted:
+  - AutomationId=action-button, Type=50000
+  - Name=New, Type=50000
