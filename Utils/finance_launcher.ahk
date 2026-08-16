@@ -149,6 +149,7 @@ Finance_OpenDashboard(reportsTab := false) {
         return
     }
     Run('"' . html . '"')
+    Finance_CloseGui()
 }
 
 Finance_ShowSettings() {
