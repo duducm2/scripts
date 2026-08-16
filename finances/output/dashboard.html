@@ -25,6 +25,8 @@
       --toggle-fg: #eee;
       --plot-paper: #1e1e1e;
       --plot-font: #ccc;
+      --ctrl-bg: #2c2c2c;
+      --ctrl-fg: #eee;
     }
     [data-theme="light"] {
       --bg: #f4f5f7;
@@ -46,14 +48,24 @@
       --toggle-fg: #1a1a1a;
       --plot-paper: #ffffff;
       --plot-font: #374151;
+      --ctrl-bg: #fff;
+      --ctrl-fg: #1a1a1a;
     }
     body { font-family: Segoe UI, sans-serif; background:var(--bg); color:var(--text); margin:0; font-size:13px; }
     header { padding:8px 14px; background:var(--header); border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; gap:12px; }
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     header h1 { margin:0; font-size:15px; font-weight:600; }
-    #themeToggle { background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
-      border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; }
-    #themeToggle:hover { filter:brightness(1.08); }
+    .period-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .period-controls label { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }
+    .period-controls input[type="month"] {
+      background:var(--ctrl-bg); color:var(--ctrl-fg); border:1px solid var(--border);
+      border-radius:6px; padding:4px 8px; font-size:12px;
+    }
+    .period-controls button {
+      background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
+      border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer;
+    }
+    .period-controls button:hover { filter:brightness(1.08); }
     main { padding:12px 16px 20px; }
     .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
     .kpi { background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }
@@ -85,21 +97,26 @@
 </head>
 <body>
 <header>
-  <h1>Finance cockpit · 2026 (Jan, Aug)</h1>
-  <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
+  <h1>Finance cockpit · <span id="periodTitle">2026-08</span></h1>
+  <div class="period-controls">
+    <label>From <input type="month" id="periodFrom" value="2026-08"/></label>
+    <label>To <input type="month" id="periodTo" value="2026-08"/></label>
+    <button type="button" id="periodApply">Apply</button>
+    <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
+  </div>
 </header>
 <main>
-  <div class="note">Budget exceeded: 💻 Electronics (R$ 2.420,22 / R$ 100,00)</div><div class="note">Goal past target date: New car</div><div class="note">Goal past target date: Land down payment</div><div class="note">Goal past target date: New car</div>
+  <div class="note">Budget exceeded: 🍽️ Food (R$ 311,91 / R$ 300,00)</div><div class="note">Budget exceeded: 💻 Electronics (R$ 2.010,22 / R$ 50,00)</div><div class="note">Goal past target date: New car</div><div class="note">Goal past target date: Land down payment</div><div class="note">Goal past target date: New car</div>
   
-        <div class="kpis">
-          <div class="kpi"><div class="lbl">Balance</div><div class="val">R$ 175.861,38</div></div>
-          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">R$ 19.736,76</div></div>
-          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">R$ 18.398,21</div></div>
-          <div class="kpi"><div class="lbl">Card avail.</div><div class="val">R$ 12.000,00 <span class="dim">/ R$ 12.000,00</span></div></div>
+        <div class="kpis" id="kpiRow">
+          <div class="kpi"><div class="lbl">Balance</div><div class="val" id="kpiBalance">R$ 175.861,38</div></div>
+          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos" id="kpiIncome">R$ 15.536,76</div></div>
+          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg" id="kpiExpense">R$ 14.169,51</div></div>
+          <div class="kpi"><div class="lbl">Card avail.</div><div class="val" id="kpiCard">R$ 12.000,00 <span class="dim">/ R$ 12.000,00</span></div></div>
         </div>
   
         <div class="panel panel-slim">
-          <div class="perf-line">Prior period R$ 0,00 · This period R$ 1.338,55 (+0%) · Kept 7% · Top: ⚖️ Adjustment R$ 4.900,00 · 🏠 Household bills R$ 4.400,00 · 💻 Electronics R$ 2.420,22 · 🛒 Groceries R$ 2.247,70</div>
+          <div class="perf-line" id="perfLine">Saved last month R$ 96,08 · This month R$ 1.367,25 (+1323%) · Kept 9% · Top: ⚖️ Adjustment R$ 4.900,00 · 🏠 Household bills R$ 2.300,00 · 💻 Electronics R$ 2.010,22 · 🏦 Banking R$ 2.010,22</div>
         </div>
   <div class="charts">
     
@@ -108,7 +125,7 @@
     
           <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
           <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
-          <div class="panel chart-cell chart-span"><h2>Annual cash flow (2026)</h2><div id="lineYear" class="chart"></div></div>
+          <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow (2026)</h2><div id="lineYear" class="chart"></div></div>
   </div>
   <div class="split">
     
@@ -116,12 +133,233 @@
           <div class="bar-row"><div class="bar-head"><span>Private pension</span><span>R$ 16.733,13 / R$ 926.400,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.8%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 909.666,87</div></div><div class="bar-row"><div class="bar-head"><span>Emergency fund</span><span>R$ 2.141,14 / R$ 18.000,00 · 12%</span></div><div class="bar-track"><div class="bar-fill" style="width:11.9%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 15.858,86</div></div><div class="bar-row"><div class="bar-head"><span>Father's money</span><span>R$ 10.000,00 / R$ 10.000,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#f1c40f"></div></div><div class="bar-meta">Reached</div></div><div class="bar-row"><div class="bar-head"><span>Germany</span><span>R$ 22.314,00 / R$ 50.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:44.6%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 27.686,00</div></div><div class="bar-row"><div class="bar-head"><span>Germany (Leonardo share)</span><span>R$ 500,00 / R$ 15.000,00 · 3%</span></div><div class="bar-track"><div class="bar-fill" style="width:3.3%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 14.500,00</div></div><div class="bar-row"><div class="bar-head"><span>New car</span><span>R$ 600,00 / R$ 40.000,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.5%;background:#7f8c8d"></div></div><div class="bar-meta">Rem R$ 39.400,00</div></div><div class="bar-row"><div class="bar-head"><span>Land down payment</span><span>R$ 7.218,73 / R$ 40.000,00 · 18%</span></div><div class="bar-track"><div class="bar-fill" style="width:18.0%;background:#7f8c8d"></div></div><div class="bar-meta">Rem R$ 32.781,27</div></div><div class="bar-row"><div class="bar-head"><span>New car</span><span>R$ 32.000,00 / R$ 70.000,00 · 46%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.7%;background:#7f8c8d"></div></div><div class="bar-meta">Rem R$ 38.000,00</div></div></div>
     
         <div class="panel"><h2>Budgets</h2>
-          <div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 522,41 / R$ 600,00 · 87%</span></div><div class="bar-track"><div class="bar-fill" style="width:87.1%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 77,59</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 100,00 / R$ 300,00 · 33%</span></div><div class="bar-track"><div class="bar-fill" style="width:33.3%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 200,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 460,00 / R$ 800,00 · 57%</span></div><div class="bar-track"><div class="bar-fill" style="width:57.5%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 340,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 4.400,00 / R$ 4.600,00 · 96%</span></div><div class="bar-track"><div class="bar-fill" style="width:95.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 200,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 279,67 / R$ 800,00 · 35%</span></div><div class="bar-track"><div class="bar-fill" style="width:35.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 520,33</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 2.420,22 / R$ 100,00 · 2420%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 2.320,22</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 200,00 / R$ 300,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:66.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 100,00</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 287,28 / R$ 1.200,00 · 24%</span></div><div class="bar-track"><div class="bar-fill" style="width:23.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 912,72</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 2.247,70 / R$ 6.000,00 · 37%</span></div><div class="bar-track"><div class="bar-fill" style="width:37.5%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 3.752,30</div></div><div class="bar-row"><div class="bar-head"><span>❤️ Health</span><span>R$ 127,90 / R$ 1.000,00 · 13%</span></div><div class="bar-track"><div class="bar-fill" style="width:12.8%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 872,10</div></div></div>
+          <div id="budgetsBody"><div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 311,91 / R$ 300,00 · 104%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 11,91</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 100,00 / R$ 150,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:66.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 50,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 280,00 / R$ 400,00 · 70%</span></div><div class="bar-track"><div class="bar-fill" style="width:70.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 120,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 2.300,00 / R$ 2.300,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 139,77 / R$ 400,00 · 35%</span></div><div class="bar-track"><div class="bar-fill" style="width:34.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 260,23</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 2.010,22 / R$ 50,00 · 4020%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 1.960,22</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 150,00 / R$ 150,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 167,28 / R$ 600,00 · 28%</span></div><div class="bar-track"><div class="bar-fill" style="width:27.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 432,72</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 1.357,30 / R$ 3.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.2%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.642,70</div></div></div></div>
   </div>
 </main>
 <script>
-const DATA = {"expensePie": {"labels": ["⚖️ Adjustment", "🏠 Household bills", "💻 Electronics", "🛒 Groceries", "🏦 Banking", "❤️ Health", "🍽️ Food", "🚗 Car", "🎉 Leisure", "📚 Education", "🤝 Humanitarian", "💄 Beauty"], "values": [4900.0, 4400.0, 2420.22, 2247.7, 2010.22, 570.71, 522.41, 460.0, 287.28, 279.67, 200.0, 100.0], "colors": ["#2ECC71", "#27AE60", "#8E44AD", "#D35400", "#16A085", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#2980B9", "#C0392B", "#9B59B6"], "custom": ["R$ 4.900,00", "R$ 4.400,00", "R$ 2.420,22", "R$ 2.247,70", "R$ 2.010,22", "R$ 570,71", "R$ 522,41", "R$ 460,00", "R$ 287,28", "R$ 279,67", "R$ 200,00", "R$ 100,00"]}, "incomePie": {"labels": ["✳️ Other", "💼 Salary", "💡 Side income", "🎁 Bonus"], "values": [10000.0, 9076.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 9.076,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01"}, {"income": 15536.76, "expense": 14169.51, "balance": 1367.25, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 14169.51, "balance": 1367.25, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "⚖️ Adjustment", "value": 4900.0}, {"name": "🏠 Household bills", "value": 4400.0}, {"name": "💻 Electronics", "value": 2420.2200000000003}, {"name": "🛒 Groceries", "value": 2247.7}, {"name": "🏦 Banking", "value": 2010.22}, {"name": "❤️ Health", "value": 570.71}, {"name": "🍽️ Food", "value": 522.41}, {"name": "🚗 Car", "value": 460.0}, {"name": "🎉 Leisure", "value": 287.28}, {"name": "📚 Education", "value": 279.67}, {"name": "🤝 Humanitarian", "value": 200.0}, {"name": "💄 Beauty", "value": 100.0}]};
+const DATA = {"expensePie": {"labels": ["⚖️ Adjustment", "🏠 Household bills", "💻 Electronics", "🏦 Banking", "🛒 Groceries", "❤️ Health", "🍽️ Food", "🚗 Car", "🎉 Leisure", "🤝 Humanitarian", "📚 Education", "💄 Beauty"], "values": [4900.0, 2300.0, 2010.22, 2010.22, 1357.3, 442.81, 311.91, 280.0, 167.28, 150.0, 139.77, 100.0], "colors": ["#2ECC71", "#27AE60", "#8E44AD", "#16A085", "#D35400", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#C0392B", "#2980B9", "#9B59B6"], "custom": ["R$ 4.900,00", "R$ 2.300,00", "R$ 2.010,22", "R$ 2.010,22", "R$ 1.357,30", "R$ 442,81", "R$ 311,91", "R$ 280,00", "R$ 167,28", "R$ 150,00", "R$ 139,77", "R$ 100,00"]}, "incomePie": {"labels": ["✳️ Other", "💼 Salary", "💡 Side income", "🎁 Bonus"], "values": [10000.0, 4876.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 4.876,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 15536.76, "expense": 14169.51, "balance": 1367.25, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 14169.51, "balance": 1367.25, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "⚖️ Adjustment", "value": 4900.0}, {"name": "🏠 Household bills", "value": 2300.0}, {"name": "💻 Electronics", "value": 2010.22}, {"name": "🏦 Banking", "value": 2010.22}, {"name": "🛒 Groceries", "value": 1357.3}, {"name": "❤️ Health", "value": 442.81}, {"name": "🍽️ Food", "value": 311.91}, {"name": "🚗 Car", "value": 280.0}, {"name": "🎉 Leisure", "value": 167.28}, {"name": "🤝 Humanitarian", "value": 150.0}, {"name": "📚 Education", "value": 139.77}, {"name": "💄 Beauty", "value": 100.0}]};
+const RAW = {"currentMonth": "2026-08", "balance": 175861.38, "cardAvailable": 12000.0, "cardLimit": 12000.0, "widgets": {"ShowBalance": true, "ShowPies": true, "ShowPerformance": true, "ShowGoals": true, "ShowBudgets": true, "ShowNotifications": true}, "transactions": [{"date": "2026-01-03", "amount": "4200,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-01-06", "amount": "180,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-01-08", "amount": "890,40", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-01-10", "amount": "2100,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-01-11", "amount": "139,90", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-01-14", "amount": "210,50", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-01-15", "amount": "50,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-01-17", "amount": "80,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-01-18", "amount": "47,90", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-01-20", "amount": "120,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-01-25", "amount": "410,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-02-03", "amount": "4200,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-02-06", "amount": "250,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-02-08", "amount": "920,15", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-02-08", "amount": "36,40", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-02-10", "amount": "2100,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-02-11", "amount": "139,90", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-02-14", "amount": "180,00", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-02-15", "amount": "80,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-02-17", "amount": "220,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-02-20", "amount": "340,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-02-22", "amount": "150,00", "type": "expense", "category_id": "CAT_BELEZA"}, {"date": "2026-02-22", "amount": "64,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-02-25", "amount": "890,50", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-02-27", "amount": "500,00", "type": "transfer", "category_id": "CAT_TRANSFER"}, {"date": "2026-03-03", "amount": "4200,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-03-06", "amount": "400,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-03-08", "amount": "1040,80", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-03-10", "amount": "2150,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-03-11", "amount": "139,90", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-03-12", "amount": "80,00", "type": "expense", "category_id": "CAT_BELEZA"}, {"date": "2026-03-14", "amount": "245,90", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-03-15", "amount": "50,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-03-17", "amount": "450,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-03-20", "amount": "80,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-03-25", "amount": "120,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-03-28", "amount": "200,00", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-04-03", "amount": "4300,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-04-05", "amount": "129,90", "type": "expense", "category_id": "CAT_PETS"}, {"date": "2026-04-06", "amount": "190,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-04-08", "amount": "980,00", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-04-10", "amount": "2150,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-04-11", "amount": "200,00", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-04-14", "amount": "198,40", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-04-15", "amount": "200,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-04-17", "amount": "90,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-04-19", "amount": "189,00", "type": "expense", "category_id": "CAT_ROUPA"}, {"date": "2026-04-20", "amount": "450,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-04-22", "amount": "80,00", "type": "expense", "category_id": "CAT_BELEZA"}, {"date": "2026-04-25", "amount": "650,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-05-03", "amount": "4500,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-05-06", "amount": "320,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-05-07", "amount": "42,18", "type": "income", "category_id": "CAT_NOTAFISC"}, {"date": "2026-05-08", "amount": "1102,33", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-05-10", "amount": "2200,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-05-11", "amount": "139,90", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-05-14", "amount": "260,10", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-05-15", "amount": "80,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-05-17", "amount": "670,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-05-20", "amount": "167,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-05-21", "amount": "80,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-05-25", "amount": "210,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-05-27", "amount": "500,00", "type": "transfer", "category_id": "CAT_TRANSFER"}, {"date": "2026-06-03", "amount": "4800,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-06-04", "amount": "8500,00", "type": "income", "category_id": "CAT_BONIFICA"}, {"date": "2026-06-06", "amount": "410,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-06-08", "amount": "1250,40", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-06-10", "amount": "2200,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-06-11", "amount": "400,00", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-06-11", "amount": "1523,45", "type": "income", "category_id": "CAT_INVESTIM"}, {"date": "2026-06-14", "amount": "310,00", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-06-15", "amount": "350,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-06-17", "amount": "150,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-06-18", "amount": "733,44", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-06-20", "amount": "520,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-06-22", "amount": "120,00", "type": "expense", "category_id": "CAT_BELEZA"}, {"date": "2026-06-25", "amount": "1480,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-07-03", "amount": "4600,00", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-07-06", "amount": "200,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-07-08", "amount": "980,12", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-07-09", "amount": "120,00", "type": "income", "category_id": "CAT_REEMBOLS"}, {"date": "2026-07-10", "amount": "2250,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-07-11", "amount": "139,90", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-07-14", "amount": "175,20", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-07-15", "amount": "50,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-07-17", "amount": "310,00", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-07-20", "amount": "90,00", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-07-25", "amount": "330,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-07-26", "amount": "98,70", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-08-03", "amount": "4876,76", "type": "income", "category_id": "CAT_SALARIO"}, {"date": "2026-08-05", "amount": "650,00", "type": "income", "category_id": "CAT_RENDAEXT"}, {"date": "2026-08-06", "amount": "280,00", "type": "expense", "category_id": "CAT_CARRO"}, {"date": "2026-08-07", "amount": "680,23", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-08-08", "amount": "1039,26", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-08-10", "amount": "2300,00", "type": "expense", "category_id": "CAT_CONTASDE"}, {"date": "2026-08-11", "amount": "139,77", "type": "expense", "category_id": "CAT_EDUCACAO"}, {"date": "2026-08-12", "amount": "10000,00", "type": "income", "category_id": "CAT_OUTROS2"}, {"date": "2026-08-14", "amount": "280,67", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-08-15", "amount": "150,00", "type": "expense", "category_id": "CAT_HUMANITA"}, {"date": "2026-08-15", "amount": "529,99", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-08-15", "amount": "317,04", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-08-15", "amount": "31,24", "type": "expense", "category_id": "CAT_ALIMENTA"}, {"date": "2026-08-16", "amount": "1,00", "type": "expense", "category_id": "CAT_MERCADO"}, {"date": "2026-08-16", "amount": "10,00", "type": "income", "category_id": "CAT_BONIFICA"}, {"date": "2026-08-17", "amount": "442,81", "type": "expense", "category_id": "CAT_SAUDE"}, {"date": "2026-08-20", "amount": "167,28", "type": "expense", "category_id": "CAT_LAZER"}, {"date": "2026-08-21", "amount": "800,00", "type": "card_expense", "category_id": "CAT_ELETRONI"}, {"date": "2026-08-22", "amount": "100,00", "type": "expense", "category_id": "CAT_BELEZA"}, {"date": "2026-08-27", "amount": "500,00", "type": "transfer", "category_id": "CAT_TRANSFER"}, {"date": "2026-08-16", "amount": "4900,00", "type": "expense", "category_id": "CAT_AJUSTE"}, {"date": "2026-08-16", "amount": "2010,22", "type": "expense", "category_id": "CAT_OPERACAO"}], "categories": [{"id": "CAT_AJUSTE", "name": "Adjustment", "parent_id": "", "color": "#2ECC71", "icon": "⚖️", "type": "expense"}, {"id": "CAT_ALIMENTA", "name": "Food", "parent_id": "", "color": "#3498DB", "icon": "🍽️", "type": "expense"}, {"id": "CAT_BELEZA", "name": "Beauty", "parent_id": "", "color": "#9B59B6", "icon": "💄", "type": "expense"}, {"id": "CAT_CABELEIR", "name": "Hairdresser", "parent_id": "CAT_BELEZA", "color": "#E67E22", "icon": "💇", "type": "expense"}, {"id": "CAT_TATUAGEM", "name": "Tattoo, piercing and earrings", "parent_id": "CAT_BELEZA", "color": "#E74C3C", "icon": "💉", "type": "expense"}, {"id": "CAT_CARRO", "name": "Car", "parent_id": "", "color": "#F1C40F", "icon": "🚗", "type": "expense"}, {"id": "CAT_CELULAR", "name": "Phone", "parent_id": "", "color": "#34495E", "icon": "📱", "type": "expense"}, {"id": "CAT_COMPRAS", "name": "Shopping", "parent_id": "", "color": "#16A085", "icon": "🛍️", "type": "expense"}, {"id": "CAT_CONTASDE", "name": "Household bills", "parent_id": "", "color": "#27AE60", "icon": "🏠", "type": "expense"}, {"id": "CAT_EDUCACAO", "name": "Education", "parent_id": "", "color": "#2980B9", "icon": "📚", "type": "expense"}, {"id": "CAT_ELETRONI", "name": "Electronics", "parent_id": "", "color": "#8E44AD", "icon": "💻", "type": "expense"}, {"id": "CAT_EMPRESTI", "name": "Loan", "parent_id": "", "color": "#D35400", "icon": "💳", "type": "expense"}, {"id": "CAT_HUMANITA", "name": "Humanitarian", "parent_id": "", "color": "#C0392B", "icon": "🤝", "type": "expense"}, {"id": "CAT_IMPOSTOS", "name": "Taxes", "parent_id": "", "color": "#7F8C8D", "icon": "🧾", "type": "expense"}, {"id": "CAT_IRSOBREI", "name": "Investment income tax", "parent_id": "CAT_IMPOSTOS", "color": "#2C3E50", "icon": "📉", "type": "expense"}, {"id": "CAT_JOGOS", "name": "Games", "parent_id": "", "color": "#2ECC71", "icon": "🎮", "type": "expense"}, {"id": "CAT_LAZER", "name": "Leisure", "parent_id": "", "color": "#3498DB", "icon": "🎉", "type": "expense"}, {"id": "CAT_BARESEBA", "name": "Bars and clubs", "parent_id": "CAT_LAZER", "color": "#E67E22", "icon": "🍸", "type": "expense"}, {"id": "CAT_BEBIDAS", "name": "Drinks", "parent_id": "CAT_LAZER", "color": "#E74C3C", "icon": "🥤", "type": "expense"}, {"id": "CAT_EVENTOS", "name": "Events", "parent_id": "CAT_LAZER", "color": "#1ABC9C", "icon": "🎫", "type": "expense"}, {"id": "CAT_RESTAURA", "name": "Restaurants", "parent_id": "CAT_LAZER", "color": "#F1C40F", "icon": "🍴", "type": "expense"}, {"id": "CAT_VIAGEM", "name": "Travel", "parent_id": "CAT_LAZER", "color": "#34495E", "icon": "✈️", "type": "expense"}, {"id": "CAT_MATERIAI", "name": "Misc materials", "parent_id": "", "color": "#16A085", "icon": "🧰", "type": "expense"}, {"id": "CAT_CASA", "name": "Home", "parent_id": "CAT_MATERIAI", "color": "#27AE60", "icon": "🏡", "type": "expense"}, {"id": "CAT_COLECION", "name": "Collectibles", "parent_id": "CAT_MATERIAI", "color": "#2980B9", "icon": "🧸", "type": "expense"}, {"id": "CAT_SEXUAIS", "name": "Adult", "parent_id": "CAT_MATERIAI", "color": "#8E44AD", "icon": "🔒", "type": "expense"}, {"id": "CAT_MERCADO", "name": "Groceries", "parent_id": "", "color": "#D35400", "icon": "🛒", "type": "expense"}, {"id": "CAT_ALIMENTO", "name": "Food items", "parent_id": "CAT_MERCADO", "color": "#C0392B", "icon": "🥫", "type": "expense"}, {"id": "CAT_BEBIDASM", "name": "Grocery drinks", "parent_id": "CAT_MERCADO", "color": "#7F8C8D", "icon": "🧃", "type": "expense"}, {"id": "CAT_CONGELAD", "name": "Frozen and deli", "parent_id": "CAT_MERCADO", "color": "#2C3E50", "icon": "🧊", "type": "expense"}, {"id": "CAT_HIGIENEP", "name": "Personal care", "parent_id": "CAT_MERCADO", "color": "#2ECC71", "icon": "🧴", "type": "expense"}, {"id": "CAT_HORTIFRU", "name": "Produce", "parent_id": "CAT_MERCADO", "color": "#3498DB", "icon": "🥬", "type": "expense"}, {"id": "CAT_OUTROS", "name": "Other", "parent_id": "CAT_MERCADO", "color": "#9B59B6", "icon": "✳️", "type": "expense"}, {"id": "CAT_PADARIA", "name": "Bakery", "parent_id": "CAT_MERCADO", "color": "#E67E22", "icon": "🥖", "type": "expense"}, {"id": "CAT_PAPELARI", "name": "Stationery", "parent_id": "CAT_MERCADO", "color": "#E74C3C", "icon": "✏️", "type": "expense"}, {"id": "CAT_PRODUTOS", "name": "Cleaning products", "parent_id": "CAT_MERCADO", "color": "#1ABC9C", "icon": "🧹", "type": "expense"}, {"id": "CAT_MOVEIS", "name": "Furniture", "parent_id": "", "color": "#F1C40F", "icon": "🛋️", "type": "expense"}, {"id": "CAT_MUDANCA", "name": "Moving", "parent_id": "", "color": "#34495E", "icon": "📦", "type": "expense"}, {"id": "CAT_OPERACAO", "name": "Banking", "parent_id": "", "color": "#16A085", "icon": "🏦", "type": "expense"}, {"id": "CAT_PETS", "name": "Pets", "parent_id": "", "color": "#27AE60", "icon": "🐾", "type": "expense"}, {"id": "CAT_ROUPA", "name": "Clothing", "parent_id": "", "color": "#8E44AD", "icon": "👕", "type": "expense"}, {"id": "CAT_FANTASIA", "name": "Costume", "parent_id": "CAT_ROUPA", "color": "#D35400", "icon": "🎭", "type": "expense"}, {"id": "CAT_SAUDE", "name": "Health", "parent_id": "", "color": "#C0392B", "icon": "❤️", "type": "expense"}, {"id": "CAT_CONSULTA", "name": "Appointments", "parent_id": "CAT_SAUDE", "color": "#7F8C8D", "icon": "🩺", "type": "expense"}, {"id": "CAT_PRODUTOS2", "name": "Medical supplies", "parent_id": "CAT_SAUDE", "color": "#2C3E50", "icon": "🩹", "type": "expense"}, {"id": "CAT_REMEDIOS", "name": "Medicine", "parent_id": "CAT_SAUDE", "color": "#2ECC71", "icon": "💊", "type": "expense"}, {"id": "CAT_SERVICO", "name": "Services", "parent_id": "", "color": "#3498DB", "icon": "🔧", "type": "expense"}, {"id": "CAT_BONIFICA", "name": "Bonus", "parent_id": "", "color": "#9B59B6", "icon": "🎁", "type": "income"}, {"id": "CAT_EMPRESTI2", "name": "Loan", "parent_id": "", "color": "#E67E22", "icon": "💵", "type": "income"}, {"id": "CAT_INVESTIM", "name": "Investments", "parent_id": "", "color": "#E74C3C", "icon": "📈", "type": "income"}, {"id": "CAT_NOTAFISC", "name": "São Paulo tax rebate", "parent_id": "", "color": "#1ABC9C", "icon": "🏛️", "type": "income"}, {"id": "CAT_OUTROS2", "name": "Other", "parent_id": "", "color": "#F1C40F", "icon": "✳️", "type": "income"}, {"id": "CAT_PREMIOS", "name": "Prizes", "parent_id": "", "color": "#16A085", "icon": "🏆", "type": "income"}, {"id": "CAT_PRESENTE", "name": "Gift", "parent_id": "", "color": "#27AE60", "icon": "🎀", "type": "income"}, {"id": "CAT_REAJUSTE", "name": "Salary adjustment", "parent_id": "", "color": "#2980B9", "icon": "🔧", "type": "income"}, {"id": "CAT_REEMBOLS", "name": "Refund", "parent_id": "", "color": "#8E44AD", "icon": "↩️", "type": "income"}, {"id": "CAT_RENDAEXT", "name": "Side income", "parent_id": "", "color": "#D35400", "icon": "💡", "type": "income"}, {"id": "CAT_RESTITUI", "name": "Income tax refund", "parent_id": "", "color": "#C0392B", "icon": "💰", "type": "income"}, {"id": "CAT_SALARIO", "name": "Salary", "parent_id": "", "color": "#7F8C8D", "icon": "💼", "type": "income"}, {"id": "CAT_TRANSFER", "name": "Transfer", "parent_id": "", "color": "#2C3E50", "icon": "🔄", "type": "income"}, {"id": "CAT_VENDA", "name": "Sale", "parent_id": "", "color": "#3498DB", "icon": "🏷️", "type": "income"}, {"id": "CAT_TRANSPOR", "name": "Transport", "parent_id": "", "color": "#1ABC9C", "icon": "🚌", "type": "expense"}, {"id": "CAT_SUBSCRIP", "name": "Subscriptions", "parent_id": "", "color": "#9B59B6", "icon": "📺", "type": "expense"}], "budgets": [{"year_month": "2026-01", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "890,40"}, {"year_month": "2026-01", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "210,50"}, {"year_month": "2026-01", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-01", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "120,00"}, {"year_month": "2026-01", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "127,90"}, {"year_month": "2026-01", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "180,00"}, {"year_month": "2026-01", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2100,00"}, {"year_month": "2026-01", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "139,90"}, {"year_month": "2026-01", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "410,00"}, {"year_month": "2026-01", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "50,00"}, {"year_month": "2026-02", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "920,15"}, {"year_month": "2026-02", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "180,00"}, {"year_month": "2026-02", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "150,00"}, {"year_month": "2026-02", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "404,00"}, {"year_month": "2026-02", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "220,00"}, {"year_month": "2026-02", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "286,40"}, {"year_month": "2026-02", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2100,00"}, {"year_month": "2026-02", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "139,90"}, {"year_month": "2026-02", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "890,50"}, {"year_month": "2026-02", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "80,00"}, {"year_month": "2026-03", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "1040,80"}, {"year_month": "2026-03", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "245,90"}, {"year_month": "2026-03", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "80,00"}, {"year_month": "2026-03", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "80,00"}, {"year_month": "2026-03", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "450,00"}, {"year_month": "2026-03", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "400,00"}, {"year_month": "2026-03", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2150,00"}, {"year_month": "2026-03", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "339,90"}, {"year_month": "2026-03", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "120,00"}, {"year_month": "2026-03", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "50,00"}, {"year_month": "2026-04", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "980,00"}, {"year_month": "2026-04", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "198,40"}, {"year_month": "2026-04", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "80,00"}, {"year_month": "2026-04", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "450,00"}, {"year_month": "2026-04", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "90,00"}, {"year_month": "2026-04", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "190,00"}, {"year_month": "2026-04", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2150,00"}, {"year_month": "2026-04", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "200,00"}, {"year_month": "2026-04", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "650,00"}, {"year_month": "2026-04", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "200,00"}, {"year_month": "2026-05", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "1102,33"}, {"year_month": "2026-05", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "260,10"}, {"year_month": "2026-05", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-05", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "167,00"}, {"year_month": "2026-05", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "670,00"}, {"year_month": "2026-05", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "320,00"}, {"year_month": "2026-05", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2200,00"}, {"year_month": "2026-05", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "139,90"}, {"year_month": "2026-05", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "210,00"}, {"year_month": "2026-05", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "160,00"}, {"year_month": "2026-06", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "1250,40"}, {"year_month": "2026-06", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "310,00"}, {"year_month": "2026-06", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "120,00"}, {"year_month": "2026-06", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "520,00"}, {"year_month": "2026-06", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "150,00"}, {"year_month": "2026-06", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "410,00"}, {"year_month": "2026-06", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2200,00"}, {"year_month": "2026-06", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "400,00"}, {"year_month": "2026-06", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "2213,44"}, {"year_month": "2026-06", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "350,00"}, {"year_month": "2026-07", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "980,12"}, {"year_month": "2026-07", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "175,20"}, {"year_month": "2026-07", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-07", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "188,70"}, {"year_month": "2026-07", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "310,00"}, {"year_month": "2026-07", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "200,00"}, {"year_month": "2026-07", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2250,00"}, {"year_month": "2026-07", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "139,90"}, {"year_month": "2026-07", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "330,00"}, {"year_month": "2026-07", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "50,00"}, {"year_month": "2026-08", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "1357,30"}, {"year_month": "2026-08", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "311,91"}, {"year_month": "2026-08", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "100,00"}, {"year_month": "2026-08", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "167,28"}, {"year_month": "2026-08", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "280,00"}, {"year_month": "2026-08", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "2300,00"}, {"year_month": "2026-08", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "139,77"}, {"year_month": "2026-08", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "2010,22"}, {"year_month": "2026-08", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "150,00"}, {"year_month": "2026-09", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "0,00"}, {"year_month": "2026-09", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "0,00"}, {"year_month": "2026-10", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_MERCADO", "planned_amount": "3000,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_ALIMENTA", "planned_amount": "300,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_BELEZA", "planned_amount": "150,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_LAZER", "planned_amount": "600,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_SAUDE", "planned_amount": "1000,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_CARRO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_CONTASDE", "planned_amount": "2300,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_EDUCACAO", "planned_amount": "400,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_ELETRONI", "planned_amount": "50,00", "spent_amount": "0,00"}, {"year_month": "2026-11", "category_id": "CAT_HUMANITA", "planned_amount": "150,00", "spent_amount": "0,00"}], "goals": [{"id": "GOAL_PREV", "name": "Private pension", "current_amount": "16733,13", "target_amount": "926400,00", "target_date": "2062-01-01"}, {"id": "GOAL_EMERG", "name": "Emergency fund", "current_amount": "2141,14", "target_amount": "18000,00", "target_date": "2099-11-01"}, {"id": "GOAL_FATHER", "name": "Father's money", "current_amount": "10000,00", "target_amount": "10000,00", "target_date": "2026-09-15"}, {"id": "GOAL_ALEM", "name": "Germany", "current_amount": "22314,00", "target_amount": "50000,00", "target_date": ""}, {"id": "GOAL_ALEM2", "name": "Germany (Leonardo share)", "current_amount": "500,00", "target_amount": "15000,00", "target_date": ""}, {"id": "GOAL_CARRO", "name": "New car", "current_amount": "600,00", "target_amount": "40000,00", "target_date": "2026-01-01"}, {"id": "GOAL_TERR", "name": "Land down payment", "current_amount": "7218,73", "target_amount": "40000,00", "target_date": "2026-01-01"}, {"id": "GOAL_NCAR", "name": "New car", "current_amount": "32000,00", "target_amount": "70000,00", "target_date": "2026-01-01"}]};
 const THEME_KEY = 'finance-cockpit-theme';
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseDecimal(value) {
+  if (value == null) return 0;
+  let s = String(value).trim().replace('R$','').replace(/\s/g,'');
+  if (!s) return 0;
+  let sign = 1;
+  if (s[0] === '-' || s[0] === '+') {
+    if (s[0] === '-') sign = -1;
+    s = s.slice(1);
+  }
+  if (s.includes(',') && s.includes('.')) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g,'').replace(',', '.');
+    else s = s.replace(/,/g,'');
+  } else if (s.includes(',')) {
+    const parts = s.split(',');
+    if (parts.length === 2 && parts[1].length <= 2) s = s.replace(/\./g,'').replace(',', '.');
+    else s = s.replace(/,/g,'');
+  }
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? sign * n : 0;
+}
+function formatBrl(num) {
+  const neg = num < 0;
+  const n = Math.abs(num);
+  const formatted = n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return (neg ? '-R$ ' : 'R$ ') + formatted;
+}
+function monthShift(ym, delta) {
+  let y = parseInt(ym.slice(0,4), 10);
+  let m = parseInt(ym.slice(5,7), 10) + delta;
+  while (m > 12) { m -= 12; y += 1; }
+  while (m < 1) { m += 12; y -= 1; }
+  return y.toString().padStart(4,'0') + '-' + String(m).padStart(2,'0');
+}
+function monthsInRange(from, to) {
+  if (!from || !to) return [];
+  let a = from, b = to;
+  if (a.slice(0,4) !== b.slice(0,4)) {
+    a = b.slice(0,4) + '-' + a.slice(5);
+  }
+  if (a > b) { const t = a; a = b; b = t; }
+  const out = [];
+  let cur = a;
+  while (cur <= b) {
+    out.push(cur);
+    cur = monthShift(cur, 1);
+  }
+  return out;
+}
+function periodLabel(months) {
+  if (!months.length) return RAW.currentMonth;
+  if (months.length === 1) return months[0];
+  const year = months[0].slice(0,4);
+  return year + ' (' + months.map(m => MONTH_NAMES[parseInt(m.slice(5,7),10)-1]).join(', ') + ')';
+}
+function catById() {
+  const map = {};
+  for (const c of RAW.categories) map[c.id] = c;
+  return map;
+}
+function mainCategoryId(cid, byId) {
+  const c = byId[cid];
+  if (!c) return cid;
+  const parent = (c.parent_id || '').trim();
+  return parent || cid;
+}
+function catLabel(row, fallback) {
+  if (!row) return fallback || 'Uncategorized';
+  const icon = (row.icon || '').trim();
+  const name = row.name || fallback || '';
+  return icon && name ? icon + ' ' + name : (name || icon || fallback || 'Uncategorized');
+}
+function monthTotals(months) {
+  let income = 0, expense = 0;
+  const set = new Set(months);
+  for (const t of RAW.transactions) {
+    const ym = String(t.date || '').slice(0,7);
+    if (!set.has(ym)) continue;
+    const amt = parseDecimal(t.amount);
+    if (t.type === 'income') income += amt;
+    else if (t.type === 'expense' || t.type === 'card_expense') expense += amt;
+  }
+  return {income, expense, balance: income - expense};
+}
+function byCategory(months, types) {
+  const byId = catById();
+  const set = new Set(months);
+  const totals = {};
+  for (const t of RAW.transactions) {
+    const ym = String(t.date || '').slice(0,7);
+    if (!set.has(ym)) continue;
+    if (!types.has(t.type)) continue;
+    const cid = mainCategoryId(t.category_id || '', byId);
+    totals[cid] = (totals[cid] || 0) + parseDecimal(t.amount);
+  }
+  const rows = Object.entries(totals).map(([cid, amt]) => {
+    const row = byId[cid];
+    return {name: catLabel(row, cid), value: amt, color: (row && row.color) || '#7F8C8D'};
+  });
+  rows.sort((a,b) => b.value - a.value);
+  return rows;
+}
+function pieFromRows(rows) {
+  return {
+    labels: rows.map(r => r.name),
+    values: rows.map(r => Math.round(r.value * 100) / 100),
+    colors: rows.map(r => r.color),
+    custom: rows.map(r => formatBrl(r.value))
+  };
+}
+function seriesFor(months) {
+  return months.map(ym => {
+    const tot = monthTotals([ym]);
+    return {month: ym, income: tot.income, expense: tot.expense, balance: tot.balance};
+  });
+}
+function annualFor(year) {
+  const out = [];
+  for (let m = 1; m <= 12; m++) {
+    const ym = year + '-' + String(m).padStart(2,'0');
+    const tot = monthTotals([ym]);
+    out.push({month: ym, label: MONTH_NAMES[m-1], income: tot.income, expense: tot.expense, balance: tot.balance});
+  }
+  return out;
+}
+function priorMonths(months) {
+  if (!months.length) return [];
+  const sorted = [...months].sort();
+  const n = sorted.length;
+  const earliest = sorted[0];
+  const out = [];
+  for (let i = n; i >= 1; i--) out.push(monthShift(earliest, -i));
+  return out;
+}
+function aggregateBudgets(months) {
+  const set = new Set(months);
+  const planned = {}, spent = {};
+  for (const b of RAW.budgets) {
+    if (!set.has(b.year_month)) continue;
+    const cid = b.category_id || '';
+    planned[cid] = (planned[cid] || 0) + parseDecimal(b.planned_amount);
+    spent[cid] = (spent[cid] || 0) + parseDecimal(b.spent_amount);
+  }
+  const ids = [...new Set([...Object.keys(planned), ...Object.keys(spent)])].sort();
+  return ids.map(cid => ({category_id: cid, planned: planned[cid] || 0, spent: spent[cid] || 0}));
+}
+function renderBudgets(rows) {
+  const el = document.getElementById('budgetsBody');
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = '<p class="empty">No budgets this period</p>';
+    return;
+  }
+  const byId = catById();
+  el.innerHTML = rows.map(b => {
+    const name = catLabel(byId[b.category_id], b.category_id);
+    const rem = b.planned - b.spent;
+    const pct = b.planned > 0 ? (b.spent / b.planned * 100) : (b.spent > 0 ? 100 : 0);
+    const width = Math.min(pct, 100);
+    const over = b.spent > b.planned && b.planned > 0;
+    const fill = over ? '#e74c3c' : '#2ecc71';
+    const cap = over ? ('Exceeded ' + formatBrl(-rem)) : ('Remain ' + formatBrl(rem));
+    return '<div class="bar-row">'
+      + '<div class="bar-head"><span>' + name + '</span><span>'
+      + formatBrl(b.spent) + ' / ' + formatBrl(b.planned) + ' · ' + pct.toFixed(0) + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + width.toFixed(1) + '%;background:' + fill + '"></div></div>'
+      + '<div class="bar-meta">' + cap + '</div></div>';
+  }).join('');
+}
+function applyPeriod() {
+  const fromEl = document.getElementById('periodFrom');
+  const toEl = document.getElementById('periodTo');
+  let from = fromEl.value;
+  let to = toEl.value;
+  if (!from || !to) return;
+  if (from.slice(0,4) !== to.slice(0,4)) {
+    from = to.slice(0,4) + '-' + from.slice(5);
+    fromEl.value = from;
+    if (from > to) { from = to; fromEl.value = from; }
+  }
+  if (from > to) {
+    const t = from; from = to; to = t;
+    fromEl.value = from; toEl.value = to;
+  }
+  const months = monthsInRange(from, to);
+  const year = to.slice(0,4);
+  const tot = monthTotals(months);
+  const prev = monthTotals(priorMonths(months));
+  const expRows = byCategory(months, new Set(['expense','card_expense']));
+  const incRows = byCategory(months, new Set(['income']));
+  const multi = months.length > 1;
+  DATA.expensePie = pieFromRows(expRows);
+  DATA.incomePie = pieFromRows(incRows);
+  DATA.spentMain = expRows.map(r => ({name: r.name, value: r.value}));
+  DATA.series = seriesFor(months);
+  DATA.annual = annualFor(year);
+
+  const title = document.getElementById('periodTitle');
+  if (title) title.textContent = periodLabel(months);
+  const annualTitle = document.getElementById('annualTitle');
+  if (annualTitle) annualTitle.textContent = 'Annual cash flow (' + year + ')';
+  const kpiIncome = document.getElementById('kpiIncome');
+  const kpiExpense = document.getElementById('kpiExpense');
+  if (kpiIncome) kpiIncome.textContent = formatBrl(tot.income);
+  if (kpiExpense) kpiExpense.textContent = formatBrl(tot.expense);
+
+  const perf = document.getElementById('perfLine');
+  if (perf) {
+    const vs = prev.balance ? ((tot.balance - prev.balance) / Math.abs(prev.balance) * 100) : 0;
+    const saved = tot.income ? (tot.balance / tot.income * 100) : 0;
+    const top = expRows.slice(0,4).map(r => r.name + ' ' + formatBrl(r.value)).join(' · ') || 'No expenses';
+    const prevLbl = multi ? 'Prior period' : 'Saved last month';
+    const curLbl = multi ? 'This period' : 'This month';
+    perf.textContent = prevLbl + ' ' + formatBrl(prev.balance) + ' · ' + curLbl + ' ' + formatBrl(tot.balance)
+      + ' (' + (vs >= 0 ? '+' : '') + vs.toFixed(0) + '%) · Kept ' + saved.toFixed(0) + '% · Top: ' + top;
+  }
+  renderBudgets(aggregateBudgets(months));
+  drawAll();
+}
 function themeColors() {
   const cs = getComputedStyle(document.documentElement);
   return {
@@ -154,27 +392,36 @@ function drawAll() {
   const L = baseLayout();
   pie('pieExp', DATA.expensePie);
   pie('pieInc', DATA.incomePie);
-  const names = DATA.spentMain.map(x => x.name);
-  const vals = DATA.spentMain.map(x => x.value);
-  Plotly.newPlot('barCat', [{type:'bar', x:names, y:vals, marker:{color:'#e67e22'},
-    hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
-    Object.assign({}, L, {
-      showlegend:false,
-      height:320,
-      margin:{t:28, b:110, l:48, r:16},
-      xaxis:{tickangle:-45, automargin:true, tickfont:{size:10}}
-    }), {responsive:true, displayModeBar:false});
-  const months = DATA.series.map(x => x.month);
-  const bals = DATA.series.map(x => x.balance);
-  const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
-  Plotly.newPlot('barBal', [{type:'bar', x:months, y:bals, marker:{color:colors},
-    hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
-    Object.assign({}, L, {showlegend:false}), {responsive:true, displayModeBar:false});
-  Plotly.newPlot('lineYear', [
-    {type:'scatter', mode:'lines+markers', name:'In', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{color:'#2ecc71'}},
-    {type:'scatter', mode:'lines+markers', name:'Out', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{color:'#e74c3c'}},
-    {type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
-  ], L, {responsive:true, displayModeBar:false});
+  const barCat = document.getElementById('barCat');
+  if (barCat) {
+    const names = DATA.spentMain.map(x => x.name);
+    const vals = DATA.spentMain.map(x => x.value);
+    Plotly.newPlot('barCat', [{type:'bar', x:names, y:vals, marker:{color:'#e67e22'},
+      hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
+      Object.assign({}, L, {
+        showlegend:false,
+        height:320,
+        margin:{t:28, b:110, l:48, r:16},
+        xaxis:{tickangle:-45, automargin:true, tickfont:{size:10}}
+      }), {responsive:true, displayModeBar:false});
+  }
+  const barBal = document.getElementById('barBal');
+  if (barBal) {
+    const months = DATA.series.map(x => x.month);
+    const bals = DATA.series.map(x => x.balance);
+    const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
+    Plotly.newPlot('barBal', [{type:'bar', x:months, y:bals, marker:{color:colors},
+      hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
+      Object.assign({}, L, {showlegend:false}), {responsive:true, displayModeBar:false});
+  }
+  const lineYear = document.getElementById('lineYear');
+  if (lineYear) {
+    Plotly.newPlot('lineYear', [
+      {type:'scatter', mode:'lines+markers', name:'In', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{color:'#2ecc71'}},
+      {type:'scatter', mode:'lines+markers', name:'Out', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{color:'#e74c3c'}},
+      {type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
+    ], L, {responsive:true, displayModeBar:false});
+  }
 }
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -183,7 +430,7 @@ function applyTheme(theme) {
   if (btn) btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
   drawAll();
 }
-(function initTheme() {
+(function init() {
   let theme = localStorage.getItem(THEME_KEY);
   if (theme !== 'light' && theme !== 'dark') theme = 'dark';
   document.documentElement.setAttribute('data-theme', theme);
@@ -195,6 +442,20 @@ function applyTheme(theme) {
       applyTheme(next);
     });
   }
+  const applyBtn = document.getElementById('periodApply');
+  if (applyBtn) applyBtn.addEventListener('click', applyPeriod);
+  const fromEl = document.getElementById('periodFrom');
+  const toEl = document.getElementById('periodTo');
+  if (fromEl) fromEl.value = RAW.currentMonth;
+  if (toEl) toEl.value = RAW.currentMonth;
+  if (fromEl) fromEl.addEventListener('change', () => {
+    if (toEl && fromEl.value.slice(0,4) !== toEl.value.slice(0,4))
+      toEl.value = fromEl.value.slice(0,4) + '-' + toEl.value.slice(5);
+  });
+  if (toEl) toEl.addEventListener('change', () => {
+    if (fromEl && fromEl.value.slice(0,4) !== toEl.value.slice(0,4))
+      fromEl.value = toEl.value.slice(0,4) + '-' + fromEl.value.slice(5);
+  });
   drawAll();
 })();
 </script>

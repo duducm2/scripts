@@ -328,3 +328,56 @@ def snapshot(months: list[str] | None = None, year: str | None = None) -> dict:
         "accounts": accs,
         "cards": cards,
     }
+
+
+def cockpit_raw(data: dict | None = None) -> dict:
+    """Compact payload for client-side period filtering in the dashboard."""
+    if data is None:
+        data = snapshot()
+    txs = read_csv("transactions.csv")
+    cats = read_csv("categories.csv")
+    budgets = read_csv("budgets.csv")
+    return {
+        "currentMonth": current_month(),
+        "balance": data["balance"],
+        "cardAvailable": data["card_available"],
+        "cardLimit": data["card_limit"],
+        "widgets": {
+            "ShowBalance": widget_on(data["settings"], "ShowBalance"),
+            "ShowPies": widget_on(data["settings"], "ShowPies"),
+            "ShowPerformance": widget_on(data["settings"], "ShowPerformance"),
+            "ShowGoals": widget_on(data["settings"], "ShowGoals"),
+            "ShowBudgets": widget_on(data["settings"], "ShowBudgets"),
+            "ShowNotifications": widget_on(data["settings"], "ShowNotifications"),
+        },
+        "transactions": [
+            {
+                "date": t.get("date", ""),
+                "amount": t.get("amount", ""),
+                "type": t.get("type", ""),
+                "category_id": t.get("category_id", ""),
+            }
+            for t in txs
+        ],
+        "categories": [
+            {
+                "id": c.get("id", ""),
+                "name": c.get("name", ""),
+                "parent_id": c.get("parent_id", ""),
+                "color": c.get("color", "#7F8C8D"),
+                "icon": c.get("icon", ""),
+                "type": c.get("type", ""),
+            }
+            for c in cats
+        ],
+        "budgets": [
+            {
+                "year_month": b.get("year_month", ""),
+                "category_id": b.get("category_id", ""),
+                "planned_amount": b.get("planned_amount", ""),
+                "spent_amount": b.get("spent_amount", ""),
+            }
+            for b in budgets
+        ],
+        "goals": data["goals"],
+    }
