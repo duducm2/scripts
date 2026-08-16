@@ -4,7 +4,6 @@ CAT_ALIMENTA,Food,expense,,#3498DB,🍽️
 CAT_BELEZA,Beauty,expense,,#9B59B6,💄
 CAT_CABELEIR,Hairdresser,expense,CAT_BELEZA,#E67E22,💇
 CAT_TATUAGEM,"Tattoo, piercing and earrings",expense,CAT_BELEZA,#E74C3C,💉
-CAT_CACHORRO,Dog,expense,,#1ABC9C,🐕
 CAT_CARRO,Car,expense,,#F1C40F,🚗
 CAT_CELULAR,Phone,expense,,#34495E,📱
 CAT_COMPRAS,Shopping,expense,,#16A085,🛍️
@@ -17,7 +16,6 @@ CAT_IMPOSTOS,Taxes,expense,,#7F8C8D,🧾
 CAT_IRSOBREI,Investment income tax,expense,CAT_IMPOSTOS,#2C3E50,📉
 CAT_JOGOS,Games,expense,,#2ECC71,🎮
 CAT_LAZER,Leisure,expense,,#3498DB,🎉
-CAT_ALIMENTA2,Food (leisure),expense,CAT_LAZER,#9B59B6,🍷
 CAT_BARESEBA,Bars and clubs,expense,CAT_LAZER,#E67E22,🍸
 CAT_BEBIDAS,Drinks,expense,CAT_LAZER,#E74C3C,🥤
 CAT_EVENTOS,Events,expense,CAT_LAZER,#1ABC9C,🎫
@@ -41,12 +39,11 @@ CAT_MOVEIS,Furniture,expense,,#F1C40F,🛋️
 CAT_MUDANCA,Moving,expense,,#34495E,📦
 CAT_OPERACAO,Banking,expense,,#16A085,🏦
 CAT_PETS,Pets,expense,,#27AE60,🐾
-CAT_PIX,Pix,expense,,#2980B9,⚡
 CAT_ROUPA,Clothing,expense,,#8E44AD,👕
 CAT_FANTASIA,Costume,expense,CAT_ROUPA,#D35400,🎭
 CAT_SAUDE,Health,expense,,#C0392B,❤️
 CAT_CONSULTA,Appointments,expense,CAT_SAUDE,#7F8C8D,🩺
-CAT_PRODUTOS2,Products,expense,CAT_SAUDE,#2C3E50,🩹
+CAT_PRODUTOS2,Medical supplies,expense,CAT_SAUDE,#2C3E50,🩹
 CAT_REMEDIOS,Medicine,expense,CAT_SAUDE,#2ECC71,💊
 CAT_SERVICO,Services,expense,,#3498DB,🔧
 CAT_BONIFICA,Bonus,income,,#9B59B6,🎁
@@ -54,7 +51,6 @@ CAT_EMPRESTI2,Loan,income,,#E67E22,💵
 CAT_INVESTIM,Investments,income,,#E74C3C,📈
 CAT_NOTAFISC,São Paulo tax rebate,income,,#1ABC9C,🏛️
 CAT_OUTROS2,Other,income,,#F1C40F,✳️
-CAT_PIX2,Pix,income,,#34495E,⚡
 CAT_PREMIOS,Prizes,income,,#16A085,🏆
 CAT_PRESENTE,Gift,income,,#27AE60,🎀
 CAT_REAJUSTE,Salary adjustment,income,,#2980B9,🔧
@@ -63,5 +59,6 @@ CAT_RENDAEXT,Side income,income,,#D35400,💡
 CAT_RESTITUI,Income tax refund,income,,#C0392B,💰
 CAT_SALARIO,Salary,income,,#7F8C8D,💼
 CAT_TRANSFER,Transfer,income,,#2C3E50,🔄
-CAT_TRANSFER2,Bank transfer,income,,#2ECC71,🏧
 CAT_VENDA,Sale,income,,#3498DB,🏷️
+CAT_TRANSPOR,Transport,expense,,#1ABC9C,🚌
+CAT_SUBSCRIP,Subscriptions,expense,,#9B59B6,📺

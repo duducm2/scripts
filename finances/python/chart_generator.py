@@ -78,17 +78,17 @@ def build_html(data: dict) -> str:
         items = []
         for g in data["goals"]:
             name = g.get("name", "")
-            status = (g.get("status") or "in_progress").strip().lower()
             cur = parse_decimal(g.get("current_amount"))
             tgt = parse_decimal(g.get("target_amount"))
             pct = (cur / tgt * 100) if tgt > 0 else (100.0 if cur > 0 else 0.0)
             width = min(pct, 100.0)
             rem = tgt - cur
-            if status == "completed" or (tgt > 0 and cur >= tgt):
+            tdate = (g.get("target_date") or "").strip()
+            today = __import__("datetime").datetime.now().strftime("%Y-%m-%d")
+            if tgt > 0 and cur >= tgt:
                 fill = "#f1c40f"
-                status = "completed"
                 cap = "Reached"
-            elif status == "expired":
+            elif tdate and tdate < today and (tgt <= 0 or cur < tgt):
                 fill = "#7f8c8d"
                 cap = f"Rem {format_brl(rem)}" if rem > 0 else "Reached"
             else:
@@ -99,7 +99,7 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-head"><span>{name}</span>'
                 f"<span>{format_brl(cur)} / {format_brl(tgt)} · {pct:.0f}%</span></div>"
                 f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
-                f'<div class="bar-meta">{status} · {cap}</div>'
+                f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
         goals_html = f"""

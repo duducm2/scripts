@@ -14,9 +14,9 @@ Finance_ShowGoals() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Goals")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceGui.Add("Text", "x12 y10 w860",
-        "Sort [1] name  [2] date  [3] %  [4] status   [A]/Insert add  [E] edit  Delete  Backspace")
+        "Sort [1] name  [2] date  [3] %   [A]/Insert add  [E] edit  Delete  Backspace")
     g_FinanceGoalLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
-        ["Purpose", "Current", "Target", "%", "Date", "Status"])
+        ["Purpose", "Current", "Target", "%", "Date"])
     g_FinanceGoalLv.OnEvent("DoubleClick", (*) => Finance_GoalEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -25,7 +25,6 @@ Finance_ShowGoals() {
         ["1", Finance_GoalSortName],
         ["2", Finance_GoalSortDate],
         ["3", Finance_GoalSortPct],
-        ["4", Finance_GoalSortStatus],
         ["a", (*) => Finance_GoalAdd()],
         ["Insert", (*) => Finance_GoalAdd()],
         ["e", (*) => Finance_GoalEdit()],
@@ -51,11 +50,6 @@ Finance_GoalSortPct(*) {
     g_FinanceGoalSort := "pct"
     Finance_GoalRefresh()
 }
-Finance_GoalSortStatus(*) {
-    global g_FinanceGoalSort
-    g_FinanceGoalSort := "status"
-    Finance_GoalRefresh()
-}
 
 Finance_GoalPct(g) {
     t := Finance_ParseDecimal(g["target_amount"])
@@ -78,8 +72,6 @@ Finance_GoalRefresh() {
                 swap := true
             else if (g_FinanceGoalSort = "pct" && Finance_GoalPct(rows[i]) < Finance_GoalPct(rows[j]))
                 swap := true
-            else if (g_FinanceGoalSort = "status" && StrCompare(rows[i]["status"], rows[j]["status"], 1) > 0)
-                swap := true
             if (swap) {
                 tmp := rows[i]
                 rows[i] := rows[j]
@@ -92,13 +84,11 @@ Finance_GoalRefresh() {
     for g in rows {
         cur := Finance_ParseDecimal(g["current_amount"])
         tgt := Finance_ParseDecimal(g["target_amount"])
-        if (g["status"] = "in_progress" && tgt > 0 && cur >= tgt)
-            g["status"] := "completed"
         g_FinanceGoalRows.Push(g)
         g_FinanceGoalLv.Add("", g["name"], Finance_FormatBrl(cur), Finance_FormatBrl(tgt),
-        Finance_GoalPct(g) . "%", g["target_date"], g["status"])
+        Finance_GoalPct(g) . "%", g["target_date"])
     }
-    loop 6
+    loop 5
         g_FinanceGoalLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -157,16 +147,6 @@ Finance_GoalForm(existing) {
     eTgt := g.Add("Edit", "w160", isEdit ? existing["target_amount"] : "0,00")
     g.Add("Text", "y+8", "Target date (YYYY-MM-DD)")
     eDate := g.Add("Edit", "w160", isEdit ? existing["target_date"] : "")
-    statuses := ["in_progress", "completed", "paused", "expired"]
-    sIdx := 1
-    if (isEdit) {
-        loop statuses.Length {
-            if (statuses[A_Index] = existing["status"])
-                sIdx := A_Index
-        }
-    }
-    g.Add("Text", "y+8", "Status")
-    ddSt := g.Add("DropDownList", "w180 Choose" . sIdx, ["in_progress", "completed", "paused", "expired"])
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveGoal)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
@@ -191,9 +171,7 @@ Finance_GoalForm(existing) {
         "name", name,
         "current_amount", Finance_FormatCsvDecimal(Finance_ParseDecimal(eCur.Value)),
         "target_amount", Finance_FormatCsvDecimal(Finance_ParseDecimal(eTgt.Value)),
-        "target_date", Trim(eDate.Value),
-        "status", ddSt.Text
-        )
+        "target_date", Trim(eDate.Value))
         if (isEdit) {
             out := []
             for r in rows {

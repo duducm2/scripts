@@ -35,6 +35,9 @@ Finance_ShowCategories() {
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
+    try g_FinanceCatLv.Focus()
+    catch {
+    }
     Finance_CenterGui(g_FinanceGui, 890, 560)
 }
 
@@ -65,8 +68,11 @@ Finance_CatRefresh() {
     for c in cats {
         if (g_FinanceCatType != "all" && c["type"] != g_FinanceCatType)
             continue
-        if (q != "" && !InStr(c["name"], q) && !InStr(c["id"], q))
-            continue
+        if (q != "") {
+            label := Finance_CatLabel(c)
+            if (!InStr(label, q, true) && !InStr(c["name"], q, true) && !InStr(c["id"], q, true))
+                continue
+        }
         parentName := ""
         if (c["parent_id"] != "")
             parentName := Finance_CatName(cats, c["parent_id"])

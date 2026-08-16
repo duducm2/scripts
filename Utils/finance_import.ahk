@@ -181,9 +181,6 @@ Finance_ImportMonthly(*) {
                 continue
             cur := Finance_ParseDecimal(g["current_amount"]) + adj
             g["current_amount"] := Finance_FormatCsvDecimal(cur)
-            tgt := Finance_ParseDecimal(g["target_amount"])
-            if (g["status"] = "in_progress" && tgt > 0 && cur >= tgt)
-                g["status"] := "completed"
             n += 1
         }
     }

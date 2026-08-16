@@ -149,9 +149,10 @@ Finance_OpenDashboard() {
 Finance_ShowSettings() {
     global g_FinanceGui
     Finance_CloseGui()
+    Finance_EnsureData()
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Finance settings")
     g_FinanceGui.SetFont("s10", "Segoe UI")
-    g_FinanceGui.Add("Text", , "Dashboard widgets (1 = show)")
+    g_FinanceGui.Add("Text", "x12 y10 w480", "Dashboard widgets")
     keys := [
         ["ShowBalance", "Current balance / incomes / expenses / card"],
         ["ShowPies", "Pie charts"],
@@ -161,22 +162,36 @@ Finance_ShowSettings() {
         ["ShowNotifications", "Notification banners"]
     ]
     ctrls := Map()
+    y := 34
     for k in keys {
         v := Finance_Setting("Dashboard", k[1], "1")
-        ctrls[k[1]] := g_FinanceGui.Add("CheckBox", "Checked" . (v = "1" ? "1" : "0"), k[2])
+        ctrls[k[1]] := g_FinanceGui.Add("CheckBox",
+            "x12 y" . y . " w480 Checked" . (v = "1" ? "1" : "0"), k[2])
+        y += 24
     }
-    g_FinanceGui.Add("Text", "y+16", "Alerts")
-    n1 := g_FinanceGui.Add("CheckBox", "Checked" . (Finance_Setting("General", "NotifyBudgetExceeded", "1") = "1" ? "1" :
-        "0"),
-    "Budget exceeded")
-    n2 := g_FinanceGui.Add("CheckBox", "Checked" . (Finance_Setting("General", "NotifyCardHighUsage", "1") = "1" ? "1" :
-        "0"),
-    "High credit-card usage")
-    g_FinanceGui.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveSettings)
-    g_FinanceGui.Add("Button", "x+8 w100", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
+    y += 8
+    g_FinanceGui.Add("Text", "x12 y" . y . " w480", "Alerts")
+    y += 24
+    n1 := g_FinanceGui.Add("CheckBox",
+        "x12 y" . y . " w480 Checked" . (Finance_Setting("General", "NotifyBudgetExceeded", "1") = "1" ? "1" : "0"),
+        "Budget exceeded")
+    y += 24
+    n2 := g_FinanceGui.Add("CheckBox",
+        "x12 y" . y . " w480 Checked" . (Finance_Setting("General", "NotifyCardHighUsage", "1") = "1" ? "1" : "0"),
+        "High credit-card usage")
+    y += 32
+    g_FinanceGui.Add("Button", "x12 y" . y . " w100 Default", "Save").OnEvent("Click", SaveSettings)
+    g_FinanceGui.Add("Button", "x120 y" . y . " w100", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
+    y += 36
+    g_FinanceGui.SetFont("s9 c555555", "Segoe UI")
+    g_FinanceGui.Add("Text", "x12 y" . y . " w480", "Esc / Backspace = back")
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
-    Finance_CenterGui(g_FinanceGui, 520, 420)
+    Finance_BindHotkeys([
+        ["Backspace", (*) => Finance_ShowMainMenu()],
+        ["Escape", (*) => Finance_ShowMainMenu()]
+    ])
+    Finance_CenterGui(g_FinanceGui, 510, y + 36)
 
     SaveSettings(*) {
         for k in keys

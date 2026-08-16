@@ -201,12 +201,12 @@ def collect_notifications(
                 )
     today = datetime.now().strftime("%Y-%m-%d")
     for g in goals:
-        if (
-            g.get("status") == "in_progress"
-            and g.get("target_date")
-            and g["target_date"] < today
-        ):
-            notes.append(f"Goal expired: {g.get('name')}")
+        tdate = (g.get("target_date") or "").strip()
+        if tdate and tdate < today:
+            cur = parse_decimal(g.get("current_amount"))
+            tgt = parse_decimal(g.get("target_amount"))
+            if tgt <= 0 or cur < tgt:
+                notes.append(f"Goal past target date: {g.get('name')}")
     return notes
 
 

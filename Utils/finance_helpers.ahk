@@ -311,7 +311,7 @@ Finance_Headers(kind) {
         case "credit_cards":
             return ["id", "name", "limit", "current_spent", "linked_account_id", "closing_day"]
         case "goals":
-            return ["id", "name", "current_amount", "target_amount", "target_date", "status"]
+            return ["id", "name", "current_amount", "target_amount", "target_date"]
         case "budgets":
             return ["year_month", "category_id", "planned_amount", "spent_amount"]
         default:
@@ -690,18 +690,9 @@ Finance_CloseGui() {
 }
 
 Finance_UnbindHotkeys() {
-    global g_FinanceHotkeys, g_FinanceGui
-    hwnd := 0
-    try {
-        if (IsObject(g_FinanceGui))
-            hwnd := g_FinanceGui.Hwnd
-    } catch {
-        hwnd := 0
-    }
-    if (hwnd) {
-        try HotIfWinActive("ahk_id " hwnd)
-        catch {
-        }
+    global g_FinanceHotkeys
+    try HotIf(Finance_HotIfFinanceKeys)
+    catch {
     }
     for item in g_FinanceHotkeys {
         try Hotkey(item, "Off")
@@ -717,12 +708,38 @@ Finance_UnbindHotkeys() {
 Finance_HotkeyNoop(*) {
 }
 
+Finance_GuiFocusIsEdit() {
+    global g_FinanceGui
+    if (!IsObject(g_FinanceGui))
+        return false
+    try {
+        focused := ControlGetFocus("ahk_id " g_FinanceGui.Hwnd)
+        return (focused != "" && InStr(focused, "Edit") = 1)
+    } catch {
+        return false
+    }
+}
+
+; Active finance window, but not while typing in an Edit (e.g. category search).
+Finance_HotIfFinanceKeys(*) {
+    global g_FinanceGui
+    if (!IsObject(g_FinanceGui))
+        return false
+    try {
+        if (!WinActive("ahk_id " g_FinanceGui.Hwnd))
+            return false
+        return !Finance_GuiFocusIsEdit()
+    } catch {
+        return false
+    }
+}
+
 Finance_BindHotkeys(pairs) {
     global g_FinanceGui, g_FinanceHotkeys
     Finance_UnbindHotkeys()
     if (!IsObject(g_FinanceGui))
         return
-    try HotIfWinActive("ahk_id " g_FinanceGui.Hwnd)
+    try HotIf(Finance_HotIfFinanceKeys)
     catch {
         return
     }
@@ -833,8 +850,12 @@ Finance_CollectNotifications() {
     }
     today := Finance_Today()
     for g in Finance_Load("goals") {
-        if (g["status"] = "in_progress" && g["target_date"] != "" && StrCompare(g["target_date"], today) < 0)
-            notes.Push("Goal expired: " . g["name"])
+        if (g["target_date"] != "" && StrCompare(g["target_date"], today) < 0) {
+            cur := Finance_ParseDecimal(g["current_amount"])
+            tgt := Finance_ParseDecimal(g["target_amount"])
+            if (tgt <= 0 || cur < tgt)
+                notes.Push("Goal past target date: " . g["name"])
+        }
     }
     return notes
 }
@@ -886,7 +907,6 @@ Finance_DefaultCatIcon(name := "") {
         "Beauty", "💄",
         "Hairdresser", "💇",
         "Tattoo, piercing and earrings", "💉",
-        "Dog", "🐕",
         "Car", "🚗",
         "Phone", "📱",
         "Shopping", "🛍️",
@@ -899,7 +919,6 @@ Finance_DefaultCatIcon(name := "") {
         "Investment income tax", "📉",
         "Games", "🎮",
         "Leisure", "🎉",
-        "Food (leisure)", "🍷",
         "Bars and clubs", "🍸",
         "Drinks", "🥤",
         "Events", "🎫",
@@ -923,14 +942,15 @@ Finance_DefaultCatIcon(name := "") {
         "Moving", "📦",
         "Banking", "🏦",
         "Pets", "🐾",
-        "Pix", "⚡",
         "Clothing", "👕",
         "Costume", "🎭",
         "Health", "❤️",
         "Appointments", "🩺",
-        "Products", "🩹",
+        "Medical supplies", "🩹",
         "Medicine", "💊",
         "Services", "🔧",
+        "Transport", "🚌",
+        "Subscriptions", "📺",
         "Bonus", "🎁",
         "Investments", "📈",
         "São Paulo tax rebate", "🏛️",
@@ -942,7 +962,6 @@ Finance_DefaultCatIcon(name := "") {
         "Income tax refund", "💰",
         "Salary", "💼",
         "Transfer", "🔄",
-        "Bank transfer", "🏧",
         "Sale", "🏷️"
     )
     if (name != "" && icons.Has(name))
@@ -1052,21 +1071,21 @@ Finance_SeedCreditCards() {
 Finance_SeedGoals() {
     rows := []
     rows.Push(Map("id", "GOAL_PREV", "name", "Private pension", "current_amount", "16733,13",
-        "target_amount", "926400,00", "target_date", "2062-01-01", "status", "in_progress"))
+        "target_amount", "926400,00", "target_date", "2062-01-01"))
     rows.Push(Map("id", "GOAL_EMERG", "name", "Emergency fund", "current_amount", "2141,14",
-        "target_amount", "18000,00", "target_date", "2099-11-01", "status", "in_progress"))
+        "target_amount", "18000,00", "target_date", "2099-11-01"))
     rows.Push(Map("id", "GOAL_FATHER", "name", "Father's money", "current_amount", "10000,00",
-        "target_amount", "10000,00", "target_date", "2026-09-15", "status", "in_progress"))
+        "target_amount", "10000,00", "target_date", "2026-09-15"))
     rows.Push(Map("id", "GOAL_ALEM", "name", "Germany", "current_amount", "22314,00",
-        "target_amount", "50000,00", "target_date", "", "status", "paused"))
+        "target_amount", "50000,00", "target_date", ""))
     rows.Push(Map("id", "GOAL_ALEM2", "name", "Germany (Leonardo share)", "current_amount", "500,00",
-        "target_amount", "15000,00", "target_date", "", "status", "paused"))
+        "target_amount", "15000,00", "target_date", ""))
     rows.Push(Map("id", "GOAL_CARRO", "name", "New car", "current_amount", "600,00",
-        "target_amount", "40000,00", "target_date", "2026-01-01", "status", "expired"))
+        "target_amount", "40000,00", "target_date", "2026-01-01"))
     rows.Push(Map("id", "GOAL_TERR", "name", "Land down payment", "current_amount", "7218,73",
-        "target_amount", "40000,00", "target_date", "2026-01-01", "status", "expired"))
+        "target_amount", "40000,00", "target_date", "2026-01-01"))
     rows.Push(Map("id", "GOAL_NCAR", "name", "New car", "current_amount", "32000,00",
-        "target_amount", "70000,00", "target_date", "2026-01-01", "status", "expired"))
+        "target_amount", "70000,00", "target_date", "2026-01-01"))
     Finance_Save("goals", rows)
 }
 

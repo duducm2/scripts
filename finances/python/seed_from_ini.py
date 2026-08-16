@@ -65,7 +65,6 @@ def default_cat_icon(name: str) -> str:
         "Beauty": "💄",
         "Hairdresser": "💇",
         "Tattoo, piercing and earrings": "💉",
-        "Dog": "🐕",
         "Car": "🚗",
         "Phone": "📱",
         "Shopping": "🛍️",
@@ -78,7 +77,6 @@ def default_cat_icon(name: str) -> str:
         "Investment income tax": "📉",
         "Games": "🎮",
         "Leisure": "🎉",
-        "Food (leisure)": "🍷",
         "Bars and clubs": "🍸",
         "Drinks": "🥤",
         "Events": "🎫",
@@ -102,14 +100,15 @@ def default_cat_icon(name: str) -> str:
         "Moving": "📦",
         "Banking": "🏦",
         "Pets": "🐾",
-        "Pix": "⚡",
         "Clothing": "👕",
         "Costume": "🎭",
         "Health": "❤️",
         "Appointments": "🩺",
-        "Products": "🩹",
+        "Medical supplies": "🩹",
         "Medicine": "💊",
         "Services": "🔧",
+        "Transport": "🚌",
+        "Subscriptions": "📺",
         "Bonus": "🎁",
         "Investments": "📈",
         "São Paulo tax rebate": "🏛️",
@@ -121,7 +120,6 @@ def default_cat_icon(name: str) -> str:
         "Income tax refund": "💰",
         "Salary": "💼",
         "Transfer": "🔄",
-        "Bank transfer": "🏧",
         "Sale": "🏷️",
     }
     return icons.get(name, "🏷️")
@@ -257,7 +255,7 @@ def seed():
 
     write_csv(
         "goals.csv",
-        ["id", "name", "current_amount", "target_amount", "target_date", "status"],
+        ["id", "name", "current_amount", "target_amount", "target_date"],
         [
             {
                 "id": "GOAL_PREV",
@@ -265,7 +263,6 @@ def seed():
                 "current_amount": "16733,13",
                 "target_amount": "926400,00",
                 "target_date": "2062-01-01",
-                "status": "in_progress",
             },
             {
                 "id": "GOAL_EMERG",
@@ -273,7 +270,6 @@ def seed():
                 "current_amount": "2141,14",
                 "target_amount": "18000,00",
                 "target_date": "2099-11-01",
-                "status": "in_progress",
             },
             {
                 "id": "GOAL_FATHER",
@@ -281,7 +277,6 @@ def seed():
                 "current_amount": "10000,00",
                 "target_amount": "10000,00",
                 "target_date": "2026-09-15",
-                "status": "in_progress",
             },
             {
                 "id": "GOAL_ALEM",
@@ -289,7 +284,6 @@ def seed():
                 "current_amount": "22314,00",
                 "target_amount": "50000,00",
                 "target_date": "",
-                "status": "paused",
             },
             {
                 "id": "GOAL_ALEM2",
@@ -297,7 +291,6 @@ def seed():
                 "current_amount": "500,00",
                 "target_amount": "15000,00",
                 "target_date": "",
-                "status": "paused",
             },
             {
                 "id": "GOAL_CARRO",
@@ -305,7 +298,6 @@ def seed():
                 "current_amount": "600,00",
                 "target_amount": "40000,00",
                 "target_date": "2026-01-01",
-                "status": "expired",
             },
             {
                 "id": "GOAL_TERR",
@@ -313,7 +305,6 @@ def seed():
                 "current_amount": "7218,73",
                 "target_amount": "40000,00",
                 "target_date": "2026-01-01",
-                "status": "expired",
             },
             {
                 "id": "GOAL_NCAR",
@@ -321,7 +312,6 @@ def seed():
                 "current_amount": "32000,00",
                 "target_amount": "70000,00",
                 "target_date": "2026-01-01",
-                "status": "expired",
             },
         ],
     )
