@@ -155,21 +155,21 @@ def build_html(data: dict) -> str:
     body {{ font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; font-size:13px; }}
     header {{ padding:8px 14px; background:#1a1a1a; border-bottom:1px solid #2a2a2a; }}
     header h1 {{ margin:0; font-size:15px; font-weight:600; }}
-    main {{ padding:10px 12px 16px; }}
-    .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:8px; }}
+    main {{ padding:12px 16px 20px; }}
+    .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }}
     .kpi {{ background:#1e1e1e; padding:8px 10px; border-radius:6px; }}
     .kpi .lbl {{ color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
     .kpi .val {{ font-size:16px; margin-top:2px; font-weight:600; }}
     .dim {{ color:#777; font-size:12px; font-weight:400; }}
     .pos {{ color:#2ecc71; }} .neg {{ color:#e74c3c; }}
-    .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }}
-    .split {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }}
-    .panel {{ background:#1e1e1e; padding:8px 10px; border-radius:6px; margin-bottom:0; }}
-    .panel-slim {{ margin-bottom:8px; }}
+    .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }}
+    .split {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
+    .panel {{ background:#1e1e1e; padding:10px 12px; border-radius:6px; margin-bottom:0; }}
+    .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:#bbb; font-weight:600; }}
     .chart {{ height:260px; }}
     .chart-cell {{ min-width:0; }}
-    .note {{ background:#3d2b00; color:#f1c40f; padding:4px 8px; border-radius:4px; margin-bottom:6px; font-size:12px; }}
+    .note {{ background:#3d2b00; color:#f1c40f; padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
     .note.ok {{ background:#143d27; color:#2ecc71; }}
     .perf-line {{ color:#ccc; font-size:12px; line-height:1.4; }}
     .bar-row {{ margin:6px 0 8px; }}
@@ -211,8 +211,13 @@ function pie(id, spec) {{
   Plotly.newPlot(id, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
     customdata: spec.custom, textfont:{{size:10}},
+    domain:{{x:[0, 0.62], y:[0, 1]}},
     hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata}}<extra></extra>'
-  }}], Object.assign({{}}, L, {{showlegend:true}}), {{responsive:true, displayModeBar:false}});
+  }}], Object.assign({{}}, L, {{
+    showlegend:true,
+    margin:{{t:28, b:20, l:8, r:8}},
+    legend:{{orientation:'v', x:1.02, y:0.5, xanchor:'left', font:{{size:10}}}}
+  }}), {{responsive:true, displayModeBar:false}});
 }}
 function drawAll() {{
   pie('pieExp', DATA.expensePie);
