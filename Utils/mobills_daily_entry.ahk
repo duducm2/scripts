@@ -133,14 +133,10 @@ MobillsDaily_DesktopPath() {
 MobillsDaily_FindLatestFile() {
     newestPath := ""
     newestStamp := ""
-    iniCount := 0
-    folderN := 0
     for folder in MobillsDaily_DesktopFolders() {
-        folderN++
         loop files folder "\*.ini", "F" {
             if (StrLower(A_LoopFileName) = "desktop.ini")
                 continue
-            iniCount++
             stamp := ""
             try stamp := FileGetTime(A_LoopFileFullPath, "M")
             catch {
@@ -152,12 +148,6 @@ MobillsDaily_FindLatestFile() {
             }
         }
     }
-    ; #region agent log
-    try MobillsAuto_Dbg("F", "mobills_daily_entry.ahk:FindLatestFile", "newest ini", '{"folderN":' folderN ',"iniCount":' iniCount ',"path":"' StrReplace(
-        newestPath, '\', '\\') '","stamp":"' newestStamp '"}')
-    catch {
-    }
-    ; #endregion
     return newestPath
 }
 
@@ -188,12 +178,6 @@ MobillsDaily_ParseFile(path) {
             break
         }
     }
-    ; #region agent log
-    try MobillsAuto_Dbg("G", "mobills_daily_entry.ahk:ParseFile", "read file", '{"rawLen":' result.rawLen ',"firstLine":"' StrReplace(
-        StrReplace(result.firstLine, '\', '\\'), '"', "'") '"}')
-    catch {
-    }
-    ; #endregion
     if (raw = "") {
         result.error := "File is empty: " path
         return result
@@ -511,14 +495,6 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         combos := MobillsAuto_DialogCombos(scope)
         catCombo := (combos.Length >= 2) ? combos[2] : ""
         acctCombo := (combos.Length >= 3) ? combos[3] : ""
-        ; #region agent log
-        chip1 := (combos.Length >= 1) ? MobillsAuto_ComboChipText(combos[1]) : ""
-        chip2 := (combos.Length >= 2) ? MobillsAuto_ComboChipText(combos[2]) : ""
-        chip3 := (combos.Length >= 3) ? MobillsAuto_ComboChipText(combos[3]) : ""
-        chip4 := (combos.Length >= 4) ? MobillsAuto_ComboChipText(combos[4]) : ""
-        MobillsAuto_Dbg("H", "mobills_daily_entry.ahk:EnterRow", "combo chips", '{"n":' combos.Length ',"c1":"' chip1 '","c2":"' chip2 '","c3":"' chip3 '","c4":"' chip4 '"}'
-        )
-        ; #endregion
         catWanted := row.subcategory != "" ? row.subcategory : row.category
         if (catCombo && catWanted != "") {
             pk := MobillsAuto_PickAutocomplete(catCombo, catWanted, uia)
@@ -764,12 +740,6 @@ MobillsDaily_Run() {
         catch {
         }
         clipParsed := MobillsDaily_ParseRaw(clip)
-        ; #region agent log
-        try MobillsAuto_Dbg("H", "mobills_daily_entry.ahk:Run", "clipboard fallback", '{"clipLen":' StrLen(clip) ',"rows":' clipParsed
-        .rows.Length '}')
-        catch {
-        }
-        ; #endregion
         if (clipParsed.rows.Length) {
             parsed := clipParsed
             sourceLabel := path " + clipboard"
