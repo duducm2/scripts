@@ -1,0 +1,8 @@
+Sources: 1
+  aug: 80 parsed rows
+Total parsed: 80
+Duplicates removed: 6
+Unique written: 74
+UNMAPPED_CATEGORY: (none)
+UNMAPPED_ACCOUNT: (none)
+By type: expense=60, income=8, transfer=6
