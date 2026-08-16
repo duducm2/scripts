@@ -93,20 +93,32 @@ def build_html(data: dict, open_reports: bool) -> str:
     bud_html = ""
     if widget_on(s, "ShowBudgets"):
         by_id = cat_index(data["categories"])
-        rows = []
+        items = []
         for b in data["budgets"]:
             name = by_id.get(b.get("category_id", ""), {}).get(
                 "name", b.get("category_id")
             )
             p = parse_decimal(b.get("planned_amount"))
             sp = parse_decimal(b.get("spent_amount"))
-            rows.append(
-                f"<tr><td>{name}</td><td>{format_brl(p)}</td><td>{format_brl(sp)}</td><td>{format_brl(p-sp)}</td></tr>"
+            rem = p - sp
+            pct = (sp / p * 100) if p > 0 else (100.0 if sp > 0 else 0.0)
+            width = min(pct, 100.0)
+            over = sp > p and p > 0
+            fill = "#e74c3c" if over else "#2ecc71"
+            cap = (
+                f"Exceeded {format_brl(-rem)}" if over else f"Remain {format_brl(rem)}"
+            )
+            items.append(
+                f'<div class="bar-row">'
+                f'<div class="bar-head"><span>{name}</span>'
+                f"<span>{format_brl(sp)} / {format_brl(p)} · {pct:.0f}%</span></div>"
+                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
+                f'<div class="bar-meta">{cap} · Planned {format_brl(p)} · Spent {format_brl(sp)} · Remaining {format_brl(rem)}</div>'
+                f"</div>"
             )
         bud_html = f"""
         <div class="panel"><h2>Budgets</h2>
-          <table><thead><tr><th>Category</th><th>Planned</th><th>Spent</th><th>Remaining</th></tr></thead>
-          <tbody>{''.join(rows)}</tbody></table></div>"""
+          {''.join(items) or '<p>No budgets this month</p>'}</div>"""
 
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
@@ -143,6 +155,11 @@ def build_html(data: dict, open_reports: bool) -> str:
     .note {{ background:#3d2b00; color:#f1c40f; padding:8px 12px; border-radius:8px; margin-bottom:8px; }}
     .note.ok {{ background:#143d27; color:#2ecc71; }}
     .hidden {{ display:none; }}
+    .bar-row {{ margin:12px 0 16px; }}
+    .bar-head {{ display:flex; justify-content:space-between; gap:12px; font-size:14px; margin-bottom:6px; }}
+    .bar-track {{ height:10px; background:#333; border-radius:6px; overflow:hidden; }}
+    .bar-fill {{ height:100%; border-radius:6px; }}
+    .bar-meta {{ color:#888; font-size:12px; margin-top:4px; }}
   </style>
 </head>
 <body>
