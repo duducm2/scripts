@@ -2,128 +2,114 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <title>Finance dashboard</title>
+  <title>Finance cockpit</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
-    body { font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; }
-    header { padding:16px 24px; background:#1e1e1e; display:flex; gap:16px; align-items:center; }
-    header h1 { margin:0; font-size:20px; }
-    .tabs button { background:#2c2c2c; color:#eee; border:0; padding:8px 14px; margin-right:8px; cursor:pointer; border-radius:6px; }
-    .tabs button.active { background:#f1c40f; color:#111; }
-    main { padding:20px 24px; }
-    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
-    .kpi { background:#1e1e1e; padding:14px; border-radius:10px; }
-    .kpi .lbl { color:#aaa; font-size:12px; }
-    .kpi .val { font-size:22px; margin-top:6px; }
+    body { font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; font-size:13px; }
+    header { padding:8px 14px; background:#1a1a1a; border-bottom:1px solid #2a2a2a; }
+    header h1 { margin:0; font-size:15px; font-weight:600; }
+    main { padding:10px 12px 16px; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:8px; }
+    .kpi { background:#1e1e1e; padding:8px 10px; border-radius:6px; }
+    .kpi .lbl { color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+    .kpi .val { font-size:16px; margin-top:2px; font-weight:600; }
+    .dim { color:#777; font-size:12px; font-weight:400; }
     .pos { color:#2ecc71; } .neg { color:#e74c3c; }
-    .charts { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .panel { background:#1e1e1e; padding:14px; border-radius:10px; margin-bottom:12px; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { text-align:left; padding:6px 8px; border-bottom:1px solid #333; }
-    .note { background:#3d2b00; color:#f1c40f; padding:8px 12px; border-radius:8px; margin-bottom:8px; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .panel { background:#1e1e1e; padding:8px 10px; border-radius:6px; margin-bottom:0; }
+    .panel-slim { margin-bottom:8px; }
+    .panel h2 { margin:0 0 4px; font-size:12px; color:#bbb; font-weight:600; }
+    .chart { height:260px; }
+    .chart-cell { min-width:0; }
+    .note { background:#3d2b00; color:#f1c40f; padding:4px 8px; border-radius:4px; margin-bottom:6px; font-size:12px; }
     .note.ok { background:#143d27; color:#2ecc71; }
-    .hidden { display:none; }
-    .bar-row { margin:12px 0 16px; }
-    .bar-head { display:flex; justify-content:space-between; gap:12px; font-size:14px; margin-bottom:6px; }
-    .bar-track { height:10px; background:#333; border-radius:6px; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:6px; }
-    .bar-meta { color:#888; font-size:12px; margin-top:4px; }
+    .perf-line { color:#ccc; font-size:12px; line-height:1.4; }
+    .bar-row { margin:6px 0 8px; }
+    .bar-head { display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:3px; }
+    .bar-track { height:7px; background:#333; border-radius:4px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:4px; }
+    .bar-meta { color:#777; font-size:11px; margin-top:2px; }
+    .empty { color:#666; margin:0; }
+    @media (max-width:900px) {
+      .kpis, .charts, .split { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
 <header>
-  <h1>Finance · 2026-08</h1>
-  <div class="tabs">
-    <button id="tabDash" class="active">Dashboard</button>
-    <button id="tabRep">Reports</button>
-  </div>
+  <h1>Finance cockpit · 2026-08</h1>
 </header>
 <main>
-  <section id="dash">
-    <div class="note">Budget exceeded: Alimentação (R$ 311,91 / R$ 300,00)</div><div class="note">Budget exceeded: Eletrônicos (R$ 2.010,22 / R$ 50,00)</div>
-    
+  <div class="note">Budget exceeded: Alimentação (R$ 311,91 / R$ 300,00)</div><div class="note">Budget exceeded: Eletrônicos (R$ 2.010,22 / R$ 50,00)</div>
+  
         <div class="kpis">
-          <div class="kpi"><div class="lbl">Current balance</div><div class="val">R$ 178.855,60</div></div>
+          <div class="kpi"><div class="lbl">Balance</div><div class="val">R$ 178.855,60</div></div>
           <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">R$ 15.536,76</div></div>
           <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">R$ 7.261,29</div></div>
-          <div class="kpi"><div class="lbl">Card available</div><div class="val">R$ 9.989,78 / R$ 12.000,00</div></div>
+          <div class="kpi"><div class="lbl">Card avail.</div><div class="val">R$ 9.989,78 <span class="dim">/ R$ 12.000,00</span></div></div>
         </div>
+  
+        <div class="panel panel-slim">
+          <div class="perf-line">Saved last month R$ 96,08 · This month R$ 8.275,47 (+8513%) · Kept 53% · Top: Contas de casa R$ 2.300,00 · Eletrônicos R$ 2.010,22 · Mercado R$ 1.359,30 · Saúde R$ 442,81</div>
+        </div>
+  <div class="charts">
     
-        <div class="panel">
-          <h2>Performance</h2>
-          <p>Saved last month: R$ 96,08 · This month: R$ 8.275,47 (+8513% vs prior)</p>
-          <p>Share of income kept: 53.3%</p>
-          <h3>Top spending categories</h3>
-          <ul><li>Contas de casa — R$ 2.300,00</li><li>Eletrônicos — R$ 2.010,22</li><li>Mercado — R$ 1.359,30</li><li>Saúde — R$ 442,81</li><li>Alimentação — R$ 311,91</li></ul>
-        </div>
+          <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>
     
-        <div class="charts">
-          <div class="panel"><h2>Expenses by category</h2><div id="pieExp"></div></div>
-          <div class="panel"><h2>Incomes by category</h2><div id="pieInc"></div></div>
-        </div>
+          <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Cash flow</h2><div id="lineCf" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Annual cash flow</h2><div id="lineYear" class="chart"></div></div>
+  </div>
+  <div class="split">
     
         <div class="panel"><h2>Goals</h2>
-          <div class="bar-row"><div class="bar-head"><span>Previdência privada</span><span>R$ 16.733,13 / R$ 926.400,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.8%;background:#3498db"></div></div><div class="bar-meta">in_progress · Remaining R$ 909.666,87 · Current R$ 16.733,13 · Target R$ 926.400,00</div></div><div class="bar-row"><div class="bar-head"><span>Fundo de emergência</span><span>R$ 2.141,14 / R$ 18.000,00 · 12%</span></div><div class="bar-track"><div class="bar-fill" style="width:11.9%;background:#3498db"></div></div><div class="bar-meta">in_progress · Remaining R$ 15.858,86 · Current R$ 2.141,14 · Target R$ 18.000,00</div></div><div class="bar-row"><div class="bar-head"><span>Father's money</span><span>R$ 10.000,00 / R$ 10.000,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#f1c40f"></div></div><div class="bar-meta">completed · Reached · Current R$ 10.000,00 · Target R$ 10.000,00</div></div><div class="bar-row"><div class="bar-head"><span>Alemanha</span><span>R$ 22.314,00 / R$ 50.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:44.6%;background:#3498db"></div></div><div class="bar-meta">paused · Remaining R$ 27.686,00 · Current R$ 22.314,00 · Target R$ 50.000,00</div></div><div class="bar-row"><div class="bar-head"><span>Alemanha (parte Leonardo)</span><span>R$ 500,00 / R$ 15.000,00 · 3%</span></div><div class="bar-track"><div class="bar-fill" style="width:3.3%;background:#3498db"></div></div><div class="bar-meta">paused · Remaining R$ 14.500,00 · Current R$ 500,00 · Target R$ 15.000,00</div></div><div class="bar-row"><div class="bar-head"><span>Novo carro</span><span>R$ 600,00 / R$ 40.000,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.5%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Remaining R$ 39.400,00 · Current R$ 600,00 · Target R$ 40.000,00</div></div><div class="bar-row"><div class="bar-head"><span>Entrada terreno</span><span>R$ 7.218,73 / R$ 40.000,00 · 18%</span></div><div class="bar-track"><div class="bar-fill" style="width:18.0%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Remaining R$ 32.781,27 · Current R$ 7.218,73 · Target R$ 40.000,00</div></div><div class="bar-row"><div class="bar-head"><span>New car</span><span>R$ 32.000,00 / R$ 70.000,00 · 46%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.7%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Remaining R$ 38.000,00 · Current R$ 32.000,00 · Target R$ 70.000,00</div></div></div>
+          <div class="bar-row"><div class="bar-head"><span>Previdência privada</span><span>R$ 16.733,13 / R$ 926.400,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.8%;background:#3498db"></div></div><div class="bar-meta">in_progress · Rem R$ 909.666,87</div></div><div class="bar-row"><div class="bar-head"><span>Fundo de emergência</span><span>R$ 2.141,14 / R$ 18.000,00 · 12%</span></div><div class="bar-track"><div class="bar-fill" style="width:11.9%;background:#3498db"></div></div><div class="bar-meta">in_progress · Rem R$ 15.858,86</div></div><div class="bar-row"><div class="bar-head"><span>Father's money</span><span>R$ 10.000,00 / R$ 10.000,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#f1c40f"></div></div><div class="bar-meta">completed · Reached</div></div><div class="bar-row"><div class="bar-head"><span>Alemanha</span><span>R$ 22.314,00 / R$ 50.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:44.6%;background:#3498db"></div></div><div class="bar-meta">paused · Rem R$ 27.686,00</div></div><div class="bar-row"><div class="bar-head"><span>Alemanha (parte Leonardo)</span><span>R$ 500,00 / R$ 15.000,00 · 3%</span></div><div class="bar-track"><div class="bar-fill" style="width:3.3%;background:#3498db"></div></div><div class="bar-meta">paused · Rem R$ 14.500,00</div></div><div class="bar-row"><div class="bar-head"><span>Novo carro</span><span>R$ 600,00 / R$ 40.000,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.5%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Rem R$ 39.400,00</div></div><div class="bar-row"><div class="bar-head"><span>Entrada terreno</span><span>R$ 7.218,73 / R$ 40.000,00 · 18%</span></div><div class="bar-track"><div class="bar-fill" style="width:18.0%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Rem R$ 32.781,27</div></div><div class="bar-row"><div class="bar-head"><span>New car</span><span>R$ 32.000,00 / R$ 70.000,00 · 46%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.7%;background:#7f8c8d"></div></div><div class="bar-meta">expired · Rem R$ 38.000,00</div></div></div>
     
         <div class="panel"><h2>Budgets</h2>
-          <div class="bar-row"><div class="bar-head"><span>Mercado</span><span>R$ 1.359,30 / R$ 3.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.3%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.640,70 · Planned R$ 3.000,00 · Spent R$ 1.359,30 · Remaining R$ 1.640,70</div></div><div class="bar-row"><div class="bar-head"><span>Alimentação</span><span>R$ 311,91 / R$ 300,00 · 104%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 11,91 · Planned R$ 300,00 · Spent R$ 311,91 · Remaining -R$ 11,91</div></div><div class="bar-row"><div class="bar-head"><span>Beleza</span><span>R$ 100,00 / R$ 150,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:66.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 50,00 · Planned R$ 150,00 · Spent R$ 100,00 · Remaining R$ 50,00</div></div><div class="bar-row"><div class="bar-head"><span>Lazer</span><span>R$ 167,28 / R$ 600,00 · 28%</span></div><div class="bar-track"><div class="bar-fill" style="width:27.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 432,72 · Planned R$ 600,00 · Spent R$ 167,28 · Remaining R$ 432,72</div></div><div class="bar-row"><div class="bar-head"><span>Saúde</span><span>R$ 442,81 / R$ 1.000,00 · 44%</span></div><div class="bar-track"><div class="bar-fill" style="width:44.3%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 557,19 · Planned R$ 1.000,00 · Spent R$ 442,81 · Remaining R$ 557,19</div></div><div class="bar-row"><div class="bar-head"><span>Carro</span><span>R$ 280,00 / R$ 400,00 · 70%</span></div><div class="bar-track"><div class="bar-fill" style="width:70.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 120,00 · Planned R$ 400,00 · Spent R$ 280,00 · Remaining R$ 120,00</div></div><div class="bar-row"><div class="bar-head"><span>Contas de casa</span><span>R$ 2.300,00 / R$ 2.300,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00 · Planned R$ 2.300,00 · Spent R$ 2.300,00 · Remaining R$ 0,00</div></div><div class="bar-row"><div class="bar-head"><span>Educação</span><span>R$ 139,77 / R$ 400,00 · 35%</span></div><div class="bar-track"><div class="bar-fill" style="width:34.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 260,23 · Planned R$ 400,00 · Spent R$ 139,77 · Remaining R$ 260,23</div></div><div class="bar-row"><div class="bar-head"><span>Eletrônicos</span><span>R$ 2.010,22 / R$ 50,00 · 4020%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 1.960,22 · Planned R$ 50,00 · Spent R$ 2.010,22 · Remaining -R$ 1.960,22</div></div><div class="bar-row"><div class="bar-head"><span>Humanitário</span><span>R$ 150,00 / R$ 150,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00 · Planned R$ 150,00 · Spent R$ 150,00 · Remaining R$ 0,00</div></div></div>
-  </section>
-  <section id="rep" class="hidden">
-    <div class="panel"><h2>Spent per main category</h2><div id="barCat"></div></div>
-    <div class="panel"><h2>Monthly balance</h2><div id="barBal"></div></div>
-    <div class="panel"><h2>Cash flow</h2><div id="lineCf"></div></div>
-    <div class="panel"><h2>Annual cash flow</h2><div id="lineYear"></div></div>
-  </section>
+          <div class="bar-row"><div class="bar-head"><span>Mercado</span><span>R$ 1.359,30 / R$ 3.000,00 · 45%</span></div><div class="bar-track"><div class="bar-fill" style="width:45.3%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.640,70</div></div><div class="bar-row"><div class="bar-head"><span>Alimentação</span><span>R$ 311,91 / R$ 300,00 · 104%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 11,91</div></div><div class="bar-row"><div class="bar-head"><span>Beleza</span><span>R$ 100,00 / R$ 150,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:66.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 50,00</div></div><div class="bar-row"><div class="bar-head"><span>Lazer</span><span>R$ 167,28 / R$ 600,00 · 28%</span></div><div class="bar-track"><div class="bar-fill" style="width:27.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 432,72</div></div><div class="bar-row"><div class="bar-head"><span>Saúde</span><span>R$ 442,81 / R$ 1.000,00 · 44%</span></div><div class="bar-track"><div class="bar-fill" style="width:44.3%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 557,19</div></div><div class="bar-row"><div class="bar-head"><span>Carro</span><span>R$ 280,00 / R$ 400,00 · 70%</span></div><div class="bar-track"><div class="bar-fill" style="width:70.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 120,00</div></div><div class="bar-row"><div class="bar-head"><span>Contas de casa</span><span>R$ 2.300,00 / R$ 2.300,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00</div></div><div class="bar-row"><div class="bar-head"><span>Educação</span><span>R$ 139,77 / R$ 400,00 · 35%</span></div><div class="bar-track"><div class="bar-fill" style="width:34.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 260,23</div></div><div class="bar-row"><div class="bar-head"><span>Eletrônicos</span><span>R$ 2.010,22 / R$ 50,00 · 4020%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 1.960,22</div></div><div class="bar-row"><div class="bar-head"><span>Humanitário</span><span>R$ 150,00 / R$ 150,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 0,00</div></div></div>
+  </div>
 </main>
 <script>
-const DATA = {"expensePie": {"labels": ["Contas de casa", "Eletrônicos", "Mercado", "Saúde", "Alimentação", "Carro", "Lazer", "Humanitário", "Educação", "Beleza"], "values": [2300.0, 2010.22, 1359.3, 442.81, 311.91, 280.0, 167.28, 150.0, 139.77, 100.0], "colors": ["#27AE60", "#8E44AD", "#D35400", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#C0392B", "#2980B9", "#9B59B6"], "custom": ["R$ 2.300,00", "R$ 2.010,22", "R$ 1.359,30", "R$ 442,81", "R$ 311,91", "R$ 280,00", "R$ 167,28", "R$ 150,00", "R$ 139,77", "R$ 100,00"]}, "incomePie": {"labels": ["Outros", "Salário", "Renda extra", "Bonificação"], "values": [10000.0, 4876.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 4.876,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Contas de casa", "value": 2300.0}, {"name": "Eletrônicos", "value": 2010.22}, {"name": "Mercado", "value": 1359.3}, {"name": "Saúde", "value": 442.81}, {"name": "Alimentação", "value": 311.91}, {"name": "Carro", "value": 280.0}, {"name": "Lazer", "value": 167.28}, {"name": "Humanitário", "value": 150.0}, {"name": "Educação", "value": 139.77}, {"name": "Beleza", "value": 100.0}], "openReports": false};
-function pie(id, spec, title) {
-  if (!spec.values.length) {
-    document.getElementById(id).innerHTML = '<p>No data</p>';
-    return;
-  }
+const DATA = {"expensePie": {"labels": ["Contas de casa", "Eletrônicos", "Mercado", "Saúde", "Alimentação", "Carro", "Lazer", "Humanitário", "Educação", "Beleza"], "values": [2300.0, 2010.22, 1359.3, 442.81, 311.91, 280.0, 167.28, 150.0, 139.77, 100.0], "colors": ["#27AE60", "#8E44AD", "#D35400", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#C0392B", "#2980B9", "#9B59B6"], "custom": ["R$ 2.300,00", "R$ 2.010,22", "R$ 1.359,30", "R$ 442,81", "R$ 311,91", "R$ 280,00", "R$ 167,28", "R$ 150,00", "R$ 139,77", "R$ 100,00"]}, "incomePie": {"labels": ["Outros", "Salário", "Renda extra", "Bonificação"], "values": [10000.0, 4876.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 4.876,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Contas de casa", "value": 2300.0}, {"name": "Eletrônicos", "value": 2010.22}, {"name": "Mercado", "value": 1359.3}, {"name": "Saúde", "value": 442.81}, {"name": "Alimentação", "value": 311.91}, {"name": "Carro", "value": 280.0}, {"name": "Lazer", "value": 167.28}, {"name": "Humanitário", "value": 150.0}, {"name": "Educação", "value": 139.77}, {"name": "Beleza", "value": 100.0}]};
+const L = {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#ccc', size:11},
+  margin:{t:28,b:36,l:42,r:16}, height:260, legend:{orientation:'h', y:1.12, font:{size:10}}};
+function pie(id, spec) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!spec.values.length) { el.innerHTML = '<p class="empty">No data</p>'; return; }
   Plotly.newPlot(id, [{
     type:'pie', labels:spec.labels, values:spec.values, marker:{colors:spec.colors},
-    customdata: spec.custom,
+    customdata: spec.custom, textfont:{size:10},
     hovertemplate: '%{label}<br>%{percent}<br>%{customdata}<extra></extra>'
-  }], {paper_bgcolor:'#1e1e1e', font:{color:'#eee'}, title:title, showlegend:true}, {responsive:true});
+  }], Object.assign({}, L, {showlegend:true}), {responsive:true, displayModeBar:false});
 }
-function drawDash() {
-  if (document.getElementById('pieExp')) pie('pieExp', DATA.expensePie, '');
-  if (document.getElementById('pieInc')) pie('pieInc', DATA.incomePie, '');
-}
-function drawRep() {
+function drawAll() {
+  pie('pieExp', DATA.expensePie);
+  pie('pieInc', DATA.incomePie);
   const names = DATA.spentMain.map(x => x.name);
   const vals = DATA.spentMain.map(x => x.value);
   Plotly.newPlot('barCat', [{type:'bar', x:names, y:vals, marker:{color:'#e67e22'},
     hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
-    {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+    Object.assign({}, L, {showlegend:false}), {responsive:true, displayModeBar:false});
   const months = DATA.series.map(x => x.month);
   const bals = DATA.series.map(x => x.balance);
   const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
   Plotly.newPlot('barBal', [{type:'bar', x:months, y:bals, marker:{color:colors},
     hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
-    {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+    Object.assign({}, L, {showlegend:false}), {responsive:true, displayModeBar:false});
   Plotly.newPlot('lineCf', [
-    {type:'scatter', mode:'lines+markers', name:'Incomes', x:months, y:DATA.series.map(x=>x.income), line:{color:'#2ecc71'}},
-    {type:'scatter', mode:'lines+markers', name:'Expenses', x:months, y:DATA.series.map(x=>x.expense), line:{color:'#e74c3c'}}
-  ], {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+    {type:'scatter', mode:'lines+markers', name:'In', x:months, y:DATA.series.map(x=>x.income), line:{color:'#2ecc71'}},
+    {type:'scatter', mode:'lines+markers', name:'Out', x:months, y:DATA.series.map(x=>x.expense), line:{color:'#e74c3c'}}
+  ], L, {responsive:true, displayModeBar:false});
   Plotly.newPlot('lineYear', [
-    {type:'scatter', mode:'lines+markers', name:'Incomes', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{color:'#2ecc71'}},
-    {type:'scatter', mode:'lines+markers', name:'Expenses', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{color:'#e74c3c'}},
-    {type:'scatter', mode:'lines+markers', name:'Balance', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
-  ], {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+    {type:'scatter', mode:'lines+markers', name:'In', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{color:'#2ecc71'}},
+    {type:'scatter', mode:'lines+markers', name:'Out', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{color:'#e74c3c'}},
+    {type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
+  ], L, {responsive:true, displayModeBar:false});
 }
-function show(tab) {
-  document.getElementById('dash').classList.toggle('hidden', tab!=='dash');
-  document.getElementById('rep').classList.toggle('hidden', tab!=='rep');
-  document.getElementById('tabDash').classList.toggle('active', tab==='dash');
-  document.getElementById('tabRep').classList.toggle('active', tab==='rep');
-  if (tab==='rep') drawRep();
-}
-document.getElementById('tabDash').onclick = () => show('dash');
-document.getElementById('tabRep').onclick = () => show('rep');
-drawDash();
-if (DATA.openReports) show('rep');
+drawAll();
 </script>
 </body></html>

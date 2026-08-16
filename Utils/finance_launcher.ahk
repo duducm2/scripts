@@ -41,13 +41,12 @@ Finance_ShowMainMenu() {
     g_FinanceGui.Add("Text", "x20 y72 w880", noteLine)
 
     items := [
-        ["D", "Dashboard", "Charts, widgets, notifications"],
+        ["D", "Dashboard", "Cockpit charts and widgets"],
         ["T", "Transactions", "List, filter, edit"],
         ["A", "Accounts", "Balances and CRUD"],
         ["C", "Credit card", "Limit, spent, mark paid"],
         ["B", "Budgets", "Monthly limits"],
         ["G", "Goals", "Funds and targets"],
-        ["R", "Reports", "Category, cash flow"],
         ["K", "Categories", "CRUD, search, filter"],
         ["I", "AI import", "Desktop daily / monthly"],
         ["S", "Settings", "Dashboard widgets"]
@@ -76,21 +75,18 @@ Finance_ShowMainMenu() {
     }
 
     g_FinanceGui.SetFont("s9 c808080", "Segoe UI")
-    g_FinanceGui.Add("Text", "x20 y510 w880", "Esc close   letters open a module   S settings")
+    g_FinanceGui.Add("Text", "x20 y470 w880", "Esc close   letters open a module   S settings")
 
     Finance_BindHotkeys([
         ["d", Finance_OnDash], ["t", Finance_OnTx], ["a", Finance_OnAcc], ["c", Finance_OnCard],
-        ["b", Finance_OnBud], ["g", Finance_OnGoals], ["r", Finance_OnRep], ["k", Finance_OnCat],
+        ["b", Finance_OnBud], ["g", Finance_OnGoals], ["k", Finance_OnCat],
         ["i", Finance_OnImp], ["s", Finance_OnSet], ["Escape", (*) => Finance_CloseGui()]
     ])
-    Finance_CenterGui(g_FinanceGui, 900, 560)
+    Finance_CenterGui(g_FinanceGui, 900, 520)
 }
 
 Finance_OnDash(*) {
-    Finance_OpenDashboard(false)
-}
-Finance_OnRep(*) {
-    Finance_OpenDashboard(true)
+    Finance_OpenDashboard()
 }
 Finance_OnTx(*) {
     Finance_ShowTransactions()
@@ -117,7 +113,7 @@ Finance_OnSet(*) {
     Finance_ShowSettings()
 }
 
-Finance_OpenDashboard(reportsTab := false) {
+Finance_OpenDashboard() {
     Finance_EnsureData()
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
     py := Finance_PythonDir() . "\chart_generator.py"
@@ -129,8 +125,6 @@ Finance_OpenDashboard(reportsTab := false) {
     catch {
     }
     cmd := 'python "' . py . '"'
-    if (reportsTab)
-        cmd .= " --reports"
     try {
         RunWait(cmd, A_ScriptDir, "Hide")
     } catch as e {

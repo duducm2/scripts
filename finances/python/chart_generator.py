@@ -1,4 +1,4 @@
-"""Build local Plotly dashboard + reports HTML."""
+"""Build local Plotly cockpit dashboard (all charts on one page)."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def pie_spec(rows):
     }
 
 
-def build_html(data: dict, open_reports: bool) -> str:
+def build_html(data: dict) -> str:
     s = data["settings"]
     notes = data["notifications"] if widget_on(s, "ShowNotifications") else []
     note_html = (
@@ -39,10 +39,10 @@ def build_html(data: dict, open_reports: bool) -> str:
     if widget_on(s, "ShowBalance"):
         cards_html = f"""
         <div class="kpis">
-          <div class="kpi"><div class="lbl">Current balance</div><div class="val">{format_brl(data['balance'])}</div></div>
+          <div class="kpi"><div class="lbl">Balance</div><div class="val">{format_brl(data['balance'])}</div></div>
           <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">{format_brl(data['totals']['income'])}</div></div>
           <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">{format_brl(data['totals']['expense'])}</div></div>
-          <div class="kpi"><div class="lbl">Card available</div><div class="val">{format_brl(data['card_available'])} / {format_brl(data['card_limit'])}</div></div>
+          <div class="kpi"><div class="lbl">Card avail.</div><div class="val">{format_brl(data['card_available'])} <span class="dim">/ {format_brl(data['card_limit'])}</span></div></div>
         </div>"""
 
     perf_html = ""
@@ -51,28 +51,27 @@ def build_html(data: dict, open_reports: bool) -> str:
         cur_b = data["totals"]["balance"]
         vs = ((cur_b - prev_b) / abs(prev_b) * 100) if prev_b else 0
         top = (
-            "".join(
-                f"<li>{name} — {format_brl(amt)}</li>"
-                for name, amt, _ in data["top_expenses"]
+            " · ".join(
+                f"{name} {format_brl(amt)}" for name, amt, _ in data["top_expenses"][:4]
             )
-            or "<li>No expenses this month</li>"
+            or "No expenses"
         )
         perf_html = f"""
-        <div class="panel">
-          <h2>Performance</h2>
-          <p>Saved last month: {format_brl(prev_b)} · This month: {format_brl(cur_b)} ({vs:+.0f}% vs prior)</p>
-          <p>Share of income kept: {data['saved_pct']:.1f}%</p>
-          <h3>Top spending categories</h3>
-          <ul>{top}</ul>
+        <div class="panel panel-slim">
+          <div class="perf-line">Saved last month {format_brl(prev_b)} · This month {format_brl(cur_b)} ({vs:+.0f}%) · Kept {data['saved_pct']:.0f}% · Top: {top}</div>
         </div>"""
 
     pies_html = ""
     if widget_on(s, "ShowPies"):
         pies_html = """
-        <div class="charts">
-          <div class="panel"><h2>Expenses by category</h2><div id="pieExp"></div></div>
-          <div class="panel"><h2>Incomes by category</h2><div id="pieInc"></div></div>
-        </div>"""
+          <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>"""
+
+    reports_html = """
+          <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Cash flow</h2><div id="lineCf" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Annual cash flow</h2><div id="lineYear" class="chart"></div></div>"""
 
     goals_html = ""
     if widget_on(s, "ShowGoals"):
@@ -91,22 +90,21 @@ def build_html(data: dict, open_reports: bool) -> str:
                 cap = "Reached"
             elif status == "expired":
                 fill = "#7f8c8d"
-                cap = f"Remaining {format_brl(rem)}" if rem > 0 else "Reached"
+                cap = f"Rem {format_brl(rem)}" if rem > 0 else "Reached"
             else:
-                # in_progress / paused
                 fill = "#3498db"
-                cap = f"Remaining {format_brl(rem)}" if rem > 0 else "Reached"
+                cap = f"Rem {format_brl(rem)}" if rem > 0 else "Reached"
             items.append(
                 f'<div class="bar-row">'
                 f'<div class="bar-head"><span>{name}</span>'
                 f"<span>{format_brl(cur)} / {format_brl(tgt)} · {pct:.0f}%</span></div>"
                 f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
-                f'<div class="bar-meta">{status} · {cap} · Current {format_brl(cur)} · Target {format_brl(tgt)}</div>'
+                f'<div class="bar-meta">{status} · {cap}</div>'
                 f"</div>"
             )
         goals_html = f"""
         <div class="panel"><h2>Goals</h2>
-          {''.join(items) or '<p>No goals</p>'}</div>"""
+          {''.join(items) or '<p class="empty">No goals</p>'}</div>"""
 
     bud_html = ""
     if widget_on(s, "ShowBudgets"):
@@ -131,12 +129,12 @@ def build_html(data: dict, open_reports: bool) -> str:
                 f'<div class="bar-head"><span>{name}</span>'
                 f"<span>{format_brl(sp)} / {format_brl(p)} · {pct:.0f}%</span></div>"
                 f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
-                f'<div class="bar-meta">{cap} · Planned {format_brl(p)} · Spent {format_brl(sp)} · Remaining {format_brl(rem)}</div>'
+                f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
         bud_html = f"""
         <div class="panel"><h2>Budgets</h2>
-          {''.join(items) or '<p>No budgets this month</p>'}</div>"""
+          {''.join(items) or '<p class="empty">No budgets this month</p>'}</div>"""
 
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
@@ -144,7 +142,6 @@ def build_html(data: dict, open_reports: bool) -> str:
         "series": data["series"],
         "annual": data["annual"],
         "spentMain": [{"name": n, "value": v} for n, v, _ in data["expense_pie"]],
-        "openReports": open_reports,
     }
     payload_json = json.dumps(payload, ensure_ascii=False)
 
@@ -152,117 +149,104 @@ def build_html(data: dict, open_reports: bool) -> str:
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <title>Finance dashboard</title>
+  <title>Finance cockpit</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
-    body {{ font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; }}
-    header {{ padding:16px 24px; background:#1e1e1e; display:flex; gap:16px; align-items:center; }}
-    header h1 {{ margin:0; font-size:20px; }}
-    .tabs button {{ background:#2c2c2c; color:#eee; border:0; padding:8px 14px; margin-right:8px; cursor:pointer; border-radius:6px; }}
-    .tabs button.active {{ background:#f1c40f; color:#111; }}
-    main {{ padding:20px 24px; }}
-    .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }}
-    .kpi {{ background:#1e1e1e; padding:14px; border-radius:10px; }}
-    .kpi .lbl {{ color:#aaa; font-size:12px; }}
-    .kpi .val {{ font-size:22px; margin-top:6px; }}
+    body {{ font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; font-size:13px; }}
+    header {{ padding:8px 14px; background:#1a1a1a; border-bottom:1px solid #2a2a2a; }}
+    header h1 {{ margin:0; font-size:15px; font-weight:600; }}
+    main {{ padding:10px 12px 16px; }}
+    .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:8px; }}
+    .kpi {{ background:#1e1e1e; padding:8px 10px; border-radius:6px; }}
+    .kpi .lbl {{ color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
+    .kpi .val {{ font-size:16px; margin-top:2px; font-weight:600; }}
+    .dim {{ color:#777; font-size:12px; font-weight:400; }}
     .pos {{ color:#2ecc71; }} .neg {{ color:#e74c3c; }}
-    .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }}
-    .panel {{ background:#1e1e1e; padding:14px; border-radius:10px; margin-bottom:12px; }}
-    table {{ width:100%; border-collapse:collapse; }}
-    th,td {{ text-align:left; padding:6px 8px; border-bottom:1px solid #333; }}
-    .note {{ background:#3d2b00; color:#f1c40f; padding:8px 12px; border-radius:8px; margin-bottom:8px; }}
+    .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }}
+    .split {{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }}
+    .panel {{ background:#1e1e1e; padding:8px 10px; border-radius:6px; margin-bottom:0; }}
+    .panel-slim {{ margin-bottom:8px; }}
+    .panel h2 {{ margin:0 0 4px; font-size:12px; color:#bbb; font-weight:600; }}
+    .chart {{ height:260px; }}
+    .chart-cell {{ min-width:0; }}
+    .note {{ background:#3d2b00; color:#f1c40f; padding:4px 8px; border-radius:4px; margin-bottom:6px; font-size:12px; }}
     .note.ok {{ background:#143d27; color:#2ecc71; }}
-    .hidden {{ display:none; }}
-    .bar-row {{ margin:12px 0 16px; }}
-    .bar-head {{ display:flex; justify-content:space-between; gap:12px; font-size:14px; margin-bottom:6px; }}
-    .bar-track {{ height:10px; background:#333; border-radius:6px; overflow:hidden; }}
-    .bar-fill {{ height:100%; border-radius:6px; }}
-    .bar-meta {{ color:#888; font-size:12px; margin-top:4px; }}
+    .perf-line {{ color:#ccc; font-size:12px; line-height:1.4; }}
+    .bar-row {{ margin:6px 0 8px; }}
+    .bar-head {{ display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:3px; }}
+    .bar-track {{ height:7px; background:#333; border-radius:4px; overflow:hidden; }}
+    .bar-fill {{ height:100%; border-radius:4px; }}
+    .bar-meta {{ color:#777; font-size:11px; margin-top:2px; }}
+    .empty {{ color:#666; margin:0; }}
+    @media (max-width:900px) {{
+      .kpis, .charts, .split {{ grid-template-columns:1fr; }}
+    }}
   </style>
 </head>
 <body>
 <header>
-  <h1>Finance · {data['year_month']}</h1>
-  <div class="tabs">
-    <button id="tabDash" class="active">Dashboard</button>
-    <button id="tabRep">Reports</button>
-  </div>
+  <h1>Finance cockpit · {data['year_month']}</h1>
 </header>
 <main>
-  <section id="dash">
-    {note_html}
-    {cards_html}
-    {perf_html}
+  {note_html}
+  {cards_html}
+  {perf_html}
+  <div class="charts">
     {pies_html}
+    {reports_html}
+  </div>
+  <div class="split">
     {goals_html}
     {bud_html}
-  </section>
-  <section id="rep" class="hidden">
-    <div class="panel"><h2>Spent per main category</h2><div id="barCat"></div></div>
-    <div class="panel"><h2>Monthly balance</h2><div id="barBal"></div></div>
-    <div class="panel"><h2>Cash flow</h2><div id="lineCf"></div></div>
-    <div class="panel"><h2>Annual cash flow</h2><div id="lineYear"></div></div>
-  </section>
+  </div>
 </main>
 <script>
 const DATA = {payload_json};
-function pie(id, spec, title) {{
-  if (!spec.values.length) {{
-    document.getElementById(id).innerHTML = '<p>No data</p>';
-    return;
-  }}
+const L = {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#ccc', size:11}},
+  margin:{{t:28,b:36,l:42,r:16}}, height:260, legend:{{orientation:'h', y:1.12, font:{{size:10}}}}}};
+function pie(id, spec) {{
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!spec.values.length) {{ el.innerHTML = '<p class="empty">No data</p>'; return; }}
   Plotly.newPlot(id, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
-    customdata: spec.custom,
+    customdata: spec.custom, textfont:{{size:10}},
     hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata}}<extra></extra>'
-  }}], {{paper_bgcolor:'#1e1e1e', font:{{color:'#eee'}}, title:title, showlegend:true}}, {{responsive:true}});
+  }}], Object.assign({{}}, L, {{showlegend:true}}), {{responsive:true, displayModeBar:false}});
 }}
-function drawDash() {{
-  if (document.getElementById('pieExp')) pie('pieExp', DATA.expensePie, '');
-  if (document.getElementById('pieInc')) pie('pieInc', DATA.incomePie, '');
-}}
-function drawRep() {{
+function drawAll() {{
+  pie('pieExp', DATA.expensePie);
+  pie('pieInc', DATA.incomePie);
   const names = DATA.spentMain.map(x => x.name);
   const vals = DATA.spentMain.map(x => x.value);
   Plotly.newPlot('barCat', [{{type:'bar', x:names, y:vals, marker:{{color:'#e67e22'}},
     hovertemplate:'%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'}}],
-    {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#eee'}}}});
+    Object.assign({{}}, L, {{showlegend:false}}), {{responsive:true, displayModeBar:false}});
   const months = DATA.series.map(x => x.month);
   const bals = DATA.series.map(x => x.balance);
   const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
   Plotly.newPlot('barBal', [{{type:'bar', x:months, y:bals, marker:{{color:colors}},
     hovertemplate:'%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'}}],
-    {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#eee'}}}});
+    Object.assign({{}}, L, {{showlegend:false}}), {{responsive:true, displayModeBar:false}});
   Plotly.newPlot('lineCf', [
-    {{type:'scatter', mode:'lines+markers', name:'Incomes', x:months, y:DATA.series.map(x=>x.income), line:{{color:'#2ecc71'}}}},
-    {{type:'scatter', mode:'lines+markers', name:'Expenses', x:months, y:DATA.series.map(x=>x.expense), line:{{color:'#e74c3c'}}}}
-  ], {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#eee'}}}});
+    {{type:'scatter', mode:'lines+markers', name:'In', x:months, y:DATA.series.map(x=>x.income), line:{{color:'#2ecc71'}}}},
+    {{type:'scatter', mode:'lines+markers', name:'Out', x:months, y:DATA.series.map(x=>x.expense), line:{{color:'#e74c3c'}}}}
+  ], L, {{responsive:true, displayModeBar:false}});
   Plotly.newPlot('lineYear', [
-    {{type:'scatter', mode:'lines+markers', name:'Incomes', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{{color:'#2ecc71'}}}},
-    {{type:'scatter', mode:'lines+markers', name:'Expenses', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{{color:'#e74c3c'}}}},
-    {{type:'scatter', mode:'lines+markers', name:'Balance', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
-  ], {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#eee'}}}});
+    {{type:'scatter', mode:'lines+markers', name:'In', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{{color:'#2ecc71'}}}},
+    {{type:'scatter', mode:'lines+markers', name:'Out', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{{color:'#e74c3c'}}}},
+    {{type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
+  ], L, {{responsive:true, displayModeBar:false}});
 }}
-function show(tab) {{
-  document.getElementById('dash').classList.toggle('hidden', tab!=='dash');
-  document.getElementById('rep').classList.toggle('hidden', tab!=='rep');
-  document.getElementById('tabDash').classList.toggle('active', tab==='dash');
-  document.getElementById('tabRep').classList.toggle('active', tab==='rep');
-  if (tab==='rep') drawRep();
-}}
-document.getElementById('tabDash').onclick = () => show('dash');
-document.getElementById('tabRep').onclick = () => show('rep');
-drawDash();
-if (DATA.openReports) show('rep');
+drawAll();
 </script>
 </body></html>"""
 
 
 def main():
-    open_reports = "--reports" in sys.argv
     seed()
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    html = build_html(snapshot(), open_reports)
+    html = build_html(snapshot())
     out = OUTPUT / "dashboard.html"
     out.write_text(html, encoding="utf-8")
     print(str(out))
