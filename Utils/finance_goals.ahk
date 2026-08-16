@@ -124,7 +124,7 @@ Finance_GoalDelete(*) {
     gsel := Finance_GoalSelected()
     if (!gsel)
         return
-    if (MsgBox("Delete " . gsel["name"] . "?", "Goals", "YesNo Icon?") != "Yes")
+    if (!Finance_Confirm("Delete " . gsel["name"] . "?", "Goals"))
         return
     out := []
     for r in Finance_Load("goals") {
@@ -171,7 +171,7 @@ Finance_GoalForm(existing) {
     SaveGoal(*) {
         name := Trim(eName.Value)
         if (name = "") {
-            MsgBox("Purpose is required.", "Goals", "Icon!")
+            Finance_Alert("Purpose is required.", "Goals")
             return
         }
         rows := Finance_Load("goals")

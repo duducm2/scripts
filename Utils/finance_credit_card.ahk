@@ -69,7 +69,7 @@ Finance_CardMarkPaid(cardId) {
         return
     }
     msg := "Pay " . Finance_FormatBrl(spent) . " from " . acc["name"] . " and reset the card?"
-    if (MsgBox(msg, "Mark as paid", "YesNo Icon?") != "Yes")
+    if (!Finance_Confirm(msg, "Mark as paid"))
         return
     txs := Finance_Load("transactions")
     tx := Map(
@@ -127,7 +127,7 @@ Finance_CardForm(existing) {
     SaveCard(*) {
         name := Trim(eName.Value)
         if (name = "") {
-            MsgBox("Name is required.", "Credit card", "Icon!")
+            Finance_Alert("Name is required.", "Credit card")
             return
         }
         cards := Finance_Load("credit_cards")

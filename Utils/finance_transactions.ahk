@@ -133,7 +133,7 @@ Finance_TxDelete(*) {
     tx := Finance_TxSelected()
     if (!tx)
         return
-    if (MsgBox("Delete " . tx["description"] . "?", "Transactions", "YesNo Icon? Owner" . g_FinanceGui.Hwnd) != "Yes")
+    if (!Finance_Confirm("Delete " . tx["description"] . "?", "Transactions"))
         return
     rows := Finance_Load("transactions")
     out := []
@@ -205,7 +205,7 @@ Finance_TxForm(existing) {
     SaveTx(*) {
         desc := Trim(eDesc.Value)
         if (desc = "") {
-            MsgBox("Description is required.", "Transactions", "Icon!")
+            Finance_Alert("Description is required.", "Transactions")
             return
         }
         rawAmt := Finance_NormalizeDot(eAmt.Value)

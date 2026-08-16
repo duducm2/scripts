@@ -14,14 +14,15 @@ Finance_ShowAccounts() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Accounts")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceAccHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
-    g_FinanceGui.Add("Text", "x12 y36 w860", "Insert add   F2 edit   Delete   J adjust balance   Backspace menu")
+    g_FinanceGui.Add("Text", "x12 y36 w860", "[A]/Insert add   F2 edit   Delete   J adjust balance   Backspace menu")
     g_FinanceAccLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
-        ["Icon", "Name", "Id", "Current", "Initial"])
+        ["Icon", "Name", "Id", "Current"])
     g_FinanceAccLv.OnEvent("DoubleClick", (*) => Finance_AccEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_AccRefresh()
     Finance_BindHotkeys([
+        ["a", (*) => Finance_AccAdd()],
         ["Insert", (*) => Finance_AccAdd()],
         ["F2", (*) => Finance_AccEdit()],
         ["Delete", (*) => Finance_AccDelete()],
@@ -42,11 +43,10 @@ Finance_AccRefresh() {
         g_FinanceAccRows.Push(a)
         cur := Finance_ParseDecimal(a["current_balance"])
         tot += cur
-        g_FinanceAccLv.Add("", a["icon"], a["name"], a["id"], Finance_FormatBrl(cur),
-        Finance_FormatBrl(Finance_ParseDecimal(a["initial_balance"])))
+        g_FinanceAccLv.Add("", a["icon"], a["name"], a["id"], Finance_FormatBrl(cur))
     }
     g_FinanceAccHeader.Value := "Current total  " . Finance_FormatBrl(tot)
-    loop 5
+    loop 4
         g_FinanceAccLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -75,7 +75,7 @@ Finance_AccDelete(*) {
     a := Finance_AccSelected()
     if (!a)
         return
-    if (MsgBox("Delete " . a["name"] . "?", "Accounts", "YesNo Icon?") != "Yes")
+    if (!Finance_Confirm("Delete " . a["name"] . "?", "Accounts"))
         return
     accs := Finance_Load("accounts")
     out := []
@@ -88,8 +88,17 @@ Finance_AccDelete(*) {
 }
 
 Finance_AccForm(existing) {
+    global g_FinanceGui
     isEdit := IsObject(existing)
-    g := Gui("+AlwaysOnTop +ToolWindow", isEdit ? "Edit account" : "Add account")
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit account" : "Add account")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Name")
     eName := g.Add("Edit", "w320", isEdit ? existing["name"] : "")
@@ -105,13 +114,14 @@ Finance_AccForm(existing) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     if (saved)
         Finance_AccRefresh()
 
     SaveAcc(*) {
         name := Trim(eName.Value)
         if (name = "") {
-            MsgBox("Name is required.", "Accounts", "Icon!")
+            Finance_Alert("Name is required.", "Accounts")
             return
         }
         accs := Finance_Load("accounts")
@@ -142,12 +152,21 @@ Finance_AccForm(existing) {
 }
 
 Finance_AccAdjust(*) {
+    global g_FinanceGui
     a := Finance_AccSelected()
     if (!a) {
         Finance_Notify("Select an account", 1200, BANNER_ACCENT_ERROR)
         return
     }
-    g := Gui("+AlwaysOnTop +ToolWindow", "Adjust balance — " . a["name"])
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Adjust balance — " . a["name"])
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", "w400", "Current: " . Finance_FormatBrl(Finance_ParseDecimal(a["current_balance"])))
     g.Add("Text", "y+8", "New current balance")
@@ -160,6 +179,7 @@ Finance_AccAdjust(*) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     Finance_AccRefresh()
 
     DoAdj(mode) {

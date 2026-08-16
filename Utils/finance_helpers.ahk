@@ -378,9 +378,9 @@ Finance_Slug(name) {
     s := StrUpper(s)
     out := ""
     loop parse s {
-        ch := A_LoopField
-        if ((ch >= "A" && ch <= "Z") || (ch >= "0" && ch <= "9"))
-            out .= ch
+        c := Ord(A_LoopField)
+        if ((c >= 65 && c <= 90) || (c >= 48 && c <= 57))
+            out .= A_LoopField
     }
     if (StrLen(out) > 8)
         out := SubStr(out, 1, 8)
@@ -725,6 +725,49 @@ Finance_Notify(msg, ms := 1800, accent := "") {
     catch {
         TrayTip("Finance", msg)
     }
+}
+
+Finance_DialogsBegin() {
+    global g_FinanceGui
+    try {
+        if (IsObject(g_FinanceGui))
+            g_FinanceGui.Opt("-AlwaysOnTop")
+    } catch {
+    }
+}
+
+Finance_DialogsEnd() {
+    global g_FinanceGui
+    try {
+        if (IsObject(g_FinanceGui))
+            g_FinanceGui.Opt("+AlwaysOnTop")
+    } catch {
+    }
+}
+
+Finance_OwnerOpt() {
+    global g_FinanceGui
+    hwnd := 0
+    try {
+        if (IsObject(g_FinanceGui))
+            hwnd := g_FinanceGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    return hwnd ? " Owner" . hwnd : ""
+}
+
+Finance_Confirm(msg, title := "Finance") {
+    Finance_DialogsBegin()
+    result := MsgBox(msg, title, "YesNo Icon?" . Finance_OwnerOpt())
+    Finance_DialogsEnd()
+    return result = "Yes"
+}
+
+Finance_Alert(msg, title := "Finance") {
+    Finance_DialogsBegin()
+    MsgBox(msg, title, "Icon!" . Finance_OwnerOpt())
+    Finance_DialogsEnd()
 }
 
 Finance_CollectNotifications() {

@@ -109,7 +109,7 @@ Finance_CatDelete(*) {
             return
         }
     }
-    if (MsgBox("Delete " . c["name"] . "?", "Categories", "YesNo Icon?") != "Yes")
+    if (!Finance_Confirm("Delete " . c["name"] . "?", "Categories"))
         return
     out := []
     for r in cats {
@@ -154,7 +154,7 @@ Finance_CatForm(existing) {
     SaveCat(*) {
         name := Trim(eName.Value)
         if (name = "") {
-            MsgBox("Name is required.", "Categories", "Icon!")
+            Finance_Alert("Name is required.", "Categories")
             return
         }
         parentId := parentCombo.ids[ddParent.Value]
@@ -162,11 +162,11 @@ Finance_CatForm(existing) {
         if (!isEdit) {
             if (parentId = "") {
                 if (!Finance_CanAddMainCategory(cats)) {
-                    MsgBox("Hard limit: 50 main categories.", "Categories", "Icon!")
+                    Finance_Alert("Hard limit: 50 main categories.", "Categories")
                     return
                 }
             } else if (!Finance_CanAddSubcategory(cats, parentId)) {
-                MsgBox("Hard limit: 10 subcategories per main category.", "Categories", "Icon!")
+                Finance_Alert("Hard limit: 10 subcategories per main category.", "Categories")
                 return
             }
         }
