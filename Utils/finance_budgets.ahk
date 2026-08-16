@@ -100,7 +100,7 @@ Finance_BudAdd(*) {
     for c in cats {
         if (existing.Has(c["id"]))
             continue
-        names.Push(c["name"])
+        names.Push(Finance_CatLabel(c))
         ids.Push(c["id"])
     }
     if (!names.Length) {

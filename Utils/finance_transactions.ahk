@@ -96,7 +96,7 @@ Finance_TxRefresh() {
         g_FinanceTxRows.Push(tx)
         cat := Finance_CatName(cats, tx["category_id"])
         if (tx["subcategory"] != "")
-            cat .= " / " . tx["subcategory"]
+            cat .= " / " . Finance_SubcatLabel(cats, tx["category_id"], tx["subcategory"])
         acc := Finance_AccName(accs, tx["account_id"])
         g_FinanceTxLv.Add("", Finance_FormatBrl(Finance_ParseDecimal(tx["amount"])), acc, cat,
         tx["description"], tx["date"], Finance_TypeLabel(tx["type"]))
@@ -174,7 +174,7 @@ Finance_TxForm(existing) {
     ddType := g.Add("DropDownList", "w180 Choose" . typeIdx, ["Expense", "Income", "Transfer", "Credit card",
         "Adjustment"])
     g.Add("Text", "x10 y+12", "Category")
-    catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true)
+    catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true, "icon")
     catIdx := Finance_ComboIndex(catCombo.ids, isEdit ? existing["category_id"] : "")
     ddCat := g.Add("DropDownList", "w220 Choose" . catIdx, catCombo.names)
     g.Add("Text", "x+12 yp-18", "Subcategory")

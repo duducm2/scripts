@@ -20,7 +20,7 @@ Finance_ShowCategories() {
     g_FinanceCatFilter.OnEvent("Change", (*) => Finance_CatRefresh())
     g_FinanceGui.Add("Text", "x350 y12", "[A] all  [X] expense  [N] income  Insert add  [E] edit  Delete")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
-        ["Id", "Name", "Type", "Parent", "Color", "Icon"])
+        ["Name", "Type", "Parent", "Color", "Id"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -71,9 +71,9 @@ Finance_CatRefresh() {
         if (c["parent_id"] != "")
             parentName := Finance_CatName(cats, c["parent_id"])
         g_FinanceCatRows.Push(c)
-        g_FinanceCatLv.Add("", c["id"], c["name"], c["type"], parentName, c["color"], c["icon"])
+        g_FinanceCatLv.Add("", Finance_CatLabel(c), c["type"], parentName, c["color"], c["id"])
     }
-    loop 6
+    loop 5
         g_FinanceCatLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -141,14 +141,14 @@ Finance_CatForm(existing) {
     g.Add("Text", "y+8", "Type")
     ddType := g.Add("DropDownList", "w180 Choose" . tIdx, ["expense", "income"])
     mains := Finance_MainCategories(cats)
-    parentCombo := Finance_ComboFromRows(mains, "id", "name", true)
+    parentCombo := Finance_ComboFromRows(mains, "id", "name", true, "icon")
     pIdx := Finance_ComboIndex(parentCombo.ids, isEdit ? existing["parent_id"] : "")
     g.Add("Text", "y+8", "Parent (empty = main)")
     ddParent := g.Add("DropDownList", "w280 Choose" . pIdx, parentCombo.names)
     g.Add("Text", "y+8", "Color (#RRGGBB)")
     eColor := g.Add("Edit", "w120", isEdit ? existing["color"] : Finance_ColorForIndex(cats.Length + 1))
-    g.Add("Text", "y+8", "Icon")
-    eIcon := g.Add("Edit", "w180", isEdit ? existing["icon"] : "tag")
+    g.Add("Text", "y+8", "Icon (emoji)")
+    eIcon := g.Add("Edit", "w180", isEdit ? existing["icon"] : Finance_DefaultCatIcon(""))
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveCat)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())

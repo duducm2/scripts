@@ -58,6 +58,75 @@ def write_csv(name: str, headers: list[str], rows: list[dict]):
             w.writerow({h: r.get(h, "") for h in headers})
 
 
+def default_cat_icon(name: str) -> str:
+    icons = {
+        "Adjustment": "⚖️",
+        "Food": "🍽️",
+        "Beauty": "💄",
+        "Hairdresser": "💇",
+        "Tattoo, piercing and earrings": "💉",
+        "Dog": "🐕",
+        "Car": "🚗",
+        "Phone": "📱",
+        "Shopping": "🛍️",
+        "Household bills": "🏠",
+        "Education": "📚",
+        "Electronics": "💻",
+        "Loan": "💳",
+        "Humanitarian": "🤝",
+        "Taxes": "🧾",
+        "Investment income tax": "📉",
+        "Games": "🎮",
+        "Leisure": "🎉",
+        "Food (leisure)": "🍷",
+        "Bars and clubs": "🍸",
+        "Drinks": "🥤",
+        "Events": "🎫",
+        "Restaurants": "🍴",
+        "Travel": "✈️",
+        "Misc materials": "🧰",
+        "Home": "🏡",
+        "Collectibles": "🧸",
+        "Adult": "🔒",
+        "Groceries": "🛒",
+        "Food items": "🥫",
+        "Grocery drinks": "🧃",
+        "Frozen and deli": "🧊",
+        "Personal care": "🧴",
+        "Produce": "🥬",
+        "Other": "✳️",
+        "Bakery": "🥖",
+        "Stationery": "✏️",
+        "Cleaning products": "🧹",
+        "Furniture": "🛋️",
+        "Moving": "📦",
+        "Banking": "🏦",
+        "Pets": "🐾",
+        "Pix": "⚡",
+        "Clothing": "👕",
+        "Costume": "🎭",
+        "Health": "❤️",
+        "Appointments": "🩺",
+        "Products": "🩹",
+        "Medicine": "💊",
+        "Services": "🔧",
+        "Bonus": "🎁",
+        "Investments": "📈",
+        "São Paulo tax rebate": "🏛️",
+        "Prizes": "🏆",
+        "Gift": "🎀",
+        "Salary adjustment": "🔧",
+        "Refund": "↩️",
+        "Side income": "💡",
+        "Income tax refund": "💰",
+        "Salary": "💼",
+        "Transfer": "🔄",
+        "Bank transfer": "🏧",
+        "Sale": "🏷️",
+    }
+    return icons.get(name, "🏷️")
+
+
 def seed():
     if (DATA / "categories.csv").exists() and (DATA / "accounts.csv").exists():
         return
@@ -79,7 +148,7 @@ def seed():
                     "type": "expense",
                     "parent_id": "",
                     "color": PALETTE[pal % len(PALETTE)],
-                    "icon": "tag",
+                    "icon": default_cat_icon(section),
                 }
             )
             pal += 1
@@ -94,7 +163,7 @@ def seed():
                         "type": "expense",
                         "parent_id": mid,
                         "color": PALETTE[pal % len(PALETTE)],
-                        "icon": "dot",
+                        "icon": default_cat_icon(key),
                     }
                 )
                 pal += 1
@@ -111,7 +180,7 @@ def seed():
                     "type": "income",
                     "parent_id": "",
                     "color": PALETTE[pal % len(PALETTE)],
-                    "icon": "arrow-down",
+                    "icon": default_cat_icon(section),
                 }
             )
             pal += 1

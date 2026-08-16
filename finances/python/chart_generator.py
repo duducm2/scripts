@@ -14,6 +14,7 @@ from data_aggregator import (  # noqa: E402
     snapshot,
     widget_on,
     cat_index,
+    cat_label,
 )
 from seed_from_ini import seed  # noqa: E402
 
@@ -111,9 +112,8 @@ def build_html(data: dict) -> str:
         by_id = cat_index(data["categories"])
         items = []
         for b in data["budgets"]:
-            name = by_id.get(b.get("category_id", ""), {}).get(
-                "name", b.get("category_id")
-            )
+            crow = by_id.get(b.get("category_id", ""))
+            name = cat_label(crow, b.get("category_id", ""))
             p = parse_decimal(b.get("planned_amount"))
             sp = parse_decimal(b.get("spent_amount"))
             rem = p - sp

@@ -461,9 +461,36 @@ Finance_TypeLabel(type) {
     }
 }
 
+Finance_CatLabel(row) {
+    if (!IsObject(row))
+        return ""
+    icon := row.Has("icon") ? Trim(row["icon"]) : ""
+    name := row.Has("name") ? row["name"] : ""
+    if (icon != "" && name != "")
+        return icon . " " . name
+    if (name != "")
+        return name
+    return icon
+}
+
 Finance_CatName(cats, id) {
     row := Finance_FindById(cats, id)
-    return row ? row["name"] : id
+    return row ? Finance_CatLabel(row) : id
+}
+
+Finance_SubcatLabel(cats, parentId, subName) {
+    subName := Trim(subName)
+    if (subName = "")
+        return ""
+    for c in cats {
+        if (c["name"] = subName && (parentId = "" || c["parent_id"] = parentId))
+            return Finance_CatLabel(c)
+    }
+    for c in cats {
+        if (c["name"] = subName)
+            return Finance_CatLabel(c)
+    }
+    return subName
 }
 
 Finance_AccName(accs, id) {
@@ -812,7 +839,7 @@ Finance_CollectNotifications() {
     return notes
 }
 
-Finance_ComboFromRows(rows, idKey := "id", nameKey := "name", includeEmpty := false) {
+Finance_ComboFromRows(rows, idKey := "id", nameKey := "name", includeEmpty := false, iconKey := "") {
     names := []
     ids := []
     if (includeEmpty) {
@@ -820,7 +847,10 @@ Finance_ComboFromRows(rows, idKey := "id", nameKey := "name", includeEmpty := fa
         ids.Push("")
     }
     for r in rows {
-        names.Push(r[nameKey])
+        label := r[nameKey]
+        if (iconKey != "" && r.Has(iconKey) && Trim(r[iconKey]) != "")
+            label := Trim(r[iconKey]) . " " . label
+        names.Push(label)
         ids.Push(r[idKey])
     }
     return { names: names, ids: ids }
@@ -849,6 +879,77 @@ Finance_IniSections(path) {
     return sections
 }
 
+Finance_DefaultCatIcon(name := "") {
+    static icons := Map(
+        "Adjustment", "⚖️",
+        "Food", "🍽️",
+        "Beauty", "💄",
+        "Hairdresser", "💇",
+        "Tattoo, piercing and earrings", "💉",
+        "Dog", "🐕",
+        "Car", "🚗",
+        "Phone", "📱",
+        "Shopping", "🛍️",
+        "Household bills", "🏠",
+        "Education", "📚",
+        "Electronics", "💻",
+        "Loan", "💳",
+        "Humanitarian", "🤝",
+        "Taxes", "🧾",
+        "Investment income tax", "📉",
+        "Games", "🎮",
+        "Leisure", "🎉",
+        "Food (leisure)", "🍷",
+        "Bars and clubs", "🍸",
+        "Drinks", "🥤",
+        "Events", "🎫",
+        "Restaurants", "🍴",
+        "Travel", "✈️",
+        "Misc materials", "🧰",
+        "Home", "🏡",
+        "Collectibles", "🧸",
+        "Adult", "🔒",
+        "Groceries", "🛒",
+        "Food items", "🥫",
+        "Grocery drinks", "🧃",
+        "Frozen and deli", "🧊",
+        "Personal care", "🧴",
+        "Produce", "🥬",
+        "Other", "✳️",
+        "Bakery", "🥖",
+        "Stationery", "✏️",
+        "Cleaning products", "🧹",
+        "Furniture", "🛋️",
+        "Moving", "📦",
+        "Banking", "🏦",
+        "Pets", "🐾",
+        "Pix", "⚡",
+        "Clothing", "👕",
+        "Costume", "🎭",
+        "Health", "❤️",
+        "Appointments", "🩺",
+        "Products", "🩹",
+        "Medicine", "💊",
+        "Services", "🔧",
+        "Bonus", "🎁",
+        "Investments", "📈",
+        "São Paulo tax rebate", "🏛️",
+        "Prizes", "🏆",
+        "Gift", "🎀",
+        "Salary adjustment", "🔧",
+        "Refund", "↩️",
+        "Side income", "💡",
+        "Income tax refund", "💰",
+        "Salary", "💼",
+        "Transfer", "🔄",
+        "Bank transfer", "🏧",
+        "Sale", "🏷️"
+    )
+    if (name != "" && icons.Has(name))
+        return icons[name]
+    return "🏷️"
+}
+
 Finance_MigrateCategoriesFromIni() {
     rows := []
     palI := 1
@@ -858,7 +959,7 @@ Finance_MigrateCategoriesFromIni() {
         for section in Finance_IniSections(expensePath) {
             mainId := Finance_SlugId("CAT_", section, rows)
             rows.Push(Map("id", mainId, "name", section, "type", "expense", "parent_id", "",
-                "color", Finance_ColorForIndex(palI), "icon", "tag"))
+                "color", Finance_ColorForIndex(palI), "icon", Finance_DefaultCatIcon(section)))
             palI += 1
             raw := IniRead(expensePath, section)
             if (raw = "ERROR")
@@ -870,7 +971,7 @@ Finance_MigrateCategoriesFromIni() {
                     continue
                 subId := Finance_SlugId("CAT_", key, rows)
                 rows.Push(Map("id", subId, "name", key, "type", "expense", "parent_id", mainId,
-                    "color", Finance_ColorForIndex(palI), "icon", "dot"))
+                    "color", Finance_ColorForIndex(palI), "icon", Finance_DefaultCatIcon(key)))
                 palI += 1
             }
         }
@@ -879,15 +980,15 @@ Finance_MigrateCategoriesFromIni() {
         for section in Finance_IniSections(incomePath) {
             mainId := Finance_SlugId("CAT_", section, rows)
             rows.Push(Map("id", mainId, "name", section, "type", "income", "parent_id", "",
-                "color", Finance_ColorForIndex(palI), "icon", "arrow-down"))
+                "color", Finance_ColorForIndex(palI), "icon", Finance_DefaultCatIcon(section)))
             palI += 1
         }
     }
     if (rows.Length = 0) {
         rows.Push(Map("id", "CAT_OUTROS", "name", "Other", "type", "expense", "parent_id", "",
-            "color", "#7F8C8D", "icon", "tag"))
+            "color", "#7F8C8D", "icon", Finance_DefaultCatIcon("Other")))
         rows.Push(Map("id", "CAT_SALARIO", "name", "Salary", "type", "income", "parent_id", "",
-            "color", "#3498DB", "icon", "briefcase"))
+            "color", "#3498DB", "icon", Finance_DefaultCatIcon("Salary")))
     }
     Finance_Save("categories", rows)
 }

@@ -91,6 +91,16 @@ def cat_index(cats: list[dict]) -> dict[str, dict]:
     return {c.get("id", ""): c for c in cats}
 
 
+def cat_label(row: dict | None, fallback: str = "") -> str:
+    if not row:
+        return fallback
+    icon = (row.get("icon") or "").strip()
+    name = row.get("name") or fallback
+    if icon and name:
+        return f"{icon} {name}"
+    return name or icon or fallback
+
+
 def main_category_id(cat_id: str, by_id: dict[str, dict]) -> str:
     c = by_id.get(cat_id)
     if not c:
@@ -127,8 +137,9 @@ def by_category(
         totals[cid] += parse_decimal(t.get("amount"))
     rows = []
     for cid, amt in totals.items():
-        name = by_id.get(cid, {}).get("name", cid or "Uncategorized")
-        color = by_id.get(cid, {}).get("color", "#7F8C8D")
+        row = by_id.get(cid)
+        name = cat_label(row, cid or "Uncategorized")
+        color = (row or {}).get("color", "#7F8C8D")
         rows.append((name, amt, color))
     rows.sort(key=lambda r: r[1], reverse=True)
     return rows
@@ -172,8 +183,9 @@ def collect_notifications(
             planned = parse_decimal(b.get("planned_amount"))
             spent = parse_decimal(b.get("spent_amount"))
             if planned > 0 and spent > planned:
-                name = by_id.get(b.get("category_id", ""), {}).get(
-                    "name", b.get("category_id")
+                name = cat_label(
+                    by_id.get(b.get("category_id", "")),
+                    b.get("category_id", ""),
                 )
                 notes.append(
                     f"Budget exceeded: {name} ({format_brl(spent)} / {format_brl(planned)})"
