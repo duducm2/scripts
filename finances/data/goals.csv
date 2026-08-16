@@ -1,4 +1,4 @@
-id,name,current_amount,target_amount,target_date
+﻿id,name,current_amount,target_amount,target_date
 GOAL_PREV,Private pension,"16733,13","926400,00",2062-01-01
 GOAL_EMERG,Emergency fund,"2141,14","18000,00",2099-11-01
 GOAL_FATHER,Father's money,"10000,00","10000,00",2026-09-15
@@ -6,4 +6,3 @@ GOAL_ALEM,Germany,"22314,00","50000,00",
 GOAL_ALEM2,Germany (Leonardo share),"500,00","15000,00",
 GOAL_CARRO,New car,"600,00","40000,00",2026-01-01
 GOAL_TERR,Land down payment,"7218,73","40000,00",2026-01-01
-GOAL_NCAR,New car,"32000,00","70000,00",2026-01-01

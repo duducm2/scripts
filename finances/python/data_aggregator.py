@@ -434,6 +434,16 @@ def cockpit_raw(data: dict | None = None) -> dict:
         "balance": data["balance"],
         "cardAvailable": data["card_available"],
         "cardLimit": data["card_limit"],
+        "cardSpent": data["card_spent"],
+        "cards": [
+            {
+                "id": c.get("id", ""),
+                "name": c.get("name", ""),
+                "limit": c.get("limit", ""),
+                "current_spent": c.get("current_spent", ""),
+            }
+            for c in data.get("cards") or []
+        ],
         "widgets": {
             "ShowBalance": widget_on(data["settings"], "ShowBalance"),
             "ShowPies": widget_on(data["settings"], "ShowPies"),

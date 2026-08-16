@@ -144,6 +144,37 @@ def build_html(data: dict) -> str:
         <div class="panel"><h2>Budgets</h2>
           <div id="budgetsBody">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
 
+    card_bars_html = ""
+    card_items = []
+    for c in data.get("cards") or []:
+        name = c.get("name") or c.get("id") or "Card"
+        lim = parse_decimal(c.get("limit"))
+        spent = parse_decimal(c.get("current_spent"))
+        avail = lim - spent
+        pct = (spent / lim * 100) if lim > 0 else (100.0 if spent > 0 else 0.0)
+        width = min(pct, 100.0)
+        over = lim > 0 and spent > lim
+        fill = "#e74c3c" if over else ("#f39c12" if pct >= 80 else "#3498db")
+        cap = (
+            f"Over by {format_brl(-avail)}"
+            if over
+            else f"Available {format_brl(avail)}"
+        )
+        card_items.append(
+            f'<div class="bar-row">'
+            f'<div class="bar-head"><span>{name}</span>'
+            f"<span>Spent {format_brl(spent)} / Limit {format_brl(lim)} · {pct:.0f}%</span></div>"
+            f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
+            f'<div class="bar-meta">{cap}</div>'
+            f"</div>"
+        )
+    card_bars_html = f"""
+        <div class="panel"><h2>Credit cards</h2>
+          <div class="bar-meta" style="margin-bottom:8px">Total available
+            {format_brl(data['card_available'])} · Limit {format_brl(data['card_limit'])} ·
+            Spent {format_brl(data['card_spent'])}</div>
+          {''.join(card_items) or '<p class="empty">No credit cards</p>'}</div>"""
+
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
         "incomePie": pie_spec(data["income_pie"]),
@@ -272,6 +303,7 @@ def build_html(data: dict) -> str:
   <div class="split">
     {goals_html}
     {bud_html}
+    {card_bars_html}
   </div>
 </main>
 <script>
