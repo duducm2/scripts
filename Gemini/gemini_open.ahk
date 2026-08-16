@@ -23,9 +23,8 @@ InitializeGeminiFirstTime() {
 
         ; Run Chrome with new window and two Gemini tabs
         Run "chrome.exe --new-window https://gemini.google.com/ https://gemini.google.com/"
-        Sleep 700   ; Give the system time to start Chrome before waiting for it
 
-        ; Find the newly created Chrome window: event-driven hook or polling fallback
+        ; Find the newly created Chrome window (WinGetList + optional CREATE hook)
         geminiHwnd := WaitForNewChromeWindow(existingChromeHwnds, GEMINI_FIRST_LAUNCH_MAX_LOOPS *
             GEMINI_FIRST_LAUNCH_POLL_MS)
         if !geminiHwnd {
@@ -41,26 +40,10 @@ InitializeGeminiFirstTime() {
             ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
             return
         }
-        if !WinWaitActive("ahk_id " geminiHwnd, , 4) {
+        if !WinWaitActive("ahk_id " geminiHwnd, , GEMINI_ACTIVATE_WAIT_MS // 1000) {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; Wait for the first tab to load so the title contains "Gemini" (timeout-bounded condition wait)
-        SetTitleMatchMode(2)
-        start := A_TickCount
-        while (A_TickCount - start < GEMINI_TITLE_READY_MS) {
-            try {
-                if InStr(WinGetTitle("ahk_id " geminiHwnd), "Gemini", false)
-                    break
-            } catch {
-            }
-            Sleep GEMINI_TITLE_POLL_MS
-        }
-        Sleep 550   ; Give window and tabs time to fully settle
-
-        ; First-launch bootstrap: tab 1 -> Pro, tab 2 -> Fast, then return to tab 1.
-        StandardLoadingBar_Update("⚙️ Configuring Gemini tabs...", BANNER_ACCENT_INTERMEDIATE)
-        GeminiConfigureFirstLaunchTabModels(geminiHwnd)
 
         StandardLoadingBar_Hide(0)
     } catch Error as err {

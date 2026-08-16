@@ -449,8 +449,9 @@ CopilotWeb_OpenOrFocus() {
     }
     CopilotWeb_InvalidateCache()
     try {
-        StandardLoadingBar_Show("📤 Opening Copilot...", BANNER_ACCENT_INTERMEDIATE)
-        Run 'chrome.exe --new-window "' CopilotWeb_GetLaunchUrl() '"'
+        StandardLoadingBar_Show("📤 Opening Copilot (2 tabs)...", BANNER_ACCENT_INTERMEDIATE)
+        url := CopilotWeb_GetLaunchUrl()
+        Run 'chrome.exe --new-window "' url '" "' url '"'
         if !WinWaitActive("ahk_exe chrome.exe", , 8) {
             StandardLoadingBar_Hide(0)
             return false

@@ -103,58 +103,62 @@ GetGeminiWindowHwnd() {
 }
 
 ; --- Phase 4: Event-driven new Chrome window detection (SetWinEventHook) ---------
-; Wait for a new Chrome window that is not in existingHwnds. Returns hwnd or 0. Timeout in ms.
-; Uses EVENT_OBJECT_CREATE hook when GEMINI_USE_WIN_EVENT_HOOK is true; else falls back to polling.
+; Wait for a new top-level Chrome window that is not in existingHwnds. Returns hwnd or 0.
+; Hook is an accelerator only: WinGetList is polled every tick so a window created
+; before the hook was installed (or missed by EVENT_OBJECT_CREATE) is found immediately.
 WaitForNewChromeWindow(existingHwnds, timeoutMs) {
-    if (GEMINI_USE_WIN_EVENT_HOOK && timeoutMs > 0) {
-        global g_GeminiCreatedHwnds := []
-        cb := CallbackCreate(GeminiWinEventProc, "F Fast", 7)
-        hHook := DllCall("user32\SetWinEventHook", "UInt", GEMINI_EVENT_OBJECT_CREATE, "UInt",
-            GEMINI_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
-        if (hHook) {
-            start := A_TickCount
-            while (A_TickCount - start < timeoutMs) {
-                Sleep 80
-                for hwnd in g_GeminiCreatedHwnds {
-                    try {
-                        if (WinGetProcessName("ahk_id " hwnd) = "chrome.exe") {
-                            isNew := true
-                            for ex in existingHwnds {
-                                if (ex = hwnd) {
-                                    isNew := false
-                                    break
-                                }
-                            }
-                            if (isNew) {
-                                DllCall("user32\UnhookWinEvent", "Ptr", hHook)
-                                return hwnd
-                            }
-                        }
-                    } catch {
-                    }
+    hHook := 0
+    try {
+        if (GEMINI_USE_WIN_EVENT_HOOK && timeoutMs > 0) {
+            global g_GeminiCreatedHwnds := []
+            cb := CallbackCreate(GeminiWinEventProc, "F Fast", 7)
+            hHook := DllCall("user32\SetWinEventHook", "UInt", GEMINI_EVENT_OBJECT_CREATE, "UInt",
+                GEMINI_EVENT_OBJECT_CREATE, "Ptr", 0, "Ptr", cb, "UInt", 0, "UInt", 0, "UInt", 0, "Ptr")
+        }
+        deadline := A_TickCount + Max(timeoutMs, 0)
+        loop {
+            hwnd := FindNewChromeWindowHwnd(existingHwnds)
+            if (hwnd)
+                return hwnd
+            if (hHook) {
+                for createdHwnd in g_GeminiCreatedHwnds {
+                    if (IsNewChromeWindowHwnd(createdHwnd, existingHwnds) && WinExist("ahk_id " createdHwnd))
+                        return createdHwnd
                 }
                 g_GeminiCreatedHwnds := []
             }
-            DllCall("user32\UnhookWinEvent", "Ptr", hHook)
+            if (A_TickCount >= deadline)
+                return 0
+            Sleep 80
         }
+    } finally {
+        if (hHook)
+            DllCall("user32\UnhookWinEvent", "Ptr", hHook)
     }
-    ; Fallback: polling loop (legacy or when hook failed)
-    deadline := A_TickCount + timeoutMs
-    loop {
-        if (A_TickCount >= deadline)
-            return 0
+}
+
+FindNewChromeWindowHwnd(existingHwnds) {
+    try {
         for hwnd in WinGetList("ahk_exe chrome.exe") {
-            isNew := true
-            for existing in existingHwnds {
-                if (existing = hwnd) {
-                    isNew := false
-                    break
-                }
-            }
-            if (isNew)
+            if IsNewChromeWindowHwnd(hwnd, existingHwnds)
                 return hwnd
         }
-        Sleep GEMINI_FIRST_LAUNCH_POLL_MS
+    } catch {
+    }
+    return 0
+}
+
+IsNewChromeWindowHwnd(hwnd, existingHwnds) {
+    if (!hwnd)
+        return false
+    for existing in existingHwnds {
+        if (existing = hwnd)
+            return false
+    }
+    try {
+        return (WinGetProcessName("ahk_id " hwnd) = "chrome.exe")
+    } catch {
+        return false
     }
 }
 
@@ -170,73 +174,4 @@ GeminiWinEventProc(hWinEventHook, event, hwnd, idObject, idChild, idEventThread,
 ; =============================================================================
 ShowGeminiTabBanner(tabNumber, geminiHwnd := 0) {
     ShowSingleCharTabBanner_Utils(tabNumber)
-}
-
-GeminiWaitForModelPickerReady(geminiHwnd := 0, timeoutMs := GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS) {
-    deadline := A_TickCount + (timeoutMs > 0 ? timeoutMs : GEMINI_FIRST_LAUNCH_MODEL_READY_TIMEOUT_MS)
-    if (!geminiHwnd)
-        geminiHwnd := FindGeminiChromeHwnd()
-    while (A_TickCount < deadline) {
-        try {
-            uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
-            if (FindGeminiModePickerButton(uia))
-                return true
-        } catch {
-        }
-        Sleep GEMINI_FIRST_LAUNCH_MODEL_READY_POLL_MS
-    }
-    return false
-}
-
-GeminiSetModelForActiveTabWhenReady(modelName, geminiHwnd := 0) {
-    if (!GeminiWaitForModelPickerReady(geminiHwnd))
-        return false
-    if (EnsureGeminiModelViaMenu(modelName))
-        return true
-    if (!GeminiWaitForModelPickerReady(geminiHwnd, GEMINI_FIRST_LAUNCH_MODEL_READY_POLL_MS * 4))
-        return false
-    return EnsureGeminiModelViaMenu(modelName)
-}
-
-GeminiConfigureFirstLaunchTabModels(geminiHwnd) {
-    if (!geminiHwnd || !WinExist("ahk_id " geminiHwnd))
-        return false
-
-    if (!WinActive("ahk_id " geminiHwnd)) {
-        try WinActivate("ahk_id " geminiHwnd)
-        if (!WinWaitActive("ahk_id " geminiHwnd, , GEMINI_ACTIVATE_WAIT_MS / 1000))
-            return false
-    }
-
-    StandardLoadingBar_Update("⚙️ Setting tab 1 model: 3.1 Pro...", BANNER_ACCENT_INTERMEDIATE)
-
-    ; Ensure tab 1 is active before assigning Pro.
-    try {
-        uia := UIA_Browser("ahk_id " geminiHwnd)
-        tabInfo := GetChromeActiveTabIndex(uia)
-        if (tabInfo && tabInfo.index != 1) {
-            Send "^1"
-            Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
-        }
-    } catch {
-    }
-
-    proSet := GeminiSetModelForActiveTabWhenReady("3.1 Pro", geminiHwnd)
-
-    ; Move to tab 2, set Fast, then return to tab 1 as requested.
-    Send "^{Tab}"
-    Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
-
-    StandardLoadingBar_Update("⚙️ Setting tab 2 model: 3.1 Flash-Lite...", BANNER_ACCENT_INTERMEDIATE)
-    fastSet := GeminiSetModelForActiveTabWhenReady("3.1 Flash-Lite", geminiHwnd)
-
-    Send "^+{Tab}"
-    Sleep GEMINI_FIRST_LAUNCH_TAB_SWITCH_SETTLE_MS
-
-    if (proSet && fastSet) {
-        StandardLoadingBar_Update("✅ Tab 1: 3.1 Pro, Tab 2: 3.1 Flash-Lite", BANNER_ACCENT_INTERMEDIATE)
-        Sleep 200
-        return true
-    }
-    return false
 }

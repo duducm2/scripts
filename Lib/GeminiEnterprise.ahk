@@ -372,8 +372,9 @@ GeminiEnterprise_OpenOrFocus() {
     }
     GeminiEnterprise_InvalidateCache()
     try {
-        StandardLoadingBar_Show("📤 Opening Gemini Enterprise...", BANNER_ACCENT_INTERMEDIATE)
-        Run 'chrome.exe --new-window "' GeminiEnterprise_GetLaunchUrl() '"'
+        StandardLoadingBar_Show("📤 Opening Gemini Enterprise (2 tabs)...", BANNER_ACCENT_INTERMEDIATE)
+        url := GeminiEnterprise_GetLaunchUrl()
+        Run 'chrome.exe --new-window "' url '" "' url '"'
         if !WinWaitActive("ahk_exe chrome.exe", , 8) {
             StandardLoadingBar_Hide(0)
             return false
