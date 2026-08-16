@@ -35,21 +35,21 @@
 </header>
 <main>
   <section id="dash">
-    <div class="note">Budget exceeded: Eletrônicos (R$ 529,99 / R$ 50,00)</div>
+    <div class="note">Budget exceeded: Alimentação (R$ 311,91 / R$ 300,00)</div><div class="note">Budget exceeded: Eletrônicos (R$ 2.010,22 / R$ 50,00)</div>
     
         <div class="kpis">
           <div class="kpi"><div class="lbl">Current balance</div><div class="val">R$ 178.855,60</div></div>
-          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">R$ 4.886,76</div></div>
-          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">R$ 881,27</div></div>
+          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">R$ 15.536,76</div></div>
+          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">R$ 7.261,29</div></div>
           <div class="kpi"><div class="lbl">Card available</div><div class="val">R$ 9.989,78 / R$ 12.000,00</div></div>
         </div>
     
         <div class="panel">
           <h2>Performance</h2>
-          <p>Saved last month: R$ 0,00 · This month: R$ 4.005,49 (+0% vs prior)</p>
-          <p>Share of income kept: 82.0%</p>
+          <p>Saved last month: R$ 96,08 · This month: R$ 8.275,47 (+8513% vs prior)</p>
+          <p>Share of income kept: 53.3%</p>
           <h3>Top spending categories</h3>
-          <ul><li>Eletrônicos — R$ 529,99</li><li>Mercado — R$ 320,04</li><li>Alimentação — R$ 31,24</li></ul>
+          <ul><li>Contas de casa — R$ 2.300,00</li><li>Eletrônicos — R$ 2.010,22</li><li>Mercado — R$ 1.359,30</li><li>Saúde — R$ 442,81</li><li>Alimentação — R$ 311,91</li></ul>
         </div>
     
         <div class="charts">
@@ -63,7 +63,7 @@
     
         <div class="panel"><h2>Budgets</h2>
           <table><thead><tr><th>Category</th><th>Planned</th><th>Spent</th><th>Remaining</th></tr></thead>
-          <tbody><tr><td>Mercado</td><td>R$ 3.000,00</td><td>R$ 320,04</td><td>R$ 2.679,96</td></tr><tr><td>Alimentação</td><td>R$ 300,00</td><td>R$ 31,24</td><td>R$ 268,76</td></tr><tr><td>Beleza</td><td>R$ 150,00</td><td>R$ 0,00</td><td>R$ 150,00</td></tr><tr><td>Lazer</td><td>R$ 600,00</td><td>R$ 0,00</td><td>R$ 600,00</td></tr><tr><td>Saúde</td><td>R$ 1.000,00</td><td>R$ 0,00</td><td>R$ 1.000,00</td></tr><tr><td>Carro</td><td>R$ 400,00</td><td>R$ 0,00</td><td>R$ 400,00</td></tr><tr><td>Contas de casa</td><td>R$ 2.300,00</td><td>R$ 0,00</td><td>R$ 2.300,00</td></tr><tr><td>Educação</td><td>R$ 400,00</td><td>R$ 0,00</td><td>R$ 400,00</td></tr><tr><td>Eletrônicos</td><td>R$ 50,00</td><td>R$ 529,99</td><td>-R$ 479,99</td></tr><tr><td>Humanitário</td><td>R$ 150,00</td><td>R$ 0,00</td><td>R$ 150,00</td></tr></tbody></table></div>
+          <tbody><tr><td>Mercado</td><td>R$ 3.000,00</td><td>R$ 1.359,30</td><td>R$ 1.640,70</td></tr><tr><td>Alimentação</td><td>R$ 300,00</td><td>R$ 311,91</td><td>-R$ 11,91</td></tr><tr><td>Beleza</td><td>R$ 150,00</td><td>R$ 100,00</td><td>R$ 50,00</td></tr><tr><td>Lazer</td><td>R$ 600,00</td><td>R$ 167,28</td><td>R$ 432,72</td></tr><tr><td>Saúde</td><td>R$ 1.000,00</td><td>R$ 442,81</td><td>R$ 557,19</td></tr><tr><td>Carro</td><td>R$ 400,00</td><td>R$ 280,00</td><td>R$ 120,00</td></tr><tr><td>Contas de casa</td><td>R$ 2.300,00</td><td>R$ 2.300,00</td><td>R$ 0,00</td></tr><tr><td>Educação</td><td>R$ 400,00</td><td>R$ 139,77</td><td>R$ 260,23</td></tr><tr><td>Eletrônicos</td><td>R$ 50,00</td><td>R$ 2.010,22</td><td>-R$ 1.960,22</td></tr><tr><td>Humanitário</td><td>R$ 150,00</td><td>R$ 150,00</td><td>R$ 0,00</td></tr></tbody></table></div>
   </section>
   <section id="rep" class="hidden">
     <div class="panel"><h2>Spent per main category</h2><div id="barCat"></div></div>
@@ -73,7 +73,7 @@
   </section>
 </main>
 <script>
-const DATA = {"expensePie": {"labels": ["Eletrônicos", "Mercado", "Alimentação"], "values": [529.99, 320.04, 31.24], "colors": ["#8E44AD", "#D35400", "#3498DB"], "custom": ["R$ 529,99", "R$ 320,04", "R$ 31,24"]}, "incomePie": {"labels": ["Salário", "Bonificação"], "values": [4876.76, 10.0], "colors": ["#7F8C8D", "#9B59B6"], "custom": ["R$ 4.876,76", "R$ 10,00"]}, "series": [{"income": 4886.76, "expense": 881.27, "balance": 4005.4900000000002, "month": "2026-08"}], "annual": [{"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-01", "label": "Jan"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-02", "label": "Feb"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-03", "label": "Mar"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-04", "label": "Apr"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-05", "label": "May"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-06", "label": "Jun"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-07", "label": "Jul"}, {"income": 4886.76, "expense": 881.27, "balance": 4005.4900000000002, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Eletrônicos", "value": 529.99}, {"name": "Mercado", "value": 320.04}, {"name": "Alimentação", "value": 31.24}], "openReports": true};
+const DATA = {"expensePie": {"labels": ["Contas de casa", "Eletrônicos", "Mercado", "Saúde", "Alimentação", "Carro", "Lazer", "Humanitário", "Educação", "Beleza"], "values": [2300.0, 2010.22, 1359.3, 442.81, 311.91, 280.0, 167.28, 150.0, 139.77, 100.0], "colors": ["#27AE60", "#8E44AD", "#D35400", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#C0392B", "#2980B9", "#9B59B6"], "custom": ["R$ 2.300,00", "R$ 2.010,22", "R$ 1.359,30", "R$ 442,81", "R$ 311,91", "R$ 280,00", "R$ 167,28", "R$ 150,00", "R$ 139,77", "R$ 100,00"]}, "incomePie": {"labels": ["Outros", "Salário", "Renda extra", "Bonificação"], "values": [10000.0, 4876.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 4.876,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Contas de casa", "value": 2300.0}, {"name": "Eletrônicos", "value": 2010.22}, {"name": "Mercado", "value": 1359.3}, {"name": "Saúde", "value": 442.81}, {"name": "Alimentação", "value": 311.91}, {"name": "Carro", "value": 280.0}, {"name": "Lazer", "value": 167.28}, {"name": "Humanitário", "value": 150.0}, {"name": "Educação", "value": 139.77}, {"name": "Beleza", "value": 100.0}], "openReports": false};
 function pie(id, spec, title) {
   if (!spec.values.length) {
     document.getElementById(id).innerHTML = '<p>No data</p>';
