@@ -17,7 +17,7 @@ Finance_ShowCategories() {
     g_FinanceGui.Add("Text", "x12 y12 w860",
         "[A] all  [X] expense  [N] income  [I]/Insert add  [E] edit  Delete  Backspace")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
-        ["Name", "Type", "Parent", "Color", "Id"])
+        ["Name", "Type", "Parent", "Color"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -66,9 +66,9 @@ Finance_CatRefresh() {
         if (c["parent_id"] != "")
             parentName := Finance_CatName(cats, c["parent_id"])
         g_FinanceCatRows.Push(c)
-        g_FinanceCatLv.Add("", Finance_CatLabel(c), c["type"], parentName, c["color"], c["id"])
+        g_FinanceCatLv.Add("", Finance_CatLabel(c), c["type"], parentName, c["color"])
     }
-    loop 5
+    loop 4
         g_FinanceCatLv.ModifyCol(A_Index, "AutoHdr")
 }
 

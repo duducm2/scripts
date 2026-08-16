@@ -17,7 +17,7 @@ Finance_ShowAccounts() {
     g_FinanceGui.Add("Text", "x12 y36 w860",
         "[A]/Insert add   [E] edit   Delete   J adjust balance   [R] primary   Backspace menu")
     g_FinanceAccLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
-        ["Primary", "Icon", "Name", "Id", "Current"])
+        ["Primary", "Icon", "Name", "Current"])
     g_FinanceAccLv.OnEvent("DoubleClick", (*) => Finance_AccEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -49,10 +49,10 @@ Finance_AccRefresh() {
         cur := Finance_ParseDecimal(a["current_balance"])
         tot += cur
         star := (a["id"] = primaryId) ? "*" : ""
-        g_FinanceAccLv.Add("", star, a["icon"], a["name"], a["id"], Finance_FormatBrl(cur))
+        g_FinanceAccLv.Add("", star, a["icon"], a["name"], Finance_FormatBrl(cur))
     }
     g_FinanceAccHeader.Value := "Current total  " . Finance_FormatBrl(tot)
-    loop 5
+    loop 4
         g_FinanceAccLv.ModifyCol(A_Index, "AutoHdr")
 }
 

@@ -57,9 +57,12 @@ def build_html(data: dict) -> str:
             )
             or "No expenses"
         )
+        multi = data.get("period_multi")
+        prev_lbl = "Prior period" if multi else "Saved last month"
+        cur_lbl = "This period" if multi else "This month"
         perf_html = f"""
         <div class="panel panel-slim">
-          <div class="perf-line">Saved last month {format_brl(prev_b)} · This month {format_brl(cur_b)} ({vs:+.0f}%) · Kept {data['saved_pct']:.0f}% · Top: {top}</div>
+          <div class="perf-line">{prev_lbl} {format_brl(prev_b)} · {cur_lbl} {format_brl(cur_b)} ({vs:+.0f}%) · Kept {data['saved_pct']:.0f}% · Top: {top}</div>
         </div>"""
 
     pies_html = ""
@@ -68,10 +71,11 @@ def build_html(data: dict) -> str:
           <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
           <div class="panel chart-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>"""
 
-    reports_html = """
+    year_lbl = data.get("period_year") or ""
+    reports_html = f"""
           <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
           <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
-          <div class="panel chart-cell chart-span"><h2>Annual cash flow</h2><div id="lineYear" class="chart"></div></div>"""
+          <div class="panel chart-cell chart-span"><h2>Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
 
     goals_html = ""
     if widget_on(s, "ShowGoals"):
@@ -133,7 +137,7 @@ def build_html(data: dict) -> str:
             )
         bud_html = f"""
         <div class="panel"><h2>Budgets</h2>
-          {''.join(items) or '<p class="empty">No budgets this month</p>'}</div>"""
+          {''.join(items) or '<p class="empty">No budgets this period</p>'}</div>"""
 
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
@@ -330,9 +334,25 @@ function applyTheme(theme) {{
 
 
 def main():
+    import argparse
+    from data_aggregator import current_month
+
     seed()
+    parser = argparse.ArgumentParser(description="Build finance cockpit dashboard")
+    parser.add_argument("--year", default=None, help="Calendar year for annual chart")
+    parser.add_argument(
+        "--months",
+        default=None,
+        help="Comma-separated YYYY-MM months to aggregate",
+    )
+    args = parser.parse_args()
+    year = args.year or current_month()[:4]
+    if args.months:
+        months = [m.strip() for m in args.months.split(",") if m.strip()]
+    else:
+        months = [current_month()]
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    html = build_html(snapshot())
+    html = build_html(snapshot(months=months, year=year))
     out = OUTPUT / "dashboard.html"
     out.write_text(html, encoding="utf-8")
     print(str(out))

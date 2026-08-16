@@ -115,16 +115,26 @@ Finance_OnSet(*) {
 
 Finance_OpenDashboard() {
     Finance_EnsureData()
-    Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
+    period := Finance_PickCockpitPeriod()
+    if (!IsObject(period))
+        return
+    for ym in period["months"]
+        Finance_RecomputeBudgetSpent(ym)
     py := Finance_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
+    monthsArg := ""
+    for ym in period["months"] {
+        if (monthsArg != "")
+            monthsArg .= ","
+        monthsArg .= ym
+    }
     try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
-    cmd := 'python "' . py . '"'
+    cmd := 'python "' . py . '" --year ' . period["year"] . ' --months "' . monthsArg . '"'
     try {
         RunWait(cmd, A_ScriptDir, "Hide")
     } catch as e {
@@ -144,6 +154,88 @@ Finance_OpenDashboard() {
     }
     Run('"' . html . '"')
     Finance_CloseGui()
+}
+
+; Returns Map("year", "YYYY", "months", ["YYYY-MM", ...]) or false if cancelled.
+Finance_PickCockpitPeriod() {
+    global g_FinanceGui
+    year := FormatTime(, "yyyy")
+    curYm := Finance_CurrentYearMonth()
+    saved := Finance_Setting("Dashboard", "CockpitMonths", curYm)
+    selected := Map()
+    loop parse saved, "," {
+        ym := Trim(A_LoopField)
+        if (ym != "" && SubStr(ym, 1, 4) = year)
+            selected[ym] := true
+    }
+    if (selected.Count = 0 && SubStr(curYm, 1, 4) = year)
+        selected[curYm] := true
+
+    names := ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+        "October", "November", "December"]
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Cockpit period")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", "x12 y10 w360", "Select months for " . year . " (annual chart = full year)")
+    boxes := []
+    loop 12 {
+        m := A_Index
+        ym := Format("{:04}-{:02}", Integer(year), m)
+        checked := selected.Has(ym) ? " Checked" : ""
+        y := 36 + ((m - 1) // 2) * 26
+        x := Mod(m - 1, 2) = 0 ? 12 : 200
+        boxes.Push({ ym: ym, ctrl: g.Add("CheckBox", "x" . x . " y" . y . " w180" . checked, names[m]) })
+    }
+    result := false
+    by := 36 + 6 * 26 + 12
+    g.Add("Button", "x12 y" . by . " w90", "All").OnEvent("Click", SelectAllMonths)
+    g.Add("Button", "x110 y" . by . " w90", "Clear").OnEvent("Click", ClearAllMonths)
+    g.Add("Button", "x220 y" . by . " w90 Default", "OK").OnEvent("Click", OkPick)
+    g.Add("Button", "x318 y" . by . " w90", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.OnEvent("Close", (*) => g.Destroy())
+    g.Show()
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    Finance_DialogsEnd()
+    return result
+
+    SelectAllMonths(*) {
+        for b in boxes
+            b.ctrl.Value := 1
+    }
+    ClearAllMonths(*) {
+        for b in boxes
+            b.ctrl.Value := 0
+    }
+    OkPick(*) {
+        months := []
+        for b in boxes {
+            if (b.ctrl.Value)
+                months.Push(b.ym)
+        }
+        if (months.Length = 0) {
+            Finance_Alert("Select at least one month.", "Cockpit period")
+            return
+        }
+        savedStr := ""
+        for ym in months {
+            if (savedStr != "")
+                savedStr .= ","
+            savedStr .= ym
+        }
+        Finance_SetSetting("Dashboard", "CockpitMonths", savedStr)
+        result := Map("year", year, "months", months)
+        g.Destroy()
+    }
 }
 
 Finance_ShowSettings() {

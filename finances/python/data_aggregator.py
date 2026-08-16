@@ -123,13 +123,30 @@ def month_totals(txs: list[dict], ym: str) -> dict:
     return {"income": income, "expense": expense, "balance": income - expense}
 
 
+def period_totals(txs: list[dict], months: list[str]) -> dict:
+    income = expense = 0.0
+    for ym in months:
+        tot = month_totals(txs, ym)
+        income += tot["income"]
+        expense += tot["expense"]
+    return {"income": income, "expense": expense, "balance": income - expense}
+
+
 def by_category(
     txs: list[dict], ym: str, types: set[str], cats: list[dict]
 ) -> list[tuple[str, float, str]]:
+    return by_category_months(txs, [ym], types, cats)
+
+
+def by_category_months(
+    txs: list[dict], months: list[str], types: set[str], cats: list[dict]
+) -> list[tuple[str, float, str]]:
     by_id = cat_index(cats)
+    prefixes = tuple(months)
     totals: dict[str, float] = defaultdict(float)
     for t in txs:
-        if not str(t.get("date", "")).startswith(ym):
+        d = str(t.get("date", ""))
+        if not any(d.startswith(ym) for ym in prefixes):
             continue
         if t.get("type") not in types:
             continue
@@ -145,8 +162,11 @@ def by_category(
     return rows
 
 
-def monthly_series(txs: list[dict]) -> list[dict]:
-    months = sorted({str(t.get("date", ""))[:7] for t in txs if t.get("date")})
+def monthly_series(txs: list[dict], months: list[str] | None = None) -> list[dict]:
+    if months is None:
+        months = sorted({str(t.get("date", ""))[:7] for t in txs if t.get("date")})
+    else:
+        months = sorted(months)
     out = []
     for ym in months:
         tot = month_totals(txs, ym)
@@ -166,20 +186,63 @@ def annual_net(txs: list[dict], year: str) -> list[dict]:
     return out
 
 
+def prior_period_months(months: list[str]) -> list[str]:
+    months = sorted(months)
+    if not months:
+        return []
+    n = len(months)
+    earliest = months[0]
+    return [month_shift(earliest, -i) for i in range(n, 0, -1)]
+
+
+def period_label(months: list[str]) -> str:
+    months = sorted(set(months))
+    if not months:
+        return current_month()
+    if len(months) == 1:
+        return months[0]
+    year = months[0][:4]
+    names = [datetime(2000, int(ym[5:7]), 1).strftime("%b") for ym in months]
+    return f"{year} ({', '.join(names)})"
+
+
+def aggregate_budgets(budgets: list[dict], months: list[str]) -> list[dict]:
+    month_set = set(months)
+    planned: dict[str, float] = defaultdict(float)
+    spent: dict[str, float] = defaultdict(float)
+    for b in budgets:
+        if b.get("year_month") not in month_set:
+            continue
+        cid = b.get("category_id", "")
+        planned[cid] += parse_decimal(b.get("planned_amount"))
+        spent[cid] += parse_decimal(b.get("spent_amount"))
+    label = period_label(months)
+    rows = []
+    for cid in sorted(planned.keys() | spent.keys()):
+        rows.append(
+            {
+                "year_month": label,
+                "category_id": cid,
+                "planned_amount": f"{planned[cid]:.2f}".replace(".", ","),
+                "spent_amount": f"{spent[cid]:.2f}".replace(".", ","),
+            }
+        )
+    return rows
+
+
 def collect_notifications(
     settings: dict,
     budgets: list[dict],
     cats: list[dict],
     cards: list[dict],
     goals: list[dict],
-    ym: str,
+    months: list[str],
 ) -> list[str]:
     notes = []
     by_id = cat_index(cats)
+    month_set = set(months)
     if settings.get("general", {}).get("NotifyBudgetExceeded", "1") != "0":
-        for b in budgets:
-            if b.get("year_month") != ym:
-                continue
+        for b in aggregate_budgets(budgets, list(month_set)):
             planned = parse_decimal(b.get("planned_amount"))
             spent = parse_decimal(b.get("spent_amount"))
             if planned > 0 and spent > planned:
@@ -210,7 +273,7 @@ def collect_notifications(
     return notes
 
 
-def snapshot() -> dict:
+def snapshot(months: list[str] | None = None, year: str | None = None) -> dict:
     txs = read_csv("transactions.csv")
     accs = read_csv("accounts.csv")
     cats = read_csv("categories.csv")
@@ -218,20 +281,32 @@ def snapshot() -> dict:
     goals = read_csv("goals.csv")
     budgets = read_csv("budgets.csv")
     settings = read_settings()
-    ym = current_month()
-    prev = month_shift(ym, -1)
-    tot = month_totals(txs, ym)
-    prev_tot = month_totals(txs, prev)
+    if not months:
+        months = [current_month()]
+    months = sorted({m.strip() for m in months if m and m.strip()})
+    if not months:
+        months = [current_month()]
+    if not year:
+        year = months[0][:4]
+    prev_months = prior_period_months(months)
+    tot = period_totals(txs, months)
+    prev_tot = period_totals(txs, prev_months)
     balance = sum(parse_decimal(a.get("current_balance")) for a in accs)
     card_limit = sum(parse_decimal(c.get("limit")) for c in cards)
     card_spent = sum(parse_decimal(c.get("current_spent")) for c in cards)
     saved_pct = (tot["balance"] / tot["income"] * 100) if tot["income"] else 0.0
-    exp_rows = by_category(txs, ym, {"expense", "card_expense"}, cats)
-    inc_rows = by_category(txs, ym, {"income"}, cats)
+    exp_rows = by_category_months(txs, months, {"expense", "card_expense"}, cats)
+    inc_rows = by_category_months(txs, months, {"income"}, cats)
+    label = period_label(months)
+    multi = len(months) > 1
     return {
         "settings": settings,
-        "year_month": ym,
-        "prev_month": prev,
+        "year_month": label,
+        "period_months": months,
+        "period_year": year,
+        "period_multi": multi,
+        "prev_month": period_label(prev_months) if prev_months else "",
+        "prev_months": prev_months,
         "totals": tot,
         "prev_totals": prev_tot,
         "balance": balance,
@@ -243,12 +318,12 @@ def snapshot() -> dict:
         "income_pie": inc_rows,
         "top_expenses": exp_rows[:5],
         "goals": goals,
-        "budgets": [b for b in budgets if b.get("year_month") == ym],
+        "budgets": aggregate_budgets(budgets, months),
         "categories": cats,
-        "series": monthly_series(txs),
-        "annual": annual_net(txs, ym[:4]),
+        "series": monthly_series(txs, months),
+        "annual": annual_net(txs, year),
         "notifications": collect_notifications(
-            settings, budgets, cats, cards, goals, ym
+            settings, budgets, cats, cards, goals, months
         ),
         "accounts": accs,
         "cards": cards,
