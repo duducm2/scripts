@@ -326,33 +326,6 @@ GetMtaskPromptText() {
     return GetPromptText("mtask")
 }
 
-; Runtime prompt: instructions + live INI catalogs (accounts, expense/income categories).
-GetMobillsPromptText() {
-    body := GetPromptText("mobills-daily")
-    fav := MobillsDaily_LoadFavorites()
-    accounts := MobillsDaily_RenderIniCatalog(A_ScriptDir "\accounts.ini", "Accounts")
-    cards := MobillsDaily_RenderIniCatalog(A_ScriptDir "\cards.ini", "Credit cards")
-    expenses := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-expenses.ini", "Expense categories")
-    incomes := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-income.ini", "Income categories")
-    extra := ""
-    if (accounts != "")
-        extra .= "`n`n" . accounts
-    if (cards != "")
-        extra .= "`n`n" . cards
-    if (expenses != "")
-        extra .= "`n`n" . expenses
-    if (incomes != "")
-        extra .= "`n`n" . incomes
-    extra .= "`n`nDefault cash account (when unspecified): " . fav.account
-    extra .= "`nCredit card (always, when unspecified): " . fav.card
-    extra .=
-        "`nNever output CATEGORY or SUBCATEGORY as geral, GERAL, or General. Those INI keys are not Mobills categories."
-    extra .=
-        "`nSOURCE, TARGET, CATEGORY, and SUBCATEGORY must equal an appended catalog name exactly; never translate."
-    extra .= "`n`nDictation follows."
-    return body . extra
-}
-
 GeminiDelayedSubmitMonitorStartFromUtils(originalHwnd, geminiChromeHwnd) {
     WM_START_DELAYED_SUBMIT_MONITOR := 0x8002
     targetHwnd := GetGeminiScriptMsgTargetHwnd()

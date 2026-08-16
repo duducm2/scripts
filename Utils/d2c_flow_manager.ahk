@@ -76,7 +76,6 @@ class D2C_FlowManager {
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
             "T", this.OnSubmitT.Bind(this),
-            "B", this.OnSubmitB.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
@@ -99,7 +98,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 920, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [B] Mobills  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [N] Cancel",
             true,
             true,
             true
@@ -131,12 +130,6 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(true, "mtask")
-    }
-
-    OnSubmitB(*) {
-        if (this.CurrentPhase != "PromptingSubmit")
-            return
-        this.ExecuteGeminiSubmit(true, "mobills")
     }
 
     OnSubmitY(*) {
@@ -555,7 +548,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" | "mobills" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
     ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
     ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
         this.CurrentPhase := "Submitting"
@@ -569,15 +562,13 @@ class D2C_FlowManager {
             PlayPreMovementWarning(aiLabel)
 
         optionalSnippet := ""
-        if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask" || presetMode = "mobills") {
+        if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
             dictation := ""
             try dictation := A_Clipboard
             if (presetMode = "grammar")
                 preset := GetGrammarPromptText()
             else if (presetMode = "aiopt")
                 preset := GetAioptPromptText()
-            else if (presetMode = "mobills")
-                preset := GetMobillsPromptText()
             else
                 preset := GetMtaskPromptText()
             optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)

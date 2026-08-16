@@ -121,7 +121,6 @@ InitMacros() {
     ; Email note: new mail to both inboxes (work Outlook / personal Gmail)
     RegisterMacro(EmailNote_Create, "📧 Email note (both inboxes)", "o")
     RegisterMacro(UnescapeMarkdownClipboard, "📋 Unescape markdown clipboard", "e")
-    RegisterMacro(MobillsDaily_Run, "💰 Mobills daily entry", "m")
     ; Toggle Sound
     RegisterMacro(ToggleSoundState, "🔊 Toggle Sound (Mute/Unmute)")
 }

@@ -93,10 +93,7 @@ PromptData_DefaultEntries() {
                                                                     filePath: "assets\prompt\clipangel-cac.txt", source: "file" }, { name: "📝 How-to steps CSV",
                                                                         char: "h", category: "General", author: "",
                                                                         filePath: "assets\prompt\howto-steps-csv.txt",
-                                                                        source: "file" }, { name: "💰 Mobills daily transactions",
-                                                                            char: "b", category: "General", author: "",
-                                                                            filePath: "assets\prompt\mobills-daily.txt",
-                                                                            source: "file" }
+                                                                        source: "file" }
     ]
 }
 
