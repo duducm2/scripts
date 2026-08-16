@@ -565,7 +565,7 @@ MobillsDaily_ScrapeAccounts(uia) {
         if (nxt.done || !nxt.ok)
             break
         try {
-            att := MobillsAuto_AttachBrowser()
+            att := MobillsAuto_AttachBrowser(false)
             if (att.uia)
                 uia := att.uia
         } catch {
@@ -815,7 +815,7 @@ MobillsDaily_Run() {
                 return
             }
             i++
-            try uia := MobillsAuto_AttachBrowser().uia
+            try uia := MobillsAuto_AttachBrowser(false).uia
             catch {
             }
         }
@@ -828,7 +828,7 @@ MobillsDaily_Run() {
             MobillsDaily_Halt("Accounts scrape failed: " acc.error)
             return
         }
-        try uia := MobillsAuto_AttachBrowser().uia
+        try uia := MobillsAuto_AttachBrowser(false).uia
         catch {
         }
         cards := MobillsDaily_ScrapeCards(uia)

@@ -38,25 +38,82 @@ MobillsAuto_ActivateHwnd(hwnd) {
     }
 }
 
-MobillsAuto_AttachBrowser() {
-    hwnd := MobillsAuto_FindHwnd()
-    if (!hwnd) {
-        try Run("https://web.mobills.com.br/dashboard")
-        catch {
-            return { uia: "", hwnd: 0, error: "Could not launch Mobills URL." }
-        }
-        endTick := A_TickCount + 20000
-        while (A_TickCount < endTick) {
-            hwnd := MobillsAuto_FindHwnd()
-            if (hwnd)
-                break
-            Sleep 400
+MobillsAuto_HasShellControl(scope) {
+    if !scope
+        return false
+    for , c in [{ Type: 50000, AutomationId: "action-button" }, { Type: 50000, AutomationId: "menu-accounts-item" }, { Type: 50000,
+        AutomationId: "menu-dashboard-item" }, { Type: 50000, Name: "Accounts" }, { Type: 50000,
+            Name: "Dashboard" }] {
+        try {
+            el := scope.FindElement(c)
+            if el
+                return true
+        } catch {
         }
     }
-    if (!hwnd)
-        return { uia: "", hwnd: 0, error: "Mobills window not found (Chrome/Edge title)." }
-    MobillsAuto_ActivateHwnd(hwnd)
-    Sleep MOBILLS_STEP_MS
+    return false
+}
+
+MobillsAuto_IsUiReady(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    uia := ""
+    try uia := UIA_Browser("ahk_id " hwnd)
+    catch {
+        return false
+    }
+    if !uia
+        return false
+    url := ""
+    try url := uia.GetCurrentURL()
+    catch {
+    }
+    title := ""
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+    }
+    onSite := InStr(url, "web.mobills.com.br") || (title != "" && InStr(title, "Mobills"))
+    if !onSite
+        return false
+    return MobillsAuto_HasShellControl(uia)
+}
+
+MobillsAuto_WaitUntilUiReady(initialHwnd := 0, timeoutMs := 25000, neededStreak := 2, openStart := 0) {
+    if (!openStart)
+        openStart := A_TickCount
+    deadline := A_TickCount + timeoutMs
+    readyStreak := 0
+    lastUpdate := 0
+    while (A_TickCount < deadline) {
+        hwnd := MobillsAuto_FindHwnd()
+        if (hwnd <= 0 && initialHwnd > 0 && WinExist("ahk_id " initialHwnd))
+            hwnd := initialHwnd
+        elapsed := Round((A_TickCount - openStart) / 1000)
+        if ((A_TickCount - lastUpdate) >= 800) {
+            try StandardLoadingBar_Update("⏳ Waiting until Mobills is fully ready... (" elapsed "s)")
+            catch {
+            }
+            lastUpdate := A_TickCount
+        }
+        if (hwnd > 0 && MobillsAuto_IsUiReady(hwnd)) {
+            readyStreak += 1
+            if (readyStreak >= neededStreak) {
+                MobillsAuto_ActivateHwnd(hwnd)
+                try StandardLoadingBar_Update("⏳ Mobills shell ready — finishing load...")
+                catch {
+                }
+                Sleep 800
+                return hwnd
+            }
+        } else {
+            readyStreak := 0
+        }
+        Sleep 200
+    }
+    return 0
+}
+
+MobillsAuto_AttachUia(hwnd) {
     uia := ""
     try uia := UIA_Browser("ahk_id " hwnd)
     catch {
@@ -70,6 +127,34 @@ MobillsAuto_AttachBrowser() {
             uia := ""
         }
     }
+    return uia
+}
+
+; waitReady=false skips the shell gate (pagination refresh).
+MobillsAuto_AttachBrowser(waitReady := true) {
+    hwnd := MobillsAuto_FindHwnd()
+    coldStart := !hwnd
+    if (!hwnd) {
+        try Run("https://web.mobills.com.br/dashboard")
+        catch {
+            return { uia: "", hwnd: 0, error: "Could not launch Mobills URL." }
+        }
+        try StandardLoadingBar_Update("⏳ Opening Mobills — please wait...")
+        catch {
+        }
+    }
+    if (waitReady) {
+        timeoutMs := coldStart ? 25000 : 10000
+        hwnd := MobillsAuto_WaitUntilUiReady(hwnd, timeoutMs, 2, A_TickCount)
+        if (!hwnd)
+            return { uia: "", hwnd: 0, error: "Mobills UI did not become ready in time." }
+    } else {
+        if (!hwnd)
+            return { uia: "", hwnd: 0, error: "Mobills window not found (Chrome/Edge title)." }
+        MobillsAuto_ActivateHwnd(hwnd)
+        Sleep MOBILLS_STEP_MS
+    }
+    uia := MobillsAuto_AttachUia(hwnd)
     if (!uia)
         return { uia: "", hwnd: hwnd, error: "UIA_Browser attach failed for Mobills hwnd." }
     return { uia: uia, hwnd: hwnd, error: "" }
@@ -767,7 +852,7 @@ MobillsAuto_NextPage(uia, fingerprint := "") {
 
 MobillsAuto_RefreshUia(uia) {
     try {
-        att := MobillsAuto_AttachBrowser()
+        att := MobillsAuto_AttachBrowser(false)
         if (att.uia)
             return att.uia
     } catch {
