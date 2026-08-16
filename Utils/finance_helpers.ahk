@@ -177,7 +177,7 @@ Finance_FormatDecimal(num, decimals := 2) {
     frac := (parts.Length > 1) ? parts[2] : ""
     grouped := ""
     while (StrLen(intPart) > 3) {
-        grouped := "." . SubStr(intPart, -2) . grouped
+        grouped := "." . SubStr(intPart, -3) . grouped
         intPart := SubStr(intPart, 1, StrLen(intPart) - 3)
     }
     grouped := intPart . grouped
@@ -770,6 +770,13 @@ Finance_Alert(msg, title := "Finance") {
     Finance_DialogsEnd()
 }
 
+Finance_InputBox(prompt, title := "Finance", default := "") {
+    Finance_DialogsBegin()
+    result := InputBox(prompt, title, "w280" . Finance_OwnerOpt(), default)
+    Finance_DialogsEnd()
+    return result
+}
+
 Finance_CollectNotifications() {
     notes := []
     ym := Finance_CurrentYearMonth()
@@ -1027,8 +1034,17 @@ Finance_SeedTransactions() {
 }
 
 Finance_PickList(title, labels) {
+    global g_FinanceGui
     result := { index: 0 }
-    g := Gui("+AlwaysOnTop +ToolWindow", title)
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
     g.SetFont("s10", "Segoe UI")
     lv := g.Add("ListView", "w420 r12", ["#", "Name"])
     loop labels.Length
@@ -1043,5 +1059,6 @@ Finance_PickList(title, labels) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     return result.index
 }

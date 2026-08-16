@@ -97,9 +97,18 @@ Finance_CardMarkPaid(cardId) {
 }
 
 Finance_CardForm(existing) {
+    global g_FinanceGui
     accs := Finance_Load("accounts")
     isEdit := IsObject(existing)
-    g := Gui("+AlwaysOnTop +ToolWindow", isEdit ? "Edit credit card" : "Add credit card")
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit credit card" : "Add credit card")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Name")
     eName := g.Add("Edit", "w280", isEdit ? existing["name"] : "")
@@ -121,6 +130,7 @@ Finance_CardForm(existing) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     if (saved)
         Finance_ShowCreditCard()
 

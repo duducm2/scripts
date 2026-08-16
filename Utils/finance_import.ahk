@@ -43,7 +43,16 @@ Finance_ArchiveImported(path) {
 }
 
 Finance_ImportConfirm(title, lines) {
-    g := Gui("+AlwaysOnTop +ToolWindow", title)
+    global g_FinanceGui
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", "w640", "Confirm import of " . lines.Length . " row(s).")
     lv := g.Add("ListView", "w640 r14 Grid", ["Row"])
@@ -58,6 +67,7 @@ Finance_ImportConfirm(title, lines) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     return ok
 
     ConfirmYes(*) {

@@ -121,9 +121,18 @@ Finance_CatDelete(*) {
 }
 
 Finance_CatForm(existing) {
+    global g_FinanceGui
     cats := Finance_Load("categories")
     isEdit := IsObject(existing)
-    g := Gui("+AlwaysOnTop +ToolWindow", isEdit ? "Edit category" : "Add category")
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit category" : "Add category")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Name")
     eName := g.Add("Edit", "w280", isEdit ? existing["name"] : "")
@@ -148,6 +157,7 @@ Finance_CatForm(existing) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     if (saved)
         Finance_CatRefresh()
 

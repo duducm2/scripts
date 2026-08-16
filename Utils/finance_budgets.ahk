@@ -18,7 +18,7 @@ Finance_ShowBudgets() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceBudHeader := g_FinanceGui.Add("Text", "x12 y8 w860 h52")
     g_FinanceGui.Add("Text", "x12 y64 w860",
-        "[,] prev  [.] next  Insert add  [E] edit planned  Delete  Backspace menu")
+        "[,] prev  [.] next  [A]/Insert add  [E] edit planned  Delete  Backspace menu")
     g_FinanceBudLv := g_FinanceGui.Add("ListView", "x12 y90 w860 h430 Grid",
         ["Category", "Planned", "Spent", "Remaining", "Status"])
     g_FinanceBudLv.OnEvent("DoubleClick", (*) => Finance_BudEdit())
@@ -28,6 +28,7 @@ Finance_ShowBudgets() {
     Finance_BindHotkeys([
         ["vkBC", (*) => Finance_BudShift(-1)],
         ["vkBE", (*) => Finance_BudShift(1)],
+        ["a", (*) => Finance_BudAdd()],
         ["Insert", (*) => Finance_BudAdd()],
         ["e", (*) => Finance_BudEdit()],
         ["Delete", (*) => Finance_BudDelete()],
@@ -109,7 +110,7 @@ Finance_BudAdd(*) {
     idx := Finance_PickList("Category", names)
     if (idx < 1)
         return
-    ib := InputBox("Planned amount (comma decimal)", "Budget", "w280", "0,00")
+    ib := Finance_InputBox("Planned amount (comma decimal)", "Budget", "0,00")
     if (ib.Result != "OK")
         return
     rows := Finance_Load("budgets")
@@ -123,7 +124,7 @@ Finance_BudEdit(*) {
     b := Finance_BudSelected()
     if (!b)
         return
-    ib := InputBox("Planned amount", "Edit budget", "w280", b["planned_amount"])
+    ib := Finance_InputBox("Planned amount", "Edit budget", b["planned_amount"])
     if (ib.Result != "OK")
         return
     rows := Finance_Load("budgets")

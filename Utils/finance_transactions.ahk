@@ -20,7 +20,7 @@ Finance_ShowTransactions() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceTxHeader := g_FinanceGui.Add("Text", "x12 y10 w880 h36")
     g_FinanceTxHint := g_FinanceGui.Add("Text", "x12 y48 w880",
-        "[G] all  [X] expenses  [N] incomes  [F] transfers  [,] prev month  [.] next  Insert add  [E] edit  Delete  Backspace menu"
+        "[G] all  [X] expenses  [N] incomes  [F] transfers  [,] prev month  [.] next  [A]/Insert add  [E] edit  Delete  Backspace menu"
     )
     g_FinanceTxLv := g_FinanceGui.Add("ListView", "x12 y74 w896 h500 Grid",
         ["Amount", "Account", "Category", "Description", "Date", "Type"])
@@ -35,6 +35,7 @@ Finance_ShowTransactions() {
         ["f", (*) => Finance_TxSetFilter("transfer")],
         ["vkBC", (*) => Finance_TxShiftMonth(-1)],
         ["vkBE", (*) => Finance_TxShiftMonth(1)],
+        ["a", (*) => Finance_TxAdd()],
         ["Insert", (*) => Finance_TxAdd()],
         ["e", (*) => Finance_TxEdit()],
         ["Delete", (*) => Finance_TxDelete()],
@@ -154,6 +155,7 @@ Finance_TxForm(existing) {
     cats := Finance_Load("categories")
     cards := Finance_Load("credit_cards")
     isEdit := IsObject(existing)
+    Finance_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit transaction" : "Add transaction")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Description")
@@ -199,6 +201,7 @@ Finance_TxForm(existing) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     if (saved)
         Finance_TxRefresh()
 

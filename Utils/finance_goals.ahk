@@ -14,7 +14,7 @@ Finance_ShowGoals() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Goals")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceGui.Add("Text", "x12 y10 w860",
-        "Sort [1] name  [2] date  [3] %  [4] status   Insert add  [E] edit  Delete  Backspace")
+        "Sort [1] name  [2] date  [3] %  [4] status   [A]/Insert add  [E] edit  Delete  Backspace")
     g_FinanceGoalLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Purpose", "Current", "Target", "%", "Date", "Status"])
     g_FinanceGoalLv.OnEvent("DoubleClick", (*) => Finance_GoalEdit())
@@ -26,6 +26,7 @@ Finance_ShowGoals() {
         ["2", Finance_GoalSortDate],
         ["3", Finance_GoalSortPct],
         ["4", Finance_GoalSortStatus],
+        ["a", (*) => Finance_GoalAdd()],
         ["Insert", (*) => Finance_GoalAdd()],
         ["e", (*) => Finance_GoalEdit()],
         ["Delete", (*) => Finance_GoalDelete()],
@@ -136,8 +137,17 @@ Finance_GoalDelete(*) {
 }
 
 Finance_GoalForm(existing) {
+    global g_FinanceGui
     isEdit := IsObject(existing)
-    g := Gui("+AlwaysOnTop +ToolWindow", isEdit ? "Edit goal" : "Add goal")
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit goal" : "Add goal")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Purpose")
     eName := g.Add("Edit", "w360", isEdit ? existing["name"] : "")
@@ -165,6 +175,7 @@ Finance_GoalForm(existing) {
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_DialogsEnd()
     if (saved)
         Finance_GoalRefresh()
 
