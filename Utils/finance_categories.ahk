@@ -1,24 +1,21 @@
 ; =============================================================================
 ; Utils module: finance_categories.ahk
-; Category CRUD, search, filter, 50/10 limits
+; Category CRUD, filter, 50/10 limits
 ; =============================================================================
 
 global g_FinanceCatLv := false
 global g_FinanceCatRows := []
-global g_FinanceCatFilter := false
 global g_FinanceCatType := "all"
 
 Finance_ShowCategories() {
-    global g_FinanceGui, g_FinanceCatLv, g_FinanceCatFilter, g_FinanceCatType
+    global g_FinanceGui, g_FinanceCatLv, g_FinanceCatType
     Finance_CloseGui()
     Finance_EnsureData()
     g_FinanceCatType := "all"
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Categories")
     g_FinanceGui.SetFont("s10", "Segoe UI")
-    g_FinanceGui.Add("Text", "x12 y12", "Search")
-    g_FinanceCatFilter := g_FinanceGui.Add("Edit", "x70 y8 w260")
-    g_FinanceCatFilter.OnEvent("Change", (*) => Finance_CatRefresh())
-    g_FinanceGui.Add("Text", "x350 y12", "[A] all  [X] expense  [N] income  Insert add  [E] edit  Delete")
+    g_FinanceGui.Add("Text", "x12 y12 w860",
+        "[A] all  [X] expense  [N] income  [I]/Insert add  [E] edit  Delete  Backspace")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Name", "Type", "Parent", "Color", "Id"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
@@ -29,15 +26,13 @@ Finance_ShowCategories() {
         ["a", Finance_CatFilterAll],
         ["x", Finance_CatFilterExpense],
         ["n", Finance_CatFilterIncome],
+        ["i", (*) => Finance_CatAdd()],
         ["Insert", (*) => Finance_CatAdd()],
         ["e", (*) => Finance_CatEdit()],
         ["Delete", (*) => Finance_CatDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
-    try g_FinanceCatLv.Focus()
-    catch {
-    }
     Finance_CenterGui(g_FinanceGui, 890, 560)
 }
 
@@ -58,21 +53,15 @@ Finance_CatFilterIncome(*) {
 }
 
 Finance_CatRefresh() {
-    global g_FinanceCatLv, g_FinanceCatRows, g_FinanceCatFilter, g_FinanceCatType
+    global g_FinanceCatLv, g_FinanceCatRows, g_FinanceCatType
     if (!IsObject(g_FinanceCatLv))
         return
-    q := IsObject(g_FinanceCatFilter) ? Trim(g_FinanceCatFilter.Value) : ""
     cats := Finance_Load("categories")
     g_FinanceCatLv.Delete()
     g_FinanceCatRows := []
     for c in cats {
         if (g_FinanceCatType != "all" && c["type"] != g_FinanceCatType)
             continue
-        if (q != "") {
-            label := Finance_CatLabel(c)
-            if (!InStr(label, q, true) && !InStr(c["name"], q, true) && !InStr(c["id"], q, true))
-                continue
-        }
         parentName := ""
         if (c["parent_id"] != "")
             parentName := Finance_CatName(cats, c["parent_id"])

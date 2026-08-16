@@ -1,4 +1,4 @@
-id,name,type,parent_id,color,icon
+﻿id,name,type,parent_id,color,icon
 CAT_AJUSTE,Adjustment,expense,,#2ECC71,⚖️
 CAT_ALIMENTA,Food,expense,,#3498DB,🍽️
 CAT_BELEZA,Beauty,expense,,#9B59B6,💄
