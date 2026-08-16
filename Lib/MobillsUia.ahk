@@ -10,6 +10,47 @@ global MOBILLS_GATE_TIMEOUT_MS := 8000
 global MOBILLS_CARD_NAME := "Mercado Pago"
 global MOBILLS_DEFAULT_ACCOUNT := "Mercado Pago main account"
 
+; #region agent log
+MobillsAuto_DbgEsc(s) {
+    s := StrReplace(String(s), "\", "\\")
+    return StrReplace(s, '"', "'")
+}
+MobillsAuto_DbgLog(hypothesisId, location, message, dataJson := "{}") {
+    line := '{"sessionId":"130948","runId":"pre-fix","hypothesisId":"' hypothesisId '","location":"' location '","message":"' MobillsAuto_DbgEsc(
+        message) '","timestamp":' A_TickCount ',"data":' dataJson '}`n'
+    try FileAppend(line, A_ScriptDir "\debug-130948.log", "UTF-8")
+    catch {
+    }
+}
+MobillsAuto_DbgListNames(root) {
+    out := ""
+    n := 0
+    list := MobillsAuto_FindOpenListbox(root)
+    scope := list ? list : root
+    if !scope
+        return ""
+    try {
+        items := scope.FindAll({ Type: 50007 })
+        if items {
+            for it in items {
+                nm := ""
+                try nm := Trim(it.Name)
+                if (nm = "")
+                    continue
+                n++
+                if (n > 8)
+                    break
+                if (out != "")
+                    out .= " || "
+                out .= nm
+            }
+        }
+    } catch {
+    }
+    return out
+}
+; #endregion
+
 MobillsAuto_TitleLooksLikeApp(t) {
     t := Trim(t)
     if (t = "")
@@ -417,12 +458,8 @@ MobillsAuto_FindOpenListbox(root) {
     return ""
 }
 
-MobillsAuto_FindAutocompleteOption(root, wanted) {
-    if !root || wanted = ""
-        return ""
-    list := MobillsAuto_FindOpenListbox(root)
-    scope := list ? list : ""
-    if !scope
+MobillsAuto_FindOptionInScope(scope, wanted) {
+    if !scope || wanted = ""
         return ""
     types := [50007, 50011, 50000, 50020]
     for , t in types {
@@ -446,6 +483,18 @@ MobillsAuto_FindAutocompleteOption(root, wanted) {
         }
     }
     return ""
+}
+
+MobillsAuto_FindAutocompleteOption(root, wanted) {
+    if !root || wanted = ""
+        return ""
+    list := MobillsAuto_FindOpenListbox(root)
+    if list {
+        el := MobillsAuto_FindOptionInScope(list, wanted)
+        if el
+            return el
+    }
+    return MobillsAuto_FindOptionInScope(root, wanted)
 }
 
 MobillsAuto_ClickAutocompleteOption(el) {
@@ -500,6 +549,10 @@ MobillsAuto_PickAutocomplete(combo, wanted, root := "") {
     chipBefore := MobillsAuto_ComboChipText(combo)
     if MobillsAuto_ChipMatches(chipBefore, wanted) {
         attempted.Push("already selected")
+        ; #region agent log
+        MobillsAuto_DbgLog("C", "MobillsUia.ahk:PickAutocomplete", "already selected", '{"wanted":"' MobillsAuto_DbgEsc(
+            wanted) '","chip":"' MobillsAuto_DbgEsc(chipBefore) '"}')
+        ; #endregion
         return { ok: true, got: chipBefore, attempted: attempted }
     }
 
@@ -515,11 +568,11 @@ MobillsAuto_PickAutocomplete(combo, wanted, root := "") {
         } catch {
         }
     }
-    attempted.Push(openBtn ? "Open button" : "Open button missing — click combo")
+    attempted.Push(openBtn ? "Open ClickLeft" : "combo ClickLeft")
     if (openBtn)
-        MobillsAuto_Click(openBtn)
+        MobillsAuto_ClickLeft(openBtn)
     else
-        MobillsAuto_Click(combo)
+        MobillsAuto_ClickLeft(combo)
     Sleep MOBILLS_STEP_MS
 
     edit := ""
@@ -558,21 +611,40 @@ MobillsAuto_PickAutocomplete(combo, wanted, root := "") {
     }
     Sleep 500
 
-    opt := MobillsAuto_FindAutocompleteOption(root, wanted)
-    if (!opt)
-        opt := MobillsAuto_FindAutocompleteOption(combo, wanted)
-    if (opt) {
-        attempted.Push("Click list option")
-        MobillsAuto_ClickAutocompleteOption(opt)
-    } else {
-        attempted.Push("list option missing — Enter fallback")
-        Send "{Enter}"
+    opt := MobillsAuto_WaitFor(MobillsAuto_FindAutocompleteOption.Bind(root, wanted), 2500)
+    if (!opt && root != combo)
+        opt := MobillsAuto_WaitFor(MobillsAuto_FindAutocompleteOption.Bind(combo, wanted), 1500)
+    optNm := ""
+    if opt {
+        try optNm := Trim(opt.Name)
+        catch {
+        }
     }
+    ; #region agent log
+    MobillsAuto_DbgLog("A", "MobillsUia.ahk:PickAutocomplete", "option search", '{"wanted":"' MobillsAuto_DbgEsc(wanted
+    ) '","wantedLen":' StrLen(wanted) ',"found":' (opt ? 1 : 0) ',"optName":"' MobillsAuto_DbgEsc(optNm) '","listNames":"' MobillsAuto_DbgEsc(
+        MobillsAuto_DbgListNames(root)) '","chipBefore":"' MobillsAuto_DbgEsc(chipBefore) '"}')
+    ; #endregion
+    if (!opt) {
+        attempted.Push("list option missing")
+        return { ok: false, got: MobillsAuto_ComboChipText(combo), attempted: attempted }
+    }
+    attempted.Push("ClickLeft list option")
+    MobillsAuto_ClickAutocompleteOption(opt)
     Sleep MOBILLS_STEP_MS
-
     got := MobillsAuto_ComboChipText(combo)
+    if !MobillsAuto_ChipMatches(got, wanted) {
+        attempted.Push("ClickLeft retry")
+        MobillsAuto_ClickAutocompleteOption(opt)
+        Sleep MOBILLS_STEP_MS
+        got := MobillsAuto_ComboChipText(combo)
+    }
     if MobillsAuto_ChipMatches(got, wanted)
         return { ok: true, got: got, attempted: attempted }
+    ; #region agent log
+    MobillsAuto_DbgLog("E", "MobillsUia.ahk:PickAutocomplete", "chip mismatch after click", '{"wanted":"' MobillsAuto_DbgEsc(
+        wanted) '","got":"' MobillsAuto_DbgEsc(got) '","optName":"' MobillsAuto_DbgEsc(optNm) '"}')
+    ; #endregion
     return { ok: false, got: got, attempted: attempted }
 }
 

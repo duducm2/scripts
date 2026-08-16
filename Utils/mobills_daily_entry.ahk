@@ -1022,6 +1022,10 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         }
         acctWanted := (row.type = "CARD") ? MOBILLS_CARD_NAME : ((row.type = "INCOME") ? (row.target != "" ? row.target :
             row.source) : row.source)
+        ; #region agent log
+        MobillsAuto_DbgLog("D", "mobills_daily_entry.ahk:EnterRow", "account combo", '{"idx":' idx ',"type":"' row.type '","combos":' combos
+            .Length ',"acctWanted":"' MobillsAuto_DbgEsc(acctWanted) '","hasAcctCombo":' (acctCombo ? 1 : 0) '"}')
+        ; #endregion
         if (acctCombo && acctWanted != "") {
             pk := MobillsAuto_PickAutocomplete(acctCombo, acctWanted, uia)
             if (!pk.ok)
