@@ -461,7 +461,7 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         originCombo := (combos.Length >= 1) ? combos[1] : ""
         destCombo := (combos.Length >= 2) ? combos[2] : ""
         if (originCombo) {
-            pk := MobillsAuto_PickAutocomplete(originCombo, row.source)
+            pk := MobillsAuto_PickAutocomplete(originCombo, row.source, uia)
             if (!pk.ok) {
                 MobillsDaily_Fail(idx, "Origin account", "Autocomplete mismatch", pk.attempted, "wanted " row.source " got " pk
                     .got)
@@ -479,7 +479,7 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
             return false
         }
         if (destCombo) {
-            pk := MobillsAuto_PickAutocomplete(destCombo, row.target)
+            pk := MobillsAuto_PickAutocomplete(destCombo, row.target, uia)
             if (!pk.ok) {
                 MobillsDaily_Fail(idx, "Destination account", "Autocomplete mismatch", pk.attempted, "wanted " row.target " got " pk
                     .got)
@@ -511,11 +511,19 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         combos := MobillsAuto_DialogCombos(scope)
         catCombo := (combos.Length >= 2) ? combos[2] : ""
         acctCombo := (combos.Length >= 3) ? combos[3] : ""
+        ; #region agent log
+        chip1 := (combos.Length >= 1) ? MobillsAuto_ComboChipText(combos[1]) : ""
+        chip2 := (combos.Length >= 2) ? MobillsAuto_ComboChipText(combos[2]) : ""
+        chip3 := (combos.Length >= 3) ? MobillsAuto_ComboChipText(combos[3]) : ""
+        chip4 := (combos.Length >= 4) ? MobillsAuto_ComboChipText(combos[4]) : ""
+        MobillsAuto_Dbg("H", "mobills_daily_entry.ahk:EnterRow", "combo chips", '{"n":' combos.Length ',"c1":"' chip1 '","c2":"' chip2 '","c3":"' chip3 '","c4":"' chip4 '"}'
+        )
+        ; #endregion
         catWanted := row.subcategory != "" ? row.subcategory : row.category
         if (catCombo && catWanted != "") {
-            pk := MobillsAuto_PickAutocomplete(catCombo, catWanted)
+            pk := MobillsAuto_PickAutocomplete(catCombo, catWanted, uia)
             if (!pk.ok && row.subcategory != "" && row.category != "")
-                pk := MobillsAuto_PickAutocomplete(catCombo, row.category)
+                pk := MobillsAuto_PickAutocomplete(catCombo, row.category, uia)
             if (!pk.ok) {
                 MobillsDaily_Fail(idx, "Category", "Autocomplete mismatch", pk.attempted, "wanted " catWanted " got " pk
                     .got)
@@ -525,7 +533,7 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         acctWanted := (row.type = "CARD") ? MOBILLS_CARD_NAME : ((row.type = "INCOME") ? (row.target != "" ? row.target :
             row.source) : row.source)
         if (acctCombo && acctWanted != "") {
-            pk := MobillsAuto_PickAutocomplete(acctCombo, acctWanted)
+            pk := MobillsAuto_PickAutocomplete(acctCombo, acctWanted, uia)
             if (!pk.ok) {
                 MobillsDaily_Fail(idx, (row.type = "CARD") ? "Card" : "Account", "Autocomplete mismatch", pk.attempted,
                 "wanted " acctWanted " got " pk.got)

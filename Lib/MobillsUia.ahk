@@ -344,16 +344,134 @@ MobillsAuto_ComboChipText(combo) {
     return ""
 }
 
-MobillsAuto_PickAutocomplete(combo, wanted) {
+MobillsAuto_ChipMatches(got, wanted) {
+    if (got = "" || wanted = "")
+        return false
+    return (got = wanted || InStr(got, wanted) || InStr(wanted, got))
+}
+
+; MUI Autocomplete list is often portaled outside the ComboBox. Prefer Click over Enter.
+MobillsAuto_FindOpenListbox(root) {
+    if !root
+        return ""
+    for , cls in ["MuiAutocomplete-listbox", "MuiAutocomplete-popper", "MuiMenu-list"] {
+        try {
+            el := root.FindElement({ ClassName: cls, matchmode: "Substring" })
+            if el
+                return el
+        } catch {
+        }
+    }
+    for , t in [50008, 50009] {
+        try {
+            all := root.FindAll({ Type: t })
+            if all {
+                for item in all {
+                    try {
+                        if !item.GetPropertyValue(UIA.Property.IsOffscreen)
+                            return item
+                    } catch {
+                    }
+                }
+            }
+        } catch {
+        }
+    }
+    return ""
+}
+
+MobillsAuto_FindAutocompleteOption(root, wanted) {
+    if !root || wanted = ""
+        return ""
+    list := MobillsAuto_FindOpenListbox(root)
+    scope := list ? list : ""
+    if !scope
+        return ""
+    types := [50007, 50011, 50000, 50020]
+    for , t in types {
+        try {
+            el := scope.FindElement({ Type: t, Name: wanted })
+            if el
+                return el
+        } catch {
+        }
+    }
+    for , t in types {
+        try {
+            el := scope.FindElement({ Type: t, Name: wanted, matchmode: "Substring" })
+            if el {
+                nm := ""
+                try nm := Trim(el.Name)
+                if (nm = wanted)
+                    return el
+            }
+        } catch {
+        }
+    }
+    return ""
+}
+
+MobillsAuto_ClickAutocompleteOption(el) {
+    if !el
+        return false
+    target := el
+    p := el
+    loop 8 {
+        ty := 0
+        try ty := p.Type
+        catch {
+            break
+        }
+        if (ty = 50007 || ty = 50011 || ty = 50000) {
+            target := p
+            break
+        }
+        try p := p.WalkTree("p")
+        catch {
+            break
+        }
+        if !p
+            break
+    }
+    try target.ScrollIntoView()
+    catch {
+    }
+    ; UIA Click() with no args Invokes; MUI only commits on a physical click.
+    try {
+        target.Click("left")
+        return true
+    } catch {
+        try {
+            target.Click("left")
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
+MobillsAuto_PickAutocomplete(combo, wanted, root := "") {
     attempted := []
     if !combo
         return { ok: false, got: "", attempted: ["combo missing"] }
     wanted := Trim(wanted)
     if (wanted = "")
         return { ok: false, got: "", attempted: ["wanted empty"] }
+    if (root = "")
+        root := combo
+
+    chipBefore := MobillsAuto_ComboChipText(combo)
+    if MobillsAuto_ChipMatches(chipBefore, wanted) {
+        attempted.Push("already selected")
+        ; #region agent log
+        MobillsAuto_Dbg("K", "MobillsUia.ahk:PickAutocomplete", "skip already selected", '{"wanted":"' wanted '","chip":"' chipBefore '"}'
+        )
+        ; #endregion
+        return { ok: true, got: chipBefore, attempted: attempted }
+    }
 
     openBtn := ""
-    try openBtn := combo.FindFirst({ Type: 50000, Name: "Open" })
+    try openBtn := combo.FindElement({ Type: 50000, Name: "Open" })
     catch {
     }
     if (!openBtn) {
@@ -372,7 +490,7 @@ MobillsAuto_PickAutocomplete(combo, wanted) {
     Sleep MOBILLS_STEP_MS
 
     edit := ""
-    try edit := combo.FindFirst({ Type: 50004 })
+    try edit := combo.FindElement({ Type: 50004 })
     catch {
     }
     if (edit) {
@@ -393,18 +511,60 @@ MobillsAuto_PickAutocomplete(combo, wanted) {
             Send "{Text}" wanted
         }
         SetKeyDelay prevDelay
+        Sleep 120
+        typed := MobillsAuto_ElementValue(edit)
+        if (typed = "" || !InStr(typed, wanted)) {
+            try edit.Value := wanted
+            catch {
+            }
+            Sleep 80
+            typed := MobillsAuto_ElementValue(edit)
+        }
+        ; #region agent log
+        MobillsAuto_Dbg("M", "MobillsUia.ahk:PickAutocomplete", "edit after type", '{"wanted":"' wanted '","typed":"' typed '"}'
+        )
+        ; #endregion
     } else {
         attempted.Push("no Edit — SendText to focused control")
         SendText wanted
     }
     Sleep 500
-    Send "{Enter}"
+
+    listbox := MobillsAuto_FindOpenListbox(root)
+    opt := MobillsAuto_FindAutocompleteOption(root, wanted)
+    if (!opt)
+        opt := MobillsAuto_FindAutocompleteOption(combo, wanted)
+    listHit := opt ? 1 : 0
+    optType := 0
+    optOff := -1
+    optName := ""
+    if (opt) {
+        try optType := opt.Type
+        try optName := StrReplace(Trim(opt.Name), '"', "'")
+        try optOff := opt.GetPropertyValue(UIA.Property.IsOffscreen) ? 1 : 0
+    }
+    ; #region agent log
+    MobillsAuto_Dbg("N", "MobillsUia.ahk:PickAutocomplete", "option before click", '{"wanted":"' wanted '","listbox":' (
+        listbox ? 1 : 0) ',"listHit":' listHit ',"optType":' optType ',"optOff":' optOff ',"optName":"' optName '"}')
+    ; #endregion
+    if (opt) {
+        attempted.Push("Click list option")
+        MobillsAuto_ClickAutocompleteOption(opt)
+    } else {
+        attempted.Push("list option missing — Enter fallback")
+        Send "{Enter}"
+    }
     Sleep MOBILLS_STEP_MS
 
     got := MobillsAuto_ComboChipText(combo)
-    if (got = "" && edit)
-        got := MobillsAuto_ElementValue(edit)
-    if (got != "" && (got = wanted || InStr(got, wanted) || InStr(wanted, got)))
+    editVal := ""
+    if (edit)
+        editVal := MobillsAuto_ElementValue(edit)
+    ; #region agent log
+    MobillsAuto_Dbg("F", "MobillsUia.ahk:PickAutocomplete", "after pick", '{"wanted":"' wanted '","chipBefore":"' chipBefore '","chipAfter":"' got '","editVal":"' editVal '","listHit":' listHit '}'
+    )
+    ; #endregion
+    if MobillsAuto_ChipMatches(got, wanted)
         return { ok: true, got: got, attempted: attempted }
     return { ok: false, got: got, attempted: attempted }
 }

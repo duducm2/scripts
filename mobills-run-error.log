@@ -29,3 +29,34 @@ Detail: wanted Hortifruti got
 Selectors attempted:
   - Open button missing — click combo
   - no Edit — SendText to focused control
+2026-08-15 21:30:22	Transaction #1
+Field: Card
+Gate: Autocomplete mismatch
+Detail: wanted Mercado Pago got 
+Selectors attempted:
+  - Open button
+  - Combo Edit + SendText
+2026-08-15 21:36:42	Transaction #1
+Field: Category
+Gate: Autocomplete mismatch
+Detail: wanted Hortifruti got Ajuste
+Selectors attempted:
+  - Open button
+  - Combo Edit + SendText
+  - Click list option
+2026-08-15 21:39:15	Transaction #1
+Field: Category
+Gate: Autocomplete mismatch
+Detail: wanted Hortifruti got Ajuste
+Selectors attempted:
+  - Open button
+  - Combo Edit + SendText
+  - Click list option
+2026-08-15 21:41:08	Transaction #1
+Field: Category
+Gate: Autocomplete mismatch
+Detail: wanted Hortifruti got Ajuste
+Selectors attempted:
+  - Open button
+  - Combo Edit + SendText
+  - Click list option
