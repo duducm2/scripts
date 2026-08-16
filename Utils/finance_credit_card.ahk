@@ -1,14 +1,16 @@
 ; =============================================================================
 ; Utils module: finance_credit_card.ahk
-; Credit cards ListView CRUD, mark paid, primary selection
+; Credit cards ListView CRUD, mark paid, primary selection, usage chart
 ; =============================================================================
 
 global g_FinanceCardLv := false
 global g_FinanceCardRows := []
 global g_FinanceCardHeader := false
+global g_FinanceCardChartLabel := false
+global g_FinanceCardChartBar := false
 
 Finance_ShowCreditCard() {
-    global g_FinanceGui, g_FinanceCardLv, g_FinanceCardHeader
+    global g_FinanceGui, g_FinanceCardLv, g_FinanceCardHeader, g_FinanceCardChartLabel, g_FinanceCardChartBar
     Finance_CloseGui()
     Finance_EnsureData()
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Credit cards")
@@ -16,9 +18,12 @@ Finance_ShowCreditCard() {
     g_FinanceCardHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
     g_FinanceGui.Add("Text", "x12 y36 w860",
         "[A]/Insert add   [E] edit   Delete   [P] pay   [R] primary   Backspace menu")
-    g_FinanceCardLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
+    g_FinanceCardChartLabel := g_FinanceGui.Add("Text", "x12 y64 w860 h36")
+    g_FinanceCardChartBar := g_FinanceGui.Add("Progress", "x12 y104 w860 h18 c2ECC71 Background333333 Range0-100", 0)
+    g_FinanceCardLv := g_FinanceGui.Add("ListView", "x12 y132 w860 h390 Grid",
         ["Primary", "Name", "Limit", "Spent", "Available", "%", "Linked", "Close day"])
     g_FinanceCardLv.OnEvent("DoubleClick", (*) => Finance_CardEdit())
+    g_FinanceCardLv.OnEvent("ItemSelect", (*) => Finance_CardUpdateChart())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_CardRefresh()
@@ -46,6 +51,7 @@ Finance_CardRefresh() {
     g_FinanceCardRows := []
     totLim := 0.0
     totSpent := 0.0
+    selectRow := 0
     for c in cards {
         g_FinanceCardRows.Push(c)
         lim := Finance_ParseDecimal(c["limit"])
@@ -57,13 +63,51 @@ Finance_CardRefresh() {
         star := (c["id"] = primaryId) ? "*" : ""
         g_FinanceCardLv.Add("", star, c["name"], Finance_FormatBrl(lim), Finance_FormatBrl(spent),
         Finance_FormatBrl(avail), pct . "%", Finance_AccName(accs, c["linked_account_id"]), c["closing_day"])
+        if (primaryId != "" && c["id"] = primaryId)
+            selectRow := g_FinanceCardRows.Length
     }
+    if (!selectRow && g_FinanceCardRows.Length)
+        selectRow := 1
     totAvail := totLim - totSpent
     g_FinanceCardHeader.Value := "Limit " . Finance_FormatBrl(totLim)
     . "  ·  Spent " . Finance_FormatBrl(totSpent)
     . "  ·  Available " . Finance_FormatBrl(totAvail)
     loop 8
         g_FinanceCardLv.ModifyCol(A_Index, "AutoHdr")
+    if (selectRow) {
+        g_FinanceCardLv.Modify(selectRow, "Select Focus Vis")
+    }
+    Finance_CardUpdateChart()
+}
+
+Finance_CardUpdateChart(*) {
+    global g_FinanceCardChartLabel, g_FinanceCardChartBar
+    if (!IsObject(g_FinanceCardChartLabel) || !IsObject(g_FinanceCardChartBar))
+        return
+    c := Finance_CardSelected()
+    if (!c) {
+        g_FinanceCardChartLabel.Value := "Select a credit card to see limit usage"
+        g_FinanceCardChartBar.Value := 0
+        try g_FinanceCardChartBar.Opt("c2ECC71")
+        catch {
+        }
+        return
+    }
+    lim := Finance_ParseDecimal(c["limit"])
+    spent := Finance_ParseDecimal(c["current_spent"])
+    avail := lim - spent
+    pct := lim > 0 ? Round(spent / lim * 100, 1) : 0
+    barPct := lim > 0 ? Min(100, Round(spent / lim * 100)) : 0
+    warn := Finance_ParseDecimal(Finance_Setting("General", "CardUsageWarnPct", "80"))
+    g_FinanceCardChartLabel.Value := c["name"] . "`nSpent " . Finance_FormatBrl(spent)
+    . " / Limit " . Finance_FormatBrl(lim)
+    . "  ·  Available " . Finance_FormatBrl(avail)
+    . "  ·  " . pct . "%"
+    g_FinanceCardChartBar.Value := barPct
+    color := (pct >= warn || (lim > 0 && spent > lim)) ? "cE74C3C" : "c2ECC71"
+    try g_FinanceCardChartBar.Opt(color)
+    catch {
+    }
 }
 
 Finance_CardSelected() {
