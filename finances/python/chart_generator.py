@@ -33,6 +33,8 @@ def build_html(data: dict) -> str:
     s = data["settings"]
     raw = cockpit_raw(data)
     cur = raw["currentMonth"]
+    date_from = raw.get("dateFrom") or raw.get("monthStart") or (cur + "-01")
+    date_to = raw.get("dateTo") or raw.get("today") or date_from
     notes = data["notifications"] if widget_on(s, "ShowNotifications") else []
     note_html = (
         "".join(f'<div class="note">{n}</div>' for n in notes)
@@ -211,7 +213,7 @@ def build_html(data: dict) -> str:
     header h1 {{ margin:0; font-size:15px; font-weight:600; }}
     .period-controls {{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }}
     .period-controls label {{ display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }}
-    .period-controls input[type="month"] {{
+    .period-controls input[type="date"] {{
       background:var(--ctrl-bg); color:var(--ctrl-fg); border:1px solid var(--border);
       border-radius:6px; padding:4px 8px; font-size:12px;
     }}
@@ -253,8 +255,8 @@ def build_html(data: dict) -> str:
 <header>
   <h1>Finance cockpit · <span id="periodTitle">{data['year_month']}</span></h1>
   <div class="period-controls">
-    <label>From <input type="month" id="periodFrom" value="{cur}"/></label>
-    <label>To <input type="month" id="periodTo" value="{cur}"/></label>
+    <label>From <input type="date" id="periodFrom" value="{date_from}"/></label>
+    <label>To <input type="date" id="periodTo" value="{date_to}"/></label>
     <button type="button" id="periodApply">Apply</button>
     <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
   </div>
@@ -311,12 +313,18 @@ function monthShift(ym, delta) {{
   while (m < 1) {{ m += 12; y -= 1; }}
   return y.toString().padStart(4,'0') + '-' + String(m).padStart(2,'0');
 }}
-function monthsInRange(from, to) {{
-  if (!from || !to) return [];
-  let a = from, b = to;
-  if (a.slice(0,4) !== b.slice(0,4)) {{
-    a = b.slice(0,4) + '-' + a.slice(5);
-  }}
+function shiftDate(ymd, deltaDays) {{
+  const d = new Date(ymd + 'T12:00:00');
+  d.setDate(d.getDate() + deltaDays);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}}
+function daysInclusive(from, to) {{
+  const a = new Date(from + 'T12:00:00');
+  const b = new Date(to + 'T12:00:00');
+  return Math.round((b - a) / 86400000) + 1;
+}}
+function monthsSpanning(from, to) {{
+  let a = from.slice(0,7), b = to.slice(0,7);
   if (a > b) {{ const t = a; a = b; b = t; }}
   const out = [];
   let cur = a;
@@ -326,11 +334,9 @@ function monthsInRange(from, to) {{
   }}
   return out;
 }}
-function periodLabel(months) {{
-  if (!months.length) return RAW.currentMonth;
-  if (months.length === 1) return months[0];
-  const year = months[0].slice(0,4);
-  return year + ' (' + months.map(m => MONTH_NAMES[parseInt(m.slice(5,7),10)-1]).join(', ') + ')';
+function periodLabel(from, to) {{
+  if (!from || !to) return RAW.monthStart + ' – ' + RAW.today;
+  return from === to ? from : (from + ' – ' + to);
 }}
 function catById() {{
   const map = {{}};
@@ -349,25 +355,23 @@ function catLabel(row, fallback) {{
   const name = row.name || fallback || '';
   return icon && name ? icon + ' ' + name : (name || icon || fallback || 'Uncategorized');
 }}
-function monthTotals(months) {{
+function dateRangeTotals(from, to) {{
   let income = 0, expense = 0;
-  const set = new Set(months);
   for (const t of RAW.transactions) {{
-    const ym = String(t.date || '').slice(0,7);
-    if (!set.has(ym)) continue;
+    const d = String(t.date || '').slice(0,10);
+    if (!d || d < from || d > to) continue;
     const amt = parseDecimal(t.amount);
     if (t.type === 'income') income += amt;
     else if (t.type === 'expense' || t.type === 'card_expense') expense += amt;
   }}
   return {{income, expense, balance: income - expense}};
 }}
-function byCategory(months, types) {{
+function byCategoryDates(from, to, types) {{
   const byId = catById();
-  const set = new Set(months);
   const totals = {{}};
   for (const t of RAW.transactions) {{
-    const ym = String(t.date || '').slice(0,7);
-    if (!set.has(ym)) continue;
+    const d = String(t.date || '').slice(0,10);
+    if (!d || d < from || d > to) continue;
     if (!types.has(t.type)) continue;
     const cid = mainCategoryId(t.category_id || '', byId);
     totals[cid] = (totals[cid] || 0) + parseDecimal(t.amount);
@@ -387,6 +391,18 @@ function pieFromRows(rows) {{
     custom: rows.map(r => formatBrl(r.value))
   }};
 }}
+function monthTotals(months) {{
+  let income = 0, expense = 0;
+  const set = new Set(months);
+  for (const t of RAW.transactions) {{
+    const ym = String(t.date || '').slice(0,7);
+    if (!set.has(ym)) continue;
+    const amt = parseDecimal(t.amount);
+    if (t.type === 'income') income += amt;
+    else if (t.type === 'expense' || t.type === 'card_expense') expense += amt;
+  }}
+  return {{income, expense, balance: income - expense}};
+}}
 function seriesFor(months) {{
   return months.map(ym => {{
     const tot = monthTotals([ym]);
@@ -400,15 +416,6 @@ function annualFor(year) {{
     const tot = monthTotals([ym]);
     out.push({{month: ym, label: MONTH_NAMES[m-1], income: tot.income, expense: tot.expense, balance: tot.balance}});
   }}
-  return out;
-}}
-function priorMonths(months) {{
-  if (!months.length) return [];
-  const sorted = [...months].sort();
-  const n = sorted.length;
-  const earliest = sorted[0];
-  const out = [];
-  for (let i = n; i >= 1; i--) out.push(monthShift(earliest, -i));
   return out;
 }}
 function aggregateBudgets(months) {{
@@ -452,22 +459,20 @@ function applyPeriod() {{
   let from = fromEl.value;
   let to = toEl.value;
   if (!from || !to) return;
-  if (from.slice(0,4) !== to.slice(0,4)) {{
-    from = to.slice(0,4) + '-' + from.slice(5);
-    fromEl.value = from;
-    if (from > to) {{ from = to; fromEl.value = from; }}
-  }}
   if (from > to) {{
     const t = from; from = to; to = t;
     fromEl.value = from; toEl.value = to;
   }}
-  const months = monthsInRange(from, to);
+  const months = monthsSpanning(from, to);
   const year = to.slice(0,4);
-  const tot = monthTotals(months);
-  const prev = monthTotals(priorMonths(months));
-  const expRows = byCategory(months, new Set(['expense','card_expense']));
-  const incRows = byCategory(months, new Set(['income']));
-  const multi = months.length > 1;
+  const tot = dateRangeTotals(from, to);
+  const n = daysInclusive(from, to);
+  const priorTo = shiftDate(from, -1);
+  const priorFrom = shiftDate(from, -n);
+  const prev = dateRangeTotals(priorFrom, priorTo);
+  const expRows = byCategoryDates(from, to, new Set(['expense','card_expense']));
+  const incRows = byCategoryDates(from, to, new Set(['income']));
+  const multi = from !== to;
   DATA.expensePie = pieFromRows(expRows);
   DATA.incomePie = pieFromRows(incRows);
   DATA.spentMain = expRows.map(r => ({{name: r.name, value: r.value}}));
@@ -475,7 +480,7 @@ function applyPeriod() {{
   DATA.annual = annualFor(year);
 
   const title = document.getElementById('periodTitle');
-  if (title) title.textContent = periodLabel(months);
+  if (title) title.textContent = periodLabel(from, to);
   const annualTitle = document.getElementById('annualTitle');
   if (annualTitle) annualTitle.textContent = 'Annual cash flow (' + year + ')';
   const kpiIncome = document.getElementById('kpiIncome');
@@ -582,42 +587,19 @@ function applyTheme(theme) {{
   if (applyBtn) applyBtn.addEventListener('click', applyPeriod);
   const fromEl = document.getElementById('periodFrom');
   const toEl = document.getElementById('periodTo');
-  if (fromEl) fromEl.value = RAW.currentMonth;
-  if (toEl) toEl.value = RAW.currentMonth;
-  if (fromEl) fromEl.addEventListener('change', () => {{
-    if (toEl && fromEl.value.slice(0,4) !== toEl.value.slice(0,4))
-      toEl.value = fromEl.value.slice(0,4) + '-' + toEl.value.slice(5);
-  }});
-  if (toEl) toEl.addEventListener('change', () => {{
-    if (fromEl && fromEl.value.slice(0,4) !== toEl.value.slice(0,4))
-      fromEl.value = toEl.value.slice(0,4) + '-' + fromEl.value.slice(5);
-  }});
-  drawAll();
+  if (fromEl) fromEl.value = RAW.monthStart || RAW.dateFrom;
+  if (toEl) toEl.value = RAW.today || RAW.dateTo;
+  applyPeriod();
 }})();
 </script>
 </body></html>"""
 
 
 def main():
-    import argparse
-    from data_aggregator import current_month
-
     seed()
-    parser = argparse.ArgumentParser(description="Build finance cockpit dashboard")
-    parser.add_argument("--year", default=None, help="Calendar year for annual chart")
-    parser.add_argument(
-        "--months",
-        default=None,
-        help="Comma-separated YYYY-MM months to aggregate",
-    )
-    args = parser.parse_args()
-    year = args.year or current_month()[:4]
-    if args.months:
-        months = [m.strip() for m in args.months.split(",") if m.strip()]
-    else:
-        months = [current_month()]
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    html = build_html(snapshot(months=months, year=year))
+    # Default: 1st of current month through today
+    html = build_html(snapshot())
     out = OUTPUT / "dashboard.html"
     out.write_text(html, encoding="utf-8")
     print(str(out))

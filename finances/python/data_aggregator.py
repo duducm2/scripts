@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import configparser
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -273,7 +273,12 @@ def collect_notifications(
     return notes
 
 
-def snapshot(months: list[str] | None = None, year: str | None = None) -> dict:
+def snapshot(
+    months: list[str] | None = None,
+    year: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> dict:
     txs = read_csv("transactions.csv")
     accs = read_csv("accounts.csv")
     cats = read_csv("categories.csv")
@@ -281,32 +286,71 @@ def snapshot(months: list[str] | None = None, year: str | None = None) -> dict:
     goals = read_csv("goals.csv")
     budgets = read_csv("budgets.csv")
     settings = read_settings()
-    if not months:
-        months = [current_month()]
-    months = sorted({m.strip() for m in months if m and m.strip()})
-    if not months:
-        months = [current_month()]
-    if not year:
-        year = months[0][:4]
-    prev_months = prior_period_months(months)
-    tot = period_totals(txs, months)
-    prev_tot = period_totals(txs, prev_months)
+    today = datetime.now().strftime("%Y-%m-%d")
+    month_start = datetime.now().strftime("%Y-%m-01")
+    if date_from is None and date_to is None and months is None:
+        date_from = month_start
+        date_to = today
+    if date_from and date_to:
+        if date_from > date_to:
+            date_from, date_to = date_to, date_from
+        months = []
+        cur = date_from[:7]
+        end = date_to[:7]
+        while cur <= end:
+            months.append(cur)
+            cur = month_shift(cur, 1)
+        year = year or date_to[:4]
+        tot = period_totals_dates(txs, date_from, date_to)
+        # Prior window: same number of days ending the day before date_from
+        n_days = (
+            datetime.strptime(date_to, "%Y-%m-%d")
+            - datetime.strptime(date_from, "%Y-%m-%d")
+        ).days + 1
+        prior_to_d = datetime.strptime(date_from, "%Y-%m-%d")
+        prior_to = (prior_to_d - timedelta(days=1)).strftime("%Y-%m-%d")
+        prior_from = (prior_to_d - timedelta(days=n_days)).strftime("%Y-%m-%d")
+        prev_tot = period_totals_dates(txs, prior_from, prior_to)
+        prev_label = f"{prior_from} – {prior_to}"
+        label = date_from if date_from == date_to else f"{date_from} – {date_to}"
+        exp_rows = by_category_dates(
+            txs, date_from, date_to, {"expense", "card_expense"}, cats
+        )
+        inc_rows = by_category_dates(txs, date_from, date_to, {"income"}, cats)
+        multi = date_from != date_to
+    else:
+        if not months:
+            months = [current_month()]
+        months = sorted({m.strip() for m in months if m and m.strip()})
+        if not months:
+            months = [current_month()]
+        if not year:
+            year = months[0][:4]
+        prev_months = prior_period_months(months)
+        tot = period_totals(txs, months)
+        prev_tot = period_totals(txs, prev_months)
+        prev_label = period_label(prev_months) if prev_months else ""
+        label = period_label(months)
+        exp_rows = by_category_months(txs, months, {"expense", "card_expense"}, cats)
+        inc_rows = by_category_months(txs, months, {"income"}, cats)
+        multi = len(months) > 1
+        date_from = months[0] + "-01"
+        date_to = today if months[-1] == current_month() else (months[-1] + "-28")
+
     balance = sum(parse_decimal(a.get("current_balance")) for a in accs)
     card_limit = sum(parse_decimal(c.get("limit")) for c in cards)
     card_spent = sum(parse_decimal(c.get("current_spent")) for c in cards)
     saved_pct = (tot["balance"] / tot["income"] * 100) if tot["income"] else 0.0
-    exp_rows = by_category_months(txs, months, {"expense", "card_expense"}, cats)
-    inc_rows = by_category_months(txs, months, {"income"}, cats)
-    label = period_label(months)
-    multi = len(months) > 1
     return {
         "settings": settings,
         "year_month": label,
         "period_months": months,
         "period_year": year,
         "period_multi": multi,
-        "prev_month": period_label(prev_months) if prev_months else "",
-        "prev_months": prev_months,
+        "date_from": date_from,
+        "date_to": date_to,
+        "prev_month": prev_label,
+        "prev_months": [],
         "totals": tot,
         "prev_totals": prev_tot,
         "balance": balance,
@@ -330,6 +374,48 @@ def snapshot(months: list[str] | None = None, year: str | None = None) -> dict:
     }
 
 
+def period_totals_dates(txs: list[dict], date_from: str, date_to: str) -> dict:
+    income = expense = 0.0
+    for t in txs:
+        d = str(t.get("date", ""))[:10]
+        if not d or d < date_from or d > date_to:
+            continue
+        amt = parse_decimal(t.get("amount"))
+        kind = t.get("type", "")
+        if kind == "income":
+            income += amt
+        elif kind in ("expense", "card_expense"):
+            expense += amt
+    return {"income": income, "expense": expense, "balance": income - expense}
+
+
+def by_category_dates(
+    txs: list[dict],
+    date_from: str,
+    date_to: str,
+    types: set[str],
+    cats: list[dict],
+) -> list[tuple[str, float, str]]:
+    by_id = cat_index(cats)
+    totals: dict[str, float] = defaultdict(float)
+    for t in txs:
+        d = str(t.get("date", ""))[:10]
+        if not d or d < date_from or d > date_to:
+            continue
+        if t.get("type") not in types:
+            continue
+        cid = main_category_id(t.get("category_id", ""), by_id)
+        totals[cid] += parse_decimal(t.get("amount"))
+    rows = []
+    for cid, amt in totals.items():
+        row = by_id.get(cid)
+        name = cat_label(row, cid or "Uncategorized")
+        color = (row or {}).get("color", "#7F8C8D")
+        rows.append((name, amt, color))
+    rows.sort(key=lambda r: r[1], reverse=True)
+    return rows
+
+
 def cockpit_raw(data: dict | None = None) -> dict:
     """Compact payload for client-side period filtering in the dashboard."""
     if data is None:
@@ -337,8 +423,14 @@ def cockpit_raw(data: dict | None = None) -> dict:
     txs = read_csv("transactions.csv")
     cats = read_csv("categories.csv")
     budgets = read_csv("budgets.csv")
+    today = datetime.now().strftime("%Y-%m-%d")
+    month_start = datetime.now().strftime("%Y-%m-01")
     return {
         "currentMonth": current_month(),
+        "today": today,
+        "monthStart": month_start,
+        "dateFrom": data.get("date_from") or month_start,
+        "dateTo": data.get("date_to") or today,
         "balance": data["balance"],
         "cardAvailable": data["card_available"],
         "cardLimit": data["card_limit"],
