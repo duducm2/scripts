@@ -152,32 +152,78 @@ def build_html(data: dict) -> str:
   <title>Finance cockpit</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
-    body {{ font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; font-size:13px; }}
-    header {{ padding:8px 14px; background:#1a1a1a; border-bottom:1px solid #2a2a2a; }}
+    :root, [data-theme="dark"] {{
+      --bg: #121212;
+      --header: #1a1a1a;
+      --border: #2a2a2a;
+      --panel: #1e1e1e;
+      --text: #eee;
+      --muted: #888;
+      --muted2: #777;
+      --heading: #bbb;
+      --perf: #ccc;
+      --track: #333;
+      --empty: #666;
+      --note-bg: #3d2b00;
+      --note-fg: #f1c40f;
+      --note-ok-bg: #143d27;
+      --note-ok-fg: #2ecc71;
+      --toggle-bg: #2c2c2c;
+      --toggle-fg: #eee;
+      --plot-paper: #1e1e1e;
+      --plot-font: #ccc;
+    }}
+    [data-theme="light"] {{
+      --bg: #f4f5f7;
+      --header: #ffffff;
+      --border: #dde1e6;
+      --panel: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --muted2: #6b7280;
+      --heading: #374151;
+      --perf: #4b5563;
+      --track: #e5e7eb;
+      --empty: #9ca3af;
+      --note-bg: #fff7e0;
+      --note-fg: #92400e;
+      --note-ok-bg: #ecfdf5;
+      --note-ok-fg: #047857;
+      --toggle-bg: #eef0f3;
+      --toggle-fg: #1a1a1a;
+      --plot-paper: #ffffff;
+      --plot-font: #374151;
+    }}
+    body {{ font-family: Segoe UI, sans-serif; background:var(--bg); color:var(--text); margin:0; font-size:13px; }}
+    header {{ padding:8px 14px; background:var(--header); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:12px; }}
     header h1 {{ margin:0; font-size:15px; font-weight:600; }}
+    #themeToggle {{ background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
+      border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; }}
+    #themeToggle:hover {{ filter:brightness(1.08); }}
     main {{ padding:12px 16px 20px; }}
     .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }}
-    .kpi {{ background:#1e1e1e; padding:8px 10px; border-radius:6px; }}
-    .kpi .lbl {{ color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
+    .kpi {{ background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }}
+    .kpi .lbl {{ color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
     .kpi .val {{ font-size:16px; margin-top:2px; font-weight:600; }}
-    .dim {{ color:#777; font-size:12px; font-weight:400; }}
+    .dim {{ color:var(--muted2); font-size:12px; font-weight:400; }}
     .pos {{ color:#2ecc71; }} .neg {{ color:#e74c3c; }}
     .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }}
     .split {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
-    .panel {{ background:#1e1e1e; padding:10px 12px; border-radius:6px; margin-bottom:0; }}
+    .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
-    .panel h2 {{ margin:0 0 4px; font-size:12px; color:#bbb; font-weight:600; }}
+    .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
     .chart {{ height:260px; }}
     .chart-cell {{ min-width:0; }}
-    .note {{ background:#3d2b00; color:#f1c40f; padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
-    .note.ok {{ background:#143d27; color:#2ecc71; }}
-    .perf-line {{ color:#ccc; font-size:12px; line-height:1.4; }}
+    .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
+    .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
+    .perf-line {{ color:var(--perf); font-size:12px; line-height:1.4; }}
     .bar-row {{ margin:6px 0 8px; }}
     .bar-head {{ display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:3px; }}
-    .bar-track {{ height:7px; background:#333; border-radius:4px; overflow:hidden; }}
+    .bar-track {{ height:7px; background:var(--track); border-radius:4px; overflow:hidden; }}
     .bar-fill {{ height:100%; border-radius:4px; }}
-    .bar-meta {{ color:#777; font-size:11px; margin-top:2px; }}
-    .empty {{ color:#666; margin:0; }}
+    .bar-meta {{ color:var(--muted2); font-size:11px; margin-top:2px; }}
+    .empty {{ color:var(--empty); margin:0; }}
     @media (max-width:900px) {{
       .kpis, .charts, .split {{ grid-template-columns:1fr; }}
     }}
@@ -186,6 +232,7 @@ def build_html(data: dict) -> str:
 <body>
 <header>
   <h1>Finance cockpit · {data['year_month']}</h1>
+  <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
 </header>
 <main>
   {note_html}
@@ -202,12 +249,24 @@ def build_html(data: dict) -> str:
 </main>
 <script>
 const DATA = {payload_json};
-const L = {{paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{{color:'#ccc', size:11}},
-  margin:{{t:28,b:36,l:42,r:16}}, height:260, legend:{{orientation:'h', y:1.12, font:{{size:10}}}}}};
+const THEME_KEY = 'finance-cockpit-theme';
+function themeColors() {{
+  const cs = getComputedStyle(document.documentElement);
+  return {{
+    paper: cs.getPropertyValue('--plot-paper').trim() || '#1e1e1e',
+    font: cs.getPropertyValue('--plot-font').trim() || '#ccc'
+  }};
+}}
+function baseLayout() {{
+  const t = themeColors();
+  return {{paper_bgcolor:t.paper, plot_bgcolor:t.paper, font:{{color:t.font, size:11}},
+    margin:{{t:28,b:36,l:42,r:16}}, height:260, legend:{{orientation:'h', y:1.12, font:{{size:10}}}}}};
+}}
 function pie(id, spec) {{
   const el = document.getElementById(id);
   if (!el) return;
   if (!spec.values.length) {{ el.innerHTML = '<p class="empty">No data</p>'; return; }}
+  const L = baseLayout();
   Plotly.newPlot(id, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
     customdata: spec.custom, textfont:{{size:10}},
@@ -220,6 +279,7 @@ function pie(id, spec) {{
   }}), {{responsive:true, displayModeBar:false}});
 }}
 function drawAll() {{
+  const L = baseLayout();
   pie('pieExp', DATA.expensePie);
   pie('pieInc', DATA.incomePie);
   const names = DATA.spentMain.map(x => x.name);
@@ -243,7 +303,27 @@ function drawAll() {{
     {{type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
   ], L, {{responsive:true, displayModeBar:false}});
 }}
-drawAll();
+function applyTheme(theme) {{
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+  drawAll();
+}}
+(function initTheme() {{
+  let theme = localStorage.getItem(THEME_KEY);
+  if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) {{
+    btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    btn.addEventListener('click', () => {{
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }});
+  }}
+  drawAll();
+}})();
 </script>
 </body></html>"""
 

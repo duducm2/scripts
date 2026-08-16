@@ -5,32 +5,78 @@
   <title>Finance cockpit</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
-    body { font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; font-size:13px; }
-    header { padding:8px 14px; background:#1a1a1a; border-bottom:1px solid #2a2a2a; }
+    :root, [data-theme="dark"] {
+      --bg: #121212;
+      --header: #1a1a1a;
+      --border: #2a2a2a;
+      --panel: #1e1e1e;
+      --text: #eee;
+      --muted: #888;
+      --muted2: #777;
+      --heading: #bbb;
+      --perf: #ccc;
+      --track: #333;
+      --empty: #666;
+      --note-bg: #3d2b00;
+      --note-fg: #f1c40f;
+      --note-ok-bg: #143d27;
+      --note-ok-fg: #2ecc71;
+      --toggle-bg: #2c2c2c;
+      --toggle-fg: #eee;
+      --plot-paper: #1e1e1e;
+      --plot-font: #ccc;
+    }
+    [data-theme="light"] {
+      --bg: #f4f5f7;
+      --header: #ffffff;
+      --border: #dde1e6;
+      --panel: #ffffff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --muted2: #6b7280;
+      --heading: #374151;
+      --perf: #4b5563;
+      --track: #e5e7eb;
+      --empty: #9ca3af;
+      --note-bg: #fff7e0;
+      --note-fg: #92400e;
+      --note-ok-bg: #ecfdf5;
+      --note-ok-fg: #047857;
+      --toggle-bg: #eef0f3;
+      --toggle-fg: #1a1a1a;
+      --plot-paper: #ffffff;
+      --plot-font: #374151;
+    }
+    body { font-family: Segoe UI, sans-serif; background:var(--bg); color:var(--text); margin:0; font-size:13px; }
+    header { padding:8px 14px; background:var(--header); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:12px; }
     header h1 { margin:0; font-size:15px; font-weight:600; }
+    #themeToggle { background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
+      border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; }
+    #themeToggle:hover { filter:brightness(1.08); }
     main { padding:12px 16px 20px; }
     .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
-    .kpi { background:#1e1e1e; padding:8px 10px; border-radius:6px; }
-    .kpi .lbl { color:#888; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+    .kpi { background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }
+    .kpi .lbl { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
     .kpi .val { font-size:16px; margin-top:2px; font-weight:600; }
-    .dim { color:#777; font-size:12px; font-weight:400; }
+    .dim { color:var(--muted2); font-size:12px; font-weight:400; }
     .pos { color:#2ecc71; } .neg { color:#e74c3c; }
     .charts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
     .split { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .panel { background:#1e1e1e; padding:10px 12px; border-radius:6px; margin-bottom:0; }
+    .panel { background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }
     .panel-slim { margin-bottom:10px; }
-    .panel h2 { margin:0 0 4px; font-size:12px; color:#bbb; font-weight:600; }
+    .panel h2 { margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }
     .chart { height:260px; }
     .chart-cell { min-width:0; }
-    .note { background:#3d2b00; color:#f1c40f; padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }
-    .note.ok { background:#143d27; color:#2ecc71; }
-    .perf-line { color:#ccc; font-size:12px; line-height:1.4; }
+    .note { background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }
+    .note.ok { background:var(--note-ok-bg); color:var(--note-ok-fg); }
+    .perf-line { color:var(--perf); font-size:12px; line-height:1.4; }
     .bar-row { margin:6px 0 8px; }
     .bar-head { display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:3px; }
-    .bar-track { height:7px; background:#333; border-radius:4px; overflow:hidden; }
+    .bar-track { height:7px; background:var(--track); border-radius:4px; overflow:hidden; }
     .bar-fill { height:100%; border-radius:4px; }
-    .bar-meta { color:#777; font-size:11px; margin-top:2px; }
-    .empty { color:#666; margin:0; }
+    .bar-meta { color:var(--muted2); font-size:11px; margin-top:2px; }
+    .empty { color:var(--empty); margin:0; }
     @media (max-width:900px) {
       .kpis, .charts, .split { grid-template-columns:1fr; }
     }
@@ -39,6 +85,7 @@
 <body>
 <header>
   <h1>Finance cockpit · 2026-08</h1>
+  <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
 </header>
 <main>
   <div class="note">Budget exceeded: Alimentação (R$ 311,91 / R$ 300,00)</div><div class="note">Budget exceeded: Eletrônicos (R$ 2.010,22 / R$ 50,00)</div>
@@ -74,12 +121,24 @@
 </main>
 <script>
 const DATA = {"expensePie": {"labels": ["Contas de casa", "Eletrônicos", "Mercado", "Saúde", "Alimentação", "Carro", "Lazer", "Humanitário", "Educação", "Beleza"], "values": [2300.0, 2010.22, 1359.3, 442.81, 311.91, 280.0, 167.28, 150.0, 139.77, 100.0], "colors": ["#27AE60", "#8E44AD", "#D35400", "#C0392B", "#3498DB", "#F1C40F", "#3498DB", "#C0392B", "#2980B9", "#9B59B6"], "custom": ["R$ 2.300,00", "R$ 2.010,22", "R$ 1.359,30", "R$ 442,81", "R$ 311,91", "R$ 280,00", "R$ 167,28", "R$ 150,00", "R$ 139,77", "R$ 100,00"]}, "incomePie": {"labels": ["Outros", "Salário", "Renda extra", "Bonificação"], "values": [10000.0, 4876.76, 650.0, 10.0], "colors": ["#F1C40F", "#7F8C8D", "#D35400", "#9B59B6"], "custom": ["R$ 10.000,00", "R$ 4.876,76", "R$ 650,00", "R$ 10,00"]}, "series": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08"}], "annual": [{"income": 4200.0, "expense": 4228.700000000001, "balance": -28.700000000000728, "month": "2026-01", "label": "Jan"}, {"income": 4200.0, "expense": 5370.950000000001, "balance": -1170.9500000000007, "month": "2026-02", "label": "Feb"}, {"income": 4200.0, "expense": 4956.6, "balance": -756.6000000000004, "month": "2026-03", "label": "Mar"}, {"income": 4300.0, "expense": 5507.3, "balance": -1207.3000000000002, "month": "2026-04", "label": "Apr"}, {"income": 4542.18, "expense": 5229.33, "balance": -687.1499999999996, "month": "2026-05", "label": "May"}, {"income": 14823.45, "expense": 7923.84, "balance": 6899.610000000001, "month": "2026-06", "label": "Jun"}, {"income": 4720.0, "expense": 4623.919999999999, "balance": 96.08000000000084, "month": "2026-07", "label": "Jul"}, {"income": 15536.76, "expense": 7261.29, "balance": 8275.470000000001, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Contas de casa", "value": 2300.0}, {"name": "Eletrônicos", "value": 2010.22}, {"name": "Mercado", "value": 1359.3}, {"name": "Saúde", "value": 442.81}, {"name": "Alimentação", "value": 311.91}, {"name": "Carro", "value": 280.0}, {"name": "Lazer", "value": 167.28}, {"name": "Humanitário", "value": 150.0}, {"name": "Educação", "value": 139.77}, {"name": "Beleza", "value": 100.0}]};
-const L = {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#ccc', size:11},
-  margin:{t:28,b:36,l:42,r:16}, height:260, legend:{orientation:'h', y:1.12, font:{size:10}}};
+const THEME_KEY = 'finance-cockpit-theme';
+function themeColors() {
+  const cs = getComputedStyle(document.documentElement);
+  return {
+    paper: cs.getPropertyValue('--plot-paper').trim() || '#1e1e1e',
+    font: cs.getPropertyValue('--plot-font').trim() || '#ccc'
+  };
+}
+function baseLayout() {
+  const t = themeColors();
+  return {paper_bgcolor:t.paper, plot_bgcolor:t.paper, font:{color:t.font, size:11},
+    margin:{t:28,b:36,l:42,r:16}, height:260, legend:{orientation:'h', y:1.12, font:{size:10}}};
+}
 function pie(id, spec) {
   const el = document.getElementById(id);
   if (!el) return;
   if (!spec.values.length) { el.innerHTML = '<p class="empty">No data</p>'; return; }
+  const L = baseLayout();
   Plotly.newPlot(id, [{
     type:'pie', labels:spec.labels, values:spec.values, marker:{colors:spec.colors},
     customdata: spec.custom, textfont:{size:10},
@@ -92,6 +151,7 @@ function pie(id, spec) {
   }), {responsive:true, displayModeBar:false});
 }
 function drawAll() {
+  const L = baseLayout();
   pie('pieExp', DATA.expensePie);
   pie('pieInc', DATA.incomePie);
   const names = DATA.spentMain.map(x => x.name);
@@ -115,6 +175,26 @@ function drawAll() {
     {type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
   ], L, {responsive:true, displayModeBar:false});
 }
-drawAll();
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+  drawAll();
+}
+(function initTheme() {
+  let theme = localStorage.getItem(THEME_KEY);
+  if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+  }
+  drawAll();
+})();
 </script>
 </body></html>
