@@ -107,6 +107,8 @@ Finance_TxRefresh() {
     g_FinanceTxLv.ModifyCol(4, 220)
     g_FinanceTxLv.ModifyCol(5, 100)
     g_FinanceTxLv.ModifyCol(6, 100)
+    if (g_FinanceTxRows.Length = 0)
+        g_FinanceTxHeader.Value .= "  ·  No transactions this month"
 }
 
 Finance_TxSelected() {
