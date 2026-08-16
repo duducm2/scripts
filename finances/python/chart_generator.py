@@ -76,19 +76,37 @@ def build_html(data: dict, open_reports: bool) -> str:
 
     goals_html = ""
     if widget_on(s, "ShowGoals"):
-        rows = []
+        items = []
         for g in data["goals"]:
+            name = g.get("name", "")
+            status = (g.get("status") or "in_progress").strip().lower()
             cur = parse_decimal(g.get("current_amount"))
             tgt = parse_decimal(g.get("target_amount"))
-            pct = (cur / tgt * 100) if tgt else 0
-            rows.append(
-                f"<tr><td>{g.get('name','')}</td><td>{format_brl(cur)}</td><td>{format_brl(tgt)}</td>"
-                f"<td>{pct:.0f}%</td><td>{g.get('status','')}</td></tr>"
+            pct = (cur / tgt * 100) if tgt > 0 else (100.0 if cur > 0 else 0.0)
+            width = min(pct, 100.0)
+            rem = tgt - cur
+            if status == "completed" or (tgt > 0 and cur >= tgt):
+                fill = "#f1c40f"
+                status = "completed"
+                cap = "Reached"
+            elif status == "expired":
+                fill = "#7f8c8d"
+                cap = f"Remaining {format_brl(rem)}" if rem > 0 else "Reached"
+            else:
+                # in_progress / paused
+                fill = "#3498db"
+                cap = f"Remaining {format_brl(rem)}" if rem > 0 else "Reached"
+            items.append(
+                f'<div class="bar-row">'
+                f'<div class="bar-head"><span>{name}</span>'
+                f"<span>{format_brl(cur)} / {format_brl(tgt)} · {pct:.0f}%</span></div>"
+                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
+                f'<div class="bar-meta">{status} · {cap} · Current {format_brl(cur)} · Target {format_brl(tgt)}</div>'
+                f"</div>"
             )
         goals_html = f"""
         <div class="panel"><h2>Goals</h2>
-          <table><thead><tr><th>Purpose</th><th>Current</th><th>Target</th><th>%</th><th>Status</th></tr></thead>
-          <tbody>{''.join(rows)}</tbody></table></div>"""
+          {''.join(items) or '<p>No goals</p>'}</div>"""
 
     bud_html = ""
     if widget_on(s, "ShowBudgets"):
