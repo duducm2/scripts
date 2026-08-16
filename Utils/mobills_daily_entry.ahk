@@ -547,19 +547,49 @@ MobillsDaily_ScrapeAccounts(uia) {
         return { ok: false, rows: [], error: "Could not open Accounts page", attempted: nav.attempted }
     Sleep MOBILLS_STEP_MS * 2
     all := []
+    seen := Map()
     seenPages := 0
     loop 8 {
         seenPages++
         StandardLoadingBar_Update("⏳ Scraping accounts page " seenPages "...")
         pageRows := MobillsDaily_ScrapeAccountsPage(uia, catalog)
-        for r in pageRows
+        for r in pageRows {
+            key := StrLower(r.name)
+            if seen.Has(key)
+                continue
+            seen[key] := true
             all.Push(r)
-        nxt := MobillsAuto_NextPage(uia)
+        }
+        fp := MobillsDaily_FirstAccountTitle(uia, catalog)
+        nxt := MobillsAuto_NextPage(uia, fp)
         if (nxt.done || !nxt.ok)
             break
+        try {
+            att := MobillsAuto_AttachBrowser()
+            if (att.uia)
+                uia := att.uia
+        } catch {
+        }
         Sleep MOBILLS_STEP_MS * 2
     }
     return { ok: true, rows: all, error: "" }
+}
+
+MobillsDaily_FirstAccountTitle(uia, catalog) {
+    try {
+        texts := uia.FindAll({ Type: 50020 })
+        if texts {
+            for t in texts {
+                nm := ""
+                try nm := t.Name
+                cand := MobillsDaily_MatchAccountName(catalog, nm)
+                if (cand != "")
+                    return cand
+            }
+        }
+    } catch {
+    }
+    return ""
 }
 
 MobillsDaily_ScrapeAccountsPage(uia, catalog) {
@@ -586,17 +616,27 @@ MobillsDaily_ScrapeAccountsPage(uia, catalog) {
     i := 1
     while (i <= names.Length) {
         if (names[i] = "Current balance") {
-            if InStr(classes[i], "MuiTypography-h5") {
+            money := ""
+            moneyCls := ""
+            if (i < names.Length && MobillsDaily_IsMoneyText(names[i + 1])) {
+                money := names[i + 1]
+                moneyCls := classes[i + 1]
+            }
+            if InStr(moneyCls, "MuiTypography-h5") || InStr(classes[i], "MuiTypography-h5") {
                 i++
                 continue
             }
-            money := ""
-            if (i < names.Length && MobillsDaily_IsMoneyText(names[i + 1]))
-                money := names[i + 1]
             acct := ""
             j := i - 1
             while (j >= 1) {
-                cand := MobillsDaily_MatchAccountName(catalog, names[j])
+                prev := names[j]
+                if (prev = "Current balance" || prev = "Predicted balance" || prev = "ADD EXPENSE" || prev = "Balance")
+                    break
+                if MobillsDaily_IsMoneyText(prev) {
+                    j--
+                    continue
+                }
+                cand := MobillsDaily_MatchAccountName(catalog, prev)
                 if (cand != "") {
                     acct := cand
                     break
@@ -633,8 +673,8 @@ MobillsDaily_ScrapeCards(uia) {
         }
     }
     card := ""
-    sawOpen := false
-    sawPartial := false
+    sawPartialLabel := false
+    sawClosing := false
     openVal := ""
     partialVal := ""
     i := 1
@@ -642,20 +682,15 @@ MobillsDaily_ScrapeCards(uia) {
         nm := names[i]
         if (nm = MOBILLS_CARD_NAME && card = "")
             card := nm
-        if (nm = "Open invoice") {
-            sawOpen := true
-            sawPartial := false
-        }
         if (nm = "Partial value")
-            sawPartial := true
-        if (MobillsDaily_IsMoneyText(nm)) {
-            if (sawPartial && partialVal = "") {
+            sawPartialLabel := true
+        if (nm = "Closing on")
+            sawClosing := true
+        if MobillsDaily_IsMoneyText(nm) {
+            if (sawPartialLabel && !sawClosing && partialVal = "")
                 partialVal := nm
-                if (openVal = "")
-                    openVal := nm
-            } else if (sawOpen && openVal = "") {
+            else if (sawClosing && openVal = "")
                 openVal := nm
-            }
         }
         if (nm = "Available Limit" || nm = "PAY INVOICE" || nm = "Total amount")
             break

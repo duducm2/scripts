@@ -647,10 +647,76 @@ MobillsAuto_FindSaveButton(scope) {
     return ""
 }
 
-MobillsAuto_NextPage(uia) {
+MobillsAuto_ClickLeft(el) {
+    if !el
+        return false
+    try {
+        el.Click("left")
+        return true
+    } catch {
+        try {
+            el.Click("left")
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
+MobillsAuto_SelectedPageNumber(uia) {
+    if !uia
+        return 0
+    try {
+        nav := uia.FindElement({ Name: "pagination navigation", Type: 50026, matchmode: "Substring" })
+        if !nav
+            return 0
+        buttons := nav.FindAll({ Type: 50000 })
+        if !buttons
+            return 0
+        for b in buttons {
+            cls := ""
+            try cls := b.ClassName
+            if !InStr(cls, "Mui-selected")
+                continue
+            nm := ""
+            try nm := b.Name
+            if RegExMatch(nm, "(\d+)", &m)
+                return Integer(m[1])
+        }
+    } catch {
+    }
+    return 0
+}
+
+MobillsAuto_FindPageButton(uia, pageN) {
+    if !uia || pageN < 1
+        return ""
+    try {
+        el := uia.FindElement({ Type: 50000, Name: "Go to page " pageN })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := uia.FindElement({ Type: 50000, Name: "page " pageN })
+        if el
+            return el
+    } catch {
+    }
+    return ""
+}
+
+MobillsAuto_NextPage(uia, fingerprint := "") {
     attempted := []
-    btn := MobillsAuto_Resolve(uia, [{ Type: 50000, Name: "Go to next page" }, { Type: 50000, Name: "next page",
-        matchmode: "Substring" }], attempted)
+    cur := MobillsAuto_SelectedPageNumber(uia)
+    nextN := (cur > 0) ? cur + 1 : 2
+    btn := MobillsAuto_FindPageButton(uia, nextN)
+    if btn
+        attempted.Push("Go to page " nextN)
+    if !btn {
+        btn := MobillsAuto_Resolve(uia, [{ Type: 50000, Name: "Go to next page" }, { Type: 50000, Name: "next page",
+            matchmode: "Substring" }], attempted)
+    }
     if !btn {
         try {
             nav := uia.FindElement({ Name: "pagination navigation", Type: 50026, matchmode: "Substring" })
@@ -667,8 +733,44 @@ MobillsAuto_NextPage(uia) {
         return { ok: false, done: true, attempted: attempted }
     if MobillsAuto_IsDisabled(btn)
         return { ok: true, done: true, attempted: attempted }
-    if !MobillsAuto_Click(btn)
+    if !MobillsAuto_ClickLeft(btn)
         return { ok: false, done: false, attempted: attempted }
     Sleep MOBILLS_STEP_MS * 2
+    uia := MobillsAuto_RefreshUia(uia)
+    sel := MobillsAuto_SelectedPageNumber(uia)
+    if (sel = cur || sel = 0) {
+        uia := MobillsAuto_RefreshUia(uia)
+        btn2 := MobillsAuto_FindPageButton(uia, nextN)
+        if !btn2
+            btn2 := btn
+        if !MobillsAuto_ClickLeft(btn2)
+            return { ok: false, done: false, attempted: attempted }
+        attempted.Push("second left click")
+        Sleep MOBILLS_STEP_MS * 2
+        uia := MobillsAuto_RefreshUia(uia)
+    }
+    endTick := A_TickCount + 4000
+    while (A_TickCount < endTick) {
+        uia := MobillsAuto_RefreshUia(uia)
+        sel := MobillsAuto_SelectedPageNumber(uia)
+        if (sel = nextN)
+            return { ok: true, done: false, attempted: attempted }
+        Sleep 150
+    }
+    sel := MobillsAuto_SelectedPageNumber(uia)
+    if (sel = nextN)
+        return { ok: true, done: false, attempted: attempted }
+    if (sel = cur || sel = 0)
+        return { ok: false, done: true, attempted: attempted }
     return { ok: true, done: false, attempted: attempted }
+}
+
+MobillsAuto_RefreshUia(uia) {
+    try {
+        att := MobillsAuto_AttachBrowser()
+        if (att.uia)
+            return att.uia
+    } catch {
+    }
+    return uia
 }
