@@ -46,51 +46,12 @@
     }
 }
 
-; Shift + U : Select first search result
+; Shift + U : Select first search result (shared with D2C [C] Chrome navigate)
 +u:: {
-    try {
-        uia := UIA_Browser()
-        if !uia
-            return
-
-        ; Find the main results container
-        centerCol := uia.FindFirst({ AutomationId: "center_col" })
-
-        targetLink := ""
-
-        if (centerCol) {
-            ; Find the first result title text inside center_col
-            ; ClassName "LC20lb" is standard for Google result titles
-            titleText := centerCol.FindFirst({ ClassName: "LC20lb", MatchMode: "Substring" })
-
-            if (titleText) {
-                ; The link is the parent of the title text
-                targetLink := titleText.WalkTree("p") ; Get Parent
-            }
-        } else {
-            ; Fallback: search from root if center_col not found
-            titleText := uia.FindFirst({ ClassName: "LC20lb", MatchMode: "Substring" })
-            if (titleText) {
-                targetLink := titleText.WalkTree("p")
-            }
-        }
-
-        if (targetLink) {
-            ; Try to invoke (click) the link
-            try {
-                targetLink.Invoke()
-            } catch {
-                targetLink.Click()
-            }
-        } else {
-            ToolTip("First result not found")
-            SetTimer(() => ToolTip(), -2000)
-        }
-
-    } catch Error as e {
-        ToolTip("Error: " . e.Message)
-        SetTimer(() => ToolTip(), -2000)
-    }
+    if (GoogleSearch_ClickFirstResult())
+        return
+    ToolTip("First result not found")
+    SetTimer(() => ToolTip(), -2000)
 }
 
 #HotIf

@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: chrome_dictation_navigate.ahk
-; Send dictation? [C] — new Chrome window, paste into address bar, Enter
+; Send dictation? [C] — new Chrome window, paste into address bar, Enter,
+; then open the first Google result (same as Shift+U)
 ; =============================================================================
 
 ChromeDictation_SnapshotHwnds() {
@@ -49,7 +50,7 @@ ChromeDictation_WaitForNewWindow(oldIds, timeoutMs := 20000) {
     return 0
 }
 
-; End-to-end: new Chrome window → Ctrl+L → paste dictation → Enter.
+; End-to-end: new Chrome window → Ctrl+L → paste dictation → Enter → first result.
 ChromeDictation_NavigateFromClipboard(messageText) {
     query := Trim(messageText)
     if (query = "") {
@@ -114,6 +115,14 @@ ChromeDictation_NavigateFromClipboard(messageText) {
         Send "^v"
         Sleep 350
         Send "{Enter}"
+
+        StandardLoadingBar_Update("⏳ Waiting for Google results...")
+        if (!GoogleSearch_WaitAndClickFirstResult(hwnd, 15000)) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ First Google result not found.", 2200, BANNER_ACCENT_ERROR)
+            barOwned := false
+            return false
+        }
 
         StandardLoadingBar_Hide(0)
         barOwned := false
