@@ -13,6 +13,12 @@ Defaults (always emit a data row; prefer a catalog name over # UNMAPPED:):
 - Unspecified or unclear credit card: use the line "Credit card (always, when unspecified):" appended after the catalogs.
 - If a named account or card is close to a list item, pick the closest listed name. Do not emit # UNMAPPED: for a missing or imperfect account/card.
 
+Names (primary keys):
+- The appended lists are the only allowed values for SOURCE, TARGET, CATEGORY, SUBCATEGORY, and card SOURCE.
+- Copy each section name and subcategory key exactly as printed (accents, capitalization, spaces). These strings are primary keys. Do not translate Portuguese to English or English to Portuguese.
+- Match the dictation by meaning; the output string must be the catalog key, not an English gloss (padaria → Mercado and Padaria, not Bakery).
+- Do not invent English aliases such as Food, Health, Market, or General.
+
 Categorization:
 - The word geral in the INI lists is only a description key. Never put geral, GERAL, or General in CATEGORY or SUBCATEGORY. Those are not Mobills categories.
 - CATEGORY must be an existing section name from the expense list (EXPENSE and CARD) or the income list (INCOME).

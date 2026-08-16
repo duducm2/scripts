@@ -68,3 +68,4 @@ Selectors attempted:
 2026-08-16 11:38:39	Mobills UI did not become ready in time.
 2026-08-16 11:41:33	Mobills UI did not become ready in time.
 2026-08-16 11:43:30	SKIP #1 EXPENSE Banana / Category / Autocomplete mismatch wanted=Groceries got 
+2026-08-16 11:53:15	SKIP #1 EXPENSE Banana / Account / Autocomplete mismatch wanted=Mercado Pago main account got 

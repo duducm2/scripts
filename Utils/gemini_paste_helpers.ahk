@@ -347,6 +347,8 @@ GetMobillsPromptText() {
     extra .= "`nCredit card (always, when unspecified): " . fav.card
     extra .=
         "`nNever output CATEGORY or SUBCATEGORY as geral, GERAL, or General. Those INI keys are not Mobills categories."
+    extra .=
+        "`nSOURCE, TARGET, CATEGORY, and SUBCATEGORY must equal an appended catalog name exactly; never translate."
     extra .= "`n`nDictation follows."
     return body . extra
 }
