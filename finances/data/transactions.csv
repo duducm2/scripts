@@ -1,0 +1,7 @@
+id,date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+TX001,2026-08-16,Banana,"3,00",expense,CAT_MERCADO,Hortifruti,ACC_BOSCHLIF,,
+TX002,2026-08-16,Gift,"10,00",income,CAT_BONIFICA,,ACC_BOSCHLIF,,
+TX003,2026-08-15,Lunch,"31,24",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+TX004,2026-08-15,Groceries,"317,04",expense,CAT_MERCADO,,ACC_MERCADOP,,
+TX005,2026-08-15,Mic,"529,99",card_expense,CAT_ELETRONI,,ACC_MERCADOP,CARD_MP,
+TX006,2026-08-03,Salary and PLR,"4876,76",income,CAT_SALARIO,,ACC_MERCADOP,,

@@ -270,6 +270,17 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Single-form Add/Edit prompt dialog -> Utils\prompt_editor_gui.ahk
 #include %A_ScriptDir%\Utils\prompt_editor_gui.ahk
 
+; [Utils module] Local finance app (Utility Shortcuts [F])
+#include %A_ScriptDir%\Utils\finance_helpers.ahk
+#include %A_ScriptDir%\Utils\finance_launcher.ahk
+#include %A_ScriptDir%\Utils\finance_transactions.ahk
+#include %A_ScriptDir%\Utils\finance_categories.ahk
+#include %A_ScriptDir%\Utils\finance_accounts.ahk
+#include %A_ScriptDir%\Utils\finance_credit_card.ahk
+#include %A_ScriptDir%\Utils\finance_budgets.ahk
+#include %A_ScriptDir%\Utils\finance_goals.ahk
+#include %A_ScriptDir%\Utils\finance_import.ahk
+
 ; [Utils module] Utility shortcuts #!+U and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <title>Finance dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body { font-family: Segoe UI, sans-serif; background:#121212; color:#eee; margin:0; }
+    header { padding:16px 24px; background:#1e1e1e; display:flex; gap:16px; align-items:center; }
+    header h1 { margin:0; font-size:20px; }
+    .tabs button { background:#2c2c2c; color:#eee; border:0; padding:8px 14px; margin-right:8px; cursor:pointer; border-radius:6px; }
+    .tabs button.active { background:#f1c40f; color:#111; }
+    main { padding:20px 24px; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    .kpi { background:#1e1e1e; padding:14px; border-radius:10px; }
+    .kpi .lbl { color:#aaa; font-size:12px; }
+    .kpi .val { font-size:22px; margin-top:6px; }
+    .pos { color:#2ecc71; } .neg { color:#e74c3c; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .panel { background:#1e1e1e; padding:14px; border-radius:10px; margin-bottom:12px; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:6px 8px; border-bottom:1px solid #333; }
+    .note { background:#3d2b00; color:#f1c40f; padding:8px 12px; border-radius:8px; margin-bottom:8px; }
+    .note.ok { background:#143d27; color:#2ecc71; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Finance · 2026-08</h1>
+  <div class="tabs">
+    <button id="tabDash" class="active">Dashboard</button>
+    <button id="tabRep">Reports</button>
+  </div>
+</header>
+<main>
+  <section id="dash">
+    <div class="note">Budget exceeded: Eletrônicos (R$ 529,99 / R$ 50,00)</div>
+    
+        <div class="kpis">
+          <div class="kpi"><div class="lbl">Current balance</div><div class="val">R$ 178.855,60</div></div>
+          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos">R$ 4.886,76</div></div>
+          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg">R$ 881,27</div></div>
+          <div class="kpi"><div class="lbl">Card available</div><div class="val">R$ 9.989,78 / R$ 12.000,00</div></div>
+        </div>
+    
+        <div class="panel">
+          <h2>Performance</h2>
+          <p>Saved last month: R$ 0,00 · This month: R$ 4.005,49 (+0% vs prior)</p>
+          <p>Share of income kept: 82.0%</p>
+          <h3>Top spending categories</h3>
+          <ul><li>Eletrônicos — R$ 529,99</li><li>Mercado — R$ 320,04</li><li>Alimentação — R$ 31,24</li></ul>
+        </div>
+    
+        <div class="charts">
+          <div class="panel"><h2>Expenses by category</h2><div id="pieExp"></div></div>
+          <div class="panel"><h2>Incomes by category</h2><div id="pieInc"></div></div>
+        </div>
+    
+        <div class="panel"><h2>Goals</h2>
+          <table><thead><tr><th>Purpose</th><th>Current</th><th>Target</th><th>%</th><th>Status</th></tr></thead>
+          <tbody><tr><td>Previdência privada</td><td>R$ 16.733,13</td><td>R$ 926.400,00</td><td>2%</td><td>in_progress</td></tr><tr><td>Fundo de emergência</td><td>R$ 2.141,14</td><td>R$ 18.000,00</td><td>12%</td><td>in_progress</td></tr><tr><td>Father's money</td><td>R$ 10.000,00</td><td>R$ 10.000,00</td><td>100%</td><td>in_progress</td></tr><tr><td>Alemanha</td><td>R$ 22.314,00</td><td>R$ 50.000,00</td><td>45%</td><td>paused</td></tr><tr><td>Alemanha (parte Leonardo)</td><td>R$ 500,00</td><td>R$ 15.000,00</td><td>3%</td><td>paused</td></tr><tr><td>Novo carro</td><td>R$ 600,00</td><td>R$ 40.000,00</td><td>2%</td><td>expired</td></tr><tr><td>Entrada terreno</td><td>R$ 7.218,73</td><td>R$ 40.000,00</td><td>18%</td><td>expired</td></tr><tr><td>New car</td><td>R$ 32.000,00</td><td>R$ 70.000,00</td><td>46%</td><td>expired</td></tr></tbody></table></div>
+    
+        <div class="panel"><h2>Budgets</h2>
+          <table><thead><tr><th>Category</th><th>Planned</th><th>Spent</th><th>Remaining</th></tr></thead>
+          <tbody><tr><td>Mercado</td><td>R$ 3.000,00</td><td>R$ 320,04</td><td>R$ 2.679,96</td></tr><tr><td>Alimentação</td><td>R$ 300,00</td><td>R$ 31,24</td><td>R$ 268,76</td></tr><tr><td>Beleza</td><td>R$ 150,00</td><td>R$ 0,00</td><td>R$ 150,00</td></tr><tr><td>Lazer</td><td>R$ 600,00</td><td>R$ 0,00</td><td>R$ 600,00</td></tr><tr><td>Saúde</td><td>R$ 1.000,00</td><td>R$ 0,00</td><td>R$ 1.000,00</td></tr><tr><td>Carro</td><td>R$ 400,00</td><td>R$ 0,00</td><td>R$ 400,00</td></tr><tr><td>Contas de casa</td><td>R$ 2.300,00</td><td>R$ 0,00</td><td>R$ 2.300,00</td></tr><tr><td>Educação</td><td>R$ 400,00</td><td>R$ 0,00</td><td>R$ 400,00</td></tr><tr><td>Eletrônicos</td><td>R$ 50,00</td><td>R$ 529,99</td><td>-R$ 479,99</td></tr><tr><td>Humanitário</td><td>R$ 150,00</td><td>R$ 0,00</td><td>R$ 150,00</td></tr></tbody></table></div>
+  </section>
+  <section id="rep" class="hidden">
+    <div class="panel"><h2>Spent per main category</h2><div id="barCat"></div></div>
+    <div class="panel"><h2>Monthly balance</h2><div id="barBal"></div></div>
+    <div class="panel"><h2>Cash flow</h2><div id="lineCf"></div></div>
+    <div class="panel"><h2>Annual cash flow</h2><div id="lineYear"></div></div>
+  </section>
+</main>
+<script>
+const DATA = {"expensePie": {"labels": ["Eletrônicos", "Mercado", "Alimentação"], "values": [529.99, 320.04, 31.24], "colors": ["#8E44AD", "#D35400", "#3498DB"], "custom": ["R$ 529,99", "R$ 320,04", "R$ 31,24"]}, "incomePie": {"labels": ["Salário", "Bonificação"], "values": [4876.76, 10.0], "colors": ["#7F8C8D", "#9B59B6"], "custom": ["R$ 4.876,76", "R$ 10,00"]}, "series": [{"income": 4886.76, "expense": 881.27, "balance": 4005.4900000000002, "month": "2026-08"}], "annual": [{"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-01", "label": "Jan"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-02", "label": "Feb"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-03", "label": "Mar"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-04", "label": "Apr"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-05", "label": "May"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-06", "label": "Jun"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-07", "label": "Jul"}, {"income": 4886.76, "expense": 881.27, "balance": 4005.4900000000002, "month": "2026-08", "label": "Aug"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-09", "label": "Sep"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-10", "label": "Oct"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-11", "label": "Nov"}, {"income": 0.0, "expense": 0.0, "balance": 0.0, "month": "2026-12", "label": "Dec"}], "spentMain": [{"name": "Eletrônicos", "value": 529.99}, {"name": "Mercado", "value": 320.04}, {"name": "Alimentação", "value": 31.24}], "openReports": false};
+function pie(id, spec, title) {
+  if (!spec.values.length) {
+    document.getElementById(id).innerHTML = '<p>No data</p>';
+    return;
+  }
+  Plotly.newPlot(id, [{
+    type:'pie', labels:spec.labels, values:spec.values, marker:{colors:spec.colors},
+    customdata: spec.custom,
+    hovertemplate: '%{label}<br>%{percent}<br>%{customdata}<extra></extra>'
+  }], {paper_bgcolor:'#1e1e1e', font:{color:'#eee'}, title:title, showlegend:true}, {responsive:true});
+}
+function drawDash() {
+  if (document.getElementById('pieExp')) pie('pieExp', DATA.expensePie, '');
+  if (document.getElementById('pieInc')) pie('pieInc', DATA.incomePie, '');
+}
+function drawRep() {
+  const names = DATA.spentMain.map(x => x.name);
+  const vals = DATA.spentMain.map(x => x.value);
+  Plotly.newPlot('barCat', [{type:'bar', x:names, y:vals, marker:{color:'#e67e22'},
+    hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
+    {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+  const months = DATA.series.map(x => x.month);
+  const bals = DATA.series.map(x => x.balance);
+  const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
+  Plotly.newPlot('barBal', [{type:'bar', x:months, y:bals, marker:{color:colors},
+    hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
+    {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+  Plotly.newPlot('lineCf', [
+    {type:'scatter', mode:'lines+markers', name:'Incomes', x:months, y:DATA.series.map(x=>x.income), line:{color:'#2ecc71'}},
+    {type:'scatter', mode:'lines+markers', name:'Expenses', x:months, y:DATA.series.map(x=>x.expense), line:{color:'#e74c3c'}}
+  ], {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+  Plotly.newPlot('lineYear', [
+    {type:'scatter', mode:'lines+markers', name:'Incomes', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.income), line:{color:'#2ecc71'}},
+    {type:'scatter', mode:'lines+markers', name:'Expenses', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.expense), line:{color:'#e74c3c'}},
+    {type:'scatter', mode:'lines+markers', name:'Balance', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{color:'#f1c40f'}}
+  ], {paper_bgcolor:'#1e1e1e', plot_bgcolor:'#1e1e1e', font:{color:'#eee'}});
+}
+function show(tab) {
+  document.getElementById('dash').classList.toggle('hidden', tab!=='dash');
+  document.getElementById('rep').classList.toggle('hidden', tab!=='rep');
+  document.getElementById('tabDash').classList.toggle('active', tab==='dash');
+  document.getElementById('tabRep').classList.toggle('active', tab==='rep');
+  if (tab==='rep') drawRep();
+}
+document.getElementById('tabDash').onclick = () => show('dash');
+document.getElementById('tabRep').onclick = () => show('rep');
+drawDash();
+if (DATA.openReports) show('rep');
+</script>
+</body></html>

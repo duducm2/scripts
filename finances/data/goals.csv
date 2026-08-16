@@ -1,0 +1,9 @@
+id,name,current_amount,target_amount,target_date,status
+GOAL_PREV,Previdência privada,"16733,13","926400,00",2062-01-01,in_progress
+GOAL_EMERG,Fundo de emergência,"2141,14","18000,00",2099-11-01,in_progress
+GOAL_FATHER,Father's money,"10000,00","10000,00",2026-09-15,in_progress
+GOAL_ALEM,Alemanha,"22314,00","50000,00",,paused
+GOAL_ALEM2,Alemanha (parte Leonardo),"500,00","15000,00",,paused
+GOAL_CARRO,Novo carro,"600,00","40000,00",2026-01-01,expired
+GOAL_TERR,Entrada terreno,"7218,73","40000,00",2026-01-01,expired
+GOAL_NCAR,New car,"32000,00","70000,00",2026-01-01,expired

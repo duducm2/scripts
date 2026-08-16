@@ -20,6 +20,11 @@ UtilitySelector_SwitchToTop() {
 
 UtilitySelector_SwitchToCategory(category) {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    if (category = "Finance") {
+        CleanupHotstringSelector()
+        Finance_LaunchApp()
+        return
+    }
     g_UtilitySelectorMode := "category"
     g_UtilitySelectorCategory := category
     UtilitySelector_RebuildGui()
@@ -255,7 +260,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   Enter/double-click = open   Esc = close"
+        return "Char = open category   [F] Finance   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name   Enter = paste first match   Char = paste   double-click = paste   Insert = add   F2 = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -277,7 +282,7 @@ UtilitySelector_PopulateLv() {
         PromptData_Load(false, true)
         HotstringData_Load(false, true)
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
-        "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length)
+        "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length, "Finance", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id

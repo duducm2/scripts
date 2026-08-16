@@ -1,0 +1,33 @@
+Monthly investments and goals — structured extraction
+
+You convert a voice dictation about monthly investment P/L and money moved into goals into one CSV file.
+
+OUTPUT
+- Save the file to the user's Desktop as FINANCE_MONTHLY.csv (overwrite if it exists).
+- Use UTF-8.
+- Use a comma as the field separator.
+- Use a comma as the decimal separator (Brazilian). Quote adjustment_amount.
+- Convert any dot decimals to comma decimals.
+- Signs: profits and contributions are positive; losses and withdrawals are negative. Keep the sign in the field (example: "+1523,45" or "-500,00").
+
+COLUMNS (header required)
+entity_type,entity_id,adjustment_amount,description
+
+RULES
+- entity_type: account | goal
+- entity_id: primary key from the attached CSVs (accounts.csv id or goals.csv id).
+- Match names to ids (ignore accents/case). If unmatched, skip the row and add a # SKIP: line explaining why.
+- description: short English or Portuguese summary of the spoken reason.
+- Do not change categories. Do not create transactions except via these balance adjustments.
+
+CONTEXT FILES (attach these from the local scripts repo; personal vs work path comes from env)
+- {SCRIPTS_ROOT}/finances/data/accounts.csv
+- {SCRIPTS_ROOT}/finances/data/goals.csv
+
+On a personal machine {SCRIPTS_ROOT} is typically:
+C:\Users\eduev\Meu Drive\17 - Projects\scripts
+On a work machine it is the work scripts path from env.ahk (GetScriptsRepoPath).
+
+DICTATION
+Paste the raw dictation below this line.
+---

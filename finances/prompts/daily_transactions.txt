@@ -1,0 +1,37 @@
+Daily transactions — structured extraction
+
+You convert a voice dictation of recent money movements into one CSV file.
+
+OUTPUT
+- Save the file to the user's Desktop as FINANCE_DAILY.csv (overwrite if it exists).
+- Use UTF-8.
+- Use a comma as the field separator.
+- Use a comma as the decimal separator (Brazilian). Quote every amount field.
+- Convert any dot decimals (31.24) to comma decimals (31,24).
+- Do not invent amounts. Skip items you cannot parse.
+
+COLUMNS (header required)
+date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+
+RULES
+- date: YYYY-MM-DD. If the speaker omits a date, use today's system date (the entry date), not a guessed real-world date.
+- amount: always positive. Example: "12,50"
+- type: expense | income | transfer | card_expense
+- Credit-card purchases: type=card_expense and fill card_id. Leave the bank account as the card's linked account if mentioned, otherwise the default account.
+- Transfers: type=transfer, account_id = source, transfer_account_id = destination.
+- Match category_id, account_id, and card_id to the primary keys in the attached context files. Prefer exact name matches (ignore accents/case). If nothing matches, leave the id empty and put the spoken name in description.
+- subcategory: subcategory name if the speaker gave one and it exists; otherwise empty.
+- You may propose a new main category only if none of the existing ones fit, the main-category count is under 50, and you add a comment line starting with # NEW_CATEGORY:name:type. Do not invent ids.
+
+CONTEXT FILES (attach these from the local scripts repo; personal vs work path comes from env)
+- {SCRIPTS_ROOT}/finances/data/categories.csv
+- {SCRIPTS_ROOT}/finances/data/accounts.csv
+- {SCRIPTS_ROOT}/finances/data/credit_cards.csv
+
+On a personal machine {SCRIPTS_ROOT} is typically:
+C:\Users\eduev\Meu Drive\17 - Projects\scripts
+On a work machine it is the work scripts path from env.ahk (GetScriptsRepoPath).
+
+DICTATION
+Paste the raw dictation below this line.
+---
