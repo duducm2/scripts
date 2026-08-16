@@ -97,66 +97,119 @@ MobillsDaily_MatchAccountName(catalog, uiName) {
     return best
 }
 
-MobillsDaily_DesktopPath() {
-    p := ""
-    try p := GetDesktopToRecyclePath()
+MobillsDaily_DesktopFolders() {
+    folders := []
+    seen := Map()
+    candidates := []
+    try candidates.Push(GetDesktopToRecyclePath())
     catch {
-        p := ""
     }
-    if (!p || p = "" || !DirExist(p))
-        p := A_Desktop
-    return p
+    candidates.Push(A_Desktop)
+    try candidates.Push(EnvGet("USERPROFILE") "\OneDrive\Desktop")
+    catch {
+    }
+    try candidates.Push(EnvGet("USERPROFILE") "\Desktop")
+    catch {
+    }
+    for p in candidates {
+        p := RTrim(p, "\")
+        if (p = "" || !DirExist(p))
+            continue
+        key := StrLower(p)
+        if seen.Has(key)
+            continue
+        seen[key] := true
+        folders.Push(p)
+    }
+    return folders
 }
 
+MobillsDaily_DesktopPath() {
+    folders := MobillsDaily_DesktopFolders()
+    return folders.Length ? folders[1] : A_Desktop
+}
+
+; Newest *.ini on any known Desktop folder (OneDrive or classic), excluding desktop.ini.
 MobillsDaily_FindLatestFile() {
-    desktop := MobillsDaily_DesktopPath()
-    if (!DirExist(desktop))
-        return ""
     newestPath := ""
     newestStamp := ""
-    loop files desktop "\*", "F" {
-        if (StrLower(A_LoopFileName) = "desktop.ini")
-            continue
-        stamp := ""
-        try {
-            tC := FileGetTime(A_LoopFileFullPath, "C")
-            tM := FileGetTime(A_LoopFileFullPath, "M")
-            stamp := (tC >= tM) ? tC : tM
-        } catch {
-            continue
-        }
-        first := ""
-        try {
-            raw := FileRead(A_LoopFileFullPath, "UTF-8")
-            loop parse raw, "`n", "`r" {
-                first := Trim(A_LoopField)
-                break
+    iniCount := 0
+    folderN := 0
+    for folder in MobillsDaily_DesktopFolders() {
+        folderN++
+        loop files folder "\*.ini", "F" {
+            if (StrLower(A_LoopFileName) = "desktop.ini")
+                continue
+            iniCount++
+            stamp := ""
+            try stamp := FileGetTime(A_LoopFileFullPath, "M")
+            catch {
+                continue
             }
-        } catch {
-            continue
-        }
-        if (first != "MOBILLS_V1")
-            continue
-        if (newestStamp = "" || stamp > newestStamp) {
-            newestStamp := stamp
-            newestPath := A_LoopFileFullPath
+            if (newestStamp = "" || stamp > newestStamp) {
+                newestStamp := stamp
+                newestPath := A_LoopFileFullPath
+            }
         }
     }
+    ; #region agent log
+    try MobillsAuto_Dbg("F", "mobills_daily_entry.ahk:FindLatestFile", "newest ini", '{"folderN":' folderN ',"iniCount":' iniCount ',"path":"' StrReplace(
+        newestPath, '\', '\\') '","stamp":"' newestStamp '"}')
+    catch {
+    }
+    ; #endregion
     return newestPath
 }
 
-MobillsDaily_ParseFile(path) {
-    result := { rows: [], unmapped: [], error: "" }
+MobillsDaily_ReadText(path) {
     raw := ""
     try raw := FileRead(path, "UTF-8")
-    catch as e {
-        result.error := "Could not read file: " e.Message
+    catch {
+        raw := ""
+    }
+    if (InStr(raw, Chr(0)) || (raw != "" && InStr(raw, "|") = 0)) {
+        try {
+            raw16 := FileRead(path, "UTF-16")
+            if (InStr(raw16, "|") && (!InStr(raw, "|") || StrLen(raw16) > StrLen(raw)))
+                raw := raw16
+        } catch {
+        }
+    }
+    return raw
+}
+
+MobillsDaily_ParseFile(path) {
+    result := { rows: [], unmapped: [], error: "", rawLen: 0, firstLine: "" }
+    raw := MobillsDaily_ReadText(path)
+    result.rawLen := StrLen(raw)
+    loop parse raw, "`n", "`r" {
+        if (Trim(A_LoopField) != "") {
+            result.firstLine := Trim(A_LoopField)
+            break
+        }
+    }
+    ; #region agent log
+    try MobillsAuto_Dbg("G", "mobills_daily_entry.ahk:ParseFile", "read file", '{"rawLen":' result.rawLen ',"firstLine":"' StrReplace(
+        StrReplace(result.firstLine, '\', '\\'), '"', "'") '"}')
+    catch {
+    }
+    ; #endregion
+    if (raw = "") {
+        result.error := "File is empty: " path
         return result
     }
+    parsed := MobillsDaily_ParseRaw(raw)
+    parsed.rawLen := result.rawLen
+    parsed.firstLine := result.firstLine
+    return parsed
+}
+
+MobillsDaily_ParseRaw(raw) {
+    result := { rows: [], unmapped: [], error: "", rawLen: StrLen(raw), firstLine: "" }
     accounts := MobillsDaily_LoadIniCatalog(A_ScriptDir "\accounts.ini")
     expenses := MobillsDaily_LoadIniCatalog(A_ScriptDir "\categories-expenses.ini")
     incomes := MobillsDaily_LoadIniCatalog(A_ScriptDir "\categories-income.ini")
-    started := false
+    started := true
     loop parse raw, "`n", "`r" {
         line := Trim(A_LoopField)
         if (line = "")
@@ -165,8 +218,6 @@ MobillsDaily_ParseFile(path) {
             started := true
             continue
         }
-        if (!started)
-            continue
         if (line = "END")
             break
         if (SubStr(line, 1, 1) = "#") {
@@ -222,8 +273,6 @@ MobillsDaily_ParseFile(path) {
             category: cat, subcategory: sub, flags: flags, raw: line
         })
     }
-    if (!started)
-        result.error := "File does not contain MOBILLS_V1."
     return result
 }
 
@@ -692,19 +741,43 @@ MobillsDaily_ReviewClose(*) {
 MobillsDaily_Run() {
     path := MobillsDaily_FindLatestFile()
     if (path = "") {
-        ShowCenteredOverlay_Utils("❌ No MOBILLS_V1 file on Desktop", 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ No .ini file on Desktop", 2500, BANNER_ACCENT_ERROR)
         return
     }
     parsed := MobillsDaily_ParseFile(path)
-    if (parsed.error != "") {
+    if (parsed.error != "" && !InStr(parsed.error, "empty")) {
         ShowCenteredOverlay_Utils("❌ " parsed.error, 2500, BANNER_ACCENT_ERROR)
         return
     }
+    sourceLabel := path
     if (!parsed.rows.Length) {
-        ShowCenteredOverlay_Utils("❌ No transactions in " path, 2500, BANNER_ACCENT_ERROR)
+        clip := ""
+        try clip := A_Clipboard
+        catch {
+        }
+        clipParsed := MobillsDaily_ParseRaw(clip)
+        ; #region agent log
+        try MobillsAuto_Dbg("H", "mobills_daily_entry.ahk:Run", "clipboard fallback", '{"clipLen":' StrLen(clip) ',"rows":' clipParsed
+        .rows.Length '}')
+        catch {
+        }
+        ; #endregion
+        if (clipParsed.rows.Length) {
+            parsed := clipParsed
+            sourceLabel := path " + clipboard"
+        }
+    }
+    if (!parsed.rows.Length) {
+        sz := 0
+        try sz := FileGetSize(path)
+        catch {
+        }
+        hint := parsed.firstLine != "" ? parsed.firstLine : "(empty)"
+        ShowCenteredOverlay_Utils("❌ Desktop .ini has no rows (" sz " bytes: " hint "). Copy the Gemini table, then run Macros [m] again.",
+            4500, BANNER_ACCENT_ERROR)
         return
     }
-    if !MobillsDaily_ShowConfirmTable(parsed.rows, parsed.unmapped, path) {
+    if !MobillsDaily_ShowConfirmTable(parsed.rows, parsed.unmapped, sourceLabel) {
         ShowCenteredOverlay_Utils("Mobills daily entry cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
         return
     }

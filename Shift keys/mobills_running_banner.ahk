@@ -410,6 +410,8 @@ Mobills_TypeMainInOpenPicker() {
     }
 }
 
+#HotIf Mobills_ShouldHandleAppKeys()
+
 ; Shift + N : Focus name/description field
 +n:: FocusDescriptionField()
 
@@ -463,3 +465,5 @@ Mobills_TypeMainInOpenPicker() {
         MsgBox "Error finding Open picker: " e.Message, "Mobills Error", "IconX"
     }
 }
+
+#HotIf

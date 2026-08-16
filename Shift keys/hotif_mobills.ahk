@@ -8,7 +8,7 @@
 ;-------------------------------------------------------------------
 ; Mobills Shortcuts
 ;-------------------------------------------------------------------
-#HotIf WinActive("Mobills")
+#HotIf Mobills_ShouldHandleAppKeys()
 
 ; Shift + D : Dashboard
 +d:: {
@@ -108,3 +108,5 @@
         MsgBox "Error navigating to Mais opÃ§Ãµes/More options: " e.Message, "Mobills Error", "IconX"
     }
 }
+
+#HotIf

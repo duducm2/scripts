@@ -231,6 +231,7 @@ global g_WikipediaScrollHistory := []
 
 ; [SK module] Mobills title WinActive hotkeys -> Shift keys\hotif_mobills.ahk
 #include %A_ScriptDir%\Shift keys\hotif_mobills.ahk
+#HotIf
 
 ; K/L month navigation: see #HotIf Mobills_ShouldHandleMonthNavKeys() below (single definition; skips text fields).
 

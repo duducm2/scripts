@@ -14,25 +14,23 @@
 global g_MobillsUrlCacheTick := 0
 global g_MobillsUrlCacheUrl := ""
 
-Mobills_IsTransactionsUrlActive(cacheMs := 250) {
+Mobills_GetActiveBrowserUrl(cacheMs := 250) {
     global g_MobillsUrlCacheTick, g_MobillsUrlCacheUrl
     now := A_TickCount
 
-    if (g_MobillsUrlCacheTick && (now - g_MobillsUrlCacheTick) < cacheMs) {
-        return InStr(g_MobillsUrlCacheUrl, "/transactions")
-    }
+    if (g_MobillsUrlCacheTick && (now - g_MobillsUrlCacheTick) < cacheMs)
+        return g_MobillsUrlCacheUrl
 
     g_MobillsUrlCacheTick := now
     g_MobillsUrlCacheUrl := ""
 
     try {
-        ; Prefer Chrome if active, else try Edge.
         if WinActive("ahk_exe chrome.exe")
             uia := UIA_Browser("ahk_exe chrome.exe")
         else if WinActive("ahk_exe msedge.exe")
             uia := UIA_Browser("ahk_exe msedge.exe")
         else
-            uia := ""
+            return ""
 
         if uia {
             try g_MobillsUrlCacheUrl := StrLower(uia.GetCurrentURL())
@@ -41,7 +39,29 @@ Mobills_IsTransactionsUrlActive(cacheMs := 250) {
         g_MobillsUrlCacheUrl := ""
     }
 
-    return InStr(g_MobillsUrlCacheUrl, "/transactions")
+    return g_MobillsUrlCacheUrl
+}
+
+Mobills_IsTransactionsUrlActive(cacheMs := 250) {
+    return InStr(Mobills_GetActiveBrowserUrl(cacheMs), "/transactions")
+}
+
+; FAB / description / sidebar keys: Mobills site only, never consumer Gemini.
+Mobills_ShouldHandleAppKeys() {
+    if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
+        return false
+    try
+        title := WinGetTitle("A")
+    catch
+        title := ""
+    if IsConsumerGeminiChromeTitle(title)
+        return false
+    url := Mobills_GetActiveBrowserUrl()
+    if InStr(url, "gemini.google.com") || GeminiEnterprise_UrlMatches(url)
+        return false
+    if InStr(url, "web.mobills.com.br")
+        return true
+    return InStr(title, "Mobills")
 }
 
 ; True when Chrome/Edge UIA focus is in a text-editable control (typing must not trigger month nav).
@@ -67,6 +87,15 @@ Mobills_IsWebTextInputFocused() {
 ; (fixes bare k/l stealing keys and +k/+l from long-press on mobile keyboards).
 Mobills_ShouldHandleMonthNavKeys() {
     if Mobills_IsWebTextInputFocused()
+        return false
+    try
+        title := WinGetTitle("A")
+    catch
+        title := ""
+    if IsConsumerGeminiChromeTitle(title)
+        return false
+    url := Mobills_GetActiveBrowserUrl()
+    if InStr(url, "gemini.google.com") || GeminiEnterprise_UrlMatches(url)
         return false
     if WinActive("Mobills")
         return true

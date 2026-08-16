@@ -5,7 +5,22 @@
 ; Shift keys.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
-#HotIf WinActive("ahk_exe chrome.exe") && IsConsumerGeminiChromeTitle(WinGetTitle("A"))
+IsConsumerGeminiChromeActive() {
+    if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
+        return false
+    try
+        title := WinGetTitle("A")
+    catch
+        title := ""
+    if IsConsumerGeminiChromeTitle(title)
+        return true
+    url := Mobills_GetActiveBrowserUrl()
+    if GeminiEnterprise_UrlMatches(url)
+        return false
+    return InStr(url, "gemini.google.com")
+}
+
+#HotIf IsConsumerGeminiChromeActive()
 
 ; Global state for Gemini drawer (main menu) – mirrors the state‑based toggle pattern
 isGeminiDrawerOpen := false

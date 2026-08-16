@@ -9,6 +9,19 @@ global MOBILLS_TYPE_DELAY_MS := 40
 global MOBILLS_GATE_TIMEOUT_MS := 8000
 global MOBILLS_CARD_NAME := "Mercado Pago"
 
+MobillsAuto_Dbg(hyp, loc, msg, data := "") {
+    ; #region agent log
+    try {
+        line := '{"sessionId":"130948","runId":"run1","hypothesisId":"' hyp '","location":"' loc '","message":"' msg '"'
+        if (data != "")
+            line .= ',"data":' data
+        line .= ',"timestamp":' A_TickCount '}'
+        FileAppend(line "`n", A_ScriptDir "\debug-130948.log", "UTF-8")
+    } catch {
+    }
+    ; #endregion
+}
+
 MobillsAuto_FindHwnd() {
     for exe in ["ahk_exe chrome.exe", "ahk_exe msedge.exe"] {
         try {
@@ -72,6 +85,18 @@ MobillsAuto_AttachBrowser() {
     }
     if (!uia)
         return { uia: "", hwnd: hwnd, error: "UIA_Browser attach failed for Mobills hwnd." }
+    url := ""
+    title := ""
+    try url := uia.GetCurrentURL()
+    catch {
+    }
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+    }
+    ; #region agent log
+    MobillsAuto_Dbg("B", "MobillsUia.ahk:AttachBrowser", "attach ok", '{"hwnd":' hwnd ',"url":"' StrReplace(url, '\',
+        '\\') '","title":"' StrReplace(title, '"', "'") '"}')
+    ; #endregion
     return { uia: uia, hwnd: hwnd, error: "" }
 }
 
@@ -127,12 +152,37 @@ MobillsAuto_TryOne(scope, c) {
         if (c.HasProp("matchmode") && c.matchmode != "")
             cond["matchmode"] := c.matchmode
         el := ""
-        try el := scope.FindElement(cond)
-        catch {
-            try el := scope.FindFirst(cond)
-            catch {
-                el := ""
+        mapErr := ""
+        objErr := ""
+        mapHit := 0
+        objHit := 0
+        try {
+            elMap := scope.FindElement(cond)
+            mapHit := elMap ? 1 : 0
+            el := elMap
+        } catch as eMap {
+            mapErr := StrReplace(eMap.Message, '"', "'")
+            try {
+                elFirst := scope.FindFirst(cond)
+                mapHit := elFirst ? 1 : 0
+                el := elFirst
+            } catch as eFirst {
+                mapErr .= " | FindFirst:" StrReplace(eFirst.Message, '"', "'")
             }
+        }
+        try {
+            elObj := scope.FindElement(c)
+            objHit := elObj ? 1 : 0
+        } catch as eObj {
+            objErr := StrReplace(eObj.Message, '"', "'")
+        }
+        aid := c.HasProp("AutomationId") ? c.AutomationId : ""
+        nm := c.HasProp("Name") ? c.Name : ""
+        if (aid = "action-button" || nm = "New" || InStr(nm, "Credit card") || nm = "Expense") {
+            ; #region agent log
+            MobillsAuto_Dbg("A", "MobillsUia.ahk:TryOne", "FindElement map vs object", '{"aid":"' aid '","name":"' nm '","mapHit":' mapHit ',"objHit":' objHit ',"mapErr":"' mapErr '","objErr":"' objErr '"}'
+            )
+            ; #endregion
         }
         if (el && c.HasProp("ClassName") && c.ClassName != "") {
             cls := ""
@@ -421,13 +471,25 @@ MobillsAuto_SelectNewMenuItem(uia, itemName) {
     attempted := []
     actionBtn := MobillsAuto_Resolve(uia, [{ Type: 50000, AutomationId: "action-button" }, { Type: 50000, Name: "New",
         matchmode: "Substring" }], attempted)
+    ; #region agent log
+    MobillsAuto_Dbg("C", "MobillsUia.ahk:SelectNewMenuItem", "after FAB resolve", '{"itemName":"' itemName '","actionFound":' (
+        actionBtn ? 1 : 0) '}')
+    ; #endregion
     if !actionBtn
         return { ok: false, attempted: attempted }
-    if !MobillsAuto_Click(actionBtn)
+    clickOk := MobillsAuto_Click(actionBtn)
+    ; #region agent log
+    MobillsAuto_Dbg("D", "MobillsUia.ahk:SelectNewMenuItem", "after FAB click", '{"clickOk":' (clickOk ? 1 : 0) '}')
+    ; #endregion
+    if !clickOk
         return { ok: false, attempted: attempted }
     Sleep 280
     menuItem := MobillsAuto_Resolve(uia, [{ Type: 50011, Name: itemName, matchmode: "Substring" }, { Type: 50000, Name: itemName,
         matchmode: "Substring" }], attempted)
+    ; #region agent log
+    MobillsAuto_Dbg("E", "MobillsUia.ahk:SelectNewMenuItem", "after menu resolve", '{"menuFound":' (menuItem ? 1 : 0) ',"attemptedN":' attempted
+    .Length '}')
+    ; #endregion
     if !menuItem
         return { ok: false, attempted: attempted }
     if !MobillsAuto_Click(menuItem)
