@@ -55,6 +55,137 @@ function Import-AudioBtHelper {
     }
 }
 
+function Wait-AudioBtWinRT($async, [int]$timeoutMs = 15000) {
+    if ($null -eq $async) {
+        return $null
+    }
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while ($true) {
+        $st = [string]$async.Status
+        if ($st -eq "Completed") {
+            try {
+                return $async.GetResults()
+            } catch {
+                return $null
+            }
+        }
+        if ($st -eq "Error" -or $st -eq "Canceled") {
+            $code = ""
+            try { $code = [string]$async.ErrorCode } catch { }
+            throw "WinRT $st $code"
+        }
+        if ($sw.ElapsedMilliseconds -ge $timeoutMs) {
+            throw "WinRT async timeout"
+        }
+        Start-Sleep -Milliseconds 40
+    }
+}
+
+function Test-AudioBtMacMatch([string]$blob, [string]$hex) {
+    if ([string]::IsNullOrWhiteSpace($blob) -or [string]::IsNullOrWhiteSpace($hex)) {
+        return $false
+    }
+    $compact = $blob.ToUpperInvariant() -replace "[:\-_]", ""
+    return $compact.Contains($hex.ToUpperInvariant())
+}
+
+function Invoke-AudioBtWinRTConnect([string]$Id) {
+    $hex = [AudioBt.Helper]::BluetoothAddressHex($Id)
+    if ([string]::IsNullOrWhiteSpace($hex)) {
+        return @{ ok = $false; err = "No Bluetooth address for WinRT connect" }
+    }
+    $hex = $hex.ToUpperInvariant() -replace "[:\-_]", ""
+    try {
+        Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction SilentlyContinue
+        $null = [Windows.Media.Audio.AudioPlaybackConnection, Windows.Media.Audio, ContentType = WindowsRuntime]
+        $null = [Windows.Devices.Enumeration.DeviceInformation, Windows.Devices.Enumeration, ContentType = WindowsRuntime]
+    } catch {
+        return @{ ok = $false; err = "AudioPlaybackConnection unavailable: $($_.Exception.Message)" }
+    }
+
+    try {
+        $selector = [Windows.Media.Audio.AudioPlaybackConnection]::GetDeviceSelector()
+        $devices = Wait-AudioBtWinRT ([Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($selector))
+        $match = $null
+        foreach ($d in $devices) {
+            $blob = ""
+            try { $blob = [string]$d.Id + " " + [string]$d.Name } catch { $blob = [string]$d.Id }
+            if (Test-AudioBtMacMatch $blob $hex) {
+                $match = $d
+                break
+            }
+        }
+        if ($null -eq $match) {
+            return @{ ok = $false; err = "AudioPlaybackConnection: no device matching $hex" }
+        }
+        $conn = [Windows.Media.Audio.AudioPlaybackConnection]::TryCreateFromId($match.Id)
+        if ($null -eq $conn) {
+            return @{ ok = $false; err = "AudioPlaybackConnection.TryCreateFromId failed" }
+        }
+        Wait-AudioBtWinRT ($conn.StartAsync()) | Out-Null
+        $open = Wait-AudioBtWinRT ($conn.OpenAsync())
+        $status = ""
+        if ($null -ne $open) {
+            try { $status = [string]$open.Status } catch { $status = "" }
+        }
+        if ($status -ne "" -and $status -ne "0" -and $status -ne "Success") {
+            return @{ ok = $false; err = "AudioPlaybackConnection.OpenAsync $status" }
+        }
+        return @{ ok = $true; err = "" }
+    } catch {
+        return @{ ok = $false; err = "AudioPlaybackConnection: $($_.Exception.Message)" }
+    }
+}
+
+function Merge-AudioBtErr([string]$primary, [string]$winrtErr) {
+    if ([string]::IsNullOrWhiteSpace($primary)) {
+        $primary = "ERR`tBluetooth connect failed"
+    }
+    if ([string]::IsNullOrWhiteSpace($winrtErr)) {
+        return $primary
+    }
+    if ($primary.StartsWith("ERR`t")) {
+        return ($primary.TrimEnd() + "; WinRT: " + $winrtErr)
+    }
+    return "ERR`t$primary; WinRT: $winrtErr"
+}
+
+function Invoke-AudioBtConnectOrWinRT([string]$Id) {
+    $r = [AudioBt.Helper]::Connect($Id)
+    if ($r -and -not $r.StartsWith("ERR`t")) {
+        return $r
+    }
+    $w = Invoke-AudioBtWinRTConnect $Id
+    if ($w.ok) {
+        $c = [AudioBt.Helper]::ConfirmConnected($Id, "AudioPlaybackConnection")
+        if ($c) {
+            return $c
+        }
+    }
+    return (Merge-AudioBtErr $r $w.err)
+}
+
+function Invoke-AudioBtIsolateOrWinRT([string]$Id) {
+    $r = [AudioBt.Helper]::Isolate($Id)
+    if ($r -and -not $r.StartsWith("ERR`t")) {
+        return $r
+    }
+    $w = Invoke-AudioBtWinRTConnect $Id
+    if ($w.ok) {
+        $c = [AudioBt.Helper]::ConfirmConnected($Id, "AudioPlaybackConnection")
+        if ($c -and -not $c.StartsWith("ERR`t")) {
+            $r2 = [AudioBt.Helper]::Isolate($Id)
+            if ($r2) {
+                return $r2
+            }
+        }
+        if ($c) {
+            return $c
+        }
+    }
+    return (Merge-AudioBtErr $r $w.err)
+}
+
 try {
     Import-AudioBtHelper
 } catch {
@@ -73,9 +204,9 @@ $result = switch ($Action) {
     "default" { [AudioBt.Helper]::SetDefault($Id) }
     "enable" { [AudioBt.Helper]::SetVisible($Id, $true) }
     "disable" { [AudioBt.Helper]::SetVisible($Id, $false) }
-    "connect" { [AudioBt.Helper]::Connect($Id) }
+    "connect" { Invoke-AudioBtConnectOrWinRT $Id }
     "disconnect" { [AudioBt.Helper]::Disconnect($Id) }
-    "isolate" { [AudioBt.Helper]::Isolate($Id) }
+    "isolate" { Invoke-AudioBtIsolateOrWinRT $Id }
 }
 
 if ($null -eq $result) {
