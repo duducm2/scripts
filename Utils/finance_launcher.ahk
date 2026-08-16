@@ -212,18 +212,17 @@ Finance_ShowImportMenu() {
     g_FinanceGui.SetFont("s12 Bold", "Segoe UI")
     g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.csv")
     g_FinanceGui.Add("Text", "y+8", "[2]  Monthly investments & goals   FINANCE_MONTHLY*.csv")
-    g_FinanceGui.Add("Text", "y+8", "[3]  Copy daily prompt    [4]  Copy monthly prompt")
     g_FinanceGui.SetFont("s10 Norm", "Segoe UI")
-    g_FinanceGui.Add("Text", "y+20 c555555", "Esc / Backspace = back")
+    g_FinanceGui.Add("Text", "y+16 c555555 w520",
+        "Prompts: Utility Shortcuts (#!+U) → Prompts → [d] daily / [m] monthly")
+    g_FinanceGui.Add("Text", "y+8 c555555", "Esc / Backspace = back")
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     Finance_BindHotkeys([
         ["1", (*) => Finance_ImportDaily()],
         ["2", (*) => Finance_ImportMonthly()],
-        ["3", (*) => Finance_CopyPrompt("daily_transactions.txt")],
-        ["4", (*) => Finance_CopyPrompt("monthly_investments.txt")],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
-    Finance_CenterGui(g_FinanceGui, 560, 240)
+    Finance_CenterGui(g_FinanceGui, 560, 220)
 }

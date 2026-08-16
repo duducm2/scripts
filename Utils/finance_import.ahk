@@ -3,18 +3,6 @@
 ; Import AI-generated FINANCE_DAILY / FINANCE_MONTHLY files from Desktop
 ; =============================================================================
 
-Finance_CopyPrompt(fileName) {
-    path := A_ScriptDir . "\finances\prompts\" . fileName
-    if (!FileExist(path)) {
-        Finance_Notify("Prompt file missing", 1600, BANNER_ACCENT_ERROR)
-        return
-    }
-    body := Finance_ReadUtf8(path)
-    body := StrReplace(body, "{SCRIPTS_ROOT}", A_ScriptDir)
-    A_Clipboard := body
-    Finance_Notify("Prompt copied", 1400, BANNER_ACCENT_SUCCESS)
-}
-
 Finance_DesktopNewest(pattern) {
     newest := ""
     newestTime := 0

@@ -23,14 +23,12 @@ RULES
 - subcategory: subcategory name if the speaker gave one and it exists; otherwise empty.
 - You may propose a new main category only if none of the existing ones fit, the main-category count is under 50, and you add a comment line starting with # NEW_CATEGORY:name:type. Do not invent ids.
 
-CONTEXT FILES (attach these from the local scripts repo; personal vs work path comes from env)
-- {SCRIPTS_ROOT}/finances/data/categories.csv
-- {SCRIPTS_ROOT}/finances/data/accounts.csv
-- {SCRIPTS_ROOT}/finances/data/credit_cards.csv
+CONTEXT FILES (attached by Utility Shortcuts → Prompts)
+- categories.csv — category and subcategory names with ids
+- accounts.csv — account names with ids
+- credit_cards.csv — card names with ids and linked accounts
 
-On a personal machine {SCRIPTS_ROOT} is typically:
-C:\Users\eduev\Meu Drive\17 - Projects\scripts
-On a work machine it is the work scripts path from env.ahk (GetScriptsRepoPath).
+Use only these attached CSVs for id mapping. Do not invent ids.
 
 DICTATION
 Paste the raw dictation below this line.

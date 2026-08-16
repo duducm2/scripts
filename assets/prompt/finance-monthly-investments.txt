@@ -20,13 +20,11 @@ RULES
 - description: short English or Portuguese summary of the spoken reason.
 - Do not change categories. Do not create transactions except via these balance adjustments.
 
-CONTEXT FILES (attach these from the local scripts repo; personal vs work path comes from env)
-- {SCRIPTS_ROOT}/finances/data/accounts.csv
-- {SCRIPTS_ROOT}/finances/data/goals.csv
+CONTEXT FILES (attached by Utility Shortcuts → Prompts)
+- accounts.csv — account names with ids (investment balances)
+- goals.csv — goal names with ids and amounts
 
-On a personal machine {SCRIPTS_ROOT} is typically:
-C:\Users\eduev\Meu Drive\17 - Projects\scripts
-On a work machine it is the work scripts path from env.ahk (GetScriptsRepoPath).
+Use only these attached CSVs for id mapping. Do not invent ids.
 
 DICTATION
 Paste the raw dictation below this line.
