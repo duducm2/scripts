@@ -139,8 +139,8 @@ UtilitySelector_BindModalHotkeys() {
     }
 
     try {
-        Hotkey("Enter", UtilitySelector_OnListActivate, "On")
-        g_HotstringHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: UtilitySelector_OnListActivate })
+        Hotkey("Enter", UtilitySelector_OnEnter, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: UtilitySelector_OnEnter })
     } catch {
     }
     try {
@@ -155,12 +155,109 @@ UtilitySelector_BindModalHotkeys() {
     g_UtilitySelectorHotkeysBound := true
 }
 
+UtilitySelector_IsFilterFocused() {
+    global g_HotstringSelectorFilterCtrl, g_HotstringSelectorGui, g_UtilitySelectorFilterTyping
+    if (g_UtilitySelectorFilterTyping)
+        return true
+    if (!IsObject(g_HotstringSelectorFilterCtrl) || !IsObject(g_HotstringSelectorGui))
+        return false
+    try {
+        focusedHwnd := ControlGetFocus(, g_HotstringSelectorGui)
+    } catch {
+        return false
+    }
+    return (focusedHwnd = g_HotstringSelectorFilterCtrl.Hwnd)
+}
+
+UtilitySelector_FocusFilterField() {
+    global g_HotstringSelectorFilterCtrl, g_UtilitySelectorFilterTyping
+    if (!UtilitySelector_IsPromptsView() || !IsObject(g_HotstringSelectorFilterCtrl))
+        return
+    g_UtilitySelectorFilterTyping := true
+    UtilitySelector_SetListNavigationHotkeysEnabled(false)
+    try g_HotstringSelectorFilterCtrl.Focus()
+    catch {
+    }
+    try SendMessage(0x00B1, 0, -1, g_HotstringSelectorFilterCtrl)
+    catch {
+    }
+}
+
+UtilitySelector_SetListNavigationHotkeysEnabled(enabled) {
+    if (enabled) {
+        UtilitySelector_BindModalHotkeys()
+        return
+    }
+    UtilitySelector_BindFilterTypingHotkeys()
+}
+
+UtilitySelector_BindFilterTypingHotkeys() {
+    global g_HotstringHotkeyHandlers, g_UtilitySelectorHotkeysBound
+    UtilitySelector_UnbindModalHotkeys()
+    hwnd := UtilitySelector_SelectorHwnd()
+    if (!hwnd)
+        return
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
+    }
+    try {
+        Hotkey("Enter", UtilitySelector_OnEnter, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: UtilitySelector_OnEnter })
+    } catch {
+    }
+    try {
+        Hotkey("Escape", HandleHotstringEscape, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "Escape", key: "Escape", handler: HandleHotstringEscape })
+    } catch {
+    }
+    try HotIf()
+    catch {
+    }
+    g_UtilitySelectorHotkeysBound := true
+}
+
+UtilitySelector_OnFilterChange(*) {
+    global g_HotstringSelectorFilterCtrl, g_UtilitySelectorFilterQuery, g_HotstringSelectorActive
+    if (!g_HotstringSelectorActive || !UtilitySelector_IsPromptsView())
+        return
+    if (!IsObject(g_HotstringSelectorFilterCtrl))
+        return
+    g_UtilitySelectorFilterQuery := g_HotstringSelectorFilterCtrl.Value
+    UtilitySelector_PopulateLv()
+}
+
+UtilitySelector_OnFilterFocus(*) {
+    global g_HotstringSelectorActive, g_UtilitySelectorFilterTyping
+    if (!UtilitySelector_IsPromptsView())
+        return
+    g_UtilitySelectorFilterTyping := true
+    if (g_HotstringSelectorActive)
+        UtilitySelector_SetListNavigationHotkeysEnabled(false)
+}
+
+UtilitySelector_OnFilterKillFocus(*) {
+    global g_HotstringSelectorActive, g_UtilitySelectorFilterTyping, g_UtilitySelectorSuppressFilterKillFocus
+    if (g_UtilitySelectorSuppressFilterKillFocus)
+        return
+    g_UtilitySelectorFilterTyping := false
+    if (g_HotstringSelectorActive && UtilitySelector_IsPromptsView())
+        UtilitySelector_SetListNavigationHotkeysEnabled(true)
+}
+
+UtilitySelector_PromptNameMatches(name, query) {
+    q := Trim(query)
+    if (q = "")
+        return true
+    return (InStr(name, q) > 0)
+}
+
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
         return "Char = open category   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
-        return "Char = paste   Enter/double-click = paste   Insert = add   F2 = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
+        return "Filter by name   Enter = paste first match   Char = paste   double-click = paste   Insert = add   F2 = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
         return "Char = paste   Enter/double-click = paste   Insert = add   F2 = edit   Delete = remove   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Projects")
@@ -197,8 +294,14 @@ UtilitySelector_PopulateLv() {
     }
 
     if (g_UtilitySelectorCategory = "Prompts") {
+        global g_HotstringSelectorFilterCtrl, g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping
         UtilitySelector_RebuildPromptCharMap()
+        if (IsObject(g_HotstringSelectorFilterCtrl))
+            g_UtilitySelectorFilterQuery := g_HotstringSelectorFilterCtrl.Value
+        q := g_UtilitySelectorFilterQuery
         for prompt in PromptData_Sorted() {
+            if (!UtilitySelector_PromptNameMatches(prompt.name, q))
+                continue
             g_UtilitySelectorRows.Push(prompt)
             g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.filePath)
         }
@@ -206,6 +309,15 @@ UtilitySelector_PopulateLv() {
         try g_HotstringSelectorLv.ModifyCol(2, 100)
         try g_HotstringSelectorLv.ModifyCol(3, 340)
         try g_HotstringSelectorLv.ModifyCol(4, 330)
+        if (g_UtilitySelectorRows.Length > 0) {
+            try {
+                if (g_UtilitySelectorFilterTyping)
+                    g_HotstringSelectorLv.Modify(1, "Select Vis")
+                else
+                    g_HotstringSelectorLv.Modify(1, "Select Focus Vis")
+            } catch {
+            }
+        }
         return
     }
 
@@ -255,8 +367,24 @@ UtilitySelector_SelectedIndex() {
     return row ? Integer(row) : 0
 }
 
+UtilitySelector_OnEnter(*) {
+    global g_HotstringSelectorActive, g_UtilitySelectorRows, g_HotstringSelectorLv, g_HotstringGeminiArmed
+    if (!g_HotstringSelectorActive)
+        return
+    if (UtilitySelector_IsPromptsView() && UtilitySelector_IsFilterFocused()) {
+        if (g_UtilitySelectorRows.Length < 1)
+            return
+        try g_HotstringSelectorLv.Modify(1, "Select Vis")
+        catch {
+        }
+        UtilitySelector_InsertPrompt(g_UtilitySelectorRows[1], g_HotstringGeminiArmed)
+        return
+    }
+    UtilitySelector_OnListActivate()
+}
+
 UtilitySelector_OnListActivate(*) {
-    global g_UtilitySelectorMode, g_UtilitySelectorRows, g_UtilitySelectorCategory
+    global g_UtilitySelectorMode, g_UtilitySelectorRows, g_UtilitySelectorCategory, g_HotstringGeminiArmed
     idx := UtilitySelector_SelectedIndex()
     if (idx < 1 || idx > g_UtilitySelectorRows.Length)
         return
@@ -264,6 +392,10 @@ UtilitySelector_OnListActivate(*) {
     if (g_UtilitySelectorMode = "top") {
         if (row.HasProp("category") && row.category != "")
             UtilitySelector_SwitchToCategory(row.category)
+        return
+    }
+    if (g_UtilitySelectorCategory = "Prompts") {
+        UtilitySelector_InsertPrompt(row, g_HotstringGeminiArmed)
         return
     }
     ch := row.HasProp("char") ? row.char : ""
@@ -300,6 +432,10 @@ UtilitySelector_RefocusGui() {
         if (IsObject(g_HotstringSelectorGui))
             WinActivate("ahk_id " g_HotstringSelectorGui.Hwnd)
     } catch {
+    }
+    if (UtilitySelector_IsPromptsView()) {
+        UtilitySelector_FocusFilterField()
+        return
     }
     try {
         if (IsObject(g_HotstringSelectorLv))

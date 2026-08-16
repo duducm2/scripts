@@ -53,6 +53,11 @@ UtilitySelector_GuiIsAlive() {
     return true
 }
 
+UtilitySelector_IsPromptsView() {
+    global g_UtilitySelectorMode, g_UtilitySelectorCategory
+    return (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory = "Prompts")
+}
+
 UtilitySelector_ApplyChrome() {
     global g_HotstringSelectorGui, g_HotstringSelectorLv, g_HotstringSelectorHint
     global g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit, g_HotstringSelectorBtnDelete
@@ -74,6 +79,7 @@ UtilitySelector_ApplyChrome() {
         try g_HotstringSelectorBtnEdit.Visible := showCrud
         try g_HotstringSelectorBtnDelete.Visible := showCrud
     }
+    UtilitySelector_ApplyFilterChrome()
 
     if (!IsObject(g_HotstringSelectorLv))
         return
@@ -118,15 +124,103 @@ UtilitySelector_WindowTitle() {
     return "Utility Shortcuts"
 }
 
+UtilitySelector_ApplyFilterChrome() {
+    global g_HotstringSelectorFilterLabel, g_HotstringSelectorFilterCtrl
+    global g_HotstringSelectorFilterEnterBtn
+
+    showFilter := UtilitySelector_IsPromptsView()
+    if (IsObject(g_HotstringSelectorFilterLabel)) {
+        try g_HotstringSelectorFilterLabel.Visible := showFilter
+        catch {
+        }
+    }
+    if (IsObject(g_HotstringSelectorFilterCtrl)) {
+        try g_HotstringSelectorFilterCtrl.Visible := showFilter
+        try g_HotstringSelectorFilterCtrl.Enabled := showFilter
+        catch {
+        }
+        if (!showFilter) {
+            try g_HotstringSelectorFilterCtrl.Value := ""
+            catch {
+            }
+        }
+    }
+    if (IsObject(g_HotstringSelectorFilterEnterBtn)) {
+        try {
+            if (showFilter)
+                g_HotstringSelectorFilterEnterBtn.Opt("+Default")
+            else
+                g_HotstringSelectorFilterEnterBtn.Opt("-Default")
+        } catch {
+        }
+    }
+    UtilitySelector_LayoutControls()
+}
+
+UtilitySelector_LayoutControls() {
+    global g_HotstringSelectorHint, g_HotstringSelectorFilterLabel, g_HotstringSelectorFilterCtrl
+    global g_HotstringSelectorLv, g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit
+    global g_HotstringSelectorBtnDelete, g_HotstringSelectorBtnClose
+
+    if (!IsObject(g_HotstringSelectorHint) || !IsObject(g_HotstringSelectorLv))
+        return
+    showFilter := UtilitySelector_IsPromptsView()
+    try {
+        g_HotstringSelectorHint.GetPos(&hx, &hy, &hw, &hh)
+    } catch {
+        return
+    }
+    if (hw < 1)
+        hw := 820
+    filterY := hy + hh + 6
+    filterH := 24
+    lvY := showFilter ? (filterY + filterH + 8) : filterY
+    lvH := showFilter ? 392 : 420
+    if (IsObject(g_HotstringSelectorFilterLabel) && showFilter) {
+        try g_HotstringSelectorFilterLabel.Move(hx, filterY, 70, filterH)
+        catch {
+        }
+    }
+    if (IsObject(g_HotstringSelectorFilterCtrl) && showFilter) {
+        try g_HotstringSelectorFilterCtrl.Move(hx + 74, filterY, hw - 74, filterH)
+        catch {
+        }
+    }
+    try g_HotstringSelectorLv.Move(hx, lvY, hw, lvH)
+    catch {
+    }
+    btnY := lvY + lvH + 8
+    if (IsObject(g_HotstringSelectorBtnAdd)) {
+        try {
+            g_HotstringSelectorBtnAdd.Move(hx, btnY)
+            if (IsObject(g_HotstringSelectorBtnEdit))
+                g_HotstringSelectorBtnEdit.Move(hx + 110, btnY)
+            if (IsObject(g_HotstringSelectorBtnDelete))
+                g_HotstringSelectorBtnDelete.Move(hx + 220, btnY)
+            if (IsObject(g_HotstringSelectorBtnClose))
+                g_HotstringSelectorBtnClose.Move(hx + 330, btnY)
+        } catch {
+        }
+    }
+}
+
 UtilitySelector_CreateGui() {
     global g_HotstringSelectorGui, g_HotstringSelectorLv, g_HotstringSelectorHint
+    global g_HotstringSelectorFilterLabel, g_HotstringSelectorFilterCtrl
+    global g_HotstringSelectorFilterEnterBtn
     global g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit, g_HotstringSelectorBtnDelete
+    global g_HotstringSelectorBtnClose
     global g_HotstringSelectorGuiReady
 
     g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Utility Shortcuts")
     g_HotstringSelectorGui.SetFont("s10", "Segoe UI")
-    g_HotstringSelectorHint := g_HotstringSelectorGui.Add("Text", "w820", UtilitySelector_HintText())
-    g_HotstringSelectorLv := g_HotstringSelectorGui.Add("ListView", "w820 h420 -Multi", ["Char", "Category", "Count",
+    g_HotstringSelectorHint := g_HotstringSelectorGui.Add("Text", "xm w820", UtilitySelector_HintText())
+    g_HotstringSelectorFilterLabel := g_HotstringSelectorGui.Add("Text", "xm w70 Hidden", "Filter:")
+    g_HotstringSelectorFilterCtrl := g_HotstringSelectorGui.Add("Edit", "yp w740 Hidden")
+    g_HotstringSelectorFilterCtrl.OnEvent("Change", UtilitySelector_OnFilterChange)
+    g_HotstringSelectorFilterCtrl.OnEvent("Focus", UtilitySelector_OnFilterFocus)
+    g_HotstringSelectorFilterCtrl.OnEvent("LoseFocus", UtilitySelector_OnFilterKillFocus)
+    g_HotstringSelectorLv := g_HotstringSelectorGui.Add("ListView", "xm w820 h420 -Multi", ["Char", "Category", "Count",
         "File"])
     g_HotstringSelectorLv.OnEvent("DoubleClick", UtilitySelector_OnListActivate)
 
@@ -136,7 +230,10 @@ UtilitySelector_CreateGui() {
     g_HotstringSelectorBtnEdit.OnEvent("Click", UtilitySelector_OnEdit)
     g_HotstringSelectorBtnDelete := g_HotstringSelectorGui.Add("Button", "w100 ys", "Delete")
     g_HotstringSelectorBtnDelete.OnEvent("Click", UtilitySelector_OnDelete)
-    g_HotstringSelectorGui.Add("Button", "w100 ys", "Close").OnEvent("Click", HandleHotstringEscape)
+    g_HotstringSelectorBtnClose := g_HotstringSelectorGui.Add("Button", "w100 ys", "Close")
+    g_HotstringSelectorBtnClose.OnEvent("Click", HandleHotstringEscape)
+    g_HotstringSelectorFilterEnterBtn := g_HotstringSelectorGui.Add("Button", "Hidden x0 y0 w1 h1", "OK")
+    g_HotstringSelectorFilterEnterBtn.OnEvent("Click", UtilitySelector_OnEnter)
     g_HotstringSelectorGui.OnEvent("Close", HandleHotstringEscape)
     g_HotstringSelectorGui.OnEvent("Escape", HandleHotstringEscape)
     g_HotstringSelectorGuiReady := true
@@ -154,28 +251,46 @@ UtilitySelector_PositionAndShow() {
     if (guiY < mon.top + 20)
         guiY := mon.top + 20
     g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY)
+    UtilitySelector_LayoutControls()
+    UtilitySelector_FocusAfterShow()
+}
+
+UtilitySelector_FocusAfterShow() {
+    if (UtilitySelector_IsPromptsView()) {
+        UtilitySelector_FocusFilterField()
+        return
+    }
+    global g_HotstringSelectorLv
     try g_HotstringSelectorLv.Focus()
     catch {
     }
 }
 
 UtilitySelector_RefreshView() {
+    global g_UtilitySelectorFilterTyping
     UtilitySelector_ApplyChrome()
     UtilitySelector_PopulateLv()
-    UtilitySelector_BindModalHotkeys()
+    if (UtilitySelector_IsPromptsView() && (g_UtilitySelectorFilterTyping || UtilitySelector_IsFilterFocused()))
+        UtilitySelector_BindFilterTypingHotkeys()
+    else
+        UtilitySelector_BindModalHotkeys()
 }
 
 UtilitySelector_RebuildGui() {
-    global g_HotstringSelectorActive
+    global g_HotstringSelectorActive, g_UtilitySelectorSuppressFilterKillFocus
+    g_UtilitySelectorSuppressFilterKillFocus := true
     if (!UtilitySelector_GuiIsAlive()) {
         UtilitySelector_CreateGui()
+        g_HotstringSelectorActive := true
         UtilitySelector_RefreshView()
         UtilitySelector_PositionAndShow()
-        g_HotstringSelectorActive := true
+        g_UtilitySelectorSuppressFilterKillFocus := false
         return
     }
     UtilitySelector_UnbindModalHotkeys()
     UtilitySelector_RefreshView()
+    g_UtilitySelectorSuppressFilterKillFocus := false
+    UtilitySelector_FocusAfterShow()
 }
 
 UtilitySelector_StartIpc(*) {
@@ -229,10 +344,10 @@ ShowHotstringSelector() {
     if (!UtilitySelector_GuiIsAlive())
         UtilitySelector_CreateGui()
 
+    g_HotstringSelectorActive := true
     UtilitySelector_RefreshView()
     UtilitySelector_PositionAndShow()
 
-    g_HotstringSelectorActive := true
     g_OnEscapePressed := HandleHotstringEscape
     ; Drive FileAppend/FileExist after paint so the hotkey is not blocked on Google Drive I/O.
     SetTimer(UtilitySelector_StartIpc, -1)

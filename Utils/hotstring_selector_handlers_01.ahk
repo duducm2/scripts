@@ -44,15 +44,7 @@ HandleHotstringChar(char) {
         prompt := PromptData_FindByChar(ch)
         if (!IsObject(prompt))
             return
-        body := PromptData_ReadBody(prompt)
-        CleanupHotstringSelector()
-        if (useGemini) {
-            UtilitySelector_PastePromptToGemini(body)
-            return
-        }
-        UtilitySelector_RestorePreviousHwnd()
-        Sleep 150
-        PasteStrippedPromptOfferReminders(body)
+        UtilitySelector_InsertPrompt(prompt, useGemini)
         return
     }
 
@@ -97,6 +89,20 @@ HandleHotstringChar(char) {
         catch {
         }
     }
+}
+
+UtilitySelector_InsertPrompt(prompt, useGemini := false) {
+    if (!IsObject(prompt))
+        return
+    body := PromptData_ReadBody(prompt)
+    CleanupHotstringSelector()
+    if (useGemini) {
+        UtilitySelector_PastePromptToGemini(body)
+        return
+    }
+    UtilitySelector_RestorePreviousHwnd()
+    Sleep 150
+    PasteStrippedPromptOfferReminders(body)
 }
 
 UtilitySelector_PastePromptToGemini(expansion) {

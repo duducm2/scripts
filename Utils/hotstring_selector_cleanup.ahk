@@ -10,8 +10,18 @@ CleanupHotstringSelector() {
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorHotkeysBound
     global g_UtilitySelectorRows, g_OnEscapePressed
+    global g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping, g_UtilitySelectorSuppressFilterKillFocus
+    global g_HotstringSelectorFilterCtrl
 
     g_HotstringSelectorActive := false
+    g_UtilitySelectorFilterTyping := false
+    g_UtilitySelectorSuppressFilterKillFocus := false
+    g_UtilitySelectorFilterQuery := ""
+    if (IsObject(g_HotstringSelectorFilterCtrl)) {
+        try g_HotstringSelectorFilterCtrl.Value := ""
+        catch {
+        }
+    }
     try SetTimer(UtilitySelector_StartIpc, 0)
     catch {
     }
