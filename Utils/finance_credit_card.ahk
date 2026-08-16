@@ -1,55 +1,133 @@
 ; =============================================================================
 ; Utils module: finance_credit_card.ahk
-; Primary credit card, mark as paid
+; Credit cards ListView CRUD, mark paid, primary selection
 ; =============================================================================
 
+global g_FinanceCardLv := false
+global g_FinanceCardRows := []
+global g_FinanceCardHeader := false
+
 Finance_ShowCreditCard() {
-    global g_FinanceGui
+    global g_FinanceGui, g_FinanceCardLv, g_FinanceCardHeader
     Finance_CloseGui()
     Finance_EnsureData()
-    cards := Finance_Load("credit_cards")
-    accs := Finance_Load("accounts")
-    primaryId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
-    card := Finance_FindById(cards, primaryId)
-    if (!card && cards.Length)
-        card := cards[1]
-    g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Credit card")
+    g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Credit cards")
     g_FinanceGui.SetFont("s10", "Segoe UI")
-    if (!card) {
-        g_FinanceGui.Add("Text", "w480", "No credit card yet.")
-        g_FinanceGui.Add("Button", "y+12 w140", "Add card").OnEvent("Click", (*) => Finance_CardForm(false))
-        g_FinanceGui.Add("Button", "x+8 w140", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
-        g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
-        Finance_CenterGui(g_FinanceGui, 520, 180)
-        return
-    }
-    lim := Finance_ParseDecimal(card["limit"])
-    spent := Finance_ParseDecimal(card["current_spent"])
-    avail := lim - spent
-    pct := lim > 0 ? Round(spent / lim * 100, 2) : 0
-    accName := Finance_AccName(accs, card["linked_account_id"])
-    g_FinanceGui.SetFont("s16 Bold", "Segoe UI")
-    g_FinanceGui.Add("Text", "x20 y16 w520", card["name"])
-    g_FinanceGui.SetFont("s11 Norm", "Segoe UI")
-    g_FinanceGui.Add("Text", "x20 y56 w520", "Id  " . card["id"])
-    g_FinanceGui.Add("Text", "x20 y84 w520", "Limit  " . Finance_FormatBrl(lim))
-    g_FinanceGui.Add("Text", "x20 y112 w520", "Current spent  " . Finance_FormatBrl(spent))
-    g_FinanceGui.Add("Text", "x20 y140 w520", "Available  " . Finance_FormatBrl(avail) . "  (" . pct . "%)")
-    g_FinanceGui.Add("Text", "x20 y168 w520", "Linked account  " . accName)
-    g_FinanceGui.Add("Text", "x20 y196 w520", "Closing day  " . card["closing_day"])
-    g_FinanceGui.Add("Button", "x20 y240 w180 Default", "[P] Mark as paid").OnEvent("Click", (*) =>
-        Finance_CardMarkPaid(card["id"]))
-    g_FinanceGui.Add("Button", "x+12 w140", "[E] Edit").OnEvent("Click", (*) => Finance_CardForm(card))
-    g_FinanceGui.Add("Button", "x+12 w140", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
+    g_FinanceCardHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
+    g_FinanceGui.Add("Text", "x12 y36 w860",
+        "[A]/Insert add   [E] edit   Delete   [P] pay   [R] primary   Backspace menu")
+    g_FinanceCardLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
+        ["Primary", "Name", "Limit", "Spent", "Available", "%", "Linked", "Close day"])
+    g_FinanceCardLv.OnEvent("DoubleClick", (*) => Finance_CardEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
+    Finance_CardRefresh()
     Finance_BindHotkeys([
-        ["p", (*) => Finance_CardMarkPaid(card["id"])],
-        ["e", (*) => Finance_CardForm(card)],
+        ["a", (*) => Finance_CardAdd()],
+        ["Insert", (*) => Finance_CardAdd()],
+        ["e", (*) => Finance_CardEdit()],
+        ["Delete", (*) => Finance_CardDelete()],
+        ["p", (*) => Finance_CardPaySelected()],
+        ["r", (*) => Finance_CardSetPrimary()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
-    Finance_CenterGui(g_FinanceGui, 560, 340)
+    Finance_CenterGui(g_FinanceGui, 890, 560)
+}
+
+Finance_CardRefresh() {
+    global g_FinanceCardLv, g_FinanceCardRows, g_FinanceCardHeader
+    if (!IsObject(g_FinanceCardLv))
+        return
+    cards := Finance_Load("credit_cards")
+    accs := Finance_Load("accounts")
+    primaryId := Finance_Setting("General", "PrimaryCardId", "")
+    g_FinanceCardLv.Delete()
+    g_FinanceCardRows := []
+    totLim := 0.0
+    totSpent := 0.0
+    for c in cards {
+        g_FinanceCardRows.Push(c)
+        lim := Finance_ParseDecimal(c["limit"])
+        spent := Finance_ParseDecimal(c["current_spent"])
+        avail := lim - spent
+        pct := lim > 0 ? Round(spent / lim * 100, 1) : 0
+        totLim += lim
+        totSpent += spent
+        star := (c["id"] = primaryId) ? "*" : ""
+        g_FinanceCardLv.Add("", star, c["name"], Finance_FormatBrl(lim), Finance_FormatBrl(spent),
+        Finance_FormatBrl(avail), pct . "%", Finance_AccName(accs, c["linked_account_id"]), c["closing_day"])
+    }
+    totAvail := totLim - totSpent
+    g_FinanceCardHeader.Value := "Limit " . Finance_FormatBrl(totLim)
+    . "  ·  Spent " . Finance_FormatBrl(totSpent)
+    . "  ·  Available " . Finance_FormatBrl(totAvail)
+    loop 8
+        g_FinanceCardLv.ModifyCol(A_Index, "AutoHdr")
+}
+
+Finance_CardSelected() {
+    global g_FinanceCardLv, g_FinanceCardRows
+    row := g_FinanceCardLv.GetNext()
+    if (!row || row > g_FinanceCardRows.Length)
+        return false
+    return g_FinanceCardRows[row]
+}
+
+Finance_CardAdd(*) {
+    Finance_CardForm(false)
+}
+
+Finance_CardEdit(*) {
+    c := Finance_CardSelected()
+    if (!c) {
+        Finance_Notify("Select a credit card", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_CardForm(c)
+}
+
+Finance_CardDelete(*) {
+    c := Finance_CardSelected()
+    if (!c)
+        return
+    if (!Finance_Confirm("Delete " . c["name"] . "?", "Credit cards"))
+        return
+    cards := Finance_Load("credit_cards")
+    out := []
+    for r in cards {
+        if (r["id"] != c["id"])
+            out.Push(r)
+    }
+    Finance_Save("credit_cards", out)
+    primaryId := Finance_Setting("General", "PrimaryCardId", "")
+    if (primaryId = c["id"]) {
+        if (out.Length)
+            Finance_SetSetting("General", "PrimaryCardId", out[1]["id"])
+        else
+            Finance_SetSetting("General", "PrimaryCardId", "")
+    }
+    Finance_CardRefresh()
+}
+
+Finance_CardPaySelected(*) {
+    c := Finance_CardSelected()
+    if (!c) {
+        Finance_Notify("Select a credit card", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_CardMarkPaid(c["id"])
+}
+
+Finance_CardSetPrimary(*) {
+    c := Finance_CardSelected()
+    if (!c) {
+        Finance_Notify("Select a credit card", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_SetSetting("General", "PrimaryCardId", c["id"])
+    Finance_Notify(c["name"] . " is primary", 1400, BANNER_ACCENT_SUCCESS)
+    Finance_CardRefresh()
 }
 
 Finance_CardMarkPaid(cardId) {
@@ -93,11 +171,15 @@ Finance_CardMarkPaid(cardId) {
     Finance_Save("accounts", accs)
     Finance_Save("credit_cards", cards)
     Finance_Notify("Invoice paid", 1600, BANNER_ACCENT_SUCCESS)
-    Finance_ShowCreditCard()
+    global g_FinanceCardLv
+    if (IsObject(g_FinanceCardLv))
+        Finance_CardRefresh()
+    else
+        Finance_ShowCreditCard()
 }
 
 Finance_CardForm(existing) {
-    global g_FinanceGui
+    global g_FinanceGui, g_FinanceCardLv
     accs := Finance_Load("accounts")
     isEdit := IsObject(existing)
     owner := ""
@@ -131,16 +213,21 @@ Finance_CardForm(existing) {
     catch {
     }
     Finance_DialogsEnd()
-    if (saved)
-        Finance_ShowCreditCard()
+    if (saved) {
+        if (IsObject(g_FinanceCardLv))
+            Finance_CardRefresh()
+        else
+            Finance_ShowCreditCard()
+    }
 
     SaveCard(*) {
         name := Trim(eName.Value)
         if (name = "") {
-            Finance_Alert("Name is required.", "Credit card")
+            Finance_Alert("Name is required.", "Credit cards")
             return
         }
         cards := Finance_Load("credit_cards")
+        wasEmpty := cards.Length = 0
         row := Map(
             "id", isEdit ? existing["id"] : Finance_SlugId("CARD_", name, cards),
         "name", name,
@@ -161,7 +248,8 @@ Finance_CardForm(existing) {
             cards.Push(row)
         }
         Finance_Save("credit_cards", cards)
-        Finance_SetSetting("General", "PrimaryCardId", row["id"])
+        if (!isEdit && wasEmpty)
+            Finance_SetSetting("General", "PrimaryCardId", row["id"])
         saved := true
         g.Destroy()
     }
