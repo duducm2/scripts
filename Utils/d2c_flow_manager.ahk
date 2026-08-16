@@ -89,6 +89,7 @@ class D2C_FlowManager {
             "P", this.OnSubmitP.Bind(this),
             "R", this.OnSubmitR.Bind(this),
             "L", this.OnSubmitL.Bind(this),
+            "C", this.OnSubmitC.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -97,8 +98,8 @@ class D2C_FlowManager {
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnSubmitTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 920, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [N] Cancel",
+            BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
+            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [C] Chrome  [N] Cancel",
             true,
             true,
             true
@@ -513,6 +514,27 @@ class D2C_FlowManager {
 
         try {
             SpotifyDictation_PlayFromClipboard(messageText)
+        } finally {
+            global g_D2C_DictationSubmitMenuCycleFinished
+            g_D2C_DictationSubmitMenuCycleFinished := true
+            this.Reset()
+        }
+    }
+
+    ; [C] New Chrome window, paste dictation into address bar, Enter.
+    OnSubmitC(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+
+        this.CurrentPhase := "OpeningChromeNavigate"
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        messageText := A_Clipboard
+
+        try {
+            ChromeDictation_NavigateFromClipboard(messageText)
         } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true

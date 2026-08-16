@@ -190,6 +190,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Dictation → Spotify search + immerse -> Utils\spotify_dictation_play.ahk
 #include %A_ScriptDir%\Utils\spotify_dictation_play.ahk
 
+; [Utils module] Send dictation? [C] new Chrome window, paste address bar, Enter -> Utils\chrome_dictation_navigate.ahk
+#include %A_ScriptDir%\Utils\chrome_dictation_navigate.ahk
+
 ; [Utils module] Dictation clipboard cleanup countdown -> Utils\dictation_cleanup.ahk
 #include %A_ScriptDir%\Utils\dictation_cleanup.ahk
 
