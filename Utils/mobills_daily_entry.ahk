@@ -12,8 +12,11 @@ global g_MobillsDailyDdlCard := ""
 global g_MobillsDailyFavOrigAccount := ""
 global g_MobillsDailyFavOrigCard := ""
 global g_MobillsDailyDdlBusy := false
+global g_MobillsDailyEditResult := ""
+global g_MobillsDailyEditing := false
 global g_MobillsDailyReviewResult := ""
 global g_MobillsDailyReviewGui := ""
+global g_MobillsDailySkips := []
 
 MobillsDaily_FavoritesPath() {
     return A_ScriptDir "\assets\data\mobills-favorites.ini"
@@ -102,6 +105,40 @@ MobillsDaily_FillStarredDdl(ddl, names, selected) {
     for n in list {
         items.Push((n = selected) ? ("★ " n) : n)
         if (n = selected)
+            choose := i
+        i++
+    }
+    if items.Length
+        ddl.Add(items)
+    if items.Length {
+        try ddl.Choose(choose)
+        catch {
+        }
+    }
+}
+
+MobillsDaily_FillPlainDdl(ddl, names, selected, includeBlank := false) {
+    ddl.Delete()
+    items := []
+    blankLabel := "(none)"
+    sel := selected
+    if includeBlank {
+        items.Push(blankLabel)
+        if (selected = "")
+            sel := blankLabel
+    }
+    found := (sel = blankLabel || sel = "")
+    for n in names {
+        items.Push(n)
+        if (n = selected)
+            found := true
+    }
+    if (selected != "" && !found)
+        items.Push(selected)
+    choose := 1
+    i := 1
+    for it in items {
+        if (it = sel)
             choose := i
         i++
     }
@@ -517,7 +554,7 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
         if !row.HasProp("origTarget")
             row.origTarget := row.target
     }
-    hint := "File: " filePath
+    hint := "File: " filePath "`nDouble-click a row or Edit to fix a cell."
     if (unmapped.Length)
         hint .= "`nUnmapped lines: " unmapped.Length . " (see rows marked ! )"
     dlg := Gui("+AlwaysOnTop +ToolWindow", "Mobills daily entry")
@@ -545,8 +582,10 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
     g_MobillsDailyDdlBusy := false
     ddlAcc.OnEvent("Change", MobillsDaily_ConfirmFavChanged)
     ddlCard.OnEvent("Change", MobillsDaily_ConfirmFavChanged)
+    lv.OnEvent("DoubleClick", MobillsDaily_ConfirmLvDoubleClick)
     MobillsDaily_RefreshConfirmLv()
     dlg.Add("Button", "xm w100 Section Default", "OK").OnEvent("Click", MobillsDaily_ConfirmOk)
+    dlg.Add("Button", "w100 ys", "Edit").OnEvent("Click", MobillsDaily_ConfirmEditClick)
     dlg.Add("Button", "w100 ys", "Cancel").OnEvent("Click", MobillsDaily_ConfirmCancel)
     dlg.OnEvent("Close", MobillsDaily_ConfirmCancel)
     dlg.OnEvent("Escape", MobillsDaily_ConfirmCancel)
@@ -573,6 +612,159 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
     g_MobillsDailyDdlAccount := ""
     g_MobillsDailyDdlCard := ""
     return res = "ok"
+}
+
+MobillsDaily_ConfirmLvDoubleClick(lv, rowNum, *) {
+    if (rowNum < 1) {
+        try rowNum := lv.GetNext(0, "Focused")
+        catch {
+            rowNum := 0
+        }
+    }
+    if (rowNum < 1)
+        return
+    MobillsDaily_EditConfirmRow(rowNum)
+}
+
+MobillsDaily_ConfirmEditClick(*) {
+    global g_MobillsDailyConfirmLv
+    rowNum := 0
+    if IsObject(g_MobillsDailyConfirmLv) {
+        try rowNum := g_MobillsDailyConfirmLv.GetNext(0, "Focused")
+        catch {
+        }
+        if (rowNum < 1) {
+            try rowNum := g_MobillsDailyConfirmLv.GetNext(0, "Selected")
+            catch {
+            }
+        }
+    }
+    if (rowNum < 1) {
+        ShowCenteredOverlay_Utils("Select a row to edit", 1500, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    MobillsDaily_EditConfirmRow(rowNum)
+}
+
+MobillsDaily_ParseCategoryLabel(label) {
+    label := Trim(label)
+    sep := InStr(label, " > ")
+    if (sep)
+        return { category: Trim(SubStr(label, 1, sep - 1)), subcategory: Trim(SubStr(label, sep + 3)) }
+    return { category: label, subcategory: "" }
+}
+
+MobillsDaily_EditConfirmRow(rowNum) {
+    global g_MobillsDailyConfirmRows, g_MobillsDailyEditResult, g_MobillsDailyConfirmLv
+    global g_MobillsDailyConfirmGui, g_MobillsDailyEditing
+    if (!IsObject(g_MobillsDailyConfirmRows) || rowNum < 1 || rowNum > g_MobillsDailyConfirmRows.Length)
+        return
+    row := g_MobillsDailyConfirmRows[rowNum]
+    g_MobillsDailyEditResult := ""
+    g_MobillsDailyEditing := true
+    if IsObject(g_MobillsDailyConfirmGui) {
+        try g_MobillsDailyConfirmGui.Opt("+Disabled")
+        catch {
+        }
+    }
+    accNames := MobillsDaily_CatalogNames(A_ScriptDir "\accounts.ini")
+    cardNames := MobillsDaily_CatalogNames(A_ScriptDir "\cards.ini")
+    sourceNames := []
+    for n in accNames
+        sourceNames.Push(n)
+    for n in cardNames
+        sourceNames.Push(n)
+    dlg := Gui("+AlwaysOnTop +Owner", "Edit transaction #" rowNum)
+    dlg.SetFont("s10", "Segoe UI")
+    dlg.Add("Text", "w80 Section", "Type")
+    types := ["EXPENSE", "INCOME", "CARD", "TRANSFER"]
+    ddlType := dlg.Add("DropDownList", "ys w200", types)
+    ti := 1
+    for t in types {
+        if (t = row.type) {
+            try ddlType.Choose(ti)
+            catch {
+            }
+            break
+        }
+        ti++
+    }
+    dlg.Add("Text", "xm w80 Section", "Description")
+    edDesc := dlg.Add("Edit", "ys w400", row.description)
+    dlg.Add("Text", "xm w80 Section", "Value")
+    edVal := dlg.Add("Edit", "ys w120", row.value)
+    dlg.Add("Text", "xm w80 Section", "Source")
+    ddlSrc := dlg.Add("DropDownList", "ys w400")
+    MobillsDaily_FillPlainDdl(ddlSrc, sourceNames, row.source, false)
+    dlg.Add("Text", "xm w80 Section", "Target")
+    ddlTgt := dlg.Add("DropDownList", "ys w400")
+    MobillsDaily_FillPlainDdl(ddlTgt, accNames, row.target, true)
+    dlg.Add("Text", "xm w80 Section", "Category")
+    edCat := dlg.Add("Edit", "ys w400", MobillsDaily_CategoryLabel(row))
+    dlg.Add("Text", "xm w480", "Category as Section or Section > subcategory")
+    dlg.Add("Button", "xm w100 Section Default", "OK").OnEvent("Click", MobillsDaily_EditOk)
+    dlg.Add("Button", "w100 ys", "Cancel").OnEvent("Click", MobillsDaily_EditCancel)
+    dlg.OnEvent("Close", MobillsDaily_EditCancel)
+    dlg.OnEvent("Escape", MobillsDaily_EditCancel)
+    dlg.Show()
+    try edDesc.Focus()
+    catch {
+    }
+    start := A_TickCount
+    while (g_MobillsDailyEditResult = "") {
+        if ((A_TickCount - start) >= 300000) {
+            g_MobillsDailyEditResult := "cancel"
+            break
+        }
+        Sleep 50
+    }
+    if (g_MobillsDailyEditResult = "ok") {
+        row.type := StrUpper(Trim(ddlType.Text))
+        row.description := Trim(edDesc.Text)
+        row.value := Trim(edVal.Text)
+        row.source := Trim(ddlSrc.Text)
+        tgt := Trim(ddlTgt.Text)
+        row.target := (tgt = "(none)") ? "" : tgt
+        parsedCat := MobillsDaily_ParseCategoryLabel(edCat.Text)
+        row.category := parsedCat.category
+        row.subcategory := parsedCat.subcategory
+        row.origSource := row.source
+        row.origTarget := row.target
+        row.flags := []
+        MobillsDaily_RefreshConfirmLv()
+        if IsObject(g_MobillsDailyConfirmLv) {
+            try g_MobillsDailyConfirmLv.Modify(rowNum, "Select Focus Vis")
+            catch {
+            }
+        }
+    }
+    g_MobillsDailyEditResult := ""
+    g_MobillsDailyEditing := false
+    try dlg.Destroy()
+    catch {
+    }
+    if IsObject(g_MobillsDailyConfirmGui) {
+        try g_MobillsDailyConfirmGui.Opt("-Disabled")
+        catch {
+        }
+        try WinActivate("ahk_id " g_MobillsDailyConfirmGui.Hwnd)
+        catch {
+        }
+    }
+}
+
+MobillsDaily_EditOk(*) {
+    global g_MobillsDailyEditResult
+    if (g_MobillsDailyEditResult != "")
+        return
+    g_MobillsDailyEditResult := "ok"
+}
+
+MobillsDaily_EditCancel(*) {
+    global g_MobillsDailyEditResult
+    if (g_MobillsDailyEditResult != "")
+        return
+    g_MobillsDailyEditResult := "cancel"
 }
 
 MobillsDaily_ConfirmFavChanged(*) {
@@ -607,7 +799,9 @@ MobillsDaily_ApplyConfirmFavorites(save) {
 }
 
 MobillsDaily_ConfirmOk(*) {
-    global g_MobillsDailyConfirmResult
+    global g_MobillsDailyConfirmResult, g_MobillsDailyEditing
+    if g_MobillsDailyEditing
+        return
     if (g_MobillsDailyConfirmResult != "")
         return
     MobillsDaily_ApplyConfirmFavorites(true)
@@ -615,7 +809,11 @@ MobillsDaily_ConfirmOk(*) {
 }
 
 MobillsDaily_ConfirmCancel(*) {
-    global g_MobillsDailyConfirmResult
+    global g_MobillsDailyConfirmResult, g_MobillsDailyEditing
+    if g_MobillsDailyEditing {
+        MobillsDaily_EditCancel()
+        return
+    }
     if (g_MobillsDailyConfirmResult != "")
         return
     g_MobillsDailyConfirmResult := "cancel"
@@ -640,20 +838,73 @@ MobillsDaily_Halt(msg) {
     WinWaitClose("ahk_id " dlg.Hwnd)
 }
 
-MobillsDaily_Fail(idx, field, gate, attempted, extra := "") {
-    att := ""
-    if (IsObject(attempted)) {
-        for a in attempted
-            att .= "`n  - " a
-    } else if (attempted != "") {
-        att := "`n  - " attempted
+MobillsDaily_SkipRow(uia, row, idx, field, gate, wanted := "", extra := "") {
+    global g_MobillsDailySkips
+    note := "Enter this " StrLower(row.type) " manually; " field " failed"
+    if (wanted != "")
+        note .= " (wanted " wanted ")"
+    skip := {
+        idx: idx, type: row.type, description: row.description, value: row.value,
+        field: field, wanted: wanted, note: note, gate: gate
     }
-    msg := "Transaction #" idx "`nField: " field "`nGate: " gate
+    if !IsObject(g_MobillsDailySkips)
+        g_MobillsDailySkips := []
+    g_MobillsDailySkips.Push(skip)
+    msg := "SKIP #" idx " " row.type " " row.description " / " field " / " gate
+    if (wanted != "")
+        msg .= " wanted=" wanted
     if (extra != "")
-        msg .= "`nDetail: " extra
-    if (att != "")
-        msg .= "`nSelectors attempted:" att
-    MobillsDaily_Halt(msg)
+        msg .= " " extra
+    try FileAppend(FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss") "`t" msg "`n", A_ScriptDir "\mobills-run-error.log",
+    "UTF-8")
+    catch {
+    }
+    MobillsDaily_DismissDialog(uia)
+    return "skip"
+}
+
+MobillsDaily_DismissDialog(uia) {
+    hwnd := 0
+    try hwnd := MobillsAuto_FindHwnd()
+    catch {
+    }
+    if hwnd {
+        try WinActivate("ahk_id " hwnd)
+        catch {
+        }
+    }
+    Send "{Escape}"
+    Sleep MOBILLS_STEP_MS
+    if MobillsDaily_DialogGone(uia)
+        return
+    Send "{Escape}"
+    Sleep MOBILLS_STEP_MS
+    if MobillsDaily_DialogGone(uia)
+        return
+    scope := ""
+    try scope := MobillsAuto_FindDialog(uia)
+    catch {
+    }
+    if !scope
+        scope := uia
+    for nm in ["Cancel", "CANCEL", "Close", "CLOSE"] {
+        btn := ""
+        try btn := scope.FindFirst({ Type: 50000, Name: nm })
+        catch {
+        }
+        if btn {
+            try MobillsAuto_ClickLeft(btn)
+            catch {
+                try MobillsAuto_Click(btn)
+                catch {
+                }
+            }
+            Sleep MOBILLS_STEP_MS
+            if MobillsDaily_DialogGone(uia)
+                return
+        }
+    }
+    MobillsAuto_WaitFor(MobillsDaily_DialogGone.Bind(uia))
 }
 
 MobillsDaily_ExpectedTitle(typ) {
@@ -699,30 +950,23 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
     StandardLoadingBar_Update("⏳ " idx "/" total " — " row.type ": " row.description " R$ " row.value)
     menuName := MobillsDaily_MenuItem(row.type)
     opened := MobillsAuto_SelectNewMenuItem(uia, menuName)
-    if (!opened.ok) {
-        MobillsDaily_Fail(idx, "New menu", "Could not click + then " menuName, opened.attempted)
-        return false
-    }
+    if (!opened.ok)
+        return MobillsDaily_SkipRow(uia, row, idx, "New menu", "Could not click + then " menuName, menuName)
     expected := MobillsDaily_ExpectedTitle(row.type)
     title := MobillsAuto_WaitFor(MobillsDaily_TitleIfExpected.Bind(uia, expected))
-    if (title != expected) {
-        MobillsDaily_Fail(idx, "Dialog title", "Expected '" expected "'", ["Text Name=" expected], "got '" title "'")
-        return false
-    }
+    if (title != expected)
+        return MobillsDaily_SkipRow(uia, row, idx, "Dialog title", "Expected '" expected "'", expected, "got '" title "'"
+        )
     dialog := MobillsAuto_FindDialog(uia)
     scope := dialog ? dialog : uia
     Sleep MOBILLS_STEP_MS
 
     amount := MobillsAuto_FindAmountEdit(scope)
-    if !amount {
-        MobillsDaily_Fail(idx, "Value", "Amount edit not found", ["Edit with numeric Value", "sibling of R$"])
-        return false
-    }
+    if !amount
+        return MobillsDaily_SkipRow(uia, row, idx, "Value", "Amount edit not found", row.value)
     setAmt := MobillsAuto_SetEditVerified(amount, row.value)
-    if (!setAmt.ok) {
-        MobillsDaily_Fail(idx, "Value", "Read-back mismatch", setAmt.attempted, "wanted " row.value " got " setAmt.got)
-        return false
-    }
+    if (!setAmt.ok)
+        return MobillsDaily_SkipRow(uia, row, idx, "Value", "Read-back mismatch", row.value, "got " setAmt.got)
 
     if (row.type = "TRANSFER") {
         combos := MobillsAuto_DialogCombos(scope)
@@ -732,52 +976,38 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
         destCombo := (combos.Length >= 2) ? combos[2] : ""
         if (originCombo) {
             pk := MobillsAuto_PickAutocomplete(originCombo, row.source, uia)
-            if (!pk.ok) {
-                MobillsDaily_Fail(idx, "Origin account", "Autocomplete mismatch", pk.attempted, "wanted " row.source " got " pk
-                    .got)
-                return false
-            }
+            if (!pk.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, "Origin account", "Autocomplete mismatch", row.source,
+                    "got " pk.got)
         } else if (originEdit) {
             setO := MobillsAuto_SetEditVerified(originEdit, row.source)
-            if (!setO.ok) {
-                MobillsDaily_Fail(idx, "Origin account", "Edit mismatch", setO.attempted, "wanted " row.source " got " setO
-                    .got)
-                return false
-            }
+            if (!setO.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, "Origin account", "Edit mismatch", row.source, "got " setO.got
+                )
         } else {
-            MobillsDaily_Fail(idx, "Origin account", "Field not found", ["Name=Origin account", "ComboBox 1"])
-            return false
+            return MobillsDaily_SkipRow(uia, row, idx, "Origin account", "Field not found", row.source)
         }
         if (destCombo) {
             pk := MobillsAuto_PickAutocomplete(destCombo, row.target, uia)
-            if (!pk.ok) {
-                MobillsDaily_Fail(idx, "Destination account", "Autocomplete mismatch", pk.attempted, "wanted " row.target " got " pk
-                    .got)
-                return false
-            }
+            if (!pk.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, "Destination account", "Autocomplete mismatch", row.target,
+                    "got " pk.got)
         } else if (destEdit) {
             setD := MobillsAuto_SetEditVerified(destEdit, row.target)
-            if (!setD.ok) {
-                MobillsDaily_Fail(idx, "Destination account", "Edit mismatch", setD.attempted, "wanted " row.target " got " setD
+            if (!setD.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, "Destination account", "Edit mismatch", row.target, "got " setD
                     .got)
-                return false
-            }
         } else {
-            MobillsDaily_Fail(idx, "Destination account", "Field not found", ["Name=Destination account", "ComboBox 2"])
-            return false
+            return MobillsDaily_SkipRow(uia, row, idx, "Destination account", "Field not found", row.target)
         }
     } else {
         descEl := MobillsAuto_FindNamedEdit(scope, "Description")
-        if !descEl {
-            MobillsDaily_Fail(idx, "Description", "Edit not found", ["Name=Description"])
-            return false
-        }
+        if !descEl
+            return MobillsDaily_SkipRow(uia, row, idx, "Description", "Edit not found", row.description)
         setD := MobillsAuto_SetEditVerified(descEl, row.description)
-        if (!setD.ok) {
-            MobillsDaily_Fail(idx, "Description", "Read-back mismatch", setD.attempted, "wanted " row.description " got " setD
+        if (!setD.ok)
+            return MobillsDaily_SkipRow(uia, row, idx, "Description", "Read-back mismatch", row.description, "got " setD
                 .got)
-            return false
-        }
         combos := MobillsAuto_DialogCombos(scope)
         catCombo := (combos.Length >= 2) ? combos[2] : ""
         acctCombo := (combos.Length >= 3) ? combos[3] : ""
@@ -786,38 +1016,29 @@ MobillsDaily_EnterRow(uia, row, idx, total) {
             pk := MobillsAuto_PickAutocomplete(catCombo, catWanted, uia)
             if (!pk.ok && row.subcategory != "" && row.category != "")
                 pk := MobillsAuto_PickAutocomplete(catCombo, row.category, uia)
-            if (!pk.ok) {
-                MobillsDaily_Fail(idx, "Category", "Autocomplete mismatch", pk.attempted, "wanted " catWanted " got " pk
-                    .got)
-                return false
-            }
+            if (!pk.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, "Category", "Autocomplete mismatch", catWanted, "got " pk.got
+                )
         }
         acctWanted := (row.type = "CARD") ? MOBILLS_CARD_NAME : ((row.type = "INCOME") ? (row.target != "" ? row.target :
             row.source) : row.source)
         if (acctCombo && acctWanted != "") {
             pk := MobillsAuto_PickAutocomplete(acctCombo, acctWanted, uia)
-            if (!pk.ok) {
-                MobillsDaily_Fail(idx, (row.type = "CARD") ? "Card" : "Account", "Autocomplete mismatch", pk.attempted,
-                "wanted " acctWanted " got " pk.got)
-                return false
-            }
+            if (!pk.ok)
+                return MobillsDaily_SkipRow(uia, row, idx, (row.type = "CARD") ? "Card" : "Account",
+                "Autocomplete mismatch",
+                acctWanted, "got " pk.got)
         }
     }
 
     saveBtn := MobillsAuto_WaitFor(MobillsDaily_SaveIfEnabled.Bind(scope))
-    if !saveBtn {
-        MobillsDaily_Fail(idx, "SAVE", "Button stayed disabled or missing", ["Name=SAVE", "Mui-disabled class"])
-        return false
-    }
-    if !MobillsAuto_Click(saveBtn) {
-        MobillsDaily_Fail(idx, "SAVE", "Click failed", ["Name=SAVE Invoke/Click"])
-        return false
-    }
+    if !saveBtn
+        return MobillsDaily_SkipRow(uia, row, idx, "SAVE", "Button stayed disabled or missing", row.description)
+    if !MobillsAuto_Click(saveBtn)
+        return MobillsDaily_SkipRow(uia, row, idx, "SAVE", "Click failed", row.description)
     gone := MobillsAuto_WaitFor(MobillsDaily_DialogGone.Bind(uia))
-    if !gone {
-        MobillsDaily_Fail(idx, "SAVE", "Dialog still open after SAVE", ["heading gone: " expected])
-        return false
-    }
+    if !gone
+        return MobillsDaily_SkipRow(uia, row, idx, "SAVE", "Dialog still open after SAVE", expected)
     Sleep MOBILLS_STEP_MS
     return true
 }
@@ -1007,13 +1228,32 @@ MobillsDaily_WriteBalancesCsv(rows) {
     return { ok: true, path: path, error: "" }
 }
 
-MobillsDaily_ShowReviewTable(rows, csvPath) {
+MobillsDaily_ShowReviewTable(rows, csvPath, skips := "") {
     global g_MobillsDailyReviewResult, g_MobillsDailyReviewGui
+    if !IsObject(skips)
+        skips := []
     g_MobillsDailyReviewResult := ""
-    dlg := Gui("+AlwaysOnTop +ToolWindow", "Mobills balances")
+    title := skips.Length ? "Mobills balances — " skips.Length " to fix manually" : "Mobills balances"
+    dlg := Gui("+AlwaysOnTop +ToolWindow", title)
     dlg.SetFont("s10", "Segoe UI")
-    dlg.Add("Text", "w720", "Saved: " csvPath)
-    lv := dlg.Add("ListView", "w720 h360 -Multi", ["Kind", "Name", "Label", "Value"])
+    hint := "Saved: " csvPath
+    if skips.Length
+        hint .= "`n" skips.Length " skipped — do these manually in Mobills (not saved)."
+    dlg.Add("Text", "w900", hint)
+    if skips.Length {
+        lvSkip := dlg.Add("ListView", "w900 h180 -Multi", ["#", "Type", "Description", "Value", "Field", "Wanted",
+            "Note"])
+        for s in skips
+            lvSkip.Add("", s.idx, s.type, s.description, s.value, s.field, s.wanted, s.note)
+        try lvSkip.ModifyCol(1, 36)
+        try lvSkip.ModifyCol(2, 90)
+        try lvSkip.ModifyCol(3, 160)
+        try lvSkip.ModifyCol(4, 70)
+        try lvSkip.ModifyCol(5, 110)
+        try lvSkip.ModifyCol(6, 140)
+        try lvSkip.ModifyCol(7, 280)
+    }
+    lv := dlg.Add("ListView", "w900 h280 -Multi", ["Kind", "Name", "Label", "Value"])
     for r in rows
         lv.Add("", r.kind, r.name, r.label, r.value)
     try lv.ModifyCol(1, 80)
@@ -1093,13 +1333,11 @@ MobillsDaily_Run() {
         }
         uia := att.uia
         total := parsed.rows.Length
+        global g_MobillsDailySkips
+        g_MobillsDailySkips := []
         i := 1
         for row in parsed.rows {
-            if !MobillsDaily_EnterRow(uia, row, i, total) {
-                StandardLoadingBar_Hide(0)
-                barOwned := false
-                return
-            }
+            MobillsDaily_EnterRow(uia, row, i, total)
             i++
             try uia := MobillsAuto_AttachBrowser(false).uia
             catch {
@@ -1136,8 +1374,12 @@ MobillsDaily_Run() {
             MobillsDaily_Halt("Could not write balances CSV: " written.error)
             return
         }
-        ShowCenteredOverlay_Utils("✅ Mobills daily entry done", 1500, BANNER_ACCENT_SUCCESS)
-        MobillsDaily_ShowReviewTable(scraped, written.path)
+        if (g_MobillsDailySkips.Length)
+            ShowCenteredOverlay_Utils("Mobills done — " g_MobillsDailySkips.Length " to enter manually", 2500,
+                BANNER_ACCENT_INTERMEDIATE)
+        else
+            ShowCenteredOverlay_Utils("✅ Mobills daily entry done", 1500, BANNER_ACCENT_SUCCESS)
+        MobillsDaily_ShowReviewTable(scraped, written.path, g_MobillsDailySkips)
     } catch as e {
         try StandardLoadingBar_Hide(0)
         barOwned := false
