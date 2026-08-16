@@ -105,7 +105,7 @@ def build_transactions() -> list[dict]:
     # Past months: paid invoices (not in current_spent). August sums to 2010.22.
     card_past = [410.00, 890.50, 120.00, 650.00, 210.00, 1480.00, 330.00]
     extras = [
-        (1, 18, "Pharmacy", 47.90, "expense", "CAT_SAUDE", MP, "Remédios"),
+        (1, 18, "Pharmacy", 47.90, "expense", "CAT_SAUDE", MP, "Medicine"),
         (2, 8, "Uber", 36.40, "expense", "CAT_CARRO", NU, ""),
         (2, 22, "Cinema", 64.00, "expense", "CAT_LAZER", MP, "Eventos"),
         (3, 12, "Haircut", 80.00, "expense", "CAT_BELEZA", MP, "Cabeleireiro"),
@@ -121,7 +121,7 @@ def build_transactions() -> list[dict]:
         (7, 26, "Restaurant", 98.70, "expense", "CAT_LAZER", MP, "Restaurantes"),
         (8, 5, "Side gig", 650.00, "income", "CAT_RENDAEXT", NU, ""),
         (8, 12, "Father's support", 10000.00, "income", "CAT_OUTROS2", MP, ""),
-        (8, 16, "Banana", 3.00, "expense", "CAT_MERCADO", BL, "Hortifruti"),
+        (8, 16, "Banana", 3.00, "expense", "CAT_MERCADO", BL, "Produce"),
         (8, 16, "Gift", 10.00, "income", "CAT_BONIFICA", BL, ""),
     ]
 

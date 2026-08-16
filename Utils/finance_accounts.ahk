@@ -200,7 +200,7 @@ Finance_AccAdjust(*) {
                 "description", "Balance adjustment",
                 "amount", Finance_FormatCsvDecimal(Abs(delta)),
                 "type", "adjustment",
-                "category_id", Finance_CatIdByName("Ajuste"),
+                "category_id", Finance_CatIdByName("Adjustment"),
                 "subcategory", "",
                 "account_id", a["id"],
                 "card_id", "",

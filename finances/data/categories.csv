@@ -1,67 +1,67 @@
 id,name,type,parent_id,color,icon
-CAT_AJUSTE,Ajuste,expense,,#2ECC71,tag
-CAT_ALIMENTA,Alimentação,expense,,#3498DB,tag
-CAT_BELEZA,Beleza,expense,,#9B59B6,tag
-CAT_CABELEIR,Cabeleireiro,expense,CAT_BELEZA,#E67E22,dot
-CAT_TATUAGEM,"Tatuagem, piercing e brincos",expense,CAT_BELEZA,#E74C3C,dot
-CAT_CACHORRO,Cachorro,expense,,#1ABC9C,tag
-CAT_CARRO,Carro,expense,,#F1C40F,tag
-CAT_CELULAR,Celular,expense,,#34495E,tag
-CAT_COMPRAS,Compras,expense,,#16A085,tag
-CAT_CONTASDE,Contas de casa,expense,,#27AE60,tag
-CAT_EDUCACAO,Educação,expense,,#2980B9,tag
-CAT_ELETRONI,Eletrônicos,expense,,#8E44AD,tag
-CAT_EMPRESTI,Emprestimo,expense,,#D35400,tag
-CAT_HUMANITA,Humanitário,expense,,#C0392B,tag
-CAT_IMPOSTOS,Impostos,expense,,#7F8C8D,tag
-CAT_IRSOBREI,IR sobre investimento,expense,CAT_IMPOSTOS,#2C3E50,dot
-CAT_JOGOS,Jogos,expense,,#2ECC71,tag
-CAT_LAZER,Lazer,expense,,#3498DB,tag
-CAT_ALIMENTA2,Alimentação,expense,CAT_LAZER,#9B59B6,dot
-CAT_BARESEBA,Bares e Baladas,expense,CAT_LAZER,#E67E22,dot
-CAT_BEBIDAS,Bebidas,expense,CAT_LAZER,#E74C3C,dot
-CAT_EVENTOS,Eventos,expense,CAT_LAZER,#1ABC9C,dot
-CAT_RESTAURA,Restaurantes,expense,CAT_LAZER,#F1C40F,dot
-CAT_VIAGEM,Viagem,expense,CAT_LAZER,#34495E,dot
-CAT_MATERIAI,Materiais diversos,expense,,#16A085,tag
-CAT_CASA,Casa,expense,CAT_MATERIAI,#27AE60,dot
-CAT_COLECION,Colecionáveis,expense,CAT_MATERIAI,#2980B9,dot
-CAT_SEXUAIS,Sexuais,expense,CAT_MATERIAI,#8E44AD,dot
-CAT_MERCADO,Mercado,expense,,#D35400,tag
-CAT_ALIMENTO,Alimentos,expense,CAT_MERCADO,#C0392B,dot
-CAT_BEBIDASM,Bebidas mercado,expense,CAT_MERCADO,#7F8C8D,dot
-CAT_CONGELAD,Congelados e frios,expense,CAT_MERCADO,#2C3E50,dot
-CAT_HIGIENEP,Higiene pessoal,expense,CAT_MERCADO,#2ECC71,dot
-CAT_HORTIFRU,Hortifruti,expense,CAT_MERCADO,#3498DB,dot
-CAT_OUTROS,Outros,expense,CAT_MERCADO,#9B59B6,dot
-CAT_PADARIA,Padaria,expense,CAT_MERCADO,#E67E22,dot
-CAT_PAPELARI,Papelaria,expense,CAT_MERCADO,#E74C3C,dot
-CAT_PRODUTOS,Produtos de limpeza,expense,CAT_MERCADO,#1ABC9C,dot
-CAT_MOVEIS,Móveis,expense,,#F1C40F,tag
-CAT_MUDANCA,Mudança,expense,,#34495E,tag
-CAT_OPERACAO,Operação bancária,expense,,#16A085,tag
+CAT_AJUSTE,Adjustment,expense,,#2ECC71,tag
+CAT_ALIMENTA,Food,expense,,#3498DB,tag
+CAT_BELEZA,Beauty,expense,,#9B59B6,tag
+CAT_CABELEIR,Hairdresser,expense,CAT_BELEZA,#E67E22,dot
+CAT_TATUAGEM,"Tattoo, piercing and earrings",expense,CAT_BELEZA,#E74C3C,dot
+CAT_CACHORRO,Dog,expense,,#1ABC9C,tag
+CAT_CARRO,Car,expense,,#F1C40F,tag
+CAT_CELULAR,Phone,expense,,#34495E,tag
+CAT_COMPRAS,Shopping,expense,,#16A085,tag
+CAT_CONTASDE,Household bills,expense,,#27AE60,tag
+CAT_EDUCACAO,Education,expense,,#2980B9,tag
+CAT_ELETRONI,Electronics,expense,,#8E44AD,tag
+CAT_EMPRESTI,Loan,expense,,#D35400,tag
+CAT_HUMANITA,Humanitarian,expense,,#C0392B,tag
+CAT_IMPOSTOS,Taxes,expense,,#7F8C8D,tag
+CAT_IRSOBREI,Investment income tax,expense,CAT_IMPOSTOS,#2C3E50,dot
+CAT_JOGOS,Games,expense,,#2ECC71,tag
+CAT_LAZER,Leisure,expense,,#3498DB,tag
+CAT_ALIMENTA2,Food (leisure),expense,CAT_LAZER,#9B59B6,dot
+CAT_BARESEBA,Bars and clubs,expense,CAT_LAZER,#E67E22,dot
+CAT_BEBIDAS,Drinks,expense,CAT_LAZER,#E74C3C,dot
+CAT_EVENTOS,Events,expense,CAT_LAZER,#1ABC9C,dot
+CAT_RESTAURA,Restaurants,expense,CAT_LAZER,#F1C40F,dot
+CAT_VIAGEM,Travel,expense,CAT_LAZER,#34495E,dot
+CAT_MATERIAI,Misc materials,expense,,#16A085,tag
+CAT_CASA,Home,expense,CAT_MATERIAI,#27AE60,dot
+CAT_COLECION,Collectibles,expense,CAT_MATERIAI,#2980B9,dot
+CAT_SEXUAIS,Adult,expense,CAT_MATERIAI,#8E44AD,dot
+CAT_MERCADO,Groceries,expense,,#D35400,tag
+CAT_ALIMENTO,Food items,expense,CAT_MERCADO,#C0392B,dot
+CAT_BEBIDASM,Grocery drinks,expense,CAT_MERCADO,#7F8C8D,dot
+CAT_CONGELAD,Frozen and deli,expense,CAT_MERCADO,#2C3E50,dot
+CAT_HIGIENEP,Personal care,expense,CAT_MERCADO,#2ECC71,dot
+CAT_HORTIFRU,Produce,expense,CAT_MERCADO,#3498DB,dot
+CAT_OUTROS,Other,expense,CAT_MERCADO,#9B59B6,dot
+CAT_PADARIA,Bakery,expense,CAT_MERCADO,#E67E22,dot
+CAT_PAPELARI,Stationery,expense,CAT_MERCADO,#E74C3C,dot
+CAT_PRODUTOS,Cleaning products,expense,CAT_MERCADO,#1ABC9C,dot
+CAT_MOVEIS,Furniture,expense,,#F1C40F,tag
+CAT_MUDANCA,Moving,expense,,#34495E,tag
+CAT_OPERACAO,Banking,expense,,#16A085,tag
 CAT_PETS,Pets,expense,,#27AE60,tag
 CAT_PIX,Pix,expense,,#2980B9,tag
-CAT_ROUPA,Roupa,expense,,#8E44AD,tag
-CAT_FANTASIA,Fantasia,expense,CAT_ROUPA,#D35400,dot
-CAT_SAUDE,Saúde,expense,,#C0392B,tag
-CAT_CONSULTA,Consultas,expense,CAT_SAUDE,#7F8C8D,dot
-CAT_PRODUTOS2,Produtos,expense,CAT_SAUDE,#2C3E50,dot
-CAT_REMEDIOS,Remédios,expense,CAT_SAUDE,#2ECC71,dot
-CAT_SERVICO,Serviço,expense,,#3498DB,tag
-CAT_BONIFICA,Bonificação,income,,#9B59B6,arrow-down
-CAT_EMPRESTI2,Empréstimo,income,,#E67E22,arrow-down
-CAT_INVESTIM,Investimentos,income,,#E74C3C,arrow-down
-CAT_NOTAFISC,Nota Fiscal Paulista,income,,#1ABC9C,arrow-down
-CAT_OUTROS2,Outros,income,,#F1C40F,arrow-down
+CAT_ROUPA,Clothing,expense,,#8E44AD,tag
+CAT_FANTASIA,Costume,expense,CAT_ROUPA,#D35400,dot
+CAT_SAUDE,Health,expense,,#C0392B,tag
+CAT_CONSULTA,Appointments,expense,CAT_SAUDE,#7F8C8D,dot
+CAT_PRODUTOS2,Products,expense,CAT_SAUDE,#2C3E50,dot
+CAT_REMEDIOS,Medicine,expense,CAT_SAUDE,#2ECC71,dot
+CAT_SERVICO,Services,expense,,#3498DB,tag
+CAT_BONIFICA,Bonus,income,,#9B59B6,arrow-down
+CAT_EMPRESTI2,Loan,income,,#E67E22,arrow-down
+CAT_INVESTIM,Investments,income,,#E74C3C,arrow-down
+CAT_NOTAFISC,São Paulo tax rebate,income,,#1ABC9C,arrow-down
+CAT_OUTROS2,Other,income,,#F1C40F,arrow-down
 CAT_PIX2,Pix,income,,#34495E,arrow-down
-CAT_PREMIOS,Prêmios,income,,#16A085,arrow-down
-CAT_PRESENTE,Presente,income,,#27AE60,arrow-down
-CAT_REAJUSTE,Reajuste,income,,#2980B9,arrow-down
-CAT_REEMBOLS,Reembolso,income,,#8E44AD,arrow-down
-CAT_RENDAEXT,Renda extra,income,,#D35400,arrow-down
-CAT_RESTITUI,Restituição de importo de renda,income,,#C0392B,arrow-down
-CAT_SALARIO,Salário,income,,#7F8C8D,arrow-down
-CAT_TRANSFER,Transferência,income,,#2C3E50,arrow-down
-CAT_TRANSFER2,Transferência bancária,income,,#2ECC71,arrow-down
-CAT_VENDA,Venda,income,,#3498DB,arrow-down
+CAT_PREMIOS,Prizes,income,,#16A085,arrow-down
+CAT_PRESENTE,Gift,income,,#27AE60,arrow-down
+CAT_REAJUSTE,Salary adjustment,income,,#2980B9,arrow-down
+CAT_REEMBOLS,Refund,income,,#8E44AD,arrow-down
+CAT_RENDAEXT,Side income,income,,#D35400,arrow-down
+CAT_RESTITUI,Income tax refund,income,,#C0392B,arrow-down
+CAT_SALARIO,Salary,income,,#7F8C8D,arrow-down
+CAT_TRANSFER,Transfer,income,,#2C3E50,arrow-down
+CAT_TRANSFER2,Bank transfer,income,,#2ECC71,arrow-down
+CAT_VENDA,Sale,income,,#3498DB,arrow-down

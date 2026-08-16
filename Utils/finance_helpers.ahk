@@ -884,9 +884,9 @@ Finance_MigrateCategoriesFromIni() {
         }
     }
     if (rows.Length = 0) {
-        rows.Push(Map("id", "CAT_OUTROS", "name", "Outros", "type", "expense", "parent_id", "",
+        rows.Push(Map("id", "CAT_OUTROS", "name", "Other", "type", "expense", "parent_id", "",
             "color", "#7F8C8D", "icon", "tag"))
-        rows.Push(Map("id", "CAT_SALARIO", "name", "Salário", "type", "income", "parent_id", "",
+        rows.Push(Map("id", "CAT_SALARIO", "name", "Salary", "type", "income", "parent_id", "",
             "color", "#3498DB", "icon", "briefcase"))
     }
     Finance_Save("categories", rows)
@@ -950,19 +950,19 @@ Finance_SeedCreditCards() {
 
 Finance_SeedGoals() {
     rows := []
-    rows.Push(Map("id", "GOAL_PREV", "name", "Previdência privada", "current_amount", "16733,13",
+    rows.Push(Map("id", "GOAL_PREV", "name", "Private pension", "current_amount", "16733,13",
         "target_amount", "926400,00", "target_date", "2062-01-01", "status", "in_progress"))
-    rows.Push(Map("id", "GOAL_EMERG", "name", "Fundo de emergência", "current_amount", "2141,14",
+    rows.Push(Map("id", "GOAL_EMERG", "name", "Emergency fund", "current_amount", "2141,14",
         "target_amount", "18000,00", "target_date", "2099-11-01", "status", "in_progress"))
     rows.Push(Map("id", "GOAL_FATHER", "name", "Father's money", "current_amount", "10000,00",
         "target_amount", "10000,00", "target_date", "2026-09-15", "status", "in_progress"))
-    rows.Push(Map("id", "GOAL_ALEM", "name", "Alemanha", "current_amount", "22314,00",
+    rows.Push(Map("id", "GOAL_ALEM", "name", "Germany", "current_amount", "22314,00",
         "target_amount", "50000,00", "target_date", "", "status", "paused"))
-    rows.Push(Map("id", "GOAL_ALEM2", "name", "Alemanha (parte Leonardo)", "current_amount", "500,00",
+    rows.Push(Map("id", "GOAL_ALEM2", "name", "Germany (Leonardo share)", "current_amount", "500,00",
         "target_amount", "15000,00", "target_date", "", "status", "paused"))
-    rows.Push(Map("id", "GOAL_CARRO", "name", "Novo carro", "current_amount", "600,00",
+    rows.Push(Map("id", "GOAL_CARRO", "name", "New car", "current_amount", "600,00",
         "target_amount", "40000,00", "target_date", "2026-01-01", "status", "expired"))
-    rows.Push(Map("id", "GOAL_TERR", "name", "Entrada terreno", "current_amount", "7218,73",
+    rows.Push(Map("id", "GOAL_TERR", "name", "Land down payment", "current_amount", "7218,73",
         "target_amount", "40000,00", "target_date", "2026-01-01", "status", "expired"))
     rows.Push(Map("id", "GOAL_NCAR", "name", "New car", "current_amount", "32000,00",
         "target_amount", "70000,00", "target_date", "2026-01-01", "status", "expired"))
@@ -987,10 +987,10 @@ Finance_AccIdByNameContains(needle) {
 
 Finance_SeedBudgets() {
     ym := "2026-08"
-    pairs := [["Mercado", "3000,00", "1039,26"], ["Alimentação", "300,00", "603,43"], ["Beleza", "150,00", "100,00"],
-    ["Lazer", "600,00", "167,28"], ["Saúde", "1000,00", "670,27"], ["Carro", "400,00", "696,59"],
-    ["Contas de casa", "2300,00", "0,00"], ["Educação", "400,00", "139,77"], ["Eletrônicos", "50,00", "733,44"],
-    ["Humanitário", "150,00", "350,90"]]
+    pairs := [["Groceries", "3000,00", "1039,26"], ["Food", "300,00", "603,43"], ["Beauty", "150,00", "100,00"],
+    ["Leisure", "600,00", "167,28"], ["Health", "1000,00", "670,27"], ["Car", "400,00", "696,59"],
+    ["Household bills", "2300,00", "0,00"], ["Education", "400,00", "139,77"], ["Electronics", "50,00", "733,44"],
+    ["Humanitarian", "150,00", "350,90"]]
     rows := []
     for p in pairs {
         cid := Finance_CatIdByName(p[1])
@@ -1006,14 +1006,14 @@ Finance_SeedTransactions() {
     accMp := Finance_AccIdByNameContains("Mercado Pago main")
     if (accMp = "")
         accMp := Finance_AccIdByNameContains("Mercado Pago")
-    catMer := Finance_CatIdByName("Mercado")
-    catAli := Finance_CatIdByName("Alimentação")
-    catSal := Finance_CatIdByName("Salário")
-    catBon := Finance_CatIdByName("Bonificação")
-    catEle := Finance_CatIdByName("Eletrônicos")
+    catMer := Finance_CatIdByName("Groceries")
+    catAli := Finance_CatIdByName("Food")
+    catSal := Finance_CatIdByName("Salary")
+    catBon := Finance_CatIdByName("Bonus")
+    catEle := Finance_CatIdByName("Electronics")
     rows := []
     rows.Push(Map("id", "TX001", "date", "2026-08-16", "description", "Banana", "amount", "3,00",
-        "type", "expense", "category_id", catMer, "subcategory", "Hortifruti", "account_id", accBl, "card_id", "",
+        "type", "expense", "category_id", catMer, "subcategory", "Produce", "account_id", accBl, "card_id", "",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX002", "date", "2026-08-16", "description", "Gift", "amount", "10,00",
         "type", "income", "category_id", catBon, "subcategory", "", "account_id", accBl, "card_id", "",

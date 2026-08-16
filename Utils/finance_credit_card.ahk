@@ -156,14 +156,14 @@ Finance_CardMarkPaid(cardId) {
         "description", "Invoice payment — " . card["name"],
         "amount", Finance_FormatCsvDecimal(spent),
         "type", "expense",
-        "category_id", Finance_CatIdByName("Operação bancária"),
+        "category_id", Finance_CatIdByName("Banking"),
         "subcategory", "",
         "account_id", acc["id"],
         "card_id", card["id"],
         "transfer_account_id", ""
     )
     if (tx["category_id"] = "")
-        tx["category_id"] := Finance_CatIdByName("Outros")
+        tx["category_id"] := Finance_CatIdByName("Other")
     txs.Push(tx)
     Finance_Save("transactions", txs)
     Finance_AdjustAccount(accs, acc["id"], -spent)

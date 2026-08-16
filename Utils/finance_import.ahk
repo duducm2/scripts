@@ -167,7 +167,7 @@ Finance_ImportMonthly(*) {
                 "description", desc,
                 "amount", Finance_FormatCsvDecimal(Abs(adj)),
                 "type", adj >= 0 ? "income" : "expense",
-                "category_id", adj >= 0 ? Finance_CatIdByName("Investimentos") : Finance_CatIdByName("Ajuste"),
+                "category_id", adj >= 0 ? Finance_CatIdByName("Investments") : Finance_CatIdByName("Adjustment"),
             "subcategory", "",
             "account_id", eid,
             "card_id", "",
