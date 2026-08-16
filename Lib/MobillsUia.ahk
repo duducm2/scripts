@@ -10,6 +10,23 @@ global MOBILLS_GATE_TIMEOUT_MS := 8000
 global MOBILLS_CARD_NAME := "Mercado Pago"
 global MOBILLS_DEFAULT_ACCOUNT := "Mercado Pago main account"
 
+MobillsAuto_TitleLooksLikeApp(t) {
+    t := Trim(t)
+    if (t = "")
+        return false
+    if InStr(t, "Gemini") || InStr(t, "gemini.google")
+        return false
+    return (InStr(t, "Mobills") = 1)
+}
+
+MobillsAuto_IsOnMobillsSite(url, title) {
+    if InStr(url, "web.mobills.com.br")
+        return true
+    if InStr(url, "gemini.google.com")
+        return false
+    return MobillsAuto_TitleLooksLikeApp(title)
+}
+
 MobillsAuto_FindHwnd() {
     for exe in ["ahk_exe chrome.exe", "ahk_exe msedge.exe"] {
         try {
@@ -17,7 +34,7 @@ MobillsAuto_FindHwnd() {
             for hwnd in hwnds {
                 try {
                     t := WinGetTitle("ahk_id " hwnd)
-                    if (t != "" && InStr(t, "Mobills"))
+                    if MobillsAuto_TitleLooksLikeApp(t)
                         return hwnd
                 } catch {
                 }
@@ -73,8 +90,7 @@ MobillsAuto_IsUiReady(hwnd) {
     try title := WinGetTitle("ahk_id " hwnd)
     catch {
     }
-    onSite := InStr(url, "web.mobills.com.br") || (title != "" && InStr(title, "Mobills"))
-    if !onSite
+    if !MobillsAuto_IsOnMobillsSite(url, title)
         return false
     return MobillsAuto_HasShellControl(uia)
 }

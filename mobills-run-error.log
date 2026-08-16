@@ -64,3 +64,7 @@ Selectors attempted:
 2026-08-16 11:31:58	SKIP #3 CARD Eraser / Category / Autocomplete mismatch wanted=Geral got 
 2026-08-16 11:32:03	SKIP #4 TRANSFER Transfer / Origin account / Autocomplete mismatch wanted=Mercado Pago main account got 
 2026-08-16 11:33:00	SKIP #1 EXPENSE Banana / Category / Autocomplete mismatch wanted=Geral got 
+2026-08-16 11:38:22	Mobills UI did not become ready in time.
+2026-08-16 11:38:39	Mobills UI did not become ready in time.
+2026-08-16 11:41:33	Mobills UI did not become ready in time.
+2026-08-16 11:43:30	SKIP #1 EXPENSE Banana / Category / Autocomplete mismatch wanted=Groceries got 

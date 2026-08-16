@@ -345,6 +345,8 @@ GetMobillsPromptText() {
         extra .= "`n`n" . incomes
     extra .= "`n`nDefault cash account (when unspecified): " . fav.account
     extra .= "`nCredit card (always, when unspecified): " . fav.card
+    extra .=
+        "`nNever output CATEGORY or SUBCATEGORY as geral, GERAL, or General. Those INI keys are not Mobills categories."
     extra .= "`n`nDictation follows."
     return body . extra
 }
