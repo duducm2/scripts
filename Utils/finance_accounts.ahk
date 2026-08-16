@@ -14,9 +14,10 @@ Finance_ShowAccounts() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Accounts")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceAccHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
-    g_FinanceGui.Add("Text", "x12 y36 w860", "[A]/Insert add   [E] edit   Delete   J adjust balance   Backspace menu")
+    g_FinanceGui.Add("Text", "x12 y36 w860",
+        "[A]/Insert add   [E] edit   Delete   J adjust balance   [R] primary   Backspace menu")
     g_FinanceAccLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
-        ["Icon", "Name", "Id", "Current"])
+        ["Primary", "Icon", "Name", "Id", "Current"])
     g_FinanceAccLv.OnEvent("DoubleClick", (*) => Finance_AccEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -27,6 +28,7 @@ Finance_ShowAccounts() {
         ["e", (*) => Finance_AccEdit()],
         ["Delete", (*) => Finance_AccDelete()],
         ["j", (*) => Finance_AccAdjust()],
+        ["r", (*) => Finance_AccSetPrimary()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
@@ -35,7 +37,10 @@ Finance_ShowAccounts() {
 
 Finance_AccRefresh() {
     global g_FinanceAccLv, g_FinanceAccRows, g_FinanceAccHeader
+    if (!IsObject(g_FinanceAccLv))
+        return
     accs := Finance_Load("accounts")
+    primaryId := Finance_Setting("General", "DefaultAccountId", "")
     g_FinanceAccLv.Delete()
     g_FinanceAccRows := []
     tot := 0.0
@@ -43,10 +48,11 @@ Finance_AccRefresh() {
         g_FinanceAccRows.Push(a)
         cur := Finance_ParseDecimal(a["current_balance"])
         tot += cur
-        g_FinanceAccLv.Add("", a["icon"], a["name"], a["id"], Finance_FormatBrl(cur))
+        star := (a["id"] = primaryId) ? "*" : ""
+        g_FinanceAccLv.Add("", star, a["icon"], a["name"], a["id"], Finance_FormatBrl(cur))
     }
     g_FinanceAccHeader.Value := "Current total  " . Finance_FormatBrl(tot)
-    loop 4
+    loop 5
         g_FinanceAccLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -84,6 +90,24 @@ Finance_AccDelete(*) {
             out.Push(r)
     }
     Finance_Save("accounts", out)
+    primaryId := Finance_Setting("General", "DefaultAccountId", "")
+    if (primaryId = a["id"]) {
+        if (out.Length)
+            Finance_SetSetting("General", "DefaultAccountId", out[1]["id"])
+        else
+            Finance_SetSetting("General", "DefaultAccountId", "")
+    }
+    Finance_AccRefresh()
+}
+
+Finance_AccSetPrimary(*) {
+    a := Finance_AccSelected()
+    if (!a) {
+        Finance_Notify("Select an account", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_SetSetting("General", "DefaultAccountId", a["id"])
+    Finance_Notify(a["name"] . " is primary", 1400, BANNER_ACCENT_SUCCESS)
     Finance_AccRefresh()
 }
 
@@ -126,6 +150,7 @@ Finance_AccForm(existing) {
         }
         accs := Finance_Load("accounts")
         init := Finance_FormatCsvDecimal(Finance_ParseDecimal(eInit.Value))
+        newId := ""
         if (isEdit) {
             oldInit := Finance_ParseDecimal(existing["initial_balance"])
             newInit := Finance_ParseDecimal(init)
@@ -142,8 +167,12 @@ Finance_AccForm(existing) {
             }
             accs := out
         } else {
-            accs.Push(Map("id", Finance_SlugId("ACC_", name, accs), "name", name, "icon", Trim(eIcon.Value),
+            newId := Finance_SlugId("ACC_", name, accs)
+            wasEmpty := accs.Length = 0
+            accs.Push(Map("id", newId, "name", name, "icon", Trim(eIcon.Value),
             "initial_balance", init, "current_balance", init))
+            if (wasEmpty || Finance_Setting("General", "DefaultAccountId", "") = "")
+                Finance_SetSetting("General", "DefaultAccountId", newId)
         }
         Finance_Save("accounts", accs)
         saved := true

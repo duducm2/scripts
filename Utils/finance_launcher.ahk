@@ -43,7 +43,7 @@ Finance_ShowMainMenu() {
     items := [
         ["D", "Dashboard", "Cockpit charts and widgets"],
         ["T", "Transactions", "List, filter, edit"],
-        ["A", "Accounts", "Balances and CRUD"],
+        ["A", "Accounts", "Balances, CRUD, primary"],
         ["C", "Credit cards", "Limits, spent, pay, primary"],
         ["B", "Budgets", "Monthly limits"],
         ["G", "Goals", "Funds and targets"],
