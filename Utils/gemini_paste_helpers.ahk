@@ -339,7 +339,8 @@ GetMobillsPromptText() {
         extra .= "`n`n" . expenses
     if (incomes != "")
         extra .= "`n`n" . incomes
-    extra .= "`n`nCredit card (always): Mercado Pago"
+    extra .= "`n`nDefault cash account (when unspecified): Mercado Pago main account"
+    extra .= "`nCredit card (always, when unspecified): Mercado Pago"
     extra .= "`n`nDictation follows."
     return body . extra
 }

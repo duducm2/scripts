@@ -8,6 +8,7 @@ global MOBILLS_STEP_MS := 350
 global MOBILLS_TYPE_DELAY_MS := 40
 global MOBILLS_GATE_TIMEOUT_MS := 8000
 global MOBILLS_CARD_NAME := "Mercado Pago"
+global MOBILLS_DEFAULT_ACCOUNT := "Mercado Pago main account"
 
 MobillsAuto_FindHwnd() {
     for exe in ["ahk_exe chrome.exe", "ahk_exe msedge.exe"] {

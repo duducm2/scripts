@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: mobills_daily_entry.ahk
-; #!+U Macros [m] — parse Desktop MOBILLS_V1 file, confirm, enter in Mobills, scrape.
+; #!+U Macros [m] — parse Desktop MOBILLS_V1.txt (or matching .ini), confirm, enter in Mobills, scrape.
 ; =============================================================================
 
 global g_MobillsDailyConfirmResult := ""
@@ -129,12 +129,55 @@ MobillsDaily_DesktopPath() {
     return folders.Length ? folders[1] : A_Desktop
 }
 
-; Newest *.ini on any known Desktop folder (OneDrive or classic), excluding desktop.ini.
-MobillsDaily_FindLatestFile() {
+; Desktop payload: MOBILLS_V1 pipe table (what Gemini used to save as .ini) or classic INI.
+MobillsDaily_FileLooksLikeTable(path) {
+    sz := 0
+    try sz := FileGetSize(path)
+    catch {
+        return false
+    }
+    if (sz < 8 || sz > 524288)
+        return false
+    raw := MobillsDaily_ReadText(path)
+    return (InStr(raw, "MOBILLS_V1") || InStr(raw, "TYPE|DESCRIPTION"))
+}
+
+MobillsDaily_FileLooksLikeIniSyntax(path) {
+    if MobillsDaily_FileLooksLikeTable(path)
+        return true
+    sz := 0
+    try sz := FileGetSize(path)
+    catch {
+        return false
+    }
+    if (sz < 8 || sz > 524288)
+        return false
+    raw := MobillsDaily_ReadText(path)
+    hasSection := false
+    hasAssign := false
+    loop parse raw, "`n", "`r" {
+        line := Trim(A_LoopField)
+        if (line = "" || SubStr(line, 1, 1) = ";" || SubStr(line, 1, 1) = "#")
+            continue
+        if RegExMatch(line, "^\[.+\]$") {
+            hasSection := true
+            continue
+        }
+        if (InStr(line, "=") && !InStr(line, "|"))
+            hasAssign := true
+        parts := StrSplit(line, "|")
+        if (parts.Length >= 7)
+            return true
+    }
+    return hasSection && hasAssign
+}
+
+; Newest Desktop file for glob (e.g. "*.ini"). skipDesktopIni; if requireIniSyntax, only valid payloads.
+MobillsDaily_NewestDesktopByGlob(glob, requireIniSyntax := false) {
     newestPath := ""
     newestStamp := ""
     for folder in MobillsDaily_DesktopFolders() {
-        loop files folder "\*.ini", "F" {
+        loop files folder "\" glob, "F" {
             if (StrLower(A_LoopFileName) = "desktop.ini")
                 continue
             stamp := ""
@@ -142,6 +185,8 @@ MobillsDaily_FindLatestFile() {
             catch {
                 continue
             }
+            if (requireIniSyntax && !MobillsDaily_FileLooksLikeIniSyntax(A_LoopFileFullPath))
+                continue
             if (newestStamp = "" || stamp > newestStamp) {
                 newestStamp := stamp
                 newestPath := A_LoopFileFullPath
@@ -149,6 +194,21 @@ MobillsDaily_FindLatestFile() {
         }
     }
     return newestPath
+}
+
+; 1) Desktop .ini with valid table/INI payload (skip desktop.ini).
+; 2) Else .txt with the same payload. Option B: parse as-is (do not rename — Gemini .ini downloads were truncated).
+MobillsDaily_FindLatestFile() {
+    iniMatch := MobillsDaily_NewestDesktopByGlob("*.ini", true)
+    if (iniMatch != "")
+        return iniMatch
+    txtMatch := MobillsDaily_NewestDesktopByGlob("*.txt", true)
+    if (txtMatch != "")
+        return txtMatch
+    iniAny := MobillsDaily_NewestDesktopByGlob("*.ini", false)
+    if (iniAny != "")
+        return iniAny
+    return MobillsDaily_NewestDesktopByGlob("*.txt", false)
 }
 
 MobillsDaily_ReadText(path) {
@@ -222,6 +282,18 @@ MobillsDaily_ParseRaw(raw) {
         target := Trim(parts[5])
         cat := Trim(parts[6])
         sub := Trim(parts[7])
+        if (typ = "CARD" && source = "")
+            source := MOBILLS_CARD_NAME
+        if (typ = "EXPENSE" && source = "")
+            source := MOBILLS_DEFAULT_ACCOUNT
+        if (typ = "INCOME" && target = "" && source = "")
+            target := MOBILLS_DEFAULT_ACCOUNT
+        if (typ = "TRANSFER") {
+            if (source = "")
+                source := MOBILLS_DEFAULT_ACCOUNT
+            if (target = "")
+                target := MOBILLS_DEFAULT_ACCOUNT
+        }
         flags := []
         if !(typ = "EXPENSE" || typ = "INCOME" || typ = "CARD" || typ = "TRANSFER")
             flags.Push("bad type")
@@ -240,8 +312,6 @@ MobillsDaily_ParseRaw(raw) {
             if (target != "" && !MobillsDaily_CatalogHasSection(accounts, target))
                 flags.Push("unknown dest account")
         }
-        if (typ = "CARD" && source = "")
-            source := MOBILLS_CARD_NAME
         if (typ = "EXPENSE" || typ = "CARD") {
             if (cat != "" && !MobillsDaily_CatalogHasSection(expenses, cat) && !MobillsDaily_CatalogHasSection(expenses,
                 sub))
@@ -760,7 +830,7 @@ MobillsDaily_ReviewClose(*) {
 MobillsDaily_Run() {
     path := MobillsDaily_FindLatestFile()
     if (path = "") {
-        ShowCenteredOverlay_Utils("❌ No .ini file on Desktop", 2500, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ No MOBILLS_V1.txt (or .ini) on Desktop", 2500, BANNER_ACCENT_ERROR)
         return
     }
     parsed := MobillsDaily_ParseFile(path)
@@ -786,7 +856,7 @@ MobillsDaily_Run() {
         catch {
         }
         hint := parsed.firstLine != "" ? parsed.firstLine : "(empty)"
-        ShowCenteredOverlay_Utils("❌ Desktop .ini has no rows (" sz " bytes: " hint "). Copy the Gemini table, then run Macros [m] again.",
+        ShowCenteredOverlay_Utils("❌ Desktop .txt/.ini has no rows (" sz " bytes: " hint "). Save MOBILLS_V1.txt or copy the table, then run Macros [m] again.",
             4500, BANNER_ACCENT_ERROR)
         return
     }
