@@ -66,7 +66,7 @@
     .panel { background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }
     .panel-slim { margin-bottom:10px; }
     .panel h2 { margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }
-    .chart { height:260px; }
+    .chart { height:320px; }
     .chart-cell { min-width:0; }
     .note { background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }
     .note.ok { background:var(--note-ok-bg); color:var(--note-ok-fg); }
@@ -132,7 +132,7 @@ function themeColors() {
 function baseLayout() {
   const t = themeColors();
   return {paper_bgcolor:t.paper, plot_bgcolor:t.paper, font:{color:t.font, size:11},
-    margin:{t:28,b:36,l:42,r:16}, height:260, legend:{orientation:'h', y:1.12, font:{size:10}}};
+    margin:{t:28,b:48,l:42,r:16}, height:320, legend:{orientation:'h', y:1.12, font:{size:10}}};
 }
 function pie(id, spec) {
   const el = document.getElementById(id);
@@ -158,7 +158,12 @@ function drawAll() {
   const vals = DATA.spentMain.map(x => x.value);
   Plotly.newPlot('barCat', [{type:'bar', x:names, y:vals, marker:{color:'#e67e22'},
     hovertemplate:'%{x}<br>R$ %{y:.2f}<extra></extra>'}],
-    Object.assign({}, L, {showlegend:false}), {responsive:true, displayModeBar:false});
+    Object.assign({}, L, {
+      showlegend:false,
+      height:320,
+      margin:{t:28, b:110, l:48, r:16},
+      xaxis:{tickangle:-45, automargin:true, tickfont:{size:10}}
+    }), {responsive:true, displayModeBar:false});
   const months = DATA.series.map(x => x.month);
   const bals = DATA.series.map(x => x.balance);
   const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
