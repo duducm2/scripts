@@ -5,8 +5,164 @@
 
 global g_MobillsDailyConfirmResult := ""
 global g_MobillsDailyConfirmGui := ""
+global g_MobillsDailyConfirmRows := ""
+global g_MobillsDailyConfirmLv := ""
+global g_MobillsDailyDdlAccount := ""
+global g_MobillsDailyDdlCard := ""
+global g_MobillsDailyFavOrigAccount := ""
+global g_MobillsDailyFavOrigCard := ""
+global g_MobillsDailyDdlBusy := false
 global g_MobillsDailyReviewResult := ""
 global g_MobillsDailyReviewGui := ""
+
+MobillsDaily_FavoritesPath() {
+    return A_ScriptDir "\assets\data\mobills-favorites.ini"
+}
+
+MobillsDaily_CatalogNames(path) {
+    names := []
+    catalog := MobillsDaily_LoadIniCatalog(path)
+    for section, _ in catalog
+        names.Push(section)
+    return names
+}
+
+MobillsDaily_LoadFavorites() {
+    global MOBILLS_DEFAULT_ACCOUNT, MOBILLS_CARD_NAME
+    acc := MOBILLS_DEFAULT_ACCOUNT
+    card := MOBILLS_CARD_NAME
+    path := MobillsDaily_FavoritesPath()
+    if FileExist(path) {
+        try {
+            a := Trim(IniRead(path, "Favorites", "Account", acc))
+            if (a != "" && a != "ERROR")
+                acc := a
+        } catch {
+        }
+        try {
+            c := Trim(IniRead(path, "Favorites", "Card", card))
+            if (c != "" && c != "ERROR")
+                card := c
+        } catch {
+        }
+    }
+    MOBILLS_DEFAULT_ACCOUNT := acc
+    MOBILLS_CARD_NAME := card
+    return { account: acc, card: card }
+}
+
+MobillsDaily_SaveFavorites(account, card) {
+    global MOBILLS_DEFAULT_ACCOUNT, MOBILLS_CARD_NAME
+    account := Trim(account)
+    card := Trim(card)
+    if (account = "")
+        account := MOBILLS_DEFAULT_ACCOUNT
+    if (card = "")
+        card := MOBILLS_CARD_NAME
+    path := MobillsDaily_FavoritesPath()
+    dir := A_ScriptDir "\assets\data"
+    if !DirExist(dir) {
+        try DirCreate(dir)
+        catch {
+        }
+    }
+    try IniWrite(account, path, "Favorites", "Account")
+    catch {
+    }
+    try IniWrite(card, path, "Favorites", "Card")
+    catch {
+    }
+    MOBILLS_DEFAULT_ACCOUNT := account
+    MOBILLS_CARD_NAME := card
+}
+
+MobillsDaily_StripStar(text) {
+    text := Trim(text)
+    if (SubStr(text, 1, 2) = "★ ")
+        return Trim(SubStr(text, 3))
+    if (SubStr(text, 1, 1) = "★")
+        return Trim(SubStr(text, 2))
+    return text
+}
+
+MobillsDaily_FillStarredDdl(ddl, names, selected) {
+    ddl.Delete()
+    choose := 1
+    i := 1
+    list := []
+    found := false
+    for n in names {
+        list.Push(n)
+        if (n = selected)
+            found := true
+    }
+    if (selected != "" && !found)
+        list.Push(selected)
+    items := []
+    for n in list {
+        items.Push((n = selected) ? ("★ " n) : n)
+        if (n = selected)
+            choose := i
+        i++
+    }
+    if items.Length
+        ddl.Add(items)
+    if items.Length {
+        try ddl.Choose(choose)
+        catch {
+        }
+    }
+}
+
+MobillsDaily_RemapDefaultedRows(rows, oldAcc, newAcc, oldCard, newCard) {
+    if (newAcc = "")
+        newAcc := oldAcc
+    if (newCard = "")
+        newCard := oldCard
+    for row in rows {
+        src := row.HasProp("origSource") ? row.origSource : row.source
+        tgt := row.HasProp("origTarget") ? row.origTarget : row.target
+        if (row.type = "EXPENSE") {
+            row.source := (src = "" || src = oldAcc) ? newAcc : src
+            row.target := tgt
+        } else if (row.type = "INCOME") {
+            row.source := src
+            if (tgt = "" || tgt = oldAcc)
+                row.target := newAcc
+            else
+                row.target := tgt
+            if (row.target = "" && (src = "" || src = oldAcc))
+                row.source := newAcc
+        } else if (row.type = "TRANSFER") {
+            row.source := (src = "" || src = oldAcc) ? newAcc : src
+            row.target := (tgt = "" || tgt = oldAcc) ? newAcc : tgt
+        } else if (row.type = "CARD") {
+            row.source := (src = "" || src = oldCard) ? newCard : src
+            row.target := tgt
+        } else {
+            row.source := src
+            row.target := tgt
+        }
+    }
+}
+
+MobillsDaily_RefreshConfirmLv() {
+    global g_MobillsDailyConfirmLv, g_MobillsDailyConfirmRows
+    lv := g_MobillsDailyConfirmLv
+    rows := g_MobillsDailyConfirmRows
+    if (!IsObject(lv) || !IsObject(rows))
+        return
+    try lv.Delete()
+    catch {
+    }
+    i := 1
+    for row in rows {
+        mark := row.flags.Length ? "! " : ""
+        lv.Add("", mark i, row.type, row.description, row.value, row.source, row.target, MobillsDaily_CategoryLabel(row
+        ))
+        i++
+    }
+}
 
 MobillsDaily_LoadIniCatalog(path) {
     catalog := Map()
@@ -250,9 +406,12 @@ MobillsDaily_ParseFile(path) {
 
 MobillsDaily_ParseRaw(raw) {
     result := { rows: [], unmapped: [], error: "", rawLen: StrLen(raw), firstLine: "" }
+    fav := MobillsDaily_LoadFavorites()
     accounts := MobillsDaily_LoadIniCatalog(A_ScriptDir "\accounts.ini")
     expenses := MobillsDaily_LoadIniCatalog(A_ScriptDir "\categories-expenses.ini")
     incomes := MobillsDaily_LoadIniCatalog(A_ScriptDir "\categories-income.ini")
+    defAcc := fav.account
+    defCard := fav.card
     started := true
     loop parse raw, "`n", "`r" {
         line := Trim(A_LoopField)
@@ -283,16 +442,16 @@ MobillsDaily_ParseRaw(raw) {
         cat := Trim(parts[6])
         sub := Trim(parts[7])
         if (typ = "CARD" && source = "")
-            source := MOBILLS_CARD_NAME
+            source := defCard
         if (typ = "EXPENSE" && source = "")
-            source := MOBILLS_DEFAULT_ACCOUNT
+            source := defAcc
         if (typ = "INCOME" && target = "" && source = "")
-            target := MOBILLS_DEFAULT_ACCOUNT
+            target := defAcc
         if (typ = "TRANSFER") {
             if (source = "")
-                source := MOBILLS_DEFAULT_ACCOUNT
+                source := defAcc
             if (target = "")
-                target := MOBILLS_DEFAULT_ACCOUNT
+                target := defAcc
         }
         flags := []
         if !(typ = "EXPENSE" || typ = "INCOME" || typ = "CARD" || typ = "TRANSFER")
@@ -324,6 +483,7 @@ MobillsDaily_ParseRaw(raw) {
         }
         result.rows.Push({
             type: typ, description: desc, value: val, source: source, target: target,
+            origSource: source, origTarget: target,
             category: cat, subcategory: sub, flags: flags, raw: line
         })
     }
@@ -337,12 +497,25 @@ MobillsDaily_CategoryLabel(row) {
 }
 
 MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
-    global g_MobillsDailyConfirmResult, g_MobillsDailyConfirmGui
+    global g_MobillsDailyConfirmResult, g_MobillsDailyConfirmGui, g_MobillsDailyConfirmRows, g_MobillsDailyConfirmLv
+    global g_MobillsDailyDdlAccount, g_MobillsDailyDdlCard, g_MobillsDailyFavOrigAccount, g_MobillsDailyFavOrigCard
+    global g_MobillsDailyDdlBusy
     g_MobillsDailyConfirmResult := ""
+    g_MobillsDailyDdlBusy := false
     if (IsObject(g_MobillsDailyConfirmGui)) {
         try g_MobillsDailyConfirmGui.Destroy()
         catch {
         }
+    }
+    fav := MobillsDaily_LoadFavorites()
+    g_MobillsDailyFavOrigAccount := fav.account
+    g_MobillsDailyFavOrigCard := fav.card
+    g_MobillsDailyConfirmRows := rows
+    for row in rows {
+        if !row.HasProp("origSource")
+            row.origSource := row.source
+        if !row.HasProp("origTarget")
+            row.origTarget := row.target
     }
     hint := "File: " filePath
     if (unmapped.Length)
@@ -350,14 +523,15 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
     dlg := Gui("+AlwaysOnTop +ToolWindow", "Mobills daily entry")
     dlg.SetFont("s10", "Segoe UI")
     dlg.Add("Text", "w900", hint)
-    lv := dlg.Add("ListView", "w900 h360 -Multi", ["#", "Type", "Description", "Value", "Source", "Target", "Category"])
-    i := 1
-    for row in rows {
-        mark := row.flags.Length ? "! " : ""
-        lv.Add("", mark i, row.type, row.description, row.value, row.source, row.target, MobillsDaily_CategoryLabel(row
-        ))
-        i++
-    }
+    dlg.Add("Text", "xm w140 Section", "★ Main account")
+    ddlAcc := dlg.Add("DropDownList", "ys w360")
+    dlg.Add("Text", "ys w160", "★ Main credit card")
+    ddlCard := dlg.Add("DropDownList", "ys w280")
+    g_MobillsDailyDdlAccount := ddlAcc
+    g_MobillsDailyDdlCard := ddlCard
+    lv := dlg.Add("ListView", "xm w900 h360 -Multi", ["#", "Type", "Description", "Value", "Source", "Target",
+        "Category"])
+    g_MobillsDailyConfirmLv := lv
     try lv.ModifyCol(1, 40)
     try lv.ModifyCol(2, 90)
     try lv.ModifyCol(3, 220)
@@ -365,7 +539,14 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
     try lv.ModifyCol(5, 180)
     try lv.ModifyCol(6, 160)
     try lv.ModifyCol(7, 160)
-    dlg.Add("Button", "w100 Section Default", "OK").OnEvent("Click", MobillsDaily_ConfirmOk)
+    g_MobillsDailyDdlBusy := true
+    MobillsDaily_FillStarredDdl(ddlAcc, MobillsDaily_CatalogNames(A_ScriptDir "\accounts.ini"), fav.account)
+    MobillsDaily_FillStarredDdl(ddlCard, MobillsDaily_CatalogNames(A_ScriptDir "\cards.ini"), fav.card)
+    g_MobillsDailyDdlBusy := false
+    ddlAcc.OnEvent("Change", MobillsDaily_ConfirmFavChanged)
+    ddlCard.OnEvent("Change", MobillsDaily_ConfirmFavChanged)
+    MobillsDaily_RefreshConfirmLv()
+    dlg.Add("Button", "xm w100 Section Default", "OK").OnEvent("Click", MobillsDaily_ConfirmOk)
     dlg.Add("Button", "w100 ys", "Cancel").OnEvent("Click", MobillsDaily_ConfirmCancel)
     dlg.OnEvent("Close", MobillsDaily_ConfirmCancel)
     dlg.OnEvent("Escape", MobillsDaily_ConfirmCancel)
@@ -388,13 +569,48 @@ MobillsDaily_ShowConfirmTable(rows, unmapped, filePath) {
     catch {
     }
     g_MobillsDailyConfirmGui := ""
+    g_MobillsDailyConfirmLv := ""
+    g_MobillsDailyDdlAccount := ""
+    g_MobillsDailyDdlCard := ""
     return res = "ok"
+}
+
+MobillsDaily_ConfirmFavChanged(*) {
+    global g_MobillsDailyDdlBusy
+    if g_MobillsDailyDdlBusy
+        return
+    MobillsDaily_ApplyConfirmFavorites(false)
+}
+
+MobillsDaily_ApplyConfirmFavorites(save) {
+    global g_MobillsDailyConfirmRows, g_MobillsDailyDdlAccount, g_MobillsDailyDdlCard
+    global g_MobillsDailyFavOrigAccount, g_MobillsDailyFavOrigCard, g_MobillsDailyDdlBusy
+    acc := MobillsDaily_StripStar(IsObject(g_MobillsDailyDdlAccount) ? g_MobillsDailyDdlAccount.Text : "")
+    card := MobillsDaily_StripStar(IsObject(g_MobillsDailyDdlCard) ? g_MobillsDailyDdlCard.Text : "")
+    if (acc = "")
+        acc := g_MobillsDailyFavOrigAccount
+    if (card = "")
+        card := g_MobillsDailyFavOrigCard
+    if IsObject(g_MobillsDailyConfirmRows)
+        MobillsDaily_RemapDefaultedRows(g_MobillsDailyConfirmRows, g_MobillsDailyFavOrigAccount, acc,
+            g_MobillsDailyFavOrigCard, card)
+    MobillsDaily_RefreshConfirmLv()
+    g_MobillsDailyDdlBusy := true
+    if IsObject(g_MobillsDailyDdlAccount)
+        MobillsDaily_FillStarredDdl(g_MobillsDailyDdlAccount, MobillsDaily_CatalogNames(A_ScriptDir "\accounts.ini"),
+        acc)
+    if IsObject(g_MobillsDailyDdlCard)
+        MobillsDaily_FillStarredDdl(g_MobillsDailyDdlCard, MobillsDaily_CatalogNames(A_ScriptDir "\cards.ini"), card)
+    g_MobillsDailyDdlBusy := false
+    if save
+        MobillsDaily_SaveFavorites(acc, card)
 }
 
 MobillsDaily_ConfirmOk(*) {
     global g_MobillsDailyConfirmResult
     if (g_MobillsDailyConfirmResult != "")
         return
+    MobillsDaily_ApplyConfirmFavorites(true)
     g_MobillsDailyConfirmResult := "ok"
 }
 

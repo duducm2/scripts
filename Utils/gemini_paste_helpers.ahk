@@ -329,18 +329,22 @@ GetMtaskPromptText() {
 ; Runtime prompt: instructions + live INI catalogs (accounts, expense/income categories).
 GetMobillsPromptText() {
     body := GetPromptText("mobills-daily")
+    fav := MobillsDaily_LoadFavorites()
     accounts := MobillsDaily_RenderIniCatalog(A_ScriptDir "\accounts.ini", "Accounts")
+    cards := MobillsDaily_RenderIniCatalog(A_ScriptDir "\cards.ini", "Credit cards")
     expenses := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-expenses.ini", "Expense categories")
     incomes := MobillsDaily_RenderIniCatalog(A_ScriptDir "\categories-income.ini", "Income categories")
     extra := ""
     if (accounts != "")
         extra .= "`n`n" . accounts
+    if (cards != "")
+        extra .= "`n`n" . cards
     if (expenses != "")
         extra .= "`n`n" . expenses
     if (incomes != "")
         extra .= "`n`n" . incomes
-    extra .= "`n`nDefault cash account (when unspecified): Mercado Pago main account"
-    extra .= "`nCredit card (always, when unspecified): Mercado Pago"
+    extra .= "`n`nDefault cash account (when unspecified): " . fav.account
+    extra .= "`nCredit card (always, when unspecified): " . fav.card
     extra .= "`n`nDictation follows."
     return body . extra
 }
