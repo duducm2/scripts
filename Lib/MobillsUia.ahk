@@ -173,6 +173,8 @@ MobillsAuto_TryOne(scope, c) {
         try {
             elObj := scope.FindElement(c)
             objHit := elObj ? 1 : 0
+            if (elObj)
+                el := elObj
         } catch as eObj {
             objErr := StrReplace(eObj.Message, '"', "'")
         }

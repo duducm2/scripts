@@ -10,3 +10,22 @@ Gate: Could not click + then Credit card expense
 Selectors attempted:
   - AutomationId=action-button, Type=50000
   - Name=New, Type=50000
+2026-08-15 21:25:37	Transaction #1
+Field: New menu
+Gate: Could not click + then Credit card expense
+Selectors attempted:
+  - AutomationId=action-button, Type=50000
+  - Name=New, Type=50000
+2026-08-15 21:26:13	Transaction #1
+Field: New menu
+Gate: Could not click + then Credit card expense
+Selectors attempted:
+  - AutomationId=action-button, Type=50000
+  - Name=New, Type=50000
+2026-08-15 21:29:16	Transaction #1
+Field: Category
+Gate: Autocomplete mismatch
+Detail: wanted Hortifruti got 
+Selectors attempted:
+  - Open button missing — click combo
+  - no Edit — SendText to focused control
