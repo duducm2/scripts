@@ -153,6 +153,7 @@ ClipAngel_ApplyForegroundMaximizeOnce(*) {
 ; =============================================================================
 ; Auto-minimize when Clip Angel loses focus to another process
 ; =============================================================================
+
 CLIPANGEL_AUTO_MINIMIZE_DEBOUNCE_MS := 250
 global g_ClipAngelFgHook := 0
 global g_ClipAngelFgHookCb := 0
@@ -239,4 +240,17 @@ ClipAngel_AutoMinimizeTick(*) {
     if (fg = ca || ClipAngel_FgIsClipAngelExe(fg))
         return
     ClipAngel_HideWindow(ca)
+}
+
+; Escape while Clip Angel is focused: close filter overlay if any, then minimize.
+; Cleanup lives in Shift keys\hotif_clipangel.ahk — call by name so Utils hosts do not #Warn.
+ClipAngel_EscapeMinimize() {
+    global g_ClipAngelFilterSelectorActive
+    if (g_ClipAngelFilterSelectorActive) {
+        fnName := "CleanupClipAngelFilterSelector"
+        try %fnName%()
+        catch {
+        }
+    }
+    ClipAngel_CloseAndRestoreFocus(0)
 }

@@ -136,6 +136,15 @@ Utils_GlobalEscapeHandler(*) {
     } catch {
     }
 
+    ; Clip Angel focused: minimize (any Utils host may own the I10 Escape hook).
+    try {
+        if WinActive("ahk_exe ClipAngel.exe") {
+            ClipAngel_EscapeMinimize()
+            return
+        }
+    } catch {
+    }
+
     ; I10 hotkey: forward at send level 0 so this handler is not re-triggered by SendInput (SendLevel / #InputLevel).
     SendLevel 0
     SendInput "{Escape}"

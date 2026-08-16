@@ -118,6 +118,9 @@ $Enter:: {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
+; Escape : minimize (process stays running). Fallback when I10 global Escape is off.
+Escape:: ClipAngel_EscapeMinimize()
+
 ; Ctrl + 1–5 : Down N, F10, Select All, Copy, then minimize.
 ^1:: ClipAngel_SelectClipCopyThenMinimize(0)
 ^2:: ClipAngel_SelectClipCopyThenMinimize(1)
@@ -282,12 +285,9 @@ CreateClipAngelFilterCharHandler(char) {
     return (*) => HandleClipAngelFilterChar(char)
 }
 
-; Handler for Escape key
+; Handler for Escape key (filter selector Hotkey replaces I10; also minimize)
 HandleClipAngelFilterEscape(*) {
-    global g_ClipAngelFilterSelectorActive
-    if (g_ClipAngelFilterSelectorActive) {
-        CleanupClipAngelFilterSelector()
-    }
+    ClipAngel_EscapeMinimize()
 }
 
 ; Cleanup function for ClipAngel filter selector
@@ -319,12 +319,13 @@ CleanupClipAngelFilterSelector() {
         }
     }
 
-    ; Disable Escape hotkey
+    ; Disable Escape hotkey, then restore I10 global handler
     try {
         Hotkey("Escape", "Off")
     } catch {
         ; Ignore
     }
+    Utils_EnsureGlobalEscapeHotkey()
 
     ; Clear handlers array
     g_ClipAngelFilterHotkeyHandlers := []

@@ -646,6 +646,7 @@ cheatSheets["ClipAngel.exe"] := "
     🔗 [M][M]erge clips
     📥 [I][I]mport clips
     🔍 [Y]File t[Y]pe filter (Quick Wizard)
+    ⌨️ [Esc] Minimize window
     ⌨️ [Alt+1] Paste current item, then minimize
     ⌨️ [Alt+2] Down 1, paste, then minimize
     ⌨️ [Alt+3] Down 2, paste, then minimize
@@ -1209,6 +1210,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Window Management] Ctrl+Alt+Win - Secondary combination
     
     [Alt+P] Open clip angel
+    [Esc] (Clip Angel focused) Minimize
     
     === CURSOR ===
     [Win+Alt+Shift+N] > Context file browser (paste path)
@@ -1219,6 +1221,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+S] > Opens or activates Spotify
     
     === CLIP ANGEL ===
+    [Esc] (Clip Angel focused) Minimize
     [Win+Alt+Shift+1] > Send top list item from Clip Angel
     [Win+Alt+Shift+7] > Clip Angel: tap = Edit Text (F4); hold 200ms+ = Paste file then hide
     
