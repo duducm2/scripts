@@ -37,6 +37,122 @@ PromptData_NormalizeIniValue(val) {
     return val
 }
 
+PromptData_StripPathQuotes(path) {
+    p := Trim(path)
+    loop 8 {
+        if (StrLen(p) < 2)
+            break
+        first := SubStr(p, 1, 1)
+        last := SubStr(p, -1)
+        if ((first = '"' && last = '"') || (first = "'" && last = "'"))
+            p := Trim(SubStr(p, 2, StrLen(p) - 2))
+        else
+            break
+    }
+    return p
+}
+
+PromptData_ExtractQuotedOrPlainTokens(line) {
+    tokens := []
+    i := 1
+    len := StrLen(line)
+    while (i <= len) {
+        while (i <= len) {
+            ch := SubStr(line, i, 1)
+            if (ch = " " || ch = "`t" || ch = "|")
+                i++
+            else
+                break
+        }
+        if (i > len)
+            break
+        ch := SubStr(line, i, 1)
+        if (ch = '"' || ch = "'") {
+            q := ch
+            i++
+            start := i
+            while (i <= len && SubStr(line, i, 1) != q)
+                i++
+            tokens.Push(PromptData_StripPathQuotes(SubStr(line, start, i - start)))
+            if (i <= len)
+                i++
+        } else {
+            start := i
+            while (i <= len && SubStr(line, i, 1) != "|")
+                i++
+            tokens.Push(PromptData_StripPathQuotes(SubStr(line, start, i - start)))
+            if (i <= len && SubStr(line, i, 1) = "|")
+                i++
+        }
+    }
+    return tokens
+}
+
+PromptData_ParsePathList(raw) {
+    out := []
+    if (IsObject(raw)) {
+        for p in raw {
+            n := PromptData_StripPathQuotes(p)
+            if (n != "")
+                out.Push(n)
+        }
+        return out
+    }
+    text := Trim(raw)
+    if (text = "")
+        return out
+    text := StrReplace(StrReplace(text, "`r`n", "`n"), "`r", "`n")
+    for line in StrSplit(text, "`n") {
+        line := Trim(line)
+        if (line = "")
+            continue
+        if (InStr(line, '"') || InStr(line, "'")) {
+            for token in PromptData_ExtractQuotedOrPlainTokens(line) {
+                if (token != "")
+                    out.Push(token)
+            }
+        } else {
+            for part in StrSplit(line, "|") {
+                n := PromptData_StripPathQuotes(part)
+                if (n != "")
+                    out.Push(n)
+            }
+        }
+    }
+    return out
+}
+
+PromptData_JoinPathList(arr) {
+    s := ""
+    for p in PromptData_ParsePathList(arr) {
+        if (s != "")
+            s .= "|"
+        s .= p
+    }
+    return s
+}
+
+PromptData_ContextFilesForCurrentEnv(prompt) {
+    global IS_WORK_ENVIRONMENT
+    if (!IsObject(prompt))
+        return []
+    arr := []
+    if (IS_WORK_ENVIRONMENT)
+        arr := prompt.HasProp("work_context_files") ? prompt.work_context_files : []
+    else
+        arr := prompt.HasProp("personal_context_files") ? prompt.personal_context_files : []
+    return PromptData_ParsePathList(arr)
+}
+
+PromptData_ReadContextFilesKey(iniPath, section, key) {
+    raw := ""
+    try raw := IniRead(iniPath, section, key, "")
+    catch {
+        raw := ""
+    }
+    return PromptData_ParsePathList(PromptData_NormalizeIniValue(raw))
+}
+
 PromptData_Invalidate() {
     global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
     g_PromptEntries := []
@@ -57,7 +173,7 @@ PromptData_FileMtime() {
 }
 
 PromptData_DefaultEntries() {
-    return [{ name: "✏️ Grammar & Spelling Corrector", char: "1", category: "General", author: "",
+    list := [{ name: "✏️ Grammar & Spelling Corrector", char: "1", category: "General", author: "",
         filePath: "assets\prompt\grammar.txt", source: "file" }, { name: "🔲 Convert to Task", char: "2", category: "General",
             author: "",
             filePath: "assets\prompt\mtask.txt", source: "file" }, { name: "🤖 AI Text Optimizer", char: "3", category: "General",
@@ -95,6 +211,11 @@ PromptData_DefaultEntries() {
                                                                         filePath: "assets\prompt\howto-steps-csv.txt",
                                                                         source: "file" }
     ]
+    for item in list {
+        item.personal_context_files := []
+        item.work_context_files := []
+    }
+    return list
 }
 
 ; skipMtime: return in-memory cache without FileGetTime/IniRead (hotkey open on Google Drive).
@@ -135,6 +256,8 @@ PromptData_Load(force := false, skipMtime := false) {
             try author := IniRead(path, section, "Author", "")
             try filePath := IniRead(path, section, "FilePath", "")
             try source := IniRead(path, section, "Source", "")
+            personalFiles := PromptData_ReadContextFilesKey(path, section, "PersonalContextFiles")
+            workFiles := PromptData_ReadContextFilesKey(path, section, "WorkContextFiles")
             name := PromptData_NormalizeIniValue(name)
             charVal := StrLower(PromptData_NormalizeIniValue(charVal))
             category := PromptData_NormalizeIniValue(category)
@@ -154,7 +277,7 @@ PromptData_Load(force := false, skipMtime := false) {
             if (charVal != "")
                 taken[charVal] := true
             list.Push({ name: name, char: charVal, category: category, author: author, filePath: filePath,
-                source: source })
+                source: source, personal_context_files: personalFiles, work_context_files: workFiles })
             idx += 1
         }
     }
@@ -184,12 +307,20 @@ PromptData_Save(list) {
         idx := 1
         for prompt in list {
             section := "Prompt_" . idx
+            prompt.personal_context_files := PromptData_ParsePathList(prompt.HasProp("personal_context_files") ?
+                prompt.personal_context_files : [])
+            prompt.work_context_files := PromptData_ParsePathList(prompt.HasProp("work_context_files") ?
+                prompt.work_context_files : [])
             IniWrite(prompt.HasProp("name") ? prompt.name : "", path, section, "Name")
             IniWrite(prompt.HasProp("char") ? prompt.char : "", path, section, "Char")
             IniWrite(prompt.HasProp("category") ? prompt.category : "General", path, section, "Category")
             IniWrite(prompt.HasProp("author") ? prompt.author : "", path, section, "Author")
             IniWrite(prompt.HasProp("filePath") ? prompt.filePath : "", path, section, "FilePath")
             IniWrite(prompt.HasProp("source") ? prompt.source : "file", path, section, "Source")
+            IniWrite(PromptData_JoinPathList(prompt.HasProp("personal_context_files") ? prompt.personal_context_files :
+                []), path, section, "PersonalContextFiles")
+            IniWrite(PromptData_JoinPathList(prompt.HasProp("work_context_files") ? prompt.work_context_files : []),
+            path, section, "WorkContextFiles")
             idx += 1
         }
     } catch {
@@ -246,7 +377,10 @@ PromptData_Sorted() {
         p := g_PromptEntries[A_Index]
         list.Push({
             name: p.name, char: p.char, category: p.category, author: p.author,
-            filePath: p.filePath, source: p.source, listIndex: A_Index
+            filePath: p.filePath, source: p.source, listIndex: A_Index,
+            personal_context_files: PromptData_ParsePathList(p.HasProp("personal_context_files") ?
+                p.personal_context_files : []),
+            work_context_files: PromptData_ParsePathList(p.HasProp("work_context_files") ? p.work_context_files : [])
         })
     }
     PromptData_SortInPlace(list)

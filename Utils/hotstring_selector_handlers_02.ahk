@@ -523,47 +523,17 @@ UtilitySelector_OnDelete(*) {
 UtilitySelector_PromptsAdd() {
     global g_PromptEntries
     PromptData_Load()
-    UtilitySelector_DialogsBegin()
-    nameBox := UtilitySelector_InputBox("Prompt name:", "Add prompt")
-    if (nameBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    name := Trim(nameBox.Value)
-    if (name = "") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_Notify("Name is required.")
-        UtilitySelector_RefocusGui()
-        return
-    }
-    catBox := UtilitySelector_InputBox("Category (e.g. General or Mnemonic):", "Prompt category", 420, "General")
-    if (catBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    category := Trim(catBox.Value)
-    if (category = "")
-        category := "General"
-    ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries)
-    if (ch = "") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    startDir := A_ScriptDir "\assets\prompt\"
-    selected := FileSelect(1, startDir, "Select prompt file", "Text (*.txt)")
-    UtilitySelector_DialogsEnd()
-    if (selected = "") {
+    result := PromptEditor_Show()
+    if (!result.saved) {
         UtilitySelector_RefocusGui()
         return
     }
     list := []
     for p in g_PromptEntries
         list.Push(p)
-    list.Push({ name: name, char: ch, category: category, author: "", filePath: PromptData_ToStoredPath(selected),
-        source: "file" })
+    list.Push({ name: result.name, char: result.char, category: result.category, author: result.author,
+        filePath: result.filePath, source: result.source, personal_context_files: result.personal_context_files,
+        work_context_files: result.work_context_files })
     if (!PromptData_Save(list)) {
         UtilitySelector_Notify("Failed to save prompt.")
         UtilitySelector_RefocusGui()
@@ -588,51 +558,17 @@ UtilitySelector_PromptsEdit() {
     if (listIndex < 1 || listIndex > g_PromptEntries.Length)
         return
     prompt := g_PromptEntries[listIndex]
-    UtilitySelector_DialogsBegin()
-    nameBox := UtilitySelector_InputBox("Prompt name:", "Edit prompt", 420, prompt.name)
-    if (nameBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
+    result := PromptEditor_Show(prompt, listIndex)
+    if (!result.saved) {
         UtilitySelector_RefocusGui()
         return
-    }
-    name := Trim(nameBox.Value)
-    if (name = "") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_Notify("Name is required.")
-        UtilitySelector_RefocusGui()
-        return
-    }
-    catBox := UtilitySelector_InputBox("Category (e.g. General or Mnemonic):", "Prompt category", 420, prompt.category)
-    if (catBox.Result != "OK") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    category := Trim(catBox.Value)
-    if (category = "")
-        category := "General"
-    currentChar := prompt.HasProp("char") ? prompt.char : ""
-    ch := UtilitySelector_PromptChar(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries, currentChar,
-        listIndex)
-    if (ch = "") {
-        UtilitySelector_DialogsEnd()
-        UtilitySelector_RefocusGui()
-        return
-    }
-    start := PromptData_ResolvePath(prompt)
-    selected := FileSelect(1, start, "Select prompt file", "Text (*.txt)")
-    UtilitySelector_DialogsEnd()
-    filePath := prompt.filePath
-    source := prompt.source
-    if (selected != "") {
-        filePath := PromptData_ToStoredPath(selected)
-        source := "file"
     }
     list := []
     loop g_PromptEntries.Length {
         if (A_Index = listIndex)
-            list.Push({ name: name, char: ch, category: category,
-                author: prompt.HasProp("author") ? prompt.author : "", filePath: filePath, source: source })
+            list.Push({ name: result.name, char: result.char, category: result.category, author: result.author,
+                filePath: result.filePath, source: result.source, personal_context_files: result.personal_context_files,
+                work_context_files: result.work_context_files })
         else
             list.Push(g_PromptEntries[A_Index])
     }

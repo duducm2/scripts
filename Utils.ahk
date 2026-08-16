@@ -267,6 +267,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] ShowHotstringSelector GUI and category view -> Utils\hotstring_selector_gui.ahk
 #include %A_ScriptDir%\Utils\hotstring_selector_gui.ahk
 
+; [Utils module] Single-form Add/Edit prompt dialog -> Utils\prompt_editor_gui.ahk
+#include %A_ScriptDir%\Utils\prompt_editor_gui.ahk
+
 ; [Utils module] Utility shortcuts #!+U and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 

@@ -97,26 +97,55 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false) {
     body := PromptData_ReadBody(prompt)
     CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body)
+        UtilitySelector_PastePromptToGemini(body, prompt)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
     Sleep 150
+    UtilitySelector_AttachPromptContextFiles(prompt)
     PasteStrippedPromptOfferReminders(body)
 }
 
-UtilitySelector_PastePromptToGemini(expansion) {
+UtilitySelector_AttachPromptContextFiles(prompt) {
+    if (!IsObject(prompt))
+        return
+    paths := PromptData_ContextFilesForCurrentEnv(prompt)
+    if (paths.Length = 0)
+        return
+    existing := []
+    missing := []
+    for p in paths {
+        if (Clipboard_PathIsExistingFile(p))
+            existing.Push(p)
+        else
+            missing.Push(p)
+    }
+    if (missing.Length > 0) {
+        label := missing.Length = 1 ? missing[1] : (missing.Length . " context files")
+        ShowCenteredOverlay_Utils("⚠ Missing context file(s): " . label, 2200, BANNER_ACCENT_ERROR)
+    }
+    if (existing.Length = 0)
+        return
+    if !InsertFiles(existing)
+        ShowCenteredOverlay_Utils("⚠ Could not attach context files", 2200, BANNER_ACCENT_ERROR)
+}
+
+UtilitySelector_PastePromptToGemini(expansion, prompt := false) {
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
     try {
         if (companion = "enterprise") {
-            GeminiEnterprise_NavigateFocusAndPaste(expansion, false)
+            GeminiEnterprise_OpenOrFocus()
+            UtilitySelector_AttachPromptContextFiles(prompt)
+            InsertText(expansion)
             try ReplaceComposerWithStrippedReminders(expansion)
             catch {
             }
         } else if (companion = "copilot") {
-            CopilotWeb_NavigateFocusAndPaste(expansion, false)
+            CopilotWeb_OpenOrFocus()
+            UtilitySelector_AttachPromptContextFiles(prompt)
+            InsertText(expansion)
             try ReplaceComposerWithStrippedReminders(expansion)
             catch {
             }
@@ -150,6 +179,7 @@ UtilitySelector_PastePromptToGemini(expansion) {
             } catch {
             }
 
+            UtilitySelector_AttachPromptContextFiles(prompt)
             InsertText(expansion)
             ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
             try ReplaceComposerWithStrippedReminders(expansion)
