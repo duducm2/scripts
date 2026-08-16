@@ -18,7 +18,7 @@ Finance_ShowBudgets() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceBudHeader := g_FinanceGui.Add("Text", "x12 y8 w860 h52")
     g_FinanceGui.Add("Text", "x12 y64 w860",
-        "[,] prev  [.] next  Insert add  F2 edit planned  Delete  Backspace menu")
+        "[,] prev  [.] next  Insert add  [E] edit planned  Delete  Backspace menu")
     g_FinanceBudLv := g_FinanceGui.Add("ListView", "x12 y90 w860 h430 Grid",
         ["Category", "Planned", "Spent", "Remaining", "Status"])
     g_FinanceBudLv.OnEvent("DoubleClick", (*) => Finance_BudEdit())
@@ -29,7 +29,7 @@ Finance_ShowBudgets() {
         ["vkBC", (*) => Finance_BudShift(-1)],
         ["vkBE", (*) => Finance_BudShift(1)],
         ["Insert", (*) => Finance_BudAdd()],
-        ["F2", (*) => Finance_BudEdit()],
+        ["e", (*) => Finance_BudEdit()],
         ["Delete", (*) => Finance_BudDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]

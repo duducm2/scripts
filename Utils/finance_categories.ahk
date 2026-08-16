@@ -18,7 +18,7 @@ Finance_ShowCategories() {
     g_FinanceGui.Add("Text", "x12 y12", "Search")
     g_FinanceCatFilter := g_FinanceGui.Add("Edit", "x70 y8 w260")
     g_FinanceCatFilter.OnEvent("Change", (*) => Finance_CatRefresh())
-    g_FinanceGui.Add("Text", "x350 y12", "[A] all  [E] expense  [N] income  Insert add  F2 edit  Delete")
+    g_FinanceGui.Add("Text", "x350 y12", "[A] all  [X] expense  [N] income  Insert add  [E] edit  Delete")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Id", "Name", "Type", "Parent", "Color", "Icon"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
@@ -27,10 +27,10 @@ Finance_ShowCategories() {
     Finance_CatRefresh()
     Finance_BindHotkeys([
         ["a", Finance_CatFilterAll],
-        ["e", Finance_CatFilterExpense],
+        ["x", Finance_CatFilterExpense],
         ["n", Finance_CatFilterIncome],
         ["Insert", (*) => Finance_CatAdd()],
-        ["F2", (*) => Finance_CatEdit()],
+        ["e", (*) => Finance_CatEdit()],
         ["Delete", (*) => Finance_CatDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]

@@ -14,7 +14,7 @@ Finance_ShowGoals() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Goals")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceGui.Add("Text", "x12 y10 w860",
-        "Sort [1] name  [2] date  [3] %  [4] status   Insert add  F2 edit  Delete  Backspace")
+        "Sort [1] name  [2] date  [3] %  [4] status   Insert add  [E] edit  Delete  Backspace")
     g_FinanceGoalLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Purpose", "Current", "Target", "%", "Date", "Status"])
     g_FinanceGoalLv.OnEvent("DoubleClick", (*) => Finance_GoalEdit())
@@ -27,7 +27,7 @@ Finance_ShowGoals() {
         ["3", Finance_GoalSortPct],
         ["4", Finance_GoalSortStatus],
         ["Insert", (*) => Finance_GoalAdd()],
-        ["F2", (*) => Finance_GoalEdit()],
+        ["e", (*) => Finance_GoalEdit()],
         ["Delete", (*) => Finance_GoalDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
