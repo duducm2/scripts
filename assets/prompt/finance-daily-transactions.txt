@@ -21,11 +21,18 @@ RULES
 - date: YYYY-MM-DD. If the speaker omits a date, use today's system date (the entry date), not a guessed real-world date.
 - amount: always positive. Example: "12,50"
 - type: expense | income | transfer | card_expense
-- Credit-card purchases: type=card_expense and fill card_id. Leave the bank account as the card's linked account if mentioned, otherwise the default account.
-- Transfers: type=transfer, account_id = source, transfer_account_id = destination.
-- Match category_id, account_id, and card_id to the primary keys in the attached context files. Prefer exact name matches (ignore accents/case). If nothing matches, leave the id empty and put the spoken name in description.
-- subcategory: subcategory name if the speaker gave one and it exists; otherwise empty.
-- You may propose a new main category only if none of the existing ones fit, the main-category count is under 50, and you add a comment line starting with # NEW_CATEGORY:name:type. Do not invent ids.
+- Transfers: type=transfer, account_id = source, transfer_account_id = destination. Leave category_id empty for transfers.
+- Credit-card purchases: type=card_expense. Set card_id to the card’s id (e.g. CARD_MP). Set account_id to the card’s linked_account_id from credit_cards.csv (or ACC_MERCADOP if unknown). Leave transfer_account_id empty. Never put an account id in card_id or a card id in transfer_account_id.
+- Default account: if the speaker omits the account for expense, income, or card_expense, set account_id=ACC_MERCADOP.
+- Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
+
+CATEGORIZATION
+- Apply best judgment. Map each item by meaning to the most appropriate existing category in categories.csv — not only exact word matches. Example: banana → category_id=CAT_MERCADO, subcategory=Produce (Produce is CAT_HORTIFRU under Groceries).
+- category_id must be a main category id (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory and its parent’s id in category_id.
+- Prefer a specific subcategory when one fits (Produce, Stationery, Food items, etc.). Do not leave category_id blank when a clear fit exists.
+- Fallback (last resort only): expense → CAT_MATERIAI (Misc materials) or, if clearly grocery-adjacent with no better subcategory, CAT_MERCADO + subcategory=Other; income → CAT_OUTROS2 (Other). Minimize these. Never leave category blank when a last-resort id applies.
+- After the CSV, optional one-line coverage note listing only items that still had no good fit and why. Do not replace the CSV with that note.
+- You may propose a new main category only if none of the existing ones fit (including last resort), the main-category count is under 50, and you add a comment line starting with # NEW_CATEGORY:name:type. Do not invent ids.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts)
 - categories.csv — category and subcategory names with ids
