@@ -145,6 +145,7 @@ namespace AudioBt
         static readonly Guid GuidHeadset = new Guid("00001108-0000-1000-8000-00805F9B34FB");
         static string logPath = "";
         static readonly object logLock = new object();
+        static string lastDroppedBt = "";
 
         public static void SetLogPath(string path)
         {
@@ -183,6 +184,13 @@ namespace AudioBt
             {
                 Log("snapshot error: " + ex.Message);
             }
+        }
+
+        static string DroppedSuffix()
+        {
+            if (string.IsNullOrEmpty(lastDroppedBt))
+                return "";
+            return " (dropped " + lastDroppedBt + ")";
         }
 
         static void Log(string msg)
@@ -457,6 +465,7 @@ namespace AudioBt
                 Log("Isolate id=" + id);
                 BtDeviceInfo bt = ResolveBt(id);
                 Log("Isolate resolveBt name=" + (bt == null ? "<null>" : bt.Name) + " addr=" + (bt == null ? "" : bt.AddrHex) + " classicConnected=" + (bt != null && bt.Connected));
+                lastDroppedBt = "";
                 bool didConnect = false;
                 string connectMethod = "";
                 int requestedFlow = -1;
@@ -468,6 +477,11 @@ namespace AudioBt
                 }
                 if (id != null && id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase) && bt == null)
                     return "ERR\tBluetooth device not found";
+                if (bt != null)
+                {
+                    string dropped;
+                    DisconnectOtherBtAudio(bt, out dropped);
+                }
                 if (bt != null && !bt.Connected)
                 {
                     string connectErr;
@@ -545,8 +559,8 @@ namespace AudioBt
                         PolicySetVisible(ep.Id, false);
                 }
                 string prefix = didConnect
-                    ? ("Connected via " + connectMethod + " and isolated: ")
-                    : "Isolated: ";
+                    ? ("Connected via " + connectMethod + DroppedSuffix() + " and isolated: ")
+                    : ("Isolated" + DroppedSuffix() + ": ");
                 return "OK\t" + prefix + Cell(names.ToString());
             }
             catch (Exception ex)
@@ -567,6 +581,7 @@ namespace AudioBt
                     return "ERR\tNot a paired Bluetooth audio device";
                 }
                 Log("Connect resolveBt name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected);
+                lastDroppedBt = "";
                 string method;
                 string err;
                 if (!ConnectBtWithFallback(bt, out method, out err))
@@ -575,7 +590,7 @@ namespace AudioBt
                     return "ERR\t" + Cell(err);
                 }
                 Log("Connect ok via " + method);
-                return "OK\tConnected via " + method + ": " + Cell(bt.Name);
+                return "OK\tConnected via " + method + DroppedSuffix() + ": " + Cell(bt.Name);
             }
             catch (Exception ex)
             {
@@ -604,7 +619,7 @@ namespace AudioBt
                     if (EndpointMatchesBt(ep, bt))
                         EnsureVisible(ep.Id, true);
                 }
-                return "OK\tConnected via " + label + ": " + Cell(bt.Name);
+                return "OK\tConnected via " + label + DroppedSuffix() + ": " + Cell(bt.Name);
             }
             catch (Exception ex)
             {
@@ -1626,12 +1641,78 @@ namespace AudioBt
             return false;
         }
 
+        static bool OtherBtHoldsAudio(BtDeviceInfo other, List<EndpointInfo> endpoints)
+        {
+            if (other == null)
+                return false;
+            if (other.Connected)
+                return true;
+            return HasActiveEndpoint(endpoints, other, eRender);
+        }
+
+        static void DisconnectOtherBtAudio(BtDeviceInfo keep, out string dropped)
+        {
+            dropped = "";
+            if (keep == null || string.IsNullOrEmpty(keep.AddrHex))
+                return;
+            List<BtDeviceInfo> peers = new List<BtDeviceInfo>();
+            List<EndpointInfo> endpoints = CollectEndpoints();
+            foreach (BtDeviceInfo other in CollectBluetoothAudio())
+            {
+                if (string.Equals(other.AddrHex, keep.AddrHex, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (!OtherBtHoldsAudio(other, endpoints))
+                    continue;
+                peers.Add(other);
+            }
+            if (peers.Count == 0)
+            {
+                Log("DisconnectOtherBtAudio: no other connected BT audio");
+                return;
+            }
+            List<string> names = new List<string>();
+            foreach (BtDeviceInfo other in peers)
+            {
+                Log("DisconnectOtherBtAudio dropping " + other.Name + " " + other.AddrHex);
+                string ioctlErr;
+                string svcErr;
+                bool ioctlOk = DisconnectRadio(other, out ioctlErr);
+                bool svcOk = SetBtServices(other, false, out svcErr);
+                Log("  ioctlOk=" + ioctlOk + " ioctlErr=" + ioctlErr + " svcOk=" + svcOk + " svcErr=" + svcErr);
+                names.Add(string.IsNullOrEmpty(other.Name) ? other.AddrHex : other.Name);
+            }
+            dropped = string.Join(", ", names.ToArray());
+            lastDroppedBt = dropped;
+            DateTime deadline = DateTime.UtcNow.AddMilliseconds(3000);
+            while (DateTime.UtcNow < deadline)
+            {
+                bool anyHeld = false;
+                endpoints = CollectEndpoints();
+                foreach (BtDeviceInfo other in CollectBluetoothAudio())
+                {
+                    if (string.Equals(other.AddrHex, keep.AddrHex, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    if (OtherBtHoldsAudio(other, endpoints))
+                    {
+                        anyHeld = true;
+                        break;
+                    }
+                }
+                if (!anyHeld)
+                    break;
+                System.Threading.Thread.Sleep(250);
+            }
+            Log("DisconnectOtherBtAudio dropped=" + dropped);
+        }
+
         static bool ConnectBtWithFallback(BtDeviceInfo bt, out string method, out string err)
         {
             method = "";
             err = "";
             List<string> errors = new List<string>();
             Log("ConnectBtWithFallback name=" + bt.Name + " addr=" + bt.AddrHex);
+            string dropped;
+            DisconnectOtherBtAudio(bt, out dropped);
 
             string svcErr;
             if (SetBtServices(bt, true, out svcErr))
