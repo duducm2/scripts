@@ -100,13 +100,11 @@ Run GetScriptPath("Mousemaster.ahk")
 if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\fie7ca\Documents\caffeine\caffeine64.exe"
     Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk"
-    Run "C:\Users\fie7ca\Documents\Shortcuts\Mobills.lnk"
     Run "C:\Users\fie7ca\Documents\Shortcuts\Settle Up.lnk"
 
     Run GetScriptPath("Microsoft Teams.ahk")
     Run GetScriptPath("Outlook.ahk")
 } else {
-    Run "C:\Users\eduev\Documents\Atalhos\Mobills.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Settle Up.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
