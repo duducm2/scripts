@@ -18,6 +18,8 @@ global g_PromptEditorIsEdit := false
 global g_PromptEditorListIndex := 0
 global g_PromptEditorPersonalPaths := []
 global g_PromptEditorWorkPaths := []
+global g_PromptEditorFlagCtrls := Map()
+global g_PromptEditorSuppressFlagSync := false
 
 PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     global g_PromptEntries, g_PromptEditorGui, g_PromptEditorResult
@@ -33,9 +35,9 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     g_PromptEditorFilePath := (g_PromptEditorIsEdit && existingPrompt.HasProp("filePath")) ? existingPrompt.filePath :
         ""
     g_PromptEditorSource := (g_PromptEditorIsEdit && existingPrompt.HasProp("source")) ? existingPrompt.source : "file"
-    g_PromptEditorPersonalPaths := PromptData_ParsePathList((g_PromptEditorIsEdit && existingPrompt.HasProp(
+    g_PromptEditorPersonalPaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
         "personal_context_files")) ? existingPrompt.personal_context_files : [])
-    g_PromptEditorWorkPaths := PromptData_ParsePathList((g_PromptEditorIsEdit && existingPrompt.HasProp(
+    g_PromptEditorWorkPaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
         "work_context_files")) ? existingPrompt.work_context_files : [])
 
     currentChar := (g_PromptEditorIsEdit && existingPrompt.HasProp("char")) ? existingPrompt.char : ""
@@ -87,9 +89,12 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
 PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     global g_PromptEditorGui, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFile, g_PromptEditorFilePath, g_PromptEditorIsEdit
-    global g_PromptEditorPersonalLv, g_PromptEditorWorkLv
+    global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
 
     colW := 360
+    pathCol := colW - 154
+    compactCol := 50
+    csvCol := 80
     g_PromptEditorGui.Add("Text", "xm w80", "Name")
     nameVal := (IsObject(existingPrompt) && existingPrompt.HasProp("name")) ? existingPrompt.name : ""
     g_PromptEditorName := g_PromptEditorGui.Add("Edit", "yp w" . (colW * 2 - 80), nameVal)
@@ -118,10 +123,18 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
 
     g_PromptEditorGui.Add("Text", "xm w" . colW . " Section", "Personal context files")
     g_PromptEditorGui.Add("Text", "ys w" . colW, "Work context files")
-    g_PromptEditorPersonalLv := g_PromptEditorGui.Add("ListView", "xm w" . colW . " r8", ["Path"])
-    g_PromptEditorWorkLv := g_PromptEditorGui.Add("ListView", "x+12 yp w" . colW . " r8", ["Path"])
-    g_PromptEditorPersonalLv.ModifyCol(1, colW - 24)
-    g_PromptEditorWorkLv.ModifyCol(1, colW - 24)
+    g_PromptEditorPersonalLv := g_PromptEditorGui.Add("ListView", "xm w" . colW . " r8", ["Path", "Compact", "CSV keep"])
+    g_PromptEditorWorkLv := g_PromptEditorGui.Add("ListView", "x+12 yp w" . colW . " r8", ["Path", "Compact",
+        "CSV keep"])
+    for lv in [g_PromptEditorPersonalLv, g_PromptEditorWorkLv] {
+        lv.ModifyCol(1, pathCol)
+        lv.ModifyCol(2, compactCol)
+        lv.ModifyCol(3, csvCol)
+    }
+    g_PromptEditorPersonalLv.OnEvent("ItemFocus", (ctrl, info) => PromptEditor_OnItemFocus("personal", info))
+    g_PromptEditorWorkLv.OnEvent("ItemFocus", (ctrl, info) => PromptEditor_OnItemFocus("work", info))
+    g_PromptEditorPersonalLv.OnEvent("Click", (ctrl, info) => PromptEditor_OnItemFocus("personal", info))
+    g_PromptEditorWorkLv.OnEvent("Click", (ctrl, info) => PromptEditor_OnItemFocus("work", info))
     PromptEditor_ReloadList("personal")
     PromptEditor_ReloadList("work")
 
@@ -135,8 +148,47 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
         "work"))
     g_PromptEditorGui.Add("Button", "x+8 yp w110", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("work"))
 
+    personalCompact := g_PromptEditorGui.Add("CheckBox", "xm w" . colW, "Compact")
+    workCompact := g_PromptEditorGui.Add("CheckBox", "x+12 yp w" . colW, "Compact")
+    personalCompact.OnEvent("Click", (*) => PromptEditor_OnCompactClick("personal"))
+    workCompact.OnEvent("Click", (*) => PromptEditor_OnCompactClick("work"))
+
+    personalCsvFromLabel := g_PromptEditorGui.Add("Text", "xm w90 Hidden", "CSV keep from")
+    personalCsvFrom := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
+    personalCsvToLabel := g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to")
+    personalCsvTo := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
+    workCsvFromLabel := g_PromptEditorGui.Add("Text", "x+162 yp w90 Hidden", "CSV keep from")
+    workCsvFrom := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
+    workCsvToLabel := g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to")
+    workCsvTo := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
+    personalCsvFrom.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("personal"))
+    personalCsvTo.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("personal"))
+    workCsvFrom.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("work"))
+    workCsvTo.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("work"))
+
+    g_PromptEditorFlagCtrls := Map()
+    g_PromptEditorFlagCtrls["personal"] := {
+        compact: personalCompact,
+        csvFromLabel: personalCsvFromLabel,
+        csvFrom: personalCsvFrom,
+        csvToLabel: personalCsvToLabel,
+        csvTo: personalCsvTo,
+        selected: 0
+    }
+    g_PromptEditorFlagCtrls["work"] := {
+        compact: workCompact,
+        csvFromLabel: workCsvFromLabel,
+        csvFrom: workCsvFrom,
+        csvToLabel: workCsvToLabel,
+        csvTo: workCsvTo,
+        selected: 0
+    }
+    PromptEditor_LoadFlagControls("personal", 0)
+    PromptEditor_LoadFlagControls("work", 0)
+
     g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12),
-    "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine.")
+    "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine. Compact and CSV keep apply at attach time."
+    )
     g_PromptEditorGui.Add("Button", "xm+430 w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
     g_PromptEditorGui.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PromptEditor_OnCancel)
 }
@@ -235,14 +287,172 @@ PromptEditor_ReloadList(side) {
     lv := PromptEditor_Lv(side)
     if (!IsObject(lv))
         return
+    selected := PromptEditor_SelectedRow(side)
     lv.Delete()
-    for p in PromptEditor_PathsRef(side)
-        lv.Add("", p)
+    for e in PromptEditor_PathsRef(side)
+        lv.Add("", PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(e))
+    if (selected >= 1 && selected <= PromptEditor_PathsRef(side).Length)
+        lv.Modify(selected, "Select Focus Vis")
+    else
+        PromptEditor_LoadFlagControls(side, 0)
+}
+
+PromptEditor_RefreshRow(side, row) {
+    lv := PromptEditor_Lv(side)
+    arr := PromptEditor_PathsRef(side)
+    if (!IsObject(lv) || row < 1 || row > arr.Length)
+        return
+    e := arr[row]
+    lv.Modify(row, , PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(
+        e))
+}
+
+PromptEditor_SelectedRow(side) {
+    lv := PromptEditor_Lv(side)
+    if (!IsObject(lv))
+        return 0
+    row := lv.GetNext(0, "F")
+    if (!row)
+        row := lv.GetNext(0)
+    return row
+}
+
+PromptEditor_EventRow(info) {
+    row := 0
+    try {
+        if (IsObject(info) && info.HasProp("EventInfo"))
+            row := Integer(info.EventInfo)
+    } catch {
+        row := 0
+    }
+    return row
+}
+
+PromptEditor_OnItemFocus(side, info) {
+    row := PromptEditor_EventRow(info)
+    if (row < 1)
+        row := PromptEditor_SelectedRow(side)
+    PromptEditor_LoadFlagControls(side, row)
+}
+
+PromptEditor_FlagCtrls(side) {
+    global g_PromptEditorFlagCtrls
+    if (!IsObject(g_PromptEditorFlagCtrls) || !g_PromptEditorFlagCtrls.Has(side))
+        return false
+    return g_PromptEditorFlagCtrls[side]
+}
+
+PromptEditor_SetCsvVisible(side, visible) {
+    ctrls := PromptEditor_FlagCtrls(side)
+    if (!IsObject(ctrls))
+        return
+    opt := visible ? "-Hidden" : "+Hidden"
+    try ctrls.csvFromLabel.Opt(opt)
+    try ctrls.csvFrom.Opt(opt)
+    try ctrls.csvToLabel.Opt(opt)
+    try ctrls.csvTo.Opt(opt)
+    catch {
+    }
+}
+
+PromptEditor_LoadFlagControls(side, row) {
+    global g_PromptEditorSuppressFlagSync, g_PromptEditorFlagCtrls
+    ctrls := PromptEditor_FlagCtrls(side)
+    if (!IsObject(ctrls))
+        return
+    g_PromptEditorSuppressFlagSync := true
+    arr := PromptEditor_PathsRef(side)
+    ctrls.selected := row
+    if (row < 1 || row > arr.Length) {
+        try ctrls.compact.Value := 0
+        catch {
+        }
+        try ctrls.compact.Enabled := false
+        catch {
+        }
+        try ctrls.csvFrom.Value := ""
+        try ctrls.csvTo.Value := ""
+        catch {
+        }
+        PromptEditor_SetCsvVisible(side, false)
+        g_PromptEditorSuppressFlagSync := false
+        return
+    }
+    e := arr[row]
+    try ctrls.compact.Enabled := true
+    catch {
+    }
+    try ctrls.compact.Value := (e.HasProp("compact") && e.compact) ? 1 : 0
+    catch {
+    }
+    isCsv := PromptData_IsCsvPath(PromptData_ContextEntryPath(e))
+    PromptEditor_SetCsvVisible(side, isCsv)
+    if (isCsv) {
+        from := (e.HasProp("csvKeepFrom") && e.csvKeepFrom >= 1) ? e.csvKeepFrom : ""
+        to := (e.HasProp("csvKeepTo") && e.csvKeepTo >= 1) ? e.csvKeepTo : ""
+        try ctrls.csvFrom.Value := from
+        try ctrls.csvTo.Value := to
+        catch {
+        }
+    } else {
+        try ctrls.csvFrom.Value := ""
+        try ctrls.csvTo.Value := ""
+        catch {
+        }
+    }
+    g_PromptEditorSuppressFlagSync := false
+    g_PromptEditorFlagCtrls[side] := ctrls
+}
+
+PromptEditor_OnCompactClick(side) {
+    global g_PromptEditorSuppressFlagSync
+    if (g_PromptEditorSuppressFlagSync)
+        return
+    ctrls := PromptEditor_FlagCtrls(side)
+    if (!IsObject(ctrls))
+        return
+    row := PromptEditor_SelectedRow(side)
+    arr := PromptEditor_PathsRef(side)
+    if (row < 1 || row > arr.Length)
+        return
+    arr[row].compact := ctrls.compact.Value ? 1 : 0
+    PromptEditor_RefreshRow(side, row)
+}
+
+PromptEditor_OnCsvKeepChange(side) {
+    global g_PromptEditorSuppressFlagSync
+    if (g_PromptEditorSuppressFlagSync)
+        return
+    ctrls := PromptEditor_FlagCtrls(side)
+    if (!IsObject(ctrls))
+        return
+    row := PromptEditor_SelectedRow(side)
+    arr := PromptEditor_PathsRef(side)
+    if (row < 1 || row > arr.Length)
+        return
+    from := 0
+    to := 0
+    try from := Integer(Trim(ctrls.csvFrom.Value))
+    catch {
+        from := 0
+    }
+    try to := Integer(Trim(ctrls.csvTo.Value))
+    catch {
+        to := 0
+    }
+    if (from < 1 || to < 1 || from > to) {
+        from := 0
+        to := 0
+    }
+    arr[row].csvKeepFrom := from
+    arr[row].csvKeepTo := to
+    PromptEditor_RefreshRow(side, row)
 }
 
 PromptEditor_HasPath(arr, path) {
     needle := StrLower(path)
-    for p in arr {
+    for e in arr {
+        p := PromptData_ContextEntryPath(e)
         if (StrLower(p) = needle)
             return true
     }
@@ -255,7 +465,7 @@ PromptEditor_AppendPaths(side, incoming) {
         n := PromptData_StripPathQuotes(raw)
         if (n = "" || PromptEditor_HasPath(arr, n))
             continue
-        arr.Push(n)
+        arr.Push(PromptData_NewContextEntry(n))
     }
     PromptEditor_SetPaths(side, arr)
     PromptEditor_ReloadList(side)
@@ -383,6 +593,7 @@ PromptEditor_OnRemove(side) {
     }
     PromptEditor_SetPaths(side, keep)
     PromptEditor_ReloadList(side)
+    PromptEditor_LoadFlagControls(side, PromptEditor_SelectedRow(side))
 }
 
 PromptEditor_OnCancel(*) {
@@ -416,6 +627,10 @@ PromptEditor_OnSave(*) {
         UtilitySelector_Notify("Prompt file is required.")
         return
     }
+    PromptEditor_OnCompactClick("personal")
+    PromptEditor_OnCompactClick("work")
+    PromptEditor_OnCsvKeepChange("personal")
+    PromptEditor_OnCsvKeepChange("work")
     g_PromptEditorResult := {
         saved: true,
         name: name,
@@ -424,8 +639,8 @@ PromptEditor_OnSave(*) {
         filePath: g_PromptEditorFilePath,
         source: g_PromptEditorSource,
         author: g_PromptEditorAuthor,
-        personal_context_files: PromptData_ParsePathList(g_PromptEditorPersonalPaths),
-        work_context_files: PromptData_ParsePathList(g_PromptEditorWorkPaths)
+        personal_context_files: PromptData_ParseContextEntries(g_PromptEditorPersonalPaths),
+        work_context_files: PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
     }
     PromptEditor_Destroy()
 }

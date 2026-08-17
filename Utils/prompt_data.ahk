@@ -132,7 +132,213 @@ PromptData_JoinPathList(arr) {
     return s
 }
 
-PromptData_ContextFilesForCurrentEnv(prompt) {
+PromptData_NewContextEntry(path, compact := 0, csvKeepFrom := 0, csvKeepTo := 0) {
+    from := 0
+    to := 0
+    try from := Integer(csvKeepFrom)
+    catch {
+        from := 0
+    }
+    try to := Integer(csvKeepTo)
+    catch {
+        to := 0
+    }
+    if (from < 1 || to < 1 || from > to) {
+        from := 0
+        to := 0
+    }
+    return {
+        path: PromptData_StripPathQuotes(path),
+        compact: compact ? 1 : 0,
+        csvKeepFrom: from,
+        csvKeepTo: to
+    }
+}
+
+PromptData_IsCsvPath(path) {
+    if (path = "")
+        return false
+    SplitPath path, , , &ext
+    return StrLower(ext) = "csv"
+}
+
+PromptData_ParseCsvKeepToken(token, &from, &to) {
+    from := 0
+    to := 0
+    t := Trim(token)
+    if (t = "")
+        return
+    if !RegExMatch(t, "^(\d+)-(\d+)$", &m)
+        return
+    try from := Integer(m[1])
+    catch {
+        from := 0
+    }
+    try to := Integer(m[2])
+    catch {
+        to := 0
+    }
+    if (from < 1 || to < 1 || from > to) {
+        from := 0
+        to := 0
+    }
+}
+
+PromptData_FormatCsvKeep(from, to) {
+    if (from < 1 || to < 1 || from > to)
+        return ""
+    return from . "-" . to
+}
+
+PromptData_SplitPipeTokens(raw) {
+    text := Trim(raw)
+    if (text = "")
+        return []
+    return StrSplit(text, "|")
+}
+
+PromptData_ParseContextEntries(raw) {
+    out := []
+    if (IsObject(raw)) {
+        for item in raw {
+            if (IsObject(item) && item.HasProp("path")) {
+                p := PromptData_StripPathQuotes(item.path)
+                if (p = "")
+                    continue
+                compact := (item.HasProp("compact") && item.compact) ? 1 : 0
+                from := 0
+                to := 0
+                if (item.HasProp("csvKeepFrom"))
+                    from := item.csvKeepFrom
+                if (item.HasProp("csvKeepTo"))
+                    to := item.csvKeepTo
+                out.Push(PromptData_NewContextEntry(p, compact, from, to))
+            } else {
+                n := PromptData_StripPathQuotes(item)
+                if (n != "")
+                    out.Push(PromptData_NewContextEntry(n))
+            }
+        }
+        return out
+    }
+    for n in PromptData_ParsePathList(raw) {
+        if (n != "")
+            out.Push(PromptData_NewContextEntry(n))
+    }
+    return out
+}
+
+PromptData_MergeContextEntries(paths, compactTokens, csvTokens) {
+    out := []
+    loop paths.Length {
+        compact := 0
+        if (A_Index <= compactTokens.Length && Trim(compactTokens[A_Index]) = "1")
+            compact := 1
+        from := 0
+        to := 0
+        if (A_Index <= csvTokens.Length)
+            PromptData_ParseCsvKeepToken(csvTokens[A_Index], &from, &to)
+        out.Push(PromptData_NewContextEntry(paths[A_Index], compact, from, to))
+    }
+    return out
+}
+
+PromptData_JoinContextPaths(entries) {
+    s := ""
+    for e in PromptData_ParseContextEntries(entries) {
+        if (s != "")
+            s .= "|"
+        s .= e.path
+    }
+    return s
+}
+
+PromptData_JoinContextCompact(entries) {
+    s := ""
+    for e in PromptData_ParseContextEntries(entries) {
+        if (s != "")
+            s .= "|"
+        s .= e.compact ? "1" : "0"
+    }
+    return s
+}
+
+PromptData_JoinContextCsvKeep(entries) {
+    s := ""
+    first := true
+    for e in PromptData_ParseContextEntries(entries) {
+        if (!first)
+            s .= "|"
+        first := false
+        s .= PromptData_FormatCsvKeep(e.csvKeepFrom, e.csvKeepTo)
+    }
+    return s
+}
+
+PromptData_ContextEntryPath(entry) {
+    if (!IsObject(entry))
+        return Trim(entry)
+    return entry.HasProp("path") ? entry.path : ""
+}
+
+PromptData_ContextCompactLabel(entry) {
+    if (!IsObject(entry) || !entry.HasProp("compact") || !entry.compact)
+        return ""
+    return "Yes"
+}
+
+PromptData_ContextCsvKeepLabel(entry) {
+    if (!IsObject(entry))
+        return ""
+    if !PromptData_IsCsvPath(PromptData_ContextEntryPath(entry))
+        return ""
+    return PromptData_FormatCsvKeep(entry.HasProp("csvKeepFrom") ? entry.csvKeepFrom : 0, entry.HasProp("csvKeepTo") ?
+        entry.csvKeepTo : 0)
+}
+
+PromptData_ContextEntryNeedsTransform(entry) {
+    if (!IsObject(entry))
+        return false
+    if (entry.HasProp("compact") && entry.compact)
+        return true
+    path := PromptData_ContextEntryPath(entry)
+    if !PromptData_IsCsvPath(path)
+        return false
+    from := entry.HasProp("csvKeepFrom") ? entry.csvKeepFrom : 0
+    to := entry.HasProp("csvKeepTo") ? entry.csvKeepTo : 0
+    return (from >= 1 && to >= 1 && from <= to)
+}
+
+PromptData_CompactedFileName(path) {
+    SplitPath path, &name, , &ext, &nameNoExt
+    if (nameNoExt = "")
+        nameNoExt := name
+    if (ext = "")
+        return nameNoExt ".compacted"
+    return nameNoExt ".compacted." ext
+}
+
+PromptData_UniqueCompactedName(path, usedMap) {
+    name := PromptData_CompactedFileName(path)
+    key := StrLower(name)
+    if (!usedMap.Has(key)) {
+        usedMap[key] := true
+        return name
+    }
+    SplitPath name, , , &ext, &nameNoExt
+    i := 2
+    loop {
+        cand := (ext != "") ? (nameNoExt "-" i "." ext) : (nameNoExt "-" i)
+        ck := StrLower(cand)
+        if (!usedMap.Has(ck)) {
+            usedMap[ck] := true
+            return cand
+        }
+        i += 1
+    }
+}
+
+PromptData_ContextEntriesForCurrentEnv(prompt) {
     global IS_WORK_ENVIRONMENT
     if (!IsObject(prompt))
         return []
@@ -141,16 +347,44 @@ PromptData_ContextFilesForCurrentEnv(prompt) {
         arr := prompt.HasProp("work_context_files") ? prompt.work_context_files : []
     else
         arr := prompt.HasProp("personal_context_files") ? prompt.personal_context_files : []
-    return PromptData_ParsePathList(arr)
+    return PromptData_ParseContextEntries(arr)
 }
 
-PromptData_ReadContextFilesKey(iniPath, section, key) {
+PromptData_ContextFilesForCurrentEnv(prompt) {
+    paths := []
+    for e in PromptData_ContextEntriesForCurrentEnv(prompt) {
+        p := PromptData_ContextEntryPath(e)
+        if (p != "")
+            paths.Push(p)
+    }
+    return paths
+}
+
+PromptData_ReadIniRaw(iniPath, section, key) {
     raw := ""
     try raw := IniRead(iniPath, section, key, "")
     catch {
         raw := ""
     }
-    return PromptData_ParsePathList(PromptData_NormalizeIniValue(raw))
+    return PromptData_NormalizeIniValue(raw)
+}
+
+PromptData_ReadContextFilesKey(iniPath, section, key) {
+    return PromptData_ParsePathList(PromptData_ReadIniRaw(iniPath, section, key))
+}
+
+PromptData_ReadContextEntries(iniPath, section, prefix) {
+    paths := PromptData_ReadContextFilesKey(iniPath, section, prefix . "ContextFiles")
+    compactTokens := PromptData_SplitPipeTokens(PromptData_ReadIniRaw(iniPath, section, prefix . "ContextCompact"))
+    csvTokens := PromptData_SplitPipeTokens(PromptData_ReadIniRaw(iniPath, section, prefix . "ContextCsvKeep"))
+    return PromptData_MergeContextEntries(paths, compactTokens, csvTokens)
+}
+
+PromptData_WriteContextEntries(iniPath, section, prefix, entries) {
+    list := PromptData_ParseContextEntries(entries)
+    IniWrite(PromptData_JoinContextPaths(list), iniPath, section, prefix . "ContextFiles")
+    IniWrite(PromptData_JoinContextCompact(list), iniPath, section, prefix . "ContextCompact")
+    IniWrite(PromptData_JoinContextCsvKeep(list), iniPath, section, prefix . "ContextCsvKeep")
 }
 
 PromptData_Invalidate() {
@@ -256,8 +490,8 @@ PromptData_Load(force := false, skipMtime := false) {
             try author := IniRead(path, section, "Author", "")
             try filePath := IniRead(path, section, "FilePath", "")
             try source := IniRead(path, section, "Source", "")
-            personalFiles := PromptData_ReadContextFilesKey(path, section, "PersonalContextFiles")
-            workFiles := PromptData_ReadContextFilesKey(path, section, "WorkContextFiles")
+            personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
+            workFiles := PromptData_ReadContextEntries(path, section, "Work")
             name := PromptData_NormalizeIniValue(name)
             charVal := StrLower(PromptData_NormalizeIniValue(charVal))
             category := PromptData_NormalizeIniValue(category)
@@ -307,9 +541,9 @@ PromptData_Save(list) {
         idx := 1
         for prompt in list {
             section := "Prompt_" . idx
-            prompt.personal_context_files := PromptData_ParsePathList(prompt.HasProp("personal_context_files") ?
+            prompt.personal_context_files := PromptData_ParseContextEntries(prompt.HasProp("personal_context_files") ?
                 prompt.personal_context_files : [])
-            prompt.work_context_files := PromptData_ParsePathList(prompt.HasProp("work_context_files") ?
+            prompt.work_context_files := PromptData_ParseContextEntries(prompt.HasProp("work_context_files") ?
                 prompt.work_context_files : [])
             IniWrite(prompt.HasProp("name") ? prompt.name : "", path, section, "Name")
             IniWrite(prompt.HasProp("char") ? prompt.char : "", path, section, "Char")
@@ -317,10 +551,8 @@ PromptData_Save(list) {
             IniWrite(prompt.HasProp("author") ? prompt.author : "", path, section, "Author")
             IniWrite(prompt.HasProp("filePath") ? prompt.filePath : "", path, section, "FilePath")
             IniWrite(prompt.HasProp("source") ? prompt.source : "file", path, section, "Source")
-            IniWrite(PromptData_JoinPathList(prompt.HasProp("personal_context_files") ? prompt.personal_context_files :
-                []), path, section, "PersonalContextFiles")
-            IniWrite(PromptData_JoinPathList(prompt.HasProp("work_context_files") ? prompt.work_context_files : []),
-            path, section, "WorkContextFiles")
+            PromptData_WriteContextEntries(path, section, "Personal", prompt.personal_context_files)
+            PromptData_WriteContextEntries(path, section, "Work", prompt.work_context_files)
             idx += 1
         }
     } catch {
@@ -378,9 +610,10 @@ PromptData_Sorted() {
         list.Push({
             name: p.name, char: p.char, category: p.category, author: p.author,
             filePath: p.filePath, source: p.source, listIndex: A_Index,
-            personal_context_files: PromptData_ParsePathList(p.HasProp("personal_context_files") ?
+            personal_context_files: PromptData_ParseContextEntries(p.HasProp("personal_context_files") ?
                 p.personal_context_files : []),
-            work_context_files: PromptData_ParsePathList(p.HasProp("work_context_files") ? p.work_context_files : [])
+            work_context_files: PromptData_ParseContextEntries(p.HasProp("work_context_files") ? p.work_context_files :
+                [])
         })
     }
     PromptData_SortInPlace(list)

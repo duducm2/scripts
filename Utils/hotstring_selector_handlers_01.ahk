@@ -3,6 +3,8 @@
 ; HandleHotstringChar, Gemini paste, Escape
 ; =============================================================================
 
+global g_PromptContextTempFiles := []
+
 HandleHotstringChar(char) {
     global g_HotstringSelectorActive, g_HotstringPromptCharMap, g_HotstringGeminiArmed
     global g_UtilitySelectorMode, g_UtilityTopCategoryById, g_UtilitySelectorCategory
@@ -109,14 +111,15 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false) {
 UtilitySelector_AttachPromptContextFiles(prompt) {
     if (!IsObject(prompt))
         return
-    paths := PromptData_ContextFilesForCurrentEnv(prompt)
-    if (paths.Length = 0)
+    entries := PromptData_ContextEntriesForCurrentEnv(prompt)
+    if (entries.Length = 0)
         return
     existing := []
     missing := []
-    for p in paths {
+    for e in entries {
+        p := PromptData_ContextEntryPath(e)
         if (Clipboard_PathIsExistingFile(p))
-            existing.Push(p)
+            existing.Push(e)
         else
             missing.Push(p)
     }
@@ -126,8 +129,113 @@ UtilitySelector_AttachPromptContextFiles(prompt) {
     }
     if (existing.Length = 0)
         return
-    if !InsertFiles(existing)
+    attachPaths := PromptContext_ResolveAttachPaths(existing)
+    if (attachPaths.Length = 0)
+        return
+    if !InsertFiles(attachPaths)
         ShowCenteredOverlay_Utils("⚠ Could not attach context files", 2200, BANNER_ACCENT_ERROR)
+}
+
+PromptContext_CmdQuote(s) {
+    return '"' . s . '"'
+}
+
+PromptContext_ScriptPath() {
+    return A_ScriptDir "\infra\python\context_compact.py"
+}
+
+PromptContext_TempDir() {
+    dir := A_Temp "\prompt-context\" A_TickCount
+    try DirCreate(dir)
+    catch {
+    }
+    return dir
+}
+
+PromptContext_ScheduleTempCleanup(paths) {
+    global g_PromptContextTempFiles
+    if (!IsObject(g_PromptContextTempFiles))
+        g_PromptContextTempFiles := []
+    for p in paths
+        g_PromptContextTempFiles.Push(p)
+    try SetTimer(PromptContext_CleanupTemps, -15000)
+    catch {
+    }
+}
+
+PromptContext_CleanupTemps(*) {
+    global g_PromptContextTempFiles
+    if (!IsObject(g_PromptContextTempFiles))
+        return
+    for p in g_PromptContextTempFiles {
+        try FileDelete(p)
+        catch {
+        }
+        SplitPath p, , &dir
+        if (dir != "" && InStr(dir, "\prompt-context\")) {
+            try DirDelete(dir)
+            catch {
+            }
+        }
+    }
+    g_PromptContextTempFiles := []
+}
+
+PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
+    script := PromptContext_ScriptPath()
+    if (!FileExist(script))
+        return false
+    cmd := "python " . PromptContext_CmdQuote(script) . " --in " . PromptContext_CmdQuote(src) . " --out " .
+    PromptContext_CmdQuote(dst)
+    if (compact)
+        cmd .= " --compact"
+    if (csvFrom >= 1 && csvTo >= 1)
+        cmd .= " --csv-keep " . csvFrom . " " . csvTo
+    exitCode := 1
+    try exitCode := RunWait(cmd, A_ScriptDir, "Hide")
+    catch {
+        return false
+    }
+    return (exitCode = 0 && FileExist(dst))
+}
+
+PromptContext_ResolveAttachPaths(entries) {
+    paths := []
+    temps := []
+    usedNames := Map()
+    tempDir := ""
+    failed := 0
+    for e in entries {
+        src := PromptData_ContextEntryPath(e)
+        if !PromptData_ContextEntryNeedsTransform(e) {
+            paths.Push(src)
+            continue
+        }
+        if (tempDir = "")
+            tempDir := PromptContext_TempDir()
+        outName := PromptData_UniqueCompactedName(src, usedNames)
+        dst := tempDir "\" outName
+        compact := (e.HasProp("compact") && e.compact) ? 1 : 0
+        csvFrom := 0
+        csvTo := 0
+        if (PromptData_IsCsvPath(src)) {
+            csvFrom := e.HasProp("csvKeepFrom") ? e.csvKeepFrom : 0
+            csvTo := e.HasProp("csvKeepTo") ? e.csvKeepTo : 0
+        }
+        if PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
+            paths.Push(dst)
+            temps.Push(dst)
+        } else {
+            failed += 1
+            paths.Push(src)
+        }
+    }
+    if (failed > 0)
+        ShowCenteredOverlay_Utils("⚠ Compact failed for " . failed . " file(s); attaching original", 2200,
+            BANNER_ACCENT_ERROR)
+    if (temps.Length > 0)
+        PromptContext_ScheduleTempCleanup(temps)
+    return paths
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false) {
