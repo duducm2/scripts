@@ -368,17 +368,13 @@ AiQuickDownload_FindNewestButton(uia, predicate) {
 }
 
 ; Scroll chat feed to bottom so newest download controls have valid geometry.
+; Use keyboard/wheel fallback only — never ChromeChat_ScrollFeedToBottomFast /
+; UIA JSExecute (SetURL "javascript:…"), which can type the payload into the
+; focused Gemini/Copilot composer when the omnibox is not actually targeted.
 AiQuickDownload_ScrollFeedToBottom(hwnd, companion := "") {
     if (!hwnd)
         return
-    try {
-        if (companion = "gemini" && IsSet(GeminiScrollFeedToBottom_Chrome)) {
-            GeminiScrollFeedToBottom_Chrome(hwnd)
-            return
-        }
-    } catch {
-    }
-    try ChromeChat_ScrollFeedToBottomFast(hwnd)
+    try ChromeChat_ScrollFeedToBottomFallback(hwnd)
     catch {
     }
 }
