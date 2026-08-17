@@ -13,6 +13,10 @@ namespace AudioBt
     [Guid("870AF99C-171D-4F9E-AF0D-E63DF40C2BC9")]
     class PolicyConfigClient { }
 
+    [ComImport]
+    [Guid("294935CE-F637-4E7C-A41B-AB255460B862")]
+    class PolicyConfigVistaClient { }
+
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     delegate int EnumAudioEndpointsProc(IntPtr thisPtr, int dataFlow, int dwStateMask, out IntPtr ppDevices);
 
@@ -144,6 +148,9 @@ namespace AudioBt
 
         [DllImport("ole32.dll")]
         static extern void CoTaskMemFree(IntPtr pv);
+
+        [DllImport("ole32.dll")]
+        static extern int CoCreateInstance(ref Guid rclsid, IntPtr pUnkOuter, uint dwClsContext, ref Guid riid, out IntPtr ppv);
 
         static IntPtr VtblSlot(IntPtr com, int slot)
         {
@@ -938,8 +945,9 @@ namespace AudioBt
             }
             int flow = target.Flow;
             string originalId = target.Id;
-            DateTime deadline = DateTime.UtcNow.AddMilliseconds(8000);
+            DateTime deadline = DateTime.UtcNow.AddMilliseconds(12000);
             int lastHr = -1;
+            int lastState = 0;
             while (true)
             {
                 List<EndpointInfo> endpoints = CollectEndpoints();
@@ -954,19 +962,32 @@ namespace AudioBt
                     ep = FindEndpointById(endpoints, target.Id);
                 if (ep != null && (ep.State & DEVICE_STATE_NOTPRESENT) == 0)
                 {
-                    EnsureVisible(ep.Id, true);
-                    lastHr = PolicySetDefault(ep.Id, ep.Flow);
-                    EndpointInfo check = FindEndpointById(CollectEndpoints(), ep.Id);
-                    if (lastHr == 0 || (check != null && check.IsDefault))
+                    lastState = ep.State;
+                    if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                        EnsureVisible(ep.Id, true);
+                    bool ready = (ep.State & DEVICE_STATE_ACTIVE) != 0
+                        && (ep.State & DEVICE_STATE_UNPLUGGED) == 0
+                        && (ep.State & DEVICE_STATE_DISABLED) == 0;
+                    if (ready)
                     {
-                        target = check ?? ep;
-                        return true;
+                        lastHr = PolicySetDefault(ep.Id, ep.Flow);
+                        EndpointInfo check = FindEndpointById(CollectEndpoints(), ep.Id);
+                        if (lastHr == 0 || (check != null && check.IsDefault))
+                        {
+                            target = check ?? ep;
+                            return true;
+                        }
                     }
                     originalId = ep.Id;
                 }
                 if (DateTime.UtcNow >= deadline)
                 {
                     string who = ep != null ? ep.Name : target.Name;
+                    if ((lastState & DEVICE_STATE_UNPLUGGED) != 0 || (lastState & DEVICE_STATE_ACTIVE) == 0)
+                    {
+                        err = (string.IsNullOrEmpty(who) ? "Device" : who) + " is not an active output yet";
+                        return false;
+                    }
                     err = "SetDefault failed " + FormatHr(lastHr) + (string.IsNullOrEmpty(who) ? "" : ": " + who);
                     return false;
                 }
@@ -1094,8 +1115,14 @@ namespace AudioBt
                         continue;
                     if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
                         continue;
-                    EnsureVisible(ep.Id, true);
-                    if ((ep.State & DEVICE_STATE_ACTIVE) != 0 || (ep.State & DEVICE_STATE_UNPLUGGED) == 0)
+                    if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                    {
+                        EnsureVisible(ep.Id, true);
+                        continue;
+                    }
+                    if ((ep.State & DEVICE_STATE_UNPLUGGED) != 0)
+                        continue;
+                    if ((ep.State & DEVICE_STATE_ACTIVE) != 0)
                         return true;
                 }
                 if (DateTime.UtcNow >= deadline)
@@ -1119,7 +1146,8 @@ namespace AudioBt
             Guid[] iids = new Guid[] {
                 new Guid("F8679F50-850A-41CF-9C72-430F290290C8"),
                 new Guid("568B9108-44BF-40B4-9006-86AFE5B5A620"),
-                new Guid("CA286FC3-91FD-42C3-8E9B-CAAFA66242E3")
+                new Guid("CA286FC3-91FD-42C3-8E9B-CAAFA66242E3"),
+                new Guid("6BE54BE8-A068-4875-A49D-0C2966473B11")
             };
             Exception last = null;
             foreach (Guid iid in iids)
@@ -1136,31 +1164,88 @@ namespace AudioBt
             throw last ?? new COMException("IPolicyConfig unavailable");
         }
 
-        static int PolicySetDefault(string deviceId, int flow)
+        static int PolicySetDefaultSlot(Guid iid)
         {
-            IntPtr cfg = CreatePolicyConfig();
+            if (iid == new Guid("568B9108-44BF-40B4-9006-86AFE5B5A620"))
+                return 12;
+            return 13;
+        }
+
+        static bool IsCurrentDefaultId(string deviceId, int flow)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+                return false;
+            IntPtr en = CreateEnumerator();
             try
             {
-                int lastFail = -1;
-                bool anyOk = false;
-                uint[] roles = flow == eCapture
-                    ? new uint[] { eCommunications, eMultimedia, eConsole }
-                    : new uint[] { eMultimedia, eConsole, eCommunications };
-                PolicySetDefaultProc fn = ComFn<PolicySetDefaultProc>(cfg, 13);
-                foreach (uint role in roles)
-                {
-                    int hr = fn(cfg, deviceId, role);
-                    if (hr == 0)
-                        anyOk = true;
-                    else
-                        lastFail = hr;
-                }
-                return anyOk ? 0 : lastFail;
+                string def = GetDefaultId(en, flow);
+                return string.Equals(def, deviceId, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {
-                Marshal.Release(cfg);
+                Marshal.Release(en);
             }
+        }
+
+        static int PolicySetDefaultOn(IntPtr cfg, int slot, string deviceId, int flow, out int lastFail)
+        {
+            lastFail = -1;
+            uint[] roles = flow == eCapture
+                ? new uint[] { eCommunications, eMultimedia, eConsole }
+                : new uint[] { eMultimedia, eConsole, eCommunications };
+            PolicySetDefaultProc fn = ComFn<PolicySetDefaultProc>(cfg, slot);
+            bool anyOk = false;
+            foreach (uint role in roles)
+            {
+                int hr = fn(cfg, deviceId, role);
+                if (hr == 0)
+                    anyOk = true;
+                else
+                    lastFail = hr;
+            }
+            if (anyOk || IsCurrentDefaultId(deviceId, flow))
+                return 0;
+            return lastFail;
+        }
+
+        static int PolicySetDefault(string deviceId, int flow)
+        {
+            Guid[] clsids = new Guid[] {
+                new Guid("870AF99C-171D-4F9E-AF0D-E63DF40C2BC9"),
+                new Guid("294935CE-F637-4E7C-A41B-AB255460B862")
+            };
+            Guid[] iids = new Guid[] {
+                new Guid("F8679F50-850A-41CF-9C72-430F290290C8"),
+                new Guid("568B9108-44BF-40B4-9006-86AFE5B5A620"),
+                new Guid("CA286FC3-91FD-42C3-8E9B-CAAFA66242E3"),
+                new Guid("6BE54BE8-A068-4875-A49D-0C2966473B11")
+            };
+            int lastFail = -1;
+            foreach (Guid clsid in clsids)
+            {
+                foreach (Guid iid in iids)
+                {
+                    Guid c = clsid;
+                    Guid i = iid;
+                    IntPtr cfg;
+                    if (CoCreateInstance(ref c, IntPtr.Zero, 23, ref i, out cfg) != 0 || cfg == IntPtr.Zero)
+                        continue;
+                    try
+                    {
+                        int hr = PolicySetDefaultOn(cfg, PolicySetDefaultSlot(i), deviceId, flow, out lastFail);
+                        if (hr == 0)
+                            return 0;
+                    }
+                    catch
+                    {
+                    }
+                    finally
+                    {
+                        Marshal.Release(cfg);
+                    }
+                }
+            }
+            return lastFail;
         }
 
         static int PolicySetVisible(string deviceId, bool visible)

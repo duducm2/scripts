@@ -55,9 +55,31 @@ function Import-AudioBtHelper {
     }
 }
 
-function Wait-AudioBtWinRT($async, [int]$timeoutMs = 15000) {
+function Wait-AudioBtWinRT($async, [int]$timeoutMs = 12000) {
     if ($null -eq $async) {
         return $null
+    }
+    if (-not ("AudioBtMsgPump" -as [type])) {
+        Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class AudioBtMsgPump {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MSG {
+        public IntPtr hWnd; public uint msg; public IntPtr wParam; public IntPtr lParam; public uint time; public int x; public int y;
+    }
+    [DllImport("user32.dll")] public static extern int PeekMessage(out MSG lpMsg, IntPtr hWnd, uint min, uint max, uint remove);
+    [DllImport("user32.dll")] public static extern bool TranslateMessage(ref MSG lpMsg);
+    [DllImport("user32.dll")] public static extern IntPtr DispatchMessage(ref MSG lpMsg);
+    public static void Pump() {
+        MSG m;
+        while (PeekMessage(out m, IntPtr.Zero, 0, 0, 1) != 0) {
+            TranslateMessage(ref m);
+            DispatchMessage(ref m);
+        }
+    }
+}
+"@
     }
     $sw = [Diagnostics.Stopwatch]::StartNew()
     while ($true) {
@@ -77,8 +99,19 @@ function Wait-AudioBtWinRT($async, [int]$timeoutMs = 15000) {
         if ($sw.ElapsedMilliseconds -ge $timeoutMs) {
             throw "WinRT async timeout"
         }
+        try { [AudioBtMsgPump]::Pump() } catch { }
         Start-Sleep -Milliseconds 40
     }
+}
+
+function Test-AudioBtNeedsConnectFallback([string]$result) {
+    if ([string]::IsNullOrWhiteSpace($result)) {
+        return $true
+    }
+    if ($result -match "SetDefault failed") {
+        return $false
+    }
+    return $true
 }
 
 function Test-AudioBtMacMatch([string]$blob, [string]$hex) {
@@ -168,6 +201,9 @@ function Invoke-AudioBtConnectOrWinRT([string]$Id) {
 function Invoke-AudioBtIsolateOrWinRT([string]$Id) {
     $r = [AudioBt.Helper]::Isolate($Id)
     if ($r -and -not $r.StartsWith("ERR`t")) {
+        return $r
+    }
+    if (-not (Test-AudioBtNeedsConnectFallback $r)) {
         return $r
     }
     $w = Invoke-AudioBtWinRTConnect $Id
