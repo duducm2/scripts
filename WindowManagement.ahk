@@ -29,7 +29,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\cursor_composer.ahk      - focus Cursor AI composer input (UIA)
 ;   WindowManagement\project_selector_02.ahk  - project selector preview / Copy-from-Gemini handlers
 ;   WindowManagement\cursor_window_select.ahk - Cursor window selection within the project selector
-;   WindowManagement\audio_bt_menu.ahk        - Win+Alt+Shift+9 Bluetooth / audio device menu
+;   WindowManagement\audio_bt_menu.ahk        - Win+Alt+Shift+9: 1× Audio/BT menu; 2× Quick Download
 ; -----------------------------------------------------------------------------
 
 ; --- Environment (use env.ahk so personal vs work matches Act/Utils) --------
@@ -104,7 +104,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 #include %A_ScriptDir%\WindowManagement\project_selector_02.ahk
 ; [WM module] Cursor window selection (within project selector) -> WindowManagement\cursor_window_select.ahk
 #include %A_ScriptDir%\WindowManagement\cursor_window_select.ahk
-; [WM module] Win+Alt+Shift+9 Bluetooth / audio device menu -> WindowManagement\audio_bt_menu.ahk
+; [WM module] Win+Alt+Shift+9: 1× Audio/BT menu; 2× Quick Download -> WindowManagement\audio_bt_menu.ahk
 #include %A_ScriptDir%\WindowManagement\audio_bt_menu.ahk
 ; =============================================================================
 ; SCRIPT SUMMARY & OPTIMIZATION DOCUMENTATION

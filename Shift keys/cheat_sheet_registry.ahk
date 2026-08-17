@@ -1270,7 +1270,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
-    [Win+Alt+Shift+9] > Audio / Bluetooth: 1/B Bluetooth, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; then Enter default, D/E enable, C/X BT connect, I isolate, N ignore, Esc back
+    [Win+Alt+Shift+9] > 1× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back) · 2× AI Quick Download (companion → Desktop → cut)
     [Win+Alt+Shift+M] > Maximizes the current window
     [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], U=[2], 6=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)

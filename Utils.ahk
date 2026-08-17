@@ -227,6 +227,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Cut newest Desktop item (#!+O) -> Utils\desktop_cut_newest.ahk
 #include %A_ScriptDir%\Utils\desktop_cut_newest.ahk
 
+; [Utils module] AI Companion Quick Download (#!+9 double-tap) -> Utils\ai_quick_download.ahk
+#include %A_ScriptDir%\Utils\ai_quick_download.ahk
+
 ; [Utils module] Mouse jump helpers and prediction squares -> Utils\mouse_jump_arrows.ahk
 #include %A_ScriptDir%\Utils\mouse_jump_arrows.ahk
 
