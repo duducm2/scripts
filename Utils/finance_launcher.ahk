@@ -159,6 +159,7 @@ Finance_ShowSettings() {
     g_FinanceGui.Add("Text", "x12 y10 w480", "Dashboard widgets")
     keys := [
         ["ShowBalance", "Current balance / incomes / expenses / card"],
+        ["ShowAccounts", "Accounts comparison"],
         ["ShowPies", "Pie charts"],
         ["ShowPerformance", "Performance metrics"],
         ["ShowGoals", "Goals overview"],

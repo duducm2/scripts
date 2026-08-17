@@ -446,8 +446,18 @@ def cockpit_raw(data: dict | None = None) -> dict:
             }
             for c in data.get("cards") or []
         ],
+        "accounts": [
+            {
+                "id": a.get("id", ""),
+                "name": a.get("name", ""),
+                "icon": a.get("icon", ""),
+                "current_balance": a.get("current_balance", ""),
+            }
+            for a in data.get("accounts") or []
+        ],
         "widgets": {
             "ShowBalance": widget_on(data["settings"], "ShowBalance"),
+            "ShowAccounts": widget_on(data["settings"], "ShowAccounts"),
             "ShowPies": widget_on(data["settings"], "ShowPies"),
             "ShowPerformance": widget_on(data["settings"], "ShowPerformance"),
             "ShowGoals": widget_on(data["settings"], "ShowGoals"),

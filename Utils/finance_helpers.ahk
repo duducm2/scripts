@@ -71,6 +71,7 @@ Finance_EnsureSettings() {
         return
     content := "[Dashboard]`n"
         . "ShowBalance=1`n"
+        . "ShowAccounts=1`n"
         . "ShowPies=1`n"
         . "ShowPerformance=1`n"
         . "ShowGoals=1`n"

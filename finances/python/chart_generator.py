@@ -206,6 +206,38 @@ def build_html(data: dict) -> str:
             Spent {format_brl(data['card_spent'])}</div>
           {''.join(card_items) or '<p class="empty">No credit cards</p>'}</div>"""
 
+    acc_html = ""
+    if widget_on(s, "ShowAccounts"):
+        acc_rows = []
+        for a in data.get("accounts") or []:
+            acc_rows.append(
+                (
+                    a.get("icon") or "🏦",
+                    a.get("name") or a.get("id") or "Account",
+                    parse_decimal(a.get("current_balance")),
+                )
+            )
+        acc_rows.sort(key=lambda r: r[2], reverse=True)
+        acc_total = sum(r[2] for r in acc_rows)
+        max_abs = max((abs(r[2]) for r in acc_rows), default=0.0)
+        acc_items = []
+        for icon, name, bal in acc_rows:
+            width = (abs(bal) / max_abs * 100.0) if max_abs > 0 else 0.0
+            share = (bal / acc_total * 100.0) if acc_total else 0.0
+            fill = "#e74c3c" if bal < 0 else "#3498db"
+            acc_items.append(
+                f'<div class="bar-row">'
+                f'<div class="bar-head"><span>{icon} {name}</span>'
+                f"<span>{format_brl(bal)}</span></div>"
+                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>'
+                f'<div class="bar-meta">{share:.0f}% of total</div>'
+                f"</div>"
+            )
+        acc_html = f"""
+        <div class="panel"><h2>Accounts</h2>
+          <div class="bar-meta" style="margin-bottom:8px">Total {format_brl(acc_total)}</div>
+          {''.join(acc_items) or '<p class="empty">No accounts</p>'}</div>"""
+
     rec_html = ""
     if widget_on(s, "ShowRecurring"):
         rec_items = []
@@ -368,6 +400,7 @@ def build_html(data: dict) -> str:
   <div class="split">
     {goals_html}
     {bud_html}
+    {acc_html}
     {card_bars_html}
   </div>
   {rec_html}
