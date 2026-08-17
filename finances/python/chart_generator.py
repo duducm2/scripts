@@ -119,11 +119,15 @@ def build_html(data: dict) -> str:
     if widget_on(s, "ShowBudgets"):
         by_id = cat_index(data["categories"])
         items = []
+        total_planned = 0.0
+        total_spent = 0.0
         for b in data["budgets"]:
             crow = by_id.get(b.get("category_id", ""))
             name = cat_label(crow, b.get("category_id", ""))
             p = parse_decimal(b.get("planned_amount"))
             sp = parse_decimal(b.get("spent_amount"))
+            total_planned += p
+            total_spent += sp
             rem = p - sp
             pct = (sp / p * 100) if p > 0 else (100.0 if sp > 0 else 0.0)
             width = min(pct, 100.0)
@@ -140,8 +144,28 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
+        tot_rem = total_planned - total_spent
+        tot_pct = (
+            (total_spent / total_planned * 100)
+            if total_planned > 0
+            else (100.0 if total_spent > 0 else 0.0)
+        )
+        tot_over = total_spent > total_planned and total_planned > 0
+        if items:
+            bud_hint = (
+                f"Exceeded {format_brl(-tot_rem)}"
+                if tot_over
+                else f"Remain {format_brl(tot_rem)}"
+            )
+            bud_summary = (
+                f"Total budget {format_brl(total_planned)} · Spent {format_brl(total_spent)}"
+                f" · {tot_pct:.0f}% · {bud_hint}"
+            )
+        else:
+            bud_summary = ""
         bud_html = f"""
         <div class="panel"><h2>Budgets</h2>
+          <div class="bar-meta" id="budgetsSummary" style="margin-bottom:8px">{bud_summary}</div>
           <div id="budgetsBody">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
 
     card_bars_html = ""
@@ -464,10 +488,26 @@ function aggregateBudgets(months) {{
 }}
 function renderBudgets(rows) {{
   const el = document.getElementById('budgetsBody');
+  const sumEl = document.getElementById('budgetsSummary');
   if (!el) return;
   if (!rows.length) {{
+    if (sumEl) sumEl.textContent = '';
     el.innerHTML = '<p class="empty">No budgets this period</p>';
     return;
+  }}
+  let totalPlanned = 0, totalSpent = 0;
+  for (const b of rows) {{
+    totalPlanned += b.planned;
+    totalSpent += b.spent;
+  }}
+  const totRem = totalPlanned - totalSpent;
+  const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
+  const totOver = totalSpent > totalPlanned && totalPlanned > 0;
+  const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
+  if (sumEl) {{
+    sumEl.textContent = 'Total budget ' + formatBrl(totalPlanned)
+      + ' · Spent ' + formatBrl(totalSpent)
+      + ' · ' + totPct.toFixed(0) + '% · ' + budHint;
   }}
   const byId = catById();
   el.innerHTML = rows.map(b => {{

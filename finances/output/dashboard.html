@@ -133,6 +133,7 @@
           <div class="bar-row"><div class="bar-head"><span>Private pension</span><span>R$ 16.733,13 / R$ 926.400,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.8%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 909.666,87</div></div><div class="bar-row"><div class="bar-head"><span>Emergency fund</span><span>R$ 2.141,14 / R$ 18.000,00 · 12%</span></div><div class="bar-track"><div class="bar-fill" style="width:11.9%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 15.858,86</div></div><div class="bar-row"><div class="bar-head"><span>Father's money</span><span>R$ 10.000,00 / R$ 10.000,00 · 100%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#f1c40f"></div></div><div class="bar-meta">Reached</div></div></div>
     
         <div class="panel"><h2>Budgets</h2>
+          <div class="bar-meta" id="budgetsSummary" style="margin-bottom:8px">Total budget R$ 7.350,00 · Spent R$ 805,00 · 11% · Remain R$ 6.545,00</div>
           <div id="budgetsBody"><div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 0,00 / R$ 300,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 300,00</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 0,00 / R$ 150,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 150,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 669,00 / R$ 400,00 · 167%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 269,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 0,00 / R$ 2.300,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 2.300,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 0,00 / R$ 400,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 400,00</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 0,00 / R$ 50,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 50,00</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 0,00 / R$ 150,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 150,00</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 136,00 / R$ 600,00 · 23%</span></div><div class="bar-track"><div class="bar-fill" style="width:22.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 464,00</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 0,00 / R$ 3.000,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 3.000,00</div></div></div></div>
     
         <div class="panel"><h2>Credit cards</h2>
@@ -300,10 +301,26 @@ function aggregateBudgets(months) {
 }
 function renderBudgets(rows) {
   const el = document.getElementById('budgetsBody');
+  const sumEl = document.getElementById('budgetsSummary');
   if (!el) return;
   if (!rows.length) {
+    if (sumEl) sumEl.textContent = '';
     el.innerHTML = '<p class="empty">No budgets this period</p>';
     return;
+  }
+  let totalPlanned = 0, totalSpent = 0;
+  for (const b of rows) {
+    totalPlanned += b.planned;
+    totalSpent += b.spent;
+  }
+  const totRem = totalPlanned - totalSpent;
+  const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
+  const totOver = totalSpent > totalPlanned && totalPlanned > 0;
+  const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
+  if (sumEl) {
+    sumEl.textContent = 'Total budget ' + formatBrl(totalPlanned)
+      + ' · Spent ' + formatBrl(totalSpent)
+      + ' · ' + totPct.toFixed(0) + '% · ' + budHint;
   }
   const byId = catById();
   el.innerHTML = rows.map(b => {
