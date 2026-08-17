@@ -128,8 +128,20 @@ Finance_AccForm(existing) {
     eName := g.Add("Edit", "w320", isEdit ? existing["name"] : "")
     g.Add("Text", "y+8", "Icon (emoji or file name)")
     eIcon := g.Add("Edit", "w160", isEdit ? existing["icon"] : "🏦")
+    if (isEdit) {
+        g.Add("Text", "y+8", "Current balance")
+        g.Add("Text", "w320 c555555",
+            Finance_FormatBrl(Finance_ParseDecimal(existing["current_balance"])))
+    }
     g.Add("Text", "y+8", "Initial balance")
     eInit := g.Add("Edit", "w160", isEdit ? existing["initial_balance"] : "0,00")
+    g.SetFont("s9 c555555", "Segoe UI")
+    g.Add("Text", "y+4 w320",
+        isEdit
+            ?
+            "Opening balance. Changing it shifts Current by the same amount. Use [J] to set Current without changing Initial."
+            : "Opening balance; Current starts equal to this.")
+    g.SetFont("s10", "Segoe UI")
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveAcc)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
