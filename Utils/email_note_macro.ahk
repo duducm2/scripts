@@ -2,6 +2,9 @@
 ; Utils module: email_note_macro.ahk
 ; Email note: new mail in Outlook (work) or Gmail (personal), To both inboxes,
 ; leave focus in Subject for typing.
+; Recipients are added one-by-one and quality-gated as chips (rounded pills)
+; before Subject is focused — a single SendText of both addresses leaves the
+; second (Gmail: both) as uncommitted text with the caret still in To.
 ; =============================================================================
 
 global EMAIL_NOTE_BOSCH := "eduardo.figueiredo@br.bosch.com"
@@ -10,23 +13,67 @@ global EMAIL_NOTE_GMAIL := "edu.evangelista.figueiredo@gmail.com"
 EmailNote_Create(subjectText := "") {
     global IS_WORK_ENVIRONMENT
     try {
-        if (IS_WORK_ENVIRONMENT) {
-            if (!EmailNote_EnsureOutlookActive())
-                return
-            Send("^1")
-            Sleep 250
-            Send("^n")
-            Sleep 450
-            SendText(EMAIL_NOTE_BOSCH "; " EMAIL_NOTE_GMAIL)
-            Sleep 80
-            Send("{Tab}")
-            Sleep 80
-            EmailNote_FocusOutlookSubjectIfNeeded()
-            EmailNote_TypeSubjectText(subjectText)
-        } else {
+        if (IS_WORK_ENVIRONMENT)
+            EmailNote_CreateOutlook(subjectText)
+        else
             EmailNote_CreateGmail(subjectText)
-        }
     } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Email note: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
+
+EmailNote_TargetEmails() {
+    global EMAIL_NOTE_BOSCH, EMAIL_NOTE_GMAIL
+    return [EMAIL_NOTE_BOSCH, EMAIL_NOTE_GMAIL]
+}
+
+EmailNote_UiaRoot(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return 0
+    try {
+        return UIA.ElementFromHandle(hwnd)
+    } catch {
+        return 0
+    }
+}
+
+EmailNote_CreateOutlook(subjectText := "") {
+    barOwned := false
+    try {
+        StandardLoadingBar_Show("⏳ Opening compose...", BANNER_ACCENT_INTERMEDIATE, {
+            fontSize: 17,
+            trackActiveMonitor: true
+        })
+        barOwned := true
+        if (!EmailNote_EnsureOutlookActive()) {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
+            return
+        }
+        StandardLoadingBar_Update("⏳ Opening compose...")
+        ex := EmailNote_OutlookExe()
+        if (ex != "") {
+            WinActivate("ahk_exe " ex)
+            WinWaitActive("ahk_exe " ex, , 2)
+        }
+        Send("^1")
+        Sleep 250
+        Send("^n")
+        hwnd := EmailNote_WaitUntilOutlookComposeReady()
+        if (!hwnd) {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
+            ShowCenteredOverlay_Utils("❌ Email note: Outlook compose did not become ready", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        StandardLoadingBar_Hide(0)
+        barOwned := false
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 2)
+        EmailNote_FillCompose(hwnd, subjectText, false)
+    } catch Error as e {
+        if (barOwned)
+            StandardLoadingBar_Hide(0)
         ShowCenteredOverlay_Utils("❌ Email note: " . e.Message, 2500, BANNER_ACCENT_ERROR)
     }
 }
@@ -91,6 +138,142 @@ EmailNote_EnsureOutlookActive() {
     return true
 }
 
+EmailNote_FindOutlookToField(root) {
+    if !root
+        return 0
+    try {
+        el := root.FindFirst({ AutomationId: "4117" })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "To", Type: 50004 })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ AutomationId: "134", Type: 50026 })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "To:", matchmode: "Substring" })
+        if el
+            return el
+    } catch {
+    }
+    for nm in ["To recipients", "Destinatários"] {
+        try {
+            el := root.FindFirst({ Type: 50003, Name: nm })
+            if el
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+EmailNote_FindOutlookSubjectField(root) {
+    if !root
+        return 0
+    try {
+        el := root.FindFirst({ AutomationId: "4101" })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "Subject", Type: 50004 })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "Subject", ControlType: "Edit" })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "Assunto", Type: 50004 })
+        if el
+            return el
+    } catch {
+    }
+    return 0
+}
+
+EmailNote_OutlookComposeIsReady(hwnd) {
+    root := EmailNote_UiaRoot(hwnd)
+    if !root
+        return false
+    if EmailNote_FindOutlookToField(root)
+        return true
+    if EmailNote_FindOutlookSubjectField(root)
+        return true
+    try {
+        if root.FindFirst({ AutomationId: "popoutCompose" })
+            return true
+        if root.FindFirst({ AutomationId: "discardCompose" })
+            return true
+    } catch {
+    }
+    return false
+}
+
+; Poll until new-mail To/Subject UIA is present (Gmail compose-ready pattern).
+; Do not use WinExist("A") — the loading bar can be the foreground window.
+EmailNote_FindOutlookComposeHwnd() {
+    ex := EmailNote_OutlookExe()
+    if (ex = "")
+        return 0
+    try {
+        for hwnd in WinGetList("ahk_exe " ex) {
+            if EmailNote_OutlookComposeIsReady(hwnd)
+                return hwnd
+        }
+    } catch {
+    }
+    return 0
+}
+
+EmailNote_WaitUntilOutlookComposeReady(timeoutMs := 15000, neededStreak := 2) {
+    openStart := A_TickCount
+    deadline := A_TickCount + timeoutMs
+    readyStreak := 0
+    lastUpdate := 0
+    lastHwnd := 0
+    while (A_TickCount < deadline) {
+        elapsed := Round((A_TickCount - openStart) / 1000)
+        if ((A_TickCount - lastUpdate) >= 800) {
+            StandardLoadingBar_Update("⏳ Waiting until Outlook compose is ready... (" elapsed "s)")
+            lastUpdate := A_TickCount
+        }
+        hwnd := EmailNote_FindOutlookComposeHwnd()
+        if (hwnd > 0) {
+            if (hwnd = lastHwnd)
+                readyStreak += 1
+            else {
+                lastHwnd := hwnd
+                readyStreak := 1
+            }
+            if (readyStreak >= neededStreak) {
+                WinActivate("ahk_id " hwnd)
+                WinWaitActive("ahk_id " hwnd, , 2)
+                return hwnd
+            }
+        } else {
+            readyStreak := 0
+            lastHwnd := 0
+        }
+        Sleep 200
+    }
+    return 0
+}
+
 EmailNote_ChromeTitleHas(hwnd, needle) {
     try {
         return InStr(WinGetTitle("ahk_id " hwnd), needle)
@@ -132,13 +315,7 @@ EmailNote_FindGmailHwnd(preferCompose := false) {
 }
 
 EmailNote_GmailUiaRoot(hwnd) {
-    if !(hwnd is Integer) || hwnd <= 0
-        return 0
-    try {
-        return UIA.ElementFromHandle(hwnd)
-    } catch {
-        return 0
-    }
+    return EmailNote_UiaRoot(hwnd)
 }
 
 EmailNote_FindGmailToField(root) {
@@ -314,50 +491,249 @@ EmailNote_TypeSubjectText(subjectText) {
     SendText(subjectText)
 }
 
-EmailNote_TypeGmailSubject(hwnd, subjectText) {
-    subjectText := EmailNote_NormalizeSubject(subjectText)
-    if (subjectText = "")
-        return
+EmailNote_LocalPart(email) {
+    p := InStr(email, "@")
+    if (p > 1)
+        return SubStr(email, 1, p - 1)
+    return email
+}
+
+EmailNote_ArrayLength(els) {
+    if !IsObject(els)
+        return 0
+    try {
+        return Integer(els.Length)
+    } catch {
+        return 0
+    }
+}
+
+EmailNote_FindToChipContainer(root) {
+    if !root
+        return 0
+    el := EmailNote_FindGmailToField(root)
+    if el
+        return el
+    try {
+        el := root.FindFirst({ AutomationId: "134", Type: 50026 })
+        if el
+            return el
+    } catch {
+    }
+    try {
+        el := root.FindFirst({ Name: "To:", matchmode: "Substring", Type: 50026 })
+        if el
+            return el
+    } catch {
+    }
+    return EmailNote_FindOutlookToField(root)
+}
+
+; Chip = Button/Group whose name includes the address (or local-part). Skip ListItems
+; so an open autocomplete row cannot pass the gate. Search inside To so the
+; account button in the window chrome cannot count as a recipient chip.
+EmailNote_RecipientChipPresent(root, email) {
+    if !root || email = ""
+        return false
+    scope := EmailNote_FindToChipContainer(root)
+    if !scope
+        scope := root
+    localPart := EmailNote_LocalPart(email)
+    for type in [50000, 50026] {
+        try {
+            el := scope.FindFirst({ Name: email, Type: type, matchmode: "Substring", cs: false })
+            if el
+                return true
+        } catch {
+        }
+        if (localPart != "" && localPart != email) {
+            try {
+                el := scope.FindFirst({ Name: localPart, Type: type, matchmode: "Substring", cs: false })
+                if el
+                    return true
+            } catch {
+            }
+        }
+    }
+    return false
+}
+
+EmailNote_CountOutlookRecipientEntities(root) {
+    if !root
+        return 0
+    scope := EmailNote_FindToChipContainer(root)
+    if !scope
+        scope := root
+    n := 0
+    try {
+        n := Max(n, EmailNote_ArrayLength(scope.FindAll({ ClassName: "_EType_RECIPIENT_ENTITY",
+            matchmode: "Substring" })))
+    } catch {
+    }
+    if (n > 0)
+        return n
+    try {
+        n := Max(n, EmailNote_ArrayLength(scope.FindAll({ AutomationId: "REK", matchmode: "Substring",
+            Type: 50026 })))
+    } catch {
+    }
+    return n
+}
+
+EmailNote_CountRecipientChips(hwnd) {
+    root := EmailNote_UiaRoot(hwnd)
+    if !root
+        return 0
+    named := 0
+    for email in EmailNote_TargetEmails() {
+        if EmailNote_RecipientChipPresent(root, email)
+            named += 1
+    }
+    return Max(named, EmailNote_CountOutlookRecipientEntities(root))
+}
+
+EmailNote_WaitUntilRecipientChipCount(hwnd, needed, timeoutMs := 4000, neededStreak := 2) {
+    deadline := A_TickCount + timeoutMs
+    readyStreak := 0
+    while (A_TickCount < deadline) {
+        if (hwnd > 0 && EmailNote_CountRecipientChips(hwnd) >= needed) {
+            readyStreak += 1
+            if (readyStreak >= neededStreak)
+                return true
+        } else {
+            readyStreak := 0
+        }
+        Sleep 120
+    }
+    return false
+}
+
+EmailNote_FocusToField(hwnd, isGmail, allowClick := false) {
     if (hwnd > 0) {
         WinActivate("ahk_id " hwnd)
         WinWaitActive("ahk_id " hwnd, , 2)
     }
-    root := EmailNote_GmailUiaRoot(hwnd)
-    subEl := EmailNote_FindGmailSubjectField(root)
-    if subEl {
-        try subEl.SetFocus()
-        catch {
-        }
-        Sleep 80
-        try subEl.Value := subjectText
-        catch {
-            SendText(subjectText)
-        }
-        return
+    root := EmailNote_UiaRoot(hwnd)
+    el := isGmail ? EmailNote_FindGmailToField(root) : EmailNote_FindOutlookToField(root)
+    if !el
+        return false
+    try el.SetFocus()
+    catch {
+        return false
     }
-    SendText(subjectText)
+    Sleep 40
+    ; Clicking To after a chip exists can hit the first pill instead of the input.
+    if (allowClick && !isGmail) {
+        try el.Click()
+        catch {
+        }
+    }
+    return true
 }
 
-EmailNote_FillGmailCompose(hwnd, subjectText := "") {
-    global EMAIL_NOTE_BOSCH, EMAIL_NOTE_GMAIL
-    root := EmailNote_GmailUiaRoot(hwnd)
-    if !root
-        return false
-    toEl := EmailNote_FindGmailToField(root)
-    if !toEl {
+EmailNote_CommitRecipientToken(isGmail) {
+    ; Separator keeps caret in To so the next address can be typed.
+    ; Tab after a blob often leaves (or jumps past) an uncommitted second address.
+    if (isGmail)
+        SendText(",")
+    else
+        SendText(";")
+}
+
+EmailNote_AddOneRecipient(hwnd, email, expectedCount, isGmail) {
+    if !EmailNote_FocusToField(hwnd, isGmail, expectedCount = 1) {
         ShowCenteredOverlay_Utils("❌ Email note: To field not found", 2500, BANNER_ACCENT_ERROR)
         return false
     }
-    try toEl.SetFocus()
+    needed := Max(expectedCount, EmailNote_CountRecipientChips(hwnd) + 1)
+    Sleep 80
+    SendText(email)
+    Sleep 120
+    EmailNote_CommitRecipientToken(isGmail)
+    if EmailNote_WaitUntilRecipientChipCount(hwnd, needed)
+        return true
+    Send("{Enter}")
+    if EmailNote_WaitUntilRecipientChipCount(hwnd, needed, 2500)
+        return true
+    Send("{Tab}")
+    if EmailNote_WaitUntilRecipientChipCount(hwnd, needed, 2500)
+        return true
+    ShowCenteredOverlay_Utils("❌ Email note: Recipient was not added as a chip", 2500, BANNER_ACCENT_ERROR)
+    return false
+}
+
+EmailNote_FocusSubjectField(hwnd, isGmail) {
+    if (hwnd > 0) {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 2)
+    }
+    if EmailNote_IsSubjectFocused()
+        return true
+    root := EmailNote_UiaRoot(hwnd)
+    el := isGmail ? EmailNote_FindGmailSubjectField(root) : EmailNote_FindOutlookSubjectField(root)
+    if !el
+        return false
+    try el.SetFocus()
     catch {
-        ShowCenteredOverlay_Utils("❌ Email note: Could not focus To", 2500, BANNER_ACCENT_ERROR)
         return false
     }
-    Sleep 80
-    SendText(EMAIL_NOTE_BOSCH ", " EMAIL_NOTE_GMAIL)
-    Sleep 80
-    EmailNote_TypeGmailSubject(hwnd, subjectText)
+    Sleep 40
+    try el.Click()
+    catch {
+    }
+    return EmailNote_IsSubjectFocused()
+}
+
+; Quality gate: Subject must actually have keyboard focus before typing.
+; UIA Value assignment can fill Subject while the caret stays in To.
+EmailNote_WaitUntilSubjectFocused(hwnd, isGmail, timeoutMs := 5000, neededStreak := 2) {
+    deadline := A_TickCount + timeoutMs
+    readyStreak := 0
+    lastFocusTry := 0
+    while (A_TickCount < deadline) {
+        if EmailNote_IsSubjectFocused() {
+            readyStreak += 1
+            if (readyStreak >= neededStreak)
+                return true
+        } else {
+            readyStreak := 0
+            if ((A_TickCount - lastFocusTry) >= 280) {
+                EmailNote_FocusSubjectField(hwnd, isGmail)
+                lastFocusTry := A_TickCount
+            }
+        }
+        Sleep 100
+    }
+    return EmailNote_IsSubjectFocused()
+}
+
+EmailNote_FillCompose(hwnd, subjectText := "", isGmail := false) {
+    if (hwnd > 0) {
+        WinActivate("ahk_id " hwnd)
+        WinWaitActive("ahk_id " hwnd, , 2)
+    }
+    expected := 0
+    for email in EmailNote_TargetEmails() {
+        expected += 1
+        if !EmailNote_AddOneRecipient(hwnd, email, expected, isGmail)
+            return false
+    }
+    if !EmailNote_WaitUntilRecipientChipCount(hwnd, 2, 2500, 2) {
+        ShowCenteredOverlay_Utils("❌ Email note: Both recipient chips were not ready", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if !EmailNote_WaitUntilSubjectFocused(hwnd, isGmail) {
+        ShowCenteredOverlay_Utils("❌ Email note: Could not focus Subject", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    EmailNote_TypeSubjectText(subjectText)
+    if !EmailNote_IsSubjectFocused()
+        EmailNote_WaitUntilSubjectFocused(hwnd, isGmail, 2000, 1)
     return true
+}
+
+EmailNote_FillGmailCompose(hwnd, subjectText := "") {
+    return EmailNote_FillCompose(hwnd, subjectText, true)
 }
 
 EmailNote_CreateGmail(subjectText := "") {
@@ -451,7 +827,7 @@ EmailNote_IsSubjectFocused() {
             return false
         n := ""
         try n := focused.Name
-        if (n != "" && InStr(n, "Subject"))
+        if (n != "" && (InStr(n, "Subject") || InStr(n, "Assunto")))
             return true
         aid := ""
         try aid := focused.AutomationId
@@ -463,23 +839,5 @@ EmailNote_IsSubjectFocused() {
 }
 
 EmailNote_FocusOutlookSubjectIfNeeded() {
-    if EmailNote_IsSubjectFocused()
-        return
-    try {
-        hwnd := WinExist("A")
-        if (!hwnd)
-            return
-        root := UIA.ElementFromHandle(hwnd)
-        if (!root)
-            return
-        el := 0
-        try el := root.FindFirst({ AutomationId: "4101" })
-        if (!el)
-            try el := root.FindFirst({ Name: "Subject", Type: 50004 })
-        if (!el)
-            try el := root.FindFirst({ Name: "Subject", ControlType: "Edit" })
-        if (el)
-            el.SetFocus()
-    } catch {
-    }
+    return EmailNote_FocusSubjectField(WinExist("A"), false)
 }
