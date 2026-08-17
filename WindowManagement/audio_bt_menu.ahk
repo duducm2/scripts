@@ -1007,8 +1007,8 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = Audio / Bluetooth quick selector (toggle)
-;   2× = AI Companion Quick Download (Utils\ai_quick_download.ahk)
+;   1× = AI Companion Quick Download (Utils\ai_quick_download.ahk)
+;   2× = Audio / Bluetooth quick selector (toggle)
 global g_AudioBt_DoubleTapArmed := false
 global g_AudioBt_LastPressTick := 0
 global g_AudioBt_DoubleTapTimer := 0
@@ -1016,21 +1016,17 @@ global g_AudioBt_DoubleTapTimer := 0
 class AudioBt_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
         global g_AudioBt_DoubleTapArmed, g_AudioBt_DoubleTapTimer
-        global g_AudioBtActive, g_AudioBtGui
         if (!g_AudioBt_DoubleTapArmed)
             return
         g_AudioBt_DoubleTapArmed := false
         g_AudioBt_DoubleTapTimer := 0
-        if (g_AudioBtActive && IsObject(g_AudioBtGui)) {
-            AudioBt_Cleanup()
-        } else {
-            AudioBt_Show()
-        }
+        AiQuickDownload_Run()
     }
 }
 
 #!+9:: {
     global g_AudioBt_DoubleTapArmed, g_AudioBt_LastPressTick, g_AudioBt_DoubleTapTimer
+    global g_AudioBtActive, g_AudioBtGui
 
     thresholdMs := 400
     try thresholdMs := AI_QD_DOUBLE_TAP_MS
@@ -1048,7 +1044,11 @@ class AudioBt_DoubleTapTimerObj {
             SetTimer(g_AudioBt_DoubleTapTimer, 0)
             g_AudioBt_DoubleTapTimer := 0
         }
-        AiQuickDownload_Run()
+        if (g_AudioBtActive && IsObject(g_AudioBtGui)) {
+            AudioBt_Cleanup()
+        } else {
+            AudioBt_Show()
+        }
         return
     }
 

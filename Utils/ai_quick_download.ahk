@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Utils module: ai_quick_download.ahk
 ; Quick Download: focus AI companion → Quality Gates → Desktop wait → cut newest.
-; Trigger: double-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
+; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
 ; =============================================================================
 
 ; Tap-dance interval (ms) — matches Teams_R_DoubleTapThresholdMs / ZMK tap-dance.
@@ -14,7 +14,7 @@ AI_QD_DESKTOP_STABLE_POLLS := 3
 
 global g_AiQuickDownloadBusy := false
 
-; Win+Alt+Shift+9 double-tap entry (called from audio_bt_menu.ahk).
+; Win+Alt+Shift+9 single-tap entry (called from audio_bt_menu.ahk).
 AiQuickDownload_Run() {
     global g_AiQuickDownloadBusy
     if (g_AiQuickDownloadBusy) {
