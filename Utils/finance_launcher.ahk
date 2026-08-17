@@ -47,6 +47,7 @@ Finance_ShowMainMenu() {
         ["C", "Credit cards", "Limits, spent, pay, primary"],
         ["B", "Budgets", "Monthly limits"],
         ["G", "Goals", "Funds and targets"],
+        ["L", "Recurring bills", "Tracking only, no auto-charge"],
         ["K", "Categories", "CRUD, search, filter"],
         ["I", "AI import", "Desktop daily / monthly"],
         ["S", "Settings", "Dashboard widgets"]
@@ -75,14 +76,14 @@ Finance_ShowMainMenu() {
     }
 
     g_FinanceGui.SetFont("s9 c808080", "Segoe UI")
-    g_FinanceGui.Add("Text", "x20 y470 w880", "Esc close   letters open a module   S settings")
+    g_FinanceGui.Add("Text", "x20 y510 w880", "Esc close   letters open a module   S settings")
 
     Finance_BindHotkeys([
         ["d", Finance_OnDash], ["t", Finance_OnTx], ["a", Finance_OnAcc], ["c", Finance_OnCard],
-        ["b", Finance_OnBud], ["g", Finance_OnGoals], ["k", Finance_OnCat],
+        ["b", Finance_OnBud], ["g", Finance_OnGoals], ["l", Finance_OnRec], ["k", Finance_OnCat],
         ["i", Finance_OnImp], ["s", Finance_OnSet], ["Escape", (*) => Finance_CloseGui()]
     ])
-    Finance_CenterGui(g_FinanceGui, 900, 520)
+    Finance_CenterGui(g_FinanceGui, 900, 560)
 }
 
 Finance_OnDash(*) {
@@ -102,6 +103,9 @@ Finance_OnBud(*) {
 }
 Finance_OnGoals(*) {
     Finance_ShowGoals()
+}
+Finance_OnRec(*) {
+    Finance_ShowRecurring()
 }
 Finance_OnCat(*) {
     Finance_ShowCategories()
@@ -159,6 +163,7 @@ Finance_ShowSettings() {
         ["ShowPerformance", "Performance metrics"],
         ["ShowGoals", "Goals overview"],
         ["ShowBudgets", "Budgets overview"],
+        ["ShowRecurring", "Recurring bills"],
         ["ShowNotifications", "Notification banners"]
     ]
     ctrls := Map()

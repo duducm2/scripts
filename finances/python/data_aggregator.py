@@ -285,6 +285,7 @@ def snapshot(
     cards = read_csv("credit_cards.csv")
     goals = read_csv("goals.csv")
     budgets = read_csv("budgets.csv")
+    recurring = read_csv("recurring_bills.csv")
     settings = read_settings()
     today = datetime.now().strftime("%Y-%m-%d")
     month_start = datetime.now().strftime("%Y-%m-01")
@@ -362,6 +363,7 @@ def snapshot(
         "income_pie": inc_rows,
         "top_expenses": exp_rows[:5],
         "goals": goals,
+        "recurring": recurring,
         "budgets": aggregate_budgets(budgets, months),
         "categories": cats,
         "series": monthly_series(txs, months),
@@ -450,6 +452,7 @@ def cockpit_raw(data: dict | None = None) -> dict:
             "ShowPerformance": widget_on(data["settings"], "ShowPerformance"),
             "ShowGoals": widget_on(data["settings"], "ShowGoals"),
             "ShowBudgets": widget_on(data["settings"], "ShowBudgets"),
+            "ShowRecurring": widget_on(data["settings"], "ShowRecurring"),
             "ShowNotifications": widget_on(data["settings"], "ShowNotifications"),
         },
         "transactions": [
@@ -482,4 +485,13 @@ def cockpit_raw(data: dict | None = None) -> dict:
             for b in budgets
         ],
         "goals": data["goals"],
+        "recurring": [
+            {
+                "id": r.get("id", ""),
+                "name": r.get("name", ""),
+                "icon": r.get("icon", ""),
+                "monthly_amount": r.get("monthly_amount", ""),
+            }
+            for r in data.get("recurring") or []
+        ],
     }

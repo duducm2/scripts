@@ -48,6 +48,8 @@ Finance_EnsureData() {
         Finance_SeedBudgets()
     if (!FileExist(Finance_DataDir() . "\transactions.csv"))
         Finance_SeedTransactions()
+    if (!FileExist(Finance_DataDir() . "\recurring_bills.csv"))
+        Finance_SeedRecurringBills()
     Finance_FixDefaultIds()
     Finance_EnsureMonthBudgets(Finance_CurrentYearMonth())
 }
@@ -73,6 +75,7 @@ Finance_EnsureSettings() {
         . "ShowPerformance=1`n"
         . "ShowGoals=1`n"
         . "ShowBudgets=1`n"
+        . "ShowRecurring=1`n"
         . "ShowNotifications=1`n"
         . "`n[General]`n"
         . "DefaultAccountId=ACC_MP_MAIN`n"
@@ -314,6 +317,8 @@ Finance_Headers(kind) {
             return ["id", "name", "current_amount", "target_amount", "target_date"]
         case "budgets":
             return ["year_month", "category_id", "planned_amount", "spent_amount"]
+        case "recurring_bills":
+            return ["id", "name", "icon", "monthly_amount"]
         default:
             return []
     }
@@ -1169,6 +1174,10 @@ Finance_AccIdByNameContains(needle) {
             return a["id"]
     }
     return ""
+}
+
+Finance_SeedRecurringBills() {
+    Finance_Save("recurring_bills", [])
 }
 
 Finance_SeedBudgets() {

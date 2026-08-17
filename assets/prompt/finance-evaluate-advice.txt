@@ -9,6 +9,7 @@ CONTEXT FILES (attached by Utility Shortcuts → Prompts)
 - budgets.csv — monthly planned vs spent by category
 - goals.csv — savings goals (current vs target, target dates)
 - credit_cards.csv — limits and current spent
+- recurring_bills.csv — tracking-only monthly bills (name, icon, monthly_amount). These are not posted transactions and do not change account balances.
 
 Do not invent balances, transactions, or goals. If a figure is missing, say so.
 
@@ -18,8 +19,8 @@ WEB RESEARCH (required)
 - If search is unavailable, state that clearly and give advice labeled as general principles only.
 
 ANALYSIS
-1. Snapshot: net liquid position (accounts), card utilization, open goals progress, budget overruns.
-2. Cash flow: recent months’ income vs expenses by main category; flag outliers and recurring leaks.
+1. Snapshot: net liquid position (accounts), card utilization, open goals progress, budget overruns, recurring bills vs income.
+2. Cash flow: recent months’ income vs expenses by main category; flag outliers and recurring leaks. Treat recurring_bills as planned monthly commitments, not as already-posted expenses.
 3. Risk: high card usage, goals past target date and underfunded, thin emergency buffer.
 4. Opportunities: reallocation, debt/card paydown order, goal prioritization, what to stop or reduce.
 

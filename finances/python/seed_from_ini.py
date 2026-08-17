@@ -448,7 +448,7 @@ def seed():
     settings = DATA / "settings.ini"
     if not settings.exists():
         settings.write_text(
-            "[Dashboard]\nShowBalance=1\nShowPies=1\nShowPerformance=1\nShowGoals=1\nShowBudgets=1\nShowNotifications=1\n\n"
+            "[Dashboard]\nShowBalance=1\nShowPies=1\nShowPerformance=1\nShowGoals=1\nShowBudgets=1\nShowRecurring=1\nShowNotifications=1\n\n"
             "[General]\nDefaultAccountId="
             + acc_mp
             + "\nPrimaryCardId=CARD_MP\nNotifyBudgetExceeded=1\nNotifyCardHighUsage=1\nCardUsageWarnPct=80\n",

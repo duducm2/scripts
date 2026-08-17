@@ -206,6 +206,34 @@ def build_html(data: dict) -> str:
             Spent {format_brl(data['card_spent'])}</div>
           {''.join(card_items) or '<p class="empty">No credit cards</p>'}</div>"""
 
+    rec_html = ""
+    if widget_on(s, "ShowRecurring"):
+        rec_items = []
+        rec_monthly = 0.0
+        for r in data.get("recurring") or []:
+            name = r.get("name") or r.get("id") or "Bill"
+            icon = r.get("icon") or "🔁"
+            amt = parse_decimal(r.get("monthly_amount"))
+            rec_monthly += amt
+            rec_items.append(
+                f'<div class="bar-row">'
+                f'<div class="bar-head"><span>{icon} {name}</span>'
+                f"<span>{format_brl(amt)} / mo</span></div></div>"
+            )
+        n_months = max(len(data.get("period_months") or []), 1)
+        rec_period = rec_monthly * n_months
+        rec_income = data["totals"]["income"]
+        rec_list = "".join(rec_items) or '<p class="empty">No recurring bills</p>'
+        rec_html = f"""
+        <div class="panel" id="recurringPanel" style="margin-top:10px">
+          <h2>Recurring bills</h2>
+          <div class="bar-meta" id="recurringSummary" style="margin-bottom:8px">
+            Period {format_brl(rec_period)} · Income {format_brl(rec_income)}
+            · {n_months} month{"s" if n_months != 1 else ""}</div>
+          <div id="recurringList">{rec_list}</div>
+          <div id="recurringVsIncome" class="chart chart-short"></div>
+        </div>"""
+
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
         "incomePie": pie_spec(data["income_pie"]),
@@ -297,6 +325,7 @@ def build_html(data: dict) -> str:
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
     .chart {{ height:320px; }}
+    .chart-short {{ height:220px; }}
     .chart-cell {{ min-width:0; }}
     .chart-span {{ grid-column:1 / -1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
@@ -341,6 +370,7 @@ def build_html(data: dict) -> str:
     {bud_html}
     {card_bars_html}
   </div>
+  {rec_html}
 </main>
 <script>
 const DATA = {payload_json};
@@ -545,6 +575,53 @@ function renderBudgets(rows) {{
       + '<div class="bar-meta">' + cap + '</div></div>';
   }}).join('');
 }}
+function recurringMonthlyTotal() {{
+  let s = 0;
+  for (const r of RAW.recurring || []) s += parseDecimal(r.monthly_amount);
+  return s;
+}}
+function renderRecurring(months, income) {{
+  const list = document.getElementById('recurringList');
+  const sumEl = document.getElementById('recurringSummary');
+  const rows = RAW.recurring || [];
+  const n = (months && months.length) ? months.length : 1;
+  const periodBills = recurringMonthlyTotal() * n;
+  if (sumEl) {{
+    sumEl.textContent = 'Period ' + formatBrl(periodBills) + ' · Income ' + formatBrl(income)
+      + ' · ' + n + (n === 1 ? ' month' : ' months');
+  }}
+  if (list) {{
+    if (!rows.length) {{
+      list.innerHTML = '<p class="empty">No recurring bills</p>';
+    }} else {{
+      list.innerHTML = rows.map(r => {{
+        const name = r.name || r.id || 'Bill';
+        const icon = r.icon || '🔁';
+        const amt = parseDecimal(r.monthly_amount);
+        return '<div class="bar-row"><div class="bar-head"><span>' + icon + ' ' + name
+          + '</span><span>' + formatBrl(amt) + ' / mo</span></div></div>';
+      }}).join('');
+    }}
+  }}
+  DATA.recurringVs = {{ bills: periodBills, income: income }};
+}}
+function drawRecurringBar() {{
+  const el = document.getElementById('recurringVsIncome');
+  if (!el) return;
+  const vs = DATA.recurringVs || {{ bills: 0, income: 0 }};
+  const L = baseLayout();
+  Plotly.newPlot('recurringVsIncome', [{{
+    type: 'bar',
+    x: ['Recurring (period)', 'Income (period)'],
+    y: [vs.bills, vs.income],
+    marker: {{ color: ['#9b59b6', '#2ecc71'] }},
+    hovertemplate: '%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'
+  }}], Object.assign({{}}, L, {{
+    showlegend: false,
+    height: 220,
+    margin: {{ t: 16, b: 48, l: 48, r: 16 }}
+  }}), {{ responsive: true, displayModeBar: false }});
+}}
 function applyPeriod() {{
   const fromEl = document.getElementById('periodFrom');
   const toEl = document.getElementById('periodTo');
@@ -591,6 +668,7 @@ function applyPeriod() {{
       + ' (' + (vs >= 0 ? '+' : '') + vs.toFixed(0) + '%) · Kept ' + saved.toFixed(0) + '% · Top: ' + top;
   }}
   renderBudgets(aggregateBudgets(months));
+  renderRecurring(months, tot.income);
   drawAll();
 }}
 function themeColors() {{
@@ -655,6 +733,7 @@ function drawAll() {{
       {{type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
     ], L, {{responsive:true, displayModeBar:false}});
   }}
+  drawRecurringBar();
 }}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);
