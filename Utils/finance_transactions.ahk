@@ -254,7 +254,13 @@ Finance_TxForm(existing) {
             Finance_ApplyTransactionToBalances(newTx, false)
         }
         Finance_Save("transactions", txs)
-        Finance_RecomputeBudgetSpent(SubStr(date, 1, 7))
+        ymNew := SubStr(date, 1, 7)
+        Finance_RecomputeBudgetSpent(ymNew)
+        if (isEdit) {
+            ymOld := SubStr(existing["date"], 1, 7)
+            if (ymOld != "" && ymOld != ymNew)
+                Finance_RecomputeBudgetSpent(ymOld)
+        }
         saved := true
         g.Destroy()
     }

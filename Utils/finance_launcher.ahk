@@ -182,16 +182,20 @@ Finance_ShowSettings() {
     y += 32
     g_FinanceGui.Add("Button", "x12 y" . y . " w100 Default", "Save").OnEvent("Click", SaveSettings)
     g_FinanceGui.Add("Button", "x120 y" . y . " w100", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
+    g_FinanceGui.Add("Button", "x230 y" . y . " w200", "Rebuild balances [R]").OnEvent("Click", (*) =>
+        Finance_OnRebuildBalances())
     y += 36
     g_FinanceGui.SetFont("s9 c555555", "Segoe UI")
-    g_FinanceGui.Add("Text", "x12 y" . y . " w480", "Esc / Backspace = back")
+    g_FinanceGui.Add("Text", "x12 y" . y . " w480",
+        "Rebuild: reset accounts/cards from initial balances, replay all transactions. Esc / Backspace = back")
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     Finance_BindHotkeys([
+        ["r", (*) => Finance_OnRebuildBalances()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
-    Finance_CenterGui(g_FinanceGui, 510, y + 36)
+    Finance_CenterGui(g_FinanceGui, 510, y + 40)
 
     SaveSettings(*) {
         for k in keys
@@ -201,6 +205,16 @@ Finance_ShowSettings() {
         Finance_Notify("Settings saved", 1200, BANNER_ACCENT_SUCCESS)
         Finance_ShowMainMenu()
     }
+}
+
+Finance_OnRebuildBalances(*) {
+    if (!Finance_Confirm(
+        "Reset all account balances to initial_balance, zero card spent, and replay every transaction? This cannot be undone except by Restore from backups.",
+        "Rebuild balances"))
+        return
+    n := Finance_RebuildBalancesFromTransactions()
+    Finance_Notify("Rebuilt balances from " . n . " transaction(s)", 2200, BANNER_ACCENT_SUCCESS)
+    Finance_ShowMainMenu()
 }
 
 Finance_ShowImportMenu() {

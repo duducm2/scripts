@@ -532,9 +532,21 @@ Finance_CanAddSubcategory(cats, parentId) {
     return Finance_Subcategories(cats, parentId).Length < 10
 }
 
-Finance_ApplyTransactionToBalances(tx, reverse := false) {
-    accs := Finance_Load("accounts")
-    cards := Finance_Load("credit_cards")
+; Apply or reverse a transaction against account/card balances.
+; reverse=true: undo a prior apply (delete expense credits the account; delete income debits).
+; card_expense: only adjusts credit_cards.current_spent (not the linked bank account).
+; Paying the card bill is a separate expense via Finance_CardMarkPaid.
+; Goals are not updated from transactions.
+; Pass accs/cards objects and save:=false to batch-apply in memory (rebuild).
+Finance_ApplyTransactionToBalances(tx, reverse := false, accs := 0, cards := 0, save := true) {
+    ownLoad := !IsObject(accs)
+    if (ownLoad) {
+        accs := Finance_Load("accounts")
+        cards := Finance_Load("credit_cards")
+        save := true
+    } else if (!IsObject(cards)) {
+        cards := Finance_Load("credit_cards")
+    }
     amt := Finance_ParseDecimal(tx["amount"])
     if (reverse)
         amt := -amt
@@ -552,8 +564,10 @@ Finance_ApplyTransactionToBalances(tx, reverse := false) {
         if (dest != "")
             Finance_AdjustAccount(accs, dest, amt)
     }
-    Finance_Save("accounts", accs)
-    Finance_Save("credit_cards", cards)
+    if (save) {
+        Finance_Save("accounts", accs)
+        Finance_Save("credit_cards", cards)
+    }
 }
 
 Finance_AdjustAccount(accs, id, delta) {
@@ -580,6 +594,58 @@ Finance_ReplaceTransaction(oldTx, newTx) {
     if (IsObject(oldTx))
         Finance_ApplyTransactionToBalances(oldTx, true)
     Finance_ApplyTransactionToBalances(newTx, false)
+}
+
+; Reset account/card balances from initial_balance / 0, then replay all transactions.
+Finance_RebuildBalancesFromTransactions() {
+    accs := Finance_Load("accounts")
+    cards := Finance_Load("credit_cards")
+    for a in accs {
+        init := a.Has("initial_balance") ? a["initial_balance"] : "0,00"
+        a["current_balance"] := init
+    }
+    for c in cards
+        c["current_spent"] := "0,00"
+    txs := Finance_SortTransactionsByDateId(Finance_Load("transactions"))
+    months := Map()
+    for tx in txs {
+        Finance_ApplyTransactionToBalances(tx, false, accs, cards, false)
+        ym := SubStr(tx["date"], 1, 7)
+        if (ym != "")
+            months[ym] := true
+    }
+    Finance_Save("accounts", accs)
+    Finance_Save("credit_cards", cards)
+    for ym, _ in months
+        Finance_RecomputeBudgetSpent(ym)
+    return txs.Length
+}
+
+Finance_SortTransactionsByDateId(txs) {
+    out := []
+    for t in txs
+        out.Push(t)
+    n := out.Length
+    if (n < 2)
+        return out
+    loop n - 1 {
+        i := A_Index
+        loop n - i {
+            j := A_Index
+            a := out[j]
+            b := out[j + 1]
+            swap := false
+            if (a["date"] > b["date"])
+                swap := true
+            else if (a["date"] = b["date"] && a["id"] > b["id"])
+                swap := true
+            if (swap) {
+                out[j] := b
+                out[j + 1] := a
+            }
+        }
+    }
+    return out
 }
 
 Finance_MonthTotals(yearMonth) {
