@@ -867,6 +867,29 @@ namespace AudioBt
             }
         }
 
+        public static string EnableBtAudioServices(string id)
+        {
+            try
+            {
+                BtDeviceInfo bt = ResolveBt(id);
+                if (bt == null)
+                    return "ERR\tNot a paired Bluetooth audio device";
+                Log("EnableBtAudioServices name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected);
+                string err;
+                if (!SetBtServices(bt, true, out err))
+                {
+                    Log("EnableBtAudioServices fail: " + err);
+                    return "ERR\t" + Cell(err);
+                }
+                Log("EnableBtAudioServices ok");
+                return "OK\tEnabled Bluetooth audio services: " + Cell(bt.Name);
+            }
+            catch (Exception ex)
+            {
+                return "ERR\t" + Cell(ex.Message);
+            }
+        }
+
         public static string ConfirmConnected(string id, string method)
         {
             try
