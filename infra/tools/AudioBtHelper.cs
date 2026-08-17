@@ -1703,6 +1703,8 @@ namespace AudioBt
                 System.Threading.Thread.Sleep(250);
             }
             Log("DisconnectOtherBtAudio dropped=" + dropped);
+            System.Threading.Thread.Sleep(1000);
+            Log("DisconnectOtherBtAudio settled 1000ms");
         }
 
         static bool ConnectBtWithFallback(BtDeviceInfo bt, out string method, out string err)
@@ -1849,8 +1851,10 @@ namespace AudioBt
                 System.Threading.Thread.Sleep(400);
                 cr = CM_Enable_DevNode(devInst, 0);
                 Log("PnP bounce disable=" + dis + " enable=" + cr + " " + instanceId);
-                if (cr == 0)
+                if (dis == 0 && cr == 0)
                     bounced++;
+                else if (cr == 0)
+                    Log("PnP enable no-op (disable=" + dis + "), not counting as bounce");
                 else
                     lastCr = cr;
             }
@@ -1859,8 +1863,10 @@ namespace AudioBt
                 return true;
             if (nodes.Count == 0)
                 err = "No BTHENUM audio node for " + hex;
-            else
+            else if (lastCr != 0)
                 err = "PnP CM_Enable_DevNode " + lastCr;
+            else
+                err = "PnP bounce skipped (not disableable)";
             return false;
         }
 

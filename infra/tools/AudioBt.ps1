@@ -99,53 +99,91 @@ function Import-AudioBtHelper {
     }
 }
 
-function Wait-AudioBtWinRT($async, [int]$timeoutMs = 12000) {
+function Get-AudioBtWinRTStatus($async) {
+    try {
+        return [string]$async.Status
+    } catch {
+        return "?"
+    }
+}
+
+function Wait-AudioBtWinRT($async, [int]$timeoutMs = 12000, [type]$resultType = $null) {
     if ($null -eq $async) {
         return $null
     }
-    if (-not ("AudioBtMsgPump" -as [type])) {
-        Add-Type -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-public static class AudioBtMsgPump {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MSG {
-        public IntPtr hWnd; public uint msg; public IntPtr wParam; public IntPtr lParam; public uint time; public int x; public int y;
-    }
-    [DllImport("user32.dll")] public static extern int PeekMessage(out MSG lpMsg, IntPtr hWnd, uint min, uint max, uint remove);
-    [DllImport("user32.dll")] public static extern bool TranslateMessage(ref MSG lpMsg);
-    [DllImport("user32.dll")] public static extern IntPtr DispatchMessage(ref MSG lpMsg);
-    public static void Pump() {
-        MSG m;
-        while (PeekMessage(out m, IntPtr.Zero, 0, 0, 1) != 0) {
-            TranslateMessage(ref m);
-            DispatchMessage(ref m);
+    Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction Stop
+    $task = $null
+    foreach ($m in [System.WindowsRuntimeSystemExtensions].GetMethods()) {
+        if ($m.Name -ne "AsTask") {
+            continue
         }
+        $ps = $m.GetParameters()
+        if ($ps.Count -ne 1) {
+            continue
+        }
+        $pn = $ps[0].ParameterType.Name
+        if ($null -ne $resultType) {
+            if (-not $m.IsGenericMethodDefinition) {
+                continue
+            }
+            if ($m.GetGenericArguments().Count -ne 1) {
+                continue
+            }
+            if ($pn -ne 'IAsyncOperation`1') {
+                continue
+            }
+            $task = $m.MakeGenericMethod($resultType).Invoke($null, @($async))
+            break
+        }
+        if ($m.IsGenericMethodDefinition) {
+            continue
+        }
+        if ($pn -ne "IAsyncAction") {
+            continue
+        }
+        $task = $m.Invoke($null, @($async))
+        break
     }
-}
-"@
-    }
-    $sw = [Diagnostics.Stopwatch]::StartNew()
-    while ($true) {
-        $st = [string]$async.Status
-        if ($st -eq "Completed") {
-            try {
-                return $async.GetResults()
-            } catch {
-                return $null
+    if ($null -eq $task) {
+        $sigs = @()
+        foreach ($m in [System.WindowsRuntimeSystemExtensions].GetMethods()) {
+            if ($m.Name -eq "AsTask") {
+                $sigs += $m.ToString()
             }
         }
-        if ($st -eq "Error" -or $st -eq "Canceled") {
-            $code = ""
-            try { $code = [string]$async.ErrorCode } catch { }
-            throw "WinRT $st $code"
-        }
-        if ($sw.ElapsedMilliseconds -ge $timeoutMs) {
-            throw "WinRT async timeout"
-        }
-        try { [AudioBtMsgPump]::Pump() } catch { }
-        Start-Sleep -Milliseconds 40
+        Write-AudioBtPsLog ("WinRT AsTask unavailable methods=" + ($sigs -join "; "))
+        throw "WinRT AsTask unavailable"
     }
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    $finished = $false
+    try {
+        $finished = [bool]$task.Wait($timeoutMs)
+    } catch {
+        $inner = $_.Exception
+        while ($null -ne $inner.InnerException) {
+            $inner = $inner.InnerException
+        }
+        Write-AudioBtPsLog ("WinRT AsTask fault elapsedMs=" + $sw.ElapsedMilliseconds + " status=" + (Get-AudioBtWinRTStatus $async) + " " + $inner.Message)
+        throw $inner
+    }
+    $st = Get-AudioBtWinRTStatus $async
+    if (-not $finished) {
+        Write-AudioBtPsLog ("WinRT AsTask timeout elapsedMs=" + $sw.ElapsedMilliseconds + " status=" + $st)
+        throw ("WinRT async timeout after " + $sw.ElapsedMilliseconds + "ms status=" + $st)
+    }
+    if ($task.IsFaulted) {
+        $ex = $task.Exception
+        if ($null -ne $ex.InnerException) {
+            $ex = $ex.InnerException
+        }
+        Write-AudioBtPsLog ("WinRT AsTask fault elapsedMs=" + $sw.ElapsedMilliseconds + " status=" + $st + " " + $ex.Message)
+        throw $ex
+    }
+    Write-AudioBtPsLog ("WinRT AsTask ok elapsedMs=" + $sw.ElapsedMilliseconds + " status=" + $st)
+    if ($null -eq $resultType) {
+        return $null
+    }
+    return $task.Result
 }
 
 function Test-AudioBtNeedsConnectFallback([string]$result) {
@@ -166,6 +204,82 @@ function Test-AudioBtMacMatch([string]$blob, [string]$hex) {
     return $compact.Contains($hex.ToUpperInvariant())
 }
 
+function Get-AudioBtWinRTDeviceBlob($d) {
+    $parts = New-Object System.Collections.Generic.List[string]
+    try { $parts.Add([string]$d.Id) } catch { }
+    try { $parts.Add([string]$d.Name) } catch { }
+    try {
+        $keys = @(
+            "System.Devices.Aep.DeviceAddress",
+            "System.DeviceInterface.Bluetooth.DeviceAddress",
+            "System.Devices.Aep.IsConnected"
+        )
+        foreach ($k in $keys) {
+            $v = $null
+            try { $v = $d.Properties[$k] } catch { $v = $null }
+            if ($null -ne $v) {
+                $parts.Add($k + "=" + [string]$v)
+            }
+        }
+    } catch { }
+    return ($parts -join " ")
+}
+
+function Find-AudioBtWinRTDevices([string]$label, [string]$aqs, [bool]$aep) {
+    Write-AudioBtPsLog ("WinRT FindAllAsync label=" + $label + " aqs=" + $aqs)
+    $collType = [Windows.Devices.Enumeration.DeviceInformationCollection]
+    try {
+        $op = $null
+        if ($aep) {
+            $props = [string[]]@(
+                "System.Devices.Aep.DeviceAddress",
+                "System.Devices.Aep.IsConnected",
+                "System.Devices.Aep.ProtocolId"
+            )
+            $kind = [Windows.Devices.Enumeration.DeviceInformationKind]::AssociationEndpoint
+            try {
+                $op = [Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($aqs, $props, $kind)
+            } catch {
+                Write-AudioBtPsLog ("WinRT FindAllAsync AEP kind overload fail, retry aqs-only: " + $_.Exception.Message)
+                $op = [Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($aqs)
+            }
+        } else {
+            $op = [Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($aqs)
+        }
+        $devices = Wait-AudioBtWinRT $op 12000 $collType
+        $count = 0
+        try { $count = @($devices).Count } catch { $count = -1 }
+        Write-AudioBtPsLog ("WinRT FindAllAsync label=" + $label + " count=" + $count)
+        return $devices
+    } catch {
+        Write-AudioBtPsLog ("WinRT FindAllAsync label=" + $label + " fail: " + $_.Exception.Message)
+        return $null
+    }
+}
+
+function Invoke-AudioBtWinRTOpen([string]$deviceId) {
+    Write-AudioBtPsLog ("WinRT TryCreateFromId " + $deviceId)
+    $conn = [Windows.Media.Audio.AudioPlaybackConnection]::TryCreateFromId($deviceId)
+    if ($null -eq $conn) {
+        Write-AudioBtPsLog "WinRT TryCreateFromId returned null"
+        return @{ ok = $false; err = "AudioPlaybackConnection.TryCreateFromId failed" }
+    }
+    Wait-AudioBtWinRT ($conn.StartAsync()) 12000 | Out-Null
+    Write-AudioBtPsLog "WinRT StartAsync completed"
+    $openType = [Windows.Media.Audio.AudioPlaybackConnectionOpenResult]
+    $open = Wait-AudioBtWinRT ($conn.OpenAsync()) 12000 $openType
+    $status = ""
+    if ($null -ne $open) {
+        try { $status = [string]$open.Status } catch { $status = "" }
+    }
+    Write-AudioBtPsLog ("WinRT OpenAsync status=" + $status)
+    if ($status -ne "" -and $status -ne "0" -and $status -ne "Success") {
+        return @{ ok = $false; err = "AudioPlaybackConnection.OpenAsync $status" }
+    }
+    Write-AudioBtPsLog "WinRT ok"
+    return @{ ok = $true; err = "" }
+}
+
 function Invoke-AudioBtWinRTConnect([string]$Id) {
     $hex = [AudioBt.Helper]::BluetoothAddressHex($Id)
     Write-AudioBtPsLog ("WinRT begin id=" + $Id + " hex=" + $hex)
@@ -178,6 +292,8 @@ function Invoke-AudioBtWinRTConnect([string]$Id) {
         Add-Type -AssemblyName System.Runtime.WindowsRuntime -ErrorAction SilentlyContinue
         $null = [Windows.Media.Audio.AudioPlaybackConnection, Windows.Media.Audio, ContentType = WindowsRuntime]
         $null = [Windows.Devices.Enumeration.DeviceInformation, Windows.Devices.Enumeration, ContentType = WindowsRuntime]
+        $null = [Windows.Devices.Enumeration.DeviceInformationKind, Windows.Devices.Enumeration, ContentType = WindowsRuntime]
+        $null = [Windows.Media.Audio.AudioPlaybackConnectionOpenResult, Windows.Media.Audio, ContentType = WindowsRuntime]
     } catch {
         Write-AudioBtPsLog ("WinRT types unavailable: " + $_.Exception.Message)
         return @{ ok = $false; err = "AudioPlaybackConnection unavailable: $($_.Exception.Message)" }
@@ -186,43 +302,44 @@ function Invoke-AudioBtWinRTConnect([string]$Id) {
     try {
         $selector = [Windows.Media.Audio.AudioPlaybackConnection]::GetDeviceSelector()
         Write-AudioBtPsLog ("WinRT selector=" + $selector)
-        $devices = Wait-AudioBtWinRT ([Windows.Devices.Enumeration.DeviceInformation]::FindAllAsync($selector))
-        $count = 0
-        try { $count = @($devices).Count } catch { $count = -1 }
-        Write-AudioBtPsLog ("WinRT devices=" + $count)
-        $match = $null
-        foreach ($d in $devices) {
-            $blob = ""
-            try { $blob = [string]$d.Id + " " + [string]$d.Name } catch { $blob = [string]$d.Id }
-            Write-AudioBtPsLog ("WinRT candidate " + $blob)
-            if (Test-AudioBtMacMatch $blob $hex) {
-                $match = $d
-                break
+        $unfiltered = ($selector -replace "(?i)\s*AND\s+System\.Devices\.InterfaceEnabled:=System\.StructuredQueryType\.Boolean#True", "").Trim()
+        $queries = New-Object System.Collections.Generic.List[object]
+        $queries.Add(@{ label = "AudioPlaybackConnection"; aqs = $selector; aep = $false })
+        if ($unfiltered -ne $selector -and -not [string]::IsNullOrWhiteSpace($unfiltered)) {
+            $queries.Add(@{ label = "AudioPlaybackUnfiltered"; aqs = $unfiltered; aep = $false })
+        }
+        $queries.Add(@{ label = "AepBluetooth"; aqs = 'System.Devices.Aep.ProtocolId:="{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}"'; aep = $true })
+        $lastErr = "AudioPlaybackConnection: no device matching $hex"
+        foreach ($q in $queries) {
+            if ([string]::IsNullOrWhiteSpace($q.aqs)) {
+                continue
             }
+            $devices = Find-AudioBtWinRTDevices $q.label $q.aqs $q.aep
+            if ($null -eq $devices) {
+                $lastErr = "AudioPlaybackConnection: FindAllAsync $($q.label) failed"
+                continue
+            }
+            $match = $null
+            foreach ($d in $devices) {
+                $blob = Get-AudioBtWinRTDeviceBlob $d
+                Write-AudioBtPsLog ("WinRT candidate " + $q.label + " " + $blob)
+                if (Test-AudioBtMacMatch $blob $hex) {
+                    $match = $d
+                    break
+                }
+            }
+            if ($null -eq $match) {
+                Write-AudioBtPsLog ("WinRT no match for " + $hex + " via " + $q.label)
+                continue
+            }
+            Write-AudioBtPsLog ("WinRT match label=" + $q.label + " id=" + $match.Id)
+            $opened = Invoke-AudioBtWinRTOpen $match.Id
+            if ($opened.ok) {
+                return $opened
+            }
+            $lastErr = $opened.err
         }
-        if ($null -eq $match) {
-            Write-AudioBtPsLog ("WinRT no match for " + $hex)
-            return @{ ok = $false; err = "AudioPlaybackConnection: no device matching $hex" }
-        }
-        Write-AudioBtPsLog ("WinRT match id=" + $match.Id)
-        $conn = [Windows.Media.Audio.AudioPlaybackConnection]::TryCreateFromId($match.Id)
-        if ($null -eq $conn) {
-            Write-AudioBtPsLog "WinRT TryCreateFromId failed"
-            return @{ ok = $false; err = "AudioPlaybackConnection.TryCreateFromId failed" }
-        }
-        Wait-AudioBtWinRT ($conn.StartAsync()) | Out-Null
-        Write-AudioBtPsLog "WinRT StartAsync completed"
-        $open = Wait-AudioBtWinRT ($conn.OpenAsync())
-        $status = ""
-        if ($null -ne $open) {
-            try { $status = [string]$open.Status } catch { $status = "" }
-        }
-        Write-AudioBtPsLog ("WinRT OpenAsync status=" + $status)
-        if ($status -ne "" -and $status -ne "0" -and $status -ne "Success") {
-            return @{ ok = $false; err = "AudioPlaybackConnection.OpenAsync $status" }
-        }
-        Write-AudioBtPsLog "WinRT ok"
-        return @{ ok = $true; err = "" }
+        return @{ ok = $false; err = $lastErr }
     } catch {
         Write-AudioBtPsLog ("WinRT exception: " + $_.Exception.Message)
         return @{ ok = $false; err = "AudioPlaybackConnection: $($_.Exception.Message)" }
