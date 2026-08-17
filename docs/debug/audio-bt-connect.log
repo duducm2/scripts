@@ -2,3 +2,8 @@
 2026-08-17 16:40:06  20260817-163943  code=1  audio-bt-connect-20260817-163943.log  ERR	BluetoothSetServiceState 1060; PnP: no audio endpoint appeared; WinRT: AudioPlaybackConnection: WinRT async timeout
 2026-08-17 16:53:16  20260817-165242  code=1  audio-bt-connect-20260817-165242.log  ERR	BluetoothSetServiceState 1060; PnP: no audio endpoint appeared; WinRT: AudioPlaybackConnection: WinRT async timeout
 2026-08-17 16:53:57  20260817-165333  code=1  audio-bt-connect-20260817-165333.log  ERR	BluetoothSetServiceState 1060; PnP: no audio endpoint appeared; WinRT: AudioPlaybackConnection: WinRT async timeout
+2026-08-17 17:15:35  20260817-171522  code=1  audio-bt-connect-20260817-171522.log  ERR	BluetoothSetServiceState 1060; PnP bounce skipped (not disableable); WinRT: AudioPlaybackConnection: FindAllAsync AepBluetooth failed
+2026-08-17 17:15:57  20260817-171544  code=1  audio-bt-connect-20260817-171544.log  ERR	BluetoothSetServiceState 1060; PnP bounce skipped (not disableable); WinRT: AudioPlaybackConnection: FindAllAsync AepBluetooth failed
+2026-08-17 17:16:14  20260817-171601  code=1  audio-bt-connect-20260817-171601.log  ERR	BluetoothSetServiceState 1060; PnP bounce skipped (not disableable); WinRT: AudioPlaybackConnection: FindAllAsync AepBluetooth failed
+2026-08-17 17:16:33  20260817-171629  code=0  audio-bt-connect-20260817-171629.log  OK	Connected via BluetoothSetServiceState and isolated: Headphones (Office)
+2026-08-17 17:17:05  20260817-171636  code=1  audio-bt-connect-20260817-171636.log  ERR	BluetoothSetServiceState 1060; PnP bounce skipped (not disableable); WinRT: AudioPlaybackConnection: FindAllAsync AepBluetooth failed
