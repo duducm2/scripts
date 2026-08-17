@@ -469,9 +469,13 @@ EmailNote_LocalPart(email) {
     return email
 }
 
-; Scoped to the To element only. Gmail uncommitted To is Text (50020), not a Button pill.
-EmailNote_ToHasAddress(toEl, email) {
-    if !toEl || email = ""
+EmailNote_FindToField(searchRoot, isGmail) {
+    return isGmail ? EmailNote_FindGmailToField(searchRoot) : EmailNote_FindOutlookToField(searchRoot)
+}
+
+; One FindFirst per needle/type. Gmail uncommitted To is Text (50020), not a Button pill.
+EmailNote_ScopeHasAddress(scope, email) {
+    if !scope || email = ""
         return false
     localPart := EmailNote_LocalPart(email)
     needles := [email]
@@ -480,7 +484,7 @@ EmailNote_ToHasAddress(toEl, email) {
     for type in [50020, 50000, 50026] {
         for needle in needles {
             try {
-                el := toEl.FindFirst({ Name: needle, Type: type, matchmode: "Substring", cs: false })
+                el := scope.FindFirst({ Name: needle, Type: type, matchmode: "Substring", cs: false })
                 if el
                     return true
             } catch {
@@ -488,22 +492,57 @@ EmailNote_ToHasAddress(toEl, email) {
         }
     }
     try {
-        n := toEl.Name
+        n := scope.Name
         if (n != "" && (InStr(n, email, false) || (localPart != "" && InStr(n, localPart, false))))
+            return true
+    } catch {
+    }
+    ; Gmail To ComboBox (50003) puts the typed address in Value, not a named Text child.
+    try {
+        v := scope.Value
+        if (v != "" && (InStr(v, email, false) || (localPart != "" && InStr(v, localPart, false))))
             return true
     } catch {
     }
     return false
 }
 
-EmailNote_WaitUntilToHasAddress(toEl, email, timeoutMs := 1500) {
+; Fresh To first, then searchRoot (stale To row after the first address is committed).
+EmailNote_ToHasAddress(searchRoot, isGmail, email) {
+    toEl := EmailNote_FindToField(searchRoot, isGmail)
+    if (toEl && EmailNote_ScopeHasAddress(toEl, email))
+        return true
+    if (searchRoot && EmailNote_ScopeHasAddress(searchRoot, email))
+        return true
+    return false
+}
+
+EmailNote_WaitUntilToHasAddress(searchRoot, isGmail, email, timeoutMs := 1500) {
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if EmailNote_ToHasAddress(toEl, email)
+        if EmailNote_ToHasAddress(searchRoot, isGmail, email)
             return true
         Sleep 40
     }
     return false
+}
+
+; Click only on the first address — later clicks hit the Bosch pill.
+EmailNote_FocusToField(searchRoot, isGmail, allowClick := false) {
+    toEl := EmailNote_FindToField(searchRoot, isGmail)
+    if !toEl
+        return false
+    try toEl.SetFocus()
+    catch {
+        return false
+    }
+    Sleep 40
+    if (allowClick) {
+        try toEl.Click()
+        catch {
+        }
+    }
+    return true
 }
 
 EmailNote_FindSubjectField(root, isGmail) {
@@ -561,16 +600,34 @@ EmailNote_WaitUntilSubjectFocused(subEl, timeoutMs := 1500) {
     return EmailNote_IsSubjectFocused()
 }
 
-EmailNote_AddOneRecipient(toEl, email, isGmail) {
+EmailNote_IsToFocused() {
+    try {
+        focused := UIA.GetFocusedElement()
+        if (!focused)
+            return false
+        n := ""
+        try n := focused.Name
+        if (n != "" && (InStr(n, "To") || InStr(n, "Destinat") || InStr(n, "recipient")))
+            return true
+    } catch {
+    }
+    return false
+}
+
+EmailNote_AddOneRecipient(searchRoot, email, isGmail, isFirst) {
+    EmailNote_FocusToField(searchRoot, isGmail, isFirst)
     SendText(email)
     if (isGmail)
         SendText(",")
     else
         SendText(";")
-    if EmailNote_WaitUntilToHasAddress(toEl, email)
+    if EmailNote_WaitUntilToHasAddress(searchRoot, isGmail, email)
         return true
     Send("{Enter}")
-    return EmailNote_WaitUntilToHasAddress(toEl, email)
+    if EmailNote_WaitUntilToHasAddress(searchRoot, isGmail, email)
+        return true
+    ; Gmail ComboBox often never exposes a named child; caret still in To means the address was typed.
+    return EmailNote_IsToFocused()
 }
 
 EmailNote_FillCompose(hwnd, subjectText := "", isGmail := false) {
@@ -588,25 +645,18 @@ EmailNote_FillCompose(hwnd, subjectText := "", isGmail := false) {
         if compose
             searchRoot := compose
     }
-    toEl := isGmail ? EmailNote_FindGmailToField(searchRoot) : EmailNote_FindOutlookToField(searchRoot)
+    toEl := EmailNote_FindToField(searchRoot, isGmail)
     if !toEl {
         ShowCenteredOverlay_Utils("❌ Email note: To field not found", 2500, BANNER_ACCENT_ERROR)
         return false
     }
-    try toEl.SetFocus()
-    catch {
-        ShowCenteredOverlay_Utils("❌ Email note: Could not focus To", 2500, BANNER_ACCENT_ERROR)
-        return false
-    }
-    Sleep 40
-    try toEl.Click()
-    catch {
-    }
+    isFirst := true
     for email in EmailNote_TargetEmails() {
-        if !EmailNote_AddOneRecipient(toEl, email, isGmail) {
+        if !EmailNote_AddOneRecipient(searchRoot, email, isGmail, isFirst) {
             ShowCenteredOverlay_Utils("❌ Email note: Recipient was not added as a chip", 2500, BANNER_ACCENT_ERROR)
             return false
         }
+        isFirst := false
     }
     subEl := EmailNote_FindSubjectField(searchRoot, isGmail)
     if !subEl {
