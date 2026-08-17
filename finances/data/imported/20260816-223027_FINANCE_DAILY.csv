@@ -1,0 +1,2 @@
+date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+2026-08-15,Water,"5,00",expense,CAT_MERCADO,Grocery drinks,ACC_MERCADOP,,

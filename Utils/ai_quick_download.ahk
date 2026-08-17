@@ -11,6 +11,11 @@ AI_QD_OPEN_SETTLE_MS := 800
 AI_QD_DESKTOP_POLL_MS := 250
 AI_QD_DESKTOP_TIMEOUT_MS := 60000
 AI_QD_DESKTOP_STABLE_POLLS := 3
+; Finance [D] auto-import: wait after stop-button gone before hunting Download code.
+AI_QD_FINANCE_POST_COMPLETE_MS := 2500
+; Settle between finance download-control retries (#!+9 keeps AI_QD_GATE_SETTLE_MS).
+AI_QD_FINANCE_GATE_SETTLE_MS := 1200
+AI_QD_FINANCE_GATE_ATTEMPTS := 4
 
 global g_AiQuickDownloadBusy := false
 
@@ -23,13 +28,31 @@ AiQuickDownload_Run() {
     }
     g_AiQuickDownloadBusy := true
     try {
-        AiQuickDownload_RunInner()
+        AiQuickDownload_RunInner(true)
     } finally {
         g_AiQuickDownloadBusy := false
     }
 }
 
-AiQuickDownload_RunInner() {
+; Finance daily [D]: same download gates; leave file on Desktop; return path (or "").
+AiQuickDownload_RunForFinanceImport() {
+    global g_AiQuickDownloadBusy
+    if (g_AiQuickDownloadBusy) {
+        try ShowCenteredOverlay_Utils("⏳ Quick Download already running…", 1800, BANNER_ACCENT_INTERMEDIATE)
+        return ""
+    }
+    g_AiQuickDownloadBusy := true
+    path := ""
+    try {
+        path := AiQuickDownload_RunInner(false)
+    } finally {
+        g_AiQuickDownloadBusy := false
+    }
+    return path
+}
+
+; doCut: true = cut newest after wait (#!+9). false = return Desktop path for finance import.
+AiQuickDownload_RunInner(doCut := true) {
     try StandardLoadingBar_Show("⏳ Quick Download…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
@@ -37,7 +60,7 @@ AiQuickDownload_RunInner() {
     focus := AiQuickDownload_FocusCompanion()
     if (!focus.ok) {
         AiQuickDownload_Fail(focus.err)
-        return
+        return ""
     }
 
     desktopPath := AiQuickDownload_ResolveDesktopPath()
@@ -57,90 +80,56 @@ AiQuickDownload_RunInner() {
     uia := focus.uia
     hwnd := focus.hwnd
     companion := focus.companion
-    AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
-    try uia := UIA_Browser("ahk_id " hwnd)
-    catch {
-    }
-    if (!IsObject(uia))
-        uia := focus.uia
-
     clicked := false
-    ; Newest file-chip Open vs Download code (by Y). Never click Show code.
-    ; Then Gate A (viewer), Gate B Open→viewer fallback, C–E stubs.
-    try clicked := AiQuickDownload_TryNewestFileOrCodeDownload(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (!clicked) {
+    attempts := doCut ? 1 : AI_QD_FINANCE_GATE_ATTEMPTS
+    loop attempts {
+        AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
         try uia := UIA_Browser("ahk_id " hwnd)
         catch {
         }
-        try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
+        if (!IsObject(uia))
+            uia := focus.uia
+        try clicked := AiQuickDownload_TryClickDownloadControl(uia, hwnd)
         catch {
             clicked := false
         }
-    }
-    if (!clicked) {
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-        }
-        try clicked := AiQuickDownload_GateB_OpenThenDownload(uia, hwnd)
-        catch {
-            clicked := false
-        }
-    }
-    if (!clicked) {
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-        }
-        try clicked := AiQuickDownload_GateC_Enterprise(uia, hwnd)
-        catch {
-            clicked := false
-        }
-    }
-    if (!clicked) {
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-        }
-        try clicked := AiQuickDownload_GateD_CopilotCard(uia, hwnd)
-        catch {
-            clicked := false
-        }
-    }
-    if (!clicked) {
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-        }
-        try clicked := AiQuickDownload_GateE_CopilotPreview(uia, hwnd)
-        catch {
-            clicked := false
-        }
+        if (clicked)
+            break
+        if (A_Index < attempts)
+            Sleep AI_QD_FINANCE_GATE_SETTLE_MS
     }
 
     if (!clicked) {
         AiQuickDownload_Fail("❌ Quick Download: download control not found")
-        return
+        return ""
     }
 
     try StandardLoadingBar_Update("⏳ Waiting for Desktop file…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
 
-    if !AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp) {
+    newPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
+    if (newPath = "") {
         AiQuickDownload_Fail("❌ Quick Download: file did not appear on Desktop")
-        return
+        return ""
     }
 
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
-    try DesktopCutNewest_Trigger()
-    catch as e {
-        try ShowCenteredOverlay_Utils("❌ Quick Download: cut failed — " SubStr(e.Message, 1, 60), 2500,
-        BANNER_ACCENT_ERROR)
+    if (doCut) {
+        try StandardLoadingBar_Hide(0)
         catch {
         }
+        try DesktopCutNewest_Trigger()
+        catch as e {
+            try ShowCenteredOverlay_Utils("❌ Quick Download: cut failed — " SubStr(e.Message, 1, 60), 2500,
+            BANNER_ACCENT_ERROR)
+            catch {
+            }
+        }
+        return newPath
     }
+
+    preferCsv := AiQuickDownload_NewestCsvPreferring(desktopPath, beforePath, beforeStamp, newPath)
+    return preferCsv != "" ? preferCsv : newPath
 }
 
 AiQuickDownload_Fail(message) {
@@ -150,6 +139,61 @@ AiQuickDownload_Fail(message) {
     try ShowCenteredOverlay_Utils(message, 2800, BANNER_ACCENT_ERROR)
     catch {
     }
+}
+
+; One pass of download gates (file/code chip → A–E). Caller refreshes UIA between retries.
+AiQuickDownload_TryClickDownloadControl(uia, hwnd := 0) {
+    clicked := false
+    try clicked := AiQuickDownload_TryNewestFileOrCodeDownload(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    if (clicked)
+        return true
+    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
+    catch {
+    }
+    try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    if (clicked)
+        return true
+    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
+    catch {
+    }
+    try clicked := AiQuickDownload_GateB_OpenThenDownload(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    if (clicked)
+        return true
+    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
+    catch {
+    }
+    try clicked := AiQuickDownload_GateC_Enterprise(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    if (clicked)
+        return true
+    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
+    catch {
+    }
+    try clicked := AiQuickDownload_GateD_CopilotCard(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    if (clicked)
+        return true
+    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
+    catch {
+    }
+    try clicked := AiQuickDownload_GateE_CopilotPreview(uia, hwnd)
+    catch {
+        clicked := false
+    }
+    return clicked
 }
 
 AiQuickDownload_FocusCompanion() {
@@ -244,7 +288,7 @@ AiQuickDownload_IsTempDownloadName(name) {
 
 AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp) {
     if (!desktopPath || !DirExist(desktopPath))
-        return false
+        return ""
     start := A_TickCount
     lastPath := ""
     lastSize := -1
@@ -283,7 +327,7 @@ AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp) {
         if (newest = lastPath && size = lastSize) {
             stableCount += 1
             if (stableCount >= AI_QD_DESKTOP_STABLE_POLLS)
-                return true
+                return newest
         } else {
             lastPath := newest
             lastSize := size
@@ -291,7 +335,29 @@ AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp) {
         }
         Sleep AI_QD_DESKTOP_POLL_MS
     }
-    return false
+    return ""
+}
+
+; If a new .csv exists that is at least as new as candidate, prefer it for finance import.
+AiQuickDownload_NewestCsvPreferring(desktopPath, beforePath, beforeStamp, candidate) {
+    best := ""
+    bestStamp := ""
+    loop files desktopPath . "\*.csv", "F" {
+        if (AiQuickDownload_IsTempDownloadName(A_LoopFileName))
+            continue
+        stamp := AiQuickDownload_ItemStamp(A_LoopFileFullPath)
+        isNew := (beforePath = "") || (A_LoopFileFullPath != beforePath) || (stamp != "" && beforeStamp != "" &&
+            stamp > beforeStamp)
+        if (!isNew)
+            continue
+        if (best = "" || (stamp != "" && stamp >= bestStamp)) {
+            best := A_LoopFileFullPath
+            bestStamp := stamp
+        }
+    }
+    if (best != "")
+        return best
+    return candidate
 }
 
 AiQuickDownload_Invoke(el) {

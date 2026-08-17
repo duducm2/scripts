@@ -1,5 +1,3 @@
 ﻿id,date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
-TX001,2026-08-15,Banana,"2,00",expense,CAT_MERCADO,Produce,ACC_MERCADOP,,
-TX002,2026-08-15,Eraser,"5,00",card_expense,CAT_MERCADO,Stationery,ACC_MERCADOP,CARD_MP,
-TX003,2026-08-15,Gift from father,"10,00",income,CAT_PRESENTE,,ACC_MERCADOP,,
-TX004,2026-08-15,Transfer to long-term savings,"12,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP3
+TX003,2026-08-16,Transfer,"4,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP2
+TX004,2026-08-16,Salary,"5,00",income,CAT_SALARIO,,ACC_MERCADOP,,

@@ -39,6 +39,7 @@ class D2C_FlowManager {
         this.MonitorButtonEverFound := false
         this.MonitorLastCheckTick := 0
         this.HasCopiedForThisResponse := false
+        this.FinanceDailyAutoImport := false
     }
 
     ; --- Entry Points ---
@@ -594,6 +595,7 @@ class D2C_FlowManager {
 
         optionalSnippet := ""
         financePrompt := false
+        this.FinanceDailyAutoImport := false
         if (presetMode = "finance_daily") {
             PromptData_Load()
             financePrompt := PromptData_FindByChar("d")
@@ -605,6 +607,7 @@ class D2C_FlowManager {
             dictation := ""
             try dictation := A_Clipboard
             optionalSnippet := D2C_CombinePresetWithDictation(PromptData_ReadBody(financePrompt), dictation)
+            this.FinanceDailyAutoImport := true
         } else if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
             dictation := ""
             try dictation := A_Clipboard
@@ -710,9 +713,15 @@ class D2C_FlowManager {
             } else
                 Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
             this.StartGeminiMonitor()
+            if (this.FinanceDailyAutoImport) {
+                try StandardLoadingBar_Show("⏳ Finance daily: waiting for AI…", BANNER_ACCENT_INTERMEDIATE, {
+                    passive: true, centerOnHwnd: 0, textWidth: 320, fontSize: 17, alpha: 204 })
+                catch {
+                }
+            }
         }
 
-        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+        if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !this.FinanceDailyAutoImport)
             WinActivate("ahk_id " this.OriginHwnd)
 
         if (!autoSubmit)
@@ -815,12 +824,65 @@ class D2C_FlowManager {
                 catch {
                     ; Ignore chime failures
                 }
-                this.PromptForResponseAction()
+                if (this.FinanceDailyAutoImport)
+                    this.FinishFinanceDailyAutoImport()
+                else
+                    this.PromptForResponseAction()
             } else {
                 ; False alarm, the button is still there. Resume polling.
                 SetTimer(this.MonitorTimer, 500)
             }
         }
+    }
+
+    ; After AI finishes: settle for download UI, Quick Download (no cut) → auto-import.
+    FinishFinanceDailyAutoImport() {
+        this.CurrentPhase := "FinanceDailyImport"
+        try StandardLoadingBar_Show("⏳ Finance daily: waiting for download UI…", BANNER_ACCENT_INTERMEDIATE, {
+            passive: true, centerOnHwnd: 0, textWidth: 360, fontSize: 17, alpha: 204 })
+        catch {
+        }
+        settleMs := 2500
+        try settleMs := AI_QD_FINANCE_POST_COMPLETE_MS
+        catch {
+            settleMs := 2500
+        }
+        Sleep settleMs
+        try StandardLoadingBar_Update("⏳ Finance daily: downloading…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+        path := ""
+        try path := AiQuickDownload_RunForFinanceImport()
+        catch {
+            path := ""
+        }
+        if (path = "" || !FileExist(path)) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            try ShowCenteredOverlay_Utils("❌ Finance daily: download failed", 2500, BANNER_ACCENT_ERROR)
+            catch {
+            }
+            this.Reset()
+            return
+        }
+        try StandardLoadingBar_Update("⏳ Finance daily: importing…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+        ok := false
+        try ok := Finance_ImportDailyFromPath(path, true)
+        catch {
+            ok := false
+        }
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        if (!ok) {
+            try ShowCenteredOverlay_Utils("❌ Finance daily: import failed", 2500, BANNER_ACCENT_ERROR)
+            catch {
+            }
+        }
+        this.Reset()
     }
 
     ; --- Phase 4: Action Prompt ---

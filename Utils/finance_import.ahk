@@ -125,21 +125,28 @@ Finance_ImportConfirm(title, lines) {
 }
 
 Finance_ImportDaily(*) {
-    path := Finance_DesktopNewest("FINANCE_DAILY*.csv")
-    if (path = "")
-        path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
-    if (path = "")
-        path := Finance_DesktopNewest("FINANCE_DAILY*.ini")
-    if (path = "")
-        path := Finance_DesktopNewestDailyCodeDump()
+    Finance_ImportDailyFromPath("", false)
+}
+
+; path empty = discover on Desktop. autoConfirm skips the confirm dialog.
+Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     if (path = "") {
+        path := Finance_DesktopNewest("FINANCE_DAILY*.csv")
+        if (path = "")
+            path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
+        if (path = "")
+            path := Finance_DesktopNewest("FINANCE_DAILY*.ini")
+        if (path = "")
+            path := Finance_DesktopNewestDailyCodeDump()
+    }
+    if (path = "" || !FileExist(path)) {
         Finance_Notify("No FINANCE_DAILY file on Desktop", 2000, BANNER_ACCENT_ERROR)
-        return
+        return false
     }
     rows := Finance_ReadAiImportCsv(path)
     if (!rows.Length) {
         Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
-        return
+        return false
     }
     lines := []
     parsed := []
@@ -161,8 +168,8 @@ Finance_ImportDaily(*) {
         ))
         lines.Push(date . "  " . t . "  " . desc . "  " . amt)
     }
-    if (!Finance_ImportConfirm("Import daily transactions", lines))
-        return
+    if (!autoConfirm && !Finance_ImportConfirm("Import daily transactions", lines))
+        return false
     txs := Finance_Load("transactions")
     for p in parsed {
         p["id"] := Finance_NextId("TX", txs)
@@ -173,7 +180,9 @@ Finance_ImportDaily(*) {
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
     Finance_ArchiveImported(path)
     Finance_Notify("Imported " . parsed.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
-    Finance_ShowTransactions()
+    if (!autoConfirm)
+        Finance_ShowTransactions()
+    return true
 }
 
 Finance_ImportMonthly(*) {

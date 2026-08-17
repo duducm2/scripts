@@ -1,0 +1,5 @@
+date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+2026-08-15,Water,"4,00",expense,CAT_LAZER,Drinks,ACC_MERCADOP,,
+2026-08-16,Apple,"1,00",card_expense,CAT_MERCADO,Produce,ACC_MERCADOP,CARD_MP,
+2026-08-16,Transfer,"4,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP2
+2026-08-16,Salary,"5,00",income,CAT_SALARIO,,ACC_MERCADOP,,
