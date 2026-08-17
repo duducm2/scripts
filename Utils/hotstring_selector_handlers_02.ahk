@@ -113,6 +113,9 @@ UtilitySelector_BindModalHotkeys() {
             ch := row.HasProp("char") ? row.char : ""
             if (ch = "" || seen.Has(ch))
                 continue
+            if ((g_UtilitySelectorCategory = "Prompts" || g_UtilitySelectorCategory = "Hotstrings") && StrLower(ch) =
+            "e")
+                continue
             seen[ch] := true
             UtilitySelector_BindOneChar(ch, CreateHotstringCharHandler(ch))
         }
@@ -130,11 +133,7 @@ UtilitySelector_BindModalHotkeys() {
                 g_HotstringHotkeyHandlers.Push({ char: "Insert", key: "Insert", handler: UtilitySelector_OnAdd })
             } catch {
             }
-            try {
-                Hotkey("F2", UtilitySelector_OnEdit, "On")
-                g_HotstringHotkeyHandlers.Push({ char: "F2", key: "F2", handler: UtilitySelector_OnEdit })
-            } catch {
-            }
+            UtilitySelector_BindOneChar("e", UtilitySelector_OnEdit)
             try {
                 Hotkey("Delete", UtilitySelector_OnDelete, "On")
                 g_HotstringHotkeyHandlers.Push({ char: "Delete", key: "Delete", handler: UtilitySelector_OnDelete })
@@ -262,9 +261,9 @@ UtilitySelector_HintText() {
     if (g_UtilitySelectorMode = "top")
         return "Char = open category   [F] Finance   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
-        return "Filter by name   Enter = paste first match   Char = paste   double-click = paste   Insert = add   F2 = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
+        return "Filter by name   Enter = paste first match   Char = paste   double-click = paste   Insert = add   E = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
-        return "Char = paste   Enter/double-click = paste   Insert = add   F2 = edit   Delete = remove   Backspace = back   Esc = close"
+        return "Char = paste   Enter/double-click = paste   Insert = add   E = edit   Delete = remove   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Projects")
         return "Char = paste name   Enter/double-click = paste name   Backspace = back   Esc = close"
     return "Char = run   Enter/double-click = run   Backspace = back   Esc = close"

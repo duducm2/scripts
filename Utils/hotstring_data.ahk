@@ -25,7 +25,7 @@ HotstringData_CharSequence() {
 
 HotstringData_IsValidChar(char) {
     global g_HotstringDataCharValid
-    if (char = "")
+    if (char = "" || char = "e")
         return false
     return g_HotstringDataCharValid.Has(char)
 }

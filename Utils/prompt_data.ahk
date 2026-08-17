@@ -12,7 +12,7 @@ PromptData_IniPath() {
     return A_ScriptDir "\assets\data\prompts.ini"
 }
 
-; Same assignment pool as g_HotstringCharSequence; 'l' is reserved for Gemini-arm in Prompts.
+; Same assignment pool as g_HotstringCharSequence; 'l' is reserved for Gemini-arm, 'e' for edit.
 global g_PromptCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "n", "m", ",", "."]
 global g_PromptCharValid := Map()
@@ -26,7 +26,7 @@ PromptData_CharSequence() {
 
 PromptData_IsValidChar(char) {
     global g_PromptCharValid
-    if (char = "" || char = "l")
+    if (char = "" || char = "l" || char = "e")
         return false
     return g_PromptCharValid.Has(char)
 }
@@ -427,7 +427,7 @@ PromptData_DefaultEntries() {
                                         filePath: "image-background-preservation-prompt.txt", source: "technique" }, { name: "📊 PPT stage 1: content to slides CSV",
                                             char: "s", category: "General", author: "",
                                             filePath: "assets\prompt\ppt-content-to-slides-csv.txt", source: "file" }, { name: "🧩 PPT stage 2: slides to elements CSV",
-                                                char: "e", category: "General", author: "",
+                                                char: "i", category: "General", author: "",
                                                 filePath: "assets\prompt\ppt-slides-to-elements-csv.txt", source: "file" }, { name: "📱 Prototype stage 1: content to screens CSV",
                                                     char: "w", category: "General", author: "",
                                                     filePath: "assets\prompt\proto-content-to-screens-csv.txt", source: "file" }, { name: "🧩 Prototype stage 2: screens to elements CSV",

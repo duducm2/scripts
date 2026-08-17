@@ -20,6 +20,7 @@ global g_PromptEditorPersonalPaths := []
 global g_PromptEditorWorkPaths := []
 global g_PromptEditorFlagCtrls := Map()
 global g_PromptEditorSuppressFlagSync := false
+global g_PromptEditorHelpGui := false
 
 PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     global g_PromptEntries, g_PromptEditorGui, g_PromptEditorResult
@@ -186,10 +187,10 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_LoadFlagControls("personal", 0)
     PromptEditor_LoadFlagControls("work", 0)
 
-    g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12),
-    "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine. Compact and CSV keep apply at attach time."
-    )
-    g_PromptEditorGui.Add("Button", "xm+430 w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
+    g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12 - 90),
+        "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine.")
+    g_PromptEditorGui.Add("Button", "xm w80", "Help").OnEvent("Click", PromptEditor_ShowHelp)
+    g_PromptEditorGui.Add("Button", "x+350 yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
     g_PromptEditorGui.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PromptEditor_OnCancel)
 }
 
@@ -242,6 +243,9 @@ PromptEditor_BindEditorHotkeys(enable) {
         return
     }
     try Hotkey("Delete", PromptEditor_OnDeleteKey, enable ? "On" : "Off")
+    catch {
+    }
+    try Hotkey("F1", PromptEditor_ShowHelp, enable ? "On" : "Off")
     catch {
     }
     try HotIf()
@@ -647,6 +651,7 @@ PromptEditor_OnSave(*) {
 
 PromptEditor_Destroy() {
     global g_PromptEditorGui
+    PromptEditor_CloseHelp()
     PromptEditor_BindEditorHotkeys(false)
     if (IsObject(g_PromptEditorGui)) {
         try g_PromptEditorGui.Destroy()
@@ -654,4 +659,86 @@ PromptEditor_Destroy() {
         }
     }
     g_PromptEditorGui := false
+}
+
+PromptEditor_HelpText() {
+    return "
+(
+Context file flags
+
+Flags are per file (personal and work lists are separate). They apply only when this prompt is inserted; the original files on disk are never changed. Flagged files are attached as a temp copy whose name includes a compacted tag, e.g. transactions.compacted.csv.
+
+Compact (any file)
+• JSON: minify, drop null values, replace data: URIs and long http(s) URLs.
+• Markdown / text: strip trailing spaces; collapse 3+ blank lines to one.
+• CSV: strip trailing spaces and drop fully empty rows (header kept).
+
+CSV keep from–to (CSV files only)
+• 1-based inclusive line range. Empty From/To means the whole file (unless Compact is also on).
+• Line 1 is the header and is always kept, even if From > 1.
+• If From is 1, the header is not written twice.
+
+Example — keep 3–4 on this file:
+  1  name,qty
+  2  apples,4
+  3  bananas,2
+  4  carrots,9
+  5  dates,1
+
+Attached copy:
+  name,qty
+  bananas,2
+  carrots,9
+
+The header stays (line 1). Lines 3–4 are kept. Lines 2 and 5 are dropped.
+)"
+}
+
+PromptEditor_ShowHelp(*) {
+    global g_PromptEditorGui, g_PromptEditorHelpGui
+    if (IsObject(g_PromptEditorHelpGui)) {
+        try WinActivate("ahk_id " g_PromptEditorHelpGui.Hwnd)
+        catch {
+        }
+        return
+    }
+    ownerOpt := "+AlwaysOnTop +ToolWindow"
+    try {
+        if (IsObject(g_PromptEditorGui))
+            ownerOpt .= " +Owner" . g_PromptEditorGui.Hwnd
+    } catch {
+    }
+    g_PromptEditorHelpGui := Gui(ownerOpt, "Context file flags")
+    g_PromptEditorHelpGui.SetFont("s10", "Segoe UI")
+    g_PromptEditorHelpGui.Add("Edit", "xm w520 r18 ReadOnly -WantReturn Wrap", PromptEditor_HelpText())
+    g_PromptEditorHelpGui.Add("Button", "xm+220 w80 Default", "Close").OnEvent("Click", PromptEditor_CloseHelp)
+    g_PromptEditorHelpGui.OnEvent("Close", PromptEditor_CloseHelp)
+    g_PromptEditorHelpGui.OnEvent("Escape", PromptEditor_CloseHelp)
+    PromptEditor_CenterHelp()
+}
+
+PromptEditor_CenterHelp() {
+    global g_PromptEditorHelpGui
+    if (!IsObject(g_PromptEditorHelpGui))
+        return
+    mon := UtilitySelector_ActiveMonitorWorkArea()
+    g_PromptEditorHelpGui.Show("Hide")
+    g_PromptEditorHelpGui.GetPos(, , &gw, &gh)
+    guiX := mon.left + (mon.width - gw) // 2
+    guiY := mon.top + (mon.height - gh) // 2
+    if (guiX < mon.left + 20)
+        guiX := mon.left + 20
+    if (guiY < mon.top + 20)
+        guiY := mon.top + 20
+    g_PromptEditorHelpGui.Show("x" . guiX . " y" . guiY)
+}
+
+PromptEditor_CloseHelp(*) {
+    global g_PromptEditorHelpGui
+    if (IsObject(g_PromptEditorHelpGui)) {
+        try g_PromptEditorHelpGui.Destroy()
+        catch {
+        }
+    }
+    g_PromptEditorHelpGui := false
 }

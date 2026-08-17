@@ -60,7 +60,7 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 | `punctual-beast-append-prompt.txt`         | Append isolated beasts or small punctual batches into open streets       |
 | `image-background-preservation-prompt.txt` | Preserve the locked background while adding mnemonic foreground elements |
 
-Registration lives in [`assets/data/prompts.ini`](../assets/data/prompts.ini): each technique row uses `Source=technique` and `FilePath=<basename>`. The Utility Shortcuts Prompts view loads the file **at paste time** via `PromptData_ReadBody()` in [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). Add/edit/delete of metadata is done in the Prompts ListView (Insert / F2 / Delete); the `.txt` file is never deleted.
+Registration lives in [`assets/data/prompts.ini`](../assets/data/prompts.ini): each technique row uses `Source=technique` and `FilePath=<basename>`. The Utility Shortcuts Prompts view loads the file **at paste time** via `PromptData_ReadBody()` in [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). Add/edit/delete of metadata is done in the Prompts ListView (Insert / E / Delete); the `.txt` file is never deleted.
 
 Prompts with no `---` divider paste in full. Prompts that use a last-line `---` divider still go through `PasteStrippedPromptOfferReminders` / `ReplaceComposerWithStrippedReminders`.
 
