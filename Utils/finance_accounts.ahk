@@ -128,20 +128,8 @@ Finance_AccForm(existing) {
     eName := g.Add("Edit", "w320", isEdit ? existing["name"] : "")
     g.Add("Text", "y+8", "Icon (emoji or file name)")
     eIcon := g.Add("Edit", "w160", isEdit ? existing["icon"] : "🏦")
-    if (isEdit) {
-        g.Add("Text", "y+8", "Current balance")
-        g.Add("Text", "w320 c555555",
-            Finance_FormatBrl(Finance_ParseDecimal(existing["current_balance"])))
-    }
-    g.Add("Text", "y+8", "Initial balance")
-    eInit := g.Add("Edit", "w160", isEdit ? existing["initial_balance"] : "0,00")
-    g.SetFont("s9 c555555", "Segoe UI")
-    g.Add("Text", "y+4 w320",
-        isEdit
-            ?
-            "Opening balance. Changing it shifts Current by the same amount. Use [J] to set Current without changing Initial."
-            : "Opening balance; Current starts equal to this.")
-    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", "y+8", "Current balance")
+    eCur := g.Add("Edit", "w160", isEdit ? existing["current_balance"] : "0,00")
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveAcc)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
@@ -161,15 +149,16 @@ Finance_AccForm(existing) {
             return
         }
         accs := Finance_Load("accounts")
-        init := Finance_FormatCsvDecimal(Finance_ParseDecimal(eInit.Value))
+        newCur := Finance_ParseDecimal(eCur.Value)
+        curStr := Finance_FormatCsvDecimal(newCur)
         newId := ""
         if (isEdit) {
-            oldInit := Finance_ParseDecimal(existing["initial_balance"])
-            newInit := Finance_ParseDecimal(init)
-            delta := newInit - oldInit
-            cur := Finance_ParseDecimal(existing["current_balance"]) + delta
+            oldCur := Finance_ParseDecimal(existing["current_balance"])
+            delta := newCur - oldCur
+            init := Finance_ParseDecimal(existing["initial_balance"]) + delta
             row := Map("id", existing["id"], "name", name, "icon", Trim(eIcon.Value),
-            "initial_balance", init, "current_balance", Finance_FormatCsvDecimal(cur))
+            "initial_balance", Finance_FormatCsvDecimal(init),
+            "current_balance", curStr)
             out := []
             for r in accs {
                 if (r["id"] = existing["id"])
@@ -182,7 +171,7 @@ Finance_AccForm(existing) {
             newId := Finance_SlugId("ACC_", name, accs)
             wasEmpty := accs.Length = 0
             accs.Push(Map("id", newId, "name", name, "icon", Trim(eIcon.Value),
-            "initial_balance", init, "current_balance", init))
+            "initial_balance", curStr, "current_balance", curStr))
             if (wasEmpty || Finance_Setting("General", "DefaultAccountId", "") = "")
                 Finance_SetSetting("General", "DefaultAccountId", newId)
         }
@@ -212,9 +201,9 @@ Finance_AccAdjust(*) {
     g.Add("Text", "w400", "Current: " . Finance_FormatBrl(Finance_ParseDecimal(a["current_balance"])))
     g.Add("Text", "y+8", "New current balance")
     eNew := g.Add("Edit", "w180", a["current_balance"])
-    g.Add("Text", "y+12 w400", "[1] Create an adjustment transaction`n[2] Modify the initial balance directly")
+    g.Add("Text", "y+12 w400", "[1] Create an adjustment transaction`n[2] Set balance only (no transaction)")
     g.Add("Button", "y+12 w200", "1 — New transaction").OnEvent("Click", (*) => DoAdj(1))
-    g.Add("Button", "x+8 w200", "2 — Change initial").OnEvent("Click", (*) => DoAdj(2))
+    g.Add("Button", "x+8 w200", "2 — Set balance").OnEvent("Click", (*) => DoAdj(2))
     g.OnEvent("Escape", (*) => g.Destroy())
     g.Show()
     try WinWaitClose("ahk_id " g.Hwnd)
