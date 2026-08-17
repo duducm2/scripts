@@ -1,3 +1,8 @@
 ﻿id,date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
 TX003,2026-08-16,Transfer,"4,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP2
 TX004,2026-08-16,Salary,"5,00",income,CAT_SALARIO,,ACC_MERCADOP,,
+TX005,2026-08-16,Bank taxes,"45,45",expense,CAT_OPERACAO,,ACC_MERCADOP,,
+TX006,2026-08-15,Touristic magnet,"15,00",expense,CAT_LAZER,Travel,ACC_MERCADOP,,
+TX007,2026-08-15,Lunch with boyfriend,"121,00",expense,CAT_LAZER,Restaurants,ACC_MERCADOP,,
+TX008,2026-08-15,Gas,"120,00",expense,CAT_CARRO,,ACC_MERCADOP,,
+TX009,2026-08-15,Car battery,"549,00",expense,CAT_CARRO,,ACC_MERCADOP,,
