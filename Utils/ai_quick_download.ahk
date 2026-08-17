@@ -65,10 +65,20 @@ AiQuickDownload_RunInner() {
         uia := focus.uia
 
     clicked := false
-    ; Five Quality Gates in order (C–E stubbed until Enterprise/Copilot dumps).
-    try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
+    ; Prefer newest Download code before Gate A so a stale Drive viewer cannot steal the click.
+    ; Five Quality Gates still apply: A (viewer), B (Open→viewer), C–E stubs.
+    try clicked := AiQuickDownload_TryNewestDownloadCode(uia, hwnd)
     catch {
         clicked := false
+    }
+    if (!clicked) {
+        try uia := UIA_Browser("ahk_id " hwnd)
+        catch {
+        }
+        try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
+        catch {
+            clicked := false
+        }
     }
     if (!clicked) {
         try uia := UIA_Browser("ahk_id " hwnd)
@@ -431,7 +441,7 @@ AiQuickDownload_GateA_DirectDownload(uia, hwnd := 0) {
     return true
 }
 
-; --- Gate B: newest Download code first; Open→viewer only if no code download ---
+; --- Gate B helpers: Download code (+ Show code expand) then Open→viewer -------
 AiQuickDownload_IsOpenChipButton(el) {
     return AiQuickDownload_NameIs(el, ["Open", "Abrir"])
     && AiQuickDownload_ClassContains(el, "open-button")
@@ -445,17 +455,44 @@ AiQuickDownload_IsDownloadCodeNamed(el) {
     return AiQuickDownload_NameIs(el, ["Download code", "Baixar código", "Baixar codigo"])
 }
 
-AiQuickDownload_GateB_OpenThenDownload(uia, hwnd := 0) {
-    ; Prefer newest code-block Download (avoids older file-chip Open stealing the click).
+AiQuickDownload_IsShowCodeNamed(el) {
+    return AiQuickDownload_NameIs(el, ["Show code", "Mostrar código", "Mostrar codigo"])
+}
+
+; Newest Download code; if missing, expand newest Show code once and retry.
+AiQuickDownload_TryNewestDownloadCode(uia, hwnd := 0) {
     codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeNamed)
     if (!IsObject(codeBtn))
         codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeCandidate)
-    if (IsObject(codeBtn)) {
-        if !AiQuickDownload_Invoke(codeBtn)
+    if (!IsObject(codeBtn)) {
+        showBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsShowCodeNamed)
+        if (!IsObject(showBtn))
             return false
-        Sleep AI_QD_GATE_SETTLE_MS
-        return true
+        if !AiQuickDownload_Invoke(showBtn)
+            return false
+        Sleep AI_QD_OPEN_SETTLE_MS
+        try {
+            if (hwnd)
+                uia := UIA_Browser("ahk_id " hwnd)
+        } catch {
+        }
+        codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeNamed)
+        if (!IsObject(codeBtn))
+            codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeCandidate)
     }
+    if (!IsObject(codeBtn))
+        return false
+    if !AiQuickDownload_Invoke(codeBtn)
+        return false
+    Sleep AI_QD_GATE_SETTLE_MS
+    return true
+}
+
+; Open file chip → viewer Download (code path already tried earlier in RunInner).
+AiQuickDownload_GateB_OpenThenDownload(uia, hwnd := 0) {
+    ; One more Download-code attempt (e.g. after Gate A mutated the tree).
+    if AiQuickDownload_TryNewestDownloadCode(uia, hwnd)
+        return true
 
     openBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsOpenChipButton)
     if (!IsObject(openBtn))
