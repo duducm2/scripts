@@ -208,7 +208,9 @@ Finance_ShowImportMenu() {
     Finance_CloseGui()
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "AI import")
     g_FinanceGui.SetFont("s11", "Segoe UI")
-    g_FinanceGui.Add("Text", "w520", "Import structured files from the Desktop (newest match).")
+    g_FinanceGui.Add("Text", "w520",
+        "Import structured files from the Desktop (newest match). Also accepts Gemini gemini-code*.txt dumps that contain a daily CSV header."
+    )
     g_FinanceGui.SetFont("s12 Bold", "Segoe UI")
     g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.csv")
     g_FinanceGui.Add("Text", "y+8", "[2]  Monthly investments & goals   FINANCE_MONTHLY*.csv")

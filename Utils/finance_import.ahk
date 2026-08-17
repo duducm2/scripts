@@ -16,6 +16,66 @@ Finance_DesktopNewest(pattern) {
     return newest
 }
 
+; Skip Gemini preambles (e.g. "FILE: FINANCE_DAILY.csv") so the header row is first.
+Finance_ReadAiImportCsv(path) {
+    text := Finance_ReadUtf8(path)
+    if (text = "")
+        return []
+    text := StrReplace(text, "`r`n", "`n")
+    text := StrReplace(text, "`r", "`n")
+    lines := StrSplit(text, "`n")
+    start := 0
+    for idx, line in lines {
+        t := Trim(line)
+        if (t = "")
+            continue
+        lower := StrLower(t)
+        if (InStr(lower, "date,") = 1 && InStr(lower, "description") && InStr(lower, "amount")) {
+            start := idx
+            break
+        }
+        if (InStr(lower, "file:") = 1 || SubStr(t, 1, 1) = "#")
+            continue
+    }
+    if (!start)
+        return Finance_ReadCsv(path)
+    cleaned := ""
+    loop lines.Length {
+        if (A_Index < start)
+            continue
+        if (cleaned != "")
+            cleaned .= "`n"
+        cleaned .= lines[A_Index]
+    }
+    tmp := A_Temp . "\finance_ai_import_norm.csv"
+    Finance_WriteUtf8(tmp, cleaned)
+    rows := Finance_ReadCsv(tmp)
+    try FileDelete(tmp)
+    catch {
+    }
+    return rows
+}
+
+; Newest Desktop dump that looks like a daily finance CSV (Gemini code downloads).
+Finance_DesktopNewestDailyCodeDump() {
+    newest := ""
+    newestTime := 0
+    loop files A_Desktop . "\gemini-code*.txt", "F" {
+        body := Finance_ReadUtf8(A_LoopFileFullPath)
+        if (body = "")
+            continue
+        lower := StrLower(body)
+        if (!InStr(lower, "date,description,amount"))
+            continue
+        ts := Number(A_LoopFileTimeModified)
+        if (ts > newestTime) {
+            newestTime := ts
+            newest := A_LoopFileFullPath
+        }
+    }
+    return newest
+}
+
 Finance_ArchiveImported(path) {
     destDir := Finance_DataDir() . "\imported"
     if (!DirExist(destDir))
@@ -67,12 +127,16 @@ Finance_ImportConfirm(title, lines) {
 Finance_ImportDaily(*) {
     path := Finance_DesktopNewest("FINANCE_DAILY*.csv")
     if (path = "")
+        path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
+    if (path = "")
         path := Finance_DesktopNewest("FINANCE_DAILY*.ini")
+    if (path = "")
+        path := Finance_DesktopNewestDailyCodeDump()
     if (path = "") {
         Finance_Notify("No FINANCE_DAILY file on Desktop", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    rows := Finance_ReadCsv(path)
+    rows := Finance_ReadAiImportCsv(path)
     if (!rows.Length) {
         Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
         return
