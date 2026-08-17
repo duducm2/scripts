@@ -251,6 +251,9 @@ namespace AudioBt
         [DllImport("cfgmgr32.dll")]
         static extern int CM_Enable_DevNode(uint dnDevInst, uint ulFlags);
 
+        [DllImport("cfgmgr32.dll")]
+        static extern int CM_Disable_DevNode(uint dnDevInst, uint ulFlags);
+
         const uint IOCTL_BTH_DISCONNECT_DEVICE = 0x0041000C;
         const uint GENERIC_READ = 0x80000000;
         const uint GENERIC_WRITE = 0x40000000;
@@ -296,7 +299,7 @@ namespace AudioBt
                     if (seenBt.ContainsKey(bt.AddrHex))
                         continue;
                     seenBt[bt.AddrHex] = true;
-                    string state = bt.Connected ? "Connected" : "Disconnected";
+                    string state = (bt.Connected || HasActiveEndpoint(endpoints, bt, -1)) ? "Connected" : "Disconnected";
                     bool isDef = false;
                     foreach (EndpointInfo ep in endpoints)
                     {
@@ -317,11 +320,11 @@ namespace AudioBt
                         state = "Connected · Isolated in";
                     else if (isDef)
                         state = "Connected · Default";
-                    else if (bt.Connected)
+                    else if (bt.Connected || HasActiveEndpoint(endpoints, bt, -1))
                     {
                         foreach (EndpointInfo ep in endpoints)
                         {
-                            if (EndpointMatchesBt(ep, bt) && (ep.State & DEVICE_STATE_ACTIVE) != 0)
+                            if (EndpointMatchesBt(ep, bt) && IsActiveEndpoint(ep))
                             {
                                 state = "Connected";
                                 break;
@@ -605,7 +608,7 @@ namespace AudioBt
 
         static bool BtFlowIsolated(BtDeviceInfo bt, List<EndpointInfo> endpoints, int[] activeByFlow, int flow)
         {
-            if (bt == null || !bt.Connected)
+            if (bt == null)
                 return false;
             bool any = false;
             foreach (EndpointInfo ep in endpoints)
@@ -1098,6 +1101,37 @@ namespace AudioBt
             return false;
         }
 
+        static bool IsActiveEndpoint(EndpointInfo ep)
+        {
+            if (ep == null)
+                return false;
+            if ((ep.State & DEVICE_STATE_ACTIVE) == 0)
+                return false;
+            if ((ep.State & DEVICE_STATE_DISABLED) != 0)
+                return false;
+            if ((ep.State & DEVICE_STATE_UNPLUGGED) != 0)
+                return false;
+            if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                return false;
+            return true;
+        }
+
+        static bool HasActiveEndpoint(List<EndpointInfo> endpoints, BtDeviceInfo bt, int flow)
+        {
+            if (endpoints == null || bt == null)
+                return false;
+            foreach (EndpointInfo ep in endpoints)
+            {
+                if (!EndpointMatchesBt(ep, bt))
+                    continue;
+                if (flow >= 0 && ep.Flow != flow)
+                    continue;
+                if (IsActiveEndpoint(ep))
+                    return true;
+            }
+            return false;
+        }
+
         static void EnsureVisible(string deviceId, bool visible)
         {
             PolicySetVisible(deviceId, visible);
@@ -1109,36 +1143,19 @@ namespace AudioBt
             while (true)
             {
                 List<EndpointInfo> endpoints = CollectEndpoints();
+                if (HasActiveEndpoint(endpoints, bt, eRender))
+                    return true;
                 foreach (EndpointInfo ep in endpoints)
                 {
-                    if (!EndpointMatchesBt(ep, bt))
-                        continue;
-                    if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                    if (!EndpointMatchesBt(ep, bt) || ep.Flow != eRender)
                         continue;
                     if ((ep.State & DEVICE_STATE_DISABLED) != 0)
-                    {
                         EnsureVisible(ep.Id, true);
-                        continue;
-                    }
-                    if ((ep.State & DEVICE_STATE_UNPLUGGED) != 0)
-                        continue;
-                    if ((ep.State & DEVICE_STATE_ACTIVE) != 0)
-                        return true;
                 }
                 if (DateTime.UtcNow >= deadline)
-                    return HasUsableBtEndpoint(bt);
+                    return HasActiveEndpoint(CollectEndpoints(), bt, eRender);
                 System.Threading.Thread.Sleep(350);
             }
-        }
-
-        static bool HasUsableBtEndpoint(BtDeviceInfo bt)
-        {
-            foreach (EndpointInfo ep in CollectEndpoints())
-            {
-                if (EndpointMatchesBt(ep, bt) && (ep.State & DEVICE_STATE_NOTPRESENT) == 0)
-                    return true;
-            }
-            return false;
         }
 
         static IntPtr CreatePolicyConfig()
@@ -1547,10 +1564,29 @@ namespace AudioBt
                 return false;
             foreach (EndpointInfo ep in CollectEndpoints())
             {
-                if (EndpointMatchesBt(ep, bt))
+                if (EndpointMatchesBt(ep, bt) && ep.Flow == eRender)
                     EnsureVisible(ep.Id, true);
             }
-            return true;
+            return HasActiveEndpoint(CollectEndpoints(), bt, eRender);
+        }
+
+        static bool IsBtAudioPnpNode(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId))
+                return false;
+            string u = instanceId.ToUpperInvariant();
+            return u.Contains("0000110B") || u.Contains("0000110A")
+                || u.Contains("0000111E") || u.Contains("00001108");
+        }
+
+        static int BtAudioPnpPriority(string instanceId)
+        {
+            string u = instanceId.ToUpperInvariant();
+            if (u.Contains("0000110B") || u.Contains("0000110A"))
+                return 2;
+            if (u.Contains("0000111E") || u.Contains("00001108"))
+                return 1;
+            return 0;
         }
 
         static bool EnablePnpBtAudio(BtDeviceInfo bt, out string err)
@@ -1569,8 +1605,7 @@ namespace AudioBt
                 err = "PnP BTHENUM enumerate failed " + Marshal.GetLastWin32Error();
                 return false;
             }
-            int enabled = 0;
-            int matched = 0;
+            List<string> nodes = new List<string>();
             int lastCr = 0;
             try
             {
@@ -1591,29 +1626,41 @@ namespace AudioBt
                     if (compact.IndexOf(hex, StringComparison.Ordinal) < 0
                         && instanceId.IndexOf(colon, StringComparison.OrdinalIgnoreCase) < 0)
                         continue;
-                    matched++;
-                    uint devInst;
-                    int cr = CM_Locate_DevNode(out devInst, instanceId, 0);
-                    if (cr != 0)
-                    {
-                        lastCr = cr;
+                    if (!IsBtAudioPnpNode(instanceId))
                         continue;
-                    }
-                    cr = CM_Enable_DevNode(devInst, 0);
-                    if (cr == 0)
-                        enabled++;
-                    else
-                        lastCr = cr;
+                    nodes.Add(instanceId);
                 }
             }
             finally
             {
                 SetupDiDestroyDeviceInfoList(devs);
             }
-            if (enabled > 0)
+            nodes.Sort(delegate (string a, string b)
+            {
+                return BtAudioPnpPriority(b).CompareTo(BtAudioPnpPriority(a));
+            });
+            int bounced = 0;
+            foreach (string instanceId in nodes)
+            {
+                uint devInst;
+                int cr = CM_Locate_DevNode(out devInst, instanceId, 0);
+                if (cr != 0)
+                {
+                    lastCr = cr;
+                    continue;
+                }
+                CM_Disable_DevNode(devInst, 0);
+                System.Threading.Thread.Sleep(400);
+                cr = CM_Enable_DevNode(devInst, 0);
+                if (cr == 0)
+                    bounced++;
+                else
+                    lastCr = cr;
+            }
+            if (bounced > 0)
                 return true;
-            if (matched == 0)
-                err = "No BTHENUM node for " + hex;
+            if (nodes.Count == 0)
+                err = "No BTHENUM audio node for " + hex;
             else
                 err = "PnP CM_Enable_DevNode " + lastCr;
             return false;
