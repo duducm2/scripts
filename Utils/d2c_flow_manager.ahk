@@ -76,6 +76,7 @@ class D2C_FlowManager {
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
             "T", this.OnSubmitT.Bind(this),
+            "D", this.OnSubmitD.Bind(this),
             "Y", this.OnSubmitY.Bind(this),
             "S", this.OnSubmitS.Bind(this),
             "V", this.OnSubmitV.Bind(this),
@@ -99,7 +100,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [C] Chrome  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [C] Chrome  [N] Cancel",
             true,
             true,
             true
@@ -131,6 +132,12 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         this.ExecuteGeminiSubmit(true, "mtask")
+    }
+
+    OnSubmitD(*) {
+        if (this.CurrentPhase != "PromptingSubmit")
+            return
+        this.ExecuteGeminiSubmit(true, "finance_daily")
     }
 
     OnSubmitY(*) {
@@ -570,7 +577,9 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" = preset from assets/prompt/*.txt + clipboard dictation via InsertText.
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" = preset from
+    ; assets/prompt/*.txt + clipboard dictation; "finance_daily" = Utility Shortcuts Prompt char d
+    ; (finance-daily-transactions.txt) + context CSV attachments + clipboard dictation.
     ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
     ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
         this.CurrentPhase := "Submitting"
@@ -579,12 +588,24 @@ class D2C_FlowManager {
         HideDictationIndicator()
 
         aiLabel := GetGlobalAIProviderLabel()
-        ; For explicit first-banner choices (Y/G/A/T/S), skip the handoff cue: user intentionally chose the AI target.
+        ; For explicit first-banner choices (Y/G/A/T/D/S), skip the handoff cue: user intentionally chose the AI target.
         if (showPreMovementWarning)
             PlayPreMovementWarning(aiLabel)
 
         optionalSnippet := ""
-        if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
+        financePrompt := false
+        if (presetMode = "finance_daily") {
+            PromptData_Load()
+            financePrompt := PromptData_FindByChar("d")
+            if (!IsObject(financePrompt)) {
+                ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
+                this.Reset()
+                return
+            }
+            dictation := ""
+            try dictation := A_Clipboard
+            optionalSnippet := D2C_CombinePresetWithDictation(PromptData_ReadBody(financePrompt), dictation)
+        } else if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
             dictation := ""
             try dictation := A_Clipboard
             if (presetMode = "grammar")
@@ -597,7 +618,24 @@ class D2C_FlowManager {
         }
 
         this.CompanionId := ResolveGlobalAICompanion()
-        if (this.CompanionId = "enterprise") {
+        if (presetMode = "finance_daily") {
+            ; Focus companion first (no text), attach CSVs, then paste prompt + dictation.
+            if (this.CompanionId = "enterprise") {
+                this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste("", false)
+                if (!this.GeminiHwnd)
+                    this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
+            } else if (this.CompanionId = "copilot") {
+                this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste("", false)
+                if (!this.GeminiHwnd)
+                    this.GeminiHwnd := GetCopilotWebWindowHwnd()
+            } else {
+                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+                this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
+            }
+            UtilitySelector_AttachPromptContextFiles(financePrompt)
+            if (optionalSnippet != "")
+                InsertText(optionalSnippet)
+        } else if (this.CompanionId = "enterprise") {
             this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste(optionalSnippet, false)
             if (!this.GeminiHwnd)
                 this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
