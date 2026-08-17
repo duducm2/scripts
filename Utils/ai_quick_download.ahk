@@ -56,6 +56,14 @@ AiQuickDownload_RunInner() {
 
     uia := focus.uia
     hwnd := focus.hwnd
+    companion := focus.companion
+    AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
+    try uia := UIA_Browser("ahk_id " hwnd)
+    catch {
+    }
+    if (!IsObject(uia))
+        uia := focus.uia
+
     clicked := false
     ; Five Quality Gates in order (C–E stubbed until Enterprise/Copilot dumps).
     try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
@@ -299,11 +307,11 @@ AiQuickDownload_Invoke(el) {
     return false
 }
 
-; Prefer last matching button (document order ≈ newest response).
-AiQuickDownload_FindLastButton(uia, predicate) {
+; Prefer visually newest match (max BoundingRectangle.t = lowest on timeline).
+; Falls back to last FindAll match when no usable rects.
+AiQuickDownload_FindNewestButton(uia, predicate) {
     if (!IsObject(uia))
         return 0
-    ; Accept Func objects or bare function references.
     pred := predicate
     if (Type(predicate) = "String") {
         try pred := Func(predicate)
@@ -339,7 +347,40 @@ AiQuickDownload_FindLastButton(uia, predicate) {
     }
     if (matches.Length = 0)
         return 0
-    return matches[matches.Length]
+    lastEl := 0
+    lastTop := ""
+    for btn in matches {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : matches[matches.Length]
+}
+
+; Scroll chat feed to bottom so newest download controls have valid geometry.
+AiQuickDownload_ScrollFeedToBottom(hwnd, companion := "") {
+    if (!hwnd)
+        return
+    try {
+        if (companion = "gemini" && IsSet(GeminiScrollFeedToBottom_Chrome)) {
+            GeminiScrollFeedToBottom_Chrome(hwnd)
+            return
+        }
+    } catch {
+    }
+    try ChromeChat_ScrollFeedToBottomFast(hwnd)
+    catch {
+    }
 }
 
 AiQuickDownload_ClassContains(el, needle) {
@@ -381,10 +422,10 @@ AiQuickDownload_IsDownloadOrBaixar(el) {
 }
 
 AiQuickDownload_GateA_DirectDownload(uia, hwnd := 0) {
-    btn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsDriveViewerDownload)
+    btn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDriveViewerDownload)
     if (!IsObject(btn)) {
-        ; Broader: last Download/Baixar button (viewer may omit class in some builds).
-        btn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsDownloadOrBaixar)
+        ; Broader: newest Download/Baixar button (viewer may omit class in some builds).
+        btn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadOrBaixar)
     }
     if (!IsObject(btn))
         return false
@@ -394,7 +435,7 @@ AiQuickDownload_GateA_DirectDownload(uia, hwnd := 0) {
     return true
 }
 
-; --- Gate B: Open file chip → viewer Download (Personal Gemini closed) --------
+; --- Gate B: newest Download code first; Open→viewer only if no code download ---
 AiQuickDownload_IsOpenChipButton(el) {
     return AiQuickDownload_NameIs(el, ["Open", "Abrir"])
     && AiQuickDownload_ClassContains(el, "open-button")
@@ -409,32 +450,31 @@ AiQuickDownload_IsDownloadCodeNamed(el) {
 }
 
 AiQuickDownload_GateB_OpenThenDownload(uia, hwnd := 0) {
-    openBtn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsOpenChipButton)
-    if (!IsObject(openBtn))
-        openBtn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsOpenNamed)
-    if (IsObject(openBtn)) {
-        if AiQuickDownload_Invoke(openBtn) {
-            Sleep AI_QD_OPEN_SETTLE_MS
-            try {
-                if (hwnd)
-                    uia := UIA_Browser("ahk_id " hwnd)
-            } catch {
-            }
-            if AiQuickDownload_GateA_DirectDownload(uia, hwnd)
-                return true
-        }
+    ; Prefer newest code-block Download (avoids older file-chip Open stealing the click).
+    codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeNamed)
+    if (!IsObject(codeBtn))
+        codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeCandidate)
+    if (IsObject(codeBtn)) {
+        if !AiQuickDownload_Invoke(codeBtn)
+            return false
+        Sleep AI_QD_GATE_SETTLE_MS
+        return true
     }
 
-    ; Fallback: code-block "Download code" under download-button group.
-    codeBtn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsDownloadCodeNamed)
-    if (!IsObject(codeBtn))
-        codeBtn := AiQuickDownload_FindLastButton(uia, AiQuickDownload_IsDownloadCodeCandidate)
-    if (!IsObject(codeBtn))
+    openBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsOpenChipButton)
+    if (!IsObject(openBtn))
+        openBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsOpenNamed)
+    if (!IsObject(openBtn))
         return false
-    if !AiQuickDownload_Invoke(codeBtn)
+    if !AiQuickDownload_Invoke(openBtn)
         return false
-    Sleep AI_QD_GATE_SETTLE_MS
-    return true
+    Sleep AI_QD_OPEN_SETTLE_MS
+    try {
+        if (hwnd)
+            uia := UIA_Browser("ahk_id " hwnd)
+    } catch {
+    }
+    return AiQuickDownload_GateA_DirectDownload(uia, hwnd)
 }
 
 AiQuickDownload_ParentClassContains(el, needle) {
