@@ -150,7 +150,9 @@ def build_html(data: dict) -> str:
             if total_planned > 0
             else (100.0 if total_spent > 0 else 0.0)
         )
+        tot_width = min(tot_pct, 100.0)
         tot_over = total_spent > total_planned and total_planned > 0
+        tot_fill = "#e74c3c" if tot_over else "#f1c40f"
         if items:
             bud_hint = (
                 f"Exceeded {format_brl(-tot_rem)}"
@@ -158,14 +160,19 @@ def build_html(data: dict) -> str:
                 else f"Remain {format_brl(tot_rem)}"
             )
             bud_summary = (
-                f"Total budget {format_brl(total_planned)} · Spent {format_brl(total_spent)}"
-                f" · {tot_pct:.0f}% · {bud_hint}"
+                f'<div class="bar-head"><span>Total</span>'
+                f"<span>{format_brl(total_spent)} / {format_brl(total_planned)}"
+                f" · {tot_pct:.0f}%</span></div>"
+                f'<div class="bar-track"><div class="bar-fill" style="width:{tot_width:.1f}%;'
+                f'background:{tot_fill}"></div></div>'
+                f'<div class="bar-meta">{bud_hint}</div>'
             )
         else:
             bud_summary = ""
+        sum_style = "" if items else ' style="display:none"'
         bud_html = f"""
         <div class="panel"><h2>Budgets</h2>
-          <div class="bar-meta" id="budgetsSummary" style="margin-bottom:8px">{bud_summary}</div>
+          <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
           <div id="budgetsBody">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
 
     card_bars_html = ""
@@ -296,6 +303,11 @@ def build_html(data: dict) -> str:
     .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
     .perf-line {{ color:var(--perf); font-size:12px; line-height:1.4; }}
     .bar-row {{ margin:6px 0 8px; }}
+    .bar-row-total {{
+      margin:4px 0 12px; padding:8px 0 10px; border-bottom:1px solid var(--border);
+    }}
+    .bar-row-total .bar-head {{ font-weight:700; font-size:13px; }}
+    .bar-row-total .bar-track {{ height:10px; }}
     .bar-head {{ display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:3px; }}
     .bar-track {{ height:7px; background:var(--track); border-radius:4px; overflow:hidden; }}
     .bar-fill {{ height:100%; border-radius:4px; }}
@@ -491,7 +503,10 @@ function renderBudgets(rows) {{
   const sumEl = document.getElementById('budgetsSummary');
   if (!el) return;
   if (!rows.length) {{
-    if (sumEl) sumEl.textContent = '';
+    if (sumEl) {{
+      sumEl.innerHTML = '';
+      sumEl.style.display = 'none';
+    }}
     el.innerHTML = '<p class="empty">No budgets this period</p>';
     return;
   }}
@@ -502,12 +517,17 @@ function renderBudgets(rows) {{
   }}
   const totRem = totalPlanned - totalSpent;
   const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
+  const totWidth = Math.min(totPct, 100);
   const totOver = totalSpent > totalPlanned && totalPlanned > 0;
+  const totFill = totOver ? '#e74c3c' : '#f1c40f';
   const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
   if (sumEl) {{
-    sumEl.textContent = 'Total budget ' + formatBrl(totalPlanned)
-      + ' · Spent ' + formatBrl(totalSpent)
-      + ' · ' + totPct.toFixed(0) + '% · ' + budHint;
+    sumEl.style.display = '';
+    sumEl.innerHTML = '<div class="bar-head"><span>Total</span><span>'
+      + formatBrl(totalSpent) + ' / ' + formatBrl(totalPlanned) + ' · ' + totPct.toFixed(0) + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + totWidth.toFixed(1)
+      + '%;background:' + totFill + '"></div></div>'
+      + '<div class="bar-meta">' + budHint + '</div>';
   }}
   const byId = catById();
   el.innerHTML = rows.map(b => {{
