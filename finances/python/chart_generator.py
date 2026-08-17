@@ -255,15 +255,17 @@ def build_html(data: dict) -> str:
         n_months = max(len(data.get("period_months") or []), 1)
         rec_period = rec_monthly * n_months
         rec_income = data["totals"]["income"]
+        rec_pct = (rec_period / rec_income * 100.0) if rec_income else 0.0
         rec_list = "".join(rec_items) or '<p class="empty">No recurring bills</p>'
         rec_html = f"""
         <div class="panel" id="recurringPanel" style="margin-top:10px">
           <h2>Recurring bills</h2>
           <div class="bar-meta" id="recurringSummary" style="margin-bottom:8px">
             Period {format_brl(rec_period)} · Income {format_brl(rec_income)}
+            · Recurring is {rec_pct:.0f}% of income
             · {n_months} month{"s" if n_months != 1 else ""}</div>
           <div id="recurringList">{rec_list}</div>
-          <div id="recurringVsIncome" class="chart chart-short"></div>
+          <div id="recurringVsIncome" class="chart chart-treemap"></div>
         </div>"""
 
     payload = {
@@ -358,6 +360,7 @@ def build_html(data: dict) -> str:
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
     .chart {{ height:320px; }}
     .chart-short {{ height:220px; }}
+    .chart-treemap {{ height:280px; }}
     .chart-cell {{ min-width:0; }}
     .chart-span {{ grid-column:1 / -1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
@@ -619,10 +622,17 @@ function renderRecurring(months, income) {{
   const rows = RAW.recurring || [];
   const n = (months && months.length) ? months.length : 1;
   const periodBills = recurringMonthlyTotal() * n;
+  const pct = income > 0 ? (periodBills / income * 100) : 0;
   if (sumEl) {{
     sumEl.textContent = 'Period ' + formatBrl(periodBills) + ' · Income ' + formatBrl(income)
+      + ' · Recurring is ' + pct.toFixed(0) + '% of income'
       + ' · ' + n + (n === 1 ? ' month' : ' months');
   }}
+  const mapped = rows.map(r => ({{
+    name: r.name || r.id || 'Bill',
+    icon: r.icon || '',
+    periodAmt: parseDecimal(r.monthly_amount) * n
+  }}));
   if (list) {{
     if (!rows.length) {{
       list.innerHTML = '<p class="empty">No recurring bills</p>';
@@ -636,23 +646,52 @@ function renderRecurring(months, income) {{
       }}).join('');
     }}
   }}
-  DATA.recurringVs = {{ bills: periodBills, income: income }};
+  DATA.recurringVs = {{ bills: periodBills, income: income, rows: mapped }};
 }}
-function drawRecurringBar() {{
+function drawRecurringTreemap() {{
   const el = document.getElementById('recurringVsIncome');
   if (!el) return;
-  const vs = DATA.recurringVs || {{ bills: 0, income: 0 }};
+  const vs = DATA.recurringVs || {{ bills: 0, income: 0, rows: [] }};
+  const labels = [];
+  const values = [];
+  const colors = [];
+  const custom = [];
+  for (const r of vs.rows || []) {{
+    if (r.periodAmt <= 0) continue;
+    labels.push(r.name);
+    values.push(r.periodAmt);
+    colors.push('#9b59b6');
+    const pInc = vs.income > 0 ? (r.periodAmt / vs.income * 100) : 0;
+    custom.push(formatBrl(r.periodAmt) + ' · ' + pInc.toFixed(0) + '% of income');
+  }}
+  const leftover = vs.income - vs.bills;
+  if (leftover > 0) {{
+    labels.push('Remainder');
+    values.push(leftover);
+    colors.push('#2ecc71');
+    const pInc = vs.income > 0 ? (leftover / vs.income * 100) : 0;
+    custom.push(formatBrl(leftover) + ' · ' + pInc.toFixed(0) + '% of income');
+  }}
+  if (!values.length) {{
+    el.innerHTML = '<p class="empty">No data</p>';
+    return;
+  }}
   const L = baseLayout();
   Plotly.newPlot('recurringVsIncome', [{{
-    type: 'bar',
-    x: ['Recurring (period)', 'Income (period)'],
-    y: [vs.bills, vs.income],
-    marker: {{ color: ['#9b59b6', '#2ecc71'] }},
-    hovertemplate: '%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'
+    type: 'treemap',
+    labels: labels,
+    parents: labels.map(() => ''),
+    values: values,
+    marker: {{ colors: colors }},
+    customdata: custom,
+    texttemplate: '%{{label}}<br>%{{customdata}}',
+    hovertemplate: '%{{label}}<br>%{{customdata}}<extra></extra>',
+    textfont: {{ size: 12 }},
+    pathbar: {{ visible: false }}
   }}], Object.assign({{}}, L, {{
     showlegend: false,
-    height: 220,
-    margin: {{ t: 16, b: 48, l: 48, r: 16 }}
+    height: 280,
+    margin: {{ t: 8, b: 8, l: 8, r: 8 }}
   }}), {{ responsive: true, displayModeBar: false }});
 }}
 function applyPeriod() {{
@@ -766,7 +805,7 @@ function drawAll() {{
       {{type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
     ], L, {{responsive:true, displayModeBar:false}});
   }}
-  drawRecurringBar();
+  drawRecurringTreemap();
 }}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);
