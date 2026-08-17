@@ -160,52 +160,103 @@ Finance_TxForm(existing) {
     Finance_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit transaction" : "Add transaction")
     g.SetFont("s10", "Segoe UI")
-    g.Add("Text", , "Description")
-    eDesc := g.Add("Edit", "w420", isEdit ? existing["description"] : "")
-    g.Add("Text", "y+8", "Amount (comma decimal)")
-    eAmt := g.Add("Edit", "w200", isEdit ? existing["amount"] : "")
+    g.Add("Text", "x10 y10", "Description")
+    eDesc := g.Add("Edit", "x10 y28 w420", isEdit ? existing["description"] : "")
+    g.Add("Text", "x10 y58", "Amount (comma decimal)")
+    eAmt := g.Add("Edit", "x10 y76 w200", isEdit ? existing["amount"] : "")
     types := ["expense", "income", "transfer", "card_expense", "adjustment"]
-    typeLabels := "Expense|Income|Transfer|Credit card|Adjustment"
     curType := isEdit ? existing["type"] : "expense"
     typeIdx := 1
     loop types.Length {
         if (types[A_Index] = curType)
             typeIdx := A_Index
     }
-    g.Add("Text", "x+16 yp-18", "Type")
-    ddType := g.Add("DropDownList", "w180 Choose" . typeIdx, ["Expense", "Income", "Transfer", "Credit card",
+    g.Add("Text", "x230 y58", "Type")
+    ddType := g.Add("DropDownList", "x230 y76 w200 Choose" . typeIdx, ["Expense", "Income", "Transfer", "Credit card",
         "Adjustment"])
-    g.Add("Text", "x10 y+12", "Category")
+
+    y1 := 112
+    y1c := 130
+    y2 := 168
+    y2c := 186
     catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true, "icon")
     catIdx := Finance_ComboIndex(catCombo.ids, isEdit ? existing["category_id"] : "")
-    ddCat := g.Add("DropDownList", "w220 Choose" . catIdx, catCombo.names)
-    g.Add("Text", "x+12 yp-18", "Subcategory")
-    eSub := g.Add("Edit", "w180", isEdit ? existing["subcategory"] : "")
-    g.Add("Text", "x10 y+12", "Account")
+    lblCat := g.Add("Text", "x10 y" . y1, "Category")
+    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w220 Choose" . catIdx, catCombo.names)
+    lblSub := g.Add("Text", "x242 y" . y1, "Subcategory")
+    eSub := g.Add("Edit", "x242 y" . y1c . " w180", isEdit ? existing["subcategory"] : "")
+
     accCombo := Finance_ComboFromRows(accs)
     accIdx := Finance_ComboIndex(accCombo.ids, isEdit ? existing["account_id"] : Finance_Setting("General",
         "DefaultAccountId", ""))
-    ddAcc := g.Add("DropDownList", "w220 Choose" . accIdx, accCombo.names)
-    g.Add("Text", "x+12 yp-18", "To account (transfer)")
+    lblAcc := g.Add("Text", "x10 y" . y2, "Account")
+    ddAcc := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . accIdx, accCombo.names)
+
     destCombo := Finance_ComboFromRows(accs, "id", "name", true)
     destIdx := Finance_ComboIndex(destCombo.ids, isEdit ? existing["transfer_account_id"] : "")
-    ddDest := g.Add("DropDownList", "w180 Choose" . destIdx, destCombo.names)
-    g.Add("Text", "x10 y+12", "Credit card")
+    lblDest := g.Add("Text", "x242 y" . y2, "To account")
+    ddDest := g.Add("DropDownList", "x242 y" . y2c . " w180 Choose" . destIdx, destCombo.names)
+
     cardCombo := Finance_ComboFromRows(cards, "id", "name", true)
     cardIdx := Finance_ComboIndex(cardCombo.ids, isEdit ? existing["card_id"] : "")
-    ddCard := g.Add("DropDownList", "w220 Choose" . cardIdx, cardCombo.names)
-    g.Add("Text", "x10 y+16 w420", "Date is always the system entry date (today) for new rows.")
+    lblCard := g.Add("Text", "x10 y" . y2, "Credit card")
+    ddCard := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . cardIdx, cardCombo.names)
+
+    g.Add("Text", "x10 y230 w420", "Date is always the system entry date (today) for new rows.")
     saved := false
-    g.Add("Button", "y+12 w100 Default", "Save").OnEvent("Click", SaveTx)
-    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.Add("Button", "x10 y256 w100 Default", "Save").OnEvent("Click", SaveTx)
+    g.Add("Button", "x118 y256 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
     g.OnEvent("Escape", (*) => g.Destroy())
-    g.Show("w460")
+    ddType.OnEvent("Change", (*) => ApplyTxTypeFields(types[ddType.Value]))
+    ApplyTxTypeFields(curType)
+    g.Show("w460 h300")
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
     Finance_DialogsEnd()
     if (saved)
         Finance_TxRefresh()
+
+    ApplyTxTypeFields(t) {
+        showCat := (t != "transfer")
+        showAcc := (t != "card_expense")
+        showDest := (t = "transfer")
+        showCard := (t = "card_expense")
+        lblCat.Visible := showCat
+        ddCat.Visible := showCat
+        lblSub.Visible := showCat
+        eSub.Visible := showCat
+        lblAcc.Visible := showAcc
+        ddAcc.Visible := showAcc
+        lblDest.Visible := showDest
+        ddDest.Visible := showDest
+        lblCard.Visible := showCard
+        ddCard.Visible := showCard
+        lblAcc.Text := (t = "transfer") ? "From account" : "Account"
+        if (t = "transfer") {
+            lblAcc.Move(10, y1)
+            ddAcc.Move(10, y1c)
+            lblDest.Move(242, y2)
+            ddDest.Move(242, y2c)
+        } else {
+            lblAcc.Move(10, y2)
+            ddAcc.Move(10, y2c)
+        }
+        catFilter := ""
+        if (t = "expense" || t = "card_expense")
+            catFilter := "expense"
+        else if (t = "income")
+            catFilter := "income"
+        keepId := ""
+        try keepId := catCombo.ids[ddCat.Value]
+        catch {
+            keepId := ""
+        }
+        catCombo := Finance_ComboFromRows(Finance_MainCategories(cats, catFilter), "id", "name", true, "icon")
+        ddCat.Delete()
+        ddCat.Add(catCombo.names)
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, keepId))
+    }
 
     SaveTx(*) {
         desc := Trim(eDesc.Value)
@@ -218,12 +269,23 @@ Finance_TxForm(existing) {
         if (amt < 0)
             amt := -amt
         t := types[ddType.Value]
-        catId := catCombo.ids[ddCat.Value]
-        accId := accCombo.ids[ddAcc.Value]
-        destId := destCombo.ids[ddDest.Value]
-        cardId := cardCombo.ids[ddCard.Value]
-        if (t = "card_expense" && cardId = "") {
-            cardId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
+        catId := ""
+        subVal := ""
+        accId := ""
+        destId := ""
+        cardId := ""
+        if (t != "transfer") {
+            catId := catCombo.ids[ddCat.Value]
+            subVal := Trim(eSub.Value)
+        }
+        if (t != "card_expense")
+            accId := accCombo.ids[ddAcc.Value]
+        if (t = "transfer")
+            destId := destCombo.ids[ddDest.Value]
+        if (t = "card_expense") {
+            cardId := cardCombo.ids[ddCard.Value]
+            if (cardId = "")
+                cardId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
         }
         date := isEdit ? existing["date"] : Finance_Today()
         txs := Finance_Load("transactions")
@@ -234,11 +296,10 @@ Finance_TxForm(existing) {
         "amount", Finance_FormatCsvDecimal(amt),
         "type", t,
         "category_id", catId,
-        "subcategory", Trim(eSub.Value),
+        "subcategory", subVal,
         "account_id", accId,
-        "card_id", t = "card_expense" ? cardId : "",
-        "transfer_account_id", t = "transfer" ? destId : ""
-        )
+        "card_id", cardId,
+        "transfer_account_id", destId)
         if (isEdit) {
             out := []
             for r in txs {
