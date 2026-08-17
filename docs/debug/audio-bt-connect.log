@@ -1,1 +1,2 @@
 # AudioBt connect index (append-only). Each attempt also writes audio-bt-connect-YYYYMMDD-HHmmss.log
+2026-08-17 16:40:06  20260817-163943  code=1  audio-bt-connect-20260817-163943.log  ERR	BluetoothSetServiceState 1060; PnP: no audio endpoint appeared; WinRT: AudioPlaybackConnection: WinRT async timeout
