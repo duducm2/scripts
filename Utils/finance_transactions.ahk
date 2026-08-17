@@ -197,8 +197,22 @@ Finance_TxForm(existing) {
     lblDest := g.Add("Text", "x242 y" . y2, "To account")
     ddDest := g.Add("DropDownList", "x242 y" . y2c . " w180 Choose" . destIdx, destCombo.names)
 
-    cardCombo := Finance_ComboFromRows(cards, "id", "name", true)
-    cardIdx := Finance_ComboIndex(cardCombo.ids, isEdit ? existing["card_id"] : "")
+    primaryCardId := Finance_Setting("General", "PrimaryCardId", "")
+    cardRows := []
+    if (primaryCardId != "") {
+        prow := Finance_FindById(cards, primaryCardId)
+        if (prow)
+            cardRows.Push(prow)
+    }
+    for c in cards {
+        if (c["id"] != primaryCardId)
+            cardRows.Push(c)
+    }
+    cardCombo := Finance_ComboFromRows(cardRows, "id", "name", false)
+    defaultCardId := isEdit ? existing["card_id"] : primaryCardId
+    if (defaultCardId = "" && cardCombo.ids.Length)
+        defaultCardId := cardCombo.ids[1]
+    cardIdx := Finance_ComboIndex(cardCombo.ids, defaultCardId)
     lblCard := g.Add("Text", "x10 y" . y2, "Credit card")
     ddCard := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . cardIdx, cardCombo.names)
 
