@@ -349,10 +349,9 @@ namespace AudioBt
                 EndpointInfo ep = ResolveEndpoint(id, true);
                 if (ep == null)
                     return "ERR\tNo audio endpoint found for that device";
-                EnsureVisible(ep.Id, true);
-                int hr = PolicySetDefault(ep.Id, ep.Flow);
-                if (hr != 0)
-                    return "ERR\tSetDefault failed HRESULT 0x" + hr.ToString("X8");
+                string err;
+                if (!TrySetDefaultTarget(ref ep, ResolveBt(id), out err))
+                    return "ERR\t" + Cell(err);
                 return "OK\tDefault set: " + Cell(ep.Name);
             }
             catch (Exception ex)
@@ -370,7 +369,7 @@ namespace AudioBt
                     return "ERR\tNo audio endpoint found for that device";
                 int hr = PolicySetVisible(ep.Id, visible);
                 if (hr != 0)
-                    return "ERR\t" + (visible ? "Enable" : "Disable") + " failed HRESULT 0x" + hr.ToString("X8");
+                    return "ERR\t" + (visible ? "Enable" : "Disable") + " failed " + FormatHr(hr);
                 return "OK\t" + (visible ? "Enabled: " : "Disabled: ") + Cell(ep.Name);
             }
             catch (Exception ex)
@@ -386,6 +385,15 @@ namespace AudioBt
                 BtDeviceInfo bt = ResolveBt(id);
                 bool didConnect = false;
                 string connectMethod = "";
+                int requestedFlow = -1;
+                if (id != null && !id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase))
+                {
+                    EndpointInfo selectedBefore = FindEndpointById(CollectEndpoints(), id);
+                    if (selectedBefore != null)
+                        requestedFlow = selectedBefore.Flow;
+                }
+                if (id != null && id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase) && bt == null)
+                    return "ERR\tBluetooth device not found";
                 if (bt != null && !bt.Connected)
                 {
                     string connectErr;
@@ -395,52 +403,58 @@ namespace AudioBt
                 }
 
                 List<EndpointInfo> endpoints = CollectEndpoints();
-                List<EndpointInfo> targets = new List<EndpointInfo>();
-                if (id != null && id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase))
+                List<EndpointInfo> targets = CollectIsolateTargets(id, bt, endpoints, requestedFlow);
+                if (targets.Count == 0)
                 {
-                    if (bt == null)
-                        return "ERR\tBluetooth device not found";
-                    foreach (EndpointInfo ep in endpoints)
-                    {
-                        if (EndpointMatchesBt(ep, bt) && (ep.State & DEVICE_STATE_NOTPRESENT) == 0)
-                            targets.Add(ep);
-                    }
-                }
-                else
-                {
-                    EndpointInfo one = FindEndpointById(endpoints, id);
-                    if (one != null)
-                        targets.Add(one);
+                    System.Threading.Thread.Sleep(500);
+                    endpoints = CollectEndpoints();
+                    targets = CollectIsolateTargets(id, bt, endpoints, requestedFlow);
                 }
                 if (targets.Count == 0)
                     return "ERR\tNo audio endpoint found to isolate";
 
-                HashSet<int> flows = new HashSet<int>();
-                foreach (EndpointInfo t in targets)
-                    flows.Add(t.Flow);
+                bool fromOutputEndpoint = requestedFlow == eRender;
 
+                HashSet<int> isolatedFlows = new HashSet<int>();
+                List<string> failed = new List<string>();
                 StringBuilder names = new StringBuilder();
-                foreach (EndpointInfo t in targets)
+                for (int i = 0; i < targets.Count; i++)
                 {
-                    EnsureVisible(t.Id, true);
-                    int hr = PolicySetDefault(t.Id, t.Flow);
-                    if (hr != 0)
-                        return "ERR\tSetDefault failed HRESULT 0x" + hr.ToString("X8");
+                    EndpointInfo t = targets[i];
+                    if (fromOutputEndpoint && t.Flow != eRender)
+                        continue;
+                    string setErr;
+                    if (!TrySetDefaultTarget(ref t, bt, out setErr))
+                    {
+                        failed.Add(setErr);
+                        continue;
+                    }
+                    targets[i] = t;
+                    isolatedFlows.Add(t.Flow);
                     if (names.Length > 0)
                         names.Append(", ");
                     names.Append(t.Name);
                 }
+                if (isolatedFlows.Count == 0)
+                {
+                    string msg = failed.Count == 0 ? "SetDefault failed" : string.Join("; ", failed);
+                    return "ERR\t" + Cell(msg);
+                }
 
+                endpoints = CollectEndpoints();
                 foreach (EndpointInfo ep in endpoints)
                 {
-                    if (!flows.Contains(ep.Flow))
+                    if (!isolatedFlows.Contains(ep.Flow))
                         continue;
                     if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
                         continue;
                     bool isTarget = false;
                     foreach (EndpointInfo t in targets)
                     {
-                        if (string.Equals(t.Id, ep.Id, StringComparison.OrdinalIgnoreCase))
+                        if (!isolatedFlows.Contains(t.Flow))
+                            continue;
+                        if (string.Equals(t.Id, ep.Id, StringComparison.OrdinalIgnoreCase)
+                            || (bt != null && EndpointMatchesBt(ep, bt) && ep.Flow == t.Flow))
                         {
                             isTarget = true;
                             break;
@@ -843,6 +857,144 @@ namespace AudioBt
             return null;
         }
 
+        static List<EndpointInfo> CollectIsolateTargets(string id, BtDeviceInfo bt, List<EndpointInfo> endpoints, int requestedFlow)
+        {
+            List<EndpointInfo> targets = new List<EndpointInfo>();
+            if (id != null && id.StartsWith("bt:", StringComparison.OrdinalIgnoreCase))
+            {
+                EndpointInfo render = BestBtEndpoint(endpoints, bt, eRender);
+                EndpointInfo capture = BestBtEndpoint(endpoints, bt, eCapture);
+                if (render != null)
+                    targets.Add(render);
+                if (capture != null)
+                    targets.Add(capture);
+                return targets;
+            }
+            int flow = requestedFlow >= 0 ? requestedFlow : eRender;
+            if (bt != null)
+            {
+                EndpointInfo best = BestBtEndpoint(endpoints, bt, flow);
+                if (best != null)
+                {
+                    targets.Add(best);
+                    return targets;
+                }
+            }
+            EndpointInfo one = FindEndpointById(endpoints, id);
+            if (one != null && (one.State & DEVICE_STATE_NOTPRESENT) == 0)
+                targets.Add(one);
+            return targets;
+        }
+
+        static EndpointInfo BestBtEndpoint(List<EndpointInfo> endpoints, BtDeviceInfo bt, int flow)
+        {
+            if (endpoints == null || bt == null)
+                return null;
+            EndpointInfo best = null;
+            int bestScore = -1;
+            foreach (EndpointInfo ep in endpoints)
+            {
+                if (!EndpointMatchesBt(ep, bt) || ep.Flow != flow)
+                    continue;
+                if ((ep.State & DEVICE_STATE_NOTPRESENT) != 0)
+                    continue;
+                int score = 0;
+                if ((ep.State & DEVICE_STATE_ACTIVE) != 0)
+                    score += 8;
+                if ((ep.State & DEVICE_STATE_DISABLED) == 0)
+                    score += 4;
+                if ((ep.State & DEVICE_STATE_UNPLUGGED) == 0)
+                    score += 2;
+                if (ep.IsDefault)
+                    score += 1;
+                string n = ep.Name ?? "";
+                if (flow == eRender)
+                {
+                    if (n.IndexOf("Hands-Free", StringComparison.OrdinalIgnoreCase) >= 0
+                        || n.IndexOf("Handsfree", StringComparison.OrdinalIgnoreCase) >= 0
+                        || n.IndexOf("Headset", StringComparison.OrdinalIgnoreCase) >= 0)
+                        score -= 3;
+                    if (n.IndexOf("Stereo", StringComparison.OrdinalIgnoreCase) >= 0
+                        || n.IndexOf("Headphones", StringComparison.OrdinalIgnoreCase) >= 0
+                        || n.IndexOf("Speaker", StringComparison.OrdinalIgnoreCase) >= 0)
+                        score += 3;
+                }
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    best = ep;
+                }
+            }
+            return best;
+        }
+
+        static bool TrySetDefaultTarget(ref EndpointInfo target, BtDeviceInfo bt, out string err)
+        {
+            err = "";
+            if (target == null)
+            {
+                err = "No audio endpoint found to set default";
+                return false;
+            }
+            int flow = target.Flow;
+            string originalId = target.Id;
+            DateTime deadline = DateTime.UtcNow.AddMilliseconds(8000);
+            int lastHr = -1;
+            while (true)
+            {
+                List<EndpointInfo> endpoints = CollectEndpoints();
+                EndpointInfo ep = FindEndpointById(endpoints, originalId);
+                if (bt != null)
+                {
+                    EndpointInfo byBt = BestBtEndpoint(endpoints, bt, flow);
+                    if (byBt != null)
+                        ep = byBt;
+                }
+                if (ep == null)
+                    ep = FindEndpointById(endpoints, target.Id);
+                if (ep != null && (ep.State & DEVICE_STATE_NOTPRESENT) == 0)
+                {
+                    EnsureVisible(ep.Id, true);
+                    lastHr = PolicySetDefault(ep.Id, ep.Flow);
+                    EndpointInfo check = FindEndpointById(CollectEndpoints(), ep.Id);
+                    if (lastHr == 0 || (check != null && check.IsDefault))
+                    {
+                        target = check ?? ep;
+                        return true;
+                    }
+                    originalId = ep.Id;
+                }
+                if (DateTime.UtcNow >= deadline)
+                {
+                    string who = ep != null ? ep.Name : target.Name;
+                    err = "SetDefault failed " + FormatHr(lastHr) + (string.IsNullOrEmpty(who) ? "" : ": " + who);
+                    return false;
+                }
+                System.Threading.Thread.Sleep(350);
+            }
+        }
+
+        static string FormatHr(int hr)
+        {
+            uint u = unchecked((uint)hr);
+            string name = "";
+            switch (u)
+            {
+                case 0x80070002: name = "not found"; break;
+                case 0x80070005: name = "access denied"; break;
+                case 0x80070015: name = "device not ready"; break;
+                case 0x8007001F: name = "device not ready"; break;
+                case 0x80070057: name = "invalid argument"; break;
+                case 0x80070490: name = "element not found"; break;
+                case 0x80004005: name = "unspecified failure"; break;
+                case 0x88890004: name = "device invalidated"; break;
+            }
+            string s = "HRESULT 0x" + u.ToString("X8");
+            if (name.Length > 0)
+                s += " (" + name + ")";
+            return s;
+        }
+
         static EndpointInfo ResolveEndpoint(string id, bool preferRender)
         {
             List<EndpointInfo> endpoints = CollectEndpoints();
@@ -864,8 +1016,16 @@ namespace AudioBt
                     capture = ep;
             }
             if (preferRender)
+            {
+                EndpointInfo bestRender = BestBtEndpoint(endpoints, bt, eRender);
+                if (bestRender != null)
+                    return bestRender;
                 return render ?? capture;
-            return render ?? capture;
+            }
+            EndpointInfo bestCapture = BestBtEndpoint(endpoints, bt, eCapture);
+            if (bestCapture != null)
+                return bestCapture;
+            return capture ?? render;
         }
 
         static BtDeviceInfo ResolveBt(string id)
@@ -981,14 +1141,21 @@ namespace AudioBt
             IntPtr cfg = CreatePolicyConfig();
             try
             {
-                int last = -1;
+                int lastFail = -1;
+                bool anyOk = false;
                 uint[] roles = flow == eCapture
                     ? new uint[] { eCommunications, eMultimedia, eConsole }
                     : new uint[] { eMultimedia, eConsole, eCommunications };
                 PolicySetDefaultProc fn = ComFn<PolicySetDefaultProc>(cfg, 13);
                 foreach (uint role in roles)
-                    last = fn(cfg, deviceId, role);
-                return last;
+                {
+                    int hr = fn(cfg, deviceId, role);
+                    if (hr == 0)
+                        anyOk = true;
+                    else
+                        lastFail = hr;
+                }
+                return anyOk ? 0 : lastFail;
             }
             finally
             {
