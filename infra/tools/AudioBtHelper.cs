@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -142,6 +143,67 @@ namespace AudioBt
         static readonly Guid GuidA2dpSink = new Guid("0000110B-0000-1000-8000-00805F9B34FB");
         static readonly Guid GuidHandsfree = new Guid("0000111E-0000-1000-8000-00805F9B34FB");
         static readonly Guid GuidHeadset = new Guid("00001108-0000-1000-8000-00805F9B34FB");
+        static string logPath = "";
+        static readonly object logLock = new object();
+
+        public static void SetLogPath(string path)
+        {
+            logPath = path ?? "";
+        }
+
+        public static void LogLine(string msg)
+        {
+            Log(msg);
+        }
+
+        public static void LogSnapshot(string label)
+        {
+            Log("--- snapshot " + label + " ---");
+            try
+            {
+                List<BtDeviceInfo> bts = CollectBluetoothAudio();
+                Log("classic BT audio count=" + bts.Count);
+                foreach (BtDeviceInfo bt in bts)
+                    Log("  bt name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected + " class=0x" + bt.ClassOfDevice.ToString("X"));
+                List<EndpointInfo> endpoints = CollectEndpoints();
+                Log("endpoints count=" + endpoints.Count);
+                foreach (EndpointInfo ep in endpoints)
+                {
+                    Log("  ep flow=" + (ep.Flow == eRender ? "Out" : "In")
+                        + " state=0x" + ep.State.ToString("X")
+                        + " active=" + IsActiveEndpoint(ep)
+                        + " def=" + ep.IsDefault
+                        + " bt=" + ep.IsBluetooth
+                        + " addr=" + ep.BtAddrHex
+                        + " name=" + ep.Name
+                        + " id=" + ep.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("snapshot error: " + ex.Message);
+            }
+        }
+
+        static void Log(string msg)
+        {
+            if (string.IsNullOrEmpty(logPath))
+                return;
+            try
+            {
+                string line = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "  " + (msg ?? "") + Environment.NewLine;
+                string dir = Path.GetDirectoryName(logPath);
+                lock (logLock)
+                {
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+                    File.AppendAllText(logPath, line, new UTF8Encoding(false));
+                }
+            }
+            catch
+            {
+            }
+        }
 
         [DllImport("ole32.dll")]
         static extern int PropVariantClear(ref PROPVARIANT pvar);
@@ -392,7 +454,9 @@ namespace AudioBt
         {
             try
             {
+                Log("Isolate id=" + id);
                 BtDeviceInfo bt = ResolveBt(id);
+                Log("Isolate resolveBt name=" + (bt == null ? "<null>" : bt.Name) + " addr=" + (bt == null ? "" : bt.AddrHex) + " classicConnected=" + (bt != null && bt.Connected));
                 bool didConnect = false;
                 string connectMethod = "";
                 int requestedFlow = -1;
@@ -407,9 +471,14 @@ namespace AudioBt
                 if (bt != null && !bt.Connected)
                 {
                     string connectErr;
+                    Log("Isolate needs connect");
                     if (!ConnectBtWithFallback(bt, out connectMethod, out connectErr))
+                    {
+                        Log("Isolate connect failed: " + connectErr);
                         return "ERR\t" + Cell(connectErr);
+                    }
                     didConnect = true;
+                    Log("Isolate connected via " + connectMethod);
                 }
 
                 List<EndpointInfo> endpoints = CollectEndpoints();
@@ -490,13 +559,22 @@ namespace AudioBt
         {
             try
             {
+                Log("Connect id=" + id);
                 BtDeviceInfo bt = ResolveBt(id);
                 if (bt == null)
+                {
+                    Log("Connect resolveBt=null");
                     return "ERR\tNot a paired Bluetooth audio device";
+                }
+                Log("Connect resolveBt name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected);
                 string method;
                 string err;
                 if (!ConnectBtWithFallback(bt, out method, out err))
+                {
+                    Log("Connect failed: " + err);
                     return "ERR\t" + Cell(err);
+                }
+                Log("Connect ok via " + method);
                 return "OK\tConnected via " + method + ": " + Cell(bt.Name);
             }
             catch (Exception ex)
@@ -513,8 +591,13 @@ namespace AudioBt
                 if (bt == null)
                     return "ERR\tNot a paired Bluetooth audio device";
                 string label = string.IsNullOrEmpty(method) ? "fallback" : method;
+                Log("ConfirmConnected method=" + label + " name=" + bt.Name);
                 if (!WaitForBtAudio(bt, 10000))
+                {
+                    Log("ConfirmConnected wait failed");
                     return "ERR\tConnected via " + label + " but no audio endpoint appeared: " + Cell(bt.Name);
+                }
+                Log("ConfirmConnected wait ok");
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 foreach (EndpointInfo ep in endpoints)
                 {
@@ -973,8 +1056,11 @@ namespace AudioBt
                         && (ep.State & DEVICE_STATE_DISABLED) == 0;
                     if (ready)
                     {
+                        Log("SetDefault try name=" + ep.Name + " flow=" + (ep.Flow == eRender ? "Out" : "In")
+                            + " state=0x" + ep.State.ToString("X") + " id=" + ep.Id);
                         lastHr = PolicySetDefault(ep.Id, ep.Flow);
                         EndpointInfo check = FindEndpointById(CollectEndpoints(), ep.Id);
+                        Log("SetDefault hr=0x" + unchecked((uint)lastHr).ToString("X8") + " nowDefault=" + (check != null && check.IsDefault));
                         if (lastHr == 0 || (check != null && check.IsDefault))
                         {
                             target = check ?? ep;
@@ -1144,7 +1230,10 @@ namespace AudioBt
             {
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 if (HasActiveEndpoint(endpoints, bt, eRender))
+                {
+                    Log("WaitForBtAudio active render=true");
                     return true;
+                }
                 foreach (EndpointInfo ep in endpoints)
                 {
                     if (!EndpointMatchesBt(ep, bt) || ep.Flow != eRender)
@@ -1153,7 +1242,11 @@ namespace AudioBt
                         EnsureVisible(ep.Id, true);
                 }
                 if (DateTime.UtcNow >= deadline)
-                    return HasActiveEndpoint(CollectEndpoints(), bt, eRender);
+                {
+                    bool ok = HasActiveEndpoint(CollectEndpoints(), bt, eRender);
+                    Log("WaitForBtAudio timeout activeRender=" + ok);
+                    return ok;
+                }
                 System.Threading.Thread.Sleep(350);
             }
         }
@@ -1250,6 +1343,8 @@ namespace AudioBt
                     try
                     {
                         int hr = PolicySetDefaultOn(cfg, PolicySetDefaultSlot(i), deviceId, flow, out lastFail);
+                        Log("PolicySetDefault iid=" + i.ToString() + " slot=" + PolicySetDefaultSlot(i)
+                            + " hr=0x" + unchecked((uint)hr).ToString("X8") + " lastFail=0x" + unchecked((uint)lastFail).ToString("X8"));
                         if (hr == 0)
                             return 0;
                     }
@@ -1422,9 +1517,15 @@ namespace AudioBt
                         BluetoothFindRadioClose(hFindRadio);
                     }
                 }
+                else
+                    Log("BluetoothFindFirstRadio=0 lastWin32=" + Marshal.GetLastWin32Error());
 
+                int nFind = list.Count;
                 TryAddRadioFile(@"\\.\BthHci", list);
+                int afterHci = list.Count;
                 AddSetupApiRadios(list);
+                Log("OpenRadioHandles findFirst=" + nFind + " plusBthHci=" + (afterHci - nFind)
+                    + " plusSetupApi=" + (list.Count - afterHci) + " total=" + list.Count);
                 return list;
             }
             catch
@@ -1530,31 +1631,43 @@ namespace AudioBt
             method = "";
             err = "";
             List<string> errors = new List<string>();
+            Log("ConnectBtWithFallback name=" + bt.Name + " addr=" + bt.AddrHex);
 
             string svcErr;
             if (SetBtServices(bt, true, out svcErr))
             {
                 method = "BluetoothSetServiceState";
+                Log("SetBtServices ok, waiting for render");
                 if (FinishConnect(bt))
                     return true;
                 errors.Add("BluetoothSetServiceState: no audio endpoint appeared");
+                Log("SetBtServices: no active render");
             }
             else if (!string.IsNullOrEmpty(svcErr))
+            {
                 errors.Add(svcErr);
+                Log("SetBtServices fail: " + svcErr);
+            }
 
             string pnpErr;
             if (EnablePnpBtAudio(bt, out pnpErr))
             {
                 method = "PnP";
+                Log("PnP bounce ok, waiting for render");
                 if (FinishConnect(bt))
                     return true;
                 errors.Add("PnP: no audio endpoint appeared");
+                Log("PnP: no active render");
             }
             else if (!string.IsNullOrEmpty(pnpErr))
+            {
                 errors.Add(pnpErr);
+                Log("PnP fail: " + pnpErr);
+            }
 
             method = "";
             err = errors.Count == 0 ? "Bluetooth connect failed" : string.Join("; ", errors);
+            Log("ConnectBtWithFallback done fail: " + err);
             return false;
         }
 
@@ -1640,6 +1753,7 @@ namespace AudioBt
                 return BtAudioPnpPriority(b).CompareTo(BtAudioPnpPriority(a));
             });
             int bounced = 0;
+            Log("PnP audio nodes=" + nodes.Count);
             foreach (string instanceId in nodes)
             {
                 uint devInst;
@@ -1647,16 +1761,19 @@ namespace AudioBt
                 if (cr != 0)
                 {
                     lastCr = cr;
+                    Log("PnP locate fail cr=" + cr + " " + instanceId);
                     continue;
                 }
-                CM_Disable_DevNode(devInst, 0);
+                int dis = CM_Disable_DevNode(devInst, 0);
                 System.Threading.Thread.Sleep(400);
                 cr = CM_Enable_DevNode(devInst, 0);
+                Log("PnP bounce disable=" + dis + " enable=" + cr + " " + instanceId);
                 if (cr == 0)
                     bounced++;
                 else
                     lastCr = cr;
             }
+            Log("PnP bounced=" + bounced);
             if (bounced > 0)
                 return true;
             if (nodes.Count == 0)
@@ -1695,6 +1812,7 @@ namespace AudioBt
                     Guid g = svc;
                     uint code = BluetoothSetServiceState(hRadio, ref info, ref g, flags);
                     lastCode = code;
+                    Log("BluetoothSetServiceState enable=" + enable + " svc=" + g.ToString() + " code=" + code);
                     if (code == 0)
                     {
                         ok++;
@@ -1703,6 +1821,7 @@ namespace AudioBt
                 }
                 return localOk > 0;
             }, out openedAny);
+            Log("SetBtServices enable=" + enable + " openedAny=" + openedAny + " ok=" + ok + " lastCode=" + lastCode);
             if (ok > 0)
                 return true;
             if (!openedAny)
