@@ -619,19 +619,46 @@ class D2C_FlowManager {
 
         this.CompanionId := ResolveGlobalAICompanion()
         if (presetMode = "finance_daily") {
-            ; Focus companion first (no text), attach CSVs, then paste prompt + dictation.
+            ; Focus only (no ClipAngel paste). Empty NavigateFocusAndPaste would send the
+            ; dictation first; we attach CSVs then paste prompt + dictation once.
             if (this.CompanionId = "enterprise") {
-                this.GeminiHwnd := GeminiEnterprise_NavigateFocusAndPaste("", false)
-                if (!this.GeminiHwnd)
-                    this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
+                GeminiEnterprise_OpenOrFocus()
+                this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
             } else if (this.CompanionId = "copilot") {
-                this.GeminiHwnd := CopilotWeb_NavigateFocusAndPaste("", false)
-                if (!this.GeminiHwnd)
-                    this.GeminiHwnd := GetCopilotWebWindowHwnd()
+                CopilotWeb_OpenOrFocus()
+                this.GeminiHwnd := GetCopilotWebWindowHwnd()
             } else {
-                geminiHwnd := GeminiNavigateFocusAndPasteFirstSnippet("", false)
+                SetTitleMatchMode(2)
+                geminiHwnd := 0
+                try {
+                    for hwnd in WinGetList("ahk_exe chrome.exe") {
+                        try {
+                            if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
+                                geminiHwnd := hwnd
+                                break
+                            }
+                        } catch {
+                        }
+                    }
+                } catch {
+                }
+                if (geminiHwnd) {
+                    WinActivate("ahk_id " geminiHwnd)
+                    WinWaitActive("ahk_id " geminiHwnd, , 2)
+                } else {
+                    WinActivate("ahk_exe chrome.exe")
+                    WinWaitActive("ahk_exe chrome.exe", , 2)
+                    geminiHwnd := WinExist("A")
+                }
+                try {
+                    uia := geminiHwnd ? UIA_Browser("ahk_id " geminiHwnd) : UIA_Browser()
+                    Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+                } catch {
+                }
                 this.GeminiHwnd := geminiHwnd ? geminiHwnd : WinExist("A")
             }
+            if (!this.GeminiHwnd)
+                this.GeminiHwnd := WinExist("A")
             UtilitySelector_AttachPromptContextFiles(financePrompt)
             if (optionalSnippet != "")
                 InsertText(optionalSnippet)
