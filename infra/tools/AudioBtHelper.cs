@@ -102,6 +102,18 @@ namespace AudioBt
         public string szName;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct BLUETOOTH_RADIO_INFO
+    {
+        public uint dwSize;
+        public ulong Address;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 248)]
+        public string szName;
+        public uint ulClassofDevice;
+        public ushort lmpSubversion;
+        public ushort manufacturer;
+    }
+
     class EndpointInfo
     {
         public string Id;
@@ -179,11 +191,255 @@ namespace AudioBt
                         + " name=" + ep.Name
                         + " id=" + ep.Id);
                 }
+                LogBtFocus(label);
             }
             catch (Exception ex)
             {
                 Log("snapshot error: " + ex.Message);
             }
+        }
+
+        public static void DumpConnectDiagnostics(string id)
+        {
+            Log("--- diagnostics id=" + id + " ---");
+            try
+            {
+                LogBtFocus("diagnostics");
+                string hex = BluetoothAddressHex(id);
+                DumpPnpBtNodes(hex);
+                Log("constructedId=" + ConstructedBluetoothDeviceId(hex));
+            }
+            catch (Exception ex)
+            {
+                Log("diagnostics error: " + ex.Message);
+            }
+        }
+
+        public static string RadioAddressHex()
+        {
+            try
+            {
+                List<IntPtr> radios = OpenRadioHandles();
+                try
+                {
+                    foreach (IntPtr h in radios)
+                    {
+                        BLUETOOTH_RADIO_INFO ri = NewRadioInfo();
+                        if (BluetoothGetRadioInfo(h, ref ri) == 0 && ri.Address != 0)
+                            return AddrHex(ri.Address);
+                    }
+                }
+                finally
+                {
+                    CloseRadioHandles(radios);
+                }
+            }
+            catch
+            {
+            }
+            return "";
+        }
+
+        public static string ConstructedBluetoothDeviceId(string deviceHex)
+        {
+            try
+            {
+                string radio = RadioAddressHex();
+                if (string.IsNullOrEmpty(radio) || string.IsNullOrEmpty(deviceHex))
+                    return "";
+                deviceHex = deviceHex.ToUpperInvariant().Replace(":", "").Replace("-", "");
+                return "Bluetooth#Bluetooth" + FormatAddrColon(radio) + "-" + FormatAddrColon(deviceHex);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        static BLUETOOTH_RADIO_INFO NewRadioInfo()
+        {
+            BLUETOOTH_RADIO_INFO ri = new BLUETOOTH_RADIO_INFO();
+            ri.dwSize = (uint)Marshal.SizeOf(typeof(BLUETOOTH_RADIO_INFO));
+            return ri;
+        }
+
+        static string FormatSystemTime(SYSTEMTIME st)
+        {
+            if (st.wYear == 0)
+                return "-";
+            return string.Format("{0:D4}-{1:D2}-{2:D2} {3:D2}:{4:D2}:{5:D2}",
+                st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+        }
+
+        static string Win32Name(uint code)
+        {
+            switch (code)
+            {
+                case 0: return "ERROR_SUCCESS";
+                case 87: return "ERROR_INVALID_PARAMETER";
+                case 234: return "ERROR_MORE_DATA";
+                case 1060: return "ERROR_SERVICE_DOES_NOT_EXIST";
+                case 1168: return "ERROR_NOT_FOUND";
+                default: return "win32";
+            }
+        }
+
+        static void LogBtFocus(string label)
+        {
+            Log("--- bt-focus " + label + " ---");
+            try
+            {
+                List<IntPtr> radios = OpenRadioHandles();
+                try
+                {
+                    int i = 0;
+                    foreach (IntPtr h in radios)
+                    {
+                        BLUETOOTH_RADIO_INFO ri = NewRadioInfo();
+                        uint rc = BluetoothGetRadioInfo(h, ref ri);
+                        Log("  radio[" + i + "] GetRadioInfo=" + rc + "(" + Win32Name(rc) + ")"
+                            + " name=" + ri.szName
+                            + " addr=" + AddrHex(ri.Address)
+                            + " class=0x" + ri.ulClassofDevice.ToString("X")
+                            + " lmp=" + ri.lmpSubversion
+                            + " mfg=" + ri.manufacturer);
+                        i++;
+                    }
+                    List<BtDeviceInfo> bts = new List<BtDeviceInfo>();
+                    Dictionary<string, bool> seen = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                    foreach (IntPtr h in radios)
+                        CollectBtOnRadio(h, bts, seen);
+                    foreach (BtDeviceInfo bt in bts)
+                    {
+                        bool dumped = false;
+                        foreach (IntPtr h in radios)
+                        {
+                            BLUETOOTH_DEVICE_INFO info = NewDeviceInfo();
+                            info.Address = bt.Address;
+                            uint gi = BluetoothGetDeviceInfo(h, ref info);
+                            if (gi != 0)
+                            {
+                                Log("  classic GetDeviceInfo=" + gi + "(" + Win32Name(gi) + ") addr=" + bt.AddrHex);
+                                continue;
+                            }
+                            Log("  classic name=" + info.szName
+                                + " addr=" + AddrHex(info.Address)
+                                + " connected=" + info.fConnected
+                                + " remembered=" + info.fRemembered
+                                + " authenticated=" + info.fAuthenticated
+                                + " class=0x" + info.ulClassOfDevice.ToString("X")
+                                + " lastSeen=" + FormatSystemTime(info.stLastSeen)
+                                + " lastUsed=" + FormatSystemTime(info.stLastUsed));
+                            DumpInstalledServices(h, ref info);
+                            dumped = true;
+                            break;
+                        }
+                        if (!dumped)
+                            Log("  classic name=" + bt.Name + " addr=" + bt.AddrHex + " GetDeviceInfo failed");
+                    }
+                }
+                finally
+                {
+                    CloseRadioHandles(radios);
+                }
+                List<EndpointInfo> endpoints = CollectEndpoints();
+                int n = 0;
+                foreach (EndpointInfo ep in endpoints)
+                {
+                    if (!ep.IsBluetooth)
+                        continue;
+                    n++;
+                    Log("  bt-ep flow=" + (ep.Flow == eRender ? "Out" : "In")
+                        + " state=0x" + ep.State.ToString("X")
+                        + " active=" + IsActiveEndpoint(ep)
+                        + " def=" + ep.IsDefault
+                        + " addr=" + ep.BtAddrHex
+                        + " name=" + ep.Name
+                        + " id=" + ep.Id);
+                }
+                Log("  bt-ep count=" + n);
+            }
+            catch (Exception ex)
+            {
+                Log("bt-focus error: " + ex.Message);
+            }
+        }
+
+        static void DumpInstalledServices(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO info)
+        {
+            uint count = 0;
+            uint rc = BluetoothEnumerateInstalledServices(hRadio, ref info, ref count, IntPtr.Zero);
+            Log("    services countQuery rc=" + rc + "(" + Win32Name(rc) + ") count=" + count);
+            if (count == 0 || count > 64)
+                return;
+            Guid[] guids = new Guid[count];
+            uint count2 = count;
+            rc = BluetoothEnumerateInstalledServicesArray(hRadio, ref info, ref count2, guids);
+            Log("    services enum rc=" + rc + "(" + Win32Name(rc) + ") count=" + count2);
+            int n = (int)count2;
+            if (n > guids.Length)
+                n = guids.Length;
+            for (int i = 0; i < n; i++)
+                Log("      svc=" + guids[i].ToString());
+        }
+
+        static void DumpPnpBtNodes(string hex)
+        {
+            if (string.IsNullOrEmpty(hex))
+            {
+                Log("--- pnp-nodes (no mac) ---");
+                return;
+            }
+            hex = hex.ToUpperInvariant().Replace(":", "").Replace("-", "");
+            string colon = FormatAddrColon(hex);
+            Log("--- pnp-nodes " + hex + " ---");
+            IntPtr devs = SetupDiGetClassDevsEnum(IntPtr.Zero, "BTHENUM", IntPtr.Zero, DIGCF_ALLCLASSES);
+            if (!IsValidHandle(devs))
+            {
+                Log("  BTHENUM enumerate failed " + Marshal.GetLastWin32Error());
+                return;
+            }
+            int n = 0;
+            try
+            {
+                for (uint i = 0; ; i++)
+                {
+                    SP_DEVINFO_DATA info = new SP_DEVINFO_DATA();
+                    info.cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA));
+                    if (!SetupDiEnumDeviceInfo(devs, i, ref info))
+                        break;
+                    StringBuilder sb = new StringBuilder(1024);
+                    int needed;
+                    if (!SetupDiGetDeviceInstanceId(devs, ref info, sb, sb.Capacity, out needed))
+                        continue;
+                    string instanceId = sb.ToString();
+                    if (string.IsNullOrEmpty(instanceId))
+                        continue;
+                    string compact = instanceId.ToUpperInvariant().Replace(":", "").Replace("-", "").Replace("_", "");
+                    if (compact.IndexOf(hex, StringComparison.Ordinal) < 0
+                        && instanceId.IndexOf(colon, StringComparison.OrdinalIgnoreCase) < 0)
+                        continue;
+                    n++;
+                    uint devInst;
+                    int locate = CM_Locate_DevNode(out devInst, instanceId, 0);
+                    uint status = 0;
+                    uint problem = 0;
+                    int st = -1;
+                    if (locate == 0)
+                        st = CM_Get_DevNode_Status(out status, out problem, devInst, 0);
+                    Log("  node locate=" + locate
+                        + " statusCr=" + st
+                        + " dnStatus=0x" + status.ToString("X")
+                        + " problem=" + problem
+                        + " audio=" + IsBtAudioPnpNode(instanceId)
+                        + " " + instanceId);
+                }
+            }
+            finally
+            {
+                SetupDiDestroyDeviceInfoList(devs);
+            }
+            Log("  pnp-nodes count=" + n);
         }
 
         static string DroppedSuffix()
@@ -272,6 +528,19 @@ namespace AudioBt
 
         [DllImport("BluetoothAPIs.dll", SetLastError = true)]
         static extern uint BluetoothGetDeviceInfo(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi);
+
+        [DllImport("BluetoothAPIs.dll", SetLastError = true)]
+        static extern uint BluetoothGetRadioInfo(IntPtr hRadio, ref BLUETOOTH_RADIO_INFO pRadioInfo);
+
+        [DllImport("BluetoothAPIs.dll", SetLastError = true)]
+        static extern uint BluetoothEnumerateInstalledServices(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref uint pcServices, IntPtr pGuidServices);
+
+        [DllImport("BluetoothAPIs.dll", SetLastError = true, EntryPoint = "BluetoothEnumerateInstalledServices")]
+        static extern uint BluetoothEnumerateInstalledServicesArray(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref uint pcServices,
+            [Out] Guid[] pGuidServices);
+
+        [DllImport("cfgmgr32.dll")]
+        static extern int CM_Get_DevNode_Status(out uint pulStatus, out uint pulProblemNumber, uint dnDevInst, uint ulFlags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -1535,12 +1804,8 @@ namespace AudioBt
                 else
                     Log("BluetoothFindFirstRadio=0 lastWin32=" + Marshal.GetLastWin32Error());
 
-                int nFind = list.Count;
                 TryAddRadioFile(@"\\.\BthHci", list);
-                int afterHci = list.Count;
                 AddSetupApiRadios(list);
-                Log("OpenRadioHandles findFirst=" + nFind + " plusBthHci=" + (afterHci - nFind)
-                    + " plusSetupApi=" + (list.Count - afterHci) + " total=" + list.Count);
                 return list;
             }
             catch
@@ -1641,13 +1906,24 @@ namespace AudioBt
             return false;
         }
 
-        static bool OtherBtHoldsAudio(BtDeviceInfo other, List<EndpointInfo> endpoints)
+        static string OtherBtHoldReason(BtDeviceInfo other, List<EndpointInfo> endpoints)
         {
             if (other == null)
-                return false;
-            if (other.Connected)
-                return true;
-            return HasActiveEndpoint(endpoints, other, eRender);
+                return "none";
+            bool classic = other.Connected;
+            bool render = HasActiveEndpoint(endpoints, other, eRender);
+            if (classic && render)
+                return "classic+activeRender";
+            if (classic)
+                return "classic";
+            if (render)
+                return "activeRender";
+            return "none";
+        }
+
+        static bool OtherBtHoldsAudio(BtDeviceInfo other, List<EndpointInfo> endpoints)
+        {
+            return OtherBtHoldReason(other, endpoints) != "none";
         }
 
         static void DisconnectOtherBtAudio(BtDeviceInfo keep, out string dropped)
@@ -1692,11 +1968,11 @@ namespace AudioBt
                 {
                     if (string.Equals(other.AddrHex, keep.AddrHex, StringComparison.OrdinalIgnoreCase))
                         continue;
-                    if (OtherBtHoldsAudio(other, endpoints))
-                    {
-                        anyHeld = true;
-                        break;
-                    }
+                    string reason = OtherBtHoldReason(other, endpoints);
+                    if (reason == "none")
+                        continue;
+                    anyHeld = true;
+                    Log("DisconnectOtherBtAudio still held " + other.Name + " " + other.AddrHex + " via " + reason);
                 }
                 if (!anyHeld)
                     break;
@@ -1705,6 +1981,7 @@ namespace AudioBt
             Log("DisconnectOtherBtAudio dropped=" + dropped);
             System.Threading.Thread.Sleep(1000);
             Log("DisconnectOtherBtAudio settled 1000ms");
+            LogBtFocus("after drop");
         }
 
         static bool ConnectBtWithFallback(BtDeviceInfo bt, out string method, out string err)
@@ -1713,6 +1990,7 @@ namespace AudioBt
             err = "";
             List<string> errors = new List<string>();
             Log("ConnectBtWithFallback name=" + bt.Name + " addr=" + bt.AddrHex);
+            DumpPnpBtNodes(bt.AddrHex);
             string dropped;
             DisconnectOtherBtAudio(bt, out dropped);
 
@@ -1794,6 +2072,7 @@ namespace AudioBt
                 return false;
             }
             string hex = bt.AddrHex.ToUpperInvariant();
+            DumpPnpBtNodes(hex);
             string colon = FormatAddrColon(hex);
             IntPtr devs = SetupDiGetClassDevsEnum(IntPtr.Zero, "BTHENUM", IntPtr.Zero, DIGCF_PRESENT | DIGCF_ALLCLASSES);
             if (!IsValidHandle(devs))
@@ -1893,13 +2172,20 @@ namespace AudioBt
                 info.Address = bt.Address;
                 BluetoothGetDeviceInfo(hRadio, ref info);
                 info.Address = bt.Address;
+                Log("BluetoothSetServiceState enable=" + enable
+                    + " name=" + info.szName
+                    + " addr=" + AddrHex(info.Address)
+                    + " connected=" + info.fConnected
+                    + " remembered=" + info.fRemembered
+                    + " authenticated=" + info.fAuthenticated);
                 int localOk = 0;
                 foreach (Guid svc in services)
                 {
                     Guid g = svc;
                     uint code = BluetoothSetServiceState(hRadio, ref info, ref g, flags);
                     lastCode = code;
-                    Log("BluetoothSetServiceState enable=" + enable + " svc=" + g.ToString() + " code=" + code);
+                    Log("BluetoothSetServiceState enable=" + enable + " svc=" + g.ToString()
+                        + " code=" + code + "(" + Win32Name(code) + ")");
                     if (code == 0)
                     {
                         ok++;
