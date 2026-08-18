@@ -51,14 +51,88 @@ ClickSeqData_SanitizeId(id) {
     return id
 }
 
+ClickSeqData_MkClick(selValues, classContains := "", settleMs := unset) {
+    if (!IsSet(settleMs))
+        settleMs := CLICKSEQ_DEFAULT_SETTLE_MS
+    click := ClickSeqData_NewClick()
+    click.classContains := classContains
+    click.settleMs := settleMs
+    click.preferNewest := true
+    click.selectors := []
+    for v in selValues {
+        if (IsObject(v))
+            click.selectors.Push(v)
+        else
+            click.selectors.Push(ClickSeqData_NewSelector("name", v, "exact"))
+    }
+    return click
+}
+
+ClickSeqData_MkSeq(name, context, clicks) {
+    seq := ClickSeqData_NewSequence(name, context)
+    seq.clicks := clicks
+    return seq
+}
+
+; Former #!+9 Quality Gates (personal Gemini A/B/file-or-code; Enterprise/Copilot labels from those stubs).
+ClickSeqData_DefaultAiQuickDownloadSequences() {
+    openSettle := 800
+    seqs := []
+    seqs.Push(ClickSeqData_MkSeq("Download code", "gemini", [ClickSeqData_MkClick(["Download code",
+        "Baixar código", "Baixar codigo"])]))
+    seqs.Push(ClickSeqData_MkSeq("Download code (icon)", "gemini", [ClickSeqData_MkClick([ClickSeqData_NewSelector(
+        "name", "Download", "substr")], "mdc-icon-button")]))
+    seqs.Push(ClickSeqData_MkSeq("Open then viewer Download", "gemini", [ClickSeqData_MkClick(["Open", "Abrir"],
+    "open-button", openSettle), ClickSeqData_MkClick(["Download", "Baixar"], "drive-viewer")]))
+    seqs.Push(ClickSeqData_MkSeq("Direct viewer Download", "gemini", [ClickSeqData_MkClick(["Download", "Baixar"],
+    "drive-viewer")]))
+    seqs.Push(ClickSeqData_MkSeq("Open then Download", "gemini", [ClickSeqData_MkClick(["Open", "Abrir"], "",
+    openSettle), ClickSeqData_MkClick(["Download", "Baixar"])]))
+    seqs.Push(ClickSeqData_MkSeq("Direct Download", "gemini", [ClickSeqData_MkClick(["Download", "Baixar"])]))
+    seqs.Push(ClickSeqData_MkSeq("Open then Export", "enterprise", [ClickSeqData_MkClick(["Open", "Abrir"], "",
+    openSettle), ClickSeqData_MkClick(["Export"])]))
+    seqs.Push(ClickSeqData_MkSeq("Direct Export", "enterprise", [ClickSeqData_MkClick(["Export"])]))
+    seqs.Push(ClickSeqData_MkSeq("Download code", "enterprise", [ClickSeqData_MkClick(["Download code",
+        "Baixar código", "Baixar codigo"])]))
+    seqs.Push(ClickSeqData_MkSeq("Open then Download", "enterprise", [ClickSeqData_MkClick(["Open", "Abrir"], "",
+    openSettle), ClickSeqData_MkClick(["Download", "Baixar"])]))
+    seqs.Push(ClickSeqData_MkSeq("Direct Download", "enterprise", [ClickSeqData_MkClick(["Download", "Baixar"])]))
+    seqs.Push(ClickSeqData_MkSeq("Direct Download", "copilot", [ClickSeqData_MkClick(["Download", "Baixar"])]))
+    seqs.Push(ClickSeqData_MkSeq("Download a copy", "copilot", [ClickSeqData_MkClick(["Download a copy", "Download",
+        "Baixar"])]))
+    idx := 1
+    for seq in seqs {
+        seq.order := idx
+        idx += 1
+    }
+    return seqs
+}
+
 ClickSeqData_DefaultMacros() {
     return [{
         id: CLICKSEQ_DEFAULT_MACRO_ID,
         name: "AI Quick Download",
         trigger: "#!+9",
         postAction: "desktopCutNewest",
-        sequences: []
+        sequences: ClickSeqData_DefaultAiQuickDownloadSequences()
     }]
+}
+
+ClickSeqData_ApplyDefaultSequencesIfEmpty(list) {
+    seeded := false
+    defSeqs := ""
+    for macro in list {
+        if (macro.id != CLICKSEQ_DEFAULT_MACRO_ID)
+            continue
+        n := (macro.HasProp("sequences") && IsObject(macro.sequences)) ? macro.sequences.Length : 0
+        if (n > 0)
+            continue
+        if (!IsObject(defSeqs))
+            defSeqs := ClickSeqData_DefaultAiQuickDownloadSequences()
+        macro.sequences := defSeqs
+        seeded := true
+    }
+    return seeded
 }
 
 ClickSeqData_NewSequence(name := "", context := "enterprise") {
@@ -434,6 +508,10 @@ ClickSeqData_Load(force := false, skipMtime := false) {
     }
 
     list := ClickSeqData_EnsureDefaultMacro(list)
+    if (ClickSeqData_ApplyDefaultSequencesIfEmpty(list)) {
+        ClickSeqData_Save(list)
+        return g_ClickSeqMacros
+    }
     g_ClickSeqMacros := list
     g_ClickSeqDataCacheReady := true
     g_ClickSeqDataCacheMtime := mtime

@@ -110,7 +110,7 @@ ClickSeqGui_BindHotkeys(pairs) {
     }
     for p in pairs {
         try {
-            Hotkey(p[1], p[2], "On")
+            Hotkey(p[1], p[2], "On I10")
             g_ClickSeqHotkeys.Push(p[1])
         } catch {
         }
@@ -192,13 +192,13 @@ ClickSeqGui_Confirm(msg) {
 ClickSeqGui_HintForLevel(level) {
     switch level {
         case "macros":
-            return "Enter drill in   E rename   Esc close   (macros are trigger containers; add sequences inside)"
+            return "[I]/Insert add sequence   Enter open   E rename   Esc close"
         case "sequences":
-            return "Enter drill   Insert add   E edit   Delete   U/J reorder   Backspace back   Esc close"
+            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Enter clicks   Backspace back   Esc close"
         case "clicks":
-            return "Enter drill   Insert add   E edit   Delete   U/J reorder   Backspace back   Esc close"
+            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Enter selectors   Backspace back   Esc close"
         case "selectors":
-            return "Insert add   E edit   Delete   U/J reorder   Backspace back   Esc close"
+            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Backspace back   Esc close"
         default:
             return "Esc close"
     }
@@ -270,13 +270,23 @@ ClickSeqGui_Rebuild() {
     g_ClickSeqActive := true
     ClickSeqGui_Refresh()
     pairs := [
+        ["$*Enter", ClickSeqGui_OnEnter],
         ["Enter", ClickSeqGui_OnEnter],
+        ["$*Escape", (*) => ClickSeqGui_Close()],
         ["Escape", (*) => ClickSeqGui_Close()],
+        ["$*Backspace", ClickSeqGui_OnBack],
         ["Backspace", ClickSeqGui_OnBack],
+        ["$*i", ClickSeqGui_OnAdd],
+        ["$*a", ClickSeqGui_OnAdd],
         ["Insert", ClickSeqGui_OnAdd],
+        ["$*Insert", ClickSeqGui_OnAdd],
+        ["$*e", ClickSeqGui_OnEdit],
         ["e", ClickSeqGui_OnEdit],
         ["Delete", ClickSeqGui_OnDelete],
+        ["$*Delete", ClickSeqGui_OnDelete],
+        ["$*u", (*) => ClickSeqGui_OnMove(-1)],
         ["u", (*) => ClickSeqGui_OnMove(-1)],
+        ["$*j", (*) => ClickSeqGui_OnMove(1)],
         ["j", (*) => ClickSeqGui_OnMove(1)]
     ]
     ClickSeqGui_BindHotkeys(pairs)
@@ -426,11 +436,21 @@ ClickSeqGui_OnBack(*) {
 }
 
 ClickSeqGui_OnAdd(*) {
-    global g_ClickSeqLevel
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqRows
     switch g_ClickSeqLevel {
         case "macros":
-            ClickSeqGui_Notify("Macros are trigger containers. Add sequences inside a macro.", 2200,
-                BANNER_ACCENT_INTERMEDIATE)
+            row := ClickSeqGui_SelectedIndex()
+            if (!row && g_ClickSeqRows.Length = 1)
+                row := 1
+            if (!row) {
+                ClickSeqGui_Notify("Select a macro, then [I] to add a sequence.", 2200,
+                    BANNER_ACCENT_INTERMEDIATE)
+                return
+            }
+            g_ClickSeqMacroId := g_ClickSeqRows[row].id
+            g_ClickSeqLevel := "sequences"
+            ClickSeqGui_Rebuild()
+            ClickSeqGui_SequenceForm(false)
         case "sequences":
             ClickSeqGui_SequenceForm(false)
         case "clicks":
@@ -591,6 +611,11 @@ ClickSeqGui_SequenceForm(isEdit) {
             return
         existing := g_ClickSeqRows[row].seq
     }
+    ctxDefault := "enterprise"
+    try ctxDefault := ResolveGlobalAICompanion()
+    catch {
+        ctxDefault := "enterprise"
+    }
     owner := ClickSeqGui_GuiOwner()
     ClickSeqGui_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit sequence" : "Add sequence")
@@ -598,7 +623,7 @@ ClickSeqGui_SequenceForm(isEdit) {
     g.Add("Text", , "Name")
     eName := g.Add("Edit", "w360", isEdit ? existing.name : "")
     g.Add("Text", "y+10", "Context  (gemini  |  enterprise  |  copilot  |  *)")
-    eCtx := g.Add("Edit", "w360", isEdit ? existing.context : "enterprise")
+    eCtx := g.Add("Edit", "w360", isEdit ? existing.context : ctxDefault)
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveSeq)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
