@@ -109,6 +109,13 @@ ReadUtf8File(path) {
     return FileRead(path, "UTF-8")
 }
 
+WriteUtf8File(path, content) {
+    try FileDelete(path)
+    catch {
+    }
+    FileAppend(content, path, "UTF-8")
+}
+
 GetPromptText(key) {
     try {
         return ReadUtf8File(GetPromptDir() "\" key ".txt")

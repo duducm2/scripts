@@ -387,6 +387,89 @@ PromptData_WriteContextEntries(iniPath, section, prefix, entries) {
     IniWrite(PromptData_JoinContextCsvKeep(list), iniPath, section, prefix . "ContextCsvKeep")
 }
 
+PromptData_ParseTags(raw) {
+    out := []
+    text := Trim(raw)
+    if (text = "")
+        return out
+    for part in StrSplit(text, ",") {
+        t := Trim(part)
+        if (t != "")
+            out.Push(t)
+    }
+    return out
+}
+
+PromptData_JoinTags(arr) {
+    s := ""
+    for t in PromptData_ParseTags(arr) {
+        if (s != "")
+            s .= ","
+        s .= t
+    }
+    return s
+}
+
+PromptData_NormalizePasteMode(mode) {
+    m := StrLower(Trim(mode))
+    valid := Map("default", 1, "body_only", 1, "body_plus_clipboard", 1, "body_attach_clipboard", 1, "attach_only", 1,
+        "auto_send", 1)
+    if (m = "" || !valid.Has(m))
+        return "default"
+    return m
+}
+
+PromptData_PasteMode(prompt) {
+    if (!IsObject(prompt))
+        return "default"
+    return PromptData_NormalizePasteMode(prompt.HasProp("pasteMode") ? prompt.pasteMode : "")
+}
+
+PromptData_ResolveDraftPath(prompt) {
+    if (!IsObject(prompt))
+        return ""
+    fp := prompt.HasProp("filePathDraft") ? prompt.filePathDraft : ""
+    if (fp = "")
+        return ""
+    if (RegExMatch(fp, "^[a-zA-Z]:\\") || SubStr(fp, 1, 2) = "\\")
+        return fp
+    return A_ScriptDir "\" fp
+}
+
+PromptData_PromptRowMatches(prompt, query) {
+    q := Trim(query)
+    if (q = "")
+        return true
+    qLower := StrLower(q)
+    if (InStr(StrLower(prompt.name), qLower))
+        return true
+    if (prompt.HasProp("tags")) {
+        for t in PromptData_ParseTags(prompt.tags) {
+            if (InStr(StrLower(t), qLower))
+                return true
+        }
+    }
+    if (prompt.HasProp("filePath") && InStr(StrLower(prompt.filePath), qLower))
+        return true
+    if (prompt.HasProp("category") && InStr(StrLower(prompt.category), qLower))
+        return true
+    return false
+}
+
+PromptData_NormalizeEntry(prompt) {
+    if (!IsObject(prompt))
+        return prompt
+    prompt.tags := PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : [])
+    prompt.pasteMode := PromptData_NormalizePasteMode(prompt.HasProp("pasteMode") ? prompt.pasteMode : "")
+    prompt.variables := Trim(prompt.HasProp("variables") ? prompt.variables : "")
+    prompt.filePathDraft := Trim(prompt.HasProp("filePathDraft") ? prompt.filePathDraft : "")
+    prompt.personal_context_files := PromptData_ParseContextEntries(prompt.HasProp("personal_context_files") ?
+        prompt.personal_context_files : [])
+    prompt.work_context_files := PromptData_ParseContextEntries(prompt.HasProp("work_context_files") ?
+        prompt.work_context_files : [])
+    return prompt
+}
+
 PromptData_Invalidate() {
     global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
     g_PromptEntries := []
@@ -448,6 +531,10 @@ PromptData_DefaultEntries() {
     for item in list {
         item.personal_context_files := []
         item.work_context_files := []
+        item.tags := ""
+        item.pasteMode := "default"
+        item.variables := ""
+        item.filePathDraft := ""
     }
     return list
 }
@@ -485,11 +572,19 @@ PromptData_Load(force := false, skipMtime := false) {
             author := ""
             filePath := ""
             source := ""
+            tags := ""
+            pasteMode := ""
+            variables := ""
+            filePathDraft := ""
             try charVal := IniRead(path, section, "Char", "")
             try category := IniRead(path, section, "Category", "")
             try author := IniRead(path, section, "Author", "")
             try filePath := IniRead(path, section, "FilePath", "")
             try source := IniRead(path, section, "Source", "")
+            try tags := IniRead(path, section, "Tags", "")
+            try pasteMode := IniRead(path, section, "PasteMode", "")
+            try variables := IniRead(path, section, "Variables", "")
+            try filePathDraft := IniRead(path, section, "FilePathDraft", "")
             personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
             workFiles := PromptData_ReadContextEntries(path, section, "Work")
             name := PromptData_NormalizeIniValue(name)
@@ -498,6 +593,10 @@ PromptData_Load(force := false, skipMtime := false) {
             author := PromptData_NormalizeIniValue(author)
             filePath := PromptData_NormalizeIniValue(filePath)
             source := StrLower(PromptData_NormalizeIniValue(source))
+            tags := PromptData_NormalizeIniValue(tags)
+            pasteMode := PromptData_NormalizeIniValue(pasteMode)
+            variables := PromptData_NormalizeIniValue(variables)
+            filePathDraft := PromptData_NormalizeIniValue(filePathDraft)
             if (name = "" && filePath = "") {
                 idx += 1
                 continue
@@ -510,8 +609,10 @@ PromptData_Load(force := false, skipMtime := false) {
                 charVal := ""
             if (charVal != "")
                 taken[charVal] := true
-            list.Push({ name: name, char: charVal, category: category, author: author, filePath: filePath,
-                source: source, personal_context_files: personalFiles, work_context_files: workFiles })
+            list.Push(PromptData_NormalizeEntry({ name: name, char: charVal, category: category, author: author,
+                filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, variables: variables,
+                filePathDraft: filePathDraft, personal_context_files: personalFiles,
+                work_context_files: workFiles }))
             idx += 1
         }
     }
@@ -541,16 +642,17 @@ PromptData_Save(list) {
         idx := 1
         for prompt in list {
             section := "Prompt_" . idx
-            prompt.personal_context_files := PromptData_ParseContextEntries(prompt.HasProp("personal_context_files") ?
-                prompt.personal_context_files : [])
-            prompt.work_context_files := PromptData_ParseContextEntries(prompt.HasProp("work_context_files") ?
-                prompt.work_context_files : [])
+            prompt := PromptData_NormalizeEntry(prompt)
             IniWrite(prompt.HasProp("name") ? prompt.name : "", path, section, "Name")
             IniWrite(prompt.HasProp("char") ? prompt.char : "", path, section, "Char")
             IniWrite(prompt.HasProp("category") ? prompt.category : "General", path, section, "Category")
             IniWrite(prompt.HasProp("author") ? prompt.author : "", path, section, "Author")
             IniWrite(prompt.HasProp("filePath") ? prompt.filePath : "", path, section, "FilePath")
             IniWrite(prompt.HasProp("source") ? prompt.source : "file", path, section, "Source")
+            IniWrite(PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : []), path, section, "Tags")
+            IniWrite(prompt.pasteMode, path, section, "PasteMode")
+            IniWrite(prompt.variables, path, section, "Variables")
+            IniWrite(prompt.filePathDraft, path, section, "FilePathDraft")
             PromptData_WriteContextEntries(path, section, "Personal", prompt.personal_context_files)
             PromptData_WriteContextEntries(path, section, "Work", prompt.work_context_files)
             idx += 1
@@ -607,14 +709,18 @@ PromptData_Sorted() {
     list := []
     loop g_PromptEntries.Length {
         p := g_PromptEntries[A_Index]
-        list.Push({
+        list.Push(PromptData_NormalizeEntry({
             name: p.name, char: p.char, category: p.category, author: p.author,
             filePath: p.filePath, source: p.source, listIndex: A_Index,
+            tags: p.HasProp("tags") ? p.tags : "",
+            pasteMode: p.HasProp("pasteMode") ? p.pasteMode : "default",
+            variables: p.HasProp("variables") ? p.variables : "",
+            filePathDraft: p.HasProp("filePathDraft") ? p.filePathDraft : "",
             personal_context_files: PromptData_ParseContextEntries(p.HasProp("personal_context_files") ?
                 p.personal_context_files : []),
             work_context_files: PromptData_ParseContextEntries(p.HasProp("work_context_files") ? p.work_context_files :
                 [])
-        })
+        }))
     }
     PromptData_SortInPlace(list)
     return list

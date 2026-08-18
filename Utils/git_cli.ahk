@@ -50,8 +50,14 @@ GitCli_RevParseTopLevel(repoDir, timeoutMs := 15000) {
 ; Capture git stdout (trimmed). Returns "" on failure/timeout.
 ; Uses git -C and a temp working dir so repo paths with spaces do not break cmd.exe.
 GitCli_CaptureStdout(repoDir, gitArgs, timeoutMs := 15000) {
+    r := GitCli_Run(repoDir, gitArgs, timeoutMs)
+    return (r.exitCode = 0) ? r.stdout : ""
+}
+
+; Run git and return exit code plus stdout (stdout may be empty on success).
+GitCli_Run(repoDir, gitArgs, timeoutMs := 15000) {
     if !repoDir || !DirExist(repoDir) || gitArgs = ""
-        return ""
+        return { exitCode: 1, stdout: "" }
     quotedRepo := StrReplace(repoDir, '"', '')
     cmd := Format('set GIT_TERMINAL_PROMPT=0& set GCM_INTERACTIVE=Never& git -C "{1}" {2}', quotedRepo, gitArgs)
     outFile := A_Temp "\git-cli-out-" A_TickCount ".txt"
@@ -66,9 +72,7 @@ GitCli_CaptureStdout(repoDir, gitArgs, timeoutMs := 15000) {
     }
     try FileDelete(outFile)
     try FileDelete(errFile)
-    if (exitCode != 0)
-        return ""
-    return out
+    return { exitCode: exitCode, stdout: out }
 }
 
 ; Commits local HEAD is behind @{upstream}, or -1 if the check failed.

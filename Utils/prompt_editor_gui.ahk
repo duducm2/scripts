@@ -21,12 +21,21 @@ global g_PromptEditorWorkPaths := []
 global g_PromptEditorFlagCtrls := Map()
 global g_PromptEditorSuppressFlagSync := false
 global g_PromptEditorHelpGui := false
+global g_PromptEditorTags := false
+global g_PromptEditorVariables := false
+global g_PromptEditorPasteMode := false
+global g_PromptEditorDraftFile := false
+global g_PromptEditorDraftPath := ""
+global g_PromptEditorGitCommit := false
+global g_PromptEditorPersonalPreset := false
+global g_PromptEditorWorkPreset := false
 
 PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     global g_PromptEntries, g_PromptEditorGui, g_PromptEditorResult
     global g_PromptEditorIsEdit, g_PromptEditorListIndex, g_PromptEditorAuthor
     global g_PromptEditorFilePath, g_PromptEditorSource
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
+    global g_PromptEditorDraftPath
 
     PromptData_Load()
     g_PromptEditorIsEdit := IsObject(existingPrompt)
@@ -40,6 +49,8 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
         "personal_context_files")) ? existingPrompt.personal_context_files : [])
     g_PromptEditorWorkPaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
         "work_context_files")) ? existingPrompt.work_context_files : [])
+    g_PromptEditorDraftPath := (g_PromptEditorIsEdit && existingPrompt.HasProp("filePathDraft")) ? existingPrompt.filePathDraft :
+        ""
 
     currentChar := (g_PromptEditorIsEdit && existingPrompt.HasProp("char")) ? existingPrompt.char : ""
     avail := UtilitySelector_AvailableChars(PromptData_CharSequence, PromptData_IsValidChar, g_PromptEntries, "char",
@@ -91,6 +102,9 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     global g_PromptEditorGui, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFile, g_PromptEditorFilePath, g_PromptEditorIsEdit
     global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
+    global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode
+    global g_PromptEditorDraftFile, g_PromptEditorDraftPath, g_PromptEditorGitCommit
+    global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
 
     colW := 360
     pathCol := colW - 154
@@ -119,8 +133,38 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     }
 
     g_PromptEditorGui.Add("Text", "xm w80", "Prompt file")
-    g_PromptEditorFile := g_PromptEditorGui.Add("Edit", "yp w520 ReadOnly", g_PromptEditorFilePath)
+    g_PromptEditorFile := g_PromptEditorGui.Add("Edit", "yp w440 ReadOnly", g_PromptEditorFilePath)
     g_PromptEditorGui.Add("Button", "yp w80", "Browse").OnEvent("Click", PromptEditor_OnBrowsePromptFile)
+    g_PromptEditorGui.Add("Button", "x+8 yp w80", "History").OnEvent("Click", PromptEditor_OnShowHistory)
+
+    g_PromptEditorGui.Add("Text", "xm w80", "Tags")
+    tagsVal := (IsObject(existingPrompt) && existingPrompt.HasProp("tags")) ? existingPrompt.tags : ""
+    g_PromptEditorTags := g_PromptEditorGui.Add("Edit", "yp w220", tagsVal)
+    g_PromptEditorGui.Add("Text", "x+16 yp w70", "Variables")
+    varsVal := (IsObject(existingPrompt) && existingPrompt.HasProp("variables")) ? existingPrompt.variables : ""
+    g_PromptEditorVariables := g_PromptEditorGui.Add("Edit", "yp w250", varsVal)
+
+    g_PromptEditorGui.Add("Text", "xm w80", "Paste mode")
+    pasteModes := ["default", "body_only", "body_plus_clipboard", "body_attach_clipboard", "attach_only", "auto_send"]
+    g_PromptEditorPasteMode := g_PromptEditorGui.Add("DropDownList", "yp w220", pasteModes)
+    pasteVal := (IsObject(existingPrompt) && existingPrompt.HasProp("pasteMode")) ? PromptData_NormalizePasteMode(
+        existingPrompt.pasteMode) : "default"
+    try g_PromptEditorPasteMode.Text := pasteVal
+    catch {
+        try g_PromptEditorPasteMode.Choose(1)
+        catch {
+        }
+    }
+
+    g_PromptEditorGui.Add("Text", "x+16 yp w70", "Draft file")
+    g_PromptEditorDraftFile := g_PromptEditorGui.Add("Edit", "yp w170 ReadOnly", g_PromptEditorDraftPath)
+    g_PromptEditorGui.Add("Button", "yp w70", "Draft…").OnEvent("Click", PromptEditor_OnBrowseDraftFile)
+    g_PromptEditorGui.Add("Button", "x+8 yp w80", "Promote").OnEvent("Click", PromptEditor_OnPromoteDraft)
+
+    g_PromptEditorGitCommit := g_PromptEditorGui.Add("CheckBox", "xm w220", "Git commit on save")
+    try g_PromptEditorGitCommit.Value := 0
+    catch {
+    }
 
     g_PromptEditorGui.Add("Text", "xm w" . colW . " Section", "Personal context files")
     g_PromptEditorGui.Add("Text", "ys w" . colW, "Work context files")
@@ -143,11 +187,28 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     g_PromptEditorGui.Add("Button", "x+8 yp w110", "Paste paths").OnEvent("Click", (*) => PromptEditor_OnPastePaths(
         "personal"))
     g_PromptEditorGui.Add("Button", "x+8 yp w110", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("personal"))
+    presetLabels := PromptContextPresets_ChoiceLabels()
+    g_PromptEditorGui.Add("Text", "xm w70", "Preset")
+    g_PromptEditorPersonalPreset := g_PromptEditorGui.Add("DropDownList", "yp w180", presetLabels)
+    try g_PromptEditorPersonalPreset.Text := "(none)"
+    catch {
+    }
+    g_PromptEditorGui.Add("Button", "yp w80", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("personal"))
     g_PromptEditorGui.Add("Button", "x+24 yp w110", "Add files").OnEvent("Click", (*) => PromptEditor_OnAddFiles("work"
     ))
     g_PromptEditorGui.Add("Button", "x+8 yp w110", "Paste paths").OnEvent("Click", (*) => PromptEditor_OnPastePaths(
         "work"))
     g_PromptEditorGui.Add("Button", "x+8 yp w110", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("work"))
+    g_PromptEditorGui.Add("Text", "x+24 yp w70", "Preset")
+    g_PromptEditorWorkPreset := g_PromptEditorGui.Add("DropDownList", "yp w180", presetLabels)
+    try g_PromptEditorWorkPreset.Text := "(none)"
+    catch {
+    }
+    g_PromptEditorGui.Add("Button", "yp w80", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("work"))
+
+    g_PromptEditorGui.Add("Button", "xm w120", "Presets…").OnEvent("Click", PromptEditor_OnOpenPresetManager)
+    g_PromptEditorGui.Add("Button", "x+8 yp w120", "Save as preset…").OnEvent("Click", PromptEditor_OnSaveAsPreset)
+    g_PromptEditorGui.Add("Button", "x+8 yp w80", "Preset ?").OnEvent("Click", PromptContextPresets_ShowHelp)
 
     personalCompact := g_PromptEditorGui.Add("CheckBox", "xm w" . colW, "Compact")
     workCompact := g_PromptEditorGui.Add("CheckBox", "x+12 yp w" . colW, "Compact")
@@ -188,7 +249,7 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_LoadFlagControls("work", 0)
 
     g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12 - 90),
-        "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine.")
+    "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine.")
     g_PromptEditorGui.Add("Button", "xm w80", "Help").OnEvent("Click", PromptEditor_ShowHelp)
     g_PromptEditorGui.Add("Button", "x+350 yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
     g_PromptEditorGui.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PromptEditor_OnCancel)
@@ -246,6 +307,9 @@ PromptEditor_BindEditorHotkeys(enable) {
     catch {
     }
     try Hotkey("F1", PromptEditor_ShowHelp, enable ? "On" : "Off")
+    catch {
+    }
+    try Hotkey("h", PromptEditor_OnShowHistory, enable ? "On" : "Off")
     catch {
     }
     try HotIf()
@@ -521,6 +585,148 @@ PromptEditor_ParseFileSelect(result) {
     return paths
 }
 
+PromptEditor_OnBrowseDraftFile(*) {
+    global g_PromptEditorGui, g_PromptEditorDraftFile, g_PromptEditorDraftPath
+    start := g_PromptEditorDraftPath != "" ? PromptData_ResolveDraftPath({ filePathDraft: g_PromptEditorDraftPath }) :
+        A_ScriptDir "\assets\prompt\"
+    if (IsObject(g_PromptEditorGui)) {
+        try g_PromptEditorGui.Opt("-AlwaysOnTop")
+        catch {
+        }
+    }
+    selected := FileSelect(1, start, "Select draft prompt file", "Text (*.txt)")
+    if (IsObject(g_PromptEditorGui)) {
+        try g_PromptEditorGui.Opt("+AlwaysOnTop")
+        try WinActivate("ahk_id " g_PromptEditorGui.Hwnd)
+        catch {
+        }
+    }
+    if (selected = "")
+        return
+    g_PromptEditorDraftPath := PromptData_ToStoredPath(selected)
+    try g_PromptEditorDraftFile.Value := g_PromptEditorDraftPath
+    catch {
+    }
+}
+
+PromptEditor_OnPromoteDraft(*) {
+    global g_PromptEditorFilePath, g_PromptEditorDraftPath, g_PromptEditorSource
+    if (g_PromptEditorDraftPath = "") {
+        UtilitySelector_Notify("Set a draft file path first.")
+        return
+    }
+    draftAbs := PromptData_ResolveDraftPath({ filePathDraft: g_PromptEditorDraftPath })
+    liveAbs := PromptData_ResolvePath({ filePath: g_PromptEditorFilePath, source: g_PromptEditorSource })
+    if (draftAbs = "" || !FileExist(draftAbs)) {
+        UtilitySelector_Notify("Draft file missing.")
+        return
+    }
+    if (liveAbs = "") {
+        UtilitySelector_Notify("Live prompt file path is missing.")
+        return
+    }
+    if (MsgBox("Copy draft over live prompt file?`n`nDraft: " g_PromptEditorDraftPath "`nLive: " g_PromptEditorFilePath,
+        "Promote draft", "YesNo Icon!") != "Yes")
+        return
+    try {
+        content := ReadUtf8File(draftAbs)
+        WriteUtf8File(liveAbs, content)
+        UtilitySelector_Notify("Draft promoted to live file.")
+    } catch {
+        UtilitySelector_Notify("Promote failed.")
+    }
+}
+
+PromptEditor_OnShowHistory(*) {
+    global g_PromptEditorFilePath, g_PromptEditorSource
+    if (g_PromptEditorFilePath = "") {
+        UtilitySelector_Notify("Set a prompt file first.")
+        return
+    }
+    absPath := PromptData_ResolvePath({ filePath: g_PromptEditorFilePath, source: g_PromptEditorSource })
+    PromptGit_ShowHistory(absPath)
+}
+
+PromptEditor_FindPathIndex(arr, path) {
+    norm := StrLower(PromptData_StripPathQuotes(path))
+    idx := 0
+    for e in arr {
+        idx += 1
+        if (StrLower(PromptData_ContextEntryPath(e)) = norm)
+            return idx
+    }
+    return 0
+}
+
+PromptEditor_MergeContextEntries(side, incoming) {
+    arr := PromptEditor_PathsRef(side)
+    for e in PromptData_ParseContextEntries(incoming) {
+        p := PromptData_ContextEntryPath(e)
+        if (p = "")
+            continue
+        idx := PromptEditor_FindPathIndex(arr, p)
+        if (idx = 0)
+            arr.Push(e)
+        else {
+            arr[idx].compact := e.HasProp("compact") ? e.compact : 0
+            arr[idx].csvKeepFrom := e.HasProp("csvKeepFrom") ? e.csvKeepFrom : 0
+            arr[idx].csvKeepTo := e.HasProp("csvKeepTo") ? e.csvKeepTo : 0
+        }
+    }
+    PromptEditor_SetPaths(side, arr)
+    PromptEditor_ReloadList(side)
+}
+
+PromptEditor_RefreshPresetDropdowns() {
+    global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
+    if (IsObject(g_PromptEditorPersonalPreset))
+        PromptContextPresets_RefreshDropdown(g_PromptEditorPersonalPreset)
+    if (IsObject(g_PromptEditorWorkPreset))
+        PromptContextPresets_RefreshDropdown(g_PromptEditorWorkPreset)
+}
+
+PromptEditor_OnOpenPresetManager(*) {
+    global g_PromptEditorGui
+    owner := 0
+    try {
+        if (IsObject(g_PromptEditorGui))
+            owner := g_PromptEditorGui.Hwnd
+    } catch {
+    }
+    PromptContextPresets_ShowManager(owner)
+}
+
+PromptEditor_OnSaveAsPreset(*) {
+    global g_PromptEditorGui, g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
+    owner := 0
+    try {
+        if (IsObject(g_PromptEditorGui))
+            owner := g_PromptEditorGui.Hwnd
+    } catch {
+    }
+    PromptContextPresets_ShowSaveDialog(g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths, owner)
+}
+
+PromptEditor_OnApplyPreset(side) {
+    global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
+    label := ""
+    try label := (side = "work") ? g_PromptEditorWorkPreset.Text : g_PromptEditorPersonalPreset.Text
+    catch {
+        return
+    }
+    if (label = "" || label = "(none)")
+        return
+    id := PromptContextPresets_IdByLabel(label)
+    if (id = "")
+        return
+    entries := PromptContextPresets_GetEntries(id, side)
+    if (entries.Length = 0) {
+        UtilitySelector_Notify("Preset has no " side " files.")
+        return
+    }
+    PromptEditor_MergeContextEntries(side, entries)
+}
+
 PromptEditor_OnBrowsePromptFile(*) {
     global g_PromptEditorGui, g_PromptEditorFile, g_PromptEditorFilePath, g_PromptEditorSource
     start := g_PromptEditorFilePath != "" ? PromptData_ResolvePath({ filePath: g_PromptEditorFilePath,
@@ -610,6 +816,8 @@ PromptEditor_OnSave(*) {
     global g_PromptEditorResult, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFilePath, g_PromptEditorSource, g_PromptEditorAuthor, g_PromptEditorIsEdit
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
+    global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode, g_PromptEditorDraftPath
+    global g_PromptEditorGitCommit
 
     name := Trim(g_PromptEditorName.Value)
     if (name = "") {
@@ -635,6 +843,49 @@ PromptEditor_OnSave(*) {
     PromptEditor_OnCompactClick("work")
     PromptEditor_OnCsvKeepChange("personal")
     PromptEditor_OnCsvKeepChange("work")
+    tags := ""
+    variables := ""
+    pasteMode := "default"
+    draftPath := g_PromptEditorDraftPath
+    try tags := Trim(g_PromptEditorTags.Value)
+    catch {
+    }
+    try variables := Trim(g_PromptEditorVariables.Value)
+    catch {
+    }
+    try pasteMode := PromptData_NormalizePasteMode(g_PromptEditorPasteMode.Text)
+    catch {
+    }
+    personalEntries := PromptData_ParseContextEntries(g_PromptEditorPersonalPaths)
+    workEntries := PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
+    draft := {
+        name: name,
+        char: ch,
+        category: category,
+        author: g_PromptEditorAuthor,
+        filePath: g_PromptEditorFilePath,
+        source: g_PromptEditorSource,
+        tags: tags,
+        pasteMode: pasteMode,
+        variables: variables,
+        filePathDraft: draftPath,
+        personal_context_files: personalEntries,
+        work_context_files: workEntries
+    }
+    if (!PromptLint_ConfirmSave(draft, personalEntries, workEntries))
+        return
+    gitCommit := false
+    try gitCommit := g_PromptEditorGitCommit.Value
+    catch {
+    }
+    gitCommitMsg := ""
+    if (gitCommit) {
+        commitMsg := PromptGit_PromptCommitMessage(name)
+        if (commitMsg = false)
+            gitCommit := false
+        else
+            gitCommitMsg := commitMsg
+    }
     g_PromptEditorResult := {
         saved: true,
         name: name,
@@ -643,8 +894,14 @@ PromptEditor_OnSave(*) {
         filePath: g_PromptEditorFilePath,
         source: g_PromptEditorSource,
         author: g_PromptEditorAuthor,
-        personal_context_files: PromptData_ParseContextEntries(g_PromptEditorPersonalPaths),
-        work_context_files: PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
+        tags: tags,
+        pasteMode: pasteMode,
+        variables: variables,
+        filePathDraft: draftPath,
+        personal_context_files: personalEntries,
+        work_context_files: workEntries,
+        gitCommit: gitCommit,
+        gitCommitMsg: gitCommitMsg
     }
     PromptEditor_Destroy()
 }
@@ -691,6 +948,22 @@ Attached copy:
   carrots,9
 
 The header stays (line 1). Lines 3–4 are kept. Lines 2 and 5 are dropped.
+
+Variables and includes
+• {{clipboard}}, {{dictation}}, {{date}}, {{time}}, {{datetime}}, {{env}}, {{selection}} fill at paste time.
+• Other {{name}} placeholders open a fill dialog unless listed in Variables (comma-separated).
+• {{include:assets/prompt/_shared/rules.txt}} inlines a file (cycle-safe).
+
+Paste modes
+• default — attach context files (if any) + paste body.
+• body_only — paste body only.
+• body_plus_clipboard — paste body then append clipboard.
+• body_attach_clipboard — same as default (explicit).
+• attach_only — attach context files only.
+• auto_send — paste body/attach like default, then Enter (Gemini path).
+
+Author notes
+• Content after a --- line is stripped before send (human reminders).
 )"
 }
 

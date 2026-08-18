@@ -209,7 +209,16 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\project_data_cursor.ahk
 ; [Utils module] Prompt registry for Utility Shortcuts -> Utils\prompt_data.ahk
 #include %A_ScriptDir%\Utils\prompt_data.ahk
-; [Utils module] Hotstring (pasteable string) registry for Utility Shortcuts -> Utils\hotstring_data.ahk
+; [Utils module] Prompt render-at-paste variables and includes -> Utils\prompt_render.ahk
+#include %A_ScriptDir%\Utils\prompt_render.ahk
+; [Utils module] Prompt structural lint on save -> Utils\prompt_lint.ahk
+#include %A_ScriptDir%\Utils\prompt_lint.ahk
+; [Utils module] Prompt-aware git history and commit -> Utils\prompt_git.ahk
+#include %A_ScriptDir%\Utils\prompt_git.ahk
+; [Utils module] Prompt usage log -> Utils\prompt_usage.ahk
+#include %A_ScriptDir%\Utils\prompt_usage.ahk
+; [Utils module] Context file presets for prompt editor -> Utils\prompt_context_presets.ahk
+#include %A_ScriptDir%\Utils\prompt_context_presets.ahk
 #include %A_ScriptDir%\Utils\hotstring_data.ahk
 
 ; [Utils module] Global AI generation state U macro -> Utils\ai_generation_state.ahk
@@ -278,6 +287,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] Single-form Add/Edit prompt dialog -> Utils\prompt_editor_gui.ahk
 #include %A_ScriptDir%\Utils\prompt_editor_gui.ahk
+; [Utils module] Context preset manager GUI -> Utils\prompt_context_presets_gui.ahk
+#include %A_ScriptDir%\Utils\prompt_context_presets_gui.ahk
 
 ; [Utils module] Local finance app (Utility Shortcuts [F])
 #include %A_ScriptDir%\Utils\finance_helpers.ahk

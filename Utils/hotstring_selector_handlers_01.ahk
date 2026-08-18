@@ -96,16 +96,36 @@ HandleHotstringChar(char) {
 UtilitySelector_InsertPrompt(prompt, useGemini := false) {
     if (!IsObject(prompt))
         return
-    body := PromptData_ReadBody(prompt)
+    body := PromptRender_Prepare(prompt)
+    if (body = "")
+        return
+    PromptUsage_Log(prompt, useGemini ? "gemini" : "direct")
+    mode := PromptData_PasteMode(prompt)
+    doAttach := (mode = "default" || mode = "body_attach_clipboard" || mode = "attach_only")
+    doPasteBody := (mode = "default" || mode = "body_only" || mode = "body_plus_clipboard" || mode =
+        "body_attach_clipboard"
+        || mode = "auto_send")
+    doAppendClipboard := (mode = "body_plus_clipboard")
+    doAutoSend := (mode = "auto_send")
     CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt)
+        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
     Sleep 150
-    UtilitySelector_AttachPromptContextFiles(prompt)
-    PasteStrippedPromptOfferReminders(body)
+    if (doAttach)
+        UtilitySelector_AttachPromptContextFiles(prompt)
+    if (doPasteBody)
+        PasteStrippedPromptOfferReminders(body)
+    if (doAppendClipboard) {
+        clip := ""
+        try clip := A_Clipboard
+        catch {
+        }
+        if (clip != "")
+            InsertText(clip)
+    }
 }
 
 UtilitySelector_AttachPromptContextFiles(prompt) {
@@ -238,25 +258,36 @@ PromptContext_ResolveAttachPaths(entries) {
     return paths
 }
 
-UtilitySelector_PastePromptToGemini(expansion, prompt := false) {
+UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=
+    false) {
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
     try {
         if (companion = "enterprise") {
             GeminiEnterprise_OpenOrFocus()
-            UtilitySelector_AttachPromptContextFiles(prompt)
-            InsertText(expansion)
-            try ReplaceComposerWithStrippedReminders(expansion)
-            catch {
+            if (doAttach)
+                UtilitySelector_AttachPromptContextFiles(prompt)
+            if (doPasteBody) {
+                InsertText(expansion)
+                try ReplaceComposerWithStrippedReminders(expansion)
+                catch {
+                }
             }
+            if (doAutoSend)
+                Send "{Enter}"
         } else if (companion = "copilot") {
             CopilotWeb_OpenOrFocus()
-            UtilitySelector_AttachPromptContextFiles(prompt)
-            InsertText(expansion)
-            try ReplaceComposerWithStrippedReminders(expansion)
-            catch {
+            if (doAttach)
+                UtilitySelector_AttachPromptContextFiles(prompt)
+            if (doPasteBody) {
+                InsertText(expansion)
+                try ReplaceComposerWithStrippedReminders(expansion)
+                catch {
+                }
             }
+            if (doAutoSend)
+                Send "{Enter}"
         } else {
             SetTitleMatchMode(2)
             geminiHwnd := 0
@@ -287,12 +318,17 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false) {
             } catch {
             }
 
-            UtilitySelector_AttachPromptContextFiles(prompt)
-            InsertText(expansion)
-            ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-            try ReplaceComposerWithStrippedReminders(expansion)
-            catch {
+            if (doAttach)
+                UtilitySelector_AttachPromptContextFiles(prompt)
+            if (doPasteBody) {
+                InsertText(expansion)
+                ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+                try ReplaceComposerWithStrippedReminders(expansion)
+                catch {
+                }
             }
+            if (doAutoSend)
+                Send "{Enter}"
         }
     } finally {
         HotstringGeminiBanner_Hide()

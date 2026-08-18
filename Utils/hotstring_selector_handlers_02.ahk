@@ -249,6 +249,35 @@ UtilitySelector_OnFilterKillFocus(*) {
         UtilitySelector_SetListNavigationHotkeysEnabled(true)
 }
 
+UtilitySelector_PromptFromEditorResult(result) {
+    return {
+        name: result.name,
+        char: result.char,
+        category: result.category,
+        author: result.author,
+        filePath: result.filePath,
+        source: result.source,
+        tags: result.HasProp("tags") ? result.tags : "",
+        pasteMode: result.HasProp("pasteMode") ? result.pasteMode : "default",
+        variables: result.HasProp("variables") ? result.variables : "",
+        filePathDraft: result.HasProp("filePathDraft") ? result.filePathDraft : "",
+        personal_context_files: result.personal_context_files,
+        work_context_files: result.work_context_files
+    }
+}
+
+UtilitySelector_MaybeCommitPrompt(result) {
+    if (!result.HasProp("gitCommit") || !result.gitCommit)
+        return
+    bodyAbs := PromptData_ResolvePath({ filePath: result.filePath, source: result.source })
+    msg := result.HasProp("gitCommitMsg") ? result.gitCommitMsg : ""
+    cr := PromptGit_CommitPromptFiles(result.name, bodyAbs, msg)
+    if (!cr.ok)
+        UtilitySelector_Notify("Git commit failed: " cr.msg)
+    else if (cr.msg != "Nothing to commit")
+        UtilitySelector_Notify(cr.msg)
+}
+
 UtilitySelector_PromptNameMatches(name, query) {
     q := Trim(query)
     if (q = "")
@@ -261,7 +290,7 @@ UtilitySelector_HintText() {
     if (g_UtilitySelectorMode = "top")
         return "Char = open category   [F] Finance   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
-        return "Filter by name   Enter = paste first match   Char = paste   double-click = paste   Insert = add   E = edit   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
+        return "Filter by name, tags, path   Enter = paste first match   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
         return "Char = paste   Enter/double-click = paste   Insert = add   E = edit   Delete = remove   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Projects")
@@ -304,7 +333,7 @@ UtilitySelector_PopulateLv() {
             g_UtilitySelectorFilterQuery := g_HotstringSelectorFilterCtrl.Value
         q := g_UtilitySelectorFilterQuery
         for prompt in PromptData_Sorted() {
-            if (!UtilitySelector_PromptNameMatches(prompt.name, q))
+            if (!PromptData_PromptRowMatches(prompt, q))
                 continue
             g_UtilitySelectorRows.Push(prompt)
             g_HotstringSelectorLv.Add("", prompt.char, prompt.category, prompt.name, prompt.filePath)
@@ -535,14 +564,13 @@ UtilitySelector_PromptsAdd() {
     list := []
     for p in g_PromptEntries
         list.Push(p)
-    list.Push({ name: result.name, char: result.char, category: result.category, author: result.author,
-        filePath: result.filePath, source: result.source, personal_context_files: result.personal_context_files,
-        work_context_files: result.work_context_files })
+    list.Push(UtilitySelector_PromptFromEditorResult(result))
     if (!PromptData_Save(list)) {
         UtilitySelector_Notify("Failed to save prompt.")
         UtilitySelector_RefocusGui()
         return
     }
+    UtilitySelector_MaybeCommitPrompt(result)
     UtilitySelector_RebuildPromptCharMap()
     UtilitySelector_PopulateLv()
     UtilitySelector_BindModalHotkeys()
@@ -570,9 +598,7 @@ UtilitySelector_PromptsEdit() {
     list := []
     loop g_PromptEntries.Length {
         if (A_Index = listIndex)
-            list.Push({ name: result.name, char: result.char, category: result.category, author: result.author,
-                filePath: result.filePath, source: result.source, personal_context_files: result.personal_context_files,
-                work_context_files: result.work_context_files })
+            list.Push(UtilitySelector_PromptFromEditorResult(result))
         else
             list.Push(g_PromptEntries[A_Index])
     }
@@ -581,6 +607,7 @@ UtilitySelector_PromptsEdit() {
         UtilitySelector_RefocusGui()
         return
     }
+    UtilitySelector_MaybeCommitPrompt(result)
     UtilitySelector_RebuildPromptCharMap()
     UtilitySelector_PopulateLv()
     UtilitySelector_BindModalHotkeys()
