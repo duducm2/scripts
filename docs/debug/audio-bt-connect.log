@@ -1,1 +1,7 @@
 2026-08-18 09:18:37  20260818-091836  code=0  audio-bt-connect-20260818-091836.log  OK	Isolated: Grupo de microfones (2- Realtek(R) Audio)
+2026-08-18 09:51:50  20260818-095136  code=1  audio-bt-connect-20260818-095136.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
+2026-08-18 09:52:53  20260818-095230  code=1  audio-bt-connect-20260818-095230.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
+2026-08-18 09:53:21  20260818-095258  code=1  audio-bt-connect-20260818-095258.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
+2026-08-18 09:53:41  20260818-095329  code=1  audio-bt-connect-20260818-095329.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
+2026-08-18 09:54:17  20260818-095401  code=1  audio-bt-connect-20260818-095401.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
+2026-08-18 09:54:37  20260818-095421  code=1  audio-bt-connect-20260818-095421.log  ERR	Connected via BluetoothDevice but no audio endpoint appeared: Office
