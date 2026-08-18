@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Click Sequence map</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #1e1e1e; --header: #252526; --panel: #2c2c2c; --text: #ddd;
+      --muted: #9aa0a6; --border: #3c3c3c; --accent: #4fc3f7; --btn: #3c3c3c;
+    }
+    body { margin: 0; font-family: Segoe UI, sans-serif; background: var(--bg); color: var(--text); }
+    header { padding: 10px 16px; background: var(--header); border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 16px; }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button, .toggle { background: var(--btn); color: var(--text); border: 1px solid var(--border);
+      padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    button:hover, .toggle:hover { border-color: var(--accent); }
+    .toggle.active { background: #1b4d66; border-color: var(--accent); color: #fff; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+      min-height: calc(100vh - 62px); }
+    .main, .vocab { padding: 16px; overflow: auto; }
+    .vocab { border-left: 1px solid var(--border); background: var(--panel); }
+    .vocab h1 { font-size: 18px; }
+    .vocab h2 { font-size: 14px; color: var(--accent); margin-top: 18px; }
+    .vocab p, .vocab li { font-size: 13px; line-height: 1.45; }
+    .vocab table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 8px 0; }
+    .vocab th, .vocab td { border: 1px solid var(--border); padding: 4px 6px; text-align: left; }
+    .vocab code, .main code { background: #1e1e1e; padding: 1px 4px; }
+    #view-tree { display: none; }
+    #view-tree.visible { display: block; }
+    #view-outline.hidden { display: none; }
+    #outline details { margin: 4px 0 4px 12px; }
+    #outline > details { margin-left: 0; }
+    #outline summary { cursor: pointer; font-size: 13px; line-height: 1.5; }
+    #outline .lvl-hardcoded { margin: 4px 0 4px 24px; font-size: 13px; color: var(--muted); }
+    #outline ul.aliases { margin: 4px 0 8px 18px; padding: 0; list-style: disc; font-size: 13px; }
+    .outline-tools { margin-bottom: 10px; display: flex; gap: 8px; }
+    .tree-hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+    .tree-pan { background: var(--panel); border-radius: 6px; overflow: hidden; height: calc(100vh - 140px);
+      cursor: grab; position: relative; }
+    .tree-pan.dragging { cursor: grabbing; }
+    .tree-inner { transform-origin: 0 0; padding: 16px; width: max-content; }
+    .mermaid { background: transparent; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Click Sequence map</h1>
+      <p>Shortcut → Slots → Sibling Sequences → Clicks → Aliases. Generated locally from click_sequences.ini.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="toggle active" id="btn-outline">Outline</button>
+      <button type="button" class="toggle" id="btn-tree">Tree</button>
+    </div>
+  </header>
+  <div class="layout">
+    <div class="main">
+      <div id="view-outline">
+        <div class="outline-tools">
+          <button type="button" id="btn-expand">Expand all</button>
+          <button type="button" id="btn-collapse">Collapse all</button>
+        </div>
+        <div id="outline">
+<details class="lvl-shortcut" open><summary>AI Quick Download  #!+9  (bottomUp)</summary>
+<div class="lvl-hardcoded">Hardcoded Script: <code>scrollFeedBottom</code></div>
+<details class="lvl-slot" open><summary>Sequence Group: clicks  (13 siblings)</summary>
+<details class="lvl-sibling"><summary>Sibling 1: Download code  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  3 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download code</code></li>
+<li><code>name:Baixar código</code></li>
+<li><code>name:Baixar codigo</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 2: Download code (icon)  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  1 alias</summary>
+<ul class="aliases">
+<li><code>name:substr:Download</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 3: Open then viewer Download  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Open</code></li>
+<li><code>name:Abrir</code></li>
+</ul></details>
+<details class="lvl-click"><summary>Click 2  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 4: Direct viewer Download  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 5: Open then Download  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Open</code></li>
+<li><code>name:Abrir</code></li>
+</ul></details>
+<details class="lvl-click"><summary>Click 2  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 6: Direct Download  [gemini]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 7: Open then Export  [enterprise]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Open</code></li>
+<li><code>name:Abrir</code></li>
+</ul></details>
+<details class="lvl-click"><summary>Click 2  ·  1 alias</summary>
+<ul class="aliases">
+<li><code>name:Export</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 8: Direct Export  [enterprise]</summary>
+<details class="lvl-click"><summary>Click 1  ·  1 alias</summary>
+<ul class="aliases">
+<li><code>name:Export</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 9: Download code  [enterprise]</summary>
+<details class="lvl-click"><summary>Click 1  ·  3 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download code</code></li>
+<li><code>name:Baixar código</code></li>
+<li><code>name:Baixar codigo</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 10: Open then Download  [enterprise]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Open</code></li>
+<li><code>name:Abrir</code></li>
+</ul></details>
+<details class="lvl-click"><summary>Click 2  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 11: Direct Download  [enterprise]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 12: Direct Download  [copilot]</summary>
+<details class="lvl-click"><summary>Click 1  ·  2 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+<details class="lvl-sibling"><summary>Sibling 13: Download a copy  [copilot]</summary>
+<details class="lvl-click"><summary>Click 1  ·  3 aliases</summary>
+<ul class="aliases">
+<li><code>name:Download a copy</code></li>
+<li><code>name:Download</code></li>
+<li><code>name:Baixar</code></li>
+</ul></details>
+</details>
+</details>
+<div class="lvl-hardcoded">Hardcoded Script: <code>desktopWait</code></div>
+<div class="lvl-hardcoded">Hardcoded Script: <code>desktopCut</code></div>
+</details>
+        </div>
+      </div>
+      <div id="view-tree">
+        <p class="tree-hint">Wheel to zoom, drag to pan. Aliases are listed in Outline.</p>
+        <div class="tree-pan" id="tree-pan">
+          <div class="tree-inner" id="tree-inner">
+            <pre class="mermaid" id="mermaid-src">
+flowchart TB
+  M_ai_quick_download["AI Quick Download #!+9 (bottomUp)"]
+  S_ai_quick_download_1["Hardcoded: scrollFeedBottom"]
+  M_ai_quick_download --> S_ai_quick_download_1
+  S_ai_quick_download_2["Sequence Group: clicks"]
+  M_ai_quick_download --> S_ai_quick_download_2
+  Q_ai_quick_download_1["Sibling 1: Download code gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_1
+  C_ai_quick_download_1_1["Click 1 · 3 aliases"]
+  Q_ai_quick_download_1 --> C_ai_quick_download_1_1
+  Q_ai_quick_download_2["Sibling 2: Download code (icon) gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_2
+  C_ai_quick_download_2_1["Click 1 · 1 alias"]
+  Q_ai_quick_download_2 --> C_ai_quick_download_2_1
+  Q_ai_quick_download_3["Sibling 3: Open then viewer Download gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_3
+  C_ai_quick_download_3_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_3 --> C_ai_quick_download_3_1
+  C_ai_quick_download_3_2["Click 2 · 2 aliases"]
+  Q_ai_quick_download_3 --> C_ai_quick_download_3_2
+  Q_ai_quick_download_4["Sibling 4: Direct viewer Download gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_4
+  C_ai_quick_download_4_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_4 --> C_ai_quick_download_4_1
+  Q_ai_quick_download_5["Sibling 5: Open then Download gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_5
+  C_ai_quick_download_5_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_5 --> C_ai_quick_download_5_1
+  C_ai_quick_download_5_2["Click 2 · 2 aliases"]
+  Q_ai_quick_download_5 --> C_ai_quick_download_5_2
+  Q_ai_quick_download_6["Sibling 6: Direct Download gemini"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_6
+  C_ai_quick_download_6_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_6 --> C_ai_quick_download_6_1
+  Q_ai_quick_download_7["Sibling 7: Open then Export enterprise"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_7
+  C_ai_quick_download_7_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_7 --> C_ai_quick_download_7_1
+  C_ai_quick_download_7_2["Click 2 · 1 alias"]
+  Q_ai_quick_download_7 --> C_ai_quick_download_7_2
+  Q_ai_quick_download_8["Sibling 8: Direct Export enterprise"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_8
+  C_ai_quick_download_8_1["Click 1 · 1 alias"]
+  Q_ai_quick_download_8 --> C_ai_quick_download_8_1
+  Q_ai_quick_download_9["Sibling 9: Download code enterprise"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_9
+  C_ai_quick_download_9_1["Click 1 · 3 aliases"]
+  Q_ai_quick_download_9 --> C_ai_quick_download_9_1
+  Q_ai_quick_download_10["Sibling 10: Open then Download enterprise"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_10
+  C_ai_quick_download_10_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_10 --> C_ai_quick_download_10_1
+  C_ai_quick_download_10_2["Click 2 · 2 aliases"]
+  Q_ai_quick_download_10 --> C_ai_quick_download_10_2
+  Q_ai_quick_download_11["Sibling 11: Direct Download enterprise"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_11
+  C_ai_quick_download_11_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_11 --> C_ai_quick_download_11_1
+  Q_ai_quick_download_12["Sibling 12: Direct Download copilot"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_12
+  C_ai_quick_download_12_1["Click 1 · 2 aliases"]
+  Q_ai_quick_download_12 --> C_ai_quick_download_12_1
+  Q_ai_quick_download_13["Sibling 13: Download a copy copilot"]
+  S_ai_quick_download_2 --> Q_ai_quick_download_13
+  C_ai_quick_download_13_1["Click 1 · 3 aliases"]
+  Q_ai_quick_download_13 --> C_ai_quick_download_13_1
+  S_ai_quick_download_3["Hardcoded: desktopWait"]
+  M_ai_quick_download --> S_ai_quick_download_3
+  S_ai_quick_download_4["Hardcoded: desktopCut"]
+  M_ai_quick_download --> S_ai_quick_download_4
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="vocab">
+<h1>Click Sequence vocabulary</h1>
+<p>Use these terms in the manager UI, the HTML map, and future agent work. Do not invent synonyms.</p>
+<h2>Shortcut / Macro</h2>
+<p>Trigger container for one hotkey. Example: <code>#!+9</code> (Win+Alt+Shift+9) named <strong>AI Quick Download</strong>. v1 does not bind new hotkeys at runtime.</p>
+<h2>Context Rule</h2>
+<p>Per-Shortcut behavior that applies to every Click unless a Click overrides it.</p>
+<li><code>searchOrder=bottomUp</code> — pick the matching control lowest on screen (chat feeds). Default for AI Quick Download.</li>
+<li><code>searchOrder=topDown</code> — pick the matching control highest on screen.</li>
+<li><code>searchOrder=firstMatch</code> — first match in UIA tree order.</li>
+<h2>Slot</h2>
+<p>One ordered step in the Shortcut chain. <strong>Every Slot must succeed.</strong> Types:</p>
+<li><strong>Hardcoded Script</strong> — named function from the script registry.</li>
+<li><strong>Sequence Group</strong> — ordered Sibling Sequences.</li>
+<h2>Hardcoded Script</h2>
+<p>A registered AutoHotkey function. Users pick an id; they cannot author new AHK in the GUI.</p>
+<table>
+<tr><th>id</th><th>Effect</th></tr>
+<tr><td>`scrollFeedBottom`</td><td>Scroll the companion chat feed to the bottom</td></tr>
+<tr><td>`desktopWait`</td><td>Wait for a new file on the Desktop</td></tr>
+<tr><td>`desktopCut`</td><td>Cut the newest Desktop item (skipped for finance import)</td></tr>
+<tr><td>`focusCompanion`</td><td>Focus the AI companion window (#!+9 also does this before the chain)</td></tr>
+</table>
+<h2>Sequence Group</h2>
+<p>A Slot that holds Sibling Sequences. Sequences in the group are still filtered by Context at run time (<code>gemini</code> / <code>enterprise</code> / <code>copilot</code> / <code>*</code>).</p>
+<h2>Sibling Sequence</h2>
+<p>An alternative Dynamic Sequence in the same Sequence Group. Tried in order. If any Click in a Sibling fails, that Sibling is aborted and the next Sibling starts from its first Click. There is no undo of Clicks already invoked.</p>
+<h2>Click</h2>
+<p>One ordered target inside a Sequence. All Clicks in a Sibling must succeed. Fields: control type, optional ClassContains AND-filter, settle ms, prefer-newest override.</p>
+<h2>Alias</h2>
+<p>Fallback identifier for one Click, tried in order until one hits. Primary kind is <strong>name</strong> (UIA <code>Name</code> string). Also: <code>automationId</code>, <code>classContains</code>, <code>region</code> (window-relative click), <code>icon</code> (stored, not executed).</p>
+<p>Example: <code>[&quot;concluded&quot;, &quot;finished&quot;, &quot;terminated&quot;]</code> as name Aliases on one Click.</p>
+<h2>Context</h2>
+<p>Companion filter on a Sibling Sequence: <code>gemini</code>, <code>enterprise</code>, <code>copilot</code>, or <code>*</code> (any).</p>
+    </aside>
+  </div>
+  <script>
+    const outlineView = document.getElementById("view-outline");
+    const treeView = document.getElementById("view-tree");
+    const btnOutline = document.getElementById("btn-outline");
+    const btnTree = document.getElementById("btn-tree");
+    let mermaidReady = false;
+
+    mermaid.initialize({ startOnLoad: false, theme: "dark", flowchart: { useMaxWidth: false, htmlLabels: true } });
+
+    function showOutline() {
+      outlineView.classList.remove("hidden");
+      treeView.classList.remove("visible");
+      btnOutline.classList.add("active");
+      btnTree.classList.remove("active");
+    }
+    async function showTree() {
+      outlineView.classList.add("hidden");
+      treeView.classList.add("visible");
+      btnTree.classList.add("active");
+      btnOutline.classList.remove("active");
+      if (!mermaidReady) {
+        await mermaid.run({ querySelector: "#mermaid-src" });
+        mermaidReady = true;
+      }
+    }
+    btnOutline.addEventListener("click", showOutline);
+    btnTree.addEventListener("click", showTree);
+
+    document.getElementById("btn-expand").addEventListener("click", () => {
+      document.querySelectorAll("#outline details").forEach((d) => { d.open = true; });
+    });
+    document.getElementById("btn-collapse").addEventListener("click", () => {
+      document.querySelectorAll("#outline details").forEach((d) => { d.open = false; });
+    });
+
+    const pan = document.getElementById("tree-pan");
+    const inner = document.getElementById("tree-inner");
+    let scale = 1, x = 16, y = 16, dragging = false, lastX = 0, lastY = 0;
+    function applyTransform() {
+      inner.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    }
+    applyTransform();
+    pan.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      pan.classList.add("dragging");
+      pan.setPointerCapture(e.pointerId);
+    });
+    pan.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      x += e.clientX - lastX;
+      y += e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      applyTransform();
+    });
+    function endDrag(e) {
+      dragging = false;
+      pan.classList.remove("dragging");
+      try { pan.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+    pan.addEventListener("pointerup", endDrag);
+    pan.addEventListener("pointercancel", endDrag);
+    pan.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const next = Math.min(2.5, Math.max(0.25, scale * (e.deltaY < 0 ? 1.1 : 0.9)));
+      scale = next;
+      applyTransform();
+    }, { passive: false });
+  </script>
+</body>
+</html>

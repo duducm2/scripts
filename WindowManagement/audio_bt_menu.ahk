@@ -1,6 +1,8 @@
 ; =============================================================================
 ; WindowManagement module: audio_bt_menu.ahk
-; Win+Alt+Shift+9 quick-access menu for Bluetooth audio and Windows sound devices.
+; Win+Alt+Shift+9 tap-dance:
+;   1× AI Quick Download (configured click sequences → Desktop wait → cut)
+;   2× Bluetooth audio / Windows sound devices menu
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
@@ -1007,7 +1009,7 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = AI Companion Quick Download (Utils\ai_quick_download.ahk)
+;   1× = AI Companion Quick Download (configured click sequences → Desktop wait → cut)
 ;   2× = Audio / Bluetooth quick selector (toggle)
 global g_AudioBt_DoubleTapArmed := false
 global g_AudioBt_LastPressTick := 0
