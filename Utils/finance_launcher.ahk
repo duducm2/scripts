@@ -146,7 +146,11 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
-    Run('"' . html . '"')
+    try Run('chrome.exe --new-window "' . html . '"')
+    catch as e {
+        Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
     Finance_CloseGui()
 }
 
