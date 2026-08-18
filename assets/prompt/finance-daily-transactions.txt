@@ -17,10 +17,10 @@ OUTPUT
 - Do not invent amounts. Skip items you cannot parse (omit those rows from the CSV; do not invent placeholders).
 
 COLUMNS (header required)
-date,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
 
 RULES
-- date: YYYY-MM-DD. If the speaker omits a date, use today's system date (the entry date), not a guessed real-world date.
+- Do not include a date column. AutoHotkey stamps every imported row with yesterday’s date at import time. Do not guess or output dates.
 - amount: always positive. Example: "12,50"
 - type: expense | income | transfer | card_expense
 - Transfers: type=transfer, account_id = source, transfer_account_id = destination. Leave category_id empty for transfers.

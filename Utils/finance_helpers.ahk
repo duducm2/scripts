@@ -436,6 +436,10 @@ Finance_Today() {
     return FormatTime(, "yyyy-MM-dd")
 }
 
+Finance_Yesterday() {
+    return FormatTime(DateAdd(A_Now, -1, "Days"), "yyyy-MM-dd")
+}
+
 Finance_NormalizeDate(raw) {
     s := Trim(raw)
     if (s = "")

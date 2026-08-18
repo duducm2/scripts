@@ -30,12 +30,12 @@ Finance_ReadAiImportCsv(path) {
         if (t = "")
             continue
         lower := StrLower(t)
-        if (InStr(lower, "date,") = 1 && InStr(lower, "description") && InStr(lower, "amount")) {
+        if (InStr(lower, "file:") = 1 || SubStr(t, 1, 1) = "#")
+            continue
+        if (InStr(lower, "description") && InStr(lower, "amount")) {
             start := idx
             break
         }
-        if (InStr(lower, "file:") = 1 || SubStr(t, 1, 1) = "#")
-            continue
     }
     if (!start)
         return Finance_ReadCsv(path)
@@ -65,7 +65,7 @@ Finance_DesktopNewestDailyCodeDump() {
         if (body = "")
             continue
         lower := StrLower(body)
-        if (!InStr(lower, "date,description,amount"))
+        if (!InStr(lower, "description,amount") && !InStr(lower, "date,description,amount"))
             continue
         ts := Number(A_LoopFileTimeModified)
         if (ts > newestTime) {
@@ -154,7 +154,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         desc := r.Has("description") ? r["description"] : ""
         amt := r.Has("amount") ? r["amount"] : "0"
         t := r.Has("type") ? r["type"] : "expense"
-        date := r.Has("date") && r["date"] != "" ? Finance_NormalizeDate(r["date"]) : Finance_Today()
+        date := Finance_Yesterday()
         parsed.Push(Map(
             "date", date,
             "description", desc,
