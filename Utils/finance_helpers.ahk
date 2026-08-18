@@ -501,8 +501,31 @@ Finance_CatLabel(row) {
 }
 
 Finance_CatName(cats, id) {
+    if (id = "")
+        return ""
     row := Finance_FindById(cats, id)
-    return row ? Finance_CatLabel(row) : id
+    return row ? Finance_CatLabel(row) : "Unknown"
+}
+
+; Remap invented or subcategory ids from daily import onto canon main categories.
+Finance_ResolveImportCategory(cats, type, categoryId, subcategory) {
+    categoryId := Trim(categoryId)
+    subcategory := Trim(subcategory)
+    t := StrLower(Trim(type))
+    if (t = "transfer")
+        return Map("category_id", "", "subcategory", "")
+    row := Finance_FindById(cats, categoryId)
+    if (row) {
+        parentId := row.Has("parent_id") ? Trim(row["parent_id"]) : ""
+        if (parentId = "")
+            return Map("category_id", categoryId, "subcategory", subcategory)
+        subName := subcategory != "" ? subcategory : (row.Has("name") ? row["name"] : "")
+        return Map("category_id", parentId, "subcategory", subName)
+    }
+    lastResort := (t = "income") ? "CAT_OUTROS2" : "CAT_MATERIAI"
+    if (t != "income" && t != "expense" && t != "card_expense")
+        lastResort := ""
+    return Map("category_id", lastResort, "subcategory", subcategory)
 }
 
 Finance_SubcatLabel(cats, parentId, subName) {

@@ -148,6 +148,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
         return false
     }
+    cats := Finance_Load("categories")
     lines := []
     parsed := []
     for r in rows {
@@ -155,13 +156,16 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         amt := r.Has("amount") ? r["amount"] : "0"
         t := r.Has("type") ? r["type"] : "expense"
         date := Finance_Yesterday()
+        resolved := Finance_ResolveImportCategory(cats, t,
+            r.Has("category_id") ? r["category_id"] : "",
+            r.Has("subcategory") ? r["subcategory"] : "")
         parsed.Push(Map(
             "date", date,
             "description", desc,
             "amount", Finance_FormatCsvDecimal(Abs(Finance_ParseDecimal(amt))),
             "type", t,
-            "category_id", r.Has("category_id") ? r["category_id"] : "",
-            "subcategory", r.Has("subcategory") ? r["subcategory"] : "",
+            "category_id", resolved["category_id"],
+            "subcategory", resolved["subcategory"],
             "account_id", r.Has("account_id") ? r["account_id"] : "",
             "card_id", r.Has("card_id") ? r["card_id"] : "",
             "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : ""

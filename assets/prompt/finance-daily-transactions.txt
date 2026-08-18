@@ -29,12 +29,14 @@ RULES
 - Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
 
 CATEGORIZATION
-- Apply best judgment. Map each item by meaning to the most appropriate existing category in categories.csv — not only exact word matches. Example: banana → category_id=CAT_MERCADO, subcategory=Produce (Produce is CAT_HORTIFRU under Groceries).
-- category_id must be a main category id (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory and its parent’s id in category_id.
-- Prefer a specific subcategory when one fits (Produce, Stationery, Food items, etc.). Do not leave category_id blank when a clear fit exists.
-- Fallback (last resort only): expense → CAT_MATERIAI (Misc materials) or, if clearly grocery-adjacent with no better subcategory, CAT_MERCADO + subcategory=Other; income → CAT_OUTROS2 (Other). Minimize these. Never leave category blank when a last-resort id applies.
-- After the CSV, optional one-line coverage note listing only items that still had no good fit and why. Do not replace the CSV with that note.
-- You may propose a new main category only if none of the existing ones fit (including last resort), the main-category count is under 50, and you add a comment line starting with # NEW_CATEGORY:name:type. Do not invent ids.
+- category_id must be copied exactly from the attached categories.csv. Never invent ids (do not output names like CAT_CUIDADOS_PESSOAIS).
+- category_id must be a main category (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory (e.g. Hairdresser) and its parent’s id in category_id. Never put a subcategory id in category_id.
+- Map by meaning, not only exact word matches.
+- Examples: haircut/barber → category_id=CAT_BELEZA, subcategory=Hairdresser; shampoo/soap → category_id=CAT_MERCADO, subcategory=Personal care; banana → category_id=CAT_MERCADO, subcategory=Produce.
+- Prefer a specific subcategory when one fits. Do not leave category_id blank when a clear fit exists.
+- Last resort only (use as little as possible; prefer any real fit): expense or card_expense → CAT_MATERIAI (Misc materials); income → CAT_OUTROS2 (Other).
+- After the CSV, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the CSV with that note.
+- Do not invent category ids. If something is a poor fit, say so in the chat note after the file.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts)
 - categories.csv — category and subcategory names with ids
