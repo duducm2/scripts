@@ -168,8 +168,8 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
 
     g_PromptEditorGui.Add("Text", "xm w" . colW . " Section", "Personal context files")
     g_PromptEditorGui.Add("Text", "ys w" . colW, "Work context files")
-    g_PromptEditorPersonalLv := g_PromptEditorGui.Add("ListView", "xm w" . colW . " r8", ["Path", "Compact", "CSV keep"])
-    g_PromptEditorWorkLv := g_PromptEditorGui.Add("ListView", "x+12 yp w" . colW . " r8", ["Path", "Compact",
+    g_PromptEditorPersonalLv := g_PromptEditorGui.Add("ListView", "xm w" . colW . " r6", ["Path", "Compact", "CSV keep"])
+    g_PromptEditorWorkLv := g_PromptEditorGui.Add("ListView", "x+12 yp w" . colW . " r6", ["Path", "Compact",
         "CSV keep"])
     for lv in [g_PromptEditorPersonalLv, g_PromptEditorWorkLv] {
         lv.ModifyCol(1, pathCol)
@@ -183,32 +183,31 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_ReloadList("personal")
     PromptEditor_ReloadList("work")
 
-    g_PromptEditorGui.Add("Button", "xm w110", "Add files").OnEvent("Click", (*) => PromptEditor_OnAddFiles("personal"))
-    g_PromptEditorGui.Add("Button", "x+8 yp w110", "Paste paths").OnEvent("Click", (*) => PromptEditor_OnPastePaths(
-        "personal"))
-    g_PromptEditorGui.Add("Button", "x+8 yp w110", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("personal"))
     presetLabels := PromptContextPresets_ChoiceLabels()
-    g_PromptEditorGui.Add("Text", "xm w70", "Preset")
-    g_PromptEditorPersonalPreset := g_PromptEditorGui.Add("DropDownList", "yp w180", presetLabels)
+    workX := colW + 12
+    g_PromptEditorGui.Add("Button", "xm w70 Section", "Add").OnEvent("Click", (*) => PromptEditor_OnAddFiles("personal"
+    ))
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptEditor_OnPastePaths("personal"
+    ))
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("personal"))
+    g_PromptEditorGui.Add("Button", "xs+" . workX . " ys w70", "Add").OnEvent("Click", (*) => PromptEditor_OnAddFiles(
+        "work"))
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptEditor_OnPastePaths("work"))
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("work"))
+
+    g_PromptEditorGui.Add("Text", "xm w44 Section", "Preset")
+    g_PromptEditorPersonalPreset := g_PromptEditorGui.Add("DropDownList", "yp w230", presetLabels)
     try g_PromptEditorPersonalPreset.Text := "(none)"
     catch {
     }
-    g_PromptEditorGui.Add("Button", "yp w80", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("personal"))
-    g_PromptEditorGui.Add("Button", "x+24 yp w110", "Add files").OnEvent("Click", (*) => PromptEditor_OnAddFiles("work"
-    ))
-    g_PromptEditorGui.Add("Button", "x+8 yp w110", "Paste paths").OnEvent("Click", (*) => PromptEditor_OnPastePaths(
-        "work"))
-    g_PromptEditorGui.Add("Button", "x+8 yp w110", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("work"))
-    g_PromptEditorGui.Add("Text", "x+24 yp w70", "Preset")
-    g_PromptEditorWorkPreset := g_PromptEditorGui.Add("DropDownList", "yp w180", presetLabels)
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset(
+        "personal"))
+    g_PromptEditorGui.Add("Text", "xs+" . workX . " ys w44", "Preset")
+    g_PromptEditorWorkPreset := g_PromptEditorGui.Add("DropDownList", "yp w230", presetLabels)
     try g_PromptEditorWorkPreset.Text := "(none)"
     catch {
     }
-    g_PromptEditorGui.Add("Button", "yp w80", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("work"))
-
-    g_PromptEditorGui.Add("Button", "xm w120", "Presets…").OnEvent("Click", PromptEditor_OnOpenPresetManager)
-    g_PromptEditorGui.Add("Button", "x+8 yp w120", "Save as preset…").OnEvent("Click", PromptEditor_OnSaveAsPreset)
-    g_PromptEditorGui.Add("Button", "x+8 yp w80", "Preset ?").OnEvent("Click", PromptContextPresets_ShowHelp)
+    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("work"))
 
     personalCompact := g_PromptEditorGui.Add("CheckBox", "xm w" . colW, "Compact")
     workCompact := g_PromptEditorGui.Add("CheckBox", "x+12 yp w" . colW, "Compact")
@@ -248,10 +247,12 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_LoadFlagControls("personal", 0)
     PromptEditor_LoadFlagControls("work", 0)
 
-    g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12 - 90),
-    "Paste Explorer Copy as path; quotes are stripped. Empty lists are fine.")
-    g_PromptEditorGui.Add("Button", "xm w80", "Help").OnEvent("Click", PromptEditor_ShowHelp)
-    g_PromptEditorGui.Add("Button", "x+350 yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
+    g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12),
+    "Paste Explorer Copy as path. Empty lists are fine.")
+    g_PromptEditorGui.Add("Button", "xm w120", "Manage presets").OnEvent("Click", PromptEditor_OnOpenPresetManager)
+    g_PromptEditorGui.Add("Button", "x+8 yp w120", "Save as preset").OnEvent("Click", PromptEditor_OnSaveAsPreset)
+    g_PromptEditorGui.Add("Button", "x+8 yp w80", "Help").OnEvent("Click", PromptEditor_ShowHelp)
+    g_PromptEditorGui.Add("Button", "x+250 yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
     g_PromptEditorGui.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PromptEditor_OnCancel)
 }
 
@@ -964,6 +965,12 @@ Paste modes
 
 Author notes
 • Content after a --- line is stripped before send (human reminders).
+
+Context presets
+• A preset is a reusable bundle of attachment files (personal and/or work).
+• Apply (per side) adds or updates files in this prompt; Save on this dialog keeps them.
+• Manage presets opens the preset library; Save as preset stores the current lists.
+• At paste time, only the list for your environment (personal or work) is attached.
 )"
 }
 
@@ -981,7 +988,7 @@ PromptEditor_ShowHelp(*) {
             ownerOpt .= " +Owner" . g_PromptEditorGui.Hwnd
     } catch {
     }
-    g_PromptEditorHelpGui := Gui(ownerOpt, "Context file flags")
+    g_PromptEditorHelpGui := Gui(ownerOpt, "Prompt editor help")
     g_PromptEditorHelpGui.SetFont("s10", "Segoe UI")
     g_PromptEditorHelpGui.Add("Edit", "xm w520 r18 ReadOnly -WantReturn Wrap", PromptEditor_HelpText())
     g_PromptEditorHelpGui.Add("Button", "xm+220 w80 Default", "Close").OnEvent("Click", PromptEditor_CloseHelp)

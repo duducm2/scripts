@@ -17,6 +17,7 @@ global g_PresetMgrPersonalLv := false
 global g_PresetMgrWorkLv := false
 global g_PresetMgrFlagCtrls := Map()
 global g_PresetMgrSuppressFlagSync := false
+global g_PresetMgrStatusCtrl := false
 
 PromptContextPresets_HelpText() {
     return "
@@ -132,28 +133,30 @@ PromptContextPresets_ShowManager(ownerHwnd := 0, onClose := "") {
 }
 
 PromptContextPresets_BuildManager() {
-    global g_PresetMgrGui, g_PresetMgrListLv, g_PresetMgrNameCtrl
+    global g_PresetMgrGui, g_PresetMgrListLv, g_PresetMgrNameCtrl, g_PresetMgrStatusCtrl
     global g_PresetMgrPersonalLv, g_PresetMgrWorkLv
     colW := 360
     pathCol := colW - 154
+    listW := 240
     g_PresetMgrGui.Add("Text", "xm w80", "Presets")
-    g_PresetMgrListLv := g_PresetMgrGui.Add("ListView", "yp w240 r8", ["Name", "P", "W"])
-    g_PresetMgrListLv.ModifyCol(1, 150)
-    g_PresetMgrListLv.ModifyCol(2, 35)
-    g_PresetMgrListLv.ModifyCol(3, 35)
+    g_PresetMgrListLv := g_PresetMgrGui.Add("ListView", "yp w" . listW . " r6", ["Name", "Personal", "Work"])
+    g_PresetMgrListLv.ModifyCol(1, 120)
+    g_PresetMgrListLv.ModifyCol(2, 55)
+    g_PresetMgrListLv.ModifyCol(3, 45)
     g_PresetMgrListLv.OnEvent("ItemFocus", PromptContextPresets_OnListFocus)
     g_PresetMgrListLv.OnEvent("Click", PromptContextPresets_OnListFocus)
     g_PresetMgrGui.Add("Button", "xm y+4 w70", "New").OnEvent("Click", PromptContextPresets_OnNew)
     g_PresetMgrGui.Add("Button", "x+6 yp w70", "Delete").OnEvent("Click", PromptContextPresets_OnDelete)
-    g_PresetMgrGui.Add("Button", "x+6 yp w70", "Help").OnEvent("Click", PromptContextPresets_ShowHelp)
 
-    g_PresetMgrGui.Add("Text", "x+16 yp-4 w80", "Name")
-    g_PresetMgrNameCtrl := g_PresetMgrGui.Add("Edit", "yp w" . (colW * 2 - 80 - 256))
+    g_PresetMgrGui.Add("Text", "x+" . (listW + 16) . " yp-4 w50", "Name")
+    nameW := colW * 2 + 12 - listW - 16 - 50
+    g_PresetMgrNameCtrl := g_PresetMgrGui.Add("Edit", "yp w" . nameW)
+    g_PresetMgrStatusCtrl := g_PresetMgrGui.Add("Text", "x+" . (listW + 16) . " y+4 w" . nameW, "")
 
     g_PresetMgrGui.Add("Text", "xm section w" . colW, "Personal files")
     g_PresetMgrGui.Add("Text", "ys w" . colW, "Work files")
-    g_PresetMgrPersonalLv := g_PresetMgrGui.Add("ListView", "xm w" . colW . " r7", ["Path", "Compact", "CSV keep"])
-    g_PresetMgrWorkLv := g_PresetMgrGui.Add("ListView", "x+12 yp w" . colW . " r7", ["Path", "Compact", "CSV keep"])
+    g_PresetMgrPersonalLv := g_PresetMgrGui.Add("ListView", "xm w" . colW . " r6", ["Path", "Compact", "CSV keep"])
+    g_PresetMgrWorkLv := g_PresetMgrGui.Add("ListView", "x+12 yp w" . colW . " r6", ["Path", "Compact", "CSV keep"])
     for lv in [g_PresetMgrPersonalLv, g_PresetMgrWorkLv] {
         lv.ModifyCol(1, pathCol)
         lv.ModifyCol(2, 50)
@@ -164,19 +167,19 @@ PromptContextPresets_BuildManager() {
     g_PresetMgrPersonalLv.OnEvent("Click", (ctrl, info) => PromptContextPresets_OnSideFocus("personal", info))
     g_PresetMgrWorkLv.OnEvent("Click", (ctrl, info) => PromptContextPresets_OnSideFocus("work", info))
 
-    g_PresetMgrGui.Add("Button", "xm w100", "Add files").OnEvent("Click", (*) => PromptContextPresets_OnAddFiles(
+    workX := colW + 12
+    g_PresetMgrGui.Add("Button", "xm w70 Section", "Add").OnEvent("Click", (*) => PromptContextPresets_OnAddFiles(
         "personal"))
-    g_PresetMgrGui.Add("Button", "x+8 yp w100", "Paste paths").OnEvent("Click", (*) =>
-        PromptContextPresets_OnPastePaths(
-            "personal"))
-    g_PresetMgrGui.Add("Button", "x+8 yp w80", "Remove").OnEvent("Click", (*) => PromptContextPresets_OnRemove(
+    g_PresetMgrGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptContextPresets_OnPastePaths(
         "personal"))
-    g_PresetMgrGui.Add("Button", "x+24 yp w100", "Add files").OnEvent("Click", (*) => PromptContextPresets_OnAddFiles(
-        "work"))
-    g_PresetMgrGui.Add("Button", "x+8 yp w100", "Paste paths").OnEvent("Click", (*) =>
-        PromptContextPresets_OnPastePaths(
+    g_PresetMgrGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptContextPresets_OnRemove(
+        "personal"))
+    g_PresetMgrGui.Add("Button", "xs+" . workX . " ys w70", "Add").OnEvent("Click", (*) =>
+        PromptContextPresets_OnAddFiles(
             "work"))
-    g_PresetMgrGui.Add("Button", "x+8 yp w80", "Remove").OnEvent("Click", (*) => PromptContextPresets_OnRemove("work"))
+    g_PresetMgrGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptContextPresets_OnPastePaths(
+        "work"))
+    g_PresetMgrGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptContextPresets_OnRemove("work"))
 
     personalCompact := g_PresetMgrGui.Add("CheckBox", "xm w" . colW, "Compact")
     workCompact := g_PresetMgrGui.Add("CheckBox", "x+12 yp w" . colW, "Compact")
@@ -212,10 +215,35 @@ PromptContextPresets_BuildManager() {
         selected: 0
     }
 
-    g_PresetMgrGui.Add("Button", "xm w100 Default", "Save preset").OnEvent("Click", PromptContextPresets_OnSavePreset)
+    g_PresetMgrGui.Add("Button", "xm w80", "Help").OnEvent("Click", PromptContextPresets_ShowHelp)
+    g_PresetMgrGui.Add("Button", "x+8 yp w100 Default", "Save preset").OnEvent("Click",
+        PromptContextPresets_OnSavePreset)
     g_PresetMgrGui.Add("Button", "x+8 yp w100", "Close").OnEvent("Click", PromptContextPresets_CloseManager)
     PromptContextPresets_ReloadManagerList()
+    PromptContextPresets_SelectInitialPreset()
+}
+
+PromptContextPresets_SetStatus(msg := "") {
+    global g_PresetMgrStatusCtrl
+    if (!IsObject(g_PresetMgrStatusCtrl))
+        return
+    try g_PresetMgrStatusCtrl.Text := msg
+    catch {
+    }
+}
+
+PromptContextPresets_SelectInitialPreset() {
+    global g_PresetMgrListLv, g_PresetMgrPresets
+    if (g_PresetMgrPresets.Length > 0) {
+        PromptContextPresets_SetStatus("")
+        try g_PresetMgrListLv.Modify(1, "Select Focus Vis")
+        catch {
+        }
+        PromptContextPresets_OnListFocus()
+        return
+    }
     PromptContextPresets_OnNew()
+    PromptContextPresets_SetStatus("No presets yet — click New.")
 }
 
 PromptContextPresets_MgrPathsRef(side) {
@@ -487,11 +515,13 @@ PromptContextPresets_OnListFocus(*) {
     if (!row || row > g_PresetMgrPresets.Length)
         return
     g_PresetMgrEditIndex := row
+    PromptContextPresets_SetStatus("")
     PromptContextPresets_LoadFormFromPreset(g_PresetMgrPresets[row])
 }
 
 PromptContextPresets_OnNew(*) {
     global g_PresetMgrNameCtrl, g_PresetMgrEditIndex, g_PresetMgrPersonalPaths, g_PresetMgrWorkPaths
+    global g_PresetMgrListLv
     g_PresetMgrEditIndex := 0
     try g_PresetMgrNameCtrl.Value := ""
     catch {
@@ -500,6 +530,12 @@ PromptContextPresets_OnNew(*) {
     g_PresetMgrWorkPaths := []
     PromptContextPresets_MgrReloadSide("personal")
     PromptContextPresets_MgrReloadSide("work")
+    if (IsObject(g_PresetMgrListLv)) {
+        try g_PresetMgrListLv.Modify(0, "Vis")
+        catch {
+        }
+    }
+    PromptContextPresets_SetStatus("New preset — enter a name and add files.")
 }
 
 PromptContextPresets_OnDelete(*) {
@@ -524,7 +560,10 @@ PromptContextPresets_OnDelete(*) {
         return
     }
     PromptContextPresets_ReloadManagerList()
-    PromptContextPresets_OnNew()
+    if (keep.Length > 0)
+        PromptContextPresets_SelectInitialPreset()
+    else
+        PromptContextPresets_OnNew()
     PromptEditor_RefreshPresetDropdowns()
 }
 
@@ -576,6 +615,7 @@ PromptContextPresets_OnSavePreset(*) {
     }
     PromptEditor_RefreshPresetDropdowns()
     UtilitySelector_Notify("Preset saved.")
+    PromptContextPresets_SetStatus("")
 }
 
 PromptContextPresets_CloseManager(*) {
