@@ -445,17 +445,30 @@ global g_EditorGitRobotResultPath := ""
 global g_EditorGitRobotDeadline := 0
 global g_EditorGitRobotQuickUpdate := false
 
+Editor_NormGitDir(p) {
+    if (p = "")
+        return ""
+    return StrLower(StrReplace(RTrim(p, "\"), "/", "\"))
+}
+
 Editor_IsThisScriptsRepo(hwnd, repoDir) {
-    scriptsDir := ""
-    try scriptsDir := GetScriptsDirectory()
-    catch {
+    repoNorm := Editor_NormGitDir(repoDir)
+    candidates := []
+    try candidates.Push(A_ScriptDir)
+    try candidates.Push(GetScriptsDirectory())
+    try {
+        global PERSONAL_SCRIPTS_PATH, WORK_SCRIPTS_PATH
+        if (IsSet(PERSONAL_SCRIPTS_PATH) && PERSONAL_SCRIPTS_PATH)
+            candidates.Push(PERSONAL_SCRIPTS_PATH)
+        if (IsSet(WORK_SCRIPTS_PATH) && WORK_SCRIPTS_PATH)
+            candidates.Push(WORK_SCRIPTS_PATH)
+    } catch {
     }
-    if (repoDir != "" && scriptsDir != "") {
-        a := StrLower(RTrim(repoDir, "\"))
-        b := StrLower(RTrim(scriptsDir, "\"))
-        if (a = b)
-            return true
-        return false
+    if (repoNorm != "") {
+        for c in candidates {
+            if (c != "" && repoNorm = Editor_NormGitDir(c))
+                return true
+        }
     }
     if !hwnd
         return false
@@ -467,8 +480,10 @@ Editor_IsThisScriptsRepo(hwnd, repoDir) {
     }
     if !(exe = "Cursor.exe" || exe = "Code.exe")
         return false
-    return InStr(title, " - scripts - ") || InStr(title, "scripts - Cursor")
-    || InStr(title, "scripts - Visual Studio Code") || InStr(title, "scripts - Code")
+    t := StrLower(title)
+    return InStr(t, " - scripts - ") || InStr(t, "scripts - cursor")
+    || InStr(t, "scripts - visual studio code") || InStr(t, "scripts - code")
+    || InStr(t, " - scripts [") || InStr(t, " (workspace) - scripts")
 }
 
 Editor_GitFlowFail(step, reason := "") {
@@ -735,6 +750,7 @@ Editor_GitRobotPollResult(*) {
     if (outcome = "ok") {
         Editor_GitPlayPullSuccessSound()
         if (doQuickUpdate) {
+            try StandardLoadingBar_Show("⏳ Restarting scripts...", BANNER_ACCENT_INTERMEDIATE)
             QuickUpdateScripts()
             return
         }
