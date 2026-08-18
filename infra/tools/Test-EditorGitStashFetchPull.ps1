@@ -57,9 +57,10 @@ function Invoke-Flow {
     param(
         [string]$RepoDir,
         [string]$ResultPath,
-        [switch]$SkipPull
+        [switch]$SkipPull,
+        [int]$TimeoutSec = 30
     )
-    $argLine = "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`" -RepoDir `"$RepoDir`" -ResultPath `"$ResultPath`" -TimeoutSec 30"
+    $argLine = "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`" -RepoDir `"$RepoDir`" -ResultPath `"$ResultPath`" -TimeoutSec $TimeoutSec"
     if ($SkipPull) { $argLine += ' -SkipPull' }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = 'powershell.exe'
@@ -143,6 +144,40 @@ try {
         -and ($readme -match 'tracked-local') -and ($scratch -match 'untracked-local') `
         -and $stashCount -eq 0 -and $stashSteps.Count -eq 1 -and (Get-Behind $r.Clone) -eq 0
     ) ("ok=$($j.ok) stashSteps=$($stashSteps.Count) stashLeft=$stashCount err=$($j.error)")
+
+    # --- Many dirty files: tracked + untracked stash, then pull + pop ---
+    $r = New-TestRepos 'many-files'
+    $trackedDir = Join-Path $r.Clone 'tracked'
+    $untrackedDir = Join-Path $r.Clone 'untracked'
+    New-Item -ItemType Directory -Path $trackedDir | Out-Null
+    New-Item -ItemType Directory -Path $untrackedDir | Out-Null
+    1..40 | ForEach-Object {
+        Set-Content -LiteralPath (Join-Path $trackedDir "f$_.txt") -Value "tracked-$_" -Encoding utf8
+    }
+    git -C $r.Clone add tracked
+    git -C $r.Clone commit -m 'tracked batch' --quiet
+    git -C $r.Clone push origin main --quiet
+    git -C $r.Other pull origin main --quiet
+    1..40 | ForEach-Object {
+        Set-Content -LiteralPath (Join-Path $trackedDir "f$_.txt") -Value "tracked-local-$_" -Encoding utf8
+        Set-Content -LiteralPath (Join-Path $untrackedDir "u$_.txt") -Value "untracked-$_" -Encoding utf8
+    }
+    Set-Content -LiteralPath (Join-Path $r.Other 'upstream-many.txt') -Value 'from-upstream' -Encoding utf8
+    git -C $r.Other add upstream-many.txt
+    git -C $r.Other commit -m 'upstream many' --quiet
+    git -C $r.Other push origin main --quiet
+    $out = Invoke-Flow $r.Clone (Join-Path $r.Root 'result.json') -TimeoutSec 120
+    $j = $out.Json
+    $trackedRestored = (Get-Content -LiteralPath (Join-Path $trackedDir 'f1.txt') -Raw) -match 'tracked-local-1'
+    $untrackedRestored = (Test-Path -LiteralPath (Join-Path $untrackedDir 'u1.txt')) -and (
+        (Get-Content -LiteralPath (Join-Path $untrackedDir 'u1.txt') -Raw) -match 'untracked-1')
+    $hasUp = Test-Path -LiteralPath (Join-Path $r.Clone 'upstream-many.txt')
+    $stashCount = @(git -C $r.Clone stash list).Count
+    Write-Case 'many-files-stash-pull-pop' (
+        $out.ExitCode -eq 0 -and $j.ok -eq $true -and $j.didStash -eq $true `
+        -and $trackedRestored -and $untrackedRestored -and $hasUp `
+        -and $stashCount -eq 0 -and (Get-Behind $r.Clone) -eq 0
+    ) ("exit=$($out.ExitCode) ok=$($j.ok) didStash=$($j.didStash) tracked=$trackedRestored untracked=$untrackedRestored up=$hasUp stash=$stashCount err=$($j.error)")
 
     # --- Still-behind after mocked/no-op pull ---
     $r = New-TestRepos 'skip-pull'

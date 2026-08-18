@@ -119,6 +119,43 @@ function Test-PorcelainBlocksPull {
     return $false
 }
 
+function Get-GitIndexLockPath {
+    $r = Invoke-GitRaw 'rev-parse --absolute-git-dir'
+    if (-not $r.Ok -or -not $r.StdOut) {
+        Fail-Step 'Repo' $(if ($r.Output) { $r.Output } else { 'cannot resolve .git directory' })
+    }
+    return (Join-Path $r.StdOut.Trim() 'index.lock')
+}
+
+function Wait-IndexLock {
+    param([int]$WaitSec = 60)
+    $lock = Get-GitIndexLockPath
+    $deadline = [datetime]::UtcNow.AddSeconds($WaitSec)
+    while (Test-Path -LiteralPath $lock) {
+        if ([datetime]::UtcNow -gt $deadline) {
+            Fail-Step 'Stash' "index.lock still present after ${WaitSec}s: $lock"
+        }
+        Start-Sleep -Milliseconds 250
+    }
+}
+
+function Wait-WorkingTreePullable {
+    param([int]$WaitSec = 30)
+    $deadline = [datetime]::UtcNow.AddSeconds($WaitSec)
+    $last = ''
+    while ($true) {
+        Wait-IndexLock
+        $last = Get-Porcelain
+        if (-not (Test-PorcelainBlocksPull $last)) {
+            return $last
+        }
+        if ([datetime]::UtcNow -ge $deadline) {
+            Fail-Step 'Stash' "working tree still not pullable after stash: $last"
+        }
+        Start-Sleep -Milliseconds 500
+    }
+}
+
 function Get-StashListText {
     $r = Invoke-GitRaw 'stash list'
     if (-not $r.Ok) {
@@ -200,6 +237,7 @@ if ($dirty) {
     if ($push.Output -notmatch '(?i)Saved working directory') {
         Fail-Step 'Stash' $(if ($push.Output) { $push.Output } else { 'stash did not save working directory' })
     }
+    Wait-IndexLock
     $stashListAfter = Get-StashListText
     if ((Get-StashLineCount $stashListAfter) -le (Get-StashLineCount $stashListBefore)) {
         Fail-Step 'Stash' 'stash list did not grow'
@@ -210,10 +248,7 @@ if ($dirty) {
     }
     $result.didStash = $true
     $result.stashRef = 'stash@{0}'
-    $afterStash = Get-Porcelain
-    if (Test-PorcelainBlocksPull $afterStash) {
-        Fail-Step 'Stash' "working tree still not pullable after stash: $afterStash"
-    }
+    Wait-WorkingTreePullable | Out-Null
     Add-Step 'stash-gate' $true $stashMsg
 } else {
     Add-Step 'stash-skip' $true 'clean working tree'

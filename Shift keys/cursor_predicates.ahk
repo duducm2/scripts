@@ -440,7 +440,7 @@ Editor_IsWorkbenchToggleOn(root, nameSubstring) {
 ; Alt+S — robot types git stash / fetch / pull in a new editor terminal
 ; =============================================================================
 global EDITOR_GIT_TERMINAL_READY_MS := 800
-global EDITOR_GIT_ROBOT_TIMEOUT_MS := 120000
+global EDITOR_GIT_ROBOT_TIMEOUT_MS := 600000
 global g_EditorGitRobotResultPath := ""
 global g_EditorGitRobotDeadline := 0
 
@@ -448,7 +448,7 @@ Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
     if (reason != "")
         msg .= ": " reason
-    try StandardLoadingBar_Update(msg, BANNER_ACCENT_ERROR)
+    try StandardLoadingBar_Show(msg, BANNER_ACCENT_ERROR)
     try StandardLoadingBar_Hide(1200)
 }
 
@@ -631,32 +631,151 @@ Editor_GitWriteRobotScript(repoDir, resultPath) {
     gitc := (repoDir != "") ? ("git -C " Editor_GitQuotePs(repoDir)) : "git"
     resQ := Editor_GitQuotePs(resultPath)
     msgQ := Editor_GitQuotePs(msg)
-    script := ""
-    script .= "Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan`r`n"
-    script .= gitc " stash push -u -m " msgQ "`r`n"
-    script .= "Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan`r`n"
-    script .= gitc " fetch`r`n"
-    script .= "if (-not $?) {`r`n"
-    script .= "  Write-Host '=== ROBOT failed ===' -ForegroundColor Red`r`n"
-    script .= "  [IO.File]::WriteAllText(" resQ ", 'fail')`r`n"
-    script .= "  exit 1`r`n"
-    script .= "}`r`n"
-    script .= "Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan`r`n"
-    script .= gitc " pull`r`n"
-    script .= "if (-not $?) {`r`n"
-    script .= "  Write-Host '=== ROBOT failed ===' -ForegroundColor Red`r`n"
-    script .= "  [IO.File]::WriteAllText(" resQ ", 'fail')`r`n"
-    script .= "  exit 1`r`n"
-    script .= "}`r`n"
-    script .= "Write-Host '=== ROBOT done ===' -ForegroundColor Green`r`n"
-    script .= "[IO.File]::WriteAllText(" resQ ", 'ok')`r`n"
-    script .= "Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan`r`n"
-    script .= "$top = " gitc " stash list -1`r`n"
-    script .= "if ($top -match [regex]::Escape(" msgQ ")) {`r`n"
-    script .= "  " gitc " stash pop`r`n"
-    script .= "} else {`r`n"
-    script .= "  Write-Host 'no stash to pop'`r`n"
-    script .= "}`r`n"
+    script := "
+(
+$ErrorActionPreference = 'Continue'
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'Never'
+$msg = __MSGQ__
+function Fail-Robot([string]$Reason) {
+  Write-Host ('=== ROBOT failed === ' + $Reason) -ForegroundColor Red
+  [IO.File]::WriteAllText(__RESQ__, 'fail')
+  exit 1
+}
+function Assert-GitOk([string]$Step) {
+  if ($LASTEXITCODE -ne 0) {
+    Fail-Robot ($Step + ' exit ' + $LASTEXITCODE)
+  }
+}
+function Test-PorcelainBlocksPull($Porcelain) {
+  foreach ($line in @($Porcelain)) {
+    if (-not $line) { continue }
+    $s = [string]$line
+    if ($s -notmatch '\S') { continue }
+    if ($s.StartsWith('!!')) { continue }
+    return $true
+  }
+  return $false
+}
+function Get-StashLineCount($Text) {
+  $n = 0
+  foreach ($line in @($Text)) {
+    if ($line -and ([string]$line).Trim()) { $n++ }
+  }
+  return $n
+}
+function Wait-IndexLock {
+  $gitDir = (__GITC__ rev-parse --absolute-git-dir)
+  Assert-GitOk 'rev-parse --absolute-git-dir'
+  $lock = Join-Path ([string]$gitDir).Trim() 'index.lock'
+  $deadline = [datetime]::UtcNow.AddSeconds(60)
+  $announced = $false
+  while (Test-Path -LiteralPath $lock) {
+    if ([datetime]::UtcNow -gt $deadline) {
+      Fail-Robot ('index.lock still present after 60s: ' + $lock)
+    }
+    if (-not $announced) {
+      Write-Host '=== ROBOT waiting for git lock ===' -ForegroundColor Yellow
+      $announced = $true
+    }
+    Start-Sleep -Milliseconds 250
+  }
+}
+function Wait-WorkingTreePullable {
+  $deadline = [datetime]::UtcNow.AddSeconds(30)
+  $announced = $false
+  $last = ''
+  while ($true) {
+    Wait-IndexLock
+    $last = (__GITC__ status --porcelain)
+    Assert-GitOk 'status --porcelain'
+    if (-not (Test-PorcelainBlocksPull $last)) { return $last }
+    if ([datetime]::UtcNow -ge $deadline) {
+      Fail-Robot ('working tree still not pullable after stash: ' + (($last | Out-String).Trim()))
+    }
+    if (-not $announced) {
+      Write-Host '=== ROBOT waiting for working tree ===' -ForegroundColor Yellow
+      $announced = $true
+    }
+    Start-Sleep -Milliseconds 500
+  }
+}
+Wait-IndexLock
+$porcelainBefore = (__GITC__ status --porcelain)
+Assert-GitOk 'status --porcelain'
+$stashListBefore = (__GITC__ stash list)
+Assert-GitOk 'stash list'
+$dirty = Test-PorcelainBlocksPull $porcelainBefore
+$didStash = $false
+if ($dirty) {
+  Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan
+  $stashOutFile = [IO.Path]::GetTempFileName()
+  __GITC__ stash push -u -m $msg > $stashOutFile 2>&1
+  $stashCode = $LASTEXITCODE
+  $stashText = [IO.File]::ReadAllText($stashOutFile)
+  Remove-Item -LiteralPath $stashOutFile -Force -ErrorAction SilentlyContinue
+  if ($stashText) { Write-Host $stashText.TrimEnd() }
+  if ($stashCode -ne 0) {
+    Fail-Robot ('stash exit ' + $stashCode + ': ' + $stashText.Trim())
+  }
+  if ($stashText -match '(?i)No local changes to save') {
+    Fail-Robot 'stash reported no local changes but working tree was dirty'
+  }
+  if ($stashText -notmatch '(?i)Saved working directory') {
+    Fail-Robot ('stash did not save working directory: ' + $stashText.Trim())
+  }
+  Wait-IndexLock
+  $stashListAfter = (__GITC__ stash list)
+  Assert-GitOk 'stash list'
+  if ((Get-StashLineCount $stashListAfter) -le (Get-StashLineCount $stashListBefore)) {
+    Fail-Robot 'stash list did not grow'
+  }
+  $top = (__GITC__ stash list -1)
+  Assert-GitOk 'stash list -1'
+  if (([string]$top) -notmatch [regex]::Escape($msg)) {
+    Fail-Robot ('new stash is not ours: ' + $top)
+  }
+  Wait-WorkingTreePullable | Out-Null
+  $didStash = $true
+  Write-Host '=== ROBOT stash-gate ===' -ForegroundColor Green
+} else {
+  Write-Host '=== ROBOT stash skip ===' -ForegroundColor Cyan
+  Wait-WorkingTreePullable | Out-Null
+}
+Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan
+__GITC__ fetch
+Assert-GitOk 'fetch'
+Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan
+__GITC__ pull --ff-only
+Assert-GitOk 'pull --ff-only'
+$behind = (__GITC__ rev-list --count 'HEAD..@{upstream}')
+Assert-GitOk 'rev-list behind'
+if (([string]$behind).Trim() -ne '0') {
+  Fail-Robot ('still behind ' + $behind + ' after pull --ff-only')
+}
+if ($didStash) {
+  Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan
+  $top = (__GITC__ stash list -1)
+  Assert-GitOk 'stash list -1'
+  if (([string]$top) -notmatch [regex]::Escape($msg)) {
+    Fail-Robot ('expected our stash on top before pop: ' + $top)
+  }
+  __GITC__ stash pop
+  Assert-GitOk 'stash pop'
+  $stashListAfterPop = (__GITC__ stash list)
+  Assert-GitOk 'stash list'
+  if ((($stashListAfterPop | Out-String)) -match [regex]::Escape($msg)) {
+    Fail-Robot ('stash message still present after pop: ' + $msg)
+  }
+} else {
+  Write-Host 'no stash to pop'
+}
+Write-Host '=== ROBOT done ===' -ForegroundColor Green
+[IO.File]::WriteAllText(__RESQ__, 'ok')
+)"
+    script := StrReplace(script, "__GITC__", gitc)
+    script := StrReplace(script, "__RESQ__", resQ)
+    script := StrReplace(script, "__MSGQ__", msgQ)
     ps1Path := A_Temp "\editor-git-robot-" A_TickCount ".ps1"
     try FileDelete(ps1Path)
     FileAppend(script, ps1Path, "UTF-8-RAW")
@@ -702,8 +821,13 @@ Editor_GitRobotStartPoll(resultPath) {
 Editor_GitRobotPollResult(*) {
     global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline
     path := g_EditorGitRobotResultPath
-    if (path = "" || A_TickCount > g_EditorGitRobotDeadline) {
+    if (path = "") {
         Editor_GitRobotStopPoll()
+        return
+    }
+    if (A_TickCount > g_EditorGitRobotDeadline) {
+        Editor_GitRobotStopPoll()
+        Editor_GitFlowFail("Git", "timed out waiting for stash/pull")
         return
     }
     outcome := ""
@@ -723,7 +847,9 @@ Editor_GitRobotPollResult(*) {
         Editor_GitPlayPullSuccessSound()
         StandardLoadingBar_Show("✅ Pull complete", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(600)
+        return
     }
+    Editor_GitFlowFail("Git", "stash/pull failed")
 }
 
 Editor_GitStashAndPull() {
