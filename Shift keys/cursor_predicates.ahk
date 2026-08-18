@@ -625,159 +625,17 @@ Editor_GitQuotePs(s) {
     return "'" StrReplace(s, "'", "''") "'"
 }
 
-; Write a real .ps1 so we never SendText doubled {{ }} from AHK Format (that aborted pull).
+; Thin launcher: run the on-disk gated flow (later .ps1 fixes apply after one AHK reload).
 Editor_GitWriteRobotScript(repoDir, resultPath) {
-    msg := "alt+s-" A_TickCount
-    gitc := (repoDir != "") ? ("git -C " Editor_GitQuotePs(repoDir)) : "git"
-    resQ := Editor_GitQuotePs(resultPath)
-    msgQ := Editor_GitQuotePs(msg)
-    script := "
-(
-$ErrorActionPreference = 'Continue'
-$env:GIT_TERMINAL_PROMPT = '0'
-$env:GCM_INTERACTIVE = 'Never'
-$msg = __MSGQ__
-function Fail-Robot([string]$Reason) {
-  Write-Host ('=== ROBOT failed === ' + $Reason) -ForegroundColor Red
-  [IO.File]::WriteAllText(__RESQ__, 'fail')
-  exit 1
-}
-function Assert-GitOk([string]$Step) {
-  if ($LASTEXITCODE -ne 0) {
-    Fail-Robot ($Step + ' exit ' + $LASTEXITCODE)
-  }
-}
-function Test-HasStashableChanges {
-  __GITC__ update-index --refresh 2>$null | Out-Null
-  __GITC__ diff --quiet --ignore-submodules=dirty HEAD
-  if ($LASTEXITCODE -ne 0) { return $true }
-  __GITC__ diff --quiet --cached --ignore-submodules=dirty
-  if ($LASTEXITCODE -ne 0) { return $true }
-  $others = (__GITC__ ls-files -o --exclude-standard)
-  foreach ($p in @($others)) {
-    if ($p -and ([string]$p).Trim()) { return $true }
-  }
-  return $false
-}
-function Get-StashLineCount($Text) {
-  $n = 0
-  foreach ($line in @($Text)) {
-    if ($line -and ([string]$line).Trim()) { $n++ }
-  }
-  return $n
-}
-function Wait-IndexLock {
-  $gitDir = (__GITC__ rev-parse --absolute-git-dir)
-  Assert-GitOk 'rev-parse --absolute-git-dir'
-  $lock = Join-Path ([string]$gitDir).Trim() 'index.lock'
-  $deadline = [datetime]::UtcNow.AddSeconds(60)
-  $announced = $false
-  while (Test-Path -LiteralPath $lock) {
-    if ([datetime]::UtcNow -gt $deadline) {
-      Fail-Robot ('index.lock still present after 60s: ' + $lock)
-    }
-    if (-not $announced) {
-      Write-Host '=== ROBOT waiting for git lock ===' -ForegroundColor Yellow
-      $announced = $true
-    }
-    Start-Sleep -Milliseconds 250
-  }
-}
-function Wait-WorkingTreePullable {
-  $deadline = [datetime]::UtcNow.AddSeconds(30)
-  $announced = $false
-  $last = ''
-  while ($true) {
-    Wait-IndexLock
-    $last = (__GITC__ status --porcelain)
-    Assert-GitOk 'status --porcelain'
-    if (-not (Test-HasStashableChanges)) { return $last }
-    if ([datetime]::UtcNow -ge $deadline) {
-      Fail-Robot ('working tree still not pullable after stash: ' + (($last | Out-String).Trim()))
-    }
-    if (-not $announced) {
-      Write-Host '=== ROBOT waiting for working tree ===' -ForegroundColor Yellow
-      $announced = $true
-    }
-    Start-Sleep -Milliseconds 500
-  }
-}
-Wait-IndexLock
-$stashListBefore = (__GITC__ stash list)
-Assert-GitOk 'stash list'
-$dirty = Test-HasStashableChanges
-$didStash = $false
-if ($dirty) {
-  Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan
-  $stashOutFile = [IO.Path]::GetTempFileName()
-  __GITC__ stash push -u -m $msg > $stashOutFile 2>&1
-  $stashCode = $LASTEXITCODE
-  $stashText = [IO.File]::ReadAllText($stashOutFile)
-  Remove-Item -LiteralPath $stashOutFile -Force -ErrorAction SilentlyContinue
-  if ($stashText) { Write-Host $stashText.TrimEnd() }
-  if ($stashCode -ne 0) {
-    Fail-Robot ('stash exit ' + $stashCode + ': ' + $stashText.Trim())
-  }
-  if ($stashText -match '(?i)No local changes to save') {
-    Write-Host '=== ROBOT stash skip === nothing to save' -ForegroundColor Yellow
-    Wait-WorkingTreePullable | Out-Null
-  } else {
-  if ($stashText -notmatch '(?i)Saved working directory') {
-    Fail-Robot ('stash did not save working directory: ' + $stashText.Trim())
-  }
-  Wait-IndexLock
-  $stashListAfter = (__GITC__ stash list)
-  Assert-GitOk 'stash list'
-  if ((Get-StashLineCount $stashListAfter) -le (Get-StashLineCount $stashListBefore)) {
-    Fail-Robot 'stash list did not grow'
-  }
-  $top = (__GITC__ stash list -1)
-  Assert-GitOk 'stash list -1'
-  if (([string]$top) -notmatch [regex]::Escape($msg)) {
-    Fail-Robot ('new stash is not ours: ' + $top)
-  }
-  Wait-WorkingTreePullable | Out-Null
-  $didStash = $true
-  Write-Host '=== ROBOT stash-gate ===' -ForegroundColor Green
-  }
-} else {
-  Write-Host '=== ROBOT stash skip ===' -ForegroundColor Cyan
-  Wait-WorkingTreePullable | Out-Null
-}
-Write-Host '=== ROBOT fetch ===' -ForegroundColor Cyan
-__GITC__ fetch
-Assert-GitOk 'fetch'
-Write-Host '=== ROBOT pull ===' -ForegroundColor Cyan
-__GITC__ pull --ff-only
-Assert-GitOk 'pull --ff-only'
-$behind = (__GITC__ rev-list --count 'HEAD..@{upstream}')
-Assert-GitOk 'rev-list behind'
-if (([string]$behind).Trim() -ne '0') {
-  Fail-Robot ('still behind ' + $behind + ' after pull --ff-only')
-}
-if ($didStash) {
-  Write-Host '=== ROBOT stash pop ===' -ForegroundColor Cyan
-  $top = (__GITC__ stash list -1)
-  Assert-GitOk 'stash list -1'
-  if (([string]$top) -notmatch [regex]::Escape($msg)) {
-    Fail-Robot ('expected our stash on top before pop: ' + $top)
-  }
-  __GITC__ stash pop
-  Assert-GitOk 'stash pop'
-  $stashListAfterPop = (__GITC__ stash list)
-  Assert-GitOk 'stash list'
-  if ((($stashListAfterPop | Out-String)) -match [regex]::Escape($msg)) {
-    Fail-Robot ('stash message still present after pop: ' + $msg)
-  }
-} else {
-  Write-Host 'no stash to pop'
-}
-Write-Host '=== ROBOT done ===' -ForegroundColor Green
-[IO.File]::WriteAllText(__RESQ__, 'ok')
-)"
-    script := StrReplace(script, "__GITC__", gitc)
-    script := StrReplace(script, "__RESQ__", resQ)
-    script := StrReplace(script, "__MSGQ__", msgQ)
+    flowPs1 := A_ScriptDir "\infra\tools\Editor-GitStashFetchPull.ps1"
+    if !FileExist(flowPs1)
+        return ""
+    repoArg := (repoDir != "") ? repoDir : "."
+    script := "Write-Host '=== ROBOT stash-and-pull ===' -ForegroundColor Cyan`r`n"
+    script .= "& " Editor_GitQuotePs(flowPs1)
+    script .= " -RepoDir " Editor_GitQuotePs(repoArg)
+    script .= " -ResultPath " Editor_GitQuotePs(resultPath)
+    script .= " -TimeoutSec 300 -Robot`r`n"
     ps1Path := A_Temp "\editor-git-robot-" A_TickCount ".ps1"
     try FileDelete(ps1Path)
     FileAppend(script, ps1Path, "UTF-8-RAW")
@@ -872,6 +730,10 @@ Editor_GitStashAndPull() {
         Editor_OpenNewEditorTerminal(hwnd)
         Sleep 120
         ps1Path := Editor_GitWriteRobotScript(repoDir, resultPath)
+        if (ps1Path = "") {
+            Editor_GitFlowFail("Git", "Editor-GitStashFetchPull.ps1 not found")
+            return
+        }
         SendText("powershell -NoProfile -ExecutionPolicy Bypass -File " . Editor_GitQuotePs(ps1Path))
         Send "{Enter}"
     } finally {

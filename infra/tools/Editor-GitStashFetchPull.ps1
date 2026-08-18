@@ -1,14 +1,16 @@
 # Alt+S editor git flow: stash (single -u), fetch, ff-only pull, stash pop.
 # Success (ok=true / exit 0) only if every quality gate passes — never on git exit 0 alone.
-# Writes JSON result to -ResultPath.
+# Writes JSON result to -ResultPath (tests) or plain ok/fail with -Robot (Alt+S terminal).
 # -SkipPull is test-only: fetch then skip pull so the behind-count gate must fail.
+# -Robot prints === ROBOT === banners and git output in the editor terminal.
 param(
     [Parameter(Mandatory = $true)]
     [string]$RepoDir,
     [Parameter(Mandatory = $true)]
     [string]$ResultPath,
     [int]$TimeoutSec = 120,
-    [switch]$SkipPull
+    [switch]$SkipPull,
+    [switch]$Robot
 )
 
 $ErrorActionPreference = 'Continue'
@@ -30,11 +32,28 @@ $result = [ordered]@{
     steps           = @()
 }
 
+function Write-Robot {
+    param([string]$Msg, [string]$Color = 'Cyan')
+    if ($Robot) {
+        Write-Host "=== ROBOT $Msg ===" -ForegroundColor $Color
+    }
+}
+
 function Write-Result {
     param([int]$ExitCode = 1)
     try {
-        $json = $result | ConvertTo-Json -Compress -Depth 6
-        Set-Content -LiteralPath $ResultPath -Value $json -Encoding UTF8
+        if ($Robot) {
+            $plain = if (($ExitCode -eq 0) -and $result.ok) { 'ok' } else { 'fail' }
+            [IO.File]::WriteAllText($ResultPath, $plain)
+            if ($plain -eq 'ok') {
+                Write-Host '=== ROBOT done ===' -ForegroundColor Green
+            } else {
+                Write-Host ('=== ROBOT failed === ' + $result.failedStep + ': ' + $result.error) -ForegroundColor Red
+            }
+        } else {
+            $json = $result | ConvertTo-Json -Compress -Depth 6
+            Set-Content -LiteralPath $ResultPath -Value $json -Encoding UTF8
+        }
     } catch {
         exit $ExitCode
     }
@@ -91,6 +110,9 @@ function Invoke-GitRaw {
 function Invoke-GitStep {
     param([string]$StepName, [string]$GitArgs)
     $r = Invoke-GitRaw $GitArgs
+    if ($Robot -and $r.Output) {
+        Write-Host $r.Output
+    }
     $detail = if ($r.Output) { $r.Output.Substring(0, [Math]::Min(500, $r.Output.Length)) } else { '' }
     Add-Step $StepName $r.Ok $detail
     if (-not $r.Ok -and $r.ExitCode -eq 124) {
@@ -238,9 +260,10 @@ $stashListBefore = Get-StashListText
 $dirty = Test-HasStashableChanges
 
 if ($dirty) {
+    Write-Robot 'stash'
     $push = Invoke-GitStep 'stash' "stash push -u -m `"$stashMsg`""
     if ($push.Output -match '(?i)No local changes to save') {
-        Wait-WorkingTreePullable | Out-Null
+        Write-Robot 'stash skip' 'Yellow'
         Add-Step 'stash-skip' $true 'stash reported no local changes'
     } else {
     if ($push.Output -notmatch '(?i)Saved working directory') {
@@ -261,9 +284,11 @@ if ($dirty) {
     Add-Step 'stash-gate' $true $stashMsg
     }
 } else {
+    Write-Robot 'stash skip' 'Yellow'
     Add-Step 'stash-skip' $true 'clean working tree'
 }
 
+Write-Robot 'fetch'
 $fetch = Invoke-GitStep 'fetch' 'fetch'
 if (-not $fetch.Ok) {
     Fail-Step 'Fetch' $(if ($fetch.Output) { $fetch.Output } else { 'git fetch failed' })
@@ -285,6 +310,7 @@ function Test-BehindGatePass {
     return ($result.behindCount -eq 0)
 }
 
+Write-Robot 'pull'
 $pull = Invoke-PullOnce 'pull'
 if (-not (Test-BehindGatePass)) {
     $retry = Invoke-GitStep 'fetch-retry' 'fetch'
@@ -306,6 +332,7 @@ if (-not (Test-BehindGatePass)) {
 Add-Step 'pull-gate' $true "behind=$($result.behindCount) ahead=$($result.aheadCount)"
 
 if ($result.didStash) {
+    Write-Robot 'stash pop'
     $top = Invoke-GitRaw 'stash list -1'
     if (-not $top.Ok -or ($top.StdOut -notmatch [regex]::Escape($stashMsg))) {
         Fail-Step 'StashPop' "expected stash@{0} to be ours before pop: $($top.StdOut)"
