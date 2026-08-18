@@ -5,3 +5,4 @@ TX007,2026-08-15,Lunch with boyfriend,"121,00",expense,CAT_LAZER,Restaurants,ACC
 TX008,2026-08-15,Gas,"120,00",expense,CAT_CARRO,,ACC_MERCADOP,,
 TX009,2026-08-15,Car battery,"549,00",expense,CAT_CARRO,,ACC_MERCADOP,,
 TX010,2026-08-17,Balance adjustment,"7,67",adjustment,CAT_AJUSTE,,ACC_MERCADOP,,
+TX011,2026-08-17,haircut,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,

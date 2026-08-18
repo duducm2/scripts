@@ -1,0 +1,2 @@
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+haircut,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
