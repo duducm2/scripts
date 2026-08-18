@@ -436,6 +436,23 @@ Finance_Today() {
     return FormatTime(, "yyyy-MM-dd")
 }
 
+Finance_NormalizeDate(raw) {
+    s := Trim(raw)
+    if (s = "")
+        return Finance_Today()
+    if (RegExMatch(s, "^(\d{4})-(\d{2})-(\d{2})", &m))
+        return m[1] . "-" . m[2] . "-" . m[3]
+    if (RegExMatch(s, "^(\d{4})/(\d{2})/(\d{2})", &m))
+        return m[1] . "-" . m[2] . "-" . m[3]
+    if (RegExMatch(s, "^(\d{1,2})[/-](\d{1,2})[/-](\d{4})", &m)) {
+        d := Integer(m[1])
+        mo := Integer(m[2])
+        y := m[3]
+        return Format("{:04}-{:02}-{:02}", y, mo, d)
+    }
+    return SubStr(s, 1, 10)
+}
+
 Finance_TxInMonth(row, yearMonth) {
     d := row["date"]
     return (SubStr(d, 1, 7) = yearMonth)

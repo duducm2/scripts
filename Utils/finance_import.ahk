@@ -154,7 +154,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         desc := r.Has("description") ? r["description"] : ""
         amt := r.Has("amount") ? r["amount"] : "0"
         t := r.Has("type") ? r["type"] : "expense"
-        date := r.Has("date") && r["date"] != "" ? r["date"] : Finance_Today()
+        date := r.Has("date") && r["date"] != "" ? Finance_NormalizeDate(r["date"]) : Finance_Today()
         parsed.Push(Map(
             "date", date,
             "description", desc,
@@ -177,12 +177,53 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         Finance_ApplyTransactionToBalances(p, false)
     }
     Finance_Save("transactions", txs)
-    Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
+    Finance_AfterDailyImport(parsed, autoConfirm)
     Finance_ArchiveImported(path)
     Finance_Notify("Imported " . parsed.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
-    if (!autoConfirm)
-        Finance_ShowTransactions()
     return true
+}
+
+Finance_AfterDailyImport(parsed, autoConfirm) {
+    global g_FinanceMonth, g_FinanceTxFilter, g_FinanceGui
+    months := Map()
+    latest := ""
+    cur := Finance_CurrentYearMonth()
+    hasCurrent := false
+    for p in parsed {
+        ym := SubStr(p["date"], 1, 7)
+        if (StrLen(ym) < 7)
+            continue
+        months[ym] := true
+        if (ym = cur)
+            hasCurrent := true
+        if (latest = "" || p["date"] > latest)
+            latest := p["date"]
+    }
+    nMonths := 0
+    onlyYm := ""
+    for ym, _ in months {
+        nMonths += 1
+        onlyYm := ym
+        Finance_RecomputeBudgetSpent(ym)
+    }
+    if (!nMonths)
+        Finance_RecomputeBudgetSpent(cur)
+    if (nMonths = 1)
+        g_FinanceMonth := onlyYm
+    else if (hasCurrent)
+        g_FinanceMonth := cur
+    else if (latest != "")
+        g_FinanceMonth := SubStr(latest, 1, 7)
+    else
+        g_FinanceMonth := cur
+    g_FinanceTxFilter := "all"
+    guiOpen := false
+    try guiOpen := IsObject(g_FinanceGui)
+    catch {
+        guiOpen := false
+    }
+    if (!autoConfirm || guiOpen)
+        Finance_ShowTransactions()
 }
 
 Finance_ImportMonthly(*) {
