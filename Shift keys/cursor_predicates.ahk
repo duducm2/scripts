@@ -443,6 +443,33 @@ global EDITOR_GIT_TERMINAL_READY_MS := 800
 global EDITOR_GIT_ROBOT_TIMEOUT_MS := 600000
 global g_EditorGitRobotResultPath := ""
 global g_EditorGitRobotDeadline := 0
+global g_EditorGitRobotQuickUpdate := false
+
+Editor_IsThisScriptsRepo(hwnd, repoDir) {
+    scriptsDir := ""
+    try scriptsDir := GetScriptsDirectory()
+    catch {
+    }
+    if (repoDir != "" && scriptsDir != "") {
+        a := StrLower(RTrim(repoDir, "\"))
+        b := StrLower(RTrim(scriptsDir, "\"))
+        if (a = b)
+            return true
+        return false
+    }
+    if !hwnd
+        return false
+    try {
+        exe := WinGetProcessName("ahk_id " hwnd)
+        title := WinGetTitle("ahk_id " hwnd)
+    } catch {
+        return false
+    }
+    if !(exe = "Cursor.exe" || exe = "Code.exe")
+        return false
+    return InStr(title, " - scripts - ") || InStr(title, "scripts - Cursor")
+    || InStr(title, "scripts - Visual Studio Code") || InStr(title, "scripts - Code")
+}
 
 Editor_GitFlowFail(step, reason := "") {
     msg := "❌ " step " failed"
@@ -661,12 +688,13 @@ Editor_GitPlayPullSuccessSound() {
 }
 
 Editor_GitRobotStopPoll() {
-    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline
+    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate
     try SetTimer(Editor_GitRobotPollResult, 0)
     catch {
     }
     g_EditorGitRobotResultPath := ""
     g_EditorGitRobotDeadline := 0
+    g_EditorGitRobotQuickUpdate := false
 }
 
 Editor_GitRobotStartPoll(resultPath) {
@@ -678,7 +706,7 @@ Editor_GitRobotStartPoll(resultPath) {
 }
 
 Editor_GitRobotPollResult(*) {
-    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline
+    global g_EditorGitRobotResultPath, g_EditorGitRobotDeadline, g_EditorGitRobotQuickUpdate
     path := g_EditorGitRobotResultPath
     if (path = "") {
         Editor_GitRobotStopPoll()
@@ -701,9 +729,15 @@ Editor_GitRobotPollResult(*) {
     }
     if (outcome = "")
         return
+    doQuickUpdate := false
+    try doQuickUpdate := g_EditorGitRobotQuickUpdate
     Editor_GitRobotStopPoll()
     if (outcome = "ok") {
         Editor_GitPlayPullSuccessSound()
+        if (doQuickUpdate) {
+            QuickUpdateScripts()
+            return
+        }
         StandardLoadingBar_Show("✅ Pull complete", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(600)
         return
@@ -740,6 +774,8 @@ Editor_GitStashAndPull() {
         try StandardLoadingBar_Hide(0)
     }
     Editor_GitRobotStartPoll(resultPath)
+    global g_EditorGitRobotQuickUpdate
+    g_EditorGitRobotQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
 }
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
