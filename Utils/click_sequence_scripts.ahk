@@ -39,29 +39,8 @@ ClickSeqScript_Ctx() {
 ClickSeqScript_Run(scriptId) {
     id := ClickSeqData_SanitizeId(scriptId)
     ctx := ClickSeqScript_Ctx()
-    ; #region agent log
-    try {
-        eqI := (id = "scrollFeedBottom")
-        eqS := (id == "scrollFeedBottom")
-        t := Type(id)
-        valid := ClickSeqScript_IsValid(scriptId)
-        FileAppend(
-            '{"sessionId":"dbd429","runId":"run1","hypothesisId":"A","location":"click_sequence_scripts.ahk:ClickSeqScript_Run","message":"script id before switch","data":{"raw":"' .
-            scriptId . '","sanitized":"' . id . '","type":"' . t . '","eqInsensitive":' . (eqI ? "true" : "false") .
-            ',"eqSensitive":' . (eqS ? "true" : "false") . ',"isValid":' . (valid ? "true" : "false") .
-            '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-dbd429.log", "UTF-8")
-    } catch {
-    }
-    ; #endregion
     switch id {
         case "scrollfeedbottom":
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"dbd429","runId":"run1","hypothesisId":"A","location":"click_sequence_scripts.ahk:switch","message":"matched scrollFeedBottom case","data":{"sanitized":"' .
-                id . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-dbd429.log", "UTF-8")
-            catch {
-            }
-            ; #endregion
             hwnd := ctx.HasProp("hwnd") ? ctx.hwnd : 0
             companion := ctx.HasProp("companion") ? ctx.companion : ""
             try AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
@@ -75,14 +54,6 @@ ClickSeqScript_Run(scriptId) {
         case "focuscompanion":
             return ClickSeqScript_FocusCompanion()
         default:
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"dbd429","runId":"run1","hypothesisId":"A","location":"click_sequence_scripts.ahk:switch","message":"hit default unknown script","data":{"sanitized":"' .
-                id . '","raw":"' . scriptId . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-dbd429.log",
-                "UTF-8")
-            catch {
-            }
-            ; #endregion
             ClickSeq_SetFail("❌ Unknown Hardcoded Script: " . id)
             return false
     }

@@ -80,6 +80,7 @@ def build_html(data: dict) -> str:
     reports_html = f"""
           <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
           <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell chart-span"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
           <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
 
     goals_html = ""
@@ -517,6 +518,20 @@ function byCategoryDates(from, to, types) {{
   rows.sort((a,b) => b.value - a.value);
   return rows;
 }}
+function incomeVsInvest(from, to) {{
+  const byId = catById();
+  let income = 0, invest = 0;
+  for (const t of RAW.transactions) {{
+    const d = String(t.date || '').slice(0,10);
+    if (!d || d < from || d > to) continue;
+    if (t.type !== 'income') continue;
+    const amt = parseDecimal(t.amount);
+    const cid = mainCategoryId(t.category_id || '', byId);
+    if (cid === 'CAT_INVESTIM') invest += amt;
+    else income += amt;
+  }}
+  return {{income, invest}};
+}}
 function pieFromRows(rows) {{
   return {{
     labels: rows.map(r => r.name),
@@ -648,6 +663,49 @@ function renderRecurring(months, income) {{
   }}
   DATA.recurringVs = {{ bills: periodBills, income: income, rows: mapped }};
 }}
+function drawIncomeInvestTreemap() {{
+  const el = document.getElementById('incomeVsInvest');
+  if (!el) return;
+  const vs = DATA.incomeVsInvest || {{ income: 0, invest: 0 }};
+  const labels = [];
+  const values = [];
+  const colors = [];
+  const custom = [];
+  const total = (vs.income || 0) + (vs.invest || 0);
+  const tiles = [
+    {{ label: 'Income', value: vs.income || 0, color: '#2ecc71' }},
+    {{ label: 'Investments', value: vs.invest || 0, color: '#e74c3c' }}
+  ];
+  for (const t of tiles) {{
+    if (t.value <= 0) continue;
+    labels.push(t.label);
+    values.push(t.value);
+    colors.push(t.color);
+    const pct = total > 0 ? (t.value / total * 100) : 0;
+    custom.push(formatBrl(t.value) + ' · ' + pct.toFixed(0) + '% of total');
+  }}
+  if (!values.length) {{
+    el.innerHTML = '<p class="empty">No data</p>';
+    return;
+  }}
+  const L = baseLayout();
+  Plotly.newPlot('incomeVsInvest', [{{
+    type: 'treemap',
+    labels: labels,
+    parents: labels.map(() => ''),
+    values: values,
+    marker: {{ colors: colors }},
+    customdata: custom,
+    texttemplate: '%{{label}}<br>%{{customdata}}',
+    hovertemplate: '%{{label}}<br>%{{customdata}}<extra></extra>',
+    textfont: {{ size: 12 }},
+    pathbar: {{ visible: false }}
+  }}], Object.assign({{}}, L, {{
+    showlegend: false,
+    height: 280,
+    margin: {{ t: 8, b: 8, l: 8, r: 8 }}
+  }}), {{ responsive: true, displayModeBar: false }});
+}}
 function drawRecurringTreemap() {{
   const el = document.getElementById('recurringVsIncome');
   if (!el) return;
@@ -719,6 +777,7 @@ function applyPeriod() {{
   DATA.spentMain = expRows.map(r => ({{name: r.name, value: r.value}}));
   DATA.series = seriesFor(months);
   DATA.annual = annualFor(year);
+  DATA.incomeVsInvest = incomeVsInvest(from, to);
 
   const title = document.getElementById('periodTitle');
   if (title) title.textContent = periodLabel(from, to);
@@ -805,6 +864,7 @@ function drawAll() {{
       {{type:'scatter', mode:'lines+markers', name:'Bal', x:DATA.annual.map(x=>x.label), y:DATA.annual.map(x=>x.balance), line:{{color:'#f1c40f'}}}}
     ], L, {{responsive:true, displayModeBar:false}});
   }}
+  drawIncomeInvestTreemap();
   drawRecurringTreemap();
 }}
 function applyTheme(theme) {{
