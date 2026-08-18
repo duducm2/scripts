@@ -1,19 +1,19 @@
 ; =============================================================================
 ; Utils module: ai_quick_download.ahk
-; Quick Download: focus AI companion → Quality Gates → Desktop wait → cut newest.
+; Quick Download: focus AI companion → configured click sequences → Desktop wait → cut newest.
 ; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
+; Click paths are runtime data (Utility Shortcuts → Sequences), not hardcoded here.
 ; =============================================================================
 
 ; Tap-dance interval (ms) — matches Teams_R_DoubleTapThresholdMs / ZMK tap-dance.
 AI_QD_DOUBLE_TAP_MS := 400
 AI_QD_GATE_SETTLE_MS := 600
-AI_QD_OPEN_SETTLE_MS := 800
 AI_QD_DESKTOP_POLL_MS := 250
 AI_QD_DESKTOP_TIMEOUT_MS := 60000
 AI_QD_DESKTOP_STABLE_POLLS := 3
-; Finance [D] auto-import: wait after stop-button gone before hunting Download code.
+; Finance [D] auto-import: wait after stop-button gone before hunting Download control.
 AI_QD_FINANCE_POST_COMPLETE_MS := 2500
-; Settle between finance download-control retries (#!+9 keeps AI_QD_GATE_SETTLE_MS).
+; Settle between finance download-control retries.
 AI_QD_FINANCE_GATE_SETTLE_MS := 1200
 AI_QD_FINANCE_GATE_ATTEMPTS := 4
 
@@ -34,7 +34,7 @@ AiQuickDownload_Run() {
     }
 }
 
-; Finance daily [D]: same download gates; leave file on Desktop; return path (or "").
+; Finance daily [D]: same download sequences; leave file on Desktop; return path (or "").
 AiQuickDownload_RunForFinanceImport() {
     global g_AiQuickDownloadBusy
     if (g_AiQuickDownloadBusy) {
@@ -77,30 +77,38 @@ AiQuickDownload_RunInner(doCut := true) {
     catch {
     }
 
-    uia := focus.uia
     hwnd := focus.hwnd
     companion := focus.companion
     clicked := false
     attempts := doCut ? 1 : AI_QD_FINANCE_GATE_ATTEMPTS
     loop attempts {
         AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-        }
-        if (!IsObject(uia))
-            uia := focus.uia
-        try clicked := AiQuickDownload_TryClickDownloadControl(uia, hwnd)
+        try clicked := AiQuickDownload_TryClickDownloadControl(hwnd, companion)
         catch {
             clicked := false
         }
         if (clicked)
+            break
+        failMsg := ""
+        try failMsg := ClickSeq_LastFailMessage()
+        catch {
+            failMsg := ""
+        }
+        if (InStr(failMsg, "No click sequences"))
             break
         if (A_Index < attempts)
             Sleep AI_QD_FINANCE_GATE_SETTLE_MS
     }
 
     if (!clicked) {
-        AiQuickDownload_Fail("❌ Quick Download: download control not found")
+        err := ""
+        try err := ClickSeq_LastFailMessage()
+        catch {
+            err := ""
+        }
+        if (err = "")
+            err := "❌ Quick Download: download control not found"
+        AiQuickDownload_Fail(err)
         return ""
     }
 
@@ -141,59 +149,9 @@ AiQuickDownload_Fail(message) {
     }
 }
 
-; One pass of download gates (file/code chip → A–E). Caller refreshes UIA between retries.
-AiQuickDownload_TryClickDownloadControl(uia, hwnd := 0) {
-    clicked := false
-    try clicked := AiQuickDownload_TryNewestFileOrCodeDownload(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (clicked)
-        return true
-    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
-    catch {
-    }
-    try clicked := AiQuickDownload_GateA_DirectDownload(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (clicked)
-        return true
-    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
-    catch {
-    }
-    try clicked := AiQuickDownload_GateB_OpenThenDownload(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (clicked)
-        return true
-    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
-    catch {
-    }
-    try clicked := AiQuickDownload_GateC_Enterprise(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (clicked)
-        return true
-    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
-    catch {
-    }
-    try clicked := AiQuickDownload_GateD_CopilotCard(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    if (clicked)
-        return true
-    try uia := hwnd ? UIA_Browser("ahk_id " hwnd) : uia
-    catch {
-    }
-    try clicked := AiQuickDownload_GateE_CopilotPreview(uia, hwnd)
-    catch {
-        clicked := false
-    }
-    return clicked
+; One pass of configured click sequences. Caller may retry (finance).
+AiQuickDownload_TryClickDownloadControl(hwnd, companion := "") {
+    return ClickSeq_RunMacro("ai-quick-download", companion, hwnd)
 }
 
 AiQuickDownload_FocusCompanion() {
@@ -360,89 +318,6 @@ AiQuickDownload_NewestCsvPreferring(desktopPath, beforePath, beforeStamp, candid
     return candidate
 }
 
-AiQuickDownload_Invoke(el) {
-    if (!IsObject(el))
-        return false
-    try {
-        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
-            el.InvokePattern.Invoke()
-            return true
-        }
-    } catch {
-    }
-    try {
-        el.Invoke()
-        return true
-    } catch {
-    }
-    try {
-        el.Click()
-        return true
-    } catch {
-    }
-    return false
-}
-
-; Prefer visually newest match (max BoundingRectangle.t = lowest on timeline).
-; Falls back to last FindAll match when no usable rects.
-AiQuickDownload_FindNewestButton(uia, predicate) {
-    if (!IsObject(uia))
-        return 0
-    pred := predicate
-    if (Type(predicate) = "String") {
-        try pred := Func(predicate)
-        catch {
-            return 0
-        }
-    }
-    if (Type(pred) != "Func" && !HasMethod(pred, "Call"))
-        return 0
-    matches := []
-    try {
-        allButtons := uia.FindAll({ Type: 50000 })
-        for btn in allButtons {
-            try {
-                if (pred.Call(btn))
-                    matches.Push(btn)
-            } catch {
-            }
-        }
-    } catch {
-        try {
-            allButtons := uia.FindAll({ Type: "Button" })
-            for btn in allButtons {
-                try {
-                    if (pred.Call(btn))
-                        matches.Push(btn)
-                } catch {
-                }
-            }
-        } catch {
-            return 0
-        }
-    }
-    if (matches.Length = 0)
-        return 0
-    lastEl := 0
-    lastTop := ""
-    for btn in matches {
-        try {
-            br := btn.BoundingRectangle
-        } catch {
-            continue
-        }
-        if (!IsObject(br))
-            continue
-        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
-            continue
-        if (lastEl = 0 || br.t >= lastTop) {
-            lastEl := btn
-            lastTop := br.t
-        }
-    }
-    return lastEl ? lastEl : matches[matches.Length]
-}
-
 ; Scroll chat feed to bottom so newest download controls have valid geometry.
 ; Use keyboard/wheel fallback only — never ChromeChat_ScrollFeedToBottomFast /
 ; UIA JSExecute (SetURL "javascript:…"), which can type the payload into the
@@ -453,213 +328,4 @@ AiQuickDownload_ScrollFeedToBottom(hwnd, companion := "") {
     try ChromeChat_ScrollFeedToBottomFallback(hwnd)
     catch {
     }
-}
-
-AiQuickDownload_ClassContains(el, needle) {
-    if (!IsObject(el) || needle = "")
-        return false
-    try {
-        cn := el.ClassName
-        return (cn != "" && InStr(cn, needle))
-    } catch {
-        return false
-    }
-}
-
-AiQuickDownload_NameIs(el, names) {
-    if (!IsObject(el))
-        return false
-    n := ""
-    try n := el.Name
-    catch {
-        return false
-    }
-    if (n = "")
-        return false
-    for want in names {
-        if (n = want)
-            return true
-    }
-    return false
-}
-
-; --- Gate A: Direct Download (Personal Gemini Drive viewer open) ---------------
-AiQuickDownload_IsDriveViewerDownload(el) {
-    return AiQuickDownload_NameIs(el, ["Download", "Baixar"])
-    && AiQuickDownload_ClassContains(el, "drive-viewer")
-}
-
-AiQuickDownload_IsDownloadOrBaixar(el) {
-    return AiQuickDownload_NameIs(el, ["Download", "Baixar"])
-}
-
-AiQuickDownload_GateA_DirectDownload(uia, hwnd := 0) {
-    btn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDriveViewerDownload)
-    if (!IsObject(btn)) {
-        ; Broader: newest Download/Baixar button (viewer may omit class in some builds).
-        btn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadOrBaixar)
-    }
-    if (!IsObject(btn))
-        return false
-    if !AiQuickDownload_Invoke(btn)
-        return false
-    Sleep AI_QD_GATE_SETTLE_MS
-    return true
-}
-
-; --- Gate B helpers: newest Open vs Download code (never Show code) ------------
-AiQuickDownload_IsOpenChipButton(el) {
-    return AiQuickDownload_NameIs(el, ["Open", "Abrir"])
-    && AiQuickDownload_ClassContains(el, "open-button")
-}
-
-AiQuickDownload_IsOpenNamed(el) {
-    return AiQuickDownload_NameIs(el, ["Open"])
-}
-
-AiQuickDownload_IsDownloadCodeNamed(el) {
-    return AiQuickDownload_NameIs(el, ["Download code", "Baixar código", "Baixar codigo"])
-}
-
-AiQuickDownload_FindNewestDownloadCodeButton(uia) {
-    codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeNamed)
-    if (!IsObject(codeBtn))
-        codeBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsDownloadCodeCandidate)
-    return IsObject(codeBtn) ? codeBtn : 0
-}
-
-AiQuickDownload_FindNewestOpenChipButton(uia) {
-    openBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsOpenChipButton)
-    if (!IsObject(openBtn))
-        openBtn := AiQuickDownload_FindNewestButton(uia, AiQuickDownload_IsOpenNamed)
-    return IsObject(openBtn) ? openBtn : 0
-}
-
-AiQuickDownload_ElementTop(el) {
-    if (!IsObject(el))
-        return ""
-    try {
-        br := el.BoundingRectangle
-        if (!IsObject(br))
-            return ""
-        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
-            return ""
-        return br.t
-    } catch {
-        return ""
-    }
-}
-
-; Newest Download code only — never clicks Show code.
-AiQuickDownload_TryNewestDownloadCode(uia, hwnd := 0) {
-    codeBtn := AiQuickDownload_FindNewestDownloadCodeButton(uia)
-    if (!IsObject(codeBtn))
-        return false
-    if !AiQuickDownload_Invoke(codeBtn)
-        return false
-    Sleep AI_QD_GATE_SETTLE_MS
-    return true
-}
-
-; Pick visually newest of file-chip Open vs Download code, then invoke that path.
-AiQuickDownload_TryNewestFileOrCodeDownload(uia, hwnd := 0) {
-    codeBtn := AiQuickDownload_FindNewestDownloadCodeButton(uia)
-    openBtn := AiQuickDownload_FindNewestOpenChipButton(uia)
-    hasCode := IsObject(codeBtn)
-    hasOpen := IsObject(openBtn)
-    if (!hasCode && !hasOpen)
-        return false
-
-    preferOpen := false
-    if (hasOpen && !hasCode) {
-        preferOpen := true
-    } else if (hasOpen && hasCode) {
-        topCode := AiQuickDownload_ElementTop(codeBtn)
-        topOpen := AiQuickDownload_ElementTop(openBtn)
-        if (topOpen != "" && (topCode = "" || topOpen >= topCode))
-            preferOpen := true
-        else if (topOpen = "" && topCode = "")
-            preferOpen := true  ; both unscored: prefer Open (file artifact over code expand)
-    }
-
-    if (preferOpen) {
-        if !AiQuickDownload_Invoke(openBtn)
-            return false
-        Sleep AI_QD_OPEN_SETTLE_MS
-        try {
-            if (hwnd)
-                uia := UIA_Browser("ahk_id " hwnd)
-        } catch {
-        }
-        return AiQuickDownload_GateA_DirectDownload(uia, hwnd)
-    }
-
-    if !AiQuickDownload_Invoke(codeBtn)
-        return false
-    Sleep AI_QD_GATE_SETTLE_MS
-    return true
-}
-
-; Open file chip → viewer Download (fallback if step 1 missed Open without class).
-AiQuickDownload_GateB_OpenThenDownload(uia, hwnd := 0) {
-    openBtn := AiQuickDownload_FindNewestOpenChipButton(uia)
-    if (!IsObject(openBtn))
-        return false
-    if !AiQuickDownload_Invoke(openBtn)
-        return false
-    Sleep AI_QD_OPEN_SETTLE_MS
-    try {
-        if (hwnd)
-            uia := UIA_Browser("ahk_id " hwnd)
-    } catch {
-    }
-    return AiQuickDownload_GateA_DirectDownload(uia, hwnd)
-}
-
-AiQuickDownload_ParentClassContains(el, needle) {
-    try {
-        p := el.WalkTree("p")
-        if (IsObject(p) && AiQuickDownload_ClassContains(p, needle))
-            return true
-    } catch {
-    }
-    return false
-}
-
-AiQuickDownload_IsDownloadCodeCandidate(el) {
-    if (AiQuickDownload_NameIs(el, ["Download code", "Baixar código", "Baixar codigo"]))
-        return true
-    n := ""
-    try n := el.Name
-    catch {
-        return false
-    }
-    if (n = "" || !InStr(n, "Download"))
-        return false
-    return AiQuickDownload_ClassContains(el, "mdc-icon-button")
-    && AiQuickDownload_ParentClassContains(el, "download-button")
-}
-
-; --- Gate C: Gemini Enterprise (stub until UIA dump) --------------------------
-; Predictive targets when dumps arrive:
-;   - Canvas: Button/MenuItem Name "Export" → DOCX / PDF
-;   - Library media: Button Name "Download" / "Baixar"
-;   - File chip Download analogous to Personal Gate A/B
-AiQuickDownload_GateC_Enterprise(uia, hwnd := 0) {
-    return false
-}
-
-; --- Gate D: Copilot Web file card / blob Download (stub until UIA dump) ------
-; Predictive targets when dumps arrive:
-;   - Chat file card Button Name "Download" / "Baixar"
-;   - Direct blob download control before OneDrive redirect
-AiQuickDownload_GateD_CopilotCard(uia, hwnd := 0) {
-    return false
-}
-
-; --- Gate E: Copilot / Office preview fallback (stub until UIA dump) ----------
-; Predictive targets when dumps arrive:
-;   - "Download a copy", "Download", File-menu download in Word Online / preview
-AiQuickDownload_GateE_CopilotPreview(uia, hwnd := 0) {
-    return false
 }

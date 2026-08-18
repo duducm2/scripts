@@ -236,6 +236,12 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Cut newest Desktop item (#!+O) -> Utils\desktop_cut_newest.ahk
 #include %A_ScriptDir%\Utils\desktop_cut_newest.ahk
 
+; [Utils module] Click sequence data (#!+U Sequences / #!+9 runner) -> Utils\click_sequence_data.ahk
+#include %A_ScriptDir%\Utils\click_sequence_data.ahk
+; [Utils module] Click sequence UIA runner -> Utils\click_sequence_runner.ahk
+#include %A_ScriptDir%\Utils\click_sequence_runner.ahk
+; [Utils module] Click sequence CRUD GUI -> Utils\click_sequence_gui.ahk
+#include %A_ScriptDir%\Utils\click_sequence_gui.ahk
 ; [Utils module] AI Companion Quick Download (#!+9 single-tap) -> Utils\ai_quick_download.ahk
 #include %A_ScriptDir%\Utils\ai_quick_download.ahk
 

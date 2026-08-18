@@ -1270,7 +1270,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
-    [Win+Alt+Shift+9] > 1× AI Quick Download (companion → Desktop → cut) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back)
+    [Win+Alt+Shift+9] > 1× AI Quick Download (configured click sequences → Desktop → cut; manage via Win+Alt+Shift+U → Sequences) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back)
     [Win+Alt+Shift+M] > Maximizes the current window
     [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], U=[2], 6=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
@@ -1313,7 +1313,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+M] > Add bookmark (Command Palette Bookmark extension)
     
     === GENERAL ===
-    [Win+Alt+Shift+U] > Quick string shortcuts
+    [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance)
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle

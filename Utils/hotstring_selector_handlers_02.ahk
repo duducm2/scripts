@@ -25,6 +25,11 @@ UtilitySelector_SwitchToCategory(category) {
         Finance_LaunchApp()
         return
     }
+    if (category = "Sequences") {
+        CleanupHotstringSelector()
+        ClickSeqGui_Launch()
+        return
+    }
     g_UtilitySelectorMode := "category"
     g_UtilitySelectorCategory := category
     UtilitySelector_RebuildGui()
@@ -288,7 +293,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   [F] Finance   Enter/double-click = open   Esc = close"
+        return "Char = open category   [S] Sequences   [F] Finance   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name, tags, path   Enter = paste first match   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -309,8 +314,10 @@ UtilitySelector_PopulateLv() {
     if (g_UtilitySelectorMode = "top") {
         PromptData_Load(false, true)
         HotstringData_Load(false, true)
+        ClickSeqData_Load(false, true)
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
-        "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length, "Finance", 1)
+        "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length,
+        "Sequences", ClickSeqData_SequenceCount(), "Finance", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id
