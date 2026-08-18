@@ -478,7 +478,7 @@ AudioBt_CreateGui(lvHeight := 360) {
     AudioBt_BindModalHotkeys()
 }
 
-AudioBt_Run(action, id := "", note := "") {
+AudioBt_Run(action, id := "") {
     ps1 := AudioBt_Ps1Path()
     if !FileExist(ps1)
         return { ok: false, text: "Missing AudioBt.ps1" }
@@ -486,17 +486,6 @@ AudioBt_Run(action, id := "", note := "") {
     cmd := 'powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "' ps1 '" -Action ' action
     if (id != "")
         cmd .= ' -Id "' id '"'
-    if (action = "connect" || action = "isolate" || action = "disconnect") {
-        logDir := A_ScriptDir "\docs\debug"
-        try DirCreate(logDir)
-        catch {
-        }
-        cmd .= ' -LogDir "' logDir '"'
-        if (note != "") {
-            noteSafe := StrReplace(StrReplace(note, '"', "'"), "`n", " ")
-            cmd .= ' -Note "' noteSafe '"'
-        }
-    }
     cmd .= ' -OutFile "' outFile '"'
     exitCode := 1
     try exitCode := RunWait(cmd, , "Hide")
@@ -913,7 +902,7 @@ AudioBt_DoAction(action, requireBt := false) {
     AudioBt_BusyShow(AudioBt_ActionBusyText(action, row))
     result := ""
     try {
-        result := AudioBt_Run(action, row.id, g_AudioBtMode . "|" . row.name . "|" . row.state)
+        result := AudioBt_Run(action, row.id)
         StandardLoadingBar_Update("⏳ Refreshing devices…", BANNER_ACCENT_INTERMEDIATE)
         AudioBt_Refresh(row.name, false)
     } finally {

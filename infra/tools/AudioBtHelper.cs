@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -102,18 +101,6 @@ namespace AudioBt
         public string szName;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    struct BLUETOOTH_RADIO_INFO
-    {
-        public uint dwSize;
-        public ulong Address;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 248)]
-        public string szName;
-        public uint ulClassofDevice;
-        public ushort lmpSubversion;
-        public ushort manufacturer;
-    }
-
     class EndpointInfo
     {
         public string Id;
@@ -155,318 +142,13 @@ namespace AudioBt
         static readonly Guid GuidA2dpSink = new Guid("0000110B-0000-1000-8000-00805F9B34FB");
         static readonly Guid GuidHandsfree = new Guid("0000111E-0000-1000-8000-00805F9B34FB");
         static readonly Guid GuidHeadset = new Guid("00001108-0000-1000-8000-00805F9B34FB");
-        static string logPath = "";
-        static readonly object logLock = new object();
         static string lastDroppedBt = "";
-
-        public static void SetLogPath(string path)
-        {
-            logPath = path ?? "";
-        }
-
-        public static void LogLine(string msg)
-        {
-            Log(msg);
-        }
-
-        public static void LogSnapshot(string label)
-        {
-            Log("--- snapshot " + label + " ---");
-            try
-            {
-                List<BtDeviceInfo> bts = CollectBluetoothAudio();
-                Log("classic BT audio count=" + bts.Count);
-                foreach (BtDeviceInfo bt in bts)
-                    Log("  bt name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected + " class=0x" + bt.ClassOfDevice.ToString("X"));
-                List<EndpointInfo> endpoints = CollectEndpoints();
-                Log("endpoints count=" + endpoints.Count);
-                foreach (EndpointInfo ep in endpoints)
-                {
-                    Log("  ep flow=" + (ep.Flow == eRender ? "Out" : "In")
-                        + " state=0x" + ep.State.ToString("X")
-                        + " active=" + IsActiveEndpoint(ep)
-                        + " def=" + ep.IsDefault
-                        + " bt=" + ep.IsBluetooth
-                        + " addr=" + ep.BtAddrHex
-                        + " name=" + ep.Name
-                        + " id=" + ep.Id);
-                }
-                LogBtFocus(label);
-            }
-            catch (Exception ex)
-            {
-                Log("snapshot error: " + ex.Message);
-            }
-        }
-
-        public static void DumpConnectDiagnostics(string id)
-        {
-            Log("--- diagnostics id=" + id + " ---");
-            try
-            {
-                LogBtFocus("diagnostics");
-                string hex = BluetoothAddressHex(id);
-                DumpPnpBtNodes(hex);
-                Log("constructedId=" + ConstructedBluetoothDeviceId(hex));
-            }
-            catch (Exception ex)
-            {
-                Log("diagnostics error: " + ex.Message);
-            }
-        }
-
-        public static string RadioAddressHex()
-        {
-            try
-            {
-                List<IntPtr> radios = OpenRadioHandles();
-                try
-                {
-                    foreach (IntPtr h in radios)
-                    {
-                        BLUETOOTH_RADIO_INFO ri = NewRadioInfo();
-                        if (BluetoothGetRadioInfo(h, ref ri) == 0 && ri.Address != 0)
-                            return AddrHex(ri.Address);
-                    }
-                }
-                finally
-                {
-                    CloseRadioHandles(radios);
-                }
-            }
-            catch
-            {
-            }
-            return "";
-        }
-
-        public static string ConstructedBluetoothDeviceId(string deviceHex)
-        {
-            try
-            {
-                string radio = RadioAddressHex();
-                if (string.IsNullOrEmpty(radio) || string.IsNullOrEmpty(deviceHex))
-                    return "";
-                deviceHex = deviceHex.ToUpperInvariant().Replace(":", "").Replace("-", "");
-                return "Bluetooth#Bluetooth" + FormatAddrColon(radio) + "-" + FormatAddrColon(deviceHex);
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
-        static BLUETOOTH_RADIO_INFO NewRadioInfo()
-        {
-            BLUETOOTH_RADIO_INFO ri = new BLUETOOTH_RADIO_INFO();
-            ri.dwSize = (uint)Marshal.SizeOf(typeof(BLUETOOTH_RADIO_INFO));
-            return ri;
-        }
-
-        static string FormatSystemTime(SYSTEMTIME st)
-        {
-            if (st.wYear == 0)
-                return "-";
-            return string.Format("{0:D4}-{1:D2}-{2:D2} {3:D2}:{4:D2}:{5:D2}",
-                st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
-        }
-
-        static string Win32Name(uint code)
-        {
-            switch (code)
-            {
-                case 0: return "ERROR_SUCCESS";
-                case 87: return "ERROR_INVALID_PARAMETER";
-                case 234: return "ERROR_MORE_DATA";
-                case 1060: return "ERROR_SERVICE_DOES_NOT_EXIST";
-                case 1168: return "ERROR_NOT_FOUND";
-                default: return "win32";
-            }
-        }
-
-        static void LogBtFocus(string label)
-        {
-            Log("--- bt-focus " + label + " ---");
-            try
-            {
-                List<IntPtr> radios = OpenRadioHandles();
-                try
-                {
-                    int i = 0;
-                    foreach (IntPtr h in radios)
-                    {
-                        BLUETOOTH_RADIO_INFO ri = NewRadioInfo();
-                        uint rc = BluetoothGetRadioInfo(h, ref ri);
-                        Log("  radio[" + i + "] GetRadioInfo=" + rc + "(" + Win32Name(rc) + ")"
-                            + " name=" + ri.szName
-                            + " addr=" + AddrHex(ri.Address)
-                            + " class=0x" + ri.ulClassofDevice.ToString("X")
-                            + " lmp=" + ri.lmpSubversion
-                            + " mfg=" + ri.manufacturer);
-                        i++;
-                    }
-                    List<BtDeviceInfo> bts = new List<BtDeviceInfo>();
-                    Dictionary<string, bool> seen = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-                    foreach (IntPtr h in radios)
-                        CollectBtOnRadio(h, bts, seen);
-                    foreach (BtDeviceInfo bt in bts)
-                    {
-                        bool dumped = false;
-                        foreach (IntPtr h in radios)
-                        {
-                            BLUETOOTH_DEVICE_INFO info = NewDeviceInfo();
-                            info.Address = bt.Address;
-                            uint gi = BluetoothGetDeviceInfo(h, ref info);
-                            if (gi != 0)
-                            {
-                                Log("  classic GetDeviceInfo=" + gi + "(" + Win32Name(gi) + ") addr=" + bt.AddrHex);
-                                continue;
-                            }
-                            Log("  classic name=" + info.szName
-                                + " addr=" + AddrHex(info.Address)
-                                + " connected=" + info.fConnected
-                                + " remembered=" + info.fRemembered
-                                + " authenticated=" + info.fAuthenticated
-                                + " class=0x" + info.ulClassOfDevice.ToString("X")
-                                + " lastSeen=" + FormatSystemTime(info.stLastSeen)
-                                + " lastUsed=" + FormatSystemTime(info.stLastUsed));
-                            DumpInstalledServices(h, ref info);
-                            dumped = true;
-                            break;
-                        }
-                        if (!dumped)
-                            Log("  classic name=" + bt.Name + " addr=" + bt.AddrHex + " GetDeviceInfo failed");
-                    }
-                }
-                finally
-                {
-                    CloseRadioHandles(radios);
-                }
-                List<EndpointInfo> endpoints = CollectEndpoints();
-                int n = 0;
-                foreach (EndpointInfo ep in endpoints)
-                {
-                    if (!ep.IsBluetooth)
-                        continue;
-                    n++;
-                    Log("  bt-ep flow=" + (ep.Flow == eRender ? "Out" : "In")
-                        + " state=0x" + ep.State.ToString("X")
-                        + " active=" + IsActiveEndpoint(ep)
-                        + " def=" + ep.IsDefault
-                        + " addr=" + ep.BtAddrHex
-                        + " name=" + ep.Name
-                        + " id=" + ep.Id);
-                }
-                Log("  bt-ep count=" + n);
-            }
-            catch (Exception ex)
-            {
-                Log("bt-focus error: " + ex.Message);
-            }
-        }
-
-        static void DumpInstalledServices(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO info)
-        {
-            uint count = 0;
-            uint rc = BluetoothEnumerateInstalledServices(hRadio, ref info, ref count, IntPtr.Zero);
-            Log("    services countQuery rc=" + rc + "(" + Win32Name(rc) + ") count=" + count);
-            if (count == 0 || count > 64)
-                return;
-            Guid[] guids = new Guid[count];
-            uint count2 = count;
-            rc = BluetoothEnumerateInstalledServicesArray(hRadio, ref info, ref count2, guids);
-            Log("    services enum rc=" + rc + "(" + Win32Name(rc) + ") count=" + count2);
-            int n = (int)count2;
-            if (n > guids.Length)
-                n = guids.Length;
-            for (int i = 0; i < n; i++)
-                Log("      svc=" + guids[i].ToString());
-        }
-
-        static void DumpPnpBtNodes(string hex)
-        {
-            if (string.IsNullOrEmpty(hex))
-            {
-                Log("--- pnp-nodes (no mac) ---");
-                return;
-            }
-            hex = hex.ToUpperInvariant().Replace(":", "").Replace("-", "");
-            string colon = FormatAddrColon(hex);
-            Log("--- pnp-nodes " + hex + " ---");
-            IntPtr devs = SetupDiGetClassDevsEnum(IntPtr.Zero, "BTHENUM", IntPtr.Zero, DIGCF_ALLCLASSES);
-            if (!IsValidHandle(devs))
-            {
-                Log("  BTHENUM enumerate failed " + Marshal.GetLastWin32Error());
-                return;
-            }
-            int n = 0;
-            try
-            {
-                for (uint i = 0; ; i++)
-                {
-                    SP_DEVINFO_DATA info = new SP_DEVINFO_DATA();
-                    info.cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA));
-                    if (!SetupDiEnumDeviceInfo(devs, i, ref info))
-                        break;
-                    StringBuilder sb = new StringBuilder(1024);
-                    int needed;
-                    if (!SetupDiGetDeviceInstanceId(devs, ref info, sb, sb.Capacity, out needed))
-                        continue;
-                    string instanceId = sb.ToString();
-                    if (string.IsNullOrEmpty(instanceId))
-                        continue;
-                    string compact = instanceId.ToUpperInvariant().Replace(":", "").Replace("-", "").Replace("_", "");
-                    if (compact.IndexOf(hex, StringComparison.Ordinal) < 0
-                        && instanceId.IndexOf(colon, StringComparison.OrdinalIgnoreCase) < 0)
-                        continue;
-                    n++;
-                    uint devInst;
-                    int locate = CM_Locate_DevNode(out devInst, instanceId, 0);
-                    uint status = 0;
-                    uint problem = 0;
-                    int st = -1;
-                    if (locate == 0)
-                        st = CM_Get_DevNode_Status(out status, out problem, devInst, 0);
-                    Log("  node locate=" + locate
-                        + " statusCr=" + st
-                        + " dnStatus=0x" + status.ToString("X")
-                        + " problem=" + problem
-                        + " audio=" + IsBtAudioPnpNode(instanceId)
-                        + " " + instanceId);
-                }
-            }
-            finally
-            {
-                SetupDiDestroyDeviceInfoList(devs);
-            }
-            Log("  pnp-nodes count=" + n);
-        }
 
         static string DroppedSuffix()
         {
             if (string.IsNullOrEmpty(lastDroppedBt))
                 return "";
             return " (dropped " + lastDroppedBt + ")";
-        }
-
-        static void Log(string msg)
-        {
-            if (string.IsNullOrEmpty(logPath))
-                return;
-            try
-            {
-                string line = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "  " + (msg ?? "") + Environment.NewLine;
-                string dir = Path.GetDirectoryName(logPath);
-                lock (logLock)
-                {
-                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                        Directory.CreateDirectory(dir);
-                    File.AppendAllText(logPath, line, new UTF8Encoding(false));
-                }
-            }
-            catch
-            {
-            }
         }
 
         [DllImport("ole32.dll")]
@@ -528,19 +210,6 @@ namespace AudioBt
 
         [DllImport("BluetoothAPIs.dll", SetLastError = true)]
         static extern uint BluetoothGetDeviceInfo(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi);
-
-        [DllImport("BluetoothAPIs.dll", SetLastError = true)]
-        static extern uint BluetoothGetRadioInfo(IntPtr hRadio, ref BLUETOOTH_RADIO_INFO pRadioInfo);
-
-        [DllImport("BluetoothAPIs.dll", SetLastError = true)]
-        static extern uint BluetoothEnumerateInstalledServices(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref uint pcServices, IntPtr pGuidServices);
-
-        [DllImport("BluetoothAPIs.dll", SetLastError = true, EntryPoint = "BluetoothEnumerateInstalledServices")]
-        static extern uint BluetoothEnumerateInstalledServicesArray(IntPtr hRadio, ref BLUETOOTH_DEVICE_INFO pbtdi, ref uint pcServices,
-            [Out] Guid[] pGuidServices);
-
-        [DllImport("cfgmgr32.dll")]
-        static extern int CM_Get_DevNode_Status(out uint pulStatus, out uint pulProblemNumber, uint dnDevInst, uint ulFlags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -731,9 +400,7 @@ namespace AudioBt
         {
             try
             {
-                Log("Isolate id=" + id);
                 BtDeviceInfo bt = ResolveBt(id);
-                Log("Isolate resolveBt name=" + (bt == null ? "<null>" : bt.Name) + " addr=" + (bt == null ? "" : bt.AddrHex) + " classicConnected=" + (bt != null && bt.Connected));
                 lastDroppedBt = "";
                 bool didConnect = false;
                 string connectMethod = "";
@@ -754,14 +421,11 @@ namespace AudioBt
                 if (bt != null && !bt.Connected)
                 {
                     string connectErr;
-                    Log("Isolate needs connect");
                     if (!ConnectBtWithFallback(bt, out connectMethod, out connectErr))
                     {
-                        Log("Isolate connect failed: " + connectErr);
                         return "ERR\t" + Cell(connectErr);
                     }
                     didConnect = true;
-                    Log("Isolate connected via " + connectMethod);
                 }
 
                 List<EndpointInfo> endpoints = CollectEndpoints();
@@ -842,23 +506,18 @@ namespace AudioBt
         {
             try
             {
-                Log("Connect id=" + id);
                 BtDeviceInfo bt = ResolveBt(id);
                 if (bt == null)
                 {
-                    Log("Connect resolveBt=null");
                     return "ERR\tNot a paired Bluetooth audio device";
                 }
-                Log("Connect resolveBt name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected);
                 lastDroppedBt = "";
                 string method;
                 string err;
                 if (!ConnectBtWithFallback(bt, out method, out err))
                 {
-                    Log("Connect failed: " + err);
                     return "ERR\t" + Cell(err);
                 }
-                Log("Connect ok via " + method);
                 return "OK\tConnected via " + method + DroppedSuffix() + ": " + Cell(bt.Name);
             }
             catch (Exception ex)
@@ -874,14 +533,11 @@ namespace AudioBt
                 BtDeviceInfo bt = ResolveBt(id);
                 if (bt == null)
                     return "ERR\tNot a paired Bluetooth audio device";
-                Log("EnableBtAudioServices name=" + bt.Name + " addr=" + bt.AddrHex + " classicConnected=" + bt.Connected);
                 string err;
                 if (!SetBtServices(bt, true, out err))
                 {
-                    Log("EnableBtAudioServices fail: " + err);
                     return "ERR\t" + Cell(err);
                 }
-                Log("EnableBtAudioServices ok");
                 return "OK\tEnabled Bluetooth audio services: " + Cell(bt.Name);
             }
             catch (Exception ex)
@@ -898,13 +554,10 @@ namespace AudioBt
                 if (bt == null)
                     return "ERR\tNot a paired Bluetooth audio device";
                 string label = string.IsNullOrEmpty(method) ? "fallback" : method;
-                Log("ConfirmConnected method=" + label + " name=" + bt.Name);
                 if (!WaitForBtAudio(bt, 10000))
                 {
-                    Log("ConfirmConnected wait failed");
                     return "ERR\tConnected via " + label + " but no audio endpoint appeared: " + Cell(bt.Name);
                 }
-                Log("ConfirmConnected wait ok");
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 foreach (EndpointInfo ep in endpoints)
                 {
@@ -1363,11 +1016,8 @@ namespace AudioBt
                         && (ep.State & DEVICE_STATE_DISABLED) == 0;
                     if (ready)
                     {
-                        Log("SetDefault try name=" + ep.Name + " flow=" + (ep.Flow == eRender ? "Out" : "In")
-                            + " state=0x" + ep.State.ToString("X") + " id=" + ep.Id);
                         lastHr = PolicySetDefault(ep.Id, ep.Flow);
                         EndpointInfo check = FindEndpointById(CollectEndpoints(), ep.Id);
-                        Log("SetDefault hr=0x" + unchecked((uint)lastHr).ToString("X8") + " nowDefault=" + (check != null && check.IsDefault));
                         if (lastHr == 0 || (check != null && check.IsDefault))
                         {
                             target = check ?? ep;
@@ -1538,7 +1188,6 @@ namespace AudioBt
                 List<EndpointInfo> endpoints = CollectEndpoints();
                 if (HasActiveEndpoint(endpoints, bt, eRender))
                 {
-                    Log("WaitForBtAudio active render=true");
                     return true;
                 }
                 foreach (EndpointInfo ep in endpoints)
@@ -1551,7 +1200,6 @@ namespace AudioBt
                 if (DateTime.UtcNow >= deadline)
                 {
                     bool ok = HasActiveEndpoint(CollectEndpoints(), bt, eRender);
-                    Log("WaitForBtAudio timeout activeRender=" + ok);
                     return ok;
                 }
                 System.Threading.Thread.Sleep(350);
@@ -1650,8 +1298,6 @@ namespace AudioBt
                     try
                     {
                         int hr = PolicySetDefaultOn(cfg, PolicySetDefaultSlot(i), deviceId, flow, out lastFail);
-                        Log("PolicySetDefault iid=" + i.ToString() + " slot=" + PolicySetDefaultSlot(i)
-                            + " hr=0x" + unchecked((uint)hr).ToString("X8") + " lastFail=0x" + unchecked((uint)lastFail).ToString("X8"));
                         if (hr == 0)
                             return 0;
                     }
@@ -1824,8 +1470,6 @@ namespace AudioBt
                         BluetoothFindRadioClose(hFindRadio);
                     }
                 }
-                else
-                    Log("BluetoothFindFirstRadio=0 lastWin32=" + Marshal.GetLastWin32Error());
 
                 TryAddRadioFile(@"\\.\BthHci", list);
                 AddSetupApiRadios(list);
@@ -1966,18 +1610,15 @@ namespace AudioBt
             }
             if (peers.Count == 0)
             {
-                Log("DisconnectOtherBtAudio: no other connected BT audio");
                 return;
             }
             List<string> names = new List<string>();
             foreach (BtDeviceInfo other in peers)
             {
-                Log("DisconnectOtherBtAudio dropping " + other.Name + " " + other.AddrHex);
-                string ioctlErr;
-                string svcErr;
-                bool ioctlOk = DisconnectRadio(other, out ioctlErr);
-                bool svcOk = SetBtServices(other, false, out svcErr);
-                Log("  ioctlOk=" + ioctlOk + " ioctlErr=" + ioctlErr + " svcOk=" + svcOk + " svcErr=" + svcErr);
+                string unusedIoctl;
+                string unusedSvc;
+                DisconnectRadio(other, out unusedIoctl);
+                SetBtServices(other, false, out unusedSvc);
                 names.Add(string.IsNullOrEmpty(other.Name) ? other.AddrHex : other.Name);
             }
             dropped = string.Join(", ", names.ToArray());
@@ -1995,16 +1636,12 @@ namespace AudioBt
                     if (reason == "none")
                         continue;
                     anyHeld = true;
-                    Log("DisconnectOtherBtAudio still held " + other.Name + " " + other.AddrHex + " via " + reason);
                 }
                 if (!anyHeld)
                     break;
                 System.Threading.Thread.Sleep(250);
             }
-            Log("DisconnectOtherBtAudio dropped=" + dropped);
             System.Threading.Thread.Sleep(1000);
-            Log("DisconnectOtherBtAudio settled 1000ms");
-            LogBtFocus("after drop");
         }
 
         static bool ConnectBtWithFallback(BtDeviceInfo bt, out string method, out string err)
@@ -2012,8 +1649,6 @@ namespace AudioBt
             method = "";
             err = "";
             List<string> errors = new List<string>();
-            Log("ConnectBtWithFallback name=" + bt.Name + " addr=" + bt.AddrHex);
-            DumpPnpBtNodes(bt.AddrHex);
             string dropped;
             DisconnectOtherBtAudio(bt, out dropped);
 
@@ -2021,37 +1656,30 @@ namespace AudioBt
             if (SetBtServices(bt, true, out svcErr))
             {
                 method = "BluetoothSetServiceState";
-                Log("SetBtServices ok, waiting for render");
                 if (FinishConnect(bt))
                     return true;
                 errors.Add("BluetoothSetServiceState: no audio endpoint appeared");
-                Log("SetBtServices: no active render");
             }
             else if (!string.IsNullOrEmpty(svcErr))
             {
                 errors.Add(svcErr);
-                Log("SetBtServices fail: " + svcErr);
             }
 
             string pnpErr;
             if (EnablePnpBtAudio(bt, out pnpErr))
             {
                 method = "PnP";
-                Log("PnP bounce ok, waiting for render");
                 if (FinishConnect(bt))
                     return true;
                 errors.Add("PnP: no audio endpoint appeared");
-                Log("PnP: no active render");
             }
             else if (!string.IsNullOrEmpty(pnpErr))
             {
                 errors.Add(pnpErr);
-                Log("PnP fail: " + pnpErr);
             }
 
             method = "";
             err = errors.Count == 0 ? "Bluetooth connect failed" : string.Join("; ", errors);
-            Log("ConnectBtWithFallback done fail: " + err);
             return false;
         }
 
@@ -2095,7 +1723,6 @@ namespace AudioBt
                 return false;
             }
             string hex = bt.AddrHex.ToUpperInvariant();
-            DumpPnpBtNodes(hex);
             string colon = FormatAddrColon(hex);
             IntPtr devs = SetupDiGetClassDevsEnum(IntPtr.Zero, "BTHENUM", IntPtr.Zero, DIGCF_PRESENT | DIGCF_ALLCLASSES);
             if (!IsValidHandle(devs))
@@ -2138,7 +1765,6 @@ namespace AudioBt
                 return BtAudioPnpPriority(b).CompareTo(BtAudioPnpPriority(a));
             });
             int bounced = 0;
-            Log("PnP audio nodes=" + nodes.Count);
             foreach (string instanceId in nodes)
             {
                 uint devInst;
@@ -2146,21 +1772,16 @@ namespace AudioBt
                 if (cr != 0)
                 {
                     lastCr = cr;
-                    Log("PnP locate fail cr=" + cr + " " + instanceId);
                     continue;
                 }
                 int dis = CM_Disable_DevNode(devInst, 0);
                 System.Threading.Thread.Sleep(400);
                 cr = CM_Enable_DevNode(devInst, 0);
-                Log("PnP bounce disable=" + dis + " enable=" + cr + " " + instanceId);
                 if (dis == 0 && cr == 0)
                     bounced++;
-                else if (cr == 0)
-                    Log("PnP enable no-op (disable=" + dis + "), not counting as bounce");
-                else
+                else if (cr != 0)
                     lastCr = cr;
             }
-            Log("PnP bounced=" + bounced);
             if (bounced > 0)
                 return true;
             if (nodes.Count == 0)
@@ -2195,20 +1816,12 @@ namespace AudioBt
                 info.Address = bt.Address;
                 BluetoothGetDeviceInfo(hRadio, ref info);
                 info.Address = bt.Address;
-                Log("BluetoothSetServiceState enable=" + enable
-                    + " name=" + info.szName
-                    + " addr=" + AddrHex(info.Address)
-                    + " connected=" + info.fConnected
-                    + " remembered=" + info.fRemembered
-                    + " authenticated=" + info.fAuthenticated);
                 int localOk = 0;
                 foreach (Guid svc in services)
                 {
                     Guid g = svc;
                     uint code = BluetoothSetServiceState(hRadio, ref info, ref g, flags);
                     lastCode = code;
-                    Log("BluetoothSetServiceState enable=" + enable + " svc=" + g.ToString()
-                        + " code=" + code + "(" + Win32Name(code) + ")");
                     if (code == 0)
                     {
                         ok++;
@@ -2217,7 +1830,6 @@ namespace AudioBt
                 }
                 return localOk > 0;
             }, out openedAny);
-            Log("SetBtServices enable=" + enable + " openedAny=" + openedAny + " ok=" + ok + " lastCode=" + lastCode);
             if (ok > 0)
                 return true;
             if (!openedAny)
