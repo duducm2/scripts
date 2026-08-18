@@ -402,7 +402,7 @@ ClickSeq_RunSeqGroup(macro, groupId, companion, hwnd) {
         seqs.Push(seq)
     if (seqs.Length = 0) {
         ClickSeq_SetFail("❌ No Sibling Sequences configured for " . ClickSeq_CompanionLabel(companion)
-            . ". Open Utility Shortcuts → Sequences.")
+        . ". Open Utility Shortcuts → Sequences.")
         return false
     }
     if (ClickSeq_TrySiblingSequences(seqs, hwnd))
@@ -463,6 +463,14 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
     for slot in macro.slots {
         if (slot.HasProp("type") && slot.type = "hardcoded") {
             sid := slot.HasProp("scriptId") ? slot.scriptId : ""
+            ; #region agent log
+            try FileAppend(
+                '{"sessionId":"dbd429","runId":"run1","hypothesisId":"B","location":"click_sequence_runner.ahk:RunMacro","message":"hardcoded slot","data":{"sid":"' .
+                sid . '","type":"' . slot.type . '","doCut":' . (doCut ? "true" : "false") . '},"timestamp":' .
+                A_TickCount . '}`n', A_ScriptDir "\debug-dbd429.log", "UTF-8")
+            catch {
+            }
+            ; #endregion
             if (sid = "desktopCut" && !doCut)
                 continue
             if (!ClickSeqScript_Run(sid))
