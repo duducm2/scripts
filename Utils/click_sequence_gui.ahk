@@ -21,7 +21,8 @@ global g_ClickSeqFormMatch := "exact"
 global g_ClickSeqFormHwnd := 0
 
 ClickSeqGui_Launch() {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSlotIndex, g_ClickSeqGroupId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSlotIndex, g_ClickSeqGroupId, g_ClickSeqSeqIndex,
+        g_ClickSeqClickIndex
     ClickSeqData_Load(true)
     g_ClickSeqLevel := "macros"
     g_ClickSeqMacroId := ""
@@ -210,7 +211,8 @@ ClickSeqGui_HintForLevel(level) {
 }
 
 ClickSeqGui_TitleForLevel() {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqGroupId, g_ClickSeqSlotIndex
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqGroupId,
+        g_ClickSeqSlotIndex
     if (g_ClickSeqLevel = "macros")
         return "Click Sequences"
     macro := ClickSeqData_MacroById(g_ClickSeqMacroId)
@@ -250,7 +252,8 @@ ClickSeqGui_CurrentClick() {
 ClickSeqGui_CurrentSlot() {
     global g_ClickSeqSlotIndex
     macro := ClickSeqGui_CurrentMacro()
-    if (!IsObject(macro) || !macro.HasProp("slots") || g_ClickSeqSlotIndex < 1 || g_ClickSeqSlotIndex > macro.slots.Length)
+    if (!IsObject(macro) || !macro.HasProp("slots") || g_ClickSeqSlotIndex < 1 || g_ClickSeqSlotIndex > macro.slots.Length
+    )
         return ""
     return macro.slots[g_ClickSeqSlotIndex]
 }
@@ -454,7 +457,8 @@ ClickSeqGui_SelectedIndex() {
 }
 
 ClickSeqGui_OnEnter(*) {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqRows, g_ClickSeqSlotIndex, g_ClickSeqGroupId
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqRows,
+        g_ClickSeqSlotIndex, g_ClickSeqGroupId
     row := ClickSeqGui_SelectedIndex()
     if (!row)
         return
@@ -1197,4 +1201,5 @@ ClickSeqGui_OnMap(*) {
         return
     }
     Run('"' . html . '"')
+    ClickSeqGui_Close()
 }
