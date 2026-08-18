@@ -451,39 +451,40 @@ Editor_NormGitDir(p) {
     return StrLower(StrReplace(RTrim(p, "\"), "/", "\"))
 }
 
+; True when this editor is the project-selector slot [s] Scripts (assets/data/projects.ini).
 Editor_IsThisScriptsRepo(hwnd, repoDir) {
-    repoNorm := Editor_NormGitDir(repoDir)
-    candidates := []
-    try candidates.Push(A_ScriptDir)
-    try candidates.Push(GetScriptsDirectory())
-    try {
-        global PERSONAL_SCRIPTS_PATH, WORK_SCRIPTS_PATH
-        if (IsSet(PERSONAL_SCRIPTS_PATH) && PERSONAL_SCRIPTS_PATH)
-            candidates.Push(PERSONAL_SCRIPTS_PATH)
-        if (IsSet(WORK_SCRIPTS_PATH) && WORK_SCRIPTS_PATH)
-            candidates.Push(WORK_SCRIPTS_PATH)
-    } catch {
+    global g_Projects
+    try ProjectData_Load()
+    catch {
     }
-    if (repoNorm != "") {
-        for c in candidates {
-            if (c != "" && repoNorm = Editor_NormGitDir(c))
+    if (hwnd) {
+        title := ""
+        try title := WinGetTitle("ahk_id " hwnd)
+        catch {
+        }
+        idx := 0
+        try idx := CursorTransfer_GetMatchingProjectIndex(hwnd, title)
+        catch {
+        }
+        if (idx > 0 && IsSet(g_Projects) && IsObject(g_Projects) && idx <= g_Projects.Length) {
+            project := g_Projects[idx]
+            if (IsObject(project) && project.HasProp("char") && StrLower(project.char) = "s")
                 return true
         }
     }
-    if !hwnd
+    repoNorm := Editor_NormGitDir(repoDir)
+    if (repoNorm = "" || !IsSet(g_Projects) || !IsObject(g_Projects))
         return false
-    try {
-        exe := WinGetProcessName("ahk_id " hwnd)
-        title := WinGetTitle("ahk_id " hwnd)
-    } catch {
-        return false
+    loop g_Projects.Length {
+        project := g_Projects[A_Index]
+        if !(IsObject(project) && project.HasProp("char") && StrLower(project.char) = "s")
+            continue
+        if (project.HasProp("path") && project.path != "" && repoNorm = Editor_NormGitDir(project.path))
+            return true
+        if (project.HasProp("workPath") && project.workPath != "" && repoNorm = Editor_NormGitDir(project.workPath))
+            return true
     }
-    if !(exe = "Cursor.exe" || exe = "Code.exe")
-        return false
-    t := StrLower(title)
-    return InStr(t, " - scripts - ") || InStr(t, "scripts - cursor")
-    || InStr(t, "scripts - visual studio code") || InStr(t, "scripts - code")
-    || InStr(t, " - scripts [") || InStr(t, " (workspace) - scripts")
+    return false
 }
 
 Editor_GitFlowFail(step, reason := "") {
