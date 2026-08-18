@@ -1,8 +1,10 @@
 ; =============================================================================
 ; Utils module: click_sequence_runner.ahk
 ; Execute configured click sequences against a window via UIA-v2.
-; No hardcoded Gemini/Copilot click paths — labels come from click_sequences.ini.
+; Slot chain runner: Hardcoded Scripts + Sequence Groups (sibling fallbacks).
 ; =============================================================================
+
+global g_ClickSeqSearchOrder := "bottomUp"
 
 ClickSeq_SetFail(message) {
     global g_ClickSeqLastFailMessage
@@ -136,6 +138,30 @@ ClickSeq_PickNewest(matches) {
     return lastEl ? lastEl : matches[matches.Length]
 }
 
+ClickSeq_PickTopmost(matches) {
+    if (!IsObject(matches) || matches.Length = 0)
+        return 0
+    firstEl := 0
+    firstTop := ""
+    for el in matches {
+        top := ClickSeq_ElementTop(el)
+        if (top = "")
+            continue
+        if (firstEl = 0 || top < firstTop) {
+            firstEl := el
+            firstTop := top
+        }
+    }
+    return firstEl ? firstEl : matches[1]
+}
+
+ClickSeq_SearchOrder() {
+    global g_ClickSeqSearchOrder
+    if (!IsSet(g_ClickSeqSearchOrder) || g_ClickSeqSearchOrder = "")
+        return "bottomUp"
+    return g_ClickSeqSearchOrder
+}
+
 ClickSeq_FindAllOfType(uia, typeSpec) {
     if (!IsObject(uia))
         return []
@@ -169,11 +195,12 @@ ClickSeq_FindElement(uia, click, sel) {
         return 0
     typeSpec := ClickSeq_TypeSpec(click.HasProp("controlType") ? click.controlType : "Button")
     preferNewest := !(click.HasProp("preferNewest") && !click.preferNewest)
+    searchOrder := ClickSeq_SearchOrder()
     classAnd := click.HasProp("classContains") ? Trim(click.classContains) : ""
     match := ClickSeqData_NormalizeMatch(sel.HasProp("match") ? sel.match : "exact")
     want := sel.HasProp("value") ? Trim(sel.value) : ""
 
-    if (!preferNewest && kind = "name" && match = "exact" && want != "" && classAnd = "") {
+    if (!preferNewest && kind = "name" && match = "exact" && want != "" && classAnd = "" && searchOrder = "firstMatch") {
         el := 0
         try el := uia.FindFirst({ Type: typeSpec, Name: want })
         catch {
@@ -193,8 +220,10 @@ ClickSeq_FindElement(uia, click, sel) {
     }
     if (matches.Length = 0)
         return 0
-    if (!preferNewest)
+    if (!preferNewest || searchOrder = "firstMatch")
         return matches[1]
+    if (searchOrder = "topDown")
+        return ClickSeq_PickTopmost(matches)
     return ClickSeq_PickNewest(matches)
 }
 
@@ -317,25 +346,9 @@ ClickSeq_SequencesForCompanion(macro, companion) {
     return out
 }
 
-; Returns true if one sequence completed every click.
-ClickSeq_RunMacro(macroId, companion, hwnd) {
-    ClickSeq_SetFail("")
-    label := ClickSeq_CompanionLabel(companion)
-    macro := ClickSeqData_MacroById(macroId)
-    if (!IsObject(macro)) {
-        ClickSeq_SetFail("❌ No click sequences configured for " . label . ". Open Utility Shortcuts → Sequences.")
-        return false
-    }
-    seqs := ClickSeq_SequencesForCompanion(macro, companion)
-    if (seqs.Length = 0) {
-        ClickSeq_SetFail("❌ No click sequences configured for " . label . ". Open Utility Shortcuts → Sequences.")
-        return false
-    }
-    if (!hwnd) {
-        ClickSeq_SetFail("❌ Click sequence: target window missing for " . label . ".")
-        return false
-    }
-
+; Returns true if every Slot in the Shortcut chain succeeds.
+; extras: { doCut, desktopPath, beforePath, beforeStamp, seqAttempts }
+ClickSeq_TrySiblingSequences(seqs, hwnd) {
     for seq in seqs {
         clicks := seq.HasProp("clicks") ? seq.clicks : []
         if (!IsObject(clicks) || clicks.Length = 0)
@@ -364,7 +377,116 @@ ClickSeq_RunMacro(macroId, companion, hwnd) {
         if (ok)
             return true
     }
-
-    ClickSeq_SetFail("❌ Quick Download: click sequence failed for " . label)
     return false
+}
+
+ClickSeq_RunSeqGroup(macro, groupId, companion, hwnd) {
+    rows := ClickSeqData_SequencesForGroup(macro, groupId)
+    ctx := ClickSeqData_NormalizeContext(companion)
+    specific := []
+    wildcard := []
+    for row in rows {
+        seq := row.seq
+        sc := ClickSeqData_NormalizeContext(seq.HasProp("context") ? seq.context : "")
+        if (sc = ctx)
+            specific.Push(seq)
+        else if (sc = "*")
+            wildcard.Push(seq)
+    }
+    ClickSeqData_SortSequences(specific)
+    ClickSeqData_SortSequences(wildcard)
+    seqs := []
+    for seq in specific
+        seqs.Push(seq)
+    for seq in wildcard
+        seqs.Push(seq)
+    if (seqs.Length = 0) {
+        ClickSeq_SetFail("❌ No Sibling Sequences configured for " . ClickSeq_CompanionLabel(companion)
+            . ". Open Utility Shortcuts → Sequences.")
+        return false
+    }
+    if (ClickSeq_TrySiblingSequences(seqs, hwnd))
+        return true
+    ClickSeq_SetFail("❌ Quick Download: click sequence failed for " . ClickSeq_CompanionLabel(companion))
+    return false
+}
+
+ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
+    global g_ClickSeqSearchOrder, g_ClickSeqRunCtx
+    ClickSeq_SetFail("")
+    label := ClickSeq_CompanionLabel(companion)
+    macro := ClickSeqData_MacroById(macroId)
+    if (!IsObject(macro)) {
+        ClickSeq_SetFail("❌ No click sequences configured for " . label . ". Open Utility Shortcuts → Sequences.")
+        return false
+    }
+    ClickSeqData_EnsureSlots(macro)
+    if (!hwnd) {
+        ClickSeq_SetFail("❌ Click sequence: target window missing for " . label . ".")
+        return false
+    }
+
+    doCut := true
+    seqAttempts := 1
+    desktopPath := ""
+    beforePath := ""
+    beforeStamp := ""
+    if (IsSet(extras) && IsObject(extras)) {
+        if (extras.HasProp("doCut"))
+            doCut := !!extras.doCut
+        if (extras.HasProp("seqAttempts"))
+            seqAttempts := ClickSeqData_Int(extras.seqAttempts, 1)
+        if (extras.HasProp("desktopPath"))
+            desktopPath := extras.desktopPath
+        if (extras.HasProp("beforePath"))
+            beforePath := extras.beforePath
+        if (extras.HasProp("beforeStamp"))
+            beforeStamp := extras.beforeStamp
+    }
+    if (seqAttempts < 1)
+        seqAttempts := 1
+
+    g_ClickSeqSearchOrder := "bottomUp"
+    if (macro.HasProp("rules") && IsObject(macro.rules) && macro.rules.HasProp("searchOrder"))
+        g_ClickSeqSearchOrder := ClickSeqData_NormalizeSearchOrder(macro.rules.searchOrder)
+
+    g_ClickSeqRunCtx := {
+        hwnd: hwnd,
+        companion: companion,
+        desktopPath: desktopPath,
+        beforePath: beforePath,
+        beforeStamp: beforeStamp,
+        lastPath: "",
+        doCut: doCut
+    }
+
+    for slot in macro.slots {
+        if (slot.HasProp("type") && slot.type = "hardcoded") {
+            sid := slot.HasProp("scriptId") ? slot.scriptId : ""
+            if (sid = "desktopCut" && !doCut)
+                continue
+            if (!ClickSeqScript_Run(sid))
+                return false
+            continue
+        }
+        groupId := slot.HasProp("groupId") ? slot.groupId : "clicks"
+        ok := false
+        loop seqAttempts {
+            try StandardLoadingBar_Update("⏳ Finding download control…", BANNER_ACCENT_INTERMEDIATE)
+            catch {
+            }
+            if (ClickSeq_RunSeqGroup(macro, groupId, companion, hwnd)) {
+                ok := true
+                break
+            }
+            failMsg := ClickSeq_LastFailMessage()
+            if (InStr(failMsg, "No Sibling Sequences") || InStr(failMsg, "No click sequences"))
+                break
+            if (A_Index < seqAttempts)
+                Sleep 1200
+        }
+        if (!ok)
+            return false
+    }
+    return true
 }

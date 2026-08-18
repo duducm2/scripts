@@ -16,6 +16,40 @@ CLICKSEQ_MAX_SEQ := 80
 CLICKSEQ_MAX_CLICK := 40
 CLICKSEQ_MAX_SELECTOR := 20
 
+ClickSeqData_VocabPath() {
+    return A_ScriptDir "\docs\click-sequence-vocabulary.md"
+}
+
+ClickSeqData_SlotLabel(slot) {
+    if (!IsObject(slot))
+        return ""
+    if (slot.HasProp("type") && slot.type = "hardcoded")
+        return "Hardcoded Script: " . (slot.HasProp("scriptId") ? slot.scriptId : "")
+    return "Sequence Group: " . (slot.HasProp("groupId") ? slot.groupId : "clicks")
+}
+
+ClickSeqData_SequencesForGroup(macro, groupId) {
+    out := []
+    if (!IsObject(macro) || !macro.HasProp("sequences") || !IsObject(macro.sequences))
+        return out
+    g := ClickSeqData_SeqGroupById(macro, groupId)
+    idxs := []
+    if (IsObject(g) && g.HasProp("seqIndexes") && IsObject(g.seqIndexes) && g.seqIndexes.Length > 0)
+        idxs := g.seqIndexes
+    else {
+        loop macro.sequences.Length
+            idxs.Push(A_Index)
+    }
+    seen := Map()
+    for n in idxs {
+        if (n < 1 || n > macro.sequences.Length || seen.Has(n))
+            continue
+        seen[n] := true
+        out.Push({ index: n, seq: macro.sequences[n] })
+    }
+    return out
+}
+
 ClickSeqData_IniPath() {
     return A_ScriptDir "\assets\data\click_sequences.ini"
 }
@@ -108,13 +142,235 @@ ClickSeqData_DefaultAiQuickDownloadSequences() {
     return seqs
 }
 
+ClickSeqData_DefaultRules() {
+    return { searchOrder: "bottomUp" }
+}
+
+ClickSeqData_DefaultSlots() {
+    return [
+        { type: "hardcoded", scriptId: "scrollFeedBottom" },
+        { type: "seqGroup", groupId: "clicks" },
+        { type: "hardcoded", scriptId: "desktopWait" },
+        { type: "hardcoded", scriptId: "desktopCut" }
+    ]
+}
+
+ClickSeqData_NormalizeSearchOrder(val) {
+    v := StrLower(Trim(val))
+    if (v = "topdown" || v = "top-down" || v = "top")
+        return "topDown"
+    if (v = "firstmatch" || v = "first" || v = "tree")
+        return "firstMatch"
+    return "bottomUp"
+}
+
+ClickSeqData_ParseRules(raw) {
+    rules := ClickSeqData_DefaultRules()
+    text := ClickSeqData_NormalizeIniValue(raw)
+    if (text = "")
+        return rules
+    for part in StrSplit(text, "|") {
+        part := Trim(part)
+        pos := InStr(part, ":")
+        if (!pos)
+            continue
+        k := StrLower(Trim(SubStr(part, 1, pos - 1)))
+        v := Trim(SubStr(part, pos + 1))
+        if (k = "searchorder")
+            rules.searchOrder := ClickSeqData_NormalizeSearchOrder(v)
+    }
+    return rules
+}
+
+ClickSeqData_EncodeRules(rules) {
+    order := "bottomUp"
+    if (IsObject(rules) && rules.HasProp("searchOrder") && rules.searchOrder != "")
+        order := rules.searchOrder
+    return "searchOrder:" . order
+}
+
+ClickSeqData_ParseSlots(raw) {
+    slots := []
+    text := ClickSeqData_NormalizeIniValue(raw)
+    if (text = "")
+        return slots
+    for part in StrSplit(text, "|") {
+        part := Trim(part)
+        pos := InStr(part, ":")
+        if (!pos)
+            continue
+        kind := StrLower(Trim(SubStr(part, 1, pos - 1)))
+        rest := Trim(SubStr(part, pos + 1))
+        if (rest = "")
+            continue
+        if (kind = "hardcoded" || kind = "script")
+            slots.Push({ type: "hardcoded", scriptId: ClickSeqData_SanitizeId(rest) })
+        else if (kind = "seqgroup" || kind = "group")
+            slots.Push({ type: "seqGroup", groupId: ClickSeqData_SanitizeId(rest) })
+    }
+    return slots
+}
+
+ClickSeqData_EncodeSlots(slots) {
+    s := ""
+    if (!IsObject(slots))
+        return s
+    for slot in slots {
+        token := ""
+        if (slot.HasProp("type") && slot.type = "hardcoded")
+            token := "hardcoded:" . (slot.HasProp("scriptId") ? slot.scriptId : "")
+        else
+            token := "seqGroup:" . (slot.HasProp("groupId") ? slot.groupId : "clicks")
+        if (token = "hardcoded:" || token = "seqGroup:")
+            continue
+        if (s != "")
+            s .= "|"
+        s .= token
+    }
+    return s
+}
+
+ClickSeqData_SeqGroupById(macro, groupId) {
+    if (!IsObject(macro) || !macro.HasProp("seqGroups") || !IsObject(macro.seqGroups))
+        return ""
+    id := ClickSeqData_SanitizeId(groupId)
+    for g in macro.seqGroups {
+        if (g.HasProp("id") && g.id = id)
+            return g
+    }
+    return ""
+}
+
+ClickSeqData_EnsureSlots(macro) {
+    changed := false
+    if (!IsObject(macro))
+        return changed
+    if (!macro.HasProp("rules") || !IsObject(macro.rules)) {
+        macro.rules := ClickSeqData_DefaultRules()
+        changed := true
+    }
+    slotsWereEmpty := (!macro.HasProp("slots") || !IsObject(macro.slots) || macro.slots.Length = 0)
+    if (slotsWereEmpty) {
+        macro.slots := ClickSeqData_DefaultSlots()
+        changed := true
+    }
+    if (!macro.HasProp("seqGroups") || !IsObject(macro.seqGroups)) {
+        macro.seqGroups := []
+        changed := true
+    }
+    n := (macro.HasProp("sequences") && IsObject(macro.sequences)) ? macro.sequences.Length : 0
+    for slot in macro.slots {
+        if (!(slot.HasProp("type") && slot.type = "seqGroup"))
+            continue
+        gid := slot.HasProp("groupId") && slot.groupId != "" ? slot.groupId : "clicks"
+        slot.groupId := gid
+        if (IsObject(ClickSeqData_SeqGroupById(macro, gid)))
+            continue
+        idxs := []
+        if (slotsWereEmpty && gid = "clicks") {
+            loop n
+                idxs.Push(A_Index)
+        }
+        macro.seqGroups.Push({ id: gid, seqIndexes: idxs })
+        changed := true
+    }
+    g := ClickSeqData_SeqGroupById(macro, "clicks")
+    if (slotsWereEmpty && IsObject(g) && n > 0 && (!g.HasProp("seqIndexes") || !IsObject(g.seqIndexes)
+        || g.seqIndexes.Length = 0)) {
+        g.seqIndexes := []
+        loop n
+            g.seqIndexes.Push(A_Index)
+        changed := true
+    }
+    return changed
+}
+
+ClickSeqData_UniqueGroupId(macro, base := "group") {
+    stem := ClickSeqData_SanitizeId(base)
+    if (stem = "")
+        stem := "group"
+    n := 1
+    loop 80 {
+        cand := (n = 1) ? stem : stem . n
+        if (!IsObject(ClickSeqData_SeqGroupById(macro, cand)))
+            return cand
+        n += 1
+    }
+    return stem . A_TickCount
+}
+
+ClickSeqData_AddSequenceToGroup(macro, groupId, seq) {
+    if (!IsObject(macro) || !IsObject(seq))
+        return 0
+    if (!macro.HasProp("sequences") || !IsObject(macro.sequences))
+        macro.sequences := []
+    seq.order := macro.sequences.Length + 1
+    macro.sequences.Push(seq)
+    idx := macro.sequences.Length
+    g := ClickSeqData_SeqGroupById(macro, groupId)
+    if (IsObject(g)) {
+        if (!g.HasProp("seqIndexes") || !IsObject(g.seqIndexes))
+            g.seqIndexes := []
+        g.seqIndexes.Push(idx)
+    }
+    return idx
+}
+
+ClickSeqData_RemoveSequenceAt(macro, seqIndex) {
+    if (!IsObject(macro) || !macro.HasProp("sequences") || seqIndex < 1 || seqIndex > macro.sequences.Length)
+        return false
+    macro.sequences.RemoveAt(seqIndex)
+    idx := 1
+    for seq in macro.sequences {
+        seq.order := idx
+        idx += 1
+    }
+    if (!macro.HasProp("seqGroups") || !IsObject(macro.seqGroups))
+        return true
+    for g in macro.seqGroups {
+        if (!g.HasProp("seqIndexes") || !IsObject(g.seqIndexes))
+            continue
+        next := []
+        for n in g.seqIndexes {
+            if (n = seqIndex)
+                continue
+            next.Push(n > seqIndex ? n - 1 : n)
+        }
+        g.seqIndexes := next
+    }
+    return true
+}
+
+ClickSeqData_NewHardcodedSlot(scriptId) {
+    return { type: "hardcoded", scriptId: ClickSeqData_SanitizeId(scriptId) }
+}
+
+ClickSeqData_NewSeqGroupSlot(groupId) {
+    return { type: "seqGroup", groupId: ClickSeqData_SanitizeId(groupId) }
+}
+
+ClickSeqData_NewSeqGroup(groupId) {
+    return { id: ClickSeqData_SanitizeId(groupId), seqIndexes: [] }
+}
+
+ClickSeqData_DefaultSeqGroups(seqCount) {
+    idxs := []
+    loop seqCount
+        idxs.Push(A_Index)
+    return [{ id: "clicks", seqIndexes: idxs }]
+}
+
 ClickSeqData_DefaultMacros() {
+    seqs := ClickSeqData_DefaultAiQuickDownloadSequences()
     return [{
         id: CLICKSEQ_DEFAULT_MACRO_ID,
         name: "AI Quick Download",
         trigger: "#!+9",
         postAction: "desktopCutNewest",
-        sequences: ClickSeqData_DefaultAiQuickDownloadSequences()
+        rules: ClickSeqData_DefaultRules(),
+        slots: ClickSeqData_DefaultSlots(),
+        seqGroups: ClickSeqData_DefaultSeqGroups(seqs.Length),
+        sequences: seqs
     }]
 }
 
@@ -130,6 +386,7 @@ ClickSeqData_ApplyDefaultSequencesIfEmpty(list) {
         if (!IsObject(defSeqs))
             defSeqs := ClickSeqData_DefaultAiQuickDownloadSequences()
         macro.sequences := defSeqs
+        ClickSeqData_EnsureSlots(macro)
         seeded := true
     }
     return seeded
@@ -461,6 +718,7 @@ ClickSeqData_Load(force := false, skipMtime := false) {
     if (ids.Length = 0)
         ids.Push(CLICKSEQ_DEFAULT_MACRO_ID)
 
+    needMigrate := false
     seen := Map()
     for id in ids {
         if (seen.Has(id))
@@ -479,6 +737,12 @@ ClickSeqData_Load(force := false, skipMtime := false) {
         try postAction := IniRead(path, section, "PostAction", "")
         trigger := ClickSeqData_NormalizeIniValue(trigger)
         postAction := ClickSeqData_NormalizeIniValue(postAction)
+        rulesRaw := ""
+        slotsRaw := ""
+        try rulesRaw := IniRead(path, section, "Rules", "")
+        try slotsRaw := IniRead(path, section, "Slots", "")
+        rulesRaw := ClickSeqData_NormalizeIniValue(rulesRaw)
+        slotsRaw := ClickSeqData_NormalizeIniValue(slotsRaw)
         if (name = "" && id = CLICKSEQ_DEFAULT_MACRO_ID) {
             name := "AI Quick Download"
             if (trigger = "")
@@ -498,17 +762,49 @@ ClickSeqData_Load(force := false, skipMtime := false) {
             seqIdx += 1
         }
         ClickSeqData_SortSequences(sequences)
-        list.Push({
+        seqGroups := []
+        gIdx := 1
+        loop 20 {
+            gsec := "SeqGroup_" . id . "_" . gIdx
+            gid := ""
+            try gid := IniRead(path, gsec, "Id", "")
+            catch {
+                break
+            }
+            gid := ClickSeqData_SanitizeId(ClickSeqData_NormalizeIniValue(gid))
+            seqLine := ""
+            try seqLine := IniRead(path, gsec, "Sequences", "")
+            if (gid = "" && ClickSeqData_NormalizeIniValue(seqLine) = "")
+                break
+            if (gid = "")
+                gid := "clicks"
+            idxs := []
+            for tok in StrSplit(ClickSeqData_NormalizeIniValue(seqLine), "|") {
+                n := ClickSeqData_Int(Trim(tok), 0)
+                if (n > 0)
+                    idxs.Push(n)
+            }
+            seqGroups.Push({ id: gid, seqIndexes: idxs })
+            gIdx += 1
+        }
+        macroObj := {
             id: id,
             name: name != "" ? name : id,
             trigger: trigger,
             postAction: postAction,
+            rules: ClickSeqData_ParseRules(rulesRaw),
+            slots: ClickSeqData_ParseSlots(slotsRaw),
+            seqGroups: seqGroups,
             sequences: sequences
-        })
+        }
+        if (slotsRaw = "")
+            needMigrate := true
+        ClickSeqData_EnsureSlots(macroObj)
+        list.Push(macroObj)
     }
 
     list := ClickSeqData_EnsureDefaultMacro(list)
-    if (ClickSeqData_ApplyDefaultSequencesIfEmpty(list)) {
+    if (ClickSeqData_ApplyDefaultSequencesIfEmpty(list) || needMigrate) {
         ClickSeqData_Save(list)
         return g_ClickSeqMacros
     }
@@ -568,6 +864,25 @@ ClickSeqData_Save(list) {
             IniWrite(macro.HasProp("name") ? macro.name : macro.id, path, msec, "Name")
             IniWrite(macro.HasProp("trigger") ? macro.trigger : "", path, msec, "Trigger")
             IniWrite(macro.HasProp("postAction") ? macro.postAction : "", path, msec, "PostAction")
+            ClickSeqData_EnsureSlots(macro)
+            IniWrite(ClickSeqData_EncodeRules(macro.rules), path, msec, "Rules")
+            IniWrite(ClickSeqData_EncodeSlots(macro.slots), path, msec, "Slots")
+            gIdx := 1
+            groups := macro.HasProp("seqGroups") ? macro.seqGroups : []
+            for grp in groups {
+                gsec := "SeqGroup_" . macro.id . "_" . gIdx
+                IniWrite(grp.HasProp("id") ? grp.id : "clicks", path, gsec, "Id")
+                idxLine := ""
+                if (grp.HasProp("seqIndexes") && IsObject(grp.seqIndexes)) {
+                    for n in grp.seqIndexes {
+                        if (idxLine != "")
+                            idxLine .= "|"
+                        idxLine .= n
+                    }
+                }
+                IniWrite(idxLine, path, gsec, "Sequences")
+                gIdx += 1
+            }
             seqs := macro.HasProp("sequences") ? macro.sequences : []
             ClickSeqData_SortSequences(seqs)
             seqIdx := 1

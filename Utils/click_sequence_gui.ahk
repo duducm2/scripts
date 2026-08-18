@@ -1,7 +1,6 @@
 ; =============================================================================
 ; Utils module: click_sequence_gui.ahk
-; Keyboard-navigable CRUD for click sequences (Utility Shortcuts → Sequences).
-; Levels: Macros → Sequences → Clicks → Selectors.
+; Keyboard-navigable CRUD: Macros → Slots → Sibling Sequences → Clicks → Aliases.
 ; =============================================================================
 
 global g_ClickSeqGui := false
@@ -11,6 +10,8 @@ global g_ClickSeqHeader := false
 global g_ClickSeqActive := false
 global g_ClickSeqLevel := "macros"
 global g_ClickSeqMacroId := ""
+global g_ClickSeqSlotIndex := 0
+global g_ClickSeqGroupId := ""
 global g_ClickSeqSeqIndex := 0
 global g_ClickSeqClickIndex := 0
 global g_ClickSeqRows := []
@@ -20,10 +21,12 @@ global g_ClickSeqFormMatch := "exact"
 global g_ClickSeqFormHwnd := 0
 
 ClickSeqGui_Launch() {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSlotIndex, g_ClickSeqGroupId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex
     ClickSeqData_Load(true)
     g_ClickSeqLevel := "macros"
     g_ClickSeqMacroId := ""
+    g_ClickSeqSlotIndex := 0
+    g_ClickSeqGroupId := ""
     g_ClickSeqSeqIndex := 0
     g_ClickSeqClickIndex := 0
     ClickSeqGui_Rebuild()
@@ -192,31 +195,35 @@ ClickSeqGui_Confirm(msg) {
 ClickSeqGui_HintForLevel(level) {
     switch level {
         case "macros":
-            return "[I]/Insert add sequence   Enter open   E rename   Esc close"
+            return "[Enter] slots   E rename   [R] rules   [V] map   F1/? help   Esc close"
+        case "slots":
+            return "[S] Sequence Group   [H] Hardcoded Script   E edit   Delete   U/J   Enter siblings   Backspace   Esc"
         case "sequences":
-            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Enter clicks   Backspace back   Esc close"
+            return "[I]/[A]/Insert add Sibling   E edit   Delete   U/J   Enter clicks   Backspace   Esc"
         case "clicks":
-            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Enter selectors   Backspace back   Esc close"
+            return "[I]/[A]/Insert add   E edit   Delete   U/J   Enter aliases   Backspace   Esc"
         case "selectors":
-            return "[I]/[A]/Insert add   E edit   Delete   U/J reorder   Backspace back   Esc close"
+            return "[I]/[A]/Insert add Alias   E edit   Delete   U/J   Backspace   Esc"
         default:
             return "Esc close"
     }
 }
 
 ClickSeqGui_TitleForLevel() {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqGroupId, g_ClickSeqSlotIndex
     if (g_ClickSeqLevel = "macros")
         return "Click Sequences"
     macro := ClickSeqData_MacroById(g_ClickSeqMacroId)
     mname := IsObject(macro) ? macro.name : g_ClickSeqMacroId
+    if (g_ClickSeqLevel = "slots")
+        return "Slots — " . mname
     if (g_ClickSeqLevel = "sequences")
-        return "Sequences — " . mname
+        return "Sibling Sequences — " . mname . " / " . (g_ClickSeqGroupId != "" ? g_ClickSeqGroupId : "group")
     seq := ClickSeqGui_CurrentSequence()
     sname := IsObject(seq) ? seq.name : "#" . g_ClickSeqSeqIndex
     if (g_ClickSeqLevel = "clicks")
         return "Clicks — " . sname
-    return "Selectors — " . sname . " click " . g_ClickSeqClickIndex
+    return "Aliases — " . sname . " click " . g_ClickSeqClickIndex
 }
 
 ClickSeqGui_CurrentMacro() {
@@ -240,6 +247,14 @@ ClickSeqGui_CurrentClick() {
     return seq.clicks[g_ClickSeqClickIndex]
 }
 
+ClickSeqGui_CurrentSlot() {
+    global g_ClickSeqSlotIndex
+    macro := ClickSeqGui_CurrentMacro()
+    if (!IsObject(macro) || !macro.HasProp("slots") || g_ClickSeqSlotIndex < 1 || g_ClickSeqSlotIndex > macro.slots.Length)
+        return ""
+    return macro.slots[g_ClickSeqSlotIndex]
+}
+
 ClickSeqGui_Rebuild() {
     global g_ClickSeqGui, g_ClickSeqLv, g_ClickSeqHint, g_ClickSeqHeader, g_ClickSeqActive, g_ClickSeqLevel
     ClickSeqGui_UnbindHotkeys()
@@ -255,11 +270,13 @@ ClickSeqGui_Rebuild() {
     cols := ["Col1", "Col2", "Col3", "Col4"]
     switch g_ClickSeqLevel {
         case "macros":
-            cols := ["Name", "Trigger", "Sequences", "Post-action"]
+            cols := ["Name", "Trigger", "Slots", "Search order"]
+        case "slots":
+            cols := ["#", "Type", "Id", "Detail"]
         case "sequences":
             cols := ["#", "Context", "Name", "Preview"]
         case "clicks":
-            cols := ["#", "Selectors", "Newest", "Settle ms"]
+            cols := ["#", "Aliases", "Newest", "Settle ms"]
         case "selectors":
             cols := ["#", "Kind", "Match", "Value"]
     }
@@ -287,7 +304,19 @@ ClickSeqGui_Rebuild() {
         ["$*u", (*) => ClickSeqGui_OnMove(-1)],
         ["u", (*) => ClickSeqGui_OnMove(-1)],
         ["$*j", (*) => ClickSeqGui_OnMove(1)],
-        ["j", (*) => ClickSeqGui_OnMove(1)]
+        ["j", (*) => ClickSeqGui_OnMove(1)],
+        ["$*s", ClickSeqGui_OnAddSeqGroup],
+        ["s", ClickSeqGui_OnAddSeqGroup],
+        ["$*h", ClickSeqGui_OnAddHardcoded],
+        ["h", ClickSeqGui_OnAddHardcoded],
+        ["$*r", ClickSeqGui_OnRules],
+        ["r", ClickSeqGui_OnRules],
+        ["$*v", ClickSeqGui_OnMap],
+        ["v", ClickSeqGui_OnMap],
+        ["$*F1", ClickSeqGui_ShowHelp],
+        ["F1", ClickSeqGui_ShowHelp],
+        ["$*?", ClickSeqGui_ShowHelp],
+        ["?", ClickSeqGui_ShowHelp]
     ]
     ClickSeqGui_BindHotkeys(pairs)
     ClickSeqGui_Center(g_ClickSeqGui, 920, 560)
@@ -312,6 +341,8 @@ ClickSeqGui_Refresh() {
     switch g_ClickSeqLevel {
         case "macros":
             ClickSeqGui_FillMacros()
+        case "slots":
+            ClickSeqGui_FillSlots()
         case "sequences":
             ClickSeqGui_FillSequences()
         case "clicks":
@@ -331,23 +362,50 @@ ClickSeqGui_Refresh() {
 ClickSeqGui_FillMacros() {
     global g_ClickSeqLv, g_ClickSeqRows
     for macro in ClickSeqData_Load() {
-        n := (macro.HasProp("sequences") && IsObject(macro.sequences)) ? macro.sequences.Length : 0
+        ClickSeqData_EnsureSlots(macro)
+        n := (macro.HasProp("slots") && IsObject(macro.slots)) ? macro.slots.Length : 0
+        order := "bottomUp"
+        if (macro.HasProp("rules") && IsObject(macro.rules) && macro.rules.HasProp("searchOrder"))
+            order := macro.rules.searchOrder
         g_ClickSeqRows.Push(macro)
-        g_ClickSeqLv.Add("", macro.name, macro.trigger, n, macro.postAction)
+        g_ClickSeqLv.Add("", macro.name, macro.trigger, n, order)
     }
 }
 
-ClickSeqGui_FillSequences() {
+ClickSeqGui_FillSlots() {
     global g_ClickSeqLv, g_ClickSeqRows
     macro := ClickSeqGui_CurrentMacro()
     if (!IsObject(macro))
         return
+    ClickSeqData_EnsureSlots(macro)
     idx := 1
-    for seq in macro.sequences {
-        g_ClickSeqRows.Push({ index: idx, seq: seq })
-        preview := ClickSeqData_SequencePreview(seq)
-        g_ClickSeqLv.Add("", idx, ClickSeqData_ContextLabel(seq.context), seq.name, preview)
+    for slot in macro.slots {
+        g_ClickSeqRows.Push({ index: idx, slot: slot })
+        if (slot.HasProp("type") && slot.type = "hardcoded") {
+            sid := slot.HasProp("scriptId") ? slot.scriptId : ""
+            detail := ClickSeqScript_Title(sid)
+            g_ClickSeqLv.Add("", idx, "Hardcoded Script", sid, detail)
+        } else {
+            gid := slot.HasProp("groupId") ? slot.groupId : "clicks"
+            n := 0
+            gobj := ClickSeqData_SeqGroupById(macro, gid)
+            if (IsObject(gobj) && gobj.HasProp("seqIndexes") && IsObject(gobj.seqIndexes))
+                n := gobj.seqIndexes.Length
+            g_ClickSeqLv.Add("", idx, "Sequence Group", gid, n . " sibling(s)")
+        }
         idx += 1
+    }
+}
+
+ClickSeqGui_FillSequences() {
+    global g_ClickSeqLv, g_ClickSeqRows, g_ClickSeqGroupId
+    macro := ClickSeqGui_CurrentMacro()
+    if (!IsObject(macro))
+        return
+    for row in ClickSeqData_SequencesForGroup(macro, g_ClickSeqGroupId) {
+        g_ClickSeqRows.Push({ index: row.index, seq: row.seq })
+        preview := ClickSeqData_SequencePreview(row.seq)
+        g_ClickSeqLv.Add("", row.index, ClickSeqData_ContextLabel(row.seq.context), row.seq.name, preview)
     }
 }
 
@@ -396,13 +454,25 @@ ClickSeqGui_SelectedIndex() {
 }
 
 ClickSeqGui_OnEnter(*) {
-    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqRows
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqSeqIndex, g_ClickSeqClickIndex, g_ClickSeqRows, g_ClickSeqSlotIndex, g_ClickSeqGroupId
     row := ClickSeqGui_SelectedIndex()
     if (!row)
         return
     item := g_ClickSeqRows[row]
     if (g_ClickSeqLevel = "macros") {
         g_ClickSeqMacroId := item.id
+        g_ClickSeqLevel := "slots"
+        ClickSeqGui_Rebuild()
+        return
+    }
+    if (g_ClickSeqLevel = "slots") {
+        slot := item.slot
+        g_ClickSeqSlotIndex := item.index
+        if (slot.HasProp("type") && slot.type = "hardcoded") {
+            ClickSeqGui_HardcodedForm(true)
+            return
+        }
+        g_ClickSeqGroupId := slot.HasProp("groupId") ? slot.groupId : "clicks"
         g_ClickSeqLevel := "sequences"
         ClickSeqGui_Rebuild()
         return
@@ -426,8 +496,10 @@ ClickSeqGui_OnBack(*) {
         ClickSeqGui_Close()
         return
     }
-    if (g_ClickSeqLevel = "sequences")
+    if (g_ClickSeqLevel = "slots")
         g_ClickSeqLevel := "macros"
+    else if (g_ClickSeqLevel = "sequences")
+        g_ClickSeqLevel := "slots"
     else if (g_ClickSeqLevel = "clicks")
         g_ClickSeqLevel := "sequences"
     else if (g_ClickSeqLevel = "selectors")
@@ -443,14 +515,16 @@ ClickSeqGui_OnAdd(*) {
             if (!row && g_ClickSeqRows.Length = 1)
                 row := 1
             if (!row) {
-                ClickSeqGui_Notify("Select a macro, then [I] to add a sequence.", 2200,
+                ClickSeqGui_Notify("Select a Shortcut, then Enter to open Slots.", 2200,
                     BANNER_ACCENT_INTERMEDIATE)
                 return
             }
             g_ClickSeqMacroId := g_ClickSeqRows[row].id
-            g_ClickSeqLevel := "sequences"
+            g_ClickSeqLevel := "slots"
             ClickSeqGui_Rebuild()
-            ClickSeqGui_SequenceForm(false)
+        case "slots":
+            ClickSeqGui_Notify("Use [S] Sequence Group or [H] Hardcoded Script.", 2200,
+                BANNER_ACCENT_INTERMEDIATE)
         case "sequences":
             ClickSeqGui_SequenceForm(false)
         case "clicks":
@@ -470,6 +544,8 @@ ClickSeqGui_OnEdit(*) {
     switch g_ClickSeqLevel {
         case "macros":
             ClickSeqGui_MacroRename()
+        case "slots":
+            ClickSeqGui_EditSlot()
         case "sequences":
             ClickSeqGui_SequenceForm(true)
         case "clicks":
@@ -482,7 +558,7 @@ ClickSeqGui_OnEdit(*) {
 ClickSeqGui_OnDelete(*) {
     global g_ClickSeqLevel, g_ClickSeqRows
     if (g_ClickSeqLevel = "macros") {
-        ClickSeqGui_Notify("Macros cannot be deleted in this version.", 2000, BANNER_ACCENT_INTERMEDIATE)
+        ClickSeqGui_Notify("Shortcuts cannot be deleted in this version.", 2000, BANNER_ACCENT_INTERMEDIATE)
         return
     }
     row := ClickSeqGui_SelectedIndex()
@@ -490,20 +566,39 @@ ClickSeqGui_OnDelete(*) {
         return
     item := g_ClickSeqRows[row]
     label := "this item"
-    if (g_ClickSeqLevel = "sequences")
+    if (g_ClickSeqLevel = "slots") {
+        if (item.slot.HasProp("type") && item.slot.type = "hardcoded")
+            label := "Hardcoded Script " . (item.slot.HasProp("scriptId") ? item.slot.scriptId : "")
+        else
+            label := "Sequence Group " . (item.slot.HasProp("groupId") ? item.slot.groupId : "")
+    } else if (g_ClickSeqLevel = "sequences")
         label := item.seq.name != "" ? item.seq.name : "sequence " . item.index
     else if (g_ClickSeqLevel = "clicks")
         label := "click " . item.index
     else
-        label := "selector " . item.index
+        label := "alias " . item.index
     if (!ClickSeqGui_Confirm("Delete " . label . "?"))
         return
     macro := ClickSeqGui_CurrentMacro()
     if (!IsObject(macro))
         return
-    if (g_ClickSeqLevel = "sequences") {
-        macro.sequences.RemoveAt(item.index)
-        ClickSeqData_SortSequences(macro.sequences)
+    if (g_ClickSeqLevel = "slots") {
+        slot := item.slot
+        if (slot.HasProp("type") && slot.type = "seqGroup") {
+            gid := slot.HasProp("groupId") ? slot.groupId : ""
+            next := []
+            if (macro.HasProp("seqGroups") && IsObject(macro.seqGroups)) {
+                for g in macro.seqGroups {
+                    if (g.HasProp("id") && g.id = gid)
+                        continue
+                    next.Push(g)
+                }
+                macro.seqGroups := next
+            }
+        }
+        macro.slots.RemoveAt(item.index)
+    } else if (g_ClickSeqLevel = "sequences") {
+        ClickSeqData_RemoveSequenceAt(macro, item.index)
     } else if (g_ClickSeqLevel = "clicks") {
         seq := ClickSeqGui_CurrentSequence()
         if (!IsObject(seq))
@@ -520,7 +615,7 @@ ClickSeqGui_OnDelete(*) {
 }
 
 ClickSeqGui_OnMove(delta) {
-    global g_ClickSeqLevel
+    global g_ClickSeqLevel, g_ClickSeqGroupId
     if (g_ClickSeqLevel = "macros")
         return
     row := ClickSeqGui_SelectedIndex()
@@ -531,15 +626,12 @@ ClickSeqGui_OnMove(delta) {
     if (!IsObject(macro))
         return
     moved := false
-    if (g_ClickSeqLevel = "sequences") {
-        moved := ClickSeqData_Swap(macro.sequences, row, dest)
-        if (moved) {
-            idx := 1
-            for seq in macro.sequences {
-                seq.order := idx
-                idx += 1
-            }
-        }
+    if (g_ClickSeqLevel = "slots") {
+        moved := ClickSeqData_Swap(macro.slots, row, dest)
+    } else if (g_ClickSeqLevel = "sequences") {
+        g := ClickSeqData_SeqGroupById(macro, g_ClickSeqGroupId)
+        if (IsObject(g) && g.HasProp("seqIndexes"))
+            moved := ClickSeqData_Swap(g.seqIndexes, row, dest)
     } else if (g_ClickSeqLevel = "clicks") {
         seq := ClickSeqGui_CurrentSequence()
         if (IsObject(seq))
@@ -637,6 +729,7 @@ ClickSeqGui_SequenceForm(isEdit) {
         ClickSeqGui_Refresh()
 
     SaveSeq(*) {
+        global g_ClickSeqRows, g_ClickSeqGroupId
         name := Trim(eName.Value)
         if (name = "") {
             MsgBox("Name is required.", "Click Sequences", "Icon!")
@@ -648,13 +741,12 @@ ClickSeqGui_SequenceForm(isEdit) {
         ctx := ClickSeqData_NormalizeContext(eCtx.Value)
         if (isEdit) {
             row := ClickSeqGui_SelectedIndex()
-            seq := macro.sequences[row]
+            seq := macro.sequences[g_ClickSeqRows[row].index]
             seq.name := name
             seq.context := ctx
         } else {
             seq := ClickSeqData_NewSequence(name, ctx)
-            seq.order := macro.sequences.Length + 1
-            macro.sequences.Push(seq)
+            ClickSeqData_AddSequenceToGroup(macro, g_ClickSeqGroupId, seq)
         }
         ClickSeqData_ReplaceMacro(macro)
         saved := true
@@ -754,7 +846,7 @@ ClickSeqGui_SelectorForm(isEdit) {
     }
     owner := ClickSeqGui_GuiOwner()
     ClickSeqGui_DialogsBegin()
-    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit selector" : "Add selector")
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit Alias" : "Add Alias")
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", "w420", "[N] name   [A] automationId   [C] classContains   [R] region   [I] icon")
     lblKind := g.Add("Text", "w420", "Kind: " . g_ClickSeqFormKind)
@@ -833,4 +925,276 @@ ClickSeqGui_SelectorForm(isEdit) {
         saved := true
         g.Destroy()
     }
+}
+
+ClickSeqGui_OnAddSeqGroup(*) {
+    global g_ClickSeqLevel
+    if (g_ClickSeqLevel != "slots")
+        return
+    macro := ClickSeqGui_CurrentMacro()
+    if (!IsObject(macro))
+        return
+    ClickSeqData_EnsureSlots(macro)
+    gid := ClickSeqData_UniqueGroupId(macro, "group")
+    if (!macro.HasProp("seqGroups") || !IsObject(macro.seqGroups))
+        macro.seqGroups := []
+    macro.seqGroups.Push(ClickSeqData_NewSeqGroup(gid))
+    macro.slots.Push(ClickSeqData_NewSeqGroupSlot(gid))
+    ClickSeqData_ReplaceMacro(macro)
+    ClickSeqGui_Refresh()
+}
+
+ClickSeqGui_OnAddHardcoded(*) {
+    global g_ClickSeqLevel
+    if (g_ClickSeqLevel != "slots")
+        return
+    ClickSeqGui_HardcodedForm(false)
+}
+
+ClickSeqGui_EditSlot() {
+    global g_ClickSeqRows
+    row := ClickSeqGui_SelectedIndex()
+    if (!row)
+        return
+    slot := g_ClickSeqRows[row].slot
+    if (slot.HasProp("type") && slot.type = "hardcoded") {
+        ClickSeqGui_HardcodedForm(true)
+        return
+    }
+    ClickSeqGui_SeqGroupRename()
+}
+
+ClickSeqGui_HardcodedForm(isEdit) {
+    global g_ClickSeqRows
+    catalog := ClickSeqScript_Catalog()
+    owner := ClickSeqGui_GuiOwner()
+    ClickSeqGui_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit Hardcoded Script" : "Add Hardcoded Script")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", "w420", "Pick a registered Hardcoded Script (not authored at runtime).")
+    lv := g.Add("ListView", "w420 h220 Grid", ["Id", "Title"])
+    for row in catalog
+        lv.Add("", row.id, row.title)
+    if (isEdit) {
+        cur := g_ClickSeqRows[ClickSeqGui_SelectedIndex()].slot
+        sid := cur.HasProp("scriptId") ? cur.scriptId : ""
+        idx := 1
+        for row in catalog {
+            if (row.id = sid) {
+                try lv.Modify(idx, "Select Focus Vis")
+                catch {
+                }
+                break
+            }
+            idx += 1
+        }
+    } else if (catalog.Length > 0) {
+        try lv.Modify(1, "Select Focus Vis")
+        catch {
+        }
+    }
+    saved := false
+    g.Add("Button", "y+12 w100 Default", "Save").OnEvent("Click", SaveScript)
+    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    lv.OnEvent("DoubleClick", SaveScript)
+    g.Show()
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    ClickSeqGui_DialogsEnd()
+    if (saved)
+        ClickSeqGui_Refresh()
+
+    SaveScript(*) {
+        pick := 0
+        try pick := lv.GetNext(0)
+        catch {
+            pick := 0
+        }
+        if (!pick || pick > catalog.Length) {
+            MsgBox("Select a Hardcoded Script.", "Click Sequences", "Icon!")
+            return
+        }
+        sid := catalog[pick].id
+        macro := ClickSeqGui_CurrentMacro()
+        if (!IsObject(macro))
+            return
+        ClickSeqData_EnsureSlots(macro)
+        if (isEdit) {
+            row := ClickSeqGui_SelectedIndex()
+            macro.slots[row] := ClickSeqData_NewHardcodedSlot(sid)
+        } else {
+            macro.slots.Push(ClickSeqData_NewHardcodedSlot(sid))
+        }
+        ClickSeqData_ReplaceMacro(macro)
+        saved := true
+        g.Destroy()
+    }
+}
+
+ClickSeqGui_SeqGroupRename() {
+    global g_ClickSeqRows
+    row := ClickSeqGui_SelectedIndex()
+    if (!row)
+        return
+    slot := g_ClickSeqRows[row].slot
+    oldId := slot.HasProp("groupId") ? slot.groupId : "clicks"
+    owner := ClickSeqGui_GuiOwner()
+    ClickSeqGui_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Rename Sequence Group")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", , "Group id")
+    eId := g.Add("Edit", "w280", oldId)
+    saved := false
+    g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveG)
+    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.Show()
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    ClickSeqGui_DialogsEnd()
+    if (saved)
+        ClickSeqGui_Refresh()
+
+    SaveG(*) {
+        nid := ClickSeqData_SanitizeId(eId.Value)
+        if (nid = "") {
+            MsgBox("Id is required.", "Click Sequences", "Icon!")
+            return
+        }
+        macro := ClickSeqGui_CurrentMacro()
+        if (!IsObject(macro))
+            return
+        grp := ClickSeqData_SeqGroupById(macro, oldId)
+        if (IsObject(grp))
+            grp.id := nid
+        slot.groupId := nid
+        ClickSeqData_ReplaceMacro(macro)
+        saved := true
+        g.Destroy()
+    }
+}
+
+ClickSeqGui_OnRules(*) {
+    global g_ClickSeqLevel, g_ClickSeqMacroId, g_ClickSeqRows
+    macro := ""
+    if (g_ClickSeqLevel = "macros") {
+        row := ClickSeqGui_SelectedIndex()
+        if (!row && g_ClickSeqRows.Length = 1)
+            row := 1
+        if (!row)
+            return
+        macro := g_ClickSeqRows[row]
+        g_ClickSeqMacroId := macro.id
+    } else {
+        macro := ClickSeqGui_CurrentMacro()
+    }
+    if (!IsObject(macro))
+        return
+    ClickSeqData_EnsureSlots(macro)
+    cur := "bottomUp"
+    if (macro.HasProp("rules") && IsObject(macro.rules) && macro.rules.HasProp("searchOrder"))
+        cur := macro.rules.searchOrder
+    owner := ClickSeqGui_GuiOwner()
+    ClickSeqGui_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Context Rules")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", "w400", "searchOrder  [B] bottomUp   [T] topDown   [F] firstMatch")
+    lbl := g.Add("Text", "w400", "Current: " . cur)
+    saved := false
+    g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveRules)
+    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.Show()
+    hwnd := 0
+    try hwnd := g.Hwnd
+    catch {
+    }
+    if (hwnd) {
+        try HotIf((*) => WinActive("ahk_id " hwnd))
+        try Hotkey("b", (*) => SetOrder("bottomUp"), "On")
+        try Hotkey("t", (*) => SetOrder("topDown"), "On")
+        try Hotkey("f", (*) => SetOrder("firstMatch"), "On")
+        try HotIf()
+    }
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    if (hwnd) {
+        try HotIf((*) => WinActive("ahk_id " hwnd))
+        try Hotkey("b", "Off")
+        try Hotkey("t", "Off")
+        try Hotkey("f", "Off")
+        try HotIf()
+    }
+    ClickSeqGui_DialogsEnd()
+    if (saved)
+        ClickSeqGui_Refresh()
+
+    SetOrder(v) {
+        cur := v
+        lbl.Value := "Current: " . v
+    }
+
+    SaveRules(*) {
+        if (!macro.HasProp("rules") || !IsObject(macro.rules))
+            macro.rules := ClickSeqData_DefaultRules()
+        macro.rules.searchOrder := ClickSeqData_NormalizeSearchOrder(cur)
+        ClickSeqData_ReplaceMacro(macro)
+        saved := true
+        g.Destroy()
+    }
+}
+
+ClickSeqGui_ShowHelp(*) {
+    path := ClickSeqData_VocabPath()
+    text := ""
+    try text := FileRead(path, "UTF-8")
+    catch {
+        text := "Vocabulary file not found:`n" . path
+    }
+    owner := ClickSeqGui_GuiOwner()
+    ClickSeqGui_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Click Sequence vocabulary")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Edit", "ReadOnly w720 h480 -Wrap", text)
+    g.Add("Button", "y+10 w100 Default", "Close").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.Show()
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    ClickSeqGui_DialogsEnd()
+}
+
+ClickSeqGui_OnMap(*) {
+    py := A_ScriptDir "\Utils\click_sequence_viz\generate_map.py"
+    if (!FileExist(py)) {
+        ClickSeqGui_Notify("generate_map.py not found", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try StandardLoadingBar_Show("Building sequence map…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    cmd := 'python "' . py . '"'
+    try {
+        RunWait(cmd, A_ScriptDir, "Hide")
+    } catch as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ClickSeqGui_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    html := A_ScriptDir "\Utils\click_sequence_viz\output\map.html"
+    try StandardLoadingBar_Hide(400)
+    catch {
+    }
+    if (!FileExist(html)) {
+        ClickSeqGui_Notify("map.html was not generated", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    Run('"' . html . '"')
 }

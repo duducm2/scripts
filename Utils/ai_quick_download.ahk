@@ -2,7 +2,7 @@
 ; Utils module: ai_quick_download.ahk
 ; Quick Download: focus AI companion → configured click sequences → Desktop wait → cut newest.
 ; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
-; Click paths are runtime data (Utility Shortcuts → Sequences), not hardcoded here.
+; Slot chain (scroll / sibling clicks / Desktop wait / cut) lives in click_sequences.ini.
 ; =============================================================================
 
 ; Tap-dance interval (ms) — matches Teams_R_DoubleTapThresholdMs / ZMK tap-dance.
@@ -53,6 +53,7 @@ AiQuickDownload_RunForFinanceImport() {
 
 ; doCut: true = cut newest after wait (#!+9). false = return Desktop path for finance import.
 AiQuickDownload_RunInner(doCut := true) {
+    global g_ClickSeqRunCtx
     try StandardLoadingBar_Show("⏳ Quick Download…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
@@ -73,34 +74,19 @@ AiQuickDownload_RunInner(doCut := true) {
     } catch {
     }
 
-    try StandardLoadingBar_Update("⏳ Finding download control…", BANNER_ACCENT_INTERMEDIATE)
+    extras := {
+        doCut: doCut,
+        seqAttempts: doCut ? 1 : AI_QD_FINANCE_GATE_ATTEMPTS,
+        desktopPath: desktopPath,
+        beforePath: beforePath,
+        beforeStamp: beforeStamp
+    }
+    ok := false
+    try ok := ClickSeq_RunMacro("ai-quick-download", focus.companion, focus.hwnd, extras)
     catch {
+        ok := false
     }
-
-    hwnd := focus.hwnd
-    companion := focus.companion
-    clicked := false
-    attempts := doCut ? 1 : AI_QD_FINANCE_GATE_ATTEMPTS
-    loop attempts {
-        AiQuickDownload_ScrollFeedToBottom(hwnd, companion)
-        try clicked := AiQuickDownload_TryClickDownloadControl(hwnd, companion)
-        catch {
-            clicked := false
-        }
-        if (clicked)
-            break
-        failMsg := ""
-        try failMsg := ClickSeq_LastFailMessage()
-        catch {
-            failMsg := ""
-        }
-        if (InStr(failMsg, "No click sequences"))
-            break
-        if (A_Index < attempts)
-            Sleep AI_QD_FINANCE_GATE_SETTLE_MS
-    }
-
-    if (!clicked) {
+    if (!ok) {
         err := ""
         try err := ClickSeq_LastFailMessage()
         catch {
@@ -112,29 +98,20 @@ AiQuickDownload_RunInner(doCut := true) {
         return ""
     }
 
-    try StandardLoadingBar_Update("⏳ Waiting for Desktop file…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
+    newPath := ""
+    try {
+        if (IsObject(g_ClickSeqRunCtx) && g_ClickSeqRunCtx.HasProp("lastPath"))
+            newPath := g_ClickSeqRunCtx.lastPath
+    } catch {
+        newPath := ""
     }
-
-    newPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
     if (newPath = "") {
         AiQuickDownload_Fail("❌ Quick Download: file did not appear on Desktop")
         return ""
     }
 
-    if (doCut) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        try DesktopCutNewest_Trigger()
-        catch as e {
-            try ShowCenteredOverlay_Utils("❌ Quick Download: cut failed — " SubStr(e.Message, 1, 60), 2500,
-            BANNER_ACCENT_ERROR)
-            catch {
-            }
-        }
+    if (doCut)
         return newPath
-    }
 
     preferCsv := AiQuickDownload_NewestCsvPreferring(desktopPath, beforePath, beforeStamp, newPath)
     return preferCsv != "" ? preferCsv : newPath

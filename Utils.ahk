@@ -244,6 +244,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\click_sequence_gui.ahk
 ; [Utils module] AI Companion Quick Download (#!+9 single-tap) -> Utils\ai_quick_download.ahk
 #include %A_ScriptDir%\Utils\ai_quick_download.ahk
+; [Utils module] Click sequence Hardcoded Script registry -> Utils\click_sequence_scripts.ahk
+#include %A_ScriptDir%\Utils\click_sequence_scripts.ahk
 
 ; [Utils module] Mouse jump helpers and prediction squares -> Utils\mouse_jump_arrows.ahk
 #include %A_ScriptDir%\Utils\mouse_jump_arrows.ahk
