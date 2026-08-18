@@ -108,14 +108,23 @@ function Get-Porcelain {
     return $r.StdOut
 }
 
-function Test-PorcelainBlocksPull {
-    param([string]$Porcelain)
-    if (-not $Porcelain) { return $false }
-    foreach ($line in ($Porcelain -split "`r?`n")) {
-        if ($line -notmatch '\S') { continue }
-        if ($line.StartsWith('!!')) { continue }
-        return $true
+function Test-HasStashableChanges {
+    Invoke-GitRaw 'update-index --refresh' | Out-Null
+    $wt = Invoke-GitRaw 'diff --quiet --ignore-submodules=dirty HEAD'
+    if ($wt.ExitCode -eq 124) {
+        Fail-Step 'Status' $wt.Output
     }
+    if ($wt.ExitCode -ne 0) { return $true }
+    $st = Invoke-GitRaw 'diff --quiet --cached --ignore-submodules=dirty'
+    if ($st.ExitCode -eq 124) {
+        Fail-Step 'Status' $st.Output
+    }
+    if ($st.ExitCode -ne 0) { return $true }
+    $others = Invoke-GitRaw 'ls-files -o --exclude-standard'
+    if (-not $others.Ok) {
+        Fail-Step 'Status' $(if ($others.Output) { $others.Output } else { 'git ls-files failed' })
+    }
+    if ($others.StdOut -and ($others.StdOut -match '\S')) { return $true }
     return $false
 }
 
@@ -146,7 +155,7 @@ function Wait-WorkingTreePullable {
     while ($true) {
         Wait-IndexLock
         $last = Get-Porcelain
-        if (-not (Test-PorcelainBlocksPull $last)) {
+        if (-not (Test-HasStashableChanges)) {
             return $last
         }
         if ([datetime]::UtcNow -ge $deadline) {
@@ -225,15 +234,15 @@ $result.upstream = $up.StdOut
 Add-Step 'preflight-upstream' $true $result.upstream
 Update-AheadBehind
 
-$porcelainBefore = Get-Porcelain
 $stashListBefore = Get-StashListText
-$dirty = Test-PorcelainBlocksPull $porcelainBefore
+$dirty = Test-HasStashableChanges
 
 if ($dirty) {
     $push = Invoke-GitStep 'stash' "stash push -u -m `"$stashMsg`""
     if ($push.Output -match '(?i)No local changes to save') {
-        Fail-Step 'Stash' 'stash reported no local changes but working tree was dirty'
-    }
+        Wait-WorkingTreePullable | Out-Null
+        Add-Step 'stash-skip' $true 'stash reported no local changes'
+    } else {
     if ($push.Output -notmatch '(?i)Saved working directory') {
         Fail-Step 'Stash' $(if ($push.Output) { $push.Output } else { 'stash did not save working directory' })
     }
@@ -250,6 +259,7 @@ if ($dirty) {
     $result.stashRef = 'stash@{0}'
     Wait-WorkingTreePullable | Out-Null
     Add-Step 'stash-gate' $true $stashMsg
+    }
 } else {
     Add-Step 'stash-skip' $true 'clean working tree'
 }

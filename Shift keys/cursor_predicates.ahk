@@ -647,13 +647,15 @@ function Assert-GitOk([string]$Step) {
     Fail-Robot ($Step + ' exit ' + $LASTEXITCODE)
   }
 }
-function Test-PorcelainBlocksPull($Porcelain) {
-  foreach ($line in @($Porcelain)) {
-    if (-not $line) { continue }
-    $s = [string]$line
-    if ($s -notmatch '\S') { continue }
-    if ($s.StartsWith('!!')) { continue }
-    return $true
+function Test-HasStashableChanges {
+  __GITC__ update-index --refresh 2>$null | Out-Null
+  __GITC__ diff --quiet --ignore-submodules=dirty HEAD
+  if ($LASTEXITCODE -ne 0) { return $true }
+  __GITC__ diff --quiet --cached --ignore-submodules=dirty
+  if ($LASTEXITCODE -ne 0) { return $true }
+  $others = (__GITC__ ls-files -o --exclude-standard)
+  foreach ($p in @($others)) {
+    if ($p -and ([string]$p).Trim()) { return $true }
   }
   return $false
 }
@@ -689,7 +691,7 @@ function Wait-WorkingTreePullable {
     Wait-IndexLock
     $last = (__GITC__ status --porcelain)
     Assert-GitOk 'status --porcelain'
-    if (-not (Test-PorcelainBlocksPull $last)) { return $last }
+    if (-not (Test-HasStashableChanges)) { return $last }
     if ([datetime]::UtcNow -ge $deadline) {
       Fail-Robot ('working tree still not pullable after stash: ' + (($last | Out-String).Trim()))
     }
@@ -701,11 +703,9 @@ function Wait-WorkingTreePullable {
   }
 }
 Wait-IndexLock
-$porcelainBefore = (__GITC__ status --porcelain)
-Assert-GitOk 'status --porcelain'
 $stashListBefore = (__GITC__ stash list)
 Assert-GitOk 'stash list'
-$dirty = Test-PorcelainBlocksPull $porcelainBefore
+$dirty = Test-HasStashableChanges
 $didStash = $false
 if ($dirty) {
   Write-Host '=== ROBOT stash ===' -ForegroundColor Cyan
@@ -719,8 +719,9 @@ if ($dirty) {
     Fail-Robot ('stash exit ' + $stashCode + ': ' + $stashText.Trim())
   }
   if ($stashText -match '(?i)No local changes to save') {
-    Fail-Robot 'stash reported no local changes but working tree was dirty'
-  }
+    Write-Host '=== ROBOT stash skip === nothing to save' -ForegroundColor Yellow
+    Wait-WorkingTreePullable | Out-Null
+  } else {
   if ($stashText -notmatch '(?i)Saved working directory') {
     Fail-Robot ('stash did not save working directory: ' + $stashText.Trim())
   }
@@ -738,6 +739,7 @@ if ($dirty) {
   Wait-WorkingTreePullable | Out-Null
   $didStash = $true
   Write-Host '=== ROBOT stash-gate ===' -ForegroundColor Green
+  }
 } else {
   Write-Host '=== ROBOT stash skip ===' -ForegroundColor Cyan
   Wait-WorkingTreePullable | Out-Null

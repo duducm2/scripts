@@ -126,7 +126,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 
-**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as a **visible robot**: opens a **new editor terminal** (same as Shift+N) and types `git stash push -u` → wait until index lock is gone and porcelain is pullable → `git fetch` → `git pull --ff-only` → `git stash pop` (only if that Alt+S stash was created). Terminal prints `=== ROBOT … ===` for each step. On full success: **✅ Pull complete** + **`pull-successful.wav`**. Does **not** use the command palette. Manual **Shift+P** remains separate. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
+**Alt+S** in Cursor and VS Code is wrapped by AHK (`$!s` → `Editor_GitStashAndPull()` in [`Shift keys/cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk)) as a **visible robot**: opens a **new editor terminal** (same as Shift+N) and types `git stash push -u` (only if there are stashable changes; dirty submodule content is skipped) → wait until index lock is gone and nothing stashable remains → `git fetch` → `git pull --ff-only` → `git stash pop` (only if that Alt+S stash was created). If stash reports `No local changes to save`, pull continues. Terminal prints `=== ROBOT … ===` for each step. On full success: **✅ Pull complete** + **`pull-successful.wav`**. Does **not** use the command palette. Manual **Shift+P** remains separate. Listed on both overlays as `💾 [S][S]tash and Pull (Git) (ahk)`.
 
 ### Special resolution (not only `exe` match)
 

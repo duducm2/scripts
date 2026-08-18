@@ -179,6 +179,37 @@ try {
         -and $stashCount -eq 0 -and (Get-Behind $r.Clone) -eq 0
     ) ("exit=$($out.ExitCode) ok=$($j.ok) didStash=$($j.didStash) tracked=$trackedRestored untracked=$untrackedRestored up=$hasUp stash=$stashCount err=$($j.error)")
 
+    # --- Dirty submodule content is not stashable; pull must still proceed ---
+    $r = New-TestRepos 'sub-dirty'
+    $subBare = Join-Path $r.Root 'sub.git'
+    $subSeed = Join-Path $r.Root 'sub-seed'
+    git init --bare --initial-branch=main --quiet $subBare
+    git init --initial-branch=main --quiet $subSeed
+    Set-GitIdentity $subSeed
+    Set-Content -LiteralPath (Join-Path $subSeed 's.txt') -Value 's' -Encoding utf8
+    git -C $subSeed add s.txt
+    git -C $subSeed commit -m 'sub init' --quiet
+    git -C $subSeed remote add origin $subBare
+    git -C $subSeed push -u origin main --quiet
+    git -C $r.Clone -c protocol.file.allow=always submodule add --quiet $subBare vendor/sub
+    git -C $r.Clone commit -m 'add submodule' --quiet
+    git -C $r.Clone push origin main --quiet
+    Set-Content -LiteralPath (Join-Path $r.Clone 'vendor\sub\s.txt') -Value 'dirty-sub' -Encoding utf8
+    git -C $r.Other pull origin main --quiet
+    Set-Content -LiteralPath (Join-Path $r.Other 'upstream-sub.txt') -Value 'from-upstream' -Encoding utf8
+    git -C $r.Other add upstream-sub.txt
+    git -C $r.Other commit -m 'upstream with submodule' --quiet
+    git -C $r.Other push origin main --quiet
+    $out = Invoke-Flow $r.Clone (Join-Path $r.Root 'result.json')
+    $j = $out.Json
+    $hasUp = Test-Path -LiteralPath (Join-Path $r.Clone 'upstream-sub.txt')
+    $subStillDirty = (Get-Content -LiteralPath (Join-Path $r.Clone 'vendor\sub\s.txt') -Raw) -match 'dirty-sub'
+    $stashCount = @(git -C $r.Clone stash list).Count
+    Write-Case 'dirty-submodule-content-skips-stash' (
+        $out.ExitCode -eq 0 -and $j.ok -eq $true -and $j.didStash -eq $false `
+        -and $hasUp -and $subStillDirty -and $stashCount -eq 0 -and (Get-Behind $r.Clone) -eq 0
+    ) ("exit=$($out.ExitCode) ok=$($j.ok) didStash=$($j.didStash) up=$hasUp subDirty=$subStillDirty stash=$stashCount err=$($j.error)")
+
     # --- Still-behind after mocked/no-op pull ---
     $r = New-TestRepos 'skip-pull'
     Set-Content -LiteralPath (Join-Path $r.Other 'ahead.txt') -Value 'ahead' -Encoding utf8
