@@ -631,8 +631,7 @@ Editor_GitWriteRobotScript(repoDir, resultPath) {
     if !FileExist(flowPs1)
         return ""
     repoArg := (repoDir != "") ? repoDir : "."
-    script := "Write-Host '=== ROBOT stash-and-pull ===' -ForegroundColor Cyan`r`n"
-    script .= "& " Editor_GitQuotePs(flowPs1)
+    script := "& " Editor_GitQuotePs(flowPs1)
     script .= " -RepoDir " Editor_GitQuotePs(repoArg)
     script .= " -ResultPath " Editor_GitQuotePs(resultPath)
     script .= " -TimeoutSec 300 -Robot`r`n"

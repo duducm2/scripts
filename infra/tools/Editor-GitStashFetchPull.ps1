@@ -16,6 +16,7 @@ param(
 $ErrorActionPreference = 'Continue'
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'Never'
+$env:GIT_PAGER = 'cat'
 
 $stashMsg = "alt+s-auto-$(Get-Date -Format 'yyyyMMddHHmmss')-$PID"
 
@@ -78,6 +79,18 @@ function Fail-Step {
 
 function Invoke-GitRaw {
     param([string]$GitArgs)
+    if ($Robot) {
+        Write-Host ("git " + $GitArgs) -ForegroundColor DarkGray
+        $output = cmd.exe /c "git -C `"$RepoDir`" $GitArgs 2>&1"
+        $code = $LASTEXITCODE
+        $text = if ($null -eq $output) { '' } else { ($output | Out-String).Trim() }
+        return [pscustomobject]@{
+            Ok       = ($code -eq 0)
+            ExitCode = $code
+            Output   = $text
+            StdOut   = $text
+        }
+    }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = 'git'
     $psi.Arguments = "-C `"$RepoDir`" $GitArgs"
@@ -85,15 +98,18 @@ function Invoke-GitRaw {
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
+    $psi.RedirectStandardInput = $true
     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'Never'
+    $psi.EnvironmentVariables['GIT_PAGER'] = 'cat'
     $p = New-Object System.Diagnostics.Process
     $p.StartInfo = $psi
     $null = $p.Start()
+    try { $p.StandardInput.Close() } catch {}
     $ms = [Math]::Max(1000, $TimeoutSec * 1000)
     if (-not $p.WaitForExit($ms)) {
         try { $p.Kill() } catch {}
-        return [pscustomobject]@{ Ok = $false; ExitCode = 124; Output = "Timed out after ${TimeoutSec}s" }
+        return [pscustomobject]@{ Ok = $false; ExitCode = 124; Output = "Timed out after ${TimeoutSec}s"; StdOut = '' }
     }
     $stdout = $p.StandardOutput.ReadToEnd()
     $stderr = $p.StandardError.ReadToEnd()
@@ -227,7 +243,7 @@ if (-not (Test-Path -LiteralPath $RepoDir)) {
     Fail-Step 'Repo' "Directory not found: $RepoDir"
 }
 
-Write-Robot 'stash-and-pull'
+Write-Robot 'preflight'
 
 $inside = Invoke-GitStep 'rev-parse' 'rev-parse --is-inside-work-tree'
 if (-not $inside.Ok -or ($inside.StdOut -ne 'true')) {
