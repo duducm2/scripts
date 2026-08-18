@@ -110,7 +110,8 @@ function Invoke-GitRaw {
 function Invoke-GitStep {
     param([string]$StepName, [string]$GitArgs)
     $r = Invoke-GitRaw $GitArgs
-    if ($Robot -and $r.Output) {
+    $show = $Robot -and $r.Output -and ($StepName -match '^(stash|fetch|pull)')
+    if ($show) {
         Write-Host $r.Output
     }
     $detail = if ($r.Output) { $r.Output.Substring(0, [Math]::Min(500, $r.Output.Length)) } else { '' }
@@ -225,6 +226,8 @@ function Test-RefExists {
 if (-not (Test-Path -LiteralPath $RepoDir)) {
     Fail-Step 'Repo' "Directory not found: $RepoDir"
 }
+
+Write-Robot 'stash-and-pull'
 
 $inside = Invoke-GitStep 'rev-parse' 'rev-parse --is-inside-work-tree'
 if (-not $inside.Ok -or ($inside.StdOut -ne 'true')) {
