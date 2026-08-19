@@ -33,6 +33,11 @@
             return
         }
         if (proc = "chrome.exe" && GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast")) {
+            ; #region agent log
+            try FileAppend(
+                '{"sessionId":"97a80a","hypothesisId":"enterprise","location":"hotif_scroll_ai:enterprise","message":"enterprise dispatch","data":{"title":"' StrReplace(
+                    SubStr(title, 1, 80), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+            ; #endregion agent log
             GeminiEnterprise_ScrollFeedToBottom(hwnd)
             return
         }
