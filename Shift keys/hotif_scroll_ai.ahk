@@ -9,9 +9,9 @@
 !u::
 {
     ; #region agent log
-    _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+    _dbgL := A_Temp "\debug-97a80a.log"
     try FileAppend(
-        '{"sessionId":"97a80a","hypothesisId":"alive","location":"hotif_scroll_ai:top","message":"hotkey fired v2","timestamp":' A_TickCount '}' "`n",
+        '{"sessionId":"97a80a","hypothesisId":"alive","location":"hotif_scroll_ai:top","message":"hotkey fired v3","timestamp":' A_TickCount '}' "`n",
         _dbgL)
     ; #endregion agent log
     loadingBarShown := false
@@ -29,7 +29,7 @@
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
         ; #region agent log
-        _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+        _dbgL := A_Temp "\debug-97a80a.log"
         try FileAppend(
             '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:!u","message":"dispatch entry","data":{"proc":"' proc '","title":"' StrReplace(
                 SubStr(title, 1, 80), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)

@@ -1340,7 +1340,7 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
         pf := IsObject(preUia) ? FindGeminiPromptField(preUia) : 0
         snapshot := ChromeChat_ComposerSnapshot(pf)
         ; #region agent log
-        _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+        _dbgL := A_Temp "\debug-97a80a.log"
         try FileAppend(
             '{"sessionId":"97a80a","hypothesisId":"A-C","location":"hotif_editor_02:GeminiScrollFeedToBottom_Chrome","message":"pre-scroll state","data":{"preUiaOk":' (
                 IsObject(preUia) ? "true" : "false") ',"pfFound":' (IsObject(pf) ? "true" : "false") ',"snapshot":"' StrReplace(

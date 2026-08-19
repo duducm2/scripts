@@ -59,7 +59,7 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
     try FileAppend(
         '{"sessionId":"97a80a","hypothesisId":"B-fix","location":"ChromeChatScroll:ScrollFeedToBottomFast","message":"scroll via mousewheel","data":{"uiaOk":' (
             IsObject(uia) ? "true" : "false") '},"timestamp":' A_TickCount '}' "`n",
-        "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+        A_Temp "\debug-97a80a.log")
     ; #endregion agent log
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
     return IsObject(uia) ? uia : 0
@@ -92,7 +92,7 @@ ChromeChat_ComposerRestore(composerEl, snapshot) {
         '{"sessionId":"97a80a","hypothesisId":"A-E","location":"ChromeChatScroll:ComposerRestore:entry","message":"restore entry","data":{"hasEl":' (
             IsObject(composerEl) ? "true" : "false") ',"snapshotEmpty":' (snapshot = "" ? "true" : "false") ',"snapshotLen":' StrLen(
                 snapshot) '},"timestamp":' A_TickCount '}' "`n",
-        "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+        A_Temp "\debug-97a80a.log")
     ; #endregion agent log
     if (!IsObject(composerEl) || snapshot = "")
         return
