@@ -11,7 +11,7 @@
     ; #region agent log
     _dbgL := A_Temp "\debug-97a80a.log"
     try FileAppend(
-        '{"sessionId":"97a80a","hypothesisId":"alive","location":"hotif_scroll_ai:top","message":"hotkey fired v3","timestamp":' A_TickCount '}' "`n",
+        '{"sessionId":"97a80a","hypothesisId":"alive","location":"hotif_scroll_ai:top","message":"v4","timestamp":' A_TickCount '}' "`n",
         _dbgL)
     ; #endregion agent log
     loadingBarShown := false
@@ -29,10 +29,9 @@
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
         ; #region agent log
-        _dbgL := A_Temp "\debug-97a80a.log"
         try FileAppend(
-            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:!u","message":"dispatch entry","data":{"proc":"' proc '","title":"' StrReplace(
-                SubStr(title, 1, 80), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:!u","message":"dispatch","data":{"proc":"' proc '","title":"' StrReplace(
+                SubStr(title, 1, 60), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
         ; #endregion agent log
         if (proc = "chrome.exe" && CopilotWeb_IsCopilotHwnd(hwnd, "fast")) {
             CopilotWeb_ScrollFeedToBottom(hwnd)
@@ -41,8 +40,8 @@
         if (proc = "chrome.exe" && GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast")) {
             ; #region agent log
             try FileAppend(
-                '{"sessionId":"97a80a","hypothesisId":"enterprise","location":"hotif_scroll_ai:enterprise","message":"enterprise dispatch","data":{"title":"' StrReplace(
-                    SubStr(title, 1, 80), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+                '{"sessionId":"97a80a","hypothesisId":"enterprise","location":"hotif_scroll_ai:enterprise","message":"enterprise","timestamp":' A_TickCount '}' "`n",
+                _dbgL)
             ; #endregion agent log
             GeminiEnterprise_ScrollFeedToBottom(hwnd)
             return
@@ -50,8 +49,8 @@
         ; #region agent log
         _isConsGem := (proc = "chrome.exe") ? IsConsumerGeminiChromeTitle(title) : false
         try FileAppend(
-            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:gemini-check","message":"consumer gemini check","data":{"isConsumerGemini":' (
-                _isConsGem ? "true" : "false") ',"proc":"' proc '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:gemini-check","message":"consGem:' (
+                _isConsGem ? "true" : "false") '","timestamp":' A_TickCount '}' "`n", _dbgL)
         ; #endregion agent log
         if (proc = "chrome.exe" && _isConsGem) {
             GeminiScrollFeedToBottom_Chrome(hwnd)

@@ -56,10 +56,12 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
     ; JSExecute intentionally skipped: it types the JS payload into the focused
     ; composer when the omnibox isn't targeted (confirmed via debug session 97a80a).
     ; #region agent log
-    try FileAppend(
-        '{"sessionId":"97a80a","hypothesisId":"B-fix","location":"ChromeChatScroll:ScrollFeedToBottomFast","message":"scroll via mousewheel","data":{"uiaOk":' (
-            IsObject(uia) ? "true" : "false") '},"timestamp":' A_TickCount '}' "`n",
-        A_Temp "\debug-97a80a.log")
+    try {
+        _dbgPath := A_Temp "\debug-97a80a.log"
+        FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"B-fix","location":"ChromeChatScroll:ScrollFeedToBottomFast","message":"scroll via mousewheel","data":{"uiaOk":' (
+                IsObject(uia) ? "true" : "false") '},"timestamp":' A_TickCount '}' "`n", _dbgPath)
+    }
     ; #endregion agent log
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
     return IsObject(uia) ? uia : 0
@@ -88,11 +90,13 @@ ChromeChat_ComposerSnapshot(composerEl) {
 ; snapshot   - the string returned by ChromeChat_ComposerSnapshot
 ChromeChat_ComposerRestore(composerEl, snapshot) {
     ; #region agent log
-    try FileAppend(
-        '{"sessionId":"97a80a","hypothesisId":"A-E","location":"ChromeChatScroll:ComposerRestore:entry","message":"restore entry","data":{"hasEl":' (
-            IsObject(composerEl) ? "true" : "false") ',"snapshotEmpty":' (snapshot = "" ? "true" : "false") ',"snapshotLen":' StrLen(
-                snapshot) '},"timestamp":' A_TickCount '}' "`n",
-        A_Temp "\debug-97a80a.log")
+    try {
+        _dbgPath := A_Temp "\debug-97a80a.log"
+        FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"A-E","location":"ChromeChatScroll:ComposerRestore:entry","message":"restore entry","data":{"hasEl":' (
+                IsObject(composerEl) ? "true" : "false") ',"snapshotEmpty":' (snapshot = "" ? "true" : "false") ',"snapshotLen":' StrLen(
+                    snapshot) '},"timestamp":' A_TickCount '}' "`n", _dbgPath)
+    }
     ; #endregion agent log
     if (!IsObject(composerEl) || snapshot = "")
         return
