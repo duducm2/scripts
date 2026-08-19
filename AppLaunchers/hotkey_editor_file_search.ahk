@@ -11,6 +11,120 @@ global EDITOR_FILE_SEARCH_RESULT_POLL_MS := 600
 global EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS := 800
 global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
 global EDITOR_FILE_SEARCH_USE_HIT_CACHE := true
+global EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN := true
+global EDITOR_FILE_SEARCH_USE_TITLE_VERIFY := true
+global EDITOR_FILE_SEARCH_TITLE_VERIFY_MS := 1500
+global EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS := 2
+
+EditorFileSearch_NormalizeBasename(raw) {
+    if (raw = "")
+        return ""
+    s := Trim(raw)
+    s := RegExReplace(s, "^[●\s]+")
+    if InStr(s, ",")
+        s := Trim(SubStr(s, 1, InStr(s, ",") - 1))
+    if (InStr(s, "\") || InStr(s, "/")) {
+        SplitPath s, &name
+        if (name != "")
+            s := name
+    }
+    return s
+}
+
+EditorFileSearch_IsPlausibleBasename(raw) {
+    s := EditorFileSearch_NormalizeBasename(raw)
+    if (s = "" || StrLen(s) > 180)
+        return false
+    lower := StrLower(s)
+    if InStr(lower, "not accessible") || InStr(lower, "screen reader") || InStr(lower, "agentswindow")
+        return false
+    if InStr(s, "`n") || InStr(s, "`r")
+        return false
+    return true
+}
+
+EditorFileSearch_BasenameFromTitle(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return ""
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+        if (title = "")
+            return ""
+        parts := StrSplit(title, " - ", , 2)
+        if (parts.Length >= 1 && parts[1] != "") {
+            candidate := EditorFileSearch_NormalizeBasename(Trim(parts[1]))
+            if EditorFileSearch_IsPlausibleBasename(candidate)
+                return candidate
+        }
+    } catch {
+    }
+    return ""
+}
+
+EditorFileSearch_NormalizeQuery(query) {
+    q := StrLower(Trim(query))
+    if (q = "")
+        return ""
+    if (InStr(q, "\") || InStr(q, "/")) {
+        SplitPath q, &nameOnly
+        if (nameOnly != "")
+            q := StrLower(nameOnly)
+    }
+    return q
+}
+
+EditorFileSearch_StripExtension(name) {
+    if (name = "")
+        return ""
+    return RegExReplace(name, "\.[^.\\\/]+$")
+}
+
+EditorFileSearch_QueryMatchesBasename(query, basename) {
+    q := EditorFileSearch_NormalizeQuery(query)
+    b := StrLower(EditorFileSearch_NormalizeBasename(basename))
+    if (q = "" || b = "")
+        return false
+    if (b = q)
+        return true
+    qStem := EditorFileSearch_StripExtension(q)
+    bStem := EditorFileSearch_StripExtension(b)
+    if (qStem != "" && bStem != "" && (qStem = bStem || InStr(bStem, qStem) || InStr(qStem, bStem)))
+        return true
+    return InStr(b, q) || InStr(q, b)
+}
+
+EditorFileSearch_HwndAlreadyHasFile(hwnd, query) {
+    basename := EditorFileSearch_BasenameFromTitle(hwnd)
+    if (basename = "")
+        return false
+    return EditorFileSearch_QueryMatchesBasename(query, basename)
+}
+
+EditorFileSearch_FindHwndAlreadyOpen(query, hwnds) {
+    for hwnd in hwnds {
+        if (EditorFileSearch_HwndAlreadyHasFile(hwnd, query))
+            return hwnd
+    }
+    return 0
+}
+
+EditorFileSearch_WaitForTitleBasenameMatch(hwnd, query, timeoutMs) {
+    global EDITOR_FILE_SEARCH_POLL_STEP_MS, EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS
+    deadline := A_TickCount + timeoutMs
+    stable := 0
+    need := EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS
+    while (A_TickCount < deadline) {
+        if (EditorFileSearch_HwndAlreadyHasFile(hwnd, query)) {
+            stable++
+            if (stable >= need)
+                return true
+        } else {
+            stable := 0
+        }
+        Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
+    }
+    return false
+}
 
 EditorFileSearch_IniPath() {
     return A_ScriptDir "\assets\data\editor_file_search.ini"
@@ -93,6 +207,16 @@ EditorFileSearch_Start() {
     if (hwnds.Length = 0) {
         ShowCenteredOverlay_Utils("File not found in any editor window", 2000, BANNER_ACCENT_ERROR)
         return
+    }
+
+    global EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN
+    if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN) {
+        alreadyHwnd := EditorFileSearch_FindHwndAlreadyOpen(query, hwnds)
+        if (alreadyHwnd) {
+            try WinActivate("ahk_id " alreadyHwnd)
+            EditorFileSearch_SaveHit(alreadyHwnd, query)
+            return
+        }
     }
 
     g_EditorFileSearchActive := true
@@ -185,7 +309,8 @@ EditorFileSearch_IsEligibleEditorHwnd(hwnd) {
 EditorFileSearch_TryOpenInInstance(hwnd, query) {
     global EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS,
         EDITOR_FILE_SEARCH_RESULT_POLL_MS, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS,
-        EDITOR_FILE_SEARCH_POLL_STEP_MS
+        EDITOR_FILE_SEARCH_POLL_STEP_MS, EDITOR_FILE_SEARCH_USE_TITLE_VERIFY,
+        EDITOR_FILE_SEARCH_TITLE_VERIFY_MS, EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN
 
     if !EditorFileSearch_IsEditorProcessHwnd(hwnd)
         return false
@@ -197,6 +322,9 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     }
     if (!WinWaitActive("ahk_id " hwnd, , EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC))
         return false
+
+    if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN && EditorFileSearch_HwndAlreadyHasFile(hwnd, query))
+        return true
 
     Send "{Escape}"
     Sleep 50
@@ -215,10 +343,18 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
             Send "{Escape}"
             return false
         }
+        if (EditorFileSearch_HwndAlreadyHasFile(hwnd, query)) {
+            Send "{Escape}"
+            return true
+        }
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
 
     Send "{Enter}"
+    if (EDITOR_FILE_SEARCH_USE_TITLE_VERIFY) {
+        if (EditorFileSearch_WaitForTitleBasenameMatch(hwnd, query, EDITOR_FILE_SEARCH_TITLE_VERIFY_MS))
+            return true
+    }
     if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS))
         return true
 
