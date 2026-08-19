@@ -1374,12 +1374,12 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
                 IsObject(pf) ? "true" : "false") ',"postVal":"' StrReplace(SubStr(postVal, 1, 120), '"', "'") '","postLen":' StrLen(
                     postVal) ',"snapshotLen":' StrLen(snapshot) '},"timestamp":' A_TickCount '}' "`n", _dbgL)
         ; #endregion agent log
-    } catch as _dbgErr {
+    } catch Error as _dbgErr {
         ; #region agent log
         try FileAppend(
             '{"sessionId":"97a80a","hypothesisId":"outer-catch","location":"hotif_editor_02:GeminiScrollFeedToBottom_Chrome:catch","message":"outer catch","data":{"err":"' StrReplace(
-                SubStr(_dbgErr.Message, 1, 120), '"', "'") '"},"timestamp":' A_TickCount '}' "`n",
-            "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+                SubStr(_dbgErr.Message, 1, 120), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", A_Temp "\debug-97a80a.log"
+        )
         ; #endregion agent log
     }
 }
