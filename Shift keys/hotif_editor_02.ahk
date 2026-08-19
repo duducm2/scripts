@@ -1335,15 +1335,23 @@ CancelCommit(ctrl, *) {
 ; Trade-off / fallback documented in Lib/ChromeChatScroll.ahk.
 GeminiScrollFeedToBottom_Chrome(hwnd) {
     try {
-        uia := ChromeChat_ScrollFeedToBottomFast(hwnd)
+        preUia := 0
+        try preUia := UIA_Browser("ahk_id " hwnd)
+        pf := IsObject(preUia) ? FindGeminiPromptField(preUia) : 0
+        snapshot := ChromeChat_ComposerSnapshot(pf)
+
+        uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
         if (!IsObject(uia))
-            return
-        pf := FindGeminiPromptField(uia)
+            uia := preUia
+
+        if (!IsObject(pf) && IsObject(uia))
+            pf := FindGeminiPromptField(uia)
         if (pf) {
             try pf.ScrollIntoView()
             catch {
             }
         }
+        ChromeChat_ComposerRestore(pf, snapshot)
     } catch {
     }
 }

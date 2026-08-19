@@ -58,3 +58,59 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
         ChromeChat_ScrollFeedToBottomFallback(hwnd)
     return IsObject(uia) ? uia : 0
 }
+
+; Guard wrapper: snapshots composer text before scrolling and restores it if
+; the scroll operation leaked keystrokes into the prompt field.
+; composerEl - UIA element for the composer/prompt field (may be 0/empty)
+; Returns the composer text that was present before scrolling.
+ChromeChat_ComposerSnapshot(composerEl) {
+    if (!IsObject(composerEl))
+        return ""
+    text := ""
+    try text := composerEl.Value
+    catch {
+        try text := composerEl.Name
+        catch {
+            text := ""
+        }
+    }
+    return text
+}
+
+; Restores composer content if it was corrupted by the scroll operation.
+; composerEl - same UIA element used for the snapshot
+; snapshot   - the string returned by ChromeChat_ComposerSnapshot
+ChromeChat_ComposerRestore(composerEl, snapshot) {
+    if (!IsObject(composerEl) || snapshot = "")
+        return
+    current := ""
+    try current := composerEl.Value
+    catch {
+        try current := composerEl.Name
+        catch {
+            return
+        }
+    }
+    if (current == snapshot)
+        return
+    try {
+        composerEl.ValuePattern.SetValue(snapshot)
+        return
+    } catch {
+    }
+    ; Fallback: select-all + paste via clipboard
+    try {
+        savedClip := A_Clipboard
+        A_Clipboard := snapshot
+        if ClipWait(1, 1) {
+            composerEl.SetFocus()
+            Sleep 30
+            Send "^a"
+            Sleep 30
+            Send "^v"
+            Sleep 50
+        }
+        A_Clipboard := savedClip
+    } catch {
+    }
+}

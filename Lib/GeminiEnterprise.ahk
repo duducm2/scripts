@@ -1104,15 +1104,23 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
     if (!hwnd)
         return false
     try {
-        uia := ChromeChat_ScrollFeedToBottomFast(hwnd)
+        preUia := 0
+        try preUia := UIA_Browser("ahk_id " hwnd)
+        pf := IsObject(preUia) ? GeminiEnterprise_FindComposer(preUia) : 0
+        snapshot := ChromeChat_ComposerSnapshot(pf)
+
+        uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
         if (!IsObject(uia))
-            return false
-        pf := GeminiEnterprise_FindComposer(uia)
+            uia := preUia
+
+        if (!IsObject(pf) && IsObject(uia))
+            pf := GeminiEnterprise_FindComposer(uia)
         if (pf) {
             try pf.ScrollIntoView()
             catch {
             }
         }
+        ChromeChat_ComposerRestore(pf, snapshot)
         return true
     } catch {
         return false
