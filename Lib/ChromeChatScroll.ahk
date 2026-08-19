@@ -53,25 +53,34 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
         catch
             uia := 0
     }
-    ; Focus address bar, inject JS, then return to page.
-    jsOk := false
-    try {
-        rw := 0
-        try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-        ControlSend("^l", , "ahk_id " hwnd)
-        Sleep 120
-        jsUrl := "javascript:" . ChromeChat_ScrollJsPayload()
-        A_Clipboard := jsUrl
-        ControlSend("^v", , "ahk_id " hwnd)
-        Sleep 80
-        ControlSend("{Enter}", , "ahk_id " hwnd)
-        Sleep 200
-        ControlSend("{Escape}", , "ahk_id " hwnd)
-        Sleep 50
-        jsOk := true
+    ; #region agent log
+    logPath := A_ScriptDir . "\..\debug-ea789f.log"
+    ; #endregion
+    ; Send Ctrl+End to the render widget to jump to page bottom, then mousewheel fallback.
+    rw := 0
+    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:ScrollFast","message":"entry","data":{"hwnd":' . hwnd .
+        ',"rw":' . (rw ? rw : 0) . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
+    ; #endregion
+    if (rw) {
+        try {
+            ControlSend("^{End}", , "ahk_id " rw)
+            Sleep 80
+        }
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:CtrlEnd","message":"sent Ctrl+End to rw","data":{"rw":' .
+            rw . '},"hypothesisId":"H-A","timestamp":' . A_TickCount . '}' . "`n", logPath)
+        ; #endregion
     }
-    ; WM_MOUSEWHEEL fallback -- always runs as belt-and-suspenders
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:AfterFallback","message":"wheel done","data":{"hwnd":' .
+        hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
+    ; #endregion
     return IsObject(uia) ? uia : 0
 }
 
