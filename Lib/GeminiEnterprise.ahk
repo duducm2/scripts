@@ -1139,8 +1139,8 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
         try FileAppend(
             '{"sessionId":"ea789f","hypothesisId":"H-D","location":"GeminiEnterprise:scroll","message":"uia results","data":{"hasPf":' .
             (IsObject(pf) ? 1 : 0) . ',"pfOk":' . (pfOk ? 1 : 0) . ',"omniOk":' . (omniOk ? 1 : 0) . ',"hasUia":' . (
-                IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n", A_ScriptDir .
-            "\debug-ea789f.log")
+                IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n",
+            "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
         ; #endregion
 
         ; Mousewheel-only fallback (no Ctrl+End — it leaks into Enterprise's ProseMirror composer).

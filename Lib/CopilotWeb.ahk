@@ -2171,7 +2171,7 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
         try FileAppend(
             '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"entry","data":{"hasPf":' .
             (IsObject(pf) ? 1 : 0) . ',"hasUia":' . (IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' .
-            "`n", A_ScriptDir . "\debug-ea789f.log")
+            "`n", "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
         ; #endregion
         uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
         if (!IsObject(uia))
@@ -2188,7 +2188,8 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
         ; #region agent log
         try FileAppend(
             '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"done","data":{"hasPfAfter":' .
-            (IsObject(pf) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n", A_ScriptDir . "\debug-ea789f.log")
+            (IsObject(pf) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n",
+            "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
         ; #endregion
         return true
     } catch {
