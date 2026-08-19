@@ -7,3 +7,19 @@ TX009,2026-08-15,Car battery,"549,00",expense,CAT_CARRO,,ACC_MERCADOP,,
 TX010,2026-08-17,Balance adjustment,"7,67",adjustment,CAT_AJUSTE,,ACC_MERCADOP,,
 TX011,2026-08-17,haircut,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
 TX012,2026-08-18,Tranfer,"5000,00",transfer,,,ACC_MERCADOP,,ACC_99PAY
+TX013,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,Services,ACC_MERCADOP,CARD_MP,
+TX014,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,Food delivery,ACC_MERCADOP,CARD_MP,
+TX015,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX016,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX017,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERCADOP,CARD_MP,description
+TX018,2026-08-18,Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,Services,ACC_MERCADOP,CARD_MP,
+TX019,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,Food delivery,ACC_MERCADOP,CARD_MP,
+TX020,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX021,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX022,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERCADOP,CARD_MP,description
+TX023,2026-08-18,Man to take mirror to garbage,"50,00",expense,CAT_SERVICO,Services,ACC_MERCADOP,,
+TX024,2026-08-18,99 food app subscription,"4,99",card_expense,CAT_MERCADO,Food delivery,ACC_MERCADOP,CARD_MP,
+TX025,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX026,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+TX027,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERCADOP,CARD_MP,description
+TX028,2026-08-19,Investiment,"10,00",income,CAT_INVESTIM,,ACC_MERCADOP,,
