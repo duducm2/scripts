@@ -8,6 +8,12 @@
 ; Alt + U : Scroll AI feed to bottom — must live outside #HotIf IsEditorActive() so Gemini (Chrome) receives it.
 !u::
 {
+    ; #region agent log
+    _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+    try FileAppend(
+        '{"sessionId":"97a80a","hypothesisId":"alive","location":"hotif_scroll_ai:top","message":"hotkey fired v2","timestamp":' A_TickCount '}' "`n",
+        _dbgL)
+    ; #endregion agent log
     loadingBarShown := false
     try {
         hwnd := WinExist("A")
