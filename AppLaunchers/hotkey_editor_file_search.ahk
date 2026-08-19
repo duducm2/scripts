@@ -11,6 +11,77 @@ global EDITOR_FILE_SEARCH_RESULT_POLL_MS := 600
 global EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS := 800
 global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
 
+global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
+global EDITOR_FILE_SEARCH_USE_HIT_CACHE := true
+
+EditorFileSearch_IniPath() {
+    return A_ScriptDir "\assets\data\editor_file_search.ini"
+}
+
+EditorFileSearch_NormalizeQueryKey(query) {
+    key := StrLower(Trim(query))
+    return StrReplace(key, "=", "`=")
+}
+
+EditorFileSearch_LoadHitWindowTitle(query) {
+    global EDITOR_FILE_SEARCH_USE_HIT_CACHE
+    if !EDITOR_FILE_SEARCH_USE_HIT_CACHE
+        return ""
+    key := EditorFileSearch_NormalizeQueryKey(query)
+    if (key = "")
+        return ""
+    try {
+        return Trim(IniRead(EditorFileSearch_IniPath(), "Hits", key, ""))
+    } catch {
+        return ""
+    }
+}
+
+EditorFileSearch_SaveHit(hwnd, query) {
+    global EDITOR_FILE_SEARCH_USE_HIT_CACHE
+    if !EDITOR_FILE_SEARCH_USE_HIT_CACHE
+        return
+    if !(hwnd is Integer) || hwnd <= 0
+        return
+    if !EditorFileSearch_IsEditorProcessHwnd(hwnd)
+        return
+    key := EditorFileSearch_NormalizeQueryKey(query)
+    if (key = "")
+        return
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+        if (title = "")
+            return
+        iniPath := EditorFileSearch_IniPath()
+        SplitPath(iniPath, , &dir)
+        if (dir != "" && !DirExist(dir))
+            DirCreate(dir)
+        IniWrite(title, iniPath, "Hits", key)
+    } catch {
+    }
+}
+
+EditorFileSearch_FindHwndBySavedTitle(savedTitle) {
+    if (savedTitle = "")
+        return 0
+    savedLower := StrLower(savedTitle)
+    for exe in ["ahk_exe Cursor.exe", "ahk_exe Code.exe"] {
+        try {
+            for hwnd in WinGetList(exe) {
+                if !EditorFileSearch_IsEligibleEditorHwnd(hwnd)
+                    continue
+                try {
+                    if (StrLower(WinGetTitle("ahk_id " hwnd)) = savedLower)
+                        return hwnd
+                } catch {
+                }
+            }
+        } catch {
+        }
+    }
+    return 0
+}
+
 EditorFileSearch_Start() {
     global g_EditorFileSearchActive
     if (g_EditorFileSearchActive)
@@ -20,7 +91,7 @@ EditorFileSearch_Start() {
     if (query = "")
         return
 
-    hwnds := EditorFileSearch_CollectEditorHwnds()
+    hwnds := EditorFileSearch_CollectEditorHwnds(query)
     if (hwnds.Length = 0) {
         ShowCenteredOverlay_Utils("File not found in any editor window", 2000, BANNER_ACCENT_ERROR)
         return
@@ -29,8 +100,10 @@ EditorFileSearch_Start() {
     g_EditorFileSearchActive := true
     try {
         for hwnd in hwnds {
-            if (EditorFileSearch_TryOpenInInstance(hwnd, query))
+            if (EditorFileSearch_TryOpenInInstance(hwnd, query)) {
+                EditorFileSearch_SaveHit(hwnd, query)
                 return
+            }
         }
         ShowCenteredOverlay_Utils("File not found in any editor window", 2000, BANNER_ACCENT_ERROR)
     } finally {
@@ -38,13 +111,25 @@ EditorFileSearch_Start() {
     }
 }
 
-EditorFileSearch_CollectEditorHwnds() {
+EditorFileSearch_CollectEditorHwnds(query := "") {
+    global EDITOR_FILE_SEARCH_USE_HIT_CACHE
     result := []
     seen := Map()
 
+    if (EDITOR_FILE_SEARCH_USE_HIT_CACHE && query != "") {
+        savedTitle := EditorFileSearch_LoadHitWindowTitle(query)
+        if (savedTitle != "") {
+            hitHwnd := EditorFileSearch_FindHwndBySavedTitle(savedTitle)
+            if (hitHwnd) {
+                result.Push(hitHwnd)
+                seen[hitHwnd] := true
+            }
+        }
+    }
+
     try {
         fg := WinGetID("A")
-        if (fg && EditorFileSearch_IsEligibleEditorHwnd(fg)) {
+        if (fg && EditorFileSearch_IsEligibleEditorHwnd(fg) && !seen.Has(fg)) {
             result.Push(fg)
             seen[fg] := true
         }
