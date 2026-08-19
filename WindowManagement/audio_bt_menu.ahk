@@ -1001,10 +1001,13 @@ AudioBt_DoAction(action, requireBt := false) {
         AudioBt_RefocusLv()
     }
     msg := AudioBt_StripResult(IsObject(result) ? result.text : "")
-    if (IsObject(result) && result.ok)
+    if (IsObject(result) && result.ok) {
         ShowCenteredOverlay_Utils("✅ " . (msg = "" ? "Done" : msg), 1400, BANNER_ACCENT_SUCCESS)
-    else
+        if (action = "isolate")
+            AudioBt_Cleanup()
+    } else {
         ShowNotification_WM("❌ " . (msg = "" ? "Action failed" : msg))
+    }
 }
 
 AudioBt_OnDefault(*) {
