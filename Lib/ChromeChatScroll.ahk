@@ -53,14 +53,15 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
         catch
             uia := 0
     }
-    ; #region agent log
-    logPath := A_ScriptDir . "\debug-ea789f.log"
-    try FileAppend('{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:ScrollFast","message":"entry","data":{"hwnd":' . hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
-    ; #endregion
+    rw := 0
+    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+    if (rw) {
+        try {
+            ControlSend("^{End}", , "ahk_id " rw)
+            Sleep 80
+        }
+    }
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
-    ; #region agent log
-    try FileAppend('{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:AfterFallback","message":"wheel done","data":{"hwnd":' . hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
-    ; #endregion
     return IsObject(uia) ? uia : 0
 }
 

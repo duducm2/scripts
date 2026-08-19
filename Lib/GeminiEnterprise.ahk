@@ -1104,59 +1104,34 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
     if (!hwnd)
         return false
     try {
-        ; #region agent log
-        logPath := A_ScriptDir . "\debug-ea789f.log"
-        try FileAppend(
-            '{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"enter","data":{"hwnd":' .
-            hwnd . '},"hypothesisId":"H-GE","timestamp":' . A_TickCount . '}' . "`n", logPath)
-        ; #endregion
         preUia := 0
         try preUia := UIA_Browser("ahk_id " hwnd)
         pf := IsObject(preUia) ? GeminiEnterprise_FindComposer(preUia) : 0
         snapshot := ChromeChat_ComposerSnapshot(pf)
 
-        ; Try UIA ScrollIntoView on the composer/omnibar first (most reliable for full-page-scroll layout).
-        scrolledViaUia := false
+        ; UIA ScrollIntoView on the composer (most reliable for Enterprise's full-page-scroll layout).
         if (pf) {
-            try {
-                pf.ScrollIntoView()
-                scrolledViaUia := true
-            } catch {
-            }
+            try pf.ScrollIntoView()
         }
-        ; Also try to find the omnibar search region and scroll it into view.
-        if (!scrolledViaUia && IsObject(preUia)) {
+        ; Also try the omnibar search region at the bottom of the page.
+        if (IsObject(preUia)) {
             try {
                 root := preUia.DocumentElement
                 if (!IsObject(root))
                     root := UIA.ElementFromHandle(hwnd)
                 omnibar := 0
                 try omnibar := root.FindFirst({ ClassName: "omnibar", matchmode: "Substring" })
-                if (IsObject(omnibar)) {
-                    try {
-                        omnibar.ScrollIntoView()
-                        scrolledViaUia := true
-                    }
-                }
+                if (IsObject(omnibar))
+                    try omnibar.ScrollIntoView()
             } catch {
             }
         }
-        ; #region agent log
-        try FileAppend(
-            '{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"uia attempt","data":{"scrolledViaUia":' .
-            (scrolledViaUia ? 1 : 0) . ',"hasPf":' . (IsObject(pf) ? 1 : 0) . '},"hypothesisId":"H-GE","timestamp":' .
-            A_TickCount . '}' . "`n", logPath)
-        ; #endregion
 
-        ; WM_MOUSEWHEEL fallback
+        ; Mousewheel-only fallback (no Ctrl+End — it leaks into Enterprise's ProseMirror composer).
         ChromeChat_ScrollFeedToBottomFallback(hwnd)
 
-        ; Re-find composer if needed and restore
-        if (!IsObject(pf)) {
-            uia := IsObject(preUia) ? preUia : 0
-            if (IsObject(uia))
-                pf := GeminiEnterprise_FindComposer(uia)
-        }
+        if (!IsObject(pf) && IsObject(preUia))
+            pf := GeminiEnterprise_FindComposer(preUia)
         if (pf) {
             try pf.ScrollIntoView()
             catch {

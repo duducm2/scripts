@@ -22,37 +22,15 @@
         try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
-        ; #region agent log
-        logPath := A_ScriptDir . "\debug-ea789f.log"
-        try FileAppend(
-            '{"sessionId":"ea789f","location":"hotif_scroll_ai.ahk:!u","message":"branch detect","data":{"proc":"' .
-            proc . '","title":"' . StrReplace(StrReplace(title, "\", "\\"), '"', '\"') . '","hwnd":' . hwnd .
-            '},"hypothesisId":"H-E","timestamp":' . A_TickCount . '}' . "`n", logPath)
-        ; #endregion
         if (proc = "chrome.exe" && CopilotWeb_IsCopilotHwnd(hwnd, "fast")) {
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"ea789f","location":"hotif_scroll_ai.ahk:!u","message":"branch: CopilotWeb","data":{},"hypothesisId":"H-E","timestamp":' .
-                A_TickCount . '}' . "`n", logPath)
-            ; #endregion
             CopilotWeb_ScrollFeedToBottom(hwnd)
             return
         }
         if (proc = "chrome.exe" && GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast")) {
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"ea789f","location":"hotif_scroll_ai.ahk:!u","message":"branch: GeminiEnterprise","data":{},"hypothesisId":"H-E","timestamp":' .
-                A_TickCount . '}' . "`n", logPath)
-            ; #endregion
             GeminiEnterprise_ScrollFeedToBottom(hwnd)
             return
         }
         if (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title)) {
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"ea789f","location":"hotif_scroll_ai.ahk:!u","message":"branch: ConsumerGemini","data":{},"hypothesisId":"H-E","timestamp":' .
-                A_TickCount . '}' . "`n", logPath)
-            ; #endregion
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }
