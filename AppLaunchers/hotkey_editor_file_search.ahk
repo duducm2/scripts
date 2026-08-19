@@ -16,6 +16,53 @@ global EDITOR_FILE_SEARCH_USE_TITLE_VERIFY := true
 global EDITOR_FILE_SEARCH_TITLE_VERIFY_MS := 1500
 global EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS := 2
 
+; #region agent log
+EditorFileSearch_DebugJsonEscape(s) {
+    s := StrReplace(String(s), "\", "\\")
+    s := StrReplace(s, '"', '\"')
+    s := StrReplace(s, "`n", "\n")
+    s := StrReplace(s, "`r", "")
+    return s
+}
+
+EditorFileSearch_DebugJoin(arr, delim := ",") {
+    s := ""
+    for i, v in arr
+        s .= (i = 1 ? "" : delim) v
+    return s
+}
+
+EditorFileSearch_DebugLog(hypothesisId, location, message, data := "") {
+    try {
+        logPath := A_ScriptDir "\debug-c69194.log"
+        dataJson := "{}"
+        if IsObject(data) && data.Count > 0 {
+            pairs := []
+            for k, v in data {
+                key := EditorFileSearch_DebugJsonEscape(k)
+                if (v is Integer || v is Float)
+                    pairs.Push('"' key '":' v)
+                else if (v = true || v = false)
+                    pairs.Push('"' key '":' (v ? "true" : "false"))
+                else
+                    pairs.Push('"' key '":"' EditorFileSearch_DebugJsonEscape(v) '"')
+            }
+            dataJson := "{" EditorFileSearch_DebugJoin(pairs) "}"
+        }
+        line := '{"sessionId":"c69194","hypothesisId":"' EditorFileSearch_DebugJsonEscape(hypothesisId)
+        . '","location":"' EditorFileSearch_DebugJsonEscape(location)
+        . '","message":"' EditorFileSearch_DebugJsonEscape(message)
+        . '","data":' dataJson ',"timestamp":' A_TickCount '}' "`n"
+        FileAppend line, logPath, "UTF-8"
+    } catch as err {
+        try FileAppend '{"sessionId":"c69194","message":"log_fail","data":"'
+            . EditorFileSearch_DebugJsonEscape(err.Message) '"}' "`n", A_ScriptDir "\debug-c69194.log", "UTF-8"
+        catch {
+        }
+    }
+}
+; #endregion
+
 EditorFileSearch_NormalizeBasename(raw) {
     if (raw = "")
         return ""
@@ -272,15 +319,28 @@ EditorFileSearch_Start() {
     global EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN
     if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN) {
         alreadyHwnd := EditorFileSearch_FindHwndAlreadyOpen(query, hwnds)
+        ; #region agent log
+        EditorFileSearch_DebugLog("A", "Start:alreadyOpenScan", "global already-open scan", Map(
+            "alreadyHwnd", alreadyHwnd, "query", query,
+            "basename", alreadyHwnd ? EditorFileSearch_BasenameFromTitle(alreadyHwnd) : ""))
+        ; #endregion
         if (alreadyHwnd) {
             try WinActivate("ahk_id " alreadyHwnd)
             EditorFileSearch_SaveHit(alreadyHwnd, query)
+            ; #region agent log
+            EditorFileSearch_DebugLog("A", "Start:alreadyOpenSkip", "return before Quick Open", Map("hwnd", alreadyHwnd
+            ))
+            ; #endregion
             return
         }
     }
 
     g_EditorFileSearchActive := true
     try {
+        ; #region agent log
+        EditorFileSearch_DebugLog("E", "Start:tryLoop", "entering hwnd loop", Map("hwndCount", hwnds.Length, "query",
+            query))
+        ; #endregion
         for hwnd in hwnds {
             if (EditorFileSearch_TryOpenInInstance(hwnd, query)) {
                 EditorFileSearch_SaveHit(hwnd, query)
@@ -372,41 +432,95 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
         EDITOR_FILE_SEARCH_POLL_STEP_MS, EDITOR_FILE_SEARCH_USE_TITLE_VERIFY,
         EDITOR_FILE_SEARCH_TITLE_VERIFY_MS, EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN
 
-    if !EditorFileSearch_IsEditorProcessHwnd(hwnd)
+    ; #region agent log
+    EditorFileSearch_DebugLog("E", "TryOpen:enter", "TryOpenInInstance", Map("hwnd", hwnd, "query", query))
+    ; #endregion
+
+    if !EditorFileSearch_IsEditorProcessHwnd(hwnd) {
+        ; #region agent log
+        EditorFileSearch_DebugLog("E", "TryOpen:exit", "not editor process", Map("hwnd", hwnd, "ok", false))
+        ; #endregion
         return false
+    }
 
     try {
         WinActivate("ahk_id " hwnd)
     } catch {
+        ; #region agent log
+        EditorFileSearch_DebugLog("E", "TryOpen:exit", "WinActivate failed", Map("hwnd", hwnd, "ok", false))
+        ; #endregion
         return false
     }
-    if (!WinWaitActive("ahk_id " hwnd, , EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC))
+    if (!WinWaitActive("ahk_id " hwnd, , EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC)) {
+        ; #region agent log
+        EditorFileSearch_DebugLog("E", "TryOpen:exit", "WinWaitActive timeout", Map("hwnd", hwnd, "ok", false))
+        ; #endregion
         return false
+    }
 
-    if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN && EditorFileSearch_HwndAlreadyHasFile(hwnd, query))
+    if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN && EditorFileSearch_HwndAlreadyHasFile(hwnd, query)) {
+        ; #region agent log
+        EditorFileSearch_DebugLog("A", "TryOpen:exit", "per-instance already-open skip", Map(
+            "hwnd", hwnd, "basename", EditorFileSearch_BasenameFromTitle(hwnd), "ok", true))
+        ; #endregion
         return true
+    }
 
     EditorFileSearch_ReleaseHotkeyModifiers()
     Send "{Escape}"
     Sleep 50
 
     Send "^p"
-    if (!EditorFileSearch_WaitForQuickInputFilter(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
+    waitOk := EditorFileSearch_WaitForQuickInput(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)
+    uiaMiss := !waitOk
+    if (uiaMiss && WinActive("ahk_id " hwnd))
+        waitOk := true
+    ; #region agent log
+    fgBefore := 0
+    try fgBefore := WinGetID("A")
+    EditorFileSearch_DebugLog("B", "TryOpen:afterWait", "WaitForQuickInput", Map(
+        "hwnd", hwnd, "waitOk", waitOk, "uiaMiss", uiaMiss, "fgHwnd", fgBefore,
+        "widget", EditorFileSearch_QuickInputVisible(hwnd)))
+    ; #endregion
+    if (!waitOk) {
         Send "{Escape}"
+        ; #region agent log
+        EditorFileSearch_DebugLog("B", "TryOpen:exit", "quick input wait failed", Map("hwnd", hwnd, "ok", false))
+        ; #endregion
         return false
     }
-    Sleep 50
 
-    SendText query
+    ; #region agent log
+    fgSend := 0
+    try fgSend := WinGetID("A")
+    EditorFileSearch_DebugLog("C", "TryOpen:beforeSendText", "about to type query", Map(
+        "hwnd", hwnd, "fgHwnd", fgSend, "fgMatches", fgSend = hwnd,
+        "queryLen", StrLen(query), "widget", EditorFileSearch_QuickInputVisible(hwnd)))
+    ; #endregion
+    typeMethod := EditorFileSearch_TypeQueryIntoQuickOpen(hwnd, query)
+    ; #region agent log
+    fgAfter := 0
+    try fgAfter := WinGetID("A")
+    EditorFileSearch_DebugLog("C", "TryOpen:afterSendText", "type query completed", Map(
+        "hwnd", hwnd, "fgHwnd", fgAfter, "typeMethod", typeMethod,
+        "widget", EditorFileSearch_QuickInputVisible(hwnd)))
+    ; #endregion
 
     deadline := A_TickCount + EDITOR_FILE_SEARCH_RESULT_POLL_MS
     while (A_TickCount < deadline) {
         if (EditorFileSearch_QuickPickHasNoResults(hwnd)) {
             Send "{Escape}"
+            ; #region agent log
+            EditorFileSearch_DebugLog("D", "TryOpen:exit", "no results in poll", Map("hwnd", hwnd, "ok", false))
+            ; #endregion
             return false
         }
         if (EditorFileSearch_HwndAlreadyHasFile(hwnd, query)) {
             Send "{Escape}"
+            ; #region agent log
+            EditorFileSearch_DebugLog("D", "TryOpen:exit", "title matched in poll before Enter", Map(
+                "hwnd", hwnd, "basename", EditorFileSearch_BasenameFromTitle(hwnd), "ok", true))
+            ; #endregion
             return true
         }
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
@@ -414,13 +528,24 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
 
     Send "{Enter}"
     if (EDITOR_FILE_SEARCH_USE_TITLE_VERIFY) {
-        if (EditorFileSearch_WaitForTitleBasenameMatch(hwnd, query, EDITOR_FILE_SEARCH_TITLE_VERIFY_MS))
+        if (EditorFileSearch_WaitForTitleBasenameMatch(hwnd, query, EDITOR_FILE_SEARCH_TITLE_VERIFY_MS)) {
+            ; #region agent log
+            EditorFileSearch_DebugLog("D", "TryOpen:exit", "title verify success", Map("hwnd", hwnd, "ok", true))
+            ; #endregion
             return true
+        }
     }
-    if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS))
+    if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS)) {
+        ; #region agent log
+        EditorFileSearch_DebugLog("D", "TryOpen:exit", "dismiss verify success", Map("hwnd", hwnd, "ok", true))
+        ; #endregion
         return true
+    }
 
     Send "{Escape}"
+    ; #region agent log
+    EditorFileSearch_DebugLog("D", "TryOpen:exit", "exhausted verify", Map("hwnd", hwnd, "ok", false))
+    ; #endregion
     return false
 }
 
@@ -449,29 +574,61 @@ EditorFileSearch_QuickInputWidget(hwnd) {
 }
 
 EditorFileSearch_QuickInputVisible(hwnd) {
-    return EditorFileSearch_QuickInputWidget(hwnd) != 0
-}
-
-EditorFileSearch_QuickInputFilterReady(hwnd) {
-    widget := EditorFileSearch_QuickInputWidget(hwnd)
-    if (!widget)
-        return false
-    try {
-        if (widget.FindFirst({ Type: "Edit" }, UIA.TreeScope.Descendants))
-            return true
-    } catch {
+    if (EditorFileSearch_QuickInputWidget(hwnd))
+        return true
+    root := EditorFileSearch_GetRoot(hwnd)
+    if (root) {
+        try {
+            if (root.FindFirst({ AutomationId: "quickInput.list.filter", cs: false }))
+                return true
+        } catch {
+        }
+    }
+    if WinActive("ahk_id " hwnd) {
+        try {
+            fe := UIA.GetFocusedElement()
+            if (fe && fe.ControlType = UIA.Type.Edit)
+                return true
+        } catch {
+        }
     }
     return false
 }
 
-EditorFileSearch_WaitForQuickInputFilter(hwnd, timeoutMs) {
+EditorFileSearch_TypeQueryIntoQuickOpen(hwnd, query) {
+    if !WinActive("ahk_id " hwnd) {
+        try WinActivate("ahk_id " hwnd)
+        if !WinWaitActive("ahk_id " hwnd, , 1)
+            return "no_foreground"
+    }
+    try {
+        ControlSendText query, , "ahk_id " hwnd
+        return "control_sendtext"
+    } catch {
+    }
+    try {
+        SendText query
+        return "sendtext"
+    } catch {
+        return "type_failed"
+    }
+}
+
+EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if (EditorFileSearch_QuickInputFilterReady(hwnd))
+        if (EditorFileSearch_QuickInputVisible(hwnd)) {
+            ; #region agent log
+            EditorFileSearch_DebugLog("B", "WaitForQuickInput:ready", "quick input detected", Map("hwnd", hwnd))
+            ; #endregion
             return true
+        }
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
+    ; #region agent log
+    EditorFileSearch_DebugLog("B", "WaitForQuickInput:timeout", "no quick input before deadline", Map("hwnd", hwnd))
+    ; #endregion
     return false
 }
 
