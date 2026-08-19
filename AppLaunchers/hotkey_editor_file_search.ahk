@@ -386,14 +386,16 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     if (EDITOR_FILE_SEARCH_SKIP_IF_ALREADY_OPEN && EditorFileSearch_HwndAlreadyHasFile(hwnd, query))
         return true
 
+    EditorFileSearch_ReleaseHotkeyModifiers()
     Send "{Escape}"
     Sleep 50
 
     Send "^p"
-    if (!EditorFileSearch_WaitForQuickInput(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
+    if (!EditorFileSearch_WaitForQuickInputFilter(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
         Send "{Escape}"
         return false
     }
+    Sleep 50
 
     SendText query
 
@@ -422,6 +424,11 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     return false
 }
 
+EditorFileSearch_ReleaseHotkeyModifiers() {
+    Send "{LWin up}{RWin up}{Alt up}{Shift up}{Ctrl up}"
+    Sleep 30
+}
+
 EditorFileSearch_GetRoot(hwnd) {
     try {
         return UIA.ElementFromHandle(hwnd)
@@ -430,29 +437,38 @@ EditorFileSearch_GetRoot(hwnd) {
     }
 }
 
-EditorFileSearch_QuickInputVisible(hwnd) {
+EditorFileSearch_QuickInputWidget(hwnd) {
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
+        return 0
+    try {
+        return root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false })
+    } catch {
+        return 0
+    }
+}
+
+EditorFileSearch_QuickInputVisible(hwnd) {
+    return EditorFileSearch_QuickInputWidget(hwnd) != 0
+}
+
+EditorFileSearch_QuickInputFilterReady(hwnd) {
+    widget := EditorFileSearch_QuickInputWidget(hwnd)
+    if (!widget)
         return false
     try {
-        if (root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false }))
-            return true
-    } catch {
-    }
-    try {
-        fe := UIA.GetFocusedElement()
-        if (fe && fe.ControlType = UIA.Type.Edit)
+        if (widget.FindFirst({ Type: "Edit" }, UIA.TreeScope.Descendants))
             return true
     } catch {
     }
     return false
 }
 
-EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
+EditorFileSearch_WaitForQuickInputFilter(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if (EditorFileSearch_QuickInputVisible(hwnd))
+        if (EditorFileSearch_QuickInputFilterReady(hwnd))
             return true
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
