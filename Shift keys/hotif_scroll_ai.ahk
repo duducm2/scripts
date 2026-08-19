@@ -23,7 +23,7 @@
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
         ; #region agent log
-        logPath := A_ScriptDir . "\..\debug-ea789f.log"
+        logPath := A_ScriptDir . "\debug-ea789f.log"
         try FileAppend(
             '{"sessionId":"ea789f","location":"hotif_scroll_ai.ahk:!u","message":"branch detect","data":{"proc":"' .
             proc . '","title":"' . StrReplace(StrReplace(title, "\", "\\"), '"', '\"') . '","hwnd":' . hwnd .

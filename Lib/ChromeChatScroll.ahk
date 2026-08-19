@@ -54,32 +54,12 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
             uia := 0
     }
     ; #region agent log
-    logPath := A_ScriptDir . "\..\debug-ea789f.log"
+    logPath := A_ScriptDir . "\debug-ea789f.log"
+    try FileAppend('{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:ScrollFast","message":"entry","data":{"hwnd":' . hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
     ; #endregion
-    ; Send Ctrl+End to the render widget to jump to page bottom, then mousewheel fallback.
-    rw := 0
-    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
-    ; #region agent log
-    try FileAppend(
-        '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:ScrollFast","message":"entry","data":{"hwnd":' . hwnd .
-        ',"rw":' . (rw ? rw : 0) . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
-    ; #endregion
-    if (rw) {
-        try {
-            ControlSend("^{End}", , "ahk_id " rw)
-            Sleep 80
-        }
-        ; #region agent log
-        try FileAppend(
-            '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:CtrlEnd","message":"sent Ctrl+End to rw","data":{"rw":' .
-            rw . '},"hypothesisId":"H-A","timestamp":' . A_TickCount . '}' . "`n", logPath)
-        ; #endregion
-    }
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
     ; #region agent log
-    try FileAppend(
-        '{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:AfterFallback","message":"wheel done","data":{"hwnd":' .
-        hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
+    try FileAppend('{"sessionId":"ea789f","location":"ChromeChatScroll.ahk:AfterFallback","message":"wheel done","data":{"hwnd":' . hwnd . '},"hypothesisId":"H-D","timestamp":' . A_TickCount . '}' . "`n", logPath)
     ; #endregion
     return IsObject(uia) ? uia : 0
 }
