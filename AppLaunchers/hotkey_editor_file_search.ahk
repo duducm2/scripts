@@ -79,18 +79,53 @@ EditorFileSearch_StripExtension(name) {
     return RegExReplace(name, "\.[^.\\\/]+$")
 }
 
-EditorFileSearch_QueryMatchesBasename(query, basename) {
+EditorFileSearch_QueryTokens(query) {
     q := EditorFileSearch_NormalizeQuery(query)
-    b := StrLower(EditorFileSearch_NormalizeBasename(basename))
-    if (q = "" || b = "")
+    tokens := []
+    if (q = "")
+        return tokens
+    for part in StrSplit(q, A_Space) {
+        part := Trim(part)
+        if (part != "")
+            tokens.Push(part)
+    }
+    return tokens
+}
+
+EditorFileSearch_TokenMatchesBasename(token, b, bStem) {
+    if (token = "" || b = "")
         return false
-    if (b = q)
+    tStem := EditorFileSearch_StripExtension(token)
+    if InStr(b, token)
         return true
-    qStem := EditorFileSearch_StripExtension(q)
+    if (tStem != "" && bStem != "" && InStr(bStem, tStem))
+        return true
+    return false
+}
+
+EditorFileSearch_QueryMatchesBasename(query, basename) {
+    b := StrLower(EditorFileSearch_NormalizeBasename(basename))
+    if (b = "")
+        return false
+    tokens := EditorFileSearch_QueryTokens(query)
+    if (tokens.Length = 0)
+        return false
+    if (tokens.Length = 1) {
+        q := tokens[1]
+        if (b = q)
+            return true
+        qStem := EditorFileSearch_StripExtension(q)
+        bStem := EditorFileSearch_StripExtension(b)
+        if (qStem != "" && bStem != "" && (qStem = bStem || InStr(bStem, qStem) || InStr(qStem, bStem)))
+            return true
+        return InStr(b, q) || InStr(q, b)
+    }
     bStem := EditorFileSearch_StripExtension(b)
-    if (qStem != "" && bStem != "" && (qStem = bStem || InStr(bStem, qStem) || InStr(qStem, bStem)))
-        return true
-    return InStr(b, q) || InStr(q, b)
+    for token in tokens {
+        if !EditorFileSearch_TokenMatchesBasename(token, b, bStem)
+            return false
+    }
+    return true
 }
 
 EditorFileSearch_HwndAlreadyHasFile(hwnd, query) {
