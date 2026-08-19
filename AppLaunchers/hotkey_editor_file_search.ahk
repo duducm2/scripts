@@ -67,8 +67,27 @@ EditorFileSearch_CollectEditorHwnds() {
     return result
 }
 
+EditorFileSearch_IsEditorProcessHwnd(hwnd) {
+    try {
+        proc := WinGetProcessName("ahk_id " hwnd)
+        return (proc = "Cursor.exe" || proc = "Code.exe")
+    } catch {
+        return false
+    }
+}
+
+EditorFileSearch_IsTargetEditorForeground(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    if !WinActive("ahk_id " hwnd)
+        return false
+    return EditorFileSearch_IsEditorProcessHwnd(hwnd)
+}
+
 EditorFileSearch_IsEligibleEditorHwnd(hwnd) {
     if !(hwnd is Integer) || hwnd <= 0
+        return false
+    if !EditorFileSearch_IsEditorProcessHwnd(hwnd)
         return false
     if !DllCall("IsWindowVisible", "ptr", hwnd)
         return false
@@ -93,6 +112,9 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
         EDITOR_FILE_SEARCH_RESULT_POLL_MS, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS,
         EDITOR_FILE_SEARCH_POLL_STEP_MS
 
+    if !EditorFileSearch_IsEditorProcessHwnd(hwnd)
+        return false
+
     try {
         WinActivate("ahk_id " hwnd)
     } catch {
@@ -100,20 +122,29 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     }
     if (!WinWaitActive("ahk_id " hwnd, , EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC))
         return false
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
 
     Send "{Escape}"
     Sleep 50
 
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
     Send "^p"
     if (!EditorFileSearch_WaitForQuickInput(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
-        Send "{Escape}"
+        if (EditorFileSearch_IsTargetEditorForeground(hwnd))
+            Send "{Escape}"
         return false
     }
 
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
     SendText query
 
     deadline := A_TickCount + EDITOR_FILE_SEARCH_RESULT_POLL_MS
     while (A_TickCount < deadline) {
+        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+            return false
         if (EditorFileSearch_QuickPickHasNoResults(hwnd)) {
             Send "{Escape}"
             return false
@@ -121,11 +152,14 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
 
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
     Send "{Enter}"
     if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS))
         return true
 
-    Send "{Escape}"
+    if (EditorFileSearch_IsTargetEditorForeground(hwnd))
+        Send "{Escape}"
     return false
 }
 
@@ -138,6 +172,8 @@ EditorFileSearch_GetRoot(hwnd) {
 }
 
 EditorFileSearch_QuickInputVisible(hwnd) {
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
         return false
@@ -147,8 +183,7 @@ EditorFileSearch_QuickInputVisible(hwnd) {
     } catch {
     }
     try {
-        fe := UIA.GetFocusedElement()
-        if (fe && fe.ControlType = UIA.Type.Edit)
+        if (root.FindFirst({ Type: 50004, AutomationId: "quickInput.list.filter", cs: false }))
             return true
     } catch {
     }
@@ -159,6 +194,8 @@ EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
+        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+            return false
         if (EditorFileSearch_QuickInputVisible(hwnd))
             return true
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
@@ -170,6 +207,8 @@ EditorFileSearch_WaitForQuickInputDismissed(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
+        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+            return false
         if (!EditorFileSearch_QuickInputVisible(hwnd))
             return true
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
@@ -178,6 +217,8 @@ EditorFileSearch_WaitForQuickInputDismissed(hwnd, timeoutMs) {
 }
 
 EditorFileSearch_QuickPickHasNoResults(hwnd) {
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
         return false
