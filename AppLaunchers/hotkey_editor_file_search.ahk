@@ -92,14 +92,39 @@ EditorFileSearch_QueryTokens(query) {
     return tokens
 }
 
-EditorFileSearch_TokenMatchesBasename(token, b, bStem) {
+EditorFileSearch_BasenameWords(b) {
+    words := []
+    if (b = "")
+        return words
+    for part in StrSplit(b, "_-. " Chr(9)) {
+        part := Trim(part)
+        if (part != "")
+            words.Push(part)
+    }
+    return words
+}
+
+EditorFileSearch_WordPrefixMatchesToken(word, token) {
+    if (word = token)
+        return true
+    if (StrLen(token) > StrLen(word))
+        return false
+    return SubStr(word, 1, StrLen(token)) = token
+}
+
+EditorFileSearch_TokenMatchesBasenameWords(token, b, bStem) {
     if (token = "" || b = "")
         return false
-    tStem := EditorFileSearch_StripExtension(token)
-    if InStr(b, token)
-        return true
-    if (tStem != "" && bStem != "" && InStr(bStem, tStem))
-        return true
+    for word in EditorFileSearch_BasenameWords(b) {
+        if EditorFileSearch_WordPrefixMatchesToken(word, token)
+            return true
+    }
+    if (bStem != "" && bStem != b) {
+        for word in EditorFileSearch_BasenameWords(bStem) {
+            if EditorFileSearch_WordPrefixMatchesToken(word, token)
+                return true
+        }
+    }
     return false
 }
 
@@ -122,7 +147,7 @@ EditorFileSearch_QueryMatchesBasename(query, basename) {
     }
     bStem := EditorFileSearch_StripExtension(b)
     for token in tokens {
-        if !EditorFileSearch_TokenMatchesBasename(token, b, bStem)
+        if !EditorFileSearch_TokenMatchesBasenameWords(token, b, bStem)
             return false
     }
     return true
