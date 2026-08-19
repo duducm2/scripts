@@ -8,8 +8,6 @@
 ; --- AppLauncher polyglot IPC feature flags (default off until phases verified) ---
 global AL_USE_DAEMON := false
 global AL_USE_MMF_IPC := false
-global AL_USE_EVENT_HOOKS := false
-global AL_USE_WIKI_FSM := false
 ; false = UIA gate before warm exit (rollback); true = keyboard-only when Desktop Explorer exists
 global AL_DESKTOP_WARM_KEYBOARD_ONLY := true
 
@@ -18,8 +16,6 @@ global AL_DESKTOP_WARM_KEYBOARD_ONLY := true
 #include %A_ScriptDir%\infra\ipc\AppLauncherIPC.ahk
 OnExit(AL_AppLaunchersExit, 1)
 AL_AppLaunchersExit(*) {
-    AL_RemoveInputGuard()
-    AL_UnregisterForegroundHook()
     AL_IPC_Teardown()
 }
 #include vendor\UIA-v2\Lib\UIA.ahk
@@ -42,11 +38,6 @@ if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
 ; stays here. See AppLaunchers/MODULARIZATION_PROGRESS.md for the full module list.
 ; -----------------------------------------------------------------------------
 
-; --- Global Variables ---
-
-; [AppLaunchers module] Phase 3/4 global state for hooks and wiki FSM -> AppLaunchers\config_globals.ahk
-#include %A_ScriptDir%\AppLaunchers\config_globals.ahk
-
 ; --- Hotkeys & Functions -----------------------------------------------------
 
 ; [AppLaunchers module] #!+n context file browser hotkey -> AppLaunchers\hotkey_context_browser.ahk
@@ -58,20 +49,8 @@ if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
 ; [AppLaunchers module] Chrome, WhatsApp, YouTube, Cursor launch hotkeys -> AppLaunchers\launch_hotkeys.ahk
 #include %A_ScriptDir%\AppLaunchers\launch_hotkeys.ahk
 
-; [AppLaunchers module] Wikipedia selector globals and article list -> AppLaunchers\wikipedia_globals.ahk
-#include %A_ScriptDir%\AppLaunchers\wikipedia_globals.ahk
-
-; [AppLaunchers module] Wikipedia focus monitor and input guard -> AppLaunchers\wikipedia_focus_guard.ahk
-#include %A_ScriptDir%\AppLaunchers\wikipedia_focus_guard.ahk
-
-; [AppLaunchers module] Wikipedia scroll position save/load/restore -> AppLaunchers\wikipedia_scroll.ahk
-#include %A_ScriptDir%\AppLaunchers\wikipedia_scroll.ahk
-
-; [AppLaunchers module] Wikipedia selector GUI and char handlers -> AppLaunchers\wikipedia_selector.ahk
-#include %A_ScriptDir%\AppLaunchers\wikipedia_selector.ahk
-
-; [AppLaunchers module] SelectWikipediaInHandy and #!+k hotkey -> AppLaunchers\wikipedia_entry.ahk
-#include %A_ScriptDir%\AppLaunchers\wikipedia_entry.ahk
+; [AppLaunchers module] #!+k editor file search across VS Code and Cursor -> AppLaunchers\hotkey_editor_file_search.ahk
+#include %A_ScriptDir%\AppLaunchers\hotkey_editor_file_search.ahk
 
 ; [AppLaunchers module] Pomodoro timer system with CSV logging -> AppLaunchers\pomodoro_timer.ahk
 #include %A_ScriptDir%\AppLaunchers\pomodoro_timer.ahk
