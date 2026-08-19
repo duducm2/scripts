@@ -12,19 +12,6 @@ ChromeChat_ScrollJsPayload() {
     return "(()=>{const S=['main','[role=main]','[class*=chat]','[class*=conversation]','[class*=messages]','[class*=Conversation]','[class*=Copilot]'];const c=new Set([document.scrollingElement,document.documentElement,document.body]);for(const s of S){try{document.querySelectorAll(s).forEach(e=>c.add(e))}catch(e){}}let best=document.scrollingElement,max=0;for(const el of c){if(!el)continue;const d=el.scrollHeight-el.clientHeight;if(d<=max)continue;const oy=getComputedStyle(el).overflowY;if(el!==document.scrollingElement&&el!==document.documentElement&&el!==document.body&&oy!=='auto'&&oy!=='scroll'&&oy!=='overlay')continue;max=d;best=el}if(best){best.scrollTop=best.scrollHeight;try{best.scrollTo(0,best.scrollHeight)}catch(e){}}try{window.scrollTo(0,Math.max(document.body.scrollHeight,document.documentElement.scrollHeight))}catch(e){}})();"
 }
 
-; #region agent log
-ChromeChat_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        payload := '{"sessionId":"ea789f","hypothesisId":"' . hypothesisId . '","location":"' . location .
-            '","message":"' . message . '","data":' . (data != "" ? data : "{}") . ',"timestamp":' . A_TickCount .
-            ',"runId":"post-fix"}' . "`n"
-        FileAppend(payload, A_Temp . "\debug-ea789f.log")
-        FileAppend(payload, "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
-    } catch {
-    }
-}
-; #endregion
-
 ChromeChat_FindFirstInUia(uia, criteriaList) {
     if (!IsObject(uia))
         return 0

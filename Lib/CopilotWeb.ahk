@@ -2203,13 +2203,10 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
 
         chatScroll := IsObject(preUia) ? CopilotWeb_FindChatScrollContainer(preUia) : 0
         lastMsg := IsObject(preUia) ? CopilotWeb_FindLastFeedMessage(preUia) : 0
-        scrollOk := ChromeChat_ScrollElementToBottom(chatScroll)
-        anchorOk := false
+        ChromeChat_ScrollElementToBottom(chatScroll)
         if (lastMsg) {
-            try {
-                lastMsg.ScrollIntoView()
-                anchorOk := true
-            } catch {
+            try lastMsg.ScrollIntoView()
+            catch {
             }
         }
         wheelTarget := chatScroll ? chatScroll : (pf ? pf : 0)
@@ -2217,11 +2214,6 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
             ChromeChat_ScrollViaMouseWheelAtElement(wheelTarget, hwnd, 80)
         else
             ChromeChat_ScrollFeedToBottomFallback(hwnd)
-        ; #region agent log
-        ChromeChat_DebugLog("H-B", "CopilotWeb:scroll", "uia scroll", '{"hasPf":' . (IsObject(pf) ? 1 : 0) .
-        ',"hasChatScroll":' . (IsObject(chatScroll) ? 1 : 0) . ',"scrollOk":' . (scrollOk ? 1 : 0) .
-        ',"hasLastMsg":' . (IsObject(lastMsg) ? 1 : 0) . ',"anchorOk":' . (anchorOk ? 1 : 0) . '}')
-        ; #endregion
 
         if (!IsObject(pf) && IsObject(preUia))
             pf := CopilotWeb_FindComposer(preUia)

@@ -22,28 +22,15 @@
         try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
-        ; #region agent log
-        ChromeChat_DebugLog("H-A", "hotif_scroll_ai:branch", "detect", '{"proc":"' . proc . '","title":"' .
-            StrReplace(StrReplace(title, "\", "\\"), '"', '\"') . '"}')
-        ; #endregion
         if (proc = "chrome.exe" && CopilotWeb_IsCopilotHwnd(hwnd, "fast")) {
-            ; #region agent log
-            ChromeChat_DebugLog("H-A", "hotif_scroll_ai:copilot", "branch:copilot", "{}")
-            ; #endregion
             CopilotWeb_ScrollFeedToBottom(hwnd)
             return
         }
         if (proc = "chrome.exe" && GeminiEnterprise_IsEnterpriseHwnd(hwnd, "fast")) {
-            ; #region agent log
-            ChromeChat_DebugLog("H-C", "hotif_scroll_ai:enterprise", "branch:enterprise", "{}")
-            ; #endregion
             GeminiEnterprise_ScrollFeedToBottom(hwnd)
             return
         }
         if (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title)) {
-            ; #region agent log
-            ChromeChat_DebugLog("H-A", "hotif_scroll_ai:personal", "branch:personal", "{}")
-            ; #endregion
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }

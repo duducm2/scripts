@@ -1112,10 +1112,6 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
         mainPanel := 0
         omnibar := 0
         copyBtn := 0
-        panelOk := false
-        pfOk := false
-        omniOk := false
-        copyOk := false
         if (IsObject(preUia)) {
             try {
                 root := preUia.DocumentElement
@@ -1123,13 +1119,11 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
                     root := UIA.ElementFromHandle(hwnd)
                 mainPanel := ChromeChat_FindFirstInUia(root, [{ AutomationId: "main-panel" }, { ClassName: "enable-full-page-scroll-view",
                     matchmode: "Substring" }])
-                panelOk := ChromeChat_ScrollElementToBottom(mainPanel)
+                ChromeChat_ScrollElementToBottom(mainPanel)
                 copyBtn := GeminiEnterprise_GetLastCopyButton(preUia)
                 if (copyBtn) {
-                    try {
-                        copyBtn.ScrollIntoView()
-                        copyOk := true
-                    } catch {
+                    try copyBtn.ScrollIntoView()
+                    catch {
                     }
                 }
                 try omnibar := root.FindFirst({ ClassName: "omnibar", matchmode: "Substring" })
@@ -1137,17 +1131,13 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
             }
         }
         if (pf) {
-            try {
-                pf.ScrollIntoView()
-                pfOk := true
-            } catch {
+            try pf.ScrollIntoView()
+            catch {
             }
         }
         if (IsObject(omnibar)) {
-            try {
-                omnibar.ScrollIntoView()
-                omniOk := true
-            } catch {
+            try omnibar.ScrollIntoView()
+            catch {
             }
         }
         wheelTarget := mainPanel ? mainPanel : (omnibar ? omnibar : (pf ? pf : 0))
@@ -1155,12 +1145,6 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
             ChromeChat_ScrollViaMouseWheelAtElement(wheelTarget, hwnd, 80)
         else
             ChromeChat_ScrollFeedToBottomFallback(hwnd)
-        ; #region agent log
-        ChromeChat_DebugLog("H-D", "GeminiEnterprise:scroll", "uia scroll", '{"hasPf":' . (IsObject(pf) ? 1 : 0) .
-        ',"pfOk":' . (pfOk ? 1 : 0) . ',"hasMainPanel":' . (IsObject(mainPanel) ? 1 : 0) . ',"panelOk":' . (
-            panelOk ? 1 : 0) . ',"hasCopyBtn":' . (IsObject(copyBtn) ? 1 : 0) . ',"copyOk":' . (copyOk ? 1 : 0) .
-        ',"omniOk":' . (omniOk ? 1 : 0) . '}')
-        ; #endregion
 
         if (!IsObject(pf) && IsObject(preUia))
             pf := GeminiEnterprise_FindComposer(preUia)
