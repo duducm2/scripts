@@ -1339,6 +1339,14 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
         try preUia := UIA_Browser("ahk_id " hwnd)
         pf := IsObject(preUia) ? FindGeminiPromptField(preUia) : 0
         snapshot := ChromeChat_ComposerSnapshot(pf)
+        ; #region agent log
+        _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+        try FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"A-C","location":"hotif_editor_02:GeminiScrollFeedToBottom_Chrome","message":"pre-scroll state","data":{"preUiaOk":' (
+                IsObject(preUia) ? "true" : "false") ',"pfFound":' (IsObject(pf) ? "true" : "false") ',"snapshot":"' StrReplace(
+                    SubStr(snapshot, 1, 80), '"', "'") '","snapshotLen":' StrLen(snapshot) '},"timestamp":' A_TickCount '}' "`n",
+            _dbgL)
+        ; #endregion agent log
 
         uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
         if (!IsObject(uia))
@@ -1352,7 +1360,27 @@ GeminiScrollFeedToBottom_Chrome(hwnd) {
             }
         }
         ChromeChat_ComposerRestore(pf, snapshot)
-    } catch {
+        ; #region agent log
+        postVal := ""
+        try postVal := pf.Value
+        catch {
+            try postVal := pf.Name
+            catch {
+                postVal := "<unreadable>"
+            }
+        }
+        try FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"D-E","location":"hotif_editor_02:GeminiScrollFeedToBottom_Chrome:post","message":"post-scroll state","data":{"pfFound":' (
+                IsObject(pf) ? "true" : "false") ',"postVal":"' StrReplace(SubStr(postVal, 1, 120), '"', "'") '","postLen":' StrLen(
+                    postVal) ',"snapshotLen":' StrLen(snapshot) '},"timestamp":' A_TickCount '}' "`n", _dbgL)
+        ; #endregion agent log
+    } catch as _dbgErr {
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"outer-catch","location":"hotif_editor_02:GeminiScrollFeedToBottom_Chrome:catch","message":"outer catch","data":{"err":"' StrReplace(
+                SubStr(_dbgErr.Message, 1, 120), '"', "'") '"},"timestamp":' A_TickCount '}' "`n",
+            "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+        ; #endregion agent log
     }
 }
 

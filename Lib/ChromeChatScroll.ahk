@@ -17,22 +17,30 @@ ChromeChat_ScrollFeedToBottomFallback(hwnd) {
     try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
     catch
         rw := 0
-    if (rw) {
-        try ControlSend "{Blind}^{End}", , "ahk_id " rw
-        catch {
-            try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-            catch {
-                Send "^{End}"
-            }
-        }
-        try ControlSend "{WheelDown 40}", , "ahk_id " rw
-        catch {
-        }
-    } else {
-        try ControlSend "{Blind}^{End}", , "ahk_id " hwnd
-        catch {
-            Send "^{End}"
-        }
+    target := rw ? rw : hwnd
+    ChromeChat_ScrollViaMouseWheel(target, 60)
+}
+
+; Scroll by posting WM_MOUSEWHEEL messages to the render widget.
+; This never leaks keystrokes into the focused element (unlike ControlSend Ctrl+End).
+ChromeChat_ScrollViaMouseWheel(hwnd, clicks := 40) {
+    static WM_MOUSEWHEEL := 0x020A
+    ; WHEEL_DELTA = 120 per notch; negative = scroll down
+    wParam := (-120 * 1) << 16
+    ; lParam = cursor pos relative to window; center of the window works fine
+    try {
+        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " hwnd)
+        cx := ww // 2
+        cy := wh // 2
+    } catch {
+        cx := 400
+        cy := 400
+    }
+    lParam := (cy << 16) | (cx & 0xFFFF)
+    loop clicks {
+        try PostMessage(WM_MOUSEWHEEL, wParam, lParam, , "ahk_id " hwnd)
+        if (Mod(A_Index, 10) = 0)
+            Sleep 10
     }
 }
 
@@ -45,17 +53,15 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
         catch
             uia := 0
     }
-    jsOk := false
-    if (IsObject(uia)) {
-        try {
-            uia.JSExecute(ChromeChat_ScrollJsPayload())
-            jsOk := true
-        } catch {
-            jsOk := false
-        }
-    }
-    if (!jsOk)
-        ChromeChat_ScrollFeedToBottomFallback(hwnd)
+    ; JSExecute intentionally skipped: it types the JS payload into the focused
+    ; composer when the omnibox isn't targeted (confirmed via debug session 97a80a).
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"97a80a","hypothesisId":"B-fix","location":"ChromeChatScroll:ScrollFeedToBottomFast","message":"scroll via mousewheel","data":{"uiaOk":' (
+            IsObject(uia) ? "true" : "false") '},"timestamp":' A_TickCount '}' "`n",
+        "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+    ; #endregion agent log
+    ChromeChat_ScrollFeedToBottomFallback(hwnd)
     return IsObject(uia) ? uia : 0
 }
 
@@ -81,6 +87,13 @@ ChromeChat_ComposerSnapshot(composerEl) {
 ; composerEl - same UIA element used for the snapshot
 ; snapshot   - the string returned by ChromeChat_ComposerSnapshot
 ChromeChat_ComposerRestore(composerEl, snapshot) {
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"97a80a","hypothesisId":"A-E","location":"ChromeChatScroll:ComposerRestore:entry","message":"restore entry","data":{"hasEl":' (
+            IsObject(composerEl) ? "true" : "false") ',"snapshotEmpty":' (snapshot = "" ? "true" : "false") ',"snapshotLen":' StrLen(
+                snapshot) '},"timestamp":' A_TickCount '}' "`n",
+        "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log")
+    ; #endregion agent log
     if (!IsObject(composerEl) || snapshot = "")
         return
     current := ""

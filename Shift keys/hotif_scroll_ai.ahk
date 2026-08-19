@@ -22,6 +22,12 @@
         try proc := StrLower(WinGetProcessName("ahk_id " hwnd))
         title := ""
         try title := WinGetTitle("ahk_id " hwnd)
+        ; #region agent log
+        _dbgL := "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-97a80a.log"
+        try FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:!u","message":"dispatch entry","data":{"proc":"' proc '","title":"' StrReplace(
+                SubStr(title, 1, 80), '"', "'") '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+        ; #endregion agent log
         if (proc = "chrome.exe" && CopilotWeb_IsCopilotHwnd(hwnd, "fast")) {
             CopilotWeb_ScrollFeedToBottom(hwnd)
             return
@@ -30,7 +36,13 @@
             GeminiEnterprise_ScrollFeedToBottom(hwnd)
             return
         }
-        if (proc = "chrome.exe" && IsConsumerGeminiChromeTitle(title)) {
+        ; #region agent log
+        _isConsGem := (proc = "chrome.exe") ? IsConsumerGeminiChromeTitle(title) : false
+        try FileAppend(
+            '{"sessionId":"97a80a","hypothesisId":"dispatch","location":"hotif_scroll_ai:gemini-check","message":"consumer gemini check","data":{"isConsumerGemini":' (
+                _isConsGem ? "true" : "false") ',"proc":"' proc '"},"timestamp":' A_TickCount '}' "`n", _dbgL)
+        ; #endregion agent log
+        if (proc = "chrome.exe" && _isConsGem) {
             GeminiScrollFeedToBottom_Chrome(hwnd)
             return
         }
