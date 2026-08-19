@@ -10,9 +10,12 @@ global EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS := 800
 global EDITOR_FILE_SEARCH_RESULT_POLL_MS := 600
 global EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS := 800
 global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
-
-global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
 global EDITOR_FILE_SEARCH_USE_HIT_CACHE := true
+
+EditorFileSearch_ReleaseHotkeyModifiers() {
+    Send "{LWin up}{RWin up}{Alt up}{Shift up}{Ctrl up}"
+    Sleep 30
+}
 
 EditorFileSearch_IniPath() {
     return A_ScriptDir "\assets\data\editor_file_search.ini"
@@ -210,21 +213,21 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     if !EditorFileSearch_IsTargetEditorForeground(hwnd)
         return false
 
+    EditorFileSearch_ReleaseHotkeyModifiers()
     Send "{Escape}"
     Sleep 50
 
     if !EditorFileSearch_IsTargetEditorForeground(hwnd)
         return false
     Send "^p"
-    if (!EditorFileSearch_WaitForQuickInput(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
+    if (!EditorFileSearch_WaitForQuickInputFilter(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
         if (EditorFileSearch_IsTargetEditorForeground(hwnd))
             Send "{Escape}"
         return false
     }
 
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+    if !EditorFileSearch_TypeQueryIntoQuickInput(hwnd, query)
         return false
-    SendText query
 
     deadline := A_TickCount + EDITOR_FILE_SEARCH_RESULT_POLL_MS
     while (A_TickCount < deadline) {
@@ -256,9 +259,90 @@ EditorFileSearch_GetRoot(hwnd) {
     }
 }
 
+EditorFileSearch_FindQuickInputFilter(hwnd) {
+    root := EditorFileSearch_GetRoot(hwnd)
+    if (!root)
+        return 0
+    try {
+        filter := root.FindFirst({ Type: 50004, AutomationId: "quickInput.list.filter", cs: false })
+        if (filter)
+            return filter
+    } catch {
+    }
+    try {
+        widget := root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false })
+        if (widget) {
+            filter := widget.FindFirst({ Type: 50004, cs: false })
+            if (filter)
+                return filter
+        }
+    } catch {
+    }
+    return 0
+}
+
+EditorFileSearch_WaitForQuickInputFilter(hwnd, timeoutMs) {
+    global EDITOR_FILE_SEARCH_POLL_STEP_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+            return false
+        if (EditorFileSearch_FindQuickInputFilter(hwnd))
+            return true
+        Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
+    }
+    return false
+}
+
+EditorFileSearch_TypeQueryIntoQuickInput(hwnd, query) {
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
+    if (query = "")
+        return false
+
+    filter := EditorFileSearch_FindQuickInputFilter(hwnd)
+    if (!filter)
+        return false
+
+    try {
+        if (filter.GetPropertyValue(UIA.Property.IsValuePatternAvailable)) {
+            filter.ValuePattern.SetValue(query)
+            return true
+        }
+    } catch {
+    }
+
+    try {
+        filter.SetFocus()
+    } catch {
+        try {
+            filter.Click()
+        } catch {
+            return false
+        }
+    }
+    Sleep 50
+    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
+        return false
+
+    try {
+        ControlSendText query, , "ahk_id " hwnd
+        return true
+    } catch {
+    }
+    try {
+        SendText query
+        return true
+    } catch {
+    }
+    return false
+}
+
 EditorFileSearch_QuickInputVisible(hwnd) {
     if !EditorFileSearch_IsTargetEditorForeground(hwnd)
         return false
+    if (EditorFileSearch_FindQuickInputFilter(hwnd))
+        return true
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
         return false
@@ -266,24 +350,6 @@ EditorFileSearch_QuickInputVisible(hwnd) {
         if (root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false }))
             return true
     } catch {
-    }
-    try {
-        if (root.FindFirst({ Type: 50004, AutomationId: "quickInput.list.filter", cs: false }))
-            return true
-    } catch {
-    }
-    return false
-}
-
-EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
-    global EDITOR_FILE_SEARCH_POLL_STEP_MS
-    deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
-        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-            return false
-        if (EditorFileSearch_QuickInputVisible(hwnd))
-            return true
-        Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
     return false
 }
