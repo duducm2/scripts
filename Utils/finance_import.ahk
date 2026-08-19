@@ -53,7 +53,14 @@ Finance_ReadAiImportCsv(path) {
     try FileDelete(tmp)
     catch {
     }
-    return rows
+    cleaned_rows := []
+    for r in rows {
+        d := r.Has("description") ? StrLower(Trim(r["description"])) : ""
+        if (d = "description" || d = "amount" || d = "type")
+            continue
+        cleaned_rows.Push(r)
+    }
+    return cleaned_rows
 }
 
 ; Newest Desktop dump that looks like a daily finance CSV (Gemini code downloads).
@@ -90,6 +97,106 @@ Finance_ArchiveImported(path) {
     }
 }
 
+; Editable import preview. parsed is an array of Maps (mutated in place).
+; Returns true if user confirms import, false if cancelled.
+Finance_ImportConfirmEditable(title, parsed) {
+    global g_FinanceGui
+    owner := ""
+    try {
+        if (IsObject(g_FinanceGui))
+            owner := " +Owner" . g_FinanceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    accs := Finance_Load("accounts")
+    cats := Finance_Load("categories")
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
+    g.SetFont("s10", "Segoe UI")
+    hdr := g.Add("Text", "x12 y8 w880", "Import preview — " . parsed.Length . " row(s).  Double-click to edit.")
+    lv := g.Add("ListView", "x12 y32 w896 r14 Grid", ["Date", "Type", "Description", "Amount", "Category", "Account"])
+    ok := false
+
+    RefreshLv() {
+        lv.Delete()
+        for p in parsed {
+            cat := Finance_CatName(cats, p["category_id"])
+            if (p["subcategory"] != "")
+                cat .= " / " . p["subcategory"]
+            acc := Finance_AccName(accs, p["account_id"])
+            if (p["type"] = "card_expense" && p["card_id"] != "")
+                acc := "card:" . p["card_id"]
+            lv.Add("", p["date"], Finance_TypeLabel(p["type"]), p["description"],
+            p["amount"], cat, acc)
+        }
+        lv.ModifyCol(1, 90)
+        lv.ModifyCol(2, 90)
+        lv.ModifyCol(3, 250)
+        lv.ModifyCol(4, 100)
+        lv.ModifyCol(5, 180)
+        lv.ModifyCol(6, 160)
+        hdr.Value := "Import preview — " . parsed.Length . " row(s).  Double-click to edit."
+    }
+
+    EditSelected() {
+        row := lv.GetNext()
+        if (!row || row > parsed.Length)
+            return
+        if (Finance_ImportRowForm(g, parsed[row], cats, accs))
+            RefreshLv()
+    }
+
+    DeleteSelected() {
+        row := lv.GetNext()
+        if (!row || row > parsed.Length)
+            return
+        parsed.RemoveAt(row)
+        RefreshLv()
+    }
+
+    AddRow() {
+        newRow := Map(
+            "date", Finance_Yesterday(),
+            "description", "",
+            "amount", "0,00",
+            "type", "expense",
+            "category_id", "",
+            "subcategory", "",
+            "account_id", "",
+            "card_id", "",
+            "transfer_account_id", ""
+        )
+        if (Finance_ImportRowForm(g, newRow, cats, accs)) {
+            parsed.Push(newRow)
+            RefreshLv()
+        }
+    }
+
+    RefreshLv()
+    lv.OnEvent("DoubleClick", (*) => EditSelected())
+
+    btnY := "y+10"
+    g.Add("Button", btnY . " x12 w80", "Edit").OnEvent("Click", (*) => EditSelected())
+    g.Add("Button", "x+6 w80", "Delete").OnEvent("Click", (*) => DeleteSelected())
+    g.Add("Button", "x+6 w80", "Add").OnEvent("Click", (*) => AddRow())
+    g.Add("Button", "x+30 w100 Default", "Import").OnEvent("Click", ConfirmYes)
+    g.Add("Button", "x+6 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.Show("w920")
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    Finance_DialogsEnd()
+    return ok
+
+    ConfirmYes(*) {
+        ok := true
+        g.Destroy()
+    }
+}
+
+; Simple read-only confirm for monthly import (unchanged behavior).
 Finance_ImportConfirm(title, lines) {
     global g_FinanceGui
     owner := ""
@@ -124,6 +231,168 @@ Finance_ImportConfirm(title, lines) {
     }
 }
 
+; Edit a single import row Map in-place. Returns true if saved.
+Finance_ImportRowForm(ownerGui, row, cats, accs) {
+    cards := Finance_Load("credit_cards")
+    owner := " +Owner" . ownerGui.Hwnd
+    Finance_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Edit import row")
+    g.SetFont("s10", "Segoe UI")
+
+    g.Add("Text", "x10 y10", "Description")
+    eDesc := g.Add("Edit", "x10 y28 w420", row["description"])
+    g.Add("Text", "x10 y58", "Amount (comma decimal)")
+    eAmt := g.Add("Edit", "x10 y76 w200", row["amount"])
+
+    types := ["expense", "income", "transfer", "card_expense", "adjustment"]
+    curType := row["type"]
+    typeIdx := 1
+    loop types.Length {
+        if (types[A_Index] = curType)
+            typeIdx := A_Index
+    }
+    g.Add("Text", "x230 y58", "Type")
+    ddType := g.Add("DropDownList", "x230 y76 w200 Choose" . typeIdx,
+        ["Expense", "Income", "Transfer", "Credit card", "Adjustment"])
+
+    y1 := 112
+    y1c := 130
+    y2 := 168
+    y2c := 186
+
+    catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true, "icon")
+    catIdx := Finance_ComboIndex(catCombo.ids, row["category_id"])
+    lblCat := g.Add("Text", "x10 y" . y1, "Category")
+    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w220 Choose" . catIdx, catCombo.names)
+    lblSub := g.Add("Text", "x242 y" . y1, "Subcategory")
+    eSub := g.Add("Edit", "x242 y" . y1c . " w180", row["subcategory"])
+
+    accCombo := Finance_ComboFromRows(accs)
+    accIdx := Finance_ComboIndex(accCombo.ids, row["account_id"] != "" ? row["account_id"]
+        : Finance_Setting("General", "DefaultAccountId", ""))
+    lblAcc := g.Add("Text", "x10 y" . y2, "Account")
+    ddAcc := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . accIdx, accCombo.names)
+
+    destCombo := Finance_ComboFromRows(accs, "id", "name", true)
+    destIdx := Finance_ComboIndex(destCombo.ids, row["transfer_account_id"])
+    lblDest := g.Add("Text", "x242 y" . y2, "To account")
+    ddDest := g.Add("DropDownList", "x242 y" . y2c . " w180 Choose" . destIdx, destCombo.names)
+
+    primaryCardId := Finance_Setting("General", "PrimaryCardId", "")
+    cardRows := []
+    if (primaryCardId != "") {
+        prow := Finance_FindById(cards, primaryCardId)
+        if (prow)
+            cardRows.Push(prow)
+    }
+    for c in cards {
+        if (c["id"] != primaryCardId)
+            cardRows.Push(c)
+    }
+    cardCombo := Finance_ComboFromRows(cardRows, "id", "name", false)
+    defaultCardId := row["card_id"] != "" ? row["card_id"] : primaryCardId
+    if (defaultCardId = "" && cardCombo.ids.Length)
+        defaultCardId := cardCombo.ids[1]
+    cardIdx := Finance_ComboIndex(cardCombo.ids, defaultCardId)
+    lblCard := g.Add("Text", "x10 y" . y2, "Credit card")
+    ddCard := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . cardIdx, cardCombo.names)
+
+    saved := false
+    g.Add("Button", "x10 y230 w100 Default", "Save").OnEvent("Click", SaveRow)
+    g.Add("Button", "x118 y230 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    ddType.OnEvent("Change", (*) => ApplyFields(types[ddType.Value]))
+    ApplyFields(curType)
+    g.Show("w460 h280")
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    Finance_DialogsEnd()
+    return saved
+
+    ApplyFields(t) {
+        showCat := (t != "transfer")
+        showAcc := (t != "card_expense")
+        showDest := (t = "transfer")
+        showCard := (t = "card_expense")
+        lblCat.Visible := showCat
+        ddCat.Visible := showCat
+        lblSub.Visible := showCat
+        eSub.Visible := showCat
+        lblAcc.Visible := showAcc
+        ddAcc.Visible := showAcc
+        lblDest.Visible := showDest
+        ddDest.Visible := showDest
+        lblCard.Visible := showCard
+        ddCard.Visible := showCard
+        lblAcc.Text := (t = "transfer") ? "From account" : "Account"
+        if (t = "transfer") {
+            lblAcc.Move(10, y1)
+            ddAcc.Move(10, y1c)
+            lblDest.Move(242, y2)
+            ddDest.Move(242, y2c)
+        } else {
+            lblAcc.Move(10, y2)
+            ddAcc.Move(10, y2c)
+        }
+        catFilter := ""
+        if (t = "expense" || t = "card_expense")
+            catFilter := "expense"
+        else if (t = "income")
+            catFilter := "income"
+        keepId := ""
+        try keepId := catCombo.ids[ddCat.Value]
+        catch {
+            keepId := ""
+        }
+        catCombo := Finance_ComboFromRows(Finance_MainCategories(cats, catFilter), "id", "name", true, "icon")
+        ddCat.Delete()
+        ddCat.Add(catCombo.names)
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, keepId))
+    }
+
+    SaveRow(*) {
+        desc := Trim(eDesc.Value)
+        if (desc = "") {
+            Finance_Alert("Description is required.", "Import")
+            return
+        }
+        rawAmt := Finance_NormalizeDot(eAmt.Value)
+        amt := Finance_ParseDecimal(rawAmt)
+        if (amt < 0)
+            amt := -amt
+        t := types[ddType.Value]
+        catId := ""
+        subVal := ""
+        accId := ""
+        destId := ""
+        cardId := ""
+        if (t != "transfer") {
+            catId := catCombo.ids[ddCat.Value]
+            subVal := Trim(eSub.Value)
+        }
+        if (t != "card_expense")
+            accId := accCombo.ids[ddAcc.Value]
+        if (t = "transfer")
+            destId := destCombo.ids[ddDest.Value]
+        if (t = "card_expense") {
+            cardId := cardCombo.ids[ddCard.Value]
+            if (cardId = "")
+                cardId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
+        }
+        row["description"] := desc
+        row["amount"] := Finance_FormatCsvDecimal(amt)
+        row["type"] := t
+        row["category_id"] := catId
+        row["subcategory"] := subVal
+        row["account_id"] := accId
+        row["card_id"] := cardId
+        row["transfer_account_id"] := destId
+        saved := true
+        g.Destroy()
+    }
+}
+
 Finance_ImportDaily(*) {
     Finance_ImportDailyFromPath("", false)
 }
@@ -149,7 +418,6 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         return false
     }
     cats := Finance_Load("categories")
-    lines := []
     parsed := []
     for r in rows {
         desc := r.Has("description") ? r["description"] : ""
@@ -170,10 +438,13 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             "card_id", r.Has("card_id") ? r["card_id"] : "",
             "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : ""
         ))
-        lines.Push(date . "  " . t . "  " . desc . "  " . amt)
     }
-    if (!autoConfirm && !Finance_ImportConfirm("Import daily transactions", lines))
+    if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
         return false
+    if (!parsed.Length) {
+        Finance_Notify("No rows to import", 1800, BANNER_ACCENT_ERROR)
+        return false
+    }
     txs := Finance_Load("transactions")
     for p in parsed {
         p["id"] := Finance_NextId("TX", txs)
@@ -200,7 +471,7 @@ Finance_AfterDailyImport(parsed, autoConfirm) {
         months[ym] := true
         if (ym = cur)
             hasCurrent := true
-        if (latest = "" || p["date"] > latest)
+        if (latest = "" || StrCompare(p["date"], latest) > 0)
             latest := p["date"]
     }
     nMonths := 0
