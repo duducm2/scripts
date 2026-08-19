@@ -70,10 +70,12 @@ def build_html(data: dict) -> str:
           <div class="perf-line" id="perfLine">{prev_lbl} {format_brl(prev_b)} · {cur_lbl} {format_brl(cur_b)} ({vs:+.0f}%) · Kept {data['saved_pct']:.0f}% · Top: {top}</div>
         </div>"""
 
-    pies_html = ""
+    pie_exp_html = ""
+    pie_inc_html = ""
     if widget_on(s, "ShowPies"):
-        pies_html = """
-          <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
+        pie_exp_html = """
+          <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>"""
+        pie_inc_html = """
           <div class="panel chart-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>"""
 
     year_lbl = data.get("period_year") or cur[:4]
@@ -172,9 +174,9 @@ def build_html(data: dict) -> str:
             bud_summary = ""
         sum_style = "" if items else ' style="display:none"'
         bud_html = f"""
-        <div class="panel"><h2>Budgets</h2>
+        <div class="panel chart-cell budget-panel"><h2>Budgets</h2>
           <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
-          <div id="budgetsBody">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
+          <div id="budgetsBody" class="budget-scroll">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
 
     card_bars_html = ""
     card_items = []
@@ -363,6 +365,7 @@ def build_html(data: dict) -> str:
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
     .chart-cell {{ min-width:0; }}
+    .budget-panel .budget-scroll {{ max-height:320px; overflow-y:auto; }}
     .chart-span {{ grid-column:1 / -1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
     .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
@@ -398,10 +401,11 @@ def build_html(data: dict) -> str:
   {cards_html}
   {perf_html}
   <div class="charts">
-    {pies_html}
+    {bud_html}
+    {pie_exp_html}
+    {pie_inc_html}
     {reports_html}
   </div>
-  {bud_html}
   <div class="split">
     {goals_html}
     {acc_html}
