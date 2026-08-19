@@ -18,7 +18,7 @@ ChromeChat_ScrollFeedToBottomFallback(hwnd) {
     catch
         rw := 0
     target := rw ? rw : hwnd
-    ChromeChat_ScrollViaMouseWheel(target, 60)
+    ChromeChat_ScrollViaMouseWheel(target, 120)
 }
 
 ; Scroll by posting WM_MOUSEWHEEL messages to the render widget.
@@ -53,8 +53,24 @@ ChromeChat_ScrollFeedToBottomFast(hwnd, uia := 0) {
         catch
             uia := 0
     }
-    ; JSExecute intentionally skipped: it types the JS payload into the focused
-    ; composer when the omnibox isn't targeted.
+    ; Focus address bar, inject JS, then return to page.
+    jsOk := false
+    try {
+        rw := 0
+        try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+        ControlSend("^l", , "ahk_id " hwnd)
+        Sleep 120
+        jsUrl := "javascript:" . ChromeChat_ScrollJsPayload()
+        A_Clipboard := jsUrl
+        ControlSend("^v", , "ahk_id " hwnd)
+        Sleep 80
+        ControlSend("{Enter}", , "ahk_id " hwnd)
+        Sleep 200
+        ControlSend("{Escape}", , "ahk_id " hwnd)
+        Sleep 50
+        jsOk := true
+    }
+    ; WM_MOUSEWHEEL fallback -- always runs as belt-and-suspenders
     ChromeChat_ScrollFeedToBottomFallback(hwnd)
     return IsObject(uia) ? uia : 0
 }
