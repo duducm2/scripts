@@ -27,6 +27,7 @@ global g_HotstringGeminiSubmitTimer := false
 global g_HotstringGeminiRestoreHwnd := 0
 global g_UtilitySelectorRestoreHwnd := 0
 global g_UtilitySelectorHotkeysBound := false
+global g_UtilitySelectorNoActivate := false
 global g_UtilitySelectorRows := []
 
 global g_UtilitySelectorMode := "top"

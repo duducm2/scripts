@@ -57,8 +57,9 @@ UtilitySelector_SelectorHwnd() {
 
 UtilitySelector_UnbindModalHotkeys() {
     global g_HotstringSelectorGui, g_HotstringHotkeyHandlers, g_UtilitySelectorHotkeysBound
+    global g_UtilitySelectorNoActivate
     hwnd := UtilitySelector_SelectorHwnd()
-    if (hwnd) {
+    if (hwnd && !g_UtilitySelectorNoActivate) {
         try HotIfWinActive("ahk_id " hwnd)
         catch {
         }
@@ -68,7 +69,7 @@ UtilitySelector_UnbindModalHotkeys() {
         catch {
         }
     }
-    if (hwnd) {
+    if (hwnd && !g_UtilitySelectorNoActivate) {
         try HotIf()
         catch {
         }
@@ -98,13 +99,16 @@ UtilitySelector_BindOneChar(char, handler) {
 UtilitySelector_BindModalHotkeys() {
     global g_HotstringSelectorGui, g_UtilitySelectorHotkeysBound, g_HotstringHotkeyHandlers
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilityTopCategoryById, g_UtilitySelectorRows
+    global g_UtilitySelectorNoActivate
     UtilitySelector_UnbindModalHotkeys()
     hwnd := UtilitySelector_SelectorHwnd()
     if (!hwnd)
         return
-    try HotIfWinActive("ahk_id " hwnd)
-    catch {
-        return
+    if (!g_UtilitySelectorNoActivate) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+            return
+        }
     }
 
     if (g_UtilitySelectorMode = "top") {
@@ -201,14 +205,16 @@ UtilitySelector_SetListNavigationHotkeysEnabled(enabled) {
 }
 
 UtilitySelector_BindFilterTypingHotkeys() {
-    global g_HotstringHotkeyHandlers, g_UtilitySelectorHotkeysBound
+    global g_HotstringHotkeyHandlers, g_UtilitySelectorHotkeysBound, g_UtilitySelectorNoActivate
     UtilitySelector_UnbindModalHotkeys()
     hwnd := UtilitySelector_SelectorHwnd()
     if (!hwnd)
         return
-    try HotIfWinActive("ahk_id " hwnd)
-    catch {
-        return
+    if (!g_UtilitySelectorNoActivate) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+            return
+        }
     }
     try {
         Hotkey("Enter", UtilitySelector_OnEnter, "On")

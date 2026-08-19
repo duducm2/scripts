@@ -240,7 +240,7 @@ UtilitySelector_CreateGui() {
 }
 
 UtilitySelector_PositionAndShow() {
-    global g_HotstringSelectorGui
+    global g_HotstringSelectorGui, g_UtilitySelectorNoActivate
     mon := UtilitySelector_ActiveMonitorWorkArea()
     guiW := 850
     guiH := 520
@@ -250,9 +250,27 @@ UtilitySelector_PositionAndShow() {
         guiX := mon.left + 20
     if (guiY < mon.top + 20)
         guiY := mon.top + 20
-    g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY)
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"20f5fb","hypothesisId":"H2","location":"hotstring_selector_gui.ahk:PositionAndShow","message":"branch taken","data":{"noActivate":' .
+        (g_UtilitySelectorNoActivate ? "true" : "false") . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir .
+        "\debug-20f5fb.log")
+    ; #endregion
+    if (g_UtilitySelectorNoActivate) {
+        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " NA")
+        ; #region agent log
+        _fgAfter := ""
+        try _fgAfter := WinGetProcessName("A")
+        try FileAppend(
+            '{"sessionId":"20f5fb","hypothesisId":"H2-H3","location":"hotstring_selector_gui.ahk:PositionAndShow:afterShowNoActivate","message":"after SW_SHOWNOACTIVATE","data":{"fgProcess":"' .
+            _fgAfter . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
+        ; #endregion
+    } else {
+        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY)
+    }
     UtilitySelector_LayoutControls()
-    UtilitySelector_FocusAfterShow()
+    if (!g_UtilitySelectorNoActivate)
+        UtilitySelector_FocusAfterShow()
 }
 
 UtilitySelector_FocusAfterShow() {
@@ -316,10 +334,37 @@ UtilitySelector_StartIpc(*) {
     g_HS_SelectorCloseCheckTimer := SetTimer(Utils_CheckHotstringSelectorCloseRequest, 120)
 }
 
+UtilitySelector_IsFocusFragileWindow() {
+    ; #region agent log
+    _dbgExe := ""
+    ; #endregion
+    try {
+        exe := WinGetProcessName("A")
+        ; #region agent log
+        _dbgExe := exe
+        ; #endregion
+        if (exe = "PowerToys.PowerLauncher.exe" || exe = "Microsoft.CmdPal.UI.exe") {
+            ; #region agent log
+            try FileAppend(
+                '{"sessionId":"20f5fb","hypothesisId":"H1","location":"hotstring_selector_gui.ahk:IsFocusFragileWindow","message":"fragile check TRUE","data":{"exe":"' .
+                exe . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
+            ; #endregion
+            return true
+        }
+    } catch {
+    }
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"20f5fb","hypothesisId":"H1","location":"hotstring_selector_gui.ahk:IsFocusFragileWindow","message":"fragile check FALSE","data":{"exe":"' .
+        _dbgExe . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
+    ; #endregion
+    return false
+}
+
 ShowHotstringSelector() {
     global g_HotstringSelectorGui, g_HotstringSelectorActive
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRestoreHwnd
-    global g_OnEscapePressed
+    global g_UtilitySelectorNoActivate, g_OnEscapePressed
 
     if (g_HotstringSelectorActive && UtilitySelector_GuiIsAlive()) {
         CleanupHotstringSelector()
@@ -337,6 +382,15 @@ ShowHotstringSelector() {
     catch {
         g_UtilitySelectorRestoreHwnd := 0
     }
+
+    g_UtilitySelectorNoActivate := UtilitySelector_IsFocusFragileWindow()
+
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"20f5fb","hypothesisId":"H1-H2","location":"hotstring_selector_gui.ahk:ShowHotstringSelector","message":"noActivate flag set","data":{"noActivate":' .
+        (g_UtilitySelectorNoActivate ? "true" : "false") . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir .
+        "\debug-20f5fb.log")
+    ; #endregion
 
     g_UtilitySelectorMode := "top"
     g_UtilitySelectorCategory := ""

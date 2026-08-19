@@ -9,7 +9,7 @@ CleanupHotstringSelector() {
     global g_HotstringPromptCharMap, g_HotstringGeminiArmed
     global g_HS_SelectorOpenFile, g_HS_SelectorCloseRequestFile, g_HS_SelectorCloseCheckTimer
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorHotkeysBound
-    global g_UtilitySelectorRows, g_OnEscapePressed
+    global g_UtilitySelectorNoActivate, g_UtilitySelectorRows, g_OnEscapePressed
     global g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping, g_UtilitySelectorSuppressFilterKillFocus
     global g_HotstringSelectorFilterCtrl
 
@@ -48,6 +48,7 @@ CleanupHotstringSelector() {
     g_UtilitySelectorCategory := ""
     g_UtilitySelectorRows := []
     g_UtilitySelectorHotkeysBound := false
+    g_UtilitySelectorNoActivate := false
 
     ; Hide and reuse; Destroy is expensive and forces a full Gui rebuild on the next #!+U.
     if (IsObject(g_HotstringSelectorGui)) {
