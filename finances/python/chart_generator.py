@@ -74,9 +74,9 @@ def build_html(data: dict) -> str:
     pie_inc_html = ""
     if widget_on(s, "ShowPies"):
         pie_exp_html = """
-          <div class="panel chart-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>"""
+          <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>"""
         pie_inc_html = """
-          <div class="panel chart-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>"""
+          <div class="panel chart-cell pie-inc-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>"""
 
     year_lbl = data.get("period_year") or cur[:4]
     reports_html = f"""
@@ -176,7 +176,7 @@ def build_html(data: dict) -> str:
         bud_html = f"""
         <div class="panel chart-cell budget-panel"><h2>Budgets</h2>
           <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
-          <div id="budgetsBody" class="budget-scroll">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
+          <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
 
     card_bars_html = ""
     card_items = []
@@ -280,6 +280,7 @@ def build_html(data: dict) -> str:
     }
     payload_json = json.dumps(payload, ensure_ascii=False)
     raw_json = json.dumps(raw, ensure_ascii=False)
+    charts_class = "charts" if bud_html else "charts charts-no-budget"
 
     return f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -365,7 +366,15 @@ def build_html(data: dict) -> str:
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
     .chart-cell {{ min-width:0; }}
-    .budget-panel .budget-scroll {{ max-height:320px; overflow-y:auto; }}
+    .budget-panel {{
+      grid-column:1; grid-row:1 / span 2;
+      display:flex; flex-direction:column;
+    }}
+    .budget-panel .budget-body {{ flex:1; overflow:visible; }}
+    .pie-exp-cell {{ grid-column:2; grid-row:1; }}
+    .pie-inc-cell {{ grid-column:2; grid-row:2; }}
+    .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
+    .charts-no-budget .pie-inc-cell {{ grid-column:2; grid-row:1; }}
     .chart-span {{ grid-column:1 / -1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
     .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
@@ -400,7 +409,7 @@ def build_html(data: dict) -> str:
   {note_html}
   {cards_html}
   {perf_html}
-  <div class="charts">
+  <div class="{charts_class}">
     {bud_html}
     {pie_exp_html}
     {pie_inc_html}
