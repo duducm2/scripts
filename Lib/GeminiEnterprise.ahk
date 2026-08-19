@@ -1106,7 +1106,9 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
     try {
         ; #region agent log
         logPath := A_ScriptDir . "\debug-ea789f.log"
-        try FileAppend('{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"enter","data":{"hwnd":' . hwnd . '},"hypothesisId":"H-GE","timestamp":' . A_TickCount . '}' . "`n", logPath)
+        try FileAppend(
+            '{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"enter","data":{"hwnd":' .
+            hwnd . '},"hypothesisId":"H-GE","timestamp":' . A_TickCount . '}' . "`n", logPath)
         ; #endregion
         preUia := 0
         try preUia := UIA_Browser("ahk_id " hwnd)
@@ -1140,7 +1142,10 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
             }
         }
         ; #region agent log
-        try FileAppend('{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"uia attempt","data":{"scrolledViaUia":' . (scrolledViaUia ? 1 : 0) . ',"hasPf":' . (IsObject(pf) ? 1 : 0) . '},"hypothesisId":"H-GE","timestamp":' . A_TickCount . '}' . "`n", logPath)
+        try FileAppend(
+            '{"sessionId":"ea789f","location":"GeminiEnterprise.ahk:ScrollFeed","message":"uia attempt","data":{"scrolledViaUia":' .
+            (scrolledViaUia ? 1 : 0) . ',"hasPf":' . (IsObject(pf) ? 1 : 0) . '},"hypothesisId":"H-GE","timestamp":' .
+            A_TickCount . '}' . "`n", logPath)
         ; #endregion
 
         ; WM_MOUSEWHEEL fallback
