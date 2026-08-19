@@ -886,6 +886,90 @@ AudioBt_OnUnignore(*) {
     ShowCenteredOverlay_Utils("Restored: " . name, 1400, BANNER_ACCENT_SUCCESS)
 }
 
+AudioBt_SettingsDeviceName(row) {
+    global g_AudioBtAllRows
+    if !IsObject(row)
+        return ""
+    if (row.kind = "BT")
+        return row.name
+    best := ""
+    for bt in g_AudioBtAllRows {
+        if (bt.kind != "BT" || Trim(bt.name) = "")
+            continue
+        if InStr(row.name, bt.name) && StrLen(bt.name) >= StrLen(best)
+            best := bt.name
+    }
+    if (best != "")
+        return best
+    if RegExMatch(row.name, "\(([^)]+)\)", &m)
+        return m[1]
+    return row.name
+}
+
+AudioBt_ShouldSettingsFallback(action, row, result) {
+    if (action != "connect" && action != "isolate")
+        return false
+    if !IsObject(row)
+        return false
+    if (row.canConnect != true && row.kind != "BT")
+        return false
+    msg := AudioBt_StripResult(IsObject(result) ? result.text : "")
+    if InStr(msg, "SetDefault failed")
+        return false
+    if InStr(msg, "Not a paired Bluetooth audio device")
+        return false
+    if InStr(msg, "Bluetooth device not found")
+        return false
+    return true
+}
+
+AudioBt_MergeSettingsErr(priorText, extra) {
+    base := AudioBt_StripResult(priorText)
+    extra := Trim(extra)
+    if (extra = "")
+        return (SubStr(priorText, 1, 4) = "ERR`t") ? priorText : "ERR`t" base
+    if (base = "")
+        return "ERR`tSettings: " extra
+    return "ERR`t" base "; Settings: " extra
+}
+
+AudioBt_TrySettingsFallback(action, row, prior) {
+    global g_AudioBtGui
+    btName := AudioBt_SettingsDeviceName(row)
+    AudioBt_BusyHide()
+    hidden := false
+    try {
+        if IsObject(g_AudioBtGui) {
+            g_AudioBtGui.Hide()
+            hidden := true
+        }
+    } catch {
+    }
+    ui := { ok: false, err: "Settings connect failed" }
+    try {
+        ui := AudioBt_SettingsUiConnect(btName)
+    } finally {
+        if hidden {
+            try g_AudioBtGui.Show()
+            catch {
+            }
+            try WinActivate("ahk_id " g_AudioBtGui.Hwnd)
+            catch {
+            }
+        }
+    }
+    if (!IsObject(ui) || !ui.ok)
+        return { ok: false, text: AudioBt_MergeSettingsErr(prior.text, IsObject(ui) ? ui.err : ""), exitCode: 1 }
+    AudioBt_BusyShow("⏳ Confirming " . btName . "…")
+    confirm := AudioBt_Run("confirm", row.id)
+    if (!confirm.ok)
+        return { ok: false, text: AudioBt_MergeSettingsErr(prior.text, AudioBt_StripResult(confirm.text)),
+            exitCode: 1 }
+    if (action = "isolate")
+        return AudioBt_Run("isolate", row.id)
+    return confirm
+}
+
 AudioBt_DoAction(action, requireBt := false) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
     if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help" || g_AudioBtMode =
@@ -905,6 +989,10 @@ AudioBt_DoAction(action, requireBt := false) {
     result := ""
     try {
         result := AudioBt_Run(action, row.id)
+        if (!result.ok && AudioBt_ShouldSettingsFallback(action, row, result)) {
+            AudioBt_BusyShow("⏳ Trying Settings connect " . AudioBt_SettingsDeviceName(row) . "…")
+            result := AudioBt_TrySettingsFallback(action, row, result)
+        }
         StandardLoadingBar_Update("⏳ Refreshing devices…", BANNER_ACCENT_INTERMEDIATE)
         AudioBt_Refresh(row.name, false)
     } finally {
@@ -1059,3 +1147,5 @@ class AudioBt_DoubleTapTimerObj {
     g_AudioBt_DoubleTapTimer := ObjBindMethod(AudioBt_DoubleTapTimerObj, "OnSingleTapTimeout")
     SetTimer(g_AudioBt_DoubleTapTimer, -thresholdMs)
 }
+
+#include %A_ScriptDir%\WindowManagement\audio_bt_settings_ui.ahk

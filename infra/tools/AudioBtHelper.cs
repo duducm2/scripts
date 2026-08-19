@@ -418,7 +418,7 @@ namespace AudioBt
                     string dropped;
                     DisconnectOtherBtAudio(bt, out dropped);
                 }
-                if (bt != null && !bt.Connected)
+                if (bt != null && !HasActiveEndpoint(CollectEndpoints(), bt, eRender))
                 {
                     string connectErr;
                     if (!ConnectBtWithFallback(bt, out connectMethod, out connectErr))

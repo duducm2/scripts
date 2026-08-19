@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("list", "default", "enable", "disable", "connect", "disconnect", "isolate")]
+    [ValidateSet("list", "default", "enable", "disable", "connect", "disconnect", "isolate", "confirm")]
     [string]$Action,
 
     [string]$Id = "",
@@ -330,6 +330,7 @@ $result = switch ($Action) {
     "connect" { Invoke-AudioBtConnectOrWinRT $Id }
     "disconnect" { [AudioBt.Helper]::Disconnect($Id) }
     "isolate" { Invoke-AudioBtIsolateOrWinRT $Id }
+    "confirm" { [AudioBt.Helper]::ConfirmConnected($Id, "Settings") }
 }
 
 if ($null -eq $result) {
