@@ -306,6 +306,40 @@ CopilotWeb_FindComposer(uia) {
         ControlType: "Edit" }])
 }
 
+CopilotWeb_FindChatScrollContainer(uia) {
+    return CopilotWeb_FindFirstInUia(uia, [{ Name: "Chat conversation" }, { ClassName: "fui-Virtualizer-Scroll-View-Dynamic__container",
+        matchmode: "Substring" }, { ClassName: "fai-CopilotChat", matchmode: "Substring" }])
+}
+
+CopilotWeb_FindLastFeedMessage(uia) {
+    if (!IsObject(uia))
+        return 0
+    lastEl := 0
+    lastTop := -1
+    for cls in ["fai-CopilotMessage", "fai-UserMessage", "fai-BebopUserMessage"] {
+        try {
+            msgs := uia.FindAll({ ClassName: cls, matchmode: "Substring" })
+            if (!msgs)
+                continue
+            for msg in msgs {
+                try {
+                    br := msg.BoundingRectangle
+                } catch {
+                    continue
+                }
+                if (!IsObject(br) || (br.r - br.l) <= 0)
+                    continue
+                if (lastEl = 0 || br.t >= lastTop) {
+                    lastTop := br.t
+                    lastEl := msg
+                }
+            }
+        } catch {
+        }
+    }
+    return lastEl
+}
+
 CopilotWeb_FindStopGenerating(uia) {
     if (!IsObject(uia))
         return 0
@@ -2167,30 +2201,36 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
         pf := IsObject(preUia) ? CopilotWeb_FindComposer(preUia) : 0
         snapshot := ChromeChat_ComposerSnapshot(pf)
 
+        chatScroll := IsObject(preUia) ? CopilotWeb_FindChatScrollContainer(preUia) : 0
+        lastMsg := IsObject(preUia) ? CopilotWeb_FindLastFeedMessage(preUia) : 0
+        scrollOk := ChromeChat_ScrollElementToBottom(chatScroll)
+        anchorOk := false
+        if (lastMsg) {
+            try {
+                lastMsg.ScrollIntoView()
+                anchorOk := true
+            } catch {
+            }
+        }
+        wheelTarget := chatScroll ? chatScroll : (pf ? pf : 0)
+        if (wheelTarget)
+            ChromeChat_ScrollViaMouseWheelAtElement(wheelTarget, hwnd, 80)
+        else
+            ChromeChat_ScrollFeedToBottomFallback(hwnd)
         ; #region agent log
-        try FileAppend(
-            '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"entry","data":{"hasPf":' .
-            (IsObject(pf) ? 1 : 0) . ',"hasUia":' . (IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' .
-            "`n", "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
+        ChromeChat_DebugLog("H-B", "CopilotWeb:scroll", "uia scroll", '{"hasPf":' . (IsObject(pf) ? 1 : 0) .
+        ',"hasChatScroll":' . (IsObject(chatScroll) ? 1 : 0) . ',"scrollOk":' . (scrollOk ? 1 : 0) .
+        ',"hasLastMsg":' . (IsObject(lastMsg) ? 1 : 0) . ',"anchorOk":' . (anchorOk ? 1 : 0) . '}')
         ; #endregion
-        uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
-        if (!IsObject(uia))
-            uia := preUia
 
-        if (!IsObject(pf) && IsObject(uia))
-            pf := CopilotWeb_FindComposer(uia)
+        if (!IsObject(pf) && IsObject(preUia))
+            pf := CopilotWeb_FindComposer(preUia)
         if (pf) {
             try pf.ScrollIntoView()
             catch {
             }
         }
         ChromeChat_ComposerRestore(pf, snapshot)
-        ; #region agent log
-        try FileAppend(
-            '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"done","data":{"hasPfAfter":' .
-            (IsObject(pf) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n",
-            "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
-        ; #endregion
         return true
     } catch {
         return false

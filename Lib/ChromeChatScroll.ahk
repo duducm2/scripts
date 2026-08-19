@@ -12,6 +12,86 @@ ChromeChat_ScrollJsPayload() {
     return "(()=>{const S=['main','[role=main]','[class*=chat]','[class*=conversation]','[class*=messages]','[class*=Conversation]','[class*=Copilot]'];const c=new Set([document.scrollingElement,document.documentElement,document.body]);for(const s of S){try{document.querySelectorAll(s).forEach(e=>c.add(e))}catch(e){}}let best=document.scrollingElement,max=0;for(const el of c){if(!el)continue;const d=el.scrollHeight-el.clientHeight;if(d<=max)continue;const oy=getComputedStyle(el).overflowY;if(el!==document.scrollingElement&&el!==document.documentElement&&el!==document.body&&oy!=='auto'&&oy!=='scroll'&&oy!=='overlay')continue;max=d;best=el}if(best){best.scrollTop=best.scrollHeight;try{best.scrollTo(0,best.scrollHeight)}catch(e){}}try{window.scrollTo(0,Math.max(document.body.scrollHeight,document.documentElement.scrollHeight))}catch(e){}})();"
 }
 
+; #region agent log
+ChromeChat_DebugLog(hypothesisId, location, message, data := "") {
+    try {
+        payload := '{"sessionId":"ea789f","hypothesisId":"' . hypothesisId . '","location":"' . location .
+            '","message":"' . message . '","data":' . (data != "" ? data : "{}") . ',"timestamp":' . A_TickCount .
+            ',"runId":"post-fix"}' . "`n"
+        FileAppend(payload, A_Temp . "\debug-ea789f.log")
+        FileAppend(payload, "C:\Users\eduev\Meu Drive\17 - Projects\scripts\debug-ea789f.log")
+    } catch {
+    }
+}
+; #endregion
+
+ChromeChat_FindFirstInUia(uia, criteriaList) {
+    if (!IsObject(uia))
+        return 0
+    for criteria in criteriaList {
+        try {
+            el := uia.FindFirst(criteria)
+            if (el)
+                return el
+        } catch {
+        }
+    }
+    return 0
+}
+
+ChromeChat_ScrollElementToBottom(el) {
+    if (!IsObject(el))
+        return false
+    ok := false
+    try {
+        if (el.GetPropertyValue(UIA.Property.IsScrollPatternAvailable)) {
+            el.ScrollPattern.SetScrollPercent(-1, 100)
+            ok := true
+        }
+    } catch {
+    }
+    try {
+        el.ScrollIntoView()
+        ok := true
+    } catch {
+    }
+    return ok
+}
+
+ChromeChat_ScrollViaMouseWheelAtPoint(hwnd, cx, cy, clicks := 80) {
+    static WM_MOUSEWHEEL := 0x020A
+    wParam := (-120 * 1) << 16
+    lParam := (cy << 16) | (cx & 0xFFFF)
+    loop clicks {
+        try PostMessage(WM_MOUSEWHEEL, wParam, lParam, , "ahk_id " hwnd)
+        if (Mod(A_Index, 10) = 0)
+            Sleep 10
+    }
+}
+
+ChromeChat_ScrollViaMouseWheelAtElement(el, hwnd, clicks := 80) {
+    if (!IsObject(el) || !hwnd)
+        return false
+    rw := 0
+    try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
+    target := rw ? rw : hwnd
+    try {
+        br := el.BoundingRectangle
+        cx := (br.l + br.r) // 2
+        cy := (br.t + br.b) // 2
+        pt := Buffer(8, 0)
+        NumPut("int", cx, pt, 0)
+        NumPut("int", cy, pt, 4)
+        DllCall("ScreenToClient", "ptr", target, "ptr", pt)
+        cx := NumGet(pt, 0, "int")
+        cy := NumGet(pt, 4, "int")
+    } catch {
+        return false
+    }
+    ChromeChat_ScrollViaMouseWheelAtPoint(target, cx, cy, clicks)
+    return true
+}
+
 ChromeChat_ScrollFeedToBottomFallback(hwnd) {
     rw := 0
     try rw := ControlGetHwnd("Chrome_RenderWidgetHostHWND1", "ahk_id " hwnd)
