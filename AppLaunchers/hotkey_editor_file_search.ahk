@@ -12,55 +12,6 @@ global EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS := 800
 global EDITOR_FILE_SEARCH_POLL_STEP_MS := 40
 global EDITOR_FILE_SEARCH_USE_HIT_CACHE := true
 
-EditorFileSearch_ReleaseHotkeyModifiers() {
-    Send "{LWin up}{RWin up}{Alt up}{Shift up}{Ctrl up}"
-    Sleep 30
-}
-
-; #region agent log
-EditorFileSearch_DebugJsonVal(v) {
-    if (v is Integer || v is Float)
-        return v
-    if (v = true)
-        return "true"
-    if (v = false)
-        return "false"
-    s := StrReplace(String(v), "\", "\\")
-    s := StrReplace(s, '"', '\"')
-    return '"' . s . '"'
-}
-
-EditorFileSearch_DebugLog(hypothesisId, location, message, dataMap := unset) {
-    logPath := A_ScriptDir . "\debug-c69194.log"
-    try {
-        ts := A_TickCount
-        id := "log_" . ts . "_" . Random(1000, 9999)
-        dataJson := "{}"
-        if (IsSet(dataMap)) {
-            dataJson := "{"
-            first := true
-            for k, v in dataMap {
-                if (!first)
-                    dataJson .= ","
-                first := false
-                dataJson .= '"' . k . '":' . EditorFileSearch_DebugJsonVal(v)
-            }
-            dataJson .= "}"
-        }
-        loc := StrReplace(location, '"', "'")
-        msg := StrReplace(message, '"', "'")
-        line := '{"sessionId":"c69194","id":"' . id . '","timestamp":' . ts . ',"location":"' . loc
-            . '","message":"' . msg . '","hypothesisId":"' . hypothesisId . '","data":' . dataJson . '}`n'
-        FileAppend(line, logPath, "UTF-8")
-    } catch as e {
-        try FileAppend('{"sessionId":"c69194","message":"log_fail","data":{"err":"' . StrReplace(e.Message, '"', "'")
-        . '"}}`n', logPath, "UTF-8")
-        catch {
-        }
-    }
-}
-; #endregion
-
 EditorFileSearch_IniPath() {
     return A_ScriptDir "\assets\data\editor_file_search.ini"
 }
@@ -145,10 +96,6 @@ EditorFileSearch_Start() {
     }
 
     g_EditorFileSearchActive := true
-    ; #region agent log
-    EditorFileSearch_DebugLog("E", "Start", "search_begin", Map(
-        "queryLen", StrLen(query), "hwndCount", hwnds.Length))
-    ; #endregion
     try {
         for hwnd in hwnds {
             if (EditorFileSearch_TryOpenInInstance(hwnd, query)) {
@@ -212,14 +159,6 @@ EditorFileSearch_IsEditorProcessHwnd(hwnd) {
     }
 }
 
-EditorFileSearch_IsTargetEditorForeground(hwnd) {
-    if !(hwnd is Integer) || hwnd <= 0
-        return false
-    if !WinActive("ahk_id " hwnd)
-        return false
-    return EditorFileSearch_IsEditorProcessHwnd(hwnd)
-}
-
 EditorFileSearch_IsEligibleEditorHwnd(hwnd) {
     if !(hwnd is Integer) || hwnd <= 0
         return false
@@ -258,54 +197,20 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     }
     if (!WinWaitActive("ahk_id " hwnd, , EDITOR_FILE_SEARCH_ACTIVATE_TIMEOUT_SEC))
         return false
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-        return false
 
-    ; #region agent log
-    proc := "?"
-    title := "?"
-    try proc := WinGetProcessName("ahk_id " hwnd)
-    catch {
-    }
-    try title := WinGetTitle("ahk_id " hwnd)
-    catch {
-    }
-    EditorFileSearch_DebugLog("D", "TryOpenInInstance", "activated", Map("hwnd", hwnd, "proc", proc, "title", title))
-    ; #endregion
-
-    EditorFileSearch_ReleaseHotkeyModifiers()
     Send "{Escape}"
     Sleep 50
 
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-        return false
     Send "^p"
-    quickOpenReady := EditorFileSearch_WaitForQuickOpenReady(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)
-    ; #region agent log
-    EditorFileSearch_DebugLog("A", "TryOpenInInstance", "after_ctrl_p", Map(
-        "quickOpenReady", quickOpenReady,
-        "hasWidget", EditorFileSearch_QuickOpenWidgetVisible(hwnd),
-        "hasFilter", !!EditorFileSearch_FindQuickInputFilter(hwnd)))
-    ; #endregion
-    if (!quickOpenReady) {
-        if (EditorFileSearch_IsTargetEditorForeground(hwnd))
-            Send "{Escape}"
+    if (!EditorFileSearch_WaitForQuickInput(hwnd, EDITOR_FILE_SEARCH_QUICKINPUT_WAIT_MS)) {
+        Send "{Escape}"
         return false
     }
 
-    typed := EditorFileSearch_TypeQueryIntoQuickInput(hwnd, query)
-    ; #region agent log
-    readBack := EditorFileSearch_ReadQuickInputValue(hwnd)
-    EditorFileSearch_DebugLog("B", "TryOpenInInstance", "after_type", Map(
-        "typed", typed, "readBack", readBack, "readBackOk", EditorFileSearch_QueryAppearsInReadBack(query, readBack)))
-    ; #endregion
-    if (!typed)
-        return false
+    SendText query
 
     deadline := A_TickCount + EDITOR_FILE_SEARCH_RESULT_POLL_MS
     while (A_TickCount < deadline) {
-        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-            return false
         if (EditorFileSearch_QuickPickHasNoResults(hwnd)) {
             Send "{Escape}"
             return false
@@ -313,14 +218,11 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
 
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-        return false
     Send "{Enter}"
     if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS))
         return true
 
-    if (EditorFileSearch_IsTargetEditorForeground(hwnd))
-        Send "{Escape}"
+    Send "{Escape}"
     return false
 }
 
@@ -332,29 +234,7 @@ EditorFileSearch_GetRoot(hwnd) {
     }
 }
 
-EditorFileSearch_FindQuickInputFilter(hwnd) {
-    root := EditorFileSearch_GetRoot(hwnd)
-    if (!root)
-        return 0
-    try {
-        filter := root.FindFirst({ Type: 50004, AutomationId: "quickInput.list.filter", cs: false })
-        if (filter)
-            return filter
-    } catch {
-    }
-    try {
-        widget := root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false })
-        if (widget) {
-            filter := widget.FindFirst({ Type: 50004, cs: false })
-            if (filter)
-                return filter
-        }
-    } catch {
-    }
-    return 0
-}
-
-EditorFileSearch_QuickOpenWidgetVisible(hwnd) {
+EditorFileSearch_QuickInputVisible(hwnd) {
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
         return false
@@ -363,140 +243,22 @@ EditorFileSearch_QuickOpenWidgetVisible(hwnd) {
             return true
     } catch {
     }
+    try {
+        fe := UIA.GetFocusedElement()
+        if (fe && fe.ControlType = UIA.Type.Edit)
+            return true
+    } catch {
+    }
     return false
 }
 
-EditorFileSearch_QuickOpenReady(hwnd) {
-    if (EditorFileSearch_FindQuickInputFilter(hwnd))
-        return true
-    return EditorFileSearch_QuickOpenWidgetVisible(hwnd)
-}
-
-EditorFileSearch_WaitForQuickOpenReady(hwnd, timeoutMs) {
+EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-            return false
-        if (EditorFileSearch_QuickOpenReady(hwnd))
+        if (EditorFileSearch_QuickInputVisible(hwnd))
             return true
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
-    }
-    return false
-}
-
-EditorFileSearch_QueryAppearsInReadBack(query, readBack) {
-    if (readBack = "" || query = "")
-        return false
-    q := StrLower(query)
-    r := StrLower(readBack)
-    return (r = q) || InStr(r, q)
-}
-
-EditorFileSearch_ReadQuickInputValue(hwnd) {
-    filter := EditorFileSearch_FindQuickInputFilter(hwnd)
-    if (!filter)
-        return ""
-    try {
-        if (filter.GetPropertyValue(UIA.Property.IsValuePatternAvailable))
-            return filter.ValuePattern.Value
-    } catch {
-    }
-    return ""
-}
-
-EditorFileSearch_TypeQueryIntoQuickInput(hwnd, query) {
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd) {
-        ; #region agent log
-        EditorFileSearch_DebugLog("B", "TypeQuery", "abort_not_foreground", Map("hwnd", hwnd))
-        ; #endregion
-        return false
-    }
-    if (query = "")
-        return false
-
-    filter := EditorFileSearch_FindQuickInputFilter(hwnd)
-    filterAid := ""
-    filterClass := ""
-    if (filter) {
-        try filterAid := filter.AutomationId
-        catch {
-        }
-        try filterClass := filter.ClassName
-        catch {
-        }
-        try filter.SetFocus()
-        catch {
-            try filter.Click()
-            catch {
-                ; #region agent log
-                EditorFileSearch_DebugLog("B", "TypeQuery", "focus_click_failed", Map(
-                    "automationId", filterAid, "className", filterClass))
-                ; #endregion
-            }
-        }
-    }
-
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd) {
-        ; #region agent log
-        EditorFileSearch_DebugLog("B", "TypeQuery", "abort_lost_foreground", Map())
-        ; #endregion
-        return false
-    }
-
-    ; Keyboard-first: VS Code/Cursor quick open owns focus after ^p; ValuePattern alone was false-success (empty palette).
-    SendInput "{Text}" query
-
-    readBack := EditorFileSearch_ReadQuickInputValue(hwnd)
-    method := "SendInput"
-    if (EditorFileSearch_QueryAppearsInReadBack(query, readBack)) {
-        ; #region agent log
-        EditorFileSearch_DebugLog("C", "TypeQuery", "typed_ok", Map(
-            "method", method, "readBack", readBack, "automationId", filterAid, "className", filterClass))
-        ; #endregion
-        return true
-    }
-
-    ; Fallback: clipboard paste into focused quick open
-    clipSaved := ClipboardAll()
-    ok := false
-    try {
-        A_Clipboard := query
-        if (ClipWait(0.5)) {
-            Send "^v"
-            if (ClipWait(0.5)) {
-            }
-            readBack := EditorFileSearch_ReadQuickInputValue(hwnd)
-            ok := EditorFileSearch_QueryAppearsInReadBack(query, readBack)
-            method := "ClipPaste"
-        }
-    } finally {
-        A_Clipboard := clipSaved
-    }
-
-    ; #region agent log
-    EditorFileSearch_DebugLog("D", "TypeQuery", ok ? "clip_ok" : "sendinput_unverified", Map(
-        "method", method, "readBack", readBack, "automationId", filterAid, "className", filterClass))
-    ; #endregion
-
-    if (ok)
-        return true
-    ; SendInput was already sent; UIA may not expose quick-open filter value in Electron builds.
-    return true
-}
-
-EditorFileSearch_QuickInputVisible(hwnd) {
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-        return false
-    if (EditorFileSearch_FindQuickInputFilter(hwnd))
-        return true
-    root := EditorFileSearch_GetRoot(hwnd)
-    if (!root)
-        return false
-    try {
-        if (root.FindFirst({ Type: 50004, ClassName: "quick-input-widget", cs: false }))
-            return true
-    } catch {
     }
     return false
 }
@@ -505,8 +267,6 @@ EditorFileSearch_WaitForQuickInputDismissed(hwnd, timeoutMs) {
     global EDITOR_FILE_SEARCH_POLL_STEP_MS
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-            return false
         if (!EditorFileSearch_QuickInputVisible(hwnd))
             return true
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
@@ -515,8 +275,6 @@ EditorFileSearch_WaitForQuickInputDismissed(hwnd, timeoutMs) {
 }
 
 EditorFileSearch_QuickPickHasNoResults(hwnd) {
-    if !EditorFileSearch_IsTargetEditorForeground(hwnd)
-        return false
     root := EditorFileSearch_GetRoot(hwnd)
     if (!root)
         return false
