@@ -2167,6 +2167,12 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
         pf := IsObject(preUia) ? CopilotWeb_FindComposer(preUia) : 0
         snapshot := ChromeChat_ComposerSnapshot(pf)
 
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"entry","data":{"hasPf":' .
+            (IsObject(pf) ? 1 : 0) . ',"hasUia":' . (IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' .
+            "`n", A_ScriptDir . "\debug-ea789f.log")
+        ; #endregion
         uia := ChromeChat_ScrollFeedToBottomFast(hwnd, preUia)
         if (!IsObject(uia))
             uia := preUia
@@ -2179,6 +2185,11 @@ CopilotWeb_ScrollFeedToBottom(hwnd := 0) {
             }
         }
         ChromeChat_ComposerRestore(pf, snapshot)
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"ea789f","hypothesisId":"H-B","location":"CopilotWeb:scroll","message":"done","data":{"hasPfAfter":' .
+            (IsObject(pf) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n", A_ScriptDir . "\debug-ea789f.log")
+        ; #endregion
         return true
     } catch {
         return false

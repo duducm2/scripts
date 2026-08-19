@@ -1110,10 +1110,15 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
         snapshot := ChromeChat_ComposerSnapshot(pf)
 
         ; UIA ScrollIntoView on the composer (most reliable for Enterprise's full-page-scroll layout).
+        pfOk := false
         if (pf) {
-            try pf.ScrollIntoView()
+            try {
+                pf.ScrollIntoView()
+                pfOk := true
+            }
         }
         ; Also try the omnibar search region at the bottom of the page.
+        omniOk := false
         if (IsObject(preUia)) {
             try {
                 root := preUia.DocumentElement
@@ -1121,11 +1126,22 @@ GeminiEnterprise_ScrollFeedToBottom(hwnd := 0) {
                     root := UIA.ElementFromHandle(hwnd)
                 omnibar := 0
                 try omnibar := root.FindFirst({ ClassName: "omnibar", matchmode: "Substring" })
-                if (IsObject(omnibar))
-                    try omnibar.ScrollIntoView()
+                if (IsObject(omnibar)) {
+                    try {
+                        omnibar.ScrollIntoView()
+                        omniOk := true
+                    }
+                }
             } catch {
             }
         }
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"ea789f","hypothesisId":"H-D","location":"GeminiEnterprise:scroll","message":"uia results","data":{"hasPf":' .
+            (IsObject(pf) ? 1 : 0) . ',"pfOk":' . (pfOk ? 1 : 0) . ',"omniOk":' . (omniOk ? 1 : 0) . ',"hasUia":' . (
+                IsObject(preUia) ? 1 : 0) . '},"timestamp":' . A_TickCount . '}' . "`n", A_ScriptDir .
+            "\debug-ea789f.log")
+        ; #endregion
 
         ; Mousewheel-only fallback (no Ctrl+End — it leaks into Enterprise's ProseMirror composer).
         ChromeChat_ScrollFeedToBottomFallback(hwnd)
