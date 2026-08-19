@@ -1,0 +1,6 @@
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Man to take mirror to garbage,"50,00",card_expense,CAT_MATERIAI,Services,ACC_MERCADOP,CARD_MP,
+99 food app subscription,"4,99",card_expense,CAT_MERCADO,Food delivery,ACC_MERCADOP,CARD_MP,
+Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
+Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERCADOP,CARD_MP,description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
