@@ -986,7 +986,7 @@ Finance_ComboFromRows(rows, idKey := "id", nameKey := "name", includeEmpty := fa
     for r in rows {
         label := r[nameKey]
         if (iconKey != "" && r.Has(iconKey) && Trim(r[iconKey]) != "")
-            label := Trim(r[iconKey]) . " " . label
+            label := label . " " . Trim(r[iconKey])
         names.Push(label)
         ids.Push(r[idKey])
     }

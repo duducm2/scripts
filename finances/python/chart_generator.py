@@ -401,9 +401,9 @@ def build_html(data: dict) -> str:
     {pies_html}
     {reports_html}
   </div>
+  {bud_html}
   <div class="split">
     {goals_html}
-    {bud_html}
     {acc_html}
     {card_bars_html}
   </div>
