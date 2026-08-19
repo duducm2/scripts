@@ -250,21 +250,8 @@ UtilitySelector_PositionAndShow() {
         guiX := mon.left + 20
     if (guiY < mon.top + 20)
         guiY := mon.top + 20
-    ; #region agent log
-    try FileAppend(
-        '{"sessionId":"20f5fb","hypothesisId":"H2","location":"hotstring_selector_gui.ahk:PositionAndShow","message":"branch taken","data":{"noActivate":' .
-        (g_UtilitySelectorNoActivate ? "true" : "false") . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir .
-        "\debug-20f5fb.log")
-    ; #endregion
     if (g_UtilitySelectorNoActivate) {
         g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " NA")
-        ; #region agent log
-        _fgAfter := ""
-        try _fgAfter := WinGetProcessName("A")
-        try FileAppend(
-            '{"sessionId":"20f5fb","hypothesisId":"H2-H3","location":"hotstring_selector_gui.ahk:PositionAndShow:afterShowNoActivate","message":"after SW_SHOWNOACTIVATE","data":{"fgProcess":"' .
-            _fgAfter . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
-        ; #endregion
     } else {
         g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY)
     }
@@ -335,29 +322,12 @@ UtilitySelector_StartIpc(*) {
 }
 
 UtilitySelector_IsFocusFragileWindow() {
-    ; #region agent log
-    _dbgExe := ""
-    ; #endregion
     try {
         exe := WinGetProcessName("A")
-        ; #region agent log
-        _dbgExe := exe
-        ; #endregion
-        if (exe = "PowerToys.PowerLauncher.exe" || exe = "Microsoft.CmdPal.UI.exe") {
-            ; #region agent log
-            try FileAppend(
-                '{"sessionId":"20f5fb","hypothesisId":"H1","location":"hotstring_selector_gui.ahk:IsFocusFragileWindow","message":"fragile check TRUE","data":{"exe":"' .
-                exe . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
-            ; #endregion
+        if (exe = "PowerToys.PowerLauncher.exe" || exe = "Microsoft.CmdPal.UI.exe")
             return true
-        }
     } catch {
     }
-    ; #region agent log
-    try FileAppend(
-        '{"sessionId":"20f5fb","hypothesisId":"H1","location":"hotstring_selector_gui.ahk:IsFocusFragileWindow","message":"fragile check FALSE","data":{"exe":"' .
-        _dbgExe . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir . "\debug-20f5fb.log")
-    ; #endregion
     return false
 }
 
@@ -384,13 +354,6 @@ ShowHotstringSelector() {
     }
 
     g_UtilitySelectorNoActivate := UtilitySelector_IsFocusFragileWindow()
-
-    ; #region agent log
-    try FileAppend(
-        '{"sessionId":"20f5fb","hypothesisId":"H1-H2","location":"hotstring_selector_gui.ahk:ShowHotstringSelector","message":"noActivate flag set","data":{"noActivate":' .
-        (g_UtilitySelectorNoActivate ? "true" : "false") . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir .
-        "\debug-20f5fb.log")
-    ; #endregion
 
     g_UtilitySelectorMode := "top"
     g_UtilitySelectorCategory := ""
