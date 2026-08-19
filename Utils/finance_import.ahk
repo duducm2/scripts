@@ -111,9 +111,12 @@ Finance_ImportConfirmEditable(title, parsed) {
     accs := Finance_Load("accounts")
     cats := Finance_Load("categories")
     Finance_DialogsBegin()
+    prevGui := g_FinanceGui
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
+    g_FinanceGui := g
     g.SetFont("s10", "Segoe UI")
-    hdr := g.Add("Text", "x12 y8 w880", "Import preview — " . parsed.Length . " row(s).  Double-click to edit.")
+    hdr := g.Add("Text", "x12 y8 w880", "Import preview — " . parsed.Length .
+        " row(s).  [E] edit  [A] add  [Delete] remove")
     lv := g.Add("ListView", "x12 y32 w896 r14 Grid", ["Date", "Type", "Description", "Amount", "Category", "Account"])
     ok := false
 
@@ -135,7 +138,7 @@ Finance_ImportConfirmEditable(title, parsed) {
         lv.ModifyCol(4, 100)
         lv.ModifyCol(5, 180)
         lv.ModifyCol(6, 160)
-        hdr.Value := "Import preview — " . parsed.Length . " row(s).  Double-click to edit."
+        hdr.Value := "Import preview — " . parsed.Length . " row(s).  [E] edit  [A] add  [Delete] remove"
     }
 
     EditSelected() {
@@ -182,17 +185,34 @@ Finance_ImportConfirmEditable(title, parsed) {
     g.Add("Button", "x+30 w100 Default", "Import").OnEvent("Click", ConfirmYes)
     g.Add("Button", "x+6 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
 
-    g.OnEvent("Escape", (*) => g.Destroy())
+    CleanupImportDialog(*) {
+        Finance_UnbindHotkeys()
+        g_FinanceGui := prevGui
+        g.Destroy()
+    }
+
+    Finance_BindHotkeys([
+        ["e", (*) => EditSelected()],
+        ["a", (*) => AddRow()],
+        ["Insert", (*) => AddRow()],
+        ["Delete", (*) => DeleteSelected()],
+        ["Escape", (*) => CleanupImportDialog()]
+    ])
+
+    g.OnEvent("Escape", (*) => CleanupImportDialog())
+    g.OnEvent("Close", (*) => CleanupImportDialog())
     g.Show("w920")
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
+    Finance_UnbindHotkeys()
+    g_FinanceGui := prevGui
     Finance_DialogsEnd()
     return ok
 
     ConfirmYes(*) {
         ok := true
-        g.Destroy()
+        CleanupImportDialog()
     }
 }
 
