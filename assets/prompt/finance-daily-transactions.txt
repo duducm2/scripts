@@ -40,12 +40,14 @@ CATEGORIZATION
 - After the CSV, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the CSV with that note.
 - Do not invent category ids. If something is a poor fit, say so in the chat note after the file.
 
-CONTEXT FILES (attached by Utility Shortcuts → Prompts)
+CONTEXT FILES (attached by Utility Shortcuts → Prompts, or Send dictation [D])
 - categories.csv — category and subcategory names with ids
 - accounts.csv — account names with ids
 - credit_cards.csv — card names with ids and linked accounts
+- categories-expenses.ini — semantic expense category canon (what each category/subcategory means)
+- categories-income.ini — semantic income category canon
 
-Use only these attached CSVs for id mapping. Do not invent ids.
+Use categories.csv / accounts.csv / credit_cards.csv for id mapping. Use the INI canons only to choose the right category by meaning. Do not invent ids.
 
 DICTATION
 Paste the raw dictation below this line.

@@ -275,10 +275,22 @@ PromptData_JoinContextCsvKeep(entries) {
     return s
 }
 
+PromptData_ResolveContextPath(path) {
+    p := Trim(path)
+    if (p = "")
+        return ""
+    if (RegExMatch(p, "^[a-zA-Z]:\\") || SubStr(p, 1, 2) = "\\")
+        return p
+    return A_ScriptDir "\" p
+}
+
 PromptData_ContextEntryPath(entry) {
+    raw := ""
     if (!IsObject(entry))
-        return Trim(entry)
-    return entry.HasProp("path") ? entry.path : ""
+        raw := Trim(entry)
+    else
+        raw := entry.HasProp("path") ? entry.path : ""
+    return PromptData_ResolveContextPath(raw)
 }
 
 PromptData_ContextCompactLabel(entry) {
