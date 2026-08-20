@@ -81,7 +81,8 @@ InsertFiles(paths) {
         Send "^v"
         ok := true
         ; Brief settle so browser upload handlers receive the paste before clipboard restore.
-        Sleep 400
+        ; Multi-file packs need a longer settle before the attach helper's upload-idle wait.
+        Sleep (paths.Length > 1) ? 800 : 400
     } finally {
         try A_Clipboard := saved
     }
@@ -94,7 +95,8 @@ InsertFiles_IsAiChatForeground() {
         if (title = "")
             return false
         lower := StrLower(title)
-        return InStr(lower, "gemini") || InStr(lower, "copilot")
+        return InStr(lower, "gemini") || InStr(lower, "copilot") || InStr(lower, "askbosch") || InStr(lower,
+            "vertex")
     } catch {
         return false
     }

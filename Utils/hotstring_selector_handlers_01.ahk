@@ -152,8 +152,11 @@ UtilitySelector_AttachPromptContextFiles(prompt) {
     attachPaths := PromptContext_ResolveAttachPaths(existing)
     if (attachPaths.Length = 0)
         return
-    if !InsertFiles(attachPaths)
+    if !InsertFiles(attachPaths) {
         ShowCenteredOverlay_Utils("⚠ Could not attach context files", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    PromptContext_WaitForAttachUploadIdle(attachPaths.Length)
 }
 
 PromptContext_CmdQuote(s) {
@@ -178,7 +181,8 @@ PromptContext_ScheduleTempCleanup(paths) {
         g_PromptContextTempFiles := []
     for p in paths
         g_PromptContextTempFiles.Push(p)
-    try SetTimer(PromptContext_CleanupTemps, -15000)
+    ; Keep staged copies until Gemini/Enterprise finishes multi-file upload.
+    try SetTimer(PromptContext_CleanupTemps, -60000)
     catch {
     }
 }
@@ -219,43 +223,140 @@ PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
     return (exitCode = 0 && FileExist(dst))
 }
 
+; Basename for staged attach: keep name; .ini → .txt for Gemini upload compatibility.
+PromptContext_StagedAttachName(path, usedMap) {
+    SplitPath path, &name, , &ext, &nameNoExt
+    if (nameNoExt = "")
+        nameNoExt := (name != "") ? name : "file"
+    if (StrLower(ext) = "ini")
+        name := nameNoExt ".txt"
+    else if (ext != "")
+        name := nameNoExt "." ext
+    else
+        name := nameNoExt
+    key := StrLower(name)
+    if (!usedMap.Has(key)) {
+        usedMap[key] := true
+        return name
+    }
+    i := 2
+    loop {
+        if (StrLower(ext) = "ini" || ext = "")
+            cand := nameNoExt "-" i ".txt"
+        else
+            cand := nameNoExt "-" i "." ext
+        ck := StrLower(cand)
+        if (!usedMap.Has(ck)) {
+            usedMap[ck] := true
+            return cand
+        }
+        i += 1
+    }
+}
+
+; Copy to local temp (Drive-safe). Returns staged path or "" on failure.
+PromptContext_StageLocalCopy(src, tempDir, usedMap) {
+    if (src = "" || !Clipboard_PathIsExistingFile(src))
+        return ""
+    if (tempDir = "")
+        return ""
+    outName := PromptContext_StagedAttachName(src, usedMap)
+    dst := tempDir "\" outName
+    if (StrLower(dst) = StrLower(src))
+        return src
+    try {
+        FileCopy(src, dst, 1)
+    } catch {
+        return ""
+    }
+    if !Clipboard_PathIsExistingFile(dst)
+        return ""
+    return dst
+}
+
 PromptContext_ResolveAttachPaths(entries) {
     paths := []
     temps := []
     usedNames := Map()
-    tempDir := ""
-    failed := 0
+    tempDir := PromptContext_TempDir()
+    failedCompact := 0
+    failedStage := 0
+    tempPrefix := StrLower(A_Temp "\prompt-context\")
     for e in entries {
         src := PromptData_ContextEntryPath(e)
-        if !PromptData_ContextEntryNeedsTransform(e) {
-            paths.Push(src)
+        workSrc := src
+        if PromptData_ContextEntryNeedsTransform(e) {
+            outName := PromptData_UniqueCompactedName(src, usedNames)
+            dst := tempDir "\" outName
+            compact := (e.HasProp("compact") && e.compact) ? 1 : 0
+            csvFrom := 0
+            csvTo := 0
+            if (PromptData_IsCsvPath(src)) {
+                csvFrom := e.HasProp("csvKeepFrom") ? e.csvKeepFrom : 0
+                csvTo := e.HasProp("csvKeepTo") ? e.csvKeepTo : 0
+            }
+            if PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
+                workSrc := dst
+                temps.Push(dst)
+            } else {
+                failedCompact += 1
+                workSrc := src
+            }
+        }
+        SplitPath workSrc, , , &workExt
+        alreadyLocal := (InStr(StrLower(workSrc), tempPrefix) = 1)
+        if (alreadyLocal && StrLower(workExt) != "ini") {
+            paths.Push(workSrc)
             continue
         }
-        if (tempDir = "")
-            tempDir := PromptContext_TempDir()
-        outName := PromptData_UniqueCompactedName(src, usedNames)
-        dst := tempDir "\" outName
-        compact := (e.HasProp("compact") && e.compact) ? 1 : 0
-        csvFrom := 0
-        csvTo := 0
-        if (PromptData_IsCsvPath(src)) {
-            csvFrom := e.HasProp("csvKeepFrom") ? e.csvKeepFrom : 0
-            csvTo := e.HasProp("csvKeepTo") ? e.csvKeepTo : 0
-        }
-        if PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
-            paths.Push(dst)
-            temps.Push(dst)
+        staged := PromptContext_StageLocalCopy(workSrc, tempDir, usedNames)
+        if (staged != "") {
+            paths.Push(staged)
+            if (staged != workSrc)
+                temps.Push(staged)
         } else {
-            failed += 1
-            paths.Push(src)
+            failedStage += 1
+            paths.Push(workSrc)
         }
     }
-    if (failed > 0)
-        ShowCenteredOverlay_Utils("⚠ Compact failed for " . failed . " file(s); attaching original", 2200,
+    if (failedCompact > 0)
+        ShowCenteredOverlay_Utils("⚠ Compact failed for " . failedCompact . " file(s); attaching original", 2200,
+            BANNER_ACCENT_ERROR)
+    if (failedStage > 0)
+        ShowCenteredOverlay_Utils("⚠ Local stage failed for " . failedStage . " file(s); attaching source", 2200,
             BANNER_ACCENT_ERROR)
     if (temps.Length > 0)
         PromptContext_ScheduleTempCleanup(temps)
     return paths
+}
+
+; After CF_HDROP paste: wait until Gemini/Enterprise upload UI settles before prompt body paste.
+PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
+    if !InsertFiles_IsAiChatForeground()
+        return
+    minMs := (fileCount >= 3) ? 2000 : 1500
+    uia := ""
+    try uia := Gemini_GetUiaForActiveGeminiChrome()
+    catch {
+        uia := ""
+    }
+    if (!IsObject(uia)) {
+        try {
+            hwnd := WinGetID("A")
+            if (hwnd)
+                uia := UIA_Browser("ahk_id " hwnd)
+        } catch {
+            uia := ""
+        }
+    }
+    if (IsObject(uia)) {
+        try Gemini_WaitForUploadIdleWithRefocus(uia, 8000, minMs)
+        catch {
+            Sleep minMs
+        }
+    } else {
+        Sleep minMs
+    }
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=
