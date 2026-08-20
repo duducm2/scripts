@@ -7,23 +7,44 @@
 
 ; Cleanup Copy from Gemini mode: disable hotkeys and reset state
 CleanupCopyFromGeminiMode() {
-    global g_CopyFromGeminiModeActive, g_CopyFromGeminiHotkeyHandlers
+    global g_CopyFromGeminiModeActive, g_CopyFromGeminiHotkeyHandlers, g_ProjectSelectorGui
 
     g_CopyFromGeminiModeActive := false
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+        }
+    }
     for handler in g_CopyFromGeminiHotkeyHandlers {
         try {
-            char := handler.char
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
+            if (handler.HasProp("key") && handler.key != "")
+                Hotkey(handler.key, "Off")
+            else {
+                ; Legacy fallback if an entry lacked key
+                char := handler.char
+                if (char = ",")
+                    Hotkey("vkBC", "Off")
+                else if (char = ".")
+                    Hotkey("vkBE", "Off")
+                else {
+                    Hotkey(char, "Off")
+                    if (RegExMatch(char, "^[a-z]$"))
+                        Hotkey(StrUpper(char), "Off")
                 }
             }
         } catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
         }
     }
     g_CopyFromGeminiHotkeyHandlers := []
@@ -107,7 +128,7 @@ CreateCopyFromGeminiProjectHandler(index) {
 ; Handler for Copy from Gemini mode trigger (K key in project selector)
 HandleCopyFromGeminiModeTrigger(*) {
     global g_ProjectSelectorActive, g_CopyFromGeminiModeActive, g_Projects, g_ProjectCharSequence
-    global g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers
+    global g_CopyFromGeminiHotkeyHandlers, g_ProjectHotkeyHandlers, g_ProjectSelectorGui
 
     ; #region agent log
     _DebugLog_WM("WindowManagement.ahk:HandleCopyFromGeminiModeTrigger", "K pressed", '{"selectorActive":' . (
@@ -119,23 +140,29 @@ HandleCopyFromGeminiModeTrigger(*) {
     ShowNotification_WM("Copy from Gemini - Select Project")
     g_CopyFromGeminiModeActive := true
 
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+        }
+    }
+
     ; Disable existing project hotkeys (keep special keys c, 3, l, k, Escape)
     for handler in g_ProjectHotkeyHandlers {
         try {
             char := handler.char
-            if (char = "l" || char = "L" || char = "k" || char = "K" || char = "c" || char = "C" || char = "3") {
+            if (char = "l" || char = "L" || char = "k" || char = "K" || char = "c" || char = "C" || char = "3"
+                || char = "Escape" || char = "Insert" || char = "F2" || char = "Delete" || char = "Enter") {
                 continue
             }
-            if (char = ",") {
-                Hotkey("vkBC", "Off")
-            } else if (char = ".") {
-                Hotkey("vkBE", "Off")
-            } else {
-                Hotkey(char, "Off")
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), "Off")
-                }
-            }
+            if (handler.HasProp("key") && handler.key != "")
+                Hotkey(handler.key, "Off")
         } catch {
         }
     }
@@ -144,23 +171,20 @@ HandleCopyFromGeminiModeTrigger(*) {
     projectIndexToChar := resolved.projectIndexToChar
 
     g_CopyFromGeminiHotkeyHandlers := []
+    digitCallbacks := Map()
     for projectIndex, char in projectIndexToChar {
         handler := CreateCopyFromGeminiProjectHandler(projectIndex)
-        g_CopyFromGeminiHotkeyHandlers.Push({ char: char, handler: handler })
-        try {
-            if (char = ",") {
-                Hotkey("vkBC", handler, "On")
-            } else if (char = ".") {
-                Hotkey("vkBE", handler, "On")
-            } else {
-                Hotkey(char, handler, "On")
-                if (RegExMatch(char, "^[a-z]$")) {
-                    Hotkey(StrUpper(char), handler, "On")
-                }
-            }
-        } catch {
+        ProjectSelector_RegisterCharKeys(char, handler, g_CopyFromGeminiHotkeyHandlers)
+        if (ProjectSelector_IsDigitChar(char))
+            digitCallbacks[char] := handler
+    }
+
+    if (hwnd) {
+        try HotIf()
+        catch {
         }
     }
+    ProjectSelector_StartDigitKeysPoll(digitCallbacks)
 }
 
 ; Handler for preview window activation (character "3")

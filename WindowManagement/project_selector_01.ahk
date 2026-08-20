@@ -49,6 +49,10 @@ global g_ProjectPathPickGui := false
 global g_ProjectPathPickPersonalEdit := false
 global g_ProjectPathPickWorkEdit := false
 global g_ProjectPathPickResult := ""
+; Digit quick-open poll (survives Hotkey("1") conflicts; see minimized_list / StandardLoadingBar)
+global g_ProjectSelectorDigitPollTimer := ""
+global g_ProjectSelectorDigitPollPrev := Map()
+global g_ProjectSelectorDigitPollCallbacks := Map()
 
 ; Global variables for Cursor window selector (used within project selector)
 global g_CursorWindowMap := Map()  ; Maps character to window HWND
@@ -193,8 +197,114 @@ ProjectSelector_HotkeyName(char) {
     return char
 }
 
+ProjectSelector_IsDigitChar(char) {
+    return (char != "" && RegExMatch(char, "^[0-9]$"))
+}
+
+; Register one hotkey string at InputLevel 10; append to handlersArr as {char, key, handler}.
+ProjectSelector_RegisterHotkey(hk, char, handler, handlersArr) {
+    try {
+        #InputLevel 10
+        Hotkey(hk, handler, "On")
+        #InputLevel 0
+        handlersArr.Push({ char: char, key: hk, handler: handler })
+    } catch {
+        try {
+            #InputLevel 0
+        } catch {
+        }
+    }
+}
+
+; Bind $*char (+ uppercase / Numpad for digits). Shared by project open and Copy-from-Gemini.
+ProjectSelector_RegisterCharKeys(char, handler, handlersArr) {
+    baseKey := ProjectSelector_HotkeyName(char)
+    ProjectSelector_RegisterHotkey("$*" . baseKey, char, handler, handlersArr)
+    if (RegExMatch(char, "^[a-z]$")) {
+        upperKey := StrUpper(char)
+        ProjectSelector_RegisterHotkey("$*" . upperKey, char, handler, handlersArr)
+    }
+    if (ProjectSelector_IsDigitChar(char))
+        ProjectSelector_RegisterHotkey("$*Numpad" . char, char, handler, handlersArr)
+}
+
+ProjectSelector_DigitKeyDown(keyName) {
+    try {
+        if (ProjectSelector_IsDigitChar(keyName))
+            return GetKeyState(keyName, "P") || GetKeyState("Numpad" . keyName, "P")
+        return GetKeyState(keyName, "P")
+    } catch {
+        return false
+    }
+}
+
+ProjectSelector_StopDigitKeysPoll() {
+    global g_ProjectSelectorDigitPollTimer, g_ProjectSelectorDigitPollPrev, g_ProjectSelectorDigitPollCallbacks
+    try SetTimer(g_ProjectSelectorDigitPollTimer, 0)
+    catch {
+    }
+    g_ProjectSelectorDigitPollTimer := ""
+    g_ProjectSelectorDigitPollPrev := Map()
+    g_ProjectSelectorDigitPollCallbacks := Map()
+}
+
+; Edge-triggered poll: survives global Hotkey("1") conflicts (same idea as minimized_list).
+ProjectSelector_DigitKeysPoll() {
+    global g_ProjectSelectorActive, g_ProjectSelectorGui, g_ProjectSelectorDigitPollCallbacks,
+        g_ProjectSelectorDigitPollPrev
+    if (!g_ProjectSelectorActive) {
+        ProjectSelector_StopDigitKeysPoll()
+        return
+    }
+    hwnd := 0
+    try {
+        if (IsObject(g_ProjectSelectorGui))
+            hwnd := g_ProjectSelectorGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    if (!hwnd)
+        return
+    try {
+        if (!WinActive("ahk_id " hwnd))
+            return
+    } catch {
+        return
+    }
+    for keyName, cb in g_ProjectSelectorDigitPollCallbacks {
+        if (!cb)
+            continue
+        isDown := ProjectSelector_DigitKeyDown(keyName)
+        wasDown := g_ProjectSelectorDigitPollPrev.Has(keyName) ? g_ProjectSelectorDigitPollPrev[keyName] : false
+        g_ProjectSelectorDigitPollPrev[keyName] := isDown
+        if (isDown && !wasDown) {
+            try cb.Call()
+            catch {
+            }
+        }
+    }
+}
+
+; digitCallbacks: Map digitChar -> handler. Empty map stops the poll.
+ProjectSelector_StartDigitKeysPoll(digitCallbacks) {
+    global g_ProjectSelectorDigitPollCallbacks, g_ProjectSelectorDigitPollPrev, g_ProjectSelectorDigitPollTimer
+    ProjectSelector_StopDigitKeysPoll()
+    if (!IsObject(digitCallbacks) || digitCallbacks.Count = 0)
+        return
+    g_ProjectSelectorDigitPollCallbacks := digitCallbacks
+    g_ProjectSelectorDigitPollPrev := Map()
+    for keyName, cb in digitCallbacks {
+        if (!cb)
+            continue
+        g_ProjectSelectorDigitPollPrev[keyName] := ProjectSelector_DigitKeyDown(keyName)
+    }
+    if (g_ProjectSelectorDigitPollCallbacks.Count > 0)
+        g_ProjectSelectorDigitPollTimer := SetTimer(ProjectSelector_DigitKeysPoll, 50)
+}
+
 ProjectSelector_UnbindModalHotkeys() {
     global g_ProjectSelectorGui, g_ProjectHotkeyHandlers, g_ProjectSelectorHotkeysBound
+    ProjectSelector_StopDigitKeysPoll()
     hwnd := 0
     try {
         if (IsObject(g_ProjectSelectorGui))
@@ -223,20 +333,7 @@ ProjectSelector_UnbindModalHotkeys() {
 
 ProjectSelector_BindOneChar(char, handler) {
     global g_ProjectHotkeyHandlers
-    key := ProjectSelector_HotkeyName(char)
-    try {
-        Hotkey(key, handler, "On")
-        g_ProjectHotkeyHandlers.Push({ char: char, key: key, handler: handler })
-    } catch {
-    }
-    if (RegExMatch(char, "^[a-z]$")) {
-        upperKey := StrUpper(char)
-        try {
-            Hotkey(upperKey, handler, "On")
-            g_ProjectHotkeyHandlers.Push({ char: char, key: upperKey, handler: handler })
-        } catch {
-        }
-    }
+    ProjectSelector_RegisterCharKeys(char, handler, g_ProjectHotkeyHandlers)
 }
 
 ProjectSelector_BindModalHotkeys() {
@@ -256,10 +353,13 @@ ProjectSelector_BindModalHotkeys() {
         return
     }
 
+    digitCallbacks := Map()
     resolved := ProjectSelector_ResolveProjectCharMap()
     for projectIndex, char in resolved.projectIndexToChar {
         handler := CreateProjectHandler(projectIndex)
         ProjectSelector_BindOneChar(char, handler)
+        if (ProjectSelector_IsDigitChar(char))
+            digitCallbacks[char] := handler
     }
 
     try {
@@ -292,6 +392,7 @@ ProjectSelector_BindModalHotkeys() {
     catch {
     }
     g_ProjectSelectorHotkeysBound := true
+    ProjectSelector_StartDigitKeysPoll(digitCallbacks)
 }
 
 ProjectSelector_PopulateLv() {
