@@ -50,9 +50,18 @@ EditorFileSearch_BasenameFromTitle(hwnd) {
         title := WinGetTitle("ahk_id " hwnd)
         if (title = "")
             return ""
-        parts := StrSplit(title, " - ", , 2)
-        if (parts.Length >= 1 && parts[1] != "") {
-            candidate := EditorFileSearch_NormalizeBasename(Trim(parts[1]))
+        sepPos := InStr(title, " - ")
+        emPos := InStr(title, " — ")
+        cut := 0
+        if (sepPos && emPos)
+            cut := Min(sepPos, emPos)
+        else if (sepPos)
+            cut := sepPos
+        else if (emPos)
+            cut := emPos
+        first := (cut > 0) ? Trim(SubStr(title, 1, cut - 1)) : Trim(title)
+        if (first != "") {
+            candidate := EditorFileSearch_NormalizeBasename(first)
             if EditorFileSearch_IsPlausibleBasename(candidate)
                 return candidate
         }
@@ -286,6 +295,12 @@ EditorFileSearch_Start() {
                 EditorFileSearch_SaveHit(hwnd, query)
                 return
             }
+            alreadyHwnd := EditorFileSearch_FindHwndAlreadyOpen(query, hwnds)
+            if (alreadyHwnd) {
+                try WinActivate("ahk_id " alreadyHwnd)
+                EditorFileSearch_SaveHit(alreadyHwnd, query)
+                return
+            }
         }
         ShowCenteredOverlay_Utils("File not found in any editor window", 2000, BANNER_ACCENT_ERROR)
     } finally {
@@ -415,11 +430,10 @@ EditorFileSearch_TryOpenInInstance(hwnd, query) {
     }
 
     Send "{Enter}"
-    if (EDITOR_FILE_SEARCH_USE_TITLE_VERIFY) {
-        if (EditorFileSearch_WaitForTitleBasenameMatch(hwnd, query, EDITOR_FILE_SEARCH_TITLE_VERIFY_MS))
-            return true
-    }
-    if (EditorFileSearch_WaitForQuickInputDismissed(hwnd, EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS))
+    verifyMs := EDITOR_FILE_SEARCH_TITLE_VERIFY_MS
+    if (!EDITOR_FILE_SEARCH_USE_TITLE_VERIFY)
+        verifyMs := EDITOR_FILE_SEARCH_DISMISS_VERIFY_MS
+    if (EditorFileSearch_WaitForOpenSuccess(hwnd, query, verifyMs))
         return true
 
     Send "{Escape}"
@@ -450,17 +464,25 @@ EditorFileSearch_QuickInputWidget(hwnd) {
     }
 }
 
-EditorFileSearch_QuickInputVisible(hwnd) {
-    if (EditorFileSearch_QuickInputWidget(hwnd))
-        return true
+EditorFileSearch_QuickInputFilterVisible(hwnd) {
     root := EditorFileSearch_GetRoot(hwnd)
-    if (root) {
-        try {
-            if (root.FindFirst({ AutomationId: "quickInput.list.filter", cs: false }))
-                return true
-        } catch {
-        }
+    if (!root)
+        return false
+    try {
+        if (root.FindFirst({ AutomationId: "quickInput.list.filter", cs: false }))
+            return true
+    } catch {
     }
+    return false
+}
+
+EditorFileSearch_QuickInputWidgetOrFilterVisible(hwnd) {
+    return EditorFileSearch_QuickInputWidget(hwnd) || EditorFileSearch_QuickInputFilterVisible(hwnd)
+}
+
+EditorFileSearch_QuickInputVisible(hwnd) {
+    if (EditorFileSearch_QuickInputWidgetOrFilterVisible(hwnd))
+        return true
     if WinActive("ahk_id " hwnd) {
         try {
             fe := UIA.GetFocusedElement()
@@ -499,12 +521,25 @@ EditorFileSearch_WaitForQuickInput(hwnd, timeoutMs) {
     return false
 }
 
-EditorFileSearch_WaitForQuickInputDismissed(hwnd, timeoutMs) {
-    global EDITOR_FILE_SEARCH_POLL_STEP_MS
+EditorFileSearch_WaitForOpenSuccess(hwnd, query, timeoutMs) {
+    global EDITOR_FILE_SEARCH_POLL_STEP_MS, EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS,
+        EDITOR_FILE_SEARCH_USE_TITLE_VERIFY
     deadline := A_TickCount + timeoutMs
+    stable := 0
+    need := EDITOR_FILE_SEARCH_TITLE_STABLE_POLLS
+    sawWidget := EditorFileSearch_QuickInputWidgetOrFilterVisible(hwnd)
     while (A_TickCount < deadline) {
-        if (!EditorFileSearch_QuickInputVisible(hwnd))
+        if (sawWidget && !EditorFileSearch_QuickInputWidgetOrFilterVisible(hwnd))
             return true
+        if (!sawWidget && EditorFileSearch_QuickInputWidgetOrFilterVisible(hwnd))
+            sawWidget := true
+        if (EDITOR_FILE_SEARCH_USE_TITLE_VERIFY && EditorFileSearch_HwndAlreadyHasFile(hwnd, query)) {
+            stable++
+            if (stable >= need)
+                return true
+        } else {
+            stable := 0
+        }
         Sleep EDITOR_FILE_SEARCH_POLL_STEP_MS
     }
     return false
