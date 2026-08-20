@@ -86,6 +86,13 @@ AudioBt_IgnoreIniPath() {
     return A_ScriptDir "\assets\data\audio_bt_ignore.ini"
 }
 
+AudioBt_IgnoreEnvSection() {
+    global IS_WORK_ENVIRONMENT
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        return "Ignore_work"
+    return "Ignore_personal"
+}
+
 AudioBt_IgnoreEntryKey(id, kind) {
     return StrLower(Trim(id)) "`t" Trim(kind)
 }
@@ -97,7 +104,8 @@ AudioBt_IgnoreSanitize(text) {
     return s
 }
 
-AudioBt_IgnoreParseIni(raw) {
+AudioBt_IgnoreParseIni(raw, sectionName) {
+    target := "[" StrLower(Trim(sectionName)) "]"
     fields := Map()
     count := 0
     inSection := false
@@ -106,7 +114,7 @@ AudioBt_IgnoreParseIni(raw) {
         if (line = "" || SubStr(line, 1, 1) = ";")
             continue
         if (SubStr(line, 1, 1) = "[") {
-            inSection := (StrLower(line) = "[ignore]")
+            inSection := (StrLower(line) = target)
             continue
         }
         if (!inSection)
@@ -128,6 +136,49 @@ AudioBt_IgnoreParseIni(raw) {
     return { count: count, fields: fields }
 }
 
+AudioBt_IgnoreItemsFromParsed(parsed) {
+    items := []
+    seen := Map()
+    loop parsed.count {
+        idx := A_Index
+        id := parsed.fields.Has("id" idx) ? Trim(parsed.fields["id" idx]) : ""
+        kind := parsed.fields.Has("kind" idx) ? Trim(parsed.fields["kind" idx]) : ""
+        name := parsed.fields.Has("name" idx) ? Trim(parsed.fields["name" idx]) : ""
+        if (id = "")
+            continue
+        key := AudioBt_IgnoreEntryKey(id, kind)
+        if (key = "`t" || seen.Has(key))
+            continue
+        seen[key] := true
+        items.Push({ id: id, kind: kind, name: name })
+    }
+    return items
+}
+
+AudioBt_IgnoreApplyItems(items) {
+    global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
+    g_AudioBtIgnoreItems := []
+    g_AudioBtIgnoreIds := Map()
+    for item in items {
+        key := AudioBt_IgnoreEntryKey(item.id, item.kind)
+        if (key = "`t" || g_AudioBtIgnoreIds.Has(key))
+            continue
+        g_AudioBtIgnoreIds[key] := true
+        g_AudioBtIgnoreItems.Push({ id: item.id, kind: item.kind, name: item.name })
+    }
+}
+
+AudioBt_IgnoreSectionLines(sectionName, items) {
+    lines := ["[" sectionName "]", "Count=" items.Length]
+    for item in items {
+        idx := A_Index
+        lines.Push("Id" idx "=" AudioBt_IgnoreSanitize(item.id))
+        lines.Push("Kind" idx "=" AudioBt_IgnoreSanitize(item.kind))
+        lines.Push("Name" idx "=" AudioBt_IgnoreSanitize(item.name))
+    }
+    return lines
+}
+
 AudioBt_IgnoreLoad() {
     global g_AudioBtIgnoreItems, g_AudioBtIgnoreIds
     g_AudioBtIgnoreItems := []
@@ -140,20 +191,15 @@ AudioBt_IgnoreLoad() {
     catch {
         return
     }
-    parsed := AudioBt_IgnoreParseIni(raw)
-    loop parsed.count {
-        idx := A_Index
-        id := parsed.fields.Has("id" idx) ? Trim(parsed.fields["id" idx]) : ""
-        kind := parsed.fields.Has("kind" idx) ? Trim(parsed.fields["kind" idx]) : ""
-        name := parsed.fields.Has("name" idx) ? Trim(parsed.fields["name" idx]) : ""
-        if (id = "")
-            continue
-        key := AudioBt_IgnoreEntryKey(id, kind)
-        if (key = "`t" || g_AudioBtIgnoreIds.Has(key))
-            continue
-        g_AudioBtIgnoreIds[key] := true
-        g_AudioBtIgnoreItems.Push({ id: id, kind: kind, name: name })
+    section := AudioBt_IgnoreEnvSection()
+    items := AudioBt_IgnoreItemsFromParsed(AudioBt_IgnoreParseIni(raw, section))
+    ; One-time: legacy [Ignore] becomes personal when that section is empty.
+    if (items.Length = 0 && section = "Ignore_personal") {
+        legacy := AudioBt_IgnoreItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Ignore"))
+        if (legacy.Length > 0)
+            items := legacy
     }
+    AudioBt_IgnoreApplyItems(items)
 }
 
 AudioBt_IgnoreSave() {
@@ -162,13 +208,31 @@ AudioBt_IgnoreSave() {
     try DirCreate(A_ScriptDir "\assets\data")
     catch {
     }
-    lines := ["[Ignore]", "Count=" g_AudioBtIgnoreItems.Length]
-    for item in g_AudioBtIgnoreItems {
-        idx := A_Index
-        lines.Push("Id" idx "=" AudioBt_IgnoreSanitize(item.id))
-        lines.Push("Kind" idx "=" AudioBt_IgnoreSanitize(item.kind))
-        lines.Push("Name" idx "=" AudioBt_IgnoreSanitize(item.name))
+    raw := ""
+    if FileExist(path) {
+        try raw := FileRead(path, "UTF-8")
+        catch {
+            raw := ""
+        }
     }
+    personalItems := AudioBt_IgnoreItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Ignore_personal"))
+    workItems := AudioBt_IgnoreItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Ignore_work"))
+    if (personalItems.Length = 0) {
+        legacy := AudioBt_IgnoreItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Ignore"))
+        if (legacy.Length > 0)
+            personalItems := legacy
+    }
+    section := AudioBt_IgnoreEnvSection()
+    if (section = "Ignore_work")
+        workItems := g_AudioBtIgnoreItems
+    else
+        personalItems := g_AudioBtIgnoreItems
+    lines := []
+    for line in AudioBt_IgnoreSectionLines("Ignore_personal", personalItems)
+        lines.Push(line)
+    lines.Push("")
+    for line in AudioBt_IgnoreSectionLines("Ignore_work", workItems)
+        lines.Push(line)
     text := ""
     for line in lines
         text .= line "`n"
