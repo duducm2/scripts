@@ -23,3 +23,5 @@ TX025,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Inves
 TX026,2026-08-18,Melli dollars income investment,"0,02",income,CAT_OUTROS2,Investment,ACC_MERCADOP,,
 TX027,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERCADOP,CARD_MP,description
 TX028,2026-08-19,Investiment,"10,00",income,CAT_INVESTIM,,ACC_MERCADOP,,
+TX029,2026-08-19,delivery dinner,"58,70",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+TX030,2026-08-19,YouTube subscription,"16,90",expense,CAT_SUBSCRIP,,ACC_MERCADOP,,

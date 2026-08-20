@@ -1,0 +1,3 @@
+"description","amount","type","category_id","subcategory","account_id","card_id","transfer_account_id"
+"delivery dinner","58,70","expense","CAT_ALIMENTA","","ACC_MERCADOP","",""
+"YouTube subscription","16,90","expense","CAT_SUBSCRIP","","ACC_MERCADOP","",""
