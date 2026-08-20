@@ -21,11 +21,13 @@ from seed_from_ini import seed  # noqa: E402
 
 
 def pie_spec(rows):
+    # rows: (name, amount, color) — category id comes from client-side rebuild
     return {
         "labels": [r[0] for r in rows],
         "values": [round(r[1], 2) for r in rows],
         "colors": [r[2] for r in rows],
         "custom": [format_brl(r[1]) for r in rows],
+        "categoryIds": [""] * len(rows),
     }
 
 
@@ -345,11 +347,12 @@ def build_html(data: dict) -> str:
       background:var(--ctrl-bg); color:var(--ctrl-fg); border:1px solid var(--border);
       border-radius:6px; padding:4px 8px; font-size:12px;
     }}
-    .period-controls button {{
+    .period-controls button, #catViewBack {{
       background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
       border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer;
     }}
-    .period-controls button:hover {{ filter:brightness(1.08); }}
+    .period-controls button:hover, #catViewBack:hover {{ filter:brightness(1.08); }}
+    #catViewBack {{ margin-top:8px; }}
     main {{ padding:12px 16px 20px; }}
     .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }}
     .kpi {{ background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }}
@@ -390,8 +393,37 @@ def build_html(data: dict) -> str:
     .bar-fill {{ height:100%; border-radius:4px; }}
     .bar-meta {{ color:var(--muted2); font-size:11px; margin-top:2px; }}
     .empty {{ color:var(--empty); margin:0; }}
+    .chart-clickable {{ cursor:pointer; }}
+    #categoryView {{ display:none; }}
+    #categoryView.active {{ display:block; }}
+    #cockpitView.hidden {{ display:none; }}
+    .cat-view-head {{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap; margin-bottom:12px;
+    }}
+    .cat-view-head h2 {{ margin:0; font-size:16px; font-weight:600; }}
+    .cat-view-meta {{ color:var(--muted); font-size:12px; margin-top:4px; }}
+    .cat-view-total {{ font-size:15px; font-weight:600; }}
+    .cat-view-total.neg {{ color:#e74c3c; }}
+    .cat-view-total.pos {{ color:#2ecc71; }}
+    .tx-table-wrap {{
+      background:var(--panel); border:1px solid var(--border); border-radius:6px;
+      overflow:auto;
+    }}
+    table.tx-table {{ width:100%; border-collapse:collapse; font-size:12px; }}
+    table.tx-table th, table.tx-table td {{
+      padding:8px 10px; text-align:left; border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }}
+    table.tx-table th {{ color:var(--muted); font-weight:600; font-size:11px;
+      text-transform:uppercase; letter-spacing:.03em; position:sticky; top:0;
+      background:var(--panel); }}
+    table.tx-table td.desc {{ white-space:normal; max-width:320px; }}
+    table.tx-table td.amt {{ text-align:right; font-variant-numeric:tabular-nums; }}
+    table.tx-table tr:last-child td {{ border-bottom:none; }}
     @media (max-width:900px) {{
       .kpis, .charts, .split {{ grid-template-columns:1fr; }}
+      .budget-panel, .pie-exp-cell, .pie-inc-cell {{ grid-column:auto; grid-row:auto; }}
     }}
   </style>
 </head>
@@ -406,6 +438,7 @@ def build_html(data: dict) -> str:
   </div>
 </header>
 <main>
+  <div id="cockpitView">
   {note_html}
   {cards_html}
   {perf_html}
@@ -421,12 +454,44 @@ def build_html(data: dict) -> str:
     {card_bars_html}
   </div>
   {rec_html}
+  </div>
+  <div id="categoryView">
+    <div class="panel">
+      <div class="cat-view-head">
+        <div>
+          <h2 id="catViewTitle">Category</h2>
+          <div class="cat-view-meta" id="catViewMeta"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="cat-view-total" id="catViewTotal"></div>
+          <button type="button" id="catViewBack">Back to dashboard</button>
+        </div>
+      </div>
+      <div class="tx-table-wrap">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Account</th>
+              <th>Type</th>
+              <th>Subcategory</th>
+            </tr>
+          </thead>
+          <tbody id="catViewBody"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="catViewEmpty" style="display:none;padding:12px 0">No transactions for this category in the selected period</p>
+    </div>
+  </div>
 </main>
 <script>
 const DATA = {payload_json};
 const RAW = {raw_json};
 const THEME_KEY = 'finance-cockpit-theme';
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let activeCategory = null; // {{ id, kind }} when detail view is open
 
 function parseDecimal(value) {{
   if (value == null) return 0;
@@ -526,7 +591,7 @@ function byCategoryDates(from, to, types) {{
   }}
   const rows = Object.entries(totals).map(([cid, amt]) => {{
     const row = byId[cid];
-    return {{name: catLabel(row, cid), value: amt, color: (row && row.color) || '#7F8C8D'}};
+    return {{id: cid, name: catLabel(row, cid), value: amt, color: (row && row.color) || '#7F8C8D'}};
   }});
   rows.sort((a,b) => b.value - a.value);
   return rows;
@@ -550,8 +615,139 @@ function pieFromRows(rows) {{
     labels: rows.map(r => r.name),
     values: rows.map(r => Math.round(r.value * 100) / 100),
     colors: rows.map(r => r.color),
-    custom: rows.map(r => formatBrl(r.value))
+    custom: rows.map(r => formatBrl(r.value)),
+    categoryIds: rows.map(r => r.id)
   }};
+}}
+function accountName(accountId) {{
+  if (!accountId) return '';
+  for (const a of RAW.accounts || []) {{
+    if (a.id === accountId) return a.name || a.id;
+  }}
+  return accountId;
+}}
+function cardName(cardId) {{
+  if (!cardId) return '';
+  for (const c of RAW.cards || []) {{
+    if (c.id === cardId) return c.name || c.id;
+  }}
+  return cardId;
+}}
+function typeLabel(t) {{
+  if (t === 'card_expense') return 'Credit card';
+  if (t === 'expense') return 'Expense';
+  if (t === 'income') return 'Income';
+  if (t === 'transfer') return 'Transfer';
+  return t || '';
+}}
+function currentPeriod() {{
+  const fromEl = document.getElementById('periodFrom');
+  const toEl = document.getElementById('periodTo');
+  let from = fromEl ? fromEl.value : '';
+  let to = toEl ? toEl.value : '';
+  if (from && to && from > to) {{ const t = from; from = to; to = t; }}
+  return {{ from, to }};
+}}
+function openCategoryView(categoryId, kind) {{
+  if (!categoryId) return;
+  activeCategory = {{ id: categoryId, kind: kind || 'expense' }};
+  const cockpit = document.getElementById('cockpitView');
+  const detail = document.getElementById('categoryView');
+  if (cockpit) cockpit.classList.add('hidden');
+  if (detail) detail.classList.add('active');
+  renderCategoryView();
+}}
+function closeCategoryView() {{
+  activeCategory = null;
+  const cockpit = document.getElementById('cockpitView');
+  const detail = document.getElementById('categoryView');
+  if (detail) detail.classList.remove('active');
+  if (cockpit) cockpit.classList.remove('hidden');
+}}
+function renderCategoryView() {{
+  if (!activeCategory) return;
+  const {{ from, to }} = currentPeriod();
+  const byId = catById();
+  const label = catLabel(byId[activeCategory.id], activeCategory.id);
+  const types = activeCategory.kind === 'income'
+    ? new Set(['income'])
+    : new Set(['expense', 'card_expense']);
+  const rows = [];
+  let total = 0;
+  for (const t of RAW.transactions) {{
+    const d = String(t.date || '').slice(0,10);
+    if (!d || (from && d < from) || (to && d > to)) continue;
+    if (!types.has(t.type)) continue;
+    if (mainCategoryId(t.category_id || '', byId) !== activeCategory.id) continue;
+    const amt = parseDecimal(t.amount);
+    total += amt;
+    rows.push(t);
+  }}
+  rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const title = document.getElementById('catViewTitle');
+  const meta = document.getElementById('catViewMeta');
+  const totEl = document.getElementById('catViewTotal');
+  const body = document.getElementById('catViewBody');
+  const empty = document.getElementById('catViewEmpty');
+  const wrap = document.querySelector('.tx-table-wrap');
+  if (title) title.textContent = label;
+  if (meta) {{
+    const kindLbl = activeCategory.kind === 'income' ? 'Incomes' : 'Expenses';
+    meta.textContent = kindLbl + ' · ' + periodLabel(from, to) + ' · ' + rows.length
+      + (rows.length === 1 ? ' transaction' : ' transactions');
+  }}
+  if (totEl) {{
+    totEl.textContent = formatBrl(total);
+    totEl.className = 'cat-view-total ' + (activeCategory.kind === 'income' ? 'pos' : 'neg');
+  }}
+  if (!body) return;
+  if (!rows.length) {{
+    body.innerHTML = '';
+    if (wrap) wrap.style.display = 'none';
+    if (empty) empty.style.display = '';
+    return;
+  }}
+  if (wrap) wrap.style.display = '';
+  if (empty) empty.style.display = 'none';
+  body.innerHTML = rows.map(t => {{
+    const acc = t.type === 'card_expense'
+      ? (cardName(t.card_id) || accountName(t.account_id) || '—')
+      : (accountName(t.account_id) || '—');
+    return '<tr>'
+      + '<td>' + String(t.date || '').slice(0,10) + '</td>'
+      + '<td class="desc">' + escapeHtml(t.description || '') + '</td>'
+      + '<td class="amt">' + formatBrl(parseDecimal(t.amount)) + '</td>'
+      + '<td>' + escapeHtml(acc) + '</td>'
+      + '<td>' + escapeHtml(typeLabel(t.type)) + '</td>'
+      + '<td>' + escapeHtml(t.subcategory || '—') + '</td>'
+      + '</tr>';
+  }}).join('');
+}}
+function escapeHtml(s) {{
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}}
+function bindChartClick(elId, kind) {{
+  const el = document.getElementById(elId);
+  if (!el || !el.on) return;
+  el.on('plotly_click', (ev) => {{
+    if (!ev || !ev.points || !ev.points.length) return;
+    const pt = ev.points[0];
+    let cid = '';
+    if (Array.isArray(pt.customdata)) cid = pt.customdata[1] || '';
+    else if (pt.customdata && typeof pt.customdata === 'object') cid = pt.customdata.categoryId || '';
+    if (!cid && typeof pt.pointNumber === 'number') {{
+      const spec = kind === 'income' ? DATA.incomePie : DATA.expensePie;
+      if (elId === 'barCat' && DATA.spentMain && DATA.spentMain[pt.pointNumber])
+        cid = DATA.spentMain[pt.pointNumber].id || '';
+      else if (spec && spec.categoryIds)
+        cid = spec.categoryIds[pt.pointNumber] || '';
+    }}
+    if (cid) openCategoryView(cid, kind);
+  }});
 }}
 function monthTotals(months) {{
   let income = 0, expense = 0;
@@ -787,7 +983,7 @@ function applyPeriod() {{
   const multi = from !== to;
   DATA.expensePie = pieFromRows(expRows);
   DATA.incomePie = pieFromRows(incRows);
-  DATA.spentMain = expRows.map(r => ({{name: r.name, value: r.value}}));
+  DATA.spentMain = expRows.map(r => ({{name: r.name, value: r.value, id: r.id}}));
   DATA.series = seriesFor(months);
   DATA.annual = annualFor(year);
   DATA.incomeVsInvest = incomeVsInvest(from, to);
@@ -813,7 +1009,8 @@ function applyPeriod() {{
   }}
   renderBudgets(aggregateBudgets(months));
   renderRecurring(months, tot.income);
-  drawAll();
+  if (activeCategory) renderCategoryView();
+  else drawAll();
 }}
 function themeColors() {{
   const cs = getComputedStyle(document.documentElement);
@@ -827,38 +1024,43 @@ function baseLayout() {{
   return {{paper_bgcolor:t.paper, plot_bgcolor:t.paper, font:{{color:t.font, size:11}},
     margin:{{t:28,b:48,l:42,r:16}}, height:320, legend:{{orientation:'h', y:1.12, font:{{size:10}}}}}};
 }}
-function pie(id, spec) {{
+function pie(id, spec, kind) {{
   const el = document.getElementById(id);
   if (!el) return;
   if (!spec.values.length) {{ el.innerHTML = '<p class="empty">No data</p>'; return; }}
   const L = baseLayout();
+  const custom = (spec.categoryIds || []).map((cid, i) => [spec.custom[i], cid]);
+  el.classList.add('chart-clickable');
   Plotly.newPlot(id, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
-    customdata: spec.custom, textfont:{{size:10}},
+    customdata: custom, textfont:{{size:10}},
     domain:{{x:[0, 0.62], y:[0, 1]}},
-    hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata}}<extra></extra>'
+    hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata[0]}}<extra></extra>'
   }}], Object.assign({{}}, L, {{
     showlegend:true,
     margin:{{t:28, b:20, l:8, r:8}},
     legend:{{orientation:'v', x:1.02, y:0.5, xanchor:'left', font:{{size:10}}}}
-  }}), {{responsive:true, displayModeBar:false}});
+  }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick(id, kind));
 }}
 function drawAll() {{
   const L = baseLayout();
-  pie('pieExp', DATA.expensePie);
-  pie('pieInc', DATA.incomePie);
+  pie('pieExp', DATA.expensePie, 'expense');
+  pie('pieInc', DATA.incomePie, 'income');
   const barCat = document.getElementById('barCat');
   if (barCat) {{
     const names = DATA.spentMain.map(x => x.name);
     const vals = DATA.spentMain.map(x => x.value);
+    const custom = DATA.spentMain.map(x => [formatBrl(x.value), x.id || '']);
+    barCat.classList.add('chart-clickable');
     Plotly.newPlot('barCat', [{{type:'bar', x:names, y:vals, marker:{{color:'#e67e22'}},
-      hovertemplate:'%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'}}],
+      customdata: custom,
+      hovertemplate:'%{{x}}<br>%{{customdata[0]}}<extra></extra>'}}],
       Object.assign({{}}, L, {{
         showlegend:false,
         height:320,
         margin:{{t:28, b:110, l:48, r:16}},
         xaxis:{{tickangle:-45, automargin:true, tickfont:{{size:10}}}}
-      }}), {{responsive:true, displayModeBar:false}});
+      }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick('barCat', 'expense'));
   }}
   const barBal = document.getElementById('barBal');
   if (barBal) {{
@@ -885,7 +1087,7 @@ function applyTheme(theme) {{
   localStorage.setItem(THEME_KEY, theme);
   const btn = document.getElementById('themeToggle');
   if (btn) btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
-  drawAll();
+  if (!activeCategory) drawAll();
 }}
 (function init() {{
   let theme = localStorage.getItem(THEME_KEY);
@@ -901,6 +1103,11 @@ function applyTheme(theme) {{
   }}
   const applyBtn = document.getElementById('periodApply');
   if (applyBtn) applyBtn.addEventListener('click', applyPeriod);
+  const backBtn = document.getElementById('catViewBack');
+  if (backBtn) backBtn.addEventListener('click', () => {{
+    closeCategoryView();
+    drawAll();
+  }});
   const fromEl = document.getElementById('periodFrom');
   const toEl = document.getElementById('periodTo');
   if (fromEl) fromEl.value = RAW.monthStart || RAW.dateFrom;

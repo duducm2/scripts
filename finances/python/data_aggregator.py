@@ -468,9 +468,13 @@ def cockpit_raw(data: dict | None = None) -> dict:
         "transactions": [
             {
                 "date": t.get("date", ""),
+                "description": t.get("description", ""),
                 "amount": t.get("amount", ""),
                 "type": t.get("type", ""),
                 "category_id": t.get("category_id", ""),
+                "subcategory": t.get("subcategory", ""),
+                "account_id": t.get("account_id", ""),
+                "card_id": t.get("card_id", ""),
             }
             for t in txs
         ],
