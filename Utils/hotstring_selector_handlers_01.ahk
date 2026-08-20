@@ -149,7 +149,8 @@ UtilitySelector_AttachPromptContextFiles(prompt) {
     }
     if (existing.Length = 0)
         return
-    attachPaths := PromptContext_ResolveAttachPaths(existing)
+    asTxt := PromptData_AttachAsTxt(prompt)
+    attachPaths := PromptContext_ResolveAttachPaths(existing, asTxt)
     if (attachPaths.Length = 0)
         return
     if !InsertFiles(attachPaths) {
@@ -223,12 +224,13 @@ PromptContext_RunCompact(src, dst, compact, csvFrom, csvTo) {
     return (exitCode = 0 && FileExist(dst))
 }
 
-; Basename for staged attach: keep name; .ini → .txt for Gemini upload compatibility.
-PromptContext_StagedAttachName(path, usedMap) {
+; Basename for staged attach. asTxt (or .ini): force .txt for Gemini upload compatibility.
+PromptContext_StagedAttachName(path, usedMap, asTxt := false) {
     SplitPath path, &name, , &ext, &nameNoExt
     if (nameNoExt = "")
         nameNoExt := (name != "") ? name : "file"
-    if (StrLower(ext) = "ini")
+    forceTxt := asTxt || (StrLower(ext) = "ini")
+    if (forceTxt)
         name := nameNoExt ".txt"
     else if (ext != "")
         name := nameNoExt "." ext
@@ -241,7 +243,7 @@ PromptContext_StagedAttachName(path, usedMap) {
     }
     i := 2
     loop {
-        if (StrLower(ext) = "ini" || ext = "")
+        if (forceTxt || ext = "")
             cand := nameNoExt "-" i ".txt"
         else
             cand := nameNoExt "-" i "." ext
@@ -255,12 +257,12 @@ PromptContext_StagedAttachName(path, usedMap) {
 }
 
 ; Copy to local temp (Drive-safe). Returns staged path or "" on failure.
-PromptContext_StageLocalCopy(src, tempDir, usedMap) {
+PromptContext_StageLocalCopy(src, tempDir, usedMap, asTxt := false) {
     if (src = "" || !Clipboard_PathIsExistingFile(src))
         return ""
     if (tempDir = "")
         return ""
-    outName := PromptContext_StagedAttachName(src, usedMap)
+    outName := PromptContext_StagedAttachName(src, usedMap, asTxt)
     dst := tempDir "\" outName
     if (StrLower(dst) = StrLower(src))
         return src
@@ -274,7 +276,7 @@ PromptContext_StageLocalCopy(src, tempDir, usedMap) {
     return dst
 }
 
-PromptContext_ResolveAttachPaths(entries) {
+PromptContext_ResolveAttachPaths(entries, asTxt := false) {
     paths := []
     temps := []
     usedNames := Map()
@@ -305,11 +307,16 @@ PromptContext_ResolveAttachPaths(entries) {
         }
         SplitPath workSrc, , , &workExt
         alreadyLocal := (InStr(StrLower(workSrc), tempPrefix) = 1)
-        if (alreadyLocal && StrLower(workExt) != "ini") {
+        needsTxtRename := asTxt || (StrLower(workExt) = "ini")
+        if (alreadyLocal && !needsTxtRename) {
             paths.Push(workSrc)
             continue
         }
-        staged := PromptContext_StageLocalCopy(workSrc, tempDir, usedNames)
+        if (alreadyLocal && asTxt && StrLower(workExt) = "txt") {
+            paths.Push(workSrc)
+            continue
+        }
+        staged := PromptContext_StageLocalCopy(workSrc, tempDir, usedNames, asTxt)
         if (staged != "") {
             paths.Push(staged)
             if (staged != workSrc)

@@ -24,6 +24,7 @@ global g_PromptEditorHelpGui := false
 global g_PromptEditorTags := false
 global g_PromptEditorVariables := false
 global g_PromptEditorPasteMode := false
+global g_PromptEditorAttachAsTxt := false
 global g_PromptEditorDraftFile := false
 global g_PromptEditorDraftPath := ""
 global g_PromptEditorGitCommit := false
@@ -163,6 +164,13 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
 
     g_PromptEditorGitCommit := g_PromptEditorGui.Add("CheckBox", "xm w220", "Git commit on save")
     try g_PromptEditorGitCommit.Value := 0
+    catch {
+    }
+    g_PromptEditorAttachAsTxt := g_PromptEditorGui.Add("CheckBox", "x+12 yp w280", "Attach context as .txt")
+    attachAsTxtVal := 0
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("attachAsTxt"))
+        attachAsTxtVal := PromptData_NormalizeAttachAsTxt(existingPrompt.attachAsTxt)
+    try g_PromptEditorAttachAsTxt.Value := attachAsTxtVal
     catch {
     }
 
@@ -818,7 +826,7 @@ PromptEditor_OnSave(*) {
     global g_PromptEditorFilePath, g_PromptEditorSource, g_PromptEditorAuthor, g_PromptEditorIsEdit
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode, g_PromptEditorDraftPath
-    global g_PromptEditorGitCommit
+    global g_PromptEditorGitCommit, g_PromptEditorAttachAsTxt
 
     name := Trim(g_PromptEditorName.Value)
     if (name = "") {
@@ -857,6 +865,10 @@ PromptEditor_OnSave(*) {
     try pasteMode := PromptData_NormalizePasteMode(g_PromptEditorPasteMode.Text)
     catch {
     }
+    attachAsTxt := 0
+    try attachAsTxt := PromptData_NormalizeAttachAsTxt(g_PromptEditorAttachAsTxt.Value)
+    catch {
+    }
     personalEntries := PromptData_ParseContextEntries(g_PromptEditorPersonalPaths)
     workEntries := PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
     draft := {
@@ -868,6 +880,7 @@ PromptEditor_OnSave(*) {
         source: g_PromptEditorSource,
         tags: tags,
         pasteMode: pasteMode,
+        attachAsTxt: attachAsTxt,
         variables: variables,
         filePathDraft: draftPath,
         personal_context_files: personalEntries,
@@ -897,6 +910,7 @@ PromptEditor_OnSave(*) {
         author: g_PromptEditorAuthor,
         tags: tags,
         pasteMode: pasteMode,
+        attachAsTxt: attachAsTxt,
         variables: variables,
         filePathDraft: draftPath,
         personal_context_files: personalEntries,
@@ -925,6 +939,10 @@ PromptEditor_HelpText() {
 Context file flags
 
 Flags are per file (personal and work lists are separate). They apply only when this prompt is inserted; the original files on disk are never changed. Flagged files are attached as a temp copy whose name includes a compacted tag, e.g. transactions.compacted.csv.
+
+Attach context as .txt (prompt-level)
+• When on, every context attachment is staged as a local .txt copy before paste (Gemini-friendly for .ini and other types some AI runs reject).
+• When off, files keep their extensions except .ini, which is still staged as .txt for upload safety.
 
 Compact (any file)
 • JSON: minify, drop null values, replace data: URIs and long http(s) URLs.

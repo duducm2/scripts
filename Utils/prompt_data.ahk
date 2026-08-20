@@ -431,6 +431,21 @@ PromptData_NormalizePasteMode(mode) {
     return m
 }
 
+PromptData_NormalizeAttachAsTxt(val) {
+    if (val = true || val = 1 || val = "1")
+        return 1
+    s := StrLower(Trim(val))
+    if (s = "1" || s = "true" || s = "yes" || s = "on")
+        return 1
+    return 0
+}
+
+PromptData_AttachAsTxt(prompt) {
+    if (!IsObject(prompt))
+        return false
+    return PromptData_NormalizeAttachAsTxt(prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0) = 1
+}
+
 PromptData_PasteMode(prompt) {
     if (!IsObject(prompt))
         return "default"
@@ -473,6 +488,7 @@ PromptData_NormalizeEntry(prompt) {
         return prompt
     prompt.tags := PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : [])
     prompt.pasteMode := PromptData_NormalizePasteMode(prompt.HasProp("pasteMode") ? prompt.pasteMode : "")
+    prompt.attachAsTxt := PromptData_NormalizeAttachAsTxt(prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0)
     prompt.variables := Trim(prompt.HasProp("variables") ? prompt.variables : "")
     prompt.filePathDraft := Trim(prompt.HasProp("filePathDraft") ? prompt.filePathDraft : "")
     prompt.personal_context_files := PromptData_ParseContextEntries(prompt.HasProp("personal_context_files") ?
@@ -545,6 +561,7 @@ PromptData_DefaultEntries() {
         item.work_context_files := []
         item.tags := ""
         item.pasteMode := "default"
+        item.attachAsTxt := 0
         item.variables := ""
         item.filePathDraft := ""
     }
@@ -586,6 +603,7 @@ PromptData_Load(force := false, skipMtime := false) {
             source := ""
             tags := ""
             pasteMode := ""
+            attachAsTxt := ""
             variables := ""
             filePathDraft := ""
             try charVal := IniRead(path, section, "Char", "")
@@ -595,6 +613,7 @@ PromptData_Load(force := false, skipMtime := false) {
             try source := IniRead(path, section, "Source", "")
             try tags := IniRead(path, section, "Tags", "")
             try pasteMode := IniRead(path, section, "PasteMode", "")
+            try attachAsTxt := IniRead(path, section, "AttachAsTxt", "0")
             try variables := IniRead(path, section, "Variables", "")
             try filePathDraft := IniRead(path, section, "FilePathDraft", "")
             personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
@@ -607,6 +626,7 @@ PromptData_Load(force := false, skipMtime := false) {
             source := StrLower(PromptData_NormalizeIniValue(source))
             tags := PromptData_NormalizeIniValue(tags)
             pasteMode := PromptData_NormalizeIniValue(pasteMode)
+            attachAsTxt := PromptData_NormalizeIniValue(attachAsTxt)
             variables := PromptData_NormalizeIniValue(variables)
             filePathDraft := PromptData_NormalizeIniValue(filePathDraft)
             if (name = "" && filePath = "") {
@@ -622,7 +642,8 @@ PromptData_Load(force := false, skipMtime := false) {
             if (charVal != "")
                 taken[charVal] := true
             list.Push(PromptData_NormalizeEntry({ name: name, char: charVal, category: category, author: author,
-                filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, variables: variables,
+                filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, attachAsTxt: attachAsTxt,
+                variables: variables,
                 filePathDraft: filePathDraft, personal_context_files: personalFiles,
                 work_context_files: workFiles }))
             idx += 1
@@ -663,6 +684,7 @@ PromptData_Save(list) {
             IniWrite(prompt.HasProp("source") ? prompt.source : "file", path, section, "Source")
             IniWrite(PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : []), path, section, "Tags")
             IniWrite(prompt.pasteMode, path, section, "PasteMode")
+            IniWrite(prompt.attachAsTxt, path, section, "AttachAsTxt")
             IniWrite(prompt.variables, path, section, "Variables")
             IniWrite(prompt.filePathDraft, path, section, "FilePathDraft")
             PromptData_WriteContextEntries(path, section, "Personal", prompt.personal_context_files)
@@ -726,6 +748,7 @@ PromptData_Sorted() {
             filePath: p.filePath, source: p.source, listIndex: A_Index,
             tags: p.HasProp("tags") ? p.tags : "",
             pasteMode: p.HasProp("pasteMode") ? p.pasteMode : "default",
+            attachAsTxt: p.HasProp("attachAsTxt") ? p.attachAsTxt : 0,
             variables: p.HasProp("variables") ? p.variables : "",
             filePathDraft: p.HasProp("filePathDraft") ? p.filePathDraft : "",
             personal_context_files: PromptData_ParseContextEntries(p.HasProp("personal_context_files") ?

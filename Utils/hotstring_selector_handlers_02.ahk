@@ -270,6 +270,7 @@ UtilitySelector_PromptFromEditorResult(result) {
         source: result.source,
         tags: result.HasProp("tags") ? result.tags : "",
         pasteMode: result.HasProp("pasteMode") ? result.pasteMode : "default",
+        attachAsTxt: result.HasProp("attachAsTxt") ? result.attachAsTxt : 0,
         variables: result.HasProp("variables") ? result.variables : "",
         filePathDraft: result.HasProp("filePathDraft") ? result.filePathDraft : "",
         personal_context_files: result.personal_context_files,
