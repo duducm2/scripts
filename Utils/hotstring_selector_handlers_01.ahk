@@ -331,31 +331,57 @@ PromptContext_ResolveAttachPaths(entries) {
 }
 
 ; After CF_HDROP paste: wait until Gemini/Enterprise upload UI settles before prompt body paste.
+; Self-contained (no Shift-keys helpers) so Utils #Warn stays clean when those symbols are absent.
+PromptContext_IsUploading(uia) {
+    if (!IsObject(uia))
+        return false
+    try {
+        texts := uia.FindAll({ Type: 50020 }) ; Text
+        for t in texts {
+            name := ""
+            try name := t.Name
+            catch {
+                continue
+            }
+            if (!name)
+                continue
+            low := StrLower(name)
+            if (InStr(low, "open upload file menu"))
+                continue
+            if (InStr(low, "upload") || InStr(low, "sending") || InStr(low, "carreg") || InStr(low, "enviando"))
+                return true
+        }
+    } catch {
+    }
+    return false
+}
+
 PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     if !InsertFiles_IsAiChatForeground()
         return
     minMs := (fileCount >= 3) ? 2000 : 1500
+    timeoutMs := 8000
     uia := ""
-    try uia := Gemini_GetUiaForActiveGeminiChrome()
-    catch {
+    try {
+        hwnd := WinGetID("A")
+        if (hwnd)
+            uia := UIA_Browser("ahk_id " hwnd)
+    } catch {
         uia := ""
     }
     if (!IsObject(uia)) {
-        try {
-            hwnd := WinGetID("A")
-            if (hwnd)
-                uia := UIA_Browser("ahk_id " hwnd)
-        } catch {
-            uia := ""
-        }
-    }
-    if (IsObject(uia)) {
-        try Gemini_WaitForUploadIdleWithRefocus(uia, 8000, minMs)
-        catch {
-            Sleep minMs
-        }
-    } else {
         Sleep minMs
+        return
+    }
+    tStart := A_TickCount
+    sawUploading := false
+    while ((A_TickCount - tStart) < timeoutMs) {
+        up := PromptContext_IsUploading(uia)
+        if (up)
+            sawUploading := true
+        if (!up && (sawUploading || (A_TickCount - tStart) >= minMs))
+            return
+        Sleep 150
     }
 }
 
