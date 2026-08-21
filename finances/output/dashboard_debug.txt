@@ -1,4 +1,4 @@
-﻿=== AHK Finance_OpenDashboard 2026-08-21 11:16:27 ===
+﻿=== AHK Finance_OpenDashboard 2026-08-21 11:19:55 ===
 --- BEFORE rebuild ---
 A_ScriptDir=C:\Users\fie7ca\Documents\scripts
 Finance_DataDir=C:\Users\fie7ca\Documents\scripts\finances\data
@@ -36,7 +36,9 @@ ACC ACC_99PAY name=99 Pay (short-term) initial=0,00 current=5000,00
 AccountNetFromTxs=-7234.8999999999978
 CARD CARD_MP name=Mercado Pago spent=123,97 limit=23100,00 [PRIMARY]
 CMD=python "C:\Users\fie7ca\Documents\scripts\finances\python\chart_generator.py" --data-dir "C:\Users\fie7ca\Documents\scripts\finances\data" --output-dir "C:\Users\fie7ca\Documents\scripts\finances\output"
-HTML=C:\Users\fie7ca\Documents\scripts\finances\output\dashboard.html
-TMP_HTML=C:\Users\fie7ca\AppData\Local\Temp\finance_dashboard_11777500.html
-FILE_URL=file:///C:/Users/fie7ca/AppData/Local/Temp/finance_dashboard_11777500.html?t=11777515
-DONE ok — commit finances/output/dashboard_debug.txt and pull on personal
+PYTHON_EXIT=9009
+--- python_run.log ---
+Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+
+--- end python_run.log ---
+ERROR: refusing to open stale dashboard.html
