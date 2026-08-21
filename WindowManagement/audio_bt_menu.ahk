@@ -4,6 +4,7 @@
 ;   1× AI Quick Download (configured click sequences → Desktop wait → cut)
 ;   2× Bluetooth audio / Windows sound devices menu
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
+; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
 ; Backend: infra\tools\AudioBt.ps1 (Core Audio IPolicyConfig + BluetoothAPIs).
 ; =============================================================================
@@ -20,6 +21,8 @@ global g_AudioBtBusy := false
 global g_AudioBtMode := "root"  ; root | BT | In | Out | help | ignore
 global g_AudioBtIgnoreItems := []
 global g_AudioBtIgnoreIds := Map()
+global g_AudioBtEmojiItems := []
+global g_AudioBtEmojiMap := Map()
 global g_AudioBtOpenFile := A_ScriptDir "\.cursor\wm_audio_bt_open"
 global g_AudioBtCloseRequestFile := A_ScriptDir "\.cursor\wm_audio_bt_close_request"
 global g_AudioBtCloseCheckTimer := ""
@@ -49,9 +52,10 @@ AudioBt_HelpRows() {
                                                     command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
                                                         command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "R",
                                                             command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "N",
-                                                                command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Enter",
-                                                                    command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Esc",
-                                                                        command: "Back", meaning: "Back to the root menu." }
+                                                                command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "M",
+                                                                    command: "Mark", meaning: "Set or clear a custom emoji label for the selected device (saved across sessions). Empty input clears." }, { key: "Enter",
+                                                                        command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Esc",
+                                                                            command: "Back", meaning: "Back to the root menu." }
     ]
 }
 
@@ -62,8 +66,8 @@ AudioBt_HintText() {
     if (g_AudioBtMode = "help")
         return "Esc back"
     if (g_AudioBtMode = "ignore")
-        return "Enter restore   Esc back"
-    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   N ignore   R refresh   Esc back"
+        return "Enter restore   M mark emoji   Esc back"
+    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   N ignore   M mark   R refresh   Esc back"
 }
 
 AudioBt_ModeTitle() {
@@ -281,6 +285,161 @@ AudioBt_IgnoreRemove(id, kind) {
     return true
 }
 
+AudioBt_EmojiIniPath() {
+    return A_ScriptDir "\assets\data\audio_bt_emoji.ini"
+}
+
+AudioBt_EmojiEnvSection() {
+    global IS_WORK_ENVIRONMENT
+    if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT)
+        return "Emoji_work"
+    return "Emoji_personal"
+}
+
+AudioBt_EmojiItemsFromParsed(parsed) {
+    items := []
+    seen := Map()
+    loop parsed.count {
+        idx := A_Index
+        id := parsed.fields.Has("id" idx) ? Trim(parsed.fields["id" idx]) : ""
+        kind := parsed.fields.Has("kind" idx) ? Trim(parsed.fields["kind" idx]) : ""
+        name := parsed.fields.Has("name" idx) ? Trim(parsed.fields["name" idx]) : ""
+        emoji := parsed.fields.Has("emoji" idx) ? Trim(parsed.fields["emoji" idx]) : ""
+        if (id = "" || emoji = "")
+            continue
+        key := AudioBt_IgnoreEntryKey(id, kind)
+        if (key = "`t" || seen.Has(key))
+            continue
+        seen[key] := true
+        items.Push({ id: id, kind: kind, name: name, emoji: emoji })
+    }
+    return items
+}
+
+AudioBt_EmojiApplyItems(items) {
+    global g_AudioBtEmojiItems, g_AudioBtEmojiMap
+    g_AudioBtEmojiItems := []
+    g_AudioBtEmojiMap := Map()
+    for item in items {
+        key := AudioBt_IgnoreEntryKey(item.id, item.kind)
+        if (key = "`t" || g_AudioBtEmojiMap.Has(key) || Trim(item.emoji) = "")
+            continue
+        g_AudioBtEmojiMap[key] := item.emoji
+        g_AudioBtEmojiItems.Push({ id: item.id, kind: item.kind, name: item.name, emoji: item.emoji })
+    }
+}
+
+AudioBt_EmojiSectionLines(sectionName, items) {
+    lines := ["[" sectionName "]", "Count=" items.Length]
+    for item in items {
+        idx := A_Index
+        lines.Push("Id" idx "=" AudioBt_IgnoreSanitize(item.id))
+        lines.Push("Kind" idx "=" AudioBt_IgnoreSanitize(item.kind))
+        lines.Push("Name" idx "=" AudioBt_IgnoreSanitize(item.name))
+        lines.Push("Emoji" idx "=" AudioBt_IgnoreSanitize(item.emoji))
+    }
+    return lines
+}
+
+AudioBt_EmojiLoad() {
+    global g_AudioBtEmojiItems, g_AudioBtEmojiMap
+    g_AudioBtEmojiItems := []
+    g_AudioBtEmojiMap := Map()
+    path := AudioBt_EmojiIniPath()
+    if !FileExist(path)
+        return
+    raw := ""
+    try raw := FileRead(path, "UTF-8")
+    catch {
+        return
+    }
+    section := AudioBt_EmojiEnvSection()
+    items := AudioBt_EmojiItemsFromParsed(AudioBt_IgnoreParseIni(raw, section))
+    AudioBt_EmojiApplyItems(items)
+}
+
+AudioBt_EmojiSave() {
+    global g_AudioBtEmojiItems
+    path := AudioBt_EmojiIniPath()
+    try DirCreate(A_ScriptDir "\assets\data")
+    catch {
+    }
+    raw := ""
+    if FileExist(path) {
+        try raw := FileRead(path, "UTF-8")
+        catch {
+            raw := ""
+        }
+    }
+    personalItems := AudioBt_EmojiItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Emoji_personal"))
+    workItems := AudioBt_EmojiItemsFromParsed(AudioBt_IgnoreParseIni(raw, "Emoji_work"))
+    section := AudioBt_EmojiEnvSection()
+    if (section = "Emoji_work")
+        workItems := g_AudioBtEmojiItems
+    else
+        personalItems := g_AudioBtEmojiItems
+    lines := []
+    for line in AudioBt_EmojiSectionLines("Emoji_personal", personalItems)
+        lines.Push(line)
+    lines.Push("")
+    for line in AudioBt_EmojiSectionLines("Emoji_work", workItems)
+        lines.Push(line)
+    text := ""
+    for line in lines
+        text .= line "`n"
+    try FileDelete(path)
+    catch {
+    }
+    FileAppend(text, path, "UTF-8")
+}
+
+AudioBt_EmojiGet(id, kind) {
+    global g_AudioBtEmojiMap
+    if !IsObject(g_AudioBtEmojiMap)
+        AudioBt_EmojiLoad()
+    key := AudioBt_IgnoreEntryKey(id, kind)
+    if (Trim(id) = "" || !g_AudioBtEmojiMap.Has(key))
+        return ""
+    return g_AudioBtEmojiMap[key]
+}
+
+AudioBt_EmojiSet(row, emoji) {
+    global g_AudioBtEmojiItems, g_AudioBtEmojiMap
+    if !IsObject(row)
+        return false
+    if (Trim(row.id) = "")
+        return false
+    key := AudioBt_IgnoreEntryKey(row.id, row.kind)
+    emoji := AudioBt_IgnoreSanitize(emoji)
+    if !IsObject(g_AudioBtEmojiMap)
+        g_AudioBtEmojiMap := Map()
+    if !IsObject(g_AudioBtEmojiItems)
+        g_AudioBtEmojiItems := []
+    kept := []
+    for item in g_AudioBtEmojiItems {
+        if (AudioBt_IgnoreEntryKey(item.id, item.kind) != key)
+            kept.Push(item)
+    }
+    g_AudioBtEmojiItems := kept
+    if (g_AudioBtEmojiMap.Has(key))
+        g_AudioBtEmojiMap.Delete(key)
+    if (emoji != "") {
+        g_AudioBtEmojiMap[key] := emoji
+        g_AudioBtEmojiItems.Push({ id: row.id, kind: row.kind, name: row.name, emoji: emoji })
+    }
+    AudioBt_EmojiSave()
+    return true
+}
+
+AudioBt_EmojiPrefix(row) {
+    if !IsObject(row)
+        return ""
+    emoji := AudioBt_EmojiGet(row.id, row.kind)
+    if (emoji = "")
+        return ""
+    return emoji . " "
+}
+
 AudioBt_OnEscape(*) {
     global g_AudioBtActive, g_AudioBtMode
     if (!g_AudioBtActive)
@@ -403,6 +562,7 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("NumpadEnter", AudioBt_OnUnignore)
         AudioBt_BindOne("Delete", AudioBt_OnUnignore)
         AudioBt_BindOne("$*u", AudioBt_OnUnignore)
+        AudioBt_BindOne("$*m", AudioBt_OnMarkEmoji)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     } else {
         loop 9 {
@@ -421,6 +581,7 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("$*c", AudioBt_OnConnect)
         AudioBt_BindOne("$*x", AudioBt_OnDisconnect)
         AudioBt_BindOne("$*n", AudioBt_OnIgnore)
+        AudioBt_BindOne("$*m", AudioBt_OnMarkEmoji)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     }
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
@@ -672,7 +833,7 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     selectRow := 1
     for row in g_AudioBtRows {
         idx := A_Index
-        prefix := AudioBt_IsolatePrefix(row)
+        prefix := AudioBt_EmojiPrefix(row) . AudioBt_IsolatePrefix(row)
         g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), prefix . row.name, row.state)
         if (keepName != "" && row.name = keepName)
             selectRow := idx
@@ -699,7 +860,7 @@ AudioBt_PopulateIgnoredLv() {
             kind := "Input"
         else if (kind = "Out")
             kind := "Output"
-        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), row.name, kind)
+        g_AudioBtLv.Add("", AudioBt_DigitLabel(idx), AudioBt_EmojiPrefix(row) . row.name, kind)
     }
     try g_AudioBtLv.ModifyCol(1, 40)
     try g_AudioBtLv.ModifyCol(2, 480)
@@ -931,6 +1092,53 @@ AudioBt_OnIgnore(*) {
     ShowCenteredOverlay_Utils("Ignored: " . row.name, 1400, BANNER_ACCENT_SUCCESS)
 }
 
+AudioBt_OnMarkEmoji(*) {
+    global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode, g_AudioBtGui
+    if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode = "root" || g_AudioBtMode = "help")
+        return
+    row := AudioBt_SelectedRow()
+    if (!IsObject(row)) {
+        ShowNotification_WM("Select a device first")
+        return
+    }
+    current := AudioBt_EmojiGet(row.id, row.kind)
+    prompt := "Emoji for:`n" . row.name . "`n`nPaste or type an emoji. Leave empty to clear."
+    try {
+        if (IsObject(g_AudioBtGui))
+            g_AudioBtGui.Opt("-AlwaysOnTop")
+    } catch {
+    }
+    try
+        result := InputBox(prompt, "Mark device emoji", "w420 h180", current)
+    finally {
+        try {
+            if (IsObject(g_AudioBtGui))
+                g_AudioBtGui.Opt("+AlwaysOnTop")
+        } catch {
+        }
+    }
+    if (result.Result != "OK") {
+        AudioBt_RefocusLv()
+        return
+    }
+    emoji := AudioBt_IgnoreSanitize(result.Value)
+    if !AudioBt_EmojiSet(row, emoji) {
+        ShowNotification_WM("Could not save emoji")
+        AudioBt_RefocusLv()
+        return
+    }
+    keepName := row.name
+    if (g_AudioBtMode = "ignore")
+        AudioBt_PopulateIgnoredLv()
+    else
+        AudioBt_PopulateDeviceLv(keepName)
+    AudioBt_RefocusLv()
+    if (emoji = "")
+        ShowCenteredOverlay_Utils("Emoji cleared: " . row.name, 1400, BANNER_ACCENT_INTERMEDIATE)
+    else
+        ShowCenteredOverlay_Utils(emoji . " " . row.name, 1400, BANNER_ACCENT_SUCCESS)
+}
+
 AudioBt_OnUnignore(*) {
     global g_AudioBtBusy, g_AudioBtActive, g_AudioBtMode
     if (!g_AudioBtActive || g_AudioBtBusy || g_AudioBtMode != "ignore")
@@ -1160,6 +1368,7 @@ AudioBt_Show() {
     }
     g_AudioBtCloseCheckTimer := SetTimer(AudioBt_CheckCloseRequest, 120)
     AudioBt_IgnoreLoad()
+    AudioBt_EmojiLoad()
     AudioBt_ShowRoot()
 }
 
