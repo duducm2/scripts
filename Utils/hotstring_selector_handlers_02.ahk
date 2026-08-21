@@ -157,6 +157,11 @@ UtilitySelector_BindModalHotkeys() {
     } catch {
     }
     try {
+        Hotkey("+Enter", UtilitySelector_OnShiftEnter, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "+Enter", key: "+Enter", handler: UtilitySelector_OnShiftEnter })
+    } catch {
+    }
+    try {
         Hotkey("Escape", HandleHotstringEscape, "On")
         g_HotstringHotkeyHandlers.Push({ char: "Escape", key: "Escape", handler: HandleHotstringEscape })
     } catch {
@@ -219,6 +224,11 @@ UtilitySelector_BindFilterTypingHotkeys() {
     try {
         Hotkey("Enter", UtilitySelector_OnEnter, "On")
         g_HotstringHotkeyHandlers.Push({ char: "Enter", key: "Enter", handler: UtilitySelector_OnEnter })
+    } catch {
+    }
+    try {
+        Hotkey("+Enter", UtilitySelector_OnShiftEnter, "On")
+        g_HotstringHotkeyHandlers.Push({ char: "+Enter", key: "+Enter", handler: UtilitySelector_OnShiftEnter })
     } catch {
     }
     try {
@@ -302,7 +312,7 @@ UtilitySelector_HintText() {
     if (g_UtilitySelectorMode = "top")
         return "Char = open category   [S] Sequences   [F] Finance   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
-        return "Filter by name, tags, path   Enter = paste first match   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
+        return "Filter by name, tags, path   Enter = paste first match   Shift+Enter = paste + clipboard   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
         return "Char = paste   Enter/double-click = paste   Insert = add   E = edit   Delete = remove   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Projects")
@@ -428,6 +438,28 @@ UtilitySelector_OnEnter(*) {
         return
     }
     UtilitySelector_OnListActivate()
+}
+
+UtilitySelector_OnShiftEnter(*) {
+    global g_HotstringSelectorActive, g_UtilitySelectorRows, g_HotstringSelectorLv, g_HotstringGeminiArmed
+    global g_UtilitySelectorCategory
+    if (!g_HotstringSelectorActive)
+        return
+    if (g_UtilitySelectorCategory != "Prompts")
+        return
+    if (UtilitySelector_IsFilterFocused()) {
+        if (g_UtilitySelectorRows.Length < 1)
+            return
+        try g_HotstringSelectorLv.Modify(1, "Select Vis")
+        catch {
+        }
+        UtilitySelector_InsertPrompt(g_UtilitySelectorRows[1], g_HotstringGeminiArmed, true)
+        return
+    }
+    idx := UtilitySelector_SelectedIndex()
+    if (idx < 1 || idx > g_UtilitySelectorRows.Length)
+        return
+    UtilitySelector_InsertPrompt(g_UtilitySelectorRows[idx], g_HotstringGeminiArmed, true)
 }
 
 UtilitySelector_OnListActivate(*) {
