@@ -153,11 +153,9 @@ Finance_AccForm(existing) {
         curStr := Finance_FormatCsvDecimal(newCur)
         newId := ""
         if (isEdit) {
-            oldCur := Finance_ParseDecimal(existing["current_balance"])
-            delta := newCur - oldCur
-            init := Finance_ParseDecimal(existing["initial_balance"]) + delta
+            initStr := Finance_FormatCsvDecimal(newCur - Finance_AccountNetFromTransactions(existing["id"]))
             row := Map("id", existing["id"], "name", name, "icon", Trim(eIcon.Value),
-            "initial_balance", Finance_FormatCsvDecimal(init),
+            "initial_balance", initStr,
             "current_balance", curStr)
             out := []
             for r in accs {
@@ -242,7 +240,7 @@ Finance_AccAdjust(*) {
             Finance_Save("transactions", txs)
             row["current_balance"] := Finance_FormatCsvDecimal(newBal)
         } else {
-            init := Finance_ParseDecimal(row["initial_balance"]) + delta
+            init := newBal - Finance_AccountNetFromTransactions(a["id"])
             row["initial_balance"] := Finance_FormatCsvDecimal(init)
             row["current_balance"] := Finance_FormatCsvDecimal(newBal)
         }

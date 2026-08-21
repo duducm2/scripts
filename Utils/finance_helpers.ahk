@@ -646,6 +646,31 @@ Finance_ReplaceTransaction(oldTx, newTx) {
     Finance_ApplyTransactionToBalances(newTx, false)
 }
 
+; Net effect of all transactions on one account (same rules as ApplyTransactionToBalances).
+Finance_AccountNetFromTransactions(accountId) {
+    if (accountId = "")
+        return 0.0
+    net := 0.0
+    for tx in Finance_Load("transactions") {
+        amt := Finance_ParseDecimal(tx["amount"])
+        type := tx["type"]
+        if (type = "income" || type = "adjustment") {
+            if (tx["account_id"] = accountId)
+                net += amt
+        } else if (type = "expense") {
+            if (tx["account_id"] = accountId)
+                net -= amt
+        } else if (type = "transfer") {
+            if (tx["account_id"] = accountId)
+                net -= amt
+            dest := tx.Has("transfer_account_id") ? tx["transfer_account_id"] : ""
+            if (dest = accountId)
+                net += amt
+        }
+    }
+    return net
+}
+
 ; Reset account/card balances from initial_balance / 0, then replay all transactions.
 Finance_RebuildBalancesFromTransactions() {
     accs := Finance_Load("accounts")
