@@ -136,14 +136,40 @@ Finance_OpenDashboard() {
     }
     cmd := 'python "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
     Finance_DashboardDebugAppend("CMD=" . cmd)
+    pyLog := outDir . "\python_run.log"
+    try FileDelete(pyLog)
+    catch {
+    }
+    ; Redirect stdout/stderr so work-PC Python failures are pullable.
+    shellCmd := A_ComSpec . ' /c ' . cmd . ' > "' . pyLog . '" 2>&1'
+    exitCode := 0
     try {
-        RunWait(cmd, A_ScriptDir, "Hide")
+        exitCode := RunWait(shellCmd, A_ScriptDir, "Hide")
     } catch as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
         Finance_DashboardDebugAppend("ERROR: Python RunWait failed: " . e.Message)
         Finance_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_DashboardDebugAppend("PYTHON_EXIT=" . exitCode)
+    if (FileExist(pyLog)) {
+        try {
+            pyOut := FileRead(pyLog, "UTF-8")
+            Finance_DashboardDebugAppend("--- python_run.log ---")
+            Finance_DashboardDebugAppend(Trim(pyOut))
+            Finance_DashboardDebugAppend("--- end python_run.log ---")
+        } catch {
+        }
+    }
+    if (exitCode != 0) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Finance_DashboardDebugAppend("ERROR: refusing to open stale dashboard.html")
+        Finance_Notify("Dashboard Python failed (exit " . exitCode . "). See dashboard_debug.txt", 3500,
+            BANNER_ACCENT_ERROR)
         return
     }
     html := outDir . "\dashboard.html"
@@ -154,6 +180,16 @@ Finance_OpenDashboard() {
         Finance_DashboardDebugAppend("ERROR: dashboard.html missing at " . html)
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
+    }
+    ; Confirm this run regenerated HTML (Python section must exist).
+    try {
+        dbgBody := FileRead(Finance_DashboardDebugPath(), "UTF-8")
+        if (!InStr(dbgBody, "=== PYTHON ok")) {
+            Finance_DashboardDebugAppend("ERROR: no PYTHON ok marker — not opening Chrome")
+            Finance_Notify("Dashboard build incomplete. See dashboard_debug.txt", 3500, BANNER_ACCENT_ERROR)
+            return
+        }
+    } catch {
     }
     Finance_DashboardDebugAppend("HTML=" . html)
     ; Unique temp copy avoids Chrome file:// cache / wrong-folder opens on work PCs.

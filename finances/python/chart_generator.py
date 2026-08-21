@@ -1173,53 +1173,66 @@ def main(argv: list[str] | None = None):
         "--output-dir", default="", help="Absolute path to finances/output"
     )
     args = parser.parse_args(argv)
-    if args.data_dir or args.output_dir:
-        configure_paths(
-            data_dir=args.data_dir or None,
-            output_dir=args.output_dir or None,
-        )
-    seed()
-    out_dir = _agg.OUTPUT
+
+    # Resolve output early so we can always leave a pullable breadcrumb.
+    out_dir = (
+        Path(args.output_dir).expanduser().resolve() if args.output_dir else _agg.OUTPUT
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
-    data = snapshot()
-    html = build_html(data)
-    out = out_dir / "dashboard.html"
-    out.write_text(html, encoding="utf-8")
-
-    # Append pullable diagnostics (same file AHK starts).
     dbg = out_dir / "dashboard_debug.txt"
-    gen = (data.get("settings") or {}).get("general") or {}
-    def_id = ""
-    for k, v in gen.items():
-        if str(k).lower() == "defaultaccountid":
-            def_id = str(v).strip()
-            break
-    lines = [
-        "",
-        f"=== PYTHON chart_generator {datetime.now().isoformat(timespec='seconds')} ===",
-        f"__file__={Path(__file__).resolve()}",
-        f"DATA={_agg.DATA}",
-        f"OUTPUT={_agg.OUTPUT}",
-        f"args.data_dir={args.data_dir!r}",
-        f"args.output_dir={args.output_dir!r}",
-        f"DefaultAccountId={def_id}",
-        f"liquid_after_card={data.get('liquid_after_card')}",
-        f"liquid_account_bal={data.get('liquid_account_bal')}",
-        f"liquid_card_spent={data.get('liquid_card_spent')}",
-        f"liquid_account_name={data.get('liquid_account_name')}",
-        f"kpi_total_balance={data.get('balance')}",
-    ]
-    for a in data.get("accounts") or []:
-        mark = " [DEFAULT]" if a.get("id") == def_id else ""
-        lines.append(
-            f"ACC {a.get('id')} name={a.get('name')} "
-            f"initial={a.get('initial_balance')} current={a.get('current_balance')}{mark}"
-        )
-    lines.append(f"HTML_WRITTEN={out.resolve()}")
     with dbg.open("a", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+        f.write(
+            f"\n=== PYTHON start {datetime.now().isoformat(timespec='seconds')} ===\n"
+            f"__file__={Path(__file__).resolve()}\n"
+            f"args.data_dir={args.data_dir!r}\n"
+            f"args.output_dir={args.output_dir!r}\n"
+        )
 
-    print(str(out.resolve()))
+    try:
+        if args.data_dir or args.output_dir:
+            configure_paths(
+                data_dir=args.data_dir or None,
+                output_dir=args.output_dir or None,
+            )
+        seed()
+        out_dir = _agg.OUTPUT
+        out_dir.mkdir(parents=True, exist_ok=True)
+        data = snapshot()
+        html = build_html(data)
+        out = out_dir / "dashboard.html"
+        out.write_text(html, encoding="utf-8")
+
+        gen = (data.get("settings") or {}).get("general") or {}
+        def_id = ""
+        for k, v in gen.items():
+            if str(k).lower() == "defaultaccountid":
+                def_id = str(v).strip()
+                break
+        lines = [
+            f"=== PYTHON ok {datetime.now().isoformat(timespec='seconds')} ===",
+            f"DATA={_agg.DATA}",
+            f"OUTPUT={_agg.OUTPUT}",
+            f"DefaultAccountId={def_id}",
+            f"liquid_after_card={data.get('liquid_after_card')}",
+            f"liquid_account_bal={data.get('liquid_account_bal')}",
+            f"liquid_card_spent={data.get('liquid_card_spent')}",
+            f"liquid_account_name={data.get('liquid_account_name')}",
+            f"kpi_total_balance={data.get('balance')}",
+        ]
+        for a in data.get("accounts") or []:
+            mark = " [DEFAULT]" if a.get("id") == def_id else ""
+            lines.append(
+                f"ACC {a.get('id')} name={a.get('name')} "
+                f"initial={a.get('initial_balance')} current={a.get('current_balance')}{mark}"
+            )
+        lines.append(f"HTML_WRITTEN={out.resolve()}")
+        with dbg.open("a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        print(str(out.resolve()))
+    except Exception as e:
+        with dbg.open("a", encoding="utf-8") as f:
+            f.write(f"=== PYTHON ERROR ===\n{type(e).__name__}: {e}\n")
+        raise
 
 
 if __name__ == "__main__":
