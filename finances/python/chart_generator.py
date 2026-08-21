@@ -38,10 +38,17 @@ def build_html(data: dict) -> str:
     date_from = raw.get("dateFrom") or raw.get("monthStart") or (cur + "-01")
     date_to = raw.get("dateTo") or raw.get("today") or date_from
     notes = data["notifications"] if widget_on(s, "ShowNotifications") else []
-    note_html = (
-        "".join(f'<div class="note">{n}</div>' for n in notes)
-        or '<div class="note ok">No alerts</div>'
-    )
+    notif_html = ""
+    if widget_on(s, "ShowNotifications"):
+        if notes:
+            items = "".join(f'<div class="note">{n}</div>' for n in notes)
+        else:
+            items = '<div class="note ok">No alerts</div>'
+        notif_html = f"""
+        <div class="panel" id="notificationsPanel" style="margin-top:10px">
+          <h2>Notifications</h2>
+          <div id="notificationsBody">{items}</div>
+        </div>"""
 
     liquid_html = ""
     liquid_val = data.get("liquid_after_card")
@@ -475,7 +482,6 @@ def build_html(data: dict) -> str:
 <main>
   <div id="cockpitView">
   {liquid_html}
-  {note_html}
   {cards_html}
   {perf_html}
   <div class="{charts_class}">
@@ -490,6 +496,7 @@ def build_html(data: dict) -> str:
     {card_bars_html}
   </div>
   {rec_html}
+  {notif_html}
   </div>
   <div id="categoryView">
     <div class="panel">
