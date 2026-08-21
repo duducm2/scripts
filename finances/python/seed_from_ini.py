@@ -240,12 +240,21 @@ def seed():
     )
     write_csv(
         "credit_cards.csv",
-        ["id", "name", "limit", "current_spent", "linked_account_id", "closing_day"],
+        [
+            "id",
+            "name",
+            "limit",
+            "initial_spent",
+            "current_spent",
+            "linked_account_id",
+            "closing_day",
+        ],
         [
             {
                 "id": "CARD_MP",
                 "name": "Mercado Pago",
                 "limit": "12000,00",
+                "initial_spent": "0,00",
                 "current_spent": "2010,22",
                 "linked_account_id": mp["id"] if mp else "",
                 "closing_day": "9",

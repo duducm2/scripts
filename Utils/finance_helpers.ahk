@@ -361,7 +361,7 @@ Finance_Headers(kind) {
         case "categories":
             return ["id", "name", "type", "parent_id", "color", "icon"]
         case "credit_cards":
-            return ["id", "name", "limit", "current_spent", "linked_account_id", "closing_day"]
+            return ["id", "name", "limit", "initial_spent", "current_spent", "linked_account_id", "closing_day"]
         case "goals":
             return ["id", "name", "current_amount", "target_amount", "target_date"]
         case "budgets":
@@ -719,7 +719,27 @@ Finance_AccountNetFromTransactions(accountId) {
     return net
 }
 
-; Reset account/card balances from initial_balance / 0, then replay all transactions.
+; Sum of card_expense amounts for one card (same rules as ApplyTransactionToBalances).
+Finance_CardNetFromTransactions(cardId) {
+    if (cardId = "")
+        return 0.0
+    net := 0.0
+    for tx in Finance_Load("transactions") {
+        if (tx["type"] = "card_expense" && tx["card_id"] = cardId)
+            net += Finance_ParseDecimal(tx["amount"])
+    }
+    return net
+}
+
+; Ensure initial_spent exists so rebuild preserves the displayed current_spent.
+Finance_EnsureCardInitialSpent(card) {
+    if (card.Has("initial_spent") && Trim(card["initial_spent"]) != "")
+        return
+    cur := Finance_ParseDecimal(card.Has("current_spent") ? card["current_spent"] : "0,00")
+    card["initial_spent"] := Finance_FormatCsvDecimal(cur - Finance_CardNetFromTransactions(card["id"]))
+}
+
+; Reset account/card balances from initial_balance / initial_spent, then replay all transactions.
 Finance_RebuildBalancesFromTransactions() {
     accs := Finance_Load("accounts")
     cards := Finance_Load("credit_cards")
@@ -727,8 +747,10 @@ Finance_RebuildBalancesFromTransactions() {
         init := a.Has("initial_balance") ? a["initial_balance"] : "0,00"
         a["current_balance"] := init
     }
-    for c in cards
-        c["current_spent"] := "0,00"
+    for c in cards {
+        Finance_EnsureCardInitialSpent(c)
+        c["current_spent"] := c["initial_spent"]
+    }
     txs := Finance_SortTransactionsByDateId(Finance_Load("transactions"))
     months := Map()
     for tx in txs {
@@ -1253,7 +1275,7 @@ Finance_SeedCreditCards() {
     }
     rows := []
     rows.Push(Map("id", "CARD_MP", "name", "Mercado Pago", "limit", "12000,00",
-        "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9"))
+        "initial_spent", "0,00", "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9"))
     Finance_Save("credit_cards", rows)
 }
 

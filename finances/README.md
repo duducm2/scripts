@@ -19,10 +19,11 @@ py -3 -m pip install -r finances\python\requirements.txt
 
 `Finance_OpenDashboard` always:
 
-1. Rebuilds account/card balances from transactions.
-2. Runs `finances/python/chart_generator.py` with `--data-dir` and `--output-dir` pointing at **this** clone (so work and personal paths stay correct).
-3. Opens Chrome only if Python exits **0** and `dashboard.html` exists (avoids showing a stale file).
-4. Copies HTML to a temp file with a cache-bust query so Chrome does not reuse an old `file://` page.
+1. Runs `finances/python/chart_generator.py` with `--data-dir` and `--output-dir` pointing at **this** clone (so work and personal paths stay correct). It does **not** rebuild or rewrite account/card balances.
+2. Opens Chrome only if Python exits **0** and `dashboard.html` exists (avoids showing a stale file).
+3. Copies HTML to a temp file with a cache-bust query so Chrome does not reuse an old `file://` page.
+
+Manual balance/spent edits are preserved: accounts use `initial_balance`, cards use `initial_spent`, so an explicit Settings → Rebuild still keeps those totals.
 
 ## Important settings (`finances/data/settings.ini`)
 
@@ -43,7 +44,7 @@ IDs are preserved on rename. Do not hand-edit IDs unless you know the matching r
 | `finances/output/dashboard.html` | Generated cockpit (safe to regenerate anytime).                                         |
 | `finances/python/`               | Chart build (`chart_generator.py`, `data_aggregator.py`).                               |
 
-Account balance edits set `initial_balance` so a later rebuild does not wipe the manual total.
+Account balance edits set `initial_balance` so a later rebuild does not wipe the manual total. Card spent edits set `initial_spent` the same way.
 
 ## Multi-PC notes
 

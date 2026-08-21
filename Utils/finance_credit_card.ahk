@@ -212,6 +212,7 @@ Finance_CardMarkPaid(cardId) {
     Finance_Save("transactions", txs)
     Finance_AdjustAccount(accs, acc["id"], -spent)
     card["current_spent"] := "0,00"
+    card["initial_spent"] := Finance_FormatCsvDecimal(0 - Finance_CardNetFromTransactions(card["id"]))
     Finance_Save("accounts", accs)
     Finance_Save("credit_cards", cards)
     Finance_Notify("Invoice paid", 1600, BANNER_ACCENT_SUCCESS)
@@ -272,14 +273,18 @@ Finance_CardForm(existing) {
         }
         cards := Finance_Load("credit_cards")
         wasEmpty := cards.Length = 0
-        row := Map(
-            "id", isEdit ? existing["id"] : Finance_SlugId("CARD_", name, cards),
-        "name", name,
-        "limit", Finance_FormatCsvDecimal(Finance_ParseDecimal(eLim.Value)),
-        "current_spent", Finance_FormatCsvDecimal(Finance_ParseDecimal(eSpent.Value)),
-        "linked_account_id", accCombo.ids[ddAcc.Value],
-        "closing_day", Integer(eClose.Value || 1))
+        spentStr := Finance_FormatCsvDecimal(Finance_ParseDecimal(eSpent.Value))
         if (isEdit) {
+            initSpent := Finance_FormatCsvDecimal(
+                Finance_ParseDecimal(eSpent.Value) - Finance_CardNetFromTransactions(existing["id"]))
+            row := Map(
+                "id", existing["id"],
+                "name", name,
+                "limit", Finance_FormatCsvDecimal(Finance_ParseDecimal(eLim.Value)),
+                "initial_spent", initSpent,
+                "current_spent", spentStr,
+                "linked_account_id", accCombo.ids[ddAcc.Value],
+                "closing_day", Integer(eClose.Value || 1))
             out := []
             for r in cards {
                 if (r["id"] = existing["id"])
@@ -289,6 +294,14 @@ Finance_CardForm(existing) {
             }
             cards := out
         } else {
+            row := Map(
+                "id", Finance_SlugId("CARD_", name, cards),
+                "name", name,
+                "limit", Finance_FormatCsvDecimal(Finance_ParseDecimal(eLim.Value)),
+                "initial_spent", spentStr,
+                "current_spent", spentStr,
+                "linked_account_id", accCombo.ids[ddAcc.Value],
+                "closing_day", Integer(eClose.Value || 1))
             cards.Push(row)
         }
         Finance_Save("credit_cards", cards)

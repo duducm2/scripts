@@ -119,7 +119,6 @@ Finance_OnSet(*) {
 
 Finance_OpenDashboard() {
     Finance_EnsureData()
-    Finance_RebuildBalancesFromTransactions()
     py := Finance_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
@@ -240,7 +239,7 @@ Finance_ShowSettings() {
 
 Finance_OnRebuildBalances(*) {
     if (!Finance_Confirm(
-        "Reset all account balances to initial_balance, zero card spent, and replay every transaction? This cannot be undone except by Restore from backups.",
+        "Reset account balances from initial_balance and card spent from initial_spent, then replay every transaction? This cannot be undone except by Restore from backups.",
         "Rebuild balances"))
         return
     n := Finance_RebuildBalancesFromTransactions()
