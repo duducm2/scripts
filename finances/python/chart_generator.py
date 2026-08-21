@@ -43,6 +43,36 @@ def build_html(data: dict) -> str:
         or '<div class="note ok">No alerts</div>'
     )
 
+    liquid_html = ""
+    liquid_val = data.get("liquid_after_card")
+    if liquid_val is not None:
+        acc_bal = data.get("liquid_account_bal") or 0.0
+        card_spent = data.get("liquid_card_spent") or 0.0
+        acc_name = data.get("liquid_account_name") or "Main account"
+        card_name = data.get("liquid_card_name") or "Primary card"
+        pct = (
+            (card_spent / acc_bal * 100.0)
+            if acc_bal > 0
+            else (100.0 if card_spent > 0 else 0.0)
+        )
+        width = min(pct, 100.0)
+        if liquid_val < 0:
+            fill = "#e74c3c"
+        elif pct >= 80:
+            fill = "#f39c12"
+        else:
+            fill = "#2ecc71"
+        val_cls = "pos" if liquid_val >= 0 else "neg"
+        liquid_html = f"""
+        <div class="panel panel-slim liquid-bar" id="liquidBar">
+          <div class="liquid-head">
+            <div class="liquid-label">Main account after card · {acc_name} − {card_name}</div>
+            <div class="liquid-val {val_cls}">{format_brl(liquid_val)}</div>
+          </div>
+          <div class="bar-track liquid-track"><div class="bar-fill" style="width:{width:.1f}%;background:{fill}"></div></div>
+          <div class="bar-meta">Account {format_brl(acc_bal)} · Card spent {format_brl(card_spent)} · {pct:.0f}% of account</div>
+        </div>"""
+
     cards_html = ""
     if widget_on(s, "ShowBalance"):
         cards_html = f"""
@@ -364,6 +394,11 @@ def build_html(data: dict) -> str:
     .split {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
+    .liquid-bar {{ padding:8px 12px; }}
+    .liquid-head {{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }}
+    .liquid-label {{ font-size:12px; color:var(--heading); font-weight:600; }}
+    .liquid-val {{ font-size:15px; font-weight:700; }}
+    .liquid-track {{ height:8px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
     .chart {{ height:320px; }}
     .chart-short {{ height:220px; }}
@@ -439,6 +474,7 @@ def build_html(data: dict) -> str:
 </header>
 <main>
   <div id="cockpitView">
+  {liquid_html}
   {note_html}
   {cards_html}
   {perf_html}

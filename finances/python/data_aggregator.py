@@ -71,6 +71,35 @@ def widget_on(settings: dict, key: str) -> bool:
     return settings.get("dashboard", {}).get(key, "1") != "0"
 
 
+def liquid_after_card(settings: dict, accs: list[dict], cards: list[dict]) -> dict:
+    """Main account balance minus primary card spent (None liquid if unresolved)."""
+    gen = settings.get("general") or {}
+    acc_id = (gen.get("DefaultAccountId") or "").strip()
+    card_id = (gen.get("PrimaryCardId") or "").strip()
+    empty = {
+        "liquid_after_card": None,
+        "liquid_account_bal": None,
+        "liquid_card_spent": None,
+        "liquid_account_name": "",
+        "liquid_card_name": "",
+    }
+    if not acc_id or not card_id:
+        return empty
+    acc = next((a for a in accs if a.get("id") == acc_id), None)
+    card = next((c for c in cards if c.get("id") == card_id), None)
+    if not acc or not card:
+        return empty
+    bal = parse_decimal(acc.get("current_balance"))
+    spent = parse_decimal(card.get("current_spent"))
+    return {
+        "liquid_after_card": bal - spent,
+        "liquid_account_bal": bal,
+        "liquid_card_spent": spent,
+        "liquid_account_name": acc.get("name") or acc_id,
+        "liquid_card_name": card.get("name") or card_id,
+    }
+
+
 def current_month() -> str:
     return datetime.now().strftime("%Y-%m")
 
@@ -342,6 +371,7 @@ def snapshot(
     card_limit = sum(parse_decimal(c.get("limit")) for c in cards)
     card_spent = sum(parse_decimal(c.get("current_spent")) for c in cards)
     saved_pct = (tot["balance"] / tot["income"] * 100) if tot["income"] else 0.0
+    liquid = liquid_after_card(settings, accs, cards)
     return {
         "settings": settings,
         "year_month": label,
@@ -373,6 +403,7 @@ def snapshot(
         ),
         "accounts": accs,
         "cards": cards,
+        **liquid,
     }
 
 
@@ -437,6 +468,11 @@ def cockpit_raw(data: dict | None = None) -> dict:
         "cardAvailable": data["card_available"],
         "cardLimit": data["card_limit"],
         "cardSpent": data["card_spent"],
+        "liquidAfterCard": data.get("liquid_after_card"),
+        "liquidAccountBal": data.get("liquid_account_bal"),
+        "liquidCardSpent": data.get("liquid_card_spent"),
+        "liquidAccountName": data.get("liquid_account_name") or "",
+        "liquidCardName": data.get("liquid_card_name") or "",
         "cards": [
             {
                 "id": c.get("id", ""),
