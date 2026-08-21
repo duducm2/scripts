@@ -125,10 +125,12 @@ Finance_OpenDashboard() {
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
+    dataDir := Finance_DataDir()
+    outDir := Finance_OutputDir()
     try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
-    cmd := 'python "' . py . '"'
+    cmd := 'python "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
     try {
         RunWait(cmd, A_ScriptDir, "Hide")
     } catch as e {
@@ -138,7 +140,7 @@ Finance_OpenDashboard() {
         Finance_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
     }
-    html := Finance_OutputDir() . "\dashboard.html"
+    html := outDir . "\dashboard.html"
     try StandardLoadingBar_Hide(400)
     catch {
     }
@@ -146,8 +148,13 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
-    ; file:// URL so ?t= cache-bust works (raw Windows path + ? breaks Chrome).
-    fileUrl := "file:///" . StrReplace(StrReplace(html, "\", "/"), " ", "%20") . "?t=" . A_TickCount
+    ; Unique temp copy avoids Chrome file:// cache / wrong-folder opens on work PCs.
+    tmpHtml := A_Temp . "\finance_dashboard_" . A_TickCount . ".html"
+    try FileCopy(html, tmpHtml, 1)
+    catch {
+        tmpHtml := html
+    }
+    fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
     try Run('chrome.exe --new-window "' . fileUrl . '"')
     catch as e {
         Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)

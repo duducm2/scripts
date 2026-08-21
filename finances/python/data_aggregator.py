@@ -13,6 +13,27 @@ DATA = ROOT / "finances" / "data"
 OUTPUT = ROOT / "finances" / "output"
 
 
+def configure_paths(
+    data_dir: str | Path | None = None, output_dir: str | Path | None = None
+) -> None:
+    """Point DATA/OUTPUT at AHK's finance folders (absolute paths)."""
+    global DATA, OUTPUT, ROOT
+    if data_dir:
+        DATA = Path(data_dir).expanduser().resolve()
+        # finances/data -> repo root
+        ROOT = DATA.parent.parent
+    if output_dir:
+        OUTPUT = Path(output_dir).expanduser().resolve()
+    # Keep seed_from_ini in sync when it is loaded.
+    try:
+        import seed_from_ini as seed_mod
+
+        seed_mod.DATA = DATA
+        seed_mod.ROOT = ROOT
+    except ImportError:
+        pass
+
+
 def parse_decimal(value) -> float:
     if value is None:
         return 0.0

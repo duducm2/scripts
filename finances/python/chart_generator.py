@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from data_aggregator import (  # noqa: E402
     OUTPUT,
+    configure_paths,
     cockpit_raw,
     format_brl,
     parse_decimal,
@@ -18,6 +19,7 @@ from data_aggregator import (  # noqa: E402
     cat_label,
 )
 from seed_from_ini import seed  # noqa: E402
+import data_aggregator as _agg  # noqa: E402
 
 
 def pie_spec(rows):
@@ -1161,14 +1163,27 @@ function applyTheme(theme) {{
 </body></html>"""
 
 
-def main():
+def main(argv: list[str] | None = None):
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build finance cockpit dashboard.html")
+    parser.add_argument("--data-dir", default="", help="Absolute path to finances/data")
+    parser.add_argument(
+        "--output-dir", default="", help="Absolute path to finances/output"
+    )
+    args = parser.parse_args(argv)
+    if args.data_dir or args.output_dir:
+        configure_paths(
+            data_dir=args.data_dir or None,
+            output_dir=args.output_dir or None,
+        )
     seed()
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    # Default: 1st of current month through today
+    out_dir = _agg.OUTPUT
+    out_dir.mkdir(parents=True, exist_ok=True)
     html = build_html(snapshot())
-    out = OUTPUT / "dashboard.html"
+    out = out_dir / "dashboard.html"
     out.write_text(html, encoding="utf-8")
-    print(str(out))
+    print(str(out.resolve()))
 
 
 if __name__ == "__main__":
