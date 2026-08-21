@@ -75,6 +75,36 @@ Finance_PythonDir() {
     return A_ScriptDir . "\finances\python"
 }
 
+; Resolve a working Python launcher (work PCs often lack `python` on PATH).
+Finance_FindPythonCmd() {
+    candidates := ["py -3", "py", "python3", "python"]
+    for c in candidates {
+        try {
+            ec := RunWait(A_ComSpec . ' /c ' . c . ' -c "print(1)" >nul 2>&1', , "Hide")
+            if (ec = 0)
+                return c
+        } catch {
+        }
+    }
+    localApps := EnvGet("LOCALAPPDATA")
+    pathGlobs := [
+        localApps . "\Programs\Python\Python3*\python.exe",
+        EnvGet("ProgramFiles") . "\Python3*\python.exe",
+        "C:\Python3*\python.exe"
+    ]
+    for g in pathGlobs {
+        loop files g, "F" {
+            try {
+                ec := RunWait('"' . A_LoopFileFullPath . '" -c "print(1)"', , "Hide")
+                if (ec = 0)
+                    return '"' . A_LoopFileFullPath . '"'
+            } catch {
+            }
+        }
+    }
+    return ""
+}
+
 Finance_SettingsPath() {
     return Finance_DataDir() . "\settings.ini"
 }

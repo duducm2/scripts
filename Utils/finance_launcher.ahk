@@ -131,10 +131,17 @@ Finance_OpenDashboard() {
     }
     dataDir := Finance_DataDir()
     outDir := Finance_OutputDir()
+    pyCmd := Finance_FindPythonCmd()
+    if (pyCmd = "") {
+        Finance_DashboardDebugAppend("ERROR: no working Python found (tried py -3, py, python3, python)")
+        Finance_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    Finance_DashboardDebugAppend("PYTHON_CMD=" . pyCmd)
     try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
-    cmd := 'python "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
     Finance_DashboardDebugAppend("CMD=" . cmd)
     pyLog := outDir . "\python_run.log"
     try FileDelete(pyLog)
