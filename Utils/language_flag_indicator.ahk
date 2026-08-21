@@ -198,32 +198,12 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; Returns true on success, false on failure.
 ; =============================================================================
 ExecuteHandyAiModelSelection(selection, keepOpen := false) {
-    ; #region agent log
-    try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "enter", Map(
-        "selection", selection,
-        "keepOpen", keepOpen ? 1 : 0,
-        "scriptName", A_ScriptName,
-        "isOwner", HandyAi_IsOwnerProcess() ? 1 : 0
-    ))
-    ; #endregion
-    if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk") {
-        ; #region agent log
-        try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "blocked_not_owner", Map(
-            "scriptName", A_ScriptName
-        ))
-        ; #endregion
+    if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk")
         return false
-    }
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
 
-    if !g_HandyAiModels.Has(selection) {
-        ; #region agent log
-        try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "invalid_selection", Map(
-            "selection", selection
-        ))
-        ; #endregion
+    if !g_HandyAiModels.Has(selection)
         return false
-    }
 
     modelInfo := g_HandyAiModels[selection]
     modelDisplayName := modelInfo.name
@@ -240,13 +220,6 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
                 : "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
             AiModelBanner_Show(attemptLabel)
             handyHwnd := Handy_ActivateOrLaunch()
-            ; #region agent log
-            try AgentDebugLog("D", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection",
-                "ActivateOrLaunch_result", Map(
-                    "attempt", attempt,
-                    "handyHwnd", handyHwnd
-                ))
-            ; #endregion
             if (!handyHwnd) {
                 if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
                     Sleep HANDY_AI_MODEL_RETRY_DELAY_MS

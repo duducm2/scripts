@@ -48,8 +48,9 @@ class D2C_FlowManager {
         global g_D2C_DictationSubmitMenuCycleFinished
         if (g_D2C_DictationSubmitMenuCycleFinished)
             return
-        if (this.CurrentPhase = "PromptingSubmit")
-            return
+        ; Same-wave duplicates use g_D2C_DictationSubmitMenuCycleFinished.
+        ; PromptingSubmit (e.g. post-[B] menu still open) must be closed and replaced
+        ; so a new dictation wave can show Send dictation? again.
         if (this.CurrentPhase != "Idle") {
             try StandardLoadingBar_CloseKeysOverlay()
             try StandardLoadingBar_Hide(0)
@@ -511,20 +512,8 @@ class D2C_FlowManager {
 
     ; [B] Toggle Parakeet <-> Cohere, re-transcribe newest History entry, copy, re-open menu.
     OnSubmitB(*) {
-        ; #region agent log
-        try AgentDebugLog("A", "d2c_flow_manager.ahk:OnSubmitB", "enter", Map(
-            "phase", this.CurrentPhase,
-            "scriptName", A_ScriptName
-        ))
-        ; #endregion
-        if (this.CurrentPhase != "PromptingSubmit") {
-            ; #region agent log
-            try AgentDebugLog("A", "d2c_flow_manager.ahk:OnSubmitB", "early_return_wrong_phase", Map(
-                "phase", this.CurrentPhase
-            ))
-            ; #endregion
+        if (this.CurrentPhase != "PromptingSubmit")
             return
-        }
 
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
@@ -535,14 +524,7 @@ class D2C_FlowManager {
 
         try {
             HandyRetranscribe_ToggleModelAndCopy()
-        } catch as err {
-            ; #region agent log
-            try AgentDebugLog("E", "d2c_flow_manager.ahk:OnSubmitB", "catch", Map(
-                "err", err.Message,
-                "what", err.What,
-                "line", err.Line
-            ))
-            ; #endregion
+        } catch {
             ShowCenteredOverlay_Utils("❌ Model toggle / re-transcribe failed.", 2200, BANNER_ACCENT_ERROR)
         }
 

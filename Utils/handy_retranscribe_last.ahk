@@ -6,44 +6,6 @@
 
 global HANDY_RETRANSCRIBE_MAX_WAIT_MS := 90000
 global HANDY_RETRANSCRIBE_POLL_MS := 250
-global g_HandyRetranscribeLastMatchLog := 0
-
-; #region agent log
-AgentDebugLog(hypothesisId, location, message, dataMap := "") {
-    logPath := A_ScriptDir "\debug-f7e6c2.log"
-    dataJson := "{}"
-    if (IsObject(dataMap)) {
-        parts := []
-        for k, v in dataMap {
-            vv := v
-            if (Type(vv) = "String") {
-                vv := StrReplace(vv, "\", "\\")
-                vv := StrReplace(vv, '"', '\"')
-                vv := '"' vv '"'
-            } else if (Type(vv) = "Integer" || Type(vv) = "Float") {
-                ; keep numeric
-            } else if (vv = true) {
-                vv := "true"
-            } else if (vv = false) {
-                vv := "false"
-            } else {
-                vv := '"' StrReplace(String(vv), '"', '\"') '"'
-            }
-            parts.Push('"' k '":' vv)
-        }
-        dataJson := "{" . ArrJoin(parts, ",") . "}"
-    }
-    line := '{"sessionId":"f7e6c2","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataJson ',"timestamp":' A_TickCount ',"runId":"post-fix"}`n'
-    try FileAppend(line, logPath, "UTF-8")
-}
-
-ArrJoin(arr, sep) {
-    out := ""
-    for i, s in arr
-        out .= (i = 1 ? "" : sep) . s
-    return out
-}
-; #endregion
 
 HandyRetranscribe_FindFirstRetranscribe(el) {
     return HandyReplay_FindNamed(el, 50000, ["Re-transcribe", "Retranscrever"])
@@ -169,32 +131,15 @@ HandyRetranscribe_ClickFirstCopy(hwnd) {
             break
         Sleep 150
     }
-    ; #region agent log
-    AgentDebugLog("L", "handy_retranscribe_last.ahk:ClickFirstCopy", "found", Map(
-        "found", btn ? 1 : 0,
-        "waited", A_TickCount - start
-    ))
-    ; #endregion
     if !btn
         return false
-    if HandyReplay_ClickWithStrategies(btn, hwnd) {
-        ; #region agent log
-        AgentDebugLog("L", "handy_retranscribe_last.ahk:ClickFirstCopy", "strategies_ok", Map())
-        ; #endregion
+    if HandyReplay_ClickWithStrategies(btn, hwnd)
         return true
-    }
-    try {
-        btn.Invoke()
-        ; #region agent log
-        AgentDebugLog("L", "handy_retranscribe_last.ahk:ClickFirstCopy", "invoke_ok", Map())
-        ; #endregion
-        return true
-    } catch {
-        ; #region agent log
-        AgentDebugLog("L", "handy_retranscribe_last.ahk:ClickFirstCopy", "all_fail", Map())
-        ; #endregion
+    try btn.Invoke()
+    catch {
         return false
     }
+    return true
 }
 
 ; Busy = visible Transcribing label only. Ignore hidden/offscreen leftover nodes.
@@ -221,27 +166,14 @@ HandyRetranscribe_ElementIsOnScreen(el) {
 }
 
 HandyRetranscribe_IsTranscribingUiVisible(el) {
-    global g_HandyRetranscribeLastMatchLog
     if !el
         return false
-    ; Exact names first, then substring — but reject Re-transcribe / transcription false positives.
     needles := ["Transcribing", "Transcrevendo"]
     for nm in needles {
         try {
             found := el.FindFirst({ Type: 50020, Name: nm })
-            if (found && HandyRetranscribe_ElementIsOnScreen(found)) {
-                ; #region agent log
-                if ((A_TickCount - g_HandyRetranscribeLastMatchLog) > 2500) {
-                    g_HandyRetranscribeLastMatchLog := A_TickCount
-                    mn := ""
-                    try mn := found.Name
-                    AgentDebugLog("S", "handy_retranscribe_last.ahk:IsTranscribingUiVisible", "match_exact_text", Map(
-                        "name", mn
-                    ))
-                }
-                ; #endregion
+            if (found && HandyRetranscribe_ElementIsOnScreen(found))
                 return true
-            }
         } catch {
         }
     }
@@ -259,14 +191,6 @@ HandyRetranscribe_IsTranscribingUiVisible(el) {
                 continue
             if !HandyRetranscribe_ElementIsOnScreen(found)
                 continue
-            ; #region agent log
-            if ((A_TickCount - g_HandyRetranscribeLastMatchLog) > 2500) {
-                g_HandyRetranscribeLastMatchLog := A_TickCount
-                AgentDebugLog("S", "handy_retranscribe_last.ahk:IsTranscribingUiVisible", "match_substr_text", Map(
-                    "name", n
-                ))
-            }
-            ; #endregion
             return true
         } catch {
         }
@@ -274,8 +198,8 @@ HandyRetranscribe_IsTranscribingUiVisible(el) {
     return false
 }
 
-; Wait until Transcribing appears then clears; then caller clicks Copy. Do not gate on entry text.
-HandyRetranscribe_WaitRetranscribeDone(hwnd, priorText, maxWaitMs := 0) {
+; Wait until Transcribing appears then clears, and entry text has changed from prior mistranslation.
+HandyRetranscribe_WaitRetranscribeDone(hwnd, priorText := "", maxWaitMs := 0) {
     global UIA, HANDY_RETRANSCRIBE_MAX_WAIT_MS, HANDY_RETRANSCRIBE_POLL_MS
     if (maxWaitMs <= 0)
         maxWaitMs := HANDY_RETRANSCRIBE_MAX_WAIT_MS
@@ -283,86 +207,56 @@ HandyRetranscribe_WaitRetranscribeDone(hwnd, priorText, maxWaitMs := 0) {
     sawBusy := false
     clearStreak := 0
     requiredClearPolls := 4
-    appearDeadline := start + 12000
-    lastBeat := 0
-
-    ; #region agent log
-    AgentDebugLog("F", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "start", Map(
-        "priorLen", StrLen(priorText),
-        "maxWaitMs", maxWaitMs
-    ))
-    ; #endregion
+    textStableStreak := 0
+    lastSeenText := ""
 
     loop {
         try {
             el := UIA.ElementFromHandle(hwnd)
             busy := HandyRetranscribe_IsTranscribingUiVisible(el)
-            copyBtn := HandyRetranscribe_FindFirstCopy(el)
-            copyEn := (copyBtn && HandyRetranscribe_ButtonEnabled(copyBtn)) ? 1 : 0
-
-            ; #region agent log
-            if ((A_TickCount - lastBeat) >= 3000) {
-                lastBeat := A_TickCount
-                AgentDebugLog("N", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "heartbeat", Map(
-                    "elapsed", A_TickCount - start,
-                    "busy", busy ? 1 : 0,
-                    "sawBusy", sawBusy ? 1 : 0,
-                    "clearStreak", clearStreak,
-                    "copyEn", copyEn
-                ))
-            }
-            ; #endregion
+            curText := HandyRetranscribe_ReadFirstEntryText(el)
+            textChanged := (priorText != "" && curText != "" && curText != priorText)
+            || (priorText = "" && curText != "")
 
             if (busy) {
-                if !sawBusy {
-                    ; #region agent log
-                    AgentDebugLog("F", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "saw_busy", Map(
-                        "elapsed", A_TickCount - start
-                    ))
-                    ; #endregion
-                }
                 sawBusy := true
                 clearStreak := 0
+                textStableStreak := 0
             } else if (sawBusy) {
                 clearStreak += 1
-                if (clearStreak >= requiredClearPolls) {
-                    ; #region agent log
-                    AgentDebugLog("F", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "done_after_busy_clear", Map(
-                        "elapsed", A_TickCount - start,
-                        "copyEn", copyEn
-                    ))
-                    ; #endregion
-                    return true
+                ; After busy clears, require the History entry text to differ from the old one
+                ; and stay stable briefly (UI can flash empty then fill).
+                if (clearStreak >= requiredClearPolls && textChanged) {
+                    if (curText = lastSeenText)
+                        textStableStreak += 1
+                    else {
+                        lastSeenText := curText
+                        textStableStreak := 1
+                    }
+                    if (textStableStreak >= 3)
+                        return true
+                } else {
+                    textStableStreak := 0
                 }
-            } else if (!sawBusy && (A_TickCount >= appearDeadline) && copyEn) {
-                ; #region agent log
-                AgentDebugLog("H", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "done_no_busy_copy_ready", Map(
-                    "elapsed", A_TickCount - start
-                ))
-                ; #endregion
-                return true
+            } else if (!busy && textChanged) {
+                ; Missed Transcribing label — still require changed text to stay stable ~1s.
+                if (curText = lastSeenText)
+                    textStableStreak += 1
+                else {
+                    lastSeenText := curText
+                    textStableStreak := 1
+                }
+                if (textStableStreak >= 6)
+                    return true
+            } else {
+                textStableStreak := 0
             }
-        } catch as err {
-            ; #region agent log
-            if ((A_TickCount - lastBeat) >= 3000) {
-                lastBeat := A_TickCount
-                AgentDebugLog("N", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "poll_error", Map(
-                    "elapsed", A_TickCount - start,
-                    "err", err.Message
-                ))
-            }
-            ; #endregion
+        } catch {
         }
         if ((A_TickCount - start) >= maxWaitMs)
             break
         Sleep HANDY_RETRANSCRIBE_POLL_MS
     }
-    ; #region agent log
-    AgentDebugLog("F", "handy_retranscribe_last.ahk:WaitRetranscribeDone", "timeout", Map(
-        "elapsed", A_TickCount - start,
-        "sawBusy", sawBusy ? 1 : 0
-    ))
-    ; #endregion
     return false
 }
 
@@ -383,6 +277,11 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
         priorText := HandyRetranscribe_ReadFirstEntryText(el)
     } catch {
     }
+    ; Prefer OS clipboard as the mistranslation baseline when History text is hard to read.
+    clipBefore := ""
+    try clipBefore := A_Clipboard
+    if (priorText = "" && clipBefore != "")
+        priorText := clipBefore
 
     if (!HandyRetranscribe_ClickFirstRetranscribe(hwnd)) {
         ShowCenteredOverlay_Utils("❌ Could not click Re-transcribe.", 2200, BANNER_ACCENT_ERROR)
@@ -410,37 +309,51 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
             ShowCenteredOverlay_Utils("❌ Handy History tab not found after re-transcribe.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
-        Sleep 120
+        Sleep 200
 
-        copyOk := HandyRetranscribe_ClickFirstCopy(hwnd)
-        ; #region agent log
-        AgentDebugLog("I", "handy_retranscribe_last.ahk:HistoryRetranscribeAndCopy", "copy_click", Map(
-            "copyOk", copyOk ? 1 : 0
-        ))
-        ; #endregion
-        if (!copyOk) {
+        newText := ""
+        try {
+            el := UIA.ElementFromHandle(hwnd)
+            newText := HandyRetranscribe_ReadFirstEntryText(el)
+        } catch {
+        }
+        if (newText = "" || (priorText != "" && newText = priorText)) {
+            ShowCenteredOverlay_Utils("❌ Transcription did not update.", 2200, BANNER_ACCENT_ERROR)
+            return false
+        }
+
+        if (!HandyRetranscribe_ClickFirstCopy(hwnd)) {
             ShowCenteredOverlay_Utils("❌ Could not copy transcription.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
 
+        ; ClipWait alone is wrong: old dictation text is already on the clipboard.
         clipOk := false
-        clipLen := 0
-        if ClipWait(3) {
+        waitEnd := A_TickCount + 4000
+        loop {
             try {
-                clipOk := (A_Clipboard != "")
-                clipLen := StrLen(A_Clipboard)
+                if (A_Clipboard != "" && A_Clipboard != clipBefore
+                    && (priorText = "" || A_Clipboard != priorText)) {
+                    clipOk := true
+                    break
+                }
+            } catch {
+            }
+            if ((A_TickCount) >= waitEnd)
+                break
+            Sleep 100
+        }
+        ; Prefer Handy's Copy; if it left the old clip, push the verified History text.
+        if (!clipOk && newText != "" && newText != priorText) {
+            try {
+                A_Clipboard := newText
+                clipOk := (A_Clipboard = newText)
             } catch {
                 clipOk := false
             }
         }
-        ; #region agent log
-        AgentDebugLog("I", "handy_retranscribe_last.ahk:HistoryRetranscribeAndCopy", "clipboard", Map(
-            "clipOk", clipOk ? 1 : 0,
-            "clipLen", clipLen
-        ))
-        ; #endregion
         if !clipOk {
-            ShowCenteredOverlay_Utils("❌ Clipboard did not update.", 2200, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Clipboard still has old transcription.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
 
@@ -456,58 +369,21 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
 ; End-to-end for Send dictation? [B]: toggle model (keep open) → re-transcribe → copy → close Handy.
 HandyRetranscribe_ToggleModelAndCopy() {
     targetSlot := Handy_GetDictationToggleTargetSlot()
-    ; #region agent log
-    AgentDebugLog("B", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "enter", Map(
-        "targetSlot", targetSlot,
-        "scriptName", A_ScriptName,
-        "isOwner", HandyAi_IsOwnerProcess() ? 1 : 0,
-        "persistedSlot", Handy_GetPersistedAiModelSlot()
-    ))
-    ; #endregion
 
-    selOk := ExecuteHandyAiModelSelection(targetSlot, true)
-    ; #region agent log
-    AgentDebugLog("C", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "after ExecuteHandyAiModelSelection", Map(
-        "selOk", selOk ? 1 : 0,
-        "targetSlot", targetSlot
-    ))
-    ; #endregion
-    if (!selOk) {
+    if (!ExecuteHandyAiModelSelection(targetSlot, true)) {
         ShowCenteredOverlay_Utils("❌ Could not switch Handy model.", 2200, BANNER_ACCENT_ERROR)
         return false
     }
 
     hwnd := Handy_ActivateOrLaunch()
-    ; #region agent log
-    AgentDebugLog("D", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "after ActivateOrLaunch post-select", Map(
-        "hwnd", hwnd
-    ))
-    ; #endregion
     if (!hwnd) {
         ShowCenteredOverlay_Utils("❌ Could not open Handy.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
 
     ok := HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd)
-    ; #region agent log
-    AgentDebugLog("I", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "before_close", Map(
-        "ok", ok ? 1 : 0,
-        "hwnd", hwnd
-    ))
-    ; #endregion
     if (ok) {
         try WinClose("ahk_id " . hwnd)
-        ; #region agent log
-        AgentDebugLog("I", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "after_close", Map(
-            "ok", 1
-        ))
-        ; #endregion
-    } else {
-        ; #region agent log
-        AgentDebugLog("J", "handy_retranscribe_last.ahk:ToggleModelAndCopy", "skip_close_on_failure", Map(
-            "hwnd", hwnd
-        ))
-        ; #endregion
     }
     return ok
 }
