@@ -25,3 +25,5 @@ TX027,2026-08-18,Print a page,"3,00",card_expense,CAT_MATERIAI,Printing,ACC_MERC
 TX028,2026-08-19,Investiment,"10,00",income,CAT_INVESTIM,,ACC_MERCADOP,,
 TX029,2026-08-19,delivery dinner,"58,70",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
 TX030,2026-08-19,YouTube subscription,"16,90",expense,CAT_SUBSCRIP,,ACC_MERCADOP,,
+TX031,2026-08-20,Monthly settlement with husband,"1500,00",expense,CAT_CONTASDE,,ACC_MERCADOP,,
+TX032,2026-08-21,Transaction,"4766,36",transfer,,,ACC_MERCADOP3,,ACC_MERCADOP
