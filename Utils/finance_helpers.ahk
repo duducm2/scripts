@@ -101,14 +101,32 @@ Finance_EnsureData() {
 }
 
 Finance_FixDefaultIds() {
-    acc := Finance_AccIdByNameContains("Mercado Pago main")
-    if (acc = "")
-        acc := Finance_AccIdByNameContains("Mercado Pago")
-    if (acc != "")
-        Finance_SetSetting("General", "DefaultAccountId", acc)
+    accs := Finance_Load("accounts")
     cards := Finance_Load("credit_cards")
-    if (cards.Length)
+    curAcc := Finance_Setting("General", "DefaultAccountId", "")
+    if (curAcc != "" && Finance_FindById(accs, curAcc)) {
+        ; Keep user/default account even after rename (id is stable).
+    } else {
+        acc := Finance_AccIdByNameContains("Mercado Pago main")
+        if (acc = "")
+            acc := Finance_AccIdByNameContains("checking")
+        if (acc = "")
+            acc := Finance_AccIdByNameContains("Mercado Pago")
+        if (acc = "" && accs.Length)
+            acc := accs[1]["id"]
+        if (acc != "")
+            Finance_SetSetting("General", "DefaultAccountId", acc)
+        else
+            Finance_SetSetting("General", "DefaultAccountId", "")
+    }
+    curCard := Finance_Setting("General", "PrimaryCardId", "")
+    if (curCard != "" && Finance_FindById(cards, curCard)) {
+        ; Keep primary card id.
+    } else if (cards.Length) {
         Finance_SetSetting("General", "PrimaryCardId", cards[1]["id"])
+    } else {
+        Finance_SetSetting("General", "PrimaryCardId", "")
+    }
 }
 
 Finance_EnsureSettings() {
