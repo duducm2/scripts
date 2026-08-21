@@ -1,5 +1,5 @@
 ﻿id,name,icon,initial_balance,current_balance
-ACC_MERCADOP,Mercado Pago (checking account),💳,"16088,54","8853,64"
+ACC_MERCADOP,Mercado Pago (checking account),💳,"14081,23","6846,33"
 ACC_MERCADOP2,Mercado Pago (short-term),💰,"39894,32","9907,32"
 ACC_NUBANKMA,Nubank (checking account),🟣,"4956,83","4956,83"
 ACC_TRANSITI,Nubank (short-term),🔄,"5100,07","5100,07"
