@@ -119,7 +119,7 @@ Finance_OnSet(*) {
 
 Finance_OpenDashboard() {
     Finance_EnsureData()
-    Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
+    Finance_RebuildBalancesFromTransactions()
     py := Finance_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
@@ -146,7 +146,7 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
-    try Run('chrome.exe --new-window "' . html . '"')
+    try Run('chrome.exe --new-window "' . html . '?t=' . A_TickCount . '"')
     catch as e {
         Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
