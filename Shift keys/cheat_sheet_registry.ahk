@@ -1239,6 +1239,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+9] > Handy: Nemotron Streaming Portuguese (picker slot 2; same as Win+Alt+Shift+C then 2)
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)
     [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
+    [Send dictation? B] > Toggle Parakeet Unified EN ↔ Cohere Transcribe, re-transcribe newest History entry, copy to clipboard, re-open menu
     
     === YOUTUBE ===
     [Win+Alt+Shift+H] > Activates Youtube

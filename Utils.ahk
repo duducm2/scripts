@@ -125,6 +125,9 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Send dictation? [R] Handy History last recording Play -> Utils\handy_replay_last.ahk
 #include %A_ScriptDir%\Utils\handy_replay_last.ahk
 
+; [Utils module] Send dictation? [B] toggle model + History re-transcribe + copy -> Utils\handy_retranscribe_last.ahk
+#include %A_ScriptDir%\Utils\handy_retranscribe_last.ahk
+
 ; [Utils module] SelectAiModelInHandy entry and pre-movement warning -> Utils\handy_selector_entry.ahk
 #include %A_ScriptDir%\Utils\handy_selector_entry.ahk
 

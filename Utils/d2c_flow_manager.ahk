@@ -92,6 +92,7 @@ class D2C_FlowManager {
             "R", this.OnSubmitR.Bind(this),
             "L", this.OnSubmitL.Bind(this),
             "C", this.OnSubmitC.Bind(this),
+            "B", this.OnSubmitB.Bind(this),
             "N", this.OnSubmitN.Bind(this)
         )
         StandardLoadingBar_ShowWithKeys(
@@ -101,7 +102,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [L] Email note  [C] Chrome  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N] Cancel",
             true,
             true,
             true
@@ -506,6 +507,48 @@ class D2C_FlowManager {
         this.Reset()
 
         HandyReplay_PlayLastRecording()
+    }
+
+    ; [B] Toggle Parakeet <-> Cohere, re-transcribe newest History entry, copy, re-open menu.
+    OnSubmitB(*) {
+        ; #region agent log
+        try AgentDebugLog("A", "d2c_flow_manager.ahk:OnSubmitB", "enter", Map(
+            "phase", this.CurrentPhase,
+            "scriptName", A_ScriptName
+        ))
+        ; #endregion
+        if (this.CurrentPhase != "PromptingSubmit") {
+            ; #region agent log
+            try AgentDebugLog("A", "d2c_flow_manager.ahk:OnSubmitB", "early_return_wrong_phase", Map(
+                "phase", this.CurrentPhase
+            ))
+            ; #endregion
+            return
+        }
+
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        HideDictationIndicator()
+
+        originHwnd := this.OriginHwnd
+        this.CurrentPhase := "Retranscribing"
+
+        try {
+            HandyRetranscribe_ToggleModelAndCopy()
+        } catch as err {
+            ; #region agent log
+            try AgentDebugLog("E", "d2c_flow_manager.ahk:OnSubmitB", "catch", Map(
+                "err", err.Message,
+                "what", err.What,
+                "line", err.Line
+            ))
+            ; #endregion
+            ShowCenteredOverlay_Utils("❌ Model toggle / re-transcribe failed.", 2200, BANNER_ACCENT_ERROR)
+        }
+
+        ; Keep origin for paste/send; do not mark cycle finished — menu continues.
+        this.OriginHwnd := originHwnd
+        this.PromptForGeminiSubmit()
     }
 
     ; [P] Open Spotify, Ctrl+K search, paste dictation, Enter, then immerse (play + fullscreen).

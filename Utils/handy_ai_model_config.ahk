@@ -36,6 +36,18 @@ global HANDY_AI_SLOT_PORTUGUESE := 2
 
 global HANDY_AI_SLOT_MULTILANG := 3
 
+; Send dictation? [B]: toggle Parakeet Unified EN (1) <-> Cohere Transcribe (3); never Nemotron (2).
+; From Nemotron/unknown -> Cohere (bilingual correction path).
+Handy_GetDictationToggleTargetSlot() {
+    global HANDY_AI_SLOT_ENGLISH, HANDY_AI_SLOT_MULTILANG
+    current := Handy_GetPersistedAiModelSlot()
+    if (current = HANDY_AI_SLOT_ENGLISH)
+        return HANDY_AI_SLOT_MULTILANG
+    if (current = HANDY_AI_SLOT_MULTILANG)
+        return HANDY_AI_SLOT_ENGLISH
+    return HANDY_AI_SLOT_MULTILANG
+}
+
 ; INI schema: 2 = current 1-3 slot lineup (Slot=2 is Portuguese; no legacy remap on read).
 
 global HANDY_AI_INI_SCHEMA_VERSION := 2

@@ -194,14 +194,36 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 
 ; =============================================================================
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
+; keepOpen: when true, leave Handy open after success (for History re-transcribe).
+; Returns true on success, false on failure.
 ; =============================================================================
-ExecuteHandyAiModelSelection(selection) {
-    if (!HandyAi_IsOwnerProcess())
-        return
+ExecuteHandyAiModelSelection(selection, keepOpen := false) {
+    ; #region agent log
+    try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "enter", Map(
+        "selection", selection,
+        "keepOpen", keepOpen ? 1 : 0,
+        "scriptName", A_ScriptName,
+        "isOwner", HandyAi_IsOwnerProcess() ? 1 : 0
+    ))
+    ; #endregion
+    if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk") {
+        ; #region agent log
+        try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "blocked_not_owner", Map(
+            "scriptName", A_ScriptName
+        ))
+        ; #endregion
+        return false
+    }
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
 
-    if !g_HandyAiModels.Has(selection)
-        return
+    if !g_HandyAiModels.Has(selection) {
+        ; #region agent log
+        try AgentDebugLog("C", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection", "invalid_selection", Map(
+            "selection", selection
+        ))
+        ; #endregion
+        return false
+    }
 
     modelInfo := g_HandyAiModels[selection]
     modelDisplayName := modelInfo.name
@@ -218,6 +240,13 @@ ExecuteHandyAiModelSelection(selection) {
                 : "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": Launching Handy..."
             AiModelBanner_Show(attemptLabel)
             handyHwnd := Handy_ActivateOrLaunch()
+            ; #region agent log
+            try AgentDebugLog("D", "language_flag_indicator.ahk:ExecuteHandyAiModelSelection",
+                "ActivateOrLaunch_result", Map(
+                    "attempt", attempt,
+                    "handyHwnd", handyHwnd
+                ))
+            ; #endregion
             if (!handyHwnd) {
                 if (attempt < HANDY_AI_MODEL_MAX_ATTEMPTS) {
                     Sleep HANDY_AI_MODEL_RETRY_DELAY_MS
@@ -226,7 +255,7 @@ ExecuteHandyAiModelSelection(selection) {
                 AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
                 Sleep 2000
                 AiModelBanner_Hide()
-                return
+                return false
             }
 
             AiModelBanner_Show((attempt > 1 ? "Retry " . attempt . "/" . HANDY_AI_MODEL_MAX_ATTEMPTS . ": " : "")
@@ -255,14 +284,14 @@ ExecuteHandyAiModelSelection(selection) {
             AiModelBanner_Show("❌ Could not switch model after " . HANDY_AI_MODEL_MAX_ATTEMPTS . " attempts", "E74C3C")
             Sleep 2000
             AiModelBanner_Hide()
-            return
+            return false
         }
 
         if (!Handy_SetPersistedAiModelSlot(selection)) {
             AiModelBanner_Show("❌ Could not save model preference", BANNER_ACCENT_ERROR)
             Sleep 2000
             AiModelBanner_Hide()
-            return
+            return false
         }
 
         ; Update persistent language flag indicator (slot 1 = UK, slot 2 = BR, slot 3 = multi).
@@ -275,15 +304,24 @@ ExecuteHandyAiModelSelection(selection) {
         if (FileExist(soundPath))
             ScriptSoundPlay(soundPath)
 
+        if (keepOpen) {
+            AiModelBanner_Show("✅ Model ready", BANNER_ACCENT_SUCCESS)
+            Sleep 400
+            AiModelBanner_Hide()
+            return true
+        }
+
         AiModelBanner_Show("✅ Done! Closing Handy...", BANNER_ACCENT_SUCCESS)
         try WinClose("ahk_id " . handyHwnd)
         Sleep 150
 
         AiModelBanner_Hide()
+        return true
 
     } catch Error as e {
         AiModelBanner_Show("❌ Error: " . e.Message, "E74C3C")
         Sleep 2000
         AiModelBanner_Hide()
+        return false
     }
 }
