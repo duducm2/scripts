@@ -71,11 +71,24 @@ def widget_on(settings: dict, key: str) -> bool:
     return settings.get("dashboard", {}).get(key, "1") != "0"
 
 
+def setting_get(section: dict, key: str, default: str = "") -> str:
+    """ConfigParser lowercases option names; accept either casing."""
+    if not section:
+        return default
+    if key in section:
+        return section[key]
+    lower = key.lower()
+    for k, v in section.items():
+        if str(k).lower() == lower:
+            return v
+    return default
+
+
 def liquid_after_card(settings: dict, accs: list[dict], cards: list[dict]) -> dict:
     """Main account balance minus primary card spent (None liquid if unresolved)."""
     gen = settings.get("general") or {}
-    acc_id = (gen.get("DefaultAccountId") or "").strip()
-    card_id = (gen.get("PrimaryCardId") or "").strip()
+    acc_id = (setting_get(gen, "DefaultAccountId") or "").strip()
+    card_id = (setting_get(gen, "PrimaryCardId") or "").strip()
     empty = {
         "liquid_after_card": None,
         "liquid_account_bal": None,
