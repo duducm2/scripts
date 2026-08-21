@@ -301,11 +301,12 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
             return false
         }
 
+        ; Keep Loading Indication through copy/clipboard (Show → Update → Hide on exit only).
         StandardLoadingBar_Update("⏳ Copying transcription...")
-        StandardLoadingBar_Hide(0)
-        barOwned := false
 
         if (!HandyReplay_EnsureHistoryTab(hwnd)) {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
             ShowCenteredOverlay_Utils("❌ Handy History tab not found after re-transcribe.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
@@ -318,11 +319,15 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
         } catch {
         }
         if (newText = "" || (priorText != "" && newText = priorText)) {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
             ShowCenteredOverlay_Utils("❌ Transcription did not update.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
 
         if (!HandyRetranscribe_ClickFirstCopy(hwnd)) {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
             ShowCenteredOverlay_Utils("❌ Could not copy transcription.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
@@ -353,10 +358,16 @@ HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd) {
             }
         }
         if !clipOk {
+            StandardLoadingBar_Hide(0)
+            barOwned := false
             ShowCenteredOverlay_Utils("❌ Clipboard still has old transcription.", 2200, BANNER_ACCENT_ERROR)
             return false
         }
 
+        StandardLoadingBar_Update("⏳ Closing Handy...")
+        Sleep 200
+        StandardLoadingBar_Hide(0)
+        barOwned := false
         ShowCenteredOverlay_Utils("✅ Re-transcribed & copied", 1500, BANNER_ACCENT_SUCCESS)
         return true
     } finally {
@@ -383,6 +394,7 @@ HandyRetranscribe_ToggleModelAndCopy() {
 
     ok := HandyRetranscribe_HistoryRetranscribeAndCopy(hwnd)
     if (ok) {
+        try StandardLoadingBar_Hide(0)
         try WinClose("ahk_id " . hwnd)
     }
     return ok
