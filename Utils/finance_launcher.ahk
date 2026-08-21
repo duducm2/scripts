@@ -119,13 +119,9 @@ Finance_OnSet(*) {
 
 Finance_OpenDashboard() {
     Finance_EnsureData()
-    Finance_DashboardDebugClear()
-    Finance_DashboardDebugAccountSnapshot("BEFORE rebuild")
     Finance_RebuildBalancesFromTransactions()
-    Finance_DashboardDebugAccountSnapshot("AFTER rebuild")
     py := Finance_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
-        Finance_DashboardDebugAppend("ERROR: chart_generator.py not found at " . py)
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
@@ -133,50 +129,28 @@ Finance_OpenDashboard() {
     outDir := Finance_OutputDir()
     pyCmd := Finance_FindPythonCmd()
     if (pyCmd = "") {
-        Finance_DashboardDebugAppend("ERROR: no working Python found (tried py -3, py, python3, python)")
         Finance_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
         return
     }
-    Finance_DashboardDebugAppend("PYTHON_CMD=" . pyCmd)
     try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
-    Finance_DashboardDebugAppend("CMD=" . cmd)
-    pyLog := outDir . "\python_run.log"
-    try FileDelete(pyLog)
-    catch {
-    }
-    ; Redirect stdout/stderr so work-PC Python failures are pullable.
-    shellCmd := A_ComSpec . ' /c ' . cmd . ' > "' . pyLog . '" 2>&1'
     exitCode := 0
     try {
-        exitCode := RunWait(shellCmd, A_ScriptDir, "Hide")
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
     } catch as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        Finance_DashboardDebugAppend("ERROR: Python RunWait failed: " . e.Message)
         Finance_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
-    }
-    Finance_DashboardDebugAppend("PYTHON_EXIT=" . exitCode)
-    if (FileExist(pyLog)) {
-        try {
-            pyOut := FileRead(pyLog, "UTF-8")
-            Finance_DashboardDebugAppend("--- python_run.log ---")
-            Finance_DashboardDebugAppend(Trim(pyOut))
-            Finance_DashboardDebugAppend("--- end python_run.log ---")
-        } catch {
-        }
     }
     if (exitCode != 0) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        Finance_DashboardDebugAppend("ERROR: refusing to open stale dashboard.html")
-        Finance_Notify("Dashboard Python failed (exit " . exitCode . "). See dashboard_debug.txt", 3500,
-            BANNER_ACCENT_ERROR)
+        Finance_Notify("Dashboard Python failed (exit " . exitCode . ")", 3500, BANNER_ACCENT_ERROR)
         return
     }
     html := outDir . "\dashboard.html"
@@ -184,37 +158,20 @@ Finance_OpenDashboard() {
     catch {
     }
     if (!FileExist(html)) {
-        Finance_DashboardDebugAppend("ERROR: dashboard.html missing at " . html)
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
-    ; Confirm this run regenerated HTML (Python section must exist).
-    try {
-        dbgBody := FileRead(Finance_DashboardDebugPath(), "UTF-8")
-        if (!InStr(dbgBody, "=== PYTHON ok")) {
-            Finance_DashboardDebugAppend("ERROR: no PYTHON ok marker — not opening Chrome")
-            Finance_Notify("Dashboard build incomplete. See dashboard_debug.txt", 3500, BANNER_ACCENT_ERROR)
-            return
-        }
-    } catch {
-    }
-    Finance_DashboardDebugAppend("HTML=" . html)
-    ; Unique temp copy avoids Chrome file:// cache / wrong-folder opens on work PCs.
     tmpHtml := A_Temp . "\finance_dashboard_" . A_TickCount . ".html"
     try FileCopy(html, tmpHtml, 1)
     catch {
         tmpHtml := html
     }
-    Finance_DashboardDebugAppend("TMP_HTML=" . tmpHtml)
     fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
-    Finance_DashboardDebugAppend("FILE_URL=" . fileUrl)
     try Run('chrome.exe --new-window "' . fileUrl . '"')
     catch as e {
-        Finance_DashboardDebugAppend("ERROR: Chrome failed: " . e.Message)
         Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
     }
-    Finance_DashboardDebugAppend("DONE ok — commit finances/output/dashboard_debug.txt and pull on personal")
     Finance_CloseGui()
 }
 

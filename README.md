@@ -27,6 +27,7 @@ This repository is an AutoHotkey v2 scripts toolkit: multiple independent entry 
 - `lib/GeminiToCursorBridge.ahk` — Copy-from-Gemini to Cursor (included by WindowManagement)
 - `vendor/UIA-v2/` — UI Automation v2 library (`UIA.ahk`, `UIA_Browser.ahk`); see [vendor/UIA-v2/README.md](vendor/UIA-v2/README.md)
 - `infra/ipc/` — IPC clients (WMIPC, AppLauncherIPC, ShiftKeysIPC) and harnesses
+- `finances/` — Personal finance app (AHK UI + CSV data + Plotly dashboard); see [finances/README.md](finances/README.md)
 
 ### Repository structure
 
