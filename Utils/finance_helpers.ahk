@@ -685,9 +685,9 @@ Finance_SortTransactionsByDateId(txs) {
             a := out[j]
             b := out[j + 1]
             swap := false
-            if (a["date"] > b["date"])
+            if (StrCompare(a["date"], b["date"]) > 0)
                 swap := true
-            else if (a["date"] = b["date"] && a["id"] > b["id"])
+            else if (a["date"] = b["date"] && StrCompare(a["id"], b["id"]) > 0)
                 swap := true
             if (swap) {
                 out[j] := b
