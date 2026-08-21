@@ -93,7 +93,8 @@ HandleHotstringChar(char) {
     }
 }
 
-UtilitySelector_InsertPrompt(prompt, useGemini := false) {
+UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := false) {
+    global g_lastExpansion
     if (!IsObject(prompt))
         return
     body := PromptRender_Prepare(prompt)
@@ -105,11 +106,17 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false) {
     doPasteBody := (mode = "default" || mode = "body_only" || mode = "body_plus_clipboard" || mode =
         "body_attach_clipboard"
         || mode = "auto_send")
-    doAppendClipboard := (mode = "body_plus_clipboard")
+    doAppendClipboard := (mode = "body_plus_clipboard") || appendClipboard
     doAutoSend := (mode = "auto_send")
+    clip := ""
+    if (doAppendClipboard) {
+        try clip := A_Clipboard
+        catch {
+        }
+    }
     CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend)
+        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend, clip)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
@@ -118,13 +125,9 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false) {
         UtilitySelector_AttachPromptContextFiles(prompt)
     if (doPasteBody)
         PasteStrippedPromptOfferReminders(body)
-    if (doAppendClipboard) {
-        clip := ""
-        try clip := A_Clipboard
-        catch {
-        }
-        if (clip != "")
-            InsertText(clip)
+    if (doAppendClipboard && clip != "") {
+        g_lastExpansion := 0
+        InsertText(clip)
     }
 }
 
@@ -393,7 +396,8 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=
-    false) {
+    false, appendClip := "") {
+    global g_lastExpansion
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
@@ -408,6 +412,10 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
                 catch {
                 }
             }
+            if (appendClip != "") {
+                g_lastExpansion := 0
+                InsertText(appendClip)
+            }
             if (doAutoSend)
                 Send "{Enter}"
         } else if (companion = "copilot") {
@@ -419,6 +427,10 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
                 try ReplaceComposerWithStrippedReminders(expansion)
                 catch {
                 }
+            }
+            if (appendClip != "") {
+                g_lastExpansion := 0
+                InsertText(appendClip)
             }
             if (doAutoSend)
                 Send "{Enter}"
@@ -460,6 +472,10 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
                 try ReplaceComposerWithStrippedReminders(expansion)
                 catch {
                 }
+            }
+            if (appendClip != "") {
+                g_lastExpansion := 0
+                InsertText(appendClip)
             }
             if (doAutoSend)
                 Send "{Enter}"
