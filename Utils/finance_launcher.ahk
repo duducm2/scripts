@@ -119,9 +119,13 @@ Finance_OnSet(*) {
 
 Finance_OpenDashboard() {
     Finance_EnsureData()
+    Finance_DashboardDebugClear()
+    Finance_DashboardDebugAccountSnapshot("BEFORE rebuild")
     Finance_RebuildBalancesFromTransactions()
+    Finance_DashboardDebugAccountSnapshot("AFTER rebuild")
     py := Finance_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
+        Finance_DashboardDebugAppend("ERROR: chart_generator.py not found at " . py)
         Finance_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
@@ -131,12 +135,14 @@ Finance_OpenDashboard() {
     catch {
     }
     cmd := 'python "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    Finance_DashboardDebugAppend("CMD=" . cmd)
     try {
         RunWait(cmd, A_ScriptDir, "Hide")
     } catch as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        Finance_DashboardDebugAppend("ERROR: Python RunWait failed: " . e.Message)
         Finance_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
     }
@@ -145,21 +151,27 @@ Finance_OpenDashboard() {
     catch {
     }
     if (!FileExist(html)) {
+        Finance_DashboardDebugAppend("ERROR: dashboard.html missing at " . html)
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
+    Finance_DashboardDebugAppend("HTML=" . html)
     ; Unique temp copy avoids Chrome file:// cache / wrong-folder opens on work PCs.
     tmpHtml := A_Temp . "\finance_dashboard_" . A_TickCount . ".html"
     try FileCopy(html, tmpHtml, 1)
     catch {
         tmpHtml := html
     }
+    Finance_DashboardDebugAppend("TMP_HTML=" . tmpHtml)
     fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
+    Finance_DashboardDebugAppend("FILE_URL=" . fileUrl)
     try Run('chrome.exe --new-window "' . fileUrl . '"')
     catch as e {
+        Finance_DashboardDebugAppend("ERROR: Chrome failed: " . e.Message)
         Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
     }
+    Finance_DashboardDebugAppend("DONE ok — commit finances/output/dashboard_debug.txt and pull on personal")
     Finance_CloseGui()
 }
 

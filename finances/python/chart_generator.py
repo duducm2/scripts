@@ -1165,6 +1165,7 @@ function applyTheme(theme) {{
 
 def main(argv: list[str] | None = None):
     import argparse
+    from datetime import datetime
 
     parser = argparse.ArgumentParser(description="Build finance cockpit dashboard.html")
     parser.add_argument("--data-dir", default="", help="Absolute path to finances/data")
@@ -1180,9 +1181,44 @@ def main(argv: list[str] | None = None):
     seed()
     out_dir = _agg.OUTPUT
     out_dir.mkdir(parents=True, exist_ok=True)
-    html = build_html(snapshot())
+    data = snapshot()
+    html = build_html(data)
     out = out_dir / "dashboard.html"
     out.write_text(html, encoding="utf-8")
+
+    # Append pullable diagnostics (same file AHK starts).
+    dbg = out_dir / "dashboard_debug.txt"
+    gen = (data.get("settings") or {}).get("general") or {}
+    def_id = ""
+    for k, v in gen.items():
+        if str(k).lower() == "defaultaccountid":
+            def_id = str(v).strip()
+            break
+    lines = [
+        "",
+        f"=== PYTHON chart_generator {datetime.now().isoformat(timespec='seconds')} ===",
+        f"__file__={Path(__file__).resolve()}",
+        f"DATA={_agg.DATA}",
+        f"OUTPUT={_agg.OUTPUT}",
+        f"args.data_dir={args.data_dir!r}",
+        f"args.output_dir={args.output_dir!r}",
+        f"DefaultAccountId={def_id}",
+        f"liquid_after_card={data.get('liquid_after_card')}",
+        f"liquid_account_bal={data.get('liquid_account_bal')}",
+        f"liquid_card_spent={data.get('liquid_card_spent')}",
+        f"liquid_account_name={data.get('liquid_account_name')}",
+        f"kpi_total_balance={data.get('balance')}",
+    ]
+    for a in data.get("accounts") or []:
+        mark = " [DEFAULT]" if a.get("id") == def_id else ""
+        lines.append(
+            f"ACC {a.get('id')} name={a.get('name')} "
+            f"initial={a.get('initial_balance')} current={a.get('current_balance')}{mark}"
+        )
+    lines.append(f"HTML_WRITTEN={out.resolve()}")
+    with dbg.open("a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
     print(str(out.resolve()))
 
 

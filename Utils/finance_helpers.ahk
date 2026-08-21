@@ -25,6 +25,52 @@ Finance_OutputDir() {
     return dir
 }
 
+; Pullable report for work-vs-personal dashboard path/balance debugging.
+Finance_DashboardDebugPath() {
+    return Finance_OutputDir() . "\dashboard_debug.txt"
+}
+
+Finance_DashboardDebugClear() {
+    path := Finance_DashboardDebugPath()
+    try FileDelete(path)
+    catch {
+    }
+    stamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+    Finance_DashboardDebugAppend("=== AHK Finance_OpenDashboard " . stamp . " ===")
+}
+
+Finance_DashboardDebugAppend(line) {
+    path := Finance_DashboardDebugPath()
+    try FileAppend(line . "`n", path, "UTF-8")
+    catch {
+    }
+}
+
+Finance_DashboardDebugAccountSnapshot(label) {
+    defId := Finance_Setting("General", "DefaultAccountId", "")
+    cardId := Finance_Setting("General", "PrimaryCardId", "")
+    Finance_DashboardDebugAppend("--- " . label . " ---")
+    Finance_DashboardDebugAppend("A_ScriptDir=" . A_ScriptDir)
+    Finance_DashboardDebugAppend("Finance_DataDir=" . Finance_DataDir())
+    Finance_DashboardDebugAppend("Finance_OutputDir=" . Finance_OutputDir())
+    Finance_DashboardDebugAppend("DefaultAccountId=" . defId)
+    Finance_DashboardDebugAppend("PrimaryCardId=" . cardId)
+    accs := Finance_Load("accounts")
+    cards := Finance_Load("credit_cards")
+    for a in accs {
+        Finance_DashboardDebugAppend("ACC " . a["id"] . " name=" . a["name"]
+            . " initial=" . a["initial_balance"] . " current=" . a["current_balance"]
+            . (a["id"] = defId ? " [DEFAULT]" : ""))
+    }
+    if (defId != "")
+        Finance_DashboardDebugAppend("AccountNetFromTxs=" . Finance_AccountNetFromTransactions(defId))
+    for c in cards {
+        Finance_DashboardDebugAppend("CARD " . c["id"] . " name=" . c["name"]
+            . " spent=" . c["current_spent"] . " limit=" . c["limit"]
+            . (c["id"] = cardId ? " [PRIMARY]" : ""))
+    }
+}
+
 Finance_PythonDir() {
     return A_ScriptDir . "\finances\python"
 }
