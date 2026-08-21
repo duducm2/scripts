@@ -584,6 +584,7 @@ Finance_ImportMonthly(*) {
     Finance_Save("accounts", accs)
     Finance_Save("goals", goals)
     Finance_Save("transactions", txs)
+    Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
     Finance_ArchiveImported(path)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
     Finance_ShowMainMenu()

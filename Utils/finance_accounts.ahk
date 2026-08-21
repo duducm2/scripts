@@ -239,6 +239,7 @@ Finance_AccAdjust(*) {
             txs.Push(tx)
             Finance_Save("transactions", txs)
             row["current_balance"] := Finance_FormatCsvDecimal(newBal)
+            Finance_RecomputeBudgetSpent(SubStr(tx["date"], 1, 7))
         } else {
             init := newBal - Finance_AccountNetFromTransactions(a["id"])
             row["initial_balance"] := Finance_FormatCsvDecimal(init)

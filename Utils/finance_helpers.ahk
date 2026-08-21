@@ -80,8 +80,28 @@ Finance_EnsureData() {
         Finance_SeedTransactions()
     if (!FileExist(Finance_DataDir() . "\recurring_bills.csv"))
         Finance_SeedRecurringBills()
+    Finance_MigrateCardInitialSpent()
     Finance_FixDefaultIds()
     Finance_EnsureMonthBudgets(Finance_CurrentYearMonth())
+}
+
+; One-time: backfill initial_spent so Rebuild/schema match displayed current_spent.
+Finance_MigrateCardInitialSpent() {
+    cards := Finance_Load("credit_cards")
+    if (!cards.Length)
+        return
+    need := false
+    for c in cards {
+        if (!c.Has("initial_spent") || Trim(c["initial_spent"]) = "") {
+            need := true
+            break
+        }
+    }
+    if (!need)
+        return
+    for c in cards
+        Finance_EnsureCardInitialSpent(c)
+    Finance_Save("credit_cards", cards)
 }
 
 Finance_FixDefaultIds() {

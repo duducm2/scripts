@@ -215,6 +215,7 @@ Finance_CardMarkPaid(cardId) {
     card["initial_spent"] := Finance_FormatCsvDecimal(0 - Finance_CardNetFromTransactions(card["id"]))
     Finance_Save("accounts", accs)
     Finance_Save("credit_cards", cards)
+    Finance_RecomputeBudgetSpent(SubStr(tx["date"], 1, 7))
     Finance_Notify("Invoice paid", 1600, BANNER_ACCENT_SUCCESS)
     global g_FinanceCardLv
     if (IsObject(g_FinanceCardLv))
