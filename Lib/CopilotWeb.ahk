@@ -2350,29 +2350,5 @@ CopilotWeb_WaitForGenerationComplete(timeout := 300000) {
     }
 }
 
-CopilotHotkey_ShowPronunciationLanguagePicker(selectedText) {
-    onSelect(lang) {
-        StandardLoadingBar_CloseKeysOverlay()
-        StandardLoadingBar_Hide(0)
-        if (lang != "")
-            (CopilotAsyncLookup(lang, selectedText)).Start()
-    }
-    onTimeout() {
-        StandardLoadingBar_CloseKeysOverlay()
-        StandardLoadingBar_Hide(0)
-        StandardLoadingBar_Show("⏳ Detecting language…", BANNER_ACCENT_INTERMEDIATE, { textWidth: 450, fontSize: 17 })
-        lang := DetectLang_AhkFallback(selectedText)
-        if !(lang = "pt" || lang = "en" || lang = "de")
-            lang := "en"
-        (CopilotAsyncLookup(lang, selectedText)).Start()
-    }
-    keyCallbacks := Map(
-        "1", (*) => onSelect("pt"),
-        "2", (*) => onSelect("en"),
-        "3", (*) => onSelect("de"),
-        "*Escape", (*) => onSelect("")
-    )
-    StandardLoadingBar_ShowWithKeys("❓ Auto-detect in 2s — press to override", keyCallbacks, 2000, 0, onTimeout,
-        BANNER_ACCENT_INTERMEDIATE,
-        450, 17, "", false, "[1] Portuguese  [2] English  [3] German  [Esc] Cancel", false, true)
-}
+; Pronunciation #!+8 language picker lives in Gemini\hotkey_pronunciation.ahk
+; (PronunciationHotkey_ShowLanguagePicker / PronunciationHotkey_StartLookup).

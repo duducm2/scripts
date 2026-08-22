@@ -1227,7 +1227,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
-    [Win+Alt+Shift+8] > Get word pronunciation, definition, and Portuguese translation ({AI_PROVIDER})
+    [Win+Alt+Shift+8] > Pronunciation lookup ({AI_PROVIDER}): 1× English, 2× German, hold = EN/DE/PT ListView
     [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
     
     === DESKTOP ===

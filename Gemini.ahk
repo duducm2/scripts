@@ -33,7 +33,7 @@ try Hotkey("#!+X", "Off")
 ; [Gemini module] #!+P, copy helper, read-aloud IPC -> Gemini\hotkey_read_copy.ahk
 #include %A_ScriptDir%\Gemini\hotkey_read_copy.ahk
 
-; [Gemini module] Language picker and #!+8 pronunciation hotkey -> Gemini\hotkey_pronunciation.ahk
+; [Gemini module] Tiered #!+8 pronunciation (1× en / 2× de / hold ListView) -> Gemini\hotkey_pronunciation.ahk
 #include %A_ScriptDir%\Gemini\hotkey_pronunciation.ahk
 
 ; [Gemini module] InitializeGeminiFirstTime and #!+I open/focus hotkey -> Gemini\gemini_open.ahk
