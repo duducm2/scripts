@@ -1,0 +1,4 @@
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+"Phone case","113,25",expense,CAT_CELULAR,,ACC_MERCADOP,,
+"Magnetic ring","126,31",expense,CAT_CELULAR,,ACC_MERCADOP,,
+"Transfer","2000,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP2
