@@ -12,9 +12,11 @@ global WHATSAPP_CHROME_APP_ID := "hnpfjngllnobngcgfapefoaidbinmjnm"
 global WHATSAPP_JUMP_USE_HWND_CACHE := true
 global WHATSAPP_JUMP_CACHED_HWND := 0
 
-; Warm: skip WaitUntilUiReady when shell already ready; shortened fallback otherwise.
-; Rollback: WHATSAPP_JUMP_WARM_FASTPATH := false restores legacy warm 8s / streak 2 / Sleep 600.
+; Fast path: after activate/Run+HWND, skip WaitUntilUiReady entirely (warm AND cold).
+; Search spam in JumpToChat is the readiness gate. Rollback: false → legacy UI-ready waits.
 global WHATSAPP_JUMP_WARM_FASTPATH := true
+; Set by ActivateOrOpen so JumpToChat can use a longer search timeout after cold Run.
+global WHATSAPP_JUMP_LAST_WAS_COLD := false
 
 WhatsAppJump_ShowLoading(state) {
     StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
@@ -156,6 +158,19 @@ WhatsAppJump_FindHwnd() {
             }
         }
     }
+    ; Broader class scan — some PWA hosts are not reported as chrome.exe promptly.
+    if !hwnd {
+        for cand in WinGetList("ahk_class Chrome_WidgetWin_1") {
+            try {
+                if WhatsAppJump_IsWhatsAppChromeAppHwnd(cand) {
+                    hwnd := cand
+                    break
+                }
+            } catch {
+            }
+        }
+    }
+
 
     if (hwnd)
         WhatsAppJump_SetCachedHwnd(hwnd)
@@ -320,7 +335,7 @@ WhatsAppJump_OpenSearchUntilFocused(hwnd, timeoutMs := 10000, waitAfterSendMs :=
         if (WhatsAppJump_IsSearchEditFocused())
             return true
         if ((A_TickCount - lastUpdate) >= 400) {
-            WhatsAppJump_UpdateLoading("⏳ Opening search (Shift+S)...")
+            WhatsAppJump_UpdateLoading("⏳ Opening search...")
             lastUpdate := A_TickCount
         }
         ; Same action as Shift+S in hotif_whatsapp
@@ -366,16 +381,59 @@ WhatsAppJump_WaitComposerEditFocused(timeoutMs := 1200, pollMs := 40) {
     return WhatsAppJump_IsComposerEditFocused()
 }
 
-; Returns true if WhatsApp is active and UI chrome is ready for keyboard shortcuts.
+; Returns true after WhatsApp is focused (or launched). With WHATSAPP_JUMP_WARM_FASTPATH,
+; does NOT wait for shell UIA readiness — JumpToChat spams search until the field appears.
 WhatsAppJump_ActivateOrOpen() {
-    global IS_WORK_ENVIRONMENT, WHATSAPP_JUMP_WARM_FASTPATH
+    global IS_WORK_ENVIRONMENT, WHATSAPP_JUMP_WARM_FASTPATH, WHATSAPP_JUMP_LAST_WAS_COLD
+    WHATSAPP_JUMP_LAST_WAS_COLD := false
     prevTitleMode := A_TitleMatchMode
     try {
         SetTitleMatchMode(2)
         didColdStart := false
         openStart := A_TickCount
         hwnd := WhatsAppJump_FindHwnd()
-        if (hwnd) {
+
+        ; Missed HWND while PWA is open (contact-title window): Run .lnk focuses the existing app.
+        if (!hwnd) {
+            WhatsAppJump_UpdateLoading("⏳ Focusing WhatsApp...")
+            if (IS_WORK_ENVIRONMENT) {
+                Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
+            } else {
+                Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
+            }
+            hwnd := WhatsAppJump_WaitHwnd(5)
+            if (hwnd) {
+                ; Existing instance came to front — treat as warm focus, not cold hydrate.
+                WhatsAppJump_UpdateLoading("⏳ Activating WhatsApp...")
+                if !WhatsAppJump_ActivateHwnd(hwnd, 3) {
+                    WhatsAppJump_HideLoading()
+                    ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
+                    return false
+                }
+                WhatsAppJump_SetCachedHwnd(hwnd)
+                if (WHATSAPP_JUMP_WARM_FASTPATH)
+                    return true
+            } else {
+                didColdStart := true
+                WHATSAPP_JUMP_LAST_WAS_COLD := true
+                WhatsAppJump_UpdateLoading("⏳ Opening WhatsApp...")
+                hwnd := WhatsAppJump_WaitHwnd(30)
+                if !hwnd {
+                    WhatsAppJump_HideLoading()
+                    ShowCenteredOverlay_Utils("❌ WhatsApp did not start in time.", 2000, BANNER_ACCENT_ERROR)
+                    return false
+                }
+                if !WhatsAppJump_ActivateHwnd(hwnd, 5) {
+                    WhatsAppJump_HideLoading()
+                    ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
+                    return false
+                }
+                WhatsAppJump_SetCachedHwnd(hwnd)
+                ; Fast path: do not WaitUntilUiReady — search spam is the gate (even on cold start).
+                if (WHATSAPP_JUMP_WARM_FASTPATH)
+                    return true
+            }
+        } else {
             WhatsAppJump_UpdateLoading("⏳ Activating WhatsApp...")
             if !WhatsAppJump_ActivateHwnd(hwnd, 3) {
                 WhatsAppJump_HideLoading()
@@ -383,47 +441,15 @@ WhatsAppJump_ActivateOrOpen() {
                 return false
             }
             WhatsAppJump_SetCachedHwnd(hwnd)
-
-            ; Warm fast path: activate only — JumpToChat spams search until the Edit appears
-            ; (search field is the readiness gate; skip shell UIA IsUiReady).
-            if (WHATSAPP_JUMP_WARM_FASTPATH) {
-                WhatsAppJump_HideLoading()
+            if (WHATSAPP_JUMP_WARM_FASTPATH)
                 return true
-            }
-        } else {
-            didColdStart := true
-            WhatsAppJump_UpdateLoading("⏳ Opening WhatsApp...")
-            if (IS_WORK_ENVIRONMENT) {
-                Run "C:\Users\fie7ca\Documents\Shortcuts\WhatsApp.lnk"
-            } else {
-                Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\apps do Chrome\WhatsApp Web.lnk"
-            }
-
-            WhatsAppJump_UpdateLoading("⏳ Waiting for WhatsApp...")
-            hwnd := WhatsAppJump_WaitHwnd(30)
-            if !hwnd {
-                WhatsAppJump_HideLoading()
-                ShowCenteredOverlay_Utils("❌ WhatsApp did not start in time.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            if !WhatsAppJump_ActivateHwnd(hwnd, 5) {
-                WhatsAppJump_HideLoading()
-                ShowCenteredOverlay_Utils("❌ Could not activate WhatsApp.", 2000, BANNER_ACCENT_ERROR)
-                return false
-            }
-            WhatsAppJump_SetCachedHwnd(hwnd)
         }
 
-        ; Cold: 45s / streak 8 / settle 600.
-        ; Warm + fastpath: 3s / streak 1 / no settle. Warm legacy: 8s / streak 2 / settle 600.
+        ; Legacy path only (WHATSAPP_JUMP_WARM_FASTPATH := false).
         if (didColdStart) {
             timeoutMs := 45000
             neededStreak := 8
             settleMs := 600
-        } else if (WHATSAPP_JUMP_WARM_FASTPATH) {
-            timeoutMs := 3000
-            neededStreak := 1
-            settleMs := 0
         } else {
             timeoutMs := 8000
             neededStreak := 2
@@ -435,7 +461,6 @@ WhatsAppJump_ActivateOrOpen() {
             ShowCenteredOverlay_Utils("❌ WhatsApp UI did not become ready in time.", 2500, BANNER_ACCENT_ERROR)
             return false
         }
-        WhatsAppJump_HideLoading()
         return true
     } finally {
         SetTitleMatchMode(prevTitleMode)
@@ -446,7 +471,8 @@ WhatsAppJump_ActivateOrOpen() {
 ; keepBarVisible: when true (D2C [Z]), leave the Loading Indication up for the caller to continue/hide.
 ; After Enter, requires composer focus ("Type a message to …"); retries search→paste→Enter up to 3 times.
 WhatsAppJumpToChat(contact, keepBarVisible := false) {
-    WhatsAppJump_ShowLoading("⏳ Opening WhatsApp...")
+    global WHATSAPP_JUMP_LAST_WAS_COLD
+    WhatsAppJump_ShowLoading("⏳ Activating WhatsApp...")
     if (!WhatsAppJump_ActivateOrOpen())
         return false
 
@@ -462,11 +488,13 @@ WhatsAppJumpToChat(contact, keepBarVisible := false) {
         Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
 
         hwnd := WhatsAppJump_FindHwnd()
-        ; ActivateOrOpen already left WhatsApp foreground when possible — re-activate only if needed.
         if (hwnd > 0 && !WinActive("ahk_id " hwnd)) {
             WhatsAppJump_UpdateLoading("⏳ Focusing WhatsApp...")
             WhatsAppJump_ActivateHwnd(hwnd, 2)
         }
+
+        ; Cold hydrate needs a longer search spam window; warm can be shorter.
+        searchTimeoutMs := WHATSAPP_JUMP_LAST_WAS_COLD ? 30000 : 12000
 
         maxAttempts := 3
         loop maxAttempts {
@@ -475,15 +503,15 @@ WhatsAppJumpToChat(contact, keepBarVisible := false) {
                 WhatsAppJump_UpdateLoading("⏳ Retrying jump (" attempt "/" maxAttempts ")...")
                 Send "{Escape}"
                 Sleep 150
+                hwnd := WhatsAppJump_FindHwnd()
                 if (hwnd > 0 && !WinActive("ahk_id " hwnd)) {
                     WhatsAppJump_ActivateHwnd(hwnd, 2)
                 }
             }
 
-            ; Hammer search (!k = Shift+S remap) until the real search field is focused
-            ; (not the chat composer Edit — that was a false positive).
+            ; Hammer search (!k = Shift+S remap) until the real search field is focused.
             WhatsAppJump_UpdateLoading("⏳ Opening search...")
-            if (!WhatsAppJump_OpenSearchUntilFocused(hwnd)) {
+            if (!WhatsAppJump_OpenSearchUntilFocused(hwnd, searchTimeoutMs)) {
                 if (attempt = maxAttempts) {
                     WhatsAppJump_HideLoading()
                     ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp search.", 2500, BANNER_ACCENT_ERROR)
@@ -514,7 +542,6 @@ WhatsAppJumpToChat(contact, keepBarVisible := false) {
             WhatsAppJump_UpdateLoading("⏳ Opening chat...")
             Send "{Enter}"
 
-            ; Quality gate: cursor must land in message composer before caller pastes (e.g. D2C [Z]).
             if (WhatsAppJump_WaitComposerEditFocused(1200, 40)) {
                 if (!keepBarVisible)
                     WhatsAppJump_HideLoading()
