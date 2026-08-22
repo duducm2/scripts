@@ -15,7 +15,7 @@ Palace_ShowStudies() {
     g_PalaceGui.Add("Text", "x12 y10 w860",
         "[A]/Insert add   [E] edit   Delete   Backspace menu")
     g_PalaceStudyLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
-        ["Title", "Slug", "Notes path", "Order", "Active"])
+        ["Title", "Notes path", "Order", "Active"])
     g_PalaceStudyLv.OnEvent("DoubleClick", (*) => Palace_StudyEdit())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
@@ -40,10 +40,10 @@ Palace_StudyRefresh() {
     g_PalaceStudyRows := []
     for s in rows {
         g_PalaceStudyRows.Push(s)
-        g_PalaceStudyLv.Add("", s["title"], s["slug"], s["notes_rel_path"],
+        g_PalaceStudyLv.Add("", s["title"], s["notes_rel_path"],
             s["sort_order"], s["active"])
     }
-    loop 5
+    loop 4
         g_PalaceStudyLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -103,9 +103,7 @@ Palace_StudyForm(existing) {
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Title")
     eTitle := g.Add("Edit", "w320", isEdit ? existing["title"] : "")
-    g.Add("Text", "y+8", "Slug (folder under notes/studies)")
-    eSlug := g.Add("Edit", "w320", isEdit ? existing["slug"] : "")
-    g.Add("Text", "y+8", "Notes relative path (usually same as slug)")
+    g.Add("Text", "y+8", "Notes relative path (folder under notes/studies)")
     ePath := g.Add("Edit", "w320", isEdit ? existing["notes_rel_path"] : "")
     g.Add("Text", "y+8", "Sort order")
     eOrder := g.Add("Edit", "w80", isEdit ? existing["sort_order"] : "1")
@@ -124,22 +122,18 @@ Palace_StudyForm(existing) {
 
     SaveStudy(*) {
         title := Trim(eTitle.Value)
-        slug := Trim(eSlug.Value)
-        if (title = "" || slug = "") {
-            Palace_Alert("Title and slug are required.", "Studies")
+        npath := Trim(ePath.Value)
+        if (title = "" || npath = "") {
+            Palace_Alert("Title and notes path are required.", "Studies")
             return
         }
-        npath := Trim(ePath.Value)
-        if (npath = "")
-            npath := slug
         studies := Palace_Load("studies")
         row := Map(
-            "id", isEdit ? existing["id"] : Palace_SlugId("STUDY_", slug, studies),
-        "slug", slug,
-        "title", title,
-        "notes_rel_path", npath,
-        "sort_order", Trim(eOrder.Value),
-        "active", chk.Value ? "1" : "0"
+            "id", isEdit ? existing["id"] : Palace_SlugId("STUDY_", npath, studies),
+            "title", title,
+            "notes_rel_path", npath,
+            "sort_order", Trim(eOrder.Value),
+            "active", chk.Value ? "1" : "0"
         )
         if (isEdit) {
             out := []

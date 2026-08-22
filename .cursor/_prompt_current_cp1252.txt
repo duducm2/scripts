@@ -1,0 +1,21 @@
+Name='ï¿½ Grammar & Spelling Corrector
+Name==ï¿½2ï¿½ Convert to Task
+Name=>ï¿½ï¿½ AI Text Optimizer
+Name==ï¿½ï¿½ï¿½ Summarize for Handoff
+Name==ï¿½ï¿½ï¿½ Creating mnemonic stories
+Name=<Ø¬ï¿½ Transcript Youtube Video
+Name==ï¿½ï¿½ï¿½ Story reduction
+Name=>ï¿½ï¿½ï¿½ Punctual beast append
+Name==ï¿½ï¿½ï¿½ï¿½ Preserve background for image generation
+Name==ï¿½ï¿½ï¿½ PPT stage 1: content to slides CSV
+Name=>ï¿½ï¿½ï¿½ PPT stage 2: slides to elements CSV
+Name==ï¿½ï¿½ï¿½ Prototype stage 1: content to screens CSV
+Name=>ï¿½ï¿½ï¿½ Prototype stage 2: screens to elements CSV
+Name=<Ø¨ï¿½ Bosch brand-compliant image
+Name==ï¿½ï¿½ï¿½ Fill CSV from unstructured text
+Name==ï¿½ï¿½ï¿½ ClipAngel .cac export
+Name==ï¿½ï¿½ï¿½ How-to steps CSV
+Name=Finance daily transactions
+Name=Finance monthly investments
+Name=Finance evaluate and advice
+Name=Memory Palace atoms CSV import

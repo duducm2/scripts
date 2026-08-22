@@ -1,0 +1,18 @@
+=== a39a3316 bytes=4868 first3=b'\xff\xfe[' ===
+
+=== 1663978d bytes=4892 first3=b'[\x00P' ===
+
+=== 778c8208 bytes=6802 first3=b'\xff\xfe[' ===
+
+=== 9216bb89 bytes=7114 first3=b'\xff\xfe[' ===
+
+=== b40a0183 bytes=7714 first3=b'\xff\xfe[' ===
+
+=== 964e9c71 bytes=7352 first3=b'\xff\xfe[' ===
+
+=== e9a422c0 bytes=8522 first3=b'[\x00P' ===
+
+=== dd461b9e bytes=9784 first3=b'[\x00P' ===
+
+=== 147c9fc4 bytes=5106 first3=b'\xff\xfe[' ===
+

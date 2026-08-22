@@ -1,0 +1,21 @@
+1	'� Grammar & Spelling Corrector	assets\prompt\grammar.txt
+2	=�2� Convert to Task	assets\prompt\mtask.txt
+3	>�� AI Text Optimizer	assets\prompt\aiopt.txt
+r	=��� Summarize for Handoff	assets\prompt\handoff-summary.txt
+4	=��� Creating mnemonic stories	story-prompt.txt
+5	<ج� Transcript Youtube Video	video-transcription-prompt.txt
+a	=��� Story reduction	story-reduction-prompt.txt
+p	>��� Punctual beast append	punctual-beast-append-prompt.txt
+g	=���� Preserve background for image gen	image-background-preservation-prompt.txt
+s	=��� PPT stage 1: content to slides CSV	assets\prompt\ppt-content-to-slides-csv.txt
+i	>��� PPT stage 2: slides to elements CSV	assets\prompt\ppt-slides-to-elements-csv.txt
+w	=��� Prototype stage 1: content to scree	assets\prompt\proto-content-to-screens-csv.txt
+f	>��� Prototype stage 2: screens to eleme	assets\prompt\proto-screens-to-elements-csv.txt
+q	<ب� Bosch brand-compliant image	assets\prompt\bosch-brand-image.txt
+t	=��� Fill CSV from unstructured text	assets\prompt\unstructured-to-csv.txt
+c	=��� ClipAngel .cac export	assets\prompt\clipangel-cac.txt
+h	=��� How-to steps CSV	assets\prompt\howto-steps-csv.txt
+d	Finance daily transactions	assets\prompt\finance-daily-transactions.txt
+m	Finance monthly investments	assets\prompt\finance-monthly-investments.txt
+v	Finance evaluate and advice	assets\prompt\finance-evaluate-advice.txt
+k	Memory Palace atoms CSV import	assets\prompt\mnemonic-atoms-import.txt

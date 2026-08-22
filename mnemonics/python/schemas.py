@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-STUDIES_HEADERS = ["id", "slug", "title", "notes_rel_path", "sort_order", "active"]
+STUDIES_HEADERS = ["id", "title", "notes_rel_path", "sort_order", "active"]
 PALACES_HEADERS = [
     "id",
     "study_id",

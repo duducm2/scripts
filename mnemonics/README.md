@@ -45,6 +45,8 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 `palaces.csv` columns: `id`, `study_id`, `palace_number`, `title`, `character_name`, `image_rel_path`, `depth_slots_used`, `image_prompt`.
 
+`studies.csv` columns: `id`, `title`, `notes_rel_path`, `sort_order`, `active` (no separate slug; folder key is `notes_rel_path`).
+
 `image_rel_path` is a relative path to the palace composite image. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `studies/technique/characters.json`, `bestiary.json`.
 
 `beasts.csv` FK is `palace_id` (row ids use `PALACE_*`).

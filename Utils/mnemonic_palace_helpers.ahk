@@ -269,7 +269,7 @@ Palace_WriteCsv(fileName, rows, headers) {
 Palace_Headers(kind) {
     switch kind {
         case "studies":
-            return ["id", "slug", "title", "notes_rel_path", "sort_order", "active"]
+            return ["id", "title", "notes_rel_path", "sort_order", "active"]
         case "palaces":
             return ["id", "study_id", "palace_number", "title", "character_name", "image_rel_path", "depth_slots_used",
                 "image_prompt"]
@@ -590,7 +590,7 @@ Palace_PickStudy() {
     for s in studies {
         if (s.Has("active") && s["active"] = "0")
             continue
-        labels.Push(s["title"] . " (" . s["slug"] . ")")
+        labels.Push(s["title"] . " (" . s["notes_rel_path"] . ")")
         values.Push(s["id"])
     }
     return Palace_PickList("Pick study", labels, values)

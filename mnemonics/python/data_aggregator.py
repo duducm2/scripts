@@ -129,7 +129,6 @@ def snapshot(
         study_cards.append(
             {
                 "id": sid,
-                "slug": study.get("slug", ""),
                 "title": study.get("title", ""),
                 "notes_rel_path": study.get("notes_rel_path", ""),
                 "palace_count": len(palace_cards),
@@ -147,7 +146,11 @@ def snapshot(
         },
         "issues": issues,
         "all_studies": [
-            {"id": s["id"], "title": s.get("title", ""), "slug": s.get("slug", "")}
+            {
+                "id": s["id"],
+                "title": s.get("title", ""),
+                "notes_rel_path": s.get("notes_rel_path", ""),
+            }
             for s in data["studies"]
             if s.get("active", "1") != "0"
         ],

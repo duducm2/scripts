@@ -1,0 +1,80 @@
+[Prompt_1]
+Name=✏️ Grammar & Spelling Corrector
+Char=1
+FilePath=assets\prompt\grammar.txt
+[Prompt_2]
+Name=🔲 Convert to Task
+Char=2
+FilePath=assets\prompt\mtask.txt
+[Prompt_3]
+Name=🤖 AI Text Optimizer
+Char=3
+FilePath=assets\prompt\aiopt.txt
+[Prompt_4]
+Name=📝 Summarize for Handoff
+Char=r
+FilePath=assets\prompt\handoff-summary.txt
+[Prompt_5]
+Name=📖 Creating mnemonic stories
+Char=4
+FilePath=story-prompt.txt
+[Prompt_6]
+Name=🎬 Transcript Youtube Video
+Char=5
+FilePath=video-transcription-prompt.txt
+[Prompt_7]
+Name=📝 Story reduction
+Char=a
+FilePath=story-reduction-prompt.txt
+[Prompt_8]
+Name=🧩 Punctual beast append
+Char=p
+FilePath=punctual-beast-append-prompt.txt
+[Prompt_9]
+Name=🛡️ Preserve background for image generation
+Char=g
+FilePath=image-background-preservation-prompt.txt
+[Prompt_10]
+Name=📊 PPT stage 1: content to slides CSV
+Char=s
+FilePath=assets\prompt\ppt-content-to-slides-csv.txt
+[Prompt_11]
+Name=🧩 PPT stage 2: slides to elements CSV
+Char=i
+FilePath=assets\prompt\ppt-slides-to-elements-csv.txt
+[Prompt_12]
+Name=📱 Prototype stage 1: content to screens CSV
+Char=w
+FilePath=assets\prompt\proto-content-to-screens-csv.txt
+[Prompt_13]
+Name=🧩 Prototype stage 2: screens to elements CSV
+Char=f
+FilePath=assets\prompt\proto-screens-to-elements-csv.txt
+[Prompt_14]
+Name=🎨 Bosch brand-compliant image
+Char=q
+FilePath=assets\prompt\bosch-brand-image.txt
+[Prompt_15]
+Name=📋 Fill CSV from unstructured text
+Char=t
+FilePath=assets\prompt\unstructured-to-csv.txt
+[Prompt_16]
+Name=📎 ClipAngel .cac export
+Char=c
+FilePath=assets\prompt\clipangel-cac.txt
+[Prompt_17]
+Name=📝 How-to steps CSV
+Char=h
+FilePath=assets\prompt\howto-steps-csv.txt
+[Prompt_18]
+Name=Finance daily transactions
+Char=d
+FilePath=assets\prompt\finance-daily-transactions.txt
+[Prompt_19]
+Name=Finance monthly investments
+Char=m
+FilePath=assets\prompt\finance-monthly-investments.txt
+[Prompt_20]
+Name=Finance evaluate and advice
+Char=v
+FilePath=assets\prompt\finance-evaluate-advice.txt

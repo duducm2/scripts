@@ -116,7 +116,7 @@ Palace_ShowImportMenu() {
     items := [
         ["1", "Import atoms", "PALACE_ATOMS*.csv — knowledge atoms"],
         ["2", "Import beasts", "PALACE_BEASTS*.csv — peg holders"],
-        ["3", "Import palaces", "PALACE_PALACES*.csv (legacy PALACE_STREETS* OK)"],
+        ["3", "Import palaces", "PALACE_PALACES*.csv — Memory Palaces (legacy STREETS OK)"],
         ["4", "Import any", "Newest PALACE_*.csv (auto-detect)"]
     ]
     y := 80

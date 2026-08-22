@@ -75,7 +75,8 @@ def load_character_names(technique_dir: Path) -> list[str]:
     if not path.exists():
         return []
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
+        data, _ = json.JSONDecoder().raw_decode(text.lstrip())
     except Exception:
         return []
     names: list[str] = []
@@ -383,7 +384,9 @@ def migrate(
         study_order += 1
         study_id = f"STUDY_{slugify(folder)}"
         # Reuse study if same folder already migrated (multiple files unlikely)
-        existing_study = next((s for s in studies if s["slug"] == folder), None)
+        existing_study = next(
+            (s for s in studies if s.get("notes_rel_path") == folder), None
+        )
         if existing_study:
             study_id = existing_study["id"]
             report.append(f"Append to study {study_id} from {md_path}")
@@ -398,7 +401,6 @@ def migrate(
             studies.append(
                 {
                     "id": study_id,
-                    "slug": folder,
                     "title": title,
                     "notes_rel_path": folder,
                     "sort_order": str(study_order),

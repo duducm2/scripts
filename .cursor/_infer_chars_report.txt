@@ -1,0 +1,21 @@
+﻿characters_canon=658
+assigned=29 still_unassigned=41 dry_run=False
+OPEN PALACE_AI_01 (no match in MD)
+py : Traceback (most recent call last):
+No C:\Users\eduev\AppData\Local\Temp\ps-script-eb4856e7-4b52-46f2-a6ee-1ad8b3504a01.ps1:86 caractere:1
++ py -3 mnemonics\python\infer_palace_characters.py --data-dir mnemonic ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\python\infer_palace_characters.py", line 150, in 
+<module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\python\infer_palace_characters.py", line 145, in main
+    print(line)
+    ~~~~~^^^^^^
+  File "C:\Users\eduev\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 16: character maps to <undefined>

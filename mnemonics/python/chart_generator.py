@@ -96,7 +96,7 @@ def build_html(snap: dict) -> str:
                      style="display:{'block' if study['id'] == selected or (not selected and cards and study is cards[0]) else 'none'}">
               <header class="study-head">
                 <h2>{html.escape(study["title"])}</h2>
-                <p>{study.get("palace_count", 0)} Memory Palaces · slug {html.escape(study.get("slug", ""))} · newest first</p>
+                <p>{study.get("palace_count", 0)} Memory Palaces · newest first</p>
               </header>
               <div class="grid">
                 {''.join(palace_html) if palace_html else '<p class="empty">No Memory Palaces yet.</p>'}
@@ -385,7 +385,7 @@ def build_html(snap: dict) -> str:
     .practice {{
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 1.35rem;
     }}
     .practice h3 {{
       margin: 0;
@@ -449,7 +449,7 @@ def build_html(snap: dict) -> str:
   <main>
     {''.join(study_blocks)}
   </main>
-  <footer>Click a Memory Palace for fullscreen practice. Latest palace opens the highest palace number.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="overlay" aria-hidden="true">
     <div class="overlay-bar">
@@ -609,15 +609,24 @@ def build_html(snap: dict) -> str:
       }});
     }});
     btnClose.addEventListener('click', closeOverlay);
-    btnLatest.addEventListener('click', () => {{
+    function openLatestPalace() {{
       const studyId = sel ? sel.value : '';
       const palaceId = STUDY_LATEST[studyId];
       if (palaceId) openPalace(palaceId);
-    }});
+    }}
+    btnLatest.addEventListener('click', openLatestPalace);
     document.addEventListener('keydown', (e) => {{
       if (e.key === 'Escape' && overlay.classList.contains('open')) {{
         e.preventDefault();
         closeOverlay();
+        return;
+      }}
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable))
+        return;
+      if (e.key === 'l' || e.key === 'L') {{
+        e.preventDefault();
+        openLatestPalace();
       }}
     }});
 

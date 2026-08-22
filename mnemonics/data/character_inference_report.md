@@ -1,0 +1,50 @@
+# Palace character inference
+
+- Canon characters: 658
+- Assigned: 0
+- Still unassigned: 41
+- Dry run: False
+
+## Log
+
+- OPEN PALACE_AI_01 (no match)
+- OPEN PALACE_COMMUNICATIO_01 (no match)
+- OPEN PALACE_COMMUNICATIO_02 (no match)
+- OPEN PALACE_COMMUNICATIO_03 (no match)
+- OPEN PALACE_ENGLISH_01 (no match)
+- OPEN PALACE_ENGLISH_02 (no match)
+- OPEN PALACE_ENGLISH_03 (no match)
+- OPEN PALACE_ENGLISH_04 (no match)
+- OPEN PALACE_ENGLISH_05 (no match)
+- OPEN PALACE_ENGLISH_06 (no match)
+- OPEN PALACE_ENGLISH_08 (no match)
+- OPEN PALACE_ENGLISH_09 (no match)
+- OPEN PALACE_ENGLISH_10 (no match)
+- OPEN PALACE_ENGLISH_12 (no match)
+- OPEN PALACE_ENGLISH_13 (no match)
+- OPEN PALACE_ENGLISH_14 (no match)
+- OPEN PALACE_ENGLISH_15 (no match)
+- OPEN PALACE_ENGLISH_16 (no match)
+- OPEN PALACE_ENGLISH_17 (no match)
+- OPEN PALACE_ENGLISH_18 (no match)
+- OPEN PALACE_GERMAN_04 (no match)
+- OPEN PALACE_GERMAN_07 (no match)
+- OPEN PALACE_GERMAN_08 (no match)
+- OPEN PALACE_PIANO_06 (no match)
+- OPEN PALACE_PIANO_07 (no match)
+- OPEN PALACE_PIANO_09 (no match)
+- OPEN PALACE_SCIENCE_04 (no match)
+- OPEN PALACE_SCIENCE_07 (no match)
+- OPEN PALACE_SCIENCE_08 (no match)
+- OPEN PALACE_SCIENCE_09 (no match)
+- OPEN PALACE_SCIENCE_11 (no match)
+- OPEN PALACE_SCIENCE_12 (no match)
+- OPEN PALACE_SCIENCE_14 (no match)
+- OPEN PALACE_SKILLS_01 (no match)
+- OPEN PALACE_SKILLS_02 (no match)
+- OPEN PALACE_SKILLS_03 (no match)
+- OPEN PALACE_SKILLS_04 (no match)
+- OPEN PALACE_SKILLS_05 (no match)
+- OPEN PALACE_TAOISM_01 (no match)
+- OPEN PALACE_TAOISM_02 (no match)
+- OPEN PALACE_TAOISM_04 (no match)

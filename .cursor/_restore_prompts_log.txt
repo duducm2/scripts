@@ -1,0 +1,22 @@
+RESTORE char=1 file=assets\prompt\grammar.txt -> ✏️ Grammar & Spelling Corrector
+RESTORE char=2 file=assets\prompt\mtask.txt -> 🔲 Convert to Task
+RESTORE char=3 file=assets\prompt\aiopt.txt -> 🤖 AI Text Optimizer
+RESTORE char=r file=assets\prompt\handoff-summary.txt -> 📝 Summarize for Handoff
+RESTORE char=4 file=story-prompt.txt -> 📖 Creating mnemonic stories
+RESTORE char=5 file=video-transcription-prompt.txt -> 🎬 Transcript Youtube Video
+RESTORE char=a file=story-reduction-prompt.txt -> 📝 Story reduction
+RESTORE char=p file=punctual-beast-append-prompt.txt -> 🧩 Punctual beast append
+RESTORE char=g file=image-background-preservation-prompt.txt -> 🛡️ Preserve background for image generation
+RESTORE char=s file=assets\prompt\ppt-content-to-slides-csv.txt -> 📊 PPT stage 1: content to slides CSV
+RESTORE char=i file=assets\prompt\ppt-slides-to-elements-csv.txt -> 🧩 PPT stage 2: slides to elements CSV
+RESTORE char=w file=assets\prompt\proto-content-to-screens-csv.txt -> 📱 Prototype stage 1: content to screens CSV
+RESTORE char=f file=assets\prompt\proto-screens-to-elements-csv.txt -> 🧩 Prototype stage 2: screens to elements CSV
+RESTORE char=q file=assets\prompt\bosch-brand-image.txt -> 🎨 Bosch brand-compliant image
+RESTORE char=t file=assets\prompt\unstructured-to-csv.txt -> 📋 Fill CSV from unstructured text
+RESTORE char=c file=assets\prompt\clipangel-cac.txt -> 📎 ClipAngel .cac export
+RESTORE char=h file=assets\prompt\howto-steps-csv.txt -> 📝 How-to steps CSV
+RESTORE char=d file=assets\prompt\finance-daily-transactions.txt -> Finance daily transactions
+RESTORE char=m file=assets\prompt\finance-monthly-investments.txt -> Finance monthly investments
+RESTORE char=v file=assets\prompt\finance-evaluate-advice.txt -> Finance evaluate and advice
+KEEP no-hist char=k name='Memory Palace atoms CSV import'
+DONE restored=20

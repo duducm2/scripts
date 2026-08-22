@@ -6,6 +6,12 @@
 Palace_ShowHelp() {
     global g_PalaceGui
     Palace_CloseGui()
+    MonitorGetWorkArea(MonitorGetPrimary(), &L, &T, &R, &B)
+    maxH := Max(320, Integer((B - T) * 0.8))
+    winW := 680
+    winH := maxH
+    bodyH := Max(160, winH - 110)
+
     g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Glossary")
     g_PalaceGui.SetFont("s10", "Segoe UI")
     g_PalaceGui.BackColor := "1E1E1E"
@@ -14,23 +20,24 @@ Palace_ShowHelp() {
     g_PalaceGui.Add("Text", "x16 y36 w640",
         "Software model only. Technique rules stay in notes/studies/technique/README.md.")
 
-    y := 64
+    body := ""
     for term in Palace_Terms() {
-        g_PalaceGui.SetFont("s11 cF1C40F Bold", "Segoe UI")
-        g_PalaceGui.Add("Text", "x16 y" . y . " w640", term[1])
-        y += 22
-        g_PalaceGui.SetFont("s9 cE0E0E0 Norm", "Segoe UI")
-        g_PalaceGui.Add("Text", "x16 y" . y . " w640 Wrap", term[2])
-        y += 48
+        if (body != "")
+            body .= "`r`n`r`n"
+        body .= term[1] . "`r`n" . term[2]
+    }
+    edit := g_PalaceGui.Add("Edit", "x16 y64 w640 h" . bodyH . " ReadOnly -WantReturn +VScroll Multi", body)
+    try edit.SetFont("s10", "Segoe UI")
+    catch {
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x16 y" . y . " w640", "Esc / Backspace — return to main menu")
+    g_PalaceGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w640", "Esc / Backspace — return to main menu")
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
     Palace_BindHotkeys([
         ["Backspace", (*) => Palace_ShowMainMenu()],
         ["Escape", (*) => Palace_ShowMainMenu()]
     ])
-    Palace_CenterGui(g_PalaceGui, 680, y + 50)
+    Palace_CenterGui(g_PalaceGui, winW, winH)
 }

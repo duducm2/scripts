@@ -7,6 +7,7 @@
 global g_PromptEntries := []
 global g_PromptDataCacheReady := false
 global g_PromptDataCacheMtime := ""
+global g_PromptIniSections := false
 
 PromptData_IniPath() {
     return A_ScriptDir "\assets\data\prompts.ini"
@@ -372,13 +373,108 @@ PromptData_ContextFilesForCurrentEnv(prompt) {
     return paths
 }
 
-PromptData_ReadIniRaw(iniPath, section, key) {
-    raw := ""
-    try raw := IniRead(iniPath, section, key, "")
-    catch {
-        raw := ""
+PromptData_ReadUtf8(path) {
+    ; RawRead + StrGet decodes 4-byte emoji correctly; FileOpen "UTF-8" can corrupt them.
+    if (!FileExist(path))
+        return ""
+    try {
+        f := FileOpen(path, "r")
+        if (!f)
+            return ""
+        size := f.Length
+        if (size <= 0) {
+            f.Close()
+            return ""
+        }
+        buf := Buffer(size)
+        f.RawRead(buf, size)
+        f.Close()
+        text := StrGet(buf, "UTF-8")
+        if (SubStr(text, 1, 1) = Chr(0xFEFF))
+            text := SubStr(text, 2)
+        return text
+    } catch {
+        return ""
     }
-    return PromptData_NormalizeIniValue(raw)
+}
+
+PromptData_WriteUtf8(path, content) {
+    ; Prefer FileAppend UTF-8 (writes BOM). Avoid FileOpen "w","UTF-8" edge cases.
+    try {
+        if (SubStr(content, 1, 1) = Chr(0xFEFF))
+            content := SubStr(content, 2)
+        if (FileExist(path)) {
+            try FileDelete(path)
+            catch {
+            }
+        }
+        FileAppend(content, path, "UTF-8")
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Parse simple INI into Map(section -> Map(key -> value)). Values keep raw text after first '='.
+PromptData_ParseIniText(text) {
+    sections := Map()
+    section := ""
+    text := StrReplace(StrReplace(text, "`r`n", "`n"), "`r", "`n")
+    for line in StrSplit(text, "`n") {
+        t := Trim(line)
+        if (t = "" || SubStr(t, 1, 1) = ";" || SubStr(t, 1, 1) = "#")
+            continue
+        if (SubStr(t, 1, 1) = "[" && SubStr(t, -1) = "]") {
+            section := SubStr(t, 2, StrLen(t) - 2)
+            if (!sections.Has(section))
+                sections[section] := Map()
+            continue
+        }
+        if (section = "")
+            continue
+        eq := InStr(line, "=")
+        if (!eq)
+            continue
+        key := Trim(SubStr(line, 1, eq - 1))
+        val := SubStr(line, eq + 1)
+        sections[section][key] := val
+    }
+    return sections
+}
+
+PromptData_IniGet(sections, section, key, default := "") {
+    if (!IsObject(sections) || !sections.Has(section))
+        return default
+    m := sections[section]
+    if (!m.Has(key))
+        return default
+    return m[key]
+}
+
+PromptData_EscapeIniValue(val) {
+    return val
+}
+
+PromptData_DisplayName(name) {
+    ; Keep valid emoji. Only strip a broken prefix when decode clearly failed.
+    n := Trim(name)
+    if (n = "")
+        return n
+    if (InStr(n, Chr(0xFFFD)) || RegExMatch(n, "^[=<>']"))
+        return Trim(RegExReplace(n, "^[^A-Za-z0-9]+", ""))
+    return n
+}
+
+PromptData_ReadIniRaw(iniPath, section, key) {
+    ; Prefer in-memory parse when Load already cached sections; else read file.
+    global g_PromptIniSections
+    if (IsObject(g_PromptIniSections))
+        return PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, key, ""))
+    text := PromptData_ReadUtf8(iniPath)
+    if (text = "")
+        return ""
+    sections := PromptData_ParseIniText(text)
+    return PromptData_NormalizeIniValue(PromptData_IniGet(sections, section, key, ""))
 }
 
 PromptData_ReadContextFilesKey(iniPath, section, key) {
@@ -393,10 +489,16 @@ PromptData_ReadContextEntries(iniPath, section, prefix) {
 }
 
 PromptData_WriteContextEntries(iniPath, section, prefix, entries) {
+    ; Used only when building Save text via PromptData_AppendContextLines.
     list := PromptData_ParseContextEntries(entries)
-    IniWrite(PromptData_JoinContextPaths(list), iniPath, section, prefix . "ContextFiles")
-    IniWrite(PromptData_JoinContextCompact(list), iniPath, section, prefix . "ContextCompact")
-    IniWrite(PromptData_JoinContextCsvKeep(list), iniPath, section, prefix . "ContextCsvKeep")
+    return list
+}
+
+PromptData_AppendContextLines(lines, prefix, entries) {
+    list := PromptData_ParseContextEntries(entries)
+    lines.Push(prefix . "ContextFiles=" . PromptData_JoinContextPaths(list))
+    lines.Push(prefix . "ContextCompact=" . PromptData_JoinContextCompact(list))
+    lines.Push(prefix . "ContextCsvKeep=" . PromptData_JoinContextCsvKeep(list))
 }
 
 PromptData_ParseTags(raw) {
@@ -499,10 +601,11 @@ PromptData_NormalizeEntry(prompt) {
 }
 
 PromptData_Invalidate() {
-    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
+    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime, g_PromptIniSections
     g_PromptEntries := []
     g_PromptDataCacheReady := false
     g_PromptDataCacheMtime := ""
+    g_PromptIniSections := false
 }
 
 PromptData_FileMtime() {
@@ -568,9 +671,9 @@ PromptData_DefaultEntries() {
     return list
 }
 
-; skipMtime: return in-memory cache without FileGetTime/IniRead (hotkey open on Google Drive).
+; skipMtime: return in-memory cache without FileGetTime (hotkey open on Google Drive).
 PromptData_Load(force := false, skipMtime := false) {
-    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
+    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime, g_PromptIniSections
     if (!force && skipMtime && g_PromptDataCacheReady)
         return g_PromptEntries
     path := PromptData_IniPath()
@@ -585,50 +688,31 @@ PromptData_Load(force := false, skipMtime := false) {
 
     list := []
     taken := Map()
+    text := PromptData_ReadUtf8(path)
+    g_PromptIniSections := PromptData_ParseIniText(text)
     if (FileExist(path)) {
         idx := 1
         loop 200 {
             section := "Prompt_" . idx
-            name := ""
-            try name := IniRead(path, section, "Name", "")
-            catch {
+            if (!g_PromptIniSections.Has(section))
                 break
-            }
-            if (name = "ERROR")
-                break
-            charVal := ""
-            category := ""
-            author := ""
-            filePath := ""
-            source := ""
-            tags := ""
-            pasteMode := ""
-            attachAsTxt := ""
-            variables := ""
-            filePathDraft := ""
-            try charVal := IniRead(path, section, "Char", "")
-            try category := IniRead(path, section, "Category", "")
-            try author := IniRead(path, section, "Author", "")
-            try filePath := IniRead(path, section, "FilePath", "")
-            try source := IniRead(path, section, "Source", "")
-            try tags := IniRead(path, section, "Tags", "")
-            try pasteMode := IniRead(path, section, "PasteMode", "")
-            try attachAsTxt := IniRead(path, section, "AttachAsTxt", "0")
-            try variables := IniRead(path, section, "Variables", "")
-            try filePathDraft := IniRead(path, section, "FilePathDraft", "")
+            name := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Name", ""))
+            charVal := StrLower(PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Char", ""
+            )))
+            category := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Category", ""))
+            author := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Author", ""))
+            filePath := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "FilePath", ""))
+            source := StrLower(PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Source",
+                "")))
+            tags := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Tags", ""))
+            pasteMode := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "PasteMode", ""))
+            attachAsTxt := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "AttachAsTxt",
+                "0"))
+            variables := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Variables", ""))
+            filePathDraft := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
+                "FilePathDraft", ""))
             personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
             workFiles := PromptData_ReadContextEntries(path, section, "Work")
-            name := PromptData_NormalizeIniValue(name)
-            charVal := StrLower(PromptData_NormalizeIniValue(charVal))
-            category := PromptData_NormalizeIniValue(category)
-            author := PromptData_NormalizeIniValue(author)
-            filePath := PromptData_NormalizeIniValue(filePath)
-            source := StrLower(PromptData_NormalizeIniValue(source))
-            tags := PromptData_NormalizeIniValue(tags)
-            pasteMode := PromptData_NormalizeIniValue(pasteMode)
-            attachAsTxt := PromptData_NormalizeIniValue(attachAsTxt)
-            variables := PromptData_NormalizeIniValue(variables)
-            filePathDraft := PromptData_NormalizeIniValue(filePathDraft)
             if (name = "" && filePath = "") {
                 idx += 1
                 continue
@@ -657,45 +741,58 @@ PromptData_Load(force := false, skipMtime := false) {
 }
 
 PromptData_Save(list) {
-    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime
+    global g_PromptEntries, g_PromptDataCacheReady, g_PromptDataCacheMtime, g_PromptIniSections
     path := PromptData_IniPath()
     try DirCreate(A_ScriptDir "\assets\data")
     catch {
     }
-    try FileDelete(path)
-    catch {
-    }
     if (!IsObject(list) || list.Length = 0) {
+        try FileDelete(path)
+        catch {
+        }
         g_PromptEntries := []
+        g_PromptIniSections := false
         g_PromptDataCacheReady := true
         g_PromptDataCacheMtime := PromptData_FileMtime()
         return true
     }
     try {
+        lines := []
         idx := 1
         for prompt in list {
-            section := "Prompt_" . idx
             prompt := PromptData_NormalizeEntry(prompt)
-            IniWrite(prompt.HasProp("name") ? prompt.name : "", path, section, "Name")
-            IniWrite(prompt.HasProp("char") ? prompt.char : "", path, section, "Char")
-            IniWrite(prompt.HasProp("category") ? prompt.category : "General", path, section, "Category")
-            IniWrite(prompt.HasProp("author") ? prompt.author : "", path, section, "Author")
-            IniWrite(prompt.HasProp("filePath") ? prompt.filePath : "", path, section, "FilePath")
-            IniWrite(prompt.HasProp("source") ? prompt.source : "file", path, section, "Source")
-            IniWrite(PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : []), path, section, "Tags")
-            IniWrite(prompt.pasteMode, path, section, "PasteMode")
-            IniWrite(prompt.attachAsTxt, path, section, "AttachAsTxt")
-            IniWrite(prompt.variables, path, section, "Variables")
-            IniWrite(prompt.filePathDraft, path, section, "FilePathDraft")
-            PromptData_WriteContextEntries(path, section, "Personal", prompt.personal_context_files)
-            PromptData_WriteContextEntries(path, section, "Work", prompt.work_context_files)
+            if (idx > 1)
+                lines.Push("")
+            lines.Push("[Prompt_" . idx . "]")
+            lines.Push("Name=" . PromptData_EscapeIniValue(prompt.HasProp("name") ? prompt.name : ""))
+            lines.Push("Char=" . PromptData_EscapeIniValue(prompt.HasProp("char") ? prompt.char : ""))
+            lines.Push("Category=" . PromptData_EscapeIniValue(prompt.HasProp("category") ? prompt.category : "General"
+            ))
+            lines.Push("Author=" . PromptData_EscapeIniValue(prompt.HasProp("author") ? prompt.author : ""))
+            lines.Push("FilePath=" . PromptData_EscapeIniValue(prompt.HasProp("filePath") ? prompt.filePath : ""))
+            lines.Push("AttachAsTxt=" . (prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0))
+            lines.Push("Source=" . PromptData_EscapeIniValue(prompt.HasProp("source") ? prompt.source : "file"))
+            lines.Push("Tags=" . PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : []))
+            lines.Push("PasteMode=" . (prompt.HasProp("pasteMode") ? prompt.pasteMode : "default"))
+            lines.Push("Variables=" . (prompt.HasProp("variables") ? prompt.variables : ""))
+            lines.Push("FilePathDraft=" . (prompt.HasProp("filePathDraft") ? prompt.filePathDraft : ""))
+            PromptData_AppendContextLines(lines, "Personal", prompt.personal_context_files)
+            PromptData_AppendContextLines(lines, "Work", prompt.work_context_files)
             idx += 1
+        }
+        content := ""
+        for line in lines
+            content .= line . "`n"
+        if (!PromptData_WriteUtf8(path, content)) {
+            PromptData_Invalidate()
+            return false
         }
     } catch {
         PromptData_Invalidate()
         return false
     }
     g_PromptEntries := list
+    g_PromptIniSections := false
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := PromptData_FileMtime()
     return true
