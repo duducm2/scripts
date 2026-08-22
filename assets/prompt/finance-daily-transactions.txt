@@ -1,17 +1,37 @@
+DELIVERY MANDATE (read first)
+This is NOT a generic "output CSV in chat" task. Deliver one downloadable file only — the human uses automated Quick Download and import. Never paste CSV header or data rows as plain chat text.
+
 Daily transactions — structured extraction
 
 You convert a voice dictation of recent money movements into one CSV file.
 
-OUTPUT
-Delivery (strict priority — chat has no Desktop or disk write access):
+FILE DELIVERY PROTOCOL (mandatory)
+The human has no Desktop or disk write access from chat. Every response must expose a Download / Download code / Export control — not inline CSV.
+
+Delivery priority (strict):
 1. Best: a real downloadable file artifact named exactly FINANCE_DAILY.csv (Canvas, file card, or attachment). The download chip/button label must be FINANCE_DAILY.csv.
-2. Acceptable: the same pure-CSV body as a downloadable file named exactly FINANCE_DAILY.txt (chip label FINANCE_DAILY.txt).
-3. Forbidden as the primary deliverable: claiming or simulating a save to Desktop / any local path; a markdown table; a fenced or “code” / “Download code” block (e.g. gemini-code-….txt). Those are failed delivery — recreate as FINANCE_DAILY.csv (or FINANCE_DAILY.txt).
+2. Acceptable: the same pure-CSV body as a downloadable file named exactly FINANCE_DAILY.txt (chip label FINANCE_DAILY.txt). The human may rename .txt to .csv before import.
+3. Acceptable fallback: a Download code chip (e.g. gemini-code-….txt) when the platform cannot produce a named file card — still a downloadable artifact, not inline text.
+4. Forbidden: inline CSV in chat — raw rows, markdown tables, or "here is your CSV" prose with no download chip.
+5. Forbidden: claiming or simulating a save to Desktop / any local path.
+
+Chat after the file: a short note is optional (coverage / skipped items only). Never put notes or CSV rows inside the chat body.
+
+Failed delivery — redo (do not ask the user to copy from chat):
+- description,amount,type,... rows visible in the chat bubble with no download button
+- Markdown ```csv or ```text blocks without an associated download chip
+- Markdown tables of transactions
+- "I saved FINANCE_DAILY.csv to your Desktop" without a real downloadable artifact
+
+Pre-send self-check (all must pass before you finish):
+1. A Download / Download code / Export control exists for the deliverable.
+2. The visible filename is FINANCE_DAILY.csv or FINANCE_DAILY.txt when the platform allows naming.
+3. Zero CSV data rows appear as plain chat text.
+If any check fails, regenerate as a downloadable artifact.
 
 File body and format:
 - Pure CSV only: first line is the header row below. No preamble, no FILE: line, no markdown, no prose inside the file.
-- After the file, a short note in chat is optional; never put notes inside the CSV. Coverage notes belong only after the file.
-- Ignore prior chat noise about skipped items (e.g. “eraser was skipped”) when producing this turn’s CSV.
+- Ignore prior chat noise about skipped items (e.g. "eraser was skipped") when producing this turn's CSV.
 - Use UTF-8.
 - Use a comma as the field separator.
 - Use a comma as the decimal separator (Brazilian). Quote every amount field.
@@ -22,17 +42,17 @@ COLUMNS (header required)
 description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
 
 RULES
-- Do not include a date column. AutoHotkey stamps every imported row with yesterday’s date at import time. Do not guess or output dates.
+- Do not include a date column. AutoHotkey stamps every imported row with yesterday's date at import time. Do not guess or output dates.
 - amount: always positive. Example: "12,50"
 - type: expense | income | transfer | card_expense
 - Transfers: type=transfer, account_id = source, transfer_account_id = destination. Leave category_id empty for transfers.
-- Credit-card purchases: type=card_expense. Set card_id to the card’s id (e.g. CARD_MP). Set account_id to the card’s linked_account_id from credit_cards.csv (or ACC_MERCADOP if unknown). Leave transfer_account_id empty. Never put an account id in card_id or a card id in transfer_account_id.
+- Credit-card purchases: type=card_expense. Set card_id to the card's id (e.g. CARD_MP). Set account_id to the card's linked_account_id from credit_cards.csv (or ACC_MERCADOP if unknown). Leave transfer_account_id empty. Never put an account id in card_id or a card id in transfer_account_id.
 - Default account: if the speaker omits the account for expense, income, or card_expense, set account_id=ACC_MERCADOP.
 - Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
 
 CATEGORIZATION
 - category_id must be copied exactly from the attached categories.csv. Never invent ids (do not output names like CAT_CUIDADOS_PESSOAIS).
-- category_id must be a main category (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory (e.g. Hairdresser) and its parent’s id in category_id. Never put a subcategory id in category_id.
+- category_id must be a main category (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory (e.g. Hairdresser) and its parent's id in category_id. Never put a subcategory id in category_id.
 - Map by meaning, not only exact word matches.
 - Examples: haircut/barber → category_id=CAT_BELEZA, subcategory=Hairdresser; shampoo/soap → category_id=CAT_MERCADO, subcategory=Personal care; banana → category_id=CAT_MERCADO, subcategory=Produce.
 - Prefer a specific subcategory when one fits. Do not leave category_id blank when a clear fit exists.
@@ -51,4 +71,11 @@ Use categories.csv / accounts.csv / credit_cards.csv for id mapping. Use the INI
 
 DICTATION
 Paste the raw dictation below this line.
+
+Reminder: deliver FINANCE_DAILY.csv (or .txt) as a downloadable file — never inline CSV.
 ---
+Human reminders (for the person sending this prompt — do not include in AI output):
+
+After the AI responds:
+- Run Quick Download (Win+Alt+Shift+9) or Finance import from the launcher
+- If the file is FINANCE_DAILY.txt or gemini-code-….txt: rename to .csv on Desktop if needed before import
