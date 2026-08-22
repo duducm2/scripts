@@ -1,4 +1,5 @@
 """Load and aggregate Memory Palace CSV data."""
+
 from __future__ import annotations
 
 import csv
@@ -31,7 +32,7 @@ def _write_csv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> No
 def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
     return {
         kind: _read_csv(data_dir / f"{kind}.csv")
-        for kind in ("studies", "streets", "beasts", "atoms")
+        for kind in ("studies", "palaces", "beasts", "atoms")
     }
 
 
@@ -48,7 +49,9 @@ def resolve_image(notes_root: Path | None, image_rel: str) -> Path | None:
         return p
     if notes_root is None:
         return None
-    cand = notes_root / Path(image_rel.replace("/", "\\") if "\\" in image_rel else image_rel)
+    cand = notes_root / Path(
+        image_rel.replace("/", "\\") if "\\" in image_rel else image_rel
+    )
     # Path handles both separators on Windows
     cand = notes_root / image_rel.replace("\\", "/")
     if cand.exists():
@@ -70,36 +73,57 @@ def snapshot(
     if study_id:
         studies = [s for s in studies if s.get("id") == study_id] or studies
 
-    streets = data["streets"]
+    palaces = data["palaces"]
     beasts = data["beasts"]
     atoms = data["atoms"]
 
-    issues = validate_dataset(data["studies"], streets, beasts, atoms)
+    issues = validate_dataset(data["studies"], palaces, beasts, atoms)
 
     study_cards: list[dict[str, Any]] = []
     for study in studies:
         sid = study["id"]
-        study_streets = [st for st in streets if st.get("study_id") == sid]
-        street_cards: list[dict[str, Any]] = []
-        for st in sorted(study_streets, key=lambda x: int(x.get("street_number") or 0)):
+        study_palaces = [st for st in palaces if st.get("study_id") == sid]
+        palace_cards: list[dict[str, Any]] = []
+        for st in sorted(
+            study_palaces, key=lambda x: int(x.get("palace_number") or 0), reverse=True
+        ):
             st_id = st["id"]
-            st_beasts = [b for b in beasts if b.get("street_id") == st_id]
-            atom_count = sum(
-                1 for a in atoms if any(b["id"] == a.get("beast_id") for b in st_beasts)
-            )
+            st_beasts = [b for b in beasts if b.get("palace_id") == st_id]
+            palace_atoms: list[dict[str, Any]] = []
+            for b in sorted(st_beasts, key=lambda x: int(x.get("sort_order") or 0)):
+                for a in atoms:
+                    if a.get("beast_id") != b["id"]:
+                        continue
+                    palace_atoms.append(
+                        {
+                            "id": a.get("id", ""),
+                            "kind": a.get("kind", ""),
+                            "zone": a.get("zone", ""),
+                            "zone_label": a.get("zone_label", ""),
+                            "concept": a.get("concept", a.get("context", "")),
+                            "quote": a.get("quote", ""),
+                            "story": a.get("story", a.get("narrative", "")),
+                            "sensory": a.get("sensory", a.get("sensory_channel", "")),
+                            "beast": f"[{b.get('peg_code', '')}] {b.get('beast_name', '')}".strip(),
+                            "sort_order": a.get("sort_order", ""),
+                        }
+                    )
+            atom_count = len(palace_atoms)
             img_path = resolve_image(notes_root, st.get("image_rel_path", ""))
-            street_cards.append(
+            palace_cards.append(
                 {
                     "id": st_id,
-                    "number": st.get("street_number", ""),
+                    "number": st.get("palace_number", ""),
                     "title": st.get("title", ""),
                     "character": st.get("character_name", ""),
                     "image_rel": st.get("image_rel_path", ""),
                     "image_abs": str(img_path) if img_path else "",
                     "image_exists": bool(img_path),
+                    "image_prompt": st.get("image_prompt", ""),
                     "beast_count": len(st_beasts),
                     "atom_count": atom_count,
                     "depth_slots": st.get("depth_slots_used", ""),
+                    "atoms": palace_atoms,
                 }
             )
         study_cards.append(
@@ -108,8 +132,8 @@ def snapshot(
                 "slug": study.get("slug", ""),
                 "title": study.get("title", ""),
                 "notes_rel_path": study.get("notes_rel_path", ""),
-                "street_count": len(street_cards),
-                "streets": street_cards,
+                "palace_count": len(palace_cards),
+                "palaces": palace_cards,
             }
         )
 
@@ -117,7 +141,7 @@ def snapshot(
         "studies": study_cards,
         "totals": {
             "studies": len(data["studies"]),
-            "streets": len(streets),
+            "palaces": len(palaces),
             "beasts": len(beasts),
             "atoms": len(atoms),
         },

@@ -14,7 +14,7 @@ Palace_ShowMainMenu() {
     Palace_EnsureData()
 
     studies := Palace_Load("studies")
-    streets := Palace_Load("streets")
+    palaces := Palace_Load("palaces")
     beasts := Palace_Load("beasts")
     atoms := Palace_Load("atoms")
 
@@ -28,17 +28,17 @@ Palace_ShowMainMenu() {
     g_PalaceGui.Add("Text", "x20 y16 w880", "Memory Palace")
     g_PalaceGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y48 w880",
-        studies.Length . " studies  ·  " . streets.Length . " streets  ·  "
+        studies.Length . " studies  ·  " . palaces.Length . " palaces  ·  "
         . beasts.Length . " beasts  ·  " . atoms.Length . " atoms")
     g_PalaceGui.SetFont("s9 cF1C40F", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y72 w880", "Letters open a module.")
 
     items := [
-        ["D", "Dashboard", "Study picker and street images"],
+        ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["Y", "Studies", "Domains that own palaces"],
-        ["S", "Streets", "Memory Palaces and images"],
-        ["B", "Beasts", "Peg holders on a street"],
-        ["A", "Atoms", "Knowledge atoms / subtopics"],
+        ["S", "Palaces", "Memory Palaces and images"],
+        ["B", "Beasts", "Peg holders on a Memory Palace"],
+        ["A", "Atoms", "Knowledge Atoms"],
         ["I", "AI import", "Desktop PALACE_*.csv"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
@@ -64,14 +64,24 @@ Palace_ShowMainMenu() {
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y440 w880", "Esc close   letters open a module   H glossary   P push")
+    g_PalaceGui.Add("Text", "x20 y440 w880",
+        "Backspace utility shortcuts   Esc close   letters open a module   H glossary   P push")
 
     Palace_BindHotkeys([
-        ["d", Palace_OnDash], ["y", Palace_OnStudies], ["s", Palace_OnStreets],
+        ["d", Palace_OnDash], ["y", Palace_OnStudies], ["s", Palace_OnPalaces],
         ["b", Palace_OnBeasts], ["a", Palace_OnAtoms], ["i", Palace_OnImp],
-        ["h", Palace_OnHelp], ["p", Palace_OnGitPush], ["Escape", (*) => Palace_CloseGui()]
+        ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
+        ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
+        ["Escape", (*) => Palace_CloseGui()]
     ])
     Palace_CenterGui(g_PalaceGui, 900, 480)
+}
+
+Palace_ReturnToUtilityShortcuts() {
+    Palace_CloseGui()
+    try ShowHotstringSelector()
+    catch {
+    }
 }
 
 Palace_OnDash(*) {
@@ -80,8 +90,8 @@ Palace_OnDash(*) {
 Palace_OnStudies(*) {
     Palace_ShowStudies()
 }
-Palace_OnStreets(*) {
-    Palace_ShowStreets()
+Palace_OnPalaces(*) {
+    Palace_ShowPalaces()
 }
 Palace_OnBeasts(*) {
     Palace_ShowBeasts()

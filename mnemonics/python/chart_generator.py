@@ -1,8 +1,10 @@
-"""Generate Memory Palace HTML dashboard (study → street images)."""
+"""Generate Memory Palace HTML dashboard (study → palace images + practice)."""
+
 from __future__ import annotations
 
 import argparse
 import html
+import json
 import sys
 from pathlib import Path
 from urllib.parse import quote
@@ -14,7 +16,6 @@ from data_aggregator import snapshot  # noqa: E402
 
 def file_uri(path: str) -> str:
     p = Path(path).resolve()
-    # Chrome file URI on Windows
     return "file:///" + quote(p.as_posix(), safe="/:")
 
 
@@ -23,7 +24,6 @@ def build_html(snap: dict) -> str:
     cards = snap.get("studies") or []
     selected = snap.get("selected_study_id") or ""
     totals = snap.get("totals") or {}
-    issues = snap.get("issues") or []
 
     options = []
     for s in studies:
@@ -32,49 +32,81 @@ def build_html(snap: dict) -> str:
             f'<option value="{html.escape(s["id"])}"{sel}>{html.escape(s["title"])}</option>'
         )
 
-    # JS study data embedded
+    palace_data: dict[str, dict] = {}
+    study_latest: dict[str, str] = {}
     study_blocks = []
     for study in cards:
-        street_html = []
-        for st in study.get("streets", []):
-            if st.get("image_exists") and st.get("image_abs"):
+        palace_html = []
+        latest_id = ""
+        for st in study.get("palaces", []):
+            sid = st["id"]
+            if not latest_id:
+                latest_id = sid  # palaces already descending by number
+            img_abs = st.get("image_abs") or ""
+            prompt = st.get("image_prompt") or ""
+            palace_data[sid] = {
+                "id": sid,
+                "study_id": study["id"],
+                "number": st.get("number", ""),
+                "title": st.get("title", ""),
+                "character": st.get("character", ""),
+                "atom_count": st.get("atom_count", 0),
+                "image_prompt": prompt,
+                "image_uri": (
+                    file_uri(img_abs) if st.get("image_exists") and img_abs else ""
+                ),
+                "atoms": st.get("atoms") or [],
+            }
+            if st.get("image_exists") and img_abs:
                 img = (
-                    f'<img src="{html.escape(file_uri(st["image_abs"]))}" '
-                    f'alt="Street {html.escape(str(st["number"]))}" loading="lazy"/>'
+                    f'<img src="{html.escape(file_uri(img_abs))}" '
+                    f'alt="Memory Palace {html.escape(str(st["number"]))}" loading="lazy"/>'
                 )
             else:
                 img = '<div class="missing">No image</div>'
-            street_html.append(
+            if prompt.strip():
+                prompt_block = (
+                    f'<div class="prompt-block">'
+                    f'<div class="prompt-head"><span>Image prompt</span>'
+                    f'<button type="button" class="btn-copy" data-copy-prompt="{html.escape(sid)}">Copy</button>'
+                    f"</div>"
+                    f'<pre class="prompt-text">{html.escape(prompt)}</pre>'
+                    f"</div>"
+                )
+            else:
+                prompt_block = '<p class="prompt-empty">No image prompt saved.</p>'
+            palace_html.append(
                 f"""
-                <article class="street">
+                <article class="palace" data-palace-id="{html.escape(sid)}" tabindex="0" role="button">
                   {img}
                   <div class="meta">
-                    <h3>Street {html.escape(str(st["number"]))}: {html.escape(st["title"])}</h3>
+                    <h3>Memory Palace {html.escape(str(st["number"]))}: {html.escape(st["title"])}</h3>
                     <p class="char">{html.escape(st.get("character") or "—")}</p>
-                    <p class="counts">{st.get("beast_count", 0)} beasts · {st.get("atom_count", 0)} atoms</p>
+                    <p class="counts">{st.get("beast_count", 0)} beasts · {st.get("atom_count", 0)} Knowledge Atoms</p>
+                    {prompt_block}
                   </div>
                 </article>
                 """
             )
+        if latest_id:
+            study_latest[study["id"]] = latest_id
         study_blocks.append(
             f"""
             <section class="study" data-study-id="{html.escape(study["id"])}"
                      style="display:{'block' if study['id'] == selected or (not selected and cards and study is cards[0]) else 'none'}">
               <header class="study-head">
                 <h2>{html.escape(study["title"])}</h2>
-                <p>{study.get("street_count", 0)} streets · slug {html.escape(study.get("slug", ""))}</p>
+                <p>{study.get("palace_count", 0)} Memory Palaces · slug {html.escape(study.get("slug", ""))} · newest first</p>
               </header>
               <div class="grid">
-                {''.join(street_html) if street_html else '<p class="empty">No streets yet.</p>'}
+                {''.join(palace_html) if palace_html else '<p class="empty">No Memory Palaces yet.</p>'}
               </div>
             </section>
             """
         )
 
-    issues_html = ""
-    if issues:
-        items = "".join(f"<li>{html.escape(i)}</li>" for i in issues[:20])
-        issues_html = f'<aside class="issues"><h3>Validation</h3><ul>{items}</ul></aside>'
+    palace_json = json.dumps(palace_data, ensure_ascii=False)
+    latest_json = json.dumps(study_latest, ensure_ascii=False)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -115,16 +147,62 @@ def build_html(snap: dict) -> str:
       letter-spacing: 0.02em;
     }}
     header.top .sub {{ color: var(--muted); margin: 0.25rem 0 0; font-size: 0.95rem; }}
+    .controls {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      align-items: end;
+    }}
     label {{ color: var(--muted); font-size: 0.85rem; display: block; margin-bottom: 0.35rem; }}
-    select {{
+    select, input[type="search"] {{
       background: var(--panel);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: 6px;
       padding: 0.45rem 0.75rem;
-      min-width: 220px;
+      min-width: 200px;
       font-size: 1rem;
     }}
+    input[type="search"] {{ min-width: 260px; }}
+    #btnLatest {{
+      background: var(--gold);
+      color: #1a1408;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 650;
+      cursor: pointer;
+      height: 2.35rem;
+    }}
+    #btnLatest:hover {{ filter: brightness(1.08); }}
+    #searchResults {{
+      display: none;
+      margin: 0 1.5rem 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      max-height: 240px;
+      overflow: auto;
+    }}
+    #searchResults.open {{ display: block; }}
+    #searchResults .hit {{
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      padding: 0.55rem 0.25rem;
+      cursor: pointer;
+      font: inherit;
+    }}
+    #searchResults .hit:last-child {{ border-bottom: none; }}
+    #searchResults .hit:hover {{ color: var(--gold); }}
+    #searchResults .hit .meta {{ color: var(--muted); font-size: 0.85rem; }}
+    #searchResults .empty {{ color: var(--muted); margin: 0; }}
     main {{ padding: 1.25rem 1.5rem 2.5rem; }}
     .study-head h2 {{ margin: 0 0 0.25rem; color: var(--gold); }}
     .study-head p {{ margin: 0 0 1rem; color: var(--muted); }}
@@ -133,15 +211,22 @@ def build_html(snap: dict) -> str:
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
     }}
-    .street {{
+    .palace {{
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 10px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.15s ease;
     }}
-    .street img {{
+    .palace:hover, .palace:focus {{
+      border-color: var(--gold);
+      outline: none;
+      transform: translateY(-2px);
+    }}
+    .palace img {{
       width: 100%;
       aspect-ratio: 4/3;
       object-fit: cover;
@@ -161,20 +246,181 @@ def build_html(snap: dict) -> str:
     .meta h3 {{ margin: 0 0 0.35rem; font-size: 1.05rem; }}
     .char {{ margin: 0; color: var(--gold); font-size: 0.92rem; }}
     .counts {{ margin: 0.35rem 0 0; color: var(--muted); font-size: 0.85rem; }}
-    .empty {{ color: var(--muted); }}
-    .issues {{
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #2a1c1c;
-      border: 1px solid #5a3030;
-      border-radius: 8px;
+    .prompt-block {{
+      margin-top: 0.65rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--line);
     }}
-    .issues h3 {{ margin: 0 0 0.5rem; color: #f0a0a0; }}
-    .issues ul {{ margin: 0; padding-left: 1.2rem; color: #e0c0c0; }}
+    .prompt-head {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      color: var(--gold);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }}
+    .btn-copy {{
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-transform: none;
+      letter-spacing: 0;
+    }}
+    .btn-copy:hover {{ border-color: var(--gold); }}
+    .prompt-text {{
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--muted);
+      max-height: 4.8em;
+      overflow: hidden;
+    }}
+    .prompt-empty {{
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-style: italic;
+    }}
+    .empty {{ color: var(--muted); }}
     footer {{
       padding: 0 1.5rem 1.5rem;
       color: var(--muted);
       font-size: 0.85rem;
+    }}
+    #overlay {{
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(8, 9, 12, 0.96);
+      overflow: auto;
+    }}
+    #overlay.open {{ display: block; }}
+    .overlay-bar {{
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.25rem;
+      background: #14161c;
+      border-bottom: 1px solid var(--line);
+    }}
+    .overlay-bar h2 {{
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 650;
+    }}
+    .overlay-bar .count {{
+      color: var(--gold);
+      font-size: 0.95rem;
+      margin: 0.2rem 0 0;
+    }}
+    #btnClose {{
+      background: var(--gold);
+      color: #1a1408;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 1.1rem;
+      font-size: 1rem;
+      font-weight: 650;
+      cursor: pointer;
+    }}
+    #btnClose:hover {{ filter: brightness(1.08); }}
+    .overlay-body {{
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 1.25rem;
+      padding: 1.25rem 1.5rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }}
+    @media (max-width: 900px) {{
+      .overlay-body {{ grid-template-columns: 1fr; }}
+    }}
+    .overlay-image {{
+      background: #0a0b0e;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+    }}
+    .overlay-image img {{
+      width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      display: block;
+    }}
+    .overlay-image .missing-lg {{
+      color: var(--muted);
+      padding: 3rem;
+      text-align: center;
+    }}
+    .overlay-prompt {{
+      margin-top: 1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }}
+    .overlay-prompt .prompt-text {{
+      max-height: none;
+      color: var(--text);
+      font-size: 0.88rem;
+    }}
+    .practice {{
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }}
+    .practice h3 {{
+      margin: 0;
+      color: var(--gold);
+      font-size: 1.05rem;
+    }}
+    .atom-card {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      scroll-margin-top: 5rem;
+    }}
+    .atom-card.highlight {{
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px var(--gold);
+    }}
+    .atom-card .field {{
+      margin: 0.45rem 0 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }}
+    .atom-card .field:first-child {{ margin-top: 0; }}
+    .atom-card .lbl {{
+      display: block;
+      color: var(--gold);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.15rem;
+    }}
+    .atom-card .zone-tag {{
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0 0 0.35rem;
     }}
   </style>
 </head>
@@ -182,24 +428,66 @@ def build_html(snap: dict) -> str:
   <header class="top">
     <div>
       <h1>Memory Palace</h1>
-      <p class="sub">{totals.get("studies", 0)} studies · {totals.get("streets", 0)} streets ·
-         {totals.get("beasts", 0)} beasts · {totals.get("atoms", 0)} atoms</p>
+      <p class="sub">{totals.get("studies", 0)} studies · {totals.get("palaces", 0)} Memory Palaces ·
+         {totals.get("beasts", 0)} beasts · {totals.get("atoms", 0)} Knowledge Atoms</p>
     </div>
-    <div>
-      <label for="study">Study</label>
-      <select id="study">
-        {''.join(options) if options else '<option value="">No studies</option>'}
-      </select>
+    <div class="controls">
+      <div>
+        <label for="study">Study</label>
+        <select id="study">
+          {''.join(options) if options else '<option value="">No studies</option>'}
+        </select>
+      </div>
+      <button type="button" id="btnLatest">Latest palace</button>
+      <div>
+        <label for="atomSearch">Search Knowledge Atoms</label>
+        <input type="search" id="atomSearch" placeholder="Beast, concept, quote, story…" autocomplete="off"/>
+      </div>
     </div>
   </header>
+  <div id="searchResults" aria-live="polite"></div>
   <main>
     {''.join(study_blocks)}
-    {issues_html}
   </main>
-  <footer>Street images resolve from notes/studies.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Latest palace opens the highest palace number.</footer>
+
+  <div id="overlay" aria-hidden="true">
+    <div class="overlay-bar">
+      <div>
+        <h2 id="ovTitle">Memory Palace</h2>
+        <p class="count" id="ovCount"></p>
+      </div>
+      <button type="button" id="btnClose">Close</button>
+    </div>
+    <div class="overlay-body">
+      <div>
+        <div class="overlay-image" id="ovImage"></div>
+        <div class="overlay-prompt" id="ovPrompt"></div>
+      </div>
+      <div class="practice">
+        <h3>Practice — Knowledge Atoms</h3>
+        <div id="ovAtoms"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    const PALACE_DATA = {palace_json};
+    const STUDY_LATEST = {latest_json};
     const sel = document.getElementById('study');
     const sections = [...document.querySelectorAll('.study')];
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ovTitle');
+    const ovCount = document.getElementById('ovCount');
+    const ovImage = document.getElementById('ovImage');
+    const ovPrompt = document.getElementById('ovPrompt');
+    const ovAtoms = document.getElementById('ovAtoms');
+    const btnClose = document.getElementById('btnClose');
+    const btnLatest = document.getElementById('btnLatest');
+    const atomSearch = document.getElementById('atomSearch');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimer = null;
+
     function show(id) {{
       sections.forEach(s => {{
         s.style.display = (s.dataset.studyId === id) ? 'block' : 'none';
@@ -209,6 +497,174 @@ def build_html(snap: dict) -> str:
       sel.addEventListener('change', () => show(sel.value));
       if (sel.value) show(sel.value);
     }}
+
+    function esc(s) {{
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }}
+
+    function dash(v) {{
+      const t = (v ?? '').toString().trim();
+      return t ? esc(t) : '—';
+    }}
+
+    async function copyPrompt(text, btn) {{
+      const t = (text || '').toString();
+      if (!t.trim()) return;
+      try {{
+        await navigator.clipboard.writeText(t);
+        if (btn) {{
+          const prev = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(() => {{ btn.textContent = prev; }}, 1200);
+        }}
+      }} catch (e) {{
+        if (btn) btn.textContent = 'Copy failed';
+      }}
+    }}
+
+    function renderPromptBlock(prompt, id) {{
+      const t = (prompt || '').toString().trim();
+      if (!t) return '<p class="prompt-empty">No image prompt saved.</p>';
+      return '<div class="prompt-head"><span>Image prompt</span>'
+        + '<button type="button" class="btn-copy" data-copy-id="' + esc(id) + '">Copy prompt</button></div>'
+        + '<pre class="prompt-text">' + esc(prompt) + '</pre>';
+    }}
+
+    function openPalace(id, focusAtomId) {{
+      const st = PALACE_DATA[id];
+      if (!st) return;
+      ovTitle.textContent = 'Memory Palace ' + st.number + ': ' + st.title;
+      const n = st.atom_count || (st.atoms || []).length;
+      ovCount.textContent = n + ' Knowledge Atom' + (n === 1 ? '' : 's')
+        + (st.character ? ' · Character: ' + st.character : '');
+      if (st.image_uri) {{
+        ovImage.innerHTML = '<img src="' + esc(st.image_uri) + '" alt="Memory Palace ' + esc(st.number) + '"/>';
+      }} else {{
+        ovImage.innerHTML = '<div class="missing-lg">No image</div>';
+      }}
+      ovPrompt.innerHTML = renderPromptBlock(st.image_prompt, st.id);
+      ovPrompt.querySelectorAll('.btn-copy').forEach(btn => {{
+        btn.addEventListener('click', (e) => {{
+          e.stopPropagation();
+          copyPrompt(st.image_prompt, btn);
+        }});
+      }});
+      const atoms = st.atoms || [];
+      if (!atoms.length) {{
+        ovAtoms.innerHTML = '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
+      }} else {{
+        ovAtoms.innerHTML = atoms.map(a => {{
+          const zone = (a.zone || a.zone_label)
+            ? '<p class="zone-tag">' + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
+            : '';
+          const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
+          return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
+            + zone
+            + '<p class="field"><span class="lbl">Beast</span>' + dash(a.beast) + '</p>'
+            + '<p class="field"><span class="lbl">Concept</span>' + dash(a.concept) + '</p>'
+            + '<p class="field"><span class="lbl">Quote</span>' + dash(a.quote) + '</p>'
+            + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
+            + '<p class="field"><span class="lbl">Sensory</span>' + dash(a.sensory) + '</p>'
+            + '</article>';
+        }}).join('');
+      }}
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      btnClose.focus();
+      if (focusAtomId) {{
+        requestAnimationFrame(() => {{
+          const el = ovAtoms.querySelector('[data-atom-id="' + CSS.escape(focusAtomId) + '"]');
+          if (el) el.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+        }});
+      }}
+    }}
+
+    function closeOverlay() {{
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }}
+
+    document.querySelectorAll('.palace').forEach(el => {{
+      el.addEventListener('click', (e) => {{
+        if (e.target.closest('.btn-copy')) return;
+        openPalace(el.dataset.palaceId);
+      }});
+      el.addEventListener('keydown', (e) => {{
+        if (e.key === 'Enter' || e.key === ' ') {{
+          e.preventDefault();
+          openPalace(el.dataset.palaceId);
+        }}
+      }});
+    }});
+    document.querySelectorAll('.btn-copy[data-copy-prompt]').forEach(btn => {{
+      btn.addEventListener('click', (e) => {{
+        e.stopPropagation();
+        const id = btn.getAttribute('data-copy-prompt');
+        const st = PALACE_DATA[id];
+        if (st) copyPrompt(st.image_prompt, btn);
+      }});
+    }});
+    btnClose.addEventListener('click', closeOverlay);
+    btnLatest.addEventListener('click', () => {{
+      const studyId = sel ? sel.value : '';
+      const palaceId = STUDY_LATEST[studyId];
+      if (palaceId) openPalace(palaceId);
+    }});
+    document.addEventListener('keydown', (e) => {{
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {{
+        e.preventDefault();
+        closeOverlay();
+      }}
+    }});
+
+    function runSearch(q) {{
+      const query = (q || '').trim().toLowerCase();
+      if (!query) {{
+        searchResults.classList.remove('open');
+        searchResults.innerHTML = '';
+        return;
+      }}
+      const studyId = sel ? sel.value : '';
+      const hits = [];
+      Object.values(PALACE_DATA).forEach(st => {{
+        if (studyId && st.study_id !== studyId) return;
+        (st.atoms || []).forEach(a => {{
+          const blob = [a.beast, a.concept, a.quote, a.story, a.sensory, a.zone, a.zone_label]
+            .map(x => (x || '').toString().toLowerCase()).join(' ');
+          if (blob.includes(query)) {{
+            hits.push({{ palaceId: st.id, palaceNumber: st.number, atom: a }});
+          }}
+        }});
+      }});
+      searchResults.classList.add('open');
+      if (!hits.length) {{
+        searchResults.innerHTML = '<p class="empty">No Knowledge Atoms found.</p>';
+        return;
+      }}
+      searchResults.innerHTML = hits.slice(0, 40).map(h => {{
+        const concept = (h.atom.concept || '').toString();
+        const snip = concept.length > 90 ? concept.slice(0, 87) + '…' : concept;
+        return '<button type="button" class="hit" data-palace-id="' + esc(h.palaceId)
+          + '" data-atom-id="' + esc(h.atom.id) + '">'
+          + '<span class="meta">Memory Palace ' + esc(h.palaceNumber) + ' · ' + dash(h.atom.beast) + '</span><br/>'
+          + dash(snip || h.atom.quote || h.atom.story)
+          + '</button>';
+      }}).join('');
+      searchResults.querySelectorAll('.hit').forEach(btn => {{
+        btn.addEventListener('click', () => {{
+          openPalace(btn.dataset.palaceId, btn.dataset.atomId);
+        }});
+      }});
+    }}
+
+    atomSearch.addEventListener('input', () => {{
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => runSearch(atomSearch.value), 120);
+    }});
   </script>
 </body>
 </html>
@@ -223,7 +679,6 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--study-id", type=str, default=None)
     args = p.parse_args(argv)
 
-    # Always load every study for the picker; study_id only sets the default tab.
     snap = snapshot(
         data_dir=args.data_dir.resolve(),
         notes_root=args.notes_root.resolve() if args.notes_root else None,

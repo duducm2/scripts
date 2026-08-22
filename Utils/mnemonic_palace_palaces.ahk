@@ -1,13 +1,13 @@
 ; =============================================================================
-; Utils module: mnemonic_palace_streets.ahk
-; Streets (Memory Palaces) CRUD
+; Utils module: mnemonic_palace_palaces.ahk
+; Memory Palaces CRUD (images + image prompts)
 ; =============================================================================
 
-global g_PalaceStreetLv := false
-global g_PalaceStreetRows := []
+global g_PalacePalaceLv := false
+global g_PalacePalaceRows := []
 
-Palace_ShowStreets() {
-    global g_PalaceGui, g_PalaceStreetLv, g_PalaceFilterStudyId
+Palace_ShowPalaces() {
+    global g_PalaceGui, g_PalacePalaceLv, g_PalaceFilterStudyId
     Palace_CloseGui()
     Palace_EnsureData()
     if (g_PalaceFilterStudyId = "") {
@@ -18,100 +18,102 @@ Palace_ShowStreets() {
         }
         g_PalaceFilterStudyId := pick
     }
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Streets")
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Memory Palaces")
     g_PalaceGui.SetFont("s10", "Segoe UI")
     g_PalaceGui.Add("Text", "x12 y10 w860",
         Palace_StudyTitle(g_PalaceFilterStudyId)
         . "   [A] add   [E] edit   Delete   [F] filter study   Backspace menu")
-    g_PalaceStreetLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
-        ["#", "Title", "Character", "Image", "Slots"])
-    g_PalaceStreetLv.OnEvent("DoubleClick", (*) => Palace_StreetEdit())
+    g_PalacePalaceLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
+        ["#", "Title", "Character", "Image", "Slots", "Prompt"])
+    g_PalacePalaceLv.OnEvent("DoubleClick", (*) => Palace_PalaceEdit())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
-    Palace_StreetRefresh()
+    Palace_PalaceRefresh()
     Palace_BindHotkeys([
-        ["a", (*) => Palace_StreetAdd()],
-        ["Insert", (*) => Palace_StreetAdd()],
-        ["e", (*) => Palace_StreetEdit()],
-        ["Delete", (*) => Palace_StreetDelete()],
-        ["f", (*) => Palace_StreetFilter()],
+        ["a", (*) => Palace_PalaceAdd()],
+        ["Insert", (*) => Palace_PalaceAdd()],
+        ["e", (*) => Palace_PalaceEdit()],
+        ["Delete", (*) => Palace_PalaceDelete()],
+        ["f", (*) => Palace_PalaceFilter()],
         ["Backspace", (*) => Palace_ShowMainMenu()],
         ["Escape", (*) => Palace_ShowMainMenu()]
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
 
-Palace_StreetFilter(*) {
+Palace_PalaceFilter(*) {
     global g_PalaceFilterStudyId
     pick := Palace_PickStudy()
     if (pick = "")
         return
     g_PalaceFilterStudyId := pick
     Palace_SetSetting("General", "LastStudyId", pick)
-    Palace_ShowStreets()
+    Palace_ShowPalaces()
 }
 
-Palace_StreetRefresh() {
-    global g_PalaceStreetLv, g_PalaceStreetRows, g_PalaceFilterStudyId
-    if (!IsObject(g_PalaceStreetLv))
+Palace_PalaceRefresh() {
+    global g_PalacePalaceLv, g_PalacePalaceRows, g_PalaceFilterStudyId
+    if (!IsObject(g_PalacePalaceLv))
         return
-    rows := Palace_FilterBy(Palace_Load("streets"), "study_id", g_PalaceFilterStudyId)
-    g_PalaceStreetLv.Delete()
-    g_PalaceStreetRows := []
+    rows := Palace_FilterBy(Palace_Load("palaces"), "study_id", g_PalaceFilterStudyId)
+    g_PalacePalaceLv.Delete()
+    g_PalacePalaceRows := []
     for st in rows {
-        g_PalaceStreetRows.Push(st)
+        g_PalacePalaceRows.Push(st)
         img := st["image_rel_path"]
         abs := Palace_ResolveImagePath(img)
         mark := (abs != "" && FileExist(abs)) ? "✓ " : "? "
-        g_PalaceStreetLv.Add("", st["street_number"], st["title"], st["character_name"],
-            mark . img, st["depth_slots_used"])
+        prompt := st.Has("image_prompt") ? Trim(st["image_prompt"]) : ""
+        promptMark := prompt != "" ? "yes" : "—"
+        g_PalacePalaceLv.Add("", st["palace_number"], st["title"], st["character_name"],
+            mark . img, st["depth_slots_used"], promptMark)
     }
-    loop 5
-        g_PalaceStreetLv.ModifyCol(A_Index, "AutoHdr")
+    loop 6
+        g_PalacePalaceLv.ModifyCol(A_Index, "AutoHdr")
 }
 
-Palace_StreetSelected() {
-    global g_PalaceStreetLv, g_PalaceStreetRows
-    row := g_PalaceStreetLv.GetNext()
-    if (!row || row > g_PalaceStreetRows.Length)
+Palace_PalaceSelected() {
+    global g_PalacePalaceLv, g_PalacePalaceRows
+    row := g_PalacePalaceLv.GetNext()
+    if (!row || row > g_PalacePalaceRows.Length)
         return false
-    return g_PalaceStreetRows[row]
+    return g_PalacePalaceRows[row]
 }
 
-Palace_StreetAdd(*) {
-    Palace_StreetForm(false)
+Palace_PalaceAdd(*) {
+    Palace_PalaceForm(false)
 }
-Palace_StreetEdit(*) {
-    st := Palace_StreetSelected()
+Palace_PalaceEdit(*) {
+    st := Palace_PalaceSelected()
     if (!st) {
-        Palace_Notify("Select a street", 1200, BANNER_ACCENT_ERROR)
+        Palace_Notify("Select a Memory Palace", 1200, BANNER_ACCENT_ERROR)
         return
     }
-    Palace_StreetForm(st)
+    Palace_PalaceForm(st)
 }
 
-Palace_StreetDelete(*) {
-    st := Palace_StreetSelected()
+Palace_PalaceDelete(*) {
+    st := Palace_PalaceSelected()
     if (!st)
         return
-    beasts := Palace_FilterBy(Palace_Load("beasts"), "street_id", st["id"])
+    beasts := Palace_FilterBy(Palace_Load("beasts"), "palace_id", st["id"])
     if (beasts.Length) {
-        Palace_Alert("Remove " . beasts.Length . " beast(s) on this street first.", "Streets")
+        Palace_Alert("Remove " . beasts.Length . " beast(s) on this Memory Palace first.", "Palaces")
         return
     }
-    if (!Palace_Confirm("Delete Street " . st["street_number"] . ": " . st["title"] . "?", "Streets"))
+    if (!Palace_Confirm("Delete Memory Palace " . st["palace_number"] . ": " . st["title"] . "?", "Palaces"))
         return
     out := []
-    for r in Palace_Load("streets") {
+    for r in Palace_Load("palaces") {
         if (r["id"] != st["id"])
             out.Push(r)
     }
-    Palace_Save("streets", out)
-    Palace_StreetRefresh()
-    Palace_Notify("Street removed", 1200, BANNER_ACCENT_SUCCESS)
+    Palace_Save("palaces", out)
+    Palace_PalaceRefresh()
+    Palace_Notify("Memory Palace removed", 1200, BANNER_ACCENT_SUCCESS)
 }
 
-Palace_StreetForm(existing) {
+Palace_PalaceForm(existing) {
     global g_PalaceGui, g_PalaceFilterStudyId
     isEdit := IsObject(existing)
     studyId := isEdit ? existing["study_id"] : g_PalaceFilterStudyId
@@ -125,10 +127,10 @@ Palace_StreetForm(existing) {
         owner := ""
     }
     Palace_DialogsBegin()
-    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit street" : "Add street")
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit Memory Palace" : "Add Memory Palace")
     g.SetFont("s10", "Segoe UI")
-    g.Add("Text", , "Street number")
-    eNum := g.Add("Edit", "w80", isEdit ? existing["street_number"] : "")
+    g.Add("Text", , "Palace number")
+    eNum := g.Add("Edit", "w80", isEdit ? existing["palace_number"] : "")
     g.Add("Text", "y+8", "Title")
     eTitle := g.Add("Edit", "w360", isEdit ? existing["title"] : "")
     g.Add("Text", "y+8", "Character (from characters.json)")
@@ -142,8 +144,10 @@ Palace_StreetForm(existing) {
     eImg := g.Add("Edit", "w360", defaultImg)
     g.Add("Text", "y+8", "Depth slots used (0–5)")
     eSlots := g.Add("Edit", "w80", isEdit ? existing["depth_slots_used"] : "0")
+    g.Add("Text", "y+8", "Image prompt (optional; empty for legacy)")
+    ePrompt := g.Add("Edit", "w360 r5", isEdit && existing.Has("image_prompt") ? existing["image_prompt"] : "")
     saved := false
-    g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveStreet)
+    g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SavePalace)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
     g.OnEvent("Escape", (*) => g.Destroy())
     g.Show()
@@ -152,55 +156,56 @@ Palace_StreetForm(existing) {
     }
     Palace_DialogsEnd()
     if (saved)
-        Palace_StreetRefresh()
+        Palace_PalaceRefresh()
 
-    SaveStreet(*) {
+    SavePalace(*) {
         num := Trim(eNum.Value)
         title := Trim(eTitle.Value)
         charName := Trim(eChar.Value)
         img := Trim(eImg.Value)
         if (num = "" || title = "") {
-            Palace_Alert("Street number and title are required.", "Streets")
+            Palace_Alert("Palace number and title are required.", "Palaces")
             return
         }
         if (charName = "") {
-            Palace_Alert("Character is required (one per street).", "Streets")
+            Palace_Alert("Character is required (one per Memory Palace).", "Palaces")
             return
         }
-        streets := Palace_Load("streets")
-        for r in streets {
+        palaces := Palace_Load("palaces")
+        for r in palaces {
             if (r["study_id"] = studyId && r["character_name"] = charName
                 && (!isEdit || r["id"] != existing["id"])) {
-                Palace_Alert("Character already used on another street in this study.", "Streets")
+                Palace_Alert("Character already used on another Memory Palace in this study.", "Palaces")
                 return
             }
         }
         pad := Format("{:02d}", Integer(num))
-        id := isEdit ? existing["id"] : "STREET_" . Palace_Slug(studyId) . "_" . pad
-        if (!isEdit && Palace_IdExists(streets, id))
-            id := Palace_SlugId("STREET_", studyId . "_" . num, streets)
+        id := isEdit ? existing["id"] : "PALACE_" . Palace_Slug(studyId) . "_" . pad
+        if (!isEdit && Palace_IdExists(palaces, id))
+            id := Palace_SlugId("PALACE_", studyId . "_" . num, palaces)
         row := Map(
             "id", id,
             "study_id", studyId,
-            "street_number", num,
+            "palace_number", num,
             "title", title,
             "character_name", charName,
             "image_rel_path", img,
-            "depth_slots_used", Trim(eSlots.Value)
+            "depth_slots_used", Trim(eSlots.Value),
+            "image_prompt", ePrompt.Value
         )
         if (isEdit) {
             out := []
-            for r in streets {
+            for r in palaces {
                 if (r["id"] = existing["id"])
                     out.Push(row)
                 else
                     out.Push(r)
             }
-            streets := out
+            palaces := out
         } else {
-            streets.Push(row)
+            palaces.Push(row)
         }
-        Palace_Save("streets", streets)
+        Palace_Save("palaces", palaces)
         saved := true
         g.Destroy()
     }

@@ -6,17 +6,24 @@
 global g_PalaceGui := false
 global g_PalaceHotkeys := []
 global g_PalaceFilterStudyId := ""
-global g_PalaceFilterStreetId := ""
+global g_PalaceFilterPalaceId := ""
 global g_PalaceFilterBeastId := ""
 
 Palace_Terms() {
     return [
         ["Study", "A broad subject domain (e.g. English, German, science, piano). Contains one or more Memory Palaces."],
-        ["Memory Palace / Street", "Equivalent terms for a location. Each street requires exactly one generated image."],
-        ["Character", "Sourced from the canon characters.json. Exactly one character anchors each street."],
-        ["Beast", "Sourced from the canon bestiary.json. Peg holder that carries knowledge."],
-        ["Knowledge Atom / Topic / Subtopic", "Equivalent terms for a discrete piece of information."],
-        ["Mapping", "A Knowledge Atom attaches to a Beast. A Beast carries one comprehensive topic, or up to exactly four smashed subtopics (Z1–Z4)."]
+        ["Memory Palace", "A location with exactly one generated image. Numbered within its Study."],
+        ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
+        ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],
+        ["Knowledge Atom",
+            "A discrete piece of information on a Beast, made of Concept, Quote, Story, and Sensory."],
+        ["Concept", "Rehearsal definition of the fact — what you recall to know what the atom means."],
+        ["Quote", "Verbatim source payload (e.g. from a transcript). Not the Concept."],
+        ["Story", "Bizarre mnemonic narrative / action that encodes the Concept."],
+        ["Sensory",
+            "Which sensory modality the Story emphasizes (visual, auditory, tactile, olfactory, gustatory, thermal)."],
+        ["Mapping",
+            "A Knowledge Atom attaches to a Beast. A Beast carries one Knowledge Atom, or up to four zoned Knowledge Atoms (Z1–Z4)."]
     ]
 }
 
@@ -79,7 +86,7 @@ Palace_EnsureSettings() {
     if (FileExist(path))
         return
     content := "[Dashboard]`n"
-        . "ShowStreetGrid=1`n"
+        . "ShowPalaceGrid=1`n"
         . "ShowMissingImages=1`n"
         . "ShowBeastCounts=1`n"
         . "`n[General]`n"
@@ -91,7 +98,7 @@ Palace_EnsureSettings() {
 Palace_EnsureData() {
     Palace_DataDir()
     Palace_EnsureSettings()
-    for kind in ["studies", "streets", "beasts", "atoms"] {
+    for kind in ["studies", "palaces", "beasts", "atoms"] {
         path := Palace_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path))
             Palace_Save(kind, [])
@@ -263,12 +270,15 @@ Palace_Headers(kind) {
     switch kind {
         case "studies":
             return ["id", "slug", "title", "notes_rel_path", "sort_order", "active"]
-        case "streets":
-            return ["id", "study_id", "street_number", "title", "character_name", "image_rel_path", "depth_slots_used"]
+        case "palaces":
+            return ["id", "study_id", "palace_number", "title", "character_name", "image_rel_path", "depth_slots_used",
+                "image_prompt"]
         case "beasts":
-            return ["id", "street_id", "peg_code", "beast_name", "beast_source", "sensory_channel", "is_smashed", "sort_order"]
+            return ["id", "palace_id", "peg_code", "beast_name", "beast_source", "sensory_channel", "is_smashed",
+                "sort_order"]
         case "atoms":
-            return ["id", "beast_id", "kind", "zone", "zone_label", "context", "quote", "narrative", "ipa", "sensory_channel", "sort_order"]
+            return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "quote", "story", "sensory", "ipa",
+                "sort_order"]
         default:
             return []
     }
@@ -300,9 +310,9 @@ Palace_IdExists(rows, id) {
 
 Palace_Unaccent(s) {
     pairs := [["á", "a"], ["à", "a"], ["â", "a"], ["ã", "a"], ["ä", "a"], ["é", "e"], ["ê", "e"], ["è", "e"],
-        ["í", "i"], ["ó", "o"], ["ô", "o"], ["õ", "o"], ["ö", "o"], ["ú", "u"], ["ü", "u"], ["ç", "c"],
-        ["Á", "A"], ["À", "A"], ["Â", "A"], ["Ã", "A"], ["É", "E"], ["Ê", "E"], ["Í", "I"], ["Ó", "O"],
-        ["Ô", "O"], ["Õ", "O"], ["Ú", "U"], ["Ç", "C"]]
+    ["í", "i"], ["ó", "o"], ["ô", "o"], ["õ", "o"], ["ö", "o"], ["ú", "u"], ["ü", "u"], ["ç", "c"],
+    ["Á", "A"], ["À", "A"], ["Â", "A"], ["Ã", "A"], ["É", "E"], ["Ê", "E"], ["Í", "I"], ["Ó", "O"],
+    ["Ô", "O"], ["Õ", "O"], ["Ú", "U"], ["Ç", "C"]]
     for p in pairs
         s := StrReplace(s, p[1], p[2])
     return s
@@ -368,11 +378,11 @@ Palace_StudyTitle(studyId) {
     return s ? s["title"] : studyId
 }
 
-Palace_StreetLabel(streetId) {
-    st := Palace_FindById(Palace_Load("streets"), streetId)
+Palace_PalaceLabel(palaceId) {
+    st := Palace_FindById(Palace_Load("palaces"), palaceId)
     if (!st)
-        return streetId
-    return "Street " . st["street_number"] . ": " . st["title"]
+        return palaceId
+    return "Memory Palace " . st["palace_number"] . ": " . st["title"]
 }
 
 Palace_BeastLabel(beastId) {
@@ -385,25 +395,20 @@ Palace_BeastLabel(beastId) {
 Palace_ValidateBeastAtoms(beastId, proposedRows := false) {
     atoms := IsObject(proposedRows) ? proposedRows : Palace_FilterBy(Palace_Load("atoms"), "beast_id", beastId)
     singles := 0
-    subs := 0
-    zones := Map()
+    zoned := 0
     for a in atoms {
-        kind := a.Has("kind") ? a["kind"] : "single"
-        if (kind = "subtopic") {
-            subs += 1
-            z := Trim(a.Has("zone") ? a["zone"] : "")
-            if (z != "")
-                zones[z] := true
-        } else {
+        kind := a.Has("kind") ? StrLower(a["kind"]) : "single"
+        if (kind = "zoned" || kind = "subtopic")
+            zoned += 1
+        else
             singles += 1
-        }
     }
-    if (singles > 0 && subs > 0)
-        return "Beast cannot mix a single atom with smashed subtopics."
+    if (singles > 0 && zoned > 0)
+        return "Beast cannot mix a single Knowledge Atom with zoned Knowledge Atoms."
     if (singles > 1)
         return "Beast may carry only one comprehensive Knowledge Atom."
-    if (subs > 4)
-        return "Beast may carry at most four smashed subtopics (Z1–Z4)."
+    if (zoned > 4)
+        return "Beast may carry at most four zoned Knowledge Atoms (Z1–Z4)."
     return ""
 }
 
@@ -591,25 +596,25 @@ Palace_PickStudy() {
     return Palace_PickList("Pick study", labels, values)
 }
 
-Palace_PickStreet(studyId := "") {
-    streets := Palace_Load("streets")
+Palace_PickPalace(studyId := "") {
+    palaces := Palace_Load("palaces")
     labels := []
     values := []
-    for st in streets {
+    for st in palaces {
         if (studyId != "" && st["study_id"] != studyId)
             continue
-        labels.Push(Palace_StudyTitle(st["study_id"]) . " · Street " . st["street_number"] . ": " . st["title"])
+        labels.Push(Palace_StudyTitle(st["study_id"]) . " · Memory Palace " . st["palace_number"] . ": " . st["title"])
         values.Push(st["id"])
     }
-    return Palace_PickList("Pick street", labels, values)
+    return Palace_PickList("Pick Memory Palace", labels, values)
 }
 
-Palace_PickBeast(streetId := "") {
+Palace_PickBeast(palaceId := "") {
     beasts := Palace_Load("beasts")
     labels := []
     values := []
     for b in beasts {
-        if (streetId != "" && b["street_id"] != streetId)
+        if (palaceId != "" && b["palace_id"] != palaceId)
             continue
         labels.Push("[" . b["peg_code"] . "] " . b["beast_name"])
         values.Push(b["id"])

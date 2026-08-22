@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all  # noqa: E402
-from schemas import ATOMS_HEADERS, BEASTS_HEADERS, STREETS_HEADERS  # noqa: E402
+from schemas import ATOMS_HEADERS, BEASTS_HEADERS, PALACES_HEADERS  # noqa: E402
 
 
 def _write(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
@@ -23,19 +23,19 @@ def _write(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
 
 def pack_study(data_dir: Path, study_id: str, out_dir: Path) -> dict[str, str]:
     data = load_all(data_dir)
-    streets = [s for s in data["streets"] if s.get("study_id") == study_id]
-    street_ids = {s["id"] for s in streets}
-    beasts = [b for b in data["beasts"] if b.get("street_id") in street_ids]
+    palaces = [s for s in data["palaces"] if s.get("study_id") == study_id]
+    palace_ids = {s["id"] for s in palaces}
+    beasts = [b for b in data["beasts"] if b.get("palace_id") in palace_ids]
     beast_ids = {b["id"] for b in beasts}
     atoms = [a for a in data["atoms"] if a.get("beast_id") in beast_ids]
 
     out_dir.mkdir(parents=True, exist_ok=True)
     paths = {
-        "streets": out_dir / "streets.csv",
+        "palaces": out_dir / "palaces.csv",
         "beasts": out_dir / "beasts.csv",
         "atoms": out_dir / "atoms.csv",
     }
-    _write(paths["streets"], STREETS_HEADERS, streets)
+    _write(paths["palaces"], PALACES_HEADERS, palaces)
     _write(paths["beasts"], BEASTS_HEADERS, beasts)
     _write(paths["atoms"], ATOMS_HEADERS, atoms)
 

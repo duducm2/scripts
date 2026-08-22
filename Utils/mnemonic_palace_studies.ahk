@@ -71,9 +71,9 @@ Palace_StudyDelete(*) {
     s := Palace_StudySelected()
     if (!s)
         return
-    streets := Palace_FilterBy(Palace_Load("streets"), "study_id", s["id"])
-    if (streets.Length) {
-        Palace_Alert("Remove or reassign " . streets.Length . " street(s) first.", "Studies")
+    palaces := Palace_FilterBy(Palace_Load("palaces"), "study_id", s["id"])
+    if (palaces.Length) {
+        Palace_Alert("Remove or reassign " . palaces.Length . " Memory Palace(s) first.", "Studies")
         return
     }
     if (!Palace_Confirm("Delete study " . s["title"] . "?", "Studies"))
@@ -135,11 +135,11 @@ Palace_StudyForm(existing) {
         studies := Palace_Load("studies")
         row := Map(
             "id", isEdit ? existing["id"] : Palace_SlugId("STUDY_", slug, studies),
-            "slug", slug,
-            "title", title,
-            "notes_rel_path", npath,
-            "sort_order", Trim(eOrder.Value),
-            "active", chk.Value ? "1" : "0"
+        "slug", slug,
+        "title", title,
+        "notes_rel_path", npath,
+        "sort_order", Trim(eOrder.Value),
+        "active", chk.Value ? "1" : "0"
         )
         if (isEdit) {
             out := []

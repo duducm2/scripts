@@ -1,17 +1,17 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_atoms.ahk
-; Knowledge Atoms / Topics / Subtopics CRUD
+; Knowledge Atoms CRUD
 ; =============================================================================
 
 global g_PalaceAtomLv := false
 global g_PalaceAtomRows := []
 
 Palace_ShowAtoms() {
-    global g_PalaceGui, g_PalaceAtomLv, g_PalaceFilterBeastId, g_PalaceFilterStreetId, g_PalaceFilterStudyId
+    global g_PalaceGui, g_PalaceAtomLv, g_PalaceFilterBeastId, g_PalaceFilterPalaceId, g_PalaceFilterStudyId
     Palace_CloseGui()
     Palace_EnsureData()
     if (g_PalaceFilterBeastId = "") {
-        if (g_PalaceFilterStreetId = "") {
+        if (g_PalaceFilterPalaceId = "") {
             studyId := g_PalaceFilterStudyId
             if (studyId = "")
                 studyId := Palace_PickStudy()
@@ -20,14 +20,14 @@ Palace_ShowAtoms() {
                 return
             }
             g_PalaceFilterStudyId := studyId
-            streetId := Palace_PickStreet(studyId)
-            if (streetId = "") {
+            palaceId := Palace_PickPalace(studyId)
+            if (palaceId = "") {
                 Palace_ShowMainMenu()
                 return
             }
-            g_PalaceFilterStreetId := streetId
+            g_PalaceFilterPalaceId := palaceId
         }
-        pick := Palace_PickBeast(g_PalaceFilterStreetId)
+        pick := Palace_PickBeast(g_PalaceFilterPalaceId)
         if (pick = "") {
             Palace_ShowMainMenu()
             return
@@ -40,7 +40,7 @@ Palace_ShowAtoms() {
         Palace_BeastLabel(g_PalaceFilterBeastId)
         . "   [A] add   [E] edit   Delete   [F] filter   Backspace menu")
     g_PalaceAtomLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
-        ["Kind", "Zone", "Label", "Context", "Sensory"])
+        ["Kind", "Zone", "Label", "Concept", "Sensory"])
     g_PalaceAtomLv.OnEvent("DoubleClick", (*) => Palace_AtomEdit())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
@@ -58,16 +58,16 @@ Palace_ShowAtoms() {
 }
 
 Palace_AtomFilter(*) {
-    global g_PalaceFilterBeastId, g_PalaceFilterStreetId, g_PalaceFilterStudyId
+    global g_PalaceFilterBeastId, g_PalaceFilterPalaceId, g_PalaceFilterStudyId
     studyId := Palace_PickStudy()
     if (studyId = "")
         return
     g_PalaceFilterStudyId := studyId
-    streetId := Palace_PickStreet(studyId)
-    if (streetId = "")
+    palaceId := Palace_PickPalace(studyId)
+    if (palaceId = "")
         return
-    g_PalaceFilterStreetId := streetId
-    pick := Palace_PickBeast(streetId)
+    g_PalaceFilterPalaceId := palaceId
+    pick := Palace_PickBeast(palaceId)
     if (pick = "")
         return
     g_PalaceFilterBeastId := pick
@@ -83,10 +83,11 @@ Palace_AtomRefresh() {
     g_PalaceAtomRows := []
     for a in rows {
         g_PalaceAtomRows.Push(a)
-        ctx := a["context"]
+        ctx := a.Has("concept") ? a["concept"] : (a.Has("context") ? a["context"] : "")
         if (StrLen(ctx) > 60)
             ctx := SubStr(ctx, 1, 57) . "..."
-        g_PalaceAtomLv.Add("", a["kind"], a["zone"], a["zone_label"], ctx, a["sensory_channel"])
+        sens := a.Has("sensory") ? a["sensory"] : (a.Has("sensory_channel") ? a["sensory_channel"] : "")
+        g_PalaceAtomLv.Add("", a["kind"], a["zone"], a["zone_label"], ctx, sens)
     }
     loop 5
         g_PalaceAtomLv.ModifyCol(A_Index, "AutoHdr")
@@ -144,25 +145,31 @@ Palace_AtomForm(existing) {
     Palace_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit atom" : "Add atom")
     g.SetFont("s10", "Segoe UI")
-    defaultKind := smashed ? "subtopic" : "single"
-    if (isEdit)
+    defaultKind := smashed ? "zoned" : "single"
+    if (isEdit) {
         defaultKind := existing["kind"]
-    g.Add("Text", , "Kind (single | subtopic)")
-    eKind := g.Add("Edit", "w120", defaultKind)
-    g.Add("Text", "y+8", "Zone (Z1–Z4 for subtopic; empty for single)")
+        if (defaultKind = "subtopic")
+            defaultKind := "zoned"
+    }
+    g.Add("Text", , "Kind (single | zoned Knowledge Atom)")
+    eKind := g.Add("Edit", "w220", defaultKind)
+    g.Add("Text", "y+8", "Zone (Z1–Z4 for zoned; empty for single)")
     eZone := g.Add("Edit", "w80", isEdit ? existing["zone"] : (smashed ? "Z1" : ""))
     g.Add("Text", "y+8", "Zone label")
     eLabel := g.Add("Edit", "w360", isEdit ? existing["zone_label"] : "")
-    g.Add("Text", "y+8", "Context (💡 definition)")
-    eCtx := g.Add("Edit", "w480 r2", isEdit ? existing["context"] : "")
+    g.Add("Text", "y+8", "Concept (rehearsal definition)")
+    eCtx := g.Add("Edit", "w480 r2", isEdit ? (existing.Has("concept") ? existing["concept"] : existing["context"]) :
+        "")
     g.Add("Text", "y+8", "Quote")
     eQuote := g.Add("Edit", "w480 r2", isEdit ? existing["quote"] : "")
-    g.Add("Text", "y+8", "Narrative")
-    eNarr := g.Add("Edit", "w480 r3", isEdit ? existing["narrative"] : "")
+    g.Add("Text", "y+8", "Story (mnemonic action)")
+    eNarr := g.Add("Edit", "w480 r3", isEdit ? (existing.Has("story") ? existing["story"] : existing["narrative"]) : ""
+    )
     g.Add("Text", "y+8", "IPA (optional)")
     eIpa := g.Add("Edit", "w480", isEdit ? existing["ipa"] : "")
-    g.Add("Text", "y+8", "Sensory channel")
-    eSens := g.Add("Edit", "w200", isEdit ? existing["sensory_channel"] : (smashed ? "visual" : ""))
+    g.Add("Text", "y+8", "Sensory (modality the story emphasizes)")
+    eSens := g.Add("Edit", "w200", isEdit ? (existing.Has("sensory") ? existing["sensory"] : existing["sensory_channel"
+        ]) : (smashed ? "visual" : ""))
     g.Add("Text", "y+8", "Sort order")
     eOrder := g.Add("Edit", "w80", isEdit ? existing["sort_order"] : "1")
     saved := false
@@ -179,13 +186,15 @@ Palace_AtomForm(existing) {
 
     SaveAtom(*) {
         kind := StrLower(Trim(eKind.Value))
-        if (kind != "single" && kind != "subtopic") {
-            Palace_Alert("Kind must be single or subtopic.", "Atoms")
+        if (kind = "subtopic")
+            kind := "zoned"
+        if (kind != "single" && kind != "zoned") {
+            Palace_Alert("Kind must be single or zoned.", "Atoms")
             return
         }
         zone := Trim(eZone.Value)
-        if (kind = "subtopic" && !RegExMatch(zone, "^Z[1-4]$")) {
-            Palace_Alert("Subtopics require zone Z1, Z2, Z3, or Z4.", "Atoms")
+        if (kind = "zoned" && !RegExMatch(zone, "^Z[1-4]$")) {
+            Palace_Alert("Zoned Knowledge Atoms require zone Z1, Z2, Z3, or Z4.", "Atoms")
             return
         }
         if (kind = "single")
@@ -198,11 +207,11 @@ Palace_AtomForm(existing) {
             "kind", kind,
             "zone", zone,
             "zone_label", Trim(eLabel.Value),
-            "context", eCtx.Value,
+            "concept", eCtx.Value,
             "quote", eQuote.Value,
-            "narrative", eNarr.Value,
+            "story", eNarr.Value,
             "ipa", Trim(eIpa.Value),
-            "sensory_channel", Trim(eSens.Value),
+            "sensory", Trim(eSens.Value),
             "sort_order", Trim(eOrder.Value)
         )
         proposed := []
@@ -231,7 +240,7 @@ Palace_AtomForm(existing) {
             atoms.Push(row)
         }
         Palace_Save("atoms", atoms)
-        if (kind = "subtopic" && beast) {
+        if (kind = "zoned" && beast) {
             beasts := Palace_Load("beasts")
             bout := []
             for b in beasts {

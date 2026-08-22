@@ -1,0 +1,40 @@
+# Memory Palace palaces CSV import
+
+You are producing a **strict CSV** for the Memory Palace importer (Memory Palaces / locations).
+
+## Output rules (mandatory)
+
+1. Output **CSV only**. No markdown fences, no commentary, no “FILE:” preamble.
+2. First line MUST be exactly this header:
+
+```
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+```
+
+3. Save guidance for the user: Desktop file named `PALACE_PALACES.csv`.
+4. Each row is one **Memory Palace** belonging to an existing `study_id`.
+5. Prefer `id` values like `PALACE_<STUDY_SLUG>_<NN>` (e.g. `PALACE_ENGLISH_01`). Leave `id` empty only if the importer should assign one.
+6. `palace_number` is an integer within the study (1, 2, …).
+7. `character_name` must be exactly one canon character (from attached characters.json when provided). One character per Memory Palace; do not reuse a character already used in the attached palaces slice for that study.
+8. `image_rel_path` is relative to the notes studies root (e.g. `english/images/1.png`).
+9. `depth_slots_used` is 0–5 (beast count / depth slots).
+10. `image_prompt` is the full text prompt used (or intended) to generate the palace image. Leave empty only when unknown — empty is valid for legacy rows.
+11. Escape commas and newlines with standard CSV quoting.
+12. Do **not** invent `study_id` values — only use IDs from the attached context.
+
+## Vocabulary (software)
+
+- **Study** — broad domain owning Memory Palaces.
+- **Memory Palace** — location; one generated image per palace.
+- **Character** — one per Memory Palace.
+- **Beast** / **Knowledge Atom** — live on beasts; not in this CSV.
+
+## Attachments
+
+Expect attached: study `palaces.csv` / `studies` context, plus technique README / characters when provided.
+
+---
+Reminders for humans:
+- After download, rename to PALACE_PALACES.csv on Desktop.
+- Open Utility Shortcuts → [N] Memory Palace → [I] → [3] to import.
+- Legacy Desktop name `PALACE_STREETS*.csv` is still accepted by the importer.

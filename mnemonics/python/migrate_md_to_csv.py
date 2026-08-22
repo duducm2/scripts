@@ -240,7 +240,7 @@ def parse_beast_blocks(street_body: str) -> list[dict[str, Any]]:
                         fields["context"] = cm.group(1).strip()
                 atoms.append(
                     {
-                        "kind": "subtopic",
+                        "kind": "zoned",
                         "zone": f"Z{sm.group(1)}",
                         "zone_label": sm.group(3).strip(),
                         "sensory_channel": (sm.group(5) or "").strip().lower(),
@@ -256,7 +256,7 @@ def parse_beast_blocks(street_body: str) -> list[dict[str, Any]]:
                     if m.group(0).strip().startswith("🟦")
                 ]
             if loose:
-                # Cap at 4 subtopics (technique max); extras get new beast later if needed — keep first 4
+                # Cap at 4 zoned Knowledge Atoms (technique max)
                 for j, sm in enumerate(loose[:4]):
                     label = sm.group(1).strip()
                     hook = (sm.group(2) or "").strip()
@@ -267,7 +267,7 @@ def parse_beast_blocks(street_body: str) -> list[dict[str, Any]]:
                         fields["narrative"] = hook
                     atoms.append(
                         {
-                            "kind": "subtopic",
+                            "kind": "zoned",
                             "zone": f"Z{j + 1}",
                             "zone_label": label,
                             "sensory_channel": "",
@@ -275,7 +275,7 @@ def parse_beast_blocks(street_body: str) -> list[dict[str, Any]]:
                         }
                     )
 
-        if atoms and any(a.get("kind") == "subtopic" for a in atoms):
+        if atoms and any(a.get("kind") in ("zoned", "subtopic") for a in atoms):
             beasts.append(
                 {
                     "peg_code": peg,
@@ -364,7 +364,7 @@ def migrate(
     char_names = load_character_names(technique_dir)
 
     studies: list[dict[str, str]] = []
-    streets: list[dict[str, str]] = []
+    palaces: list[dict[str, str]] = []
     beasts: list[dict[str, str]] = []
     atoms: list[dict[str, str]] = []
     report: list[str] = []
@@ -408,14 +408,14 @@ def migrate(
             report.append(f"Study {study_id} from {md_path}")
 
         text = md_path.read_text(encoding="utf-8", errors="replace")
+        # Legacy MD still uses "## Street N" headings; emit palaces.csv.
         street_blocks = split_streets(text)
         if not street_blocks:
-            warnings.append(f"No streets in {md_path}")
+            warnings.append(f"No Memory Palaces (## Street N) in {md_path}")
             continue
 
         used_chars: set[str] = set()
-        # characters already used in this study's streets
-        for st in streets:
+        for st in palaces:
             if st.get("study_id") == study_id and st.get("character_name"):
                 used_chars.add(st["character_name"])
 
@@ -439,29 +439,30 @@ def migrate(
                         break
                 if not img_rel:
                     img_rel = f"{folder}/images/{num}.png"
-                    warnings.append(f"Missing image for {folder} street {num}")
+                    warnings.append(f"Missing image for {folder} palace {num}")
 
             char_name, found = infer_character(block, char_names, used_chars)
             if found:
                 used_chars.add(char_name)
             else:
-                char_name = f"(unassigned street {num})"
+                char_name = f"(unassigned palace {num})"
                 warnings.append(
-                    f"Low-confidence character for {folder} street {num} → placeholder"
+                    f"Low-confidence character for {folder} palace {num} → placeholder"
                 )
                 used_chars.add(char_name)
 
-            street_id = f"STREET_{slugify(folder)}_{num:02d}"
+            palace_id = f"PALACE_{slugify(folder)}_{num:02d}"
             beasts_parsed = parse_beast_blocks(block)
-            streets.append(
+            palaces.append(
                 {
-                    "id": street_id,
+                    "id": palace_id,
                     "study_id": study_id,
-                    "street_number": str(num),
+                    "palace_number": str(num),
                     "title": st_title,
                     "character_name": char_name,
                     "image_rel_path": img_rel,
                     "depth_slots_used": str(min(5, len(beasts_parsed))),
+                    "image_prompt": "",
                 }
             )
 
@@ -472,7 +473,7 @@ def migrate(
                 beasts.append(
                     {
                         "id": beast_id,
-                        "street_id": street_id,
+                        "palace_id": palace_id,
                         "peg_code": bp["peg_code"],
                         "beast_name": bp["beast_name"],
                         "beast_source": "",
@@ -490,31 +491,33 @@ def migrate(
                             "kind": atom.get("kind", "single"),
                             "zone": atom.get("zone", ""),
                             "zone_label": atom.get("zone_label", ""),
-                            "context": atom.get("context", ""),
+                            "concept": atom.get("concept", atom.get("context", "")),
                             "quote": atom.get("quote", ""),
-                            "narrative": atom.get("narrative", ""),
+                            "story": atom.get("story", atom.get("narrative", "")),
                             "ipa": atom.get("ipa", ""),
-                            "sensory_channel": atom.get("sensory_channel", ""),
+                            "sensory": atom.get(
+                                "sensory", atom.get("sensory_channel", "")
+                            ),
                             "sort_order": str(ai),
                         }
                     )
 
             if not beasts_parsed:
-                warnings.append(f"No beasts parsed on {folder} street {num}")
+                warnings.append(f"No beasts parsed on {folder} palace {num}")
 
     data = {
         "studies": studies,
-        "streets": streets,
+        "palaces": palaces,
         "beasts": beasts,
         "atoms": atoms,
     }
-    issues = validate_dataset(studies, streets, beasts, atoms)
+    issues = validate_dataset(studies, palaces, beasts, atoms)
     report_path = out_dir / "migration_report.md"
     lines = [
         "# Memory Palace migration report",
         "",
         f"- Studies: {len(studies)}",
-        f"- Streets: {len(streets)}",
+        f"- Palaces: {len(palaces)}",
         f"- Beasts: {len(beasts)}",
         f"- Atoms: {len(atoms)}",
         f"- Dry run: {dry_run}",
@@ -540,7 +543,7 @@ def migrate(
     return {
         "counts": {
             "studies": len(studies),
-            "streets": len(streets),
+            "palaces": len(palaces),
             "beasts": len(beasts),
             "atoms": len(atoms),
         },
@@ -552,7 +555,9 @@ def migrate(
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Migrate mnemonic markdown to Memory Palace CSV")
+    p = argparse.ArgumentParser(
+        description="Migrate mnemonic markdown to Memory Palace CSV"
+    )
     p.add_argument(
         "--notes-root",
         type=Path,

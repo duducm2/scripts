@@ -1,272 +1,272 @@
-id,street_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
-BEAST_AI_01_A,STREET_AI_01,A,Arachne,,visual,0,1
-BEAST_AI_01_B,STREET_AI_01,B,bird of paradise,,visual,0,2
-BEAST_AI_01_C,STREET_AI_01,C,cat,,olfactory,1,3
-BEAST_AI_02_D,STREET_AI_02,D,dragon,,tactile,0,1
-BEAST_AI_02_E,STREET_AI_02,E,eagle,,auditory,0,2
-BEAST_AI_02_F,STREET_AI_02,F,frog,,visual,0,3
-BEAST_AI_02_G,STREET_AI_02,G,goat,,gustatory,0,4
-BEAST_AI_02_H,STREET_AI_02,H,Hydra,,olfactory,0,5
-BEAST_AI_03_I,STREET_AI_03,I,imp,,olfactory,1,1
-BEAST_COMMUNICATIO_01_A,STREET_COMMUNICATIO_01,A,Arachne,,,0,1
-BEAST_COMMUNICATIO_01_B,STREET_COMMUNICATIO_01,B,bird of paradise,,,0,2
-BEAST_COMMUNICATIO_01_C,STREET_COMMUNICATIO_01,C,cat,,,0,3
-BEAST_COMMUNICATIO_02_D,STREET_COMMUNICATIO_02,D,dragon,,visual,0,1
-BEAST_COMMUNICATIO_02_E,STREET_COMMUNICATIO_02,E,eagle,,tactile,0,2
-BEAST_COMMUNICATIO_02_F,STREET_COMMUNICATIO_02,F,frog,,auditory,0,3
-BEAST_COMMUNICATIO_02_G,STREET_COMMUNICATIO_02,G,goat,,olfactory,0,4
-BEAST_COMMUNICATIO_02_H,STREET_COMMUNICATIO_02,H,Hydra,,gustatory,0,5
-BEAST_COMMUNICATIO_03_I,STREET_COMMUNICATIO_03,I,imp,,visual,0,1
-BEAST_COMMUNICATIO_03_J,STREET_COMMUNICATIO_03,J,jester,,tactile,0,2
-BEAST_COMMUNICATIO_03_K,STREET_COMMUNICATIO_03,K,kitten,,auditory,0,3
-BEAST_COMMUNICATIO_03_L,STREET_COMMUNICATIO_03,L,lion,,gustatory,0,4
-BEAST_ENGLISH_01_A,STREET_ENGLISH_01,A,Arachne,,,0,1
-BEAST_ENGLISH_01_B,STREET_ENGLISH_01,B,Bird of Paradise,,,0,2
-BEAST_ENGLISH_01_C,STREET_ENGLISH_01,C,Cat,,,0,3
-BEAST_ENGLISH_01_E,STREET_ENGLISH_01,E,Eagle,,,0,4
-BEAST_ENGLISH_02_F,STREET_ENGLISH_02,F,Frog,,,0,1
-BEAST_ENGLISH_02_G,STREET_ENGLISH_02,G,Goat,,,0,2
-BEAST_ENGLISH_02_H,STREET_ENGLISH_02,H,Hydra,,,0,3
-BEAST_ENGLISH_02_I,STREET_ENGLISH_02,I,Imp,,,0,4
-BEAST_ENGLISH_02_J,STREET_ENGLISH_02,J,Jester,,,0,5
-BEAST_ENGLISH_03_K,STREET_ENGLISH_03,K,Kitten,,,0,1
-BEAST_ENGLISH_03_L,STREET_ENGLISH_03,L,Lion,,,0,2
-BEAST_ENGLISH_04_M,STREET_ENGLISH_04,M,marmoset,,,0,1
-BEAST_ENGLISH_04_N,STREET_ENGLISH_04,N,Neanderthal,,,0,2
-BEAST_ENGLISH_04_O,STREET_ENGLISH_04,O,owl,,,0,3
-BEAST_ENGLISH_04_P,STREET_ENGLISH_04,P,panther,,,0,4
-BEAST_ENGLISH_04_Q,STREET_ENGLISH_04,Q,Quetzalcoatl,,,0,5
-BEAST_ENGLISH_05_R,STREET_ENGLISH_05,R,rat,,,0,1
-BEAST_ENGLISH_05_S,STREET_ENGLISH_05,S,skull,,,0,2
-BEAST_ENGLISH_06_T,STREET_ENGLISH_06,T,toucan,,,0,1
-BEAST_ENGLISH_06_U,STREET_ENGLISH_06,U,unicorn,,,0,2
-BEAST_ENGLISH_06_V,STREET_ENGLISH_06,V,vulture,,,0,3
-BEAST_ENGLISH_06_W,STREET_ENGLISH_06,W,wombat,,,0,4
-BEAST_ENGLISH_07_X,STREET_ENGLISH_07,X,"Xena, warrior woman",,,0,1
-BEAST_ENGLISH_07_Y,STREET_ENGLISH_07,Y,yak,,,0,2
-BEAST_ENGLISH_07_Z,STREET_ENGLISH_07,Z,Zeus,,,0,3
-BEAST_ENGLISH_07_AA,STREET_ENGLISH_07,Aa,aardvark,,,0,4
-BEAST_ENGLISH_07_AB,STREET_ENGLISH_07,Ab,Abyssinian cat,,,0,5
-BEAST_ENGLISH_08_AC,STREET_ENGLISH_08,Ac,acorn,,,0,1
-BEAST_ENGLISH_08_AD,STREET_ENGLISH_08,Ad,adder,,,0,2
-BEAST_ENGLISH_08_AE,STREET_ENGLISH_08,Ae,aerialist,,,0,3
-BEAST_ENGLISH_08_AF,STREET_ENGLISH_08,Af,Afghan hound,,,0,4
-BEAST_ENGLISH_08_AG,STREET_ENGLISH_08,Ag,Agaric fungi,,,0,5
-BEAST_ENGLISH_09_AH,STREET_ENGLISH_09,Ah,Ah!—a sigh,,,0,1
-BEAST_ENGLISH_09_AI,STREET_ENGLISH_09,Ai,Airedale terrier,,,0,2
-BEAST_ENGLISH_10_AJ,STREET_ENGLISH_10,Aj,Ajax,,,0,1
-BEAST_ENGLISH_10_AK,STREET_ENGLISH_10,Ak,Akita (dog breed),,,0,2
-BEAST_ENGLISH_10_AL,STREET_ENGLISH_10,Al,alligator,,,0,3
-BEAST_ENGLISH_10_AM,STREET_ENGLISH_10,Am,amulet,,,0,4
-BEAST_ENGLISH_10_AN,STREET_ENGLISH_10,An,angel,,,0,5
-BEAST_ENGLISH_11_AO,STREET_ENGLISH_11,Ao,aoudad,,,0,1
-BEAST_ENGLISH_11_AP,STREET_ENGLISH_11,Ap,ape,,,0,2
-BEAST_ENGLISH_11_AQ,STREET_ENGLISH_11,Aq,aquatic leech,,,0,3
-BEAST_ENGLISH_11_AR,STREET_ENGLISH_11,Ar,armadillo,,,0,4
-BEAST_ENGLISH_11_AS,STREET_ENGLISH_11,As,asp,,,0,5
-BEAST_ENGLISH_12_AT,STREET_ENGLISH_12,At,atlas,,,0,1
-BEAST_ENGLISH_12_AU,STREET_ENGLISH_12,Au,auroch,,,0,2
-BEAST_ENGLISH_12_AV,STREET_ENGLISH_12,Av,avocet,,,0,3
-BEAST_ENGLISH_12_AW,STREET_ENGLISH_12,Aw,awassi sheep,,,0,4
-BEAST_ENGLISH_12_AX,STREET_ENGLISH_12,Ax,axolotl,,,0,5
-BEAST_ENGLISH_13_AY,STREET_ENGLISH_13,Ay,aye-aye,,,0,1
-BEAST_ENGLISH_13_AZ,STREET_ENGLISH_13,Az,Aztec,,,0,2
-BEAST_ENGLISH_13_BA,STREET_ENGLISH_13,Ba,bat,,,0,3
-BEAST_ENGLISH_13_BB,STREET_ENGLISH_13,Bb,Brass bison,,,0,4
-BEAST_ENGLISH_13_BE,STREET_ENGLISH_13,Be,bee,,,0,5
-BEAST_ENGLISH_14_BF,STREET_ENGLISH_14,Bf,Blackwater ferret,,,0,1
-BEAST_ENGLISH_14_BG,STREET_ENGLISH_14,Bg,Boulder giraffe,,,0,2
-BEAST_ENGLISH_15_BH,STREET_ENGLISH_15,Bh,Bitter hare,,,0,1
-BEAST_ENGLISH_15_BI,STREET_ENGLISH_15,Bi,bison,,,0,2
-BEAST_ENGLISH_15_BJ,STREET_ENGLISH_15,Bj,Basil jellyfish,,,0,3
-BEAST_ENGLISH_15_BK,STREET_ENGLISH_15,Bk,Bloodmoon kestrel,,,0,4
-BEAST_ENGLISH_16_BL,STREET_ENGLISH_16,Bl,bloodhound,,,0,1
-BEAST_ENGLISH_16_BM,STREET_ENGLISH_16,Bm,Bone marmoset,,,0,2
-BEAST_ENGLISH_16_BN,STREET_ENGLISH_16,Bn,Blazing nightjar,,,0,3
-BEAST_ENGLISH_16_BO,STREET_ENGLISH_16,Bo,bower-bird,,,0,4
-BEAST_ENGLISH_16_BP,STREET_ENGLISH_16,Bp,Blackwater penguin,,,0,5
-BEAST_ENGLISH_17_BQ,STREET_ENGLISH_17,Bq,Boulder quail,,,0,1
-BEAST_ENGLISH_17_BR,STREET_ENGLISH_17,Br,brontosaurus,,,0,2
-BEAST_ENGLISH_18_BS,STREET_ENGLISH_18,Bs,Bone Shark,,,0,1
-BEAST_ENGLISH_18_BT,STREET_ENGLISH_18,Bt,Bone Toad,,,0,2
-BEAST_ENGLISH_18_BU,STREET_ENGLISH_18,Bu,butterfly,,,0,3
-BEAST_GERMAN_01_A,STREET_GERMAN_01,A,Arachne,,,0,1
-BEAST_GERMAN_01_B,STREET_GERMAN_01,B,bird of paradise,,,0,2
-BEAST_GERMAN_01_C,STREET_GERMAN_01,C,cat,,,0,3
-BEAST_GERMAN_01_D,STREET_GERMAN_01,D,dragon,,,0,4
-BEAST_GERMAN_01_E,STREET_GERMAN_01,E,eagle,,,0,5
-BEAST_GERMAN_02_F,STREET_GERMAN_02,F,frog,,,0,1
-BEAST_GERMAN_02_G,STREET_GERMAN_02,G,goat,,,0,2
-BEAST_GERMAN_02_H,STREET_GERMAN_02,H,Hydra,,,0,3
-BEAST_GERMAN_03_I,STREET_GERMAN_03,I,imp,,,0,1
-BEAST_GERMAN_03_J,STREET_GERMAN_03,J,jester,,,0,2
-BEAST_GERMAN_03_K,STREET_GERMAN_03,K,kitten,,,0,3
-BEAST_GERMAN_03_L,STREET_GERMAN_03,L,lion,,,0,4
-BEAST_GERMAN_03_M,STREET_GERMAN_03,M,marmoset,,,0,5
-BEAST_GERMAN_04_N,STREET_GERMAN_04,N,Neanderthal,,,0,1
-BEAST_GERMAN_04_O,STREET_GERMAN_04,O,owl,,,0,2
-BEAST_GERMAN_04_P,STREET_GERMAN_04,P,panther,,,0,3
-BEAST_GERMAN_04_Q,STREET_GERMAN_04,Q,Quetzalcoatl,,,0,4
-BEAST_GERMAN_05_R,STREET_GERMAN_05,R,Rat,,,0,1
-BEAST_GERMAN_05_S,STREET_GERMAN_05,S,Skull,,,0,2
-BEAST_GERMAN_05_T,STREET_GERMAN_05,T,Toucan,,,0,3
-BEAST_GERMAN_05_U,STREET_GERMAN_05,U,Unicorn,,,0,4
-BEAST_GERMAN_05_V,STREET_GERMAN_05,V,Vulture,,,0,5
-BEAST_GERMAN_06_W,STREET_GERMAN_06,W,Wombat,,,0,1
-BEAST_GERMAN_06_X,STREET_GERMAN_06,X,"Xena, warrior woman",,,0,2
-BEAST_GERMAN_07_Y,STREET_GERMAN_07,Y,yak,,,0,1
-BEAST_GERMAN_07_Z,STREET_GERMAN_07,Z,Zeus,,,0,2
-BEAST_GERMAN_07_AA,STREET_GERMAN_07,Aa,aardvark,,,0,3
-BEAST_GERMAN_07_AB,STREET_GERMAN_07,Ab,Abyssinian cat,,,0,4
-BEAST_GERMAN_07_AC,STREET_GERMAN_07,Ac,acorn,,,0,5
-BEAST_GERMAN_08_AD,STREET_GERMAN_08,Ad,adder,,,0,1
-BEAST_GERMAN_08_AE,STREET_GERMAN_08,Ae,aerialqist,,,0,2
-BEAST_GERMAN_08_AF,STREET_GERMAN_08,Af,Afghan hound,,,1,3
-BEAST_PIANO_01_A,STREET_PIANO_01,A,Arachne,,,1,1
-BEAST_PIANO_01_B,STREET_PIANO_01,B,bird of paradise,,,1,2
-BEAST_PIANO_01_C,STREET_PIANO_01,C,cat,,,1,3
-BEAST_PIANO_01_D,STREET_PIANO_01,D,dragon,,,1,4
-BEAST_PIANO_01_E,STREET_PIANO_01,E,eagle,,,0,5
-BEAST_PIANO_02_F,STREET_PIANO_02,F,frog,,,1,1
-BEAST_PIANO_02_G,STREET_PIANO_02,G,goat,,,0,2
-BEAST_PIANO_02_H,STREET_PIANO_02,H,Hydra,,,1,3
-BEAST_PIANO_02_I,STREET_PIANO_02,I,imp,,,1,4
-BEAST_PIANO_02_J,STREET_PIANO_02,J,jester,,,1,5
-BEAST_PIANO_03_K,STREET_PIANO_03,K,kitten,,,0,1
-BEAST_PIANO_03_L,STREET_PIANO_03,L,lion,,,1,2
-BEAST_PIANO_03_M,STREET_PIANO_03,M,marmoset,,,1,3
-BEAST_PIANO_03_N,STREET_PIANO_03,N,Neanderthal,,,1,4
-BEAST_PIANO_03_O,STREET_PIANO_03,O,owl,,,1,5
-BEAST_PIANO_04_P,STREET_PIANO_04,P,panther,,,1,1
-BEAST_PIANO_04_Q,STREET_PIANO_04,Q,Quetzalcoatl,,,1,2
-BEAST_PIANO_04_R,STREET_PIANO_04,R,rat,,,0,3
-BEAST_PIANO_05_S,STREET_PIANO_05,S,skull,,visual,0,1
-BEAST_PIANO_05_T,STREET_PIANO_05,T,toucan,,visual,0,2
-BEAST_PIANO_05_U,STREET_PIANO_05,U,unicorn,,tactile,0,3
-BEAST_PIANO_05_V,STREET_PIANO_05,V,vulture,,auditory,0,4
-BEAST_PIANO_05_W,STREET_PIANO_05,W,wombat,,tactile,0,5
-BEAST_PIANO_06_X,STREET_PIANO_06,X,"Xena, warrior woman",,visual,0,1
-BEAST_PIANO_06_Y,STREET_PIANO_06,Y,yak,,visual,1,2
-BEAST_PIANO_06_Z,STREET_PIANO_06,Z,Zeus,,visual,1,3
-BEAST_PIANO_06_AA,STREET_PIANO_06,Aa,aardvark,,visual,0,4
-BEAST_PIANO_06_AB,STREET_PIANO_06,Ab,Abyssinian cat,,tactile,0,5
-BEAST_PIANO_07_AC,STREET_PIANO_07,Ac,acorn,,visual,0,1
-BEAST_PIANO_07_AD,STREET_PIANO_07,Ad,adder,,auditory,0,2
-BEAST_PIANO_07_AE,STREET_PIANO_07,Ae,aerialist,,olfactory,1,3
-BEAST_PIANO_08_AF,STREET_PIANO_08,Af,Afghan hound,,tactile,0,1
-BEAST_PIANO_08_AG,STREET_PIANO_08,Ag,Agaric fungi,,visual,0,2
-BEAST_PIANO_08_AH,STREET_PIANO_08,Ah,Ah!—a sigh,,auditory,0,3
-BEAST_PIANO_09_AI,STREET_PIANO_09,Ai,Airedale terrier,,auditory,0,1
-BEAST_PIANO_10_AJ,STREET_PIANO_10,Aj,Ajax,,visual,0,1
-BEAST_PIANO_10_AK,STREET_PIANO_10,Ak,Akita (dog breed),,visual,0,2
-BEAST_SCIENCE_01_A,STREET_SCIENCE_01,A,Arachne,,,0,1
-BEAST_SCIENCE_01_B,STREET_SCIENCE_01,B,bird of paradise,,,0,2
-BEAST_SCIENCE_02_C,STREET_SCIENCE_02,C,cat,,,0,1
-BEAST_SCIENCE_02_D,STREET_SCIENCE_02,D,dragon,,,0,2
-BEAST_SCIENCE_02_E,STREET_SCIENCE_02,E,eagle,,,0,3
-BEAST_SCIENCE_02_F,STREET_SCIENCE_02,F,frog,,,0,4
-BEAST_SCIENCE_03_G,STREET_SCIENCE_03,G,Goat,,,0,1
-BEAST_SCIENCE_03_H,STREET_SCIENCE_03,H,Hydra,,,0,2
-BEAST_SCIENCE_03_I,STREET_SCIENCE_03,I,Imp,,,0,3
-BEAST_SCIENCE_03_J,STREET_SCIENCE_03,J,Jester,,,0,4
-BEAST_SCIENCE_03_K,STREET_SCIENCE_03,K,Kitten,,,0,5
-BEAST_SCIENCE_04_L,STREET_SCIENCE_04,L,Lion,,,0,1
-BEAST_SCIENCE_04_M,STREET_SCIENCE_04,M,Marmoset,,,0,2
-BEAST_SCIENCE_04_N,STREET_SCIENCE_04,N,Neanderthal,,,0,3
-BEAST_SCIENCE_05_O,STREET_SCIENCE_05,O,owl,,,0,1
-BEAST_SCIENCE_05_P,STREET_SCIENCE_05,P,panther,,,0,2
-BEAST_SCIENCE_05_Q,STREET_SCIENCE_05,Q,Quetzalcoatl,,,0,3
-BEAST_SCIENCE_05_R,STREET_SCIENCE_05,R,rat,,,0,4
-BEAST_SCIENCE_06_S,STREET_SCIENCE_06,S,skull,,,0,1
-BEAST_SCIENCE_06_T,STREET_SCIENCE_06,T,toucan,,,0,2
-BEAST_SCIENCE_06_U,STREET_SCIENCE_06,U,unicorn,,,0,3
-BEAST_SCIENCE_06_V,STREET_SCIENCE_06,V,vulture,,,0,4
-BEAST_SCIENCE_06_W,STREET_SCIENCE_06,W,wombat,,,0,5
-BEAST_SCIENCE_07_X,STREET_SCIENCE_07,X,"Xena, warrior woman",,,0,1
-BEAST_SCIENCE_07_Y,STREET_SCIENCE_07,Y,yak,,,0,2
-BEAST_SCIENCE_07_Z,STREET_SCIENCE_07,Z,Zeus,,,0,3
-BEAST_SCIENCE_07_AA,STREET_SCIENCE_07,Aa,aardvark,,,0,4
-BEAST_SCIENCE_07_AB,STREET_SCIENCE_07,Ab,Abyssinian cat,,,0,5
-BEAST_SCIENCE_08_AC,STREET_SCIENCE_08,Ac,acorn,,,0,1
-BEAST_SCIENCE_08_AD,STREET_SCIENCE_08,Ad,adder,,,0,2
-BEAST_SCIENCE_09_AE,STREET_SCIENCE_09,Ae,aerialist,,,0,1
-BEAST_SCIENCE_09_AF,STREET_SCIENCE_09,Af,Afghan hound,,,0,2
-BEAST_SCIENCE_09_AG,STREET_SCIENCE_09,Ag,Agaric fungi,,,0,3
-BEAST_SCIENCE_09_AH,STREET_SCIENCE_09,Ah,Ah!�a sigh,,,0,4
-BEAST_SCIENCE_09_AI,STREET_SCIENCE_09,Ai,Airedale terrier,,,0,5
-BEAST_SCIENCE_10_AJ,STREET_SCIENCE_10,Aj,[Ajax],,,0,1
-BEAST_SCIENCE_10_AK,STREET_SCIENCE_10,Ak,[Akita (dog breed)],,,0,2
-BEAST_SCIENCE_10_AL,STREET_SCIENCE_10,Al,[alligator],,,0,3
-BEAST_SCIENCE_10_AM,STREET_SCIENCE_10,Am,[amulet],,,0,4
-BEAST_SCIENCE_10_AN,STREET_SCIENCE_10,An,[angel],,,0,5
-BEAST_SCIENCE_11_AO,STREET_SCIENCE_11,Ao,aoudad,,,0,1
-BEAST_SCIENCE_11_AP,STREET_SCIENCE_11,Ap,ape,,,0,2
-BEAST_SCIENCE_11_AQ,STREET_SCIENCE_11,Aq,aquatic leech,,,0,3
-BEAST_SCIENCE_11_AR,STREET_SCIENCE_11,Ar,armadillo,,,0,4
-BEAST_SCIENCE_12_AS,STREET_SCIENCE_12,As,asp,,,0,1
-BEAST_SCIENCE_12_AT,STREET_SCIENCE_12,At,atlas,,,0,2
-BEAST_SCIENCE_12_AU,STREET_SCIENCE_12,Au,auroch,,,0,3
-BEAST_SCIENCE_12_AV,STREET_SCIENCE_12,Av,avocet,,,0,4
-BEAST_SCIENCE_13_AW,STREET_SCIENCE_13,Aw,awassi sheep,,,0,1
-BEAST_SCIENCE_13_AX,STREET_SCIENCE_13,Ax,axolotl,,,0,2
-BEAST_SCIENCE_13_AY,STREET_SCIENCE_13,Ay,aye-aye,,,0,3
-BEAST_SCIENCE_13_AZ,STREET_SCIENCE_13,Az,Aztec,,,0,4
-BEAST_SCIENCE_13_BA,STREET_SCIENCE_13,Ba,bat,,,0,5
-BEAST_SCIENCE_14_BB,STREET_SCIENCE_14,Bb,Bone Bear,,,0,1
-BEAST_SCIENCE_14_BC,STREET_SCIENCE_14,Bc,Bone Cat,,,0,2
-BEAST_SCIENCE_14_BD,STREET_SCIENCE_14,Bd,Bone Dog,,,0,3
-BEAST_SCIENCE_14_BE,STREET_SCIENCE_14,Be,bee,,,0,4
-BEAST_SCIENCE_15_BF,STREET_SCIENCE_15,Bf,Bone frog,,,0,1
-BEAST_SCIENCE_15_BG,STREET_SCIENCE_15,Bg,Bone goat,,,0,2
-BEAST_SCIENCE_15_BH,STREET_SCIENCE_15,Bh,Bone Hydra,,,0,3
-BEAST_SCIENCE_15_BI,STREET_SCIENCE_15,Bi,bison,,,0,4
-BEAST_SCIENCE_15_BJ,STREET_SCIENCE_15,Bj,Bone jester,,,0,5
-BEAST_SCIENCE_16_BK,STREET_SCIENCE_16,Bk,Bone kitten,,,0,1
-BEAST_SCIENCE_16_BL,STREET_SCIENCE_16,Bl,bloodhound,,,0,2
-BEAST_SCIENCE_16_BM,STREET_SCIENCE_16,Bm,Bone marmoset,,,0,3
-BEAST_SCIENCE_17_BN,STREET_SCIENCE_17,Bn,Bone Neanderthal,,,0,1
-BEAST_SCIENCE_17_BO,STREET_SCIENCE_17,Bo,bower-bird,,,0,2
-BEAST_SCIENCE_17_BP,STREET_SCIENCE_17,Bp,Bone panther,,,0,3
-BEAST_SCIENCE_18_BQ,STREET_SCIENCE_18,Bq,Bone Quetzalcoatl,,,0,1
-BEAST_SCIENCE_18_BR,STREET_SCIENCE_18,Br,brontosaurus,,,0,2
-BEAST_SCIENCE_18_BS,STREET_SCIENCE_18,Bs,Bone skull,,,0,3
-BEAST_SCIENCE_18_BT,STREET_SCIENCE_18,Bt,Bone toucan,,,0,4
-BEAST_SCIENCE_19_BU,STREET_SCIENCE_19,Bu,"[butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: ""the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships."" Quote: ""Does SSL increase trust?"" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: ""the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships."" Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: ""Does SSL increase trust?""",,,0,1
-BEAST_SCIENCE_19_BV,STREET_SCIENCE_19,Bv,"[Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: ""How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?"" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: ""How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?"" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.",,,0,2
-BEAST_SCIENCE_19_BW,STREET_SCIENCE_19,Bw,"[Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: ""Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?"" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: ""Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?"" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.",,,0,3
-BEAST_SCIENCE_19_BX,STREET_SCIENCE_19,Bx,"[Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: ""How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?"" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: ""How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?"" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.",,,0,4
-BEAST_SKILLS_01_A,STREET_SKILLS_01,A,Arachne,,,0,1
-BEAST_SKILLS_01_B,STREET_SKILLS_01,B,bird of paradise,,,0,2
-BEAST_SKILLS_01_C,STREET_SKILLS_01,C,cat,,,0,3
-BEAST_SKILLS_01_D,STREET_SKILLS_01,D,dragon,,,0,4
-BEAST_SKILLS_01_E,STREET_SKILLS_01,E,eagle,,,0,5
-BEAST_SKILLS_02_F,STREET_SKILLS_02,F,frog,,,0,1
-BEAST_SKILLS_02_G,STREET_SKILLS_02,G,goat,,,0,2
-BEAST_SKILLS_03_H,STREET_SKILLS_03,H,Hydra,,tactile,1,1
-BEAST_SKILLS_03_I,STREET_SKILLS_03,I,imp,,olfactory,1,2
-BEAST_SKILLS_04_J,STREET_SKILLS_04,J,jester,,tactile,0,1
-BEAST_SKILLS_04_K,STREET_SKILLS_04,K,kitten,,tactile,0,2
-BEAST_SKILLS_04_L,STREET_SKILLS_04,L,lion,,tactile,0,3
-BEAST_SKILLS_04_M,STREET_SKILLS_04,M,marmoset,,tactile,0,4
-BEAST_SKILLS_05_N,STREET_SKILLS_05,N,Neanderthal,,auditory,1,1
-BEAST_SKILLS_05_O,STREET_SKILLS_05,O,owl,,visual,1,2
-BEAST_TAOISM_01_A,STREET_TAOISM_01,A,Arachne,,gustatory,0,1
-BEAST_TAOISM_01_B,STREET_TAOISM_01,B,bird of paradise,,tactile,0,2
-BEAST_TAOISM_01_C,STREET_TAOISM_01,C,cat,,auditory,0,3
-BEAST_TAOISM_01_D,STREET_TAOISM_01,D,dragon,,visual,0,4
-BEAST_TAOISM_01_E,STREET_TAOISM_01,E,eagle,,olfactory,0,5
-BEAST_TAOISM_02_F,STREET_TAOISM_02,F,frog,,visual,0,1
-BEAST_TAOISM_02_G,STREET_TAOISM_02,G,goat,,auditory,0,2
-BEAST_TAOISM_02_H,STREET_TAOISM_02,H,Hydra,,tactile,0,3
-BEAST_TAOISM_02_I,STREET_TAOISM_02,I,imp,,olfactory,0,4
-BEAST_TAOISM_02_J,STREET_TAOISM_02,J,jester,,gustatory,0,5
-BEAST_TAOISM_03_K,STREET_TAOISM_03,K,kitten,,visual,0,1
-BEAST_TAOISM_03_L,STREET_TAOISM_03,L,lion,,tactile,0,2
-BEAST_TAOISM_03_M,STREET_TAOISM_03,M,marmoset,,auditory,0,3
-BEAST_TAOISM_03_N,STREET_TAOISM_03,N,Neanderthal,,olfactory,0,4
-BEAST_TAOISM_03_O,STREET_TAOISM_03,O,owl,,tactile,0,5
-BEAST_TAOISM_04_P,STREET_TAOISM_04,P,panther,,auditory,0,1
-BEAST_TAOISM_04_Q,STREET_TAOISM_04,Q,Quetzalcoatl,,visual,0,2
-BEAST_TAOISM_04_R,STREET_TAOISM_04,R,rat,,gustatory,0,3
-BEAST_TAOISM_04_S,STREET_TAOISM_04,S,skull,,tactile,0,4
-BEAST_TAOISM_04_T,STREET_TAOISM_04,T,toucan,,olfactory,0,5
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_AI_01_A,PALACE_AI_01,A,Arachne,,visual,0,1
+BEAST_AI_01_B,PALACE_AI_01,B,bird of paradise,,visual,0,2
+BEAST_AI_01_C,PALACE_AI_01,C,cat,,olfactory,1,3
+BEAST_AI_02_D,PALACE_AI_02,D,dragon,,tactile,0,1
+BEAST_AI_02_E,PALACE_AI_02,E,eagle,,auditory,0,2
+BEAST_AI_02_F,PALACE_AI_02,F,frog,,visual,0,3
+BEAST_AI_02_G,PALACE_AI_02,G,goat,,gustatory,0,4
+BEAST_AI_02_H,PALACE_AI_02,H,Hydra,,olfactory,0,5
+BEAST_AI_03_I,PALACE_AI_03,I,imp,,olfactory,1,1
+BEAST_COMMUNICATIO_01_A,PALACE_COMMUNICATIO_01,A,Arachne,,,0,1
+BEAST_COMMUNICATIO_01_B,PALACE_COMMUNICATIO_01,B,bird of paradise,,,0,2
+BEAST_COMMUNICATIO_01_C,PALACE_COMMUNICATIO_01,C,cat,,,0,3
+BEAST_COMMUNICATIO_02_D,PALACE_COMMUNICATIO_02,D,dragon,,visual,0,1
+BEAST_COMMUNICATIO_02_E,PALACE_COMMUNICATIO_02,E,eagle,,tactile,0,2
+BEAST_COMMUNICATIO_02_F,PALACE_COMMUNICATIO_02,F,frog,,auditory,0,3
+BEAST_COMMUNICATIO_02_G,PALACE_COMMUNICATIO_02,G,goat,,olfactory,0,4
+BEAST_COMMUNICATIO_02_H,PALACE_COMMUNICATIO_02,H,Hydra,,gustatory,0,5
+BEAST_COMMUNICATIO_03_I,PALACE_COMMUNICATIO_03,I,imp,,visual,0,1
+BEAST_COMMUNICATIO_03_J,PALACE_COMMUNICATIO_03,J,jester,,tactile,0,2
+BEAST_COMMUNICATIO_03_K,PALACE_COMMUNICATIO_03,K,kitten,,auditory,0,3
+BEAST_COMMUNICATIO_03_L,PALACE_COMMUNICATIO_03,L,lion,,gustatory,0,4
+BEAST_ENGLISH_01_A,PALACE_ENGLISH_01,A,Arachne,,,0,1
+BEAST_ENGLISH_01_B,PALACE_ENGLISH_01,B,Bird of Paradise,,,0,2
+BEAST_ENGLISH_01_C,PALACE_ENGLISH_01,C,Cat,,,0,3
+BEAST_ENGLISH_01_E,PALACE_ENGLISH_01,E,Eagle,,,0,4
+BEAST_ENGLISH_02_F,PALACE_ENGLISH_02,F,Frog,,,0,1
+BEAST_ENGLISH_02_G,PALACE_ENGLISH_02,G,Goat,,,0,2
+BEAST_ENGLISH_02_H,PALACE_ENGLISH_02,H,Hydra,,,0,3
+BEAST_ENGLISH_02_I,PALACE_ENGLISH_02,I,Imp,,,0,4
+BEAST_ENGLISH_02_J,PALACE_ENGLISH_02,J,Jester,,,0,5
+BEAST_ENGLISH_03_K,PALACE_ENGLISH_03,K,Kitten,,,0,1
+BEAST_ENGLISH_03_L,PALACE_ENGLISH_03,L,Lion,,,0,2
+BEAST_ENGLISH_04_M,PALACE_ENGLISH_04,M,marmoset,,,0,1
+BEAST_ENGLISH_04_N,PALACE_ENGLISH_04,N,Neanderthal,,,0,2
+BEAST_ENGLISH_04_O,PALACE_ENGLISH_04,O,owl,,,0,3
+BEAST_ENGLISH_04_P,PALACE_ENGLISH_04,P,panther,,,0,4
+BEAST_ENGLISH_04_Q,PALACE_ENGLISH_04,Q,Quetzalcoatl,,,0,5
+BEAST_ENGLISH_05_R,PALACE_ENGLISH_05,R,rat,,,0,1
+BEAST_ENGLISH_05_S,PALACE_ENGLISH_05,S,skull,,,0,2
+BEAST_ENGLISH_06_T,PALACE_ENGLISH_06,T,toucan,,,0,1
+BEAST_ENGLISH_06_U,PALACE_ENGLISH_06,U,unicorn,,,0,2
+BEAST_ENGLISH_06_V,PALACE_ENGLISH_06,V,vulture,,,0,3
+BEAST_ENGLISH_06_W,PALACE_ENGLISH_06,W,wombat,,,0,4
+BEAST_ENGLISH_07_X,PALACE_ENGLISH_07,X,"Xena, warrior woman",,,0,1
+BEAST_ENGLISH_07_Y,PALACE_ENGLISH_07,Y,yak,,,0,2
+BEAST_ENGLISH_07_Z,PALACE_ENGLISH_07,Z,Zeus,,,0,3
+BEAST_ENGLISH_07_AA,PALACE_ENGLISH_07,Aa,aardvark,,,0,4
+BEAST_ENGLISH_07_AB,PALACE_ENGLISH_07,Ab,Abyssinian cat,,,0,5
+BEAST_ENGLISH_08_AC,PALACE_ENGLISH_08,Ac,acorn,,,0,1
+BEAST_ENGLISH_08_AD,PALACE_ENGLISH_08,Ad,adder,,,0,2
+BEAST_ENGLISH_08_AE,PALACE_ENGLISH_08,Ae,aerialist,,,0,3
+BEAST_ENGLISH_08_AF,PALACE_ENGLISH_08,Af,Afghan hound,,,0,4
+BEAST_ENGLISH_08_AG,PALACE_ENGLISH_08,Ag,Agaric fungi,,,0,5
+BEAST_ENGLISH_09_AH,PALACE_ENGLISH_09,Ah,Ah!—a sigh,,,0,1
+BEAST_ENGLISH_09_AI,PALACE_ENGLISH_09,Ai,Airedale terrier,,,0,2
+BEAST_ENGLISH_10_AJ,PALACE_ENGLISH_10,Aj,Ajax,,,0,1
+BEAST_ENGLISH_10_AK,PALACE_ENGLISH_10,Ak,Akita (dog breed),,,0,2
+BEAST_ENGLISH_10_AL,PALACE_ENGLISH_10,Al,alligator,,,0,3
+BEAST_ENGLISH_10_AM,PALACE_ENGLISH_10,Am,amulet,,,0,4
+BEAST_ENGLISH_10_AN,PALACE_ENGLISH_10,An,angel,,,0,5
+BEAST_ENGLISH_11_AO,PALACE_ENGLISH_11,Ao,aoudad,,,0,1
+BEAST_ENGLISH_11_AP,PALACE_ENGLISH_11,Ap,ape,,,0,2
+BEAST_ENGLISH_11_AQ,PALACE_ENGLISH_11,Aq,aquatic leech,,,0,3
+BEAST_ENGLISH_11_AR,PALACE_ENGLISH_11,Ar,armadillo,,,0,4
+BEAST_ENGLISH_11_AS,PALACE_ENGLISH_11,As,asp,,,0,5
+BEAST_ENGLISH_12_AT,PALACE_ENGLISH_12,At,atlas,,,0,1
+BEAST_ENGLISH_12_AU,PALACE_ENGLISH_12,Au,auroch,,,0,2
+BEAST_ENGLISH_12_AV,PALACE_ENGLISH_12,Av,avocet,,,0,3
+BEAST_ENGLISH_12_AW,PALACE_ENGLISH_12,Aw,awassi sheep,,,0,4
+BEAST_ENGLISH_12_AX,PALACE_ENGLISH_12,Ax,axolotl,,,0,5
+BEAST_ENGLISH_13_AY,PALACE_ENGLISH_13,Ay,aye-aye,,,0,1
+BEAST_ENGLISH_13_AZ,PALACE_ENGLISH_13,Az,Aztec,,,0,2
+BEAST_ENGLISH_13_BA,PALACE_ENGLISH_13,Ba,bat,,,0,3
+BEAST_ENGLISH_13_BB,PALACE_ENGLISH_13,Bb,Brass bison,,,0,4
+BEAST_ENGLISH_13_BE,PALACE_ENGLISH_13,Be,bee,,,0,5
+BEAST_ENGLISH_14_BF,PALACE_ENGLISH_14,Bf,Blackwater ferret,,,0,1
+BEAST_ENGLISH_14_BG,PALACE_ENGLISH_14,Bg,Boulder giraffe,,,0,2
+BEAST_ENGLISH_15_BH,PALACE_ENGLISH_15,Bh,Bitter hare,,,0,1
+BEAST_ENGLISH_15_BI,PALACE_ENGLISH_15,Bi,bison,,,0,2
+BEAST_ENGLISH_15_BJ,PALACE_ENGLISH_15,Bj,Basil jellyfish,,,0,3
+BEAST_ENGLISH_15_BK,PALACE_ENGLISH_15,Bk,Bloodmoon kestrel,,,0,4
+BEAST_ENGLISH_16_BL,PALACE_ENGLISH_16,Bl,bloodhound,,,0,1
+BEAST_ENGLISH_16_BM,PALACE_ENGLISH_16,Bm,Bone marmoset,,,0,2
+BEAST_ENGLISH_16_BN,PALACE_ENGLISH_16,Bn,Blazing nightjar,,,0,3
+BEAST_ENGLISH_16_BO,PALACE_ENGLISH_16,Bo,bower-bird,,,0,4
+BEAST_ENGLISH_16_BP,PALACE_ENGLISH_16,Bp,Blackwater penguin,,,0,5
+BEAST_ENGLISH_17_BQ,PALACE_ENGLISH_17,Bq,Boulder quail,,,0,1
+BEAST_ENGLISH_17_BR,PALACE_ENGLISH_17,Br,brontosaurus,,,0,2
+BEAST_ENGLISH_18_BS,PALACE_ENGLISH_18,Bs,Bone Shark,,,0,1
+BEAST_ENGLISH_18_BT,PALACE_ENGLISH_18,Bt,Bone Toad,,,0,2
+BEAST_ENGLISH_18_BU,PALACE_ENGLISH_18,Bu,butterfly,,,0,3
+BEAST_GERMAN_01_A,PALACE_GERMAN_01,A,Arachne,,,0,1
+BEAST_GERMAN_01_B,PALACE_GERMAN_01,B,bird of paradise,,,0,2
+BEAST_GERMAN_01_C,PALACE_GERMAN_01,C,cat,,,0,3
+BEAST_GERMAN_01_D,PALACE_GERMAN_01,D,dragon,,,0,4
+BEAST_GERMAN_01_E,PALACE_GERMAN_01,E,eagle,,,0,5
+BEAST_GERMAN_02_F,PALACE_GERMAN_02,F,frog,,,0,1
+BEAST_GERMAN_02_G,PALACE_GERMAN_02,G,goat,,,0,2
+BEAST_GERMAN_02_H,PALACE_GERMAN_02,H,Hydra,,,0,3
+BEAST_GERMAN_03_I,PALACE_GERMAN_03,I,imp,,,0,1
+BEAST_GERMAN_03_J,PALACE_GERMAN_03,J,jester,,,0,2
+BEAST_GERMAN_03_K,PALACE_GERMAN_03,K,kitten,,,0,3
+BEAST_GERMAN_03_L,PALACE_GERMAN_03,L,lion,,,0,4
+BEAST_GERMAN_03_M,PALACE_GERMAN_03,M,marmoset,,,0,5
+BEAST_GERMAN_04_N,PALACE_GERMAN_04,N,Neanderthal,,,0,1
+BEAST_GERMAN_04_O,PALACE_GERMAN_04,O,owl,,,0,2
+BEAST_GERMAN_04_P,PALACE_GERMAN_04,P,panther,,,0,3
+BEAST_GERMAN_04_Q,PALACE_GERMAN_04,Q,Quetzalcoatl,,,0,4
+BEAST_GERMAN_05_R,PALACE_GERMAN_05,R,Rat,,,0,1
+BEAST_GERMAN_05_S,PALACE_GERMAN_05,S,Skull,,,0,2
+BEAST_GERMAN_05_T,PALACE_GERMAN_05,T,Toucan,,,0,3
+BEAST_GERMAN_05_U,PALACE_GERMAN_05,U,Unicorn,,,0,4
+BEAST_GERMAN_05_V,PALACE_GERMAN_05,V,Vulture,,,0,5
+BEAST_GERMAN_06_W,PALACE_GERMAN_06,W,Wombat,,,0,1
+BEAST_GERMAN_06_X,PALACE_GERMAN_06,X,"Xena, warrior woman",,,0,2
+BEAST_GERMAN_07_Y,PALACE_GERMAN_07,Y,yak,,,0,1
+BEAST_GERMAN_07_Z,PALACE_GERMAN_07,Z,Zeus,,,0,2
+BEAST_GERMAN_07_AA,PALACE_GERMAN_07,Aa,aardvark,,,0,3
+BEAST_GERMAN_07_AB,PALACE_GERMAN_07,Ab,Abyssinian cat,,,0,4
+BEAST_GERMAN_07_AC,PALACE_GERMAN_07,Ac,acorn,,,0,5
+BEAST_GERMAN_08_AD,PALACE_GERMAN_08,Ad,adder,,,0,1
+BEAST_GERMAN_08_AE,PALACE_GERMAN_08,Ae,aerialqist,,,0,2
+BEAST_GERMAN_08_AF,PALACE_GERMAN_08,Af,Afghan hound,,,1,3
+BEAST_PIANO_01_A,PALACE_PIANO_01,A,Arachne,,,1,1
+BEAST_PIANO_01_B,PALACE_PIANO_01,B,bird of paradise,,,1,2
+BEAST_PIANO_01_C,PALACE_PIANO_01,C,cat,,,1,3
+BEAST_PIANO_01_D,PALACE_PIANO_01,D,dragon,,,1,4
+BEAST_PIANO_01_E,PALACE_PIANO_01,E,eagle,,,0,5
+BEAST_PIANO_02_F,PALACE_PIANO_02,F,frog,,,1,1
+BEAST_PIANO_02_G,PALACE_PIANO_02,G,goat,,,0,2
+BEAST_PIANO_02_H,PALACE_PIANO_02,H,Hydra,,,1,3
+BEAST_PIANO_02_I,PALACE_PIANO_02,I,imp,,,1,4
+BEAST_PIANO_02_J,PALACE_PIANO_02,J,jester,,,1,5
+BEAST_PIANO_03_K,PALACE_PIANO_03,K,kitten,,,0,1
+BEAST_PIANO_03_L,PALACE_PIANO_03,L,lion,,,1,2
+BEAST_PIANO_03_M,PALACE_PIANO_03,M,marmoset,,,1,3
+BEAST_PIANO_03_N,PALACE_PIANO_03,N,Neanderthal,,,1,4
+BEAST_PIANO_03_O,PALACE_PIANO_03,O,owl,,,1,5
+BEAST_PIANO_04_P,PALACE_PIANO_04,P,panther,,,1,1
+BEAST_PIANO_04_Q,PALACE_PIANO_04,Q,Quetzalcoatl,,,1,2
+BEAST_PIANO_04_R,PALACE_PIANO_04,R,rat,,,0,3
+BEAST_PIANO_05_S,PALACE_PIANO_05,S,skull,,visual,0,1
+BEAST_PIANO_05_T,PALACE_PIANO_05,T,toucan,,visual,0,2
+BEAST_PIANO_05_U,PALACE_PIANO_05,U,unicorn,,tactile,0,3
+BEAST_PIANO_05_V,PALACE_PIANO_05,V,vulture,,auditory,0,4
+BEAST_PIANO_05_W,PALACE_PIANO_05,W,wombat,,tactile,0,5
+BEAST_PIANO_06_X,PALACE_PIANO_06,X,"Xena, warrior woman",,visual,0,1
+BEAST_PIANO_06_Y,PALACE_PIANO_06,Y,yak,,visual,1,2
+BEAST_PIANO_06_Z,PALACE_PIANO_06,Z,Zeus,,visual,1,3
+BEAST_PIANO_06_AA,PALACE_PIANO_06,Aa,aardvark,,visual,0,4
+BEAST_PIANO_06_AB,PALACE_PIANO_06,Ab,Abyssinian cat,,tactile,0,5
+BEAST_PIANO_07_AC,PALACE_PIANO_07,Ac,acorn,,visual,0,1
+BEAST_PIANO_07_AD,PALACE_PIANO_07,Ad,adder,,auditory,0,2
+BEAST_PIANO_07_AE,PALACE_PIANO_07,Ae,aerialist,,olfactory,1,3
+BEAST_PIANO_08_AF,PALACE_PIANO_08,Af,Afghan hound,,tactile,0,1
+BEAST_PIANO_08_AG,PALACE_PIANO_08,Ag,Agaric fungi,,visual,0,2
+BEAST_PIANO_08_AH,PALACE_PIANO_08,Ah,Ah!—a sigh,,auditory,0,3
+BEAST_PIANO_09_AI,PALACE_PIANO_09,Ai,Airedale terrier,,auditory,0,1
+BEAST_PIANO_10_AJ,PALACE_PIANO_10,Aj,Ajax,,visual,0,1
+BEAST_PIANO_10_AK,PALACE_PIANO_10,Ak,Akita (dog breed),,visual,0,2
+BEAST_SCIENCE_01_A,PALACE_SCIENCE_01,A,Arachne,,,0,1
+BEAST_SCIENCE_01_B,PALACE_SCIENCE_01,B,bird of paradise,,,0,2
+BEAST_SCIENCE_02_C,PALACE_SCIENCE_02,C,cat,,,0,1
+BEAST_SCIENCE_02_D,PALACE_SCIENCE_02,D,dragon,,,0,2
+BEAST_SCIENCE_02_E,PALACE_SCIENCE_02,E,eagle,,,0,3
+BEAST_SCIENCE_02_F,PALACE_SCIENCE_02,F,frog,,,0,4
+BEAST_SCIENCE_03_G,PALACE_SCIENCE_03,G,Goat,,,0,1
+BEAST_SCIENCE_03_H,PALACE_SCIENCE_03,H,Hydra,,,0,2
+BEAST_SCIENCE_03_I,PALACE_SCIENCE_03,I,Imp,,,0,3
+BEAST_SCIENCE_03_J,PALACE_SCIENCE_03,J,Jester,,,0,4
+BEAST_SCIENCE_03_K,PALACE_SCIENCE_03,K,Kitten,,,0,5
+BEAST_SCIENCE_04_L,PALACE_SCIENCE_04,L,Lion,,,0,1
+BEAST_SCIENCE_04_M,PALACE_SCIENCE_04,M,Marmoset,,,0,2
+BEAST_SCIENCE_04_N,PALACE_SCIENCE_04,N,Neanderthal,,,0,3
+BEAST_SCIENCE_05_O,PALACE_SCIENCE_05,O,owl,,,0,1
+BEAST_SCIENCE_05_P,PALACE_SCIENCE_05,P,panther,,,0,2
+BEAST_SCIENCE_05_Q,PALACE_SCIENCE_05,Q,Quetzalcoatl,,,0,3
+BEAST_SCIENCE_05_R,PALACE_SCIENCE_05,R,rat,,,0,4
+BEAST_SCIENCE_06_S,PALACE_SCIENCE_06,S,skull,,,0,1
+BEAST_SCIENCE_06_T,PALACE_SCIENCE_06,T,toucan,,,0,2
+BEAST_SCIENCE_06_U,PALACE_SCIENCE_06,U,unicorn,,,0,3
+BEAST_SCIENCE_06_V,PALACE_SCIENCE_06,V,vulture,,,0,4
+BEAST_SCIENCE_06_W,PALACE_SCIENCE_06,W,wombat,,,0,5
+BEAST_SCIENCE_07_X,PALACE_SCIENCE_07,X,"Xena, warrior woman",,,0,1
+BEAST_SCIENCE_07_Y,PALACE_SCIENCE_07,Y,yak,,,0,2
+BEAST_SCIENCE_07_Z,PALACE_SCIENCE_07,Z,Zeus,,,0,3
+BEAST_SCIENCE_07_AA,PALACE_SCIENCE_07,Aa,aardvark,,,0,4
+BEAST_SCIENCE_07_AB,PALACE_SCIENCE_07,Ab,Abyssinian cat,,,0,5
+BEAST_SCIENCE_08_AC,PALACE_SCIENCE_08,Ac,acorn,,,0,1
+BEAST_SCIENCE_08_AD,PALACE_SCIENCE_08,Ad,adder,,,0,2
+BEAST_SCIENCE_09_AE,PALACE_SCIENCE_09,Ae,aerialist,,,0,1
+BEAST_SCIENCE_09_AF,PALACE_SCIENCE_09,Af,Afghan hound,,,0,2
+BEAST_SCIENCE_09_AG,PALACE_SCIENCE_09,Ag,Agaric fungi,,,0,3
+BEAST_SCIENCE_09_AH,PALACE_SCIENCE_09,Ah,Ah!�a sigh,,,0,4
+BEAST_SCIENCE_09_AI,PALACE_SCIENCE_09,Ai,Airedale terrier,,,0,5
+BEAST_SCIENCE_10_AJ,PALACE_SCIENCE_10,Aj,[Ajax],,,0,1
+BEAST_SCIENCE_10_AK,PALACE_SCIENCE_10,Ak,[Akita (dog breed)],,,0,2
+BEAST_SCIENCE_10_AL,PALACE_SCIENCE_10,Al,[alligator],,,0,3
+BEAST_SCIENCE_10_AM,PALACE_SCIENCE_10,Am,[amulet],,,0,4
+BEAST_SCIENCE_10_AN,PALACE_SCIENCE_10,An,[angel],,,0,5
+BEAST_SCIENCE_11_AO,PALACE_SCIENCE_11,Ao,aoudad,,,0,1
+BEAST_SCIENCE_11_AP,PALACE_SCIENCE_11,Ap,ape,,,0,2
+BEAST_SCIENCE_11_AQ,PALACE_SCIENCE_11,Aq,aquatic leech,,,0,3
+BEAST_SCIENCE_11_AR,PALACE_SCIENCE_11,Ar,armadillo,,,0,4
+BEAST_SCIENCE_12_AS,PALACE_SCIENCE_12,As,asp,,,0,1
+BEAST_SCIENCE_12_AT,PALACE_SCIENCE_12,At,atlas,,,0,2
+BEAST_SCIENCE_12_AU,PALACE_SCIENCE_12,Au,auroch,,,0,3
+BEAST_SCIENCE_12_AV,PALACE_SCIENCE_12,Av,avocet,,,0,4
+BEAST_SCIENCE_13_AW,PALACE_SCIENCE_13,Aw,awassi sheep,,,0,1
+BEAST_SCIENCE_13_AX,PALACE_SCIENCE_13,Ax,axolotl,,,0,2
+BEAST_SCIENCE_13_AY,PALACE_SCIENCE_13,Ay,aye-aye,,,0,3
+BEAST_SCIENCE_13_AZ,PALACE_SCIENCE_13,Az,Aztec,,,0,4
+BEAST_SCIENCE_13_BA,PALACE_SCIENCE_13,Ba,bat,,,0,5
+BEAST_SCIENCE_14_BB,PALACE_SCIENCE_14,Bb,Bone Bear,,,0,1
+BEAST_SCIENCE_14_BC,PALACE_SCIENCE_14,Bc,Bone Cat,,,0,2
+BEAST_SCIENCE_14_BD,PALACE_SCIENCE_14,Bd,Bone Dog,,,0,3
+BEAST_SCIENCE_14_BE,PALACE_SCIENCE_14,Be,bee,,,0,4
+BEAST_SCIENCE_15_BF,PALACE_SCIENCE_15,Bf,Bone frog,,,0,1
+BEAST_SCIENCE_15_BG,PALACE_SCIENCE_15,Bg,Bone goat,,,0,2
+BEAST_SCIENCE_15_BH,PALACE_SCIENCE_15,Bh,Bone Hydra,,,0,3
+BEAST_SCIENCE_15_BI,PALACE_SCIENCE_15,Bi,bison,,,0,4
+BEAST_SCIENCE_15_BJ,PALACE_SCIENCE_15,Bj,Bone jester,,,0,5
+BEAST_SCIENCE_16_BK,PALACE_SCIENCE_16,Bk,Bone kitten,,,0,1
+BEAST_SCIENCE_16_BL,PALACE_SCIENCE_16,Bl,bloodhound,,,0,2
+BEAST_SCIENCE_16_BM,PALACE_SCIENCE_16,Bm,Bone marmoset,,,0,3
+BEAST_SCIENCE_17_BN,PALACE_SCIENCE_17,Bn,Bone Neanderthal,,,0,1
+BEAST_SCIENCE_17_BO,PALACE_SCIENCE_17,Bo,bower-bird,,,0,2
+BEAST_SCIENCE_17_BP,PALACE_SCIENCE_17,Bp,Bone panther,,,0,3
+BEAST_SCIENCE_18_BQ,PALACE_SCIENCE_18,Bq,Bone Quetzalcoatl,,,0,1
+BEAST_SCIENCE_18_BR,PALACE_SCIENCE_18,Br,brontosaurus,,,0,2
+BEAST_SCIENCE_18_BS,PALACE_SCIENCE_18,Bs,Bone skull,,,0,3
+BEAST_SCIENCE_18_BT,PALACE_SCIENCE_18,Bt,Bone toucan,,,0,4
+BEAST_SCIENCE_19_BU,PALACE_SCIENCE_19,Bu,"[butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: ""the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships."" Quote: ""Does SSL increase trust?"" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: ""the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships."" Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: ""Does SSL increase trust?""",,,0,1
+BEAST_SCIENCE_19_BV,PALACE_SCIENCE_19,Bv,"[Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: ""How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?"" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: ""How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?"" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.",,,0,2
+BEAST_SCIENCE_19_BW,PALACE_SCIENCE_19,Bw,"[Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: ""Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?"" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: ""Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?"" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.",,,0,3
+BEAST_SCIENCE_19_BX,PALACE_SCIENCE_19,Bx,"[Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: ""How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?"" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: ""How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?"" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.",,,0,4
+BEAST_SKILLS_01_A,PALACE_SKILLS_01,A,Arachne,,,0,1
+BEAST_SKILLS_01_B,PALACE_SKILLS_01,B,bird of paradise,,,0,2
+BEAST_SKILLS_01_C,PALACE_SKILLS_01,C,cat,,,0,3
+BEAST_SKILLS_01_D,PALACE_SKILLS_01,D,dragon,,,0,4
+BEAST_SKILLS_01_E,PALACE_SKILLS_01,E,eagle,,,0,5
+BEAST_SKILLS_02_F,PALACE_SKILLS_02,F,frog,,,0,1
+BEAST_SKILLS_02_G,PALACE_SKILLS_02,G,goat,,,0,2
+BEAST_SKILLS_03_H,PALACE_SKILLS_03,H,Hydra,,tactile,1,1
+BEAST_SKILLS_03_I,PALACE_SKILLS_03,I,imp,,olfactory,1,2
+BEAST_SKILLS_04_J,PALACE_SKILLS_04,J,jester,,tactile,0,1
+BEAST_SKILLS_04_K,PALACE_SKILLS_04,K,kitten,,tactile,0,2
+BEAST_SKILLS_04_L,PALACE_SKILLS_04,L,lion,,tactile,0,3
+BEAST_SKILLS_04_M,PALACE_SKILLS_04,M,marmoset,,tactile,0,4
+BEAST_SKILLS_05_N,PALACE_SKILLS_05,N,Neanderthal,,auditory,1,1
+BEAST_SKILLS_05_O,PALACE_SKILLS_05,O,owl,,visual,1,2
+BEAST_TAOISM_01_A,PALACE_TAOISM_01,A,Arachne,,gustatory,0,1
+BEAST_TAOISM_01_B,PALACE_TAOISM_01,B,bird of paradise,,tactile,0,2
+BEAST_TAOISM_01_C,PALACE_TAOISM_01,C,cat,,auditory,0,3
+BEAST_TAOISM_01_D,PALACE_TAOISM_01,D,dragon,,visual,0,4
+BEAST_TAOISM_01_E,PALACE_TAOISM_01,E,eagle,,olfactory,0,5
+BEAST_TAOISM_02_F,PALACE_TAOISM_02,F,frog,,visual,0,1
+BEAST_TAOISM_02_G,PALACE_TAOISM_02,G,goat,,auditory,0,2
+BEAST_TAOISM_02_H,PALACE_TAOISM_02,H,Hydra,,tactile,0,3
+BEAST_TAOISM_02_I,PALACE_TAOISM_02,I,imp,,olfactory,0,4
+BEAST_TAOISM_02_J,PALACE_TAOISM_02,J,jester,,gustatory,0,5
+BEAST_TAOISM_03_K,PALACE_TAOISM_03,K,kitten,,visual,0,1
+BEAST_TAOISM_03_L,PALACE_TAOISM_03,L,lion,,tactile,0,2
+BEAST_TAOISM_03_M,PALACE_TAOISM_03,M,marmoset,,auditory,0,3
+BEAST_TAOISM_03_N,PALACE_TAOISM_03,N,Neanderthal,,olfactory,0,4
+BEAST_TAOISM_03_O,PALACE_TAOISM_03,O,owl,,tactile,0,5
+BEAST_TAOISM_04_P,PALACE_TAOISM_04,P,panther,,auditory,0,1
+BEAST_TAOISM_04_Q,PALACE_TAOISM_04,Q,Quetzalcoatl,,visual,0,2
+BEAST_TAOISM_04_R,PALACE_TAOISM_04,R,rat,,gustatory,0,3
+BEAST_TAOISM_04_S,PALACE_TAOISM_04,S,skull,,tactile,0,4
+BEAST_TAOISM_04_T,PALACE_TAOISM_04,T,toucan,,olfactory,0,5

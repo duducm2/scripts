@@ -7,10 +7,10 @@ global g_PalaceBeastLv := false
 global g_PalaceBeastRows := []
 
 Palace_ShowBeasts() {
-    global g_PalaceGui, g_PalaceBeastLv, g_PalaceFilterStreetId, g_PalaceFilterStudyId
+    global g_PalaceGui, g_PalaceBeastLv, g_PalaceFilterPalaceId, g_PalaceFilterStudyId
     Palace_CloseGui()
     Palace_EnsureData()
-    if (g_PalaceFilterStreetId = "") {
+    if (g_PalaceFilterPalaceId = "") {
         studyId := g_PalaceFilterStudyId
         if (studyId = "")
             studyId := Palace_PickStudy()
@@ -19,17 +19,17 @@ Palace_ShowBeasts() {
             return
         }
         g_PalaceFilterStudyId := studyId
-        pick := Palace_PickStreet(studyId)
+        pick := Palace_PickPalace(studyId)
         if (pick = "") {
             Palace_ShowMainMenu()
             return
         }
-        g_PalaceFilterStreetId := pick
+        g_PalaceFilterPalaceId := pick
     }
     g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Beasts")
     g_PalaceGui.SetFont("s10", "Segoe UI")
     g_PalaceGui.Add("Text", "x12 y10 w860",
-        Palace_StreetLabel(g_PalaceFilterStreetId)
+        Palace_PalaceLabel(g_PalaceFilterPalaceId)
         . "   [A] add   [E] edit   Delete   [F] filter   Backspace menu")
     g_PalaceBeastLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
         ["Peg", "Name", "Source", "Sensory", "Smashed", "Order"])
@@ -50,23 +50,23 @@ Palace_ShowBeasts() {
 }
 
 Palace_BeastFilter(*) {
-    global g_PalaceFilterStreetId, g_PalaceFilterStudyId
+    global g_PalaceFilterPalaceId, g_PalaceFilterStudyId
     studyId := Palace_PickStudy()
     if (studyId = "")
         return
     g_PalaceFilterStudyId := studyId
-    pick := Palace_PickStreet(studyId)
+    pick := Palace_PickPalace(studyId)
     if (pick = "")
         return
-    g_PalaceFilterStreetId := pick
+    g_PalaceFilterPalaceId := pick
     Palace_ShowBeasts()
 }
 
 Palace_BeastRefresh() {
-    global g_PalaceBeastLv, g_PalaceBeastRows, g_PalaceFilterStreetId
+    global g_PalaceBeastLv, g_PalaceBeastRows, g_PalaceFilterPalaceId
     if (!IsObject(g_PalaceBeastLv))
         return
-    rows := Palace_FilterBy(Palace_Load("beasts"), "street_id", g_PalaceFilterStreetId)
+    rows := Palace_FilterBy(Palace_Load("beasts"), "palace_id", g_PalaceFilterPalaceId)
     g_PalaceBeastLv.Delete()
     g_PalaceBeastRows := []
     for b in rows {
@@ -125,9 +125,9 @@ Palace_BeastDelete(*) {
 }
 
 Palace_BeastForm(existing) {
-    global g_PalaceGui, g_PalaceFilterStreetId
+    global g_PalaceGui, g_PalaceFilterPalaceId
     isEdit := IsObject(existing)
-    streetId := isEdit ? existing["street_id"] : g_PalaceFilterStreetId
+    palaceId := isEdit ? existing["palace_id"] : g_PalaceFilterPalaceId
     owner := ""
     try {
         if (IsObject(g_PalaceGui))
@@ -147,7 +147,7 @@ Palace_BeastForm(existing) {
     g.Add("Text", "y+8", "Sensory channel (visual, auditory, …)")
     eSens := g.Add("Edit", "w200", isEdit ? existing["sensory_channel"] : "visual")
     chk := g.Add("CheckBox", "y+8 Checked" . (isEdit && existing["is_smashed"] = "1" ? "1" : "0"),
-        "Smashed (up to 4 subtopics; header carries no atom)")
+    "Smashed (up to 4 Knowledge Atoms on Z1–Z4; header carries no atom)")
     g.Add("Text", "y+8", "Sort order")
     eOrder := g.Add("Edit", "w80", isEdit ? existing["sort_order"] : "1")
     saved := false
@@ -174,22 +174,22 @@ Palace_BeastForm(existing) {
             return
         }
         beasts := Palace_Load("beasts")
-        onStreet := Palace_FilterBy(beasts, "street_id", streetId)
+        onPalace := Palace_FilterBy(beasts, "palace_id", palaceId)
         count := 0
-        for r in onStreet {
+        for r in onPalace {
             if (!isEdit || r["id"] != existing["id"])
                 count += 1
         }
         if (!isEdit && count >= 5) {
-            Palace_Alert("Maximum 5 beasts per street.", "Beasts")
+            Palace_Alert("Maximum 5 beasts per Memory Palace.", "Beasts")
             return
         }
-        id := isEdit ? existing["id"] : "BEAST_" . Palace_Slug(streetId) . "_" . Palace_Slug(peg)
+        id := isEdit ? existing["id"] : "BEAST_" . Palace_Slug(palaceId) . "_" . Palace_Slug(peg)
         if (!isEdit && Palace_IdExists(beasts, id))
             id := Palace_SlugId("BEAST_", peg . "_" . name, beasts)
         row := Map(
             "id", id,
-            "street_id", streetId,
+            "palace_id", palaceId,
             "peg_code", peg,
             "beast_name", name,
             "beast_source", Trim(eSrc.Value),
