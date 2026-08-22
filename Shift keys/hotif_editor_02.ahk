@@ -691,7 +691,8 @@ Editor_QuickCommit() {
 ; Shift + Y : Zen mode - Zen
 +y:: Send "+z"
 
-; Shift + P : Git Pull — native in Cursor/VS Code (no AHK remap)
+; Shift + P : Git Pull, else Sync Changes (UIA + palette quality gates)
++p:: Editor_GitPullOrSync()
 
 ; Shift + V : Git Commit - Commit
 +v:: Send "+v"

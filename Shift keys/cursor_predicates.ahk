@@ -794,6 +794,192 @@ Editor_GitStashAndPull() {
     global g_EditorGitRobotQuickUpdate
     g_EditorGitRobotQuickUpdate := Editor_IsThisScriptsRepo(hwnd, repoDir)
 }
+
+; ---------------------------------------------------------------------------
+; Shift+P: Pull first, then Sync Changes (may also push). Quality gates.
+; ---------------------------------------------------------------------------
+Editor_GitInvokeUiaElement(el) {
+    if !IsObject(el)
+        return false
+    try {
+        if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
+            try {
+                el.InvokePattern.Invoke()
+                return true
+            } catch {
+            }
+            try {
+                el.Invoke()
+                return true
+            } catch {
+            }
+        }
+    } catch {
+    }
+    try {
+        el.Click()
+        return true
+    } catch {
+    }
+    return false
+}
+
+Editor_GitIsPullButtonName(name) {
+    if (name = "")
+        return false
+    ; Exact Pull / Pull from… — avoid "Pull Request".
+    if RegExMatch(name, "i)^Pull$")
+        return true
+    if RegExMatch(name, "i)^Pull from\b")
+        return true
+    if RegExMatch(name, "i)^Git:\s*Pull$")
+        return true
+    return false
+}
+
+Editor_GitIsSyncButtonName(name) {
+    if (name = "")
+        return false
+    ; In progress or post-commit — do not click.
+    if InStr(name, "Synchronizing")
+        return false
+    if InStr(name, "Commit & Sync") || InStr(name, "Commit and Sync")
+        return false
+    if InStr(name, "Sync Changes") || InStr(name, "Synchronize Changes")
+        return true
+    return false
+}
+
+Editor_GitFindPullControl(root) {
+    if !IsObject(root)
+        return 0
+    try {
+        for name in ["Pull", "Pull from...", "Git: Pull"] {
+            try {
+                btn := root.FindFirst({ Name: name, Type: UIA.Type.Button })
+                if btn
+                    return btn
+            } catch {
+            }
+        }
+        for btn in root.FindAll({ Type: UIA.Type.Button }) {
+            n := ""
+            try n := btn.Name
+            if Editor_GitIsPullButtonName(n)
+                return btn
+        }
+    } catch {
+    }
+    return 0
+}
+
+Editor_GitFindSyncControl(root) {
+    if !IsObject(root)
+        return 0
+    try {
+        ; Prefer SCM action button (title includes Sync Changes + optional ahead/behind).
+        try {
+            btn := root.FindFirst({ Name: "Sync Changes", Type: UIA.Type.Button, matchmode: "Substring" })
+            if btn {
+                n := ""
+                try n := btn.Name
+                if Editor_GitIsSyncButtonName(n)
+                    return btn
+            }
+        } catch {
+        }
+        for btn in root.FindAll({ Type: UIA.Type.Button }) {
+            n := ""
+            try n := btn.Name
+            if Editor_GitIsSyncButtonName(n)
+                return btn
+        }
+        ; Status bar often uses "Synchronize Changes".
+        for needle in ["Synchronize Changes", "Sync Changes"] {
+            try {
+                el := root.FindFirst({ Name: needle, matchmode: "Substring" })
+                if el {
+                    n := ""
+                    try n := el.Name
+                    if Editor_GitIsSyncButtonName(n)
+                        return el
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+Editor_GitRunPaletteCommand(cmdTitle) {
+    if (cmdTitle = "")
+        return false
+    try {
+        Send "^+p"
+        Sleep 220
+        SendText cmdTitle
+        Sleep 180
+        Send "{Enter}"
+        Sleep 120
+        return true
+    } catch {
+    }
+    return false
+}
+
+Editor_GitPullOrSync() {
+    hwnd := WinExist("A")
+    if !hwnd
+        return
+    if !(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe")) {
+        Editor_GitFlowFail("Git", "active window is not Cursor or VS Code")
+        return
+    }
+
+    try FocusSourceControlViewForCommitGeneration()
+    catch {
+        Send "+d"
+        Sleep 450
+    }
+
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+
+    if IsObject(root) {
+        ; Gate 2: UIA Pull button
+        pullBtn := Editor_GitFindPullControl(root)
+        if pullBtn && Editor_GitInvokeUiaElement(pullBtn) {
+            try StandardLoadingBar_Show("⬇️ Pull", BANNER_ACCENT_SUCCESS)
+            try StandardLoadingBar_Hide(600)
+            return
+        }
+        ; Gates 3–4: UIA Sync Changes (SCM button or status bar)
+        syncEl := Editor_GitFindSyncControl(root)
+        if syncEl && Editor_GitInvokeUiaElement(syncEl) {
+            try StandardLoadingBar_Show("🔄 Sync Changes (pull + push)", BANNER_ACCENT_SUCCESS)
+            try StandardLoadingBar_Hide(800)
+            return
+        }
+    }
+
+    ; Gate 5: Command palette Git: Pull
+    if Editor_GitRunPaletteCommand("Git: Pull") {
+        try StandardLoadingBar_Show("⬇️ Pull (palette)", BANNER_ACCENT_SUCCESS)
+        try StandardLoadingBar_Hide(600)
+        return
+    }
+
+    ; Gate 6: Command palette Git: Sync (only if opening/typing Pull palette failed)
+    if Editor_GitRunPaletteCommand("Git: Sync") {
+        try StandardLoadingBar_Show("🔄 Sync (palette; pull + push)", BANNER_ACCENT_SUCCESS)
+        try StandardLoadingBar_Hide(800)
+        return
+    }
+
+    Editor_GitFlowFail("Git", "Pull/Sync not found")
+}
+
 ; Primary sidebar open: Cursor uses sidebarvisible on monaco-workbench; VS Code uses the title-bar toggle.
 Editor_IsPrimarySidebarVisible(editorHwnd := 0) {
     try {
