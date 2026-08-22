@@ -331,6 +331,41 @@ WhatsAppJump_OpenSearchUntilFocused(hwnd, timeoutMs := 10000, waitAfterSendMs :=
     return WhatsAppJump_IsSearchEditFocused()
 }
 
+; True only when the chat *message composer* is focused (whatsapp.md: "Type a message to …").
+; Rejects search Edit names so a stuck search field never counts as success.
+WhatsAppJump_IsComposerEditFocused() {
+    try {
+        fe := UIA.GetFocusedElement()
+        if (!fe)
+            return false
+        nm := ""
+        try nm := fe.Name
+        if (nm = "") {
+            try nm := fe.LegacyIAccessible.Name
+        }
+        if (nm = "")
+            return false
+        if (RegExMatch(nm,
+            "i)(search|buscar|pesquisar|encontrar|name or number|nome ou|start a new chat|nova conversa)"))
+            return false
+        if (RegExMatch(nm, "i)(type a message|digite uma mensagem|digite a mensagem)"))
+            return true
+    } catch {
+    }
+    return false
+}
+
+; Poll until message composer Edit is focused (or deadline). Returns true if focused.
+WhatsAppJump_WaitComposerEditFocused(timeoutMs := 1200, pollMs := 40) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (WhatsAppJump_IsComposerEditFocused())
+            return true
+        Sleep pollMs
+    }
+    return WhatsAppJump_IsComposerEditFocused()
+}
+
 ; Returns true if WhatsApp is active and UI chrome is ready for keyboard shortcuts.
 WhatsAppJump_ActivateOrOpen() {
     global IS_WORK_ENVIRONMENT, WHATSAPP_JUMP_WARM_FASTPATH
@@ -409,6 +444,7 @@ WhatsAppJump_ActivateOrOpen() {
 
 ; Opens search, pastes contact, Enter to select chat only. Does not paste the message.
 ; keepBarVisible: when true (D2C [Z]), leave the Loading Indication up for the caller to continue/hide.
+; After Enter, requires composer focus ("Type a message to …"); retries search→paste→Enter up to 3 times.
 WhatsAppJumpToChat(contact, keepBarVisible := false) {
     WhatsAppJump_ShowLoading("⏳ Opening WhatsApp...")
     if (!WhatsAppJump_ActivateOrOpen())
@@ -432,39 +468,63 @@ WhatsAppJumpToChat(contact, keepBarVisible := false) {
             WhatsAppJump_ActivateHwnd(hwnd, 2)
         }
 
-        ; Hammer search (!k = Shift+S remap) until the real search field is focused
-        ; (not the chat composer Edit — that was a false positive).
-        WhatsAppJump_UpdateLoading("⏳ Opening search...")
-        if (!WhatsAppJump_OpenSearchUntilFocused(hwnd)) {
-            WhatsAppJump_HideLoading()
-            ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp search.", 2500, BANNER_ACCENT_ERROR)
-            return false
-        }
+        maxAttempts := 3
+        loop maxAttempts {
+            attempt := A_Index
+            if (attempt > 1) {
+                WhatsAppJump_UpdateLoading("⏳ Retrying jump (" attempt "/" maxAttempts ")...")
+                Send "{Escape}"
+                Sleep 150
+                if (hwnd > 0 && !WinActive("ahk_id " hwnd)) {
+                    WhatsAppJump_ActivateHwnd(hwnd, 2)
+                }
+            }
 
-        WhatsAppJump_UpdateLoading("⏳ Searching contact...")
-        loop 5 {
-            A_Clipboard := ""
-            A_Clipboard := contact
-            if ClipWait(2) && (A_Clipboard = contact)
-                break
-            if A_Index = 5 {
+            ; Hammer search (!k = Shift+S remap) until the real search field is focused
+            ; (not the chat composer Edit — that was a false positive).
+            WhatsAppJump_UpdateLoading("⏳ Opening search...")
+            if (!WhatsAppJump_OpenSearchUntilFocused(hwnd)) {
+                if (attempt = maxAttempts) {
+                    WhatsAppJump_HideLoading()
+                    ShowCenteredOverlay_Utils("❌ Could not focus WhatsApp search.", 2500, BANNER_ACCENT_ERROR)
+                    return false
+                }
+                continue
+            }
+
+            WhatsAppJump_UpdateLoading("⏳ Searching contact...")
+            clipOk := false
+            loop 5 {
+                A_Clipboard := ""
+                A_Clipboard := contact
+                if ClipWait(2) && (A_Clipboard = contact) {
+                    clipOk := true
+                    break
+                }
+                Sleep 100
+            }
+            if (!clipOk) {
                 WhatsAppJump_HideLoading()
                 ShowCenteredOverlay_Utils("❌ CLIPBOARD ERROR - TRY AGAIN", 3000, BANNER_ACCENT_ERROR)
                 return false
             }
-            Sleep 100
+
+            Send "^v"
+            Sleep 300
+            WhatsAppJump_UpdateLoading("⏳ Opening chat...")
+            Send "{Enter}"
+
+            ; Quality gate: cursor must land in message composer before caller pastes (e.g. D2C [Z]).
+            if (WhatsAppJump_WaitComposerEditFocused(1200, 40)) {
+                if (!keepBarVisible)
+                    WhatsAppJump_HideLoading()
+                return true
+            }
         }
 
-        Send "^v"
-        Sleep 300
-        WhatsAppJump_UpdateLoading("⏳ Opening chat...")
-        Send "{Enter}"
-        ; Let the chat composer take focus before caller (e.g. D2C [Z]) pastes the message.
-        Sleep 350
-
-        if (!keepBarVisible)
-            WhatsAppJump_HideLoading()
-        return true
+        WhatsAppJump_HideLoading()
+        ShowCenteredOverlay_Utils("❌ Could not open chat composer.", 2500, BANNER_ACCENT_ERROR)
+        return false
     } finally {
         SetWinDelay oldWinDelay
         SetKeyDelay oldKeyDelay, 0
