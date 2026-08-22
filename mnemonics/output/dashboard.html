@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Memory Palace</title>
+  <style>
+    :root {
+      --bg: #12141a;
+      --panel: #1c1f28;
+      --text: #e8e6e0;
+      --muted: #9a958c;
+      --gold: #d4a017;
+      --line: #2a2e3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Iowan Old Style", Georgia, serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #2a2418 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header.top {
+      padding: 1.25rem 1.5rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: end;
+      justify-content: space-between;
+    }
+    header.top h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+    header.top .sub { color: var(--muted); margin: 0.25rem 0 0; font-size: 0.95rem; }
+    label { color: var(--muted); font-size: 0.85rem; display: block; margin-bottom: 0.35rem; }
+    select {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      min-width: 220px;
+      font-size: 1rem;
+    }
+    main { padding: 1.25rem 1.5rem 2.5rem; }
+    .study-head h2 { margin: 0 0 0.25rem; color: var(--gold); }
+    .study-head p { margin: 0 0 1rem; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .street {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .street img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      background: #0a0b0e;
+      display: block;
+    }
+    .missing {
+      width: 100%;
+      aspect-ratio: 4/3;
+      display: grid;
+      place-items: center;
+      background: #0a0b0e;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+    }
+    .meta { padding: 0.75rem 0.9rem 1rem; }
+    .meta h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+    .char { margin: 0; color: var(--gold); font-size: 0.92rem; }
+    .counts { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.85rem; }
+    .empty { color: var(--muted); }
+    .issues {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #2a1c1c;
+      border: 1px solid #5a3030;
+      border-radius: 8px;
+    }
+    .issues h3 { margin: 0 0 0.5rem; color: #f0a0a0; }
+    .issues ul { margin: 0; padding-left: 1.2rem; color: #e0c0c0; }
+    footer {
+      padding: 0 1.5rem 1.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Memory Palace</h1>
+      <p class="sub">8 studies · 70 streets ·
+         271 beasts · 302 atoms</p>
+    </div>
+    <div>
+      <label for="study">Study</label>
+      <select id="study">
+        <option value="STUDY_AI" selected>Ai</option><option value="STUDY_COMMUNICATIO">Communication</option><option value="STUDY_ENGLISH">English</option><option value="STUDY_GERMAN">German</option><option value="STUDY_PIANO">Piano</option><option value="STUDY_SCIENCE">Science</option><option value="STUDY_SKILLS">Skills</option><option value="STUDY_TAOISM">Taoism</option>
+      </select>
+    </div>
+  </header>
+  <main>
+    
+            <section class="study" data-study-id="STUDY_AI"
+                     style="display:block">
+              <header class="study-head">
+                <h2>Ai</h2>
+                <p>3 streets · slug AI</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/AI/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Foundations &amp; Semantic Interoperability</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">3 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/AI/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: The Semantic Layer &amp; RAG Structure</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/AI/images/3.jpg" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: AI Pricing &amp; Elo Mechanics</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">1 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_COMMUNICATIO"
+                     style="display:none">
+              <header class="study-head">
+                <h2>Communication</h2>
+                <p>3 streets · slug communication</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/communication/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: The Foundations of Rhetoric</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/communication/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Leading the Business and Others</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/communication/images/3.png" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Leading Myself</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_ENGLISH"
+                     style="display:none">
+              <header class="study-head">
+                <h2>English</h2>
+                <p>18 streets · slug english</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Cleft Sentences &amp; It-Clefts</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Wh-Clefts &amp; Rules</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/3.png" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Special Variations</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/4.png" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Ellipsis &amp; Substitution Basics</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/5.png" alt="Street 5" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 5: Advanced Application</h3>
+                    <p class="char">(unassigned street 5)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/6.png" alt="Street 6" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 6: Discourse Markers (Result &amp; Reason)</h3>
+                    <p class="char">(unassigned street 6)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/7.png" alt="Street 7" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 7: Participle Definitions &amp; Active Forms</h3>
+                    <p class="char">(unassigned street 7)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/8.png" alt="Street 8" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 8: Consequences &amp; Past Forms</h3>
+                    <p class="char">(unassigned street 8)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/9.png" alt="Street 9" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 9: Passive &amp; Mistakes</h3>
+                    <p class="char">(unassigned street 9)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/10.png" alt="Street 10" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 10: Nominalization &amp; Definitions</h3>
+                    <p class="char">(unassigned street 10)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/11.png" alt="Street 11" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 11: Prefixes &amp; Suffixes Definitions</h3>
+                    <p class="char">(unassigned street 11)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/12.png" alt="Street 12" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 12: Negation, Mistakes, &amp; Time</h3>
+                    <p class="char">(unassigned street 12)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/13.png" alt="Street 13" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 13: Suprasegmental Basics</h3>
+                    <p class="char">(unassigned street 13)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/14.png" alt="Street 14" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 14: Pitch and Notation</h3>
+                    <p class="char">(unassigned street 14)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/15.png" alt="Street 15" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 15: Rhythm and Flow</h3>
+                    <p class="char">(unassigned street 15)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/16.png" alt="Street 16" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 16: Connected Speech &amp; Assimilation</h3>
+                    <p class="char">(unassigned street 16)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/17.png" alt="Street 17" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 17: Elision &amp; Intrusion Rules</h3>
+                    <p class="char">(unassigned street 17)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/english/images/18.png" alt="Street 18" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 18: Syllabic Consonants</h3>
+                    <p class="char">(unassigned street 18)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_GERMAN"
+                     style="display:none">
+              <header class="study-head">
+                <h2>German</h2>
+                <p>8 streets · slug german</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Re-tuned Mouth Moves</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Deep German Sounds</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/3.png" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Shifted Placements and Rounded Vowels</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/4.png" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Drops and Fast Diphthongs</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/5.png" alt="Street 5" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 5: Compound Stress and Consonants</h3>
+                    <p class="char">(unassigned street 5)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/6.png" alt="Street 6" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 6: Vowel Length Rules</h3>
+                    <p class="char">(unassigned street 6)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/7.png" alt="Street 7" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 7: Consonant Limits and Vowel Reductions</h3>
+                    <p class="char">(unassigned street 7)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/german/images/8.png" alt="Street 8" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 8: The German R Variations</h3>
+                    <p class="char">(unassigned street 8)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_PIANO"
+                     style="display:none">
+              <header class="study-head">
+                <h2>Piano</h2>
+                <p>10 streets · slug piano</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Keyboard Map and Reading System</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">5 beasts · 11 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Note Values and Relaxed Hand</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">5 beasts · 11 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/3.png" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Practice Structure and Scale Steps</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">5 beasts · 8 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/4.png" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Key Choice, Chords, and Pedal</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">3 beasts · 6 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/5.png" alt="Street 5" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 5: Chord Construction and Types</h3>
+                    <p class="char">(unassigned street 5)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/6.png" alt="Street 6" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 6: Chord Positions and Harmony Basics</h3>
+                    <p class="char">(unassigned street 6)</p>
+                    <p class="counts">5 beasts · 7 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/7.png" alt="Street 7" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 7: Musical Structure</h3>
+                    <p class="char">(unassigned street 7)</p>
+                    <p class="counts">3 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/8.png" alt="Street 8" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 8: Reading Spaces and Resolution</h3>
+                    <p class="char">(unassigned street 8)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/9.png" alt="Street 9" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 9: Note Symbols and Counting</h3>
+                    <p class="char">(unassigned street 9)</p>
+                    <p class="counts">1 beasts · 1 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/piano/images/10.jpg" alt="Street 10" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 10: Reading and Hand Posture</h3>
+                    <p class="char">(unassigned street 10)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_SCIENCE"
+                     style="display:none">
+              <header class="study-head">
+                <h2>Science</h2>
+                <p>19 streets · slug science</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: What your sample says vs. what the world might say</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: The Comparative Method of Valuation</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/3.png" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Conjoint Analysis Basics</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/4.png" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Calculating Share and Demand</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/5.png" alt="Street 5" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 5: Research Bias</h3>
+                    <p class="char">(unassigned street 5)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/6.png" alt="Street 6" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 6: Science vs. Pseudoscience</h3>
+                    <p class="char">(unassigned street 6)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/7.png" alt="Street 7" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 7: Paradigms, Crisis, and Shifts</h3>
+                    <p class="char">(unassigned street 7)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/8.png" alt="Street 8" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 8: The Hypothesis Courtroom</h3>
+                    <p class="char">(unassigned street 8)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/9.png" alt="Street 9" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 9: The Bayesian Courtroom</h3>
+                    <p class="char">(unassigned street 9)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/10.png" alt="Street 10" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 10: The Coin Flip Casino</h3>
+                    <p class="char">(unassigned street 10)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/11.png" alt="Street 11" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 11: The Structure Web</h3>
+                    <p class="char">(unassigned street 11)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/12.png" alt="Street 12" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 12: Foundations and Constant Comparison</h3>
+                    <p class="char">(unassigned street 12)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/13.png" alt="Street 13" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 13: The Evolution of Grounded Theory</h3>
+                    <p class="char">(unassigned street 13)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/14.png" alt="Street 14" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 14: Foundations of Reasoning</h3>
+                    <p class="char">(unassigned street 14)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/15.png" alt="Street 15" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 15: From Social Theory to Bosch UX Practice</h3>
+                    <p class="char">(unassigned street 15)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/16.png" alt="Street 16" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 16: From Raw Data to Theory</h3>
+                    <p class="char">(unassigned street 16)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/17.png" alt="Street 17" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 17: Participatory Action Research Mechanics</h3>
+                    <p class="char">(unassigned street 17)</p>
+                    <p class="counts">3 beasts · 3 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/18.png" alt="Street 18" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 18: Definition and Characteristics</h3>
+                    <p class="char">(unassigned street 18)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/science/images/19.png" alt="Street 19" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 19: How and Why Questions</h3>
+                    <p class="char">(unassigned street 19)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_SKILLS"
+                     style="display:none">
+              <header class="study-head">
+                <h2>Skills</h2>
+                <p>5 streets · slug skills</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/skills/images/1.png" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Core Speed Reading Principles</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/skills/images/2.png" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Enhancing Brain Focus and Retention</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">2 beasts · 2 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/skills/images/3.jpg" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Vital Signs</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">2 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/skills/images/4.png" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Rotina de Ativação Matinal</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">4 beasts · 4 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/skills/images/5.png" alt="Street 5" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 5: Cognitive Shuffling Fundamentals</h3>
+                    <p class="char">(unassigned street 5)</p>
+                    <p class="counts">2 beasts · 6 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+            <section class="study" data-study-id="STUDY_TAOISM"
+                     style="display:none">
+              <header class="study-head">
+                <h2>Taoism</h2>
+                <p>4 streets · slug taoism</p>
+              </header>
+              <div class="grid">
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/taoism/images/1.jpg" alt="Street 1" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 1: Core Philosophy</h3>
+                    <p class="char">(unassigned street 1)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/taoism/images/2.jpg" alt="Street 2" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 2: Foundational Texts &amp; Figures</h3>
+                    <p class="char">(unassigned street 2)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/taoism/images/3.jpg" alt="Street 3" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 3: Cosmology &amp; The Body</h3>
+                    <p class="char">(unassigned street 3)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+                <article class="street">
+                  <img src="file:///C:/Users/eduev/Meu%20Drive/17%20-%20Projects/notes/studies/taoism/images/4.jpg" alt="Street 4" loading="lazy"/>
+                  <div class="meta">
+                    <h3>Street 4: Religious Development &amp; Pantheon</h3>
+                    <p class="char">(unassigned street 4)</p>
+                    <p class="counts">5 beasts · 5 atoms</p>
+                  </div>
+                </article>
+                
+              </div>
+            </section>
+            
+    <aside class="issues"><h3>Validation</h3><ul><li>Street STREET_AI_01 has placeholder character (fill via Streets module)</li><li>Street STREET_AI_02 has placeholder character (fill via Streets module)</li><li>Street STREET_AI_03 has placeholder character (fill via Streets module)</li><li>Street STREET_COMMUNICATIO_01 has placeholder character (fill via Streets module)</li><li>Street STREET_COMMUNICATIO_02 has placeholder character (fill via Streets module)</li><li>Street STREET_COMMUNICATIO_03 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_01 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_02 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_03 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_04 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_05 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_06 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_07 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_08 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_09 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_10 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_11 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_12 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_13 has placeholder character (fill via Streets module)</li><li>Street STREET_ENGLISH_14 has placeholder character (fill via Streets module)</li></ul></aside>
+  </main>
+  <footer>Street images resolve from notes/studies.</footer>
+  <script>
+    const sel = document.getElementById('study');
+    const sections = [...document.querySelectorAll('.study')];
+    function show(id) {
+      sections.forEach(s => {
+        s.style.display = (s.dataset.studyId === id) ? 'block' : 'none';
+      });
+    }
+    if (sel) {
+      sel.addEventListener('change', () => show(sel.value));
+      if (sel.value) show(sel.value);
+    }
+  </script>
+</body>
+</html>

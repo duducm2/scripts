@@ -1,0 +1,9 @@
+id,slug,title,notes_rel_path,sort_order,active
+STUDY_AI,AI,Ai,AI,1,1
+STUDY_COMMUNICATIO,communication,Communication,communication,2,1
+STUDY_ENGLISH,english,English,english,3,1
+STUDY_GERMAN,german,German,german,4,1
+STUDY_PIANO,piano,Piano,piano,5,1
+STUDY_SCIENCE,science,Science,science,6,1
+STUDY_SKILLS,skills,Skills,skills,7,1
+STUDY_TAOISM,taoism,Taoism,taoism,8,1

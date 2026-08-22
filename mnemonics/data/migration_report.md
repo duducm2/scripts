@@ -1,0 +1,164 @@
+# Memory Palace migration report
+
+- Studies: 8
+- Streets: 70
+- Beasts: 271
+- Atoms: 302
+- Dry run: False
+
+## Log
+
+- Study STUDY_AI from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\AI\mnemonics-ai-robot.md
+- Study STUDY_COMMUNICATIO from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\communication\mnemonics-communication.md
+- Study STUDY_ENGLISH from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\english\mnemonics-english.md
+- Study STUDY_GERMAN from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\german\mnemonics-german.md
+- Study STUDY_PIANO from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\piano\mnemonics-piano.md
+- Study STUDY_SCIENCE from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\science\mnemonics-science.md
+- Study STUDY_SKILLS from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\skills\mnemonics-skills.md
+- Study STUDY_TAOISM from C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\taoism\mnemonics-taoism.md
+
+## Warnings
+
+- Low-confidence character for AI street 1 → placeholder
+- Low-confidence character for AI street 2 → placeholder
+- Low-confidence character for AI street 3 → placeholder
+- Low-confidence character for communication street 1 → placeholder
+- Low-confidence character for communication street 2 → placeholder
+- Low-confidence character for communication street 3 → placeholder
+- Low-confidence character for english street 1 → placeholder
+- Low-confidence character for english street 2 → placeholder
+- Low-confidence character for english street 3 → placeholder
+- Low-confidence character for english street 4 → placeholder
+- Low-confidence character for english street 5 → placeholder
+- Low-confidence character for english street 6 → placeholder
+- Low-confidence character for english street 7 → placeholder
+- Low-confidence character for english street 8 → placeholder
+- Low-confidence character for english street 9 → placeholder
+- Low-confidence character for english street 10 → placeholder
+- Low-confidence character for english street 11 → placeholder
+- Low-confidence character for english street 12 → placeholder
+- Low-confidence character for english street 13 → placeholder
+- Low-confidence character for english street 14 → placeholder
+- Low-confidence character for english street 15 → placeholder
+- Low-confidence character for english street 16 → placeholder
+- Low-confidence character for english street 17 → placeholder
+- Low-confidence character for english street 18 → placeholder
+- Low-confidence character for german street 1 → placeholder
+- Low-confidence character for german street 2 → placeholder
+- Low-confidence character for german street 3 → placeholder
+- Low-confidence character for german street 4 → placeholder
+- Low-confidence character for german street 5 → placeholder
+- Low-confidence character for german street 6 → placeholder
+- Low-confidence character for german street 7 → placeholder
+- Low-confidence character for german street 8 → placeholder
+- Low-confidence character for piano street 1 → placeholder
+- Low-confidence character for piano street 2 → placeholder
+- Low-confidence character for piano street 3 → placeholder
+- Low-confidence character for piano street 4 → placeholder
+- Low-confidence character for piano street 5 → placeholder
+- Low-confidence character for piano street 6 → placeholder
+- Low-confidence character for piano street 7 → placeholder
+- Low-confidence character for piano street 8 → placeholder
+- Low-confidence character for piano street 9 → placeholder
+- Low-confidence character for piano street 10 → placeholder
+- Low-confidence character for science street 1 → placeholder
+- Low-confidence character for science street 2 → placeholder
+- Low-confidence character for science street 3 → placeholder
+- Low-confidence character for science street 4 → placeholder
+- Low-confidence character for science street 5 → placeholder
+- Low-confidence character for science street 6 → placeholder
+- Low-confidence character for science street 7 → placeholder
+- Low-confidence character for science street 8 → placeholder
+- Low-confidence character for science street 9 → placeholder
+- Low-confidence character for science street 10 → placeholder
+- Low-confidence character for science street 11 → placeholder
+- Low-confidence character for science street 12 → placeholder
+- Low-confidence character for science street 13 → placeholder
+- Low-confidence character for science street 14 → placeholder
+- Low-confidence character for science street 15 → placeholder
+- Low-confidence character for science street 16 → placeholder
+- Low-confidence character for science street 17 → placeholder
+- Low-confidence character for science street 18 → placeholder
+- Low-confidence character for science street 19 → placeholder
+- Low-confidence character for skills street 1 → placeholder
+- Low-confidence character for skills street 2 → placeholder
+- Low-confidence character for skills street 3 → placeholder
+- Low-confidence character for skills street 4 → placeholder
+- Low-confidence character for skills street 5 → placeholder
+- Low-confidence character for taoism street 1 → placeholder
+- Low-confidence character for taoism street 2 → placeholder
+- Low-confidence character for taoism street 3 → placeholder
+- Low-confidence character for taoism street 4 → placeholder
+
+## Validation issues
+
+- Street STREET_AI_01 has placeholder character (fill via Streets module)
+- Street STREET_AI_02 has placeholder character (fill via Streets module)
+- Street STREET_AI_03 has placeholder character (fill via Streets module)
+- Street STREET_COMMUNICATIO_01 has placeholder character (fill via Streets module)
+- Street STREET_COMMUNICATIO_02 has placeholder character (fill via Streets module)
+- Street STREET_COMMUNICATIO_03 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_01 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_02 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_03 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_04 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_05 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_06 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_07 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_08 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_09 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_10 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_11 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_12 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_13 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_14 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_15 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_16 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_17 has placeholder character (fill via Streets module)
+- Street STREET_ENGLISH_18 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_01 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_02 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_03 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_04 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_05 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_06 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_07 has placeholder character (fill via Streets module)
+- Street STREET_GERMAN_08 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_01 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_02 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_03 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_04 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_05 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_06 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_07 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_08 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_09 has placeholder character (fill via Streets module)
+- Street STREET_PIANO_10 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_01 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_02 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_03 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_04 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_05 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_06 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_07 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_08 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_09 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_10 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_11 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_12 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_13 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_14 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_15 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_16 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_17 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_18 has placeholder character (fill via Streets module)
+- Street STREET_SCIENCE_19 has placeholder character (fill via Streets module)
+- Street STREET_SKILLS_01 has placeholder character (fill via Streets module)
+- Street STREET_SKILLS_02 has placeholder character (fill via Streets module)
+- Street STREET_SKILLS_03 has placeholder character (fill via Streets module)
+- Street STREET_SKILLS_04 has placeholder character (fill via Streets module)
+- Street STREET_SKILLS_05 has placeholder character (fill via Streets module)
+- Street STREET_TAOISM_01 has placeholder character (fill via Streets module)
+- Street STREET_TAOISM_02 has placeholder character (fill via Streets module)
+- Street STREET_TAOISM_03 has placeholder character (fill via Streets module)
+- Street STREET_TAOISM_04 has placeholder character (fill via Streets module)

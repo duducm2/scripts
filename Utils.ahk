@@ -314,6 +314,17 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\finance_import.ahk
 #include %A_ScriptDir%\Utils\finance_git_sync.ahk
 
+; [Utils module] Memory Palace (Utility Shortcuts [N])
+#include %A_ScriptDir%\Utils\mnemonic_palace_helpers.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_launcher.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_studies.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_streets.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_beasts.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_atoms.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk
+
 ; [Utils module] Utility shortcuts #!+U and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 

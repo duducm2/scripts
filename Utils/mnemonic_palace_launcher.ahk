@@ -1,0 +1,164 @@
+; =============================================================================
+; Utils module: mnemonic_palace_launcher.ahk
+; Memory Palace main menu (Utility Shortcuts [N])
+; =============================================================================
+
+Palace_LaunchApp() {
+    Palace_EnsureData()
+    Palace_ShowMainMenu()
+}
+
+Palace_ShowMainMenu() {
+    global g_PalaceGui
+    Palace_CloseGui()
+    Palace_EnsureData()
+
+    studies := Palace_Load("studies")
+    streets := Palace_Load("streets")
+    beasts := Palace_Load("beasts")
+    atoms := Palace_Load("atoms")
+
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace")
+    g_PalaceGui.SetFont("s10", "Segoe UI")
+    g_PalaceGui.BackColor := "1E1E1E"
+    g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
+    g_PalaceGui.OnEvent("Escape", (*) => Palace_CloseGui())
+
+    g_PalaceGui.SetFont("s16 cWhite Bold", "Segoe UI")
+    g_PalaceGui.Add("Text", "x20 y16 w880", "Memory Palace")
+    g_PalaceGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
+    g_PalaceGui.Add("Text", "x20 y48 w880",
+        studies.Length . " studies  ·  " . streets.Length . " streets  ·  "
+        . beasts.Length . " beasts  ·  " . atoms.Length . " atoms")
+    g_PalaceGui.SetFont("s9 cF1C40F", "Segoe UI")
+    g_PalaceGui.Add("Text", "x20 y72 w880", "Letters open a module.")
+
+    items := [
+        ["D", "Dashboard", "Study picker and street images"],
+        ["Y", "Studies", "Domains that own palaces"],
+        ["S", "Streets", "Memory Palaces and images"],
+        ["B", "Beasts", "Peg holders on a street"],
+        ["A", "Atoms", "Knowledge atoms / subtopics"],
+        ["I", "AI import", "Desktop PALACE_*.csv"],
+        ["H", "Help", "Vocabulary and mapping rules"],
+        ["P", "Push to cloud", "Commit and push scripts repo"]
+    ]
+
+    x0 := 20
+    y0 := 108
+    colW := 440
+    rowH := 78
+    idx := 0
+    for it in items {
+        col := Mod(idx, 2)
+        row := idx // 2
+        x := x0 + col * colW
+        y := y0 + row * rowH
+        g_PalaceGui.SetFont("s14 cF1C40F Bold", "Segoe UI")
+        g_PalaceGui.Add("Text", "x" . (x + 12) . " y" . (y + 10) . " w40 BackgroundTrans", "[" . it[1] . "]")
+        g_PalaceGui.SetFont("s12 cWhite Bold", "Segoe UI")
+        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 10) . " w340 BackgroundTrans", it[2])
+        g_PalaceGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 36) . " w340 BackgroundTrans", it[3])
+        idx += 1
+    }
+
+    g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
+    g_PalaceGui.Add("Text", "x20 y440 w880", "Esc close   letters open a module   H glossary   P push")
+
+    Palace_BindHotkeys([
+        ["d", Palace_OnDash], ["y", Palace_OnStudies], ["s", Palace_OnStreets],
+        ["b", Palace_OnBeasts], ["a", Palace_OnAtoms], ["i", Palace_OnImp],
+        ["h", Palace_OnHelp], ["p", Palace_OnGitPush], ["Escape", (*) => Palace_CloseGui()]
+    ])
+    Palace_CenterGui(g_PalaceGui, 900, 480)
+}
+
+Palace_OnDash(*) {
+    Palace_OpenDashboard()
+}
+Palace_OnStudies(*) {
+    Palace_ShowStudies()
+}
+Palace_OnStreets(*) {
+    Palace_ShowStreets()
+}
+Palace_OnBeasts(*) {
+    Palace_ShowBeasts()
+}
+Palace_OnAtoms(*) {
+    Palace_ShowAtoms()
+}
+Palace_OnImp(*) {
+    Palace_ShowImportMenu()
+}
+Palace_OnHelp(*) {
+    Palace_ShowHelp()
+}
+Palace_OnGitPush(*) {
+    Palace_GitSyncPush()
+}
+
+Palace_OpenDashboard() {
+    Palace_EnsureData()
+    py := Palace_PythonDir() . "\chart_generator.py"
+    if (!FileExist(py)) {
+        Palace_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    notesRoot := Palace_NotesStudiesRoot()
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        Palace_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    if (notesRoot != "")
+        cmd .= ' --notes-root "' . notesRoot . '"'
+    lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
+    if (lastStudy != "")
+        cmd .= ' --study-id "' . lastStudy . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    } catch as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Palace_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    if (exitCode != 0) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Palace_Notify("Dashboard Python failed (exit " . exitCode . ")", 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    html := outDir . "\dashboard.html"
+    try StandardLoadingBar_Hide(400)
+    catch {
+    }
+    if (!FileExist(html)) {
+        Palace_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
+        return
+    }
+    tmpHtml := A_Temp . "\palace_dashboard_" . A_TickCount . ".html"
+    try FileCopy(html, tmpHtml, 1)
+    catch {
+        tmpHtml := html
+    }
+    ; Copy sibling assets folder reference is embedded as file paths; generator uses absolute file URIs.
+    fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
+    try Run('chrome.exe --new-window "' . fileUrl . '"')
+    catch as e {
+        Palace_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    Palace_CloseGui()
+}
