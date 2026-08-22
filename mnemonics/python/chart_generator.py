@@ -341,27 +341,24 @@ def build_html(snap: dict) -> str:
     #btnClose:hover {{ filter: brightness(1.08); }}
     .overlay-body {{
       display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-      gap: 1.25rem;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
       padding: 1.25rem 1.5rem 2rem;
-      max-width: 1400px;
+      max-width: 1100px;
       margin: 0 auto;
-    }}
-    @media (max-width: 900px) {{
-      .overlay-body {{ grid-template-columns: 1fr; }}
     }}
     .overlay-image {{
       background: #0a0b0e;
       border: 1px solid var(--line);
       border-radius: 10px;
       overflow: hidden;
-      min-height: 240px;
+      min-height: 200px;
       display: grid;
       place-items: center;
     }}
     .overlay-image img {{
       width: 100%;
-      max-height: 78vh;
+      max-height: 52vh;
       object-fit: contain;
       display: block;
     }}
@@ -371,7 +368,7 @@ def build_html(snap: dict) -> str:
       text-align: center;
     }}
     .overlay-prompt {{
-      margin-top: 1rem;
+      margin-top: 0;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -385,7 +382,7 @@ def build_html(snap: dict) -> str:
     .practice {{
       display: flex;
       flex-direction: column;
-      gap: 1.35rem;
+      gap: 1.75rem;
     }}
     .practice h3 {{
       margin: 0;
@@ -396,7 +393,7 @@ def build_html(snap: dict) -> str:
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 0.85rem 1rem;
+      padding: 0.95rem 1.05rem;
       scroll-margin-top: 5rem;
     }}
     .atom-card.highlight {{
@@ -416,6 +413,19 @@ def build_html(snap: dict) -> str:
       letter-spacing: 0.04em;
       text-transform: uppercase;
       margin-bottom: 0.15rem;
+    }}
+    .atom-card .beast-name {{
+      font-size: 1.12rem;
+      font-weight: 650;
+      line-height: 1.35;
+    }}
+    .atom-card .field-concept {{
+      margin-top: 0.65rem;
+      padding: 0.65rem 0.75rem;
+      background: #242830;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
     }}
     .atom-card .zone-tag {{
       color: var(--muted);
@@ -460,14 +470,12 @@ def build_html(snap: dict) -> str:
       <button type="button" id="btnClose">Close</button>
     </div>
     <div class="overlay-body">
-      <div>
-        <div class="overlay-image" id="ovImage"></div>
-        <div class="overlay-prompt" id="ovPrompt"></div>
-      </div>
+      <div class="overlay-image" id="ovImage"></div>
       <div class="practice">
         <h3>Practice — Knowledge Atoms</h3>
         <div id="ovAtoms"></div>
       </div>
+      <div class="overlay-prompt" id="ovPrompt"></div>
     </div>
   </div>
 
@@ -564,8 +572,10 @@ def build_html(snap: dict) -> str:
           const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
           return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
             + zone
-            + '<p class="field"><span class="lbl">Beast</span>' + dash(a.beast) + '</p>'
-            + '<p class="field"><span class="lbl">Concept</span>' + dash(a.concept) + '</p>'
+            + '<p class="field field-beast"><span class="lbl">Beast</span>'
+            + '<span class="beast-name">' + dash(a.beast) + '</span></p>'
+            + '<p class="field field-concept"><span class="lbl">Concept</span>'
+            + dash(a.concept) + '</p>'
             + '<p class="field"><span class="lbl">Quote</span>' + dash(a.quote) + '</p>'
             + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
             + '<p class="field"><span class="lbl">Sensory</span>' + dash(a.sensory) + '</p>'
