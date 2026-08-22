@@ -9,6 +9,7 @@
 ; Project Quick Selector
 ; Hotkey: Ctrl+Alt+Win+0 (see WindowManagement\cursor_window_select.ahk)
 ; ListView of projects (char, name, paths) with add/edit/delete; opens the selected folder.
+; A (and Insert) adds a project; A is reserved and not assignable as a quick-open char.
 ; =============================================================================
 
 ; Project list lives in assets/data/projects.ini (loaded by Utils\project_data_cursor.ahk).
@@ -362,6 +363,8 @@ ProjectSelector_BindModalHotkeys() {
             digitCallbacks[char] := handler
     }
 
+    ; 'a' is reserved (not in g_ProjectCharSequence) so it never conflicts with quick-open.
+    ProjectSelector_BindOneChar("a", ProjectSelector_OnAdd)
     try {
         Hotkey("Insert", ProjectSelector_OnAdd, "On")
         g_ProjectHotkeyHandlers.Push({ char: "Insert", key: "Insert", handler: ProjectSelector_OnAdd })

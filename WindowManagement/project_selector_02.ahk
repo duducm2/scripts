@@ -153,11 +153,12 @@ HandleCopyFromGeminiModeTrigger(*) {
         }
     }
 
-    ; Disable existing project hotkeys (keep special keys c, 3, l, k, Escape)
+    ; Disable existing project hotkeys (keep special keys a/add, c, 3, l, k, Escape)
     for handler in g_ProjectHotkeyHandlers {
         try {
             char := handler.char
-            if (char = "l" || char = "L" || char = "k" || char = "K" || char = "c" || char = "C" || char = "3"
+            if (char = "a" || char = "A" || char = "l" || char = "L" || char = "k" || char = "K"
+                || char = "c" || char = "C" || char = "3"
                 || char = "Escape" || char = "Insert" || char = "F2" || char = "Delete" || char = "Enter") {
                 continue
             }

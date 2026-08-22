@@ -467,7 +467,7 @@ HandleCursorWindowSelectionTrigger(*) {
     ShowCursorWindowSelectorSubMenu()
 }
 
-; Show project selector GUI (ListView: char / Enter / double-click to open; Insert / F2 / Delete to manage)
+; Show project selector GUI (ListView: char / Enter / double-click to open; A/Insert / F2 / Delete to manage)
 ShowProjectSelector() {
     global g_ProjectSelectorGui, g_ProjectSelectorLv, g_ProjectSelectorActive
     global g_OnEscapePressed, g_WM_SelectorOpenFile, g_WM_SelectorCloseCheckTimer
@@ -522,7 +522,7 @@ ShowProjectSelector() {
     g_ProjectSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Project Selector")
     g_ProjectSelectorGui.SetFont("s10", "Segoe UI")
     g_ProjectSelectorGui.Add("Text", "w820",
-        "Char = open   Enter/double-click = open   Insert = add   F2 = rename   Delete = remove   Esc = close")
+        "Char = open   Enter/double-click = open   A/Insert = add   F2 = rename   Delete = remove   Esc = close")
     g_ProjectSelectorLv := g_ProjectSelectorGui.Add("ListView", "w820 h420 -Multi", ["Char", "Name", "Path", "WorkPath"])
     g_ProjectSelectorLv.OnEvent("DoubleClick", ProjectSelector_OnListActivate)
     g_ProjectSelectorGui.Add("Button", "w100 Section", "Add").OnEvent("Click", ProjectSelector_OnAdd)

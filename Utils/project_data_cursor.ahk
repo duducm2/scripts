@@ -4,8 +4,9 @@
 ; Persistent store: assets/data/projects.ini
 ; =============================================================================
 
-; Character sequence for assignment: 1 2 3 4 5 q w e r t a s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
-global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
+; Character sequence for assignment: 1 2 3 4 5 q w e r t s d f g z x c v b 6 7 8 9 0 y u i o p h j k l n m , .
+; 'a' is reserved for Add in the project selector (not assignable as a quick-open char).
+global g_ProjectCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
 
 global g_Projects := []
