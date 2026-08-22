@@ -312,6 +312,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\finance_goals.ahk
 #include %A_ScriptDir%\Utils\finance_recurring.ahk
 #include %A_ScriptDir%\Utils\finance_import.ahk
+#include %A_ScriptDir%\Utils\finance_git_sync.ahk
 
 ; [Utils module] Utility shortcuts #!+U and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk

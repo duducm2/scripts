@@ -54,25 +54,30 @@ GitCli_CaptureStdout(repoDir, gitArgs, timeoutMs := 15000) {
     return (r.exitCode = 0) ? r.stdout : ""
 }
 
-; Run git and return exit code plus stdout (stdout may be empty on success).
+; Run git from repoDir as working directory (avoids git -C paths with spaces breaking via PowerShell).
 GitCli_Run(repoDir, gitArgs, timeoutMs := 15000) {
     if !repoDir || !DirExist(repoDir) || gitArgs = ""
-        return { exitCode: 1, stdout: "" }
-    quotedRepo := StrReplace(repoDir, '"', '')
-    cmd := Format('set GIT_TERMINAL_PROMPT=0& set GCM_INTERACTIVE=Never& git -C "{1}" {2}', quotedRepo, gitArgs)
+        return { exitCode: 1, stdout: "", stderr: "" }
+    cmd := Format("set GIT_TERMINAL_PROMPT=0& set GCM_INTERACTIVE=Never& git {1}", gitArgs)
     outFile := A_Temp "\git-cli-out-" A_TickCount ".txt"
     errFile := A_Temp "\git-cli-err-" A_TickCount ".txt"
     fullCmd := cmd . ' 1>"' outFile '" 2>"' errFile '"'
-    exitCode := RunWaitWithTimeout(fullCmd, A_Temp, "Hide", timeoutMs)
+    exitCode := RunWaitWithTimeout(fullCmd, repoDir, "Hide", timeoutMs)
     out := ""
+    err := ""
     try {
         if FileExist(outFile)
             out := Trim(FileRead(outFile, "UTF-8"), "`r`n `t")
     } catch {
     }
+    try {
+        if FileExist(errFile)
+            err := Trim(FileRead(errFile, "UTF-8"), "`r`n `t")
+    } catch {
+    }
     try FileDelete(outFile)
     try FileDelete(errFile)
-    return { exitCode: exitCode, stdout: out }
+    return { exitCode: exitCode, stdout: out, stderr: err }
 }
 
 ; Commits local HEAD is behind @{upstream}, or -1 if the check failed.

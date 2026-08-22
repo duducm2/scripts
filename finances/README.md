@@ -49,5 +49,6 @@ Account balance edits set `initial_balance` so a later rebuild does not wipe the
 ## Multi-PC notes
 
 - Data lives in the repo; after `git pull` on another machine, open Finance → Dashboard once so Python regenerates HTML for that PC.
+- After updates on this PC, use **Finance → [P] Push to cloud** to commit and push the scripts repo (success banner when done).
 - If Dashboard says Python failed / not found, fix the Python install on that machine (see Requirements). Do not rely on copying `dashboard.html` alone.
 - Feature ideas / research: [docs/research-feature-ideas.md](docs/research-feature-ideas.md).
