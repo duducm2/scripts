@@ -115,16 +115,6 @@ Finance_OnImp(*) {
     Finance_ShowImportMenu()
 }
 Finance_OnGitPush(*) {
-    ; #region agent log
-    try {
-        logPath := A_ScriptDir . "\debug-90ed93.log"
-        line :=
-            '{"sessionId":"90ed93","hypothesisId":"H1","location":"finance_launcher:OnGitPush","message":"hotkey p fired","timestamp":'
-            . A_TickCount . ',"data":{}}`n'
-        FileAppend(line, logPath, "UTF-8")
-    } catch {
-    }
-    ; #endregion
     Finance_GitSyncPush()
 }
 Finance_OnSet(*) {
