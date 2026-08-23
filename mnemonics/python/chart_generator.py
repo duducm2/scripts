@@ -541,61 +541,68 @@ def build_html(
       font-size: 1.05rem;
     }}
     #ovAtoms {{
-      display: flex;
-      flex-direction: column;
-      gap: 1.35rem;
-      width: 100%;
-    }}
-    #ovAtoms > .empty {{
-      margin: 0;
-    }}
-    .beast-group {{
-      background: #181c24;
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--gold);
-      border-radius: 10px;
-      padding: 0.95rem 1rem 1.05rem;
-      width: 100%;
-      box-sizing: border-box;
-    }}
-    .beast-group-head {{
-      margin: 0 0 0.85rem;
-      padding-bottom: 0.55rem;
-      border-bottom: 1px solid var(--line);
-    }}
-    .beast-group-head .beast-name {{
-      margin: 0.15rem 0 0;
-      font-size: 1.15rem;
-      font-weight: 650;
-      line-height: 1.35;
-      color: var(--text);
-    }}
-    .beast-atoms-grid {{
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 1rem;
       width: 100%;
+      align-items: stretch;
+    }}
+    #ovAtoms > .empty {{
+      grid-column: 1 / -1;
+      margin: 0;
     }}
     @media (max-width: 1500px) {{
-      .beast-atoms-grid {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
+      #ovAtoms {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
     }}
     @media (max-width: 1100px) {{
-      .beast-atoms-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      #ovAtoms {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
     }}
     @media (max-width: 720px) {{
-      .beast-atoms-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+      #ovAtoms {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
     }}
     @media (max-width: 480px) {{
-      .beast-atoms-grid {{ grid-template-columns: 1fr; }}
+      #ovAtoms {{ grid-template-columns: 1fr; }}
+    }}
+    .beast-cluster {{
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      min-width: 0;
+      background: #181c24;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 10px;
+      padding: 0.75rem 0.8rem 0.85rem;
+      box-sizing: border-box;
+    }}
+    .beast-cluster-head {{
+      margin: 0;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--line);
+    }}
+    .beast-cluster-head .beast-name {{
+      margin: 0.1rem 0 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+      line-height: 1.3;
+      color: var(--text);
+    }}
+    .beast-cluster-atoms {{
+      display: grid;
+      grid-template-columns: repeat(var(--beast-cols, 1), minmax(0, 1fr));
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 0;
     }}
     .atom-card {{
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 0.85rem 0.95rem;
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
       scroll-margin-top: 5rem;
       min-width: 0;
       box-sizing: border-box;
+      height: 100%;
     }}
     .atom-card.highlight {{
       border-color: var(--gold);
@@ -616,8 +623,8 @@ def build_html(
       margin-bottom: 0.15rem;
     }}
     .atom-card .field-concept {{
-      margin-top: 0.65rem;
-      padding: 0.65rem 0.75rem;
+      margin-top: 0.55rem;
+      padding: 0.55rem 0.65rem;
       background: #242830;
       border: 1px solid var(--line);
       border-left: 3px solid var(--gold);
@@ -630,8 +637,8 @@ def build_html(
       color: var(--gold);
       font-size: 0.82rem;
       font-weight: 650;
-      margin: 0 0 0.45rem;
-      padding-bottom: 0.35rem;
+      margin: 0 0 0.4rem;
+      padding-bottom: 0.3rem;
       border-bottom: 1px dashed var(--line);
     }}
     #btnMethod {{
@@ -1543,15 +1550,19 @@ def build_html(
       if (!atoms || !atoms.length) {{
         return '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
       }}
-      const groups = groupAtomsByBeast(atoms);
-      return groups.map(g => {{
+      const maxCols = 6;
+      return groupAtomsByBeast(atoms).map(g => {{
+        const n = g.atoms.length;
+        const span = Math.min(Math.max(n, 1), maxCols);
+        const innerCols = Math.min(n, maxCols);
         const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId)).join('');
-        return '<section class="beast-group">'
-          + '<header class="beast-group-head">'
+        return '<section class="beast-cluster" style="grid-column: span ' + span
+          + '; --beast-cols: ' + innerCols + '">'
+          + '<header class="beast-cluster-head">'
           + '<span class="lbl">Beast</span>'
-          + '<h4 class="beast-name">' + dash(g.beast) + '</h4>'
+          + '<p class="beast-name">' + dash(g.beast) + '</p>'
           + '</header>'
-          + '<div class="beast-atoms-grid">' + cards + '</div>'
+          + '<div class="beast-cluster-atoms">' + cards + '</div>'
           + '</section>';
       }}).join('');
     }}
