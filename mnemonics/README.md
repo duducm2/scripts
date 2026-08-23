@@ -58,10 +58,13 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 `beasts.csv` FK is `palace_id` (row ids use `PALACE_*`).
 
-## Main menu letters
+## Main menu
 
 | Key       | Module                                             |
 | --------- | -------------------------------------------------- |
+| 1         | Study Video (open / set video link via API)        |
+| 2         | Study Article (open / set article link via API)    |
+| 3         | Favorite (open / set favorite link via API)        |
 | D         | Dashboard (Python → Chrome)                        |
 | B         | Browse (studies → palaces → beasts → atoms)        |
 | I         | AI import (Desktop `PALACE_*` pack, one preview)   |

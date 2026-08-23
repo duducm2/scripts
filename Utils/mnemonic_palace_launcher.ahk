@@ -31,9 +31,12 @@ Palace_ShowMainMenu() {
         studies.Length . " studies  ·  " . palaces.Length . " palaces  ·  "
         . beasts.Length . " beasts  ·  " . atoms.Length . " atoms")
     g_PalaceGui.SetFont("s9 cF1C40F", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y72 w880", "Letters open a module.")
+    g_PalaceGui.Add("Text", "x20 y72 w880", "1-3 quick links · letters open a module.")
 
     items := [
+        ["1", "📹 Study Video", "Open / set video link (Google Docs API)"],
+        ["2", "📖 Study Article", "Open / set article link (Google Docs API)"],
+        ["3", "❤️ Favorite", "Open / set favorite link (Google Docs API)"],
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["I", "AI import", "Desktop PALACE pack (preview)"],
@@ -65,10 +68,11 @@ Palace_ShowMainMenu() {
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y510 w880",
-        "Backspace utility shortcuts   Esc close   R regen Markdown   G practice   O plans   P push")
+    g_PalaceGui.Add("Text", "x20 y588 w880",
+        "Backspace utility shortcuts   Esc close   1-3 quick links   R regen   G practice   O plans   P push")
 
     Palace_BindHotkeys([
+        ["1", Palace_OnStudyVideo], ["2", Palace_OnStudyArticle], ["3", Palace_OnStudyFavorite],
         ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
         ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
         ["o", Palace_OnPlansGithub], ["r", Palace_OnRegenMarkdown],
@@ -76,7 +80,7 @@ Palace_ShowMainMenu() {
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
-    Palace_CenterGui(g_PalaceGui, 900, 560)
+    Palace_CenterGui(g_PalaceGui, 900, 630)
 }
 
 Palace_ReturnToUtilityShortcuts() {
@@ -88,6 +92,18 @@ Palace_ReturnToUtilityShortcuts() {
 
 Palace_OnDash(*) {
     Palace_OpenDashboard()
+}
+Palace_OnStudyVideo(*) {
+    Palace_CloseGui()
+    StudyTopicSelector_ManageLinks()
+}
+Palace_OnStudyArticle(*) {
+    Palace_CloseGui()
+    StudyTopicSelector_ManageArticleLinks()
+}
+Palace_OnStudyFavorite(*) {
+    Palace_CloseGui()
+    StudyTopicSelector_ManageFavoriteLinks()
 }
 Palace_OnBrowse(*) {
     Palace_ShowBrowse()

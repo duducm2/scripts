@@ -4,28 +4,35 @@ Configure the **Google Apps Script** backend and **MacroDroid** for study links.
 
 ## Study material menu (main)
 
-Open via Study Topic selector. Keys **1–6**:
+Open via Study Topic selector (`#!+x`). Keys **1–3**:
 
-| Key | Module           | Action                                                                                                       |
-| --- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| 1   | —                | Mnemonics (links in `assets/data/study_links.ini` `[Mnemonics]`; in-menu `a` add / `r` remove)               |
-| 2   | —                | Plans (links in `assets/data/study_links.ini` `[Plans]`; in-menu `a` add / `r` remove)                       |
-| 3   | YouTube subtopic | Manage Study Subtopic Link → inner `1` open / `2` automate (Share) / `3` manual InputBox → `StudyLink_Set`   |
-| 4   | Article link     | Manage Study Article Link → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set`  |
-| 5   | Favorite link    | Manage Study Favorite Link → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set` |
-| 6   | Technique        | Chrome → technique README on GitHub                                                                          |
+| Key | Module    | Action                                                                                         |
+| --- | --------- | ---------------------------------------------------------------------------------------------- |
+| 1   | —         | Mnemonics (links in `assets/data/study_links.ini` `[Mnemonics]`; in-menu `a` add / `r` remove) |
+| 2   | —         | Plans (links in `assets/data/study_links.ini` `[Plans]`; in-menu `a` add / `r` remove)         |
+| 3   | Technique | Chrome → technique README on GitHub                                                            |
+
+## Memory Palace quick links (PC)
+
+Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N). Keys **1–3** on the main menu:
+
+| Key | Module           | Action                                                                                                  |
+| --- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | YouTube subtopic | Manage Study Video → inner `1` open / `2` automate (Share) / `3` manual InputBox → `StudyLink_Set`      |
+| 2   | Article link     | Manage Study Article → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set`  |
+| 3   | Favorite link    | Manage Study Favorite → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set` |
 
 ## API keys (same web app URL)
 
-| Key | Module | Sheet | PC file |
+| Key | Module | Sheet | PC entry |
 
 | ------------------- | ------------- | ----- | ------------------------- |
 
-| `subtopic` | 3 — YouTube | A1 | `Utils.ahk` |
+| `subtopic` | 1 — YouTube | A1 | Memory Palace `[1]` |
 
-| `subtopic_article` | 4 — Article | A2 | `StudyArticleLink.ahk` |
+| `subtopic_article` | 2 — Article | A2 | Memory Palace `[2]` |
 
-| `subtopic_favorite` | 5 — Favorite | A3 | `StudyFavoriteLink.ahk` |
+| `subtopic_favorite` | 3 — Favorite | A3 | Memory Palace `[3]` |
 
 **Endpoint** (`STUDY_LINKS_API_URL` in `StudyLinkHelpers.ahk`):
 
@@ -223,7 +230,7 @@ Study Topic → **`[6] Technique`** opens the technique README on GitHub in a ne
 
 2. Run [`infra/tools/TestStudyLinkApi.ahk`](../infra/tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
-3. Manual: `[3]` inner 1–2, `[4]` inner 1–2, `[5]` inner 1–2, `[6]` (technique).
+3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each; Study Material `[3]` (technique).
 
 4. Phone: Set then Get for each link type after Apps Script redeploy.
 
