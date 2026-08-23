@@ -1,5 +1,5 @@
 DELIVERY MANDATE (read first)
-Deliver **one** downloadable pack file — the human reviews the preview, saves to Desktop, and runs Memory Palace **[I]**. Never claim or simulate a save to Desktop / any local path.
+Deliver **one** downloadable pack file — the human reviews the preview, saves to Desktop, and runs Memory Palace **[J] Import plan**. Never claim or simulate a save to Desktop / any local path.
 
 Creating a study plan — Memory Palace PLAN_PACK
 
@@ -67,4 +67,4 @@ PLAN CONTENT GUIDANCE
 - Prefer actionable checkbox texts (verbs, concrete outcomes).
 - Keep item count proportional to scope (typically 40–150 items for a serious plan; fewer for a tiny topic).
 
-After the pack is ready, remind the human: save `PLAN_PACK.txt` to Desktop, then Memory Palace **[I]** to import.
+After the pack is ready, remind the human: save `PLAN_PACK.txt` to Desktop, then Memory Palace **[J] Import plan** (not mnemonic **[I]**).

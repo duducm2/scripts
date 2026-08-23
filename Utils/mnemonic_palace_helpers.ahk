@@ -17,7 +17,7 @@ Palace_Terms() {
         ["Study",
             "A broad subject domain (e.g. English, German, science, piano). Contains Memory Palaces and one Study Plan."],
         ["Study Plan",
-            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub."],
+            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Main menu [J] imports Desktop PLAN_PACK; [I] is mnemonic packs only; [L] browses plans."],
         ["Memory Palace", "A location with exactly one generated image. Numbered within its Study."],
         ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
         ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],

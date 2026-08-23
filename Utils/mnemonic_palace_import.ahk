@@ -249,29 +249,41 @@ Palace_SplitPalacePack(path) {
     return result
 }
 
-; Single [I]: PLAN_PACK if present, else newest Desktop mnemonic pack.
+; Resolve newest Desktop PLAN_PACK (or gemini-code with PLANS.csv). Empty if none.
+Palace_ResolveDesktopPlanPackPath() {
+    pathPlanPack := Palace_DesktopNewestCsvOrTxt("PLAN_PACK")
+    if (pathPlanPack != "")
+        return pathPlanPack
+    newest := ""
+    newestTime := 0
+    loop files A_Desktop . "\gemini-code*.txt", "F" {
+        text := Palace_ReadUtf8(A_LoopFileFullPath)
+        if (!InStr(text, "===FILE: PLANS.csv", false) && !InStr(text, "---FILE: PLANS.csv", false))
+            continue
+        ts := Number(A_LoopFileTimeModified)
+        if (ts > newestTime) {
+            newestTime := ts
+            newest := A_LoopFileFullPath
+        }
+    }
+    return newest
+}
+
+; Main menu [J]: PLAN_PACK only.
+Palace_ImportPlanPackFromDesktop(*) {
+    Palace_EnsureData()
+    pathPlanPack := Palace_ResolveDesktopPlanPackPath()
+    if (pathPlanPack = "") {
+        Palace_Notify("No PLAN_PACK / gemini-code (PLANS.csv) on Desktop", 2800, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+    return Palace_ImportPlansFromDesktop(pathPlanPack)
+}
+
+; Main menu [I]: mnemonic PALACE packs only (never PLAN_PACK).
 Palace_ImportMnemonicsFromDesktop(*) {
     Palace_EnsureData()
-    pathPlanPack := Palace_DesktopNewestCsvOrTxt("PLAN_PACK")
-    if (pathPlanPack = "") {
-        ; Also accept gemini-code packs that contain PLANS.csv section
-        newest := ""
-        newestTime := 0
-        loop files A_Desktop . "\gemini-code*.txt", "F" {
-            text := Palace_ReadUtf8(A_LoopFileFullPath)
-            if (!InStr(text, "===FILE: PLANS.csv", false) && !InStr(text, "---FILE: PLANS.csv", false))
-                continue
-            ts := Number(A_LoopFileTimeModified)
-            if (ts > newestTime) {
-                newestTime := ts
-                newest := A_LoopFileFullPath
-            }
-        }
-        pathPlanPack := newest
-    }
-    if (pathPlanPack != "")
-        return Palace_ImportPlansFromDesktop(pathPlanPack)
-
     pathPalaces := Palace_ResolveDesktopPalacesPath()
     pathBeasts := Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
     pathAtoms := Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
@@ -284,7 +296,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
         pathPack := Palace_DesktopNewestPackPath()
         if (pathPack = "") {
-            Palace_Notify("No PLAN_PACK / PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
+            Palace_Notify("No PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
             Palace_ShowMainMenu()
             return false
         }

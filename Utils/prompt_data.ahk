@@ -631,7 +631,7 @@ PromptData_DefaultEntries() {
                     filePath: "assets\prompt\handoff-summary.txt", source: "file" }, { name: "📖 Creating mnemonic stories",
                         char: "4", category: "Mnemonic", author: "",
                         filePath: "story-prompt.txt", source: "technique" }, { name: "📋 Create study plan",
-                            char: "l", category: "Mnemonic", author: "",
+                            char: "n", category: "Mnemonic", author: "",
                             filePath: "plan-prompt.txt", source: "technique" }, { name: "🎬 Transcript Youtube Video",
                                 char: "5", category: "Mnemonic", author: "",
                                 filePath: "video-transcription-prompt.txt", source: "technique" }, { name: "📝 Story reduction",
@@ -737,7 +737,47 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptEntries := list
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
+    PromptData_EnsurePlanPromptEntry()
     return g_PromptEntries
+}
+
+; Upsert Create study plan into live prompts.ini (existing installs never get DefaultEntries again).
+PromptData_EnsurePlanPromptEntry() {
+    global g_PromptEntries
+    list := g_PromptEntries
+    if (!IsObject(list))
+        list := []
+    needle := "plan-prompt.txt"
+    for prompt in list {
+        fp := StrLower(StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\"))
+        if (InStr(fp, needle))
+            return
+    }
+    taken := Map()
+    for prompt in list {
+        c := StrLower(Trim(prompt.HasProp("char") ? prompt.char : ""))
+        if (c != "")
+            taken[c] := true
+    }
+    charVal := "n"
+    if (taken.Has(charVal))
+        charVal := ""
+    list.Push(PromptData_NormalizeEntry({
+        name: "📋 Create study plan",
+        char: charVal,
+        category: "Mnemonic",
+        author: "",
+        filePath: "plan-prompt.txt",
+        source: "technique",
+        tags: "",
+        pasteMode: "default",
+        attachAsTxt: 0,
+        variables: "",
+        filePathDraft: "",
+        personal_context_files: [],
+        work_context_files: []
+    }))
+    PromptData_Save(list)
 }
 
 PromptData_Save(list) {

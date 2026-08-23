@@ -42,7 +42,8 @@ Palace_ShowMainMenu() {
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["L", "Plans", "Browse / edit study plan checklists (CSV)"],
-        ["I", "AI import", "Desktop PLAN_PACK or PALACE pack (preview)"],
+        ["I", "AI import", "Desktop PALACE_PACK / PALACE_*.csv (preview)"],
+        ["J", "Import plan", "Desktop PLAN_PACK only → sync output/plans"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
         ["O", "Plans on GitHub", "Synced study plan Markdown for mobile"],
@@ -72,12 +73,13 @@ Palace_ShowMainMenu() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y620 w880",
-        "Backspace utility shortcuts   Esc close   L plans   O plans GitHub   P push   R regen")
+        "Backspace utility shortcuts   Esc close   L plans   J import plan   I mnemonic pack   O plans GitHub   P push   R regen"
+    )
 
     Palace_BindHotkeys([
         ["1", Palace_OnStudyVideo], ["2", Palace_OnStudyArticle], ["3", Palace_OnStudyFavorite],
         ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["l", Palace_OnPlans],
-        ["i", Palace_OnImp],
+        ["i", Palace_OnImp], ["j", Palace_OnImportPlan],
         ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
         ["o", Palace_OnPlansGithub], ["r", Palace_OnRegenMarkdown],
         ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
@@ -128,6 +130,9 @@ Palace_OnPlans(*) {
 }
 Palace_OnImp(*) {
     Palace_ImportMnemonicsFromDesktop()
+}
+Palace_OnImportPlan(*) {
+    Palace_ImportPlanPackFromDesktop()
 }
 Palace_OnQuickImage(*) {
     Palace_QuickAttachDesktopImage()
