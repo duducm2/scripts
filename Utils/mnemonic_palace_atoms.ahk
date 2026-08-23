@@ -23,9 +23,10 @@ Palace_ShowAtoms() {
     }
     g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Knowledge Atoms"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Knowledge Atoms"))
-    g_PalaceAtomLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
+    lvY := Palace_AddBrowseChrome(g_PalaceGui, "Knowledge Atoms")
+    g_PalaceAtomLv := g_PalaceGui.Add("ListView", "x12 y" . lvY . " w860 h440 Grid Background2D2D30",
         ["Kind", "Zone", "Label", "Concept", "Sensory"])
+    Palace_StyleDarkListView(g_PalaceAtomLv)
     g_PalaceAtomLv.OnEvent("DoubleClick", (*) => Palace_AtomEdit())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
@@ -41,7 +42,6 @@ Palace_ShowAtoms() {
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
-
 
 Palace_AtomFilter(*) {
     global g_PalaceFilterBeastId, g_PalaceFilterPalaceId, g_PalaceFilterStudyId
@@ -77,6 +77,7 @@ Palace_AtomRefresh() {
     }
     loop 5
         g_PalaceAtomLv.ModifyCol(A_Index, "AutoHdr")
+    Palace_StyleDarkListView(g_PalaceAtomLv)
 }
 
 Palace_AtomSelected() {

@@ -12,9 +12,10 @@ Palace_ShowStudies() {
     Palace_EnsureData()
     g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Studies"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Studies"))
-    g_PalaceStudyLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
+    lvY := Palace_AddBrowseChrome(g_PalaceGui, "Studies")
+    g_PalaceStudyLv := g_PalaceGui.Add("ListView", "x12 y" . lvY . " w860 h440 Grid Background2D2D30",
         ["Title", "Notes path", "Order", "Active"])
+    Palace_StyleDarkListView(g_PalaceStudyLv)
     g_PalaceStudyLv.OnEvent("DoubleClick", (*) => Palace_BrowseInto())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
@@ -31,7 +32,6 @@ Palace_ShowStudies() {
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
 
-
 Palace_StudyRefresh() {
     global g_PalaceStudyLv, g_PalaceStudyRows
     if (!IsObject(g_PalaceStudyLv))
@@ -46,6 +46,7 @@ Palace_StudyRefresh() {
     }
     loop 4
         g_PalaceStudyLv.ModifyCol(A_Index, "AutoHdr")
+    Palace_StyleDarkListView(g_PalaceStudyLv)
 }
 
 Palace_StudySelected() {
@@ -131,10 +132,10 @@ Palace_StudyForm(existing) {
         studies := Palace_Load("studies")
         row := Map(
             "id", isEdit ? existing["id"] : Palace_SlugId("STUDY_", npath, studies),
-            "title", title,
-            "notes_rel_path", npath,
-            "sort_order", Trim(eOrder.Value),
-            "active", chk.Value ? "1" : "0"
+        "title", title,
+        "notes_rel_path", npath,
+        "sort_order", Trim(eOrder.Value),
+        "active", chk.Value ? "1" : "0"
         )
         if (isEdit) {
             out := []

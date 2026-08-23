@@ -667,10 +667,69 @@ Palace_BreadcrumbText() {
     return out
 }
 
-Palace_BrowseBarHints(levelNoun) {
+Palace_BrowseKeysHint() {
+    return "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
+}
+
+; Two-line chrome: gold breadcrumb, muted keys. Returns ListView Y.
+Palace_AddBrowseChrome(guiObj, levelNoun) {
     crumb := Palace_BreadcrumbText()
-    head := (crumb != "") ? crumb : levelNoun
-    return head . "   [A]/Insert add   [E] edit   Delete   Enter open   Backspace up"
+    if (crumb = "")
+        crumb := levelNoun
+    try guiObj.BackColor := "1E1E1E"
+    catch {
+    }
+    try DllCall("dwmapi\DwmSetWindowAttribute", "ptr", guiObj.Hwnd, "uint", 20, "int*", 1, "int", 4)
+    catch {
+    }
+    guiObj.SetFont("s11 cF1C40F Bold", "Segoe UI")
+    guiObj.Add("Text", "x12 y8 w860 cF1C40F BackgroundTrans", crumb)
+    guiObj.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+    guiObj.Add("Text", "x12 y32 w860 cA0A0A0 BackgroundTrans", Palace_BrowseKeysHint())
+    guiObj.SetFont("s10 cWhite Norm", "Segoe UI")
+    return 56
+}
+
+Palace_StyleDarkListView(lv) {
+    hwnd := 0
+    try hwnd := lv.Hwnd
+    catch {
+        return
+    }
+    if (!hwnd)
+        return
+    ; Clear visual styles so LVM_* color messages apply (Explorer theme stays light)
+    try DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
+    catch {
+    }
+    ; COLORREF BGR: panel #2D2D30, text #F2F2F2
+    bg := 0x302D2D
+    fg := 0xF2F2F2
+    try SendMessage(0x1001, 0, bg, hwnd) ; LVM_SETBKCOLOR
+    catch {
+    }
+    try SendMessage(0x1024, 0, fg, hwnd) ; LVM_SETTEXTCOLOR
+    catch {
+    }
+    try SendMessage(0x1026, 0, bg, hwnd) ; LVM_SETTEXTBKCOLOR
+    catch {
+    }
+    hdr := 0
+    try hdr := SendMessage(0x101F, 0, 0, hwnd) ; LVM_GETHEADER
+    catch {
+        hdr := 0
+    }
+    if (hdr) {
+        try DllCall("uxtheme\SetWindowTheme", "ptr", hdr, "wstr", "DarkMode_ItemsView", "wstr", "")
+        catch {
+            try DllCall("uxtheme\SetWindowTheme", "ptr", hdr, "wstr", "", "wstr", "")
+            catch {
+            }
+        }
+    }
+    try DllCall("InvalidateRect", "ptr", hwnd, "ptr", 0, "int", 1)
+    catch {
+    }
 }
 
 Palace_BrowseWindowTitle(levelNoun) {
