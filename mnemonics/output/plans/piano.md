@@ -14,9 +14,9 @@
 
 #### Posture, Bench Setup, Hand Shape, and Wrist Alignment
 
-- [ ] 🟧 Establish non-collapsed wrist alignment
-- [ ] 🟧 Set bench height to level with elbows
-- [ ] 🟧 Master arm gravity technique over muscular force
+- [✅] 🟧 Establish non-collapsed wrist alignment
+- [✅] 🟧 Set bench height to level with elbows
+- [✅] 🟧 Master arm gravity technique over muscular force
 - [ ] 🟧 Daily practice audit for postural consistency
 
 **🔗 Resources:**
