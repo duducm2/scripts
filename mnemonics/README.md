@@ -135,6 +135,8 @@ Prompt context files resolve from `mnemonics/technique/` first.
 
 Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, AI import **[I]**, and quick image attach **[Q]** (loading bar shown during generation).
 
+**Layout (GitHub mobile):** Export mirrors the dashboard hierarchy — collapsible Memory Palaces (`<details>`), beasts grouped like the overlay beast clusters, and stacked **Concept / Quote / Story / Sensory** field blocks. The newest palace is open by default; tap summaries to expand the rest. GitHub’s Markdown renderer does not apply dashboard CSS (no dark/gold theme); structural and label parity is intentional for phone recall.
+
 Batch browse on GitHub:
 
 `https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice`

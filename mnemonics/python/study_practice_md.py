@@ -11,6 +11,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import load_all, resolve_image, save_all, snapshot  # noqa: E402
+from palace_practice_render import md_escape, render_palace_section_md  # noqa: E402
 
 PRACTICE_PREFIX = "practice/images/"
 
@@ -28,26 +29,6 @@ def practice_md_path(practice_dir: Path, notes_rel_path: str) -> Path:
 
 def practice_image_dir(practice_dir: Path, notes_rel_path: str) -> Path:
     return practice_dir / "images" / slug_filename(notes_rel_path)
-
-
-def _md_escape(text: str) -> str:
-    if not text:
-        return ""
-    return text.replace("\r\n", "\n").strip()
-
-
-def _format_sensory(value: str) -> str:
-    v = (value or "").strip()
-    if not v:
-        return "—"
-    return v
-
-
-def _format_field(label: str, value: str) -> str:
-    v = _md_escape(value)
-    if not v:
-        return f"**{label}:** —"
-    return f"**{label}:** {v}"
 
 
 def copy_palace_image(
@@ -100,12 +81,14 @@ def build_study_markdown(
     study_card: dict[str, Any],
     image_md_paths: dict[str, str],
 ) -> str:
-    title = _md_escape(study_card.get("title") or study_card.get("id") or "Study")
+    title = md_escape(study_card.get("title") or study_card.get("id") or "Study")
     palace_count = study_card.get("palace_count", 0)
     lines: list[str] = [
         f"# {title}",
         "",
         f"_{palace_count} Memory Palaces · newest first_",
+        "",
+        "_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_",
         "",
         "---",
         "",
@@ -116,79 +99,15 @@ def build_study_markdown(
         lines.append("")
         return "\n".join(lines)
 
-    for palace in palaces:
+    for i, palace in enumerate(palaces):
         pid = palace.get("id", "")
-        num = palace.get("number", "")
-        ptitle = _md_escape(palace.get("title") or "")
-        character = _md_escape(palace.get("character") or "—")
-        beast_count = palace.get("beast_count", 0)
-        atom_count = palace.get("atom_count", 0)
-        prompt = _md_escape(palace.get("image_prompt") or "")
-
-        lines.append(f"## Memory Palace {num}: {ptitle}")
-        lines.append("")
-        lines.append(f"**Character:** {character}")
-        lines.append("")
-
-        img_rel = image_md_paths.get(pid, "")
-        if img_rel:
-            lines.append(f"![Memory Palace {num}]({img_rel})")
-        else:
-            lines.append("_No image_")
-        lines.append("")
-        lines.append(f"_{beast_count} beasts · {atom_count} Knowledge Atoms_")
-        lines.append("")
-
-        if prompt:
-            lines.append("**Image prompt**")
-            lines.append("")
-            lines.append("```")
-            lines.append(prompt)
-            lines.append("```")
-        else:
-            lines.append("_No image prompt saved._")
-        lines.append("")
-
-        atoms = palace.get("atoms") or []
-        if not atoms:
-            lines.append("_No Knowledge Atoms on this Memory Palace._")
-        else:
-            lines.append("### Knowledge Atoms")
-            lines.append("")
-            for atom in atoms:
-                zone = (atom.get("zone") or "").strip()
-                zone_label = (atom.get("zone_label") or "").strip()
-                if zone or zone_label:
-                    tag = zone
-                    if zone_label:
-                        tag = f"{zone} · {zone_label}" if zone else zone_label
-                    lines.append(f"**{tag}**")
-                    lines.append("")
-
-                beast = _md_escape(atom.get("beast") or "")
-                if beast:
-                    lines.append(f"🟧 **{beast}**")
-                    lines.append("")
-
-                concept = _md_escape(atom.get("concept") or "")
-                if concept:
-                    lines.append(f"💡 **Concept:** {concept}")
-                else:
-                    lines.append(_format_field("Concept", ""))
-
-                lines.extend(
-                    [
-                        _format_field("Quote", atom.get("quote") or ""),
-                        _format_field("Story", atom.get("story") or ""),
-                        _format_field(
-                            "Sensory", _format_sensory(atom.get("sensory") or "")
-                        ),
-                        "",
-                    ]
-                )
-
-        lines.append("---")
-        lines.append("")
+        lines.extend(
+            render_palace_section_md(
+                palace,
+                image_md_paths.get(pid, ""),
+                open_default=(i == 0),
+            )
+        )
 
     return "\n".join(lines).rstrip() + "\n"
 
