@@ -1,1 +1,1 @@
-C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\german\mnemonics-german.md
+﻿C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\output\practice\german.md

@@ -306,3 +306,13 @@ ATOM_0304,BEAST_VIOLIN_01_B,single,,,A evidência mais antiga são pinturas de G
 ATOM_0305,BEAST_VIOLIN_01_C,single,,,O violino evoluiu da viela rabeca e lira da braccio.,"É provável que os violinos tenham sido desenvolvidos a partir de vários outros instrumentos de cordas dos séculos XV e XVI, incluindo a viela, rabeca e lira da braccio.",A microscopic cat shrieks a deafening operatic note on the pavement while furiously sawing a wooden lira da braccio that transforms into a rabid lizard.,auditory,,3
 ATOM_0306,BEAST_VIOLIN_01_D,single,,,O padrão foi estabelecido no século XVII por Amati Stainer e Stradivari.,"O padrão geral do instrumento foi estabelecido no século XVII por lutieres como a prolífica família Amati, Jakob Stainer, do Tirol, e Antonio Stradivari",A dragon exhales frozen centuries upon the street lamp freezing three master luthiers into ice statues who eternally carve glowing Stradivarius violins.,thermal,,4
 ATOM_0307,BEAST_VIOLIN_01_E,single,,,O violino mais antigo confirmado a sobreviver é o Charles IX de Andrea Amati (1564).,"O mais antigo violino sobrevivente confirmado, datado dentro, é o ""Charles IX"" de Andrea Amati, produzido em Cremona em 1564",A golden eagle with rotting zombie flesh regurgitates a pristine sour-tasting wooden box labeled Charles IX onto the parked carriage swallowing a royal crown.,gustatory,,5
+ATOM_0308,BEAST_GERMAN_09_AG,single,,,Simple waves move evenly and repeat in a regular pattern.,,,,,1
+ATOM_0309,BEAST_GERMAN_09_AH,single,,,Amplitude shows how far a wave moves away from its resting point.,,,,,1
+ATOM_0310,BEAST_GERMAN_09_AI,single,,,"Real sounds are usually made of messy, overlapping vibrations.",,,,,1
+ATOM_0311,BEAST_GERMAN_09_AK,single,,,"Vowel sounds are even and smooth, while consonants can be messy and irregular.",,,,,1
+ATOM_0312,BEAST_GERMAN_10_AL,single,,,A sound gets louder when the space around it boosts the vibration.,,,,,1
+ATOM_0313,BEAST_GERMAN_10_AM,single,,,The absolute base wave made by the source is the fundamental frequency.,,,,,1
+ATOM_0314,BEAST_GERMAN_10_AN,single,,,Resonance bundles multiply the base frequency to create speech formants.,,,,,1
+ATOM_0315,BEAST_GERMAN_10_AO,single,,,The fundamental pitch comes directly from the vocal folds buzzing.,,,,,1
+ATOM_0316,BEAST_GERMAN_10_AP,single,,,"The throat shapes the first formant, the mouth shapes the second, and their interplay with the base sound forms the source-filter model.",,,,,1
+ATOM_0317,BEAST_GERMAN_11_AQ,single,,,Reharse the german alphabet depicted here: https://github.com/duducm2/scripts/blob/main/mnemonics/studies/german/portals/mnemonics-aquatic-leech.md,,,,,1

@@ -17,6 +17,13 @@ from technique_renderer import (  # noqa: E402
     default_technique_dir,
 )
 from sync_technique import resolve_technique_source, sync_technique  # noqa: E402
+from study_plan_renderer import (  # noqa: E402
+    PLANS_GITHUB_URL,
+    build_plans_panel_shell,
+    build_plans_payload,
+)
+from study_plan_parser import default_studies_root  # noqa: E402
+from study_plans_md import sync_all as sync_plans_all  # noqa: E402
 
 
 def file_uri(path: str) -> str:
@@ -28,6 +35,7 @@ def build_html(
     snap: dict,
     method_html: str = "",
     method_canon: dict | None = None,
+    plans_payload: dict | None = None,
 ) -> str:
     studies = snap.get("all_studies") or []
     cards = snap.get("studies") or []
@@ -120,8 +128,18 @@ def build_html(
         [{"id": s["id"], "title": s.get("title") or s["id"]} for s in studies],
         ensure_ascii=False,
     )
-    method_canon_json = json.dumps(method_canon or {"characters": [], "bestiary": []}, ensure_ascii=False)
-    method_body = method_html or '<div class="method-empty"><p>No technique docs mirrored.</p></div>'
+    method_canon_json = json.dumps(
+        method_canon or {"characters": [], "bestiary": []}, ensure_ascii=False
+    )
+    plans_data_json = json.dumps(
+        plans_payload or {"plans": {}, "github_url": PLANS_GITHUB_URL},
+        ensure_ascii=False,
+    )
+    method_body = (
+        method_html
+        or '<div class="method-empty"><p>No technique docs mirrored.</p></div>'
+    )
+    plans_body = build_plans_panel_shell()
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -602,7 +620,6 @@ def build_html(
       outline: 2px solid #fff4d0;
       outline-offset: 2px;
     }}
-    #practicePanel.hidden, #methodPanel.hidden {{ display: none !important; }}
     #methodPanel {{
       padding: 1rem 1.5rem 2.5rem;
     }}
@@ -771,6 +788,217 @@ def build_html(
     .canon-table tr:hover td {{ background: #242830; }}
     .method-empty {{ color: var(--muted); padding: 2rem; }}
     .method-warn {{ color: #e0a060; }}
+    #btnPlans {{
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 650;
+      cursor: pointer;
+      height: 2.35rem;
+    }}
+    #btnPlans:hover, #btnPlans.active {{
+      background: var(--gold);
+      color: #1a1408;
+    }}
+    #btnPlans:focus {{
+      outline: 2px solid #fff4d0;
+      outline-offset: 2px;
+    }}
+    #practicePanel.hidden, #methodPanel.hidden, #plansPanel.hidden {{ display: none !important; }}
+    #plansPanel {{
+      padding: 1rem 1.5rem 2.5rem;
+    }}
+    .plans-layout {{
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }}
+    @media (max-width: 900px) {{
+      .plans-layout {{ grid-template-columns: 1fr; }}
+      .plans-toc {{ position: static !important; max-height: none !important; }}
+    }}
+    .plans-toc {{
+      position: sticky;
+      top: 0.75rem;
+      max-height: calc(100vh - 1.5rem);
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-size: 0.88rem;
+    }}
+    .plans-toc h2 {{
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      color: var(--gold);
+    }}
+    .plans-toc ul {{ margin: 0; padding-left: 1.1rem; }}
+    .plans-toc a {{ color: var(--muted); text-decoration: none; }}
+    .plans-toc a:hover {{ color: var(--gold); }}
+    .plans-toc .lvl-3 {{ padding-left: 0.35rem; }}
+    .plans-toc .lvl-4 {{ padding-left: 0.7rem; font-size: 0.82rem; }}
+    .plans-toc .lvl-5 {{ padding-left: 1rem; font-size: 0.8rem; }}
+    .plans-main {{ min-width: 0; }}
+    .plans-header {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.85rem;
+    }}
+    .plans-header h2 {{
+      margin: 0;
+      font-size: 1.45rem;
+      color: var(--text);
+    }}
+    .plans-sub {{ margin: 0.25rem 0 0; color: var(--muted); font-size: 0.92rem; }}
+    .plans-header-actions {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }}
+    .plans-github {{
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 650;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+    }}
+    .plans-github:hover {{ border-color: var(--gold); }}
+    .btn-plans-reset {{
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }}
+    .btn-plans-reset:hover {{ color: var(--gold); border-color: var(--gold); }}
+    .plans-progress-wrap {{
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }}
+    .plans-progress-bar {{
+      flex: 1;
+      height: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      max-width: 420px;
+    }}
+    .plans-progress-bar::after {{
+      content: "";
+      display: block;
+      height: 100%;
+      width: var(--pct, 0%);
+      background: linear-gradient(90deg, #8a6914, var(--gold));
+      border-radius: 999px;
+      transition: width 0.2s ease;
+    }}
+    .plans-progress-label {{ color: var(--muted); font-size: 0.88rem; white-space: nowrap; }}
+    .plans-content {{ max-width: 52rem; }}
+    .plans-backlog {{
+      background: #242018;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+    }}
+    .plans-backlog h3 {{
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: var(--gold);
+    }}
+    .plans-backlog li {{
+      margin: 0.25rem 0;
+      color: var(--text);
+      line-height: 1.5;
+    }}
+    .plan-section {{
+      margin-bottom: 1.75rem;
+      scroll-margin-top: 0.75rem;
+    }}
+    .plan-section h3, .plan-section h4, .plan-section h5, .plan-section h6 {{
+      color: var(--text);
+      margin: 0 0 0.55rem;
+      line-height: 1.35;
+    }}
+    .plan-section.level-2 > h3 {{
+      font-size: 1.35rem;
+      color: var(--gold);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.35rem;
+      margin-top: 0.25rem;
+    }}
+    .plan-section.level-3 > h4 {{ font-size: 1.12rem; margin-top: 0.5rem; }}
+    .plan-section.level-4 > h5 {{ font-size: 1.02rem; color: var(--muted); }}
+    .plan-section.level-5 > h6 {{ font-size: 0.95rem; color: var(--muted); }}
+    .plan-todos {{
+      list-style: none;
+      margin: 0 0 0.65rem;
+      padding: 0;
+    }}
+    .plan-todo {{
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      padding: 0.35rem 0.25rem;
+      border-radius: 6px;
+      line-height: 1.45;
+    }}
+    .plan-todo:hover {{ background: #1e222c; }}
+    .plan-todo input[type="checkbox"] {{
+      margin-top: 0.2rem;
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+      cursor: pointer;
+    }}
+    .plan-todo label {{
+      cursor: pointer;
+      flex: 1;
+    }}
+    .plan-todo.done label {{
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: #5a5548;
+    }}
+    .plan-resources {{
+      margin: 0.35rem 0 0.85rem 1.5rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.75rem;
+    }}
+    .plan-resources summary {{
+      cursor: pointer;
+      color: var(--gold);
+      font-weight: 650;
+      font-size: 0.92rem;
+    }}
+    .plan-resources ul {{
+      margin: 0.45rem 0 0;
+      padding-left: 1.2rem;
+    }}
+    .plan-resources li {{ margin: 0.2rem 0; line-height: 1.45; }}
+    .plan-resources a {{ color: #9ec8ff; }}
+    .plans-empty {{ color: var(--muted); padding: 2rem 0; }}
+    .plans-empty.hidden {{ display: none; }}
   </style>
 </head>
 <body>
@@ -788,6 +1016,7 @@ def build_html(
         </select>
       </div>
       <button type="button" id="btnLatest">Latest palace</button>
+      <button type="button" id="btnPlans" title="Study plans (P)">Plans</button>
       <button type="button" id="btnMethod" title="Method docs (M)">Method</button>
       <div>
         <label for="atomSearch">Search Knowledge Atoms</label>
@@ -802,7 +1031,8 @@ def build_html(
   <div id="methodPanel" class="hidden" aria-hidden="true">
     {method_body}
   </div>
-  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
+  {plans_body}
+  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. <strong>P</strong> plans · <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -842,6 +1072,7 @@ def build_html(
     const STUDY_LATEST = {latest_json};
     const STUDIES = {studies_json};
     const METHOD_CANON = {method_canon_json};
+    const PLANS_DATA = {plans_data_json};
     const sel = document.getElementById('study');
     const sections = [...document.querySelectorAll('.study')];
     const overlay = document.getElementById('overlay');
@@ -857,8 +1088,10 @@ def build_html(
     const ovNavPos = document.getElementById('ovNavPos');
     const btnLatest = document.getElementById('btnLatest');
     const btnMethod = document.getElementById('btnMethod');
+    const btnPlans = document.getElementById('btnPlans');
     const practicePanel = document.getElementById('practicePanel');
     const methodPanel = document.getElementById('methodPanel');
+    const plansPanel = document.getElementById('plansPanel');
     const atomSearch = document.getElementById('atomSearch');
     const searchResults = document.getElementById('searchResults');
     const studyModal = document.getElementById('studyModal');
@@ -868,8 +1101,9 @@ def build_html(
     const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
     let currentOverlayPalaceId = '';
-    let methodView = false;
+    let dashboardView = 'practice';
     let mermaidReady = false;
+    const PLANS_STORAGE_KEY = 'mnemonics_plans_v1';
 
     // Newest-first order per study (same as grid)
     const STUDY_PALACE_ORDER = {{}};
@@ -935,6 +1169,7 @@ def build_html(
       sel.addEventListener('change', () => {{
         show(sel.value);
         focusLatestBtn();
+        if (dashboardView === 'plans') renderPlansForStudy(sel.value);
       }});
       if (sel.value) show(sel.value);
     }}
@@ -1192,23 +1427,204 @@ def build_html(
     }}
     btnLatest.addEventListener('click', openLatestPalace);
 
-    function setMethodView(on) {{
-      methodView = !!on;
-      if (practicePanel) practicePanel.classList.toggle('hidden', methodView);
-      if (methodPanel) {{
-        methodPanel.classList.toggle('hidden', !methodView);
-        methodPanel.setAttribute('aria-hidden', methodView ? 'false' : 'true');
+    function setDashboardView(view) {{
+      const next = (view === 'method' || view === 'plans') ? view : 'practice';
+      if (dashboardView === next && view !== 'toggle-method' && view !== 'toggle-plans') {{
+        if (next === 'practice') return;
       }}
-      if (btnMethod) btnMethod.classList.toggle('active', methodView);
-      if (searchResults && methodView) {{
+      if (view === 'toggle-method') {{
+        dashboardView = dashboardView === 'method' ? 'practice' : 'method';
+      }} else if (view === 'toggle-plans') {{
+        dashboardView = dashboardView === 'plans' ? 'practice' : 'plans';
+      }} else {{
+        dashboardView = next;
+      }}
+      const isPractice = dashboardView === 'practice';
+      const isMethod = dashboardView === 'method';
+      const isPlans = dashboardView === 'plans';
+      if (practicePanel) practicePanel.classList.toggle('hidden', !isPractice);
+      if (methodPanel) {{
+        methodPanel.classList.toggle('hidden', !isMethod);
+        methodPanel.setAttribute('aria-hidden', isMethod ? 'false' : 'true');
+      }}
+      if (plansPanel) {{
+        plansPanel.classList.toggle('hidden', !isPlans);
+        plansPanel.setAttribute('aria-hidden', isPlans ? 'false' : 'true');
+      }}
+      if (btnMethod) btnMethod.classList.toggle('active', isMethod);
+      if (btnPlans) btnPlans.classList.toggle('active', isPlans);
+      if (searchResults && !isPractice) {{
         searchResults.classList.remove('open');
         searchResults.innerHTML = '';
       }}
-      if (methodView) {{
+      if (isMethod) {{
         ensureMermaid();
         renderCharacters('');
         renderBestiary('');
       }}
+      if (isPlans) renderPlansForStudy(sel ? sel.value : '');
+    }}
+
+    function loadPlanStorage() {{
+      try {{
+        const raw = localStorage.getItem(PLANS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {{}};
+      }} catch (e) {{
+        return {{}};
+      }}
+    }}
+
+    function savePlanStorage(data) {{
+      try {{
+        localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(data));
+      }} catch (e) {{}}
+    }}
+
+    function planChecked(plan, todo) {{
+      const store = loadPlanStorage();
+      if (Object.prototype.hasOwnProperty.call(store, todo.id)) {{
+        return !!store[todo.id];
+      }}
+      return !!todo.checked;
+    }}
+
+    function setPlanChecked(todoId, checked) {{
+      const store = loadPlanStorage();
+      store[todoId] = !!checked;
+      savePlanStorage(store);
+    }}
+
+    function resetPlanProgress(slug) {{
+      const store = loadPlanStorage();
+      const prefix = slug + ':';
+      Object.keys(store).forEach(k => {{
+        if (k.startsWith(prefix)) delete store[k];
+      }});
+      savePlanStorage(store);
+    }}
+
+    function mdInline(text) {{
+      let s = esc(text);
+      s = s.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      s = s.replace(/(https?:\\/\\/[^\\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+      return s;
+    }}
+
+    function renderPlanResources(lines) {{
+      if (!lines || !lines.length) return '';
+      const items = lines.map(line => '<li>' + mdInline(line.replace(/^[-*]\\s*/, '')) + '</li>').join('');
+      return '<details class="plan-resources"><summary>Resources</summary><ul>' + items + '</ul></details>';
+    }}
+
+    function renderPlanTodos(todos, plan) {{
+      if (!todos || !todos.length) return '';
+      const rows = todos.map(t => {{
+        const checked = planChecked(plan, t);
+        const doneCls = checked ? ' done' : '';
+        return '<li class="plan-todo' + doneCls + '">'
+          + '<input type="checkbox" id="' + esc(t.id) + '" data-todo-id="' + esc(t.id) + '"'
+          + (checked ? ' checked' : '') + '/>'
+          + '<label for="' + esc(t.id) + '">' + mdInline(t.text) + '</label></li>';
+      }}).join('');
+      return '<ul class="plan-todos">' + rows + '</ul>';
+    }}
+
+    function headingTag(level) {{
+      const n = Math.min(Math.max(level, 2), 6);
+      return 'h' + n;
+    }}
+
+    function renderPlanSection(section, plan) {{
+      const lvl = section.level || 2;
+      const tag = headingTag(lvl);
+      let html = '<section class="plan-section level-' + lvl + '" id="' + esc(section.anchor || '') + '">'
+        + '<' + tag + '>' + esc(section.title || '') + '</' + tag + '>'
+        + renderPlanTodos(section.todos || [], plan)
+        + renderPlanResources(section.resources || []);
+      (section.children || []).forEach(child => {{
+        html += renderPlanSection(child, plan);
+      }});
+      html += '</section>';
+      return html;
+    }}
+
+    function updatePlansProgress(plan) {{
+      const bar = document.getElementById('plansProgressBar');
+      const label = document.getElementById('plansProgressLabel');
+      if (!plan) {{
+        if (bar) bar.style.setProperty('--pct', '0%');
+        if (label) label.textContent = '0 / 0 complete';
+        if (bar) bar.setAttribute('aria-valuenow', '0');
+        return;
+      }}
+      const todos = plan.todos || [];
+      const total = todos.length;
+      let done = 0;
+      todos.forEach(t => {{ if (planChecked(plan, t)) done += 1; }});
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      if (bar) {{
+        bar.style.setProperty('--pct', pct + '%');
+        bar.setAttribute('aria-valuenow', String(pct));
+      }}
+      if (label) label.textContent = done + ' / ' + total + ' complete';
+    }}
+
+    function renderPlansToc(plan) {{
+      const list = document.getElementById('plansTocList');
+      if (!list) return;
+      if (!plan) {{
+        list.innerHTML = '';
+        return;
+      }}
+      const items = (plan.toc || []).map(entry => {{
+        const cls = entry.level >= 3 ? ' class="lvl-' + entry.level + '"' : '';
+        return '<li' + cls + '><a href="#' + esc(entry.anchor) + '">' + esc(entry.title) + '</a></li>';
+      }}).join('');
+      list.innerHTML = items || '<li class="empty">No sections</li>';
+    }}
+
+    function renderPlansForStudy(studyId) {{
+      const plan = (PLANS_DATA.plans || {{}})[studyId];
+      const titleEl = document.getElementById('plansTitle');
+      const subEl = document.getElementById('plansSub');
+      const content = document.getElementById('plansContent');
+      const empty = document.getElementById('plansEmpty');
+      const github = document.getElementById('plansGithub');
+      if (github && PLANS_DATA.github_url) github.href = PLANS_DATA.github_url;
+      if (!plan) {{
+        if (titleEl) titleEl.textContent = 'Study Plan';
+        if (subEl) subEl.textContent = 'No plan file for this study';
+        if (content) content.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        renderPlansToc(null);
+        updatePlansProgress(null);
+        return;
+      }}
+      if (empty) empty.classList.add('hidden');
+      if (titleEl) titleEl.textContent = plan.title || plan.study_title || 'Study Plan';
+      if (subEl) subEl.textContent = (plan.todo_count || 0) + ' tasks · source ' + (plan.source_rel || '');
+      let html = '';
+      if (plan.backlog && plan.backlog.length) {{
+        html += '<div class="plans-backlog" id="plan-backlog"><h3>Backlog</h3><ul>'
+          + plan.backlog.map(line => '<li>' + mdInline(line) + '</li>').join('')
+          + '</ul></div>';
+      }}
+      (plan.sections || []).forEach(sec => {{
+        html += renderPlanSection(sec, plan);
+      }});
+      if (content) {{
+        content.innerHTML = html;
+        content.querySelectorAll('input[type="checkbox"][data-todo-id]').forEach(box => {{
+          box.addEventListener('change', () => {{
+            setPlanChecked(box.getAttribute('data-todo-id'), box.checked);
+            const row = box.closest('.plan-todo');
+            if (row) row.classList.toggle('done', box.checked);
+            updatePlansProgress(plan);
+          }});
+        }});
+      }}
+      renderPlansToc(plan);
+      updatePlansProgress(plan);
     }}
 
     function ensureMermaid() {{
@@ -1279,7 +1695,20 @@ def build_html(
     }}
 
     if (btnMethod) {{
-      btnMethod.addEventListener('click', () => setMethodView(!methodView));
+      btnMethod.addEventListener('click', () => setDashboardView('toggle-method'));
+    }}
+    if (btnPlans) {{
+      btnPlans.addEventListener('click', () => setDashboardView('toggle-plans'));
+    }}
+    const btnPlansReset = document.getElementById('btnPlansReset');
+    if (btnPlansReset) {{
+      btnPlansReset.addEventListener('click', () => {{
+        const studyId = sel ? sel.value : '';
+        const plan = (PLANS_DATA.plans || {{}})[studyId];
+        if (!plan || !plan.slug) return;
+        resetPlanProgress(plan.slug);
+        renderPlansForStudy(studyId);
+      }});
     }}
     const charSearch = document.getElementById('charSearch');
     const beastSearch = document.getElementById('beastSearch');
@@ -1340,14 +1769,20 @@ def build_html(
       const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable))
         return;
+      if ((e.key === 'p' || e.key === 'P') && !overlay.classList.contains('open')
+          && !e.ctrlKey && !e.metaKey && !e.altKey) {{
+        e.preventDefault();
+        setDashboardView('toggle-plans');
+        return;
+      }}
       if ((e.key === 'm' || e.key === 'M') && !overlay.classList.contains('open')
           && !e.ctrlKey && !e.metaKey && !e.altKey) {{
         e.preventDefault();
-        setMethodView(!methodView);
+        setDashboardView('toggle-method');
         return;
       }}
       if (e.key === 'l' || e.key === 'L') {{
-        if (methodView) setMethodView(false);
+        if (dashboardView !== 'practice') setDashboardView('practice');
         e.preventDefault();
         openLatestPalace();
       }}
@@ -1414,13 +1849,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--technique-source", type=Path, default=None)
     p.add_argument("--technique-dir", type=Path, default=None)
     p.add_argument("--skip-technique-sync", action="store_true")
+    p.add_argument("--studies-root", type=Path, default=None)
+    p.add_argument("--skip-plans-sync", action="store_true")
     args = p.parse_args(argv)
 
     out_dir = args.output_dir.resolve()
+    studies_root = (
+        args.studies_root.resolve() if args.studies_root else default_studies_root()
+    )
     technique_dir = (
-        args.technique_dir.resolve()
-        if args.technique_dir
-        else default_technique_dir()
+        args.technique_dir.resolve() if args.technique_dir else default_technique_dir()
     )
 
     if not args.skip_technique_sync:
@@ -1442,6 +1880,19 @@ def main(argv: list[str] | None = None) -> int:
 
     method_html, method_canon = build_method_panel(technique_dir)
 
+    if not args.skip_plans_sync:
+        try:
+            entries = sync_plans_all(
+                args.data_dir.resolve(),
+                studies_root,
+                out_dir,
+            )
+            print(f"Plans sync: {len(entries)} plan(s)")
+        except OSError as e:
+            print(f"Plans sync warning: {e}", file=sys.stderr)
+
+    plans_payload = build_plans_payload(studies_root, args.data_dir.resolve())
+
     snap = snapshot(
         data_dir=args.data_dir.resolve(),
         notes_root=args.notes_root.resolve() if args.notes_root else None,
@@ -1453,7 +1904,12 @@ def main(argv: list[str] | None = None) -> int:
     elif snap.get("studies"):
         snap["selected_study_id"] = snap["studies"][0]["id"]
 
-    html_out = build_html(snap, method_html=method_html, method_canon=method_canon)
+    html_out = build_html(
+        snap,
+        method_html=method_html,
+        method_canon=method_canon,
+        plans_payload=plans_payload,
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / "dashboard.html"
     out.write_text(html_out, encoding="utf-8")

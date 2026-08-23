@@ -1,1 +1,1 @@
-C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\english\mnemonics-english.md
+﻿C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\output\practice\english.md

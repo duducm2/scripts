@@ -1,1 +1,1 @@
-C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique\README.md
+C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\technique\README.md

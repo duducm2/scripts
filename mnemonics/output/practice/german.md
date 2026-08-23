@@ -1,6 +1,118 @@
 # German
 
-_8 Memory Palaces · newest first_
+_11 Memory Palaces · newest first_
+
+---
+
+## Memory Palace 11: The German Alphabet
+
+**Character:** (unassigned palace 11)
+
+![Memory Palace 11](images/german/11.png)
+
+_1 beasts · 1 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[Aq] [aquatic leech]**
+
+💡 **Concept:** Reharse the german alphabet depicted here: https://github.com/duducm2/scripts/blob/main/mnemonics/studies/german/portals/mnemonics-aquatic-leech.md
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 10: Formants and Resonance
+
+**Character:** (unassigned palace 10)
+
+![Memory Palace 10](images/german/10.png)
+
+_5 beasts · 5 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[Al] [alligator]**
+
+💡 **Concept:** A sound gets louder when the space around it boosts the vibration.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Am] [amulet]**
+
+💡 **Concept:** The absolute base wave made by the source is the fundamental frequency.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[An] [angel]**
+
+💡 **Concept:** Resonance bundles multiply the base frequency to create speech formants.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Ao] [aoudad]**
+
+💡 **Concept:** The fundamental pitch comes directly from the vocal folds buzzing.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Ap] [ape]**
+
+💡 **Concept:** The throat shapes the first formant, the mouth shapes the second, and their interplay with the base sound forms the source-filter model.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 9: Simple and Complex Sound Foundations
+
+**Character:** (unassigned palace 9)
+
+![Memory Palace 9](images/german/9.png)
+
+_4 beasts · 4 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[Ag] [Agaric fungi]**
+
+💡 **Concept:** Simple waves move evenly and repeat in a regular pattern.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Ah] [Ah!—a sigh]**
+
+💡 **Concept:** Amplitude shows how far a wave moves away from its resting point.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Ai] [Airedale terrier]**
+
+💡 **Concept:** Real sounds are usually made of messy, overlapping vibrations.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Ak] [Akita (dog breed)]**
+
+💡 **Concept:** Vowel sounds are even and smooth, while consonants can be messy and irregular.
+**Quote:** —
+**Story:** —
+**Sensory:** —
 
 ---
 

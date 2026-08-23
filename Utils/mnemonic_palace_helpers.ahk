@@ -152,24 +152,35 @@ Palace_NotesStudiesRoot(createIfMissing := false) {
         }
         return ""
     }
+    ; In-repo studies (plans/research) after notes/studies removal
+    localStudies := A_ScriptDir . "\mnemonics\studies"
+    if (DirExist(localStudies))
+        return localStudies
+    if (createIfMissing) {
+        try DirCreate(localStudies)
+        catch {
+        }
+        if (DirExist(localStudies))
+            return localStudies
+    }
     notesRoot := ""
     try notesRoot := GetNotesRepoPath()
     catch {
         notesRoot := ""
     }
-    if (notesRoot = "")
-        return ""
-    studies := RTrim(notesRoot, "\") . "\studies"
-    if (DirExist(studies))
-        return studies
-    if (createIfMissing) {
-        try DirCreate(studies)
-        catch {
-        }
+    if (notesRoot != "") {
+        studies := RTrim(notesRoot, "\") . "\studies"
         if (DirExist(studies))
             return studies
+        if (createIfMissing) {
+            try DirCreate(studies)
+            catch {
+            }
+            if (DirExist(studies))
+                return studies
+        }
     }
-    return ""
+    return localStudies
 }
 
 Palace_ResolveImagePath(imageRelPath) {

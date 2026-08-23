@@ -4,7 +4,7 @@ Keyboard-first Memory Palace manager: AutoHotkey CRUD + CSV under `mnemonics/dat
 
 Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N).
 
-Technique rules are mirrored in-repo at `mnemonics/technique/` (from notes `studies/technique`). The app does not change the mnemonic method. Technique docs may still say “street”; this software uses **Memory Palace** only.
+Technique rules live in-repo at `mnemonics/technique/` (SSOT). The app does not change the mnemonic method. Technique docs may still say “street”; this software uses **Memory Palace** only.
 
 ## Requirements
 
@@ -42,14 +42,19 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | `mnemonics/data/imported/`        | Archived AI import CSVs.                                              |
 | `mnemonics/output/dashboard.html` | Generated cockpit.                                                    |
 | `mnemonics/output/practice/`      | Auto-synced study `.md` files + palace images (mobile/GitHub).        |
-| `mnemonics/technique/`            | Mirrored method docs, canon JSON, prompts, research.                  |
+| `mnemonics/output/plans/`         | Auto-synced study plan `.md` files (mobile/GitHub).                   |
+| `mnemonics/technique/`            | Method docs, canon JSON, prompts, research (SSOT).                    |
+| `mnemonics/studies/`              | Study plans / portals still tied to active topics.                    |
+| `mnemonics/_quarantine_review/`   | Suspected unused files staged for manual delete (not auto-removed).   |
 | `mnemonics/python/`               | Migrator, aggregator, chart generator, practice MD sync, prompt pack. |
 
 `palaces.csv` columns: `id`, `study_id`, `palace_number`, `title`, `character_name`, `image_rel_path`, `depth_slots_used`, `image_prompt`.
 
 `studies.csv` columns: `id`, `title`, `notes_rel_path`, `sort_order`, `active` (no separate slug; folder key is `notes_rel_path`).
 
-`image_rel_path` is a relative path to the palace composite image. New attaches use `practice/images/{study}/{n}.ext` under `mnemonics/output/` (self-contained in the scripts repo). Legacy rows may still point at `notes/studies/…` until migrated. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `mnemonics/technique/characters.json`, `bestiary.json`.
+`image_rel_path` is a relative path to the palace composite image. New attaches use `practice/images/{study}/{n}.ext` under `mnemonics/output/`. `image_prompt` stores the text used to generate that image; **empty is valid**. Canon JSON: `mnemonics/technique/characters.json`, `bestiary.json`.
+
+`NotesStudiesRoot` (optional) defaults to `mnemonics/studies/` when unset.
 
 `beasts.csv` FK is `palace_id` (row ids use `PALACE_*`).
 
@@ -62,6 +67,7 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | I         | AI import (Desktop `PALACE_*` pack, one preview)   |
 | Q         | Quick image (newest Desktop PNG/JPG → last palace) |
 | G         | Practice on GitHub (synced mobile notes)           |
+| O         | Plans on GitHub (synced study plan checklists)     |
 | H         | Glossary                                           |
 | P         | Push scripts repo to cloud                         |
 | Backspace | Return to Utility Shortcuts                        |
@@ -69,38 +75,55 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 ## Migrate legacy Markdown
 
+One-time migrator for historical `mnemonics-*.md` archives (if you still have a copy elsewhere):
+
 ```powershell
 py -3 mnemonics\python\migrate_md_to_csv.py `
-  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
-  --out mnemonics\data `
-  --dry-run
-
-py -3 mnemonics\python\migrate_md_to_csv.py `
-  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
+  --notes-root "<path-to-folder-of-legacy-md>" `
   --out mnemonics\data
 ```
 
-Writes `mnemonics/data/migration_report.md`. Legacy `mnemonics-*.md` files are left untouched. MD headings `## Street N` are still parsed; output is `palaces.csv` with empty `image_prompt`.
+Writes `mnemonics/data/migration_report.md`. MD headings `## Street N` are still parsed; output is `palaces.csv` with empty `image_prompt`.
 
 ## Dashboard
 
-Memory Palace **[D]** runs `chart_generator.py` with `--data-dir` / `--output-dir` / `--notes-root` (syncs technique mirror first), then opens Chrome. Pick a study in the page to view Memory Palace images (newest palace number first).
+Memory Palace **[D]** runs `chart_generator.py` with `--data-dir` / `--output-dir` (and optional `--notes-root`), then opens Chrome. Technique docs are loaded from `mnemonics/technique/` (no notes clone required). Pick a study in the page to view Memory Palace images (newest palace number first).
 
 Click a palace card to open a fullscreen view: image, **Image prompt** (or empty state) with **Copy prompt**, Knowledge Atom count, **Close**, and a practice list that labels each atom’s **Beast**, **Concept**, **Quote**, **Story**, and **Sensory**.
 
-**Method** button (or keyboard **M**) opens the mirrored technique docs in the same page: README (tables, mermaid workflow), research notes, prompt previews, and searchable Characters / Bestiary canon.
+**Method** button (or keyboard **M**) opens the technique docs in the same page: README (tables, mermaid workflow), research notes, prompt previews, and searchable Characters / Bestiary canon.
 
-## Technique mirror
+**Plans** button (or keyboard **P**) opens study plan checklists parsed from `mnemonics/studies/*/*-plan.md`: backlog, phased sections, checkbox todos, and collapsible resource links. Progress toggles are saved in the browser (localStorage); use **Reset to file** to restore the Markdown file state.
 
-Notes `studies/technique` remains the edit source. Scripts keep a one-way copy under `mnemonics/technique/`. Dashboard **[D]** refreshes the mirror when the notes path is available.
+## Study plan Markdown (mobile / GitHub)
+
+Source plans live under `mnemonics/studies/{topic}/*-plan.md`. On each dashboard build, copies sync to `mnemonics/output/plans/{slug}.md` for batch mobile/GitHub access.
+
+Batch browse on GitHub:
+
+`https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans`
+
+Regenerate all plan files:
+
+```powershell
+py -3 mnemonics\python\study_plans_md.py `
+  --data-dir mnemonics\data `
+  --studies-root mnemonics\studies `
+  --output-dir mnemonics\output `
+  --sync-all
+```
+
+## Technique (SSOT)
+
+Edit method rules, prompts, and canon JSON under `mnemonics/technique/`. Dashboard **[D]** uses that tree directly. Optional one-way sync from an external technique folder remains available:
 
 ```powershell
 py -3 mnemonics\python\sync_technique.py `
-  --source "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique" `
+  --source "<external-technique-folder>" `
   --dest mnemonics\technique
 ```
 
-Prompt context files and technique prompt fallbacks resolve from `mnemonics/technique/` when the notes clone is missing.
+Prompt context files resolve from `mnemonics/technique/` first.
 
 ## Practice Markdown (mobile / GitHub)
 
@@ -110,27 +133,14 @@ Batch browse on GitHub:
 
 `https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice`
 
-One-time backfill (copies images from notes and migrates `image_rel_path` in CSV):
+Regenerate all practice files:
 
 ```powershell
 py -3 mnemonics\python\study_practice_md.py `
   --data-dir mnemonics\data `
   --output-dir mnemonics\output `
-  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
-  --sync-all --migrate-image-paths
+  --sync-all
 ```
-
-Optional legacy cleanup in the notes repo (dry-run first):
-
-```powershell
-py -3 mnemonics\python\study_practice_md.py `
-  --data-dir mnemonics\data `
-  --output-dir mnemonics\output `
-  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
-  --prune-legacy-notes-md --dry-run
-```
-
-Remove `--dry-run` to delete `mnemonics-*.md` under notes studies (skips `technique/` and `portals/`).
 
 ## AI import
 

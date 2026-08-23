@@ -126,20 +126,18 @@ GetPromptText(key) {
     }
 }
 
-; MyNotes technique prompts: live repo path first, then mirror under mnemonics\technique\prompts.
+; Technique prompts: scripts mirror first, then live notes repo if present.
 GetTechniquePromptFilePath(fileName) {
+    mirror := A_ScriptDir "\mnemonics\technique\prompts\" fileName
+    if FileExist(mirror)
+        return mirror
     repo := GetNotesRepoPath()
     dir := (repo != "") ? repo "\studies\technique\prompts" : ""
     if (dir != "" && FileExist(dir "\" fileName))
         return dir "\" fileName
-    mirror := A_ScriptDir "\mnemonics\technique\prompts\" fileName
-    if FileExist(mirror)
-        return mirror
     legacy := A_ScriptDir "\assets\prompt\technique\" fileName
     if FileExist(legacy)
         return legacy
-    if (dir != "")
-        return dir "\" fileName
     return mirror
 }
 

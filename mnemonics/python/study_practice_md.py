@@ -70,7 +70,17 @@ def copy_palace_image(
     if src and src.exists():
         ext = src.suffix.lstrip(".") or "png"
         dest = dest_dir / f"{num}.{ext}"
-        shutil.copy2(src, dest)
+        try:
+            same = src.resolve() == dest.resolve()
+        except OSError:
+            same = False
+        if not same:
+            try:
+                shutil.copy2(src, dest)
+            except PermissionError:
+                # Destination locked (e.g. Drive sync) — keep existing dest if present
+                if not dest.exists():
+                    raise
         return f"images/{slug_filename(slug)}/{num}.{ext}"
 
     # Already under practice/images in CSV — file may exist from prior sync

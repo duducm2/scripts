@@ -1,1 +1,1 @@
-C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\piano\mnemonics-piano.md
+﻿C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\output\practice\piano.md

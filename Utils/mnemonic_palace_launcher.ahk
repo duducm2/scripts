@@ -38,7 +38,8 @@ Palace_ShowMainMenu() {
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["I", "AI import", "Desktop PALACE pack (preview)"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
-        ["G", "Practice on GitHub", "Synced study notes for mobile"],
+        ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
+        ["O", "Plans on GitHub", "Synced study plan checklists for mobile"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
     ]
@@ -64,11 +65,12 @@ Palace_ShowMainMenu() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y438 w880",
-        "Backspace utility shortcuts   Esc close   G practice on GitHub   I import   Q image   P push")
+        "Backspace utility shortcuts   Esc close   G practice   O plans on GitHub   I import   Q image   P push")
 
     Palace_BindHotkeys([
         ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
         ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
+        ["o", Palace_OnPlansGithub],
         ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
@@ -122,6 +124,27 @@ Palace_OpenPracticeGithub() {
     Palace_Notify("Practice folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
 }
 
+Palace_PlansGithubUrl() {
+    return "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans"
+}
+
+Palace_OnPlansGithub(*) {
+    Palace_OpenPlansGithub()
+}
+
+Palace_OpenPlansGithub() {
+    url := Palace_PlansGithubUrl()
+    try Run('chrome.exe --new-window "' . url . '"')
+    catch as e {
+        try Run('"' . url . '"')
+        catch {
+            Palace_Notify("Could not open GitHub: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
+    Palace_Notify("Plans folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
+}
+
 Palace_OpenDashboard() {
     Palace_EnsureData()
     py := Palace_PythonDir() . "\chart_generator.py"
@@ -137,12 +160,14 @@ Palace_OpenDashboard() {
         Palace_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
         return
     }
-    try StandardLoadingBar_Show("Syncing technique + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
+    try StandardLoadingBar_Show("Syncing technique + plans + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
-    if (notesRoot != "")
+    if (notesRoot != "") {
         cmd .= ' --notes-root "' . notesRoot . '"'
+        cmd .= ' --studies-root "' . notesRoot . '"'
+    }
     lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
     if (lastStudy != "")
         cmd .= ' --study-id "' . lastStudy . '"'
