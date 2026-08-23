@@ -4,13 +4,13 @@ Configure the **Google Apps Script** backend and **MacroDroid** for study links.
 
 ## Study material menu (unbound)
 
-`Win+Alt+Shift+X` (`#!+x`) is **empty / reserved** — it no longer opens Study Material.
-Mnemonics / Plans / Technique GUI code remains in `peek_pdf_study_*.ahk` but has no hotkey entry.
+Former Study Material entry on `#!+x` was removed. That chord now opens **Memory Palace** (same as Utility Shortcuts `[N]`).
+Mnemonics / Plans / Technique GUI code remains in `peek_pdf_study_*.ahk` but has no dedicated hotkey.
 Study link manage GUIs are opened from Memory Palace (below).
 
 ## Memory Palace quick links (PC)
 
-Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N). Keys **1–3** on the main menu:
+Open via **Win+Alt+Shift+X**, or **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N). Keys **1–3** on the main menu:
 
 | Key | Module           | Action                                                                                                  |
 | --- | ---------------- | ------------------------------------------------------------------------------------------------------- |
@@ -226,7 +226,7 @@ Study Topic → **`[6] Technique`** opens the technique README on GitHub in a ne
 
 2. Run [`infra/tools/TestStudyLinkApi.ahk`](../infra/tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
-3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each. (`#!+x` is empty / reserved.)
+3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each (open via `#!+x` or Utility Shortcuts `[N]`).
 
 4. Phone: Set then Get for each link type after Apps Script redeploy.
 

@@ -272,7 +272,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Peek PDF / QuickLook study helpers (part 3) -> Utils\peek_pdf_study_03.ahk
 #include %A_ScriptDir%\Utils\peek_pdf_study_03.ahk
 
-; [Utils module] Win+Alt+Shift+X reserved (empty) -> Utils\study_hotkey_x.ahk
+; [Utils module] Win+Alt+Shift+X → Memory Palace -> Utils\study_hotkey_x.ahk
 #include %A_ScriptDir%\Utils\study_hotkey_x.ahk
 
 ; [Utils module] Modal ListView letter jump helpers -> Utils\modal_list_letter_jump.ahk

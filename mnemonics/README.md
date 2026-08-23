@@ -2,7 +2,7 @@
 
 Keyboard-first Memory Palace manager: AutoHotkey CRUD + CSV under `mnemonics/data/` + Python palace-image dashboard in `mnemonics/output/`.
 
-Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N).
+Open via **Win+Alt+Shift+X**, or **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N).
 
 Technique rules live in-repo at `mnemonics/technique/` (SSOT). The app does not change the mnemonic method. Technique docs may still say “street”; this software uses **Memory Palace** only.
 
