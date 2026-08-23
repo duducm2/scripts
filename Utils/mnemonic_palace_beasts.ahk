@@ -111,6 +111,7 @@ Palace_BeastDelete(*) {
             out.Push(r)
     }
     Palace_Save("beasts", out)
+    Palace_SyncPracticeMd([Palace_StudyIdForPalace(b["palace_id"])])
     Palace_BeastRefresh()
     Palace_Notify("Beast removed", 1200, BANNER_ACCENT_SUCCESS)
 }
@@ -203,5 +204,6 @@ Palace_BeastForm(existing) {
         Palace_Save("beasts", beasts)
         saved := true
         g.Destroy()
+        Palace_SyncPracticeMd([Palace_StudyIdForPalace(palaceId)])
     }
 }

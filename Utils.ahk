@@ -316,6 +316,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] Memory Palace (Utility Shortcuts [N])
 #include %A_ScriptDir%\Utils\mnemonic_palace_helpers.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_practice_md.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_launcher.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_studies.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_palaces.ahk

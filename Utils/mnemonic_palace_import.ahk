@@ -348,6 +348,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     nBeasts := 0
     nAtoms := 0
     beastIdRemap := Map()
+    syncStudyIds := Map()
 
     ; --- Palaces: upsert by id ---
     for r in palaceRows {
@@ -386,6 +387,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 existing["image_prompt"] := promptIn
             if (img != "")
                 existing["image_rel_path"] := img
+            syncStudyIds[studyId] := true
             nPalaces += 1
         } else {
             palaces.Push(Map(
@@ -398,6 +400,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "depth_slots_used", r.Has("depth_slots_used") ? r["depth_slots_used"] : "0",
                 "image_prompt", promptIn
             ))
+            syncStudyIds[studyId] := true
             nPalaces += 1
         }
     }
@@ -461,6 +464,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "is_smashed", r.Has("is_smashed") ? r["is_smashed"] : "0",
                 "sort_order", r.Has("sort_order") ? r["sort_order"] : "1"
             ))
+            sid := Palace_StudyIdForPalace(palaceId)
+            if (sid != "")
+                syncStudyIds[sid] := true
             nBeasts += 1
         }
     }
@@ -534,6 +540,9 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 for row in proposed {
                     atoms.Push(row)
                     nAtoms += 1
+                    sid := Palace_StudyIdForBeast(beastId)
+                    if (sid != "")
+                        syncStudyIds[sid] := true
                 }
             }
         }
@@ -567,6 +576,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
 
     Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
         2800, BANNER_ACCENT_SUCCESS)
+    syncIds := []
+    for sid, _ in syncStudyIds
+        syncIds.Push(sid)
+    if (syncIds.Length)
+        Palace_SyncPracticeMd(syncIds)
     Palace_ShowMainMenu()
     return true
 }
@@ -625,21 +639,21 @@ Palace_QuickAttachDesktopImage(*) {
         Palace_Notify("Study has no notes path", 2200, BANNER_ACCENT_ERROR)
         return false
     }
-    if (!Palace_EnsureStudyNotesFolder(slug)) {
-        Palace_Notify("Could not create study images folder", 2500, BANNER_ACCENT_ERROR)
-        return false
-    }
     SplitPath(src, , , &ext)
     ext := StrLower(Trim(ext))
     if (ext = "")
         ext := "png"
-    rel := StrReplace(slug, "\", "/") . "/images/" . palace["palace_number"] . "." . ext
-    root := Palace_NotesStudiesRoot(true)
-    if (root = "") {
-        Palace_Notify("Notes studies root not found", 2200, BANNER_ACCENT_ERROR)
-        return false
+    slugNorm := StrReplace(slug, "\", "/")
+    rel := "practice/images/" . slugNorm . "/" . palace["palace_number"] . "." . ext
+    practiceDestDir := Palace_PracticeDir() . "\images\" . StrReplace(slugNorm, "/", "\")
+    if (!DirExist(practiceDestDir)) {
+        try DirCreate(practiceDestDir)
+        catch {
+            Palace_Notify("Could not create practice images folder", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
     }
-    absDest := root . "\" . StrReplace(rel, "/", "\")
+    absDest := practiceDestDir . "\" . palace["palace_number"] . "." . ext
     try FileCopy(src, absDest, 1)
     catch as e {
         Palace_Notify("Copy failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
@@ -654,5 +668,6 @@ Palace_QuickAttachDesktopImage(*) {
     existing["image_rel_path"] := rel
     Palace_Save("palaces", palaces)
     Palace_Notify("Attached image → " . palace["title"] . " (" . rel . ")", 2800, BANNER_ACCENT_SUCCESS)
+    Palace_SyncPracticeMd([palace["study_id"]])
     return true
 }

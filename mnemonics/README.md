@@ -35,19 +35,20 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 ## Data layout
 
-| Path                              | Role                                                |
-| --------------------------------- | --------------------------------------------------- |
-| `mnemonics/data/*.csv`            | Source of truth (studies, palaces, beasts, atoms).  |
-| `mnemonics/data/settings.ini`     | Last study, optional NotesStudiesRoot override.     |
-| `mnemonics/data/imported/`        | Archived AI import CSVs.                            |
-| `mnemonics/output/dashboard.html` | Generated cockpit.                                  |
-| `mnemonics/python/`               | Migrator, aggregator, chart generator, prompt pack. |
+| Path                              | Role                                                                  |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `mnemonics/data/*.csv`            | Source of truth (studies, palaces, beasts, atoms).                    |
+| `mnemonics/data/settings.ini`     | Last study, optional NotesStudiesRoot override.                       |
+| `mnemonics/data/imported/`        | Archived AI import CSVs.                                              |
+| `mnemonics/output/dashboard.html` | Generated cockpit.                                                    |
+| `mnemonics/output/practice/`      | Auto-synced study `.md` files + palace images (mobile/GitHub).        |
+| `mnemonics/python/`               | Migrator, aggregator, chart generator, practice MD sync, prompt pack. |
 
 `palaces.csv` columns: `id`, `study_id`, `palace_number`, `title`, `character_name`, `image_rel_path`, `depth_slots_used`, `image_prompt`.
 
 `studies.csv` columns: `id`, `title`, `notes_rel_path`, `sort_order`, `active` (no separate slug; folder key is `notes_rel_path`).
 
-`image_rel_path` is a relative path to the palace composite image. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `studies/technique/characters.json`, `bestiary.json`.
+`image_rel_path` is a relative path to the palace composite image. New attaches use `practice/images/{study}/{n}.ext` under `mnemonics/output/` (self-contained in the scripts repo). Legacy rows may still point at `notes/studies/…` until migrated. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `studies/technique/characters.json`, `bestiary.json`.
 
 `beasts.csv` FK is `palace_id` (row ids use `PALACE_*`).
 
@@ -85,13 +86,43 @@ Memory Palace **[D]** runs `chart_generator.py` with `--data-dir` / `--output-di
 
 Click a palace card to open a fullscreen view: image, **Image prompt** (or empty state) with **Copy prompt**, Knowledge Atom count, **Close**, and a practice list that labels each atom’s **Beast**, **Concept**, **Quote**, **Story**, and **Sensory**.
 
+## Practice Markdown (mobile / GitHub)
+
+Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, AI import **[I]**, and quick image attach **[Q]** (loading bar shown during generation).
+
+Batch browse on GitHub:
+
+`https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice`
+
+One-time backfill (copies images from notes and migrates `image_rel_path` in CSV):
+
+```powershell
+py -3 mnemonics\python\study_practice_md.py `
+  --data-dir mnemonics\data `
+  --output-dir mnemonics\output `
+  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
+  --sync-all --migrate-image-paths
+```
+
+Optional legacy cleanup in the notes repo (dry-run first):
+
+```powershell
+py -3 mnemonics\python\study_practice_md.py `
+  --data-dir mnemonics\data `
+  --output-dir mnemonics\output `
+  --notes-root "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies" `
+  --prune-legacy-notes-md --dry-run
+```
+
+Remove `--dry-run` to delete `mnemonics-*.md` under notes studies (skips `technique/` and `portals/`).
+
 ## AI import
 
 1. Technique prompts (Utility Shortcuts → Prompts): `5` transcript, `4` create mnemonic stories, `a` story reduction, `g` preserve background.
 2. Stories / reduction deliver one downloadable **`PALACE_PACK.txt`**: human-readable `===PREVIEW===` plus three labeled CSV sections (`===FILE: PALACE_PALACES.csv===`, `BEASTS`, `ATOMS`). A `gemini-code-….txt` dump with the same markers also works. Edit the pack on Desktop if needed.
 3. Separate Desktop files `PALACE_PALACES*` / `PALACE_BEASTS*` / `PALACE_ATOMS*` still import when present (preferred over pack if any exist).
 4. Memory Palace **[I]** — one-shot import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
-5. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId`.
+5. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId` (stored under `mnemonics/output/practice/images/`).
 
 ### Prompt context pack
 

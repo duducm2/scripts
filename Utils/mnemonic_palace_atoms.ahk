@@ -112,6 +112,7 @@ Palace_AtomDelete(*) {
             out.Push(r)
     }
     Palace_Save("atoms", out)
+    Palace_SyncPracticeMd([Palace_StudyIdForAtom(a["id"])])
     Palace_AtomRefresh()
     Palace_Notify("Atom removed", 1200, BANNER_ACCENT_SUCCESS)
 }
@@ -242,5 +243,6 @@ Palace_AtomForm(existing) {
         }
         saved := true
         g.Destroy()
+        Palace_SyncPracticeMd([Palace_StudyIdForBeast(beastId)])
     }
 }

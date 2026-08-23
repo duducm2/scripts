@@ -140,6 +140,7 @@ Palace_PalaceDelete(*) {
             palaceOut.Push(r)
     }
     Palace_Save("palaces", palaceOut)
+    Palace_SyncPracticeMd([st["study_id"]])
     Palace_PalaceRefresh()
     Palace_Notify("Memory Palace removed", 1200, BANNER_ACCENT_SUCCESS)
 }
@@ -239,5 +240,6 @@ Palace_PalaceForm(existing) {
         Palace_Save("palaces", palaces)
         saved := true
         g.Destroy()
+        Palace_SyncPracticeMd([studyId])
     }
 }

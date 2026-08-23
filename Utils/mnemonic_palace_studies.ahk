@@ -122,6 +122,7 @@ Palace_StudyDelete(*) {
     Palace_Save("studies", studyOut)
     if (Trim(Palace_Setting("General", "LastStudyId", "")) = s["id"])
         Palace_SetSetting("General", "LastStudyId", "")
+    Palace_SyncPracticeMd([], s["notes_rel_path"])
     Palace_StudyRefresh()
     Palace_Notify("Study removed", 1200, BANNER_ACCENT_SUCCESS)
 }
@@ -205,6 +206,7 @@ Palace_StudyForm(existing) {
         Palace_SetSetting("General", "LastStudyId", row["id"])
         saved := true
         g.Destroy()
+        Palace_SyncPracticeMd([row["id"]])
         Palace_Notify(isEdit ? "Study updated" : "Study saved", 1200, BANNER_ACCENT_SUCCESS)
     }
 }

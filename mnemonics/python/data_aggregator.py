@@ -41,22 +41,29 @@ def save_all(data_dir: Path, data: dict[str, list[dict[str, str]]]) -> None:
         _write_csv(data_dir / f"{kind}.csv", headers, data.get(kind, []))
 
 
-def resolve_image(notes_root: Path | None, image_rel: str) -> Path | None:
+def resolve_image(
+    notes_root: Path | None,
+    image_rel: str,
+    output_dir: Path | None = None,
+) -> Path | None:
     if not image_rel:
         return None
     p = Path(image_rel)
     if p.is_absolute() and p.exists():
         return p
+    norm = image_rel.replace("\\", "/")
+    if output_dir is not None and norm.startswith("practice/images/"):
+        cand = output_dir / norm.replace("/", "\\")
+        if cand.exists():
+            return cand
+        cand2 = output_dir / norm
+        if cand2.exists():
+            return cand2
     if notes_root is None:
         return None
-    cand = notes_root / Path(
-        image_rel.replace("/", "\\") if "\\" in image_rel else image_rel
-    )
-    # Path handles both separators on Windows
-    cand = notes_root / image_rel.replace("\\", "/")
+    cand = notes_root / norm
     if cand.exists():
         return cand
-    # try with backslashes
     cand2 = notes_root / image_rel.replace("/", "\\")
     if cand2.exists():
         return cand2
@@ -67,6 +74,7 @@ def snapshot(
     data_dir: Path,
     notes_root: Path | None = None,
     study_id: str | None = None,
+    output_dir: Path | None = None,
 ) -> dict[str, Any]:
     data = load_all(data_dir)
     studies = [s for s in data["studies"] if s.get("active", "1") != "0"]
@@ -109,7 +117,9 @@ def snapshot(
                         }
                     )
             atom_count = len(palace_atoms)
-            img_path = resolve_image(notes_root, st.get("image_rel_path", ""))
+            img_path = resolve_image(
+                notes_root, st.get("image_rel_path", ""), output_dir
+            )
             palace_cards.append(
                 {
                     "id": st_id,

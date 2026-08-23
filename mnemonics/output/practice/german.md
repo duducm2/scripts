@@ -1,0 +1,343 @@
+# German
+
+_8 Memory Palaces · newest first_
+
+---
+
+## Memory Palace 8: The German R Variations
+
+**Character:** (unassigned palace 8)
+
+![Memory Palace 8](images/german/8.png)
+
+_3 beasts · 3 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[Ad] adder**
+
+💡 **Concept:** The 'r' can vibrate far back in the throat as a flexible option.
+**Quote:** Uvular trill: Can be used as a free variant of the voiced uvular fricative.
+**Story:** On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
+**Sensory:** —
+
+🟧 **[Ae] aerialqist**
+
+💡 **Concept:** The 'r' can be a friction sound pushed more to the front.
+**Quote:** Voiced velar fricative: A more fronted variant.
+**Story:** An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
+**Sensory:** —
+
+**Z1 · Additional notes (non-mnemonic)**
+
+🟧 **[Af] Afghan hound**
+
+💡 **Concept:** Reharse the german alphabet depicted here:
+**Quote:** —
+**Story:** The main difference lies in **how air is obstructed** (manner of articulation) and **where it happens** (place of articulation).
+**Sensory:** —
+
+---
+
+## Memory Palace 7: Consonant Limits and Vowel Reductions
+
+**Character:** (unassigned palace 7)
+
+![Memory Palace 7](images/german/7.png)
+
+_5 beasts · 5 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[Y] yak**
+
+💡 **Concept:** The /z/ sound never starts a word in Standard German.
+**Quote:** —
+**Story:** A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
+**Sensory:** —
+
+🟧 **[Z] Zeus**
+
+💡 **Concept:** The /ŋ/ sound only happens at the end of syllables.
+**Quote:** The velar nasal /ŋ/ only occurs at the end of syllables (syllable coda).
+**Story:** Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
+**Sensory:** —
+
+🟧 **[Aa] aardvark**
+
+💡 **Concept:** Long vowels get short when they are not stressed.
+**Quote:** —
+**Story:** An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁaːl]. It pulls out another band that says Metan [meˈtaːn]. Because the aardvark is very relaxed and not stressed, it lets both bands snap back so they become very short. "Most long vowels can be shortened when they appear in an unstressed position (e.g., Moral, Metan)." IPA: Moral [moˈʁaːl], Metan [meˈtaːn]
+**Sensory:** —
+
+🟧 **[Ab] Abyssinian cat**
+
+💡 **Concept:** The weak 'e' sound can be completely dropped.
+**Quote:** —
+**Story:** An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
+**Sensory:** —
+
+🟧 **[Ac] acorn**
+
+💡 **Concept:** The 'r' can be rolled loudly in southern areas or in singing.
+**Quote:** Alveolar trill: Mostly used in southern dialects (Bavarian, Franconian) and in singing.
+**Story:** A giant acorn rolls out of the hole the cat made. It bounces fast on the front of a tongue model, rolling loudly. The acorn wears a southern alpine hat and sings a loud opera song to the cat and the yak.
+**Sensory:** —
+
+---
+
+## Memory Palace 6: Vowel Length Rules
+
+**Character:** Wolfgang Amadeus Mozart
+
+![Memory Palace 6](images/german/6.png)
+
+_2 beasts · 2 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[W] Wombat**
+
+💡 **Concept:** Long vowels usually come before one or fewer consonants.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[X] Xena, warrior woman**
+
+💡 **Concept:** The letter 'h' acts as a vowel lengthener.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 5: Compound Stress and Consonants
+
+**Character:** Harry Potter
+
+![Memory Palace 5](images/german/5.png)
+
+_5 beasts · 5 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[R] Rat**
+
+💡 **Concept:** Compound words keep their original stress patterns, but one primary stress dominates the whole word.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[S] Skull**
+
+💡 **Concept:** Voiced consonants harden into unvoiced sounds at the absolute end of a word.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[T] Toucan**
+
+💡 **Concept:** Word elements keep their strict pronunciation rules even when trapped inside compound words.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[U] Unicorn**
+
+💡 **Concept:** To pronounce a short vowel, move to the consonants early and hold them.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[V] Vulture**
+
+💡 **Concept:** Short vowels almost always come before two or more consonants.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 4: Drops and Fast Diphthongs
+
+**Character:** (unassigned palace 4)
+
+![Memory Palace 4](images/german/4.png)
+
+_4 beasts · 4 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[N] Neanderthal**
+
+💡 **Concept:** The `[ʏ]` sound uses a slightly lower tongue position while keeping lips round.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[O] owl**
+
+💡 **Concept:** The unaccented `[ɐ]` sound is placed extremely close to the English `[ʌ]` vowel.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[P] panther**
+
+💡 **Concept:** Germans transition to the second vowel in a diphthong much faster than English speakers.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[Q] Quetzalcoatl**
+
+💡 **Concept:** For the `[ɔʏ̯]` sound, the lips must stay tight and rounded all the way to the end.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 3: Shifted Placements and Rounded Vowels
+
+**Character:** Glossonauta
+
+![Memory Palace 3](images/german/3.png)
+
+_5 beasts · 5 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[I] imp**
+
+💡 **Concept:** The long `[aː]` sound pushes the tongue slightly closer to the front of the mouth.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[J] jester**
+
+💡 **Concept:** The `[yː]` sound takes a high front tongue position but rounds the lips.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[K] kitten**
+
+💡 **Concept:** The `[øː]` sound moves the tongue slightly down but keeps the lips round.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[L] lion**
+
+💡 **Concept:** The `[œ]` sound uses a mid-mouth tongue shape with rounded lips.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[M] marmoset**
+
+💡 **Concept:** The `[ɔ]` sound starts in the back-center of the mouth with round lips.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 2: Deep German Sounds
+
+**Character:** Johann Sebastian Bach
+
+![Memory Palace 2](images/german/2.png)
+
+_3 beasts · 3 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[F] frog**
+
+💡 **Concept:** German [r] is made deep in the throat with the back of the tongue.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[G] goat**
+
+💡 **Concept:** The ach-laut [x] is a tight back-of-mouth air sound, like controlled choking air.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[H] Hydra**
+
+💡 **Concept:** The ich-laut [ç] is a hissing sound made farther forward from a y-like tongue position.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---
+
+## Memory Palace 1: Re-tuned Mouth Moves
+
+**Character:** Ada Lovelace
+
+![Memory Palace 1](images/german/1.png)
+
+_5 beasts · 5 Knowledge Atoms_
+
+_No image prompt saved._
+
+### Knowledge Atoms
+
+🟧 **[A] Arachne**
+
+💡 **Concept:** German l is lighter than English l.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[B] bird of paradise**
+
+💡 **Concept:** [ŋ] uses the back of the tongue and should not end with a hard g.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[C] cat**
+
+💡 **Concept:** [ʃ] in German pulls the tongue farther back for a sharper sch feel.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[D] dragon**
+
+💡 **Concept:** German uses glottal stops often before vowel-starting words.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+🟧 **[E] eagle**
+
+💡 **Concept:** Clusters join two consonants into one fast combined move.
+**Quote:** —
+**Story:** —
+**Sensory:** —
+
+---

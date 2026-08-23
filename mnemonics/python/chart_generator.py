@@ -1083,6 +1083,7 @@ def main(argv: list[str] | None = None) -> int:
         data_dir=args.data_dir.resolve(),
         notes_root=args.notes_root.resolve() if args.notes_root else None,
         study_id=None,
+        output_dir=args.output_dir.resolve(),
     )
     if args.study_id:
         snap["selected_study_id"] = args.study_id

@@ -158,6 +158,15 @@ Palace_ResolveImagePath(imageRelPath) {
         return ""
     if (InStr(imageRelPath, ":") || SubStr(imageRelPath, 1, 2) = "\\")
         return imageRelPath
+    norm := StrReplace(imageRelPath, "/", "\")
+    if (InStr(norm, "practice\images\") = 1 || InStr(StrReplace(imageRelPath, "\", "/"), "practice/images/") = 1) {
+        cand := Palace_OutputDir() . "\" . norm
+        if (FileExist(cand))
+            return cand
+        cand2 := Palace_OutputDir() . "\" . StrReplace(imageRelPath, "/", "\")
+        if (FileExist(cand2))
+            return cand2
+    }
     root := Palace_NotesStudiesRoot()
     if (root = "")
         return ""
