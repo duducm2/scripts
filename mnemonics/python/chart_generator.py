@@ -343,22 +343,24 @@ def build_html(snap: dict) -> str:
       display: grid;
       grid-template-columns: 1fr;
       gap: 1.5rem;
-      padding: 1.25rem 1.5rem 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
+      padding: 0.75rem 0.5rem 2rem;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      box-sizing: border-box;
     }}
     .overlay-image {{
       background: #0a0b0e;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 0;
       overflow: hidden;
       min-height: 200px;
-      display: grid;
-      place-items: center;
+      width: 100%;
     }}
     .overlay-image img {{
       width: 100%;
-      max-height: 52vh;
+      height: auto;
+      max-height: 70vh;
       object-fit: contain;
       display: block;
     }}
@@ -565,6 +567,12 @@ def build_html(snap: dict) -> str:
       return '<span class="emoji" aria-hidden="true">💡</span>' + esc(t);
     }}
 
+    function formatQuote(v) {{
+      const t = (v ?? '').toString().trim();
+      if (!t) return '—';
+      return '\u201c' + esc(t) + '\u201d';
+    }}
+
     async function copyPrompt(text, btn) {{
       const t = (text || '').toString();
       if (!t.trim()) return;
@@ -622,7 +630,7 @@ def build_html(snap: dict) -> str:
             + '<span class="beast-name">' + dash(a.beast) + '</span></p>'
             + '<p class="field field-concept"><span class="lbl">Concept</span>'
             + formatConcept(a.concept) + '</p>'
-            + '<p class="field"><span class="lbl">Quote</span>' + dash(a.quote) + '</p>'
+            + '<p class="field"><span class="lbl">Quote</span>' + formatQuote(a.quote) + '</p>'
             + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
             + '<p class="field"><span class="lbl">Sensory</span>' + formatSensory(a.sensory) + '</p>'
             + '</article>';
