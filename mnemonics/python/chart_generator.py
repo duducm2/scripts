@@ -419,6 +419,46 @@ def build_html(snap: dict) -> str:
       cursor: pointer;
     }}
     #btnClose:hover {{ filter: brightness(1.08); }}
+    .overlay-nav {{
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }}
+    .overlay-nav button {{
+      background: #242830;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }}
+    .overlay-nav button:hover:not(:disabled) {{
+      border-color: var(--gold);
+      color: var(--gold);
+    }}
+    .overlay-nav button:disabled {{
+      opacity: 0.35;
+      cursor: default;
+    }}
+    .overlay-nav .nav-pos {{
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-width: 4.5rem;
+      text-align: center;
+    }}
+    .overlay-nav #btnClose {{
+      background: var(--gold);
+      color: #1a1408;
+      border: none;
+      margin-left: 0.35rem;
+    }}
+    .overlay-nav #btnClose:hover:not(:disabled) {{
+      filter: brightness(1.08);
+      color: #1a1408;
+      border: none;
+    }}
     .overlay-body {{
       display: grid;
       grid-template-columns: 1fr;
@@ -559,7 +599,7 @@ def build_html(snap: dict) -> str:
   <main>
     {''.join(study_blocks)}
   </main>
-  <footer>Click a Memory Palace for fullscreen practice. Latest palace (or L) opens the highest palace number.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Inside overlay: ← Older / Newer → (or arrow keys). Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -576,7 +616,12 @@ def build_html(snap: dict) -> str:
         <h2 id="ovTitle">Memory Palace</h2>
         <p class="count" id="ovCount"></p>
       </div>
-      <button type="button" id="btnClose">Close</button>
+      <div class="overlay-nav">
+        <button type="button" id="btnPrevPalace" title="Older palace (←)">← Older</button>
+        <span class="nav-pos" id="ovNavPos"></span>
+        <button type="button" id="btnNextPalace" title="Newer palace (→)">Newer →</button>
+        <button type="button" id="btnClose">Close</button>
+      </div>
     </div>
     <div class="overlay-body">
       <div class="overlay-image" id="ovImage"></div>
@@ -601,6 +646,9 @@ def build_html(snap: dict) -> str:
     const ovPrompt = document.getElementById('ovPrompt');
     const ovAtoms = document.getElementById('ovAtoms');
     const btnClose = document.getElementById('btnClose');
+    const btnPrevPalace = document.getElementById('btnPrevPalace');
+    const btnNextPalace = document.getElementById('btnNextPalace');
+    const ovNavPos = document.getElementById('ovNavPos');
     const btnLatest = document.getElementById('btnLatest');
     const atomSearch = document.getElementById('atomSearch');
     const searchResults = document.getElementById('searchResults');
@@ -610,6 +658,50 @@ def build_html(snap: dict) -> str:
     const studyModalList = document.getElementById('studyModalList');
     const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
+    let currentOverlayPalaceId = '';
+
+    // Newest-first order per study (same as grid)
+    const STUDY_PALACE_ORDER = {{}};
+    Object.values(PALACE_DATA).forEach(st => {{
+      const sid = st.study_id || '';
+      if (!STUDY_PALACE_ORDER[sid]) STUDY_PALACE_ORDER[sid] = [];
+      STUDY_PALACE_ORDER[sid].push(st);
+    }});
+    Object.keys(STUDY_PALACE_ORDER).forEach(sid => {{
+      STUDY_PALACE_ORDER[sid].sort((a, b) => Number(b.number) - Number(a.number));
+      STUDY_PALACE_ORDER[sid] = STUDY_PALACE_ORDER[sid].map(s => s.id);
+    }});
+
+    function palaceOrderFor(st) {{
+      if (!st) return [];
+      return STUDY_PALACE_ORDER[st.study_id] || [];
+    }}
+
+    function updatePalaceNav(id) {{
+      const st = PALACE_DATA[id];
+      const order = palaceOrderFor(st);
+      const idx = order.indexOf(id);
+      const hasPrev = idx >= 0 && idx < order.length - 1; // older = higher index
+      const hasNext = idx > 0; // newer = lower index
+      if (btnPrevPalace) btnPrevPalace.disabled = !hasPrev;
+      if (btnNextPalace) btnNextPalace.disabled = !hasNext;
+      if (ovNavPos) {{
+        ovNavPos.textContent = (idx >= 0 && order.length)
+          ? ((idx + 1) + ' / ' + order.length)
+          : '';
+      }}
+    }}
+
+    function stepPalace(delta) {{
+      // delta +1 = older (toward end of newest-first list), -1 = newer
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      const order = palaceOrderFor(st);
+      const idx = order.indexOf(currentOverlayPalaceId);
+      if (idx < 0) return;
+      const nextIdx = idx + delta;
+      if (nextIdx < 0 || nextIdx >= order.length) return;
+      openPalace(order[nextIdx]);
+    }}
 
     function show(id) {{
       sections.forEach(s => {{
@@ -789,6 +881,7 @@ def build_html(snap: dict) -> str:
     function openPalace(id, focusAtomId) {{
       const st = PALACE_DATA[id];
       if (!st) return;
+      currentOverlayPalaceId = id;
       ovTitle.textContent = 'Memory Palace ' + st.number + ': ' + st.title;
       const n = st.atom_count || (st.atoms || []).length;
       ovCount.textContent = n + ' Knowledge Atom' + (n === 1 ? '' : 's')
@@ -826,9 +919,10 @@ def build_html(snap: dict) -> str:
             + '</article>';
         }}).join('');
       }}
+      updatePalaceNav(id);
       overlay.classList.add('open');
       overlay.setAttribute('aria-hidden', 'false');
-      btnClose.focus();
+      if (btnClose) btnClose.focus();
       if (focusAtomId) {{
         requestAnimationFrame(() => {{
           const el = ovAtoms.querySelector('[data-atom-id="' + CSS.escape(focusAtomId) + '"]');
@@ -840,6 +934,7 @@ def build_html(snap: dict) -> str:
     function closeOverlay() {{
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
+      currentOverlayPalaceId = '';
     }}
 
     document.querySelectorAll('.palace').forEach(el => {{
@@ -863,6 +958,8 @@ def build_html(snap: dict) -> str:
       }});
     }});
     btnClose.addEventListener('click', closeOverlay);
+    if (btnPrevPalace) btnPrevPalace.addEventListener('click', () => stepPalace(1));
+    if (btnNextPalace) btnNextPalace.addEventListener('click', () => stepPalace(-1));
     function openLatestPalace() {{
       const studyId = sel ? sel.value : '';
       const palaceId = STUDY_LATEST[studyId];
@@ -875,6 +972,18 @@ def build_html(snap: dict) -> str:
         e.preventDefault();
         closeOverlay();
         return;
+      }}
+      if (overlay.classList.contains('open')) {{
+        if (e.key === 'ArrowLeft') {{
+          e.preventDefault();
+          stepPalace(1);
+          return;
+        }}
+        if (e.key === 'ArrowRight') {{
+          e.preventDefault();
+          stepPalace(-1);
+          return;
+        }}
       }}
       const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable))
