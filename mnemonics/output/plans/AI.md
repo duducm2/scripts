@@ -4,13 +4,13 @@
 
 ## 📃 Backlog
 
-🔲 dumb zone 
+- [ ] dumb zone
 
-🔲 Meta prompt
+- [ ] Meta prompt
 
-🔲 ETL (Extract, Transform, Load)
+- [ ] ETL (Extract, Transform, Load)
 
-🔲 Data lake
+- [ ] Data lake
 
 ## Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3)
 

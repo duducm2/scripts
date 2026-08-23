@@ -10,12 +10,49 @@ from typing import Any
 from data_aggregator import load_all
 
 BACKLOG_HEADING = "## 📃 Backlog"
+BACKLOG_SECTION_PATH = "Backlog"
 RESOURCES_MARKER = "**🔗 Resources:**"
 TODO_RE = re.compile(
     r"^-\s*\[(?P<mark>[ xX✅])\]\s*(?P<text>.+)$",
     re.UNICODE,
 )
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
+# Technique marker in plan sources; redundant next to dashboard checkboxes.
+TOPIC_EMOJI_PREFIX_RE = re.compile(r"^🟧\s*")
+# Decorative backlog prefixes from older notes (not checkbox status).
+BACKLOG_DECOR_RE = re.compile(
+    r"^(?:🔲|⏳|🟪|⬜|☐|☑|✅|❗|📌|•)+\s*",
+)
+
+
+def strip_plan_topic_emoji(text: str) -> str:
+    """Remove leading 🟧 from plan todo display text (checkbox already shows status)."""
+    return TOPIC_EMOJI_PREFIX_RE.sub("", (text or "").strip()).strip()
+
+
+def strip_backlog_decor(text: str) -> str:
+    """Remove legacy backlog emoji/bullet prefixes; keep plain task text."""
+    t = strip_plan_topic_emoji(text)
+    return BACKLOG_DECOR_RE.sub("", t).strip()
+
+
+def _todo_from_parts(
+    slug: str,
+    section_path: str,
+    raw_text: str,
+    checked: bool,
+    *,
+    backlog: bool = False,
+) -> dict[str, Any]:
+    display = strip_backlog_decor(raw_text) if backlog else strip_plan_topic_emoji(raw_text)
+    # Backlog IDs use cleaned text (emoji migration). Section todos keep raw for progress stability.
+    id_text = display if backlog else raw_text
+    todo_id = _stable_id(slug, section_path, id_text)
+    return {
+        "id": todo_id,
+        "text": display,
+        "checked": checked,
+    }
 
 
 def slug_filename(notes_rel_path: str) -> str:
@@ -78,7 +115,7 @@ def parse_plan_text(text: str, slug: str) -> dict[str, Any]:
     """Parse plan markdown content into structured payload."""
     lines = text.replace("\r\n", "\n").split("\n")
     title = ""
-    backlog: list[str] = []
+    backlog: list[dict[str, Any]] = []
     sections: list[dict[str, Any]] = []
     flat_todos: list[dict[str, Any]] = []
 
@@ -146,8 +183,22 @@ def parse_plan_text(text: str, slug: str) -> dict[str, Any]:
             continue
 
         if in_backlog:
-            if stripped:
-                backlog.append(stripped)
+            if not stripped:
+                i += 1
+                continue
+            tm = TODO_RE.match(line)
+            if tm:
+                raw_text = tm.group("text").strip()
+                checked = _todo_checked(tm.group("mark"))
+            else:
+                raw_text = stripped
+                checked = False
+            todo = _todo_from_parts(
+                slug, BACKLOG_SECTION_PATH, raw_text, checked, backlog=True
+            )
+            if todo["text"]:
+                backlog.append(todo)
+                flat_todos.append({**todo, "section_path": BACKLOG_SECTION_PATH})
             i += 1
             continue
 
@@ -162,14 +213,9 @@ def parse_plan_text(text: str, slug: str) -> dict[str, Any]:
 
         tm = TODO_RE.match(line)
         if tm and current_section is not None:
-            text_part = tm.group("text").strip()
+            raw_text = tm.group("text").strip()
             checked = _todo_checked(tm.group("mark"))
-            todo_id = _stable_id(slug, section_path, text_part)
-            todo = {
-                "id": todo_id,
-                "text": text_part,
-                "checked": checked,
-            }
+            todo = _todo_from_parts(slug, section_path, raw_text, checked, backlog=False)
             current_section["todos"].append(todo)
             flat_todos.append({**todo, "section_path": section_path})
             i += 1
@@ -197,12 +243,12 @@ def parse_plan_file(path: Path, slug: str) -> dict[str, Any]:
 
 
 def build_toc(
-    flat_sections: list[dict[str, Any]], backlog: list[str]
+    flat_sections: list[dict[str, Any]], backlog: list[Any]
 ) -> list[dict[str, Any]]:
     """Flatten section tree into TOC entries."""
     toc: list[dict[str, Any]] = []
-    if backlog:
-        toc.append({"level": 2, "title": "Backlog", "anchor": "plan-backlog"})
+    # Always list Backlog so the dashboard can show empty state + add UI.
+    toc.append({"level": 2, "title": "Backlog", "anchor": "plan-backlog"})
 
     def walk(nodes: list[dict[str, Any]]) -> None:
         for node in nodes:

@@ -4,13 +4,13 @@
 
 ## 📃 Backlog
 
-we already have pneumonia for descriptive analysis and inferential analysis check if there are more types of analysis
+- [ ] we already have pneumonia for descriptive analysis and inferential analysis check if there are more types of analysis
 
-🔲 Create mnemonics for logical fallacies: https://www.youtube.com/watch?v=wwUe7T2OKQE
+- [ ] Create mnemonics for logical fallacies: https://www.youtube.com/watch?v=wwUe7T2OKQE
 
-🔲 Anaálise descritiva vs visual
+- [ ] Anaálise descritiva vs visual
 
-🔲 https://www.youtube.com/watch?v=b3kKFNOnwOY&t=418s
+- [ ] https://www.youtube.com/watch?v=b3kKFNOnwOY&t=418s
 
 ## Autonomous Scientific Researcher
 

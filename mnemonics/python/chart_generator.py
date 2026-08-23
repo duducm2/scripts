@@ -1117,10 +1117,48 @@ def build_html(
       font-size: 1rem;
       color: var(--gold);
     }}
-    .plans-backlog li {{
-      margin: 0.25rem 0;
+    .plans-backlog .plan-todos {{
+      margin: 0.35rem 0 0.75rem;
+    }}
+    .plans-backlog-empty {{
+      margin: 0.35rem 0 0.75rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }}
+    .plans-backlog-add {{
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+      margin-top: 0.25rem;
+    }}
+    .plans-backlog-add input {{
+      flex: 1;
+      min-width: 0;
+      background: #1a1710;
+      border: 1px solid var(--line);
+      border-radius: 6px;
       color: var(--text);
-      line-height: 1.5;
+      padding: 0.45rem 0.65rem;
+      font: inherit;
+    }}
+    .plans-backlog-add input:focus {{
+      outline: none;
+      border-color: var(--gold);
+    }}
+    .plans-backlog-add button {{
+      flex-shrink: 0;
+      background: var(--gold);
+      color: #1a1408;
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 0.85rem;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }}
+    .plans-backlog-add button:disabled {{
+      opacity: 0.55;
+      cursor: default;
     }}
     .plan-section {{
       margin-bottom: 1.75rem;
@@ -1797,6 +1835,7 @@ def build_html(
         }}
       }}
       (plan.todos || []).forEach(patchTodo);
+      (plan.backlog || []).forEach(patchTodo);
       function walk(sections) {{
         (sections || []).forEach(sec => {{
           (sec.todos || []).forEach(patchTodo);
@@ -1805,6 +1844,7 @@ def build_html(
       }}
       walk(plan.sections);
       plan.checked_count = (plan.todos || []).filter(t => t.checked).length;
+      plan.todo_count = (plan.todos || []).length;
     }}
 
     function applySavedPlanStates(payload) {{
@@ -1880,6 +1920,10 @@ def build_html(
       return '<details class="plan-resources"><summary>Resources</summary><ul>' + items + '</ul></details>';
     }}
 
+    function stripPlanTopicEmoji(text) {{
+      return (text || '').toString().replace(/^\\s*🟧\\s*/u, '').trim();
+    }}
+
     function renderPlanTodos(todos, plan) {{
       if (!todos || !todos.length) return '';
       const rows = todos.map(t => {{
@@ -1888,7 +1932,7 @@ def build_html(
         return '<li class="plan-todo' + doneCls + '">'
           + '<input type="checkbox" id="' + esc(t.id) + '" data-todo-id="' + esc(t.id) + '"'
           + (checked ? ' checked' : '') + '/>'
-          + '<label for="' + esc(t.id) + '">' + mdInline(t.text) + '</label></li>';
+          + '<label for="' + esc(t.id) + '">' + mdInline(stripPlanTopicEmoji(t.text)) + '</label></li>';
       }}).join('');
       return '<ul class="plan-todos">' + rows + '</ul>';
     }}
@@ -1973,14 +2017,11 @@ def build_html(
         list.innerHTML = '';
         return;
       }}
-      let html = '';
-      if (plan.backlog && plan.backlog.length) {{
-        html += '<li class="toc-level-2">'
-          + '<div class="toc-row">'
-          + '<button type="button" class="toc-twist leaf" tabindex="-1">•</button>'
-          + '<a class="toc-link" href="#plan-backlog">Backlog</a>'
-          + '</div></li>';
-      }}
+      let html = '<li class="toc-level-2">'
+        + '<div class="toc-row">'
+        + '<button type="button" class="toc-twist leaf" tabindex="-1">•</button>'
+        + '<a class="toc-link" href="#plan-backlog">Backlog</a>'
+        + '</div></li>';
       (plan.sections || []).forEach(sec => {{
         html += renderTocNode(sec);
       }});
@@ -2043,12 +2084,17 @@ def build_html(
       if (empty) empty.classList.add('hidden');
       if (titleEl) titleEl.textContent = plan.title || plan.study_title || 'Study Plan';
       if (subEl) subEl.textContent = (plan.todo_count || 0) + ' tasks · source ' + (plan.source_rel || '');
-      let html = '';
-      if (plan.backlog && plan.backlog.length) {{
-        html += '<div class="plans-backlog" id="plan-backlog"><h3>Backlog</h3><ul>'
-          + plan.backlog.map(line => '<li>' + mdInline(line) + '</li>').join('')
-          + '</ul></div>';
+      const backlog = plan.backlog || [];
+      let html = '<div class="plans-backlog" id="plan-backlog"><h3>Backlog</h3>';
+      if (backlog.length) {{
+        html += renderPlanTodos(backlog, plan);
+      }} else {{
+        html += '<p class="plans-backlog-empty">No backlog items yet.</p>';
       }}
+      html += '<div class="plans-backlog-add">'
+        + '<input type="text" id="plansBacklogInput" placeholder="Add backlog item…" autocomplete="off"/>'
+        + '<button type="button" id="btnPlansBacklogAdd">Add</button>'
+        + '</div></div>';
       (plan.sections || []).forEach(sec => {{
         html += renderPlanSection(sec, plan);
       }});
@@ -2062,9 +2108,59 @@ def build_html(
             updatePlansProgress(plan);
           }});
         }});
+        const addBtn = document.getElementById('btnPlansBacklogAdd');
+        const addInput = document.getElementById('plansBacklogInput');
+        const submitBacklog = () => addBacklogItem(studyId, plan);
+        if (addBtn) addBtn.addEventListener('click', submitBacklog);
+        if (addInput) {{
+          addInput.addEventListener('keydown', (e) => {{
+            if (e.key === 'Enter') {{
+              e.preventDefault();
+              submitBacklog();
+            }}
+          }});
+        }}
       }}
       renderPlansToc(plan);
       updatePlansProgress(plan);
+    }}
+
+    async function addBacklogItem(studyId, plan) {{
+      const input = document.getElementById('plansBacklogInput');
+      const btn = document.getElementById('btnPlansBacklogAdd');
+      const text = input ? input.value.trim() : '';
+      if (!text) {{
+        setPlansSaveStatus('Enter a backlog item first.', 'err');
+        if (input) input.focus();
+        return;
+      }}
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      if (btn) btn.disabled = true;
+      setPlansSaveStatus('Adding backlog item…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{ action: 'add_backlog', study_id: studyId, text }}),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok || !data.plan) {{
+          const msg = (data && data.error) ? data.error : ('Add failed (' + res.status + ')');
+          setPlansSaveStatus(msg + ' — reopen dashboard from Memory Palace [D].', 'err');
+          return;
+        }}
+        PLANS_DATA.plans[studyId] = data.plan;
+        if (input) input.value = '';
+        renderPlansForStudy(studyId);
+        setPlansSaveStatus('Backlog item added to plan file.', 'ok');
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
+      }} finally {{
+        if (btn) btn.disabled = false;
+      }}
     }}
 
     function ensureMermaid() {{

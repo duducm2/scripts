@@ -167,7 +167,7 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 🟦 **Z1 · Z1 Head | Phrase**
 
 **Concept**
-💡 she catches a heavy, rough-textured punctuation mark with her teeth, biting down hard to create a resting point · sensory: tactile ✋
+💡 she catches a heavy, rough-textured punctuation mark with her teeth, biting down hard to create a resting point
 
 **Quote**
 “A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.”
@@ -176,14 +176,14 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 An aerialist swings upside down from a streetlamp, leaving a thick trail of burnt ozone smoke in the air. With her head, she catches a heavy, rough-textured punctuation mark in her teeth, biting down to physically carve out the rule: "A phrase is a single musical thought or "sentence". It is the smallest structural unit that gives a sense of completion, typically ending with a musical resting point called a cadence." Simultaneously, with her forelimbs, she grabs huge, glowing concrete highway segments and stacks them together like children's blocks, projecting blinding neon words from her palms: "A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together."
 
 **Sensory**
-—
+✋ tactile
 
 ---
 
 🟦 **Z2 · Z2 Forelimbs | Section**
 
 **Concept**
-💡 she stacks huge, glowing concrete highway segments together like children's blocks using her hands · sensory: visual 👁️
+💡 she stacks huge, glowing concrete highway segments together like children's blocks using her hands
 
 **Quote**
 “A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together.”
@@ -192,7 +192,7 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 An aerialist swings upside down from a streetlamp, leaving a thick trail of burnt ozone smoke in the air. With her head, she catches a heavy, rough-textured punctuation mark in her teeth, biting down to physically carve out the rule: "A phrase is a single musical thought or "sentence". It is the smallest structural unit that gives a sense of completion, typically ending with a musical resting point called a cadence." Simultaneously, with her forelimbs, she grabs huge, glowing concrete highway segments and stacks them together like children's blocks, projecting blinding neon words from her palms: "A section is a larger, major structural block of a musical form (such as a verse, chorus, or bridge). A section is made up of multiple phrases combined together."
 
 **Sensory**
-—
+👁️ visual
 
 </details>
 
@@ -242,7 +242,7 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 🟦 **Z2 · Z2 Forelimbs | Triad unit**
 
 **Concept**
-💡 stamping three distinct lightning bolts into the pavement · sensory: tactile ✋
+💡 stamping three distinct lightning bolts into the pavement
 
 **Quote**
 —
@@ -251,14 +251,14 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 stamping three distinct lightning bolts into the pavement · sensory: tactile ✋
 
 **Sensory**
-—
+✋ tactile
 
 ### 🟧 [Z] Zeus
 
 🟦 **Z1 · Z1 Head | Consonant rest**
 
 **Concept**
-💡 resting his cheek heavily against a massive, calming iron ship anchor · sensory: tactile ✋
+💡 resting his cheek heavily against a massive, calming iron ship anchor
 
 **Quote**
 “Composers use dissonance intentionally to create emotional tension, which typically drives the music forward”
@@ -267,14 +267,14 @@ stamping three distinct lightning bolts into the pavement · sensory: tactile �
 Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass, sighing: "Consonant chords provide a sense of rest and anchor the musical piece." Suddenly, he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning, loud sparks while roaring: "Composers use dissonance intentionally to create emotional tension, which typically drives the music forward".
 
 **Sensory**
-—
+✋ tactile
 
 ---
 
 🟦 **Z2 · Z2 Forelimbs | Dissonant tension**
 
 **Concept**
-💡 violently scratching sheet metal to shoot burning sparks · sensory: auditory 👂
+💡 violently scratching sheet metal to shoot burning sparks
 
 **Quote**
 “Composers use dissonance intentionally to create emotional tension, which typically drives the music forward”
@@ -283,7 +283,7 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 Zeus rests his cheek heavily against a massive iron ship anchor that instantly smooths the rough pavement into calm glass, sighing: "Consonant chords provide a sense of rest and anchor the musical piece." Suddenly, he grips two pieces of sheet metal with his hands and violently scratches them together, shooting burning, loud sparks while roaring: "Composers use dissonance intentionally to create emotional tension, which typically drives the music forward".
 
 **Sensory**
-—
+👂 auditory
 
 ### 🟧 [Aa] aardvark
 

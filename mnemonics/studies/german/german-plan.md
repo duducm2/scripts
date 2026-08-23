@@ -2,7 +2,7 @@
 
 ## 📃 Backlog
 
-🔲 Save German tongue twists for you to practice
+- [ ] Save German tongue twists for you to practice
 
 ## Phase 1: Basic User (A1 – A2) – Foundation and Routine Communication
 

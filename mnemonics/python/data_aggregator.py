@@ -3,10 +3,34 @@
 from __future__ import annotations
 
 import csv
+import re
 from pathlib import Path
 from typing import Any
 
 from schemas import HEADERS, validate_dataset
+
+# Legacy Story Architect / smash lines often append channel to concept, e.g.
+# "... · sensory: gustatory 👅" while leaving the sensory column empty.
+_SENSORY_TAIL_RE = re.compile(
+    r"\s*[·•]\s*sensory:\s*([A-Za-z]+)(?:\s+\S+)?\s*$",
+    re.IGNORECASE,
+)
+
+
+def normalize_atom_concept_sensory(row: dict[str, str]) -> dict[str, str]:
+    """Move trailing `· sensory: channel [emoji]` from concept into sensory."""
+    concept = (row.get("concept") or row.get("context") or "").strip()
+    sensory = (row.get("sensory") or row.get("sensory_channel") or "").strip()
+    m = _SENSORY_TAIL_RE.search(concept)
+    if not m:
+        return row
+    channel = m.group(1).strip().lower()
+    cleaned = concept[: m.start()].rstrip()
+    out = dict(row)
+    out["concept"] = cleaned
+    if not sensory:
+        out["sensory"] = channel
+    return out
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
@@ -30,10 +54,12 @@ def _write_csv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> No
 
 
 def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
-    return {
+    data = {
         kind: _read_csv(data_dir / f"{kind}.csv")
         for kind in ("studies", "palaces", "beasts", "atoms")
     }
+    data["atoms"] = [normalize_atom_concept_sensory(a) for a in data["atoms"]]
+    return data
 
 
 def save_all(data_dir: Path, data: dict[str, list[dict[str, str]]]) -> None:

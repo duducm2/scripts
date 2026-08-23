@@ -16,7 +16,7 @@ _No image prompt saved._
 🟦 **Z1 · Z1 Head | Token Metric**
 
 **Concept**
-💡 a giant glowing green price tag clamps aggressively over its face, mutating its skull into a loudly ringing cash register · sensory: auditory 👂
+💡 a giant glowing green price tag clamps aggressively over its face, mutating its skull into a loudly ringing cash register
 
 **Quote**
 “Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
@@ -25,14 +25,14 @@ _No image prompt saved._
 A colossal, skyscraper-sized imp phases through the solid iron front gate, reeking of burning sulfur. A giant glowing green price tag violently clamps over its face, mutating its skull into a mechanical cash register that rings with a deafening crash. As Michael Jackson watches in awe, the imp's front claws violently vomit blistering hot golden coins that melt the concrete, demonstrating the heavy, expensive computing power needed for output generation.
 
 **Sensory**
-—
+👂 auditory
 
 ---
 
 🟦 **Z2 · Z2 Forelimbs | Output Cost**
 
 **Concept**
-💡 its claws violently vomit blistering hot golden coins that visibly melt the concrete · sensory: thermal 🌡️
+💡 its claws violently vomit blistering hot golden coins that visibly melt the concrete
 
 **Quote**
 “Generating new text takes significantly more computing power, so output tokens are almost always 3 to 5 times more expensive than input tokens.”
@@ -41,7 +41,7 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 A colossal, skyscraper-sized imp phases through the solid iron front gate, reeking of burning sulfur. A giant glowing green price tag violently clamps over its face, mutating its skull into a mechanical cash register that rings with a deafening crash. As Michael Jackson watches in awe, the imp's front claws violently vomit blistering hot golden coins that melt the concrete, demonstrating the heavy, expensive computing power needed for output generation.
 
 **Sensory**
-—
+🌡️ thermal
 
 </details>
 
@@ -172,7 +172,7 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 🟦 **Z1 · Z1 Head | Data-lake translator jaws**
 
 **Concept**
-💡 The cat's jaws violently gulp raw data-lake water and spit it out as neatly labeled golden folders that glow with piercing light. · sensory: visual 👁️
+💡 The cat's jaws violently gulp raw data-lake water and spit it out as neatly labeled golden folders that glow with piercing light.
 
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
@@ -181,14 +181,14 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
 
 **Sensory**
-—
+👁️ visual
 
 ---
 
 🟦 **Z2 · Z2 Forelimbs | Crystal sphere helmet**
 
 **Concept**
-💡 The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_. · sensory: auditory 👂
+💡 The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_.
 
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
@@ -197,14 +197,14 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
 
 **Sensory**
-—
+👂 auditory
 
 ---
 
 🟦 **Z3 · Z3 Torso | Blueprint projector ribs**
 
 **Concept**
-💡 The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating. · sensory: thermal 🌡️
+💡 The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating.
 
 **Quote**
 “In the era of Generative AI, semantic layers provide the unambiguous business context that Large Language Models (LLMs) and chatbots need to translate natural language questions into accurate SQL queries without hallucinating .”
@@ -213,6 +213,6 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its jaws violently gulp raw data-lake water and spit neatly labeled golden folders of piercing light. Its front paws slam a crystal sphere helmet onto its skull, locking every flying financial paper into identical golden numbers with a deafening _clack_. Its ribs fire a frigid, hallucination-free blueprint that the 1940s man feeds to a floating robot brain.
 
 **Sensory**
-—
+🌡️ thermal
 
 </details>

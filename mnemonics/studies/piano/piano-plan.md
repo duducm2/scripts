@@ -2,9 +2,9 @@
 
 ## 📃 Backlog
 
-🔲 https://youtu.be/YfT0irsgB3Q?is=MLt94FrTt3a6UL6E
+- [ ] https://youtu.be/YfT0irsgB3Q?is=MLt94FrTt3a6UL6E
 
-⏳ What is a vibrato tenor and similar words like this one in Western music
+- [ ] What is a vibrato tenor and similar words like this one in Western music
 
 ## Phase 1: Biomechanical Foundation and Spatial Mapping (Months 1-3)
 
