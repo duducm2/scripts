@@ -118,18 +118,37 @@ Palace_SetSetting(section, key, value) {
     IniWrite(value, Palace_SettingsPath(), section, key)
 }
 
-Palace_NotesStudiesRoot() {
+Palace_NotesStudiesRoot(createIfMissing := false) {
     override := Trim(Palace_Setting("General", "NotesStudiesRoot", ""))
-    if (override != "" && DirExist(override))
-        return RTrim(override, "\")
-    try {
-        root := GetNotesRepoPath()
-        if (root != "") {
-            studies := RTrim(root, "\") . "\studies"
-            if (DirExist(studies))
-                return studies
+    if (override != "") {
+        root := RTrim(override, "\")
+        if (DirExist(root))
+            return root
+        if (createIfMissing) {
+            try DirCreate(root)
+            catch {
+            }
+            if (DirExist(root))
+                return root
         }
-    } catch {
+        return ""
+    }
+    notesRoot := ""
+    try notesRoot := GetNotesRepoPath()
+    catch {
+        notesRoot := ""
+    }
+    if (notesRoot = "")
+        return ""
+    studies := RTrim(notesRoot, "\") . "\studies"
+    if (DirExist(studies))
+        return studies
+    if (createIfMissing) {
+        try DirCreate(studies)
+        catch {
+        }
+        if (DirExist(studies))
+            return studies
     }
     return ""
 }
@@ -334,6 +353,58 @@ Palace_Slug(name) {
     if (out = "")
         out := "X"
     return out
+}
+
+; Folder name under notes/studies (lowercase; matches existing english, german, …)
+Palace_NotesFolderSlug(title) {
+    s := Palace_Unaccent(Trim(title))
+    s := StrLower(s)
+    out := ""
+    prevDash := false
+    loop parse s {
+        ch := A_LoopField
+        c := Ord(ch)
+        if ((c >= 97 && c <= 122) || (c >= 48 && c <= 57)) {
+            out .= ch
+            prevDash := false
+        } else if (ch = " " || ch = "_" || ch = "-" || ch = ".") {
+            if (out != "" && !prevDash) {
+                out .= "-"
+                prevDash := true
+            }
+        }
+    }
+    out := Trim(out, "-")
+    if (out = "")
+        out := "study"
+    if (StrLen(out) > 48)
+        out := SubStr(out, 1, 48)
+    return out
+}
+
+Palace_EnsureStudyNotesFolder(relPath) {
+    rel := Trim(relPath)
+    rel := StrReplace(rel, "/", "\")
+    rel := Trim(rel, "\")
+    if (rel = "" || InStr(rel, "..") || InStr(rel, ":"))
+        return false
+    root := Palace_NotesStudiesRoot(true)
+    if (root = "")
+        return false
+    abs := root . "\" . rel
+    if (!DirExist(abs)) {
+        try DirCreate(abs)
+        catch {
+            return false
+        }
+    }
+    img := abs . "\images"
+    if (!DirExist(img)) {
+        try DirCreate(img)
+        catch {
+        }
+    }
+    return DirExist(abs)
 }
 
 Palace_SlugId(prefix, name, existing) {

@@ -1,4 +1,4 @@
-id,title,notes_rel_path,sort_order,active
+﻿id,title,notes_rel_path,sort_order,active
 STUDY_AI,Ai,AI,1,1
 STUDY_COMMUNICATIO,Communication,communication,2,1
 STUDY_ENGLISH,English,english,3,1

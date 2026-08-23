@@ -105,8 +105,6 @@ Palace_StudyForm(existing) {
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Title")
     eTitle := g.Add("Edit", "w320", isEdit ? existing["title"] : "")
-    g.Add("Text", "y+8", "Notes relative path (folder under notes/studies)")
-    ePath := g.Add("Edit", "w320", isEdit ? existing["notes_rel_path"] : "")
     g.Add("Text", "y+8", "Sort order")
     eOrder := g.Add("Edit", "w80", isEdit ? existing["sort_order"] : "1")
     chk := g.Add("CheckBox", "y+8 Checked" . (isEdit ? (existing["active"] = "0" ? "0" : "1") : "1"), "Active")
@@ -124,9 +122,28 @@ Palace_StudyForm(existing) {
 
     SaveStudy(*) {
         title := Trim(eTitle.Value)
-        npath := Trim(ePath.Value)
-        if (title = "" || npath = "") {
-            Palace_Alert("Title and notes path are required.", "Studies")
+        if (title = "") {
+            Palace_Alert("Title is required.", "Studies")
+            return
+        }
+        ; Notes folder is attributed under the hood (not shown in the form)
+        npath := isEdit ? Trim(existing["notes_rel_path"]) : Palace_NotesFolderSlug(title)
+        if (npath = "")
+            npath := Palace_NotesFolderSlug(title)
+        npath := StrReplace(npath, "/", "\")
+        npath := Trim(npath, "\")
+        if (npath = "" || InStr(npath, "..") || InStr(npath, ":")) {
+            Palace_Alert("Could not derive a notes folder from the title.", "Studies")
+            return
+        }
+        if (!Palace_EnsureStudyNotesFolder(npath)) {
+            root := Palace_NotesStudiesRoot(true)
+            if (root = "")
+                Palace_Alert(
+                    "Could not resolve notes/studies root. Set NotesStudiesRoot in settings or ensure the notes repo path exists.",
+                    "Studies")
+            else
+                Palace_Alert("Could not create notes folder for this study.", "Studies")
             return
         }
         studies := Palace_Load("studies")
@@ -153,5 +170,6 @@ Palace_StudyForm(existing) {
         Palace_SetSetting("General", "LastStudyId", row["id"])
         saved := true
         g.Destroy()
+        Palace_Notify(isEdit ? "Study updated" : "Study saved", 1200, BANNER_ACCENT_SUCCESS)
     }
 }
