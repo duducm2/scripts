@@ -245,11 +245,22 @@ Palace_IsPlanSaveServerRunning(port := 0) {
 }
 
 Palace_OpenDashboard() {
+    try StandardLoadingBar_Show("⏳ Opening Memory Palace dashboard…", BANNER_ACCENT_INTERMEDIATE, {
+        passive: false
+    })
+    catch {
+    }
     Palace_EnsureData()
+    try StandardLoadingBar_Update("⏳ Restarting plan save server…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
     ; Restart so save-server code (e.g. add_backlog) is never stale after edits.
     Palace_EnsurePlanSaveServer(true)
     py := Palace_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         Palace_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
@@ -258,10 +269,13 @@ Palace_OpenDashboard() {
     notesRoot := Palace_NotesStudiesRoot()
     pyCmd := Palace_FindPythonCmd()
     if (pyCmd = "") {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         Palace_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
         return
     }
-    try StandardLoadingBar_Show("Syncing technique + plans + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
+    try StandardLoadingBar_Update("⏳ Syncing technique + plans + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
@@ -290,12 +304,15 @@ Palace_OpenDashboard() {
         return
     }
     html := outDir . "\dashboard.html"
-    try StandardLoadingBar_Hide(400)
-    catch {
-    }
     if (!FileExist(html)) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         Palace_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
+    }
+    try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
     }
     tmpHtml := A_Temp . "\palace_dashboard_" . A_TickCount . ".html"
     try FileCopy(html, tmpHtml, 1)
@@ -305,8 +322,14 @@ Palace_OpenDashboard() {
     fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
     try Run('chrome.exe --new-window "' . fileUrl . '"')
     catch as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         Palace_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
+    }
+    try StandardLoadingBar_Hide(400)
+    catch {
     }
     Palace_CloseGui()
 }
