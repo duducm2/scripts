@@ -47,7 +47,14 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path.rstrip("/") == "/health":
-            self._json(200, {"ok": True, "service": "plan_save_server"})
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "service": "plan_save_server",
+                    "features": ["add_backlog"],
+                },
+            )
             return
         self._json(404, {"ok": False, "error": "not found"})
 

@@ -171,9 +171,28 @@ Palace_PlanSaveServerPort() {
     return 8765
 }
 
-Palace_EnsurePlanSaveServer() {
+; Kill whatever is listening on the plan-save port so [D] always loads fresh Python.
+Palace_StopPlanSaveServer(port := 0) {
+    if (port = 0)
+        port := Palace_PlanSaveServerPort()
+    ; Use netstat+taskkill (avoids nested PowerShell $_ expansion issues).
+    cmd := 'for /f "tokens=5" %a in (' 'netstat -ano ^| findstr :' . port
+        . ' ^| findstr LISTENING' ') do taskkill /F /PID %a >nul 2>&1'
+    try RunWait(A_ComSpec . ' /c ' . cmd, , "Hide")
+    catch {
+    }
+    loop 15 {
+        if (!Palace_IsPlanSaveServerRunning(port))
+            return
+        Sleep 100
+    }
+}
+
+Palace_EnsurePlanSaveServer(forceRestart := false) {
     port := Palace_PlanSaveServerPort()
-    if (Palace_IsPlanSaveServerRunning(port))
+    if (forceRestart)
+        Palace_StopPlanSaveServer(port)
+    else if (Palace_IsPlanSaveServerRunning(port))
         return true
     py := Palace_PythonDir() . "\plan_save_server.py"
     if (!FileExist(py)) {
@@ -221,7 +240,8 @@ Palace_IsPlanSaveServerRunning(port := 0) {
 
 Palace_OpenDashboard() {
     Palace_EnsureData()
-    Palace_EnsurePlanSaveServer()
+    ; Restart so save-server code (e.g. add_backlog) is never stale after edits.
+    Palace_EnsurePlanSaveServer(true)
     py := Palace_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
         Palace_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)

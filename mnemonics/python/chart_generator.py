@@ -2145,7 +2145,11 @@ def build_html(
         }});
         const data = await res.json().catch(() => ({{}}));
         if (!res.ok || !data.ok || !data.plan) {{
-          const msg = (data && data.error) ? data.error : ('Add failed (' + res.status + ')');
+          let msg = (data && data.error) ? data.error : '';
+          if (!msg && data && data.ok === false && Array.isArray(data.results) && !data.results.length) {{
+            msg = 'Save server outdated — press [D] again';
+          }}
+          if (!msg) msg = 'Add failed (' + res.status + ')';
           setPlansSaveStatus(msg + ' — reopen dashboard from Memory Palace [D].', 'err');
           return;
         }}
