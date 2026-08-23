@@ -881,20 +881,6 @@ def build_html(
       color: var(--gold);
       border-color: var(--gold);
     }}
-    .plans-toc ul {{
-      margin: 0;
-      padding-left: 1.05rem;
-      overflow: auto;
-      flex: 1;
-      min-height: 0;
-      scrollbar-width: thin;
-      scrollbar-color: var(--line) transparent;
-    }}
-    .plans-toc a {{ color: var(--muted); text-decoration: none; }}
-    .plans-toc a:hover {{ color: var(--gold); }}
-    .plans-toc .lvl-3 {{ padding-left: 0.35rem; }}
-    .plans-toc .lvl-4 {{ padding-left: 0.7rem; font-size: 0.82rem; }}
-    .plans-toc .lvl-5 {{ padding-left: 1rem; font-size: 0.8rem; }}
     .plans-layout.toc-collapsed .plans-toc {{
       padding: 0.45rem 0.3rem;
       align-items: center;
@@ -982,17 +968,19 @@ def build_html(
     .plans-progress-wrap {{
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
       margin-bottom: 1.25rem;
+      width: 100%;
     }}
     .plans-progress-bar {{
-      flex: 1;
-      height: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      height: 10px;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 999px;
       overflow: hidden;
-      max-width: 420px;
     }}
     .plans-progress-bar::after {{
       content: "";
@@ -1003,8 +991,73 @@ def build_html(
       border-radius: 999px;
       transition: width 0.2s ease;
     }}
-    .plans-progress-label {{ color: var(--muted); font-size: 0.88rem; white-space: nowrap; }}
-    .plans-content {{ max-width: 52rem; }}
+    .plans-progress-label {{
+      color: var(--muted);
+      font-size: 0.88rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }}
+    .plans-content {{ max-width: none; width: 100%; }}
+    .plans-toc ul {{
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+      overflow: auto;
+      flex: 1;
+      min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+    }}
+    .plans-toc ul ul {{
+      padding-left: 0.85rem;
+      margin-top: 0.15rem;
+      border-left: 1px solid var(--line);
+      margin-left: 0.45rem;
+    }}
+    .plans-toc li {{
+      margin: 0.1rem 0;
+    }}
+    .plans-toc .toc-row {{
+      display: flex;
+      align-items: flex-start;
+      gap: 0.15rem;
+      min-width: 0;
+    }}
+    .plans-toc .toc-twist {{
+      flex-shrink: 0;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.05rem;
+      padding: 0;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      line-height: 1.15rem;
+      text-align: center;
+      border-radius: 3px;
+    }}
+    .plans-toc .toc-twist:hover {{ color: var(--gold); background: #242830; }}
+    .plans-toc .toc-twist.leaf {{
+      visibility: hidden;
+      pointer-events: none;
+    }}
+    .plans-toc .toc-link {{
+      flex: 1;
+      min-width: 0;
+      color: var(--muted);
+      text-decoration: none;
+      line-height: 1.35;
+      padding: 0.1rem 0.2rem;
+      border-radius: 4px;
+    }}
+    .plans-toc .toc-link:hover {{ color: var(--gold); }}
+    .plans-toc li.toc-collapsed > ul {{ display: none; }}
+    .plans-toc .toc-level-2 > .toc-row .toc-link {{ color: var(--text); font-weight: 650; }}
+    .plans-toc .toc-level-3 > .toc-row .toc-link {{ font-size: 0.86rem; }}
+    .plans-toc .toc-level-4 > .toc-row .toc-link,
+    .plans-toc .toc-level-5 > .toc-row .toc-link {{ font-size: 0.82rem; }}
     .plans-backlog {{
       background: #242018;
       border: 1px solid var(--line);
@@ -1200,6 +1253,7 @@ def build_html(
     let mermaidReady = false;
     const PLANS_STORAGE_KEY = 'mnemonics_plans_v1';
     const PLANS_TOC_COLLAPSED_KEY = 'mnemonics_plans_toc_collapsed';
+    const PLANS_TOC_NODES_KEY = 'mnemonics_plans_toc_nodes';
 
     // Newest-first order per study (same as grid)
     const STUDY_PALACE_ORDER = {{}};
@@ -1766,6 +1820,96 @@ def build_html(
       return html;
     }}
 
+    function loadTocNodeState() {{
+      try {{
+        const raw = localStorage.getItem(PLANS_TOC_NODES_KEY);
+        return raw ? JSON.parse(raw) : {{}};
+      }} catch (e) {{
+        return {{}};
+      }}
+    }}
+
+    function saveTocNodeState(state) {{
+      try {{
+        localStorage.setItem(PLANS_TOC_NODES_KEY, JSON.stringify(state));
+      }} catch (e) {{}}
+    }}
+
+    function isTocNodeCollapsed(anchor, level, hasChildren) {{
+      if (!hasChildren) return false;
+      const state = loadTocNodeState();
+      if (Object.prototype.hasOwnProperty.call(state, anchor)) {{
+        return !!state[anchor];
+      }}
+      // Default: keep Phases open; collapse Month+ topic nests for a cleaner TOC
+      return level >= 3;
+    }}
+
+    function setTocNodeCollapsed(anchor, collapsed) {{
+      const state = loadTocNodeState();
+      state[anchor] = !!collapsed;
+      saveTocNodeState(state);
+    }}
+
+    function renderTocNode(section) {{
+      const children = section.children || [];
+      const hasChildren = children.length > 0;
+      const level = section.level || 2;
+      const anchor = section.anchor || '';
+      const collapsed = isTocNodeCollapsed(anchor, level, hasChildren);
+      const twistCls = hasChildren ? 'toc-twist' : 'toc-twist leaf';
+      const twistChar = hasChildren ? (collapsed ? '▶' : '▼') : '•';
+      const liCls = 'toc-level-' + level + (collapsed ? ' toc-collapsed' : '');
+      let html = '<li class="' + liCls + '" data-toc-anchor="' + esc(anchor) + '">'
+        + '<div class="toc-row">'
+        + '<button type="button" class="' + twistCls + '" data-toc-twist="' + esc(anchor) + '"'
+        + ' aria-expanded="' + (collapsed ? 'false' : 'true') + '"'
+        + (hasChildren ? '' : ' tabindex="-1"') + '>' + twistChar + '</button>'
+        + '<a class="toc-link" href="#' + esc(anchor) + '">' + esc(section.title || '') + '</a>'
+        + '</div>';
+      if (hasChildren) {{
+        html += '<ul>' + children.map(renderTocNode).join('') + '</ul>';
+      }}
+      html += '</li>';
+      return html;
+    }}
+
+    function renderPlansToc(plan) {{
+      const list = document.getElementById('plansTocList');
+      if (!list) return;
+      if (!plan) {{
+        list.innerHTML = '';
+        return;
+      }}
+      let html = '';
+      if (plan.backlog && plan.backlog.length) {{
+        html += '<li class="toc-level-2">'
+          + '<div class="toc-row">'
+          + '<button type="button" class="toc-twist leaf" tabindex="-1">•</button>'
+          + '<a class="toc-link" href="#plan-backlog">Backlog</a>'
+          + '</div></li>';
+      }}
+      (plan.sections || []).forEach(sec => {{
+        html += renderTocNode(sec);
+      }});
+      list.innerHTML = html || '<li class="empty">No sections</li>';
+      list.querySelectorAll('[data-toc-twist]').forEach(btn => {{
+        if (btn.classList.contains('leaf')) return;
+        btn.addEventListener('click', (e) => {{
+          e.preventDefault();
+          e.stopPropagation();
+          const anchor = btn.getAttribute('data-toc-twist');
+          const li = btn.closest('li');
+          if (!li) return;
+          const next = !li.classList.contains('toc-collapsed');
+          li.classList.toggle('toc-collapsed', next);
+          btn.textContent = next ? '▶' : '▼';
+          btn.setAttribute('aria-expanded', next ? 'false' : 'true');
+          setTocNodeCollapsed(anchor, next);
+        }});
+      }});
+    }}
+
     function updatePlansProgress(plan) {{
       const bar = document.getElementById('plansProgressBar');
       const label = document.getElementById('plansProgressLabel');
@@ -1785,20 +1929,6 @@ def build_html(
         bar.setAttribute('aria-valuenow', String(pct));
       }}
       if (label) label.textContent = done + ' / ' + total + ' complete';
-    }}
-
-    function renderPlansToc(plan) {{
-      const list = document.getElementById('plansTocList');
-      if (!list) return;
-      if (!plan) {{
-        list.innerHTML = '';
-        return;
-      }}
-      const items = (plan.toc || []).map(entry => {{
-        const cls = entry.level >= 3 ? ' class="lvl-' + entry.level + '"' : '';
-        return '<li' + cls + '><a href="#' + esc(entry.anchor) + '">' + esc(entry.title) + '</a></li>';
-      }}).join('');
-      list.innerHTML = items || '<li class="empty">No sections</li>';
     }}
 
     function renderPlansForStudy(studyId) {{

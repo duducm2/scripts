@@ -41,7 +41,8 @@ Palace_ShowHelp() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
-    "Esc / Backspace — main menu. Dashboard: P plans · M method · L latest · Save (Plans panel). Plans source: mnemonics/studies/*-plan.md")
+    "Esc / Backspace — main menu. [R] force-regen practice+plan Markdown. Dashboard: P plans · M method · L latest · Save (Plans panel)."
+    )
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
     Palace_BindHotkeys([

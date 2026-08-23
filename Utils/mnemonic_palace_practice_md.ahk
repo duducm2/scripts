@@ -113,15 +113,17 @@ Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
     return true
 }
 
-Palace_SyncAllPracticeMd() {
+Palace_SyncAllPracticeMd(showUi := true) {
     py := Palace_PythonDir() . "\study_practice_md.py"
     if (!FileExist(py)) {
-        Palace_Notify("study_practice_md.py not found", 2200, BANNER_ACCENT_ERROR)
+        if (showUi)
+            Palace_Notify("study_practice_md.py not found", 2200, BANNER_ACCENT_ERROR)
         return false
     }
     pyCmd := Palace_FindPythonCmd()
     if (pyCmd = "") {
-        Palace_Notify("Python not found for practice sync", 2500, BANNER_ACCENT_ERROR)
+        if (showUi)
+            Palace_Notify("Python not found for practice sync", 2500, BANNER_ACCENT_ERROR)
         return false
     }
     dataDir := Palace_DataDir()
@@ -131,28 +133,129 @@ Palace_SyncAllPracticeMd() {
         . '" --sync-all --migrate-image-paths'
     if (notesRoot != "")
         cmd .= ' --notes-root "' . notesRoot . '"'
-    try StandardLoadingBar_Show("Syncing all practice notes…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
+    if (showUi) {
+        try StandardLoadingBar_Show("Syncing all practice notes…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
     }
     exitCode := 0
     try {
         exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
     } catch as e {
-        try StandardLoadingBar_Hide(0)
-        catch {
+        if (showUi) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            Palace_Notify("Practice sync failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         }
-        Palace_Notify("Practice sync failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
     }
     if (exitCode != 0) {
+        if (showUi) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
+        }
+        return false
+    }
+    if (showUi) {
+        try StandardLoadingBar_Hide(400)
+        catch {
+        }
+    }
+    return true
+}
+
+Palace_SyncAllPlansMd(showUi := true) {
+    py := Palace_PythonDir() . "\study_plans_md.py"
+    if (!FileExist(py)) {
+        if (showUi)
+            Palace_Notify("study_plans_md.py not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        if (showUi)
+            Palace_Notify("Python not found for plans sync", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    notesRoot := Palace_NotesStudiesRoot()
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir
+        . '" --sync-all'
+    if (notesRoot != "")
+        cmd .= ' --studies-root "' . notesRoot . '"'
+    if (showUi) {
+        try StandardLoadingBar_Show("Syncing all study plans…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+    }
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    } catch as e {
+        if (showUi) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            Palace_Notify("Plans sync failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        }
+        return false
+    }
+    if (exitCode != 0) {
+        if (showUi) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            Palace_Notify("Plans sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
+        }
+        return false
+    }
+    if (showUi) {
+        try StandardLoadingBar_Hide(400)
+        catch {
+        }
+    }
+    return true
+}
+
+Palace_ForceRegenAllMarkdown() {
+    ; Manual fallback: force-regenerate practice + plan Markdown (independent of CRUD hooks)
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        Palace_Notify("Python not found for Markdown regen", 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    try StandardLoadingBar_Show("Regenerating practice Markdown…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    okPractice := Palace_SyncAllPracticeMd(false)
+    if (!okPractice) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
+        Palace_Notify("Practice Markdown regen failed", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    try StandardLoadingBar_Update("Regenerating study plan Markdown…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+        try StandardLoadingBar_Show("Regenerating study plan Markdown…", BANNER_ACCENT_INTERMEDIATE)
+        catch {
+        }
+    }
+    okPlans := Palace_SyncAllPlansMd(false)
+    if (!okPlans) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Palace_Notify("Plan Markdown regen failed (practice OK)", 3200, BANNER_ACCENT_ERROR)
         return false
     }
     try StandardLoadingBar_Hide(400)
     catch {
     }
+    Palace_Notify("All Markdown regenerated (practice + plans)", 2800, BANNER_ACCENT_SUCCESS)
     return true
 }

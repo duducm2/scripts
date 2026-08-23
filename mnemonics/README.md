@@ -68,6 +68,7 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | Q         | Quick image (newest Desktop PNG/JPG → last palace) |
 | G         | Practice on GitHub (synced mobile notes)           |
 | O         | Plans on GitHub (synced study plan checklists)     |
+| R         | Regen Markdown (force all practice + plan `.md`)   |
 | H         | Glossary                                           |
 | P         | Push scripts repo to cloud                         |
 | Backspace | Return to Utility Shortcuts                        |
