@@ -38,6 +38,7 @@ Palace_ShowMainMenu() {
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["I", "AI import", "Desktop PALACE pack (preview)"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
+        ["G", "Practice on GitHub", "Synced study notes for mobile"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
     ]
@@ -62,16 +63,17 @@ Palace_ShowMainMenu() {
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y360 w880",
-        "Backspace utility shortcuts   Esc close   I import pack   Q quick image   P push")
+    g_PalaceGui.Add("Text", "x20 y438 w880",
+        "Backspace utility shortcuts   Esc close   G practice on GitHub   I import   Q image   P push")
 
     Palace_BindHotkeys([
         ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
-        ["q", Palace_OnQuickImage], ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
+        ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
+        ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
-    Palace_CenterGui(g_PalaceGui, 900, 420)
+    Palace_CenterGui(g_PalaceGui, 900, 500)
 }
 
 Palace_ReturnToUtilityShortcuts() {
@@ -93,11 +95,31 @@ Palace_OnImp(*) {
 Palace_OnQuickImage(*) {
     Palace_QuickAttachDesktopImage()
 }
+Palace_OnPracticeGithub(*) {
+    Palace_OpenPracticeGithub()
+}
 Palace_OnHelp(*) {
     Palace_ShowHelp()
 }
 Palace_OnGitPush(*) {
     Palace_GitSyncPush()
+}
+
+Palace_PracticeGithubUrl() {
+    return "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice"
+}
+
+Palace_OpenPracticeGithub() {
+    url := Palace_PracticeGithubUrl()
+    try Run('chrome.exe --new-window "' . url . '"')
+    catch as e {
+        try Run('"' . url . '"')
+        catch {
+            Palace_Notify("Could not open GitHub: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
+    Palace_Notify("Practice folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
 }
 
 Palace_OpenDashboard() {

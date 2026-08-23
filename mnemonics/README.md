@@ -60,6 +60,7 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | B         | Browse (studies → palaces → beasts → atoms)        |
 | I         | AI import (Desktop `PALACE_*` pack, one preview)   |
 | Q         | Quick image (newest Desktop PNG/JPG → last palace) |
+| G         | Practice on GitHub (synced mobile notes)           |
 | H         | Glossary                                           |
 | P         | Push scripts repo to cloud                         |
 | Backspace | Return to Utility Shortcuts                        |
