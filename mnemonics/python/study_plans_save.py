@@ -158,6 +158,53 @@ def append_backlog_item_to_text(text: str, item_text: str) -> tuple[str, bool]:
     return "\n".join(lines), True
 
 
+def remove_backlog_item_from_text(text: str, slug: str, todo_id: str) -> tuple[str, bool]:
+    """Remove the backlog line whose stable id matches todo_id. Returns (text, removed)."""
+    target = (todo_id or "").strip()
+    if not target:
+        return text, False
+
+    lines = text.replace("\r\n", "\n").split("\n")
+    backlog_idx = -1
+    next_h2 = -1
+    for i, line in enumerate(lines):
+        hm = HEADING_RE.match(line)
+        if not hm:
+            continue
+        level = len(hm.group(1))
+        heading_text = hm.group(2).strip()
+        if level == 2 and heading_text == "📃 Backlog":
+            backlog_idx = i
+            continue
+        if backlog_idx >= 0 and level == 2:
+            next_h2 = i
+            break
+
+    if backlog_idx < 0:
+        return text, False
+
+    end = next_h2 if next_h2 >= 0 else len(lines)
+    remove_at = -1
+    for i in range(backlog_idx + 1, end):
+        stripped = lines[i].strip()
+        if not stripped:
+            continue
+        tm = TODO_RE.match(lines[i])
+        raw_text = tm.group("text").strip() if tm else stripped
+        display = strip_backlog_decor(raw_text)
+        if not display:
+            continue
+        if _stable_id(slug, BACKLOG_SECTION_PATH, display) == target:
+            remove_at = i
+            break
+
+    if remove_at < 0:
+        return text, False
+
+    del lines[remove_at]
+    return "\n".join(lines), True
+
+
 def save_plan_by_slug(
     slug: str,
     progress: dict[str, bool],
@@ -231,6 +278,44 @@ def add_backlog_item(
     }
 
 
+def remove_backlog_item(
+    study_id: str,
+    todo_id: str,
+    data_dir: Path,
+    studies_root: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    data = load_all(data_dir)
+    study = next((s for s in data["studies"] if s["id"] == study_id), None)
+    if not study:
+        return {"ok": False, "error": "study not found", "study_id": study_id}
+
+    slug = slug_filename(study.get("notes_rel_path") or "")
+    source = discover_plan_path(studies_root, slug)
+    if not source:
+        return {"ok": False, "error": "plan file not found", "study_id": study_id}
+
+    text = source.read_text(encoding="utf-8")
+    updated, removed = remove_backlog_item_from_text(text, slug, todo_id)
+    if not removed:
+        return {"ok": False, "error": "backlog item not found", "study_id": study_id}
+
+    if dry_run:
+        return {"ok": True, "dry_run": True, "study_id": study_id, "slug": slug}
+
+    source.write_text(updated, encoding="utf-8")
+    sync_one_plan(source, slug, output_dir, dry_run=False)
+    plan = refresh_plan_payload(study_id, studies_root, data_dir)
+    return {
+        "ok": True,
+        "study_id": study_id,
+        "slug": slug,
+        "source": str(source),
+        "plan": plan,
+    }
+
+
 def save_study_progress(
     study_id: str,
     todos: list[dict[str, Any]],
@@ -263,6 +348,15 @@ def save_payload(
         return add_backlog_item(
             str(payload.get("study_id") or ""),
             str(payload.get("text") or ""),
+            data_dir,
+            studies_root,
+            output_dir,
+            dry_run=dry_run,
+        )
+    if payload.get("action") == "remove_backlog":
+        return remove_backlog_item(
+            str(payload.get("study_id") or ""),
+            str(payload.get("todo_id") or ""),
             data_dir,
             studies_root,
             output_dir,

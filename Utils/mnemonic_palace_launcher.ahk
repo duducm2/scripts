@@ -175,11 +175,17 @@ Palace_PlanSaveServerPort() {
 Palace_StopPlanSaveServer(port := 0) {
     if (port = 0)
         port := Palace_PlanSaveServerPort()
-    ; Use netstat+taskkill (avoids nested PowerShell $_ expansion issues).
-    cmd := 'for /f "tokens=5" %a in (' 'netstat -ano ^| findstr :' . port
-        . ' ^| findstr LISTENING' ') do taskkill /F /PID %a >nul 2>&1'
-    try RunWait(A_ComSpec . ' /c ' . cmd, , "Hide")
-    catch {
+    ; netstat+taskkill — kill every LISTENING PID (stale servers can stack).
+    q := Chr(39)
+    cmd := "for /f `"tokens=5`" %a in (" . q . "netstat -ano ^| findstr :" . port
+        . " ^| findstr LISTENING" . q . ") do taskkill /F /PID %a >nul 2>&1"
+    loop 3 {
+        try RunWait(A_ComSpec . " /c " . cmd, , "Hide")
+        catch {
+        }
+        Sleep 200
+        if (!Palace_IsPlanSaveServerRunning(port))
+            break
     }
     loop 15 {
         if (!Palace_IsPlanSaveServerRunning(port))

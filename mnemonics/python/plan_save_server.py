@@ -52,7 +52,7 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
                     "service": "plan_save_server",
-                    "features": ["add_backlog"],
+                    "features": ["add_backlog", "remove_backlog"],
                 },
             )
             return

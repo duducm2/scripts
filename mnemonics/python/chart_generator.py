@@ -1204,11 +1204,30 @@ def build_html(
     .plan-todo label {{
       cursor: pointer;
       flex: 1;
+      min-width: 0;
     }}
     .plan-todo.done label {{
       color: var(--muted);
       text-decoration: line-through;
       text-decoration-color: #5a5548;
+    }}
+    .plan-todo-remove {{
+      flex-shrink: 0;
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font: inherit;
+      font-size: 0.95rem;
+      line-height: 1.2;
+      cursor: pointer;
+    }}
+    .plan-todo-remove:hover {{
+      color: #e8b4b4;
+      border-color: #5a3030;
+      background: #2a1a1a;
     }}
     .plan-resources {{
       margin: 0.35rem 0 0.85rem 1.5rem;
@@ -1937,6 +1956,21 @@ def build_html(
       return '<ul class="plan-todos">' + rows + '</ul>';
     }}
 
+    function renderBacklogTodos(todos, plan) {{
+      if (!todos || !todos.length) return '';
+      const rows = todos.map(t => {{
+        const checked = planChecked(plan, t);
+        const doneCls = checked ? ' done' : '';
+        return '<li class="plan-todo' + doneCls + '">'
+          + '<input type="checkbox" id="' + esc(t.id) + '" data-todo-id="' + esc(t.id) + '"'
+          + (checked ? ' checked' : '') + '/>'
+          + '<label for="' + esc(t.id) + '">' + mdInline(stripPlanTopicEmoji(t.text)) + '</label>'
+          + '<button type="button" class="plan-todo-remove" data-backlog-remove="' + esc(t.id)
+          + '" title="Remove from backlog" aria-label="Remove from backlog">×</button></li>';
+      }}).join('');
+      return '<ul class="plan-todos">' + rows + '</ul>';
+    }}
+
     function headingTag(level) {{
       const n = Math.min(Math.max(level, 2), 6);
       return 'h' + n;
@@ -2087,7 +2121,7 @@ def build_html(
       const backlog = plan.backlog || [];
       let html = '<div class="plans-backlog" id="plan-backlog"><h3>Backlog</h3>';
       if (backlog.length) {{
-        html += renderPlanTodos(backlog, plan);
+        html += renderBacklogTodos(backlog, plan);
       }} else {{
         html += '<p class="plans-backlog-empty">No backlog items yet.</p>';
       }}
@@ -2108,6 +2142,12 @@ def build_html(
             updatePlansProgress(plan);
           }});
         }});
+        content.querySelectorAll('[data-backlog-remove]').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            const todoId = btn.getAttribute('data-backlog-remove');
+            removeBacklogItem(studyId, todoId);
+          }});
+        }});
         const addBtn = document.getElementById('btnPlansBacklogAdd');
         const addInput = document.getElementById('plansBacklogInput');
         const submitBacklog = () => addBacklogItem(studyId, plan);
@@ -2123,6 +2163,15 @@ def build_html(
       }}
       renderPlansToc(plan);
       updatePlansProgress(plan);
+    }}
+
+    function backlogActionError(data, res, verb) {{
+      let msg = (data && data.error) ? data.error : '';
+      if (!msg && data && data.ok === false && Array.isArray(data.results) && !data.results.length) {{
+        msg = 'Save server outdated — press [D] again';
+      }}
+      if (!msg) msg = verb + ' failed (' + res.status + ')';
+      return msg + ' — reopen dashboard from Memory Palace [D].';
     }}
 
     async function addBacklogItem(studyId, plan) {{
@@ -2145,12 +2194,7 @@ def build_html(
         }});
         const data = await res.json().catch(() => ({{}}));
         if (!res.ok || !data.ok || !data.plan) {{
-          let msg = (data && data.error) ? data.error : '';
-          if (!msg && data && data.ok === false && Array.isArray(data.results) && !data.results.length) {{
-            msg = 'Save server outdated — press [D] again';
-          }}
-          if (!msg) msg = 'Add failed (' + res.status + ')';
-          setPlansSaveStatus(msg + ' — reopen dashboard from Memory Palace [D].', 'err');
+          setPlansSaveStatus(backlogActionError(data, res, 'Add'), 'err');
           return;
         }}
         PLANS_DATA.plans[studyId] = data.plan;
@@ -2164,6 +2208,41 @@ def build_html(
         );
       }} finally {{
         if (btn) btn.disabled = false;
+      }}
+    }}
+
+    async function removeBacklogItem(studyId, todoId) {{
+      if (!todoId) return;
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      setPlansSaveStatus('Removing backlog item…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{
+            action: 'remove_backlog',
+            study_id: studyId,
+            todo_id: todoId,
+          }}),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok || !data.plan) {{
+          setPlansSaveStatus(backlogActionError(data, res, 'Remove'), 'err');
+          return;
+        }}
+        const store = loadPlanStorage();
+        if (Object.prototype.hasOwnProperty.call(store, todoId)) {{
+          delete store[todoId];
+          savePlanStorage(store);
+        }}
+        PLANS_DATA.plans[studyId] = data.plan;
+        renderPlansForStudy(studyId);
+        setPlansSaveStatus('Backlog item removed from plan file.', 'ok');
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
       }}
     }}
 
