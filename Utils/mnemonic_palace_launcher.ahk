@@ -17,6 +17,7 @@ Palace_ShowMainMenu() {
     palaces := Palace_Load("palaces")
     beasts := Palace_Load("beasts")
     atoms := Palace_Load("atoms")
+    plans := Palace_Load("plans")
 
     g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace")
     g_PalaceGui.SetFont("s10", "Segoe UI")
@@ -29,7 +30,8 @@ Palace_ShowMainMenu() {
     g_PalaceGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y48 w880",
         studies.Length . " studies  ·  " . palaces.Length . " palaces  ·  "
-        . beasts.Length . " beasts  ·  " . atoms.Length . " atoms")
+        . beasts.Length . " beasts  ·  " . atoms.Length . " atoms  ·  "
+        . plans.Length . " plans")
     g_PalaceGui.SetFont("s9 cF1C40F", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y72 w880", "1-3 quick links · letters open a module.")
 
@@ -39,10 +41,11 @@ Palace_ShowMainMenu() {
         ["3", "❤️ Favorite", "Open / set favorite link (Google Docs API)"],
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
+        ["L", "Plans", "Browse / edit study plan checklists (CSV)"],
         ["I", "AI import", "Desktop PLAN_PACK or PALACE pack (preview)"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
-        ["O", "Plans on GitHub", "Synced study plan checklists for mobile"],
+        ["O", "Plans on GitHub", "Synced study plan Markdown for mobile"],
         ["R", "Regen Markdown", "Force-create all practice + plan .md files"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
@@ -51,7 +54,7 @@ Palace_ShowMainMenu() {
     x0 := 20
     y0 := 108
     colW := 440
-    rowH := 78
+    rowH := 72
     idx := 0
     for it in items {
         col := Mod(idx, 2)
@@ -59,28 +62,29 @@ Palace_ShowMainMenu() {
         x := x0 + col * colW
         y := y0 + row * rowH
         g_PalaceGui.SetFont("s14 cF1C40F Bold", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 12) . " y" . (y + 10) . " w40 BackgroundTrans", "[" . it[1] . "]")
+        g_PalaceGui.Add("Text", "x" . (x + 12) . " y" . (y + 8) . " w40 BackgroundTrans", "[" . it[1] . "]")
         g_PalaceGui.SetFont("s12 cWhite Bold", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 10) . " w340 BackgroundTrans", it[2])
+        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 8) . " w340 BackgroundTrans", it[2])
         g_PalaceGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 36) . " w340 BackgroundTrans", it[3])
+        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 32) . " w340 BackgroundTrans", it[3])
         idx += 1
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y588 w880",
-        "Backspace utility shortcuts   Esc close   1-3 quick links   R regen   G practice   O plans   P push")
+    g_PalaceGui.Add("Text", "x20 y620 w880",
+        "Backspace utility shortcuts   Esc close   L plans   O plans GitHub   P push   R regen")
 
     Palace_BindHotkeys([
         ["1", Palace_OnStudyVideo], ["2", Palace_OnStudyArticle], ["3", Palace_OnStudyFavorite],
-        ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
+        ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["l", Palace_OnPlans],
+        ["i", Palace_OnImp],
         ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
         ["o", Palace_OnPlansGithub], ["r", Palace_OnRegenMarkdown],
         ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
-    Palace_CenterGui(g_PalaceGui, 900, 630)
+    Palace_CenterGui(g_PalaceGui, 900, 660)
 }
 
 Palace_ReturnToUtilityShortcuts() {
@@ -107,6 +111,20 @@ Palace_OnStudyFavorite(*) {
 }
 Palace_OnBrowse(*) {
     Palace_ShowBrowse()
+}
+Palace_OnPlans(*) {
+    global g_PalaceFilterStudyId, g_PalaceFilterPlanId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    Palace_EnsureData()
+    pick := Palace_PickStudy()
+    if (pick = "") {
+        Palace_ShowMainMenu()
+        return
+    }
+    g_PalaceFilterStudyId := pick
+    g_PalaceFilterPalaceId := ""
+    g_PalaceFilterBeastId := ""
+    g_PalaceFilterPlanId := ""
+    Palace_ShowPlans()
 }
 Palace_OnImp(*) {
     Palace_ImportMnemonicsFromDesktop()

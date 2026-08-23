@@ -25,7 +25,7 @@ Palace_ShowStudies() {
         ["Insert", (*) => Palace_StudyAdd()],
         ["e", (*) => Palace_StudyEdit()],
         ["Delete", (*) => Palace_StudyDelete()],
-        ["p", (*) => Palace_OpenPlansForSelectedStudy()],
+        ["l", (*) => Palace_OpenPlansForSelectedStudy()],
         ["Enter", (*) => Palace_BrowseInto()],
         ["Backspace", (*) => Palace_BrowseUp()],
         ["Escape", (*) => Palace_BrowseUp()]

@@ -13,7 +13,7 @@ global g_PalaceFilterPlanId := ""
 Palace_Terms() {
     return [
         ["Browse",
-            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. From a study, [P] opens Plans. Enter opens the next level; Backspace goes up."],
+            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. Main menu [L] or Browse [L] opens Plans. Enter opens the next level; Backspace goes up."],
         ["Study",
             "A broad subject domain (e.g. English, German, science, piano). Contains Memory Palaces and one Study Plan."],
         ["Study Plan",
@@ -808,9 +808,9 @@ Palace_BrowseKeysHint() {
     depth := Palace_BrowseDepth()
     base := "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
     if (depth = 0)
-        return base . "    [P] plans"
+        return base . "    [L] plans"
     if (depth = 1)
-        return base . "    [C] copy prompt    [P] plans"
+        return base . "    [C] copy prompt    [L] plans"
     return base
 }
 
