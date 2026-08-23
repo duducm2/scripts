@@ -382,12 +382,23 @@ def build_html(snap: dict) -> str:
     .practice {{
       display: flex;
       flex-direction: column;
-      gap: 1.75rem;
+      gap: 0.85rem;
     }}
     .practice h3 {{
       margin: 0;
       color: var(--gold);
       font-size: 1.05rem;
+    }}
+    #ovAtoms {{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1.75rem;
+      align-items: stretch;
+    }}
+    #ovAtoms > .empty {{
+      flex: 1 1 100%;
+      margin: 0;
     }}
     .atom-card {{
       background: var(--panel);
@@ -395,6 +406,10 @@ def build_html(snap: dict) -> str:
       border-radius: 10px;
       padding: 0.95rem 1.05rem;
       scroll-margin-top: 5rem;
+      flex: 1 1 200px;
+      min-width: min(200px, 100%);
+      max-width: 100%;
+      box-sizing: border-box;
     }}
     .atom-card.highlight {{
       border-color: var(--gold);
@@ -426,6 +441,9 @@ def build_html(snap: dict) -> str:
       border: 1px solid var(--line);
       border-left: 3px solid var(--gold);
       border-radius: 8px;
+    }}
+    .atom-card .emoji {{
+      margin-right: 0.28rem;
     }}
     .atom-card .zone-tag {{
       color: var(--muted);
@@ -519,6 +537,34 @@ def build_html(snap: dict) -> str:
       return t ? esc(t) : '—';
     }}
 
+    function sensoryEmoji(v) {{
+      const k = (v ?? '').toString().trim().toLowerCase();
+      const map = {{
+        visual: '👁️',
+        auditory: '👂',
+        tactile: '✋',
+        olfactory: '👃',
+        gustatory: '👅',
+        thermal: '🌡️'
+      }};
+      return map[k] || '';
+    }}
+
+    function formatSensory(v) {{
+      const t = (v ?? '').toString().trim();
+      if (!t) return '—';
+      const emoji = sensoryEmoji(t);
+      return emoji
+        ? '<span class="emoji" aria-hidden="true">' + emoji + '</span>' + esc(t)
+        : esc(t);
+    }}
+
+    function formatConcept(v) {{
+      const t = (v ?? '').toString().trim();
+      if (!t) return '—';
+      return '<span class="emoji" aria-hidden="true">💡</span>' + esc(t);
+    }}
+
     async function copyPrompt(text, btn) {{
       const t = (text || '').toString();
       if (!t.trim()) return;
@@ -575,10 +621,10 @@ def build_html(snap: dict) -> str:
             + '<p class="field field-beast"><span class="lbl">Beast</span>'
             + '<span class="beast-name">' + dash(a.beast) + '</span></p>'
             + '<p class="field field-concept"><span class="lbl">Concept</span>'
-            + dash(a.concept) + '</p>'
+            + formatConcept(a.concept) + '</p>'
             + '<p class="field"><span class="lbl">Quote</span>' + dash(a.quote) + '</p>'
             + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
-            + '<p class="field"><span class="lbl">Sensory</span>' + dash(a.sensory) + '</p>'
+            + '<p class="field"><span class="lbl">Sensory</span>' + formatSensory(a.sensory) + '</p>'
             + '</article>';
         }}).join('');
       }}
