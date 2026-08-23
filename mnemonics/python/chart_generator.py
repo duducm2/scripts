@@ -813,36 +813,111 @@ def build_html(
     }}
     .plans-layout {{
       display: grid;
-      grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
-      gap: 1.5rem;
+      grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+      gap: 1.25rem;
       align-items: start;
+      transition: grid-template-columns 0.2s ease;
+    }}
+    .plans-layout.toc-collapsed {{
+      grid-template-columns: 2.75rem minmax(0, 1fr);
+      gap: 0.85rem;
     }}
     @media (max-width: 900px) {{
       .plans-layout {{ grid-template-columns: 1fr; }}
-      .plans-toc {{ position: static !important; max-height: none !important; }}
+      .plans-layout.toc-collapsed {{ grid-template-columns: 1fr; }}
+      .plans-toc {{
+        position: static !important;
+        max-height: none !important;
+      }}
+      .plans-layout.toc-collapsed .plans-toc {{
+        max-height: none !important;
+      }}
+      .plans-layout.toc-collapsed .plans-toc-head h2,
+      .plans-layout.toc-collapsed #plansTocList {{
+        display: none !important;
+      }}
     }}
     .plans-toc {{
       position: sticky;
       top: 0.75rem;
-      max-height: calc(100vh - 1.5rem);
-      overflow: auto;
+      max-height: min(70vh, calc(100vh - 8rem));
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 0.85rem 1rem;
+      padding: 0.65rem 0.75rem 0.75rem;
       font-size: 0.88rem;
     }}
-    .plans-toc h2 {{
-      margin: 0 0 0.5rem;
+    .plans-toc-head {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.35rem;
+      margin-bottom: 0.45rem;
+      flex-shrink: 0;
+    }}
+    .plans-toc-head h2 {{
+      margin: 0;
       font-size: 0.95rem;
       color: var(--gold);
+      white-space: nowrap;
     }}
-    .plans-toc ul {{ margin: 0; padding-left: 1.1rem; }}
+    .btn-plans-toc-toggle {{
+      flex-shrink: 0;
+      width: 1.7rem;
+      height: 1.7rem;
+      padding: 0;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.7rem;
+      line-height: 1;
+    }}
+    .btn-plans-toc-toggle:hover {{
+      color: var(--gold);
+      border-color: var(--gold);
+    }}
+    .plans-toc ul {{
+      margin: 0;
+      padding-left: 1.05rem;
+      overflow: auto;
+      flex: 1;
+      min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+    }}
     .plans-toc a {{ color: var(--muted); text-decoration: none; }}
     .plans-toc a:hover {{ color: var(--gold); }}
     .plans-toc .lvl-3 {{ padding-left: 0.35rem; }}
     .plans-toc .lvl-4 {{ padding-left: 0.7rem; font-size: 0.82rem; }}
     .plans-toc .lvl-5 {{ padding-left: 1rem; font-size: 0.8rem; }}
+    .plans-layout.toc-collapsed .plans-toc {{
+      padding: 0.45rem 0.3rem;
+      align-items: center;
+      max-height: none;
+      overflow: visible;
+    }}
+    .plans-layout.toc-collapsed .plans-toc-head {{
+      flex-direction: column;
+      margin-bottom: 0;
+    }}
+    .plans-layout.toc-collapsed .plans-toc-head h2 {{
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      margin: 0.35rem 0;
+    }}
+    .plans-layout.toc-collapsed #plansTocList {{
+      display: none;
+    }}
+    .plans-layout.toc-collapsed .btn-plans-toc-toggle {{
+      order: -1;
+    }}
     .plans-main {{ min-width: 0; }}
     .plans-header {{
       display: flex;
@@ -884,6 +959,26 @@ def build_html(
       font-size: 0.85rem;
     }}
     .btn-plans-reset:hover {{ color: var(--gold); border-color: var(--gold); }}
+    .btn-plans-save {{
+      background: var(--gold);
+      color: #1a1408;
+      border: none;
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 650;
+    }}
+    .btn-plans-save:hover {{ filter: brightness(1.08); }}
+    .btn-plans-save:disabled {{ opacity: 0.55; cursor: wait; }}
+    .plans-save-status {{
+      margin: 0 0 0.75rem;
+      min-height: 1.2rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }}
+    .plans-save-status.ok {{ color: #7dcea0; }}
+    .plans-save-status.err {{ color: #e08080; }}
     .plans-progress-wrap {{
       display: flex;
       align-items: center;
@@ -1104,6 +1199,7 @@ def build_html(
     let dashboardView = 'practice';
     let mermaidReady = false;
     const PLANS_STORAGE_KEY = 'mnemonics_plans_v1';
+    const PLANS_TOC_COLLAPSED_KEY = 'mnemonics_plans_toc_collapsed';
 
     // Newest-first order per study (same as grid)
     const STUDY_PALACE_ORDER = {{}};
@@ -1503,6 +1599,128 @@ def build_html(
       savePlanStorage(store);
     }}
 
+    function setPlansTocCollapsed(collapsed) {{
+      const layout = document.getElementById('plansLayout');
+      const btn = document.getElementById('btnPlansTocToggle');
+      if (layout) layout.classList.toggle('toc-collapsed', !!collapsed);
+      if (btn) {{
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        btn.title = collapsed ? 'Expand sections' : 'Collapse sections';
+        btn.textContent = collapsed ? '▶' : '◀';
+      }}
+      try {{
+        localStorage.setItem(PLANS_TOC_COLLAPSED_KEY, collapsed ? '1' : '0');
+      }} catch (e) {{}}
+    }}
+
+    function initPlansTocToggle() {{
+      const btn = document.getElementById('btnPlansTocToggle');
+      if (!btn) return;
+      let collapsed = false;
+      try {{
+        collapsed = localStorage.getItem(PLANS_TOC_COLLAPSED_KEY) === '1';
+      }} catch (e) {{}}
+      setPlansTocCollapsed(collapsed);
+      btn.addEventListener('click', () => {{
+        const layout = document.getElementById('plansLayout');
+        const next = !(layout && layout.classList.contains('toc-collapsed'));
+        setPlansTocCollapsed(next);
+      }});
+    }}
+    initPlansTocToggle();
+
+    function collectPlansSavePayload() {{
+      const plans = {{}};
+      Object.entries(PLANS_DATA.plans || {{}}).forEach(([studyId, plan]) => {{
+        const todos = (plan.todos || []).map(t => ({{
+          id: t.id,
+          checked: planChecked(plan, t),
+        }}));
+        if (todos.length) {{
+          plans[studyId] = {{ study_id: studyId, slug: plan.slug, todos }};
+        }}
+      }});
+      return {{ plans }};
+    }}
+
+    function clearSavedPlanProgress(studyIds) {{
+      const store = loadPlanStorage();
+      studyIds.forEach(studyId => {{
+        const plan = (PLANS_DATA.plans || {{}})[studyId];
+        if (!plan || !plan.slug) return;
+        const prefix = plan.slug + ':';
+        Object.keys(store).forEach(k => {{
+          if (k.startsWith(prefix)) delete store[k];
+        }});
+      }});
+      savePlanStorage(store);
+    }}
+
+    function applySavedPlanStates(payload) {{
+      Object.entries(payload.plans || {{}}).forEach(([studyId, entry]) => {{
+        const plan = (PLANS_DATA.plans || {{}})[studyId];
+        if (!plan) return;
+        const byId = {{}};
+        (entry.todos || []).forEach(t => {{ byId[t.id] = !!t.checked; }});
+        (plan.todos || []).forEach(t => {{
+          if (Object.prototype.hasOwnProperty.call(byId, t.id)) {{
+            t.checked = byId[t.id];
+          }}
+        }});
+        plan.checked_count = (plan.todos || []).filter(t => t.checked).length;
+      }});
+    }}
+
+    function setPlansSaveStatus(text, kind) {{
+      const el = document.getElementById('plansSaveStatus');
+      if (!el) return;
+      el.textContent = text || '';
+      el.classList.remove('ok', 'err');
+      if (kind) el.classList.add(kind);
+    }}
+
+    async function savePlansToDisk() {{
+      const btn = document.getElementById('btnPlansSave');
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      const payload = collectPlansSavePayload();
+      const studyIds = Object.keys(payload.plans || {{}});
+      if (!studyIds.length) {{
+        setPlansSaveStatus('No plan todos to save.', 'err');
+        return;
+      }}
+      if (btn) btn.disabled = true;
+      setPlansSaveStatus('Saving…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify(payload),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok) {{
+          const msg = (data && data.error) ? data.error : ('Save failed (' + res.status + ')');
+          setPlansSaveStatus(msg + ' — reopen dashboard from Memory Palace [D].', 'err');
+          return;
+        }}
+        const changed = data.total_changed != null ? data.total_changed : 0;
+        applySavedPlanStates(payload);
+        clearSavedPlanProgress(studyIds);
+        const studyId = sel ? sel.value : '';
+        if (dashboardView === 'plans') renderPlansForStudy(studyId);
+        setPlansSaveStatus(
+          'Saved ' + changed + ' checkbox line(s) to plan files. Push [P] when ready.',
+          'ok'
+        );
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
+      }} finally {{
+        if (btn) btn.disabled = false;
+      }}
+    }}
+
     function mdInline(text) {{
       let s = esc(text);
       s = s.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
@@ -1701,6 +1919,10 @@ def build_html(
       btnPlans.addEventListener('click', () => setDashboardView('toggle-plans'));
     }}
     const btnPlansReset = document.getElementById('btnPlansReset');
+    const btnPlansSave = document.getElementById('btnPlansSave');
+    if (btnPlansSave) {{
+      btnPlansSave.addEventListener('click', () => savePlansToDisk());
+    }}
     if (btnPlansReset) {{
       btnPlansReset.addEventListener('click', () => {{
         const studyId = sel ? sel.value : '';

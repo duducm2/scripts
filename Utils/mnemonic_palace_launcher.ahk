@@ -145,8 +145,61 @@ Palace_OpenPlansGithub() {
     Palace_Notify("Plans folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
 }
 
+Palace_PlanSaveServerPort() {
+    return 8765
+}
+
+Palace_EnsurePlanSaveServer() {
+    port := Palace_PlanSaveServerPort()
+    if (Palace_IsPlanSaveServerRunning(port))
+        return true
+    py := Palace_PythonDir() . "\plan_save_server.py"
+    if (!FileExist(py)) {
+        Palace_Notify("plan_save_server.py not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        Palace_Notify("Python not found for plan save server", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    notesRoot := Palace_NotesStudiesRoot()
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir
+        . '" --port ' . port
+    if (notesRoot != "")
+        cmd .= ' --studies-root "' . notesRoot . '"'
+    try Run(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    catch as e {
+        Palace_Notify("Plan save server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    loop 20 {
+        if (Palace_IsPlanSaveServerRunning(port))
+            return true
+        Sleep 150
+    }
+    Palace_Notify("Plan save server did not start", 2800, BANNER_ACCENT_ERROR)
+    return false
+}
+
+Palace_IsPlanSaveServerRunning(port := 0) {
+    if (port = 0)
+        port := Palace_PlanSaveServerPort()
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.Send()
+        return (whr.Status = 200)
+    } catch {
+        return false
+    }
+}
+
 Palace_OpenDashboard() {
     Palace_EnsureData()
+    Palace_EnsurePlanSaveServer()
     py := Palace_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {
         Palace_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)

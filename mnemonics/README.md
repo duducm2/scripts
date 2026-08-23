@@ -93,7 +93,7 @@ Click a palace card to open a fullscreen view: image, **Image prompt** (or empty
 
 **Method** button (or keyboard **M**) opens the technique docs in the same page: README (tables, mermaid workflow), research notes, prompt previews, and searchable Characters / Bestiary canon.
 
-**Plans** button (or keyboard **P**) opens study plan checklists parsed from `mnemonics/studies/*/*-plan.md`: backlog, phased sections, checkbox todos, and collapsible resource links. Progress toggles are saved in the browser (localStorage); use **Reset to file** to restore the Markdown file state.
+**Plans** button (or keyboard **P**) opens study plan checklists parsed from `mnemonics/studies/*/*-plan.md`: backlog, phased sections, checkbox todos, and collapsible resource links. Progress toggles are saved in the browser (localStorage). **Save** writes checkbox state back to the source plan `.md` files (and refreshes `output/plans/`); then use **[P] Push to cloud** for GitHub. **Reset to file** clears local-only progress.
 
 ## Study plan Markdown (mobile / GitHub)
 
@@ -112,6 +112,8 @@ py -3 mnemonics\python\study_plans_md.py `
   --output-dir mnemonics\output `
   --sync-all
 ```
+
+**Save (dashboard):** Opening the dashboard via **[D]** starts a local save server (`127.0.0.1:8765`). In the Plans panel, **Save** writes checkbox progress to `mnemonics/studies/*/*-plan.md` and refreshes `output/plans/`. Then **[P] Push to cloud** commits for GitHub.
 
 ## Technique (SSOT)
 
