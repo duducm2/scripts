@@ -120,6 +120,8 @@ Palace_StudyDelete(*) {
             studyOut.Push(r)
     }
     Palace_Save("studies", studyOut)
+    if (Trim(Palace_Setting("General", "LastStudyId", "")) = s["id"])
+        Palace_SetSetting("General", "LastStudyId", "")
     Palace_StudyRefresh()
     Palace_Notify("Study removed", 1200, BANNER_ACCENT_SUCCESS)
 }

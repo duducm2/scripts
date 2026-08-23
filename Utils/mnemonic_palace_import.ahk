@@ -347,6 +347,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     nPalaces := 0
     nBeasts := 0
     nAtoms := 0
+    beastIdRemap := Map()
 
     ; --- Palaces: upsert by id ---
     for r in palaceRows {
@@ -360,20 +361,29 @@ Palace_ImportMnemonicsFromDesktop(*) {
         titleP := r.Has("title") ? Trim(r["title"]) : ""
         if (num = "" || titleP = "")
             continue
-        pad := Format("{:02d}", Integer(num))
+        try
+            pad := Format("{:02d}", Integer(num))
+        catch {
+            Palace_Notify("Skip palace: bad palace_number " . num, 2200, BANNER_ACCENT_ERROR)
+            continue
+        }
         id := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"])
             : "PALACE_" . Palace_Slug(studyId) . "_" . pad
         if (SubStr(id, 1, 7) = "STREET_")
             id := "PALACE_" . SubStr(id, 8)
         img := r.Has("image_rel_path") ? Trim(r["image_rel_path"]) : ""
+        promptIn := r.Has("image_prompt") ? Trim(r["image_prompt"]) : ""
         existing := Palace_FindById(palaces, id)
         if (IsObject(existing)) {
             existing["study_id"] := studyId
             existing["palace_number"] := num
             existing["title"] := titleP
-            existing["character_name"] := r.Has("character_name") ? r["character_name"] : ""
-            existing["depth_slots_used"] := r.Has("depth_slots_used") ? r["depth_slots_used"] : "0"
-            existing["image_prompt"] := r.Has("image_prompt") ? r["image_prompt"] : ""
+            if (r.Has("character_name") && Trim(r["character_name"]) != "")
+                existing["character_name"] := r["character_name"]
+            if (r.Has("depth_slots_used") && Trim(r["depth_slots_used"]) != "")
+                existing["depth_slots_used"] := r["depth_slots_used"]
+            if (promptIn != "")
+                existing["image_prompt"] := promptIn
             if (img != "")
                 existing["image_rel_path"] := img
             nPalaces += 1
@@ -386,54 +396,61 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "character_name", r.Has("character_name") ? r["character_name"] : "",
                 "image_rel_path", img,
                 "depth_slots_used", r.Has("depth_slots_used") ? r["depth_slots_used"] : "0",
-                "image_prompt", r.Has("image_prompt") ? r["image_prompt"] : ""
+                "image_prompt", promptIn
             ))
             nPalaces += 1
         }
     }
 
-    ; --- Beasts: replace all beasts (and cascade atoms) for palace_ids in pack ---
+    ; --- Beasts: wipe only palaces with at least one insertable row; remap colliding ids ---
     if (beastRows.Length) {
+        insertable := []
         replacePalaceIds := Map()
         for r in beastRows {
             r := Palace_NormalizeBeastImportRow(r)
-            pid := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
-            if (pid != "")
-                replacePalaceIds[pid] := true
-        }
-        removeBeastIds := Map()
-        for b in beasts {
-            if (replacePalaceIds.Has(b["palace_id"]))
-                removeBeastIds[b["id"]] := true
-        }
-        newAtoms := []
-        for a in atoms {
-            if (!removeBeastIds.Has(a["beast_id"]))
-                newAtoms.Push(a)
-        }
-        atoms := newAtoms
-        newBeasts := []
-        for b in beasts {
-            if (!replacePalaceIds.Has(b["palace_id"]))
-                newBeasts.Push(b)
-        }
-        beasts := newBeasts
-
-        for r in beastRows {
-            r := Palace_NormalizeBeastImportRow(r)
             palaceId := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
+            peg := r.Has("peg_code") ? Trim(r["peg_code"]) : ""
+            name := r.Has("beast_name") ? Trim(r["beast_name"]) : ""
             if (palaceId = "" || !Palace_FindById(palaces, palaceId)) {
                 Palace_Notify("Skip beast: unknown palace_id " . palaceId, 2200, BANNER_ACCENT_ERROR)
                 continue
             }
-            peg := r.Has("peg_code") ? Trim(r["peg_code"]) : ""
-            name := r.Has("beast_name") ? Trim(r["beast_name"]) : ""
             if (peg = "" || name = "")
                 continue
-            id := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"])
+            insertable.Push(r)
+            replacePalaceIds[palaceId] := true
+        }
+        if (replacePalaceIds.Count) {
+            removeBeastIds := Map()
+            for b in beasts {
+                if (replacePalaceIds.Has(b["palace_id"]))
+                    removeBeastIds[b["id"]] := true
+            }
+            newAtoms := []
+            for a in atoms {
+                if (!removeBeastIds.Has(a["beast_id"]))
+                    newAtoms.Push(a)
+            }
+            atoms := newAtoms
+            newBeasts := []
+            for b in beasts {
+                if (!replacePalaceIds.Has(b["palace_id"]))
+                    newBeasts.Push(b)
+            }
+            beasts := newBeasts
+        }
+        for r in insertable {
+            palaceId := Trim(r["palace_id"])
+            peg := Trim(r["peg_code"])
+            name := Trim(r["beast_name"])
+            packId := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"]) : ""
+            id := packId != "" ? packId
                 : "BEAST_" . Palace_Slug(palaceId) . "_" . Palace_Slug(peg)
             if (Palace_FindById(beasts, id))
                 id := Palace_SlugId("BEAST_", peg . "_" . name, beasts)
+            if (packId != "")
+                beastIdRemap[packId] := id
+            beastIdRemap[id] := id
             beasts.Push(Map(
                 "id", id,
                 "palace_id", palaceId,
@@ -448,21 +465,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
         }
     }
 
-    ; --- Atoms: replace atoms for beast_ids in pack ---
+    ; --- Atoms: validate groups first; wipe+insert only for groups that pass ---
     if (atomRows.Length) {
-        replaceBeastIds := Map()
-        for r in atomRows {
-            bid := r.Has("beast_id") ? Trim(r["beast_id"]) : ""
-            if (bid != "")
-                replaceBeastIds[bid] := true
-        }
-        newAtoms2 := []
-        for a in atoms {
-            if (!replaceBeastIds.Has(a["beast_id"]))
-                newAtoms2.Push(a)
-        }
-        atoms := newAtoms2
-
         usedAtomIds := Map()
         scratchAtoms := []
         for a in atoms {
@@ -472,6 +476,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
         pendingByBeast := Map()
         for r in atomRows {
             beastId := r.Has("beast_id") ? Trim(r["beast_id"]) : ""
+            if (beastId != "" && beastIdRemap.Has(beastId))
+                beastId := beastIdRemap[beastId]
             if (beastId = "" || !Palace_FindById(beasts, beastId)) {
                 Palace_Notify("Skip atom: unknown beast_id " . beastId, 2200, BANNER_ACCENT_ERROR)
                 continue
@@ -506,26 +512,46 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 pendingByBeast[beastId] := []
             pendingByBeast[beastId].Push(row)
         }
+        okBeastIds := Map()
         for beastId, proposed in pendingByBeast {
             err := Palace_ValidateBeastAtoms(beastId, proposed)
             if (err != "") {
                 Palace_Notify("Skip atoms for " . beastId . ": " . err, 2800, BANNER_ACCENT_ERROR)
                 continue
             }
-            for row in proposed {
-                atoms.Push(row)
-                nAtoms += 1
+            okBeastIds[beastId] := true
+        }
+        if (okBeastIds.Count) {
+            kept := []
+            for a in atoms {
+                if (!okBeastIds.Has(a["beast_id"]))
+                    kept.Push(a)
+            }
+            atoms := kept
+            for beastId, proposed in pendingByBeast {
+                if (!okBeastIds.Has(beastId))
+                    continue
+                for row in proposed {
+                    atoms.Push(row)
+                    nAtoms += 1
+                }
             }
         }
     }
 
-    if (palaceRows.Length)
+    if (nPalaces)
         Palace_Save("palaces", palaces)
-    if (beastRows.Length) {
+    if (nBeasts) {
         Palace_Save("beasts", beasts)
         Palace_Save("atoms", atoms)
-    } else if (atomRows.Length) {
+    } else if (nAtoms) {
         Palace_Save("atoms", atoms)
+    }
+
+    if (nPalaces + nBeasts + nAtoms = 0) {
+        Palace_Notify("Import produced no rows — Desktop files kept", 2800, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
     }
 
     if (pathPack != "")

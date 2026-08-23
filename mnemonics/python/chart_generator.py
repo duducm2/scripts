@@ -863,12 +863,14 @@ def build_html(snap: dict) -> str:
       try {{
         await navigator.clipboard.writeText(t);
         if (btn) {{
-          const prev = btn.textContent;
           btn.textContent = 'Copied';
-          setTimeout(() => {{ btn.textContent = prev; }}, 1200);
+          setTimeout(() => {{ btn.textContent = 'Copy prompt'; }}, 1200);
         }}
       }} catch (e) {{
-        if (btn) btn.textContent = 'Copy failed';
+        if (btn) {{
+          btn.textContent = 'Copy failed';
+          setTimeout(() => {{ btn.textContent = 'Copy prompt'; }}, 1600);
+        }}
       }}
     }}
 
@@ -998,10 +1000,13 @@ def build_html(snap: dict) -> str:
           stepPalace(-1);
           return;
         }}
-        if ((e.key === 'c' || e.key === 'C') && currentOverlayPalaceId) {{
-          e.preventDefault();
+        if ((e.key === 'c' || e.key === 'C') && currentOverlayPalaceId
+            && !e.ctrlKey && !e.metaKey && !e.altKey) {{
           const st = PALACE_DATA[currentOverlayPalaceId];
-          if (st) copyPrompt(st.image_prompt, btnCopyPrompt);
+          const prompt = st ? (st.image_prompt || '').toString().trim() : '';
+          if (!prompt) return;
+          e.preventDefault();
+          copyPrompt(st.image_prompt, btnCopyPrompt);
           return;
         }}
       }}
