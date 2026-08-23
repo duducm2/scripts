@@ -754,7 +754,11 @@ Palace_BreadcrumbText() {
 }
 
 Palace_BrowseKeysHint() {
-    return "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
+    depth := Palace_BrowseDepth()
+    base := "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
+    if (depth = 1)
+        return base . "    [C] copy prompt"
+    return base
 }
 
 ; Two-line chrome: gold breadcrumb, muted keys. Returns ListView Y.

@@ -28,6 +28,7 @@ Palace_ShowPalaces() {
         ["a", (*) => Palace_PalaceAdd()],
         ["Insert", (*) => Palace_PalaceAdd()],
         ["e", (*) => Palace_PalaceEdit()],
+        ["c", (*) => Palace_PalaceCopyImagePrompt()],
         ["Delete", (*) => Palace_PalaceDelete()],
         ["Enter", (*) => Palace_BrowseInto()],
         ["Backspace", (*) => Palace_BrowseUp()],
@@ -86,6 +87,21 @@ Palace_PalaceEdit(*) {
         return
     }
     Palace_PalaceForm(st)
+}
+
+Palace_PalaceCopyImagePrompt(*) {
+    st := Palace_PalaceSelected()
+    if (!st) {
+        Palace_Notify("Select a Memory Palace", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    prompt := st.Has("image_prompt") ? Trim(st["image_prompt"]) : ""
+    if (prompt = "") {
+        Palace_Notify("No image prompt on this palace", 1800, BANNER_ACCENT_ERROR)
+        return
+    }
+    A_Clipboard := prompt
+    Palace_Notify("Image prompt copied — " . st["title"], 1800, BANNER_ACCENT_SUCCESS)
 }
 
 Palace_PalaceDelete(*) {

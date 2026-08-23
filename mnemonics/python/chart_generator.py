@@ -599,7 +599,7 @@ def build_html(snap: dict) -> str:
   <main>
     {''.join(study_blocks)}
   </main>
-  <footer>Click a Memory Palace for fullscreen practice. Inside overlay: ← Older / Newer → (or arrow keys). Latest palace (or L) opens the highest palace number.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -620,16 +620,17 @@ def build_html(snap: dict) -> str:
         <button type="button" id="btnPrevPalace" title="Older palace (←)">← Older</button>
         <span class="nav-pos" id="ovNavPos"></span>
         <button type="button" id="btnNextPalace" title="Newer palace (→)">Newer →</button>
+        <button type="button" id="btnCopyPrompt" title="Copy image prompt (C)" disabled>Copy prompt</button>
         <button type="button" id="btnClose">Close</button>
       </div>
     </div>
     <div class="overlay-body">
       <div class="overlay-image" id="ovImage"></div>
+      <div class="overlay-prompt" id="ovPrompt"></div>
       <div class="practice">
         <h3>Practice — Knowledge Atoms</h3>
         <div id="ovAtoms"></div>
       </div>
-      <div class="overlay-prompt" id="ovPrompt"></div>
     </div>
   </div>
 
@@ -648,6 +649,7 @@ def build_html(snap: dict) -> str:
     const btnClose = document.getElementById('btnClose');
     const btnPrevPalace = document.getElementById('btnPrevPalace');
     const btnNextPalace = document.getElementById('btnNextPalace');
+    const btnCopyPrompt = document.getElementById('btnCopyPrompt');
     const ovNavPos = document.getElementById('ovNavPos');
     const btnLatest = document.getElementById('btnLatest');
     const atomSearch = document.getElementById('atomSearch');
@@ -898,6 +900,14 @@ def build_html(snap: dict) -> str:
           copyPrompt(st.image_prompt, btn);
         }});
       }});
+      if (btnCopyPrompt) {{
+        const hasPrompt = !!(st.image_prompt || '').toString().trim();
+        btnCopyPrompt.disabled = !hasPrompt;
+        btnCopyPrompt.onclick = (e) => {{
+          e.stopPropagation();
+          copyPrompt(st.image_prompt, btnCopyPrompt);
+        }};
+      }}
       const atoms = st.atoms || [];
       if (!atoms.length) {{
         ovAtoms.innerHTML = '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
@@ -935,6 +945,10 @@ def build_html(snap: dict) -> str:
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
       currentOverlayPalaceId = '';
+      if (btnCopyPrompt) {{
+        btnCopyPrompt.disabled = true;
+        btnCopyPrompt.onclick = null;
+      }}
     }}
 
     document.querySelectorAll('.palace').forEach(el => {{
@@ -982,6 +996,12 @@ def build_html(snap: dict) -> str:
         if (e.key === 'ArrowRight') {{
           e.preventDefault();
           stepPalace(-1);
+          return;
+        }}
+        if ((e.key === 'c' || e.key === 'C') && currentOverlayPalaceId) {{
+          e.preventDefault();
+          const st = PALACE_DATA[currentOverlayPalaceId];
+          if (st) copyPrompt(st.image_prompt, btnCopyPrompt);
           return;
         }}
       }}
