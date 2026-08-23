@@ -626,11 +626,11 @@ def build_html(snap: dict) -> str:
     </div>
     <div class="overlay-body">
       <div class="overlay-image" id="ovImage"></div>
-      <div class="overlay-prompt" id="ovPrompt"></div>
       <div class="practice">
         <h3>Practice — Knowledge Atoms</h3>
         <div id="ovAtoms"></div>
       </div>
+      <div class="overlay-prompt" id="ovPrompt"></div>
     </div>
   </div>
 
