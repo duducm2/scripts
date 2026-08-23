@@ -12,50 +12,36 @@ Palace_ShowAtoms() {
     Palace_EnsureData()
     if (g_PalaceFilterBeastId = "") {
         if (g_PalaceFilterPalaceId = "") {
-            studyId := g_PalaceFilterStudyId
-            if (studyId = "")
-                studyId := Palace_PickStudy()
-            if (studyId = "") {
-                Palace_ShowMainMenu()
-                return
-            }
-            g_PalaceFilterStudyId := studyId
-            palaceId := Palace_PickPalace(studyId)
-            if (palaceId = "") {
-                Palace_ShowMainMenu()
-                return
-            }
-            g_PalaceFilterPalaceId := palaceId
+            if (g_PalaceFilterStudyId = "")
+                Palace_ShowStudies()
+            else
+                Palace_ShowPalaces()
+        } else {
+            Palace_ShowBeasts()
         }
-        pick := Palace_PickBeast(g_PalaceFilterPalaceId)
-        if (pick = "") {
-            Palace_ShowMainMenu()
-            return
-        }
-        g_PalaceFilterBeastId := pick
+        return
     }
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Knowledge Atoms")
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Knowledge Atoms"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860",
-        Palace_BeastLabel(g_PalaceFilterBeastId)
-        . "   [A] add   [E] edit   Delete   [F] filter   Backspace menu")
+    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Knowledge Atoms"))
     g_PalaceAtomLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
         ["Kind", "Zone", "Label", "Concept", "Sensory"])
     g_PalaceAtomLv.OnEvent("DoubleClick", (*) => Palace_AtomEdit())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
-    g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
+    g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
     Palace_AtomRefresh()
     Palace_BindHotkeys([
         ["a", (*) => Palace_AtomAdd()],
         ["Insert", (*) => Palace_AtomAdd()],
         ["e", (*) => Palace_AtomEdit()],
         ["Delete", (*) => Palace_AtomDelete()],
-        ["f", (*) => Palace_AtomFilter()],
-        ["Backspace", (*) => Palace_ShowMainMenu()],
-        ["Escape", (*) => Palace_ShowMainMenu()]
+        ["Enter", (*) => Palace_AtomEdit()],
+        ["Backspace", (*) => Palace_BrowseUp()],
+        ["Escape", (*) => Palace_BrowseUp()]
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
+
 
 Palace_AtomFilter(*) {
     global g_PalaceFilterBeastId, g_PalaceFilterPalaceId, g_PalaceFilterStudyId

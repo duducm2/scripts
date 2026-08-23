@@ -11,35 +11,30 @@ Palace_ShowPalaces() {
     Palace_CloseGui()
     Palace_EnsureData()
     if (g_PalaceFilterStudyId = "") {
-        pick := Palace_PickStudy()
-        if (pick = "") {
-            Palace_ShowMainMenu()
-            return
-        }
-        g_PalaceFilterStudyId := pick
+        Palace_ShowStudies()
+        return
     }
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Memory Palaces")
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Palaces"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860",
-        Palace_StudyTitle(g_PalaceFilterStudyId)
-        . "   [A] add   [E] edit   Delete   [F] filter study   Backspace menu")
+    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Palaces"))
     g_PalacePalaceLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
         ["#", "Title", "Character", "Image", "Slots", "Prompt"])
-    g_PalacePalaceLv.OnEvent("DoubleClick", (*) => Palace_PalaceEdit())
+    g_PalacePalaceLv.OnEvent("DoubleClick", (*) => Palace_BrowseInto())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
-    g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
+    g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
     Palace_PalaceRefresh()
     Palace_BindHotkeys([
         ["a", (*) => Palace_PalaceAdd()],
         ["Insert", (*) => Palace_PalaceAdd()],
         ["e", (*) => Palace_PalaceEdit()],
         ["Delete", (*) => Palace_PalaceDelete()],
-        ["f", (*) => Palace_PalaceFilter()],
-        ["Backspace", (*) => Palace_ShowMainMenu()],
-        ["Escape", (*) => Palace_ShowMainMenu()]
+        ["Enter", (*) => Palace_BrowseInto()],
+        ["Backspace", (*) => Palace_BrowseUp()],
+        ["Escape", (*) => Palace_BrowseUp()]
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
+
 
 Palace_PalaceFilter(*) {
     global g_PalaceFilterStudyId

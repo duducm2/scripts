@@ -10,26 +10,27 @@ Palace_ShowStudies() {
     global g_PalaceGui, g_PalaceStudyLv
     Palace_CloseGui()
     Palace_EnsureData()
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Studies")
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Studies"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860",
-        "[A]/Insert add   [E] edit   Delete   Backspace menu")
+    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Studies"))
     g_PalaceStudyLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
         ["Title", "Notes path", "Order", "Active"])
-    g_PalaceStudyLv.OnEvent("DoubleClick", (*) => Palace_StudyEdit())
+    g_PalaceStudyLv.OnEvent("DoubleClick", (*) => Palace_BrowseInto())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
-    g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
+    g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
     Palace_StudyRefresh()
     Palace_BindHotkeys([
         ["a", (*) => Palace_StudyAdd()],
         ["Insert", (*) => Palace_StudyAdd()],
         ["e", (*) => Palace_StudyEdit()],
         ["Delete", (*) => Palace_StudyDelete()],
-        ["Backspace", (*) => Palace_ShowMainMenu()],
-        ["Escape", (*) => Palace_ShowMainMenu()]
+        ["Enter", (*) => Palace_BrowseInto()],
+        ["Backspace", (*) => Palace_BrowseUp()],
+        ["Escape", (*) => Palace_BrowseUp()]
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
+
 
 Palace_StudyRefresh() {
     global g_PalaceStudyLv, g_PalaceStudyRows

@@ -35,10 +35,7 @@ Palace_ShowMainMenu() {
 
     items := [
         ["D", "Dashboard", "Study picker and Memory Palace images"],
-        ["Y", "Studies", "Domains that own palaces"],
-        ["S", "Palaces", "Memory Palaces and images"],
-        ["B", "Beasts", "Peg holders on a Memory Palace"],
-        ["A", "Atoms", "Knowledge Atoms"],
+        ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["I", "AI import", "Desktop PALACE_*.csv"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
@@ -64,17 +61,16 @@ Palace_ShowMainMenu() {
     }
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y440 w880",
-        "Backspace utility shortcuts   Esc close   letters open a module   H glossary   P push")
+    g_PalaceGui.Add("Text", "x20 y360 w880",
+        "Backspace utility shortcuts   Esc close   B browse hierarchy   H glossary   P push")
 
     Palace_BindHotkeys([
-        ["d", Palace_OnDash], ["y", Palace_OnStudies], ["s", Palace_OnPalaces],
-        ["b", Palace_OnBeasts], ["a", Palace_OnAtoms], ["i", Palace_OnImp],
+        ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
         ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
-    Palace_CenterGui(g_PalaceGui, 900, 480)
+    Palace_CenterGui(g_PalaceGui, 900, 420)
 }
 
 Palace_ReturnToUtilityShortcuts() {
@@ -87,17 +83,8 @@ Palace_ReturnToUtilityShortcuts() {
 Palace_OnDash(*) {
     Palace_OpenDashboard()
 }
-Palace_OnStudies(*) {
-    Palace_ShowStudies()
-}
-Palace_OnPalaces(*) {
-    Palace_ShowPalaces()
-}
-Palace_OnBeasts(*) {
-    Palace_ShowBeasts()
-}
-Palace_OnAtoms(*) {
-    Palace_ShowAtoms()
+Palace_OnBrowse(*) {
+    Palace_ShowBrowse()
 }
 Palace_OnImp(*) {
     Palace_ShowImportMenu()
@@ -163,7 +150,6 @@ Palace_OpenDashboard() {
     catch {
         tmpHtml := html
     }
-    ; Copy sibling assets folder reference is embedded as file paths; generator uses absolute file URIs.
     fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
     try Run('chrome.exe --new-window "' . fileUrl . '"')
     catch as e {

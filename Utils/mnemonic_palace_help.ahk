@@ -40,7 +40,8 @@ Palace_ShowHelp() {
     Palace_StyleDarkEdit(edit)
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW, "Esc / Backspace — return to main menu")
+    g_PalaceGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
+    "Esc / Backspace — main menu. Browse [B]: Enter drills down, Backspace goes up.")
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
     Palace_BindHotkeys([

@@ -11,43 +11,33 @@ Palace_ShowBeasts() {
     Palace_CloseGui()
     Palace_EnsureData()
     if (g_PalaceFilterPalaceId = "") {
-        studyId := g_PalaceFilterStudyId
-        if (studyId = "")
-            studyId := Palace_PickStudy()
-        if (studyId = "") {
-            Palace_ShowMainMenu()
-            return
-        }
-        g_PalaceFilterStudyId := studyId
-        pick := Palace_PickPalace(studyId)
-        if (pick = "") {
-            Palace_ShowMainMenu()
-            return
-        }
-        g_PalaceFilterPalaceId := pick
+        if (g_PalaceFilterStudyId = "")
+            Palace_ShowStudies()
+        else
+            Palace_ShowPalaces()
+        return
     }
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace — Beasts")
+    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", Palace_BrowseWindowTitle("Beasts"))
     g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.Add("Text", "x12 y10 w860",
-        Palace_PalaceLabel(g_PalaceFilterPalaceId)
-        . "   [A] add   [E] edit   Delete   [F] filter   Backspace menu")
+    g_PalaceGui.Add("Text", "x12 y10 w860", Palace_BrowseBarHints("Beasts"))
     g_PalaceBeastLv := g_PalaceGui.Add("ListView", "x12 y36 w860 h460 Grid",
         ["Peg", "Name", "Source", "Sensory", "Smashed", "Order"])
-    g_PalaceBeastLv.OnEvent("DoubleClick", (*) => Palace_BeastEdit())
+    g_PalaceBeastLv.OnEvent("DoubleClick", (*) => Palace_BrowseInto())
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
-    g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())
+    g_PalaceGui.OnEvent("Escape", (*) => Palace_BrowseUp())
     Palace_BeastRefresh()
     Palace_BindHotkeys([
         ["a", (*) => Palace_BeastAdd()],
         ["Insert", (*) => Palace_BeastAdd()],
         ["e", (*) => Palace_BeastEdit()],
         ["Delete", (*) => Palace_BeastDelete()],
-        ["f", (*) => Palace_BeastFilter()],
-        ["Backspace", (*) => Palace_ShowMainMenu()],
-        ["Escape", (*) => Palace_ShowMainMenu()]
+        ["Enter", (*) => Palace_BrowseInto()],
+        ["Backspace", (*) => Palace_BrowseUp()],
+        ["Escape", (*) => Palace_BrowseUp()]
     ])
     Palace_CenterGui(g_PalaceGui, 890, 540)
 }
+
 
 Palace_BeastFilter(*) {
     global g_PalaceFilterPalaceId, g_PalaceFilterStudyId

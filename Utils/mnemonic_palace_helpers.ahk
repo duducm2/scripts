@@ -11,6 +11,8 @@ global g_PalaceFilterBeastId := ""
 
 Palace_Terms() {
     return [
+        ["Browse",
+            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. Enter opens the next level; Backspace goes up. The top bar shows Study › Palace › Beast."],
         ["Study", "A broad subject domain (e.g. English, German, science, piano). Contains one or more Memory Palaces."],
         ["Memory Palace", "A location with exactly one generated image. Numbered within its Study."],
         ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
@@ -620,4 +622,122 @@ Palace_PickBeast(palaceId := "") {
         values.Push(b["id"])
     }
     return Palace_PickList("Pick beast", labels, values)
+}
+
+; --- Browse hierarchy (Study › Palace › Beast › Atoms) ---
+
+Palace_BrowseDepth() {
+    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    if (g_PalaceFilterBeastId != "")
+        return 3
+    if (g_PalaceFilterPalaceId != "")
+        return 2
+    if (g_PalaceFilterStudyId != "")
+        return 1
+    return 0
+}
+
+Palace_ClearFiltersToDepth(depth) {
+    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    if (depth < 1)
+        g_PalaceFilterStudyId := ""
+    if (depth < 2)
+        g_PalaceFilterPalaceId := ""
+    if (depth < 3)
+        g_PalaceFilterBeastId := ""
+}
+
+Palace_BreadcrumbText() {
+    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    parts := []
+    if (g_PalaceFilterStudyId != "")
+        parts.Push(Palace_StudyTitle(g_PalaceFilterStudyId))
+    if (g_PalaceFilterPalaceId != "")
+        parts.Push(Palace_PalaceLabel(g_PalaceFilterPalaceId))
+    if (g_PalaceFilterBeastId != "")
+        parts.Push(Palace_BeastLabel(g_PalaceFilterBeastId))
+    if (!parts.Length)
+        return ""
+    out := parts[1]
+    i := 2
+    while (i <= parts.Length) {
+        out .= " › " . parts[i]
+        i += 1
+    }
+    return out
+}
+
+Palace_BrowseBarHints(levelNoun) {
+    crumb := Palace_BreadcrumbText()
+    head := (crumb != "") ? crumb : levelNoun
+    return head . "   [A]/Insert add   [E] edit   Delete   Enter open   Backspace up"
+}
+
+Palace_BrowseWindowTitle(levelNoun) {
+    crumb := Palace_BreadcrumbText()
+    if (crumb != "")
+        return "Memory Palace — " . crumb
+    return "Memory Palace — " . levelNoun
+}
+
+Palace_ShowBrowse() {
+    depth := Palace_BrowseDepth()
+    if (depth = 0)
+        Palace_ShowStudies()
+    else if (depth = 1)
+        Palace_ShowPalaces()
+    else if (depth = 2)
+        Palace_ShowBeasts()
+    else
+        Palace_ShowAtoms()
+}
+
+Palace_BrowseUp(*) {
+    depth := Palace_BrowseDepth()
+    if (depth <= 0) {
+        Palace_ShowMainMenu()
+        return
+    }
+    Palace_ClearFiltersToDepth(depth - 1)
+    Palace_ShowBrowse()
+}
+
+Palace_BrowseInto(*) {
+    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    depth := Palace_BrowseDepth()
+    if (depth = 0) {
+        s := Palace_StudySelected()
+        if (!s) {
+            Palace_Notify("Select a study", 1200, BANNER_ACCENT_ERROR)
+            return
+        }
+        g_PalaceFilterStudyId := s["id"]
+        g_PalaceFilterPalaceId := ""
+        g_PalaceFilterBeastId := ""
+        Palace_SetSetting("General", "LastStudyId", s["id"])
+        Palace_ShowPalaces()
+        return
+    }
+    if (depth = 1) {
+        st := Palace_PalaceSelected()
+        if (!st) {
+            Palace_Notify("Select a Memory Palace", 1200, BANNER_ACCENT_ERROR)
+            return
+        }
+        g_PalaceFilterPalaceId := st["id"]
+        g_PalaceFilterBeastId := ""
+        Palace_ShowBeasts()
+        return
+    }
+    if (depth = 2) {
+        b := Palace_BeastSelected()
+        if (!b) {
+            Palace_Notify("Select a beast", 1200, BANNER_ACCENT_ERROR)
+            return
+        }
+        g_PalaceFilterBeastId := b["id"]
+        Palace_ShowAtoms()
+        return
+    }
+    Palace_AtomEdit()
 }
