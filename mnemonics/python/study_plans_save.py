@@ -32,11 +32,13 @@ def _format_mark(checked: bool) -> str:
 
 
 def _todo_checked_mark(mark: str) -> bool:
-    m = mark.strip()
-    return m.lower() == "x" or m == "✅"
+    m = (mark or "").strip().lower().replace(" ", "")
+    return m in ("x", "✅") or m.startswith("✅")
 
 
-def apply_progress_to_text(text: str, slug: str, progress: dict[str, bool]) -> tuple[str, int]:
+def apply_progress_to_text(
+    text: str, slug: str, progress: dict[str, bool]
+) -> tuple[str, int]:
     """Return updated markdown and count of lines changed."""
     lines = text.replace("\r\n", "\n").split("\n")
     stack: list[tuple[int, str]] = []
@@ -72,8 +74,10 @@ def apply_progress_to_text(text: str, slug: str, progress: dict[str, bool]) -> t
                 raw_text = tm.group("text").strip()
                 display = strip_backlog_decor(raw_text)
                 todo_id = _stable_id(slug, BACKLOG_SECTION_PATH, display)
-                checked = bool(progress[todo_id]) if todo_id in progress else _todo_checked_mark(
-                    tm.group("mark")
+                checked = (
+                    bool(progress[todo_id])
+                    if todo_id in progress
+                    else _todo_checked_mark(tm.group("mark"))
                 )
                 new_line = f"- [{_format_mark(checked)}] {display}"
             else:
@@ -96,18 +100,25 @@ def apply_progress_to_text(text: str, slug: str, progress: dict[str, bool]) -> t
             continue
 
         text_part = tm.group("text").strip()
-        todo_id = _stable_id(slug, current_section, text_part)
-        if todo_id not in progress:
-            continue
-
-        checked = bool(progress[todo_id])
+        display = strip_plan_topic_emoji(text_part)
+        todo_id = _stable_id(slug, current_section, display)
+        checked = (
+            bool(progress[todo_id])
+            if todo_id in progress
+            else _todo_checked_mark(tm.group("mark"))
+        )
         current_checked = _todo_checked_mark(tm.group("mark"))
-        if current_checked == checked:
-            continue
-
-        mark = _format_mark(checked)
-        lines[i] = f"- [{mark}] {text_part}"
-        changed += 1
+        new_line = f"- [{_format_mark(checked)}] {display}"
+        # Always rewrite when emoji present or checkbox/progress differs.
+        if lines[i] != new_line:
+            if (
+                todo_id not in progress
+                and current_checked == checked
+                and display == text_part
+            ):
+                continue
+            lines[i] = new_line
+            changed += 1
 
     return "\n".join(lines), changed
 
@@ -158,7 +169,9 @@ def append_backlog_item_to_text(text: str, item_text: str) -> tuple[str, bool]:
     return "\n".join(lines), True
 
 
-def remove_backlog_item_from_text(text: str, slug: str, todo_id: str) -> tuple[str, bool]:
+def remove_backlog_item_from_text(
+    text: str, slug: str, todo_id: str
+) -> tuple[str, bool]:
     """Remove the backlog line whose stable id matches todo_id. Returns (text, removed)."""
     target = (todo_id or "").strip()
     if not target:
@@ -331,7 +344,9 @@ def save_study_progress(
 
     slug = slug_filename(study.get("notes_rel_path") or "")
     progress = {str(t["id"]): bool(t.get("checked")) for t in todos if t.get("id")}
-    result = save_plan_by_slug(slug, progress, studies_root, output_dir, dry_run=dry_run)
+    result = save_plan_by_slug(
+        slug, progress, studies_root, output_dir, dry_run=dry_run
+    )
     result["study_id"] = study_id
     return result
 
@@ -426,7 +441,9 @@ def refresh_plan_payload(
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Save plan checkbox progress to source Markdown")
+    p = argparse.ArgumentParser(
+        description="Save plan checkbox progress to source Markdown"
+    )
     p.add_argument("--data-dir", type=Path, required=True)
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--studies-root", type=Path, default=None)
@@ -436,9 +453,7 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     studies_root = (
-        args.studies_root.resolve()
-        if args.studies_root
-        else default_studies_root()
+        args.studies_root.resolve() if args.studies_root else default_studies_root()
     )
     data_dir = args.data_dir.resolve()
     output_dir = args.output_dir.resolve()
@@ -448,7 +463,9 @@ def main(argv: list[str] | None = None) -> int:
     else:
         payload = json.loads(sys.stdin.read())
 
-    result = save_payload(payload, data_dir, studies_root, output_dir, dry_run=args.dry_run)
+    result = save_payload(
+        payload, data_dir, studies_root, output_dir, dry_run=args.dry_run
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result.get("ok") else 1
 

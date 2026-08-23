@@ -11,9 +11,9 @@
 
 ##### Passive Voice
 
-- [ ] 🟧 Forming passive sentences in all tenses
-- [ ] 🟧 Impersonal passives
-- [ ] 🟧 Causative passives
+- [ ] Forming passive sentences in all tenses
+- [ ] Impersonal passives
+- [ ] Causative passives
 
 **🔗 Resources:**
 
@@ -22,9 +22,9 @@
 
 ##### Articles and Determiners
 
-- [ ] 🟧 Definite and Indefinite Articles (a, an, the)
-- [ ] 🟧 Zero article usage
-- [ ] 🟧 Quantifiers (some, any, few, many, much, little, a lot of, etc.)
+- [ ] Definite and Indefinite Articles (a, an, the)
+- [ ] Zero article usage
+- [ ] Quantifiers (some, any, few, many, much, little, a lot of, etc.)
 
 **🔗 Resources:**
 
@@ -34,19 +34,19 @@
 
 ##### Sentence Structure
 
-- [ ] 🟧 Simple, Compound, and Complex sentences
-- [ ] 🟧 Compound-complex sentences
-- [ ] 🟧 Subject-Verb Agreement (Collective nouns, Indefinite pronouns, Inverted structures)
+- [ ] Simple, Compound, and Complex sentences
+- [ ] Compound-complex sentences
+- [ ] Subject-Verb Agreement (Collective nouns, Indefinite pronouns, Inverted structures)
 
 #### Month 2: Conditional & Modal Systems
 
 ##### Modal Verbs
 
-- [ ] 🟧 Can, Could, May, Might, Must, Shall, Should, Will, Would
-- [ ] 🟧 Ought to, Need (as modal)
-- [ ] 🟧 Modal perfects (must have done, should have done, could have done)
-- [ ] 🟧 Modal passives (can be done, should have been done)
-- [ ] 🟧 Expressing degrees of certainty and obligation
+- [ ] Can, Could, May, Might, Must, Shall, Should, Will, Would
+- [ ] Ought to, Need (as modal)
+- [ ] Modal perfects (must have done, should have done, could have done)
+- [ ] Modal passives (can be done, should have been done)
+- [ ] Expressing degrees of certainty and obligation
 
 **🔗 Resources:**
 
@@ -55,12 +55,12 @@
 
 ##### Conditional Sentences
 
-- [ ] 🟧 Zero Conditional (general truths)
-- [ ] 🟧 First Conditional (real future possibilities)
-- [ ] 🟧 Second Conditional (hypothetical present/future)
-- [ ] 🟧 Third Conditional (hypothetical past)
-- [ ] 🟧 Mixed Conditionals (Past condition → present result, Present condition → past result)
-- [ ] 🟧 Inverted conditionals (Had I known, Should you need, Were I you)
+- [ ] Zero Conditional (general truths)
+- [ ] First Conditional (real future possibilities)
+- [ ] Second Conditional (hypothetical present/future)
+- [ ] Third Conditional (hypothetical past)
+- [ ] Mixed Conditionals (Past condition → present result, Present condition → past result)
+- [ ] Inverted conditionals (Had I known, Should you need, Were I you)
 
 **🔗 Resources:**
 
@@ -71,10 +71,10 @@
 
 ##### Reported Speech
 
-- [ ] 🟧 Direct and Indirect Speech
-- [ ] 🟧 Changes in tenses, pronouns, and time expressions
-- [ ] 🟧 Reporting verbs (suggest, insist, recommend, claim, deny, etc.)
-- [ ] 🟧 Reporting questions and commands
+- [ ] Direct and Indirect Speech
+- [ ] Changes in tenses, pronouns, and time expressions
+- [ ] Reporting verbs (suggest, insist, recommend, claim, deny, etc.)
+- [ ] Reporting questions and commands
 
 **🔗 Resources:**
 
@@ -82,9 +82,9 @@
 
 ##### Causative Verbs / Causative Constructions
 
-- [ ] 🟧 Have/get something done
-- [ ] 🟧 Make/let/help + infinitive
-- [ ] 🟧 Get someone to do something
+- [ ] Have/get something done
+- [ ] Make/let/help + infinitive
+- [ ] Get someone to do something
 
 **🔗 Resources:**
 
@@ -92,8 +92,8 @@
 
 ##### Verbs of Perception
 
-- [ ] 🟧 See/watch/hear/feel + object + infinitive/gerund
-- [ ] 🟧 Notice, observe, perceive patterns
+- [ ] See/watch/hear/feel + object + infinitive/gerund
+- [ ] Notice, observe, perceive patterns
 
 **🔗 Resources:**
 
@@ -102,10 +102,10 @@
 
 ##### Infinitive vs. Gerund
 
-- [ ] 🟧 Verb patterns (verb + infinitive, verb + gerund, verb + object + infinitive)
-- [ ] 🟧 Meaning changes: remember to do vs. remember doing
-- [ ] 🟧 Stop to do vs. stop doing
-- [ ] 🟧 Try to do vs. try doing
+- [ ] Verb patterns (verb + infinitive, verb + gerund, verb + object + infinitive)
+- [ ] Meaning changes: remember to do vs. remember doing
+- [ ] Stop to do vs. stop doing
+- [ ] Try to do vs. try doing
 
 **🔗 Resources:**
 
@@ -113,11 +113,11 @@
 
 ##### Advanced Grammar Components
 
-- [ ] 🟧 Subjunctive Mood (I suggest that he be present, If I were you, It's essential that she arrive on time)
-- [ ] 🟧 Cleft Sentences (It was John who called, What I need is more time, All I want is peace)
-- [ ] 🟧 Inversion (Never have I seen such beauty, Not only did he arrive late, but he also forgot the documents, Rarely do we see such dedication)
-- [ ] 🟧 Ellipsis and Substitution (Avoiding repetition, So do I, Neither did he, One/ones substitution)
-- [ ] 🟧 Discourse Markers (Cohesion and coherence: However, therefore, furthermore, nevertheless, etc.)
+- [ ] Subjunctive Mood (I suggest that he be present, If I were you, It's essential that she arrive on time)
+- [ ] Cleft Sentences (It was John who called, What I need is more time, All I want is peace)
+- [ ] Inversion (Never have I seen such beauty, Not only did he arrive late, but he also forgot the documents, Rarely do we see such dedication)
+- [ ] Ellipsis and Substitution (Avoiding repetition, So do I, Neither did he, One/ones substitution)
+- [ ] Discourse Markers (Cohesion and coherence: However, therefore, furthermore, nevertheless, etc.)
 
 **🔗 Resources:**
 
@@ -134,10 +134,10 @@
 
 ##### Relative Clauses
 
-- [ ] 🟧 Defining and Non-defining relative clauses
-- [ ] 🟧 Relative pronouns (who, whom, whose, which, that, where, when, why)
-- [ ] 🟧 Reduced relative clauses (The man standing there...)
-- [ ] 🟧 Prepositions in relative clauses (The house in which I live)
+- [ ] Defining and Non-defining relative clauses
+- [ ] Relative pronouns (who, whom, whose, which, that, where, when, why)
+- [ ] Reduced relative clauses (The man standing there...)
+- [ ] Prepositions in relative clauses (The house in which I live)
 
 **🔗 Resources:**
 
@@ -147,15 +147,15 @@
 
 ##### Conjunctions and Linking Words
 
-- [ ] 🟧 Coordinating conjunctions (FANBOYS)
-- [ ] 🟧 Subordinating conjunctions (although, because, unless, whereas, while, since, etc.)
-- [ ] 🟧 Correlative conjunctions (both...and, either...or, not only...but also, neither...nor)
-- [ ] 🟧 Transitional words (Addition, Contrast, Cause/Effect, Time)
+- [ ] Coordinating conjunctions (FANBOYS)
+- [ ] Subordinating conjunctions (although, because, unless, whereas, while, since, etc.)
+- [ ] Correlative conjunctions (both...and, either...or, not only...but also, neither...nor)
+- [ ] Transitional words (Addition, Contrast, Cause/Effect, Time)
 
 ##### Advanced Constructions
 
-- [ ] 🟧 Participle Clauses (Having finished the work, he left; Being tired, she went to bed early; The book written by him)
-- [ ] 🟧 Nominalization (Converting verbs to nouns for academic/formal style)
+- [ ] Participle Clauses (Having finished the work, he left; Being tired, she went to bed early; The book written by him)
+- [ ] Nominalization (Converting verbs to nouns for academic/formal style)
 
 **🔗 Resources:**
 
@@ -166,10 +166,10 @@
 
 ##### Nouns and Plurals
 
-- [ ] 🟧 Regular and Irregular plurals
-- [ ] 🟧 Countable and Uncountable nouns
-- [ ] 🟧 Collective nouns (team, family, government)
-- [ ] 🟧 Compound nouns
+- [ ] Regular and Irregular plurals
+- [ ] Countable and Uncountable nouns
+- [ ] Collective nouns (team, family, government)
+- [ ] Compound nouns
 
 **🔗 Resources:**
 
@@ -177,10 +177,10 @@
 
 ##### Pronouns
 
-- [ ] 🟧 Subject, Object, Possessive Pronouns
-- [ ] 🟧 Reflexive and Emphatic Pronouns
-- [ ] 🟧 Indefinite pronouns (everyone, someone, anybody, etc.)
-- [ ] 🟧 Relative pronouns
+- [ ] Subject, Object, Possessive Pronouns
+- [ ] Reflexive and Emphatic Pronouns
+- [ ] Indefinite pronouns (everyone, someone, anybody, etc.)
+- [ ] Relative pronouns
 
 **🔗 Resources:**
 
@@ -188,10 +188,10 @@
 
 ##### Adjectives and Adverbs
 
-- [ ] 🟧 Comparative and Superlative forms
-- [ ] 🟧 Position in sentences
-- [ ] 🟧 Order of adjectives (opinion, size, age, shape, color, origin, material, purpose)
-- [ ] 🟧 Adverbs of manner, frequency, time, place, degree
+- [ ] Comparative and Superlative forms
+- [ ] Position in sentences
+- [ ] Order of adjectives (opinion, size, age, shape, color, origin, material, purpose)
+- [ ] Adverbs of manner, frequency, time, place, degree
 
 **🔗 Resources:**
 
@@ -199,8 +199,8 @@
 
 ##### Adverbs vs. Prepositions
 
-- [ ] 🟧 Prepositions relate nouns/pronouns to other parts of a sentence
-- [ ] 🟧 Adverbs modify verbs, adjectives, or other adverbs
+- [ ] Prepositions relate nouns/pronouns to other parts of a sentence
+- [ ] Adverbs modify verbs, adjectives, or other adverbs
 
 **🔗 Resources:**
 
@@ -210,9 +210,9 @@
 
 ##### Prepositions
 
-- [ ] 🟧 Prepositions of time, place, and direction
-- [ ] 🟧 Prepositional phrases
-- [ ] 🟧 Preposition of phrases functioning as adverbial phrases (e.g., "read by", "work by")
+- [ ] Prepositions of time, place, and direction
+- [ ] Prepositional phrases
+- [ ] Preposition of phrases functioning as adverbial phrases (e.g., "read by", "work by")
 
 **🔗 Resources:**
 
@@ -220,11 +220,11 @@
 
 ##### Phrasal Verbs
 
-- [ ] 🟧 Common phrasal verbs and their meanings
-- [ ] 🟧 Usage in sentences
-- [ ] 🟧 Separable vs. inseparable phrasal verbs
-- [ ] 🟧 Three-word phrasal verbs (put up with, look forward to, get away with)
-- [ ] 🟧 Phrasal verbs by category (Movement, Communication, Business)
+- [ ] Common phrasal verbs and their meanings
+- [ ] Usage in sentences
+- [ ] Separable vs. inseparable phrasal verbs
+- [ ] Three-word phrasal verbs (put up with, look forward to, get away with)
+- [ ] Phrasal verbs by category (Movement, Communication, Business)
 
 **🔗 Resources:**
 
@@ -232,13 +232,13 @@
 
 ##### Advanced Vocabulary Components
 
-- [ ] 🟧 Collocations (Strong tea, Heavy rain, Make a decision)
-- [ ] 🟧 Idioms and Expressions (emotions, business, daily life, relationships)
-- [ ] 🟧 Academic Word List (AWL) - 570 word families
-- [ ] 🟧 Synonyms and Antonyms for precision and variety
-- [ ] 🟧 Word Formation (Prefixes, Suffixes, Latin/Greek roots)
-- [ ] 🟧 Register and Formality (Formal vs. informal vocabulary)
-- [ ] 🟧 Topic-Specific Vocabulary (Business, Technology, Health, Environment, Culture)
+- [ ] Collocations (Strong tea, Heavy rain, Make a decision)
+- [ ] Idioms and Expressions (emotions, business, daily life, relationships)
+- [ ] Academic Word List (AWL) - 570 word families
+- [ ] Synonyms and Antonyms for precision and variety
+- [ ] Word Formation (Prefixes, Suffixes, Latin/Greek roots)
+- [ ] Register and Formality (Formal vs. informal vocabulary)
+- [ ] Topic-Specific Vocabulary (Business, Technology, Health, Environment, Culture)
 
 **🔗 Resources:**
 
@@ -252,17 +252,17 @@
 
 ##### Confusing Word Pairs
 
-- [ ] 🟧 under, underneath, below, beneath
-- [ ] 🟧 for vs. to (Purpose, Recipient, Importance)
-- [ ] 🟧 someone vs. somebody
-- [ ] 🟧 thus / therefore / hence
-- [ ] 🟧 tough, though, thought, through, thorough, throughout
-- [ ] 🟧 affect vs. effect
-- [ ] 🟧 advice vs. advise
-- [ ] 🟧 complement vs. compliment
-- [ ] 🟧 lie vs. lay
-- [ ] 🟧 rise vs. raise
-- [ ] 🟧 sit vs. set
+- [ ] under, underneath, below, beneath
+- [ ] for vs. to (Purpose, Recipient, Importance)
+- [ ] someone vs. somebody
+- [ ] thus / therefore / hence
+- [ ] tough, though, thought, through, thorough, throughout
+- [ ] affect vs. effect
+- [ ] advice vs. advise
+- [ ] complement vs. compliment
+- [ ] lie vs. lay
+- [ ] rise vs. raise
+- [ ] sit vs. set
 
 **🔗 Resources:**
 
@@ -275,7 +275,7 @@
 
 ##### Useful Words
 
-- [ ] 🟧 Due (Expected, Due diligence)
+- [ ] Due (Expected, Due diligence)
 
 ## Phase 2: Productive Skills Excellence (Months 4-9)
 
@@ -285,19 +285,19 @@
 
 ##### Phonetics and Phonology
 
-- [ ] 🟧 Individual sounds (Vowels, Consonants, Diphthongs)
-- [ ] 🟧 Minimal pairs practice
+- [ ] Individual sounds (Vowels, Consonants, Diphthongs)
+- [ ] Minimal pairs practice
 
 ##### Suprasegmental Features
 
-- [ ] 🟧 Word stress patterns
-- [ ] 🟧 Sentence stress and rhythm
-- [ ] 🟧 Intonation patterns
-- [ ] 🟧 Connected speech (Linking, Elision, Assimilation)
+- [ ] Word stress patterns
+- [ ] Sentence stress and rhythm
+- [ ] Intonation patterns
+- [ ] Connected speech (Linking, Elision, Assimilation)
 
 ##### Accent Reduction
 
-- [ ] 🟧 Target accent selection and practice with native models
+- [ ] Target accent selection and practice with native models
 
 **🔗 Resources:**
 
@@ -307,21 +307,21 @@
 
 ##### Discourse Competence
 
-- [ ] 🟧 Turn-taking in conversations
-- [ ] 🟧 Topic development and coherence
+- [ ] Turn-taking in conversations
+- [ ] Topic development and coherence
 
 ##### Functional Language
 
-- [ ] 🟧 Expressing opinions, Agreeing/Disagreeing
-- [ ] 🟧 Making suggestions, Giving advice
-- [ ] 🟧 Describing, narrating, explaining
-- [ ] 🟧 Presenting arguments and persuading
+- [ ] Expressing opinions, Agreeing/Disagreeing
+- [ ] Making suggestions, Giving advice
+- [ ] Describing, narrating, explaining
+- [ ] Presenting arguments and persuading
 
 ##### Conversational Strategies
 
-- [ ] 🟧 Fillers and hesitation devices
-- [ ] 🟧 Clarification and repair strategies
-- [ ] 🟧 Paraphrasing and circumlocution
+- [ ] Fillers and hesitation devices
+- [ ] Clarification and repair strategies
+- [ ] Paraphrasing and circumlocution
 
 **🔗 Resources:**
 
@@ -332,21 +332,21 @@
 
 ##### Presentations and Public Speaking
 
-- [ ] 🟧 Structure (Introduction, Body, Conclusion)
-- [ ] 🟧 Signposting language
-- [ ] 🟧 Visual aids and body language
+- [ ] Structure (Introduction, Body, Conclusion)
+- [ ] Signposting language
+- [ ] Visual aids and body language
 
 ##### Debate and Argumentation
 
-- [ ] 🟧 Constructing logical arguments (Claim, Evidence, Reasoning)
-- [ ] 🟧 Counterarguments and rebuttals
-- [ ] 🟧 Logical fallacies to avoid
+- [ ] Constructing logical arguments (Claim, Evidence, Reasoning)
+- [ ] Counterarguments and rebuttals
+- [ ] Logical fallacies to avoid
 
 ##### Sociolinguistic Competence
 
-- [ ] 🟧 Register appropriateness (Formal vs. Informal)
-- [ ] 🟧 Cultural references and pragmatics
-- [ ] 🟧 Humor, sarcasm, and indirect speech
+- [ ] Register appropriateness (Formal vs. Informal)
+- [ ] Cultural references and pragmatics
+- [ ] Humor, sarcasm, and indirect speech
 
 **🔗 Resources:**
 
@@ -357,9 +357,9 @@
 
 #### Months 4-6: Active Listening Skills
 
-- [ ] 🟧 Bottom-Up Processing (Sounds, connected speech, word boundaries)
-- [ ] 🟧 Top-Down Processing (Context, prior knowledge, implied meaning)
-- [ ] 🟧 Listening for Gist, Specific Information, Detail, and Inference
+- [ ] Bottom-Up Processing (Sounds, connected speech, word boundaries)
+- [ ] Top-Down Processing (Context, prior knowledge, implied meaning)
+- [ ] Listening for Gist, Specific Information, Detail, and Inference
 
 **🔗 Resources:**
 
@@ -367,9 +367,9 @@
 
 #### Months 7-9: Advanced Listening
 
-- [ ] 🟧 Accent Varieties (British, American, Australian, World Englishes)
-- [ ] 🟧 Authentic Materials (News, Documentaries, Lectures, Movies, Podcasts)
-- [ ] 🟧 Note-Taking Skills (Cornell method, abbreviations)
+- [ ] Accent Varieties (British, American, Australian, World Englishes)
+- [ ] Authentic Materials (News, Documentaries, Lectures, Movies, Podcasts)
+- [ ] Note-Taking Skills (Cornell method, abbreviations)
 
 **🔗 Resources:**
 
@@ -379,9 +379,9 @@
 
 #### Months 4-6: Writing Fundamentals
 
-- [ ] 🟧 Writing Process (Planning, Drafting, Revising, Proofreading)
-- [ ] 🟧 Paragraph Structure (Topic sentences, Supporting details, Transitions)
-- [ ] 🟧 Text Types (Descriptive, Narrative, Expository, Persuasive)
+- [ ] Writing Process (Planning, Drafting, Revising, Proofreading)
+- [ ] Paragraph Structure (Topic sentences, Supporting details, Transitions)
+- [ ] Text Types (Descriptive, Narrative, Expository, Persuasive)
 
 **🔗 Resources:**
 
@@ -390,9 +390,9 @@
 
 #### Months 7-9: Advanced Writing Skills
 
-- [ ] 🟧 Academic Writing (Essay structure, Thesis statements, Citation/APA/MLA)
-- [ ] 🟧 Professional Writing (Emails, Reports, Proposals, CVs)
-- [ ] 🟧 Creative Writing (Short stories, Descriptive techniques, Plot development)
+- [ ] Academic Writing (Essay structure, Thesis statements, Citation/APA/MLA)
+- [ ] Professional Writing (Emails, Reports, Proposals, CVs)
+- [ ] Creative Writing (Short stories, Descriptive techniques, Plot development)
 
 **🔗 Resources:**
 
@@ -403,9 +403,9 @@
 
 #### Months 4-6: Reading Skills Development
 
-- [ ] 🟧 Reading Strategies (Skimming, Scanning, Intensive, Extensive)
-- [ ] 🟧 Vocabulary in Context (Inferring meaning, Word families)
-- [ ] 🟧 Text Organization (Main ideas, Text structure)
+- [ ] Reading Strategies (Skimming, Scanning, Intensive, Extensive)
+- [ ] Vocabulary in Context (Inferring meaning, Word families)
+- [ ] Text Organization (Main ideas, Text structure)
 
 **🔗 Resources:**
 
@@ -414,9 +414,9 @@
 
 #### Months 7-9: Advanced Reading
 
-- [ ] 🟧 Critical Reading (Analyzing arguments, Evaluating evidence, Identifying bias)
-- [ ] 🟧 Text Types (Fiction, Non-fiction, Academic, Professional)
-- [ ] 🟧 Speed Reading (Chunking, reducing subvocalization)
+- [ ] Critical Reading (Analyzing arguments, Evaluating evidence, Identifying bias)
+- [ ] Text Types (Fiction, Non-fiction, Academic, Professional)
+- [ ] Speed Reading (Chunking, reducing subvocalization)
 
 **🔗 Resources:**
 
@@ -428,8 +428,8 @@
 
 #### Month 10: Functional Integration
 
-- [ ] 🟧 Task-Based Learning (Job interviews, Negotiations, Presentations)
-- [ ] 🟧 Cultural Competence (Cultural references, Pragmatics, Cross-cultural communication)
+- [ ] Task-Based Learning (Job interviews, Negotiations, Presentations)
+- [ ] Cultural Competence (Cultural references, Pragmatics, Cross-cultural communication)
 
 **🔗 Resources:**
 
@@ -437,11 +437,11 @@
 
 #### Month 11: Specialized English
 
-- [ ] 🟧 Business English (Meetings, Negotiations, Presentations)
-- [ ] 🟧 Academic English (Research writing, Seminars, AWL)
-- [ ] 🟧 Technical English (Documentation, Industry-specific vocabulary)
-- [ ] 🟧 Medical/Legal English (Specialized terminology)
-- [ ] 🟧 Advanced Discourse Analysis (Spoken and written discourse)
+- [ ] Business English (Meetings, Negotiations, Presentations)
+- [ ] Academic English (Research writing, Seminars, AWL)
+- [ ] Technical English (Documentation, Industry-specific vocabulary)
+- [ ] Medical/Legal English (Specialized terminology)
+- [ ] Advanced Discourse Analysis (Spoken and written discourse)
 
 **🔗 Resources:**
 
@@ -454,90 +454,90 @@
 
 #### Month 12: Mastery & Certification
 
-- [ ] 🟧 Comprehensive Review of weak areas
-- [ ] 🟧 Certification Preparation (Cambridge CPE, IELTS, TOEFL)
-- [ ] 🟧 Portfolio Development (Writing/Speaking samples, Learning journal)
+- [ ] Comprehensive Review of weak areas
+- [ ] Certification Preparation (Cambridge CPE, IELTS, TOEFL)
+- [ ] Portfolio Development (Writing/Speaking samples, Learning journal)
 
 ## Additional Components
 
 ### 10. Fluency & Confidence
 
-- [ ] 🟧 Fluency Development (Natural rhythm, smooth transitions)
-- [ ] 🟧 Confidence Building (Overcoming fear of mistakes, self-efficacy)
+- [ ] Fluency Development (Natural rhythm, smooth transitions)
+- [ ] Confidence Building (Overcoming fear of mistakes, self-efficacy)
 
 ## Resources & Tools
 
 ### Assessment Tools
 
-- [ ] 🟧 Self-Assessment (CEFR grid, Cambridge placement, EF SET)
-- [ ] 🟧 Official Tests (Cambridge, IELTS, TOEFL, TOEIC)
+- [ ] Self-Assessment (CEFR grid, Cambridge placement, EF SET)
+- [ ] Official Tests (Cambridge, IELTS, TOEFL, TOEIC)
 
 ### Grammar Resources
 
-- [ ] 🟧 Textbooks (Advanced Grammar in Use, Practical English Usage)
-- [ ] 🟧 Online (Grammarly, Purdue OWL, British Council)
+- [ ] Textbooks (Advanced Grammar in Use, Practical English Usage)
+- [ ] Online (Grammarly, Purdue OWL, British Council)
 
 ### Vocabulary Resources
 
-- [ ] 🟧 Dictionaries (Oxford, Cambridge, Merriam-Webster)
-- [ ] 🟧 Lists (AWL, Oxford 3000/5000)
-- [ ] 🟧 Tools (Anki, Quizlet, Memrise)
+- [ ] Dictionaries (Oxford, Cambridge, Merriam-Webster)
+- [ ] Lists (AWL, Oxford 3000/5000)
+- [ ] Tools (Anki, Quizlet, Memrise)
 
 ### Pronunciation Resources
 
-- [ ] 🟧 Textbooks (English Pronunciation in Use, Ship or Sheep?)
-- [ ] 🟧 Online (Forvo, YouGlish, Sounds of Speech)
-- [ ] 🟧 Apps (ELSA Speak, Speechling)
+- [ ] Textbooks (English Pronunciation in Use, Ship or Sheep?)
+- [ ] Online (Forvo, YouGlish, Sounds of Speech)
+- [ ] Apps (ELSA Speak, Speechling)
 
 ### Speaking Resources
 
-- [ ] 🟧 Language Exchange (iTalki, Tandem, HelloTalk)
-- [ ] 🟧 Practice Materials (TED Talks, Debate.org, Toastmasters)
+- [ ] Language Exchange (iTalki, Tandem, HelloTalk)
+- [ ] Practice Materials (TED Talks, Debate.org, Toastmasters)
 
 ### Listening Resources
 
-- [ ] 🟧 News (BBC, VOA, NPR, The Economist)
-- [ ] 🟧 Podcasts (6 Minute English, This American Life, Radiolab)
-- [ ] 🟧 Academic (Coursera, edX, MIT OCW, Khan Academy)
-- [ ] 🟧 Entertainment (Netflix, YouTube, Audiobooks)
+- [ ] News (BBC, VOA, NPR, The Economist)
+- [ ] Podcasts (6 Minute English, This American Life, Radiolab)
+- [ ] Academic (Coursera, edX, MIT OCW, Khan Academy)
+- [ ] Entertainment (Netflix, YouTube, Audiobooks)
 
 ### Reading Resources
 
-- [ ] 🟧 News & Magazines (The Economist, The Atlantic, The New Yorker, The Guardian)
-- [ ] 🟧 Literature (Project Gutenberg, Goodreads)
-- [ ] 🟧 Academic (Google Scholar, JSTOR, ResearchGate)
-- [ ] 🟧 Online (Medium, Quora, Reddit)
+- [ ] News & Magazines (The Economist, The Atlantic, The New Yorker, The Guardian)
+- [ ] Literature (Project Gutenberg, Goodreads)
+- [ ] Academic (Google Scholar, JSTOR, ResearchGate)
+- [ ] Online (Medium, Quora, Reddit)
 
 ### Writing Resources
 
-- [ ] 🟧 Tools (Grammarly, Hemingway, ProWritingAid)
-- [ ] 🟧 Guides (Purdue OWL, The Elements of Style)
+- [ ] Tools (Grammarly, Hemingway, ProWritingAid)
+- [ ] Guides (Purdue OWL, The Elements of Style)
 
 ## Progress Tracking
 
 ### Weekly Checklist
 
-- [ ] 🟧 7 hours of total study time completed
-- [ ] 🟧 3.5 hours speaking/pronunciation practice (30 min daily)
-- [ ] 🟧 Grammar exercises completed
-- [ ] 🟧 Vocabulary: 50-70 new words/phrases learned
-- [ ] 🟧 Writing: 2-3 pieces completed
-- [ ] 🟧 Reading: 3-4 articles/chapters
-- [ ] 🟧 Listening: Daily practice completed
-- [ ] 🟧 Self-assessment completed
+- [ ] 7 hours of total study time completed
+- [ ] 3.5 hours speaking/pronunciation practice (30 min daily)
+- [ ] Grammar exercises completed
+- [ ] Vocabulary: 50-70 new words/phrases learned
+- [ ] Writing: 2-3 pieces completed
+- [ ] Reading: 3-4 articles/chapters
+- [ ] Listening: Daily practice completed
+- [ ] Self-assessment completed
 
 ### Monthly Milestones
 
-- [ ] 🟧 Practice test completed and scored
-- [ ] 🟧 Weak areas identified and addressed
-- [ ] 🟧 New learning materials/resources explored
-- [ ] 🟧 Speaking session recorded and self-assessed
-- [ ] 🟧 Progress review and plan adjustment
+- [ ] Practice test completed and scored
+- [ ] Weak areas identified and addressed
+- [ ] New learning materials/resources explored
+- [ ] Speaking session recorded and self-assessed
+- [ ] Progress review and plan adjustment
 
 ### Quarterly Goals
 
-- [ ] 🟧 Comprehensive skills assessment
-- [ ] 🟧 Adjust plan based on progress
-- [ ] 🟧 Celebrate achievements
-- [ ] 🟧 Set new targets for next quarter
-- [ ] 🟧 Review and update resources
+- [ ] Comprehensive skills assessment
+- [ ] Adjust plan based on progress
+- [ ] Celebrate achievements
+- [ ] Set new targets for next quarter
+- [ ] Review and update resources

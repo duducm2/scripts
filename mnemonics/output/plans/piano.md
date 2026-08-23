@@ -14,10 +14,10 @@
 
 #### Posture, Bench Setup, Hand Shape, and Wrist Alignment
 
-- [✅] 🟧 Establish non-collapsed wrist alignment
-- [✅] 🟧 Set bench height to level with elbows
-- [✅] 🟧 Master arm gravity technique over muscular force
-- [ ] 🟧 Daily practice audit for postural consistency
+- [✅] Establish non-collapsed wrist alignment
+- [✅] Set bench height to level with elbows
+- [✅] Master arm gravity technique over muscular force
+- [ ] Daily practice audit for postural consistency
 
 **🔗 Resources:**
 
@@ -27,10 +27,10 @@
 
 #### Keyboard Geography and Note Names
 
-- [ ] 🟧 Recognize keyboard via black-key clustering (2s and 3s)
-- [ ] 🟧 Master note names across all octaves
-- [ ] 🟧 Develop tactile proprioception without visual dependency
-- [ ] 🟧 Navigate entire 88-key range fluently
+- [ ] Recognize keyboard via black-key clustering (2s and 3s)
+- [ ] Master note names across all octaves
+- [ ] Develop tactile proprioception without visual dependency
+- [ ] Navigate entire 88-key range fluently
 
 **🔗 Resources:**
 
@@ -42,10 +42,10 @@
 
 #### Treble Clef Reading
 
-- [ ] 🟧 Master line notes (E-G-B-D-F) and space notes (F-A-C-E)
-- [ ] 🟧 Read treble staff via intervallic relationships (not mnemonics)
-- [ ] 🟧 Achieve reflexive note-to-key mapping
-- [ ] 🟧 Isolate treble reading from bass interference
+- [ ] Master line notes (E-G-B-D-F) and space notes (F-A-C-E)
+- [ ] Read treble staff via intervallic relationships (not mnemonics)
+- [ ] Achieve reflexive note-to-key mapping
+- [ ] Isolate treble reading from bass interference
 
 **🔗 Resources:**
 
@@ -55,10 +55,10 @@
 
 #### Bass Clef Reading
 
-- [ ] 🟧 Master F-line anchor and surrounding notes
-- [ ] 🟧 Prevent cognitive interference from treble dominance
-- [ ] 🟧 Read bass staff fluidly in lower registers
-- [ ] 🟧 Establish independent left-hand reading process
+- [ ] Master F-line anchor and surrounding notes
+- [ ] Prevent cognitive interference from treble dominance
+- [ ] Read bass staff fluidly in lower registers
+- [ ] Establish independent left-hand reading process
 
 **🔗 Resources:**
 
@@ -70,10 +70,10 @@
 
 #### Rhythm Fundamentals and Meter
 
-- [ ] 🟧 Master note values (whole, half, quarter, eighth) and rests
-- [ ] 🟧 Count simple meter (4/4, 3/4) and compound time (6/8)
-- [ ] 🟧 Vocalize and clap rhythms with metronome accuracy
-- [ ] 🟧 Distinguish simple vs. compound subdivisions
+- [ ] Master note values (whole, half, quarter, eighth) and rests
+- [ ] Count simple meter (4/4, 3/4) and compound time (6/8)
+- [ ] Vocalize and clap rhythms with metronome accuracy
+- [ ] Distinguish simple vs. compound subdivisions
 
 **🔗 Resources:**
 
@@ -83,10 +83,10 @@
 
 #### Hands-Together Coordination
 
-- [ ] 🟧 Break neurological dependency between hands
-- [ ] 🟧 Execute bimanual drills (parallel motion, asymmetrical rhythms)
-- [ ] 🟧 Eliminate flamming (uneven hand strikes)
-- [ ] 🟧 Build sustained bimanual independence
+- [ ] Break neurological dependency between hands
+- [ ] Execute bimanual drills (parallel motion, asymmetrical rhythms)
+- [ ] Eliminate flamming (uneven hand strikes)
+- [ ] Build sustained bimanual independence
 
 **🔗 Resources:**
 
@@ -100,11 +100,11 @@
 
 #### Articulation and Dynamics
 
-- [ ] 🟧 Execute staccato (detached, wrist-bounced)
-- [ ] 🟧 Execute legato (smooth weight transfer, connected)
-- [ ] 🟧 Apply crescendo and decrescendo arcs
-- [ ] 🟧 Master tenuto, accents, and ties
-- [ ] 🟧 Generate volume via arm gravity, not finger flexion
+- [ ] Execute staccato (detached, wrist-bounced)
+- [ ] Execute legato (smooth weight transfer, connected)
+- [ ] Apply crescendo and decrescendo arcs
+- [ ] Master tenuto, accents, and ties
+- [ ] Generate volume via arm gravity, not finger flexion
 
 **🔗 Resources:**
 
@@ -114,10 +114,10 @@
 
 #### Major Scales (C, G, D) and Finger Independence
 
-- [ ] 🟧 Master standard scale fingerings with thumb-tuck positioning
-- [ ] 🟧 Execute Phillips isolation exercise (thumb locked, other digits independent)
-- [ ] 🟧 Achieve even, fluid scale execution in two octaves
-- [ ] 🟧 Develop independent finger strength without sympathetic tension
+- [ ] Master standard scale fingerings with thumb-tuck positioning
+- [ ] Execute Phillips isolation exercise (thumb locked, other digits independent)
+- [ ] Achieve even, fluid scale execution in two octaves
+- [ ] Develop independent finger strength without sympathetic tension
 
 **🔗 Resources:**
 
@@ -129,11 +129,11 @@
 
 #### Intervals and Key Signatures
 
-- [ ] 🟧 Identify all diatonic intervals (2nds through 8ves)
-- [ ] 🟧 Map interval hand-spans kinesthetically
-- [ ] 🟧 Master major key signatures (up to 3 sharps/flats)
-- [ ] 🟧 Correlate staff-based intervals to keyboard topology
-- [ ] 🟧 Read key signature implications fluently
+- [ ] Identify all diatonic intervals (2nds through 8ves)
+- [ ] Map interval hand-spans kinesthetically
+- [ ] Master major key signatures (up to 3 sharps/flats)
+- [ ] Correlate staff-based intervals to keyboard topology
+- [ ] Read key signature implications fluently
 
 **🔗 Resources:**
 
@@ -143,11 +143,11 @@
 
 #### Triads and Inversions
 
-- [ ] 🟧 Master major and minor triads (root position)
-- [ ] 🟧 Execute first inversions (3rd in bass)
-- [ ] 🟧 Execute second inversions (5th in bass)
-- [ ] 🟧 Build muscle memory via "blind practice"
-- [ ] 🟧 Establish smooth voice-leading transitions
+- [ ] Master major and minor triads (root position)
+- [ ] Execute first inversions (3rd in bass)
+- [ ] Execute second inversions (5th in bass)
+- [ ] Build muscle memory via "blind practice"
+- [ ] Establish smooth voice-leading transitions
 
 **🔗 Resources:**
 
@@ -159,11 +159,11 @@
 
 #### Common Chord Progressions and Lead Sheets
 
-- [ ] 🟧 Master standard progressions (I-V-vi-IV, I-IV-V-I, vi-IV-I-V)
-- [ ] 🟧 Map inversions for smooth geometric hand movement
-- [ ] 🟧 Read lead-sheet symbols fluently
-- [ ] 🟧 Maintain common tones between chords
-- [ ] 🟧 Restrict hand movement to max one-third interval
+- [ ] Master standard progressions (I-V-vi-IV, I-IV-V-I, vi-IV-I-V)
+- [ ] Map inversions for smooth geometric hand movement
+- [ ] Read lead-sheet symbols fluently
+- [ ] Maintain common tones between chords
+- [ ] Restrict hand movement to max one-third interval
 
 **🔗 Resources:**
 
@@ -173,11 +173,11 @@
 
 #### Sustain Pedal Technique
 
-- [ ] 🟧 Master syncopated pedaling (foot lifts as hands strike new chord)
-- [ ] 🟧 Avoid muddy harmonic accumulation
-- [ ] 🟧 Prevent jarring silence gaps
-- [ ] 🟧 Isolate lower-body coordination
-- [ ] 🟧 Execute delayed pedal timing
+- [ ] Master syncopated pedaling (foot lifts as hands strike new chord)
+- [ ] Avoid muddy harmonic accumulation
+- [ ] Prevent jarring silence gaps
+- [ ] Isolate lower-body coordination
+- [ ] Execute delayed pedal timing
 
 **🔗 Resources:**
 
@@ -191,11 +191,11 @@
 
 #### Phrase Shaping and Musical Expression
 
-- [ ] 🟧 Identify phrase boundaries and structure
-- [ ] 🟧 Apply crescendo toward phrase apex
-- [ ] 🟧 Execute decrescendo at phrase resolution
-- [ ] 🟧 Implement wrist-lift "breath" at phrase boundaries
-- [ ] 🟧 Eliminate typewriter technique (uniform velocity)
+- [ ] Identify phrase boundaries and structure
+- [ ] Apply crescendo toward phrase apex
+- [ ] Execute decrescendo at phrase resolution
+- [ ] Implement wrist-lift "breath" at phrase boundaries
+- [ ] Eliminate typewriter technique (uniform velocity)
 
 **🔗 Resources:**
 
@@ -205,11 +205,11 @@
 
 #### Sight-Reading System and Pattern Chunking
 
-- [ ] 🟧 Implement daily graded sight-reading routine
-- [ ] 🟧 Chunk macroscopic patterns (not individual notes)
-- [ ] 🟧 Apply Gestalt perception to score processing
-- [ ] 🟧 Enforce "Continuity Always" rule (no stopping for corrections)
-- [ ] 🟧 Achieve fluent 45-second visual audit
+- [ ] Implement daily graded sight-reading routine
+- [ ] Chunk macroscopic patterns (not individual notes)
+- [ ] Apply Gestalt perception to score processing
+- [ ] Enforce "Continuity Always" rule (no stopping for corrections)
+- [ ] Achieve fluent 45-second visual audit
 
 **🔗 Resources:**
 
@@ -221,12 +221,12 @@
 
 #### Arpeggios and Accompaniment Patterns
 
-- [ ] 🟧 Master five core patterns (Sunrise, Waterfall, Heartbeat, Wave, Flow)
-- [ ] 🟧 Execute Sunrise (ascending notes)
-- [ ] 🟧 Execute Heartbeat (Alberti bass 1-5-3-5)
-- [ ] 🟧 Transition smoothly between pattern types
-- [ ] 🟧 Prevent wrist contortion and excessive stretching
-- [ ] 🟧 Maintain rhythmic evenness over speed
+- [ ] Master five core patterns (Sunrise, Waterfall, Heartbeat, Wave, Flow)
+- [ ] Execute Sunrise (ascending notes)
+- [ ] Execute Heartbeat (Alberti bass 1-5-3-5)
+- [ ] Transition smoothly between pattern types
+- [ ] Prevent wrist contortion and excessive stretching
+- [ ] Maintain rhythmic evenness over speed
 
 **🔗 Resources:**
 
@@ -238,11 +238,11 @@
 
 #### Style Basics: Baroque, Classical, Romantic
 
-- [ ] 🟧 Execute Baroque articulation (crisp, light, unpedaled)
-- [ ] 🟧 Apply Classical phrasing (structured, even dynamics)
-- [ ] 🟧 Explore Romantic tone (rich, variable rubato, complex pedaling)
-- [ ] 🟧 Master pedal-ban rule for Baroque/early Classical
-- [ ] 🟧 Select one accessible piece per era
+- [ ] Execute Baroque articulation (crisp, light, unpedaled)
+- [ ] Apply Classical phrasing (structured, even dynamics)
+- [ ] Explore Romantic tone (rich, variable rubato, complex pedaling)
+- [ ] Master pedal-ban rule for Baroque/early Classical
+- [ ] Select one accessible piece per era
 
 **🔗 Resources:**
 
@@ -256,11 +256,11 @@
 
 #### Ear Training (Intervals, Chord Quality)
 
-- [ ] 🟧 Identify melodic intervals (2nds through octaves)
-- [ ] 🟧 Distinguish major, minor, diminished, augmented chord qualities
-- [ ] 🟧 Build relative pitch framework without perfect pitch
-- [ ] 🟧 Vocalize interval identification before keyboard contact
-- [ ] 🟧 Achieve 80%+ accuracy threshold before advancing
+- [ ] Identify melodic intervals (2nds through octaves)
+- [ ] Distinguish major, minor, diminished, augmented chord qualities
+- [ ] Build relative pitch framework without perfect pitch
+- [ ] Vocalize interval identification before keyboard contact
+- [ ] Achieve 80%+ accuracy threshold before advancing
 
 **🔗 Resources:**
 
@@ -272,11 +272,11 @@
 
 #### Melody by Ear
 
-- [ ] 🟧 Isolate key center via tonic humming
-- [ ] 🟧 Establish diatonic boundaries
-- [ ] 🟧 Track bassline by lowest frequency focus
-- [ ] 🟧 Transcribe via trial-and-error within diatonic pool only
-- [ ] 🟧 Apply Pivot Test to confirm major/minor tonality
+- [ ] Isolate key center via tonic humming
+- [ ] Establish diatonic boundaries
+- [ ] Track bassline by lowest frequency focus
+- [ ] Transcribe via trial-and-error within diatonic pool only
+- [ ] Apply Pivot Test to confirm major/minor tonality
 
 **🔗 Resources:**
 
@@ -286,12 +286,12 @@
 
 #### Improvisation (Pentatonic and Chord-Tone)
 
-- [ ] 🟧 Master pentatonic scale geography (5 safe notes per chord)
-- [ ] 🟧 Overlay pentatonics across extended chord progressions
-- [ ] 🟧 Develop motivic development (rhythm-spiked ideas)
-- [ ] 🟧 Execute large intervallic skips
-- [ ] 🟧 Build quartal shapes
-- [ ] 🟧 Prevent meandering aimlessness
+- [ ] Master pentatonic scale geography (5 safe notes per chord)
+- [ ] Overlay pentatonics across extended chord progressions
+- [ ] Develop motivic development (rhythm-spiked ideas)
+- [ ] Execute large intervallic skips
+- [ ] Build quartal shapes
+- [ ] Prevent meandering aimlessness
 
 **🔗 Resources:**
 
@@ -303,13 +303,13 @@
 
 #### Performance Preparation and Recording-Review Workflow
 
-- [ ] 🟧 Prepare fully-learned piece for formal video recording
-- [ ] 🟧 Execute "Tracking" (score chunking into recovery spots)
-- [ ] 🟧 Conduct mental practice away from instrument
-- [ ] 🟧 Establish Super Starting Spots throughout architecture
-- [ ] 🟧 Execute Dress Rehearsal (play-through without stopping)
-- [ ] 🟧 Complete recording and clinical playback analysis
-- [ ] 🟧 Build 3-5 piece mini repertoire set
+- [ ] Prepare fully-learned piece for formal video recording
+- [ ] Execute "Tracking" (score chunking into recovery spots)
+- [ ] Conduct mental practice away from instrument
+- [ ] Establish Super Starting Spots throughout architecture
+- [ ] Execute Dress Rehearsal (play-through without stopping)
+- [ ] Complete recording and clinical playback analysis
+- [ ] Build 3-5 piece mini repertoire set
 
 **🔗 Resources:**
 
@@ -321,50 +321,50 @@
 
 #### Session Structure
 
-- [ ] 🟧 Warm-up (5 min): Postural audit, arm-gravity demonstration, black-key navigation
-- [ ] 🟧 Technical Block (10 min): Scales, finger independence, ear training, or current topic application
-- [ ] 🟧 Repertoire Block (15 min): Primary piece, sight-reading, or style-specific application
-- [ ] 🟧 Review and Reflection (5 min): Metric logging, visualization dashboard update, weekly reflection
+- [ ] Warm-up (5 min): Postural audit, arm-gravity demonstration, black-key navigation
+- [ ] Technical Block (10 min): Scales, finger independence, ear training, or current topic application
+- [ ] Repertoire Block (15 min): Primary piece, sight-reading, or style-specific application
+- [ ] Review and Reflection (5 min): Metric logging, visualization dashboard update, weekly reflection
 
 ## Progress Tracking
 
 #### Practice Consistency
 
-- [ ] 🟧 5-6 sessions per week completed
+- [ ] 5-6 sessions per week completed
 
 #### Tempo Progression
 
-- [ ] 🟧 C Major Scale (Eighths) - Target: 120 BPM
-- [ ] 🟧 I-V-vi-IV Arpeggios - Target: 100 BPM
-- [ ] 🟧 Style-Specific Repertoire - Target: 110 BPM
+- [ ] C Major Scale (Eighths) - Target: 120 BPM
+- [ ] I-V-vi-IV Arpeggios - Target: 100 BPM
+- [ ] Style-Specific Repertoire - Target: 110 BPM
 
 #### Accuracy Trend
 
-- [ ] 🟧 Monitor Wrong Notes (%)
-- [ ] 🟧 Monitor Rhythm/Meter Errors (%)
-- [ ] 🟧 Monitor In-Piece Restarts
+- [ ] Monitor Wrong Notes (%)
+- [ ] Monitor Rhythm/Meter Errors (%)
+- [ ] Monitor In-Piece Restarts
 
 #### Repertoire Readiness
 
-- [ ] 🟧 Chopin Prelude in E Minor
-- [ ] 🟧 Clementi Sonatina Op. 36
-- [ ] 🟧 "Let It Be" Lead Sheet
+- [ ] Chopin Prelude in E Minor
+- [ ] Clementi Sonatina Op. 36
+- [ ] "Let It Be" Lead Sheet
 
 #### Skill Radar (Semi-Monthly Self-Assessment)
 
-- [ ] 🟧 Technique (Posture/Scales)
-- [ ] 🟧 Rhythm & Meter
-- [ ] 🟧 Sight-Reading
-- [ ] 🟧 Musical Expression
-- [ ] 🟧 Ear Training
-- [ ] 🟧 Improvisation
+- [ ] Technique (Posture/Scales)
+- [ ] Rhythm & Meter
+- [ ] Sight-Reading
+- [ ] Musical Expression
+- [ ] Ear Training
+- [ ] Improvisation
 
 ## Goals (End of Year 1)
 
-- [ ] 🟧 Fluent sight-reading across multiple genres
-- [ ] 🟧 3-5 piece performance-ready repertoire set (mixed styles)
-- [ ] 🟧 Solid relative pitch / melody-by-ear capability
-- [ ] 🟧 Comfortable improvisation over standard progressions
-- [ ] 🟧 Recorded performance documentation (monthly snapshots)
-- [ ] 🟧 Consistent 5-6 session/week practice discipline
-- [ ] 🟧 Zero postural injuries or chronic tension
+- [ ] Fluent sight-reading across multiple genres
+- [ ] 3-5 piece performance-ready repertoire set (mixed styles)
+- [ ] Solid relative pitch / melody-by-ear capability
+- [ ] Comfortable improvisation over standard progressions
+- [ ] Recorded performance documentation (monthly snapshots)
+- [ ] Consistent 5-6 session/week practice discipline
+- [ ] Zero postural injuries or chronic tension

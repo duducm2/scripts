@@ -1940,7 +1940,7 @@ def build_html(
     }}
 
     function stripPlanTopicEmoji(text) {{
-      return (text || '').toString().replace(/^\\s*🟧\\s*/u, '').trim();
+      return (text || '').toString().replace(/^\\s*(?:🟧|🟦)\\s*/u, '').trim();
     }}
 
     function renderPlanTodos(todos, plan) {{

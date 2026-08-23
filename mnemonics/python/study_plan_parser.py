@@ -13,12 +13,12 @@ BACKLOG_HEADING = "## 📃 Backlog"
 BACKLOG_SECTION_PATH = "Backlog"
 RESOURCES_MARKER = "**🔗 Resources:**"
 TODO_RE = re.compile(
-    r"^-\s*\[(?P<mark>[ xX✅])\]\s*(?P<text>.+)$",
+    r"^-\s*\[(?P<mark>[^\]]*)\]\s*(?P<text>.+)$",
     re.UNICODE,
 )
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
-# Technique marker in plan sources; redundant next to dashboard checkboxes.
-TOPIC_EMOJI_PREFIX_RE = re.compile(r"^🟧\s*")
+# Technique markers in plan sources; redundant next to dashboard checkboxes.
+TOPIC_EMOJI_PREFIX_RE = re.compile(r"^(?:🟧|🟦)\s*")
 # Decorative backlog prefixes from older notes (not checkbox status).
 BACKLOG_DECOR_RE = re.compile(
     r"^(?:🔲|⏳|🟪|⬜|☐|☑|✅|❗|📌|•)+\s*",
@@ -26,7 +26,7 @@ BACKLOG_DECOR_RE = re.compile(
 
 
 def strip_plan_topic_emoji(text: str) -> str:
-    """Remove leading 🟧 from plan todo display text (checkbox already shows status)."""
+    """Remove leading 🟧/🟦 from plan todo text (checkbox already shows status)."""
     return TOPIC_EMOJI_PREFIX_RE.sub("", (text or "").strip()).strip()
 
 
@@ -44,10 +44,11 @@ def _todo_from_parts(
     *,
     backlog: bool = False,
 ) -> dict[str, Any]:
-    display = strip_backlog_decor(raw_text) if backlog else strip_plan_topic_emoji(raw_text)
-    # Backlog IDs use cleaned text (emoji migration). Section todos keep raw for progress stability.
-    id_text = display if backlog else raw_text
-    todo_id = _stable_id(slug, section_path, id_text)
+    display = (
+        strip_backlog_decor(raw_text) if backlog else strip_plan_topic_emoji(raw_text)
+    )
+    # IDs use cleaned text so emoji migration does not orphan progress.
+    todo_id = _stable_id(slug, section_path, display)
     return {
         "id": todo_id,
         "text": display,
@@ -86,8 +87,8 @@ def discover_plan_path(studies_root: Path, notes_rel_path: str) -> Path | None:
 
 
 def _todo_checked(mark: str) -> bool:
-    m = mark.strip()
-    return m.lower() == "x" or m == "✅"
+    m = (mark or "").strip().lower().replace(" ", "")
+    return m in ("x", "✅") or m.startswith("✅")
 
 
 def _stable_id(slug: str, section_path: str, text: str) -> str:
@@ -215,7 +216,9 @@ def parse_plan_text(text: str, slug: str) -> dict[str, Any]:
         if tm and current_section is not None:
             raw_text = tm.group("text").strip()
             checked = _todo_checked(tm.group("mark"))
-            todo = _todo_from_parts(slug, section_path, raw_text, checked, backlog=False)
+            todo = _todo_from_parts(
+                slug, section_path, raw_text, checked, backlog=False
+            )
             current_section["todos"].append(todo)
             flat_todos.append({**todo, "section_path": section_path})
             i += 1
