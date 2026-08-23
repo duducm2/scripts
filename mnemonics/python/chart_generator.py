@@ -180,6 +180,11 @@ def build_html(snap: dict) -> str:
       height: 2.35rem;
     }}
     #btnLatest:hover {{ filter: brightness(1.08); }}
+    #btnLatest:focus {{
+      outline: 2px solid #fff4d0;
+      outline-offset: 2px;
+      filter: brightness(1.1);
+    }}
     #searchResults {{
       display: none;
       margin: 0 1.5rem 0.5rem;
@@ -612,18 +617,22 @@ def build_html(snap: dict) -> str:
       }});
     }}
 
-    function selectStudy(id, {{ focusSelect = true }} = {{}}) {{
+    function focusLatestBtn() {{
+      if (btnLatest) requestAnimationFrame(() => btnLatest.focus());
+    }}
+
+    function selectStudy(id, {{ focusLatest = true }} = {{}}) {{
       if (!sel || !id) return;
       sel.value = id;
       show(id);
-      sel.dispatchEvent(new Event('change', {{ bubbles: true }}));
-      if (focusSelect) {{
-        requestAnimationFrame(() => sel.focus());
-      }}
+      if (focusLatest) focusLatestBtn();
     }}
 
     if (sel) {{
-      sel.addEventListener('change', () => show(sel.value));
+      sel.addEventListener('change', () => {{
+        show(sel.value);
+        focusLatestBtn();
+      }});
       if (sel.value) show(sel.value);
     }}
 
@@ -631,16 +640,16 @@ def build_html(snap: dict) -> str:
       return studyModal && studyModal.classList.contains('open');
     }}
 
-    function closeStudyModal({{ focusSelect = true }} = {{}}) {{
+    function closeStudyModal({{ focusLatest = true }} = {{}}) {{
       if (!studyModal) return;
       studyModal.classList.remove('open');
       studyModal.setAttribute('aria-hidden', 'true');
-      if (focusSelect && sel) requestAnimationFrame(() => sel.focus());
+      if (focusLatest) focusLatestBtn();
     }}
 
     function openStudyModal() {{
       if (!studyModal || !STUDIES.length) {{
-        if (sel) requestAnimationFrame(() => sel.focus());
+        focusLatestBtn();
         return;
       }}
       studyModal.classList.add('open');
@@ -679,15 +688,15 @@ def build_html(snap: dict) -> str:
     }}
 
     function pickStudyItem(id) {{
-      selectStudy(id, {{ focusSelect: true }});
-      closeStudyModal({{ focusSelect: true }});
+      selectStudy(id, {{ focusLatest: true }});
+      closeStudyModal({{ focusLatest: false }});
     }}
 
     function handleStudyModalKey(e) {{
       if (!studyModalOpen()) return false;
       if (e.key === 'Escape') {{
         e.preventDefault();
-        closeStudyModal({{ focusSelect: true }});
+        closeStudyModal({{ focusLatest: true }});
         return true;
       }}
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {{
