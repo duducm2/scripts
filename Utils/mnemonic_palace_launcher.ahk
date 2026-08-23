@@ -36,7 +36,8 @@ Palace_ShowMainMenu() {
     items := [
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
-        ["I", "AI import", "Desktop PALACE_*.csv"],
+        ["I", "AI import", "Desktop PALACE pack (preview)"],
+        ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
         ["H", "Help", "Vocabulary and mapping rules"],
         ["P", "Push to cloud", "Commit and push scripts repo"]
     ]
@@ -62,11 +63,11 @@ Palace_ShowMainMenu() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y360 w880",
-        "Backspace utility shortcuts   Esc close   B browse hierarchy   H glossary   P push")
+        "Backspace utility shortcuts   Esc close   I import pack   Q quick image   P push")
 
     Palace_BindHotkeys([
         ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["i", Palace_OnImp],
-        ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
+        ["q", Palace_OnQuickImage], ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
@@ -87,7 +88,10 @@ Palace_OnBrowse(*) {
     Palace_ShowBrowse()
 }
 Palace_OnImp(*) {
-    Palace_ShowImportMenu()
+    Palace_ImportMnemonicsFromDesktop()
+}
+Palace_OnQuickImage(*) {
+    Palace_QuickAttachDesktopImage()
 }
 Palace_OnHelp(*) {
     Palace_ShowHelp()

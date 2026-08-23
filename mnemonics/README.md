@@ -53,18 +53,16 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 ## Main menu letters
 
-| Key       | Module                                    |
-| --------- | ----------------------------------------- |
-| D         | Dashboard (Python → Chrome)               |
-| Y         | Studies                                   |
-| S         | Palaces (Memory Palaces and images)       |
-| B         | Beasts                                    |
-| A         | Knowledge atoms                           |
-| I         | AI import (`PALACE_*.csv` on Desktop)     |
-| H         | Glossary                                  |
-| P         | Push scripts repo to cloud                |
-| Backspace | Return to Utility Shortcuts               |
-| Esc       | Close without reopening Utility Shortcuts |
+| Key       | Module                                             |
+| --------- | -------------------------------------------------- |
+| D         | Dashboard (Python → Chrome)                        |
+| B         | Browse (studies → palaces → beasts → atoms)        |
+| I         | AI import (Desktop `PALACE_*` pack, one preview)   |
+| Q         | Quick image (newest Desktop PNG/JPG → last palace) |
+| H         | Glossary                                           |
+| P         | Push scripts repo to cloud                         |
+| Backspace | Return to Utility Shortcuts                        |
+| Esc       | Close without reopening Utility Shortcuts          |
 
 ## Migrate legacy Markdown
 
@@ -89,12 +87,10 @@ Click a palace card to open a fullscreen view: image, **Image prompt** (or empty
 
 ## AI import
 
-1. Technique prompts (Utility Shortcuts → Prompts): `5` transcript, `4` stories, `a` reduction, `g` background. **Ignore** punctual beast (`p`).
-2. Import contract prompts:
-   - **`k`** — `assets/prompt/mnemonic-atoms-import.txt` (atoms)
-   - Palaces — `assets/prompt/mnemonic-palaces-import.txt` → Desktop `PALACE_PALACES.csv`
-3. Save AI CSV to Desktop as `PALACE_ATOMS.csv` (or `PALACE_BEASTS` / `PALACE_PALACES`). Legacy `PALACE_STREETS*` filenames still import.
-4. Memory Palace **[I]** → preview → commit → archive under `data/imported/`.
+1. Technique prompts (Utility Shortcuts → Prompts): `5` transcript, `4` create mnemonic stories, `a` story reduction, `g` preserve background.
+2. Stories / reduction deliver downloadable **`PALACE_PALACES`**, **`PALACE_BEASTS`**, **`PALACE_ATOMS`** (`.csv` or `.txt` renamed to `.csv`). Edit on Desktop if needed.
+3. Memory Palace **[I]** — one-shot pack import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
+4. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId`.
 
 ### Prompt context pack
 
