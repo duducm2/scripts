@@ -2,15 +2,11 @@
 
 Configure the **Google Apps Script** backend and **MacroDroid** for study links. PC code is split by module: YouTube in [`Utils.ahk`](../Utils.ahk), articles in [`StudyArticleLink.ahk`](../Lib/study/StudyArticleLink.ahk), favorites in [`StudyFavoriteLink.ahk`](../Lib/study/StudyFavoriteLink.ahk), shared HTTP in [`StudyLinkHelpers.ahk`](../Lib/study/StudyLinkHelpers.ahk).
 
-## Study material menu (main)
+## Study material menu (unbound)
 
-Open via Study Topic selector (`#!+x`). Keys **1–3**:
-
-| Key | Module    | Action                                                                                         |
-| --- | --------- | ---------------------------------------------------------------------------------------------- |
-| 1   | —         | Mnemonics (links in `assets/data/study_links.ini` `[Mnemonics]`; in-menu `a` add / `r` remove) |
-| 2   | —         | Plans (links in `assets/data/study_links.ini` `[Plans]`; in-menu `a` add / `r` remove)         |
-| 3   | Technique | Chrome → technique README on GitHub                                                            |
+`Win+Alt+Shift+X` (`#!+x`) is **empty / reserved** — it no longer opens Study Material.
+Mnemonics / Plans / Technique GUI code remains in `peek_pdf_study_*.ahk` but has no hotkey entry.
+Study link manage GUIs are opened from Memory Palace (below).
 
 ## Memory Palace quick links (PC)
 
@@ -230,7 +226,7 @@ Study Topic → **`[6] Technique`** opens the technique README on GitHub in a ne
 
 2. Run [`infra/tools/TestStudyLinkApi.ahk`](../infra/tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
-3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each; Study Material `[3]` (technique).
+3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each. (`#!+x` is empty / reserved.)
 
 4. Phone: Set then Get for each link type after Apps Script redeploy.
 
