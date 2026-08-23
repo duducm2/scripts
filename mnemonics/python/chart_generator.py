@@ -542,24 +542,59 @@ def build_html(
     }}
     #ovAtoms {{
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 1.75rem;
-      align-items: stretch;
+      flex-direction: column;
+      gap: 1.35rem;
+      width: 100%;
     }}
     #ovAtoms > .empty {{
-      flex: 1 1 100%;
       margin: 0;
+    }}
+    .beast-group {{
+      background: #181c24;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 10px;
+      padding: 0.95rem 1rem 1.05rem;
+      width: 100%;
+      box-sizing: border-box;
+    }}
+    .beast-group-head {{
+      margin: 0 0 0.85rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--line);
+    }}
+    .beast-group-head .beast-name {{
+      margin: 0.15rem 0 0;
+      font-size: 1.15rem;
+      font-weight: 650;
+      line-height: 1.35;
+      color: var(--text);
+    }}
+    .beast-atoms-grid {{
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1rem;
+      width: 100%;
+    }}
+    @media (max-width: 1500px) {{
+      .beast-atoms-grid {{ grid-template-columns: repeat(5, minmax(0, 1fr)); }}
+    }}
+    @media (max-width: 1100px) {{
+      .beast-atoms-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+    }}
+    @media (max-width: 720px) {{
+      .beast-atoms-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+    }}
+    @media (max-width: 480px) {{
+      .beast-atoms-grid {{ grid-template-columns: 1fr; }}
     }}
     .atom-card {{
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 0.95rem 1.05rem;
+      padding: 0.85rem 0.95rem;
       scroll-margin-top: 5rem;
-      flex: 1 1 200px;
-      min-width: min(200px, 100%);
-      max-width: 100%;
+      min-width: 0;
       box-sizing: border-box;
     }}
     .atom-card.highlight {{
@@ -580,11 +615,6 @@ def build_html(
       text-transform: uppercase;
       margin-bottom: 0.15rem;
     }}
-    .atom-card .beast-name {{
-      font-size: 1.12rem;
-      font-weight: 650;
-      line-height: 1.35;
-    }}
     .atom-card .field-concept {{
       margin-top: 0.65rem;
       padding: 0.65rem 0.75rem;
@@ -597,9 +627,12 @@ def build_html(
       margin-right: 0.28rem;
     }}
     .atom-card .zone-tag {{
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin: 0 0 0.35rem;
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 650;
+      margin: 0 0 0.45rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px dashed var(--line);
     }}
     #btnMethod {{
       background: transparent;
@@ -1476,6 +1509,53 @@ def build_html(
         + '<pre class="prompt-text">' + esc(prompt) + '</pre>';
     }}
 
+    function groupAtomsByBeast(atoms) {{
+      const groups = [];
+      const seen = new Map();
+      (atoms || []).forEach(a => {{
+        const key = (a.beast || '').toString().trim() || '—';
+        if (!seen.has(key)) {{
+          const g = {{ beast: key, atoms: [] }};
+          seen.set(key, g);
+          groups.push(g);
+        }}
+        seen.get(key).atoms.push(a);
+      }});
+      return groups;
+    }}
+
+    function renderAtomCard(a, focusAtomId) {{
+      const zone = (a.zone || a.zone_label)
+        ? '<p class="zone-tag">' + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
+        : '';
+      const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
+      return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
+        + zone
+        + '<p class="field field-concept"><span class="lbl">Concept</span>'
+        + formatConcept(a.concept) + '</p>'
+        + '<p class="field"><span class="lbl">Quote</span>' + formatQuote(a.quote) + '</p>'
+        + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
+        + '<p class="field"><span class="lbl">Sensory</span>' + formatSensory(a.sensory) + '</p>'
+        + '</article>';
+    }}
+
+    function renderPalaceAtoms(atoms, focusAtomId) {{
+      if (!atoms || !atoms.length) {{
+        return '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
+      }}
+      const groups = groupAtomsByBeast(atoms);
+      return groups.map(g => {{
+        const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId)).join('');
+        return '<section class="beast-group">'
+          + '<header class="beast-group-head">'
+          + '<span class="lbl">Beast</span>'
+          + '<h4 class="beast-name">' + dash(g.beast) + '</h4>'
+          + '</header>'
+          + '<div class="beast-atoms-grid">' + cards + '</div>'
+          + '</section>';
+      }}).join('');
+    }}
+
     function openPalace(id, focusAtomId) {{
       const st = PALACE_DATA[id];
       if (!st) return;
@@ -1505,26 +1585,7 @@ def build_html(
         }};
       }}
       const atoms = st.atoms || [];
-      if (!atoms.length) {{
-        ovAtoms.innerHTML = '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
-      }} else {{
-        ovAtoms.innerHTML = atoms.map(a => {{
-          const zone = (a.zone || a.zone_label)
-            ? '<p class="zone-tag">' + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
-            : '';
-          const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
-          return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
-            + zone
-            + '<p class="field field-beast"><span class="lbl">Beast</span>'
-            + '<span class="beast-name">' + dash(a.beast) + '</span></p>'
-            + '<p class="field field-concept"><span class="lbl">Concept</span>'
-            + formatConcept(a.concept) + '</p>'
-            + '<p class="field"><span class="lbl">Quote</span>' + formatQuote(a.quote) + '</p>'
-            + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
-            + '<p class="field"><span class="lbl">Sensory</span>' + formatSensory(a.sensory) + '</p>'
-            + '</article>';
-        }}).join('');
-      }}
+      ovAtoms.innerHTML = renderPalaceAtoms(atoms, focusAtomId);
       updatePalaceNav(id);
       overlay.classList.add('open');
       overlay.setAttribute('aria-hidden', 'false');
@@ -1710,18 +1771,30 @@ def build_html(
       savePlanStorage(store);
     }}
 
+    function applyTodoStatesToPlan(plan, byId) {{
+      function patchTodo(t) {{
+        if (Object.prototype.hasOwnProperty.call(byId, t.id)) {{
+          t.checked = byId[t.id];
+        }}
+      }}
+      (plan.todos || []).forEach(patchTodo);
+      function walk(sections) {{
+        (sections || []).forEach(sec => {{
+          (sec.todos || []).forEach(patchTodo);
+          walk(sec.children);
+        }});
+      }}
+      walk(plan.sections);
+      plan.checked_count = (plan.todos || []).filter(t => t.checked).length;
+    }}
+
     function applySavedPlanStates(payload) {{
       Object.entries(payload.plans || {{}}).forEach(([studyId, entry]) => {{
         const plan = (PLANS_DATA.plans || {{}})[studyId];
         if (!plan) return;
         const byId = {{}};
         (entry.todos || []).forEach(t => {{ byId[t.id] = !!t.checked; }});
-        (plan.todos || []).forEach(t => {{
-          if (Object.prototype.hasOwnProperty.call(byId, t.id)) {{
-            t.checked = byId[t.id];
-          }}
-        }});
-        plan.checked_count = (plan.todos || []).filter(t => t.checked).length;
+        applyTodoStatesToPlan(plan, byId);
       }});
     }}
 
