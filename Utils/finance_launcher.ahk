@@ -77,14 +77,24 @@ Finance_ShowMainMenu() {
     }
 
     g_FinanceGui.SetFont("s9 c808080", "Segoe UI")
-    g_FinanceGui.Add("Text", "x20 y586 w880", "Esc close   letters open a module   P push   S settings")
+    g_FinanceGui.Add("Text", "x20 y586 w880",
+        "Backspace utility shortcuts   Esc close   letters open a module   P push   S settings")
 
     Finance_BindHotkeys([
         ["d", Finance_OnDash], ["t", Finance_OnTx], ["a", Finance_OnAcc], ["c", Finance_OnCard],
         ["b", Finance_OnBud], ["g", Finance_OnGoals], ["l", Finance_OnRec], ["k", Finance_OnCat],
-        ["i", Finance_OnImp], ["p", Finance_OnGitPush], ["s", Finance_OnSet], ["Escape", (*) => Finance_CloseGui()]
+        ["i", Finance_OnImp], ["p", Finance_OnGitPush], ["s", Finance_OnSet],
+        ["Backspace", (*) => Finance_ReturnToUtilityShortcuts()],
+        ["Escape", (*) => Finance_CloseGui()]
     ])
     Finance_CenterGui(g_FinanceGui, 900, 620)
+}
+
+Finance_ReturnToUtilityShortcuts() {
+    Finance_CloseGui()
+    try ShowHotstringSelector()
+    catch {
+    }
 }
 
 Finance_OnDash(*) {
