@@ -25,6 +25,7 @@ Palace_ShowStudies() {
         ["Insert", (*) => Palace_StudyAdd()],
         ["e", (*) => Palace_StudyEdit()],
         ["Delete", (*) => Palace_StudyDelete()],
+        ["p", (*) => Palace_OpenPlansForSelectedStudy()],
         ["Enter", (*) => Palace_BrowseInto()],
         ["Backspace", (*) => Palace_BrowseUp()],
         ["Escape", (*) => Palace_BrowseUp()]
@@ -90,12 +91,44 @@ Palace_StudyDelete(*) {
         if (beastIds.Has(a["beast_id"]))
             atomCount += 1
     }
+    planIds := Map()
+    planCount := 0
+    for pl in Palace_Load("plans") {
+        if (pl["study_id"] = s["id"]) {
+            planIds[pl["id"]] := true
+            planCount += 1
+        }
+    }
+    planItemCount := 0
+    for it in Palace_Load("plan_items") {
+        if (planIds.Has(it["plan_id"]))
+            planItemCount += 1
+    }
     msg := "Delete study " . s["title"] . "?"
-    if (palaces.Length || beastCount || atomCount)
+    if (palaces.Length || beastCount || atomCount || planCount)
         msg .= "`nAlso deletes " . palaces.Length . " palace(s), "
-            . beastCount . " beast(s), and " . atomCount . " atom(s)."
+            . beastCount . " beast(s), " . atomCount . " atom(s), "
+            . planCount . " plan(s) / " . planItemCount . " plan item(s)."
     if (!Palace_Confirm(msg, "Studies"))
         return
+    itemOut := []
+    for it in Palace_Load("plan_items") {
+        if (!planIds.Has(it["plan_id"]))
+            itemOut.Push(it)
+    }
+    Palace_Save("plan_items", itemOut)
+    resOut := []
+    for r in Palace_Load("plan_resources") {
+        if (!planIds.Has(r["plan_id"]))
+            resOut.Push(r)
+    }
+    Palace_Save("plan_resources", resOut)
+    planOut := []
+    for r in Palace_Load("plans") {
+        if (r["study_id"] != s["id"])
+            planOut.Push(r)
+    }
+    Palace_Save("plans", planOut)
     atomOut := []
     for a in Palace_Load("atoms") {
         if (!beastIds.Has(a["beast_id"]))
@@ -123,6 +156,7 @@ Palace_StudyDelete(*) {
     if (Trim(Palace_Setting("General", "LastStudyId", "")) = s["id"])
         Palace_SetSetting("General", "LastStudyId", "")
     Palace_SyncPracticeMd([], s["notes_rel_path"])
+    Palace_SyncPlansMd([s["id"]])
     Palace_StudyRefresh()
     Palace_Notify("Study removed", 1200, BANNER_ACCENT_SUCCESS)
 }

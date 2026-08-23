@@ -8,12 +8,16 @@ global g_PalaceHotkeys := []
 global g_PalaceFilterStudyId := ""
 global g_PalaceFilterPalaceId := ""
 global g_PalaceFilterBeastId := ""
+global g_PalaceFilterPlanId := ""
 
 Palace_Terms() {
     return [
         ["Browse",
-            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. Enter opens the next level; Backspace goes up. The top bar shows Study › Palace › Beast."],
-        ["Study", "A broad subject domain (e.g. English, German, science, piano). Contains one or more Memory Palaces."],
+            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. From a study, [P] opens Plans. Enter opens the next level; Backspace goes up."],
+        ["Study",
+            "A broad subject domain (e.g. English, German, science, piano). Contains Memory Palaces and one Study Plan."],
+        ["Study Plan",
+            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub."],
         ["Memory Palace", "A location with exactly one generated image. Numbered within its Study."],
         ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
         ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],
@@ -119,7 +123,7 @@ Palace_EnsureSettings() {
 Palace_EnsureData() {
     Palace_DataDir()
     Palace_EnsureSettings()
-    for kind in ["studies", "palaces", "beasts", "atoms"] {
+    for kind in ["studies", "palaces", "beasts", "atoms", "plans", "plan_items", "plan_resources"] {
         path := Palace_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path))
             Palace_Save(kind, [])
@@ -339,6 +343,12 @@ Palace_Headers(kind) {
         case "atoms":
             return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "quote", "story", "sensory", "ipa",
                 "sort_order"]
+        case "plans":
+            return ["id", "study_id", "title", "sort_order", "active"]
+        case "plan_items":
+            return ["id", "plan_id", "section_path", "text", "checked", "sort_order"]
+        case "plan_resources":
+            return ["id", "plan_id", "section_path", "line", "sort_order"]
         default:
             return []
     }
@@ -763,11 +773,13 @@ Palace_BrowseDepth() {
 }
 
 Palace_ClearFiltersToDepth(depth) {
-    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
+    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId, g_PalaceFilterPlanId
     if (depth < 1)
         g_PalaceFilterStudyId := ""
-    if (depth < 2)
+    if (depth < 2) {
         g_PalaceFilterPalaceId := ""
+        g_PalaceFilterPlanId := ""
+    }
     if (depth < 3)
         g_PalaceFilterBeastId := ""
 }
@@ -795,8 +807,10 @@ Palace_BreadcrumbText() {
 Palace_BrowseKeysHint() {
     depth := Palace_BrowseDepth()
     base := "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
+    if (depth = 0)
+        return base . "    [P] plans"
     if (depth = 1)
-        return base . "    [C] copy prompt"
+        return base . "    [C] copy prompt    [P] plans"
     return base
 }
 

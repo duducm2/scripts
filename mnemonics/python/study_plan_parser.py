@@ -278,11 +278,42 @@ def enrich_plan(payload: dict[str, Any]) -> dict[str, Any]:
 def load_study_plan(
     studies_root: Path,
     notes_rel_path: str,
+    data_dir: Path | None = None,
 ) -> dict[str, Any] | None:
+    """Load plan for a study slug from CSV (preferred) or legacy Markdown."""
+    from plan_csv import load_plan_tables, plan_row_to_payload
+
+    slug = slug_filename(notes_rel_path)
+    root = data_dir or (Path(__file__).resolve().parent.parent / "data")
+    data = load_all(root)
+    study = next(
+        (
+            s
+            for s in data["studies"]
+            if slug_filename(s.get("notes_rel_path") or "") == slug
+        ),
+        None,
+    )
+    if study:
+        tables = load_plan_tables(root)
+        plan = next(
+            (
+                r
+                for r in tables["plans"]
+                if r.get("study_id") == study["id"] and r.get("active", "1") != "0"
+            ),
+            None,
+        )
+        if plan:
+            return enrich_plan(
+                plan_row_to_payload(
+                    plan, tables["plan_items"], tables["plan_resources"], slug
+                )
+            )
+
     path = discover_plan_path(studies_root, notes_rel_path)
     if not path:
         return None
-    slug = slug_filename(notes_rel_path)
     return enrich_plan(parse_plan_file(path, slug))
 
 
@@ -290,7 +321,7 @@ def load_all_plans(
     studies_root: Path,
     data_dir: Path,
 ) -> dict[str, dict[str, Any]]:
-    """Return plans keyed by study_id for active studies with plan files."""
+    """Return plans keyed by study_id for active studies with CSV (or legacy MD) plans."""
     data = load_all(data_dir)
     out: dict[str, dict[str, Any]] = {}
     for study in data["studies"]:
@@ -299,7 +330,7 @@ def load_all_plans(
         slug = (study.get("notes_rel_path") or "").strip()
         if not slug:
             continue
-        plan = load_study_plan(studies_root, slug)
+        plan = load_study_plan(studies_root, slug, data_dir=data_dir)
         if plan:
             plan["study_id"] = study["id"]
             plan["study_title"] = study.get("title") or study["id"]

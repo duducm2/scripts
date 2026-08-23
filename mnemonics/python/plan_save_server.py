@@ -52,7 +52,7 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
                     "service": "plan_save_server",
-                    "features": ["add_backlog", "remove_backlog"],
+                    "features": ["add_backlog", "remove_backlog", "plans_csv"],
                 },
             )
             return
@@ -119,9 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     studies_root = (
-        args.studies_root.resolve()
-        if args.studies_root
-        else default_studies_root()
+        args.studies_root.resolve() if args.studies_root else default_studies_root()
     )
     data_dir = args.data_dir.resolve()
     output_dir = args.output_dir.resolve()

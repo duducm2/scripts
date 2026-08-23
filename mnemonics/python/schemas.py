@@ -39,12 +39,25 @@ ATOMS_HEADERS = [
     "ipa",
     "sort_order",
 ]
+PLANS_HEADERS = ["id", "study_id", "title", "sort_order", "active"]
+PLAN_ITEMS_HEADERS = [
+    "id",
+    "plan_id",
+    "section_path",
+    "text",
+    "checked",
+    "sort_order",
+]
+PLAN_RESOURCES_HEADERS = ["id", "plan_id", "section_path", "line", "sort_order"]
 
 HEADERS = {
     "studies": STUDIES_HEADERS,
     "palaces": PALACES_HEADERS,
     "beasts": BEASTS_HEADERS,
     "atoms": ATOMS_HEADERS,
+    "plans": PLANS_HEADERS,
+    "plan_items": PLAN_ITEMS_HEADERS,
+    "plan_resources": PLAN_RESOURCES_HEADERS,
 }
 
 

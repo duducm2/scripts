@@ -29,6 +29,7 @@ Palace_ShowPalaces() {
         ["Insert", (*) => Palace_PalaceAdd()],
         ["e", (*) => Palace_PalaceEdit()],
         ["c", (*) => Palace_PalaceCopyImagePrompt()],
+        ["p", (*) => Palace_OpenPlansForCurrentStudy()],
         ["Delete", (*) => Palace_PalaceDelete()],
         ["Enter", (*) => Palace_BrowseInto()],
         ["Backspace", (*) => Palace_BrowseUp()],

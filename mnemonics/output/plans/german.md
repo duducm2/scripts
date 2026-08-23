@@ -1,4 +1,4 @@
-<!-- synced from studies/german/german-plan.md -->
+<!-- synced from plans.csv (PLAN_0003) / study german -->
 
 # Comprehensive Autonomous German Language Study Plan
 
@@ -329,6 +329,4 @@
 - [ ] **Monday – Wednesday (Acquisition):** Focus entirely on ingesting new structural grammar rules and thematic vocabulary clusters.
 - [ ] **Thursday – Friday (Application & Correction):** Transition to output. Write short essays, emails, or record audio diaries. **Mandatory:** Submit this output for external correction.
 - [ ] **Saturday (Simulation & Live Interaction):**
-  - **Simulation:** Conduct timed writing or speaking simulations mirroring official exams (Goethe or telc) to test recall speed.
-  - **Interaction:** Execute your scheduled language exchange or professional tutoring session (italki/HelloTalk) focused exclusively on the week's theme.
 - [ ] **Sunday (Passive Recovery):** Discard active study. Consume German media (podcasts, vlogs, music, films) purely for entertainment to allow subconscious consolidation.

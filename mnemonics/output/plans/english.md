@@ -1,8 +1,9 @@
-<!-- synced from studies/english/english-plan.md -->
+<!-- synced from plans.csv (PLAN_0002) / study english -->
 
 # English Language Study Plan
 
 ## 📃 Backlog
+
 ## Phase 1: Foundation Refinement (Months 1-3)
 
 ### 1. Grammar Mastery
@@ -164,7 +165,7 @@
 
 ### 3. Parts of Speech
 
-##### Nouns and Plurals
+#### Nouns and Plurals
 
 - [ ] Regular and Irregular plurals
 - [ ] Countable and Uncountable nouns
@@ -175,7 +176,7 @@
 
 - [English for Beginners: Countable & Uncountable Nouns](https://www.youtube.com/watch?v=bhgzqbv9Rxk)
 
-##### Pronouns
+#### Pronouns
 
 - [ ] Subject, Object, Possessive Pronouns
 - [ ] Reflexive and Emphatic Pronouns
@@ -186,7 +187,7 @@
 
 - [Subject, Object, Possessive & Reflexive Pronouns for Beginners](https://www.youtube.com/watch?v=HzVVzdSKd2A)
 
-##### Adjectives and Adverbs
+#### Adjectives and Adverbs
 
 - [ ] Comparative and Superlative forms
 - [ ] Position in sentences
@@ -197,7 +198,7 @@
 
 - [Word Order of Adjectives - Learn English Grammar](https://www.youtube.com/watch?v=46_M9mS71R8)
 
-##### Adverbs vs. Prepositions
+#### Adverbs vs. Prepositions
 
 - [ ] Prepositions relate nouns/pronouns to other parts of a sentence
 - [ ] Adverbs modify verbs, adjectives, or other adverbs
@@ -208,7 +209,7 @@
 
 ### 4. Vocabulary Development
 
-##### Prepositions
+#### Prepositions
 
 - [ ] Prepositions of time, place, and direction
 - [ ] Prepositional phrases
@@ -218,7 +219,7 @@
 
 - [Prepositions Explained: Master Place, Time & Direction Easily](https://www.youtube.com/watch?v=gkXlBPOStag)
 
-##### Phrasal Verbs
+#### Phrasal Verbs
 
 - [ ] Common phrasal verbs and their meanings
 - [ ] Usage in sentences
@@ -230,7 +231,7 @@
 
 - [Best Way to Remember Phrasal Verbs (Easiest Method!)](https://www.youtube.com/watch?v=utVSFiBe9Vs)
 
-##### Advanced Vocabulary Components
+#### Advanced Vocabulary Components
 
 - [ ] Collocations (Strong tea, Heavy rain, Make a decision)
 - [ ] Idioms and Expressions (emotions, business, daily life, relationships)
@@ -250,7 +251,7 @@
 - [Word Formation Practice: Prefixes & Suffixes for Beginners](https://www.youtube.com/watch?v=Ql9Dqv-UE6k)
 - [Formal, Neutral, Informal: Say it the right way in English!](https://www.youtube.com/watch?v=YMomUIxSrFQ)
 
-##### Confusing Word Pairs
+#### Confusing Word Pairs
 
 - [ ] under, underneath, below, beneath
 - [ ] for vs. to (Purpose, Recipient, Importance)
@@ -273,7 +274,7 @@
 - [The Pronunciation and Meaning of: Though, Thought, Tough, Thorough, Through, and Throughout](https://www.youtube.com/watch?v=-Bjk92yDWEM)
 - [Stop Confusing These Words | Lose or Loose? Advice or Advise? Affect or Effect?](https://www.youtube.com/watch?v=2q33rqAhtak)
 
-##### Useful Words
+#### Useful Words
 
 - [ ] Due (Expected, Due diligence)
 

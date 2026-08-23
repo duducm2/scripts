@@ -9,7 +9,6 @@
 - [ ] ETL (Extract, Transform, Load)
 
 - [ ] Data lake
-- [ ] Testing
 
 ## Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3)
 

@@ -221,6 +221,44 @@ Palace_SyncAllPlansMd(showUi := true) {
     return true
 }
 
+; Sync plan Markdown for one or more study ids (CSV → output/plans/).
+Palace_SyncPlansMd(studyIds := "") {
+    py := Palace_PythonDir() . "\study_plans_md.py"
+    if (!FileExist(py))
+        return false
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "")
+        return false
+    ids := []
+    if (IsObject(studyIds)) {
+        seen := Map()
+        for sid in studyIds {
+            s := Trim(String(sid))
+            if (s != "" && !seen.Has(s)) {
+                seen[s] := true
+                ids.Push(s)
+            }
+        }
+    } else if (Trim(String(studyIds)) != "") {
+        ids.Push(Trim(String(studyIds)))
+    }
+    if (!ids.Length)
+        return true
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    notesRoot := Palace_NotesStudiesRoot()
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    if (notesRoot != "")
+        cmd .= ' --studies-root "' . notesRoot . '"'
+    for sid in ids
+        cmd .= ' --study-id "' . sid . '"'
+    try RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    catch {
+        return false
+    }
+    return true
+}
+
 Palace_ForceRegenAllMarkdown() {
     ; Manual fallback: force-regenerate practice + plan Markdown (independent of CRUD hooks)
     pyCmd := Palace_FindPythonCmd()

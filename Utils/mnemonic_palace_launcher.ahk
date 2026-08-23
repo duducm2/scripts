@@ -39,7 +39,7 @@ Palace_ShowMainMenu() {
         ["3", "❤️ Favorite", "Open / set favorite link (Google Docs API)"],
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
-        ["I", "AI import", "Desktop PALACE pack (preview)"],
+        ["I", "AI import", "Desktop PLAN_PACK or PALACE pack (preview)"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
         ["O", "Plans on GitHub", "Synced study plan checklists for mobile"],

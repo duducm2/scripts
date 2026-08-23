@@ -249,9 +249,29 @@ Palace_SplitPalacePack(path) {
     return result
 }
 
-; Single [I]: newest Desktop pack (palaces → beasts → atoms), combined preview, palace-scoped replace.
+; Single [I]: PLAN_PACK if present, else newest Desktop mnemonic pack.
 Palace_ImportMnemonicsFromDesktop(*) {
     Palace_EnsureData()
+    pathPlanPack := Palace_DesktopNewestCsvOrTxt("PLAN_PACK")
+    if (pathPlanPack = "") {
+        ; Also accept gemini-code packs that contain PLANS.csv section
+        newest := ""
+        newestTime := 0
+        loop files A_Desktop . "\gemini-code*.txt", "F" {
+            text := Palace_ReadUtf8(A_LoopFileFullPath)
+            if (!InStr(text, "===FILE: PLANS.csv", false) && !InStr(text, "---FILE: PLANS.csv", false))
+                continue
+            ts := Number(A_LoopFileTimeModified)
+            if (ts > newestTime) {
+                newestTime := ts
+                newest := A_LoopFileFullPath
+            }
+        }
+        pathPlanPack := newest
+    }
+    if (pathPlanPack != "")
+        return Palace_ImportPlansFromDesktop(pathPlanPack)
+
     pathPalaces := Palace_ResolveDesktopPalacesPath()
     pathBeasts := Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
     pathAtoms := Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
@@ -264,7 +284,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
         pathPack := Palace_DesktopNewestPackPath()
         if (pathPack = "") {
-            Palace_Notify("No PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
+            Palace_Notify("No PLAN_PACK / PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
             Palace_ShowMainMenu()
             return false
         }
@@ -669,5 +689,203 @@ Palace_QuickAttachDesktopImage(*) {
     Palace_Save("palaces", palaces)
     Palace_Notify("Attached image → " . palace["title"] . " (" . rel . ")", 2800, BANNER_ACCENT_SUCCESS)
     Palace_SyncPracticeMd([palace["study_id"]])
+    return true
+}
+
+; --- Study plan pack import (PLAN_PACK.txt) ---
+
+Palace_WriteTempCsvFromSection(body) {
+    tmp := A_Temp . "\palace_plan_import_" . A_TickCount . ".csv"
+    Palace_WriteUtf8(tmp, body)
+    return tmp
+}
+
+Palace_ImportPlansFromDesktop(pathPack) {
+    text := Palace_ReadUtf8(pathPack)
+    if (text = "") {
+        Palace_Notify("Empty PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+    plansBody := Palace_ExtractPackFileSection(text, "PLANS.csv")
+    itemsBody := Palace_ExtractPackFileSection(text, "PLAN_ITEMS.csv")
+    resBody := Palace_ExtractPackFileSection(text, "PLAN_RESOURCES.csv")
+    if (plansBody = "" || itemsBody = "") {
+        Palace_Notify("PLAN_PACK needs PLANS.csv + PLAN_ITEMS.csv sections", 3000, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+    tmpP := Palace_WriteTempCsvFromSection(plansBody)
+    tmpI := Palace_WriteTempCsvFromSection(itemsBody)
+    planRows := Palace_ReadAiImportCsv(tmpP, "study_id")
+    itemRows := Palace_ReadAiImportCsv(tmpI, "plan_id")
+    resRows := []
+    if (resBody != "") {
+        tmpR := Palace_WriteTempCsvFromSection(resBody)
+        resRows := Palace_ReadAiImportCsv(tmpR, "plan_id")
+        try FileDelete(tmpR)
+        catch {
+        }
+    }
+    try FileDelete(tmpP)
+    catch {
+    }
+    try FileDelete(tmpI)
+    catch {
+    }
+
+    if (!planRows.Length) {
+        Palace_Notify("No plan rows in PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+
+    preview := Palace_ExtractPackPreview(text)
+    labels := []
+    if (preview != "") {
+        labels.Push("--- Human PREVIEW ---")
+        for line in StrSplit(StrReplace(StrReplace(preview, "`r`n", "`n"), "`r", "`n"), "`n")
+            labels.Push(line)
+        labels.Push("--- Import rows ---")
+    }
+    labels.Push("--- Plans (" . planRows.Length . ") ---")
+    for r in planRows
+        labels.Push((r.Has("id") ? r["id"] : "?") . " · " . (r.Has("title") ? r["title"] : "")
+        . " @ " . (r.Has("study_id") ? r["study_id"] : "?"))
+    labels.Push("--- Items (" . itemRows.Length . ") ---")
+    nShow := 0
+    for r in itemRows {
+        if (nShow >= 40) {
+            labels.Push("… +" . (itemRows.Length - nShow) . " more")
+            break
+        }
+        labels.Push((r.Has("section_path") ? r["section_path"] : "?") . " · "
+        . SubStr(r.Has("text") ? r["text"] : "", 1, 60))
+        nShow += 1
+    }
+    if (resRows.Length)
+        labels.Push("--- Resources (" . resRows.Length . ") ---")
+    if (!Palace_ImportConfirmPreview("Import PLAN_PACK", labels)) {
+        Palace_ShowMainMenu()
+        return false
+    }
+
+    studies := Palace_Load("studies")
+    plans := Palace_Load("plans")
+    items := Palace_Load("plan_items")
+    resources := Palace_Load("plan_resources")
+    syncIds := []
+    nPlans := 0
+    nItems := 0
+
+    for pr in planRows {
+        studyId := pr.Has("study_id") ? Trim(pr["study_id"]) : ""
+        if (studyId = "" || !Palace_FindById(studies, studyId)) {
+            Palace_Notify("Skip plan: unknown study_id " . studyId, 2500, BANNER_ACCENT_ERROR)
+            continue
+        }
+        packPlanId := pr.Has("id") ? Trim(pr["id"]) : ""
+        ; Replace existing active plan for this study
+        oldIds := Map()
+        keptPlans := []
+        for p in plans {
+            if (p["study_id"] = studyId) {
+                oldIds[p["id"]] := true
+            } else {
+                keptPlans.Push(p)
+            }
+        }
+        plans := keptPlans
+        keptItems := []
+        for it in items {
+            if (!oldIds.Has(it["plan_id"]))
+                keptItems.Push(it)
+        }
+        items := keptItems
+        keptRes := []
+        for r in resources {
+            if (!oldIds.Has(r["plan_id"]))
+                keptRes.Push(r)
+        }
+        resources := keptRes
+
+        planId := packPlanId != "" ? packPlanId : Palace_NextId("PLAN_", plans, 4)
+        if (Palace_FindById(plans, planId))
+            planId := Palace_NextId("PLAN_", plans, 4)
+        plans.Push(Map(
+            "id", planId,
+            "study_id", studyId,
+            "title", pr.Has("title") ? Trim(pr["title"]) : "Study Plan",
+            "sort_order", pr.Has("sort_order") ? pr["sort_order"] : "1",
+            "active", pr.Has("active") ? pr["active"] : "1"
+        ))
+        nPlans += 1
+        syncIds.Push(studyId)
+
+        packIdToReal := Map()
+        if (packPlanId != "")
+            packIdToReal[packPlanId] := planId
+        packIdToReal[planId] := planId
+
+        for ir in itemRows {
+            pid := ir.Has("plan_id") ? Trim(ir["plan_id"]) : ""
+            if (pid = "")
+                continue
+            if (packIdToReal.Has(pid))
+                pid := packIdToReal[pid]
+            else if (pid != planId && packPlanId != "" && pid = packPlanId)
+                pid := planId
+            else if (pid != planId)
+                continue
+            iid := ir.Has("id") && Trim(ir["id"]) != "" ? Trim(ir["id"]) : Palace_NextId("PITEM_", items, 4)
+            if (Palace_FindById(items, iid))
+                iid := Palace_NextId("PITEM_", items, 4)
+            checked := ir.Has("checked") ? Trim(ir["checked"]) : "0"
+            if (checked = "true" || checked = "yes" || checked = "x" || checked = "✅")
+                checked := "1"
+            if (checked != "1")
+                checked := "0"
+            items.Push(Map(
+                "id", iid,
+                "plan_id", planId,
+                "section_path", ir.Has("section_path") ? Trim(ir["section_path"]) : "Backlog",
+                "text", ir.Has("text") ? Trim(ir["text"]) : "",
+                "checked", checked,
+                "sort_order", ir.Has("sort_order") ? ir["sort_order"] : String(nItems + 1)
+            ))
+            nItems += 1
+        }
+        for rr in resRows {
+            pid := rr.Has("plan_id") ? Trim(rr["plan_id"]) : ""
+            if (packIdToReal.Has(pid))
+                pid := packIdToReal[pid]
+            else if (pid != planId)
+                continue
+            rid := rr.Has("id") && Trim(rr["id"]) != "" ? Trim(rr["id"]) : Palace_NextId("PRES_", resources, 4)
+            if (Palace_FindById(resources, rid))
+                rid := Palace_NextId("PRES_", resources, 4)
+            resources.Push(Map(
+                "id", rid,
+                "plan_id", planId,
+                "section_path", rr.Has("section_path") ? Trim(rr["section_path"]) : "",
+                "line", rr.Has("line") ? rr["line"] : "",
+                "sort_order", rr.Has("sort_order") ? rr["sort_order"] : "1"
+            ))
+        }
+    }
+
+    if (!nPlans) {
+        Palace_Notify("Import produced no plans", 2500, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+
+    Palace_Save("plans", plans)
+    Palace_Save("plan_items", items)
+    Palace_Save("plan_resources", resources)
+    Palace_ArchiveImported(pathPack)
+    Palace_SyncPlansMd(syncIds)
+    Palace_Notify("Imported " . nPlans . " plan(s), " . nItems . " item(s)", 2800, BANNER_ACCENT_SUCCESS)
+    Palace_ShowMainMenu()
     return true
 }

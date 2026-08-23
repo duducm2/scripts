@@ -1,4 +1,4 @@
-<!-- synced from studies/piano/piano-plan.md -->
+<!-- synced from plans.csv (PLAN_0004) / study piano -->
 
 # Piano Learning Plan
 
@@ -319,7 +319,7 @@
 
 ## Practice Schedule (Standard 45-Minute Session Architecture)
 
-#### Session Structure
+### Session Structure
 
 - [ ] Warm-up (5 min): Postural audit, arm-gravity demonstration, black-key navigation
 - [ ] Technical Block (10 min): Scales, finger independence, ear training, or current topic application
@@ -328,29 +328,29 @@
 
 ## Progress Tracking
 
-#### Practice Consistency
+### Practice Consistency
 
 - [ ] 5-6 sessions per week completed
 
-#### Tempo Progression
+### Tempo Progression
 
 - [ ] C Major Scale (Eighths) - Target: 120 BPM
 - [ ] I-V-vi-IV Arpeggios - Target: 100 BPM
 - [ ] Style-Specific Repertoire - Target: 110 BPM
 
-#### Accuracy Trend
+### Accuracy Trend
 
 - [ ] Monitor Wrong Notes (%)
 - [ ] Monitor Rhythm/Meter Errors (%)
 - [ ] Monitor In-Piece Restarts
 
-#### Repertoire Readiness
+### Repertoire Readiness
 
 - [ ] Chopin Prelude in E Minor
 - [ ] Clementi Sonatina Op. 36
 - [ ] "Let It Be" Lead Sheet
 
-#### Skill Radar (Semi-Monthly Self-Assessment)
+### Skill Radar (Semi-Monthly Self-Assessment)
 
 - [ ] Technique (Posture/Scales)
 - [ ] Rhythm & Meter

@@ -324,6 +324,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_palaces.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_beasts.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_atoms.ahk
+#include %A_ScriptDir%\Utils\mnemonic_palace_plans.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk

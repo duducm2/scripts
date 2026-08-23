@@ -1,4 +1,4 @@
-<!-- synced from studies/science/science-plan.md -->
+<!-- synced from plans.csv (PLAN_0005) / study science -->
 
 # Science Study Plan
 
@@ -214,7 +214,7 @@
 
 ## Willingness to Pay
 
-#### Rank 1 — Validity of stated WTP: hypothetical bias, stated vs. revealed preference, and Comparative Method of Valuation (CMV)
+### Rank 1 — Validity of stated WTP: hypothetical bias, stated vs. revealed preference, and Comparative Method of Valuation (CMV)
 
 - [ ] Understand hypothetical bias and the unreliability of vacuum-style WTP questions
 - [✅] Master the Comparative Method of Valuation (CMV) framework
@@ -223,7 +223,7 @@
 
 - [A Better Way to Measure Customers’ Willingness to Pay](https://insight.kellogg.northwestern.edu/article/better-way-to-measure-customers-willingness-to-pay)
 
-#### Rank 2 — Choice-Based Conjoint (CBC) and marginal willingness to pay (MWTP)
+### Rank 2 — Choice-Based Conjoint (CBC) and marginal willingness to pay (MWTP)
 
 - [✅] Understand part-worth utilities with price as an attribute
 - [ ] Calculate marginal willingness to pay (MWTP) as the monetary equivalent of incremental utility
@@ -234,7 +234,7 @@
 - [Pricing: Conjoint Analysis](https://www.youtube.com/watch?v=2yFoVmrgMPc)
 - [Conjoint Analysis in 10 minutes](https://www.youtube.com/watch?v=yiRNcHU2ZGU)
 
-#### Rank 3 — Outcome-Driven Innovation (ODI): importance × satisfaction
+### Rank 3 — Outcome-Driven Innovation (ODI): importance × satisfaction
 
 - [ ] Map importance versus satisfaction of outcomes
 - [ ] Identify where premium WTP concentrates (high importance + low satisfaction)
@@ -244,7 +244,7 @@
 - [Outcome-Driven Innovation Process Overview](https://www.youtube.com/watch?v=SNboL5bW_8E)
 - [Introduction to the Market Opportunity Navigator](https://www.youtube.com/watch?v=N4ZUMr70-0w)
 
-#### Rank 4 — Behavioral mechanisms that distort reported or perceived value
+### Rank 4 — Behavioral mechanisms that distort reported or perceived value
 
 - [ ] Study anchoring, framing, and decoys
 - [ ] Understand the willingness-to-pay vs. willingness-to-accept gap (loss aversion, endowment effect)
@@ -255,7 +255,7 @@
 - [Behavioral Finance — Framing and The Allais Paradox](https://www.youtube.com/watch?v=AQsnhtCCMtM)
 - [Loss Aversion](https://www.youtube.com/watch?v=mOFtpotONzk)
 
-#### Rank 5 — Direct stated-price methods: Van Westendorp Price Sensitivity Meter and Gabor-Granger
+### Rank 5 — Direct stated-price methods: Van Westendorp Price Sensitivity Meter and Gabor-Granger
 
 - [ ] Master Van Westendorp Price Sensitivity Meter for acceptable range and optimal price point
 - [ ] Master Gabor-Granger for iterative yes/no at preset prices and demand curves
@@ -266,7 +266,7 @@
 - [Turn pricing perceptions into decisions with Van Westendorp and Gabor-Granger modeling](https://www.youtube.com/watch?v=vIE9UjLvpAk)
 - [Gabor-Granger Price Elasticity Model in Qualtrics Surveys](https://www.youtube.com/watch?v=ebRQ6GSCqqs)
 
-#### Secondary Topics (Ranks 6–10)
+### Secondary Topics (Ranks 6–10)
 
 - [ ] Ramanujam’s staged WTP interview protocol
 - [ ] Revealed preference through observation and experiments (Scanner sales, A/B tests, Auctions)
