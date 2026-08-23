@@ -11,8 +11,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
+### 🟧 [I] imp
 
 🟦 **Z1 · Z1 Head | Token Metric**
 
@@ -46,8 +45,6 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 2: The Semantic Layer & RAG Structure</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
 
@@ -59,8 +56,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 **Concept**
 💡 Retrieval-Augmented Generation (RAG) fetches external documents at query time instead of relying entirely on its training memory.
@@ -74,10 +70,7 @@ A colossal dragon made of folded library pages refuses to use its own brain. Ins
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 A flat, unstructured content store causes models to retrieve the loudest keyword match instead of the most accurate document.
@@ -91,10 +84,7 @@ A skyscraper-sized eagle stands on a flat heap of rotting, messy file folders th
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
+### 🟧 [F] frog
 
 **Concept**
 💡 Controlled vocabularies prevent slight word variations from fracturing one concept into multiple unrelated topics.
@@ -108,10 +98,7 @@ A microscopic frog sits on a distant brick wall, catching hundreds of chaotic, f
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
+### 🟧 [G] goat
 
 **Concept**
 💡 AI agents require explicit structures, hierarchies, and boundaries to safely take action and update records.
@@ -125,10 +112,7 @@ A three-headed goat tries to stamp its hooves to route banking tickets, but free
 **Sensory**
 👅 gustatory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
+### 🟧 [H] Hydra
 
 **Concept**
 💡 Adding situational context to text chunks before indexing them drastically reduces retrieval failures.
@@ -144,8 +128,6 @@ A massive Hydra coils around a fire hydrant, injecting thick blue context-gel in
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 1: Foundations & Semantic Interoperability</strong> · Character: (unassigned palace 1) · 3 beasts · 5 atoms</summary>
 
@@ -157,8 +139,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 **Concept**
 💡 Augmented analytics automates data analysis using AI and machine learning.
@@ -172,10 +153,7 @@ A skyscraper-sized Arachne weaves a glowing web of binary code directly into a m
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 **Concept**
 💡 Conversational interfaces allow you to query data using everyday language.
@@ -189,10 +167,7 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 🟦 **Z1 · Z1 Head | Data-lake translator jaws**
 
@@ -239,7 +214,5 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 
 **Sensory**
 —
-
-</details>
 
 </details>

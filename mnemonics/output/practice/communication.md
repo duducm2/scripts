@@ -11,8 +11,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
+### 🟧 [I] imp
 
 **Concept**
 💡 Enable others to grow and contribute to their maximum potential.
@@ -26,10 +25,7 @@ A tiny imp stands on a brick wall, glowing with a blinding, radioactive light th
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
+### 🟧 [J] jester
 
 **Concept**
 💡 Deal with your own personality in a self-reflective way.
@@ -43,10 +39,7 @@ A completely flat, two-dimensional jester lies stuck on a wooden bench, wrapped 
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
+### 🟧 [K] kitten
 
 **Concept**
 💡 Have a clear sense of internal orientation and manage personal resources effectively.
@@ -60,10 +53,7 @@ A colossal kitten blocks a distant building facade, purring with the ear-splitti
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
+### 🟧 [L] lion
 
 **Concept**
 💡 Learn continuously to grow personally and professionally.
@@ -79,8 +69,6 @@ A transparent lion sits on a high balcony edge, loudly crunching on glowing, met
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 2: Leading the Business and Others</strong> · Character: (unassigned palace 2) · 5 beasts · 5 atoms</summary>
 
@@ -92,8 +80,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 **Concept**
 💡 Define the business agenda for your own area.
@@ -107,10 +94,7 @@ A colossal dragon lands heavily on the gate post, and Goku desperately grabs its
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 Create value according to the general interest of Bosch.
@@ -124,10 +108,7 @@ An impossibly heavy eagle crashes onto a parked car, crushing its steel roof lik
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
+### 🟧 [F] frog
 
 **Concept**
 💡 Foster a collaborative and learning organization while driving digital business.
@@ -141,10 +122,7 @@ A skyscraper-sized frog squats at the far end of the street, croaking with a dea
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
+### 🟧 [G] goat
 
 **Concept**
 💡 Create an environment where people feel comfortable expressing their opinions.
@@ -158,10 +136,7 @@ A floating goat balances perfectly on top of a street lamp, emitting a highly co
 **Sensory**
 👃 olfactory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
+### 🟧 [H] Hydra
 
 **Concept**
 💡 Encourage others to take responsibility and achieve exceptional results.
@@ -177,8 +152,6 @@ A multi-headed Hydra bursts out of a tiny metal mailbox, biting into shockingly 
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 1: The Foundations of Rhetoric</strong> · Character: (unassigned palace 1) · 3 beasts · 3 atoms</summary>
 
@@ -190,8 +163,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 **Concept**
 💡 Ethos is the credibility and authority of the speaker.
@@ -205,10 +177,7 @@ Arachne (a woman with the lower body of a spider) crawls down onto the street. S
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 **Concept**
 💡 Pathos is the emotional appeal used to engage the audience.
@@ -222,10 +191,7 @@ A bright bird of paradise flutters down to perch on Arachne's badge and starts c
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 **Concept**
 💡 Logos is the logical structure and the evidence supporting the argument.
@@ -238,7 +204,5 @@ A small cat jumps down onto the pavement, completely ignoring the crying bird. I
 
 **Sensory**
 —
-
-</details>
 
 </details>

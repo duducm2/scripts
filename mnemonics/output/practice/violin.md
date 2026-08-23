@@ -15,8 +15,7 @@ ForegroundLeft: Arachne weaving a pizza from lute strings anchored to an iron ga
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 **Concept**
 💡 O violino foi inventado no início do século XVI na Itália.
@@ -30,10 +29,7 @@ Arachne weaves a giant Italian pizza out of thick sixteenth-century lute strings
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 **Concept**
 💡 A evidência mais antiga são pinturas de Gaudenzio Ferrari (década de 1530) com violinos de três cordas.
@@ -47,10 +43,7 @@ A skyscraper-sized bird of paradise paints a roaring Ferrari engine on the brick
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 **Concept**
 💡 O violino evoluiu da viela rabeca e lira da braccio.
@@ -64,10 +57,7 @@ A microscopic cat shrieks a deafening operatic note on the pavement while furiou
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 **Concept**
 💡 O padrão foi estabelecido no século XVII por Amati Stainer e Stradivari.
@@ -81,10 +71,7 @@ A dragon exhales frozen centuries upon the street lamp freezing three master lut
 **Sensory**
 🌡️ thermal
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 O violino mais antigo confirmado a sobreviver é o Charles IX de Andrea Amati (1564).
@@ -97,7 +84,5 @@ A golden eagle with rotting zombie flesh regurgitates a pristine sour-tasting wo
 
 **Sensory**
 👅 gustatory
-
-</details>
 
 </details>

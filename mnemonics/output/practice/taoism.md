@@ -11,8 +11,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [P] panther</summary>
+### 🟧 [P] panther
 
 **Concept**
 💡 Taoism splits into Daojia (a school of teachings and texts) and Daojiao (an organized religion).
@@ -26,10 +25,7 @@ A two-headed panther stands at a left-side gate. One head whispers riddles that 
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Q] Quetzalcoatl</summary>
+### 🟧 [Q] Quetzalcoatl
 
 **Concept**
 💡 The Way of the Celestial Masters was the first organized Taoist group, started by Zhang Daoling after a vision of Laozi.
@@ -43,10 +39,7 @@ A huge feathered serpent coils around a right-side parked car and stacks five gl
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [R] rat</summary>
+### 🟧 [R] rat
 
 **Concept**
 💡 The Three Pure Ones are the highest Taoist gods, three faces of the Tao as it takes form.
@@ -60,10 +53,7 @@ A three-headed rat at the far end of the street bites three cheeses at once. The
 **Sensory**
 👅 gustatory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [S] skull</summary>
+### 🟧 [S] skull
 
 **Concept**
 💡 The Jade Emperor rules the sky in Taoist belief and runs it like an old Chinese court.
@@ -77,10 +67,7 @@ A giant skull in a jade crown sits on a cloud-throne above a roof, bone so smoot
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [T] toucan</summary>
+### 🟧 [T] toucan
 
 **Concept**
 💡 Quanzhen is a monastic Taoist school that trains inner alchemy and blends three teachings.
@@ -96,8 +83,6 @@ A toucan with three beaks builds a tiny monastery on a near-right corner. One be
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 3: Cosmology & The Body</strong> · Character: The Jade Emperor · 5 beasts · 5 atoms</summary>
 
@@ -109,8 +94,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
+### 🟧 [K] kitten
 
 **Concept**
 💡 Yin and yang are the paired forces (dark/light, soft/hard, and so on) whose play shapes the world.
@@ -124,10 +108,7 @@ A kitten on a left-side parked car bats a ball of yarn that is half pitch-black 
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
+### 🟧 [L] lion
 
 **Concept**
 💡 Qi is the living stuff of the universe, the body of the Tao you can feel in all things.
@@ -141,10 +122,7 @@ A lion made of crackling energy walks along a right-side wall, paws that never q
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
+### 🟧 [M] marmoset
 
 **Concept**
 💡 Wuxing is the five phases — wood, fire, earth, metal, water — used to explain how things change.
@@ -158,10 +136,7 @@ A marmoset on a far facade juggles five orbs that scream five ways: fire crackle
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
+### 🟧 [N] Neanderthal
 
 **Concept**
 💡 Neidan is inner alchemy: you change jing, qi, and shen inside the body to live longer and change the spirit.
@@ -175,10 +150,7 @@ A Neanderthal sits on a balcony in a still pose, with a cauldron boiling inside 
 **Sensory**
 👃 olfactory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
+### 🟧 [O] owl
 
 **Concept**
 💡 Xian are immortals who gain strange powers by mastering the Tao, body and spirit both.
@@ -194,8 +166,6 @@ An owl of shifting light perches on a near-right wall. It sheds feathers that fe
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 2: Foundational Texts & Figures</strong> · Character: (unassigned palace 2) · 5 beasts · 5 atoms</summary>
 
@@ -207,8 +177,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
+### 🟧 [F] frog
 
 **Concept**
 💡 Laozi is the traditional founder of Taoism, but scholars debate whether he was a real person.
@@ -222,10 +191,7 @@ One frog sits on a lily pad in a curb puddle by a left-side wall. Its throat-sac
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
+### 🟧 [G] goat
 
 **Concept**
 💡 The Tao Te Ching is the core Taoist book, a short poetic text tied to Laozi.
@@ -239,10 +205,7 @@ A goat chained to a right-side fence chews a scroll that talks while it is eaten
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
+### 🟧 [H] Hydra
 
 **Concept**
 💡 Zhuangzi was a major Taoist hermit, and some think southern shaman practice shaped him.
@@ -256,10 +219,7 @@ A Hydra fills a cave mouth that opened in a far brick wall. Shaman rattles grow 
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
+### 🟧 [I] imp
 
 **Concept**
 💡 The Zhuangzi uses stories and talks to push a free life in line with nature, not stiff social rules.
@@ -273,10 +233,7 @@ An imp juggles dirt-smelling story balls from a balcony. One ball hits a stone o
 **Sensory**
 👃 olfactory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
+### 🟧 [J] jester
 
 **Concept**
 💡 The Yellow Emperor is a mythic ruler said to have set many Taoist rules while seeking a long life.
@@ -292,8 +249,6 @@ A jester in bright yellow robes holds out a peach from a near-right doorway. One
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 1: Core Philosophy</strong> · Character: (unassigned palace 1) · 5 beasts · 5 atoms</summary>
 
@@ -305,8 +260,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 **Concept**
 💡 The Tao is the nameless changing process under all of reality.
@@ -320,10 +274,7 @@ A street-wide Arachne spins a web you can taste, honey and lightning in one bite
 **Sensory**
 👅 gustatory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 **Concept**
 💡 De is the power that shows up when a person lives in line with the Tao.
@@ -337,10 +288,7 @@ A bird of paradise sits on a right-side gate post, feathers so hot they feel lik
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 **Concept**
 💡 Wu wei is effortless action: you reach a goal by flowing with the world, not by forcing it.
@@ -354,10 +302,7 @@ A sleeping cat rides a flood down the far street, still asleep on a fence-board.
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 **Concept**
 💡 Ziran is the self-so state of things: natural, unforced, as they already are.
@@ -371,10 +316,7 @@ A dragon the size of a thumbnail sits on an uncut log on a roof edge. Branches e
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 The Three Treasures are compassion (ci), moderation (jian), and humility.
@@ -387,7 +329,5 @@ An eagle on a near-right lamp post drops three chests. One smells like a sudden 
 
 **Sensory**
 👃 olfactory
-
-</details>
 
 </details>

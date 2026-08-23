@@ -11,8 +11,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
+### 🟧 [N] Neanderthal
 
 🟦 **Z1 · Z1 Head | Cognitive Shuffling**
 
@@ -60,10 +59,7 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
+### 🟧 [O] owl
 
 🟦 **Z1 · Z1 Head | Spelling Trick**
 
@@ -113,8 +109,6 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 4: Rotina de Ativação Matinal</strong> · Character: (unassigned palace 4) · 4 beasts · 4 atoms</summary>
 
@@ -126,8 +120,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
+### 🟧 [J] jester
 
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
@@ -141,10 +134,7 @@ A colossal medieval jester refuses to wait for hope; it aggressively bites Goku'
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
+### 🟧 [K] kitten
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
@@ -158,10 +148,7 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
+### 🟧 [L] lion
 
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
@@ -175,10 +162,7 @@ A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against 
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
+### 🟧 [M] marmoset
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
@@ -194,8 +178,6 @@ A hairy marmoset ignores a massive factory assembly line and instead gently spla
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 3: Vital Signs</strong> · Character: (unassigned palace 3) · 2 beasts · 5 atoms</summary>
 
@@ -207,8 +189,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
+### 🟧 [H] Hydra
 
 🟦 **Z1 · Z1 Head | BP Definition**
 
@@ -256,10 +237,7 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
+### 🟧 [I] imp
 
 🟦 **Z1 · Z1 Head | HR Definition**
 
@@ -293,8 +271,6 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 2: Enhancing Brain Focus and Retention</strong> · Character: (unassigned palace 2) · 2 beasts · 2 atoms</summary>
 
@@ -306,8 +282,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
+### 🟧 [F] frog
 
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
@@ -321,10 +296,7 @@ _No image prompt saved._
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
+### 🟧 [G] goat
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
@@ -340,8 +312,6 @@ _No image prompt saved._
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 1: Core Speed Reading Principles</strong> · Character: (unassigned palace 1) · 5 beasts · 5 atoms</summary>
 
@@ -353,8 +323,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
@@ -368,10 +337,7 @@ _No image prompt saved._
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
@@ -385,10 +351,7 @@ _No image prompt saved._
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
@@ -402,10 +365,7 @@ _No image prompt saved._
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
@@ -419,10 +379,7 @@ _No image prompt saved._
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.
@@ -435,7 +392,5 @@ _No image prompt saved._
 
 **Sensory**
 —
-
-</details>
 
 </details>

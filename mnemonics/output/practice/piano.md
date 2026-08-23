@@ -11,8 +11,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [Aj] Ajax</summary>
+### 🟧 [Aj] Ajax
 
 **Concept**
 💡 Stacked notes sharing a single stem mean the notes are played simultaneously.
@@ -26,10 +25,7 @@ The towering Greek warrior Ajax slams his bronze shield into the pavement, split
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ak] Akita (dog breed)</summary>
+### 🟧 [Ak] Akita (dog breed)
 
 **Concept**
 💡 Good posture involves sitting straight with the head lifted upward as if pulled by a string, while keeping the shoulders relaxed.
@@ -45,8 +41,6 @@ An enormous Akita dog sits straight up on a street bench, its heavy head defying
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 9: Note Symbols and Counting</strong> · Character: (unassigned palace 9) · 1 beast · 1 atom</summary>
 
@@ -58,8 +52,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ai] Airedale terrier</summary>
+### 🟧 [Ai] Airedale terrier
 
 **Concept**
 💡 Counting out loud and clapping physically reinforces the rhythm and prevents speed changes.
@@ -75,8 +68,6 @@ A colossal Airedale terrier claps its massive front paws together in a deafening
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 8: Reading Spaces and Resolution</strong> · Character: Marilyn Monroe · 3 beasts · 3 atoms</summary>
 
@@ -88,8 +79,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [Af] Afghan hound</summary>
+### 🟧 [Af] Afghan hound
 
 **Concept**
 💡 A line note has a staff line passing directly through its center, similar to a bead on a string.
@@ -103,10 +93,7 @@ Marilyn Monroe watches in awe as an Afghan hound bites down hard on a massive, g
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ag] Agaric fungi</summary>
+### 🟧 [Ag] Agaric fungi
 
 **Concept**
 💡 A space note is a musical note that rests entirely in the empty gap between two staff lines.
@@ -120,10 +107,7 @@ Giant, glowing Agaric fungi sprout exclusively inside the floating gap between t
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ah] Ah!—a sigh</summary>
+### 🟧 [Ah] Ah!—a sigh
 
 **Concept**
 💡 A cadence is a harmonic progression at the end of a musical phrase that provides a sense of resolution or punctuation.
@@ -139,8 +123,6 @@ A massive, semi-transparent cloud shaped like a human face floats above the stre
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 7: Musical Structure</strong> · Character: (unassigned palace 7) · 3 beasts · 4 atoms</summary>
 
@@ -152,8 +134,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ac] acorn</summary>
+### 🟧 [Ac] acorn
 
 **Concept**
 💡 An accidental is a symbol that alters a note's pitch temporarily, such as sharps, flats, or naturals.
@@ -167,10 +148,7 @@ Goku throws a giant, glowing acorn that crashes into a metal street sign, warpin
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ad] adder</summary>
+### 🟧 [Ad] adder
 
 **Concept**
 💡 A melody combines pitch and rhythm into a primary, cohesive musical line.
@@ -184,10 +162,7 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ae] aerialist</summary>
+### 🟧 [Ae] aerialist
 
 🟦 **Z1 · Z1 Head | Phrase**
 
@@ -221,8 +196,6 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 6: Chord Positions and Harmony Basics</strong> · Character: (unassigned palace 6) · 5 beasts · 7 atoms</summary>
 
@@ -234,8 +207,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [X] Xena, warrior woman</summary>
+### 🟧 [X] Xena, warrior woman
 
 **Concept**
 💡 An inversion changes which note sits at the bottom of the chord.
@@ -249,10 +221,7 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Y] yak</summary>
+### 🟧 [Y] yak
 
 🟦 **Z1 · Z1 Head | Harmony combination**
 
@@ -284,10 +253,7 @@ stamping three distinct lightning bolts into the pavement · sensory: tactile �
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Z] Zeus</summary>
+### 🟧 [Z] Zeus
 
 🟦 **Z1 · Z1 Head | Consonant rest**
 
@@ -319,10 +285,7 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Aa] aardvark</summary>
+### 🟧 [Aa] aardvark
 
 **Concept**
 💡 A chord progression is a sequence of chords that dictates the emotional arc and key of a song.
@@ -336,10 +299,7 @@ A colossal aardvark hops along a drawn timeline on the road while Neo tracks its
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Ab] Abyssinian cat</summary>
+### 🟧 [Ab] Abyssinian cat
 
 **Concept**
 💡 Harmony provides the underlying context that can completely change the emotional feeling of the same melody.
@@ -355,8 +315,6 @@ An Abyssinian cat creeps low under a glowing melody wire and transforms the lite
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 5: Chord Construction and Types</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
 
@@ -368,8 +326,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [S] skull</summary>
+### 🟧 [S] skull
 
 **Concept**
 💡 Chords are constructed by skipping keys between the notes you play.
@@ -383,10 +340,7 @@ A giant floating skull rolls along the street, explicitly skipping over every ot
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [T] toucan</summary>
+### 🟧 [T] toucan
 
 **Concept**
 💡 Primary chords (I, IV, V) produce a cheerful, major sound.
@@ -400,10 +354,7 @@ A skyscraper-sized toucan flaps its wings to project a blindingly bright rainbow
 **Sensory**
 👁️ visual
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [U] unicorn</summary>
+### 🟧 [U] unicorn
 
 **Concept**
 💡 Secondary chords (ii, iii, vi) produce a darker, minor sound in major keys.
@@ -417,10 +368,7 @@ A shadowy unicorn bleeds thick red ink from its horn onto the pavement to draw t
 **Sensory**
 ✋ tactile
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [V] vulture</summary>
+### 🟧 [V] vulture
 
 **Concept**
 💡 Diminished chords have an edgy, dissonant sound because they skip fewer keys.
@@ -434,10 +382,7 @@ A vulture violently scratches a chalkboard wall on the street with its talons, l
 **Sensory**
 👂 auditory
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [W] wombat</summary>
+### 🟧 [W] wombat
 
 **Concept**
 💡 A chord is in root position when the root note is on the very bottom.
@@ -453,8 +398,6 @@ A super-strong wombat lifts a heavy piano completely upside down with one paw wh
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 4: Key Choice, Chords, and Pedal</strong> · Character: Alan Turing · 3 beasts · 6 atoms</summary>
 
@@ -466,8 +409,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [P] panther</summary>
+### 🟧 [P] panther
 
 🟦 **Z1 · C major white keys**
 
@@ -515,10 +457,7 @@ A panther crouches across the street piano with white mushrooms growing only alo
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [Q] Quetzalcoatl</summary>
+### 🟧 [Q] Quetzalcoatl
 
 🟦 **Z1 · Chord**
 
@@ -550,10 +489,7 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [R] rat</summary>
+### 🟧 [R] rat
 
 **Concept**
 💡 The damper pedal keeps notes ringing after the keys are released.
@@ -569,8 +505,6 @@ A rat presses the piano pedal with its heavy tail. The keys are let go, but the 
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 3: Practice Structure and Scale Steps</strong> · Character: Frédéric Chopin · 5 beasts · 8 atoms</summary>
 
@@ -582,8 +516,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
+### 🟧 [K] kitten
 
 **Concept**
 💡 Practice rhythm and pitch apart before putting them together.
@@ -597,10 +530,7 @@ A kitten divides the street piano into two clear work tables. One table holds a 
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
+### 🟧 [L] lion
 
 🟦 **Z1 · Tonic home note**
 
@@ -632,10 +562,7 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
+### 🟧 [M] marmoset
 
 🟦 **Z1 · Half step**
 
@@ -667,10 +594,7 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
+### 🟧 [N] Neanderthal
 
 🟦 **Z1 · Pentascale**
 
@@ -686,10 +610,7 @@ The Neanderthal carries a cracked acorn with five tiny piano keys growing from i
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
+### 🟧 [O] owl
 
 🟦 **Z1 · Major scale sound**
 
@@ -723,8 +644,6 @@ An owl spreads its wings above the street piano and lands on eight sung step mar
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 2: Note Values and Relaxed Hand</strong> · Character: Claude Debussy · 5 beasts · 11 atoms</summary>
 
@@ -736,8 +655,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
+### 🟧 [F] frog
 
 🟦 **Z1 · Whole note**
 
@@ -785,10 +703,7 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
+### 🟧 [G] goat
 
 **Concept**
 💡 A double bar line marks the end of a part or piece.
@@ -802,10 +717,7 @@ A goat drops two thick black bars across the street staff. Every sound stops at 
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
+### 🟧 [H] Hydra
 
 🟦 **Z1 · Rounded fingers**
 
@@ -853,10 +765,7 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
+### 🟧 [I] imp
 
 🟦 **Z1 · Gentle arm weight**
 
@@ -888,10 +797,7 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
+### 🟧 [J] jester
 
 🟦 **Z1 · Raised flexible wrists**
 
@@ -925,8 +831,6 @@ A jester sits at the piano while Maurice Ravel places soft cushions under the je
 
 </details>
 
-</details>
-
 <details>
 <summary><strong>Memory Palace 1: Keyboard Map and Reading System</strong> · Character: Wolfgang Amadeus Mozart · 5 beasts · 11 atoms</summary>
 
@@ -938,8 +842,7 @@ _No image prompt saved._
 
 #### Knowledge Atoms
 
-<details>
-<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
+### 🟧 [A] Arachne
 
 🟦 **Z1 · Middle C home marker**
 
@@ -987,10 +890,7 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
+### 🟧 [B] bird of paradise
 
 🟦 **Z1 · Five-line staff**
 
@@ -1038,10 +938,7 @@ The bird of paradise lands beside the piano and drags one claw across the street
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
+### 🟧 [C] cat
 
 🟦 **Z1 · Bass C landmark**
 
@@ -1073,10 +970,7 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
+### 🟧 [D] dragon
 
 🟦 **Z1 · Steady beat**
 
@@ -1108,10 +1002,7 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 **Sensory**
 —
 
-</details>
-
-<details>
-<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
+### 🟧 [E] eagle
 
 **Concept**
 💡 A time signature tells how beats fit inside each measure.
@@ -1124,7 +1015,5 @@ An eagle draws small boxes on the road like measures. Wolfgang Amadeus Mozart dr
 
 **Sensory**
 —
-
-</details>
 
 </details>

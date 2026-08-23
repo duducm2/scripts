@@ -92,10 +92,10 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
 
 
 def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str]:
+    """Flat beast block (not collapsible) — only Memory Palaces use <details>."""
     beast_label = dash(beast)
     lines: list[str] = [
-        "<details>",
-        f"<summary>🟧 <strong>Beast</strong> · {beast_label}</summary>",
+        f"### 🟧 {beast_label}",
         "",
     ]
     for i, atom in enumerate(atoms):
@@ -103,8 +103,6 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
             lines.append("---")
             lines.append("")
         lines.extend(render_atom_block_md(atom))
-    lines.append("</details>")
-    lines.append("")
     return lines
 
 
