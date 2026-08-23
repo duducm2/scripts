@@ -406,3 +406,85 @@ StudyLink_Open(studyKey) {
         MsgBox "No link stored for this study."
     }
 }
+
+; Memory Palace–matched manage menu (dark #1E1E1E, gold keys, card rows).
+; items: [["1","Open","…"], …]   pairs: [["1", callback], …]
+StudyLink_CenterGui(guiObj, w := 560, h := 420) {
+    MonitorGetWorkArea(MonitorGetPrimary(), &L, &T, &R, &B)
+    x := L + ((R - L) - w) // 2
+    y := T + ((B - T) - h) // 2
+    guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
+}
+
+StudyLink_TruncateLabel(s, maxLen := 72) {
+    t := Trim(s)
+    if (StrLen(t) <= maxLen)
+        return t
+    return SubStr(t, 1, maxLen - 1) . "…"
+}
+
+StudyLink_UnbindManageMenuHotkeys() {
+    loop 9 {
+        try Hotkey(String(A_Index), "Off")
+    }
+    try Hotkey("Escape", "Off")
+    try Hotkey("Backspace", "Off")
+}
+
+StudyLink_ClosePalaceManageGui(&guiRef) {
+    StudyLink_UnbindManageMenuHotkeys()
+    StudyTopicSelector_SafeDestroyGui(guiRef)
+    guiRef := false
+    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+    global g_StudyTopicSelectorActive
+    if (!g_StudyTopicSelectorActive) {
+        try Palace_ShowMainMenu()
+        catch {
+        }
+    }
+}
+
+StudyLink_ShowPalaceManageGui(&guiRef, windowTitle, heading, statusLine, items, pairs, onEscape) {
+    StudyLink_UnbindManageMenuHotkeys()
+
+    guiRef := Gui("+AlwaysOnTop +ToolWindow", windowTitle)
+    guiRef.SetFont("s10", "Segoe UI")
+    guiRef.BackColor := "1E1E1E"
+    guiRef.OnEvent("Close", onEscape)
+    guiRef.OnEvent("Escape", onEscape)
+
+    guiRef.SetFont("s16 cWhite Bold", "Segoe UI")
+    guiRef.Add("Text", "x20 y16 w520", heading)
+    guiRef.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
+    guiRef.Add("Text", "x20 y48 w520", StudyLink_TruncateLabel(statusLine, 90))
+    guiRef.SetFont("s9 cF1C40F", "Segoe UI")
+    guiRef.Add("Text", "x20 y72 w520", "Press 1–3 · Backspace / Esc — back")
+
+    y0 := 108
+    rowH := 72
+    for it in items {
+        y := y0 + (A_Index - 1) * rowH
+        guiRef.SetFont("s14 cF1C40F Bold", "Segoe UI")
+        guiRef.Add("Text", "x32 y" . (y + 10) . " w40 BackgroundTrans", "[" . it[1] . "]")
+        guiRef.SetFont("s12 cWhite Bold", "Segoe UI")
+        guiRef.Add("Text", "x78 y" . (y + 10) . " w440 BackgroundTrans", it[2])
+        guiRef.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+        guiRef.Add("Text", "x78 y" . (y + 36) . " w440 BackgroundTrans", it[3])
+    }
+
+    footerY := y0 + items.Length * rowH + 12
+    guiRef.SetFont("s9 c808080", "Segoe UI")
+    guiRef.Add("Text", "x20 y" . footerY . " w520", "Backspace / Esc — Memory Palace menu")
+
+    for p in pairs {
+        try Hotkey(p[1], p[2], "On")
+    }
+    try Hotkey("Escape", onEscape, "On")
+    try Hotkey("Backspace", onEscape, "On")
+
+    try DllCall("dwmapi\DwmSetWindowAttribute", "ptr", guiRef.Hwnd, "uint", 20, "int*", 1, "int", 4)
+    catch {
+    }
+    winH := footerY + 40
+    StudyLink_CenterGui(guiRef, 560, winH)
+}

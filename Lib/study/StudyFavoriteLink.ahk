@@ -5,43 +5,33 @@ global g_StudyFavoriteLinksGui := false
 
 StudyTopicSelector_ManageFavoriteLinksEsc(*) {
     global g_StudyFavoriteLinksGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyFavoriteLinksGui)
-    g_StudyFavoriteLinksGui := false
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+    StudyLink_ClosePalaceManageGui(&g_StudyFavoriteLinksGui)
 }
 
 StudyTopicSelector_ManageFavoriteLinks(*) {
     global g_StudyFavoriteLinksGui
     StudyTopicSelector_UnbindRobustEscape()
     StudyTopicSelector_SafeDestroyGui(g_StudyFavoriteLinksGui)
-    g_StudyFavoriteLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
-    loop 9 {
-        try Hotkey(String(A_Index), "Off")
-    }
-    try Hotkey("Escape", "Off")
-    g_StudyFavoriteLinksGui.BackColor := "1E1E2E"
-    g_StudyFavoriteLinksGui.MarginX := 20
-    g_StudyFavoriteLinksGui.MarginY := 15
-    g_StudyFavoriteLinksGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyFavoriteLinksGui.Add("Text", "w400 Center", "⭐ Manage Study Favorite Link")
-    g_StudyFavoriteLinksGui.Add("Text", "w400 h1 Background45475A")
-    g_StudyFavoriteLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
     favResult := StudyLink_GetResult(STUDYLINK_KEY_FAVORITE)
     if (favResult["ok"])
         StudyLink_PlayApiSuccessSound()
-    g_StudyFavoriteLinksGui.Add("Text", "w400", "Current favorite link: " . StudyLink_FormatLinkLabel(favResult))
-    g_StudyFavoriteLinksGui.Add("Text", "w400", "[1] Open favorite link")
-    g_StudyFavoriteLinksGui.Add("Text", "w400", "[2] Set favorite link (Chrome address bar)")
-    g_StudyFavoriteLinksGui.Add("Text", "w400", "[3] Set favorite link manually")
-    g_StudyFavoriteLinksGui.Add("Text", "w400 h1 Background45475A y+10")
-    g_StudyFavoriteLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyFavoriteLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
-    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyFavoriteLinksGui)
-    Hotkey("1", StudyTopicSelector_ManageFavoriteLinks_Open, "On")
-    Hotkey("2", StudyTopicSelector_ManageFavoriteLinks_Set, "On")
-    Hotkey("3", StudyTopicSelector_ManageFavoriteLinks_SetManual, "On")
-    Hotkey("Escape", StudyTopicSelector_ManageFavoriteLinksEsc, "On")
-    g_StudyFavoriteLinksGui.Show()
+    StudyLink_ShowPalaceManageGui(
+        &g_StudyFavoriteLinksGui,
+        "Memory Palace — Favorite",
+        "❤️ Favorite",
+        "Current: " . StudyLink_FormatLinkLabel(favResult),
+        [
+            ["1", "Open", "Open the stored favorite link in Chrome"],
+            ["2", "Set from Chrome", "Copy URL from the address bar (F6)"],
+            ["3", "Set manually", "Paste or type a URL"]
+        ],
+        [
+            ["1", StudyTopicSelector_ManageFavoriteLinks_Open],
+            ["2", StudyTopicSelector_ManageFavoriteLinks_Set],
+            ["3", StudyTopicSelector_ManageFavoriteLinks_SetManual]
+        ],
+        StudyTopicSelector_ManageFavoriteLinksEsc
+    )
 }
 
 StudyTopicSelector_ManageFavoriteLinks_Open(*) {

@@ -49,43 +49,33 @@ StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg := "") {
 
 StudyTopicSelector_ManageArticleLinksEsc(*) {
     global g_StudyArticleLinksGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
-    g_StudyArticleLinksGui := false
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+    StudyLink_ClosePalaceManageGui(&g_StudyArticleLinksGui)
 }
 
 StudyTopicSelector_ManageArticleLinks(*) {
     global g_StudyArticleLinksGui
     StudyTopicSelector_UnbindRobustEscape()
     StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)
-    g_StudyArticleLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
-    loop 9 {
-        try Hotkey(String(A_Index), "Off")
-    }
-    try Hotkey("Escape", "Off")
-    g_StudyArticleLinksGui.BackColor := "1E1E2E"
-    g_StudyArticleLinksGui.MarginX := 20
-    g_StudyArticleLinksGui.MarginY := 15
-    g_StudyArticleLinksGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyArticleLinksGui.Add("Text", "w400 Center", "📄 Manage Study Article Link")
-    g_StudyArticleLinksGui.Add("Text", "w400 h1 Background45475A")
-    g_StudyArticleLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
     artResult := StudyLink_GetResult(STUDYLINK_KEY_ARTICLE)
     if (artResult["ok"])
         StudyLink_PlayApiSuccessSound()
-    g_StudyArticleLinksGui.Add("Text", "w400", "Current article link: " . StudyLink_FormatLinkLabel(artResult))
-    g_StudyArticleLinksGui.Add("Text", "w400", "[1] Open article link")
-    g_StudyArticleLinksGui.Add("Text", "w400", "[2] Set article link (Chrome address bar)")
-    g_StudyArticleLinksGui.Add("Text", "w400", "[3] Set article link manually")
-    g_StudyArticleLinksGui.Add("Text", "w400 h1 Background45475A y+10")
-    g_StudyArticleLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyArticleLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
-    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyArticleLinksGui)
-    Hotkey("1", StudyTopicSelector_ManageArticleLinks_Open, "On")
-    Hotkey("2", StudyTopicSelector_ManageArticleLinks_Set, "On")
-    Hotkey("3", StudyTopicSelector_ManageArticleLinks_SetManual, "On")
-    Hotkey("Escape", StudyTopicSelector_ManageArticleLinksEsc, "On")
-    g_StudyArticleLinksGui.Show()
+    StudyLink_ShowPalaceManageGui(
+        &g_StudyArticleLinksGui,
+        "Memory Palace — Study Article",
+        "📖 Study Article",
+        "Current: " . StudyLink_FormatLinkLabel(artResult),
+        [
+            ["1", "Open", "Open the stored article link in Chrome"],
+            ["2", "Set from Chrome", "Copy URL from the address bar (F6)"],
+            ["3", "Set manually", "Paste or type a URL"]
+        ],
+        [
+            ["1", StudyTopicSelector_ManageArticleLinks_Open],
+            ["2", StudyTopicSelector_ManageArticleLinks_Set],
+            ["3", StudyTopicSelector_ManageArticleLinks_SetManual]
+        ],
+        StudyTopicSelector_ManageArticleLinksEsc
+    )
 }
 
 StudyTopicSelector_ManageArticleLinks_Open(*) {

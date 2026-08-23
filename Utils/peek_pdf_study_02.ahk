@@ -106,9 +106,7 @@ StudyTopicSelector_ResumeSelectorEscapeAfterLinks(*) {
 
 StudyTopicSelector_ManageLinksEsc(*) {
     global g_StudyLinksGui
-    StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
-    g_StudyLinksGui := false
-    StudyTopicSelector_ResumeSelectorEscapeAfterLinks()
+    StudyLink_ClosePalaceManageGui(&g_StudyLinksGui)
 }
 
 ; Persistent global GUI for link management submenu
@@ -118,35 +116,26 @@ StudyTopicSelector_ManageLinks(*) {
     StudyLink_EnsureManageSubtopicSentinel()
     StudyTopicSelector_UnbindRobustEscape()
     StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
-    g_StudyLinksGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
-    ; Unbind previous hotkeys to avoid conflicts
-    loop 9 {
-        try Hotkey(String(A_Index), "Off")
-    }
-    try Hotkey("Escape", "Off")
-    g_StudyLinksGui.BackColor := "1E1E2E"
-    g_StudyLinksGui.MarginX := 20
-    g_StudyLinksGui.MarginY := 15
-    g_StudyLinksGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "🔗 Manage Study Subtopic Link")
-    g_StudyLinksGui.Add("Text", "w400 h1 Background45475A")
-    g_StudyLinksGui.SetFont("s11 cCDD6F4", "Segoe UI")
     ytResult := StudyLink_GetResult(STUDYLINK_KEY_YOUTUBE)
     if (ytResult["ok"])
         StudyLink_PlayApiSuccessSound()
-    g_StudyLinksGui.Add("Text", "w400", "Current YouTube link: " . StudyLink_FormatLinkLabel(ytResult))
-    g_StudyLinksGui.Add("Text", "w400", "[1] Open YouTube link")
-    g_StudyLinksGui.Add("Text", "w400", "[2] Set YouTube link (Share + timestamp)")
-    g_StudyLinksGui.Add("Text", "w400", "[3] Set YouTube link manually")
-    g_StudyLinksGui.Add("Text", "w400 h1 Background45475A y+10")
-    g_StudyLinksGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyLinksGui.Add("Text", "w400 Center", "Press 1-3 | Esc to cancel")
-    StudyTopicSelector_PositionGuiLikeOutlook(g_StudyLinksGui)
-    Hotkey("1", StudyTopicSelector_ManageLinks_Open, "On")
-    Hotkey("2", StudyTopicSelector_ManageLinks_Set, "On")
-    Hotkey("3", StudyTopicSelector_ManageLinks_SetManual, "On")
-    Hotkey("Escape", StudyTopicSelector_ManageLinksEsc, "On")
-    g_StudyLinksGui.Show()
+    StudyLink_ShowPalaceManageGui(
+        &g_StudyLinksGui,
+        "Memory Palace — Study Video",
+        "📹 Study Video",
+        "Current: " . StudyLink_FormatLinkLabel(ytResult),
+        [
+            ["1", "Open", "Open the stored video link in Chrome"],
+            ["2", "Set from YouTube", "Share + timestamp from the active Chrome tab"],
+            ["3", "Set manually", "Paste or type a URL"]
+        ],
+        [
+            ["1", StudyTopicSelector_ManageLinks_Open],
+            ["2", StudyTopicSelector_ManageLinks_Set],
+            ["3", StudyTopicSelector_ManageLinks_SetManual]
+        ],
+        StudyTopicSelector_ManageLinksEsc
+    )
 }
 
 ; [1] Open the saved YouTube subtopic link in Google Chrome
