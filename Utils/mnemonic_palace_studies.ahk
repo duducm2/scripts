@@ -105,8 +105,6 @@ Palace_StudyForm(existing) {
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Title")
     eTitle := g.Add("Edit", "w320", isEdit ? existing["title"] : "")
-    g.Add("Text", "y+8", "Sort order")
-    eOrder := g.Add("Edit", "w80", isEdit ? existing["sort_order"] : "1")
     chk := g.Add("CheckBox", "y+8 Checked" . (isEdit ? (existing["active"] = "0" ? "0" : "1") : "1"), "Active")
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SaveStudy)
@@ -147,11 +145,12 @@ Palace_StudyForm(existing) {
             return
         }
         studies := Palace_Load("studies")
+        sortOrder := isEdit ? existing["sort_order"] : Palace_NextSortOrder(studies)
         row := Map(
             "id", isEdit ? existing["id"] : Palace_SlugId("STUDY_", npath, studies),
         "title", title,
         "notes_rel_path", npath,
-        "sort_order", Trim(eOrder.Value),
+        "sort_order", sortOrder,
         "active", chk.Value ? "1" : "0"
         )
         if (isEdit) {

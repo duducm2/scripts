@@ -437,6 +437,21 @@ Palace_NextId(prefix, rows, pad := 3) {
     return prefix . Format("{:0" . pad . "d}", maxN + 1)
 }
 
+Palace_NextSortOrder(rows) {
+    maxN := 0
+    for row in rows {
+        if (!row.Has("sort_order"))
+            continue
+        s := Trim(row["sort_order"])
+        if (s = "" || !IsDigit(s))
+            continue
+        n := Integer(s)
+        if (n > maxN)
+            maxN := n
+    }
+    return String(maxN + 1)
+}
+
 Palace_FilterBy(rows, key, value) {
     out := []
     for r in rows {
