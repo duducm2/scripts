@@ -270,3 +270,8 @@ BEAST_TAOISM_04_Q,PALACE_TAOISM_04,Q,Quetzalcoatl,,visual,0,2
 BEAST_TAOISM_04_R,PALACE_TAOISM_04,R,rat,,gustatory,0,3
 BEAST_TAOISM_04_S,PALACE_TAOISM_04,S,skull,,tactile,0,4
 BEAST_TAOISM_04_T,PALACE_TAOISM_04,T,toucan,,olfactory,0,5
+BEAST_VIOLIN_01_A,PALACE_VIOLIN_01,A,Arachne,Lynne Kelly,tactile,0,1
+BEAST_VIOLIN_01_B,PALACE_VIOLIN_01,B,bird of paradise,Lynne Kelly,visual,0,2
+BEAST_VIOLIN_01_C,PALACE_VIOLIN_01,C,cat,Lynne Kelly,auditory,0,3
+BEAST_VIOLIN_01_D,PALACE_VIOLIN_01,D,dragon,Lynne Kelly,thermal,0,4
+BEAST_VIOLIN_01_E,PALACE_VIOLIN_01,E,eagle,Lynne Kelly,gustatory,0,5
