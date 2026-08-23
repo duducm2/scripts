@@ -18,9 +18,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [N] Neanderthal</summary>
+<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
 
-**Z1 · Z1 Head | Cognitive Shuffling**
+🟦 **Z1 · Z1 Head | Cognitive Shuffling**
 
 **Concept**
 💡 massive jaw aggressively chewing a glowing, random word generator that shoots out floating, emotionally neutral letters · sensory: visual 👁️
@@ -36,7 +36,7 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 
 ---
 
-**Z2 · Z2 Forelimbs | Insomnia Cause**
+🟦 **Z2 · Z2 Forelimbs | Insomnia Cause**
 
 **Concept**
 💡 thick, hairy hands violently crushing a sharp, freezing-cold holographic calendar of worries · sensory: tactile ✋
@@ -52,7 +52,7 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 
 ---
 
-**Z3 · Z3 Torso | Cognitive Refocusing**
+🟦 **Z3 · Z3 Torso | Cognitive Refocusing**
 
 **Concept**
 💡 chest cavity bursting open to vomit a stream of sweet, pastel-colored marshmallows that drown out buzzing hornets · sensory: gustatory 👅
@@ -69,9 +69,9 @@ The Neanderthal's massive jaw aggressively chews a glowing, random word generato
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [O] owl</summary>
+<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
 
-**Z1 · Z1 Head | Spelling Trick**
+🟦 **Z1 · Z1 Head | Spelling Trick**
 
 **Concept**
 💡 sharp beak ripping a giant, screaming letter "B" out of a cake and firing it like a machine gun · sensory: auditory 👂
@@ -87,7 +87,7 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 
 ---
 
-**Z2 · Z2 Forelimbs | Hypnagogic Composition**
+🟦 **Z2 · Z2 Forelimbs | Hypnagogic Composition**
 
 **Concept**
 💡 wings aggressively flapping a thick, pungent cloud of heavy dream-sand that melts the pavement · sensory: olfactory 👃
@@ -103,7 +103,7 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 
 ---
 
-**Z3 · Z3 Torso | Sleep Strategy Practice**
+🟦 **Z3 · Z3 Torso | Sleep Strategy Practice**
 
 **Concept**
 💡 heavy torso vigorously lifting a massive barbell made of solid cheese, sweating under the physical pressure · sensory: tactile ✋
@@ -133,7 +133,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [J] jester</summary>
+<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
 
 **Concept**
 💡 Behavioral activation works because taking physical action forcefully shifts brain chemistry before motivation ever appears.
@@ -150,7 +150,7 @@ A colossal medieval jester refuses to wait for hope; it aggressively bites Goku'
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [K] kitten</summary>
+<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
 
 **Concept**
 💡 The first five minutes involve gentle physical rotations of the neck, shoulders, and wrists to release an immediate energy boost.
@@ -167,7 +167,7 @@ A majestic kitten violently twists its neck, shoulders, and wrists exactly ten t
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [L] lion</summary>
+<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
 
 **Concept**
 💡 The second block emotionally warms the brain by placing a hand on the chest and deeply visualizing a simple pleasant experience.
@@ -184,7 +184,7 @@ A tiny lion leaps onto Goku's chest, forcefully slamming its heavy paws against 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [M] marmoset</summary>
+<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
 
 **Concept**
 💡 The final five minutes require a small, practical action focused on personal sensory meaning rather than societal productivity.
@@ -214,9 +214,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
-**Z1 · Z1 Head | BP Definition**
+🟦 **Z1 · Z1 Head | BP Definition**
 
 **Concept**
 💡 massive jaws crunching down on thick, rubbery arteries, bursting them open loudly · sensory: auditory 👂
@@ -232,7 +232,7 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 
 ---
 
-**Z2 · Z2 Forelimbs | Normal range**
+🟦 **Z2 · Z2 Forelimbs | Normal range**
 
 **Concept**
 💡 front claws frantically splashing boiling, glowing red blood that scorches the ground · sensory: visual 👁️
@@ -248,7 +248,7 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 
 ---
 
-**Z3 · Z3 Torso | Mean Arterial Pressure**
+🟦 **Z3 · Z3 Torso | Mean Arterial Pressure**
 
 **Concept**
 💡 a giant, heavy iron scale violently branded into its chest, physically balancing the top and bottom blood pools while emitting burning smoke · sensory: olfactory 👃
@@ -265,9 +265,9 @@ Dracula stands by a stone gate, commanding a monstrous Hydra to attack the pavem
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [I] imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
 
-**Z1 · Z1 Head | HR Definition**
+🟦 **Z1 · Z1 Head | HR Definition**
 
 **Concept**
 💡 a giant stopwatch swallowed whole, glowing blindingly through its throat · sensory: visual 👁️
@@ -283,7 +283,7 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 ---
 
-**Z2 · Z2 Forelimbs | Normal range**
+🟦 **Z2 · Z2 Forelimbs | Normal range**
 
 **Concept**
 💡 arms violently vibrating and shooting electric shocks · sensory: tactile ✋
@@ -313,7 +313,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [F] frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
 
 **Concept**
 💡 Asking questions before reading primes the brain to filter for relevant information.
@@ -330,7 +330,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
 
 **Concept**
 💡 Highlighting everything defeats the purpose of highlighting.
@@ -360,7 +360,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 The habit of pronouncing words in your head slows down reading.
@@ -377,7 +377,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
 **Concept**
 💡 Eyes backtracking or back skipping wastes time and ruins focus.
@@ -394,7 +394,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
 **Concept**
 💡 Familiar words don't need to be pronounced internally to be understood.
@@ -411,7 +411,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
 **Concept**
 💡 Using a visual guide prevents regression and focuses attention.
@@ -428,7 +428,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 Capturing multiple words per fixation expands reading speed.

@@ -18,9 +18,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [I] imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
 
-**Z1 · Z1 Head | Token Metric**
+🟦 **Z1 · Z1 Head | Token Metric**
 
 **Concept**
 💡 a giant glowing green price tag clamps aggressively over its face, mutating its skull into a loudly ringing cash register · sensory: auditory 👂
@@ -36,7 +36,7 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 
 ---
 
-**Z2 · Z2 Forelimbs | Output Cost**
+🟦 **Z2 · Z2 Forelimbs | Output Cost**
 
 **Concept**
 💡 its claws violently vomit blistering hot golden coins that visibly melt the concrete · sensory: thermal 🌡️
@@ -66,7 +66,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
 **Concept**
 💡 Retrieval-Augmented Generation (RAG) fetches external documents at query time instead of relying entirely on its training memory.
@@ -83,7 +83,7 @@ A colossal dragon made of folded library pages refuses to use its own brain. Ins
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 A flat, unstructured content store causes models to retrieve the loudest keyword match instead of the most accurate document.
@@ -100,7 +100,7 @@ A skyscraper-sized eagle stands on a flat heap of rotting, messy file folders th
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [F] frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
 
 **Concept**
 💡 Controlled vocabularies prevent slight word variations from fracturing one concept into multiple unrelated topics.
@@ -117,7 +117,7 @@ A microscopic frog sits on a distant brick wall, catching hundreds of chaotic, f
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
 
 **Concept**
 💡 AI agents require explicit structures, hierarchies, and boundaries to safely take action and update records.
@@ -134,7 +134,7 @@ A three-headed goat tries to stamp its hooves to route banking tickets, but free
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
 **Concept**
 💡 Adding situational context to text chunks before indexing them drastically reduces retrieval failures.
@@ -164,7 +164,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 Augmented analytics automates data analysis using AI and machine learning.
@@ -181,7 +181,7 @@ A skyscraper-sized Arachne weaves a glowing web of binary code directly into a m
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
 **Concept**
 💡 Conversational interfaces allow you to query data using everyday language.
@@ -198,9 +198,9 @@ A neon-plumed bird of paradise perched on a wooden bench sings questions that in
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
-**Z1 · Z1 Head | Data-lake translator jaws**
+🟦 **Z1 · Z1 Head | Data-lake translator jaws**
 
 **Concept**
 💡 The cat's jaws violently gulp raw data-lake water and spit it out as neatly labeled golden folders that glow with piercing light. · sensory: visual 👁️
@@ -216,7 +216,7 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 
 ---
 
-**Z2 · Z2 Forelimbs | Crystal sphere helmet**
+🟦 **Z2 · Z2 Forelimbs | Crystal sphere helmet**
 
 **Concept**
 💡 The cat's front paws violently slam a crystal sphere helmet onto its skull, locking all financial numbers inside with a loud, echoing _clack_. · sensory: auditory 👂
@@ -232,7 +232,7 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 
 ---
 
-**Z3 · Z3 Torso | Blueprint projector ribs**
+🟦 **Z3 · Z3 Torso | Blueprint projector ribs**
 
 **Concept**
 💡 The cat's ribs aggressively fire a solid, freezing-cold architectural blueprint from its chest that stops a robot brain from hallucinating. · sensory: thermal 🌡️

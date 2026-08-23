@@ -18,7 +18,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Aj] Ajax</summary>
+<summary>🟧 <strong>Beast</strong> · [Aj] Ajax</summary>
 
 **Concept**
 💡 Stacked notes sharing a single stem mean the notes are played simultaneously.
@@ -35,7 +35,7 @@ The towering Greek warrior Ajax slams his bronze shield into the pavement, split
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ak] Akita (dog breed)</summary>
+<summary>🟧 <strong>Beast</strong> · [Ak] Akita (dog breed)</summary>
 
 **Concept**
 💡 Good posture involves sitting straight with the head lifted upward as if pulled by a string, while keeping the shoulders relaxed.
@@ -65,7 +65,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ai] Airedale terrier</summary>
+<summary>🟧 <strong>Beast</strong> · [Ai] Airedale terrier</summary>
 
 **Concept**
 💡 Counting out loud and clapping physically reinforces the rhythm and prevents speed changes.
@@ -95,7 +95,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Af] Afghan hound</summary>
+<summary>🟧 <strong>Beast</strong> · [Af] Afghan hound</summary>
 
 **Concept**
 💡 A line note has a staff line passing directly through its center, similar to a bead on a string.
@@ -112,7 +112,7 @@ Marilyn Monroe watches in awe as an Afghan hound bites down hard on a massive, g
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ag] Agaric fungi</summary>
+<summary>🟧 <strong>Beast</strong> · [Ag] Agaric fungi</summary>
 
 **Concept**
 💡 A space note is a musical note that rests entirely in the empty gap between two staff lines.
@@ -129,7 +129,7 @@ Giant, glowing Agaric fungi sprout exclusively inside the floating gap between t
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ah] Ah!—a sigh</summary>
+<summary>🟧 <strong>Beast</strong> · [Ah] Ah!—a sigh</summary>
 
 **Concept**
 💡 A cadence is a harmonic progression at the end of a musical phrase that provides a sense of resolution or punctuation.
@@ -159,7 +159,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ac] acorn</summary>
+<summary>🟧 <strong>Beast</strong> · [Ac] acorn</summary>
 
 **Concept**
 💡 An accidental is a symbol that alters a note's pitch temporarily, such as sharps, flats, or naturals.
@@ -176,7 +176,7 @@ Goku throws a giant, glowing acorn that crashes into a metal street sign, warpin
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ad] adder</summary>
+<summary>🟧 <strong>Beast</strong> · [Ad] adder</summary>
 
 **Concept**
 💡 A melody combines pitch and rhythm into a primary, cohesive musical line.
@@ -193,9 +193,9 @@ A colossal adder slithers along a wooden fence, hissing a rhythm so loud it shat
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ae] aerialist</summary>
+<summary>🟧 <strong>Beast</strong> · [Ae] aerialist</summary>
 
-**Z1 · Z1 Head | Phrase**
+🟦 **Z1 · Z1 Head | Phrase**
 
 **Concept**
 💡 she catches a heavy, rough-textured punctuation mark with her teeth, biting down hard to create a resting point · sensory: tactile ✋
@@ -211,7 +211,7 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 
 ---
 
-**Z2 · Z2 Forelimbs | Section**
+🟦 **Z2 · Z2 Forelimbs | Section**
 
 **Concept**
 💡 she stacks huge, glowing concrete highway segments together like children's blocks using her hands · sensory: visual 👁️
@@ -241,7 +241,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [X] Xena, warrior woman</summary>
+<summary>🟧 <strong>Beast</strong> · [X] Xena, warrior woman</summary>
 
 **Concept**
 💡 An inversion changes which note sits at the bottom of the chord.
@@ -258,9 +258,9 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Y] yak</summary>
+<summary>🟧 <strong>Beast</strong> · [Y] yak</summary>
 
-**Z1 · Z1 Head | Harmony combination**
+🟦 **Z1 · Z1 Head | Harmony combination**
 
 **Concept**
 💡 - Many notes came flying and gathered together a single note. That single note was growing in size, getting bigger and bigger, till it was so heavy that it fell onto the yaks head.
@@ -276,7 +276,7 @@ Xena, warrior woman levitates high in the air and flips completely upside down, 
 
 ---
 
-**Z2 · Z2 Forelimbs | Triad unit**
+🟦 **Z2 · Z2 Forelimbs | Triad unit**
 
 **Concept**
 💡 stamping three distinct lightning bolts into the pavement · sensory: tactile ✋
@@ -293,9 +293,9 @@ stamping three distinct lightning bolts into the pavement · sensory: tactile �
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Z] Zeus</summary>
+<summary>🟧 <strong>Beast</strong> · [Z] Zeus</summary>
 
-**Z1 · Z1 Head | Consonant rest**
+🟦 **Z1 · Z1 Head | Consonant rest**
 
 **Concept**
 💡 resting his cheek heavily against a massive, calming iron ship anchor · sensory: tactile ✋
@@ -311,7 +311,7 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 
 ---
 
-**Z2 · Z2 Forelimbs | Dissonant tension**
+🟦 **Z2 · Z2 Forelimbs | Dissonant tension**
 
 **Concept**
 💡 violently scratching sheet metal to shoot burning sparks · sensory: auditory 👂
@@ -328,7 +328,7 @@ Zeus rests his cheek heavily against a massive iron ship anchor that instantly s
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Aa] aardvark</summary>
+<summary>🟧 <strong>Beast</strong> · [Aa] aardvark</summary>
 
 **Concept**
 💡 A chord progression is a sequence of chords that dictates the emotional arc and key of a song.
@@ -345,7 +345,7 @@ A colossal aardvark hops along a drawn timeline on the road while Neo tracks its
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ab] Abyssinian cat</summary>
+<summary>🟧 <strong>Beast</strong> · [Ab] Abyssinian cat</summary>
 
 **Concept**
 💡 Harmony provides the underlying context that can completely change the emotional feeling of the same melody.
@@ -375,7 +375,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [S] skull</summary>
+<summary>🟧 <strong>Beast</strong> · [S] skull</summary>
 
 **Concept**
 💡 Chords are constructed by skipping keys between the notes you play.
@@ -392,7 +392,7 @@ A giant floating skull rolls along the street, explicitly skipping over every ot
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [T] toucan</summary>
+<summary>🟧 <strong>Beast</strong> · [T] toucan</summary>
 
 **Concept**
 💡 Primary chords (I, IV, V) produce a cheerful, major sound.
@@ -409,7 +409,7 @@ A skyscraper-sized toucan flaps its wings to project a blindingly bright rainbow
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [U] unicorn</summary>
+<summary>🟧 <strong>Beast</strong> · [U] unicorn</summary>
 
 **Concept**
 💡 Secondary chords (ii, iii, vi) produce a darker, minor sound in major keys.
@@ -426,7 +426,7 @@ A shadowy unicorn bleeds thick red ink from its horn onto the pavement to draw t
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [V] vulture</summary>
+<summary>🟧 <strong>Beast</strong> · [V] vulture</summary>
 
 **Concept**
 💡 Diminished chords have an edgy, dissonant sound because they skip fewer keys.
@@ -443,7 +443,7 @@ A vulture violently scratches a chalkboard wall on the street with its talons, l
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [W] wombat</summary>
+<summary>🟧 <strong>Beast</strong> · [W] wombat</summary>
 
 **Concept**
 💡 A chord is in root position when the root note is on the very bottom.
@@ -473,9 +473,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [P] panther</summary>
+<summary>🟧 <strong>Beast</strong> · [P] panther</summary>
 
-**Z1 · C major white keys**
+🟦 **Z1 · C major white keys**
 
 **Concept**
 💡 The panther wears white mushrooms growing only along its white-key collar.
@@ -491,7 +491,7 @@ A panther crouches across the street piano with white mushrooms growing only alo
 
 ---
 
-**Z2 · Flat lowers**
+🟦 **Z2 · Flat lowers**
 
 **Concept**
 💡 The panther carries a drooping key charm pushed down and left.
@@ -507,7 +507,7 @@ A panther crouches across the street piano with white mushrooms growing only alo
 
 ---
 
-**Z3 · Sharp raises**
+🟦 **Z3 · Sharp raises**
 
 **Concept**
 💡 The panther carries a bright spike charm lifting a key upward and right.
@@ -524,9 +524,9 @@ A panther crouches across the street piano with white mushrooms growing only alo
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Q] Quetzalcoatl</summary>
+<summary>🟧 <strong>Beast</strong> · [Q] Quetzalcoatl</summary>
 
-**Z1 · Chord**
+🟦 **Z1 · Chord**
 
 **Concept**
 💡 Quetzalcoatl presses two piano keys at the same time with a wide coiled body.
@@ -542,7 +542,7 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 
 ---
 
-**Z2 · Triad**
+🟦 **Z2 · Triad**
 
 **Concept**
 💡 Quetzalcoatl stacks three piano stones labeled by position: root, skip, next, skip, next.
@@ -559,7 +559,7 @@ Quetzalcoatl coils around the piano while Alan Turing stands nearby holding a th
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [R] rat</summary>
+<summary>🟧 <strong>Beast</strong> · [R] rat</summary>
 
 **Concept**
 💡 The damper pedal keeps notes ringing after the keys are released.
@@ -589,7 +589,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [K] kitten</summary>
+<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
 
 **Concept**
 💡 Practice rhythm and pitch apart before putting them together.
@@ -606,9 +606,9 @@ A kitten divides the street piano into two clear work tables. One table holds a 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [L] lion</summary>
+<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
 
-**Z1 · Tonic home note**
+🟦 **Z1 · Tonic home note**
 
 **Concept**
 💡 The lion pulls a tiny piano house to one note and parks there.
@@ -624,7 +624,7 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 
 ---
 
-**Z2 · C-major resolution**
+🟦 **Z2 · C-major resolution**
 
 **Concept**
 💡 The lion places a bright C finish stone at the end of a C-major path.
@@ -641,9 +641,9 @@ A lion pulls a tiny piano house along the street and parks it on one note, makin
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [M] marmoset</summary>
+<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
 
-**Z1 · Half step**
+🟦 **Z1 · Half step**
 
 **Concept**
 💡 The marmoset squeezes between two side-by-side piano keys with no space between them.
@@ -659,7 +659,7 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 
 ---
 
-**Z2 · Whole step**
+🟦 **Z2 · Whole step**
 
 **Concept**
 💡 The marmoset leaps over exactly one glowing skipped key and lands on the next key.
@@ -676,9 +676,9 @@ A marmoset crouches between two side-by-side piano keys and finds no space at al
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [N] Neanderthal</summary>
+<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
 
-**Z1 · Pentascale**
+🟦 **Z1 · Pentascale**
 
 **Concept**
 💡 The Neanderthal carries a cracked acorn with five tiny piano keys growing from it.
@@ -695,9 +695,9 @@ The Neanderthal carries a cracked acorn with five tiny piano keys growing from i
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [O] owl</summary>
+<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
 
-**Z1 · Major scale sound**
+🟦 **Z1 · Major scale sound**
 
 **Concept**
 💡 The owl lands on eight sung step markers that rise and fall like do-re-mi.
@@ -713,7 +713,7 @@ An owl spreads its wings above the street piano and lands on eight sung step mar
 
 ---
 
-**Z2 · Any starting key**
+🟦 **Z2 · Any starting key**
 
 **Concept**
 💡 The owl carries a golden start flag that moves between black and white keys while the same gap path appears.
@@ -743,9 +743,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [F] frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
 
-**Z1 · Whole note**
+🟦 **Z1 · Whole note**
 
 **Concept**
 💡 The frog holds one big hollow note shield while four drum hits shake the street.
@@ -761,7 +761,7 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 
 ---
 
-**Z2 · Half note**
+🟦 **Z2 · Half note**
 
 **Concept**
 💡 The frog carries a note with a stem and takes exactly two steps.
@@ -777,7 +777,7 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 
 ---
 
-**Z3 · Quarter note**
+🟦 **Z3 · Quarter note**
 
 **Concept**
 💡 The frog presses one black note shape into wet clay with one loud footstep.
@@ -794,7 +794,7 @@ A frog stands inside a painted measure grid. First, it lifts a big hollow note l
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
 
 **Concept**
 💡 A double bar line marks the end of a part or piece.
@@ -811,9 +811,9 @@ A goat drops two thick black bars across the street staff. Every sound stops at 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
-**Z1 · Rounded fingers**
+🟦 **Z1 · Rounded fingers**
 
 **Concept**
 💡 The Hydra balances a small orange under its softly arched playing hand.
@@ -829,7 +829,7 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 
 ---
 
-**Z2 · Fingertip pads**
+🟦 **Z2 · Fingertip pads**
 
 **Concept**
 💡 Its glowing soft fingertip pads press the keys instead of sharp claws.
@@ -845,7 +845,7 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 
 ---
 
-**Z3 · Loose thumb**
+🟦 **Z3 · Loose thumb**
 
 **Concept**
 💡 A tiny thumb-shaped pillow rests beside the Hydra’s relaxed hand.
@@ -862,9 +862,9 @@ A Hydra places one playing hand over the piano keys while Claude Debussy watches
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [I] imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
 
-**Z1 · Gentle arm weight**
+🟦 **Z1 · Gentle arm weight**
 
 **Concept**
 💡 The imp lowers a wet sponge onto a piano key so water slowly squeezes out.
@@ -880,7 +880,7 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 
 ---
 
-**Z2 · Weight transfer**
+🟦 **Z2 · Weight transfer**
 
 **Concept**
 💡 The imp wears a heavy cloth sleeve from shoulder to fingertip, letting weight flow into the key.
@@ -897,9 +897,9 @@ An imp sits at the street piano wearing a heavy cloth sleeve that hangs from sho
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [J] jester</summary>
+<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
 
-**Z1 · Raised flexible wrists**
+🟦 **Z1 · Raised flexible wrists**
 
 **Concept**
 💡 The jester balances soft cushions under lifted wrists above the keys.
@@ -915,7 +915,7 @@ A jester sits at the piano while Maurice Ravel places soft cushions under the je
 
 ---
 
-**Z2 · Elbows away**
+🟦 **Z2 · Elbows away**
 
 **Concept**
 💡 The jester opens wing-like sleeves slightly away from the body.
@@ -945,9 +945,9 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
-**Z1 · Middle C home marker**
+🟦 **Z1 · Middle C home marker**
 
 **Concept**
 💡 A thick white web wraps the middle C key between high and low staff signs.
@@ -963,7 +963,7 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 
 ---
 
-**Z2 · Repeating note names**
+🟦 **Z2 · Repeating note names**
 
 **Concept**
 💡 Seven bright feathers form a C D E F G A B loop across the piano keys.
@@ -979,7 +979,7 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 
 ---
 
-**Z3 · Octave jump**
+🟦 **Z3 · Octave jump**
 
 **Concept**
 💡 Arachne springs from one C-key house to the next C-key house with the same letter farther away.
@@ -996,9 +996,9 @@ Arachne sits at a street piano as Johann Sebastian Bach points to one wrapped mi
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
-**Z1 · Five-line staff**
+🟦 **Z1 · Five-line staff**
 
 **Concept**
 💡 The bird scratches five long black staff lines across the road.
@@ -1014,7 +1014,7 @@ The bird of paradise lands beside the piano and drags one claw across the street
 
 ---
 
-**Z2 · Bass clef low notes**
+🟦 **Z2 · Bass clef low notes**
 
 **Concept**
 💡 Its folded wings form a heavy bass clef shape low on the lines.
@@ -1030,7 +1030,7 @@ The bird of paradise lands beside the piano and drags one claw across the street
 
 ---
 
-**Z3 · Grand staff brace**
+🟦 **Z3 · Grand staff brace**
 
 **Concept**
 💡 A large metal brace hangs from its beak, joining two music staffs into one system.
@@ -1047,9 +1047,9 @@ The bird of paradise lands beside the piano and drags one claw across the street
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
-**Z1 · Bass C landmark**
+🟦 **Z1 · Bass C landmark**
 
 **Concept**
 💡 The cat carries a small flag planted on a low C key.
@@ -1065,7 +1065,7 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 
 ---
 
-**Z2 · Bass F landmark**
+🟦 **Z2 · Bass F landmark**
 
 **Concept**
 💡 The cat wears a soft tooth-shaped ring gently locked around a low F key.
@@ -1082,9 +1082,9 @@ A cat walks low across the bass staff with two clear landmarks attached to its b
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
-**Z1 · Steady beat**
+🟦 **Z1 · Steady beat**
 
 **Concept**
 💡 The dragon stamps one claw on the road again and again while street lamps blink with each pulse.
@@ -1100,7 +1100,7 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 
 ---
 
-**Z2 · Tempo speed**
+🟦 **Z2 · Tempo speed**
 
 **Concept**
 💡 The dragon turns a speed dial beside the piano, making the pulse faster or slower.
@@ -1117,7 +1117,7 @@ A dragon stands over the street piano and stamps one claw on the road in a stead
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 A time signature tells how beats fit inside each measure.

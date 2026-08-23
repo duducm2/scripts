@@ -18,7 +18,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Bs] Bone Shark</summary>
+<summary>🟧 <strong>Beast</strong> · [Bs] Bone Shark</summary>
 
 **Concept**
 💡 Syllabic L [l̩] takes over the entire syllable when the vowel is reduced.
@@ -35,7 +35,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bt] Bone Toad</summary>
+<summary>🟧 <strong>Beast</strong> · [Bt] Bone Toad</summary>
 
 **Concept**
 💡 Syllabic N [n̩] frequently occurs after alveolar consonants like /t/ or /s/, often utilizing a glottal stop.
@@ -52,7 +52,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bu] butterfly</summary>
+<summary>🟧 <strong>Beast</strong> · [Bu] butterfly</summary>
 
 **Concept**
 💡 Syllabic M [m̩] acts as its own syllable, often found in words ending in "thm" or "sm".
@@ -82,7 +82,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Bq] Boulder quail</summary>
+<summary>🟧 <strong>Beast</strong> · [Bq] Boulder quail</summary>
 
 **Concept**
 💡 Intrusion is the addition of a new sound.
@@ -99,7 +99,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Br] brontosaurus</summary>
+<summary>🟧 <strong>Beast</strong> · [Br] brontosaurus</summary>
 
 **Concept**
 💡 Only 'w', 'y', or 'r' sounds are usually added in intrusion.
@@ -129,7 +129,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Bl] bloodhound</summary>
+<summary>🟧 <strong>Beast</strong> · [Bl] bloodhound</summary>
 
 **Concept**
 💡 Connected speech involves changing, losing, or adding sounds.
@@ -146,7 +146,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bm] Bone marmoset</summary>
+<summary>🟧 <strong>Beast</strong> · [Bm] Bone marmoset</summary>
 
 **Concept**
 💡 Assimilation is when a sound changes to be more like its neighbor.
@@ -163,7 +163,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bn] Blazing nightjar</summary>
+<summary>🟧 <strong>Beast</strong> · [Bn] Blazing nightjar</summary>
 
 **Concept**
 💡 Preparing for /b/ by closing lips early changes /n/ to /m/.
@@ -180,7 +180,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bo] bower-bird</summary>
+<summary>🟧 <strong>Beast</strong> · [Bo] bower-bird</summary>
 
 **Concept**
 💡 Elision is the deletion or loss of sounds.
@@ -197,7 +197,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bp] Blackwater penguin</summary>
+<summary>🟧 <strong>Beast</strong> · [Bp] Blackwater penguin</summary>
 
 **Concept**
 💡 Final 't' or 'd' sounds are the most commonly lost in English.
@@ -227,7 +227,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Bh] Bitter hare</summary>
+<summary>🟧 <strong>Beast</strong> · [Bh] Bitter hare</summary>
 
 **Concept**
 💡 Thought groups involve using short pauses to break down sentences.
@@ -244,7 +244,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bi] bison</summary>
+<summary>🟧 <strong>Beast</strong> · [Bi] bison</summary>
 
 **Concept**
 💡 English is a stress-timed language with regular intervals.
@@ -261,7 +261,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bj] Basil jellyfish</summary>
+<summary>🟧 <strong>Beast</strong> · [Bj] Basil jellyfish</summary>
 
 **Concept**
 💡 Linking occurs when the end of one word blends directly into the start of the next word.
@@ -278,7 +278,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bk] Bloodmoon kestrel</summary>
+<summary>🟧 <strong>Beast</strong> · [Bk] Bloodmoon kestrel</summary>
 
 **Concept**
 💡 Shadowing is actively repeating a text simultaneously to absorb natural rhythm.
@@ -308,7 +308,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Bf] Blackwater ferret</summary>
+<summary>🟧 <strong>Beast</strong> · [Bf] Blackwater ferret</summary>
 
 **Concept**
 💡 Linguistically, only the relative values of pitch matter, not the absolute values.
@@ -325,7 +325,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bg] Boulder giraffe</summary>
+<summary>🟧 <strong>Beast</strong> · [Bg] Boulder giraffe</summary>
 
 **Concept**
 💡 The IPA chart has a dedicated section for suprasegmental symbols.
@@ -355,7 +355,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ay] aye-aye</summary>
+<summary>🟧 <strong>Beast</strong> · [Ay] aye-aye</summary>
 
 **Concept**
 💡 Spoken language is built from segments: consonants (bricks) and vowels (mortar).
@@ -372,7 +372,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Az] Aztec</summary>
+<summary>🟧 <strong>Beast</strong> · [Az] Aztec</summary>
 
 **Concept**
 💡 Suprasegmentals are features "beyond the segment" that emerge only through comparison.
@@ -389,7 +389,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ba] bat</summary>
+<summary>🟧 <strong>Beast</strong> · [Ba] bat</summary>
 
 **Concept**
 💡 Length is the relative duration of a sound.
@@ -406,7 +406,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Bb] Brass bison</summary>
+<summary>🟧 <strong>Beast</strong> · [Bb] Brass bison</summary>
 
 **Concept**
 💡 Stress can alter a word's meaning, pitch, and sound properties.
@@ -423,7 +423,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Be] bee</summary>
+<summary>🟧 <strong>Beast</strong> · [Be] bee</summary>
 
 **Concept**
 💡 Intonation is the pitch pattern at the sentence level, which can change meaning.
@@ -453,7 +453,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [At] atlas</summary>
+<summary>🟧 <strong>Beast</strong> · [At] atlas</summary>
 
 **Concept**
 💡 Prefix dis- indicates the opposite or active negation.
@@ -470,7 +470,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Au] auroch</summary>
+<summary>🟧 <strong>Beast</strong> · [Au] auroch</summary>
 
 **Concept**
 💡 Prefix mis- refers to a mistake.
@@ -487,7 +487,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Av] avocet</summary>
+<summary>🟧 <strong>Beast</strong> · [Av] avocet</summary>
 
 **Concept**
 💡 Prefixes im-, in-, ir- spelling rules.
@@ -504,7 +504,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Aw] awassi sheep</summary>
+<summary>🟧 <strong>Beast</strong> · [Aw] awassi sheep</summary>
 
 **Concept**
 💡 Insecure (feeling) vs. Unsecure (safety).
@@ -521,7 +521,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ax] axolotl</summary>
+<summary>🟧 <strong>Beast</strong> · [Ax] axolotl</summary>
 
 **Concept**
 💡 Prefix re- means to repeat.
@@ -551,7 +551,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ao] aoudad</summary>
+<summary>🟧 <strong>Beast</strong> · [Ao] aoudad</summary>
 
 **Concept**
 💡 Core definitions: Prefix (before) and Suffix (after).
@@ -568,7 +568,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ap] ape</summary>
+<summary>🟧 <strong>Beast</strong> · [Ap] ape</summary>
 
 **Concept**
 💡 Suffix -able indicates ability.
@@ -585,7 +585,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Aq] aquatic leech</summary>
+<summary>🟧 <strong>Beast</strong> · [Aq] aquatic leech</summary>
 
 **Concept**
 💡 Suffix -ish softens time or adjectives.
@@ -602,7 +602,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ar] armadillo</summary>
+<summary>🟧 <strong>Beast</strong> · [Ar] armadillo</summary>
 
 **Concept**
 💡 Prefix un- means not complete or absent.
@@ -619,7 +619,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [As] asp</summary>
+<summary>🟧 <strong>Beast</strong> · [As] asp</summary>
 
 **Concept**
 💡 Prefix un- can also mean to reverse an action.
@@ -649,7 +649,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Aj] Ajax</summary>
+<summary>🟧 <strong>Beast</strong> · [Aj] Ajax</summary>
 
 **Concept**
 💡 Definition of Nominalization (turning words into nouns).
@@ -666,7 +666,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ak] Akita (dog breed)</summary>
+<summary>🟧 <strong>Beast</strong> · [Ak] Akita (dog breed)</summary>
 
 **Concept**
 💡 Transforming Verbs into Nouns (Enjoy -> Enjoyment).
@@ -683,7 +683,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Al] alligator</summary>
+<summary>🟧 <strong>Beast</strong> · [Al] alligator</summary>
 
 **Concept**
 💡 Transforming Adjectives into Nouns (Beautiful -> Beauty).
@@ -700,7 +700,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Am] amulet</summary>
+<summary>🟧 <strong>Beast</strong> · [Am] amulet</summary>
 
 **Concept**
 💡 The "Noun of Noun" Structure (Develop -> Development).
@@ -717,7 +717,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [An] angel</summary>
+<summary>🟧 <strong>Beast</strong> · [An] angel</summary>
 
 **Concept**
 💡 Advanced Nominalization with Relational Verbs (Leads to).
@@ -747,7 +747,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ah] Ah!—a sigh</summary>
+<summary>🟧 <strong>Beast</strong> · [Ah] Ah!—a sigh</summary>
 
 **Concept**
 💡 Perfect Passive (Sequence/Reason) - Passive action completed before main clause.
@@ -764,7 +764,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ai] Airedale terrier</summary>
+<summary>🟧 <strong>Beast</strong> · [Ai] Airedale terrier</summary>
 
 **Concept**
 💡 The Dangling Participle - Subject mismatch.
@@ -794,7 +794,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ac] acorn</summary>
+<summary>🟧 <strong>Beast</strong> · [Ac] acorn</summary>
 
 **Concept**
 💡 Present Active (Consequence) - Action first, then the result.
@@ -811,7 +811,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ad] adder</summary>
+<summary>🟧 <strong>Beast</strong> · [Ad] adder</summary>
 
 **Concept**
 💡 Present Active (Ambiguity) - Flip the sentence if the subject is unclear.
@@ -828,7 +828,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ae] aerialist</summary>
+<summary>🟧 <strong>Beast</strong> · [Ae] aerialist</summary>
 
 **Concept**
 💡 Perfect Active (Sequence) - Action fully completed before the main clause.
@@ -845,7 +845,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Af] Afghan hound</summary>
+<summary>🟧 <strong>Beast</strong> · [Af] Afghan hound</summary>
 
 **Concept**
 💡 Past Participle (Subject Info) - Adding information about the subject.
@@ -862,7 +862,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ag] Agaric fungi</summary>
+<summary>🟧 <strong>Beast</strong> · [Ag] Agaric fungi</summary>
 
 **Concept**
 💡 Past Participle (Condition) - Reduced conditional stating a fact.
@@ -892,7 +892,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [X] Xena, warrior woman</summary>
+<summary>🟧 <strong>Beast</strong> · [X] Xena, warrior woman</summary>
 
 **Concept**
 💡 A participle clause is a subordinate clause used to give extra information.
@@ -909,7 +909,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Y] yak</summary>
+<summary>🟧 <strong>Beast</strong> · [Y] yak</summary>
 
 **Concept**
 💡 The subject of the participle clause and the main clause must be the same.
@@ -926,7 +926,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Z] Zeus</summary>
+<summary>🟧 <strong>Beast</strong> · [Z] Zeus</summary>
 
 **Concept**
 💡 Present Active (Simultaneous Actions) - Two things happening at the same time.
@@ -943,7 +943,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Aa] aardvark</summary>
+<summary>🟧 <strong>Beast</strong> · [Aa] aardvark</summary>
 
 **Concept**
 💡 Present Active (Reason) - Stating a reason before the result.
@@ -960,7 +960,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ab] Abyssinian cat</summary>
+<summary>🟧 <strong>Beast</strong> · [Ab] Abyssinian cat</summary>
 
 **Concept**
 💡 Present Active (Negative Form) - Place "not" before the participle.
@@ -990,7 +990,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [T] toucan</summary>
+<summary>🟧 <strong>Beast</strong> · [T] toucan</summary>
 
 **Concept**
 💡 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
@@ -1007,7 +1007,7 @@ A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decid
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [U] unicorn</summary>
+<summary>🟧 <strong>Beast</strong> · [U] unicorn</summary>
 
 **Concept**
 💡 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
@@ -1024,7 +1024,7 @@ A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [V] vulture</summary>
+<summary>🟧 <strong>Beast</strong> · [V] vulture</summary>
 
 **Concept**
 💡 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
@@ -1041,7 +1041,7 @@ A Vulture perches on a desk like a boss. It places the word "therefore" right be
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [W] wombat</summary>
+<summary>🟧 <strong>Beast</strong> · [W] wombat</summary>
 
 **Concept**
 💡 A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
@@ -1071,7 +1071,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [R] rat</summary>
+<summary>🟧 <strong>Beast</strong> · [R] rat</summary>
 
 **Concept**
 💡 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
@@ -1088,7 +1088,7 @@ A Rat looks at a calendar on the wall. Someone says "He will come today." The Ra
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [S] skull</summary>
+<summary>🟧 <strong>Beast</strong> · [S] skull</summary>
 
 **Concept**
 💡 A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
@@ -1118,7 +1118,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [M] marmoset</summary>
+<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
 
 **Concept**
 💡 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
@@ -1135,7 +1135,7 @@ It holds a red pen and reads a long sentence on a screen. It aggressively crosse
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [N] Neanderthal</summary>
+<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
 
 **Concept**
 💡 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
@@ -1152,7 +1152,7 @@ A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [O] owl</summary>
+<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
 
 **Concept**
 💡 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
@@ -1169,7 +1169,7 @@ An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [P] panther</summary>
+<summary>🟧 <strong>Beast</strong> · [P] panther</summary>
 
 **Concept**
 💡 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
@@ -1186,7 +1186,7 @@ A black Panther stalks a sentence written on the ground. It pounces on a repeate
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Q] Quetzalcoatl</summary>
+<summary>🟧 <strong>Beast</strong> · [Q] Quetzalcoatl</summary>
 
 **Concept**
 💡 The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
@@ -1216,7 +1216,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [K] Kitten</summary>
+<summary>🟧 <strong>Beast</strong> · [K] Kitten</summary>
 
 **Concept**
 💡 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
@@ -1233,7 +1233,7 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [L] Lion</summary>
+<summary>🟧 <strong>Beast</strong> · [L] Lion</summary>
 
 **Concept**
 💡 A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
@@ -1263,7 +1263,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [F] Frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] Frog</summary>
 
 **Concept**
 💡 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your rel
@@ -1280,7 +1280,7 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] Goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] Goat</summary>
 
 **Concept**
 💡 A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
@@ -1297,7 +1297,7 @@ A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
 **Concept**
 💡 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Cleft
@@ -1314,7 +1314,7 @@ The Hydra holds a heavy car battery in its main head. It moves the battery all t
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [I] Imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] Imp</summary>
 
 **Concept**
 💡 An Imp paints a big word "IS" on the wall. A big pile of plural nouns falls on him. Even with the heavy weight, he says the verb must be singular. The rule is: The Wh-clause is singular. Even if your noun is plural, use is or was.
@@ -1331,7 +1331,7 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [J] Jester</summary>
+<summary>🟧 <strong>Beast</strong> · [J] Jester</summary>
 
 **Concept**
 💡 The Jester points at the Imp and laughs. He uses the word "That" to talk about the whole thing. He says: "That's what I'm talking about." This shows you can use "That" to talk about what just happened.
@@ -1361,7 +1361,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
@@ -1378,7 +1378,7 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] Bird of Paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] Bird of Paradise</summary>
 
 **Concept**
 💡 Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my pass
@@ -1395,7 +1395,7 @@ Next to her, a Bird of Paradise opens its colorful feathers. It wants you to loo
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] Cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] Cat</summary>
 
 **Concept**
 💡 Down the street, a Cat sits on a government paper. You try to move the cat, but it stays there. It shows that this is the paper you need. The cat says: "It's form B6115 that you need." This shows the It-Cleft Structure: It plus "to be" plus
@@ -1412,7 +1412,7 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] Eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] Eagle</summary>
 
 **Concept**
 💡 High up, an Eagle holds a famous book in its claws. It shouts the name of the author to everyone below. "I believe it was Shel Silverstein who wrote The Giving Tree." The Eagle shows you the Relative Pronouns: Who or That.

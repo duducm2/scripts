@@ -13,7 +13,7 @@ _Tap a Memory Palace to expand · beasts grouped like the dashboard · newest op
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-**Image prompt**
+**🖼️ Image prompt**
 
 ```
 ForegroundLeft: Arachne weaving a pizza from lute strings anchored to an iron gate. MidgroundRight: Skyscraper-sized bird of paradise painting a car engine with three glowing strings on a brick wall. BackgroundCenter: Microscopic cat sawing a lira da braccio on the distant pavement. Aerial: Dragon freezing statues on a street lamp. ForegroundRight: Zombie eagle regurgitating a wooden box onto a parked carriage. Johann Sebastian Bach stands in the center conducting the chaos.
@@ -22,7 +22,7 @@ ForegroundLeft: Arachne weaving a pizza from lute strings anchored to an iron ga
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 O violino foi inventado no início do século XVI na Itália.
@@ -39,7 +39,7 @@ Arachne weaves a giant Italian pizza out of thick sixteenth-century lute strings
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
 **Concept**
 💡 A evidência mais antiga são pinturas de Gaudenzio Ferrari (década de 1530) com violinos de três cordas.
@@ -56,7 +56,7 @@ A skyscraper-sized bird of paradise paints a roaring Ferrari engine on the brick
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
 **Concept**
 💡 O violino evoluiu da viela rabeca e lira da braccio.
@@ -73,7 +73,7 @@ A microscopic cat shrieks a deafening operatic note on the pavement while furiou
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
 **Concept**
 💡 O padrão foi estabelecido no século XVII por Amati Stainer e Stradivari.
@@ -90,7 +90,7 @@ A dragon exhales frozen centuries upon the street lamp freezing three master lut
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 O violino mais antigo confirmado a sobreviver é o Charles IX de Andrea Amati (1564).

@@ -18,7 +18,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [I] imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
 
 **Concept**
 💡 Enable others to grow and contribute to their maximum potential.
@@ -35,7 +35,7 @@ A tiny imp stands on a brick wall, glowing with a blinding, radioactive light th
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [J] jester</summary>
+<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
 
 **Concept**
 💡 Deal with your own personality in a self-reflective way.
@@ -52,7 +52,7 @@ A completely flat, two-dimensional jester lies stuck on a wooden bench, wrapped 
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [K] kitten</summary>
+<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
 
 **Concept**
 💡 Have a clear sense of internal orientation and manage personal resources effectively.
@@ -69,7 +69,7 @@ A colossal kitten blocks a distant building facade, purring with the ear-splitti
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [L] lion</summary>
+<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
 
 **Concept**
 💡 Learn continuously to grow personally and professionally.
@@ -99,7 +99,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
 **Concept**
 💡 Define the business agenda for your own area.
@@ -116,7 +116,7 @@ A colossal dragon lands heavily on the gate post, and Goku desperately grabs its
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 Create value according to the general interest of Bosch.
@@ -133,7 +133,7 @@ An impossibly heavy eagle crashes onto a parked car, crushing its steel roof lik
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [F] frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
 
 **Concept**
 💡 Foster a collaborative and learning organization while driving digital business.
@@ -150,7 +150,7 @@ A skyscraper-sized frog squats at the far end of the street, croaking with a dea
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
 
 **Concept**
 💡 Create an environment where people feel comfortable expressing their opinions.
@@ -167,7 +167,7 @@ A floating goat balances perfectly on top of a street lamp, emitting a highly co
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
 **Concept**
 💡 Encourage others to take responsibility and achieve exceptional results.
@@ -197,7 +197,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 Ethos is the credibility and authority of the speaker.
@@ -214,7 +214,7 @@ Arachne (a woman with the lower body of a spider) crawls down onto the street. S
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
 **Concept**
 💡 Pathos is the emotional appeal used to engage the audience.
@@ -231,7 +231,7 @@ A bright bird of paradise flutters down to perch on Arachne's badge and starts c
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
 **Concept**
 💡 Logos is the logical structure and the evidence supporting the argument.

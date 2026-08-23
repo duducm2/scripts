@@ -58,6 +58,7 @@ def format_quote(value: str | None) -> str:
 
 
 def format_sensory(value: str | None) -> str:
+    """Dashboard overlay order: emoji then channel word (e.g. 👁️ visual)."""
     t = (value or "").strip()
     if not t:
         return "—"
@@ -80,7 +81,7 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
             tag = f"{zone} · {zone_label}"
         else:
             tag = zone or zone_label
-        lines.append(f"**{tag}**")
+        lines.append(f"🟦 **{tag}**")
         lines.append("")
 
     lines.extend(format_field_block("Concept", format_concept(atom.get("concept"))))
@@ -94,7 +95,7 @@ def render_beast_cluster_md(beast: str, atoms: list[dict[str, Any]]) -> list[str
     beast_label = dash(beast)
     lines: list[str] = [
         "<details>",
-        f"<summary><strong>Beast</strong> · {beast_label}</summary>",
+        f"<summary>🟧 <strong>Beast</strong> · {beast_label}</summary>",
         "",
     ]
     for i, atom in enumerate(atoms):
@@ -154,7 +155,7 @@ def render_palace_section_md(
     lines.append("")
 
     if prompt:
-        lines.append("**Image prompt**")
+        lines.append("**🖼️ Image prompt**")
         lines.append("")
         lines.append("```")
         lines.append(prompt)

@@ -18,7 +18,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Aq] [aquatic leech]</summary>
+<summary>🟧 <strong>Beast</strong> · [Aq] [aquatic leech]</summary>
 
 **Concept**
 💡 Reharse the german alphabet depicted here: https://github.com/duducm2/scripts/blob/main/mnemonics/studies/german/portals/mnemonics-aquatic-leech.md
@@ -48,7 +48,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Al] [alligator]</summary>
+<summary>🟧 <strong>Beast</strong> · [Al] [alligator]</summary>
 
 **Concept**
 💡 A sound gets louder when the space around it boosts the vibration.
@@ -65,7 +65,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Am] [amulet]</summary>
+<summary>🟧 <strong>Beast</strong> · [Am] [amulet]</summary>
 
 **Concept**
 💡 The absolute base wave made by the source is the fundamental frequency.
@@ -82,7 +82,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [An] [angel]</summary>
+<summary>🟧 <strong>Beast</strong> · [An] [angel]</summary>
 
 **Concept**
 💡 Resonance bundles multiply the base frequency to create speech formants.
@@ -99,7 +99,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ao] [aoudad]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ao] [aoudad]</summary>
 
 **Concept**
 💡 The fundamental pitch comes directly from the vocal folds buzzing.
@@ -116,7 +116,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ap] [ape]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ap] [ape]</summary>
 
 **Concept**
 💡 The throat shapes the first formant, the mouth shapes the second, and their interplay with the base sound forms the source-filter model.
@@ -146,7 +146,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ag] [Agaric fungi]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ag] [Agaric fungi]</summary>
 
 **Concept**
 💡 Simple waves move evenly and repeat in a regular pattern.
@@ -163,7 +163,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ah] [Ah!—a sigh]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ah] [Ah!—a sigh]</summary>
 
 **Concept**
 💡 Amplitude shows how far a wave moves away from its resting point.
@@ -180,7 +180,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ai] [Airedale terrier]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ai] [Airedale terrier]</summary>
 
 **Concept**
 💡 Real sounds are usually made of messy, overlapping vibrations.
@@ -197,7 +197,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ak] [Akita (dog breed)]</summary>
+<summary>🟧 <strong>Beast</strong> · [Ak] [Akita (dog breed)]</summary>
 
 **Concept**
 💡 Vowel sounds are even and smooth, while consonants can be messy and irregular.
@@ -227,7 +227,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Ad] adder</summary>
+<summary>🟧 <strong>Beast</strong> · [Ad] adder</summary>
 
 **Concept**
 💡 The 'r' can vibrate far back in the throat as a flexible option.
@@ -244,7 +244,7 @@ On the next street, an adder snake slithers around freely. It meets a tall villa
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ae] aerialqist</summary>
+<summary>🟧 <strong>Beast</strong> · [Ae] aerialqist</summary>
 
 **Concept**
 💡 The 'r' can be a friction sound pushed more to the front.
@@ -261,9 +261,9 @@ An aerialist swings on a trapeze above the snake. She swings her body forward to
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Af] Afghan hound</summary>
+<summary>🟧 <strong>Beast</strong> · [Af] Afghan hound</summary>
 
-**Z1 · Additional notes (non-mnemonic)**
+🟦 **Z1 · Additional notes (non-mnemonic)**
 
 **Concept**
 💡 Reharse the german alphabet depicted here:
@@ -293,7 +293,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [Y] yak</summary>
+<summary>🟧 <strong>Beast</strong> · [Y] yak</summary>
 
 **Concept**
 💡 The /z/ sound never starts a word in Standard German.
@@ -310,7 +310,7 @@ A yak stands at the corner of the street. It holds a large sign with the word Sy
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Z] Zeus</summary>
+<summary>🟧 <strong>Beast</strong> · [Z] Zeus</summary>
 
 **Concept**
 💡 The /ŋ/ sound only happens at the end of syllables.
@@ -327,7 +327,7 @@ Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grab
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Aa] aardvark</summary>
+<summary>🟧 <strong>Beast</strong> · [Aa] aardvark</summary>
 
 **Concept**
 💡 Long vowels get short when they are not stressed.
@@ -344,7 +344,7 @@ An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁ
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ab] Abyssinian cat</summary>
+<summary>🟧 <strong>Beast</strong> · [Ab] Abyssinian cat</summary>
 
 **Concept**
 💡 The weak 'e' sound can be completely dropped.
@@ -361,7 +361,7 @@ An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Ac] acorn</summary>
+<summary>🟧 <strong>Beast</strong> · [Ac] acorn</summary>
 
 **Concept**
 💡 The 'r' can be rolled loudly in southern areas or in singing.
@@ -391,7 +391,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [W] Wombat</summary>
+<summary>🟧 <strong>Beast</strong> · [W] Wombat</summary>
 
 **Concept**
 💡 Long vowels usually come before one or fewer consonants.
@@ -408,7 +408,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [X] Xena, warrior woman</summary>
+<summary>🟧 <strong>Beast</strong> · [X] Xena, warrior woman</summary>
 
 **Concept**
 💡 The letter 'h' acts as a vowel lengthener.
@@ -438,7 +438,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [R] Rat</summary>
+<summary>🟧 <strong>Beast</strong> · [R] Rat</summary>
 
 **Concept**
 💡 Compound words keep their original stress patterns, but one primary stress dominates the whole word.
@@ -455,7 +455,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [S] Skull</summary>
+<summary>🟧 <strong>Beast</strong> · [S] Skull</summary>
 
 **Concept**
 💡 Voiced consonants harden into unvoiced sounds at the absolute end of a word.
@@ -472,7 +472,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [T] Toucan</summary>
+<summary>🟧 <strong>Beast</strong> · [T] Toucan</summary>
 
 **Concept**
 💡 Word elements keep their strict pronunciation rules even when trapped inside compound words.
@@ -489,7 +489,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [U] Unicorn</summary>
+<summary>🟧 <strong>Beast</strong> · [U] Unicorn</summary>
 
 **Concept**
 💡 To pronounce a short vowel, move to the consonants early and hold them.
@@ -506,7 +506,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [V] Vulture</summary>
+<summary>🟧 <strong>Beast</strong> · [V] Vulture</summary>
 
 **Concept**
 💡 Short vowels almost always come before two or more consonants.
@@ -536,7 +536,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [N] Neanderthal</summary>
+<summary>🟧 <strong>Beast</strong> · [N] Neanderthal</summary>
 
 **Concept**
 💡 The `[ʏ]` sound uses a slightly lower tongue position while keeping lips round.
@@ -553,7 +553,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [O] owl</summary>
+<summary>🟧 <strong>Beast</strong> · [O] owl</summary>
 
 **Concept**
 💡 The unaccented `[ɐ]` sound is placed extremely close to the English `[ʌ]` vowel.
@@ -570,7 +570,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [P] panther</summary>
+<summary>🟧 <strong>Beast</strong> · [P] panther</summary>
 
 **Concept**
 💡 Germans transition to the second vowel in a diphthong much faster than English speakers.
@@ -587,7 +587,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [Q] Quetzalcoatl</summary>
+<summary>🟧 <strong>Beast</strong> · [Q] Quetzalcoatl</summary>
 
 **Concept**
 💡 For the `[ɔʏ̯]` sound, the lips must stay tight and rounded all the way to the end.
@@ -617,7 +617,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [I] imp</summary>
+<summary>🟧 <strong>Beast</strong> · [I] imp</summary>
 
 **Concept**
 💡 The long `[aː]` sound pushes the tongue slightly closer to the front of the mouth.
@@ -634,7 +634,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [J] jester</summary>
+<summary>🟧 <strong>Beast</strong> · [J] jester</summary>
 
 **Concept**
 💡 The `[yː]` sound takes a high front tongue position but rounds the lips.
@@ -651,7 +651,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [K] kitten</summary>
+<summary>🟧 <strong>Beast</strong> · [K] kitten</summary>
 
 **Concept**
 💡 The `[øː]` sound moves the tongue slightly down but keeps the lips round.
@@ -668,7 +668,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [L] lion</summary>
+<summary>🟧 <strong>Beast</strong> · [L] lion</summary>
 
 **Concept**
 💡 The `[œ]` sound uses a mid-mouth tongue shape with rounded lips.
@@ -685,7 +685,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [M] marmoset</summary>
+<summary>🟧 <strong>Beast</strong> · [M] marmoset</summary>
 
 **Concept**
 💡 The `[ɔ]` sound starts in the back-center of the mouth with round lips.
@@ -715,7 +715,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [F] frog</summary>
+<summary>🟧 <strong>Beast</strong> · [F] frog</summary>
 
 **Concept**
 💡 German [r] is made deep in the throat with the back of the tongue.
@@ -732,7 +732,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [G] goat</summary>
+<summary>🟧 <strong>Beast</strong> · [G] goat</summary>
 
 **Concept**
 💡 The ach-laut [x] is a tight back-of-mouth air sound, like controlled choking air.
@@ -749,7 +749,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [H] Hydra</summary>
+<summary>🟧 <strong>Beast</strong> · [H] Hydra</summary>
 
 **Concept**
 💡 The ich-laut [ç] is a hissing sound made farther forward from a y-like tongue position.
@@ -779,7 +779,7 @@ _No image prompt saved._
 #### Knowledge Atoms
 
 <details>
-<summary><strong>Beast</strong> · [A] Arachne</summary>
+<summary>🟧 <strong>Beast</strong> · [A] Arachne</summary>
 
 **Concept**
 💡 German l is lighter than English l.
@@ -796,7 +796,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [B] bird of paradise</summary>
+<summary>🟧 <strong>Beast</strong> · [B] bird of paradise</summary>
 
 **Concept**
 💡 [ŋ] uses the back of the tongue and should not end with a hard g.
@@ -813,7 +813,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [C] cat</summary>
+<summary>🟧 <strong>Beast</strong> · [C] cat</summary>
 
 **Concept**
 💡 [ʃ] in German pulls the tongue farther back for a sharper sch feel.
@@ -830,7 +830,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [D] dragon</summary>
+<summary>🟧 <strong>Beast</strong> · [D] dragon</summary>
 
 **Concept**
 💡 German uses glottal stops often before vowel-starting words.
@@ -847,7 +847,7 @@ _No image prompt saved._
 </details>
 
 <details>
-<summary><strong>Beast</strong> · [E] eagle</summary>
+<summary>🟧 <strong>Beast</strong> · [E] eagle</summary>
 
 **Concept**
 💡 Clusters join two consonants into one fast combined move.
