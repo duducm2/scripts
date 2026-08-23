@@ -1,0 +1,38 @@
+===PREVIEW===
+STUDY_VIOLIN · 2 palaces · 9 beasts · 9 atoms
+- PALACE_VIOLIN_01: Origins and Precursors (Lira, Rebab, Gaudenzio Ferrari paintings)
+- PALACE_VIOLIN_02: Spread, Royal Courts, and Anatomy (Amati, Stradivari, 72 parts)
+- Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_VIOLIN_01,STUDY_VIOLIN,1,Origins and Precursors,Johann Sebastian Bach,violin/images/1.png,5,"Realistic street scene with classical German composer Johann Sebastian Bach in period attire. In ForegroundLeft, a giant mechanical spider webs a glowing 3-string wooden violin to an iron gate. In MidgroundRight, a bird of paradise perches on a mailbox with neon sycamore tree bark frozen in mid-air. In BackgroundCenter, a domestic cat stands at the doorway balancing an Arabic rebab on its tail. At the Aerial slot on the roof ledge, a dragon breaths blue sparks across a fresco depicting angels. In ForegroundRight, a massive bald eagle clutches a golden 1556 manuscript in its talons by a parked car."
+PALACE_VIOLIN_02,STUDY_VIOLIN,2,Spread Court Orders and Anatomy,Ludwig van Beethoven,violin/images/2.png,4,"Realistic street scene with composer Ludwig van Beethoven standing focused near the center. In ForegroundLeft, a giant poisonous frog croaks glowing French royal decrees onto a stone curb. In MidgroundRight, a mountain goat balances on a stone wall carving 1564 into an Andrea Amati violin with its horns. In BackgroundCenter, a multi-headed Hydra hovers at the far crossroad guarding an untouched 1716 violin in a crystal case. At the Aerial slot on a lamp post, an imp counts 72 floating maple wood fragments orbiting like planets."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_VIOLIN_01_A,PALACE_VIOLIN_01,A,Arachne,Lynne Kelly,tactile,0,1
+BEAST_VIOLIN_01_B,PALACE_VIOLIN_01,B,bird of paradise,Lynne Kelly,tactile,0,2
+BEAST_VIOLIN_01_C,PALACE_VIOLIN_01,C,cat,Lynne Kelly,auditory,0,3
+BEAST_VIOLIN_01_D,PALACE_VIOLIN_01,D,dragon,Lynne Kelly,visual,0,4
+BEAST_VIOLIN_01_E,PALACE_VIOLIN_01,E,eagle,Lynne Kelly,visual,0,5
+BEAST_VIOLIN_02_F,PALACE_VIOLIN_02,F,frog,Lynne Kelly,auditory,0,1
+BEAST_VIOLIN_02_G,PALACE_VIOLIN_02,G,goat,Lynne Kelly,tactile,0,2
+BEAST_VIOLIN_02_H,PALACE_VIOLIN_02,H,Hydra,Lynne Kelly,visual,0,3
+BEAST_VIOLIN_02_I,PALACE_VIOLIN_02,I,imp,Lynne Kelly,visual,0,4
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_VIOLIN_01_A,single,,,The earliest evidence of the violin family appears in Gaudenzio Ferrari paintings from the 1530s featuring three-string versions.,"A evidência mais antiga de sua existência está nas pinturas de Gaudenzio Ferrari da década de 1530, embora os instrumentos da Ferrari tivessem apenas três cordas.","A giant Arachne spider weaves glowing silk across the street gate; it plucks exactly three strings of a floating wooden violin, instantly freezing the vibrations into solid glass.",tactile,,1
+,BEAST_VIOLIN_01_B,single,,,Early bowed instruments like the ravanastron and omerti were crafted from hollow sycamore cylinders and played like a cello.,"Os dois primeiros instrumentos de cordas friccionadas são o ravanastrão e o omerti encontrados na Índia e feitos de um cilindro oco de madeira de sicômoro. Eles eram tocados à maneira de um violoncelo.","A microscopic bird of paradise balances atop a hollow sycamore log by the curb; it bows the wooden cylinder violently, causing deafening low cello rumbles that bend the nearby metal mailbox.",tactile,,2
+,BEAST_VIOLIN_01_C,single,,,The Arabic rebab is the direct ancestor of European bowed instruments via the Byzantine lyra and rebec.,"O ancestral direto de todos instrumentos de arco e cordas é o árabe rebab (ربابة), que evoluiu para a lira bizantina pelo século nono e mais tarde na rabeca europeia.","A cat standing on its hind legs holds an Arabic rebab like a bow; each bow stroke emits ancient Byzantine chants that swirl as visible sand clouds around the doorway.",auditory,,3
+,BEAST_VIOLIN_01_D,single,,,Ferrari frescoes in Saronno depict angels playing fretless violin family instruments with arched plates and f-holes.,"Os instrumentos retratados pela Ferrari têm tampos dianteiros e traseiros abaulados, cordas que alimentam cravelhames com cravelhas laterais, e buracos em forma de f. Eles não têm trastes.","A dragon perched on the roof ledge breathes freezing vapor over an open fresco; the vapor solidifies into arched wooden plates with glowing f-holes that lack any frets.",visual,,4
+,BEAST_VIOLIN_01_E,single,,,Philibert Jambe de Fer published Academie musicale in 1556 providing the first clear description of the violin family.,"O Academie musicale, um tratado escrito em 1556 por Philibert Jambe de Fer, fornece uma descrição clara da família dos violinos, tal como a conhecemos hoje.","A massive eagle drops a heavy stone book dated 1556 onto the hood of a parked car; Johann Sebastian Bach inspects the pages as radiant musical staves burst out across the pavement.",visual,,5
+,BEAST_VIOLIN_02_F,single,,,Charles IX of France commissioned an extensive collection of string instruments in the late 16th century.,"O violino rapidamente se tornou muito popular, tanto entre músicos de rua e a nobreza, o que é ilustrado pelo fato de que Carlos IX de França encomendou uma ampla gama de instrumentos de corda na segunda metade do século XVI.","A neon-green frog perches on the curb and croaks out golden French royal decrees; each croak materializes miniature violins that march down the gutter in military formation.",auditory,,1
+,BEAST_VIOLIN_02_G,single,,,The oldest confirmed surviving violin is Andrea Amati Charles IX made in Cremona around 1564.,"O mais antigo violino sobrevivente confirmado, datado dentro, é o ""Charles IX"" de Andrea Amati, produzido em Cremona em 1564, mas o rótulo é muito duvidoso.","A mountain goat leaps onto the low wall and headbutts a wooden crate; an Andrea Amati violin dated 1564 falls out, emitting blinding white light as its label shivers.",tactile,,2
+,BEAST_VIOLIN_02_H,single,,,Antonio Stradivari made the famous Messiah Stradivarius in 1716 which remains preserved in pristine condition.,"Um dos mais famosos e certamente o mais primitivo é o Messiah Stradivarius (também conhecido como 'Salabue') feito por Antonio Stradivari em 1716 e muito pouco tocado, talvez quase nunca e em um estado como novo.","A Hydra coils around a museum glass case hovering at the crossroad; all eight heads breathe protective mist over the pristine 1716 Messiah violin to prevent a single speck of dust from touching it.",visual,,3
+,BEAST_VIOLIN_02_I,single,,,A violin consists of 70 to 72 indispensable separate parts when top and back plates use two wood pieces.,"O violino possui 70 partes, na verdade 72 se os tampos superior e inferior forem feitos de dois pedaços de madeira. Cada uma das partes separadas é indispensável.","An imp sits on the aerial streetlamp rapidly disassembling a violin into exactly 72 glowing wooden puzzle pieces; each piece floats in orbit around Ludwig van Beethoven before snapping back into place.",visual,,4
+===END_FILE===

@@ -158,30 +158,113 @@ Palace_ResolveDesktopPalacesPath() {
     return path
 }
 
+; Newest PALACE_PACK*.txt/csv, else newest gemini-code*.txt that contains pack FILE markers.
+Palace_DesktopNewestPackPath() {
+    path := Palace_DesktopNewestCsvOrTxt("PALACE_PACK")
+    if (path != "")
+        return path
+    newest := ""
+    newestTime := 0
+    loop files A_Desktop . "\gemini-code*.txt", "F" {
+        text := Palace_ReadUtf8(A_LoopFileFullPath)
+        if (!InStr(text, "===FILE: PALACE_", false))
+            continue
+        ts := Number(A_LoopFileTimeModified)
+        if (ts > newestTime) {
+            newestTime := ts
+            newest := A_LoopFileFullPath
+        }
+    }
+    return newest
+}
+
+; Extract pure CSV body between ===FILE: name=== and ===END_FILE===.
+Palace_ExtractPackFileSection(text, fileName) {
+    needle := "===FILE: " . fileName . "==="
+    pos := InStr(text, needle, false)
+    if (!pos)
+        return ""
+    rest := SubStr(text, pos + StrLen(needle))
+    endPos := InStr(rest, "===END_FILE===", false)
+    if (!endPos)
+        return ""
+    return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+}
+
+; Split a PALACE_PACK / gemini-code body into row arrays. Requires all three FILE sections.
+Palace_SplitPalacePack(path) {
+    result := Map("ok", false, "error", "", "palaces", [], "beasts", [], "atoms", [])
+    text := Palace_ReadUtf8(path)
+    if (text = "") {
+        result["error"] := "Empty pack file"
+        return result
+    }
+    specs := [
+        ["palaces", "PALACE_PALACES.csv", "palace_number"],
+        ["beasts", "PALACE_BEASTS.csv", "peg_code"],
+        ["atoms", "PALACE_ATOMS.csv", "beast_id"]
+    ]
+    for spec in specs {
+        key := spec[1]
+        fname := spec[2]
+        hint := spec[3]
+        body := Palace_ExtractPackFileSection(text, fname)
+        if (body = "") {
+            result["error"] := "Missing section " . fname
+            return result
+        }
+        tmp := A_Temp . "\palace_pack_" . key . ".csv"
+        Palace_WriteUtf8(tmp, body)
+        rows := Palace_ReadAiImportCsv(tmp, hint)
+        if (key = "palaces" && !rows.Length)
+            rows := Palace_ReadAiImportCsv(tmp, "street_number")
+        try FileDelete(tmp)
+        catch {
+        }
+        result[key] := rows
+    }
+    result["ok"] := true
+    return result
+}
+
 ; Single [I]: newest Desktop pack (palaces → beasts → atoms), combined preview, palace-scoped replace.
 Palace_ImportMnemonicsFromDesktop(*) {
     Palace_EnsureData()
     pathPalaces := Palace_ResolveDesktopPalacesPath()
     pathBeasts := Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
     pathAtoms := Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
-    if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
-        Palace_Notify("No PALACE_PALACES / BEASTS / ATOMS on Desktop", 2800, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
-        return false
-    }
-
+    pathPack := ""
     palaceRows := []
     beastRows := []
     atomRows := []
-    if (pathPalaces != "") {
-        palaceRows := Palace_ReadAiImportCsv(pathPalaces, "palace_number")
-        if (!palaceRows.Length)
-            palaceRows := Palace_ReadAiImportCsv(pathPalaces, "street_number")
+
+    if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
+        pathPack := Palace_DesktopNewestPackPath()
+        if (pathPack = "") {
+            Palace_Notify("No PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
+            Palace_ShowMainMenu()
+            return false
+        }
+        split := Palace_SplitPalacePack(pathPack)
+        if (!split["ok"]) {
+            Palace_Notify(split["error"], 2800, BANNER_ACCENT_ERROR)
+            Palace_ShowMainMenu()
+            return false
+        }
+        palaceRows := split["palaces"]
+        beastRows := split["beasts"]
+        atomRows := split["atoms"]
+    } else {
+        if (pathPalaces != "") {
+            palaceRows := Palace_ReadAiImportCsv(pathPalaces, "palace_number")
+            if (!palaceRows.Length)
+                palaceRows := Palace_ReadAiImportCsv(pathPalaces, "street_number")
+        }
+        if (pathBeasts != "")
+            beastRows := Palace_ReadAiImportCsv(pathBeasts, "peg_code")
+        if (pathAtoms != "")
+            atomRows := Palace_ReadAiImportCsv(pathAtoms, "beast_id")
     }
-    if (pathBeasts != "")
-        beastRows := Palace_ReadAiImportCsv(pathBeasts, "peg_code")
-    if (pathAtoms != "")
-        atomRows := Palace_ReadAiImportCsv(pathAtoms, "beast_id")
 
     if (!palaceRows.Length && !beastRows.Length && !atomRows.Length) {
         Palace_Notify("No rows found in Desktop PALACE pack", 2500, BANNER_ACCENT_ERROR)
@@ -195,7 +278,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         for r in palaceRows {
             r := Palace_NormalizePalaceImportRow(r)
             labels.Push("Memory Palace " . (r.Has("palace_number") ? r["palace_number"] : "?")
-                . ": " . (r.Has("title") ? r["title"] : ""))
+            . ": " . (r.Has("title") ? r["title"] : ""))
         }
     }
     if (beastRows.Length) {
@@ -203,17 +286,17 @@ Palace_ImportMnemonicsFromDesktop(*) {
         for r in beastRows {
             r := Palace_NormalizeBeastImportRow(r)
             labels.Push("[" . (r.Has("peg_code") ? r["peg_code"] : "?") . "] "
-                . (r.Has("beast_name") ? r["beast_name"] : "")
-                . " @ " . (r.Has("palace_id") ? r["palace_id"] : "?"))
+            . (r.Has("beast_name") ? r["beast_name"] : "")
+            . " @ " . (r.Has("palace_id") ? r["palace_id"] : "?"))
         }
     }
     if (atomRows.Length) {
         labels.Push("--- Atoms (" . atomRows.Length . ") ---")
         for r in atomRows {
             lab := (r.Has("kind") ? r["kind"] : "?") . " · "
-                . (r.Has("zone") ? r["zone"] : "") . " · "
-                . (r.Has("concept") ? SubStr(r["concept"], 1, 50)
-                    : (r.Has("context") ? SubStr(r["context"], 1, 50) : ""))
+            . (r.Has("zone") ? r["zone"] : "") . " · "
+            . (r.Has("concept") ? SubStr(r["concept"], 1, 50)
+                : (r.Has("context") ? SubStr(r["context"], 1, 50) : ""))
             labels.Push(lab)
         }
     }
@@ -415,12 +498,16 @@ Palace_ImportMnemonicsFromDesktop(*) {
         Palace_Save("atoms", atoms)
     }
 
-    if (pathPalaces != "")
-        Palace_ArchiveImported(pathPalaces)
-    if (pathBeasts != "")
-        Palace_ArchiveImported(pathBeasts)
-    if (pathAtoms != "")
-        Palace_ArchiveImported(pathAtoms)
+    if (pathPack != "")
+        Palace_ArchiveImported(pathPack)
+    else {
+        if (pathPalaces != "")
+            Palace_ArchiveImported(pathPalaces)
+        if (pathBeasts != "")
+            Palace_ArchiveImported(pathBeasts)
+        if (pathAtoms != "")
+            Palace_ArchiveImported(pathAtoms)
+    }
 
     Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
         2800, BANNER_ACCENT_SUCCESS)

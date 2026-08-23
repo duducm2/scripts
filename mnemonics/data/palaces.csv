@@ -1,4 +1,4 @@
-id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+﻿id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
 PALACE_AI_01,STUDY_AI,1,Foundations & Semantic Interoperability,(unassigned palace 1),AI/images/1.png,3,
 PALACE_AI_02,STUDY_AI,2,The Semantic Layer & RAG Structure,Ada Lovelace,AI/images/2.png,5,
 PALACE_AI_03,STUDY_AI,3,AI Pricing & Elo Mechanics,Michael Jackson,AI/images/3.jpg,1,
@@ -69,3 +69,5 @@ PALACE_TAOISM_01,STUDY_TAOISM,1,Core Philosophy,(unassigned palace 1),taoism/ima
 PALACE_TAOISM_02,STUDY_TAOISM,2,Foundational Texts & Figures,(unassigned palace 2),taoism/images/2.jpg,5,
 PALACE_TAOISM_03,STUDY_TAOISM,3,Cosmology & The Body,The Jade Emperor,taoism/images/3.jpg,5,
 PALACE_TAOISM_04,STUDY_TAOISM,4,Religious Development & Pantheon,(unassigned palace 4),taoism/images/4.jpg,5,
+PALACE_VIOLIN_01,STUDY_VIOLIN,1,Origins and Precursors,Johann Sebastian Bach,violin/images/1.png,5,"Realistic street scene with classical German composer Johann Sebastian Bach in period attire. In ForegroundLeft, a giant mechanical spider webs a glowing 3-string wooden violin to an iron gate. In MidgroundRight, a bird of paradise perches on a mailbox with neon sycamore tree bark frozen in mid-air. In BackgroundCenter, a domestic cat stands at the doorway balancing an Arabic rebab on its tail. At the Aerial slot on the roof ledge, a dragon breaths blue sparks across a fresco depicting angels. In ForegroundRight, a massive bald eagle clutches a golden 1556 manuscript in its talons by a parked car."
+PALACE_VIOLIN_02,STUDY_VIOLIN,2,Spread Court Orders and Anatomy,Ludwig van Beethoven,violin/images/2.png,4,"Realistic street scene with composer Ludwig van Beethoven standing focused near the center. In ForegroundLeft, a giant poisonous frog croaks glowing French royal decrees onto a stone curb. In MidgroundRight, a mountain goat balances on a stone wall carving 1564 into an Andrea Amati violin with its horns. In BackgroundCenter, a multi-headed Hydra hovers at the far crossroad guarding an untouched 1716 violin in a crystal case. At the Aerial slot on a lamp post, an imp counts 72 floating maple wood fragments orbiting like planets."

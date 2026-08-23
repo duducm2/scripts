@@ -88,9 +88,10 @@ Click a palace card to open a fullscreen view: image, **Image prompt** (or empty
 ## AI import
 
 1. Technique prompts (Utility Shortcuts → Prompts): `5` transcript, `4` create mnemonic stories, `a` story reduction, `g` preserve background.
-2. Stories / reduction deliver downloadable **`PALACE_PALACES`**, **`PALACE_BEASTS`**, **`PALACE_ATOMS`** (`.csv` or `.txt` renamed to `.csv`). Edit on Desktop if needed.
-3. Memory Palace **[I]** — one-shot pack import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
-4. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId`.
+2. Stories / reduction deliver one downloadable **`PALACE_PACK.txt`**: human-readable `===PREVIEW===` plus three labeled CSV sections (`===FILE: PALACE_PALACES.csv===`, `BEASTS`, `ATOMS`). A `gemini-code-….txt` dump with the same markers also works. Edit the pack on Desktop if needed.
+3. Separate Desktop files `PALACE_PALACES*` / `PALACE_BEASTS*` / `PALACE_ATOMS*` still import when present (preferred over pack if any exist).
+4. Memory Palace **[I]** — one-shot import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
+5. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId`.
 
 ### Prompt context pack
 
