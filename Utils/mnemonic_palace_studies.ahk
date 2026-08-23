@@ -74,18 +74,52 @@ Palace_StudyDelete(*) {
     if (!s)
         return
     palaces := Palace_FilterBy(Palace_Load("palaces"), "study_id", s["id"])
-    if (palaces.Length) {
-        Palace_Alert("Remove or reassign " . palaces.Length . " Memory Palace(s) first.", "Studies")
-        return
+    palaceIds := Map()
+    for p in palaces
+        palaceIds[p["id"]] := true
+    beastIds := Map()
+    beastCount := 0
+    for b in Palace_Load("beasts") {
+        if (palaceIds.Has(b["palace_id"])) {
+            beastIds[b["id"]] := true
+            beastCount += 1
+        }
     }
-    if (!Palace_Confirm("Delete study " . s["title"] . "?", "Studies"))
+    atomCount := 0
+    for a in Palace_Load("atoms") {
+        if (beastIds.Has(a["beast_id"]))
+            atomCount += 1
+    }
+    msg := "Delete study " . s["title"] . "?"
+    if (palaces.Length || beastCount || atomCount)
+        msg .= "`nAlso deletes " . palaces.Length . " palace(s), "
+            . beastCount . " beast(s), and " . atomCount . " atom(s)."
+    if (!Palace_Confirm(msg, "Studies"))
         return
-    out := []
+    atomOut := []
+    for a in Palace_Load("atoms") {
+        if (!beastIds.Has(a["beast_id"]))
+            atomOut.Push(a)
+    }
+    Palace_Save("atoms", atomOut)
+    beastOut := []
+    for b in Palace_Load("beasts") {
+        if (!palaceIds.Has(b["palace_id"]))
+            beastOut.Push(b)
+    }
+    Palace_Save("beasts", beastOut)
+    palaceOut := []
+    for r in Palace_Load("palaces") {
+        if (r["study_id"] != s["id"])
+            palaceOut.Push(r)
+    }
+    Palace_Save("palaces", palaceOut)
+    studyOut := []
     for r in Palace_Load("studies") {
         if (r["id"] != s["id"])
-            out.Push(r)
+            studyOut.Push(r)
     }
-    Palace_Save("studies", out)
+    Palace_Save("studies", studyOut)
     Palace_StudyRefresh()
     Palace_Notify("Study removed", 1200, BANNER_ACCENT_SUCCESS)
 }

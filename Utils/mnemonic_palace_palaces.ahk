@@ -93,18 +93,37 @@ Palace_PalaceDelete(*) {
     if (!st)
         return
     beasts := Palace_FilterBy(Palace_Load("beasts"), "palace_id", st["id"])
-    if (beasts.Length) {
-        Palace_Alert("Remove " . beasts.Length . " beast(s) on this Memory Palace first.", "Palaces")
-        return
+    beastIds := Map()
+    for b in beasts
+        beastIds[b["id"]] := true
+    atomCount := 0
+    for a in Palace_Load("atoms") {
+        if (beastIds.Has(a["beast_id"]))
+            atomCount += 1
     }
-    if (!Palace_Confirm("Delete Memory Palace " . st["palace_number"] . ": " . st["title"] . "?", "Palaces"))
+    msg := "Delete Memory Palace " . st["palace_number"] . ": " . st["title"] . "?"
+    if (beasts.Length || atomCount)
+        msg .= "`nAlso deletes " . beasts.Length . " beast(s) and " . atomCount . " atom(s)."
+    if (!Palace_Confirm(msg, "Palaces"))
         return
-    out := []
+    atomOut := []
+    for a in Palace_Load("atoms") {
+        if (!beastIds.Has(a["beast_id"]))
+            atomOut.Push(a)
+    }
+    Palace_Save("atoms", atomOut)
+    beastOut := []
+    for r in Palace_Load("beasts") {
+        if (r["palace_id"] != st["id"])
+            beastOut.Push(r)
+    }
+    Palace_Save("beasts", beastOut)
+    palaceOut := []
     for r in Palace_Load("palaces") {
         if (r["id"] != st["id"])
-            out.Push(r)
+            palaceOut.Push(r)
     }
-    Palace_Save("palaces", out)
+    Palace_Save("palaces", palaceOut)
     Palace_PalaceRefresh()
     Palace_Notify("Memory Palace removed", 1200, BANNER_ACCENT_SUCCESS)
 }
