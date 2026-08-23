@@ -82,15 +82,8 @@ def build_study_markdown(
     image_md_paths: dict[str, str],
 ) -> str:
     title = md_escape(study_card.get("title") or study_card.get("id") or "Study")
-    palace_count = study_card.get("palace_count", 0)
     lines: list[str] = [
         f"# {title}",
-        "",
-        f"_{palace_count} Memory Palaces · newest first_",
-        "",
-        "_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_",
-        "",
-        "---",
         "",
     ]
     palaces = study_card.get("palaces") or []
@@ -109,46 +102,7 @@ def build_study_markdown(
             )
         )
 
-    text = "\n".join(lines).rstrip() + "\n"
-    # #region agent log
-    try:
-        import json, time
-        from pathlib import Path as _P
-
-        _log = _P(__file__).resolve().parents[2] / "debug-099245.log"
-        _details = text.count("<details")
-        _nested = text.count("<summary>🟧")  # beast details inside palace
-        with _log.open("a", encoding="utf-8") as _f:
-            _f.write(
-                json.dumps(
-                    {
-                        "sessionId": "099245",
-                        "runId": "pre-fix",
-                        "hypothesisId": "A",
-                        "location": "study_practice_md.py:build_study_markdown",
-                        "message": "md export style pipeline probe",
-                        "data": {
-                            "study": title,
-                            "has_css_link": (
-                                "stylesheet" in text.lower() or ".css" in text.lower()
-                            ),
-                            "has_style_tag": "<style" in text.lower(),
-                            "details_count": _details,
-                            "beast_details_count": _nested,
-                            "nesting_depth_est": (
-                                2 if _nested and _details else (1 if _details else 0)
-                            ),
-                            "chars": len(text),
-                        },
-                        "timestamp": int(time.time() * 1000),
-                    }
-                )
-                + "\n"
-            )
-    except Exception:
-        pass
-    # #endregion
-    return text
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def write_study(
@@ -182,43 +136,6 @@ def write_study(
 
     md_text = build_study_markdown(study_card, image_md_paths)
     out_path = practice_md_path(practice_dir, slug)
-    # #region agent log
-    try:
-        import json, time
-
-        _css_candidates = [
-            practice_dir / "practice.css",
-            practice_dir / "assets" / "practice.css",
-            output_dir / "practice.css",
-            Path(__file__).resolve().parent / "practice.css",
-            Path(__file__).resolve().parent / "palace_theme.css",
-        ]
-        _existing = [str(p) for p in _css_candidates if p.exists()]
-        _log = Path(__file__).resolve().parents[2] / "debug-099245.log"
-        with _log.open("a", encoding="utf-8") as _f:
-            _f.write(
-                json.dumps(
-                    {
-                        "sessionId": "099245",
-                        "runId": "pre-fix",
-                        "hypothesisId": "D",
-                        "location": "study_practice_md.py:write_study",
-                        "message": "write_study css filesystem probe",
-                        "data": {
-                            "out_path": str(out_path),
-                            "dry_run": dry_run,
-                            "css_files_found": _existing,
-                            "css_files_found_count": len(_existing),
-                            "practice_dir": str(practice_dir),
-                        },
-                        "timestamp": int(time.time() * 1000),
-                    }
-                )
-                + "\n"
-            )
-    except Exception:
-        pass
-    # #endregion
     if dry_run:
         print(f"[dry-run] would write {out_path}")
         return out_path

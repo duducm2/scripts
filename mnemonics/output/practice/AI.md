@@ -1,11 +1,5 @@
 # Ai
 
-_3 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: Michael Jackson · 1 beast · 2 atoms</summary>
 

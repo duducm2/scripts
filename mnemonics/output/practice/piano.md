@@ -1,11 +1,5 @@
 # Piano
 
-_10 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 10: Reading and Hand Posture</strong> · Character: Elvis Presley · 2 beasts · 2 atoms</summary>
 

@@ -1,11 +1,5 @@
 # Communication
 
-_3 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 3: Leading Myself</strong> · Character: (unassigned palace 3) · 4 beasts · 4 atoms</summary>
 

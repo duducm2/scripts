@@ -1,11 +1,5 @@
 # Taoism
 
-_4 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 4: Religious Development & Pantheon</strong> · Character: (unassigned palace 4) · 5 beasts · 5 atoms</summary>
 

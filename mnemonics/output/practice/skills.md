@@ -1,11 +1,5 @@
 # Skills
 
-_5 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 5: Cognitive Shuffling Fundamentals</strong> · Character: (unassigned palace 5) · 2 beasts · 6 atoms</summary>
 

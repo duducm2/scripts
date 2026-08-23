@@ -1,11 +1,5 @@
 # German
 
-_11 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 11: The German Alphabet</strong> · Character: (unassigned palace 11) · 1 beast · 1 atom</summary>
 

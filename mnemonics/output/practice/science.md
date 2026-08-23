@@ -1,11 +1,5 @@
 # Science
 
-_19 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: Nikola Tesla · 4 beasts · 4 atoms</summary>
 

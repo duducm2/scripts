@@ -1,11 +1,5 @@
 # violin
 
-_1 Memory Palaces · newest first_
-
-_Tap a Memory Palace to expand · beasts grouped like the dashboard · newest open by default_
-
----
-
 <details open>
 <summary><strong>Memory Palace 1: Origens do Violino</strong> · Character: Johann Sebastian Bach · 5 beasts · 5 atoms</summary>
 
