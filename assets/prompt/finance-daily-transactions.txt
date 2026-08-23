@@ -1,36 +1,49 @@
 DELIVERY MANDATE (read first)
-This is NOT a generic "output CSV in chat" task. Deliver one downloadable file only — the human uses automated Quick Download and import. Never paste CSV header or data rows as plain chat text.
+Deliver exactly one downloadable text file. The human uses Quick Download and Finance import. Do not use unnamed chat code snippets as the primary deliverable. Do not claim a Desktop save.
 
 Daily transactions — structured extraction
 
-You convert a voice dictation of recent money movements into one CSV file.
+You convert a voice dictation of recent money movements into one `FINANCE_DAILY.txt` pack (preview + labeled CSV section).
 
 FILE DELIVERY PROTOCOL (mandatory)
-The human has no Desktop or disk write access from chat. Every response must expose a Download / Download code / Export control — not inline CSV.
+The human has no Desktop or disk write access from chat. Expose a Download / Download code / Export control for the pack.
 
 Delivery priority (strict):
-1. Best: a real downloadable file artifact named exactly FINANCE_DAILY.csv (Canvas, file card, or attachment). The download chip/button label must be FINANCE_DAILY.csv.
-2. Acceptable: the same pure-CSV body as a downloadable file named exactly FINANCE_DAILY.txt (chip label FINANCE_DAILY.txt). The human may rename .txt to .csv before import.
-3. Acceptable fallback: a Download code chip (e.g. gemini-code-….txt) when the platform cannot produce a named file card — still a downloadable artifact, not inline text.
-4. Forbidden: inline CSV in chat — raw rows, markdown tables, or "here is your CSV" prose with no download chip.
-5. Forbidden: claiming or simulating a save to Desktop / any local path.
+1. Best: one downloadable artifact named exactly `FINANCE_DAILY.txt` (chip/button label must match).
+2. Acceptable: a `gemini-code-….txt` download whose body uses the markers below.
+3. Forbidden: unnamed code snippets without pack markers; markdown tables as the primary deliverable; fake Desktop saves.
 
-Chat after the file: a short note is optional (coverage / skipped items only). Never put notes or CSV rows inside the chat body.
+PACK BODY LAYOUT (exact markers — required inside the downloadable file):
 
-Failed delivery — redo (do not ask the user to copy from chat):
-- description,amount,type,... rows visible in the chat bubble with no download button
-- Markdown ```csv or ```text blocks without an associated download chip
-- Markdown tables of transactions
-- "I saved FINANCE_DAILY.csv to your Desktop" without a real downloadable artifact
+```
+===PREVIEW===
+N row(s) · brief coverage / skips
+===END_PREVIEW===
 
-Pre-send self-check (all must pass before you finish):
-1. A Download / Download code / Export control exists for the deliverable.
-2. The visible filename is FINANCE_DAILY.csv or FINANCE_DAILY.txt when the platform allows naming.
-3. Zero CSV data rows appear as plain chat text.
-If any check fails, regenerate as a downloadable artifact.
+===FILE: FINANCE_DAILY.csv===
+<pure CSV: header + rows>
+===END_FILE===
+```
 
-File body and format:
-- Pure CSV only: first line is the header row below. No preamble, no FILE: line, no markdown, no prose inside the file.
+Rules:
+- Preview is plain text only (coverage / skips). Importer ignores it.
+- The FILE section body is pure CSV only — header first, no markdown fences inside the section.
+- Chat after the download may briefly point at the chip. Do not put CSV rows only in chat outside the pack file.
+
+Failed delivery — redo:
+- description,amount,type,... rows in the chat bubble with no download control
+- Unnamed ```csv / ```text snippets without `===FILE: FINANCE_DAILY.csv===` markers
+- Markdown tables of transactions as the main output
+- "I saved FINANCE_DAILY.txt to your Desktop" without a real downloadable artifact
+
+Pre-send self-check (all must pass):
+1. One Download / Download code control exists (named `FINANCE_DAILY.txt` when the platform allows).
+2. Body contains `===PREVIEW===` … `===END_PREVIEW===` and `===FILE: FINANCE_DAILY.csv===` … `===END_FILE===`.
+3. CSV body uses the exact header below.
+If any check fails, regenerate as one `FINANCE_DAILY.txt` pack.
+
+CSV body format (inside the FILE section):
+- Pure CSV only: first line is the header row below. No preamble, no `FILE:` line, no markdown, no prose inside the section.
 - Ignore prior chat noise about skipped items (e.g. "eraser was skipped") when producing this turn's CSV.
 - Use UTF-8.
 - Use a comma as the field separator.
@@ -57,7 +70,7 @@ CATEGORIZATION
 - Examples: haircut/barber → category_id=CAT_BELEZA, subcategory=Hairdresser; shampoo/soap → category_id=CAT_MERCADO, subcategory=Personal care; banana → category_id=CAT_MERCADO, subcategory=Produce.
 - Prefer a specific subcategory when one fits. Do not leave category_id blank when a clear fit exists.
 - Last resort only (use as little as possible; prefer any real fit): expense or card_expense → CAT_MATERIAI (Misc materials); income → CAT_OUTROS2 (Other).
-- After the CSV, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the CSV with that note.
+- After the pack, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the pack with that note.
 - Do not invent category ids. If something is a poor fit, say so in the chat note after the file.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts, or Send dictation [D])
@@ -72,10 +85,10 @@ Use categories.csv / accounts.csv / credit_cards.csv for id mapping. Use the INI
 DICTATION
 Paste the raw dictation below this line.
 
-Reminder: deliver FINANCE_DAILY.csv (or .txt) as a downloadable file — never inline CSV.
+Reminder: deliver `FINANCE_DAILY.txt` as a downloadable pack — never unnamed CSV snippets.
 ---
 Human reminders (for the person sending this prompt — do not include in AI output):
 
 After the AI responds:
 - Run Quick Download (Win+Alt+Shift+9) or Finance import from the launcher
-- If the file is FINANCE_DAILY.txt or gemini-code-….txt: rename to .csv on Desktop if needed before import
+- No rename required: importer extracts the CSV section from `FINANCE_DAILY.txt` or a marked `gemini-code-….txt`

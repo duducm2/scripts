@@ -36,6 +36,10 @@ Finance_ReadAiImportCsv(path) {
             start := idx
             break
         }
+        if (InStr(lower, "entity_type") && InStr(lower, "entity_id")) {
+            start := idx
+            break
+        }
     }
     if (!start)
         return Finance_ReadCsv(path)
@@ -58,9 +62,42 @@ Finance_ReadAiImportCsv(path) {
         d := r.Has("description") ? StrLower(Trim(r["description"])) : ""
         if (d = "description" || d = "amount" || d = "type")
             continue
+        et := r.Has("entity_type") ? StrLower(Trim(r["entity_type"])) : ""
+        if (et = "entity_type")
+            continue
         cleaned_rows.Push(r)
     }
     return cleaned_rows
+}
+
+; Extract CSV body between ===FILE: name=== / ---FILE: name--- and matching END_FILE.
+Finance_ExtractPackFileSection(text, fileName) {
+    for style in ["===", "---"] {
+        needle := style . "FILE: " . fileName . style
+        endNeedle := style . "END_FILE" . style
+        pos := InStr(text, needle, false)
+        if (!pos)
+            continue
+        rest := SubStr(text, pos + StrLen(needle))
+        endPos := InStr(rest, endNeedle, false)
+        if (!endPos)
+            continue
+        return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+    }
+    return ""
+}
+
+; If path is a pack with FILE markers, write CSV body to temp and return that path; else return path.
+Finance_MaterializeAiCsv(path, expectedFileName) {
+    text := Finance_ReadUtf8(path)
+    if (text = "")
+        return path
+    body := Finance_ExtractPackFileSection(text, expectedFileName)
+    if (body = "")
+        return path
+    tmp := A_Temp . "\finance_pack_" . StrReplace(expectedFileName, ".", "_") . ".csv"
+    Finance_WriteUtf8(tmp, body)
+    return tmp
 }
 
 ; Newest Desktop dump that looks like a daily finance CSV (Gemini code downloads).
@@ -72,7 +109,29 @@ Finance_DesktopNewestDailyCodeDump() {
         if (body = "")
             continue
         lower := StrLower(body)
-        if (!InStr(lower, "description,amount") && !InStr(lower, "date,description,amount"))
+        hasDaily := InStr(lower, "description,amount") || InStr(lower, "date,description,amount")
+        || InStr(lower, "file: finance_daily")
+        if (!hasDaily)
+            continue
+        ts := Number(A_LoopFileTimeModified)
+        if (ts > newestTime) {
+            newestTime := ts
+            newest := A_LoopFileFullPath
+        }
+    }
+    return newest
+}
+
+Finance_DesktopNewestMonthlyCodeDump() {
+    newest := ""
+    newestTime := 0
+    loop files A_Desktop . "\gemini-code*.txt", "F" {
+        body := Finance_ReadUtf8(A_LoopFileFullPath)
+        if (body = "")
+            continue
+        lower := StrLower(body)
+        hasMonthly := InStr(lower, "entity_type,entity_id") || InStr(lower, "file: finance_monthly")
+        if (!hasMonthly)
             continue
         ts := Number(A_LoopFileTimeModified)
         if (ts > newestTime) {
@@ -420,9 +479,9 @@ Finance_ImportDaily(*) {
 ; path empty = discover on Desktop. autoConfirm skips the confirm dialog.
 Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     if (path = "") {
-        path := Finance_DesktopNewest("FINANCE_DAILY*.csv")
+        path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
         if (path = "")
-            path := Finance_DesktopNewest("FINANCE_DAILY*.txt")
+            path := Finance_DesktopNewest("FINANCE_DAILY*.csv")
         if (path = "")
             path := Finance_DesktopNewest("FINANCE_DAILY*.ini")
         if (path = "")
@@ -432,7 +491,14 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         Finance_Notify("No FINANCE_DAILY file on Desktop", 2000, BANNER_ACCENT_ERROR)
         return false
     }
-    rows := Finance_ReadAiImportCsv(path)
+    sourcePath := path
+    csvPath := Finance_MaterializeAiCsv(path, "FINANCE_DAILY.csv")
+    rows := Finance_ReadAiImportCsv(csvPath)
+    if (csvPath != sourcePath) {
+        try FileDelete(csvPath)
+        catch {
+        }
+    }
     if (!rows.Length) {
         Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
         return false
@@ -473,7 +539,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     }
     Finance_Save("transactions", txs)
     Finance_AfterDailyImport(parsed, autoConfirm)
-    Finance_ArchiveImported(path)
+    Finance_ArchiveImported(sourcePath)
     Finance_Notify("Imported " . parsed.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
     return true
 }
@@ -522,14 +588,25 @@ Finance_AfterDailyImport(parsed, autoConfirm) {
 }
 
 Finance_ImportMonthly(*) {
-    path := Finance_DesktopNewest("FINANCE_MONTHLY*.csv")
+    path := Finance_DesktopNewest("FINANCE_MONTHLY*.txt")
+    if (path = "")
+        path := Finance_DesktopNewest("FINANCE_MONTHLY*.csv")
     if (path = "")
         path := Finance_DesktopNewest("FINANCE_MONTHLY*.ini")
+    if (path = "")
+        path := Finance_DesktopNewestMonthlyCodeDump()
     if (path = "") {
         Finance_Notify("No FINANCE_MONTHLY file on Desktop", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    rows := Finance_ReadCsv(path)
+    sourcePath := path
+    csvPath := Finance_MaterializeAiCsv(path, "FINANCE_MONTHLY.csv")
+    rows := Finance_ReadAiImportCsv(csvPath)
+    if (csvPath != sourcePath) {
+        try FileDelete(csvPath)
+        catch {
+        }
+    }
     if (!rows.Length) {
         Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
         return
@@ -585,7 +662,7 @@ Finance_ImportMonthly(*) {
     Finance_Save("goals", goals)
     Finance_Save("transactions", txs)
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
-    Finance_ArchiveImported(path)
+    Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
     Finance_ShowMainMenu()
 }

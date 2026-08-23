@@ -257,11 +257,11 @@ Finance_ShowImportMenu() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "AI import")
     g_FinanceGui.SetFont("s11", "Segoe UI")
     g_FinanceGui.Add("Text", "w520",
-        "Import structured files from the Desktop (newest match). Also accepts Gemini gemini-code*.txt dumps that contain a daily CSV header."
+        "Import FINANCE_*.txt packs from the Desktop (newest match). Extracts CSV from ===FILE=== sections. Also accepts legacy .csv and gemini-code*.txt dumps."
     )
     g_FinanceGui.SetFont("s12 Bold", "Segoe UI")
-    g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.csv")
-    g_FinanceGui.Add("Text", "y+8", "[2]  Monthly investments & goals   FINANCE_MONTHLY*.csv")
+    g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.txt")
+    g_FinanceGui.Add("Text", "y+8", "[2]  Monthly investments & goals   FINANCE_MONTHLY*.txt")
     g_FinanceGui.SetFont("s10 Norm", "Segoe UI")
     g_FinanceGui.Add("Text", "y+16 c555555 w520",
         "Prompts: Utility Shortcuts (#!+U) → Prompts → [d] daily / [m] monthly")
