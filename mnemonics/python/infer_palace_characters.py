@@ -56,14 +56,20 @@ def main(argv: list[str] | None = None) -> int:
         "--technique-dir",
         type=Path,
         default=None,
-        help="Default: <notes-root>/technique",
+        help="Default: mnemonics/technique, else <notes-root>/technique",
     )
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args(argv)
 
     data_dir = args.data_dir.resolve()
     notes_root = args.notes_root.resolve()
-    technique_dir = (args.technique_dir or (notes_root / "technique")).resolve()
+    script_technique = Path(__file__).resolve().parent.parent / "technique"
+    if args.technique_dir:
+        technique_dir = args.technique_dir.resolve()
+    elif script_technique.is_dir() and (script_technique / "characters.json").exists():
+        technique_dir = script_technique
+    else:
+        technique_dir = (notes_root / "technique").resolve()
 
     palaces_path = data_dir / "palaces.csv"
     studies_path = data_dir / "studies.csv"

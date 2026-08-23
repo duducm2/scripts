@@ -137,7 +137,7 @@ Palace_OpenDashboard() {
         Palace_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
         return
     }
-    try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
+    try StandardLoadingBar_Show("Syncing technique + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'

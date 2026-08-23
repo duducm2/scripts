@@ -50,6 +50,25 @@ Palace_PythonDir() {
     return A_ScriptDir . "\mnemonics\python"
 }
 
+Palace_TechniqueRoot() {
+    mirror := A_ScriptDir . "\mnemonics\technique"
+    if (DirExist(mirror) && FileExist(mirror . "\README.md"))
+        return mirror
+    notesRoot := ""
+    try notesRoot := GetNotesRepoPath()
+    catch {
+        notesRoot := ""
+    }
+    if (notesRoot != "") {
+        live := RTrim(notesRoot, "\") . "\studies\technique"
+        if (DirExist(live))
+            return live
+    }
+    if (DirExist(mirror))
+        return mirror
+    return ""
+}
+
 Palace_FindPythonCmd() {
     candidates := ["py -3", "py", "python3", "python"]
     for c in candidates {

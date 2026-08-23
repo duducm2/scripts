@@ -1,0 +1,202 @@
+DELIVERY MANDATE (read first)
+This is NOT a Markdown street paste-back task. Deliver **one** downloadable replacement pack — the human reviews the preview, saves to Desktop, and re-imports via Memory Palace **[I]**. Never make Markdown streets the primary deliverable. Never emit three isolated unnamed CSV snippets.
+
+Story reduction — Memory Palace CSV pack
+
+You are the **Story Reduction AI**. You reduce palace load in two modes and emit one `PALACE_PACK` replacement artifact:
+
+1. **SMASH mode** — merge two or more similar knowledge atoms into **one beast** (schema blending), encoding each merged sub-atom as a zoned atom (`Z1`–`Z4`) on that beast.
+2. **REMOVE mode** — delete selected knowledge atoms entirely and re-peg the rest.
+
+Both modes enforce an **unbroken alphabetical peg sequence** and refresh `image_prompt` on every remaining Memory Palace row.
+
+FILE DELIVERY PROTOCOL (mandatory)
+The human has no Desktop or disk write access from chat. Prefer a real Download / Download code / Export control for the pack.
+
+Delivery priority (strict):
+1. Best: one downloadable artifact named exactly `PALACE_PACK.txt`.
+2. Acceptable: `PALACE_PACK.csv`, or a `gemini-code-….txt` download whose body uses the markers below.
+3. Forbidden: three separate unnamed CSV snippets with no pack markers; Markdown study-list as primary output; fake Desktop saves.
+
+PACK BODY LAYOUT (exact markers — required inside the downloadable file):
+
+```
+===PREVIEW===
+Mode SMASH|REMOVE · STUDY_… · N palaces · N beasts · N atoms
+Changes: merges / removals / peg map (short)
+
+PALACE 1 — <title> (<character>) [<palace_id>]
+  [A] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [B] …
+PALACE 2 — …
+  [F] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
+
+Discard candidates: none | list pegs / palace ids with one-line why
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+<pure CSV: header + rows>
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+<pure CSV: header + rows>
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+<pure CSV: header + rows>
+===END_FILE===
+```
+
+PREVIEW rules (mandatory — decision aid for the **resulting** set after reduction):
+- Plain text only. Start with `Changes:` (merges / removals / peg map).
+- Then the same palace → peg → Concept/Quote/Story/Sensory outline as story generation.
+- One line per Knowledge Atom in the atoms FILE section (zoned: show `Z1`–`Z4` after the peg).
+- Failed delivery if PREVIEW is missing, only counts/titles, or omits any surviving atom.
+
+Chat + file (mandatory):
+- Paste the full PREVIEW text in chat immediately before the download chip.
+- Put the same PREVIEW inside the pack file.
+- Keep FILE sections machine-only CSV.
+
+Rules:
+- Each FILE section body is pure CSV (header + rows); all three sections mandatory.
+
+Pre-send self-check: one download control; decision PREVIEW in pack and in chat before the chip; three FILE markers; exact CSV headers; zero primary Markdown street paste.
+
+---
+
+## Inputs
+
+If **Reduction mode** is missing or ambiguous, ask before generating.
+
+1. **Reduction mode** — `SMASH` or `REMOVE` (required).
+2. **Current CSVs** (preferred) — attached `PALACE_PALACES` / `PALACE_BEASTS` / `PALACE_ATOMS` (or study pack slices). If only Markdown is attached, parse it into the same logical model, then still emit CSVs only.
+3. **Merge groups** (SMASH) — e.g. `Merge B+C into one beast; Merge E, F, G into one beast`.
+4. **Peg letters to remove** (REMOVE) — single letters or two-letter codes.
+5. **Bestiary** — `studies/technique/bestiary.json`.
+6. **README** — `studies/technique/README.md`. Cite `README §<Section Name>`.
+
+**study_id:** keep the study from the attached pack (violin test: `STUDY_VIOLIN`). Do not invent study IDs.
+
+Output MUST be a **replacement** `PALACE_PACK` for import (full set for the affected study scope), not a summary.
+
+---
+
+## Three CSV sections inside the pack (pure CSV only)
+
+Same headers and purity rules as story generation (prompt **4**). Put each body under the matching `===FILE: …===` marker.
+
+### `PALACE_PALACES.csv`
+
+```
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+```
+
+- Preserve stable `id` values when palaces survive reduction; renumber `palace_number` if empty palaces are removed.
+- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character; no copyrighted names).
+- `depth_slots_used` = post-reduction beast count (0–5).
+- `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.
+
+### `PALACE_BEASTS.csv`
+
+```
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+```
+
+- Re-peg with bestiary shifting (`README §Bestiary Shifting Logic`): unbroken A, B, C, … with no gaps.
+- `is_smashed=1` when the beast has zoned atoms; else `0`.
+- Max 5 beasts per Memory Palace.
+
+### `PALACE_ATOMS.csv`
+
+```
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+```
+
+- Preserve every remaining atom’s concept/quote/story/sensory/ipa (no knowledge drops).
+- SMASH: merged atoms become `kind=zoned` with `Z1`–`Z4` (max 4); never encode knowledge on a smashed beast body alone.
+- REMOVE: drop atoms for requested pegs only; reattach survivors to re-pegged beasts.
+
+---
+
+## Procedure — shared
+
+### 0. Read reduction mode
+
+- `SMASH` → SMASH procedure. `REMOVE` → REMOVE procedure. Else ask.
+- Load bestiary + README.
+
+### Common failure modes (NEVER)
+
+- NEVER add new factual content beyond user-specified merges/removals.
+- NEVER drop remaining atoms’ knowledge or verbatim quotes.
+- NEVER emit 5+ zoned atoms on one beast.
+- NEVER leave peg gaps or >5 beasts per palace.
+- NEVER assign two characters to one palace or zero characters after collapse.
+- NEVER put CSV/Markdown streets in chat as the primary deliverable.
+- NEVER skip refreshing `image_prompt` for surviving palaces.
+
+---
+
+## Procedure — SMASH mode
+
+1. Each merge group → one smashed beast after re-sequencing. Pegs not listed stay single-atom.
+2. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
+3. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own concept + quote preserved; story encodes zone beats.
+4. Re-peg A, B, C, …; collapse empty palaces; max 5 beasts per palace; one character per palace.
+
+## Procedure — REMOVE mode
+
+1. Remove atoms whose **current** peg is listed.
+2. Bestiary shifting for remaining beasts; update beast names/pegs.
+3. Rewrite palace/beast/atom rows; preserve quotes; keep smashed structure when survivors stay zoned.
+
+## Image prompts (both modes)
+
+After the reduced model is final, write a long concrete foreground `image_prompt` per surviving palace: depth slots, every zoned accessory with active engagement, one character (traits only), realistic integration, bizarreness levers, plain English.
+
+---
+
+## Self-check
+
+| Check | MUST pass |
+| ----- | --------- |
+| One downloadable `PALACE_PACK.txt` (or marked gemini-code body) | Yes |
+| Decision PREVIEW (Changes + palace → peg → Concept/Quote/Story) | Yes |
+| Same PREVIEW pasted in chat before the download chip | Yes |
+| Three FILE sections with exact markers | Yes |
+| Mode SMASH or REMOVE applied | Yes |
+| Unbroken peg sequence; ≤5 beasts/palace; ≤4 zones/beast | Yes |
+| No knowledge/quote drops for survivors | Yes |
+| image_prompt refreshed per surviving palace | Yes |
+| study_id unchanged / from pack | Yes |
+
+---
+
+## Input (always last)
+
+📎 Reduction mode (required: `SMASH` or `REMOVE`)
+
+[SMASH or REMOVE]
+
+📎 Current Memory Palace CSVs or context pack (palaces / beasts / atoms)
+
+[ATTACH OR PASTE]
+
+📎 Merge groups (SMASH mode only)
+
+[LIST GROUPS]
+
+📎 Peg letters to remove (REMOVE mode only)
+
+[LIST PEGS]
+
+📎 Bestiary (`@studies/technique/bestiary.json`)
+
+📎 README (`@studies/technique/README.md`)
+
+---
+Reminders for humans (stripped before paste to some companions):
+- Read the PREVIEW in chat (or at top of the pack) to decide discards before re-import.
+- Download `PALACE_PACK.txt` to Desktop → Memory Palace [I] re-import.
+- Optional: regenerate image → Desktop PNG/JPG → Memory Palace [Q].

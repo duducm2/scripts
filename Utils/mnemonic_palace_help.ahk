@@ -22,7 +22,7 @@ Palace_ShowHelp() {
     g_PalaceGui.Add("Text", "x16 y12 w" . bodyW . " cWhite", "Memory Palace — vocabulary for this system")
     g_PalaceGui.SetFont("s9 cA0A0A0", "Segoe UI")
     g_PalaceGui.Add("Text", "x16 y36 w" . bodyW,
-        "Software model only. Technique rules stay in notes/studies/technique/README.md.")
+        "Software model only. Technique rules: mnemonics/technique/README.md (mirrored).")
 
     body := ""
     for term in Palace_Terms() {

@@ -1,0 +1,2809 @@
+{
+  "source": "characters.md",
+  "description": "Mnemonic characters list — categories and subcategories with character names.",
+  "sections": [
+    {
+      "level": 4,
+      "title": "**Classical Music Artists**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Johann Sebastian Bach"
+        },
+        {
+          "number": 2,
+          "name": "Ludwig van Beethoven"
+        },
+        {
+          "number": 3,
+          "name": "Wolfgang Amadeus Mozart"
+        },
+        {
+          "number": 4,
+          "name": "Claude Debussy"
+        },
+        {
+          "number": 5,
+          "name": "Maurice Ravel"
+        },
+        {
+          "number": 6,
+          "name": "Erik Satie"
+        },
+        {
+          "number": 7,
+          "name": "Frédéric Chopin"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Taoist Philosophy**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Laozi (Lao Tzu)"
+        },
+        {
+          "number": 2,
+          "name": "Zhuangzi (Chuang Tzu)"
+        },
+        {
+          "number": 3,
+          "name": "The Jade Emperor"
+        },
+        {
+          "number": 4,
+          "name": "Benjamin Hoff (The Tao of Pooh)"
+        },
+        {
+          "number": 5,
+          "name": "Bruce Lee (Taoist martial arts philosophy)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Programming and Automation Culture**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Alan Turing"
+        },
+        {
+          "number": 2,
+          "name": "Ada Lovelace"
+        },
+        {
+          "number": 3,
+          "name": "GitHub Copilot"
+        },
+        {
+          "number": 4,
+          "name": "\"Hello World\""
+        },
+        {
+          "number": 5,
+          "name": "Neo (The Matrix)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Linguistics and Phonology**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Glossonauta"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Animes**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Goku (Dragon Ball)"
+        },
+        {
+          "number": 2,
+          "name": "Naruto Uzumaki (Naruto)"
+        },
+        {
+          "number": 3,
+          "name": "Sailor Moon (Usagi Tsukino)"
+        },
+        {
+          "number": 4,
+          "name": "Spike Spiegel (Cowboy Bebop)"
+        },
+        {
+          "number": 5,
+          "name": "Edward Elric (Fullmetal Alchemist)"
+        },
+        {
+          "number": 6,
+          "name": "Light Yagami (Death Note)"
+        },
+        {
+          "number": 7,
+          "name": "L (Death Note)"
+        },
+        {
+          "number": 8,
+          "name": "Eren Yeager (Attack on Titan)"
+        },
+        {
+          "number": 9,
+          "name": "Totoro (My Neighbor Totoro)"
+        },
+        {
+          "number": 10,
+          "name": "Chihiro (Spirited Away)"
+        },
+        {
+          "number": 11,
+          "name": "Haku (Spirited Away)"
+        },
+        {
+          "number": 12,
+          "name": "No-Face (Spirited Away)"
+        },
+        {
+          "number": 13,
+          "name": "Kiki (Kiki's Delivery Service)"
+        },
+        {
+          "number": 14,
+          "name": "Jiji (Kiki's Delivery Service)"
+        },
+        {
+          "number": 15,
+          "name": "Howl (Howl's Moving Castle)"
+        },
+        {
+          "number": 16,
+          "name": "Sophie (Howl's Moving Castle)"
+        },
+        {
+          "number": 17,
+          "name": "Ponyo (Ponyo)"
+        },
+        {
+          "number": 18,
+          "name": "Astro Boy"
+        },
+        {
+          "number": 19,
+          "name": "Pikachu (Pokémon)"
+        },
+        {
+          "number": 20,
+          "name": "Ash Ketchum (Pokémon)"
+        },
+        {
+          "number": 21,
+          "name": "Yugi Muto (Yu-Gi-Oh!)"
+        },
+        {
+          "number": 22,
+          "name": "Vegeta (Dragon Ball)"
+        },
+        {
+          "number": 23,
+          "name": "Bulma (Dragon Ball)"
+        },
+        {
+          "number": 24,
+          "name": "Piccolo (Dragon Ball)"
+        },
+        {
+          "number": 25,
+          "name": "Trunks (Dragon Ball)"
+        },
+        {
+          "number": 26,
+          "name": "Gohan (Dragon Ball)"
+        },
+        {
+          "number": 27,
+          "name": "Frieza (Dragon Ball)"
+        },
+        {
+          "number": 28,
+          "name": "Majin Buu (Dragon Ball)"
+        },
+        {
+          "number": 29,
+          "name": "Zatch Bell (Zatch Bell)"
+        },
+        {
+          "number": 30,
+          "name": "Sakura Kinomoto (Sakura Card Captors)"
+        },
+        {
+          "number": 31,
+          "name": "Tomoyo Daidouji (Sakura Card Captors)"
+        },
+        {
+          "number": 32,
+          "name": "Syaoran Li (Sakura Card Captors)"
+        },
+        {
+          "number": 33,
+          "name": "Keroberos (Sakura Card Captors)"
+        },
+        {
+          "number": 34,
+          "name": "Agumon (Digimon)"
+        },
+        {
+          "number": 35,
+          "name": "Gabumon (Digimon)"
+        },
+        {
+          "number": 36,
+          "name": "Tai Kamiya (Taichi Yagami, Digimon)"
+        },
+        {
+          "number": 37,
+          "name": "Matt Ishida (Yamato Ishida, Digimon)"
+        },
+        {
+          "number": 38,
+          "name": "Gatomon (Digimon)"
+        },
+        {
+          "number": 39,
+          "name": "Patamon (Digimon)"
+        },
+        {
+          "number": 40,
+          "name": "Izzy Izumi (Koushiro Izumi, Digimon)"
+        },
+        {
+          "number": 41,
+          "name": "Tentomon (Digimon)"
+        },
+        {
+          "number": 42,
+          "name": "Palmon (Digimon)"
+        },
+        {
+          "number": 43,
+          "name": "Mimi Tachikawa (Digimon)"
+        },
+        {
+          "number": 44,
+          "name": "Joe Kido (Digimon)"
+        },
+        {
+          "number": 45,
+          "name": "T.K. Takaishi (Takeru Takaishi, Digimon)"
+        },
+        {
+          "number": 46,
+          "name": "Kari Kamiya (Hikari Yagami, Digimon)"
+        },
+        {
+          "number": 47,
+          "name": "Leomon (Digimon)"
+        },
+        {
+          "number": 48,
+          "name": "Devimon (Digimon)"
+        },
+        {
+          "number": 49,
+          "name": "Wizardmon (Digimon)"
+        },
+        {
+          "number": 50,
+          "name": "Terriermon (Digimon)"
+        },
+        {
+          "number": 51,
+          "name": "Renamon (Digimon)"
+        },
+        {
+          "number": 52,
+          "name": "Guilmon (Digimon)"
+        },
+        {
+          "number": 53,
+          "name": "Lopmon (Digimon)"
+        },
+        {
+          "number": 54,
+          "name": "Sasuke Uchiha (Naruto)"
+        },
+        {
+          "number": 55,
+          "name": "Sakura Haruno (Naruto)"
+        },
+        {
+          "number": 56,
+          "name": "Kakashi Hatake (Naruto)"
+        },
+        {
+          "number": 57,
+          "name": "Itachi Uchiha (Naruto)"
+        },
+        {
+          "number": 58,
+          "name": "Gaara (Naruto)"
+        },
+        {
+          "number": 59,
+          "name": "Rock Lee (Naruto)"
+        },
+        {
+          "number": 60,
+          "name": "Hinata Hyuga (Naruto)"
+        },
+        {
+          "number": 61,
+          "name": "Shikamaru Nara (Naruto)"
+        },
+        {
+          "number": 62,
+          "name": "Jiraiya (Naruto)"
+        },
+        {
+          "number": 63,
+          "name": "Orochimaru (Naruto)"
+        },
+        {
+          "number": 64,
+          "name": "Tsunade (Naruto)"
+        },
+        {
+          "number": 65,
+          "name": "Haku (Naruto)"
+        },
+        {
+          "number": 66,
+          "name": "Zabuza Momochi (Naruto)"
+        },
+        {
+          "number": 67,
+          "name": "Neji Hyuga (Naruto)"
+        },
+        {
+          "number": 68,
+          "name": "Kiba Inuzuka (Naruto)"
+        },
+        {
+          "number": 69,
+          "name": "Akamaru (Naruto)"
+        },
+        {
+          "number": 70,
+          "name": "Choji Akimichi (Naruto)"
+        },
+        {
+          "number": 71,
+          "name": "Ino Yamanaka (Naruto)"
+        },
+        {
+          "number": 72,
+          "name": "Pain (Nagato) (Naruto)"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** Impressionist Painters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Claude Monet"
+        },
+        {
+          "number": 2,
+          "name": "Pierre-Auguste Renoir"
+        },
+        {
+          "number": 3,
+          "name": "Camille Pissarro"
+        },
+        {
+          "number": 4,
+          "name": "Berthe Morisot"
+        },
+        {
+          "number": 5,
+          "name": "Edouard Manet"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Pop Culture**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Marilyn Monroe"
+        },
+        {
+          "number": 2,
+          "name": "Elvis Presley"
+        },
+        {
+          "number": 3,
+          "name": "Michael Jackson"
+        },
+        {
+          "number": 4,
+          "name": "Madonna"
+        },
+        {
+          "number": 5,
+          "name": "Beyoncé"
+        },
+        {
+          "number": 6,
+          "name": "Taylor Swift"
+        },
+        {
+          "number": 7,
+          "name": "Kim Kardashian"
+        },
+        {
+          "number": 8,
+          "name": "Oprah Winfrey"
+        },
+        {
+          "number": 9,
+          "name": "Harry Potter"
+        },
+        {
+          "number": 10,
+          "name": "Darth Vader"
+        },
+        {
+          "number": 11,
+          "name": "Barbie"
+        },
+        {
+          "number": 12,
+          "name": "Mickey Mouse"
+        },
+        {
+          "number": 13,
+          "name": "Mario (Nintendo)"
+        },
+        {
+          "number": 14,
+          "name": "The Beatles"
+        },
+        {
+          "number": 15,
+          "name": "Elon Musk (Meme culture aspect)"
+        },
+        {
+          "number": 16,
+          "name": "Meme: Doge"
+        },
+        {
+          "number": 17,
+          "name": "Meme: Pepe the Frog"
+        },
+        {
+          "number": 18,
+          "name": "Meme: Distracted Boyfriend"
+        },
+        {
+          "number": 19,
+          "name": "Game of Thrones (The Iron Throne)"
+        },
+        {
+          "number": 20,
+          "name": "Friends (The Couch)"
+        },
+        {
+          "number": 21,
+          "name": "Walter White (Breaking Bad)"
+        },
+        {
+          "number": 22,
+          "name": "SpongeBob SquarePants"
+        },
+        {
+          "number": 23,
+          "name": "Shrek"
+        },
+        {
+          "number": 24,
+          "name": "Britney Spears"
+        },
+        {
+          "number": 25,
+          "name": "Lady Gaga"
+        },
+        {
+          "number": 26,
+          "name": "Rihanna"
+        },
+        {
+          "number": 27,
+          "name": "Cher"
+        },
+        {
+          "number": 28,
+          "name": "Kylie Minogue"
+        },
+        {
+          "number": 29,
+          "name": "Celine Dion"
+        },
+        {
+          "number": 30,
+          "name": "Grace Jones"
+        },
+        {
+          "number": 31,
+          "name": "Diana Ross"
+        },
+        {
+          "number": 32,
+          "name": "RuPaul"
+        },
+        {
+          "number": 33,
+          "name": "Mariah Carey"
+        },
+        {
+          "number": 34,
+          "name": "Janet Jackson"
+        },
+        {
+          "number": 35,
+          "name": "Whitney Houston"
+        },
+        {
+          "number": 36,
+          "name": "ChatGPT"
+        }
+      ],
+      "parent_level": 3
+    },
+    {
+      "level": 4,
+      "title": "**Music (General/Modern)**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Freddie Mercury"
+        },
+        {
+          "number": 2,
+          "name": "David Bowie"
+        },
+        {
+          "number": 3,
+          "name": "Prince"
+        },
+        {
+          "number": 4,
+          "name": "Kurt Cobain"
+        },
+        {
+          "number": 5,
+          "name": "Eminem"
+        },
+        {
+          "number": 6,
+          "name": "Bob Marley"
+        },
+        {
+          "number": 7,
+          "name": "Paul McCartney"
+        },
+        {
+          "number": 8,
+          "name": "John Lennon"
+        },
+        {
+          "number": 9,
+          "name": "Adele"
+        },
+        {
+          "number": 10,
+          "name": "Ed Sheeran"
+        },
+        {
+          "number": 11,
+          "name": "Drake"
+        },
+        {
+          "number": 12,
+          "name": "Kendrick Lamar"
+        },
+        {
+          "number": 13,
+          "name": "Kanye West"
+        },
+        {
+          "number": 14,
+          "name": "Daft Punk"
+        },
+        {
+          "number": 15,
+          "name": "The Weeknd"
+        },
+        {
+          "number": 16,
+          "name": "Billie Eilish"
+        },
+        {
+          "number": 17,
+          "name": "Bruno Mars"
+        },
+        {
+          "number": 18,
+          "name": "Queen"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Movies**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Joker (Heath Ledger)"
+        },
+        {
+          "number": 2,
+          "name": "James Bond (007)"
+        },
+        {
+          "number": 3,
+          "name": "Indiana Jones"
+        },
+        {
+          "number": 4,
+          "name": "Ellen Ripley (Alien)"
+        },
+        {
+          "number": 5,
+          "name": "Sarah Connor (Terminator)"
+        },
+        {
+          "number": 6,
+          "name": "Marty McFly (Back to the Future)"
+        },
+        {
+          "number": 7,
+          "name": "Doc Brown (Back to the Future)"
+        },
+        {
+          "number": 8,
+          "name": "Jack Sparrow"
+        },
+        {
+          "number": 9,
+          "name": "Forrest Gump"
+        },
+        {
+          "number": 10,
+          "name": "Hannibal Lecter"
+        },
+        {
+          "number": 11,
+          "name": "Neo (The Matrix)"
+        },
+        {
+          "number": 12,
+          "name": "John Wick"
+        },
+        {
+          "number": 13,
+          "name": "Tyler Durden (Fight Club)"
+        },
+        {
+          "number": 14,
+          "name": "Gandalf"
+        },
+        {
+          "number": 15,
+          "name": "Hermione Granger"
+        },
+        {
+          "number": 16,
+          "name": "Katniss Everdeen"
+        },
+        {
+          "number": 17,
+          "name": "Tony Stark (Iron Man)"
+        },
+        {
+          "number": 18,
+          "name": "Luke Skywalker"
+        },
+        {
+          "number": 19,
+          "name": "Princess Leia"
+        },
+        {
+          "number": 20,
+          "name": "Elsa (Frozen)"
+        },
+        {
+          "number": 21,
+          "name": "Woody (Toy Story)"
+        },
+        {
+          "number": 22,
+          "name": "Buzz Lightyear (Toy Story)"
+        },
+        {
+          "number": 23,
+          "name": "Jack Dawson (Titanic)"
+        },
+        {
+          "number": 24,
+          "name": "Rose DeWitt Bukater (Titanic)"
+        },
+        {
+          "number": 25,
+          "name": "Terminator (T-800)"
+        },
+        {
+          "number": 26,
+          "name": "Norman Bates (Psycho)"
+        },
+        {
+          "number": 27,
+          "name": "Yoda (Star Wars)"
+        },
+        {
+          "number": 28,
+          "name": "Darth Vader (Star Wars)"
+        },
+        {
+          "number": 29,
+          "name": "Scar (The Lion King)"
+        },
+        {
+          "number": 30,
+          "name": "Shrek (Shrek)"
+        },
+        {
+          "number": 31,
+          "name": "Donkey (Shrek)"
+        },
+        {
+          "number": 32,
+          "name": "Fiona (Shrek)"
+        },
+        {
+          "number": 33,
+          "name": "Lord Farquaad (Shrek)"
+        },
+        {
+          "number": 34,
+          "name": "Dragon (Shrek)"
+        },
+        {
+          "number": 35,
+          "name": "Puss in Boots (Shrek)"
+        },
+        {
+          "number": 36,
+          "name": "Prince Charming (Shrek)"
+        },
+        {
+          "number": 37,
+          "name": "King Harold (Shrek)"
+        },
+        {
+          "number": 38,
+          "name": "Queen Lillian (Shrek)"
+        },
+        {
+          "number": 39,
+          "name": "Pinocchio (Shrek)"
+        },
+        {
+          "number": 40,
+          "name": "Gingy (Gingerbread Man) (Shrek)"
+        },
+        {
+          "number": 41,
+          "name": "Three Little Pigs (Shrek)"
+        },
+        {
+          "number": 42,
+          "name": "Big Bad Wolf (Shrek)"
+        },
+        {
+          "number": 43,
+          "name": "Magic Mirror (Shrek)"
+        },
+        {
+          "number": 44,
+          "name": "Simba (The Lion King)"
+        },
+        {
+          "number": 45,
+          "name": "Mufasa (The Lion King)"
+        },
+        {
+          "number": 46,
+          "name": "Belle (Beauty and the Beast)"
+        },
+        {
+          "number": 47,
+          "name": "Beast (Beauty and the Beast)"
+        },
+        {
+          "number": 48,
+          "name": "Aladdin (Aladdin)"
+        },
+        {
+          "number": 49,
+          "name": "Genie (Aladdin)"
+        },
+        {
+          "number": 50,
+          "name": "Mickey Mouse (Disney)"
+        },
+        {
+          "number": 51,
+          "name": "Minnie Mouse (Disney)"
+        },
+        {
+          "number": 52,
+          "name": "Donald Duck (Disney)"
+        },
+        {
+          "number": 53,
+          "name": "Goofy (Disney)"
+        },
+        {
+          "number": 54,
+          "name": "Pluto (Disney)"
+        },
+        {
+          "number": 55,
+          "name": "Cinderella (Disney)"
+        },
+        {
+          "number": 56,
+          "name": "Snow White (Disney)"
+        },
+        {
+          "number": 57,
+          "name": "Ariel (The Little Mermaid)"
+        },
+        {
+          "number": 58,
+          "name": "Timon (The Lion King)"
+        },
+        {
+          "number": 59,
+          "name": "Pumbaa (The Lion King)"
+        },
+        {
+          "number": 60,
+          "name": "Anna (Frozen)"
+        },
+        {
+          "number": 61,
+          "name": "Olaf (Frozen)"
+        },
+        {
+          "number": 62,
+          "name": "Moana (Moana)"
+        },
+        {
+          "number": 63,
+          "name": "Tiana (The Princess and the Frog)"
+        },
+        {
+          "number": 64,
+          "name": "Rapunzel (Tangled)"
+        },
+        {
+          "number": 65,
+          "name": "Captain America (Steve Rogers)"
+        },
+        {
+          "number": 66,
+          "name": "Wolverine (Logan)"
+        },
+        {
+          "number": 67,
+          "name": "Deadpool (Wade Wilson)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Games**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Mario"
+        },
+        {
+          "number": 2,
+          "name": "Luigi"
+        },
+        {
+          "number": 3,
+          "name": "Link (Zelda)"
+        },
+        {
+          "number": 4,
+          "name": "Zelda"
+        },
+        {
+          "number": 5,
+          "name": "Kratos (God of War)"
+        },
+        {
+          "number": 6,
+          "name": "Lara Croft (Tomb Raider)"
+        },
+        {
+          "number": 7,
+          "name": "Sonic the Hedgehog"
+        },
+        {
+          "number": 8,
+          "name": "Geralt of Rivia (The Witcher)"
+        },
+        {
+          "number": 9,
+          "name": "Arthur Morgan (RDR2)"
+        },
+        {
+          "number": 10,
+          "name": "Doomguy (Doom Slayer)"
+        },
+        {
+          "number": 11,
+          "name": "Ryu (Street Fighter)"
+        },
+        {
+          "number": 12,
+          "name": "Scorpion (Mortal Kombat)"
+        },
+        {
+          "number": 13,
+          "name": "Sub-Zero (Mortal Kombat)"
+        },
+        {
+          "number": 14,
+          "name": "Pikachu"
+        },
+        {
+          "number": 15,
+          "name": "Pac-Man"
+        },
+        {
+          "number": 16,
+          "name": "Steve (Minecraft)"
+        },
+        {
+          "number": 17,
+          "name": "Jinx (League of Legends)"
+        },
+        {
+          "number": 18,
+          "name": "Yasuo (League of Legends)"
+        },
+        {
+          "number": 19,
+          "name": "Thresh (League of Legends)"
+        },
+        {
+          "number": 20,
+          "name": "Lee Sin (League of Legends)"
+        },
+        {
+          "number": 21,
+          "name": "Miss Fortune (League of Legends)"
+        },
+        {
+          "number": 22,
+          "name": "Ekko (League of Legends)"
+        },
+        {
+          "number": 23,
+          "name": "Vi (League of Legends)"
+        },
+        {
+          "number": 24,
+          "name": "Darius (League of Legends)"
+        },
+        {
+          "number": 25,
+          "name": "Lux (League of Legends)"
+        },
+        {
+          "number": 26,
+          "name": "Ahri (League of Legends)"
+        },
+        {
+          "number": 27,
+          "name": "Crash Bandicoot"
+        },
+        {
+          "number": 28,
+          "name": "Spyro the Dragon"
+        },
+        {
+          "number": 29,
+          "name": "Trevor Philips (GTA V)"
+        },
+        {
+          "number": 30,
+          "name": "Michael De Santa (GTA V)"
+        },
+        {
+          "number": 31,
+          "name": "Franklin Clinton (GTA V)"
+        },
+        {
+          "number": 32,
+          "name": "CJ (Carl Johnson, GTA: San Andreas)"
+        },
+        {
+          "number": 33,
+          "name": "Niko Bellic (GTA IV)"
+        },
+        {
+          "number": 34,
+          "name": "Big Smoke (GTA: San Andreas)"
+        },
+        {
+          "number": 35,
+          "name": "Dante (Devil May Cry)"
+        },
+        {
+          "number": 36,
+          "name": "Vergil (Devil May Cry)"
+        },
+        {
+          "number": 37,
+          "name": "Trish (Devil May Cry)"
+        },
+        {
+          "number": 38,
+          "name": "Lady (Devil May Cry)"
+        },
+        {
+          "number": 39,
+          "name": "Frisk (Undertale)"
+        },
+        {
+          "number": 40,
+          "name": "Sans (Undertale)"
+        },
+        {
+          "number": 41,
+          "name": "Papyrus (Undertale)"
+        },
+        {
+          "number": 42,
+          "name": "Toriel (Undertale)"
+        },
+        {
+          "number": 43,
+          "name": "Mettaton (Undertale)"
+        },
+        {
+          "number": 44,
+          "name": "Asgore (Undertale)"
+        },
+        {
+          "number": 45,
+          "name": "Flowey (Undertale)"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "**Game of Thrones Characters**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Daenerys Targaryen"
+        },
+        {
+          "number": 2,
+          "name": "Jon Snow"
+        },
+        {
+          "number": 3,
+          "name": "Arya Stark"
+        },
+        {
+          "number": 4,
+          "name": "Sansa Stark"
+        },
+        {
+          "number": 5,
+          "name": "Cersei Lannister"
+        },
+        {
+          "number": 6,
+          "name": "Jaime Lannister"
+        },
+        {
+          "number": 7,
+          "name": "Tyrion Lannister"
+        },
+        {
+          "number": 8,
+          "name": "Bran Stark"
+        },
+        {
+          "number": 9,
+          "name": "Hodor"
+        },
+        {
+          "number": 10,
+          "name": "Melisandre"
+        },
+        {
+          "number": 11,
+          "name": "Brienne of Tarth"
+        },
+        {
+          "number": 12,
+          "name": "The Mountain (Gregor Clegane)"
+        },
+        {
+          "number": 13,
+          "name": "Theon Greyjoy"
+        },
+        {
+          "number": 14,
+          "name": "Yara Greyjoy"
+        },
+        {
+          "number": 15,
+          "name": "Stannis Baratheon"
+        },
+        {
+          "number": 16,
+          "name": "Ygritte"
+        },
+        {
+          "number": 17,
+          "name": "Loras Tyrell"
+        },
+        {
+          "number": 18,
+          "name": "The Night King"
+        },
+        {
+          "number": 19,
+          "name": "Leaf (Child of the Forest)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Marvel Comics**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Spider-Man (Peter Parker)"
+        },
+        {
+          "number": 2,
+          "name": "Iron Man (Tony Stark)"
+        },
+        {
+          "number": 3,
+          "name": "Captain America (Steve Rogers)"
+        },
+        {
+          "number": 4,
+          "name": "Thor"
+        },
+        {
+          "number": 5,
+          "name": "Hulk (Bruce Banner)"
+        },
+        {
+          "number": 6,
+          "name": "Black Widow (Natasha Romanoff)"
+        },
+        {
+          "number": 7,
+          "name": "Wolverine (Logan)"
+        },
+        {
+          "number": 8,
+          "name": "Deadpool (Wade Wilson)"
+        },
+        {
+          "number": 9,
+          "name": "Doctor Strange"
+        },
+        {
+          "number": 10,
+          "name": "Scarlet Witch (Wanda Maximoff)"
+        },
+        {
+          "number": 11,
+          "name": "Black Panther (T'Challa)"
+        },
+        {
+          "number": 12,
+          "name": "Captain Marvel (Carol Danvers)"
+        },
+        {
+          "number": 13,
+          "name": "Ant-Man (Scott Lang)"
+        },
+        {
+          "number": 14,
+          "name": "Thanos"
+        },
+        {
+          "number": 15,
+          "name": "Loki"
+        },
+        {
+          "number": 16,
+          "name": "Magneto"
+        },
+        {
+          "number": 17,
+          "name": "Professor Xavier (Charles Xavier)"
+        },
+        {
+          "number": 18,
+          "name": "Tempestade (Storm)"
+        },
+        {
+          "number": 19,
+          "name": "Jean Grey (Fênix)"
+        },
+        {
+          "number": 20,
+          "name": "Ciclope (Scott Summers)"
+        },
+        {
+          "number": 21,
+          "name": "Tempestade (Ororo Munroe)"
+        },
+        {
+          "number": 22,
+          "name": "Psylocke (Elizabeth Braddock)"
+        },
+        {
+          "number": 23,
+          "name": "Emma Frost"
+        },
+        {
+          "number": 24,
+          "name": "Colossus (Piotr Rasputin)"
+        },
+        {
+          "number": 25,
+          "name": "Fera (Hank McCoy)"
+        },
+        {
+          "number": 26,
+          "name": "Homem de Gelo (Bobby Drake)"
+        },
+        {
+          "number": 27,
+          "name": "Mística (Raven Darkhölme)"
+        },
+        {
+          "number": 28,
+          "name": "Vampira (Anna Marie)"
+        },
+        {
+          "number": 29,
+          "name": "Gambit (Remy LeBeau)"
+        },
+        {
+          "number": 30,
+          "name": "Ciclope"
+        },
+        {
+          "number": 31,
+          "name": "Demolidor (Matt Murdock)"
+        },
+        {
+          "number": 32,
+          "name": "O Justiceiro (Frank Castle)"
+        },
+        {
+          "number": 33,
+          "name": "Rocket Raccoon"
+        },
+        {
+          "number": 34,
+          "name": "Groot"
+        },
+        {
+          "number": 35,
+          "name": "Duende Verde"
+        },
+        {
+          "number": 36,
+          "name": "Doutor Destino"
+        },
+        {
+          "number": 37,
+          "name": "Miles Morales"
+        },
+        {
+          "number": 38,
+          "name": "Vision"
+        },
+        {
+          "number": 39,
+          "name": "Ghost Rider (Johnny Blaze)"
+        },
+        {
+          "number": 40,
+          "name": "She-Hulk (Jennifer Walters)"
+        }
+      ],
+      "parent_level": 3
+    },
+    {
+      "level": 4,
+      "title": "**DC Comics**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Batman (Bruce Wayne)"
+        },
+        {
+          "number": 2,
+          "name": "Superman (Clark Kent)"
+        },
+        {
+          "number": 3,
+          "name": "Wonder Woman (Diana Prince)"
+        },
+        {
+          "number": 4,
+          "name": "The Flash (Barry Allen)"
+        },
+        {
+          "number": 5,
+          "name": "Aquaman (Arthur Curry)"
+        },
+        {
+          "number": 6,
+          "name": "Green Lantern (Hal Jordan)"
+        },
+        {
+          "number": 7,
+          "name": "Cyborg"
+        },
+        {
+          "number": 8,
+          "name": "The Joker"
+        },
+        {
+          "number": 9,
+          "name": "Harley Quinn"
+        },
+        {
+          "number": 10,
+          "name": "Catwoman"
+        },
+        {
+          "number": 11,
+          "name": "Lex Luthor"
+        },
+        {
+          "number": 12,
+          "name": "Batgirl (Barbara Gordon)"
+        },
+        {
+          "number": 13,
+          "name": "Robin (Damian Wayne)"
+        },
+        {
+          "number": 14,
+          "name": "Green Arrow (Oliver Queen)"
+        },
+        {
+          "number": 15,
+          "name": "Shazam (Billy Batson)"
+        },
+        {
+          "number": 16,
+          "name": "Poison Ivy"
+        },
+        {
+          "number": 17,
+          "name": "Penguin"
+        },
+        {
+          "number": 18,
+          "name": "Dr. Manhattan (Watchmen)"
+        },
+        {
+          "number": 19,
+          "name": "Dream (The Sandman)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Scientists**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Albert Einstein"
+        },
+        {
+          "number": 2,
+          "name": "Isaac Newton"
+        },
+        {
+          "number": 3,
+          "name": "Charles Darwin"
+        },
+        {
+          "number": 4,
+          "name": "Marie Curie"
+        },
+        {
+          "number": 5,
+          "name": "Nikola Tesla"
+        },
+        {
+          "number": 6,
+          "name": "Galileo Galilei"
+        },
+        {
+          "number": 7,
+          "name": "Stephen Hawking"
+        },
+        {
+          "number": 8,
+          "name": "Carl Sagan"
+        },
+        {
+          "number": 9,
+          "name": "Erwin Schrödinger"
+        },
+        {
+          "number": 10,
+          "name": "Tim Berners-Lee"
+        },
+        {
+          "number": 11,
+          "name": "Santos Dumont (Aviation Pioneer)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Philosophers**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Socrates"
+        },
+        {
+          "number": 2,
+          "name": "Plato"
+        },
+        {
+          "number": 3,
+          "name": "Aristotle"
+        },
+        {
+          "number": 4,
+          "name": "Friedrich Nietzsche"
+        },
+        {
+          "number": 5,
+          "name": "René Descartes"
+        },
+        {
+          "number": 6,
+          "name": "Karl Marx"
+        },
+        {
+          "number": 7,
+          "name": "Confucius"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Books**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Moby Dick (Herman Melville)"
+        },
+        {
+          "number": 2,
+          "name": "Harry Potter (J.K. Rowling)"
+        },
+        {
+          "number": 3,
+          "name": "Dune (Frank Herbert)"
+        },
+        {
+          "number": 4,
+          "name": "Frankenstein (Mary Shelley)"
+        },
+        {
+          "number": 5,
+          "name": "Dracula (Bram Stoker)"
+        },
+        {
+          "number": 6,
+          "name": "Sherlock Holmes (Conan Doyle)"
+        },
+        {
+          "number": 7,
+          "name": "The Little Prince (Exupéry)"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** Strange Things **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Eleven (Stranger Things)"
+        },
+        {
+          "number": 2,
+          "name": "Mike Wheeler (Stranger Things)"
+        },
+        {
+          "number": 3,
+          "name": "Dustin Henderson (Stranger Things)"
+        },
+        {
+          "number": 4,
+          "name": "Lucas Sinclair (Stranger Things)"
+        },
+        {
+          "number": 5,
+          "name": "Will Byers (Stranger Things)"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** The big bang theory characters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Sheldon Cooper"
+        },
+        {
+          "number": 2,
+          "name": "Leonard Hofstadter"
+        },
+        {
+          "number": 3,
+          "name": "Penny"
+        },
+        {
+          "number": 4,
+          "name": "Rajesh Koothrappali"
+        },
+        {
+          "number": 5,
+          "name": "Howard Wolowitz"
+        },
+        {
+          "number": 6,
+          "name": "Bernadette Rostenkowski-Wolowitz"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** Rick and Morty characters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Rick Sanchez"
+        },
+        {
+          "number": 2,
+          "name": "Morty Smith"
+        },
+        {
+          "number": 3,
+          "name": "Summer Smith"
+        },
+        {
+          "number": 4,
+          "name": "Beth Smith"
+        },
+        {
+          "number": 5,
+          "name": "Jerry Smith"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** The simpsons characters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Homer Simpson"
+        },
+        {
+          "number": 2,
+          "name": "Marge Simpson"
+        },
+        {
+          "number": 3,
+          "name": "Bart Simpson"
+        },
+        {
+          "number": 4,
+          "name": "Lisa Simpson"
+        },
+        {
+          "number": 5,
+          "name": "Maggie Simpson"
+        },
+        {
+          "number": 6,
+          "name": "Ned Flanders"
+        },
+        {
+          "number": 7,
+          "name": "Barney Gumble"
+        },
+        {
+          "number": 8,
+          "name": "Krusty the Clown"
+        },
+        {
+          "number": 9,
+          "name": "Principal Skinner"
+        },
+        {
+          "number": 10,
+          "name": "Mr. Burns"
+        },
+        {
+          "number": 11,
+          "name": "Nelson Muntz"
+        },
+        {
+          "number": 12,
+          "name": "Ralph Wiggum"
+        },
+        {
+          "number": 13,
+          "name": "Milhouse Van Houten"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** Bob's burgers characters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Bob Belcher"
+        },
+        {
+          "number": 2,
+          "name": "Linda Belcher"
+        },
+        {
+          "number": 3,
+          "name": "Tina Belcher"
+        },
+        {
+          "number": 4,
+          "name": "Gene Belcher"
+        },
+        {
+          "number": 5,
+          "name": "Louise Belcher"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "** Avatar: The last airbender characters **",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Aang"
+        },
+        {
+          "number": 2,
+          "name": "Katara"
+        },
+        {
+          "number": 3,
+          "name": "Sokka"
+        },
+        {
+          "number": 4,
+          "name": "Zuko"
+        },
+        {
+          "number": 5,
+          "name": "Azula"
+        },
+        {
+          "number": 6,
+          "name": "Uncle Iroh"
+        },
+        {
+          "number": 7,
+          "name": "Toph Beifong"
+        },
+        {
+          "number": 8,
+          "name": "Appa"
+        },
+        {
+          "number": 9,
+          "name": "Momo"
+        },
+        {
+          "number": 10,
+          "name": "Princess Yue"
+        },
+        {
+          "number": 11,
+          "name": "Ty Lee"
+        },
+        {
+          "number": 12,
+          "name": "Mai"
+        },
+        {
+          "number": 13,
+          "name": "Jet"
+        },
+        {
+          "number": 14,
+          "name": "King Bumi"
+        },
+        {
+          "number": 15,
+          "name": "Avatar Roku"
+        },
+        {
+          "number": 16,
+          "name": "Avatar Kyoshi"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Brazilian Politics**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Luiz Inácio Lula da Silva"
+        },
+        {
+          "number": 2,
+          "name": "Jair Bolsonaro"
+        },
+        {
+          "number": 3,
+          "name": "Dilma Rousseff"
+        },
+        {
+          "number": 4,
+          "name": "Michel Temer"
+        },
+        {
+          "number": 5,
+          "name": "Fernando Henrique Cardoso (FHC)"
+        },
+        {
+          "number": 6,
+          "name": "Geraldo Alckmin"
+        },
+        {
+          "number": 7,
+          "name": "Ciro Gomes"
+        },
+        {
+          "number": 8,
+          "name": "Marina Silva"
+        },
+        {
+          "number": 9,
+          "name": "Sergio Moro"
+        },
+        {
+          "number": 10,
+          "name": "Alexandre de Moraes (Xandão)"
+        }
+      ],
+      "parent_level": 3
+    },
+    {
+      "level": 4,
+      "title": "**Brazilian Celebrities and Sub Celebrities**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Anitta"
+        },
+        {
+          "number": 2,
+          "name": "Neymar Jr."
+        },
+        {
+          "number": 3,
+          "name": "Gisele Bündchen"
+        },
+        {
+          "number": 4,
+          "name": "Ivete Sangalo"
+        },
+        {
+          "number": 5,
+          "name": "Xuxa Meneghel"
+        },
+        {
+          "number": 6,
+          "name": "Luciano Huck"
+        },
+        {
+          "number": 7,
+          "name": "Faustão (Fausto Silva)"
+        },
+        {
+          "number": 8,
+          "name": "Silvio Santos"
+        },
+        {
+          "number": 9,
+          "name": "Pelé"
+        },
+        {
+          "number": 10,
+          "name": "Fernanda Montenegro"
+        },
+        {
+          "number": 11,
+          "name": "Wagner Moura"
+        },
+        {
+          "number": 12,
+          "name": "Rodrigo Santoro"
+        },
+        {
+          "number": 13,
+          "name": "Whindersson Nunes"
+        },
+        {
+          "number": 14,
+          "name": "Felipe Neto"
+        },
+        {
+          "number": 15,
+          "name": "Gil do Vigor (BBB)"
+        },
+        {
+          "number": 16,
+          "name": "Karol Conká (The Villain Arc)"
+        },
+        {
+          "number": 17,
+          "name": "Inês Brasil (Sub-celebrity icon)"
+        },
+        {
+          "number": 18,
+          "name": "Narcisa Tamborindeguy"
+        },
+        {
+          "number": 19,
+          "name": "Gretchen (Queen of Memes)"
+        },
+        {
+          "number": 20,
+          "name": "Belo"
+        },
+        {
+          "number": 21,
+          "name": "Zeca Pagodinho"
+        },
+        {
+          "number": 22,
+          "name": "Marília Mendonça (Eternal)"
+        },
+        {
+          "number": 23,
+          "name": "Jojo Todynho"
+        },
+        {
+          "number": 24,
+          "name": "Luva de Pedreiro"
+        },
+        {
+          "number": 25,
+          "name": "Drauzio Varella"
+        },
+        {
+          "number": 26,
+          "name": "Ana Maria Braga"
+        },
+        {
+          "number": 27,
+          "name": "Roberto Carlos (The Singer)"
+        },
+        {
+          "number": 28,
+          "name": "Fábio Porchat"
+        },
+        {
+          "number": 29,
+          "name": "Tatá Werneck"
+        },
+        {
+          "number": 30,
+          "name": "Juliette Freire (BBB)"
+        },
+        {
+          "number": 31,
+          "name": "Paulo Gustavo (In Memoriam)"
+        },
+        {
+          "number": 32,
+          "name": "Dani Calabresa"
+        },
+        {
+          "number": 33,
+          "name": "Lázaro Ramos"
+        },
+        {
+          "number": 34,
+          "name": "Taís Araújo"
+        },
+        {
+          "number": 35,
+          "name": "Sabrina Sato"
+        },
+        {
+          "number": 36,
+          "name": "Pabllo Vittar"
+        },
+        {
+          "number": 37,
+          "name": "Linn da Quebrada"
+        },
+        {
+          "number": 38,
+          "name": "Gloria Groove"
+        },
+        {
+          "number": 39,
+          "name": "Jean Wyllys"
+        },
+        {
+          "number": 40,
+          "name": "Erika Hilton"
+        },
+        {
+          "number": 41,
+          "name": "Daniela Mercury"
+        },
+        {
+          "number": 42,
+          "name": "Claudia Leitte"
+        },
+        {
+          "number": 43,
+          "name": "Marcos Mion"
+        },
+        {
+          "number": 44,
+          "name": "Adriane Galisteu"
+        },
+        {
+          "number": 45,
+          "name": "Pedro Bial"
+        },
+        {
+          "number": 46,
+          "name": "Gal Costa (Eternal)"
+        },
+        {
+          "number": 47,
+          "name": "Caetano Veloso"
+        },
+        {
+          "number": 48,
+          "name": "Gilberto Gil"
+        },
+        {
+          "number": 49,
+          "name": "Carlinhos Maia"
+        },
+        {
+          "number": 50,
+          "name": "Alexandre Frota"
+        },
+        {
+          "number": 51,
+          "name": "Susana Vieira"
+        },
+        {
+          "number": 52,
+          "name": "Regina Casé"
+        },
+        {
+          "number": 53,
+          "name": "Carolina Dieckmann"
+        },
+        {
+          "number": 54,
+          "name": "Murilo Benício"
+        },
+        {
+          "number": 55,
+          "name": "Sandy"
+        },
+        {
+          "number": 56,
+          "name": "Luan Santana"
+        },
+        {
+          "number": 57,
+          "name": "Wesley Safadão"
+        },
+        {
+          "number": 58,
+          "name": "Alok"
+        },
+        {
+          "number": 59,
+          "name": "Larissa Manoela"
+        },
+        {
+          "number": 60,
+          "name": "Maisa Silva"
+        },
+        {
+          "number": 61,
+          "name": "Celso Portiolli"
+        },
+        {
+          "number": 62,
+          "name": "Rodrigo Faro"
+        },
+        {
+          "number": 63,
+          "name": "Eliana"
+        },
+        {
+          "number": 64,
+          "name": "Michel Teló"
+        },
+        {
+          "number": 65,
+          "name": "Padre Fábio de Melo"
+        },
+        {
+          "number": 66,
+          "name": "Tiago Leifert"
+        },
+        {
+          "number": 67,
+          "name": "Angélica (TV Host)"
+        },
+        {
+          "number": 68,
+          "name": "Luciano Huck (TV Host)"
+        },
+        {
+          "number": 69,
+          "name": "Adriana Esteves"
+        },
+        {
+          "number": 70,
+          "name": "Tony Ramos"
+        },
+        {
+          "number": 71,
+          "name": "Camila Pitanga"
+        },
+        {
+          "number": 72,
+          "name": "Bruno Gagliasso"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Cartoons**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Mickey Mouse"
+        },
+        {
+          "number": 2,
+          "name": "Bugs Bunny"
+        },
+        {
+          "number": 3,
+          "name": "Tom and Jerry"
+        },
+        {
+          "number": 4,
+          "name": "SpongeBob SquarePants"
+        },
+        {
+          "number": 5,
+          "name": "Fred Flintstone"
+        },
+        {
+          "number": 6,
+          "name": "Scooby-Doo"
+        },
+        {
+          "number": 7,
+          "name": "Shaggy Rogers"
+        },
+        {
+          "number": 8,
+          "name": "Fred Jones"
+        },
+        {
+          "number": 9,
+          "name": "Daphne Blake"
+        },
+        {
+          "number": 10,
+          "name": "Velma Dinkley"
+        },
+        {
+          "number": 11,
+          "name": "Popeye"
+        },
+        {
+          "number": 12,
+          "name": "Woody Woodpecker (Pica-Pau - very famous in Brazil)"
+        },
+        {
+          "number": 13,
+          "name": "Pink Panther"
+        },
+        {
+          "number": 14,
+          "name": "Wile E. Coyote"
+        },
+        {
+          "number": 15,
+          "name": "Road Runner"
+        },
+        {
+          "number": 16,
+          "name": "Daffy Duck"
+        },
+        {
+          "number": 17,
+          "name": "Donald Duck"
+        },
+        {
+          "number": 18,
+          "name": "Goofy"
+        },
+        {
+          "number": 19,
+          "name": "Snoopy"
+        },
+        {
+          "number": 20,
+          "name": "Charlie Brown"
+        },
+        {
+          "number": 21,
+          "name": "Garfield"
+        },
+        {
+          "number": 22,
+          "name": "BoJack Horseman"
+        },
+        {
+          "number": 23,
+          "name": "Finn the Human (Adventure Time)"
+        },
+        {
+          "number": 24,
+          "name": "Jake the Dog (Adventure Time)"
+        },
+        {
+          "number": 25,
+          "name": "Princess Bubblegum (Adventure Time)"
+        },
+        {
+          "number": 26,
+          "name": "Marceline the Vampire Queen (Adventure Time)"
+        },
+        {
+          "number": 27,
+          "name": "Ice King (Adventure Time)"
+        },
+        {
+          "number": 28,
+          "name": "BMO (Adventure Time)"
+        },
+        {
+          "number": 29,
+          "name": "Lumpy Space Princess (Adventure Time)"
+        },
+        {
+          "number": 30,
+          "name": "Flame Princess (Adventure Time)"
+        },
+        {
+          "number": 31,
+          "name": "Peppermint Butler (Adventure Time)"
+        },
+        {
+          "number": 32,
+          "name": "Lady Rainicorn (Adventure Time)"
+        },
+        {
+          "number": 33,
+          "name": "Tree Trunks (Adventure Time)"
+        },
+        {
+          "number": 34,
+          "name": "Lemongrab (Adventure Time)"
+        },
+        {
+          "number": 35,
+          "name": "King of Ooo (Adventure Time)"
+        },
+        {
+          "number": 36,
+          "name": "Magic Man (Adventure Time)"
+        },
+        {
+          "number": 37,
+          "name": "Gunter (Adventure Time)"
+        },
+        {
+          "number": 38,
+          "name": "Hunson Abadeer (Adventure Time)"
+        },
+        {
+          "number": 39,
+          "name": "Cinnamon Bun (Adventure Time)"
+        },
+        {
+          "number": 40,
+          "name": "Jake Jr. (Adventure Time)"
+        },
+        {
+          "number": 41,
+          "name": "Abraham Lincoln (Adventure Time)"
+        },
+        {
+          "number": 42,
+          "name": "Susan Strong (Adventure Time)"
+        },
+        {
+          "number": 43,
+          "name": "The Lich (Adventure Time)"
+        },
+        {
+          "number": 44,
+          "name": "Huntress Wizard (Adventure Time)"
+        },
+        {
+          "number": 45,
+          "name": "Bubblegum Guardians (Adventure Time)"
+        },
+        {
+          "number": 46,
+          "name": "Banana Guard (Adventure Time)"
+        },
+        {
+          "number": 47,
+          "name": "Starchy (Adventure Time)"
+        },
+        {
+          "number": 48,
+          "name": "Shelby the Worm (Adventure Time)"
+        },
+        {
+          "number": 49,
+          "name": "Root Beer Guy (Adventure Time)"
+        },
+        {
+          "number": 50,
+          "name": "Neptr (Adventure Time)"
+        },
+        {
+          "number": 51,
+          "name": "Mr. Cupcake (Adventure Time)"
+        },
+        {
+          "number": 52,
+          "name": "Choose Goose (Adventure Time)"
+        },
+        {
+          "number": 53,
+          "name": "Banana Man (Adventure Time)"
+        },
+        {
+          "number": 54,
+          "name": "Ben 10 (Ben Tennyson)"
+        },
+        {
+          "number": 55,
+          "name": "Gwen Tennyson (Ben 10)"
+        },
+        {
+          "number": 56,
+          "name": "Grandpa Max (Max Tennyson) (Ben 10)"
+        },
+        {
+          "number": 57,
+          "name": "Kevin Levin (Ben 10)"
+        },
+        {
+          "number": 58,
+          "name": "Four Arms (Ben 10 Alien)"
+        },
+        {
+          "number": 59,
+          "name": "Heatblast (Ben 10 Alien)"
+        },
+        {
+          "number": 60,
+          "name": "Diamondhead (Ben 10 Alien)"
+        },
+        {
+          "number": 61,
+          "name": "XLR8 (Ben 10 Alien)"
+        },
+        {
+          "number": 62,
+          "name": "Grey Matter (Ben 10 Alien)"
+        },
+        {
+          "number": 63,
+          "name": "Phineas and Ferb"
+        },
+        {
+          "number": 64,
+          "name": "Timmy Turner (Fairly OddParents)"
+        },
+        {
+          "number": 65,
+          "name": "Cosmo (Fairly OddParents)"
+        },
+        {
+          "number": 66,
+          "name": "Wanda (Fairly OddParents)"
+        },
+        {
+          "number": 67,
+          "name": "Vicky (Fairly OddParents)"
+        },
+        {
+          "number": 68,
+          "name": "Jimmy Neutron"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Cartoon Network Characters**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Dexter (Dexter's Laboratory)"
+        },
+        {
+          "number": 2,
+          "name": "Dee Dee (Dexter's Laboratory)"
+        },
+        {
+          "number": 3,
+          "name": "Johnny Bravo"
+        },
+        {
+          "number": 4,
+          "name": "Courage (Courage the Cowardly Dog)"
+        },
+        {
+          "number": 5,
+          "name": "Ed (Ed, Edd n Eddy)"
+        },
+        {
+          "number": 6,
+          "name": "Edd (Double D) (Ed, Edd n Eddy)"
+        },
+        {
+          "number": 7,
+          "name": "Eddy (Ed, Edd n Eddy)"
+        },
+        {
+          "number": 8,
+          "name": "Blossom (The Powerpuff Girls)"
+        },
+        {
+          "number": 9,
+          "name": "Bubbles (The Powerpuff Girls)"
+        },
+        {
+          "number": 10,
+          "name": "Buttercup (The Powerpuff Girls)"
+        },
+        {
+          "number": 11,
+          "name": "Mojo Jojo (The Powerpuff Girls)"
+        },
+        {
+          "number": 12,
+          "name": "Professor Utonium (The Powerpuff Girls)"
+        },
+        {
+          "number": 13,
+          "name": "Him (The Powerpuff Girls)"
+        },
+        {
+          "number": 14,
+          "name": "Fuzzy Lumpkins (The Powerpuff Girls)"
+        },
+        {
+          "number": 15,
+          "name": "The Mayor (The Powerpuff Girls)"
+        },
+        {
+          "number": 16,
+          "name": "Ms. Sara Bellum (The Powerpuff Girls)"
+        },
+        {
+          "number": 17,
+          "name": "Ms. Keane (The Powerpuff Girls)"
+        },
+        {
+          "number": 18,
+          "name": "Sedusa (The Powerpuff Girls)"
+        },
+        {
+          "number": 19,
+          "name": "Princess Morbucks (The Powerpuff Girls)"
+        },
+        {
+          "number": 20,
+          "name": "The Rowdyruff Boys (The Powerpuff Girls)"
+        },
+        {
+          "number": 21,
+          "name": "Samurai Jack"
+        },
+        {
+          "number": 22,
+          "name": "Ben Tennyson (Ben 10)"
+        },
+        {
+          "number": 23,
+          "name": "Gumball Watterson (The Amazing World of Gumball)"
+        },
+        {
+          "number": 24,
+          "name": "Darwin Watterson (The Amazing World of Gumball)"
+        },
+        {
+          "number": 25,
+          "name": "Mordecai (Regular Show)"
+        },
+        {
+          "number": 26,
+          "name": "Rigby (Regular Show)"
+        },
+        {
+          "number": 27,
+          "name": "Benson (Regular Show)"
+        },
+        {
+          "number": 28,
+          "name": "Pops (Regular Show)"
+        },
+        {
+          "number": 29,
+          "name": "Skips (Regular Show)"
+        },
+        {
+          "number": 30,
+          "name": "Muscle Man (Regular Show)"
+        },
+        {
+          "number": 31,
+          "name": "Hi Five Ghost (Regular Show)"
+        },
+        {
+          "number": 32,
+          "name": "Margaret (Regular Show)"
+        },
+        {
+          "number": 33,
+          "name": "Steven Universe"
+        },
+        {
+          "number": 34,
+          "name": "Garnet (Steven Universe)"
+        },
+        {
+          "number": 35,
+          "name": "Amethyst (Steven Universe)"
+        },
+        {
+          "number": 36,
+          "name": "Pearl (Steven Universe)"
+        },
+        {
+          "number": 37,
+          "name": "Connie Maheswaran (Steven Universe)"
+        },
+        {
+          "number": 38,
+          "name": "Greg Universe (Steven Universe)"
+        },
+        {
+          "number": 39,
+          "name": "Peridot (Steven Universe)"
+        },
+        {
+          "number": 40,
+          "name": "Lapis Lazuli (Steven Universe)"
+        },
+        {
+          "number": 41,
+          "name": "Rose Quartz (Steven Universe)"
+        },
+        {
+          "number": 42,
+          "name": "Lars Barriga (Steven Universe)"
+        },
+        {
+          "number": 43,
+          "name": "Sapphire (Steven Universe)"
+        },
+        {
+          "number": 44,
+          "name": "Ruby (Steven Universe)"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Top most famous people in the world**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Buddha"
+        },
+        {
+          "number": 2,
+          "name": "Adolf Hitler (Infamous)"
+        },
+        {
+          "number": 3,
+          "name": "Joseph Stalin (Infamous)"
+        },
+        {
+          "number": 4,
+          "name": "Osama bin Laden (Infamous)"
+        },
+        {
+          "number": 5,
+          "name": "Leonardo da Vinci"
+        },
+        {
+          "number": 6,
+          "name": "William Shakespeare"
+        },
+        {
+          "number": 7,
+          "name": "Abraham Lincoln"
+        },
+        {
+          "number": 8,
+          "name": "Mahatma Gandhi"
+        },
+        {
+          "number": 9,
+          "name": "Nelson Mandela"
+        },
+        {
+          "number": 10,
+          "name": "Martin Luther King Jr."
+        },
+        {
+          "number": 11,
+          "name": "Queen Elizabeth II"
+        },
+        {
+          "number": 12,
+          "name": "Princess Diana"
+        },
+        {
+          "number": 13,
+          "name": "Michael Jackson"
+        },
+        {
+          "number": 14,
+          "name": "Elvis Presley"
+        },
+        {
+          "number": 15,
+          "name": "Marilyn Monroe"
+        },
+        {
+          "number": 16,
+          "name": "Barack Obama"
+        },
+        {
+          "number": 17,
+          "name": "Donald Trump"
+        },
+        {
+          "number": 18,
+          "name": "Vladimir Putin"
+        },
+        {
+          "number": 19,
+          "name": "Elon Musk"
+        },
+        {
+          "number": 20,
+          "name": "Bill Gates"
+        },
+        {
+          "number": 21,
+          "name": "Steve Jobs"
+        },
+        {
+          "number": 22,
+          "name": "Mark Zuckerberg"
+        },
+        {
+          "number": 23,
+          "name": "Jeff Bezos"
+        },
+        {
+          "number": 24,
+          "name": "Cristiano Ronaldo"
+        },
+        {
+          "number": 25,
+          "name": "Lionel Messi"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "**Top most famous people in Brazil**",
+      "characters": [
+        {
+          "number": 1,
+          "name": "Pelé"
+        },
+        {
+          "number": 2,
+          "name": "Ayrton Senna"
+        },
+        {
+          "number": 3,
+          "name": "Santos Dumont"
+        },
+        {
+          "number": 4,
+          "name": "Gisele Bündchen"
+        },
+        {
+          "number": 5,
+          "name": "Neymar Jr."
+        },
+        {
+          "number": 6,
+          "name": "Lula"
+        },
+        {
+          "number": 7,
+          "name": "Carmen Miranda"
+        },
+        {
+          "number": 8,
+          "name": "Roberto Carlos (Singer)"
+        },
+        {
+          "number": 9,
+          "name": "Silvio Santos"
+        },
+        {
+          "number": 10,
+          "name": "Xuxa"
+        },
+        {
+          "number": 11,
+          "name": "Ivete Sangalo"
+        },
+        {
+          "number": 12,
+          "name": "Anitta"
+        },
+        {
+          "number": 13,
+          "name": "Caetano Veloso"
+        },
+        {
+          "number": 14,
+          "name": "Gilberto Gil"
+        },
+        {
+          "number": 15,
+          "name": "Chico Buarque"
+        },
+        {
+          "number": 16,
+          "name": "Jorge Amado"
+        },
+        {
+          "number": 17,
+          "name": "Machado de Assis"
+        },
+        {
+          "number": 18,
+          "name": "Clarice Lispector"
+        },
+        {
+          "number": 19,
+          "name": "Tiradentes"
+        },
+        {
+          "number": 20,
+          "name": "Lampião"
+        },
+        {
+          "number": 21,
+          "name": "Maria Bonita"
+        },
+        {
+          "number": 22,
+          "name": "Ronaldo Fenômeno"
+        },
+        {
+          "number": 23,
+          "name": "Ronaldinho Gaúcho"
+        },
+        {
+          "number": 24,
+          "name": "Fernanda Montenegro"
+        },
+        {
+          "number": 25,
+          "name": "Wagner Moura"
+        }
+      ]
+    }
+  ]
+}\n

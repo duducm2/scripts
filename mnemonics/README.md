@@ -4,7 +4,7 @@ Keyboard-first Memory Palace manager: AutoHotkey CRUD + CSV under `mnemonics/dat
 
 Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N).
 
-Technique rules stay in notes `studies/technique/README.md` — this app does not change the mnemonic method. Technique docs may still say “street”; this software uses **Memory Palace** only.
+Technique rules are mirrored in-repo at `mnemonics/technique/` (from notes `studies/technique`). The app does not change the mnemonic method. Technique docs may still say “street”; this software uses **Memory Palace** only.
 
 ## Requirements
 
@@ -42,13 +42,14 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | `mnemonics/data/imported/`        | Archived AI import CSVs.                                              |
 | `mnemonics/output/dashboard.html` | Generated cockpit.                                                    |
 | `mnemonics/output/practice/`      | Auto-synced study `.md` files + palace images (mobile/GitHub).        |
+| `mnemonics/technique/`            | Mirrored method docs, canon JSON, prompts, research.                  |
 | `mnemonics/python/`               | Migrator, aggregator, chart generator, practice MD sync, prompt pack. |
 
 `palaces.csv` columns: `id`, `study_id`, `palace_number`, `title`, `character_name`, `image_rel_path`, `depth_slots_used`, `image_prompt`.
 
 `studies.csv` columns: `id`, `title`, `notes_rel_path`, `sort_order`, `active` (no separate slug; folder key is `notes_rel_path`).
 
-`image_rel_path` is a relative path to the palace composite image. New attaches use `practice/images/{study}/{n}.ext` under `mnemonics/output/` (self-contained in the scripts repo). Legacy rows may still point at `notes/studies/…` until migrated. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `studies/technique/characters.json`, `bestiary.json`.
+`image_rel_path` is a relative path to the palace composite image. New attaches use `practice/images/{study}/{n}.ext` under `mnemonics/output/` (self-contained in the scripts repo). Legacy rows may still point at `notes/studies/…` until migrated. `image_prompt` stores the text used to generate that image; **empty is valid** (legacy rows migrated without prompts). Canon JSON: `mnemonics/technique/characters.json`, `bestiary.json`.
 
 `beasts.csv` FK is `palace_id` (row ids use `PALACE_*`).
 
@@ -83,9 +84,23 @@ Writes `mnemonics/data/migration_report.md`. Legacy `mnemonics-*.md` files are l
 
 ## Dashboard
 
-Memory Palace **[D]** runs `chart_generator.py` with `--data-dir` / `--output-dir` / `--notes-root`, then opens Chrome. Pick a study in the page to view Memory Palace images (newest palace number first).
+Memory Palace **[D]** runs `chart_generator.py` with `--data-dir` / `--output-dir` / `--notes-root` (syncs technique mirror first), then opens Chrome. Pick a study in the page to view Memory Palace images (newest palace number first).
 
 Click a palace card to open a fullscreen view: image, **Image prompt** (or empty state) with **Copy prompt**, Knowledge Atom count, **Close**, and a practice list that labels each atom’s **Beast**, **Concept**, **Quote**, **Story**, and **Sensory**.
+
+**Method** button (or keyboard **M**) opens the mirrored technique docs in the same page: README (tables, mermaid workflow), research notes, prompt previews, and searchable Characters / Bestiary canon.
+
+## Technique mirror
+
+Notes `studies/technique` remains the edit source. Scripts keep a one-way copy under `mnemonics/technique/`. Dashboard **[D]** refreshes the mirror when the notes path is available.
+
+```powershell
+py -3 mnemonics\python\sync_technique.py `
+  --source "C:\Users\eduev\Meu Drive\17 - Projects\notes\studies\technique" `
+  --dest mnemonics\technique
+```
+
+Prompt context files and technique prompt fallbacks resolve from `mnemonics/technique/` when the notes clone is missing.
 
 ## Practice Markdown (mobile / GitHub)
 

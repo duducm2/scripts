@@ -12,6 +12,11 @@ from urllib.parse import quote
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data_aggregator import snapshot  # noqa: E402
+from technique_renderer import (  # noqa: E402
+    build_method_panel,
+    default_technique_dir,
+)
+from sync_technique import resolve_technique_source, sync_technique  # noqa: E402
 
 
 def file_uri(path: str) -> str:
@@ -19,7 +24,11 @@ def file_uri(path: str) -> str:
     return "file:///" + quote(p.as_posix(), safe="/:")
 
 
-def build_html(snap: dict) -> str:
+def build_html(
+    snap: dict,
+    method_html: str = "",
+    method_canon: dict | None = None,
+) -> str:
     studies = snap.get("all_studies") or []
     cards = snap.get("studies") or []
     selected = snap.get("selected_study_id") or ""
@@ -111,6 +120,8 @@ def build_html(snap: dict) -> str:
         [{"id": s["id"], "title": s.get("title") or s["id"]} for s in studies],
         ensure_ascii=False,
     )
+    method_canon_json = json.dumps(method_canon or {"characters": [], "bestiary": []}, ensure_ascii=False)
+    method_body = method_html or '<div class="method-empty"><p>No technique docs mirrored.</p></div>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -572,6 +583,194 @@ def build_html(snap: dict) -> str:
       font-size: 0.85rem;
       margin: 0 0 0.35rem;
     }}
+    #btnMethod {{
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.95rem;
+      font-weight: 650;
+      cursor: pointer;
+      height: 2.35rem;
+    }}
+    #btnMethod:hover, #btnMethod.active {{
+      background: var(--gold);
+      color: #1a1408;
+    }}
+    #btnMethod:focus {{
+      outline: 2px solid #fff4d0;
+      outline-offset: 2px;
+    }}
+    #practicePanel.hidden, #methodPanel.hidden {{ display: none !important; }}
+    #methodPanel {{
+      padding: 1rem 1.5rem 2.5rem;
+    }}
+    .method-layout {{
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }}
+    @media (max-width: 900px) {{
+      .method-layout {{ grid-template-columns: 1fr; }}
+      .method-toc {{ position: static !important; max-height: none !important; }}
+    }}
+    .method-toc {{
+      position: sticky;
+      top: 0.75rem;
+      max-height: calc(100vh - 1.5rem);
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-size: 0.88rem;
+    }}
+    .method-toc h2 {{
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      color: var(--gold);
+    }}
+    .method-toc ul {{ margin: 0; padding-left: 1.1rem; }}
+    .method-toc a {{ color: var(--muted); text-decoration: none; }}
+    .method-toc a:hover {{ color: var(--gold); }}
+    .method-main {{ min-width: 0; }}
+    .method-banner {{
+      margin: 0 0 1rem;
+      padding: 0.65rem 0.85rem;
+      background: #242018;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }}
+    .method-prose {{
+      max-width: 52rem;
+      line-height: 1.65;
+      font-size: 1.02rem;
+    }}
+    .method-prose h1 {{ font-size: 1.75rem; margin: 0 0 0.75rem; color: var(--text); }}
+    .method-prose h2 {{
+      font-size: 1.35rem;
+      margin: 1.75rem 0 0.65rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--line);
+      color: var(--gold);
+    }}
+    .method-prose h3 {{ font-size: 1.12rem; margin: 1.25rem 0 0.45rem; color: var(--text); }}
+    .method-prose p, .method-prose li {{ color: var(--text); }}
+    .method-prose table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.95rem;
+    }}
+    .method-prose th, .method-prose td {{
+      border: 1px solid var(--line);
+      padding: 0.45rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }}
+    .method-prose th {{ background: var(--panel); color: var(--gold); }}
+    .method-prose code {{
+      background: #242830;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }}
+    .method-prose pre {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      overflow: auto;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }}
+    .method-prose pre.mermaid {{
+      background: #161820;
+      text-align: center;
+    }}
+    .method-prose blockquote {{
+      margin: 0.75rem 0;
+      padding: 0.35rem 0.85rem;
+      border-left: 3px solid var(--gold);
+      color: var(--muted);
+    }}
+    .method-section {{
+      margin-top: 2rem;
+      max-width: 52rem;
+    }}
+    .method-section > h2 {{
+      color: var(--gold);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.35rem;
+    }}
+    .method-note, .method-search-label {{ color: var(--muted); font-size: 0.9rem; }}
+    .method-section input[type="search"] {{
+      display: block;
+      width: min(360px, 100%);
+      margin: 0.35rem 0 0.85rem;
+    }}
+    .method-research, .method-prompt {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      margin: 0.55rem 0;
+    }}
+    .method-research summary, .method-prompt summary {{
+      cursor: pointer;
+      color: var(--gold);
+      font-weight: 650;
+    }}
+    .method-prompt pre {{
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 320px;
+      overflow: auto;
+      background: #161820;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.65rem;
+      font-size: 0.82rem;
+    }}
+    .btn-prompt-full {{
+      margin-top: 0.4rem;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+    }}
+    .btn-prompt-full:hover {{ color: var(--gold); border-color: var(--gold); }}
+    .canon-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.45rem;
+    }}
+    .canon-card {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.9rem;
+    }}
+    .canon-card .sec {{ color: var(--muted); font-size: 0.75rem; display: block; margin-bottom: 0.15rem; }}
+    .canon-table-wrap {{ overflow: auto; max-height: 420px; border: 1px solid var(--line); border-radius: 8px; }}
+    .canon-table {{ width: 100%; border-collapse: collapse; font-size: 0.92rem; }}
+    .canon-table th, .canon-table td {{
+      border-bottom: 1px solid var(--line);
+      padding: 0.4rem 0.65rem;
+      text-align: left;
+    }}
+    .canon-table th {{ position: sticky; top: 0; background: var(--panel); color: var(--gold); }}
+    .canon-table tr:hover td {{ background: #242830; }}
+    .method-empty {{ color: var(--muted); padding: 2rem; }}
+    .method-warn {{ color: #e0a060; }}
   </style>
 </head>
 <body>
@@ -589,6 +788,7 @@ def build_html(snap: dict) -> str:
         </select>
       </div>
       <button type="button" id="btnLatest">Latest palace</button>
+      <button type="button" id="btnMethod" title="Method docs (M)">Method</button>
       <div>
         <label for="atomSearch">Search Knowledge Atoms</label>
         <input type="search" id="atomSearch" placeholder="Beast, concept, quote, story…" autocomplete="off"/>
@@ -596,10 +796,13 @@ def build_html(snap: dict) -> str:
     </div>
   </header>
   <div id="searchResults" aria-live="polite"></div>
-  <main>
+  <main id="practicePanel">
     {''.join(study_blocks)}
   </main>
-  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. Latest palace (or L) opens the highest palace number.</footer>
+  <div id="methodPanel" class="hidden" aria-hidden="true">
+    {method_body}
+  </div>
+  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -638,6 +841,7 @@ def build_html(snap: dict) -> str:
     const PALACE_DATA = {palace_json};
     const STUDY_LATEST = {latest_json};
     const STUDIES = {studies_json};
+    const METHOD_CANON = {method_canon_json};
     const sel = document.getElementById('study');
     const sections = [...document.querySelectorAll('.study')];
     const overlay = document.getElementById('overlay');
@@ -652,6 +856,9 @@ def build_html(snap: dict) -> str:
     const btnCopyPrompt = document.getElementById('btnCopyPrompt');
     const ovNavPos = document.getElementById('ovNavPos');
     const btnLatest = document.getElementById('btnLatest');
+    const btnMethod = document.getElementById('btnMethod');
+    const practicePanel = document.getElementById('practicePanel');
+    const methodPanel = document.getElementById('methodPanel');
     const atomSearch = document.getElementById('atomSearch');
     const searchResults = document.getElementById('searchResults');
     const studyModal = document.getElementById('studyModal');
@@ -661,6 +868,8 @@ def build_html(snap: dict) -> str:
     const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
     let currentOverlayPalaceId = '';
+    let methodView = false;
+    let mermaidReady = false;
 
     // Newest-first order per study (same as grid)
     const STUDY_PALACE_ORDER = {{}};
@@ -982,6 +1191,124 @@ def build_html(snap: dict) -> str:
       if (palaceId) openPalace(palaceId);
     }}
     btnLatest.addEventListener('click', openLatestPalace);
+
+    function setMethodView(on) {{
+      methodView = !!on;
+      if (practicePanel) practicePanel.classList.toggle('hidden', methodView);
+      if (methodPanel) {{
+        methodPanel.classList.toggle('hidden', !methodView);
+        methodPanel.setAttribute('aria-hidden', methodView ? 'false' : 'true');
+      }}
+      if (btnMethod) btnMethod.classList.toggle('active', methodView);
+      if (searchResults && methodView) {{
+        searchResults.classList.remove('open');
+        searchResults.innerHTML = '';
+      }}
+      if (methodView) {{
+        ensureMermaid();
+        renderCharacters('');
+        renderBestiary('');
+      }}
+    }}
+
+    function ensureMermaid() {{
+      if (mermaidReady) {{
+        if (window.mermaid) window.mermaid.run();
+        return;
+      }}
+      mermaidReady = true;
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+      s.onload = () => {{
+        if (window.mermaid) {{
+          window.mermaid.initialize({{ startOnLoad: false, theme: 'dark' }});
+          window.mermaid.run();
+        }}
+      }};
+      document.head.appendChild(s);
+    }}
+
+    function renderCharacters(q) {{
+      const el = document.getElementById('charResults');
+      if (!el) return;
+      const query = (q || '').trim().toLowerCase();
+      const cards = [];
+      (METHOD_CANON.characters || []).forEach(sec => {{
+        (sec.characters || []).forEach(c => {{
+          const name = (c.name || '').toString();
+          if (query && !name.toLowerCase().includes(query)) return;
+          cards.push(
+            '<div class="canon-card"><span class="sec">' + esc(sec.title || '') + '</span>'
+            + esc(name) + '</div>'
+          );
+        }});
+      }});
+      if (!cards.length) {{
+        el.innerHTML = '<p class="empty">No characters match.</p>';
+        return;
+      }}
+      el.innerHTML = cards.slice(0, 200).join('');
+    }}
+
+    function renderBestiary(q) {{
+      const el = document.getElementById('beastResults');
+      if (!el) return;
+      const query = (q || '').trim().toLowerCase();
+      const rows = [];
+      (METHOD_CANON.bestiary || []).forEach(b => {{
+        const code = (b.code || '').toString();
+        const name = (b.name || '').toString();
+        const source = (b.source || '').toString();
+        const blob = (code + ' ' + name + ' ' + source).toLowerCase();
+        if (query && !blob.includes(query)) return;
+        rows.push(
+          '<tr><td>' + esc(code) + '</td><td>' + esc(name) + '</td><td>' + esc(source) + '</td></tr>'
+        );
+      }});
+      if (!rows.length) {{
+        el.innerHTML = '<p class="empty">No beasts match.</p>';
+        return;
+      }}
+      const limit = query ? 200 : 80;
+      el.innerHTML = '<table class="canon-table"><thead><tr><th>Code</th><th>Name</th><th>Source</th></tr></thead><tbody>'
+        + rows.slice(0, limit).join('')
+        + '</tbody></table>'
+        + (rows.length > limit
+          ? '<p class="method-note">Showing ' + limit + ' of ' + rows.length + ' — refine search to narrow.</p>'
+          : '');
+    }}
+
+    if (btnMethod) {{
+      btnMethod.addEventListener('click', () => setMethodView(!methodView));
+    }}
+    const charSearch = document.getElementById('charSearch');
+    const beastSearch = document.getElementById('beastSearch');
+    if (charSearch) {{
+      charSearch.addEventListener('input', () => {{
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => renderCharacters(charSearch.value), 80);
+      }});
+    }}
+    if (beastSearch) {{
+      beastSearch.addEventListener('input', () => {{
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => renderBestiary(beastSearch.value), 80);
+      }});
+    }}
+    document.querySelectorAll('.btn-prompt-full').forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        const det = btn.closest('.method-prompt');
+        if (!det) return;
+        const preview = det.querySelector('.prompt-preview');
+        const full = det.querySelector('.prompt-full');
+        if (!preview || !full) return;
+        const showing = !full.hidden;
+        full.hidden = showing;
+        preview.hidden = !showing;
+        btn.textContent = showing ? 'Show all' : 'Show less';
+      }});
+    }});
+
     document.addEventListener('keydown', (e) => {{
       if (handleStudyModalKey(e)) return;
       if (e.key === 'Escape' && overlay.classList.contains('open')) {{
@@ -1013,7 +1340,14 @@ def build_html(snap: dict) -> str:
       const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable))
         return;
+      if ((e.key === 'm' || e.key === 'M') && !overlay.classList.contains('open')
+          && !e.ctrlKey && !e.metaKey && !e.altKey) {{
+        e.preventDefault();
+        setMethodView(!methodView);
+        return;
+      }}
       if (e.key === 'l' || e.key === 'L') {{
+        if (methodView) setMethodView(false);
         e.preventDefault();
         openLatestPalace();
       }}
@@ -1077,21 +1411,49 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--notes-root", type=Path, default=None)
     p.add_argument("--study-id", type=str, default=None)
+    p.add_argument("--technique-source", type=Path, default=None)
+    p.add_argument("--technique-dir", type=Path, default=None)
+    p.add_argument("--skip-technique-sync", action="store_true")
     args = p.parse_args(argv)
+
+    out_dir = args.output_dir.resolve()
+    technique_dir = (
+        args.technique_dir.resolve()
+        if args.technique_dir
+        else default_technique_dir()
+    )
+
+    if not args.skip_technique_sync:
+        src = resolve_technique_source(
+            args.technique_source,
+            args.notes_root.resolve() if args.notes_root else None,
+        )
+        if src and src.is_dir():
+            try:
+                copied, skipped = sync_technique(src, technique_dir)
+                print(f"Technique sync: {copied} copied, {skipped} skipped")
+            except OSError as e:
+                print(f"Technique sync warning: {e}", file=sys.stderr)
+        else:
+            print(
+                "Technique sync skipped (source missing); using existing mirror if any",
+                file=sys.stderr,
+            )
+
+    method_html, method_canon = build_method_panel(technique_dir)
 
     snap = snapshot(
         data_dir=args.data_dir.resolve(),
         notes_root=args.notes_root.resolve() if args.notes_root else None,
         study_id=None,
-        output_dir=args.output_dir.resolve(),
+        output_dir=out_dir,
     )
     if args.study_id:
         snap["selected_study_id"] = args.study_id
     elif snap.get("studies"):
         snap["selected_study_id"] = snap["studies"][0]["id"]
 
-    html_out = build_html(snap)
-    out_dir = args.output_dir.resolve()
+    html_out = build_html(snap, method_html=method_html, method_canon=method_canon)
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / "dashboard.html"
     out.write_text(html_out, encoding="utf-8")

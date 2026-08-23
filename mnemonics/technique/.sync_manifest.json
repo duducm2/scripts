@@ -1,0 +1,61 @@
+{
+  "source": "C:\\Users\\eduev\\Meu Drive\\17 - Projects\\notes\\studies\\technique",
+  "files": {
+    "bestiary.json": {
+      "mtime_ns": 1782769676749400400,
+      "size": 80609
+    },
+    "characters.json": {
+      "mtime_ns": 1771178473250970100,
+      "size": 58364
+    },
+    "links/childhood-house-pictures.url": {
+      "mtime_ns": 1780787273669551900,
+      "size": 120
+    },
+    "prompts/image-background-preservation-prompt.txt": {
+      "mtime_ns": 1787451998043132900,
+      "size": 10494
+    },
+    "prompts/story-prompt.txt": {
+      "mtime_ns": 1787455104608934800,
+      "size": 11735
+    },
+    "prompts/story-reduction-prompt.txt": {
+      "mtime_ns": 1787455104608934800,
+      "size": 8498
+    },
+    "prompts/video-transcription-prompt.txt": {
+      "mtime_ns": 1787451998031137200,
+      "size": 6402
+    },
+    "README.md": {
+      "mtime_ns": 1787236062107504000,
+      "size": 44911
+    },
+    "research/memorization-techniques.md": {
+      "mtime_ns": 1771160255126049800,
+      "size": 43764
+    },
+    "research/mnemonic-technique.md": {
+      "mtime_ns": 1775931166227208800,
+      "size": 654
+    },
+    "research/nested-memory-palaces.md": {
+      "mtime_ns": 1780590510474357000,
+      "size": 3299
+    },
+    "research/recall.md": {
+      "mtime_ns": 1782052159749201400,
+      "size": 1420
+    },
+    "research/rehearsing-mnemonics.md": {
+      "mtime_ns": 1778532433036285600,
+      "size": 29161
+    },
+    "transcript.md": {
+      "mtime_ns": 1784940605037906000,
+      "size": 25143
+    }
+  }
+}
