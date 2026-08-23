@@ -135,7 +135,7 @@ Palace_ImportConfirmPreview(title, labels) {
     Palace_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
     g.SetFont("s10", "Segoe UI")
-    lv := g.Add("ListView", "w640 h320 Grid", ["Row"])
+    lv := g.Add("ListView", "w720 h420 Grid", ["Row"])
     for lab in labels
         lv.Add("", lab)
     lv.ModifyCol(1, "AutoHdr")
@@ -167,7 +167,7 @@ Palace_DesktopNewestPackPath() {
     newestTime := 0
     loop files A_Desktop . "\gemini-code*.txt", "F" {
         text := Palace_ReadUtf8(A_LoopFileFullPath)
-        if (!InStr(text, "===FILE: PALACE_", false))
+        if (!InStr(text, "===FILE: PALACE_", false) && !InStr(text, "---FILE: PALACE_", false))
             continue
         ts := Number(A_LoopFileTimeModified)
         if (ts > newestTime) {
@@ -178,27 +178,49 @@ Palace_DesktopNewestPackPath() {
     return newest
 }
 
-; Extract pure CSV body between ===FILE: name=== and ===END_FILE===.
+; Extract pure CSV body between ===FILE: name=== / ---FILE: name--- and matching END_FILE.
 Palace_ExtractPackFileSection(text, fileName) {
-    needle := "===FILE: " . fileName . "==="
-    pos := InStr(text, needle, false)
-    if (!pos)
-        return ""
-    rest := SubStr(text, pos + StrLen(needle))
-    endPos := InStr(rest, "===END_FILE===", false)
-    if (!endPos)
-        return ""
-    return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+    for style in ["===", "---"] {
+        needle := style . "FILE: " . fileName . style
+        endNeedle := style . "END_FILE" . style
+        pos := InStr(text, needle, false)
+        if (!pos)
+            continue
+        rest := SubStr(text, pos + StrLen(needle))
+        endPos := InStr(rest, endNeedle, false)
+        if (!endPos)
+            continue
+        return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+    }
+    return ""
+}
+
+; Extract PREVIEW block (=== or ---). Returns plain text body or "".
+Palace_ExtractPackPreview(text) {
+    for style in ["===", "---"] {
+        needle := style . "PREVIEW" . style
+        endNeedle := style . "END_PREVIEW" . style
+        pos := InStr(text, needle, false)
+        if (!pos)
+            continue
+        rest := SubStr(text, pos + StrLen(needle))
+        endPos := InStr(rest, endNeedle, false)
+        if (!endPos)
+            continue
+        return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+    }
+    return ""
 }
 
 ; Split a PALACE_PACK / gemini-code body into row arrays. Requires all three FILE sections.
 Palace_SplitPalacePack(path) {
-    result := Map("ok", false, "error", "", "palaces", [], "beasts", [], "atoms", [])
+    result := Map("ok", false, "error", "", "preview", "", "palaces", [], "beasts", [], "atoms", [])
     text := Palace_ReadUtf8(path)
     if (text = "") {
         result["error"] := "Empty pack file"
         return result
     }
+    result["preview"] := Palace_ExtractPackPreview(text)
     specs := [
         ["palaces", "PALACE_PALACES.csv", "palace_number"],
         ["beasts", "PALACE_BEASTS.csv", "peg_code"],
@@ -234,6 +256,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     pathBeasts := Palace_DesktopNewestCsvOrTxt("PALACE_BEASTS")
     pathAtoms := Palace_DesktopNewestCsvOrTxt("PALACE_ATOMS")
     pathPack := ""
+    packPreview := ""
     palaceRows := []
     beastRows := []
     atomRows := []
@@ -254,6 +277,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         palaceRows := split["palaces"]
         beastRows := split["beasts"]
         atomRows := split["atoms"]
+        packPreview := split["preview"]
     } else {
         if (pathPalaces != "") {
             palaceRows := Palace_ReadAiImportCsv(pathPalaces, "palace_number")
@@ -273,6 +297,12 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
 
     labels := []
+    if (packPreview != "") {
+        labels.Push("--- Human PREVIEW ---")
+        for line in StrSplit(StrReplace(StrReplace(packPreview, "`r`n", "`n"), "`r", "`n"), "`n")
+            labels.Push(line)
+        labels.Push("--- Import rows ---")
+    }
     if (palaceRows.Length) {
         labels.Push("--- Palaces (" . palaceRows.Length . ") ---")
         for r in palaceRows {
