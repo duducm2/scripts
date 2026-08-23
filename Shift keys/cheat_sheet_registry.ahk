@@ -1319,6 +1319,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Memory Palace (same as Utility Shortcuts [N])
+    [Win+Alt+Shift+D] > Finance (same as Utility Shortcuts [F])
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)
     [Win+Alt+Shift+↓] > Show square selector (down direction)

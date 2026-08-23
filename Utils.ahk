@@ -313,6 +313,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\finance_recurring.ahk
 #include %A_ScriptDir%\Utils\finance_import.ahk
 #include %A_ScriptDir%\Utils\finance_git_sync.ahk
+; [Utils module] Win+Alt+Shift+D → Finance -> Utils\finance_hotkey_d.ahk
+#include %A_ScriptDir%\Utils\finance_hotkey_d.ahk
 
 ; [Utils module] Memory Palace (Utility Shortcuts [N])
 #include %A_ScriptDir%\Utils\mnemonic_palace_helpers.ahk

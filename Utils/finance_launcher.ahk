@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: finance_launcher.ahk
-; Finance app main menu (Utility Shortcuts [F])
+; Finance app main menu (Utility Shortcuts [F] / Win+Alt+Shift+D)
 ; =============================================================================
 
 global g_FinanceMenuLabels := []
