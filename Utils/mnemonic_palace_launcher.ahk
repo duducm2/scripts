@@ -115,6 +115,7 @@ Palace_OnQuickImage(*) {
     Palace_QuickAttachDesktopImage()
 }
 Palace_OnPracticeGithub(*) {
+    Palace_CloseGui()
     Palace_OpenPracticeGithub()
 }
 Palace_OnRegenMarkdown(*) {
@@ -149,6 +150,7 @@ Palace_PlansGithubUrl() {
 }
 
 Palace_OnPlansGithub(*) {
+    Palace_CloseGui()
     Palace_OpenPlansGithub()
 }
 
