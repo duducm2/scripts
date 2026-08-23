@@ -587,7 +587,6 @@ def build_html(snap: dict) -> str:
     const PALACE_DATA = {palace_json};
     const STUDY_LATEST = {latest_json};
     const STUDIES = {studies_json};
-    const STUDY_PAGE_SIZE = 8;
     const sel = document.getElementById('study');
     const sections = [...document.querySelectorAll('.study')];
     const overlay = document.getElementById('overlay');
@@ -606,8 +605,6 @@ def build_html(snap: dict) -> str:
     const studyModalList = document.getElementById('studyModalList');
     const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
-    let studyPickerTier = 'group'; // 'group' | 'study'
-    let studyPickerGroup = 0;
 
     function show(id) {{
       sections.forEach(s => {{
@@ -630,14 +627,6 @@ def build_html(snap: dict) -> str:
       if (sel.value) show(sel.value);
     }}
 
-    function studyGroups() {{
-      const groups = [];
-      for (let i = 0; i < STUDIES.length; i += STUDY_PAGE_SIZE) {{
-        groups.push(STUDIES.slice(i, i + STUDY_PAGE_SIZE));
-      }}
-      return groups;
-    }}
-
     function studyModalOpen() {{
       return studyModal && studyModal.classList.contains('open');
     }}
@@ -654,64 +643,39 @@ def build_html(snap: dict) -> str:
         if (sel) requestAnimationFrame(() => sel.focus());
         return;
       }}
-      studyPickerTier = 'group';
-      studyPickerGroup = 0;
       studyModal.classList.add('open');
       studyModal.setAttribute('aria-hidden', 'false');
       renderStudyModal();
     }}
 
-    function renderStudyModal() {{
-      const groups = studyGroups();
-      studyModalList.innerHTML = '';
-      if (studyPickerTier === 'group') {{
-        studyModalTitle.textContent = 'Select a study group';
-        studyModalHint.textContent = 'Press a number to open a group.';
-        studyModalFoot.textContent = 'Esc keeps the current study';
-        groups.forEach((g, idx) => {{
-          const n = String(idx + 1);
-          const first = g[0] ? g[0].title : '';
-          const last = g[g.length - 1] ? g[g.length - 1].title : '';
-          const label = (first === last)
-            ? first
-            : (first + ' — ' + last);
-          const li = document.createElement('li');
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.innerHTML = '<span class="key">' + esc(n) + '</span>'
-            + '<span class="pick-label">' + esc(label) + ' <span style="color:var(--muted)">('
-            + g.length + ')</span></span>';
-          btn.addEventListener('click', () => pickStudyGroup(idx));
-          li.appendChild(btn);
-          studyModalList.appendChild(li);
-        }});
-      }} else {{
-        const g = groups[studyPickerGroup] || [];
-        studyModalTitle.textContent = 'Select a study';
-        studyModalHint.textContent = 'Press a letter to choose a study.';
-        studyModalFoot.textContent = 'Esc returns to groups';
-        g.forEach((st, idx) => {{
-          const letter = String.fromCharCode(97 + idx); // a, b, c...
-          const li = document.createElement('li');
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.innerHTML = '<span class="key">' + esc(letter.toUpperCase()) + '</span>'
-            + '<span class="pick-label">' + esc(st.title) + '</span>';
-          btn.addEventListener('click', () => pickStudyItem(st.id));
-          li.appendChild(btn);
-          studyModalList.appendChild(li);
-        }});
-      }}
-      const firstBtn = studyModalList.querySelector('button');
-      if (firstBtn) requestAnimationFrame(() => firstBtn.focus());
+    function studyShortcut(idx) {{
+      // Letters a–z; numbers 1–9 also map to the first nine studies
+      if (idx < 0 || idx >= STUDIES.length || idx > 25) return null;
+      return String.fromCharCode(97 + idx);
     }}
 
-    function pickStudyGroup(idx) {{
-      const groups = studyGroups();
-      if (idx < 0 || idx >= groups.length) return;
-      studyPickerGroup = idx;
-      studyPickerTier = 'study';
-      renderStudyModal();
+    function renderStudyModal() {{
+      studyModalTitle.textContent = 'Select a study';
+      studyModalHint.textContent = 'Press a letter to choose a study (1–9 also work for the first nine).';
+      studyModalFoot.textContent = 'Esc keeps the current study';
+      studyModalList.innerHTML = '';
+      STUDIES.forEach((st, idx) => {{
+        const letter = studyShortcut(idx);
+        if (!letter) return;
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const numHint = (idx < 9)
+          ? ' <span style="color:var(--muted)">(' + (idx + 1) + ')</span>'
+          : '';
+        btn.innerHTML = '<span class="key">' + esc(letter.toUpperCase()) + '</span>'
+          + '<span class="pick-label">' + esc(st.title) + numHint + '</span>';
+        btn.addEventListener('click', () => pickStudyItem(st.id));
+        li.appendChild(btn);
+        studyModalList.appendChild(li);
+      }});
+      const firstBtn = studyModalList.querySelector('button');
+      if (firstBtn) requestAnimationFrame(() => firstBtn.focus());
     }}
 
     function pickStudyItem(id) {{
@@ -723,33 +687,24 @@ def build_html(snap: dict) -> str:
       if (!studyModalOpen()) return false;
       if (e.key === 'Escape') {{
         e.preventDefault();
-        if (studyPickerTier === 'study') {{
-          studyPickerTier = 'group';
-          renderStudyModal();
-        }} else {{
-          closeStudyModal({{ focusSelect: true }});
-        }}
+        closeStudyModal({{ focusSelect: true }});
         return true;
       }}
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {{
         const ch = e.key.toLowerCase();
-        if (studyPickerTier === 'group') {{
-          if (ch >= '1' && ch <= '9') {{
-            e.preventDefault();
-            pickStudyGroup(parseInt(ch, 10) - 1);
-            return true;
-          }}
-        }} else if (ch >= 'a' && ch <= 'z') {{
-          const idx = ch.charCodeAt(0) - 97;
-          const g = studyGroups()[studyPickerGroup] || [];
-          if (idx >= 0 && idx < g.length) {{
-            e.preventDefault();
-            pickStudyItem(g[idx].id);
-            return true;
-          }}
+        let idx = -1;
+        if (ch >= 'a' && ch <= 'z') {{
+          idx = ch.charCodeAt(0) - 97;
+        }} else if (ch >= '1' && ch <= '9') {{
+          idx = parseInt(ch, 10) - 1;
+        }}
+        if (idx >= 0 && idx < STUDIES.length) {{
+          e.preventDefault();
+          pickStudyItem(STUDIES[idx].id);
+          return true;
         }}
       }}
-      return true; // swallow other keys while modal is open
+      return true;
     }}
 
     function esc(s) {{
