@@ -444,6 +444,9 @@
       line-height: 1.3;
       color: var(--text);
     }
+    .beast-cluster-head .beast-name .emoji {
+      margin-right: 0.28rem;
+    }
     .beast-cluster-atoms {
       display: grid;
       grid-template-columns: repeat(var(--beast-cols, 1), minmax(0, 1fr));
@@ -497,6 +500,9 @@
       margin: 0 0 0.4rem;
       padding-bottom: 0.3rem;
       border-bottom: 1px dashed var(--line);
+    }
+    .atom-card .zone-tag .emoji {
+      margin-right: 0.28rem;
     }
     #btnMethod {
       background: transparent;
@@ -1057,7 +1063,7 @@
       <div>
         <label for="study">Study</label>
         <select id="study">
-          <option value="STUDY_AI">Ai</option><option value="STUDY_COMMUNICATIO">Communication</option><option value="STUDY_ENGLISH">English</option><option value="STUDY_GERMAN">German</option><option value="STUDY_PIANO">Piano</option><option value="STUDY_SCIENCE">Science</option><option value="STUDY_SKILLS">Skills</option><option value="STUDY_TAOISM">Taoism</option><option value="STUDY_VIOLIN" selected>violin</option>
+          <option value="STUDY_AI">Ai</option><option value="STUDY_COMMUNICATIO">Communication</option><option value="STUDY_ENGLISH">English</option><option value="STUDY_GERMAN">German</option><option value="STUDY_PIANO">Piano</option><option value="STUDY_SCIENCE">Science</option><option value="STUDY_SKILLS" selected>Skills</option><option value="STUDY_TAOISM">Taoism</option><option value="STUDY_VIOLIN">violin</option>
         </select>
       </div>
       <button type="button" id="btnLatest">Latest palace</button>
@@ -1779,7 +1785,7 @@
             </section>
             
             <section class="study" data-study-id="STUDY_SKILLS"
-                     style="display:none">
+                     style="display:block">
               <header class="study-head">
                 <h2>Skills</h2>
                 <p>5 Memory Palaces · newest first</p>
@@ -1891,7 +1897,7 @@
             </section>
             
             <section class="study" data-study-id="STUDY_VIOLIN"
-                     style="display:block">
+                     style="display:none">
               <header class="study-head">
                 <h2>violin</h2>
                 <p>1 Memory Palaces · newest first</p>
@@ -3854,7 +3860,8 @@ Before returning, verify every item.
 
     function renderAtomCard(a, focusAtomId) {
       const zone = (a.zone || a.zone_label)
-        ? '<p class="zone-tag">' + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
+        ? '<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> '
+          + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
         : '';
       const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
       return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
@@ -3881,7 +3888,8 @@ Before returning, verify every item.
           + '; --beast-cols: ' + innerCols + '">'
           + '<header class="beast-cluster-head">'
           + '<span class="lbl">Beast</span>'
-          + '<p class="beast-name">' + dash(g.beast) + '</p>'
+          + '<p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> '
+          + dash(g.beast) + '</p>'
           + '</header>'
           + '<div class="beast-cluster-atoms">' + cards + '</div>'
           + '</section>';

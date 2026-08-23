@@ -425,9 +425,7 @@ StudyTopicSelector_ManageLinks_Set(*) {
         if (url != "") {
             ; Close share panel while Chrome still has focus (before loading overlay steals it).
             StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
-            StandardLoadingBar_Show("Saving link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
             setOk := StudyLink_Set(STUDYLINK_KEY_YOUTUBE, url)
-            try StandardLoadingBar_Hide(0)
             if setOk
                 ShowCenteredOverlay_Utils("✅ Link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
             else

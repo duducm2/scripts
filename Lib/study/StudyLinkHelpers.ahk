@@ -218,14 +218,43 @@ StudyLink_NormalizeApiError(response) {
     return "Could not read link from API"
 }
 
+; Friendly label for loading banners (video / article / favorite).
+StudyLink_LoadingLabel(studyKey) {
+    if (studyKey = STUDYLINK_KEY_YOUTUBE)
+        return "study video"
+    if (studyKey = STUDYLINK_KEY_ARTICLE)
+        return "study article"
+    if (studyKey = STUDYLINK_KEY_FAVORITE)
+        return "favorite"
+    return "link"
+}
+
+StudyLink_ShowApiLoading(actionVerb, studyKey) {
+    msg := "⏳ " . actionVerb . " " . StudyLink_LoadingLabel(studyKey) . "…"
+    try StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    catch {
+    }
+}
+
+StudyLink_HideApiLoading() {
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+}
+
 ; Returns Map: ok (true=HTTP+parse succeeded), url (decoded link or ""), err (failure message).
 StudyLink_GetResult(studyKey) {
-    response := StudyLink_HttpGet("key=" . StudyLink_UrlEncode(studyKey))
-    if StudyLink_IsHttpErrorText(response) || !StudyLink_IsValidGetResponse(response) {
-        return Map("ok", false, "url", "", "err", StudyLink_NormalizeApiError(response))
+    StudyLink_ShowApiLoading("Loading", studyKey)
+    try {
+        response := StudyLink_HttpGet("key=" . StudyLink_UrlEncode(studyKey))
+        if StudyLink_IsHttpErrorText(response) || !StudyLink_IsValidGetResponse(response) {
+            return Map("ok", false, "url", "", "err", StudyLink_NormalizeApiError(response))
+        }
+        url := StudyLink_ExtractUrlFromResponse(response)
+        return Map("ok", true, "url", url, "err", "")
+    } finally {
+        StudyLink_HideApiLoading()
     }
-    url := StudyLink_ExtractUrlFromResponse(response)
-    return Map("ok", true, "url", url, "err", "")
 }
 
 ; Backward-compatible: returns URL string, or "" if not set or on error.
@@ -284,16 +313,13 @@ StudyLink_SetFromManualInput(studyKey, successLabel := "link") {
         return false
     }
 
-    StandardLoadingBar_Show("Saving " . successLabel . "…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     setOk := StudyLink_Set(studyKey, url)
-    try StandardLoadingBar_Hide(0)
     if setOk
         ShowCenteredOverlay_Utils("✅ " . successLabel . " saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
     else
         ShowCenteredOverlay_Utils("❌ Could not save the " . successLabel . " (API failed).", 3500, BANNER_ACCENT_ERROR)
     return setOk
 }
-
 ; True when POST response indicates the link was saved (see StudyLink_Set).
 StudyLink_ResponseIndicatesSetSuccess(response) {
     if (SubStr(response, 1, 6) = "ERROR:")
@@ -318,12 +344,17 @@ StudyLink_ResponseIndicatesSetSuccess(response) {
 ; ────────────────────────────────────────────────────────────────────────────
 StudyLink_Set(studyKey, url) {
     ; Match MacroDroid Set_Video.macro: literal url in body (Apps Script reads everything after url=).
-    data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . url
-    response := StudyLink_HttpPost(data)
-    if (!StudyLink_ResponseIndicatesSetSuccess(response))
-        return false
-    StudyLink_PlayApiSuccessSound()
-    return true
+    StudyLink_ShowApiLoading("Saving", studyKey)
+    try {
+        data := "key=" . StudyLink_UrlEncode(studyKey) . "&url=" . url
+        response := StudyLink_HttpPost(data)
+        if (!StudyLink_ResponseIndicatesSetSuccess(response))
+            return false
+        StudyLink_PlayApiSuccessSound()
+        return true
+    } finally {
+        StudyLink_HideApiLoading()
+    }
 }
 
 ; Legacy INI path (kept for reference — not used by new API code)

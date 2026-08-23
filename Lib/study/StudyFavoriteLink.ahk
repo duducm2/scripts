@@ -58,9 +58,7 @@ StudyTopicSelector_ManageFavoriteLinks_Set(*) {
         errMsg := ""
         url := StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg)
         if (url != "") {
-            StandardLoadingBar_Show("Saving favorite link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
             setOk := StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
-            try StandardLoadingBar_Hide(0)
             if setOk
                 ShowCenteredOverlay_Utils("✅ Favorite link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
             else

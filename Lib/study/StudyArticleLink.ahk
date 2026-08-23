@@ -102,9 +102,7 @@ StudyTopicSelector_ManageArticleLinks_Set(*) {
         errMsg := ""
         url := StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg)
         if (url != "") {
-            StandardLoadingBar_Show("Saving article link…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
             setOk := StudyLink_Set(STUDYLINK_KEY_ARTICLE, url)
-            try StandardLoadingBar_Hide(0)
             if setOk
                 ShowCenteredOverlay_Utils("✅ Article link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
             else

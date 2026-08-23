@@ -587,6 +587,9 @@ def build_html(
       line-height: 1.3;
       color: var(--text);
     }}
+    .beast-cluster-head .beast-name .emoji {{
+      margin-right: 0.28rem;
+    }}
     .beast-cluster-atoms {{
       display: grid;
       grid-template-columns: repeat(var(--beast-cols, 1), minmax(0, 1fr));
@@ -640,6 +643,9 @@ def build_html(
       margin: 0 0 0.4rem;
       padding-bottom: 0.3rem;
       border-bottom: 1px dashed var(--line);
+    }}
+    .atom-card .zone-tag .emoji {{
+      margin-right: 0.28rem;
     }}
     #btnMethod {{
       background: transparent;
@@ -1533,7 +1539,8 @@ def build_html(
 
     function renderAtomCard(a, focusAtomId) {{
       const zone = (a.zone || a.zone_label)
-        ? '<p class="zone-tag">' + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
+        ? '<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> '
+          + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
         : '';
       const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
       return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
@@ -1560,7 +1567,8 @@ def build_html(
           + '; --beast-cols: ' + innerCols + '">'
           + '<header class="beast-cluster-head">'
           + '<span class="lbl">Beast</span>'
-          + '<p class="beast-name">' + dash(g.beast) + '</p>'
+          + '<p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> '
+          + dash(g.beast) + '</p>'
           + '</header>'
           + '<div class="beast-cluster-atoms">' + cards + '</div>'
           + '</section>';
