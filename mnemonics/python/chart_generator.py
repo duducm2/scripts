@@ -107,6 +107,10 @@ def build_html(snap: dict) -> str:
 
     palace_json = json.dumps(palace_data, ensure_ascii=False)
     latest_json = json.dumps(study_latest, ensure_ascii=False)
+    studies_json = json.dumps(
+        [{"id": s["id"], "title": s.get("title") or s["id"]} for s in studies],
+        ensure_ascii=False,
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -203,6 +207,77 @@ def build_html(snap: dict) -> str:
     #searchResults .hit:hover {{ color: var(--gold); }}
     #searchResults .hit .meta {{ color: var(--muted); font-size: 0.85rem; }}
     #searchResults .empty {{ color: var(--muted); margin: 0; }}
+    #studyModal {{
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(8, 9, 12, 0.82);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }}
+    #studyModal.open {{ display: flex; }}
+    #studyModal .modal-panel {{
+      width: min(420px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem 1.25rem;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    }}
+    #studyModal h2 {{
+      margin: 0 0 0.35rem;
+      font-size: 1.2rem;
+      font-weight: 650;
+    }}
+    #studyModal .hint {{
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }}
+    #studyModal .pick-list {{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-height: min(60vh, 420px);
+      overflow: auto;
+    }}
+    #studyModal .pick-list button {{
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: left;
+      background: #242830;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.65rem 0.8rem;
+      font: inherit;
+      cursor: pointer;
+    }}
+    #studyModal .pick-list button:hover,
+    #studyModal .pick-list button:focus {{
+      outline: none;
+      border-color: var(--gold);
+      color: var(--gold);
+    }}
+    #studyModal .key {{
+      flex: 0 0 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+    }}
+    #studyModal .pick-label {{ flex: 1; }}
+    #studyModal .modal-foot {{
+      margin: 0.9rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }}
     main {{ padding: 1.25rem 1.5rem 2.5rem; }}
     .study-head h2 {{ margin: 0 0 0.25rem; color: var(--gold); }}
     .study-head p {{ margin: 0 0 1rem; color: var(--muted); }}
@@ -481,6 +556,15 @@ def build_html(snap: dict) -> str:
   </main>
   <footer>Click a Memory Palace for fullscreen practice. Latest palace (or L) opens the highest palace number.</footer>
 
+  <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
+    <div class="modal-panel">
+      <h2 id="studyModalTitle">Select a study</h2>
+      <p class="hint" id="studyModalHint"></p>
+      <ul class="pick-list" id="studyModalList"></ul>
+      <p class="modal-foot" id="studyModalFoot"></p>
+    </div>
+  </div>
+
   <div id="overlay" aria-hidden="true">
     <div class="overlay-bar">
       <div>
@@ -502,6 +586,8 @@ def build_html(snap: dict) -> str:
   <script>
     const PALACE_DATA = {palace_json};
     const STUDY_LATEST = {latest_json};
+    const STUDIES = {studies_json};
+    const STUDY_PAGE_SIZE = 8;
     const sel = document.getElementById('study');
     const sections = [...document.querySelectorAll('.study')];
     const overlay = document.getElementById('overlay');
@@ -514,16 +600,156 @@ def build_html(snap: dict) -> str:
     const btnLatest = document.getElementById('btnLatest');
     const atomSearch = document.getElementById('atomSearch');
     const searchResults = document.getElementById('searchResults');
+    const studyModal = document.getElementById('studyModal');
+    const studyModalTitle = document.getElementById('studyModalTitle');
+    const studyModalHint = document.getElementById('studyModalHint');
+    const studyModalList = document.getElementById('studyModalList');
+    const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
+    let studyPickerTier = 'group'; // 'group' | 'study'
+    let studyPickerGroup = 0;
 
     function show(id) {{
       sections.forEach(s => {{
         s.style.display = (s.dataset.studyId === id) ? 'block' : 'none';
       }});
     }}
+
+    function selectStudy(id, {{ focusSelect = true }} = {{}}) {{
+      if (!sel || !id) return;
+      sel.value = id;
+      show(id);
+      sel.dispatchEvent(new Event('change', {{ bubbles: true }}));
+      if (focusSelect) {{
+        requestAnimationFrame(() => sel.focus());
+      }}
+    }}
+
     if (sel) {{
       sel.addEventListener('change', () => show(sel.value));
       if (sel.value) show(sel.value);
+    }}
+
+    function studyGroups() {{
+      const groups = [];
+      for (let i = 0; i < STUDIES.length; i += STUDY_PAGE_SIZE) {{
+        groups.push(STUDIES.slice(i, i + STUDY_PAGE_SIZE));
+      }}
+      return groups;
+    }}
+
+    function studyModalOpen() {{
+      return studyModal && studyModal.classList.contains('open');
+    }}
+
+    function closeStudyModal({{ focusSelect = true }} = {{}}) {{
+      if (!studyModal) return;
+      studyModal.classList.remove('open');
+      studyModal.setAttribute('aria-hidden', 'true');
+      if (focusSelect && sel) requestAnimationFrame(() => sel.focus());
+    }}
+
+    function openStudyModal() {{
+      if (!studyModal || !STUDIES.length) {{
+        if (sel) requestAnimationFrame(() => sel.focus());
+        return;
+      }}
+      studyPickerTier = 'group';
+      studyPickerGroup = 0;
+      studyModal.classList.add('open');
+      studyModal.setAttribute('aria-hidden', 'false');
+      renderStudyModal();
+    }}
+
+    function renderStudyModal() {{
+      const groups = studyGroups();
+      studyModalList.innerHTML = '';
+      if (studyPickerTier === 'group') {{
+        studyModalTitle.textContent = 'Select a study group';
+        studyModalHint.textContent = 'Press a number to open a group.';
+        studyModalFoot.textContent = 'Esc keeps the current study';
+        groups.forEach((g, idx) => {{
+          const n = String(idx + 1);
+          const first = g[0] ? g[0].title : '';
+          const last = g[g.length - 1] ? g[g.length - 1].title : '';
+          const label = (first === last)
+            ? first
+            : (first + ' — ' + last);
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.innerHTML = '<span class="key">' + esc(n) + '</span>'
+            + '<span class="pick-label">' + esc(label) + ' <span style="color:var(--muted)">('
+            + g.length + ')</span></span>';
+          btn.addEventListener('click', () => pickStudyGroup(idx));
+          li.appendChild(btn);
+          studyModalList.appendChild(li);
+        }});
+      }} else {{
+        const g = groups[studyPickerGroup] || [];
+        studyModalTitle.textContent = 'Select a study';
+        studyModalHint.textContent = 'Press a letter to choose a study.';
+        studyModalFoot.textContent = 'Esc returns to groups';
+        g.forEach((st, idx) => {{
+          const letter = String.fromCharCode(97 + idx); // a, b, c...
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.innerHTML = '<span class="key">' + esc(letter.toUpperCase()) + '</span>'
+            + '<span class="pick-label">' + esc(st.title) + '</span>';
+          btn.addEventListener('click', () => pickStudyItem(st.id));
+          li.appendChild(btn);
+          studyModalList.appendChild(li);
+        }});
+      }}
+      const firstBtn = studyModalList.querySelector('button');
+      if (firstBtn) requestAnimationFrame(() => firstBtn.focus());
+    }}
+
+    function pickStudyGroup(idx) {{
+      const groups = studyGroups();
+      if (idx < 0 || idx >= groups.length) return;
+      studyPickerGroup = idx;
+      studyPickerTier = 'study';
+      renderStudyModal();
+    }}
+
+    function pickStudyItem(id) {{
+      selectStudy(id, {{ focusSelect: true }});
+      closeStudyModal({{ focusSelect: true }});
+    }}
+
+    function handleStudyModalKey(e) {{
+      if (!studyModalOpen()) return false;
+      if (e.key === 'Escape') {{
+        e.preventDefault();
+        if (studyPickerTier === 'study') {{
+          studyPickerTier = 'group';
+          renderStudyModal();
+        }} else {{
+          closeStudyModal({{ focusSelect: true }});
+        }}
+        return true;
+      }}
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {{
+        const ch = e.key.toLowerCase();
+        if (studyPickerTier === 'group') {{
+          if (ch >= '1' && ch <= '9') {{
+            e.preventDefault();
+            pickStudyGroup(parseInt(ch, 10) - 1);
+            return true;
+          }}
+        }} else if (ch >= 'a' && ch <= 'z') {{
+          const idx = ch.charCodeAt(0) - 97;
+          const g = studyGroups()[studyPickerGroup] || [];
+          if (idx >= 0 && idx < g.length) {{
+            e.preventDefault();
+            pickStudyItem(g[idx].id);
+            return true;
+          }}
+        }}
+      }}
+      return true; // swallow other keys while modal is open
     }}
 
     function esc(s) {{
@@ -680,6 +906,7 @@ def build_html(snap: dict) -> str:
     }}
     btnLatest.addEventListener('click', openLatestPalace);
     document.addEventListener('keydown', (e) => {{
+      if (handleStudyModalKey(e)) return;
       if (e.key === 'Escape' && overlay.classList.contains('open')) {{
         e.preventDefault();
         closeOverlay();
@@ -738,6 +965,8 @@ def build_html(snap: dict) -> str:
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => runSearch(atomSearch.value), 120);
     }});
+
+    openStudyModal();
   </script>
 </body>
 </html>
