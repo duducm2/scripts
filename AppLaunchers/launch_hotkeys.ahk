@@ -1,6 +1,6 @@
 ; =============================================================================
 ; AppLaunchers module: launch_hotkeys.ahk
-; Chrome, WhatsApp, YouTube, Cursor launch hotkeys
+; Chrome, WhatsApp, Cursor launch hotkeys; Win+Alt+Shift+H → Utility Shortcuts Prompts
 ; Extracted verbatim from AppLaunchers.ahk; loaded via #include into the
 ; AppLaunchers.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
@@ -61,72 +61,13 @@
 }
 
 ; =============================================================================
-; Open/Activate YouTube
+; Utility Shortcuts → Prompts (prompt manager)
 ; Hotkey: Win+Alt+Shift+H
-; Original File: Youtube - Activate.ahk
+; Same UI as #!+U then [R]; toggles closed if Prompts is already open.
 ; =============================================================================
-; Session start: **assumes** the watch-page video is paused/stopped. One Send("k") toggles play (YouTube shortcut).
-; Trade-off: if the video was already playing, k pauses — use when entering focus with a paused video, or press #!+h again to exit.
-; Fast path: one UIA_Browser bound to ytHwnd + GetCurrentURL only (no FindFirst / tree scans). See docs/efficiency-canon.md §11.
-YouTube_PlayWhenOpened(ytHwnd := 0) {
-    if !(ytHwnd is Integer) || ytHwnd <= 0
-        ytHwnd := WinExist("YouTube ahk_exe chrome.exe")
-    if !ytHwnd
-        return
-    if !WinActive("ahk_id " ytHwnd) {
-        WinActivate("ahk_id " ytHwnd)
-        WinWaitActive("ahk_id " ytHwnd, , 2)
-    }
-    try {
-        uia := UIA_Browser("ahk_id " ytHwnd)
-        if !InStr(uia.GetCurrentURL(), "youtube.com/watch")
-            return
-        Send("k")
-    } catch {
-        ; UIA/URL unavailable — do not Send(k) blind (wrong-focus risk).
-    }
-}
-
 #!+h::
 {
-    ; Preserve and restore title match mode (efficiency-canon: no leaked global state)
-    prevTitleMode := A_TitleMatchMode
-    global g_YoutubeFocusSessionActive
-    try {
-        SetTitleMatchMode 2
-        if (g_YoutubeFocusSessionActive) {
-            YouTube_EndFocusSession()
-            return
-        }
-
-        YouTube_PauseSpotifyBeforeYoutube()
-
-        ; Prefer focusing an existing YouTube Chrome window to avoid duplicates.
-        hwnd := WinExist("YouTube ahk_exe chrome.exe")
-        if hwnd {
-            WinActivate("ahk_id " hwnd)
-            WinWaitActive("ahk_id " hwnd, , 2)
-            CenterMouse()
-            YouTube_PlayWhenOpened(hwnd)
-            StartYoutubeFocusMonitor(hwnd)
-            g_YoutubeFocusSessionActive := true
-            return
-        }
-        ; No YouTube window detected: open History URL in a new Chrome window
-        ; so it doesn't attach as a tab to an existing instance.
-        Run 'chrome.exe --new-window "https://www.youtube.com/feed/history"'
-        if WinWaitActive("YouTube ahk_exe chrome.exe", , 10) {
-            CenterMouse()
-            YouTube_PlayWhenOpened(WinExist("A"))
-            hwnd := WinExist("A")
-            if hwnd {
-                StartYoutubeFocusMonitor(hwnd)
-                g_YoutubeFocusSessionActive := true
-            }
-        }
-    } finally {
-        try SetTitleMatchMode prevTitleMode
-    }
+    ShowHotstringSelector("Prompts")
 }
 
 ; =============================================================================

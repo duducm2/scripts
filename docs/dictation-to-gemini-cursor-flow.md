@@ -116,6 +116,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 ## Related
 
 - [paste-field-mapping.md](paste-field-mapping.md) — learn-and-persist main text field for `#!+L` / D2C **[W]**.
+- [prompt-data-output-and-finance-packs.md](prompt-data-output-and-finance-packs.md) — Prompt Manager `ExpectsDataOutput` / `DataOutputFormat`, injected AIB delivery contract, finance/mnemonic `.txt` packs and import.
 
 ## Happy path (no cancel)
 

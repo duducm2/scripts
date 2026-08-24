@@ -1241,8 +1241,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
     [Send dictation? B] > Toggle Parakeet Unified EN ↔ Cohere Transcribe, re-transcribe newest History entry, copy to clipboard, re-open menu
     
-    === YOUTUBE ===
-    [Win+Alt+Shift+H] > Activates Youtube
+    === PROMPTS ===
+    [Win+Alt+Shift+H] > Utility Shortcuts → Prompts (prompt manager; same as #!+U then R)
     
     === GOOGLE ===
     [Win+Alt+Shift+F] > Opens Google

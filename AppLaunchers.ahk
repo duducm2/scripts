@@ -46,7 +46,7 @@ if !(A_Args.Length > 0 && A_Args[1] = "/Updated")
 ; [AppLaunchers module] Shift+Win+E desktop explorer and UIA helpers -> AppLaunchers\desktop_explorer.ahk
 #include %A_ScriptDir%\AppLaunchers\desktop_explorer.ahk
 
-; [AppLaunchers module] Chrome, WhatsApp, YouTube, Cursor launch hotkeys -> AppLaunchers\launch_hotkeys.ahk
+; [AppLaunchers module] Chrome, WhatsApp, Prompts (#!+h), Cursor launch hotkeys -> AppLaunchers\launch_hotkeys.ahk
 #include %A_ScriptDir%\AppLaunchers\launch_hotkeys.ahk
 
 ; [AppLaunchers module] #!+k editor file search across VS Code and Cursor -> AppLaunchers\hotkey_editor_file_search.ahk

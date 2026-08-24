@@ -176,7 +176,8 @@ Blackout_Disable7Min(*) {
     StandardLoadingBar_Hide(0)
 }
 
-; YouTube focus session (Win+Alt+Shift+H): toggle on/off; SMTC for Spotify play/pause (not toggle).
+; YouTube focus session helpers (formerly Win+Alt+Shift+H; that hotkey now opens Prompts).
+; SMTC for Spotify play/pause (not toggle). Keep for possible reuse under another binding.
 global g_YoutubeFocusMonitorTimer := false
 global g_YoutubeFocusTrackedHwnd := 0
 global g_YoutubeSpotifyPausePending := false

@@ -171,14 +171,14 @@ These wrap `StandardLoadingBar_*` with preset styles:
 
 ### AppLaunchers.ahk
 
-| Lines                  | Context                                                                                                                                                                                        |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `#!+n` context browser | Opens `ShowContextBrowser` (Utils); expected failures use Information Only banners (`ContextBrowser_ShowError` / `ShowCenteredOverlay_Utils` + `BANNER_ACCENT_ERROR`), not TrayTip             |
-| `#!+h` YouTube focus   | No banner on this hotkey (latency); `YouTube_PlayWhenOpened` uses `UIA_Browser("ahk_id " hwnd)` + `GetCurrentURL` then `Send("k")` when on a watch URL (assumes paused video on session start) |
-| 522–563                | Restore scroll (short path)                                                                                                                                                                    |
-| 842–1003               | Restore scroll (new window, UIA)                                                                                                                                                               |
-| 1296–1392              | Restore scroll (existing window)                                                                                                                                                               |
-| 1912–1941              | Save scroll position                                                                                                                                                                           |
+| Lines                  | Context                                                                                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#!+n` context browser | Opens `ShowContextBrowser` (Utils); expected failures use Information Only banners (`ContextBrowser_ShowError` / `ShowCenteredOverlay_Utils` + `BANNER_ACCENT_ERROR`), not TrayTip |
+| `#!+h` Prompts         | Opens Utility Shortcuts → Prompts (`ShowHotstringSelector("Prompts")`); toggles closed if that view is already open                                                                |
+| 522–563                | Restore scroll (short path)                                                                                                                                                        |
+| 842–1003               | Restore scroll (new window, UIA)                                                                                                                                                   |
+| 1296–1392              | Restore scroll (existing window)                                                                                                                                                   |
+| 1912–1941              | Save scroll position                                                                                                                                                               |
 
 ### Act.ahk
 
