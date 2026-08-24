@@ -100,7 +100,6 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     body := PromptRender_Prepare(prompt)
     if (body = "")
         return
-    PromptUsage_Log(prompt, useGemini ? "gemini" : "direct")
     mode := PromptData_PasteMode(prompt)
     doAttach := (mode = "default" || mode = "body_attach_clipboard" || mode = "attach_only")
     doPasteBody := (mode = "default" || mode = "body_only" || mode = "body_plus_clipboard" || mode =
@@ -108,6 +107,16 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         || mode = "auto_send")
     doAppendClipboard := (mode = "body_plus_clipboard") || appendClipboard
     doAutoSend := (mode = "auto_send")
+    contextEntries := ""
+    pickedCount := 0
+    if (doAttach) {
+        resolved := UtilitySelector_ResolveContextEntries(prompt)
+        if (resolved = false)
+            return
+        contextEntries := resolved.entries
+        pickedCount := resolved.pickedCount
+    }
+    PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
     clip := ""
     if (doAppendClipboard) {
         try clip := A_Clipboard
@@ -116,13 +125,13 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     }
     CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend, clip)
+        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend, clip, contextEntries)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
     Sleep 150
     if (doAttach)
-        UtilitySelector_AttachPromptContextFiles(prompt)
+        UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
     if (doPasteBody)
         PasteStrippedPromptOfferReminders(body)
     if (doAppendClipboard && clip != "") {
@@ -131,10 +140,27 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     }
 }
 
-UtilitySelector_AttachPromptContextFiles(prompt) {
+UtilitySelector_ResolveContextEntries(prompt) {
+    if (!IsObject(prompt))
+        return { entries: [], pickedCount: 0 }
+    staticEntries := PromptData_ContextEntriesForCurrentEnv(prompt)
+    catalog := PromptData_SelectContextCatalog(prompt)
+    if (catalog = "")
+        return { entries: staticEntries, pickedCount: 0 }
+    picked := PromptContextPicker_Show(catalog)
+    if (picked = false)
+        return false
+    return {
+        entries: PromptContext_MergeEntries(staticEntries, picked),
+        pickedCount: IsObject(picked) ? picked.Length : 0
+    }
+}
+
+UtilitySelector_AttachPromptContextFiles(prompt, entries := "") {
     if (!IsObject(prompt))
         return
-    entries := PromptData_ContextEntriesForCurrentEnv(prompt)
+    if (entries = "")
+        entries := PromptData_ContextEntriesForCurrentEnv(prompt)
     if (entries.Length = 0)
         return
     existing := []
@@ -449,7 +475,7 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=
-    false, appendClip := "") {
+    false, appendClip := "", contextEntries := "") {
     global g_lastExpansion
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
@@ -458,7 +484,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         if (companion = "enterprise") {
             GeminiEnterprise_OpenOrFocus()
             if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt)
+                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
             if (doPasteBody) {
                 InsertText(expansion)
                 try ReplaceComposerWithStrippedReminders(expansion)
@@ -474,7 +500,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         } else if (companion = "copilot") {
             CopilotWeb_OpenOrFocus()
             if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt)
+                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
             if (doPasteBody) {
                 InsertText(expansion)
                 try ReplaceComposerWithStrippedReminders(expansion)
@@ -518,7 +544,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             }
 
             if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt)
+                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
             if (doPasteBody) {
                 InsertText(expansion)
                 ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")

@@ -553,6 +553,20 @@ PromptData_NormalizeDataOutputFormat(mode) {
     return "file"
 }
 
+PromptData_NormalizeSelectContextCatalog(val) {
+    m := StrLower(Trim(val))
+    if (m = "mnemonic_stories")
+        return "mnemonic_stories"
+    return ""
+}
+
+PromptData_SelectContextCatalog(prompt) {
+    if (!IsObject(prompt))
+        return ""
+    return PromptData_NormalizeSelectContextCatalog(prompt.HasProp("selectContextCatalog") ? prompt.selectContextCatalog :
+        "")
+}
+
 PromptData_AttachAsTxt(prompt) {
     if (!IsObject(prompt))
         return false
@@ -657,6 +671,8 @@ PromptData_NormalizeEntry(prompt) {
         prompt.personal_context_files : [])
     prompt.work_context_files := PromptData_ParseContextEntries(prompt.HasProp("work_context_files") ?
         prompt.work_context_files : [])
+    prompt.selectContextCatalog := PromptData_NormalizeSelectContextCatalog(prompt.HasProp("selectContextCatalog") ?
+        prompt.selectContextCatalog : "")
     return prompt
 }
 
@@ -727,6 +743,10 @@ PromptData_DefaultEntries() {
         item.attachAsTxt := 0
         item.variables := ""
         item.filePathDraft := ""
+        item.selectContextCatalog := ""
+        fp := StrLower(StrReplace(item.HasProp("filePath") ? item.filePath : "", "/", "\"))
+        if (InStr(fp, "story-prompt.txt") || InStr(fp, "story-reduction-prompt.txt"))
+            item.selectContextCatalog := "mnemonic_stories"
     }
     return list
 }
@@ -775,6 +795,8 @@ PromptData_Load(force := false, skipMtime := false) {
             variables := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Variables", ""))
             filePathDraft := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
                 "FilePathDraft", ""))
+            selectContextCatalog := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
+                "SelectContextCatalog", ""))
             personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
             workFiles := PromptData_ReadContextEntries(path, section, "Work")
             if (name = "" && filePath = "") {
@@ -793,7 +815,8 @@ PromptData_Load(force := false, skipMtime := false) {
                 filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, attachAsTxt: attachAsTxt,
                 expectsDataOutput: expectsDataOutput, dataOutputFormat: dataOutputFormat,
                 variables: variables,
-                filePathDraft: filePathDraft, personal_context_files: personalFiles,
+                filePathDraft: filePathDraft, selectContextCatalog: selectContextCatalog,
+                personal_context_files: personalFiles,
                 work_context_files: workFiles }))
             idx += 1
         }
@@ -803,6 +826,7 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
     PromptData_EnsurePlanPromptEntry()
+    PromptData_EnsureStoryPromptPickers()
     return g_PromptEntries
 }
 
@@ -842,9 +866,38 @@ PromptData_EnsurePlanPromptEntry() {
         variables: "",
         filePathDraft: "",
         personal_context_files: [],
-        work_context_files: []
+        work_context_files: [],
+        selectContextCatalog: ""
     }))
     PromptData_Save(list)
+}
+
+; Upsert SelectContextCatalog=mnemonic_stories on story prompts (existing installs).
+PromptData_EnsureStoryPromptPickers() {
+    global g_PromptEntries
+    list := g_PromptEntries
+    if (!IsObject(list))
+        return
+    dirty := false
+    storyNeedles := ["story-prompt.txt", "story-reduction-prompt.txt"]
+    for i, prompt in list {
+        fp := StrLower(StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\"))
+        isStory := false
+        for needle in storyNeedles {
+            if (InStr(fp, needle)) {
+                isStory := true
+                break
+            }
+        }
+        if (!isStory)
+            continue
+        if (PromptData_SelectContextCatalog(prompt) = "mnemonic_stories")
+            continue
+        list[i].selectContextCatalog := "mnemonic_stories"
+        dirty := true
+    }
+    if (dirty)
+        PromptData_Save(list)
 }
 
 PromptData_Save(list) {
@@ -885,6 +938,8 @@ PromptData_Save(list) {
             lines.Push("DataOutputFormat=" . (prompt.HasProp("dataOutputFormat") ? prompt.dataOutputFormat : "file"))
             lines.Push("Variables=" . (prompt.HasProp("variables") ? prompt.variables : ""))
             lines.Push("FilePathDraft=" . (prompt.HasProp("filePathDraft") ? prompt.filePathDraft : ""))
+            lines.Push("SelectContextCatalog=" . PromptData_EscapeIniValue(prompt.HasProp("selectContextCatalog") ?
+                prompt.selectContextCatalog : ""))
             PromptData_AppendContextLines(lines, "Personal", prompt.personal_context_files)
             PromptData_AppendContextLines(lines, "Work", prompt.work_context_files)
             idx += 1
@@ -962,7 +1017,8 @@ PromptData_Sorted() {
             personal_context_files: PromptData_ParseContextEntries(p.HasProp("personal_context_files") ?
                 p.personal_context_files : []),
             work_context_files: PromptData_ParseContextEntries(p.HasProp("work_context_files") ? p.work_context_files :
-                [])
+                []),
+            selectContextCatalog: p.HasProp("selectContextCatalog") ? p.selectContextCatalog : ""
         }))
     }
     PromptData_SortInPlace(list)

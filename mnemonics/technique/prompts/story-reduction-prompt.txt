@@ -72,7 +72,7 @@ Pre-send self-check: download chip OR one marked fence; decision PREVIEW in pack
 If **Reduction mode** is missing or ambiguous, ask before generating.
 
 1. **Reduction mode** — `SMASH` or `REMOVE` (required).
-2. **Current CSVs** (preferred) — attached `PALACE_PALACES` / `PALACE_BEASTS` / `PALACE_ATOMS` (or study pack slices). If only Markdown is attached, parse it into the same logical model, then still emit CSVs only.
+2. **Current story** — attached practice `.md` from the Prompt Manager story picker at paste (preferred), or `PALACE_*` CSV slices / context pack. Parse Markdown into the same logical model, then emit CSVs only.
 3. **Merge groups** (SMASH) — e.g. `Merge B+C into one beast; Merge E, F, G into one beast`.
 4. **Peg letters to remove** (REMOVE) — single letters or two-letter codes.
 5. **Bestiary** — `studies/technique/bestiary.json`.
@@ -181,7 +181,7 @@ After the reduced model is final, write a long concrete foreground `image_prompt
 
 [SMASH or REMOVE]
 
-📎 Current Memory Palace CSVs or context pack (palaces / beasts / atoms)
+📎 Full mnemonic story — practice `.md` from the Prompt Manager story picker at paste (shows last palace / peg / character). Or attach CSV context pack manually.
 
 [ATTACH OR PASTE]
 

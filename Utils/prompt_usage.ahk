@@ -7,7 +7,7 @@ PromptUsage_LogPath() {
     return A_ScriptDir "\assets\data\prompt_usage.log"
 }
 
-PromptUsage_Log(prompt, extra := "") {
+PromptUsage_Log(prompt, extra := "", pickedCount := 0) {
     if (!IsObject(prompt))
         return
     path := PromptUsage_LogPath()
@@ -23,7 +23,10 @@ PromptUsage_Log(prompt, extra := "") {
     catch {
     }
     ctxCount := PromptData_ContextEntriesForCurrentEnv(prompt).Length
-    line := ts . "|" . ch . "|" . name . "|" . companion . "|" . mode . "|ctx=" . ctxCount
+    ctxLabel := "ctx=" . ctxCount
+    if (pickedCount > 0)
+        ctxLabel .= "+" . pickedCount
+    line := ts . "|" . ch . "|" . name . "|" . companion . "|" . mode . "|" . ctxLabel
     if (extra != "")
         line .= "|" . extra
     line .= "`n"

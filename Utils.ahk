@@ -328,6 +328,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk
+; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
+#include %A_ScriptDir%\Utils\prompt_context_picker.ahk
 
 ; [Utils module] ClipAngel last clip → Desktop (.txt) -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk

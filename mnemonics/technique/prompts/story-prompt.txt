@@ -231,7 +231,7 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 
 📎 Video transcription
 
-📎 Context pack (`study_id` + palaces/beasts/atoms CSV slices) — prefer over Markdown list
+📎 Existing study story (practice `.md`) — chosen at paste via the Prompt Manager story picker; read it to find the last Memory Palace / peg / character before continuing. CSV context packs are also accepted if attached manually.
 
 📎 Characters (`@studies/technique/characters.json` or paste)
 
