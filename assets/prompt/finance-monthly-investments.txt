@@ -1,27 +1,27 @@
 DELIVERY MANDATE (read first)
-Deliver exactly one real downloadable text file in this same reply. The human uses Quick Download (clicks a Download control) and Finance import. A chat code snippet is not the file. Do not say a download is available unless a download control exists in this reply. Do not claim a Desktop save.
+Deliver exactly one real downloadable text file in this same reply. The human uses Quick Download (clicks a Download control) and Finance import. A chat code snippet is not the file. Do not say a download is available unless a download control exists in this reply. You cannot write to the human’s disk, Desktop, Downloads, or any local path — never say you saved, wrote, or stored a file there.
 
 Monthly investments and goals — structured extraction
 
 You convert a voice dictation about monthly investment P/L and money moved into goals into one `FINANCE_MONTHLY.txt` pack (preview + labeled CSV section).
 
 FILE DELIVERY PROTOCOL (mandatory)
-The human has no Desktop or disk write access from chat. Words in the bubble do not create a file.
+You have no access to the human’s computer. You cannot save, write, or store files on their disk. Words in the bubble do not create a file. A Gemini code-execution sandbox is not their PC.
 
-What counts as delivery (must exist in this same reply): a file chip / attachment / Download / Download code / Export control whose payload is the pack. Preferred name `FINANCE_MONTHLY.txt` (chip/button label must match when the platform allows). Acceptable: a `gemini-code-….txt` download whose body uses the markers below.
+What counts as delivery (must exist in this same reply): a Gemini Download code / file card / attachment / Export control whose payload is the pack. Preferred name `FINANCE_MONTHLY.txt` (chip/button label must match when the platform allows). Acceptable: a `gemini-code-….txt` download whose body uses the markers below.
 
 What does not count (redo the whole turn):
 - Any fenced ```txt / ```csv / ```text block in chat as the primary deliverable — even if it contains the pack markers and looks like `FINANCE_MONTHLY.txt`
 - Saying the file is ready, attached, or available to download when this message has no download control
 - Canvas / doc / “view file” that cannot be saved as a `.txt` download
-- Fake local paths (Desktop, `/mnt`, Downloads)
+- Any claim that the file was saved, written, stored, or exported to disk, Desktop, Downloads, Documents, `/mnt`, a sandbox, or “your computer”
 
 How: use the product’s file / artifact / attachment API (create file, code-execution download, Gemini file card, Claude artifact with download, Copilot/ChatGPT downloadable file). After the file exists, chat may be a one-line pointer at the chip. Do not put CSV rows only in chat.
 
 Delivery priority (strict):
 1. Best: one downloadable artifact named exactly `FINANCE_MONTHLY.txt`.
 2. Acceptable: a `gemini-code-….txt` download whose body uses the markers below.
-3. Forbidden: chat snippets (named or unnamed) as the primary deliverable; markdown tables as the primary deliverable; phantom “ready to download” claims; fake Desktop saves.
+3. Forbidden: chat snippets (named or unnamed) as the primary deliverable; markdown tables as the primary deliverable; phantom “ready to download” claims; any “saved to disk / your computer / Desktop / Downloads” sentence.
 
 PACK BODY LAYOUT (exact markers — required inside the downloadable file):
 
@@ -44,13 +44,14 @@ Failed delivery — redo:
 - Pack dumped only as a code snippet (with or without pack markers)
 - “File is ready / available to download” (or similar) with no Download control in this reply
 - Markdown tables as the main output
-- “I saved FINANCE_MONTHLY.txt to your Desktop” (or any local path) without a real downloadable artifact
+- “I saved / wrote / stored FINANCE_MONTHLY.txt on your disk / computer / Desktop / Downloads” (Gemini has no disk access; this is always failed delivery)
+- Any local path (`C:\`, `/mnt`, `Downloads`) presented as where the pack now lives
 
 Pre-send self-check (all must pass):
 1. This reply has a real UI download object (chip, attachment, Download / Download code / Export) — not a sentence claiming one exists. Named `FINANCE_MONTHLY.txt` when the platform allows.
 2. That file’s body contains `===PREVIEW===` … `===END_PREVIEW===` and `===FILE: FINANCE_MONTHLY.csv===` … `===END_FILE===`.
 3. CSV body uses the exact header below.
-If the platform cannot attach a file, do not output CSV in chat and do not claim success — retry the file tool once. If still impossible, say so in one sentence (no fake download, no snippet-as-file).
+If the platform cannot attach a file, do not output CSV in chat, do not claim a disk save, and do not claim success — retry Download code once. If still impossible, say you could not attach a download (no fake disk save, no snippet-as-file).
 If any check fails, regenerate as one `FINANCE_MONTHLY.txt` pack.
 
 CSV body format (inside the FILE section):
@@ -80,7 +81,7 @@ Use only these attached CSVs for id mapping. Do not invent ids.
 DICTATION
 Paste the raw dictation below this line.
 
-Reminder: deliver `FINANCE_MONTHLY.txt` as a real downloadable pack — never a chat snippet standing in for the file, never a download claim without a control.
+Reminder: deliver `FINANCE_MONTHLY.txt` only as a Download code / file card in this reply. Never say it was saved to disk. Never use a chat snippet as the file.
 ---
 Human reminders (for the person sending this prompt — do not include in AI output):
 
