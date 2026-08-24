@@ -44,7 +44,7 @@ Palace_ShowMainMenu() {
         ["L", "Plans", "Browse / edit study plan checklists (CSV)"],
         ["I", "AI import", "Desktop PALACE_PACK / PALACE_*.txt|.csv (preview)"],
         ["J", "Import plan", "Desktop PLAN_PACK only → sync output/plans"],
-        ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
+        ["Q", "Quick image", "Pick palace without image → newest Desktop PNG/JPG"],
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
         ["O", "Plans on GitHub", "Synced study plan Markdown for mobile"],
         ["R", "Regen Markdown", "Force-create all practice + plan .md files"],

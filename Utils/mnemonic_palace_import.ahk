@@ -707,6 +707,99 @@ Palace_ImportMnemonicsFromDesktop(*) {
     return true
 }
 
+Palace_PalacesMissingImage() {
+    palaces := Palace_Load("palaces")
+    missing := []
+    for p in palaces {
+        img := Trim(p.Has("image_rel_path") ? p["image_rel_path"] : "")
+        if (img = "")
+            missing.Push(p)
+    }
+    ; Sort by study title then palace_number
+    loop {
+        swapped := false
+        i := 1
+        while (i < missing.Length) {
+            a := missing[i]
+            b := missing[i + 1]
+            sa := StrLower(Palace_StudyTitle(a.Has("study_id") ? a["study_id"] : ""))
+            sb := StrLower(Palace_StudyTitle(b.Has("study_id") ? b["study_id"] : ""))
+            na := 0
+            nb := 0
+            try na := Integer(a.Has("palace_number") ? a["palace_number"] : 0)
+            catch {
+            }
+            try nb := Integer(b.Has("palace_number") ? b["palace_number"] : 0)
+            catch {
+            }
+            if (sa > sb || (sa = sb && na > nb)) {
+                missing[i] := b
+                missing[i + 1] := a
+                swapped := true
+            }
+            i += 1
+        }
+        if (!swapped)
+            break
+    }
+    return missing
+}
+
+; Returns selected palace Map, or false if cancelled / empty.
+Palace_PickPalaceMissingImage() {
+    global g_PalaceGui
+    missing := Palace_PalacesMissingImage()
+    if (!missing.Length)
+        return false
+    owner := ""
+    try {
+        if (IsObject(g_PalaceGui))
+            owner := " +Owner" . g_PalaceGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    Palace_DialogsBegin()
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, "Attach image — palaces without image")
+    g.SetFont("s10", "Segoe UI")
+    g.Add("Text", "w560", "Select a Memory Palace (Study · # · Name). Enter / double-click confirms.")
+    lv := g.Add("ListView", "w560 h320 Grid", ["Study", "#", "Name"])
+    try Palace_StyleDarkListView(lv)
+    catch {
+    }
+    for p in missing {
+        studyLab := Palace_StudyTitle(p.Has("study_id") ? p["study_id"] : "")
+        num := p.Has("palace_number") ? p["palace_number"] : ""
+        title := p.Has("title") ? p["title"] : ""
+        lv.Add("", studyLab, num, title)
+    }
+    lv.ModifyCol(1, 180)
+    lv.ModifyCol(2, 50)
+    lv.ModifyCol(3, 300)
+    if (missing.Length > 0)
+        lv.Modify(1, "Select Focus Vis")
+    chosen := false
+    PickOk(*) {
+        row := lv.GetNext()
+        if (!row || row > missing.Length)
+            return
+        chosen := missing[row]
+        g.Destroy()
+    }
+    g.Add("Button", "y+8 w100 Default", "OK").OnEvent("Click", PickOk)
+    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    lv.OnEvent("DoubleClick", PickOk)
+    g.Show()
+    try lv.Focus()
+    catch {
+    }
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
+    Palace_DialogsEnd()
+    return chosen
+}
+
 Palace_LastPalaceForQuickImage() {
     lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
     palaces := Palace_Load("palaces")
@@ -737,17 +830,19 @@ Palace_PickHighestPalace(palaces, studyId) {
     return best
 }
 
-; [Q] Copy newest Desktop PNG/JPG onto the last Memory Palace under LastStudyId.
+; [Q] Pick a palace without image, then copy newest Desktop PNG/JPG onto it.
 Palace_QuickAttachDesktopImage(*) {
     Palace_EnsureData()
+    if (!Palace_PalacesMissingImage().Length) {
+        Palace_Notify("All Memory Palaces already have an image path", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    palace := Palace_PickPalaceMissingImage()
+    if (!IsObject(palace))
+        return false
     src := Palace_DesktopNewestImage()
     if (src = "") {
         Palace_Notify("No PNG/JPG on Desktop", 2200, BANNER_ACCENT_ERROR)
-        return false
-    }
-    palace := Palace_LastPalaceForQuickImage()
-    if (!IsObject(palace)) {
-        Palace_Notify("No Memory Palace to attach to", 2200, BANNER_ACCENT_ERROR)
         return false
     }
     studies := Palace_Load("studies")
