@@ -3,26 +3,6 @@
 ; Dynamic context file picker at prompt paste time
 ; =============================================================================
 
-PromptContextCatalog_SupplementChoices(isStoryPrompt := false) {
-    if (isStoryPrompt)
-        return ["(none)", "Mnemonic story files"]
-    return ["(none)"]
-}
-
-PromptContextCatalog_SupplementLabel(catalog) {
-    catalog := StrLower(Trim(catalog))
-    if (catalog = "mnemonic_stories")
-        return "Mnemonic story files"
-    return "(none)"
-}
-
-PromptContextCatalog_SupplementFromLabel(label) {
-    lab := Trim(label)
-    if (lab = "Mnemonic story files")
-        return "mnemonic_stories"
-    return ""
-}
-
 PromptContextCatalog_List(catalog) {
     catalog := StrLower(Trim(catalog))
     if (catalog = "mnemonic_stories")
@@ -186,26 +166,14 @@ PromptContextPicker_BuildPool(prompt) {
     items := []
     seen := Map()
     for e in PromptData_SelectableContextEntriesForCurrentEnv(prompt) {
-        p := PromptData_ContextEntryPath(e)
-        if (p = "")
-            continue
-        abs := PromptData_ResolveContextPath({ path: p })
+        abs := PromptData_ContextEntryPath(e)
         if (abs = "" || !FileExist(abs))
             continue
         key := StrLower(abs)
         if (seen.Has(key))
             continue
         seen[key] := true
-        items.Push(PromptContextPicker_ItemFromPath(p))
-    }
-    if (PromptData_IsStoryPrompt(prompt)) {
-        for it in PromptContextCatalog_List(PromptData_SelectContextCatalog(prompt)) {
-            key := StrLower(it.path)
-            if (seen.Has(key))
-                continue
-            seen[key] := true
-            items.Push(it)
-        }
+        items.Push(PromptContextPicker_ItemFromPath(abs))
     }
     PromptContextPicker_SortItemsByMtime(items)
     return items

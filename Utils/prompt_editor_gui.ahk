@@ -37,9 +37,7 @@ global g_PromptEditorPersonalSelectablePaths := []
 global g_PromptEditorWorkSelectablePaths := []
 global g_PromptEditorPersonalSelectableLv := false
 global g_PromptEditorWorkSelectableLv := false
-global g_PromptEditorSelectContextCatalog := false
 global g_PromptEditorTabs := false
-global g_PromptEditorRefreshMnemonicBtn := false
 global g_PromptEditorLayout := false
 global g_PromptEditorContextCtrls := []
 global g_PromptEditorContextOrig := []
@@ -265,11 +263,10 @@ PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L) {
 }
 
 PromptEditor_BuildTabContext(existingPrompt, L) {
-    global g_PromptEditorGui, g_PromptEditorTabs, g_PromptEditorFilePath
+    global g_PromptEditorGui, g_PromptEditorTabs
     global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
     global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
     global g_PromptEditorPersonalSelectableLv, g_PromptEditorWorkSelectableLv
-    global g_PromptEditorSelectContextCatalog, g_PromptEditorRefreshMnemonicBtn
     global g_PromptEditorContextCtrls
 
     g_PromptEditorContextCtrls := []
@@ -284,7 +281,6 @@ PromptEditor_BuildTabContext(existingPrompt, L) {
     csvCol := L["csvCol"]
     selPathCol := L["selPathCol"]
     hintW := L["hintW"]
-    isStoryPrompt := PromptData_IsStoryPrompt({ filePath: g_PromptEditorFilePath })
 
     g_PromptEditorTabs.UseTab(2)
     g_PromptEditorGui.MarginX := innerX
@@ -390,36 +386,10 @@ PromptEditor_BuildTabContext(existingPrompt, L) {
 
     g_PromptEditorGui.SetFont("s9 c808080 Norm", "Segoe UI")
     track(g_PromptEditorGui.Add("Text", "xs y+16 w" . hintW . " Wrap Section",
-        "Selectable at paste (0–n chosen when invoked; not auto-attached)"))
+        "Selectable at paste — add paths below; choose 0–n when you invoke this prompt (not auto-attached)."))
     g_PromptEditorGui.SetFont("s10 Norm", "Segoe UI")
-    supplementHint := isStoryPrompt
-        ? "Dynamic supplement merges discovered mnemonic story .md files into the picker at paste time."
-            : "Add explicit paths below. Mnemonic story discovery is only available for story prompts."
-    track(g_PromptEditorGui.Add("Text", "xs y+8 w" . hintW . " Wrap", supplementHint))
-    track(g_PromptEditorGui.Add("Text", "xs y+12 w120 Section", "Dynamic supplement"))
-    catalogChoices := PromptContextCatalog_SupplementChoices(isStoryPrompt)
-    g_PromptEditorSelectContextCatalog := track(g_PromptEditorGui.Add("DropDownList", "xs y+6 w240 Section",
-        catalogChoices))
-    catVal := "(none)"
-    if (IsObject(existingPrompt) && isStoryPrompt)
-        catVal := PromptContextCatalog_SupplementLabel(PromptData_SelectContextCatalog(existingPrompt))
-    try g_PromptEditorSelectContextCatalog.Text := catVal
-    catch {
-        try g_PromptEditorSelectContextCatalog.Choose(1)
-        catch {
-        }
-    }
-    if (isStoryPrompt) {
-        g_PromptEditorRefreshMnemonicBtn := track(g_PromptEditorGui.Add("Button", "xs y+10 w" . hintW . " Section",
-            "Refresh mnemonic stories → selectable"))
-        g_PromptEditorRefreshMnemonicBtn.OnEvent("Click", PromptEditor_OnRefreshMnemonicStories)
-        selectableHeaderGap := "y+14"
-    } else {
-        g_PromptEditorRefreshMnemonicBtn := false
-        selectableHeaderGap := "y+16"
-    }
 
-    track(g_PromptEditorGui.Add("Text", "xs " . selectableHeaderGap . " w" . colW . " Section", "Personal selectable"))
+    track(g_PromptEditorGui.Add("Text", "xs y+14 w" . colW . " Section", "Personal selectable"))
     track(g_PromptEditorGui.Add("Text", "x+" . colGap . " yp w" . colW, "Work selectable"))
     g_PromptEditorPersonalSelectableLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r2", ["Path"]))
     g_PromptEditorWorkSelectableLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r2", [
@@ -1074,16 +1044,6 @@ PromptEditor_OnRemoveSelectable(side) {
     PromptEditor_ReloadSelectableList(side)
 }
 
-PromptEditor_OnRefreshMnemonicStories(*) {
-    global IS_WORK_ENVIRONMENT
-    side := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) ? "work" : "personal"
-    paths := []
-    for it in PromptContextCatalog_MnemonicStories()
-        paths.Push(it.path)
-    PromptEditor_AppendSelectablePaths(side, paths)
-    UtilitySelector_Notify("Added " . paths.Length . " mnemonic story path(s) to " . side . " selectable list.")
-}
-
 PromptEditor_ParseFileSelect(result) {
     paths := []
     if (result = "" || result = 0)
@@ -1431,12 +1391,6 @@ PromptEditor_OnSave(*) {
     workEntries := PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
     personalSelectable := PromptData_ParseContextEntries(g_PromptEditorPersonalSelectablePaths)
     workSelectable := PromptData_ParseContextEntries(g_PromptEditorWorkSelectablePaths)
-    selectCatalog := ""
-    if (PromptData_IsStoryPrompt({ filePath: g_PromptEditorFilePath })) {
-        try selectCatalog := PromptContextCatalog_SupplementFromLabel(g_PromptEditorSelectContextCatalog.Text)
-        catch {
-        }
-    }
     draft := {
         name: name,
         char: ch,
@@ -1451,7 +1405,7 @@ PromptEditor_OnSave(*) {
         dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
-        selectContextCatalog: selectCatalog,
+        selectContextCatalog: "",
         personal_context_files: personalEntries,
         work_context_files: workEntries,
         personal_selectable_context_files: personalSelectable,
@@ -1486,7 +1440,7 @@ PromptEditor_OnSave(*) {
         dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
-        selectContextCatalog: selectCatalog,
+        selectContextCatalog: "",
         personal_context_files: personalEntries,
         work_context_files: workEntries,
         personal_selectable_context_files: personalSelectable,
@@ -1573,10 +1527,8 @@ Context presets
 • At paste time, only the static list for your environment (personal or work) is attached automatically.
 
 Selectable context at paste (Context tab)
-• Selectable lists define candidate files shown in a multi-select picker when you invoke the prompt.
-• Choose 0–n files at paste; they attach in addition to static context.
-• Dynamic supplement (Mnemonic story files) is only available for story prompts; it merges discovered practice .md files into the picker pool at paste time.
-• Refresh mnemonic stories → selectable copies current practice .md paths into the selectable list for the active environment side.
+• Selectable lists are the only source for the paste-time picker pool.
+• Add the files you want available; choose 0–n when you invoke the prompt (they attach in addition to static context).
 )"
 }
 

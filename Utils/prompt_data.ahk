@@ -277,6 +277,8 @@ PromptData_JoinContextCsvKeep(entries) {
 }
 
 PromptData_ResolveContextPath(path) {
+    if (IsObject(path))
+        path := path.HasProp("path") ? path.path : ""
     p := Trim(path)
     if (p = "")
         return ""
@@ -405,18 +407,10 @@ PromptData_IsStoryPrompt(prompt) {
     return InStr(fp, "story-prompt.txt") || InStr(fp, "story-reduction-prompt.txt")
 }
 
-PromptData_EffectiveSelectContextCatalog(prompt) {
-    if (!PromptData_IsStoryPrompt(prompt))
-        return ""
-    return PromptData_SelectContextCatalog(prompt)
-}
-
 PromptData_PromptHasSelectablePicker(prompt) {
     if (!IsObject(prompt))
         return false
-    if (PromptData_SelectableContextEntriesForCurrentEnv(prompt).Length > 0)
-        return true
-    return PromptData_EffectiveSelectContextCatalog(prompt) != ""
+    return PromptData_SelectableContextEntriesForCurrentEnv(prompt).Length > 0
 }
 
 PromptData_SelectablePickerListSuffix(prompt) {
@@ -800,9 +794,6 @@ PromptData_DefaultEntries() {
         item.variables := ""
         item.filePathDraft := ""
         item.selectContextCatalog := ""
-        fp := StrLower(StrReplace(item.HasProp("filePath") ? item.filePath : "", "/", "\"))
-        if (InStr(fp, "story-prompt.txt") || InStr(fp, "story-reduction-prompt.txt"))
-            item.selectContextCatalog := "mnemonic_stories"
     }
     return list
 }
@@ -886,8 +877,7 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
     PromptData_EnsurePlanPromptEntry()
-    PromptData_MigrateStoryPromptCatalog()
-    PromptData_MigrateStripInvalidStoryCatalog()
+    PromptData_MigrateCatalogIntoSelectable()
     return g_PromptEntries
 }
 
@@ -935,42 +925,54 @@ PromptData_EnsurePlanPromptEntry() {
     PromptData_Save(list)
 }
 
-; One-time: default story prompts to mnemonic supplement only when catalog still empty.
-PromptData_MigrateStoryPromptCatalog() {
+; One-time: fold SelectContextCatalog discoveries into selectable lists, then clear catalog.
+PromptData_MigrateCatalogIntoSelectable() {
     global g_PromptEntries
     list := g_PromptEntries
     if (!IsObject(list))
         return
     dirty := false
     for i, prompt in list {
-        if (!PromptData_IsStoryPrompt(prompt))
+        catalog := PromptData_SelectContextCatalog(prompt)
+        if (catalog = "")
             continue
-        if (PromptData_SelectContextCatalog(prompt) != "")
-            continue
-        list[i].selectContextCatalog := "mnemonic_stories"
+        if (catalog = "mnemonic_stories") {
+            paths := []
+            for it in PromptContextCatalog_List(catalog)
+                paths.Push(it.path)
+            if (paths.Length > 0) {
+                list[i].personal_selectable_context_files := PromptData_MergeContextPathLists(
+                    prompt.HasProp("personal_selectable_context_files") ? prompt.personal_selectable_context_files : [],
+                paths)
+                list[i].work_selectable_context_files := PromptData_MergeContextPathLists(
+                    prompt.HasProp("work_selectable_context_files") ? prompt.work_selectable_context_files : [], paths)
+            }
+        }
+        list[i].selectContextCatalog := ""
         dirty := true
     }
     if (dirty)
         PromptData_Save(list)
 }
 
-; Clear mnemonic_stories catalog from prompts that are not story prompts.
-PromptData_MigrateStripInvalidStoryCatalog() {
-    global g_PromptEntries
-    list := g_PromptEntries
-    if (!IsObject(list))
-        return
-    dirty := false
-    for i, prompt in list {
-        if (PromptData_IsStoryPrompt(prompt))
-            continue
-        if (PromptData_SelectContextCatalog(prompt) = "")
-            continue
-        list[i].selectContextCatalog := ""
-        dirty := true
+PromptData_MergeContextPathLists(existingEntries, paths) {
+    out := PromptData_ParseContextEntries(existingEntries)
+    seen := Map()
+    for e in out {
+        p := StrLower(PromptData_ContextEntryPath(e))
+        if (p != "")
+            seen[p] := true
     }
-    if (dirty)
-        PromptData_Save(list)
+    for p in paths {
+        abs := PromptData_ResolveContextPath(p)
+        stored := PromptData_ToStoredPath(abs != "" ? abs : p)
+        key := StrLower(stored)
+        if (key = "" || seen.Has(key))
+            continue
+        seen[key] := true
+        out.Push(PromptData_NewContextEntry(stored))
+    }
+    return out
 }
 
 PromptData_Save(list) {
