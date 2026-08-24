@@ -700,6 +700,14 @@ class D2C_FlowManager {
             }
             if (!this.GeminiHwnd)
                 this.GeminiHwnd := WinExist("A")
+            if (presetMode = "finance_daily") {
+                try StandardLoadingBar_Show("⏳ Attaching finance context…", BANNER_ACCENT_INTERMEDIATE, {
+                    passive: false,
+                    centerOnHwnd: this.GeminiHwnd
+                })
+                catch {
+                }
+            }
             UtilitySelector_AttachPromptContextFiles(registryPrompt)
             if (optionalSnippet != "")
                 InsertText(optionalSnippet)
@@ -721,10 +729,22 @@ class D2C_FlowManager {
 
         if (autoSubmit) {
             if (presetMode = "finance_daily") {
-                try ShowCenteredOverlay_Utils("⏳ Waiting for context files…", 2500, BANNER_ACCENT_INTERMEDIATE)
+                try StandardLoadingBar_Update("⏳ Waiting for context files…", BANNER_ACCENT_INTERMEDIATE)
+                catch {
+                    try StandardLoadingBar_Show("⏳ Waiting for context files…", BANNER_ACCENT_INTERMEDIATE, {
+                        passive: false,
+                        centerOnHwnd: this.GeminiHwnd
+                    })
+                    catch {
+                    }
+                }
+                ready := false
+                try ready := PromptContext_WaitForSendReady(this.GeminiHwnd, this.CompanionId, 45000)
                 catch {
                 }
-                ready := PromptContext_WaitForSendReady(this.GeminiHwnd, this.CompanionId, 45000)
+                try StandardLoadingBar_Hide(0)
+                catch {
+                }
                 if (!ready) {
                     try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
                     catch {
@@ -765,7 +785,7 @@ class D2C_FlowManager {
                 ; Send-only: leave companion generating; user downloads/imports manually.
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
-                try ShowCenteredOverlay_Utils("✓ Finance daily sent — finish manually", 2200, BANNER_ACCENT_SUCCESS)
+                try ShowCenteredOverlay_Utils("✅ Finance daily sent — finish manually", 2200, BANNER_ACCENT_SUCCESS)
                 catch {
                 }
                 global g_D2C_DictationSubmitMenuCycleFinished
