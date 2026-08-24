@@ -1,0 +1,36 @@
+﻿===PREVIEW===
+Mode REMOVE · STUDY_PIANO · 1 palaces · 5 beasts · 5 atoms
+Changes: Removed Arachne, dragon, eagle, goat. Kept bird of paradise, cat, frog, hydra, imp. Re-pegged to Al-Ap to continue from Palace 10 in the existing file. Added uppercase vs lowercase nuance to the final atom.
+
+PALACE 11 - Clefs and Note Placement (Claude Monet) [PALACE_PIANO_11]
+  [Al] alligator - Concept: Bass F sits on the second line from the top and acts as a symmetrical mirror image... | Quote: "Treble G is up this far..." | Story: Claude Monet watches an enormous alligator balance vertically... | Sensory: visual 👁️
+  [Am] amulet - Concept: Middle C for the left hand is drawn with a downward stem... | Quote: "So I can draw this middle C..." | Story: A heavy, cursed amulet floats above a drawn bass staff... | Sensory: visual 👁️
+  [An] angel - Concept: Moving to an adjacent white key on the piano means stepping between... | Quote: "when we play on the piano we move..." | Story: A skyscraper-sized angel lands on the street and physically hops... | Sensory: tactile ✋
+  [Ao] aoudad - Concept: Treble F is located in the first space at the very bottom... | Quote: "this note is now in space one..." | Story: Claude Monet tries to paint a wild aoudad that violently rams... | Sensory: visual 👁️
+  [Ap] ape - Concept: Musical note names must be written in uppercase letters because lowercase letters represent... | Quote: "now whenever we write the names of notes in music..." | Story: A silver-backed ape goes berserk and furiously crushes small lowercase... | Sensory: visual 👁️
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_PIANO_11,STUDY_PIANO,11,Clefs and Note Placement,Claude Monet,,5,"Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_PIANO_Al,PALACE_PIANO_11,Al,alligator,Lynne Kelly,visual 👁️,0,1
+BEAST_PIANO_Am,PALACE_PIANO_11,Am,amulet,Lynne Kelly,visual 👁️,0,2
+BEAST_PIANO_An,PALACE_PIANO_11,An,angel,Lynne Kelly,tactile ✋,0,3
+BEAST_PIANO_Ao,PALACE_PIANO_11,Ao,aoudad,Lynne Kelly,visual 👁️,0,4
+BEAST_PIANO_Ap,PALACE_PIANO_11,Ap,ape,Lynne Kelly,visual 👁️,0,5
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_PIANO_Al,single,,,Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.,"Treble G is up this far and bass F is down this far So they're like mirrors of each other","Claude Monet watches an enormous alligator balance vertically on its tail upon a middle C piano key. The alligator holds a massive, ornate mirror in its jaws that perfectly reflects a glowing F note sinking downwards while a corresponding G note floats symmetrically upwards.",visual 👁️,,1
+,BEAST_PIANO_Am,single,,,Middle C for the left hand is drawn with a downward stem on a ledger line above the bass staff.,"So I can draw this middle C also for my left hand just by drawing a ledger line above the bass staff","A heavy, cursed amulet floats above a drawn bass staff, radiating dark energy. Claude Monet touches the amulet, causing it to shoot a thick, physical downward laser beam that scorches a perfectly straight ledger line right into the pavement for his left hand to play.",visual 👁️,,1
+,BEAST_PIANO_An,single,,,Moving to an adjacent white key on the piano means stepping between a line note and a space note on the musical staff.,"when we play on the piano we move between line notes and space notes line space line space line space","A skyscraper-sized angel lands on the street and physically hops between the painted street lines and the open concrete spaces between them. With every leap, the angel's bare feet feel the alternating textures of rough paint and smooth stone, echoing the movement between adjacent white piano keys.",tactile ✋,,1
+,BEAST_PIANO_Ao,single,,,Treble F is located in the first space at the very bottom of the treble staff, directly below the Treble G line.,"this note is now in space one which is the space below the g line this note is f","Claude Monet tries to paint a wild aoudad that violently rams its curved horns into the lowest gap of a floating musical staff. The beast completely submerges its head into a deep puddle in that first bottom space, surfacing with a sunken block shaped exactly like an F.",visual 👁️,,1
+,BEAST_PIANO_Ap,single,,,Musical note names must be written in uppercase letters because lowercase letters represent different concepts in music theory notation.,"now whenever we write the names of notes in music we always use capital letters because uh if we use lowercase letters that actually means something slightly different in music","A silver-backed ape goes berserk and furiously crushes small lowercase letter blocks into fine powder, roaring that they belong to a completely different musical language. Claude Monet hands the ape massive, heavy uppercase letter blocks instead, which the beast proudly stacks into a towering monument.",visual 👁️,,1
+===END_FILE===

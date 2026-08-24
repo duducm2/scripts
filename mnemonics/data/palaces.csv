@@ -1,4 +1,4 @@
-id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+﻿id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
 PALACE_AI_01,STUDY_AI,1,Foundations & Semantic Interoperability,(unassigned palace 1),practice/images/AI/1.png,3,
 PALACE_AI_02,STUDY_AI,2,The Semantic Layer & RAG Structure,Ada Lovelace,practice/images/AI/2.png,5,
 PALACE_AI_03,STUDY_AI,3,AI Pricing & Elo Mechanics,Michael Jackson,practice/images/AI/3.jpg,1,
@@ -73,3 +73,4 @@ PALACE_VIOLIN_01,STUDY_VIOLIN,1,Origens do Violino,Johann Sebastian Bach,practic
 PALACE_GERMAN_09,STUDY_GERMAN,9,Simple and Complex Sound Foundations,(unassigned palace 9),practice/images/german/9.png,4,
 PALACE_GERMAN_10,STUDY_GERMAN,10,Formants and Resonance,(unassigned palace 10),practice/images/german/10.png,5,
 PALACE_GERMAN_11,STUDY_GERMAN,11,The German Alphabet,(unassigned palace 11),practice/images/german/11.png,1,
+PALACE_PIANO_11,STUDY_PIANO,11,Clefs and Note Placement,Claude Monet,practice/images/piano/11.png,5,"Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby."

@@ -1,6 +1,93 @@
 # Piano
 
 <details open>
+<summary><strong>Memory Palace 11: Clefs and Note Placement</strong> · Character: Claude Monet · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 11](images/piano/11.png)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+**🖼️ Image prompt**
+
+```
+Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby.
+```
+
+#### Knowledge Atoms
+
+### 🟧 [Al] alligator
+
+**Concept**
+💡 Bass F sits on the second line from the top and acts as a symmetrical mirror image to Treble G around Middle C.
+
+**Quote**
+“Treble G is up this far and bass F is down this far So they're like mirrors of each other”
+
+**Story**
+Claude Monet watches an enormous alligator balance vertically on its tail upon a middle C piano key. The alligator holds a massive, ornate mirror in its jaws that perfectly reflects a glowing F note sinking downwards while a corresponding G note floats symmetrically upwards.
+
+**Sensory**
+visual 👁️
+
+### 🟧 [Am] amulet
+
+**Concept**
+💡 Middle C for the left hand is drawn with a downward stem on a ledger line above the bass staff.
+
+**Quote**
+“So I can draw this middle C also for my left hand just by drawing a ledger line above the bass staff”
+
+**Story**
+A heavy, cursed amulet floats above a drawn bass staff, radiating dark energy. Claude Monet touches the amulet, causing it to shoot a thick, physical downward laser beam that scorches a perfectly straight ledger line right into the pavement for his left hand to play.
+
+**Sensory**
+visual 👁️
+
+### 🟧 [An] angel
+
+**Concept**
+💡 Moving to an adjacent white key on the piano means stepping between a line note and a space note on the musical staff.
+
+**Quote**
+“when we play on the piano we move between line notes and space notes line space line space line space”
+
+**Story**
+A skyscraper-sized angel lands on the street and physically hops between the painted street lines and the open concrete spaces between them. With every leap, the angel's bare feet feel the alternating textures of rough paint and smooth stone, echoing the movement between adjacent white piano keys.
+
+**Sensory**
+tactile ✋
+
+### 🟧 [Ao] aoudad
+
+**Concept**
+💡 Treble F is located in the first space at the very bottom of the treble staff
+
+**Quote**
+“directly below the Treble G line.”
+
+**Story**
+this note is now in space one which is the space below the g line this note is f
+
+**Sensory**
+Claude Monet tries to paint a wild aoudad that violently rams its curved horns into the lowest gap of a floating musical staff. The beast completely submerges its head into a deep puddle in that first bottom space, surfacing with a sunken block shaped exactly like an F.
+
+### 🟧 [Ap] ape
+
+**Concept**
+💡 Musical note names must be written in uppercase letters because lowercase letters represent different concepts in music theory notation.
+
+**Quote**
+“now whenever we write the names of notes in music we always use capital letters because uh if we use lowercase letters that actually means something slightly different in music”
+
+**Story**
+A silver-backed ape goes berserk and furiously crushes small lowercase letter blocks into fine powder, roaring that they belong to a completely different musical language. Claude Monet hands the ape massive, heavy uppercase letter blocks instead, which the beast proudly stacks into a towering monument.
+
+**Sensory**
+visual 👁️
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 10: Reading and Hand Posture</strong> · Character: Elvis Presley · 2 beasts · 2 atoms</summary>
 
 ![Memory Palace 10](images/piano/10.jpg)
