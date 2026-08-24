@@ -231,11 +231,17 @@ PromptContextPicker_ShowPool(items) {
     lv.ModifyCol(1, 140)
     lv.ModifyCol(2, 240)
     lv.ModifyCol(3, 160)
+    ; GetNext(..., "Checked") starts BELOW StartingRow — use row-1 to test this row.
+    RowIsChecked(row) {
+        return row > 0 && lv.GetNext(row - 1, "Checked") = row
+    }
     ToggleRow(*) {
         row := lv.GetNext(0, "Focused")
         if (!row)
+            row := lv.GetNext(0, "Selected")
+        if (!row)
             return
-        if (lv.GetNext(row, "Checked"))
+        if (RowIsChecked(row))
             lv.Modify(row, "-Check")
         else
             lv.Modify(row, "Check")
@@ -260,21 +266,37 @@ PromptContextPicker_ShowPool(items) {
         result := false
         g.Destroy()
     }
-    g.Add("Button", "x12 y364 w100 Default", "Attach").OnEvent("Click", PickOk)
+    ; No Default on Attach — Space must toggle checks, not activate Attach (Enter still works via hotkey).
+    g.Add("Button", "x12 y364 w100", "Attach").OnEvent("Click", PickOk)
     g.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PickCancel)
     g.OnEvent("Close", PickCancel)
     g.OnEvent("Escape", PickCancel)
     lv.OnEvent("DoubleClick", ToggleRow)
-    HotIf (*) => WinActive("ahk_id " g.Hwnd)
-    Hotkey "Space", ToggleRow, "On"
+    HotIfWinActive("ahk_id " g.Hwnd)
+    try Hotkey("Space", ToggleRow, "On")
+    catch {
+    }
+    try Hotkey("Enter", PickOk, "On")
+    catch {
+    }
     g.Show()
+    try {
+        lv.Focus()
+        if (rowPaths.Length > 0)
+            lv.Modify(1, "Select Focus Vis")
+    } catch {
+    }
     try WinWaitClose("ahk_id " g.Hwnd)
     catch {
     }
-    try {
-        Hotkey "Space", "Off"
-        HotIf()
-    } catch {
+    try Hotkey("Space", "Off")
+    catch {
+    }
+    try Hotkey("Enter", "Off")
+    catch {
+    }
+    try HotIf()
+    catch {
     }
     return result
 }
