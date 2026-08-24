@@ -45,15 +45,44 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     ClipAngel_ReleaseChordModifiersForSend()
 
     if !isHold {
-        if !ActivateClipAngelWithFocusCorrection(true) {
-            ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+        if !ClipAngel_TryAcquireAutomationLock()
             return
+        hideMs := 350
+        StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
+        try {
+            if !ActivateClipAngelWithFocusCorrection(true) {
+                StandardLoadingBar_Update("❌ Clip Angel is not running.", BANNER_ACCENT_ERROR)
+                hideMs := 2000
+                return
+            }
+            hwnd := ClipAngel_MainHwnd()
+            if !hwnd {
+                StandardLoadingBar_Update("❌ Clip Angel window not found.", BANNER_ACCENT_ERROR)
+                hideMs := 2000
+                return
+            }
+            if !ClipAngel_EnsureWindowActive(hwnd) {
+                StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
+                hideMs := 2000
+                return
+            }
+            if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
+                StandardLoadingBar_Update("❌ Clip Angel: list not ready", BANNER_ACCENT_ERROR)
+                hideMs := 2000
+                return
+            }
+            if !WinActive("ahk_id " hwnd) {
+                StandardLoadingBar_Update("❌ Clip Angel: lost focus before Edit", BANNER_ACCENT_ERROR)
+                hideMs := 2000
+                return
+            }
+            StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
+            SendInput "{F4}"
+            StandardLoadingBar_Update("✅ Clip Angel: Edit", BANNER_ACCENT_SUCCESS)
+        } finally {
+            StandardLoadingBar_Hide(hideMs)
+            ClipAngel_ReleaseAutomationLock()
         }
-        if !ClipAngel_MainHwnd() {
-            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        SendInput "{F4}"
         return
     }
 
