@@ -605,7 +605,11 @@ Excel_SaveCsvUtf8FromClipboardPath() {
     Sleep 200
     FileDialog_FocusFileNameField()
     Sleep 50
-    Send "^v"
+    saveName := FileDialog_NormalizeCsvSaveName(A_Clipboard)
+    if (saveName != "")
+        SendText(saveName)
+    else
+        Send "^v"
     Sleep 300
     try StandardLoadingBar_Update("⏳ Saving CSV UTF-8…", BANNER_ACCENT_INTERMEDIATE)
     catch {

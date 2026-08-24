@@ -143,24 +143,25 @@ FileDialog_FocusAddressBar() {
     return false
 }
 
-FileDialog_FocusFileNameField() {
+FileDialog_FindFileNameEdit(root := 0) {
+    if !root {
+        try root := UIA.ElementFromHandle(WinExist("A"))
+        catch {
+            return 0
+        }
+    }
     try {
-        root := UIA.ElementFromHandle(WinExist("A"))
-
-        ; First attempt: Find by AutomationId and Type (most reliable)
         fileNameEdit := root.FindFirst({ Type: "Edit", AutomationId: "1148" })
-
-        ; Second attempt: Try various possible names
         if !fileNameEdit {
             possibleNames := [
-                "File name:",      ; English standard
-                "Nome:",          ; Portuguese standard
-                "Filename:",      ; Alternative English
-                "File Name:",     ; Alternative capitalization
-                "Name:",          ; Generic English
-                "Nome do arquivo:", ; Full Portuguese
-                "Save As:",       ; Save dialog English
-                "Salvar como:"    ; Save dialog Portuguese
+                "File name:",
+                "Nome:",
+                "Filename:",
+                "File Name:",
+                "Name:",
+                "Nome do arquivo:",
+                "Save As:",
+                "Salvar como:"
             ]
             for name in possibleNames {
                 fileNameEdit := root.FindFirst({ Type: "Edit", Name: name })
@@ -168,15 +169,21 @@ FileDialog_FocusFileNameField() {
                     break
             }
         }
-
-        ; Third attempt: Try to find through parent ComboBox
         if !fileNameEdit {
             fileNameCombo := root.FindFirst({ Type: "ComboBox", AutomationId: "1148" })
             if fileNameCombo {
                 fileNameEdit := fileNameCombo.FindFirst({ Type: "Edit" })
             }
         }
+        return fileNameEdit ? fileNameEdit : 0
+    } catch {
+        return 0
+    }
+}
 
+FileDialog_FocusFileNameField() {
+    try {
+        fileNameEdit := FileDialog_FindFileNameEdit()
         if fileNameEdit {
             fileNameEdit.SetFocus()
             Sleep 50
@@ -769,6 +776,58 @@ FileDialog_HandlePostSaveDialogs() {
     }
 }
 
+; Strip quotes and collapse ".csv.csv" so Save as type CSV cannot produce
+; `"path\file.csv".csv` (Windows appends .csv when quotes hide the real extension).
+FileDialog_NormalizeCsvSaveName(raw) {
+    name := Trim(raw)
+    if (name = "")
+        return ""
+    name := StrReplace(name, '"')
+    name := Trim(name)
+    while RegExMatch(name, "i)\.csv\.csv$")
+        name := RegExReplace(name, "i)\.csv$", "")
+    return name
+}
+
+FileDialog_ReadFileNameField(root) {
+    el := FileDialog_FindFileNameEdit(root)
+    if !el
+        return ""
+    val := ""
+    try val := el.Value
+    catch {
+    }
+    return Trim(val)
+}
+
+FileDialog_WriteFileNameField(root, name) {
+    if (name = "")
+        return false
+    el := FileDialog_FindFileNameEdit(root)
+    if el {
+        try {
+            el.Value := name
+            return true
+        } catch {
+        }
+    }
+    FileDialog_FocusFileNameField()
+    Sleep 50
+    SendText(name)
+    return true
+}
+
+; After CSV UTF-8 is selected, rewrite the file name if quoted or double-extended.
+FileDialog_EnsureCsvSaveNameIsValid(root) {
+    raw := FileDialog_ReadFileNameField(root)
+    if (raw = "")
+        return true
+    clean := FileDialog_NormalizeCsvSaveName(raw)
+    if (clean = "" || clean = raw)
+        return true
+    return FileDialog_WriteFileNameField(root, clean)
+}
+
 FileDialog_SaveAsCsvUtf8() {
     hwnd := WinExist("A")
     if !hwnd
@@ -783,6 +842,8 @@ FileDialog_SaveAsCsvUtf8() {
             return
 
         Sleep 80
+        FileDialog_EnsureCsvSaveNameIsValid(root)
+        Sleep 50
         FileDialog_ClickSaveButton(root)
         Sleep 200
         FileDialog_HandlePostSaveDialogs()
