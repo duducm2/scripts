@@ -42,3 +42,6 @@ TX044,2026-08-23,Skincare moisturizer,"100,00",expense,CAT_MERCADO,Personal care
 TX045,2026-08-23,Coffee grinding machine,"200,00",expense,CAT_MATERIAI,Home,ACC_MERCADOP,,
 TX046,2026-08-23,Groceries,"214,89",expense,CAT_MERCADO,Food items,ACC_MERCADOP,,
 TX047,2026-08-23,MagSafe phone holders,"378,72",expense,CAT_CELULAR,,ACC_MERCADOP,,
+TX048,2026-08-23,Phone screen protector,"20,00",expense,CAT_CELULAR,,ACC_MERCADOP,,
+TX049,2026-08-23,Lunch,"36,00",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+TX050,2026-08-23,Sunscreen,"16,50",expense,CAT_MERCADO,Personal care,ACC_MERCADOP,,

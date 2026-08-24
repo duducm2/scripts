@@ -1,0 +1,9 @@
+===PREVIEW===
+3 row(s) · phone screen protector, lunch, sunscreen
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+"Phone screen protector","20,00",expense,CAT_CELULAR,,ACC_MERCADOP,,
+"Lunch","36,00",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+"Sunscreen","16,50",expense,CAT_MERCADO,Personal care,ACC_MERCADOP,,
+===END_FILE===
