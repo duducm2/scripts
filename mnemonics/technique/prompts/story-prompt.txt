@@ -123,7 +123,7 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 
 Rules:
 - Prefer `id` like `PALACE_<STUDY_SLUG>_<NN>` (e.g. `PALACE_VIOLIN_01`). Leave empty only if the importer must assign.
-- `palace_number` — integer within the study (1, 2, …), continuing after attached existing palaces.
+- `palace_number` — optional integer within the study (1, 2, …). Leave empty to let the importer assign the next free index. Prefer a stable `id` and a clear `title` (title is the human identifier).
 - `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached palaces + new rows).
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
 - `depth_slots_used` — 0–5 (beast count / depth slots for that palace).

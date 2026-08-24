@@ -162,8 +162,13 @@ Palace_PalaceForm(existing) {
     Palace_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit Memory Palace" : "Add Memory Palace")
     g.SetFont("s10", "Segoe UI")
-    g.Add("Text", , "Palace number")
-    eNum := g.Add("Edit", "w80", isEdit ? existing["palace_number"] : "")
+    if (isEdit) {
+        g.Add("Text", , "Palace number (assigned)")
+        eNum := g.Add("Edit", "w80 ReadOnly", existing["palace_number"])
+    } else {
+        g.Add("Text", "c808080", "Palace number is assigned automatically on save.")
+        eNum := false
+    }
     g.Add("Text", "y+8", "Title")
     eTitle := g.Add("Edit", "w360", isEdit ? existing["title"] : "")
     g.Add("Text", "y+8", "Character (from characters.json)")
@@ -192,12 +197,11 @@ Palace_PalaceForm(existing) {
         Palace_PalaceRefresh()
 
     SavePalace(*) {
-        num := Trim(eNum.Value)
         title := Trim(eTitle.Value)
         charName := Trim(eChar.Value)
         img := Trim(eImg.Value)
-        if (num = "" || title = "") {
-            Palace_Alert("Palace number and title are required.", "Palaces")
+        if (title = "") {
+            Palace_Alert("Title is required.", "Palaces")
             return
         }
         if (charName = "") {
@@ -212,14 +216,20 @@ Palace_PalaceForm(existing) {
                 return
             }
         }
-        pad := Format("{:02d}", Integer(num))
-        id := isEdit ? existing["id"] : "PALACE_" . Palace_Slug(studyId) . "_" . pad
-        if (!isEdit && Palace_IdExists(palaces, id))
-            id := Palace_SlugId("PALACE_", studyId . "_" . num, palaces)
+        if (isEdit) {
+            num := existing["palace_number"]
+            id := existing["id"]
+        } else {
+            num := Palace_NextPalaceNumber(palaces, studyId)
+            pad := Format("{:02d}", Integer(num))
+            id := "PALACE_" . Palace_Slug(studyId) . "_" . pad
+            if (Palace_IdExists(palaces, id))
+                id := Palace_SlugId("PALACE_", studyId . "_" . num, palaces)
+        }
         row := Map(
             "id", id,
             "study_id", studyId,
-            "palace_number", num,
+            "palace_number", String(num),
             "title", title,
             "character_name", charName,
             "image_rel_path", img,

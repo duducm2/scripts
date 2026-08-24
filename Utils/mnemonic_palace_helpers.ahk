@@ -16,9 +16,10 @@ Palace_Terms() {
             "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. Main menu [L] or Browse [L] opens Plans. Enter opens the next level; Backspace goes up."],
         ["Study",
             "A broad subject domain (e.g. English, German, science, piano). Contains Memory Palaces and one Study Plan."],
+        ["Memory Palace",
+            "A location with exactly one generated image. Numbered within its Study (auto-assigned on add/import when omitted)."],
         ["Study Plan",
-            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Main menu [J] imports Desktop PLAN_PACK; [I] is mnemonic packs only; [L] browses plans."],
-        ["Memory Palace", "A location with exactly one generated image. Numbered within its Study."],
+            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Main menu [J] imports Desktop PLAN_PACK; [I] imports mnemonic PALACE_PACK .txt|.csv (auto palace numbers); [L] browses plans."],
         ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
         ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],
         ["Knowledge Atom",
@@ -373,6 +374,47 @@ Palace_FindById(rows, id) {
 Palace_IdExists(rows, id) {
     for row in rows {
         if (row.Has("id") && row["id"] = id)
+            return true
+    }
+    return false
+}
+
+Palace_NextPalaceNumber(palaces, studyId) {
+    maxNum := 0
+    for p in palaces {
+        if (p.Has("study_id") && p["study_id"] != studyId)
+            continue
+        try {
+            n := Integer(p.Has("palace_number") ? p["palace_number"] : 0)
+            if (n > maxNum)
+                maxNum := n
+        } catch {
+        }
+    }
+    return maxNum + 1
+}
+
+Palace_FindPalaceByTitle(palaces, studyId, title) {
+    needle := StrLower(Trim(title))
+    if (needle = "")
+        return false
+    for p in palaces {
+        if (p.Has("study_id") && p["study_id"] != studyId)
+            continue
+        if (StrLower(Trim(p.Has("title") ? p["title"] : "")) = needle)
+            return p
+    }
+    return false
+}
+
+Palace_PalaceNumberInUse(palaces, studyId, num, exceptId := "") {
+    want := String(num)
+    for p in palaces {
+        if (p.Has("study_id") && p["study_id"] != studyId)
+            continue
+        if (exceptId != "" && p.Has("id") && p["id"] = exceptId)
+            continue
+        if (String(p.Has("palace_number") ? p["palace_number"] : "") = want)
             return true
     }
     return false

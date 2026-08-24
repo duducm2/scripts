@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_import.ahk
-; Import AI-generated PALACE_*.csv pack from Desktop + quick image attach
+; Import AI-generated PALACE_PACK / PALACE_*.txt|.csv from Desktop + quick image attach
 ; =============================================================================
 
 Palace_DesktopNewest(pattern) {
@@ -17,10 +17,18 @@ Palace_DesktopNewest(pattern) {
 }
 
 Palace_DesktopNewestCsvOrTxt(baseName) {
-    path := Palace_DesktopNewest(baseName . "*.csv")
-    if (path = "")
-        path := Palace_DesktopNewest(baseName . "*.txt")
-    return path
+    newest := ""
+    newestTime := 0
+    for ext in ["csv", "txt"] {
+        loop files A_Desktop . "\" . baseName . "*." . ext, "F" {
+            ts := Number(A_LoopFileTimeModified)
+            if (ts > newestTime) {
+                newestTime := ts
+                newest := A_LoopFileFullPath
+            }
+        }
+    }
+    return newest
 }
 
 Palace_DesktopNewestImage() {
@@ -109,6 +117,70 @@ Palace_NormalizePalaceImportRow(r) {
     if (!r.Has("image_prompt"))
         r["image_prompt"] := ""
     return r
+}
+
+; Resolve import row. On create, pushes a stub onto palaces so later rows get the next number.
+Palace_ResolvePalaceImportRow(r, studies, &palaces) {
+    r := Palace_NormalizePalaceImportRow(r)
+    studyId := r.Has("study_id") ? Trim(r["study_id"]) : ""
+    if (studyId = "" || !Palace_FindById(studies, studyId))
+        return Map("ok", false, "skip", "unknown study_id " . studyId)
+    titleP := r.Has("title") ? Trim(r["title"]) : ""
+    if (titleP = "")
+        return Map("ok", false, "skip", "missing title")
+
+    packId := r.Has("id") ? Trim(r["id"]) : ""
+    if (SubStr(packId, 1, 7) = "STREET_")
+        packId := "PALACE_" . SubStr(packId, 8)
+
+    existing := false
+    if (packId != "")
+        existing := Palace_FindById(palaces, packId)
+    if (!IsObject(existing))
+        existing := Palace_FindPalaceByTitle(palaces, studyId, titleP)
+
+    num := ""
+    id := ""
+    if (IsObject(existing)) {
+        num := String(existing["palace_number"])
+        id := existing["id"]
+    } else {
+        packNum := r.Has("palace_number") ? Trim(r["palace_number"]) : ""
+        usePackNum := false
+        if (packNum != "") {
+            try {
+                Integer(packNum)
+                if (!Palace_PalaceNumberInUse(palaces, studyId, packNum, packId))
+                    usePackNum := true
+            } catch {
+            }
+        }
+        if (usePackNum)
+            num := String(Integer(packNum))
+        else
+            num := String(Palace_NextPalaceNumber(palaces, studyId))
+        pad := Format("{:02d}", Integer(num))
+        if (packId != "" && !Palace_IdExists(palaces, packId))
+            id := packId
+        else
+            id := "PALACE_" . Palace_Slug(studyId) . "_" . pad
+        if (Palace_IdExists(palaces, id))
+            id := Palace_SlugId("PALACE_", studyId . "_" . num, palaces)
+        palaces.Push(Map(
+            "id", id,
+            "study_id", studyId,
+            "palace_number", num,
+            "title", titleP,
+            "character_name", "",
+            "image_rel_path", "",
+            "depth_slots_used", "0",
+            "image_prompt", "",
+            "_import_stub", "1"
+        ))
+        existing := false
+    }
+    return Map("ok", true, "skip", "", "studyId", studyId, "title", titleP, "num", num, "id", id,
+        "existing", existing, "row", r)
 }
 
 Palace_NormalizeBeastImportRow(r) {
@@ -296,7 +368,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
         pathPack := Palace_DesktopNewestPackPath()
         if (pathPack = "") {
-            Palace_Notify("No PALACE_PACK / PALACE_*.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
+            Palace_Notify("No PALACE_PACK / PALACE_*.txt|.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
             Palace_ShowMainMenu()
             return false
         }
@@ -335,12 +407,17 @@ Palace_ImportMnemonicsFromDesktop(*) {
             labels.Push(line)
         labels.Push("--- Import rows ---")
     }
+    studiesPreview := Palace_Load("studies")
+    palacesPreview := Palace_Load("palaces")
     if (palaceRows.Length) {
         labels.Push("--- Palaces (" . palaceRows.Length . ") ---")
         for r in palaceRows {
-            r := Palace_NormalizePalaceImportRow(r)
-            labels.Push("Memory Palace " . (r.Has("palace_number") ? r["palace_number"] : "?")
-            . ": " . (r.Has("title") ? r["title"] : ""))
+            resolved := Palace_ResolvePalaceImportRow(r, studiesPreview, &palacesPreview)
+            if (!resolved["ok"]) {
+                labels.Push("Skip: " . resolved["skip"])
+                continue
+            }
+            labels.Push("Memory Palace " . resolved["num"] . ": " . resolved["title"])
         }
     }
     if (beastRows.Length) {
@@ -382,39 +459,29 @@ Palace_ImportMnemonicsFromDesktop(*) {
     beastIdRemap := Map()
     syncStudyIds := Map()
 
-    ; --- Palaces: upsert by id ---
+    ; --- Palaces: upsert by id / title; auto-assign palace_number when needed ---
     for r in palaceRows {
-        r := Palace_NormalizePalaceImportRow(r)
-        studyId := r.Has("study_id") ? Trim(r["study_id"]) : ""
-        if (studyId = "" || !Palace_FindById(studies, studyId)) {
-            Palace_Notify("Skip palace: unknown study_id " . studyId, 2200, BANNER_ACCENT_ERROR)
+        resolved := Palace_ResolvePalaceImportRow(r, studies, &palaces)
+        if (!resolved["ok"]) {
+            Palace_Notify("Skip palace: " . resolved["skip"], 2200, BANNER_ACCENT_ERROR)
             continue
         }
-        num := r.Has("palace_number") ? Trim(r["palace_number"]) : ""
-        titleP := r.Has("title") ? Trim(r["title"]) : ""
-        if (num = "" || titleP = "")
-            continue
-        try
-            pad := Format("{:02d}", Integer(num))
-        catch {
-            Palace_Notify("Skip palace: bad palace_number " . num, 2200, BANNER_ACCENT_ERROR)
-            continue
-        }
-        id := r.Has("id") && Trim(r["id"]) != "" ? Trim(r["id"])
-            : "PALACE_" . Palace_Slug(studyId) . "_" . pad
-        if (SubStr(id, 1, 7) = "STREET_")
-            id := "PALACE_" . SubStr(id, 8)
-        img := r.Has("image_rel_path") ? Trim(r["image_rel_path"]) : ""
-        promptIn := r.Has("image_prompt") ? Trim(r["image_prompt"]) : ""
-        existing := Palace_FindById(palaces, id)
+        studyId := resolved["studyId"]
+        titleP := resolved["title"]
+        num := resolved["num"]
+        id := resolved["id"]
+        rowIn := resolved["row"]
+        img := rowIn.Has("image_rel_path") ? Trim(rowIn["image_rel_path"]) : ""
+        promptIn := rowIn.Has("image_prompt") ? Trim(rowIn["image_prompt"]) : ""
+        existing := resolved["existing"]
         if (IsObject(existing)) {
             existing["study_id"] := studyId
             existing["palace_number"] := num
             existing["title"] := titleP
-            if (r.Has("character_name") && Trim(r["character_name"]) != "")
-                existing["character_name"] := r["character_name"]
-            if (r.Has("depth_slots_used") && Trim(r["depth_slots_used"]) != "")
-                existing["depth_slots_used"] := r["depth_slots_used"]
+            if (rowIn.Has("character_name") && Trim(rowIn["character_name"]) != "")
+                existing["character_name"] := rowIn["character_name"]
+            if (rowIn.Has("depth_slots_used") && Trim(rowIn["depth_slots_used"]) != "")
+                existing["depth_slots_used"] := rowIn["depth_slots_used"]
             if (promptIn != "")
                 existing["image_prompt"] := promptIn
             if (img != "")
@@ -422,20 +489,43 @@ Palace_ImportMnemonicsFromDesktop(*) {
             syncStudyIds[studyId] := true
             nPalaces += 1
         } else {
-            palaces.Push(Map(
-                "id", id,
-                "study_id", studyId,
-                "palace_number", num,
-                "title", titleP,
-                "character_name", r.Has("character_name") ? r["character_name"] : "",
-                "image_rel_path", img,
-                "depth_slots_used", r.Has("depth_slots_used") ? r["depth_slots_used"] : "0",
-                "image_prompt", promptIn
-            ))
+            ; Stub already pushed by Resolve — fill real fields (or replace stub).
+            stub := Palace_FindById(palaces, id)
+            if (IsObject(stub)) {
+                stub["study_id"] := studyId
+                stub["palace_number"] := num
+                stub["title"] := titleP
+                stub["character_name"] := rowIn.Has("character_name") ? rowIn["character_name"] : ""
+                stub["image_rel_path"] := img
+                stub["depth_slots_used"] := rowIn.Has("depth_slots_used") ? rowIn["depth_slots_used"] : "0"
+                stub["image_prompt"] := promptIn
+                if (stub.Has("_import_stub"))
+                    stub.Delete("_import_stub")
+            } else {
+                palaces.Push(Map(
+                    "id", id,
+                    "study_id", studyId,
+                    "palace_number", num,
+                    "title", titleP,
+                    "character_name", rowIn.Has("character_name") ? rowIn["character_name"] : "",
+                    "image_rel_path", img,
+                    "depth_slots_used", rowIn.Has("depth_slots_used") ? rowIn["depth_slots_used"] : "0",
+                    "image_prompt", promptIn
+                ))
+            }
             syncStudyIds[studyId] := true
             nPalaces += 1
         }
     }
+
+    ; Strip any leftover preview stubs (should not remain after create fill)
+    cleanedPalaces := []
+    for p in palaces {
+        if (p.Has("_import_stub"))
+            continue
+        cleanedPalaces.Push(p)
+    }
+    palaces := cleanedPalaces
 
     ; --- Beasts: wipe only palaces with at least one insertable row; remap colliding ids ---
     if (beastRows.Length) {

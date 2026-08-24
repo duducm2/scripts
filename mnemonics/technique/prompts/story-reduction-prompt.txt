@@ -94,7 +94,7 @@ Same headers and purity rules as story generation (prompt **4**). Put each body 
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
 ```
 
-- Preserve stable `id` values when palaces survive reduction; renumber `palace_number` if empty palaces are removed.
+- Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
 - Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character; no copyrighted names).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.

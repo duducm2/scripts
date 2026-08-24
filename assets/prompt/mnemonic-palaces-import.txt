@@ -11,10 +11,10 @@ You are producing a **strict CSV** for the Memory Palace importer (Memory Palace
 id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
 ```
 
-3. Save guidance for the user: Desktop file named `PALACE_PALACES.csv`.
+3. Save guidance for the user: Desktop file named `PALACE_PALACES.txt` (or `.csv`).
 4. Each row is one **Memory Palace** belonging to an existing `study_id`.
 5. Prefer `id` values like `PALACE_<STUDY_SLUG>_<NN>` (e.g. `PALACE_ENGLISH_01`). Leave `id` empty only if the importer should assign one.
-6. `palace_number` is an integer within the study (1, 2, …).
+6. `palace_number` may be left empty — the importer assigns the next free index in that study. If you supply a number, it must be an unused integer (1, 2, …). Prefer a clear `title` as the human identifier.
 7. `character_name` must be exactly one canon character (from attached characters.json when provided). One character per Memory Palace; do not reuse a character already used in the attached palaces slice for that study.
 8. `image_rel_path` is relative to the notes studies root (e.g. `english/images/1.png`).
 9. `depth_slots_used` is 0–5 (beast count / depth slots).
@@ -35,6 +35,6 @@ Expect attached: study `palaces.csv` / `studies` context, plus technique README 
 
 ---
 Reminders for humans:
-- After download, rename to PALACE_PALACES.csv on Desktop.
-- Open Utility Shortcuts → [N] Memory Palace → [I] → [3] to import.
-- Legacy Desktop name `PALACE_STREETS*.csv` is still accepted by the importer.
+- After download, save as `PALACE_PALACES.txt` (or `.csv`) on Desktop.
+- Open Utility Shortcuts → [N] Memory Palace → [I] to import.
+- Legacy Desktop name `PALACE_STREETS*.csv` / `.txt` is still accepted by the importer.

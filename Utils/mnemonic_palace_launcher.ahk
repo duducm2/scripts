@@ -42,7 +42,7 @@ Palace_ShowMainMenu() {
         ["D", "Dashboard", "Study picker and Memory Palace images"],
         ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
         ["L", "Plans", "Browse / edit study plan checklists (CSV)"],
-        ["I", "AI import", "Desktop PALACE_PACK / PALACE_*.csv (preview)"],
+        ["I", "AI import", "Desktop PALACE_PACK / PALACE_*.txt|.csv (preview)"],
         ["J", "Import plan", "Desktop PLAN_PACK only → sync output/plans"],
         ["Q", "Quick image", "Newest Desktop PNG/JPG → last palace"],
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
