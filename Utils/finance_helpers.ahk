@@ -616,6 +616,34 @@ Finance_AccName(accs, id) {
     return row ? row["name"] : id
 }
 
+Finance_NameOrUnknown(rows, id) {
+    if (id = "")
+        return ""
+    row := Finance_FindById(rows, id)
+    if (row && row.Has("name") && Trim(row["name"]) != "")
+        return row["name"]
+    return "Unknown"
+}
+
+; Human-readable account/card/transfer label for import preview and transaction list.
+Finance_ImportAccountLabel(row, accs, cards) {
+    t := row.Has("type") ? row["type"] : ""
+    if (t = "card_expense") {
+        cid := row.Has("card_id") ? row["card_id"] : ""
+        if (cid != "")
+            return Finance_NameOrUnknown(cards, cid)
+        return Finance_NameOrUnknown(accs, row.Has("account_id") ? row["account_id"] : "")
+    }
+    if (t = "transfer") {
+        src := Finance_NameOrUnknown(accs, row.Has("account_id") ? row["account_id"] : "")
+        dest := Finance_NameOrUnknown(accs, row.Has("transfer_account_id") ? row["transfer_account_id"] : "")
+        if (src != "" && dest != "")
+            return src . " → " . dest
+        return src != "" ? src : dest
+    }
+    return Finance_NameOrUnknown(accs, row.Has("account_id") ? row["account_id"] : "")
+}
+
 Finance_MainCategories(cats, type := "") {
     out := []
     for c in cats {

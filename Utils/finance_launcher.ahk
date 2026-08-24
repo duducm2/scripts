@@ -267,7 +267,7 @@ Finance_ShowImportMenu() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "AI import")
     g_FinanceGui.SetFont("s11", "Segoe UI")
     g_FinanceGui.Add("Text", "w520",
-        "Import FINANCE_*.txt packs from the Desktop (newest match). Extracts CSV from ===FILE=== sections. Also accepts legacy .csv and gemini-code*.txt dumps."
+        "Import FINANCE_*.txt packs from the Desktop (newest match). Converts the pack to CSV locally. Also accepts legacy .csv and gemini-code*.txt dumps."
     )
     g_FinanceGui.SetFont("s12 Bold", "Segoe UI")
     g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.txt")

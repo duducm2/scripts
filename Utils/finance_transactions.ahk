@@ -75,6 +75,7 @@ Finance_TxRefresh() {
     if (!IsObject(g_FinanceTxLv))
         return
     accs := Finance_Load("accounts")
+    cards := Finance_Load("credit_cards")
     cats := Finance_Load("categories")
     tot := Finance_MonthTotals(g_FinanceMonth)
     filtLabel := Map("all", "General", "expense", "Expenses", "income", "Incomes", "transfer", "Transfers")
@@ -97,12 +98,12 @@ Finance_TxRefresh() {
         cat := Finance_CatName(cats, tx["category_id"])
         if (tx["subcategory"] != "")
             cat .= " / " . Finance_SubcatLabel(cats, tx["category_id"], tx["subcategory"])
-        acc := Finance_AccName(accs, tx["account_id"])
+        acc := Finance_ImportAccountLabel(tx, accs, cards)
         g_FinanceTxLv.Add("", Finance_FormatBrl(Finance_ParseDecimal(tx["amount"])), acc, cat,
         tx["description"], tx["date"], Finance_TypeLabel(tx["type"]))
     }
     g_FinanceTxLv.ModifyCol(1, 110)
-    g_FinanceTxLv.ModifyCol(2, 160)
+    g_FinanceTxLv.ModifyCol(2, 200)
     g_FinanceTxLv.ModifyCol(3, 170)
     g_FinanceTxLv.ModifyCol(4, 220)
     g_FinanceTxLv.ModifyCol(5, 100)
