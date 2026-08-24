@@ -291,7 +291,12 @@ UtilitySelector_PromptFromEditorResult(result) {
         variables: result.HasProp("variables") ? result.variables : "",
         filePathDraft: result.HasProp("filePathDraft") ? result.filePathDraft : "",
         personal_context_files: result.personal_context_files,
-        work_context_files: result.work_context_files
+        work_context_files: result.work_context_files,
+        personal_selectable_context_files: result.HasProp("personal_selectable_context_files") ?
+            result.personal_selectable_context_files : [],
+        work_selectable_context_files: result.HasProp("work_selectable_context_files") ?
+            result.work_selectable_context_files : [],
+        selectContextCatalog: result.HasProp("selectContextCatalog") ? result.selectContextCatalog : ""
     }
 }
 
@@ -369,7 +374,7 @@ UtilitySelector_PopulateLv() {
                 continue
             g_UtilitySelectorRows.Push(prompt)
             g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt.name),
-            PromptData_DataOutputOutLabel(prompt), prompt.filePath)
+            PromptData_DataOutputOutLabel(prompt) . PromptData_SelectablePickerListSuffix(prompt), prompt.filePath)
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
         try g_HotstringSelectorLv.ModifyCol(2, 90)

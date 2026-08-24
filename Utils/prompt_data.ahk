@@ -373,6 +373,56 @@ PromptData_ContextFilesForCurrentEnv(prompt) {
     return paths
 }
 
+PromptData_ReadSelectableContextEntries(iniPath, section, prefix) {
+    paths := PromptData_ReadContextFilesKey(iniPath, section, prefix . "SelectableContextFiles")
+    out := []
+    for p in paths
+        out.Push(PromptData_NewContextEntry(p))
+    return out
+}
+
+PromptData_AppendSelectableContextLines(lines, prefix, entries) {
+    list := PromptData_ParseContextEntries(entries)
+    lines.Push(prefix . "SelectableContextFiles=" . PromptData_JoinContextPaths(list))
+}
+
+PromptData_SelectableContextEntriesForCurrentEnv(prompt) {
+    global IS_WORK_ENVIRONMENT
+    if (!IsObject(prompt))
+        return []
+    arr := []
+    if (IS_WORK_ENVIRONMENT)
+        arr := prompt.HasProp("work_selectable_context_files") ? prompt.work_selectable_context_files : []
+    else
+        arr := prompt.HasProp("personal_selectable_context_files") ? prompt.personal_selectable_context_files : []
+    return PromptData_ParseContextEntries(arr)
+}
+
+PromptData_IsStoryPrompt(prompt) {
+    if (!IsObject(prompt))
+        return false
+    fp := StrLower(StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\"))
+    return InStr(fp, "story-prompt.txt") || InStr(fp, "story-reduction-prompt.txt")
+}
+
+PromptData_EffectiveSelectContextCatalog(prompt) {
+    if (!PromptData_IsStoryPrompt(prompt))
+        return ""
+    return PromptData_SelectContextCatalog(prompt)
+}
+
+PromptData_PromptHasSelectablePicker(prompt) {
+    if (!IsObject(prompt))
+        return false
+    if (PromptData_SelectableContextEntriesForCurrentEnv(prompt).Length > 0)
+        return true
+    return PromptData_EffectiveSelectContextCatalog(prompt) != ""
+}
+
+PromptData_SelectablePickerListSuffix(prompt) {
+    return PromptData_PromptHasSelectablePicker(prompt) ? " +sel" : ""
+}
+
 PromptData_ReadUtf8(path) {
     ; RawRead + StrGet decodes 4-byte emoji correctly; FileOpen "UTF-8" can corrupt them.
     if (!FileExist(path))
@@ -671,6 +721,10 @@ PromptData_NormalizeEntry(prompt) {
         prompt.personal_context_files : [])
     prompt.work_context_files := PromptData_ParseContextEntries(prompt.HasProp("work_context_files") ?
         prompt.work_context_files : [])
+    prompt.personal_selectable_context_files := PromptData_ParseContextEntries(prompt.HasProp(
+        "personal_selectable_context_files") ? prompt.personal_selectable_context_files : [])
+    prompt.work_selectable_context_files := PromptData_ParseContextEntries(prompt.HasProp(
+        "work_selectable_context_files") ? prompt.work_selectable_context_files : [])
     prompt.selectContextCatalog := PromptData_NormalizeSelectContextCatalog(prompt.HasProp("selectContextCatalog") ?
         prompt.selectContextCatalog : "")
     return prompt
@@ -738,6 +792,8 @@ PromptData_DefaultEntries() {
     for item in list {
         item.personal_context_files := []
         item.work_context_files := []
+        item.personal_selectable_context_files := []
+        item.work_selectable_context_files := []
         item.tags := ""
         item.pasteMode := "default"
         item.attachAsTxt := 0
@@ -799,6 +855,8 @@ PromptData_Load(force := false, skipMtime := false) {
                 "SelectContextCatalog", ""))
             personalFiles := PromptData_ReadContextEntries(path, section, "Personal")
             workFiles := PromptData_ReadContextEntries(path, section, "Work")
+            personalSelectable := PromptData_ReadSelectableContextEntries(path, section, "Personal")
+            workSelectable := PromptData_ReadSelectableContextEntries(path, section, "Work")
             if (name = "" && filePath = "") {
                 idx += 1
                 continue
@@ -817,7 +875,9 @@ PromptData_Load(force := false, skipMtime := false) {
                 variables: variables,
                 filePathDraft: filePathDraft, selectContextCatalog: selectContextCatalog,
                 personal_context_files: personalFiles,
-                work_context_files: workFiles }))
+                work_context_files: workFiles,
+                personal_selectable_context_files: personalSelectable,
+                work_selectable_context_files: workSelectable }))
             idx += 1
         }
     }
@@ -826,7 +886,8 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
     PromptData_EnsurePlanPromptEntry()
-    PromptData_EnsureStoryPromptPickers()
+    PromptData_MigrateStoryPromptCatalog()
+    PromptData_MigrateStripInvalidStoryCatalog()
     return g_PromptEntries
 }
 
@@ -867,33 +928,45 @@ PromptData_EnsurePlanPromptEntry() {
         filePathDraft: "",
         personal_context_files: [],
         work_context_files: [],
+        personal_selectable_context_files: [],
+        work_selectable_context_files: [],
         selectContextCatalog: ""
     }))
     PromptData_Save(list)
 }
 
-; Upsert SelectContextCatalog=mnemonic_stories on story prompts (existing installs).
-PromptData_EnsureStoryPromptPickers() {
+; One-time: default story prompts to mnemonic supplement only when catalog still empty.
+PromptData_MigrateStoryPromptCatalog() {
     global g_PromptEntries
     list := g_PromptEntries
     if (!IsObject(list))
         return
     dirty := false
-    storyNeedles := ["story-prompt.txt", "story-reduction-prompt.txt"]
     for i, prompt in list {
-        fp := StrLower(StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\"))
-        isStory := false
-        for needle in storyNeedles {
-            if (InStr(fp, needle)) {
-                isStory := true
-                break
-            }
-        }
-        if (!isStory)
+        if (!PromptData_IsStoryPrompt(prompt))
             continue
-        if (PromptData_SelectContextCatalog(prompt) = "mnemonic_stories")
+        if (PromptData_SelectContextCatalog(prompt) != "")
             continue
         list[i].selectContextCatalog := "mnemonic_stories"
+        dirty := true
+    }
+    if (dirty)
+        PromptData_Save(list)
+}
+
+; Clear mnemonic_stories catalog from prompts that are not story prompts.
+PromptData_MigrateStripInvalidStoryCatalog() {
+    global g_PromptEntries
+    list := g_PromptEntries
+    if (!IsObject(list))
+        return
+    dirty := false
+    for i, prompt in list {
+        if (PromptData_IsStoryPrompt(prompt))
+            continue
+        if (PromptData_SelectContextCatalog(prompt) = "")
+            continue
+        list[i].selectContextCatalog := ""
         dirty := true
     }
     if (dirty)
@@ -942,6 +1015,8 @@ PromptData_Save(list) {
                 prompt.selectContextCatalog : ""))
             PromptData_AppendContextLines(lines, "Personal", prompt.personal_context_files)
             PromptData_AppendContextLines(lines, "Work", prompt.work_context_files)
+            PromptData_AppendSelectableContextLines(lines, "Personal", prompt.personal_selectable_context_files)
+            PromptData_AppendSelectableContextLines(lines, "Work", prompt.work_selectable_context_files)
             idx += 1
         }
         content := ""
@@ -1018,6 +1093,10 @@ PromptData_Sorted() {
                 p.personal_context_files : []),
             work_context_files: PromptData_ParseContextEntries(p.HasProp("work_context_files") ? p.work_context_files :
                 []),
+            personal_selectable_context_files: PromptData_ParseContextEntries(p.HasProp(
+                "personal_selectable_context_files") ? p.personal_selectable_context_files : []),
+            work_selectable_context_files: PromptData_ParseContextEntries(p.HasProp("work_selectable_context_files") ?
+                p.work_selectable_context_files : []),
             selectContextCatalog: p.HasProp("selectContextCatalog") ? p.selectContextCatalog : ""
         }))
     }

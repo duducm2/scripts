@@ -1,4 +1,4 @@
-﻿; =============================================================================
+; =============================================================================
 ; Utils module: hotstring_selector_handlers_01.ahk
 ; HandleHotstringChar, Gemini paste, Escape
 ; =============================================================================
@@ -144,10 +144,10 @@ UtilitySelector_ResolveContextEntries(prompt) {
     if (!IsObject(prompt))
         return { entries: [], pickedCount: 0 }
     staticEntries := PromptData_ContextEntriesForCurrentEnv(prompt)
-    catalog := PromptData_SelectContextCatalog(prompt)
-    if (catalog = "")
+    pool := PromptContextPicker_BuildPool(prompt)
+    if (pool.Length = 0)
         return { entries: staticEntries, pickedCount: 0 }
-    picked := PromptContextPicker_Show(catalog)
+    picked := PromptContextPicker_ShowPool(pool)
     if (picked = false)
         return false
     return {

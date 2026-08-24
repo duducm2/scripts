@@ -33,12 +33,28 @@ global g_PromptEditorDraftPath := ""
 global g_PromptEditorGitCommit := false
 global g_PromptEditorPersonalPreset := false
 global g_PromptEditorWorkPreset := false
+global g_PromptEditorPersonalSelectablePaths := []
+global g_PromptEditorWorkSelectablePaths := []
+global g_PromptEditorPersonalSelectableLv := false
+global g_PromptEditorWorkSelectableLv := false
+global g_PromptEditorSelectContextCatalog := false
+global g_PromptEditorTabs := false
+global g_PromptEditorRefreshMnemonicBtn := false
+global g_PromptEditorLayout := false
+global g_PromptEditorContextCtrls := []
+global g_PromptEditorContextOrig := []
+global g_PromptEditorContextScroll := 0
+global g_PromptEditorContextScrollMax := 0
+global g_PromptEditorContextScrollPage := 1
+global g_PromptEditorContextSb := false
+global g_PromptEditorContextScrollBound := false
 
 PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     global g_PromptEntries, g_PromptEditorGui, g_PromptEditorResult
     global g_PromptEditorIsEdit, g_PromptEditorListIndex, g_PromptEditorAuthor
     global g_PromptEditorFilePath, g_PromptEditorSource
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
+    global g_PromptEditorPersonalSelectablePaths, g_PromptEditorWorkSelectablePaths
     global g_PromptEditorDraftPath
 
     PromptData_Load()
@@ -53,6 +69,10 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
         "personal_context_files")) ? existingPrompt.personal_context_files : [])
     g_PromptEditorWorkPaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
         "work_context_files")) ? existingPrompt.work_context_files : [])
+    g_PromptEditorPersonalSelectablePaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
+        "personal_selectable_context_files")) ? existingPrompt.personal_selectable_context_files : [])
+    g_PromptEditorWorkSelectablePaths := PromptData_ParseContextEntries((g_PromptEditorIsEdit && existingPrompt.HasProp(
+        "work_selectable_context_files")) ? existingPrompt.work_selectable_context_files : [])
     g_PromptEditorDraftPath := (g_PromptEditorIsEdit && existingPrompt.HasProp("filePathDraft")) ? existingPrompt.filePathDraft :
         ""
 
@@ -83,12 +103,15 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     title := g_PromptEditorIsEdit ? "Edit prompt" : "Add prompt"
     g_PromptEditorGui := Gui(ownerOpt, title)
     g_PromptEditorGui.SetFont("s10", "Segoe UI")
+    g_PromptEditorGui.MarginX := 22
+    g_PromptEditorGui.MarginY := 14
     PromptEditor_BuildControls(existingPrompt, avail, currentChar)
     g_PromptEditorGui.OnEvent("Close", PromptEditor_OnCancel)
     g_PromptEditorGui.OnEvent("Escape", PromptEditor_OnCancel)
 
     UtilitySelector_DialogsBegin()
     PromptEditor_CenterOnSelector()
+    PromptEditor_ContextScrollInit()
     try g_PromptEditorName.Focus()
     catch {
     }
@@ -96,31 +119,103 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     try WinWaitClose("ahk_id " g_PromptEditorGui.Hwnd)
     catch {
     }
+    PromptEditor_ContextScrollTeardown()
     PromptEditor_BindEditorHotkeys(false)
     UtilitySelector_DialogsEnd()
     g_PromptEditorGui := false
     return g_PromptEditorResult
 }
 
+PromptEditor_Layout() {
+    padX := 22
+    padY := 14
+    colGap := 16
+    tabW := 760
+    tabH := 640
+    ; Insets inside the tab page (applied via Gui.Margin after UseTab — not absolute x/y).
+    innerX := 18
+    innerY := 14
+    scrollW := 18
+    ; Tab chrome eats a few px; reserve scrollbar gutter on the right so Apply/lists don't touch the edge.
+    tabChrome := 12
+    labelW := 88
+    footerGap := 14
+    footerY := padY + tabH + footerGap
+    innerW := tabW - (2 * innerX) - scrollW - tabChrome
+    colW := Floor((innerW - colGap) / 2)
+    return Map(
+        "padX", padX,
+        "padY", padY,
+        "innerX", innerX,
+        "innerY", innerY,
+        "scrollW", scrollW,
+        "labelW", labelW,
+        "colGap", colGap,
+        "tabW", tabW,
+        "tabH", tabH,
+        "footerY", footerY,
+        "innerW", innerW,
+        "colW", colW,
+        "workX", colW + colGap,
+        "pathCol", colW - 96,
+        "compactCol", 44,
+        "csvCol", 44,
+        "selPathCol", colW - 8,
+        "hintW", innerW,
+        "saveX", padX + tabW - 208
+    )
+}
+
+; Tab3: never use xm inside tabs (window-relative → clips). First control: no x/y so
+; MarginX/MarginY place it in the tab page; later rows use xs / xs y+N Section only.
 PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
-    global g_PromptEditorGui, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
-    global g_PromptEditorFile, g_PromptEditorFilePath, g_PromptEditorIsEdit
-    global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
+    global g_PromptEditorGui, g_PromptEditorTabs, g_PromptEditorLayout
+    L := PromptEditor_Layout()
+    g_PromptEditorLayout := L
+    g_PromptEditorTabs := g_PromptEditorGui.Add("Tab3",
+        "x" . L["padX"] . " y" . L["padY"] . " w" . L["tabW"] . " h" . L["tabH"] . " Choose1",
+        ["General", "Context", "Advanced"])
+    g_PromptEditorTabs.OnEvent("Change", PromptEditor_OnTabChange)
+    PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L)
+    PromptEditor_BuildTabContext(existingPrompt, L)
+    PromptEditor_BuildTabAdvanced(existingPrompt, L)
+    g_PromptEditorTabs.UseTab()
+    g_PromptEditorGui.MarginX := L["padX"]
+    g_PromptEditorGui.MarginY := L["padY"]
+    PromptEditor_BuildFooter(L)
+}
+
+PromptEditor_CtxTrack(ctrl) {
+    global g_PromptEditorContextCtrls
+    if (IsObject(ctrl))
+        g_PromptEditorContextCtrls.Push(ctrl)
+    return ctrl
+}
+
+PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L) {
+    global g_PromptEditorGui, g_PromptEditorTabs
+    global g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
+    global g_PromptEditorFile, g_PromptEditorFilePath
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode
-    global g_PromptEditorDraftFile, g_PromptEditorDraftPath, g_PromptEditorGitCommit
-    global g_PromptEditorAttachAsTxt
-    global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
-    global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat, g_PromptEditorDataOutputHint
+    global g_PromptEditorDraftFile, g_PromptEditorDraftPath
 
-    colW := 360
-    pathCol := colW - 154
-    compactCol := 50
-    csvCol := 80
-    g_PromptEditorGui.Add("Text", "xm w80", "Name")
+    innerW := L["innerW"]
+    innerX := L["innerX"]
+    innerY := L["innerY"]
+    labelW := L["labelW"]
+    fileEditW := Max(160, innerW - labelW - 184)
+    tagsEditW := Floor((innerW - labelW - 16 - 70) * 0.45)
+    varsEditW := innerW - labelW - 16 - 70 - tagsEditW
+    draftEditW := Max(160, innerW - labelW - 166)
+
+    g_PromptEditorTabs.UseTab(1)
+    g_PromptEditorGui.MarginX := innerX
+    g_PromptEditorGui.MarginY := innerY
+    g_PromptEditorGui.Add("Text", "w" . labelW . " Section", "Name")
     nameVal := (IsObject(existingPrompt) && existingPrompt.HasProp("name")) ? existingPrompt.name : ""
-    g_PromptEditorName := g_PromptEditorGui.Add("Edit", "yp w" . (colW * 2 - 80), nameVal)
+    g_PromptEditorName := g_PromptEditorGui.Add("Edit", "yp w" . (innerW - labelW), nameVal)
 
-    g_PromptEditorGui.Add("Text", "xm w80", "Category")
+    g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Category")
     catChoices := PromptEditor_CategoryChoices(IsObject(existingPrompt) ? existingPrompt.category : "General")
     g_PromptEditorCategory := g_PromptEditorGui.Add("ComboBox", "yp w220", catChoices)
     if (IsObject(existingPrompt) && existingPrompt.HasProp("category") && existingPrompt.category != "")
@@ -138,19 +233,19 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
         }
     }
 
-    g_PromptEditorGui.Add("Text", "xm w80", "Prompt file")
-    g_PromptEditorFile := g_PromptEditorGui.Add("Edit", "yp w440 ReadOnly", g_PromptEditorFilePath)
+    g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Prompt file")
+    g_PromptEditorFile := g_PromptEditorGui.Add("Edit", "yp w" . fileEditW . " ReadOnly", g_PromptEditorFilePath)
     g_PromptEditorGui.Add("Button", "yp w80", "Browse").OnEvent("Click", PromptEditor_OnBrowsePromptFile)
     g_PromptEditorGui.Add("Button", "x+8 yp w80", "History").OnEvent("Click", PromptEditor_OnShowHistory)
 
-    g_PromptEditorGui.Add("Text", "xm w80", "Tags")
+    g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Tags")
     tagsVal := (IsObject(existingPrompt) && existingPrompt.HasProp("tags")) ? existingPrompt.tags : ""
-    g_PromptEditorTags := g_PromptEditorGui.Add("Edit", "yp w220", tagsVal)
+    g_PromptEditorTags := g_PromptEditorGui.Add("Edit", "yp w" . tagsEditW, tagsVal)
     g_PromptEditorGui.Add("Text", "x+16 yp w70", "Variables")
     varsVal := (IsObject(existingPrompt) && existingPrompt.HasProp("variables")) ? existingPrompt.variables : ""
-    g_PromptEditorVariables := g_PromptEditorGui.Add("Edit", "yp w250", varsVal)
+    g_PromptEditorVariables := g_PromptEditorGui.Add("Edit", "yp w" . varsEditW, varsVal)
 
-    g_PromptEditorGui.Add("Text", "xm w80", "Paste mode")
+    g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Paste mode")
     pasteModes := ["default", "body_only", "body_plus_clipboard", "body_attach_clipboard", "attach_only", "auto_send"]
     g_PromptEditorPasteMode := g_PromptEditorGui.Add("DropDownList", "yp w220", pasteModes)
     pasteVal := (IsObject(existingPrompt) && existingPrompt.HasProp("pasteMode")) ? PromptData_NormalizePasteMode(
@@ -162,54 +257,50 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
         }
     }
 
-    g_PromptEditorGui.Add("Text", "x+16 yp w70", "Draft file")
-    g_PromptEditorDraftFile := g_PromptEditorGui.Add("Edit", "yp w170 ReadOnly", g_PromptEditorDraftPath)
+    g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Draft file")
+    g_PromptEditorDraftFile := g_PromptEditorGui.Add("Edit", "yp w" . draftEditW . " ReadOnly", g_PromptEditorDraftPath
+    )
     g_PromptEditorGui.Add("Button", "yp w70", "Draft…").OnEvent("Click", PromptEditor_OnBrowseDraftFile)
     g_PromptEditorGui.Add("Button", "x+8 yp w80", "Promote").OnEvent("Click", PromptEditor_OnPromoteDraft)
+}
 
-    g_PromptEditorGitCommit := g_PromptEditorGui.Add("CheckBox", "xm w220", "Git commit on save")
-    try g_PromptEditorGitCommit.Value := 0
-    catch {
-    }
-    g_PromptEditorAttachAsTxt := g_PromptEditorGui.Add("CheckBox", "x+12 yp w280", "Attach context as .txt")
-    attachAsTxtVal := 0
-    if (IsObject(existingPrompt) && existingPrompt.HasProp("attachAsTxt"))
-        attachAsTxtVal := PromptData_NormalizeAttachAsTxt(existingPrompt.attachAsTxt)
-    try g_PromptEditorAttachAsTxt.Value := attachAsTxtVal
-    catch {
-    }
+PromptEditor_BuildTabContext(existingPrompt, L) {
+    global g_PromptEditorGui, g_PromptEditorTabs, g_PromptEditorFilePath
+    global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
+    global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
+    global g_PromptEditorPersonalSelectableLv, g_PromptEditorWorkSelectableLv
+    global g_PromptEditorSelectContextCatalog, g_PromptEditorRefreshMnemonicBtn
+    global g_PromptEditorContextCtrls
 
-    g_PromptEditorExpectsDataOutput := g_PromptEditorGui.Add("CheckBox", "xm w200", "Expects data output")
-    expectsVal := 0
-    if (IsObject(existingPrompt) && existingPrompt.HasProp("expectsDataOutput"))
-        expectsVal := PromptData_NormalizeExpectsDataOutput(existingPrompt.expectsDataOutput)
-    try g_PromptEditorExpectsDataOutput.Value := expectsVal
-    catch {
-    }
-    g_PromptEditorExpectsDataOutput.OnEvent("Click", PromptEditor_OnExpectsDataOutputClick)
+    g_PromptEditorContextCtrls := []
+    track := PromptEditor_CtxTrack
+    innerX := L["innerX"]
+    innerY := L["innerY"]
+    colW := L["colW"]
+    colGap := L["colGap"]
+    workX := L["workX"]
+    pathCol := L["pathCol"]
+    compactCol := L["compactCol"]
+    csvCol := L["csvCol"]
+    selPathCol := L["selPathCol"]
+    hintW := L["hintW"]
+    isStoryPrompt := PromptData_IsStoryPrompt({ filePath: g_PromptEditorFilePath })
 
-    g_PromptEditorGui.Add("Text", "x+8 yp w90", "Data output")
-    g_PromptEditorDataOutputFormat := g_PromptEditorGui.Add("DropDownList", "yp w100", ["file", "code"])
-    fmtVal := "file"
-    if (IsObject(existingPrompt) && existingPrompt.HasProp("dataOutputFormat"))
-        fmtVal := PromptData_NormalizeDataOutputFormat(existingPrompt.dataOutputFormat)
-    try g_PromptEditorDataOutputFormat.Text := fmtVal
-    catch {
-        try g_PromptEditorDataOutputFormat.Choose(1)
-        catch {
-        }
-    }
-    try g_PromptEditorDataOutputFormat.Enabled := (expectsVal = 1)
-    catch {
-    }
-    g_PromptEditorDataOutputHint := g_PromptEditorGui.Add("Text", "x+12 yp w280 c808080",
-        "Convention: .txt — app transpiles after save")
+    g_PromptEditorTabs.UseTab(2)
+    g_PromptEditorGui.MarginX := innerX
+    g_PromptEditorGui.MarginY := innerY
+    g_PromptEditorGui.SetFont("s9 c808080 Norm", "Segoe UI")
+    track(g_PromptEditorGui.Add("Text", "w" . hintW . " Wrap Section",
+        "Static lists attach every time. Selectable files appear in a picker when you invoke this prompt (not auto-attached)."
+    ))
+    g_PromptEditorGui.SetFont("s10 Norm", "Segoe UI")
 
-    g_PromptEditorGui.Add("Text", "xm w" . colW . " Section", "Personal context files")
-    g_PromptEditorGui.Add("Text", "ys w" . colW, "Work context files")
-    g_PromptEditorPersonalLv := g_PromptEditorGui.Add("ListView", "xm w" . colW . " r6", ["Path", "Compact", "CSV keep"])
-    g_PromptEditorWorkLv := g_PromptEditorGui.Add("ListView", "x+12 yp w" . colW . " r6", ["Path", "Compact",
-        "CSV keep"])
+    track(g_PromptEditorGui.Add("Text", "xs y+12 w" . colW . " Section", "Personal static context"))
+    track(g_PromptEditorGui.Add("Text", "x+" . colGap . " yp w" . colW, "Work static context"))
+    g_PromptEditorPersonalLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r2", ["Path", "Cmp", "CSV"]))
+    g_PromptEditorWorkLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r2", ["Path",
+        "Cmp",
+        "CSV"]))
     for lv in [g_PromptEditorPersonalLv, g_PromptEditorWorkLv] {
         lv.ModifyCol(1, pathCol)
         lv.ModifyCol(2, compactCol)
@@ -223,44 +314,50 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_ReloadList("work")
 
     presetLabels := PromptContextPresets_ChoiceLabels()
-    workX := colW + 12
-    g_PromptEditorGui.Add("Button", "xm w70 Section", "Add").OnEvent("Click", (*) => PromptEditor_OnAddFiles("personal"
+    track(g_PromptEditorGui.Add("Button", "xs y+10 w70 Section", "Add")).OnEvent("Click", (*) =>
+        PromptEditor_OnAddFiles(
+            "personal"
+        ))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste")).OnEvent("Click", (*) => PromptEditor_OnPastePaths(
+        "personal"
     ))
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptEditor_OnPastePaths("personal"
-    ))
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("personal"))
-    g_PromptEditorGui.Add("Button", "xs+" . workX . " ys w70", "Add").OnEvent("Click", (*) => PromptEditor_OnAddFiles(
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove")).OnEvent("Click", (*) => PromptEditor_OnRemove(
+        "personal"))
+    track(g_PromptEditorGui.Add("Button", "xs+" . workX . " ys w70", "Add")).OnEvent("Click", (*) =>
+        PromptEditor_OnAddFiles("work"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste")).OnEvent("Click", (*) => PromptEditor_OnPastePaths(
         "work"))
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste").OnEvent("Click", (*) => PromptEditor_OnPastePaths("work"))
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove").OnEvent("Click", (*) => PromptEditor_OnRemove("work"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove")).OnEvent("Click", (*) => PromptEditor_OnRemove("work"
+    ))
 
-    g_PromptEditorGui.Add("Text", "xm w44 Section", "Preset")
-    g_PromptEditorPersonalPreset := g_PromptEditorGui.Add("DropDownList", "yp w230", presetLabels)
+    track(g_PromptEditorGui.Add("Text", "xs y+10 w44 Section", "Preset"))
+    g_PromptEditorPersonalPreset := track(g_PromptEditorGui.Add("DropDownList", "yp w210", presetLabels))
     try g_PromptEditorPersonalPreset.Text := "(none)"
     catch {
     }
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset(
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply")).OnEvent("Click", (*) => PromptEditor_OnApplyPreset(
         "personal"))
-    g_PromptEditorGui.Add("Text", "xs+" . workX . " ys w44", "Preset")
-    g_PromptEditorWorkPreset := g_PromptEditorGui.Add("DropDownList", "yp w230", presetLabels)
+    track(g_PromptEditorGui.Add("Text", "xs+" . workX . " ys w44", "Preset"))
+    g_PromptEditorWorkPreset := track(g_PromptEditorGui.Add("DropDownList", "yp w210", presetLabels))
     try g_PromptEditorWorkPreset.Text := "(none)"
     catch {
     }
-    g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply").OnEvent("Click", (*) => PromptEditor_OnApplyPreset("work"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Apply")).OnEvent("Click", (*) => PromptEditor_OnApplyPreset(
+        "work"))
 
-    personalCompact := g_PromptEditorGui.Add("CheckBox", "xm w" . colW, "Compact")
-    workCompact := g_PromptEditorGui.Add("CheckBox", "x+12 yp w" . colW, "Compact")
+    personalCompact := track(g_PromptEditorGui.Add("CheckBox", "xs w" . colW, "Compact"))
+    workCompact := track(g_PromptEditorGui.Add("CheckBox", "x+" . colGap . " yp w" . colW, "Compact"))
     personalCompact.OnEvent("Click", (*) => PromptEditor_OnCompactClick("personal"))
     workCompact.OnEvent("Click", (*) => PromptEditor_OnCompactClick("work"))
 
-    personalCsvFromLabel := g_PromptEditorGui.Add("Text", "xm w90 Hidden", "CSV keep from")
-    personalCsvFrom := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
-    personalCsvToLabel := g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to")
-    personalCsvTo := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
-    workCsvFromLabel := g_PromptEditorGui.Add("Text", "x+162 yp w90 Hidden", "CSV keep from")
-    workCsvFrom := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
-    workCsvToLabel := g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to")
-    workCsvTo := g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden")
+    personalCsvFromLabel := track(g_PromptEditorGui.Add("Text", "xs w90 Hidden", "CSV keep from"))
+    personalCsvFrom := track(g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden"))
+    personalCsvToLabel := track(g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to"))
+    personalCsvTo := track(g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden"))
+    workCsvFromLabel := track(g_PromptEditorGui.Add("Text", "x+162 yp w90 Hidden", "CSV keep from"))
+    workCsvFrom := track(g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden"))
+    workCsvToLabel := track(g_PromptEditorGui.Add("Text", "yp w20 Hidden", "to"))
+    workCsvTo := track(g_PromptEditorGui.Add("Edit", "yp w50 Number Hidden"))
     personalCsvFrom.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("personal"))
     personalCsvTo.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("personal"))
     workCsvFrom.OnEvent("Change", (*) => PromptEditor_OnCsvKeepChange("work"))
@@ -286,13 +383,292 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     PromptEditor_LoadFlagControls("personal", 0)
     PromptEditor_LoadFlagControls("work", 0)
 
-    g_PromptEditorGui.Add("Text", "xm w" . (colW * 2 + 12),
-    "Paste Explorer Copy as path. Empty lists are fine.")
-    g_PromptEditorGui.Add("Button", "xm w120", "Manage presets").OnEvent("Click", PromptEditor_OnOpenPresetManager)
-    g_PromptEditorGui.Add("Button", "x+8 yp w120", "Save as preset").OnEvent("Click", PromptEditor_OnSaveAsPreset)
-    g_PromptEditorGui.Add("Button", "x+8 yp w80", "Help").OnEvent("Click", PromptEditor_ShowHelp)
-    g_PromptEditorGui.Add("Button", "x+250 yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave)
+    track(g_PromptEditorGui.Add("Button", "xs y+14 w120 Section", "Manage presets")).OnEvent("Click",
+        PromptEditor_OnOpenPresetManager)
+    track(g_PromptEditorGui.Add("Button", "x+8 yp w120", "Save as preset")).OnEvent("Click",
+        PromptEditor_OnSaveAsPreset)
+
+    g_PromptEditorGui.SetFont("s9 c808080 Norm", "Segoe UI")
+    track(g_PromptEditorGui.Add("Text", "xs y+16 w" . hintW . " Wrap Section",
+        "Selectable at paste (0–n chosen when invoked; not auto-attached)"))
+    g_PromptEditorGui.SetFont("s10 Norm", "Segoe UI")
+    supplementHint := isStoryPrompt
+        ? "Dynamic supplement merges discovered mnemonic story .md files into the picker at paste time."
+            : "Add explicit paths below. Mnemonic story discovery is only available for story prompts."
+    track(g_PromptEditorGui.Add("Text", "xs y+8 w" . hintW . " Wrap", supplementHint))
+    track(g_PromptEditorGui.Add("Text", "xs y+12 w120 Section", "Dynamic supplement"))
+    catalogChoices := PromptContextCatalog_SupplementChoices(isStoryPrompt)
+    g_PromptEditorSelectContextCatalog := track(g_PromptEditorGui.Add("DropDownList", "xs y+6 w240 Section",
+        catalogChoices))
+    catVal := "(none)"
+    if (IsObject(existingPrompt) && isStoryPrompt)
+        catVal := PromptContextCatalog_SupplementLabel(PromptData_SelectContextCatalog(existingPrompt))
+    try g_PromptEditorSelectContextCatalog.Text := catVal
+    catch {
+        try g_PromptEditorSelectContextCatalog.Choose(1)
+        catch {
+        }
+    }
+    if (isStoryPrompt) {
+        g_PromptEditorRefreshMnemonicBtn := track(g_PromptEditorGui.Add("Button", "xs y+10 w" . hintW . " Section",
+            "Refresh mnemonic stories → selectable"))
+        g_PromptEditorRefreshMnemonicBtn.OnEvent("Click", PromptEditor_OnRefreshMnemonicStories)
+        selectableHeaderGap := "y+14"
+    } else {
+        g_PromptEditorRefreshMnemonicBtn := false
+        selectableHeaderGap := "y+16"
+    }
+
+    track(g_PromptEditorGui.Add("Text", "xs " . selectableHeaderGap . " w" . colW . " Section", "Personal selectable"))
+    track(g_PromptEditorGui.Add("Text", "x+" . colGap . " yp w" . colW, "Work selectable"))
+    g_PromptEditorPersonalSelectableLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r2", ["Path"]))
+    g_PromptEditorWorkSelectableLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r2", [
+        "Path"]))
+    g_PromptEditorPersonalSelectableLv.ModifyCol(1, selPathCol)
+    g_PromptEditorWorkSelectableLv.ModifyCol(1, selPathCol)
+    PromptEditor_ReloadSelectableList("personal")
+    PromptEditor_ReloadSelectableList("work")
+
+    track(g_PromptEditorGui.Add("Button", "xs y+8 w70 Section", "Add")).OnEvent("Click", (*) =>
+        PromptEditor_OnAddSelectableFiles("personal"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste")).OnEvent("Click", (*) =>
+        PromptEditor_OnPasteSelectablePaths("personal"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove")).OnEvent("Click", (*) =>
+        PromptEditor_OnRemoveSelectable("personal"))
+    track(g_PromptEditorGui.Add("Button", "xs+" . workX . " ys w70", "Add")).OnEvent("Click", (*) =>
+        PromptEditor_OnAddSelectableFiles("work"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Paste")).OnEvent("Click", (*) =>
+        PromptEditor_OnPasteSelectablePaths("work"))
+    track(g_PromptEditorGui.Add("Button", "x+6 yp w70", "Remove")).OnEvent("Click", (*) =>
+        PromptEditor_OnRemoveSelectable("work"))
+}
+
+PromptEditor_BuildTabAdvanced(existingPrompt, L) {
+    global g_PromptEditorGui, g_PromptEditorTabs
+    global g_PromptEditorGitCommit, g_PromptEditorAttachAsTxt
+    global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat, g_PromptEditorDataOutputHint
+
+    innerX := L["innerX"]
+    innerY := L["innerY"]
+    hintW := L["hintW"]
+
+    g_PromptEditorTabs.UseTab(3)
+    g_PromptEditorGui.MarginX := innerX
+    g_PromptEditorGui.MarginY := innerY
+    g_PromptEditorGui.Add("Text", "w" . hintW . " Section", "Output and save options")
+
+    g_PromptEditorGitCommit := g_PromptEditorGui.Add("CheckBox", "xs y+14 w" . hintW . " Section", "Git commit on save"
+    )
+    try g_PromptEditorGitCommit.Value := 0
+    catch {
+    }
+    g_PromptEditorAttachAsTxt := g_PromptEditorGui.Add("CheckBox", "xs y+12 w" . hintW . " Section",
+        "Attach context as .txt")
+    attachAsTxtVal := 0
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("attachAsTxt"))
+        attachAsTxtVal := PromptData_NormalizeAttachAsTxt(existingPrompt.attachAsTxt)
+    try g_PromptEditorAttachAsTxt.Value := attachAsTxtVal
+    catch {
+    }
+
+    g_PromptEditorExpectsDataOutput := g_PromptEditorGui.Add("CheckBox", "xs y+12 w" . hintW . " Section",
+        "Expects data output")
+    expectsVal := 0
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("expectsDataOutput"))
+        expectsVal := PromptData_NormalizeExpectsDataOutput(existingPrompt.expectsDataOutput)
+    try g_PromptEditorExpectsDataOutput.Value := expectsVal
+    catch {
+    }
+    g_PromptEditorExpectsDataOutput.OnEvent("Click", PromptEditor_OnExpectsDataOutputClick)
+
+    g_PromptEditorGui.Add("Text", "xs y+10 w90 Section", "Data output")
+    g_PromptEditorDataOutputFormat := g_PromptEditorGui.Add("DropDownList", "yp w100", ["file", "code"])
+    fmtVal := "file"
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("dataOutputFormat"))
+        fmtVal := PromptData_NormalizeDataOutputFormat(existingPrompt.dataOutputFormat)
+    try g_PromptEditorDataOutputFormat.Text := fmtVal
+    catch {
+        try g_PromptEditorDataOutputFormat.Choose(1)
+        catch {
+        }
+    }
+    try g_PromptEditorDataOutputFormat.Enabled := (expectsVal = 1)
+    catch {
+    }
+    g_PromptEditorDataOutputHint := g_PromptEditorGui.Add("Text", "xs y+10 w" . hintW . " Wrap c808080",
+        "Convention: .txt — app transpiles after save")
+}
+
+PromptEditor_BuildFooter(L) {
+    global g_PromptEditorGui
+    fy := L["footerY"]
+    px := L["padX"]
+    g_PromptEditorGui.Add("Button", "x" . px . " y" . fy . " w80 Section", "Help").OnEvent("Click",
+        PromptEditor_ShowHelp)
+    g_PromptEditorGui.Add("Button", "x" . L["saveX"] . " yp w100 Default", "Save").OnEvent("Click", PromptEditor_OnSave
+    )
     g_PromptEditorGui.Add("Button", "x+8 yp w100", "Cancel").OnEvent("Click", PromptEditor_OnCancel)
+}
+
+PromptEditor_OnTabChange(*) {
+    PromptEditor_ContextScrollSyncVisibility()
+}
+
+PromptEditor_ContextScrollInit() {
+    global g_PromptEditorGui, g_PromptEditorTabs, g_PromptEditorLayout
+    global g_PromptEditorContextCtrls, g_PromptEditorContextOrig
+    global g_PromptEditorContextScroll, g_PromptEditorContextScrollMax, g_PromptEditorContextScrollPage
+    global g_PromptEditorContextSb, g_PromptEditorContextScrollBound
+
+    g_PromptEditorContextOrig := []
+    g_PromptEditorContextScroll := 0
+    g_PromptEditorContextScrollMax := 0
+    if (!IsObject(g_PromptEditorGui) || !IsObject(g_PromptEditorTabs) || !IsObject(g_PromptEditorLayout))
+        return
+    if (g_PromptEditorContextCtrls.Length = 0)
+        return
+
+    L := g_PromptEditorLayout
+    contentBottom := 0
+    for ctrl in g_PromptEditorContextCtrls {
+        try {
+            ctrl.GetPos(&cx, &cy, &cw, &ch)
+            g_PromptEditorContextOrig.Push({ ctrl: ctrl, x: cx, y: cy, w: cw, h: ch })
+            contentBottom := Max(contentBottom, cy + ch)
+        } catch {
+        }
+    }
+
+    g_PromptEditorTabs.GetPos(&tx, &ty, &tw, &th)
+    tabHeader := 32
+    viewBottom := ty + th - 6
+    overflow := contentBottom - viewBottom
+    g_PromptEditorContextScrollMax := Max(0, overflow + 12)
+    g_PromptEditorContextScrollPage := Max(40, th - tabHeader - 40)
+
+    try {
+        if (IsObject(g_PromptEditorContextSb)) {
+            g_PromptEditorContextSb.Visible := false
+            g_PromptEditorContextSb := false
+        }
+    } catch {
+        g_PromptEditorContextSb := false
+    }
+
+    if (g_PromptEditorContextScrollMax > 0) {
+        sbX := tx + tw - L["scrollW"] - 4
+        sbY := ty + tabHeader
+        sbH := Max(80, th - tabHeader - 8)
+        ; Native Slider (Custom msctls_scrollbar32 is unreliable as Gui.Add Custom).
+        g_PromptEditorContextSb := g_PromptEditorGui.Add("Slider",
+            "Vertical Invert Center NoTicks x" . sbX . " y" . sbY
+            . " w" . L["scrollW"] . " h" . sbH
+            . " Range0-" . g_PromptEditorContextScrollMax)
+        try g_PromptEditorContextSb.Value := 0
+        catch {
+        }
+        g_PromptEditorContextSb.OnEvent("Change", PromptEditor_ContextOnSliderChange)
+    }
+    PromptEditor_ContextScrollSyncVisibility()
+
+    if (!g_PromptEditorContextScrollBound) {
+        OnMessage(0x20A, PromptEditor_ContextOnMouseWheel) ; WM_MOUSEWHEEL
+        g_PromptEditorContextScrollBound := true
+    }
+}
+
+PromptEditor_ContextScrollTeardown() {
+    global g_PromptEditorContextScrollBound, g_PromptEditorContextSb
+    global g_PromptEditorContextCtrls, g_PromptEditorContextOrig
+    global g_PromptEditorContextScroll, g_PromptEditorContextScrollMax
+
+    if (g_PromptEditorContextScrollBound) {
+        OnMessage(0x20A, PromptEditor_ContextOnMouseWheel, 0)
+        g_PromptEditorContextScrollBound := false
+    }
+    g_PromptEditorContextSb := false
+    g_PromptEditorContextCtrls := []
+    g_PromptEditorContextOrig := []
+    g_PromptEditorContextScroll := 0
+    g_PromptEditorContextScrollMax := 0
+}
+
+PromptEditor_ContextScrollSyncVisibility() {
+    global g_PromptEditorTabs, g_PromptEditorContextSb, g_PromptEditorContextScrollMax
+    showSb := false
+    try showSb := IsObject(g_PromptEditorTabs) && (g_PromptEditorTabs.Value = 2) && (g_PromptEditorContextScrollMax > 0
+    )
+    catch {
+        showSb := false
+    }
+    try {
+        if (IsObject(g_PromptEditorContextSb))
+            g_PromptEditorContextSb.Visible := showSb
+    } catch {
+    }
+}
+
+PromptEditor_ContextOnSliderChange(ctrl, *) {
+    try PromptEditor_ContextScrollTo(ctrl.Value)
+    catch {
+    }
+}
+
+PromptEditor_ContextScrollTo(pos) {
+    global g_PromptEditorContextScroll, g_PromptEditorContextScrollMax, g_PromptEditorContextOrig
+    global g_PromptEditorContextSb
+    if (g_PromptEditorContextScrollMax <= 0)
+        return
+    pos := Max(0, Min(Integer(pos), g_PromptEditorContextScrollMax))
+    if (pos = g_PromptEditorContextScroll)
+        return
+    g_PromptEditorContextScroll := pos
+    for item in g_PromptEditorContextOrig {
+        try item.ctrl.Move(item.x, item.y - pos)
+        catch {
+        }
+    }
+    try {
+        if (IsObject(g_PromptEditorContextSb) && g_PromptEditorContextSb.Value != pos)
+            g_PromptEditorContextSb.Value := pos
+    } catch {
+    }
+}
+
+PromptEditor_ContextScrollBy(delta) {
+    global g_PromptEditorContextScroll
+    PromptEditor_ContextScrollTo(g_PromptEditorContextScroll + delta)
+}
+
+PromptEditor_ContextOnMouseWheel(wParam, lParam, msg, hwnd) {
+    global g_PromptEditorGui, g_PromptEditorTabs, g_PromptEditorContextScrollMax
+    if (!IsObject(g_PromptEditorGui) || !IsObject(g_PromptEditorTabs))
+        return
+    try {
+        if (g_PromptEditorTabs.Value != 2 || g_PromptEditorContextScrollMax <= 0)
+            return
+    } catch {
+        return
+    }
+    mouseX := lParam & 0xFFFF
+    mouseY := (lParam >> 16) & 0xFFFF
+    if (mouseX >= 0x8000)
+        mouseX -= 0x10000
+    if (mouseY >= 0x8000)
+        mouseY -= 0x10000
+    g_PromptEditorTabs.GetPos(&tx, &ty, &tw, &th)
+    WinGetClientPos(&gx, &gy, , , g_PromptEditorGui.Hwnd)
+    tabScreenL := gx + tx
+    tabScreenT := gy + ty
+    tabScreenR := tabScreenL + tw
+    tabScreenB := tabScreenT + th
+    if (mouseX < tabScreenL || mouseX > tabScreenR || mouseY < tabScreenT || mouseY > tabScreenB)
+        return
+    delta := (wParam >> 16) & 0xFFFF
+    if (delta >= 0x8000)
+        delta -= 0x10000
+    PromptEditor_ContextScrollBy(-delta // 120 * 32)
+    return 0
 }
 
 PromptEditor_CategoryChoices(current) {
@@ -359,18 +735,45 @@ PromptEditor_BindEditorHotkeys(enable) {
 
 PromptEditor_FocusedSide() {
     global g_PromptEditorGui, g_PromptEditorPersonalLv, g_PromptEditorWorkLv
+    global g_PromptEditorPersonalSelectableLv, g_PromptEditorWorkSelectableLv
     focused := 0
     try focused := ControlGetFocus("ahk_id " g_PromptEditorGui.Hwnd)
     catch {
         return "personal"
     }
+    if (IsObject(g_PromptEditorWorkSelectableLv) && focused = g_PromptEditorWorkSelectableLv.Hwnd)
+        return "work"
     if (IsObject(g_PromptEditorWorkLv) && focused = g_PromptEditorWorkLv.Hwnd)
         return "work"
     return "personal"
 }
 
+PromptEditor_FocusedListKind() {
+    global g_PromptEditorGui, g_PromptEditorPersonalLv, g_PromptEditorWorkLv
+    global g_PromptEditorPersonalSelectableLv, g_PromptEditorWorkSelectableLv
+    focused := 0
+    try focused := ControlGetFocus("ahk_id " g_PromptEditorGui.Hwnd)
+    catch {
+        return ""
+    }
+    if (IsObject(g_PromptEditorPersonalSelectableLv) && focused = g_PromptEditorPersonalSelectableLv.Hwnd)
+        return "selectable"
+    if (IsObject(g_PromptEditorWorkSelectableLv) && focused = g_PromptEditorWorkSelectableLv.Hwnd)
+        return "selectable"
+    if (IsObject(g_PromptEditorPersonalLv) && focused = g_PromptEditorPersonalLv.Hwnd)
+        return "static"
+    if (IsObject(g_PromptEditorWorkLv) && focused = g_PromptEditorWorkLv.Hwnd)
+        return "static"
+    return ""
+}
+
 PromptEditor_OnDeleteKey(*) {
-    PromptEditor_OnRemove(PromptEditor_FocusedSide())
+    kind := PromptEditor_FocusedListKind()
+    side := PromptEditor_FocusedSide()
+    if (kind = "selectable")
+        PromptEditor_OnRemoveSelectable(side)
+    else if (kind = "static")
+        PromptEditor_OnRemove(side)
 }
 
 PromptEditor_PathsRef(side) {
@@ -577,6 +980,108 @@ PromptEditor_AppendPaths(side, incoming) {
     }
     PromptEditor_SetPaths(side, arr)
     PromptEditor_ReloadList(side)
+}
+
+PromptEditor_SelectablePathsRef(side) {
+    global g_PromptEditorPersonalSelectablePaths, g_PromptEditorWorkSelectablePaths
+    return (side = "work") ? g_PromptEditorWorkSelectablePaths : g_PromptEditorPersonalSelectablePaths
+}
+
+PromptEditor_SelectableLv(side) {
+    global g_PromptEditorPersonalSelectableLv, g_PromptEditorWorkSelectableLv
+    return (side = "work") ? g_PromptEditorWorkSelectableLv : g_PromptEditorPersonalSelectableLv
+}
+
+PromptEditor_SetSelectablePaths(side, arr) {
+    global g_PromptEditorPersonalSelectablePaths, g_PromptEditorWorkSelectablePaths
+    if (side = "work")
+        g_PromptEditorWorkSelectablePaths := arr
+    else
+        g_PromptEditorPersonalSelectablePaths := arr
+}
+
+PromptEditor_ReloadSelectableList(side) {
+    lv := PromptEditor_SelectableLv(side)
+    if (!IsObject(lv))
+        return
+    lv.Delete()
+    for e in PromptEditor_SelectablePathsRef(side)
+        lv.Add("", PromptData_ContextEntryPath(e))
+}
+
+PromptEditor_AppendSelectablePaths(side, incoming) {
+    arr := PromptEditor_SelectablePathsRef(side)
+    for raw in incoming {
+        n := PromptData_StripPathQuotes(raw)
+        if (n = "" || PromptEditor_HasPath(arr, n))
+            continue
+        arr.Push(PromptData_NewContextEntry(n))
+    }
+    PromptEditor_SetSelectablePaths(side, arr)
+    PromptEditor_ReloadSelectableList(side)
+}
+
+PromptEditor_OnAddSelectableFiles(side) {
+    global g_PromptEditorGui
+    if (IsObject(g_PromptEditorGui)) {
+        try g_PromptEditorGui.Opt("-AlwaysOnTop")
+        catch {
+        }
+    }
+    selected := FileSelect("M1", , "Select selectable context files")
+    if (IsObject(g_PromptEditorGui)) {
+        try g_PromptEditorGui.Opt("+AlwaysOnTop")
+        try WinActivate("ahk_id " g_PromptEditorGui.Hwnd)
+        catch {
+        }
+    }
+    PromptEditor_AppendSelectablePaths(side, PromptEditor_ParseFileSelect(selected))
+}
+
+PromptEditor_OnPasteSelectablePaths(side) {
+    raw := ""
+    try raw := A_Clipboard
+    catch {
+        return
+    }
+    PromptEditor_AppendSelectablePaths(side, PromptData_ParsePathList(raw))
+}
+
+PromptEditor_OnRemoveSelectable(side) {
+    lv := PromptEditor_SelectableLv(side)
+    if (!IsObject(lv))
+        return
+    selected := []
+    row := 0
+    loop {
+        row := lv.GetNext(row)
+        if (!row)
+            break
+        selected.Push(Integer(row))
+    }
+    if (selected.Length = 0)
+        return
+    arr := PromptEditor_SelectablePathsRef(side)
+    keep := []
+    skip := Map()
+    for idx in selected
+        skip[idx] := true
+    loop arr.Length {
+        if (!skip.Has(A_Index))
+            keep.Push(arr[A_Index])
+    }
+    PromptEditor_SetSelectablePaths(side, keep)
+    PromptEditor_ReloadSelectableList(side)
+}
+
+PromptEditor_OnRefreshMnemonicStories(*) {
+    global IS_WORK_ENVIRONMENT
+    side := (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) ? "work" : "personal"
+    paths := []
+    for it in PromptContextCatalog_MnemonicStories()
+        paths.Push(it.path)
+    PromptEditor_AppendSelectablePaths(side, paths)
+    UtilitySelector_Notify("Added " . paths.Length . " mnemonic story path(s) to " . side . " selectable list.")
 }
 
 PromptEditor_ParseFileSelect(result) {
@@ -924,6 +1429,14 @@ PromptEditor_OnSave(*) {
         dataOutputFormat := "file"
     personalEntries := PromptData_ParseContextEntries(g_PromptEditorPersonalPaths)
     workEntries := PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
+    personalSelectable := PromptData_ParseContextEntries(g_PromptEditorPersonalSelectablePaths)
+    workSelectable := PromptData_ParseContextEntries(g_PromptEditorWorkSelectablePaths)
+    selectCatalog := ""
+    if (PromptData_IsStoryPrompt({ filePath: g_PromptEditorFilePath })) {
+        try selectCatalog := PromptContextCatalog_SupplementFromLabel(g_PromptEditorSelectContextCatalog.Text)
+        catch {
+        }
+    }
     draft := {
         name: name,
         char: ch,
@@ -938,8 +1451,11 @@ PromptEditor_OnSave(*) {
         dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
+        selectContextCatalog: selectCatalog,
         personal_context_files: personalEntries,
-        work_context_files: workEntries
+        work_context_files: workEntries,
+        personal_selectable_context_files: personalSelectable,
+        work_selectable_context_files: workSelectable
     }
     if (!PromptLint_ConfirmSave(draft, personalEntries, workEntries))
         return
@@ -970,8 +1486,11 @@ PromptEditor_OnSave(*) {
         dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
+        selectContextCatalog: selectCatalog,
         personal_context_files: personalEntries,
         work_context_files: workEntries,
+        personal_selectable_context_files: personalSelectable,
+        work_selectable_context_files: workSelectable,
         gitCommit: gitCommit,
         gitCommitMsg: gitCommitMsg
     }
@@ -981,6 +1500,7 @@ PromptEditor_OnSave(*) {
 PromptEditor_Destroy() {
     global g_PromptEditorGui
     PromptEditor_CloseHelp()
+    PromptEditor_ContextScrollTeardown()
     PromptEditor_BindEditorHotkeys(false)
     if (IsObject(g_PromptEditorGui)) {
         try g_PromptEditorGui.Destroy()
@@ -1041,11 +1561,22 @@ Paste modes
 Author notes
 • Content after a --- line is stripped before send (human reminders).
 
+Context tab (Edit prompt)
+• General — name, category, char, prompt file, tags, variables, paste mode, draft.
+• Context — static context (always attached), selectable pool (picker at paste), presets.
+• Advanced — git commit, attach as .txt, data output flags.
+
 Context presets
 • A preset is a reusable bundle of attachment files (personal and/or work).
 • Apply (per side) adds or updates files in this prompt; Save on this dialog keeps them.
 • Manage presets opens the preset library; Save as preset stores the current lists.
-• At paste time, only the list for your environment (personal or work) is attached.
+• At paste time, only the static list for your environment (personal or work) is attached automatically.
+
+Selectable context at paste (Context tab)
+• Selectable lists define candidate files shown in a multi-select picker when you invoke the prompt.
+• Choose 0–n files at paste; they attach in addition to static context.
+• Dynamic supplement (Mnemonic story files) is only available for story prompts; it merges discovered practice .md files into the picker pool at paste time.
+• Refresh mnemonic stories → selectable copies current practice .md paths into the selectable list for the active environment side.
 )"
 }
 

@@ -3,6 +3,26 @@
 ; Dynamic context file picker at prompt paste time
 ; =============================================================================
 
+PromptContextCatalog_SupplementChoices(isStoryPrompt := false) {
+    if (isStoryPrompt)
+        return ["(none)", "Mnemonic story files"]
+    return ["(none)"]
+}
+
+PromptContextCatalog_SupplementLabel(catalog) {
+    catalog := StrLower(Trim(catalog))
+    if (catalog = "mnemonic_stories")
+        return "Mnemonic story files"
+    return "(none)"
+}
+
+PromptContextCatalog_SupplementFromLabel(label) {
+    lab := Trim(label)
+    if (lab = "Mnemonic story files")
+        return "mnemonic_stories"
+    return ""
+}
+
 PromptContextCatalog_List(catalog) {
     catalog := StrLower(Trim(catalog))
     if (catalog = "mnemonic_stories")
@@ -101,7 +121,11 @@ PromptContextCatalog_MnemonicStories() {
             fileLabel: PromptData_ToStoredPath(path)
         })
     }
-    ; Sort by mtime descending (newest first).
+    PromptContextPicker_SortItemsByMtime(items)
+    return items
+}
+
+PromptContextPicker_SortItemsByMtime(items) {
     loop items.Length - 1 {
         swapped := false
         loop items.Length - A_Index {
@@ -116,6 +140,74 @@ PromptContextCatalog_MnemonicStories() {
         if (!swapped)
             break
     }
+}
+
+PromptContextPicker_ItemFromPath(path) {
+    entry := PromptData_NewContextEntry(path)
+    abs := PromptData_ContextEntryPath(entry)
+    if (abs = "")
+        abs := path
+    mtime := 0
+    try mtime := Number(FileGetTime(abs, "M"))
+    catch {
+        mtime := 0
+    }
+    studyTitle := RegExReplace(abs, ".*\\", "")
+    tail := ""
+    studyId := ""
+    practiceNeedle := StrLower(Palace_OutputDir() . "\practice\")
+    if (InStr(StrLower(abs), practiceNeedle)) {
+        slug := RegExReplace(studyTitle, "\.md$", "", , 1)
+        Palace_EnsureData()
+        for s in Palace_Load("studies") {
+            if (StrLower(Trim(s.Has("notes_rel_path") ? s["notes_rel_path"] : "")) = StrLower(slug)) {
+                studyId := s.Has("id") ? s["id"] : ""
+                studyTitle := s.Has("title") ? s["title"] : slug
+                tail := PromptContextCatalog_StudyTailSummary(studyId)
+                break
+            }
+        }
+    }
+    if (tail = "")
+        tail := FileExist(abs) ? "Custom context file" : "(missing file)"
+    return {
+        studyId: studyId,
+        studyTitle: studyTitle,
+        path: abs,
+        tail: tail,
+        mtime: mtime,
+        fileLabel: PromptData_ToStoredPath(abs)
+    }
+}
+
+PromptContextPicker_BuildPool(prompt) {
+    if (!IsObject(prompt))
+        return []
+    items := []
+    seen := Map()
+    for e in PromptData_SelectableContextEntriesForCurrentEnv(prompt) {
+        p := PromptData_ContextEntryPath(e)
+        if (p = "")
+            continue
+        abs := PromptData_ResolveContextPath({ path: p })
+        if (abs = "" || !FileExist(abs))
+            continue
+        key := StrLower(abs)
+        if (seen.Has(key))
+            continue
+        seen[key] := true
+        items.Push(PromptContextPicker_ItemFromPath(p))
+    }
+    if (PromptData_IsStoryPrompt(prompt)) {
+        for it in PromptContextCatalog_List(PromptData_SelectContextCatalog(prompt)) {
+            key := StrLower(it.path)
+            if (seen.Has(key))
+                continue
+            seen[key] := true
+            items.Push(it)
+        }
+    }
+    PromptContextPicker_SortItemsByMtime(items)
     return items
 }
 
@@ -140,12 +232,9 @@ PromptContext_MergeEntries(staticEntries, pickedEntries) {
 }
 
 ; Returns array of context entries, or false if user cancelled.
-PromptContextPicker_Show(catalog) {
-    items := PromptContextCatalog_List(catalog)
-    if (!items.Length) {
-        ShowCenteredOverlay_Utils("No mnemonic story files found on disk", 2400, BANNER_ACCENT_ERROR)
+PromptContextPicker_ShowPool(items) {
+    if (!IsObject(items) || items.Length = 0)
         return []
-    }
     lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
     preCheck := Map()
     if (lastStudy != "") {
@@ -155,17 +244,16 @@ PromptContextPicker_Show(catalog) {
         }
     }
     result := false
-    g := Gui("+AlwaysOnTop +ToolWindow", "Attach story context")
+    g := Gui("+AlwaysOnTop +ToolWindow", "Attach context files")
     g.SetFont("s10", "Segoe UI")
     g.BackColor := "1E1E1E"
     g.SetFont("s10 cWhite", "Segoe UI")
     g.Add("Text", "x12 y10 w560",
-        "Select one or more existing mnemonic stories (Space toggles check). Tail shows last palace / beast / character."
-    )
+        "Select files to attach (Space toggles check). Static context files attach automatically.")
     g.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
     g.Add("Text", "x12 y32 w560",
-        "Esc / Cancel aborts the prompt. OK with none checked continues with static files only.")
-    lv := g.Add("ListView", "x12 y56 w560 h300 Checked Grid", ["Study", "Tail", "File"])
+        "Esc / Cancel aborts the prompt. Attach with none checked continues with static files only.")
+    lv := g.Add("ListView", "x12 y56 w560 h300 Checked Grid", ["Label", "Tail / note", "File"])
     rowPaths := []
     for it in items {
         opts := preCheck.Has(it.path) ? "Check" : ""
@@ -195,7 +283,7 @@ PromptContextPicker_Show(catalog) {
                 picked.Push(PromptData_NewContextEntry(rowPaths[row]))
         }
         if (picked.Length = 0)
-            ShowCenteredOverlay_Utils("No story files selected — continuing with static attachments only", 2600,
+            ShowCenteredOverlay_Utils("No files selected — continuing with static attachments only", 2600,
                 BANNER_ACCENT_ERROR)
         result := picked
         g.Destroy()
@@ -221,4 +309,33 @@ PromptContextPicker_Show(catalog) {
     } catch {
     }
     return result
+}
+
+; Legacy catalog-only entry (editor refresh uses catalog builders directly).
+PromptContextPicker_Show(catalog) {
+    return PromptContextPicker_ShowPool(PromptContextCatalog_List(catalog))
+}
+
+PromptContextPicker_AppendMnemonicStoriesToSelectable(side) {
+    global IS_WORK_ENVIRONMENT, g_PromptEditorPersonalSelectablePaths, g_PromptEditorWorkSelectablePaths
+    arr := (side = "work") ? g_PromptEditorWorkSelectablePaths : g_PromptEditorPersonalSelectablePaths
+    if (!IsObject(arr))
+        arr := []
+    seen := Map()
+    for e in arr {
+        p := StrLower(PromptData_ContextEntryPath(e))
+        if (p != "")
+            seen[p] := true
+    }
+    for it in PromptContextCatalog_MnemonicStories() {
+        p := StrLower(it.path)
+        if (seen.Has(p))
+            continue
+        seen[p] := true
+        arr.Push(PromptData_NewContextEntry(it.path))
+    }
+    if (side = "work")
+        g_PromptEditorWorkSelectablePaths := arr
+    else
+        g_PromptEditorPersonalSelectablePaths := arr
 }
