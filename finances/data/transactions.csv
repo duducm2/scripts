@@ -35,3 +35,10 @@ TX037,2026-08-21,Transfer,"2000,00",transfer,,,ACC_MERCADOP,,ACC_MERCADOP2
 TX038,2026-08-23,Liquidificador for Peterson,"99,00",card_expense,CAT_HUMANITA,,,CARD_MP,
 TX039,2026-08-23,Transfer,"10000,00",transfer,,,ACC_MERCADOP3,,ACC_MERCADOP
 TX040,2026-08-23,Transfer to father,"10000,00",expense,CAT_AJUSTE,,ACC_MERCADOP,,
+TX041,2026-08-23,Tissue container,"16,49",expense,CAT_MATERIAI,Home,ACC_MERCADOP,,
+TX042,2026-08-23,Crux sandal,"283,99",expense,CAT_ROUPA,,ACC_MERCADOP,,
+TX043,2026-08-23,Keyboard keycaps,"100,00",expense,CAT_ELETRONI,,ACC_MERCADOP,,
+TX044,2026-08-23,Skincare moisturizer,"100,00",expense,CAT_MERCADO,Personal care,ACC_MERCADOP,,
+TX045,2026-08-23,Coffee grinding machine,"200,00",expense,CAT_MATERIAI,Home,ACC_MERCADOP,,
+TX046,2026-08-23,Groceries,"214,89",expense,CAT_MERCADO,Food items,ACC_MERCADOP,,
+TX047,2026-08-23,MagSafe phone holders,"378,72",expense,CAT_CELULAR,,ACC_MERCADOP,,

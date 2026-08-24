@@ -1,0 +1,13 @@
+﻿===PREVIEW===
+7 row(s) · Extracted travel tissue container, sandal, a dismantled Mercado Livre purchase (keycaps, moisturizer, coffee grinder, groceries), and MagSafe phone holders.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Tissue container,"16,49",expense,CAT_MATERIAI,Home,ACC_MERCADOP,,
+Crux sandal,"283,99",expense,CAT_ROUPA,,ACC_MERCADOP,,
+Keyboard keycaps,"100,00",expense,CAT_ELETRONI,,ACC_MERCADOP,,
+Skincare moisturizer,"100,00",expense,CAT_MERCADO,Personal care,ACC_MERCADOP,,
+Coffee grinding machine,"200,00",expense,CAT_MATERIAI,Home,ACC_MERCADOP,,
+Groceries,"214,89",expense,CAT_MERCADO,Food items,ACC_MERCADOP,,
+MagSafe phone holders,"378,72",expense,CAT_CELULAR,,ACC_MERCADOP,,
+===END_FILE===
