@@ -286,6 +286,8 @@ UtilitySelector_PromptFromEditorResult(result) {
         tags: result.HasProp("tags") ? result.tags : "",
         pasteMode: result.HasProp("pasteMode") ? result.pasteMode : "default",
         attachAsTxt: result.HasProp("attachAsTxt") ? result.attachAsTxt : 0,
+        expectsDataOutput: result.HasProp("expectsDataOutput") ? result.expectsDataOutput : 0,
+        dataOutputFormat: result.HasProp("dataOutputFormat") ? result.dataOutputFormat : "file",
         variables: result.HasProp("variables") ? result.variables : "",
         filePathDraft: result.HasProp("filePathDraft") ? result.filePathDraft : "",
         personal_context_files: result.personal_context_files,
@@ -366,13 +368,14 @@ UtilitySelector_PopulateLv() {
             if (!PromptData_PromptRowMatches(prompt, q))
                 continue
             g_UtilitySelectorRows.Push(prompt)
-            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt.name), prompt.filePath
-            )
+            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt.name),
+            PromptData_DataOutputOutLabel(prompt), prompt.filePath)
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
-        try g_HotstringSelectorLv.ModifyCol(2, 100)
-        try g_HotstringSelectorLv.ModifyCol(3, 340)
-        try g_HotstringSelectorLv.ModifyCol(4, 330)
+        try g_HotstringSelectorLv.ModifyCol(2, 90)
+        try g_HotstringSelectorLv.ModifyCol(3, 280)
+        try g_HotstringSelectorLv.ModifyCol(4, 90)
+        try g_HotstringSelectorLv.ModifyCol(5, 280)
         if (g_UtilitySelectorRows.Length > 0) {
             try {
                 if (g_UtilitySelectorFilterTyping)

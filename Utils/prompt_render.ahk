@@ -227,5 +227,6 @@ PromptRender_Prepare(prompt) {
     if (!IsObject(prompt))
         return ""
     raw := PromptData_ReadBody(prompt)
+    raw := PromptData_AppendDataOutputDirective(raw, prompt)
     return PromptRender_PrepareBody(raw, prompt)
 }

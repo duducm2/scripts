@@ -630,7 +630,8 @@ class D2C_FlowManager {
             }
             dictation := ""
             try dictation := A_Clipboard
-            optionalSnippet := D2C_CombinePresetWithDictation(PromptData_ReadBody(financePrompt), dictation)
+            financeBody := PromptData_AppendDataOutputDirective(PromptData_ReadBody(financePrompt), financePrompt)
+            optionalSnippet := D2C_CombinePresetWithDictation(financeBody, dictation)
         } else if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
             dictation := ""
             try dictation := A_Clipboard

@@ -542,10 +542,58 @@ PromptData_NormalizeAttachAsTxt(val) {
     return 0
 }
 
+PromptData_NormalizeExpectsDataOutput(val) {
+    return PromptData_NormalizeAttachAsTxt(val)
+}
+
+PromptData_NormalizeDataOutputFormat(mode) {
+    m := StrLower(Trim(mode))
+    if (m = "code" || m = "snippet" || m = "fence")
+        return "code"
+    return "file"
+}
+
 PromptData_AttachAsTxt(prompt) {
     if (!IsObject(prompt))
         return false
     return PromptData_NormalizeAttachAsTxt(prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0) = 1
+}
+
+PromptData_ExpectsDataOutput(prompt) {
+    if (!IsObject(prompt))
+        return false
+    return PromptData_NormalizeExpectsDataOutput(prompt.HasProp("expectsDataOutput") ? prompt.expectsDataOutput : 0) =
+    1
+}
+
+PromptData_DataOutputFormat(prompt) {
+    if (!IsObject(prompt))
+        return "file"
+    return PromptData_NormalizeDataOutputFormat(prompt.HasProp("dataOutputFormat") ? prompt.dataOutputFormat : "file")
+}
+
+; ListView label: blank | txt·file | txt·code
+PromptData_DataOutputOutLabel(prompt) {
+    if (!PromptData_ExpectsDataOutput(prompt))
+        return ""
+    return "txt·" . PromptData_DataOutputFormat(prompt)
+}
+
+; Prepend runtime delivery contract for AIB when ExpectsDataOutput=1.
+PromptData_AppendDataOutputDirective(body, prompt) {
+    if (!PromptData_ExpectsDataOutput(prompt))
+        return body
+    fmt := PromptData_DataOutputFormat(prompt)
+    if (fmt = "code") {
+        block := "DATA OUTPUT CONTRACT (mandatory — from prompt manager):`n"
+            .
+            "This prompt expects structured data. Deliver as exactly ONE fenced text (or unlabeled) code block whose entire body is the pack (use the pack markers from the prompt body). Extension convention is .txt when the human saves it. Do not claim a disk/Desktop/Downloads save. Do not use a download chip as the primary deliverable for this turn.`n`n"
+    } else {
+        block := "DATA OUTPUT CONTRACT (mandatory — from prompt manager):`n"
+            .
+            "This prompt expects structured data. Deliver as a downloadable .txt file (preferred name from the prompt body; gemini-code-….txt with the same markers is OK). Do not claim a disk/Desktop/Downloads save. Do not use a chat code fence as the primary deliverable.`n`n"
+    }
+    return block . body
 }
 
 PromptData_PasteMode(prompt) {
@@ -591,6 +639,10 @@ PromptData_NormalizeEntry(prompt) {
     prompt.tags := PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : [])
     prompt.pasteMode := PromptData_NormalizePasteMode(prompt.HasProp("pasteMode") ? prompt.pasteMode : "")
     prompt.attachAsTxt := PromptData_NormalizeAttachAsTxt(prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0)
+    prompt.expectsDataOutput := PromptData_NormalizeExpectsDataOutput(prompt.HasProp("expectsDataOutput") ?
+        prompt.expectsDataOutput : 0)
+    prompt.dataOutputFormat := PromptData_NormalizeDataOutputFormat(prompt.HasProp("dataOutputFormat") ?
+        prompt.dataOutputFormat : "file")
     prompt.variables := Trim(prompt.HasProp("variables") ? prompt.variables : "")
     prompt.filePathDraft := Trim(prompt.HasProp("filePathDraft") ? prompt.filePathDraft : "")
     prompt.personal_context_files := PromptData_ParseContextEntries(prompt.HasProp("personal_context_files") ?
@@ -708,6 +760,10 @@ PromptData_Load(force := false, skipMtime := false) {
             pasteMode := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "PasteMode", ""))
             attachAsTxt := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "AttachAsTxt",
                 "0"))
+            expectsDataOutput := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
+                "ExpectsDataOutput", "0"))
+            dataOutputFormat := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
+                "DataOutputFormat", "file"))
             variables := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Variables", ""))
             filePathDraft := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section,
                 "FilePathDraft", ""))
@@ -727,6 +783,7 @@ PromptData_Load(force := false, skipMtime := false) {
                 taken[charVal] := true
             list.Push(PromptData_NormalizeEntry({ name: name, char: charVal, category: category, author: author,
                 filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, attachAsTxt: attachAsTxt,
+                expectsDataOutput: expectsDataOutput, dataOutputFormat: dataOutputFormat,
                 variables: variables,
                 filePathDraft: filePathDraft, personal_context_files: personalFiles,
                 work_context_files: workFiles }))
@@ -772,6 +829,8 @@ PromptData_EnsurePlanPromptEntry() {
         tags: "",
         pasteMode: "default",
         attachAsTxt: 0,
+        expectsDataOutput: 1,
+        dataOutputFormat: "file",
         variables: "",
         filePathDraft: "",
         personal_context_files: [],
@@ -814,6 +873,8 @@ PromptData_Save(list) {
             lines.Push("Source=" . PromptData_EscapeIniValue(prompt.HasProp("source") ? prompt.source : "file"))
             lines.Push("Tags=" . PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : []))
             lines.Push("PasteMode=" . (prompt.HasProp("pasteMode") ? prompt.pasteMode : "default"))
+            lines.Push("ExpectsDataOutput=" . (prompt.HasProp("expectsDataOutput") ? prompt.expectsDataOutput : 0))
+            lines.Push("DataOutputFormat=" . (prompt.HasProp("dataOutputFormat") ? prompt.dataOutputFormat : "file"))
             lines.Push("Variables=" . (prompt.HasProp("variables") ? prompt.variables : ""))
             lines.Push("FilePathDraft=" . (prompt.HasProp("filePathDraft") ? prompt.filePathDraft : ""))
             PromptData_AppendContextLines(lines, "Personal", prompt.personal_context_files)
@@ -886,6 +947,8 @@ PromptData_Sorted() {
             tags: p.HasProp("tags") ? p.tags : "",
             pasteMode: p.HasProp("pasteMode") ? p.pasteMode : "default",
             attachAsTxt: p.HasProp("attachAsTxt") ? p.attachAsTxt : 0,
+            expectsDataOutput: p.HasProp("expectsDataOutput") ? p.expectsDataOutput : 0,
+            dataOutputFormat: p.HasProp("dataOutputFormat") ? p.dataOutputFormat : "file",
             variables: p.HasProp("variables") ? p.variables : "",
             filePathDraft: p.HasProp("filePathDraft") ? p.filePathDraft : "",
             personal_context_files: PromptData_ParseContextEntries(p.HasProp("personal_context_files") ?

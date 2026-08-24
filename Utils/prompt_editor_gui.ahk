@@ -25,6 +25,9 @@ global g_PromptEditorTags := false
 global g_PromptEditorVariables := false
 global g_PromptEditorPasteMode := false
 global g_PromptEditorAttachAsTxt := false
+global g_PromptEditorExpectsDataOutput := false
+global g_PromptEditorDataOutputFormat := false
+global g_PromptEditorDataOutputHint := false
 global g_PromptEditorDraftFile := false
 global g_PromptEditorDraftPath := ""
 global g_PromptEditorGitCommit := false
@@ -106,6 +109,7 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode
     global g_PromptEditorDraftFile, g_PromptEditorDraftPath, g_PromptEditorGitCommit
     global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
+    global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat, g_PromptEditorDataOutputHint
 
     colW := 360
     pathCol := colW - 154
@@ -173,6 +177,32 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     try g_PromptEditorAttachAsTxt.Value := attachAsTxtVal
     catch {
     }
+
+    g_PromptEditorExpectsDataOutput := g_PromptEditorGui.Add("CheckBox", "xm w200", "Expects data output")
+    expectsVal := 0
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("expectsDataOutput"))
+        expectsVal := PromptData_NormalizeExpectsDataOutput(existingPrompt.expectsDataOutput)
+    try g_PromptEditorExpectsDataOutput.Value := expectsVal
+    catch {
+    }
+    g_PromptEditorExpectsDataOutput.OnEvent("Click", PromptEditor_OnExpectsDataOutputClick)
+
+    g_PromptEditorGui.Add("Text", "x+8 yp w90", "Data output")
+    g_PromptEditorDataOutputFormat := g_PromptEditorGui.Add("DropDownList", "yp w100", ["file", "code"])
+    fmtVal := "file"
+    if (IsObject(existingPrompt) && existingPrompt.HasProp("dataOutputFormat"))
+        fmtVal := PromptData_NormalizeDataOutputFormat(existingPrompt.dataOutputFormat)
+    try g_PromptEditorDataOutputFormat.Text := fmtVal
+    catch {
+        try g_PromptEditorDataOutputFormat.Choose(1)
+        catch {
+        }
+    }
+    try g_PromptEditorDataOutputFormat.Enabled := (expectsVal = 1)
+    catch {
+    }
+    g_PromptEditorDataOutputHint := g_PromptEditorGui.Add("Text", "x+12 yp w280 c808080",
+        "Convention: .txt — app transpiles after save")
 
     g_PromptEditorGui.Add("Text", "xm w" . colW . " Section", "Personal context files")
     g_PromptEditorGui.Add("Text", "ys w" . colW, "Work context files")
@@ -821,12 +851,24 @@ PromptEditor_OnCancel(*) {
     PromptEditor_Destroy()
 }
 
+PromptEditor_OnExpectsDataOutputClick(*) {
+    global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat
+    on := 0
+    try on := g_PromptEditorExpectsDataOutput.Value
+    catch {
+    }
+    try g_PromptEditorDataOutputFormat.Enabled := (on = 1)
+    catch {
+    }
+}
+
 PromptEditor_OnSave(*) {
     global g_PromptEditorResult, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFilePath, g_PromptEditorSource, g_PromptEditorAuthor, g_PromptEditorIsEdit
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode, g_PromptEditorDraftPath
     global g_PromptEditorGitCommit, g_PromptEditorAttachAsTxt
+    global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat
 
     name := Trim(g_PromptEditorName.Value)
     if (name = "") {
@@ -869,6 +911,16 @@ PromptEditor_OnSave(*) {
     try attachAsTxt := PromptData_NormalizeAttachAsTxt(g_PromptEditorAttachAsTxt.Value)
     catch {
     }
+    expectsDataOutput := 0
+    try expectsDataOutput := PromptData_NormalizeExpectsDataOutput(g_PromptEditorExpectsDataOutput.Value)
+    catch {
+    }
+    dataOutputFormat := "file"
+    try dataOutputFormat := PromptData_NormalizeDataOutputFormat(g_PromptEditorDataOutputFormat.Text)
+    catch {
+    }
+    if (expectsDataOutput = 0)
+        dataOutputFormat := "file"
     personalEntries := PromptData_ParseContextEntries(g_PromptEditorPersonalPaths)
     workEntries := PromptData_ParseContextEntries(g_PromptEditorWorkPaths)
     draft := {
@@ -881,6 +933,8 @@ PromptEditor_OnSave(*) {
         tags: tags,
         pasteMode: pasteMode,
         attachAsTxt: attachAsTxt,
+        expectsDataOutput: expectsDataOutput,
+        dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
         personal_context_files: personalEntries,
@@ -911,6 +965,8 @@ PromptEditor_OnSave(*) {
         tags: tags,
         pasteMode: pasteMode,
         attachAsTxt: attachAsTxt,
+        expectsDataOutput: expectsDataOutput,
+        dataOutputFormat: dataOutputFormat,
         variables: variables,
         filePathDraft: draftPath,
         personal_context_files: personalEntries,

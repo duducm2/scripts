@@ -88,13 +88,15 @@ UtilitySelector_ApplyChrome() {
         try g_HotstringSelectorLv.ModifyCol(2, 220, "Category")
         try g_HotstringSelectorLv.ModifyCol(3, 80, "Count")
         try g_HotstringSelectorLv.ModifyCol(4, 0, "")
+        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
         return
     }
     if (g_UtilitySelectorCategory = "Prompts") {
         try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
-        try g_HotstringSelectorLv.ModifyCol(2, 100, "Category")
-        try g_HotstringSelectorLv.ModifyCol(3, 340, "Name")
-        try g_HotstringSelectorLv.ModifyCol(4, 330, "File")
+        try g_HotstringSelectorLv.ModifyCol(2, 90, "Category")
+        try g_HotstringSelectorLv.ModifyCol(3, 280, "Name")
+        try g_HotstringSelectorLv.ModifyCol(4, 90, "Out")
+        try g_HotstringSelectorLv.ModifyCol(5, 280, "File")
         return
     }
     if (g_UtilitySelectorCategory = "Hotstrings") {
@@ -102,6 +104,7 @@ UtilitySelector_ApplyChrome() {
         try g_HotstringSelectorLv.ModifyCol(2, 260, "Name")
         try g_HotstringSelectorLv.ModifyCol(3, 420, "Text")
         try g_HotstringSelectorLv.ModifyCol(4, 0, "")
+        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
         return
     }
     if (g_UtilitySelectorCategory = "Projects") {
@@ -109,12 +112,15 @@ UtilitySelector_ApplyChrome() {
         try g_HotstringSelectorLv.ModifyCol(2, 400, "Name")
         try g_HotstringSelectorLv.ModifyCol(3, 0, "")
         try g_HotstringSelectorLv.ModifyCol(4, 0, "")
+        try g_HotstringSelectorLv.ModifyCol(5, 0, "")
         return
     }
     try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
     try g_HotstringSelectorLv.ModifyCol(2, 500, "Title")
     try g_HotstringSelectorLv.ModifyCol(3, 0, "")
     try g_HotstringSelectorLv.ModifyCol(4, 0, "")
+    try g_HotstringSelectorLv.ModifyCol(5, 0, "")
+    return
 }
 
 UtilitySelector_WindowTitle() {
@@ -221,7 +227,7 @@ UtilitySelector_CreateGui() {
     g_HotstringSelectorFilterCtrl.OnEvent("Focus", UtilitySelector_OnFilterFocus)
     g_HotstringSelectorFilterCtrl.OnEvent("LoseFocus", UtilitySelector_OnFilterKillFocus)
     g_HotstringSelectorLv := g_HotstringSelectorGui.Add("ListView", "xm w820 h420 -Multi", ["Char", "Category", "Count",
-        "File"])
+        "Out", "File"])
     g_HotstringSelectorLv.OnEvent("DoubleClick", UtilitySelector_OnListActivate)
 
     g_HotstringSelectorBtnAdd := g_HotstringSelectorGui.Add("Button", "w100 Section", "Add")
