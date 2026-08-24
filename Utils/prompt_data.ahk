@@ -413,10 +413,6 @@ PromptData_PromptHasSelectablePicker(prompt) {
     return PromptData_SelectableContextEntriesForCurrentEnv(prompt).Length > 0
 }
 
-PromptData_SelectablePickerListSuffix(prompt) {
-    return PromptData_PromptHasSelectablePicker(prompt) ? " +sel" : ""
-}
-
 PromptData_ReadUtf8(path) {
     ; RawRead + StrGet decodes 4-byte emoji correctly; FileOpen "UTF-8" can corrupt them.
     if (!FileExist(path))

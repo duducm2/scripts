@@ -129,7 +129,7 @@ PromptEditor_Layout() {
     padY := 14
     colGap := 16
     tabW := 760
-    tabH := 640
+    tabH := 720
     ; Insets inside the tab page (applied via Gui.Margin after UseTab — not absolute x/y).
     innerX := 18
     innerY := 14
@@ -293,8 +293,8 @@ PromptEditor_BuildTabContext(existingPrompt, L) {
 
     track(g_PromptEditorGui.Add("Text", "xs y+12 w" . colW . " Section", "Personal static context"))
     track(g_PromptEditorGui.Add("Text", "x+" . colGap . " yp w" . colW, "Work static context"))
-    g_PromptEditorPersonalLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r2", ["Path", "Cmp", "CSV"]))
-    g_PromptEditorWorkLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r2", ["Path",
+    g_PromptEditorPersonalLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r5", ["Path", "Cmp", "CSV"]))
+    g_PromptEditorWorkLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r5", ["Path",
         "Cmp",
         "CSV"]))
     for lv in [g_PromptEditorPersonalLv, g_PromptEditorWorkLv] {
@@ -391,8 +391,8 @@ PromptEditor_BuildTabContext(existingPrompt, L) {
 
     track(g_PromptEditorGui.Add("Text", "xs y+14 w" . colW . " Section", "Personal selectable"))
     track(g_PromptEditorGui.Add("Text", "x+" . colGap . " yp w" . colW, "Work selectable"))
-    g_PromptEditorPersonalSelectableLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r2", ["Path"]))
-    g_PromptEditorWorkSelectableLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r2", [
+    g_PromptEditorPersonalSelectableLv := track(g_PromptEditorGui.Add("ListView", "xs w" . colW . " r5", ["Path"]))
+    g_PromptEditorWorkSelectableLv := track(g_PromptEditorGui.Add("ListView", "x+" . colGap . " yp w" . colW . " r5", [
         "Path"]))
     g_PromptEditorPersonalSelectableLv.ModifyCol(1, selPathCol)
     g_PromptEditorWorkSelectableLv.ModifyCol(1, selPathCol)

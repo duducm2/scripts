@@ -374,7 +374,7 @@ UtilitySelector_PopulateLv() {
                 continue
             g_UtilitySelectorRows.Push(prompt)
             g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt.name),
-            PromptData_DataOutputOutLabel(prompt) . PromptData_SelectablePickerListSuffix(prompt), prompt.filePath)
+            PromptData_DataOutputOutLabel(prompt), prompt.filePath)
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
         try g_HotstringSelectorLv.ModifyCol(2, 90)
