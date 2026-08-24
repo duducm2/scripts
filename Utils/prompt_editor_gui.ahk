@@ -108,6 +108,7 @@ PromptEditor_BuildControls(existingPrompt, avail, currentChar) {
     global g_PromptEditorPersonalLv, g_PromptEditorWorkLv, g_PromptEditorFlagCtrls
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode
     global g_PromptEditorDraftFile, g_PromptEditorDraftPath, g_PromptEditorGitCommit
+    global g_PromptEditorAttachAsTxt
     global g_PromptEditorPersonalPreset, g_PromptEditorWorkPreset
     global g_PromptEditorExpectsDataOutput, g_PromptEditorDataOutputFormat, g_PromptEditorDataOutputHint
 
