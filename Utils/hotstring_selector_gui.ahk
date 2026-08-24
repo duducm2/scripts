@@ -337,12 +337,21 @@ UtilitySelector_IsFocusFragileWindow() {
     return false
 }
 
-ShowHotstringSelector() {
+ShowHotstringSelector(initialCategory := "") {
     global g_HotstringSelectorGui, g_HotstringSelectorActive
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorRestoreHwnd
     global g_UtilitySelectorNoActivate, g_OnEscapePressed
 
     if (g_HotstringSelectorActive && UtilitySelector_GuiIsAlive()) {
+        ; Same view again → toggle close. Different category → switch without full reopen.
+        if (initialCategory != "") {
+            if (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory = initialCategory) {
+                CleanupHotstringSelector()
+                return
+            }
+            UtilitySelector_SwitchToCategory(initialCategory)
+            return
+        }
         CleanupHotstringSelector()
         return
     }
@@ -361,8 +370,13 @@ ShowHotstringSelector() {
 
     g_UtilitySelectorNoActivate := UtilitySelector_IsFocusFragileWindow()
 
-    g_UtilitySelectorMode := "top"
-    g_UtilitySelectorCategory := ""
+    if (initialCategory != "") {
+        g_UtilitySelectorMode := "category"
+        g_UtilitySelectorCategory := initialCategory
+    } else {
+        g_UtilitySelectorMode := "top"
+        g_UtilitySelectorCategory := ""
+    }
 
     if (!UtilitySelector_GuiIsAlive())
         UtilitySelector_CreateGui()

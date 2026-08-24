@@ -129,14 +129,16 @@ For each refactor or new automation path, confirm:
 
 ---
 
-## 11. Hot-path example: YouTube focus (Win+Alt+Shift+H, AppLaunchers)
+## 11. Hot-path example: YouTube focus (historical; `#!+h` now opens Prompts)
 
-Illustrates **minimizing** UIA cost on a sub-second hotkey path:
+Previously illustrated by Win+Alt+Shift+H in AppLaunchers (YouTube focus). That hotkey now opens Utility Shortcuts → Prompts. The principles below still apply to other sub-second UIA hotkeys:
 
 - **Bind** `UIA_Browser` to the **specific** window (`"ahk_id " hwnd`), not a generic `ahk_exe` match, so URL and document queries refer to the correct Chrome instance.
-- **Prefer** a **single** cheap call (`GetCurrentURL`) plus a **documented assumption** (e.g. user enters focus with the watch-page video **paused**) and **one** `Send("k")` over repeated `FindFirst` / subtree scans that can cost hundreds of milliseconds per key press.
-- **Trade-off** must be explicit in code comments: if the assumption is wrong (e.g. video already playing), the same key toggles playback — acceptable only when the workflow guarantees or accepts that state.
+- **Prefer** a **single** cheap call (`GetCurrentURL`) plus a **documented assumption** and **one** `Send(...)` over repeated `FindFirst` / subtree scans that can cost hundreds of milliseconds per key press.
+- **Trade-off** must be explicit in code comments when an assumption can be wrong.
 - **Do not** add loading banners or NDJSON logging on the same hotkey path unless required for UX or diagnostics; they add latency and I/O.
+
+YouTube focus-session helpers remain in [`Utils/peek_pdf_study_01.ahk`](../Utils/peek_pdf_study_01.ahk) if revived under another binding.
 
 ---
 

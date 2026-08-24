@@ -35,7 +35,7 @@ Central helper: `StudyLinkHelpers.ahk` — `StudyLink_OpenUrlInChrome` (lines 24
 | 9   | `Utils.ahk` **11599** — `TryRunFile`                                          | HTTP(S) → `StudyLink_OpenUrlInChrome(fp, true)`; else `Run(fp)` (implemented) | Quick-open URLs in `InitQuickOpenFiles` (**921–935**)              | `[x]` Separate window          |
 | 10  | `Utils.ahk` **11269** — `GeminiNavigateFocusAndPasteFirstSnippet`             | `chrome.exe --new-window` when no Gemini window                               | `https://gemini.google.com/`                                       | `[ ]` Already isolated         |
 | 11  | `Gemini.ahk` **1083** — `InitializeGeminiFirstTime`                           | `chrome.exe --new-window` (two Gemini tabs)                                   | `https://gemini.google.com/`                                       | `[ ]` Already isolated         |
-| 12  | `AppLaunchers.ahk` **418** — `#!+h` (no YouTube window)                       | `chrome.exe --new-window` + History URL                                       | YouTube History feed                                               | `[ ]` Already isolated         |
+| 12  | ~~`AppLaunchers` `#!+h` YouTube History~~                                     | _(removed)_ — `#!+h` now opens Utility Shortcuts → Prompts                    | —                                                                  | `[x]` Repurposed 2026-08-24    |
 | 13  | `AppLaunchers.ahk` **1006** — `HandleWikipediaChar`                           | `chrome.exe --new-window` + `item.url`                                        | Hardcoded Wikipedia URLs (**482–485**)                             | `[ ]` Already isolated         |
 
 ---
