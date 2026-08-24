@@ -596,6 +596,14 @@ PromptData_AppendDataOutputDirective(body, prompt) {
     return block . body
 }
 
+; Body ready to send to AIB: includes, placeholders, and Prompt Manager data-output contract.
+; Returns "" if the user cancels the variable fill dialog.
+PromptData_PreparedBodyForSend(prompt) {
+    if (!IsObject(prompt))
+        return ""
+    return PromptRender_Prepare(prompt)
+}
+
 PromptData_PasteMode(prompt) {
     if (!IsObject(prompt))
         return "default"

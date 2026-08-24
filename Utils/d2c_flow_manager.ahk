@@ -602,9 +602,9 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" = preset from
-    ; assets/prompt/*.txt + clipboard dictation; "finance_daily" = Utility Shortcuts Prompt char d
-    ; (finance-daily-transactions.txt) + context CSV attachments + clipboard dictation.
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" | "finance_daily"
+    ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
+    ; Finance daily / registry presets: attach context files then paste prompt + dictation.
     ; Finance daily sends only (no wait / download / import); user finishes manually.
     ; showPreMovementWarning: true only for non-banner-triggered submits (e.g., hotstring path).
     ExecuteGeminiSubmit(autoSubmit := true, presetMode := "", showPreMovementWarning := false) {
@@ -619,35 +619,49 @@ class D2C_FlowManager {
             PlayPreMovementWarning(aiLabel)
 
         optionalSnippet := ""
-        financePrompt := false
-        if (presetMode = "finance_daily") {
-            PromptData_Load()
-            financePrompt := PromptData_FindByChar("d")
-            if (!IsObject(financePrompt)) {
+        registryPrompt := false
+        useRegistryPastePath := false
+        dictation := ""
+        try dictation := A_Clipboard
+
+        if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
+            PromptData_Load(true)
+            charKey := ""
+            if (presetMode = "finance_daily")
+                charKey := "d"
+            else if (presetMode = "grammar")
+                charKey := "1"
+            else if (presetMode = "aiopt")
+                charKey := "3"
+            else if (presetMode = "mtask")
+                charKey := "2"
+            registryPrompt := PromptData_FindByChar(charKey)
+            if (presetMode = "finance_daily" && !IsObject(registryPrompt)) {
                 ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
                 this.Reset()
                 return
             }
-            dictation := ""
-            try dictation := A_Clipboard
-            financeBody := PromptData_AppendDataOutputDirective(PromptData_ReadBody(financePrompt), financePrompt)
-            optionalSnippet := D2C_CombinePresetWithDictation(financeBody, dictation)
-        } else if (presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
-            dictation := ""
-            try dictation := A_Clipboard
-            if (presetMode = "grammar")
-                preset := GetGrammarPromptText()
-            else if (presetMode = "aiopt")
-                preset := GetAioptPromptText()
-            else
-                preset := GetMtaskPromptText()
-            optionalSnippet := D2C_CombinePresetWithDictation(preset, dictation)
+            presetBody := ""
+            if (IsObject(registryPrompt)) {
+                presetBody := PromptData_PreparedBodyForSend(registryPrompt)
+                if (presetBody = "") {
+                    this.Reset()
+                    return
+                }
+                useRegistryPastePath := true
+            } else if (presetMode = "grammar") {
+                presetBody := GetGrammarPromptText()
+            } else if (presetMode = "aiopt") {
+                presetBody := GetAioptPromptText()
+            } else if (presetMode = "mtask") {
+                presetBody := GetMtaskPromptText()
+            }
+            optionalSnippet := D2C_CombinePresetWithDictation(presetBody, dictation)
         }
 
         this.CompanionId := ResolveGlobalAICompanion()
-        if (presetMode = "finance_daily") {
-            ; Focus only (no ClipAngel paste). Empty NavigateFocusAndPaste would send the
-            ; dictation first; we attach CSVs then paste prompt + dictation once.
+        if (useRegistryPastePath) {
+            ; Focus only (no ClipAngel paste). Attach Prompt Manager context, then paste once.
             if (this.CompanionId = "enterprise") {
                 GeminiEnterprise_OpenOrFocus()
                 this.GeminiHwnd := GetGeminiEnterpriseWindowHwnd()
@@ -686,7 +700,7 @@ class D2C_FlowManager {
             }
             if (!this.GeminiHwnd)
                 this.GeminiHwnd := WinExist("A")
-            UtilitySelector_AttachPromptContextFiles(financePrompt)
+            UtilitySelector_AttachPromptContextFiles(registryPrompt)
             if (optionalSnippet != "")
                 InsertText(optionalSnippet)
         } else if (this.CompanionId = "enterprise") {

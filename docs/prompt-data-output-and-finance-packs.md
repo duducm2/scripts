@@ -25,22 +25,22 @@ Documentation for future agents working on Utility Shortcuts prompts, AIB delive
 
 ListView **Out** column: blank, `txt·file`, or `txt·code`.
 
-**Seeded `ExpectsDataOutput=1` + `DataOutputFormat=file`:**
+**Seeded `ExpectsDataOutput=1`:**
 
-- `finance-daily-transactions.txt` (char `d`)
-- `finance-monthly-investments.txt` (char `m`)
-- `story-prompt.txt`, `story-reduction-prompt.txt`, `plan-prompt.txt`
+- `finance-daily-transactions.txt` (char `d`) — `DataOutputFormat=code`
+- `finance-monthly-investments.txt` (char `m`) — `DataOutputFormat=code`
+- `story-prompt.txt`, `story-reduction-prompt.txt`, `plan-prompt.txt` — typically `file` unless changed in the editor
 
-Switch to `code` in the editor when Gemini cannot attach downloads.
+Change **Data output** in Prompt Manager (`#!+h` or `#!+U` → Prompts → Edit) and save. Body prose alone does **not** flip file vs code.
 
 ### Injected contract (runtime)
 
-`PromptData_AppendDataOutputDirective(body, prompt)` prepends a short mandatory block when expects=1.
+`PromptData_AppendDataOutputDirective` / `PromptData_PreparedBodyForSend` → `PromptRender_Prepare`.
 
 Call sites:
 
-- [`Utils/prompt_render.ahk`](../Utils/prompt_render.ahk) — `PromptRender_Prepare` (Utility Shortcuts paste / L-arm companion)
-- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — finance daily **[D]** after `ReadBody`, before combine with dictation
+- [`Utils/prompt_render.ahk`](../Utils/prompt_render.ahk) — Utility Shortcuts paste / L-arm companion
+- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / `2`), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation
 
 The long FILE DELIVERY PROTOCOL inside each `.txt` body is documentation/fallback; the injected block is the runtime authority for **file vs code**.
 
