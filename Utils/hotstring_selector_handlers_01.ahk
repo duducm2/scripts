@@ -370,7 +370,9 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     if !InsertFiles_IsAiChatForeground()
         return
     minMs := (fileCount >= 3) ? 2000 : 1500
-    timeoutMs := 8000
+    ; Base 8s + 2s per file above 2, cap 25s (multi-file finance attach).
+    extra := (fileCount > 2) ? ((fileCount - 2) * 2000) : 0
+    timeoutMs := Min(8000 + extra, 25000)
     uia := ""
     try {
         hwnd := WinGetID("A")
@@ -393,6 +395,57 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
             return
         Sleep 150
     }
+}
+
+; After multi-file attach + body paste: wait until companion Send/Submit is enabled.
+; Returns true if ready, false on timeout (caller may still attempt submit).
+PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companionId := StrLower(Trim(companionId))
+    tStart := A_TickCount
+    while ((A_TickCount - tStart) < timeoutMs) {
+        if (!WinExist("ahk_id " hwnd))
+            return false
+        uia := 0
+        try uia := UIA_Browser("ahk_id " hwnd)
+        catch {
+            uia := 0
+        }
+        if (IsObject(uia) && !PromptContext_IsUploading(uia)) {
+            sendBtn := 0
+            hasText := false
+            try {
+                if (companionId = "enterprise") {
+                    sendBtn := GeminiEnterprise_FindSubmitButton(uia)
+                    hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+                } else if (companionId = "copilot") {
+                    sendBtn := CopilotWeb_FindSendButton(uia)
+                    hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
+                } else {
+                    sendBtn := Gemini_FindSendButton(uia)
+                    hasText := (GeminiPromptFieldGetTextFromUia(uia) != "")
+                }
+            } catch {
+                sendBtn := 0
+                hasText := false
+            }
+            if (sendBtn && hasText) {
+                enabled := false
+                try enabled := !!sendBtn.GetPropertyValue(UIA.Property.IsEnabled)
+                catch {
+                    try enabled := !!sendBtn.IsEnabled
+                    catch {
+                        enabled := true ; control found; treat as ready if IsEnabled unavailable
+                    }
+                }
+                if (enabled)
+                    return true
+            }
+        }
+        Sleep 200
+    }
+    return false
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=

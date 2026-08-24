@@ -720,6 +720,17 @@ class D2C_FlowManager {
         }
 
         if (autoSubmit) {
+            if (presetMode = "finance_daily") {
+                try ShowCenteredOverlay_Utils("⏳ Waiting for context files…", 2500, BANNER_ACCENT_INTERMEDIATE)
+                catch {
+                }
+                ready := PromptContext_WaitForSendReady(this.GeminiHwnd, this.CompanionId, 45000)
+                if (!ready) {
+                    try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
+                    catch {
+                    }
+                }
+            }
             if (this.CompanionId = "enterprise") {
                 Sleep 1000
                 endTick := A_TickCount + 5000
