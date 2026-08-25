@@ -850,8 +850,7 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     }
 }
 
-; Device lists: blue = isolated, soft green = active, gray = inactive.
-; Shape markers (◆ / ● / ○) reinforce status for colorblind reading.
+; Device lists: blue = isolated, gray = everything else. ◆ marks isolated for colorblind reading.
 AudioBt_LvEnableRowColors(lv) {
     if (!IsObject(lv))
         return
@@ -874,45 +873,29 @@ AudioBt_LvEnableRowColors(lv) {
     }
 }
 
-; Returns "isolated" | "active" | "inactive" | "".
-AudioBt_RowStatusKind(row) {
+AudioBt_RowIsIsolated(row) {
     if !IsObject(row)
-        return ""
-    state := row.state
-    iso := ""
-    if row.HasProp("iso")
-        iso := row.iso
-    if (iso != "" || InStr(state, "Isolated"))
-        return "isolated"
-    if InStr(state, "Disconnected") || InStr(state, "Disabled") || InStr(state, "Unplugged") || InStr(state,
-        "Not present")
-        return "inactive"
-    if InStr(state, "Connected") || InStr(state, "Enabled") || InStr(state, "Default")
-        return "active"
-    return ""
+        return false
+    if row.HasProp("iso") && row.iso != ""
+        return true
+    return InStr(row.state, "Isolated")
 }
 
 AudioBt_StateDisplay(row) {
     if !IsObject(row)
         return ""
-    ; Distinct shapes so status is readable without relying on hue alone.
-    switch AudioBt_RowStatusKind(row) {
-        case "isolated": return "◆ " . row.state
-        case "active": return "● " . row.state
-        case "inactive": return "○ " . row.state
-        default: return row.state
-    }
+    if AudioBt_RowIsIsolated(row)
+        return "◆ " . row.state
+    return row.state
 }
 
 AudioBt_LvRowBkColor(row) {
-    ; COLORREF is BGR. Prefer luminance separation as well as hue.
-    ; Isolated soft blue #C5DCF5 → 0xF5DCC5; active #E3F5DC → 0xDCF5E3; inactive #D6D6D6.
-    switch AudioBt_RowStatusKind(row) {
-        case "isolated": return 0xF5DCC5
-        case "active": return 0xDCF5E3
-        case "inactive": return 0xD6D6D6
-        default: return ""
-    }
+    ; COLORREF is BGR. Isolated soft blue #C5DCF5 → 0xF5DCC5; general gray #D6D6D6.
+    if !IsObject(row)
+        return ""
+    if AudioBt_RowIsIsolated(row)
+        return 0xF5DCC5
+    return 0xD6D6D6
 }
 
 AudioBt_LvCustomDraw(LV, L) {
