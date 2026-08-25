@@ -1,4 +1,4 @@
-id,plan_id,section_path,text,checked,sort_order
+﻿id,plan_id,section_path,text,checked,sort_order
 PITEM_0001,PLAN_0001,Backlog,dumb zone,0,1
 PITEM_0002,PLAN_0001,Backlog,Meta prompt,0,2
 PITEM_0003,PLAN_0001,Backlog,"ETL (Extract, Transform, Load)",0,3

@@ -1,4 +1,4 @@
-id,study_id,title,sort_order,active
+﻿id,study_id,title,sort_order,active
 PLAN_0001,STUDY_AI,AI Study Plan,1,1
 PLAN_0002,STUDY_ENGLISH,English Language Study Plan,1,1
 PLAN_0003,STUDY_GERMAN,Comprehensive Autonomous German Language Study Plan,1,1

@@ -2238,13 +2238,14 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 - **File-wide uniqueness:** In one mnemonic list file (`mnemonics-&lt;topic&gt;.md` or a portal file), **each character name MAY appear at most once**. NEVER reuse a character already assigned to another street in the same file.
 - **Pool exhausted:** If unused names in `characters.json` are fewer than streets needing assignment, flag this in the AI quality summary—NEVER silently skip a street or reuse a name.
 - **Portal scope:** Uniqueness applies **per file**. Avoid reusing a character from the main list in a linked portal file when both are reviewed as one palace.
+- **Name vs image split:** Keep the canon name in `character_name`, PREVIEW titles, and Story/Narrative text (human recall). For **image generation** (`image_prompt` and Background Preservation), NEVER use that name — use the lookalike formula in **Image composition rules**.
 
 **Check before adding a character:**
 
 1. Scan the **full existing study list** for character names already in use.
 2. Pick only **unused** names from `characters.json`.
 3. Assign **exactly one** unused character to each new street—do not repeat a name from step 1.
-4. Confirm every street in your output has its one character woven into narratives and the matching image prompt.
+4. Confirm every street has its one character in narratives/`character_name`, and the matching `image_prompt` uses the lookalike formula (no real/IP names).
 
 **Character preservation after SMASH / REMOVE:**
 
@@ -2325,7 +2326,21 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 - **Placement:** Composite foreground elements into the fixed background as physically grounded inserts.
 - **Depth slots (required):** Assign each beast on a street its depth slot per **Streets and Depth Slots**. One beast per slot; no clustering on the same depth plane or lateral zone; no pavement-only anchors when structures exist in frame.
 - **Mnemonic salience:** Preserve story memorability through **realistic rendering** of symbolic, strange, exaggerated, metaphorical foreground details. Every beat SHOULD reflect the **Bizarreness Gate**. Prefer dramatic expressions, texture, absurd contrast, bizarre juxtapositions, non-graphic grotesque elements, adult-safe non-explicit sensual tension, startling but non-graphic impact over explicit depictions.
-- **Copyright Workaround:** To avoid blocks from image generators (like Gemini), do not use copyrighted names (e.g., &quot;Yoda&quot;). Instead, describe a character with similar features (e.g., &quot;a small green alien with pointy ears and a robe&quot;).
+- **Character likeness / image-safety (mandatory for all image prompts):** Image generators often block named real people (living or historical), celebrities, and copyrighted/IP characters. Treat every palace character as an **original lookalike**, never as that named person or franchise character.
+
+  **Rules:**
+  1. In `image_prompt` (and any text sent to an image model): NEVER write real person names, celebrity names, historical figure names, or IP/franchise character names (e.g. no &quot;Johann Sebastian Bach&quot;, &quot;Michael Jackson&quot;, &quot;Ada Lovelace&quot;, &quot;Yoda&quot;, &quot;Hermione Granger&quot;).
+  2. Describe an **original fictional person** who shares the memorable visual traits of the assigned character (age band, era/clothing, hair, signature props, posture, vibe) so recall still works.
+  3. Explicitly disclaim identity in the same sentence: e.g. `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure / not any copyrighted character`.
+  4. `character_name` in CSV/PREVIEW/stories MAY keep the canon name for human recall; only the image path must stay nameless.
+
+  **Lookalike formula (use this shape in every `image_prompt`):**
+  `an original fictional [brief role] who resembles [age band], [hair/face cues], [era or signature clothing], [1–2 signature props or gestures] — not any real, living, historical, or named public figure and not any copyrighted character`
+
+  **Examples:**
+  - Canon `Johann Sebastian Bach` → `an original fictional 18th-century composer-like man (older adult, white powdered wig, dark baroque coat, conducting with a baton) — not any real or named historical person`
+  - Canon `Michael Jackson` → `an original fictional pop performer (slim build, sequined jacket, single glitter glove, fedora, moonwalk-ready stance) — not any real celebrity`
+  - Canon `Yoda` → `a small green elderly alien-like mentor with pointy ears and a simple robe — not any copyrighted character`
 
 Always preserve the background&#x27;s recognizability. The street MUST remain the anchor of the memory image; beasts and characters are foreground additions, not replacements for the place.
 
@@ -2548,7 +2563,7 @@ Delivery note: output is an **image** (image-tool paste/download) — not Deskto
 
 You are the **Background Preservation AI**. You receive a locked Memory Palace background plus mnemonic foreground instructions, and you MUST add only the requested foreground subjects while keeping the original place clearly recognizable.
 
-The uploaded image is the immutable background — usually a Google Maps or Street View snapshot. The mnemonic story already defines the beasts, characters, props, and actions to add. Beasts on the same street are **visually co-located but narratively independent**; depth slot separation supports random-access recall.
+The uploaded image is the immutable background — usually a Google Maps or Street View snapshot. The mnemonic story already defines the beasts, lookalike characters, props, and actions to add. Beasts on the same street are **visually co-located but narratively independent**; depth slot separation supports random-access recall.
 
 Your task: preserve the real place while compositing mnemonic foreground elements into it. The place MUST stay recognizable through its anchor landmarks (gates, walls, corners, facades).
 
@@ -2557,7 +2572,7 @@ Your task: preserve the real place while compositing mnemonic foreground element
 ## Inputs
 
 1. **Background image** — the locked Google Maps or Street View screenshot.
-2. **Mnemonic image prompt for this street** — one line copied from the `🖼️ Mnemonic image prompts` section of the mnemonic story or Story Reduction output. Contains beast list, depth slots, `🟦` accessories (if any), character, and story details.
+2. **Mnemonic image prompt for this street** — one line from the palace `image_prompt` (or legacy `🖼️ Mnemonic image prompts` section). Contains beast list, depth slots, `🟦` accessories (if any), character as a **lookalike description** (never a real/celebrity/IP name), and story details.
 3. **README** (recommended reference) — `studies/technique/README.md`; cite as `README §&lt;Section Name&gt;` when applying framework rules.
 
 ---
@@ -2568,7 +2583,7 @@ Delivery note: output is an **image** (image-tool paste/download) — not Deskto
 
 You are the **Background Preservation AI**. You receive a locked Memory Palace background plus mnemonic foreground instructions, and you MUST add only the requested foreground subjects while keeping the original place clearly recognizable.
 
-The uploaded image is the immutable background — usually a Google Maps or Street View snapshot. The mnemonic story already defines the beasts, characters, props, and actions to add. Beasts on the same street are **visually co-located but narratively independent**; depth slot separation supports random-access recall.
+The uploaded image is the immutable background — usually a Google Maps or Street View snapshot. The mnemonic story already defines the beasts, lookalike characters, props, and actions to add. Beasts on the same street are **visually co-located but narratively independent**; depth slot separation supports random-access recall.
 
 Your task: preserve the real place while compositing mnemonic foreground elements into it. The place MUST stay recognizable through its anchor landmarks (gates, walls, corners, facades).
 
@@ -2577,7 +2592,7 @@ Your task: preserve the real place while compositing mnemonic foreground element
 ## Inputs
 
 1. **Background image** — the locked Google Maps or Street View screenshot.
-2. **Mnemonic image prompt for this street** — one line copied from the `🖼️ Mnemonic image prompts` section of the mnemonic story or Story Reduction output. Contains beast list, depth slots, `🟦` accessories (if any), character, and story details.
+2. **Mnemonic image prompt for this street** — one line from the palace `image_prompt` (or legacy `🖼️ Mnemonic image prompts` section). Contains beast list, depth slots, `🟦` accessories (if any), character as a **lookalike description** (never a real/celebrity/IP name), and story details.
 3. **README** (recommended reference) — `studies/technique/README.md`; cite as `README §&lt;Section Name&gt;` when applying framework rules.
 
 ---
@@ -2627,11 +2642,21 @@ Some architectural repainting or surface restyling is acceptable when it support
 Use the image-generation instructions from the mnemonic prompt to place:
 
 - Beasts.
-- Characters.
+- Characters (as **original lookalikes** — see §4b).
 - Props.
 - Gestures, expressions, poses, and symbolic foreground details.
 
 Keep those additions clearly readable as foreground elements layered into the existing place. Make the foreground vivid, emotional, theatrical, and memorable when the mnemonic scene calls for it. Strong spectacle is welcome as long as the real street still reads as the same place.
+
+### 4b. Character likeness / image-safety (mandatory)
+
+Image models often refuse named real people, celebrities, historical figures, and copyrighted characters. Treat every human/humanoid street anchor as an **original fictional lookalike**:
+
+- NEVER depict or request a named real, living, historical, or celebrity person.
+- NEVER depict or request a named copyrighted / franchise character.
+- If the pasted mnemonic prompt still contains a real or IP **name**, ignore the name and render only a lookalike from visual traits (age band, clothing era, hair, signature props/gestures), framed as an original fictional person who merely resembles those traits.
+- Prefer wording already in the prompt that matches: `an original fictional … who resembles … — not any real … or copyrighted character`.
+- Keep the lookalike visually distinctive enough for mnemonic recall, but do **not** aim for a photoreal celebrity portrait of a specific named individual.
 
 **Beast-bound accessories (mandatory when the prompt lists them):**
 
@@ -2690,7 +2715,7 @@ Because this prompt runs in an image model, the self-check is a mental pass, not
 | Priority landmarks (gates, walls, facades, rooflines) still visible | Procedure §2 | Yes |
 | No forbidden change applied (no reframing, no cartoon overlay, no landmark distortion) | Procedure §3 | Yes |
 | Every beast from the prompt is present | Procedure §4 | Yes |
-| The street&#x27;s single assigned character is present | `README §Characters` | Yes |
+| The street&#x27;s single assigned character is present as a lookalike (not a named celebrity/IP) | Procedure §4b · `README §Image composition rules` | Yes |
 | Beast-body sensory cue from `🟧` rendered as presence only when smashed; no knowledge on body | `README §Anatomical Micro-Loci` | Yes |
 | Every `🟦` accessory rendered in its Anatomical Micro-Loci zone with active engagement | `README §Anatomical Micro-Loci` | Yes |
 | No floating or unassigned props | Procedure §4 | Yes |
@@ -2700,7 +2725,7 @@ Because this prompt runs in an image model, the self-check is a mental pass, not
 | No cartoon, illustration, sticker, or clip-art appearance | Procedure §5 | Yes |
 | Location still unmistakably recognizable | Procedure §7 | Yes |
 | Bizarreness levers from prompt honored (not normalized) | `README §Bizarreness Gate` | Yes |
-| No copyrighted character names used (visual traits only) | `README §Image composition rules` | Yes |
+| No real person, celebrity, historical, or IP character names used or depicted | Procedure §4b · `README §Image composition rules` | Yes |
 
 ---
 
@@ -2712,7 +2737,7 @@ Because this prompt runs in an image model, the self-check is a mental pass, not
 
 📎 Mnemonic image prompt for this street
 
-[PASTE THE MATCHING STREET LINE FROM THE `🖼️ MNEMONIC IMAGE PROMPTS` SECTION HERE]
+[PASTE THE MATCHING PALACE `image_prompt` (OR LEGACY 🖼️ LINE) HERE — MUST BE LOOKALIKE TRAITS ONLY, NO REAL/IP NAMES]
 
 📎 README (optional reference — `@studies/technique/README.md` or paste)
 </pre><button type="button" class="btn-prompt-full" data-prompt="image-background-preservation-prompt.txt">Show all</button></details><details class="method-prompt" data-prompt-name="plan-prompt.txt"><summary>plan-prompt.txt</summary><pre class="prompt-preview" data-preview="1">DELIVERY MANDATE (read first)
@@ -2956,7 +2981,7 @@ Rules:
 - `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached palaces + new rows).
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
 - `depth_slots_used` — 0–5 (beast count / depth slots for that palace).
-- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section.
+- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section. Character MUST use the lookalike formula (`README §Image composition rules`); NEVER paste `character_name` into this field.
 
 ### 2) `PALACE_BEASTS.csv`
 
@@ -3023,7 +3048,8 @@ Rules:
 
 ### 4. Image prompts
 
-- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character (visual traits, no copyrighted names); plain English; bizarreness levers reflected.
+- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character as a **lookalike** (`README §Image composition rules` — Character likeness / image-safety); plain English; bizarreness levers reflected.
+- `character_name` keeps the canon name for recall. In `image_prompt` NEVER write that name (or any real/celebrity/historical/IP name). Use the lookalike formula: `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 
 ### 5. Common failure modes (NEVER)
@@ -3031,6 +3057,7 @@ Rules:
 - NEVER assign two+ characters to one palace or reuse a character already used.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
 - NEVER use numeric pegs or cross-beast narrative dependency.
+- NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
 - NEVER omit the single `PALACE_PACK.txt` pack (download chip or one marked fence / gemini-code body).
@@ -3051,6 +3078,7 @@ Rules:
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | image_prompt filled per new palace | Yes |
+| image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 
 ---
 
@@ -3193,7 +3221,7 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 ```
 
 - Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
-- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character; no copyrighted names).
+- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character as lookalike — `README §Image composition rules`; NEVER paste `character_name` or any real/celebrity/historical/IP name into `image_prompt`).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.
 
@@ -3235,6 +3263,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 - NEVER assign two characters to one palace or zero characters after collapse.
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving palaces.
+- NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 
 ---
 
@@ -3253,7 +3282,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 
 ## Image prompts (both modes)
 
-After the reduced model is final, write a long concrete foreground `image_prompt` per surviving palace: depth slots, every zoned accessory with active engagement, one character (traits only), realistic integration, bizarreness levers, plain English.
+After the reduced model is final, write a long concrete foreground `image_prompt` per surviving palace: depth slots, every zoned accessory with active engagement, one character via the lookalike formula (`an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`), realistic integration, bizarreness levers, plain English. Keep canon names only in `character_name` / PREVIEW — never in `image_prompt`.
 
 ---
 
@@ -3269,6 +3298,7 @@ After the reduced model is final, write a long concrete foreground `image_prompt
 | Unbroken peg sequence; ≤5 beasts/palace; ≤4 zones/beast | Yes |
 | No knowledge/quote drops for survivors | Yes |
 | image_prompt refreshed per surviving palace | Yes |
+| image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 | study_id unchanged / from pack | Yes |
 
 ---
