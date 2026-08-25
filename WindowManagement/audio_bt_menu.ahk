@@ -684,7 +684,7 @@ AudioBt_CreateGui(lvHeight := 360) {
     g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", lvCols)
     g_AudioBtLv.SetFont("s14", "Segoe UI")
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
-    if (g_AudioBtMode = "BT")
+    if (g_AudioBtMode = "BT" || g_AudioBtMode = "In" || g_AudioBtMode = "Out")
         AudioBt_LvEnableRowColors(g_AudioBtLv)
     g_AudioBtGui.Add("Button", "w100 Section", (g_AudioBtMode = "root") ? "Close" : "Back").OnEvent("Click",
         AudioBt_OnEscape)
@@ -850,7 +850,7 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     }
 }
 
-; Bluetooth list: orange = isolated, soft green = connected, gray = disconnected (NM_CUSTOMDRAW).
+; Device lists: orange = isolated, soft green = active/connected, gray = inactive (NM_CUSTOMDRAW).
 AudioBt_LvEnableRowColors(lv) {
     if (!IsObject(lv))
         return
@@ -875,7 +875,7 @@ AudioBt_LvEnableRowColors(lv) {
 
 AudioBt_LvRowBkColor(row) {
     ; COLORREF is BGR.
-    ; Isolated soft orange #FFE4C4 → 0xC4E4FF; connected #E3F5DC → 0xDCF5E3; disconnected #E8E8E8.
+    ; Isolated soft orange #FFE4C4 → 0xC4E4FF; active #E3F5DC → 0xDCF5E3; inactive #E8E8E8.
     if !IsObject(row)
         return ""
     state := row.state
@@ -884,9 +884,10 @@ AudioBt_LvRowBkColor(row) {
         iso := row.iso
     if (iso != "" || InStr(state, "Isolated"))
         return 0xC4E4FF
-    if InStr(state, "Disconnected")
+    if InStr(state, "Disconnected") || InStr(state, "Disabled") || InStr(state, "Unplugged") || InStr(state,
+        "Not present")
         return 0xE8E8E8
-    if InStr(state, "Connected")
+    if InStr(state, "Connected") || InStr(state, "Enabled") || InStr(state, "Default")
         return 0xDCF5E3
     return ""
 }
@@ -899,7 +900,7 @@ AudioBt_LvCustomDraw(LV, L) {
     static OffItem := SizeNMHDR + 16 + (A_PtrSize * 2)
     static OffCT := SizeNCD
     static OffCB := OffCT + 4
-    if (g_AudioBtMode != "BT")
+    if (g_AudioBtMode != "BT" && g_AudioBtMode != "In" && g_AudioBtMode != "Out")
         return 0
     drawStage := NumGet(L + SizeNMHDR, "UInt")
     if (drawStage = 0x000001) ; CDDS_PREPAINT
