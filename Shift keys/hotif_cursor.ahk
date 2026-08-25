@@ -8,8 +8,9 @@
 #HotIf IsCursorActive() && WinGetClass("A") != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
-; Captionless dark-theme key menu (legacy Catppuccin style; Handy #!+C now uses ListView).
+; Utility Shortcuts ListView aesthetic (Char-first ListView).
 global g_CursorShortcutMenuGui := false
+global g_CursorShortcutMenuLv := false
 global g_CursorShortcutMenuActive := false
 global g_CursorShortcutMenuEscPollPrev := false
 global g_CursorShortcutMenuPrevHwnd := 0

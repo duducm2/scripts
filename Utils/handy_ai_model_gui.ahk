@@ -6,6 +6,7 @@
 ; =============================================================================
 
 global g_AiModelSelectorLv := false
+global g_AiModelSelectorPrevHwnd := 0
 global g_AiModelHotkeyHandlers := []
 
 ; =============================================================================
@@ -13,17 +14,23 @@ global g_AiModelHotkeyHandlers := []
 ; =============================================================================
 ShowAiModelSelector() {
     global g_AiModelSelectorGui, g_AiModelSelectorActive, g_AiModelSelectorLv
-    global g_HandyAiModels, g_OnEscapePressed
+    global g_AiModelSelectorPrevHwnd, g_HandyAiModels, g_OnEscapePressed
 
     if (g_AiModelSelectorActive)
         return
+
+    g_AiModelSelectorPrevHwnd := 0
+    try g_AiModelSelectorPrevHwnd := WinGetID("A")
+    catch {
+        g_AiModelSelectorPrevHwnd := 0
+    }
 
     currentSlot := Handy_GetPersistedAiModelSlot()
 
     g_AiModelSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Handy AI Model")
     g_AiModelSelectorGui.SetFont("s10", "Segoe UI")
     g_AiModelSelectorGui.Add("Text", "w700",
-        "Char = select   Enter/double-click = select   Esc = cancel")
+        "Char = select   Enter/double-click = select   Esc/Space = cancel")
     g_AiModelSelectorLv := g_AiModelSelectorGui.Add("ListView", "w700 h120 -Multi", ["Char", "Model",
         "Description", "Status"])
     g_AiModelSelectorLv.OnEvent("DoubleClick", AiModelSelector_OnListActivate)
@@ -174,6 +181,11 @@ AiModelSelector_BindModalHotkeys() {
         g_AiModelHotkeyHandlers.Push({ key: "Escape", handler: AiModelSelector_Cancel })
     } catch {
     }
+    try {
+        Hotkey("Space", AiModelSelector_Cancel, "On")
+        g_AiModelHotkeyHandlers.Push({ key: "Space", handler: AiModelSelector_Cancel })
+    } catch {
+    }
 
     try HotIf()
     catch {
@@ -234,7 +246,8 @@ AiModelSelector_Cancel(*) {
 }
 
 AiModelSelector_Close() {
-    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_AiModelSelectorLv, g_OnEscapePressed
+    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_AiModelSelectorLv, g_AiModelSelectorPrevHwnd
+    global g_OnEscapePressed
 
     if (!g_AiModelSelectorActive)
         return
@@ -252,4 +265,12 @@ AiModelSelector_Close() {
     }
     g_AiModelSelectorGui := false
     g_AiModelSelectorLv := false
+
+    prevHwnd := g_AiModelSelectorPrevHwnd
+    g_AiModelSelectorPrevHwnd := 0
+    if (prevHwnd && WinExist("ahk_id " prevHwnd)) {
+        try WinActivate("ahk_id " prevHwnd)
+        catch {
+        }
+    }
 }

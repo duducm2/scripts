@@ -1088,7 +1088,7 @@ cheatSheets["Gemini"] := "
     🔍 [S][S]earch
     🔄 [M]Select [M]Deep model (no-op if already active)
     ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
-    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f/d set Fast/Deep)
+    📃 [L]Model [L]ist (1-9/letters; Insert/a add; E edit; Delete remove; f/d Fast/Deep)
     🛠️ [T][T]ools
     🖼️ [I]Create [I]mage (Tools menu; opens if needed)
     🔬 [E]Deep r[E]search (Tools menu; opens if needed)
@@ -1113,7 +1113,7 @@ cheatSheets["Gemini Enterprise"] := "
     🔍 [S][S]earch
     🔄 [M]Select [M]Deep model (no-op if already active)
     ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
-    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f/d set Fast/Deep)
+    📃 [L]Model [L]ist (1-9/letters; Insert/a add; E edit; Delete remove; f/d Fast/Deep)
     🎨 [A][A]rt: Deep + Create images + bosch-brand-image (strip reminders)
     🛠️ [T]Select [T]ools
     🖼️ [I]Create images (Tools menu; opens if needed)
@@ -1135,7 +1135,7 @@ cheatSheets["Copilot Web"] := "
     🔍 [S][S]earch (nav drawer)
     🔄 [M]Select [M]Deep model (no-op if already active)
     ⚡ [Q]Select Fast / [Q]uick model (no-op if already active)
-    📃 [L]Model [L]ist (1-9/letters; a add; r remove; f/d set Fast/Deep)
+    📃 [L]Model [L]ist (1-9/letters; Insert/a add; E edit; Delete remove; f/d Fast/Deep)
     🎨 [A][A]rt: Deep + Generate image + bosch-brand-image (strip reminders)
     🛠️ [T]Add/manage sources (Tools menu)
     🖼️ [I]Add capabilities → Generate an image

@@ -283,10 +283,14 @@ ML_SortClose() {
     try Hotkey("Escape", ML_SortCancel, "Off")
     catch {
     }
-    global g_ML_SortGui
+    try Hotkey("Enter", "Off")
+    catch {
+    }
+    global g_ML_SortGui, g_ML_SortLv
     if (g_ML_SortGui && IsObject(g_ML_SortGui) && g_ML_SortGui.Hwnd)
         try g_ML_SortGui.Destroy()
     g_ML_SortGui := 0
+    g_ML_SortLv := false
 }
 
 ML_SortCancel(*) {
@@ -296,6 +300,37 @@ ML_SortCancel(*) {
 ML_SortSelect(idx) {
     ML_SortClose()
     ML_SortApply(idx)
+}
+
+ML_SortOnEnter(*) {
+    global g_ML_SortLv
+    if (!IsObject(g_ML_SortLv))
+        return
+    row := 0
+    try row := g_ML_SortLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_ML_SortLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return
+    ch := ""
+    try ch := g_ML_SortLv.GetText(row, 1)
+    catch {
+        return
+    }
+    if (!RegExMatch(ch, "^\d+$"))
+        return
+    ML_SortSelect(Integer(ch))
+}
+
+ML_SortOnListActivate(*) {
+    ML_SortOnEnter()
 }
 
 ML_SortApply(idx) {
@@ -471,30 +506,25 @@ ML_SortApply(idx) {
         MsgBox "Página do Mercado Livre não disponível."
         return
     }
-    global g_ML_SortGui
-    g_ML_SortGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_ML_SortGui.BackColor := "1E1E2E"
-    g_ML_SortGui.MarginX := 20
-    g_ML_SortGui.MarginY := 15
-    g_ML_SortGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 Center", "Ordenar por")
-    g_ML_SortGui.Add("Text", "w280 h1 Background45475A")
-    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280", "[1] Mais relevantes")
-    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 y+2", "    Relevância da busca")
-    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280", "[2] Menor preço")
-    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 y+2", "    Preço crescente")
-    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280", "[3] Maior preço")
-    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 y+2", "    Preço decrescente")
-    g_ML_SortGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 h1 Background45475A y+10")
-    g_ML_SortGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_ML_SortGui.Add("Text", "w280 Center", "Press 1-3 | Esc to cancel")
+    global g_ML_SortGui, g_ML_SortLv
+    g_ML_SortGui := Gui("+AlwaysOnTop +ToolWindow", "Ordenar por")
+    g_ML_SortGui.SetFont("s10", "Segoe UI")
+    g_ML_SortGui.Add("Text", "w420",
+        "Char = select   Enter/double-click = select   Esc = cancel")
+    g_ML_SortLv := g_ML_SortGui.Add("ListView", "w420 h120 -Multi", ["Char", "Option", "Description"])
+    g_ML_SortLv.OnEvent("DoubleClick", ML_SortOnListActivate)
+    g_ML_SortGui.Add("Button", "w100", "Close").OnEvent("Click", ML_SortCancel)
+    g_ML_SortGui.OnEvent("Close", ML_SortCancel)
+    g_ML_SortGui.OnEvent("Escape", ML_SortCancel)
+    g_ML_SortLv.Add("", "1", "Mais relevantes", "Relevância da busca")
+    g_ML_SortLv.Add("", "2", "Menor preço", "Preço crescente")
+    g_ML_SortLv.Add("", "3", "Maior preço", "Preço decrescente")
+    try g_ML_SortLv.ModifyCol(1, 50)
+    try g_ML_SortLv.ModifyCol(2, 140)
+    try g_ML_SortLv.ModifyCol(3, 200)
+    try g_ML_SortLv.Modify(1, "Select Focus Vis")
+    catch {
+    }
     activeWin := 0
     try
         activeWin := WinGetID("A")
@@ -524,14 +554,15 @@ ML_SortApply(idx) {
             }
         }
     }
-    g_ML_SortGui.Show("AutoSize Hide")
-    g_ML_SortGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    g_ML_SortGui.Show("x" . cx . " y" . cy . " NA")
+    guiW := 440
+    guiH := 220
+    cx := monitorLeft + (monitorWidth - guiW) // 2
+    cy := monitorTop + (monitorHeight - guiH) // 2
+    g_ML_SortGui.Show("x" . cx . " y" . cy . " w" . guiW . " h" . guiH . " NA")
     Hotkey("1", (*) => ML_SortSelect(1), "On")
     Hotkey("2", (*) => ML_SortSelect(2), "On")
     Hotkey("3", (*) => ML_SortSelect(3), "On")
+    Hotkey("Enter", ML_SortOnEnter, "On")
     Hotkey("Escape", ML_SortCancel, "On")
 }
 

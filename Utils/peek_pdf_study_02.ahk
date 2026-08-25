@@ -57,44 +57,91 @@ StudyTopicSelector_GuiHasWindow(gui) {
 
 ; Category menu (Technique README / Mnemonics / Plans). Bind Escape + Backspace to cancel; Backspace on topic menu goes back via StudyTopicSelector_BackFromTopic.
 StudyTopicSelector_ShowCategoryPhase() {
-    global g_StudyTopicSelectorGui, g_StudyTopics, g_StudyTopicSelectorActive,
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorLv, g_StudyTopics, g_StudyTopicSelectorActive,
         g_StudyTopicSelectorLastForegroundMonitorIdx
 
     StudyTopicSelector_StopActiveMonitorTracking()
     StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
+    g_StudyTopicSelectorLv := false
 
-    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
-    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
-    g_StudyTopicSelectorGui.MarginX := 20
-    g_StudyTopicSelectorGui.MarginY := 15
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Study material")
+    g_StudyTopicSelectorGui.SetFont("s10", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w520",
+        "Char = open   Enter/double-click = open   Backspace/Esc = cancel")
+    g_StudyTopicSelectorLv := g_StudyTopicSelectorGui.Add("ListView", "w520 h120 -Multi", ["Char", "Category",
+        "Description"])
+    g_StudyTopicSelectorLv.OnEvent("DoubleClick", StudyTopicSelector_OnCategoryListActivate)
+    g_StudyTopicSelectorGui.Add("Button", "w100", "Close").OnEvent("Click", StudyTopicSelector_Cancel)
+    g_StudyTopicSelectorGui.OnEvent("Close", StudyTopicSelector_Cancel)
+    g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
 
-    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "📚 Study material")
-    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A")
-
-    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[1] Mnemonics")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[2] Plans")
-    g_StudyTopicSelectorGui.Add("Text", "w300", "[3] Technique")
-    g_StudyTopicSelectorGui.Add("Text", "w300 h1 Background45475A y+10")
-    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w300 Center", "Press 1-3 | Backspace/Esc to cancel")
-
-    try {
-        g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
-    } catch {
+    g_StudyTopicSelectorLv.Add("", "1", "Mnemonics", "Practice notes / GitHub")
+    g_StudyTopicSelectorLv.Add("", "2", "Plans", "Study plan checklists")
+    g_StudyTopicSelectorLv.Add("", "3", "Technique", "Technique README on GitHub")
+    try g_StudyTopicSelectorLv.ModifyCol(1, 50)
+    try g_StudyTopicSelectorLv.ModifyCol(2, 120)
+    try g_StudyTopicSelectorLv.ModifyCol(3, 320)
+    try g_StudyTopicSelectorLv.Modify(1, "Select Focus Vis")
+    catch {
     }
+
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
+    try g_StudyTopicSelectorLv.Focus()
+    catch {
+    }
     g_StudyTopicSelectorActive := true
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     Hotkey("1", StudyTopicSelector_SelectMnemonics, "On")
     Hotkey("2", StudyTopicSelector_SelectPlans, "On")
     Hotkey("3", StudyTopicSelector_SelectTechnique, "On")
+    Hotkey("Enter", StudyTopicSelector_OnCategoryEnter, "On")
     Hotkey("Backspace", StudyTopicSelector_Cancel, "On")
     StudyTopicSelector_BindRobustEscape()
     SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
+}
+
+StudyTopicSelector_SelectedChar() {
+    global g_StudyTopicSelectorLv
+    if (!IsObject(g_StudyTopicSelectorLv))
+        return ""
+    row := 0
+    try row := g_StudyTopicSelectorLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_StudyTopicSelectorLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return ""
+    ch := ""
+    try ch := g_StudyTopicSelectorLv.GetText(row, 1)
+    catch {
+        return ""
+    }
+    return StrLower(Trim(ch))
+}
+
+StudyTopicSelector_OnCategoryEnter(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "category")
+        return
+    ch := StudyTopicSelector_SelectedChar()
+    if (ch = "1")
+        StudyTopicSelector_SelectMnemonics()
+    else if (ch = "2")
+        StudyTopicSelector_SelectPlans()
+    else if (ch = "3")
+        StudyTopicSelector_SelectTechnique()
+}
+
+StudyTopicSelector_OnCategoryListActivate(*) {
+    StudyTopicSelector_OnCategoryEnter()
 }
 
 ; After closing Manage Links GUI (Esc) or finishing Open Link from submenu — main category Gui still exists.
@@ -478,7 +525,7 @@ StudyTopicSelector_ShowTopicPhase() {
 
 ; Re-render topic list while phase == "topic" (open, after add/remove, clear pending-remove).
 StudyTopicSelector_RebuildTopicPhase() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase,
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorLv, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase,
         g_StudyTopicSelectorCategory, g_StudyTopicSelectorLastForegroundMonitorIdx,
         g_StudyTopicSelectorPendingRemove
 
@@ -495,44 +542,57 @@ StudyTopicSelector_RebuildTopicPhase() {
 
     StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
+    g_StudyTopicSelectorLv := false
 
-    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner -DPIScale")
-    g_StudyTopicSelectorGui.BackColor := "1E1E2E"
-    g_StudyTopicSelectorGui.MarginX := 20
-    g_StudyTopicSelectorGui.MarginY := 15
+    winTitle := g_StudyTopicSelectorPendingRemove
+        ? catLabel . " — pick to REMOVE"
+            : catLabel . " — topic"
+    hint := g_StudyTopicSelectorPendingRemove
+        ? "Char = remove   Enter/double-click = remove   Esc/Backspace = cancel remove"
+            : "Char = open   Enter/double-click = open   a add   r remove   Backspace = back   Esc = cancel"
 
-    titleText := g_StudyTopicSelectorPendingRemove
-        ? "📚 " . catLabel . " — pick to REMOVE"
-            : "📚 " . catLabel . " — topic"
-    g_StudyTopicSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_StudyTopicSelectorGui.Add("Text", "w360 Center", titleText)
-    g_StudyTopicSelectorGui.Add("Text", "w360 h1 Background45475A")
+    g_StudyTopicSelectorGui := Gui("+AlwaysOnTop +ToolWindow", winTitle)
+    g_StudyTopicSelectorGui.SetFont("s10", "Segoe UI")
+    g_StudyTopicSelectorGui.Add("Text", "w620", hint)
+    g_StudyTopicSelectorLv := g_StudyTopicSelectorGui.Add("ListView", "w620 h280 -Multi", ["Char", "Name",
+        "Detail"])
+    g_StudyTopicSelectorLv.OnEvent("DoubleClick", StudyTopicSelector_OnTopicListActivate)
+    g_StudyTopicSelectorGui.Add("Button", "w100", "Close").OnEvent("Click", StudyTopicSelector_Cancel)
+    g_StudyTopicSelectorGui.OnEvent("Close", StudyTopicSelector_Cancel)
+    g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
 
-    g_StudyTopicSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    if (!g_StudyTopicSelectorPendingRemove) {
+        g_StudyTopicSelectorLv.Add("", "a", "Add entry", "Name + URL")
+        g_StudyTopicSelectorLv.Add("", "r", "Arm remove", "Next item key deletes")
+    }
+
     if (entries.Length = 0) {
-        g_StudyTopicSelectorGui.SetFont("s11 c6C7086", "Segoe UI")
-        g_StudyTopicSelectorGui.Add("Text", "w360 Center", "(no entries — press a to add)")
+        g_StudyTopicSelectorLv.Add("", "", "(no entries)", "press a to add")
     } else {
         for i, entry in entries {
             if (i > 33)
                 break
             label := StudyLinks_LabelForIndex(i)
-            g_StudyTopicSelectorGui.Add("Text", "w360", "[" . label . "] " . entry.name)
+            g_StudyTopicSelectorLv.Add("", label, entry.name, "")
         }
     }
 
-    g_StudyTopicSelectorGui.Add("Text", "w360 h1 Background45475A y+10")
-    g_StudyTopicSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    footerHint := g_StudyTopicSelectorPendingRemove
-        ? "Press item key to remove | Esc/Backspace cancel remove"
-            : "1-9 / b-z open | a add | r remove | Backspace back | Esc cancel"
-    g_StudyTopicSelectorGui.Add("Text", "w360 Center", footerHint)
-
-    try {
-        g_StudyTopicSelectorGui.OnEvent("Escape", StudyTopicSelector_GuiEscape)
-    } catch {
+    try g_StudyTopicSelectorLv.ModifyCol(1, 50)
+    try g_StudyTopicSelectorLv.ModifyCol(2, 280)
+    try g_StudyTopicSelectorLv.ModifyCol(3, 260)
+    focusRow := g_StudyTopicSelectorPendingRemove ? 1 : 3
+    if (focusRow > g_StudyTopicSelectorLv.GetCount())
+        focusRow := 1
+    if (g_StudyTopicSelectorLv.GetCount() > 0) {
+        try g_StudyTopicSelectorLv.Modify(focusRow, "Select Focus Vis")
+        catch {
+        }
     }
+
     StudyTopicSelector_PositionGuiLikeOutlook(g_StudyTopicSelectorGui)
+    try g_StudyTopicSelectorLv.Focus()
+    catch {
+    }
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 
     count := Min(entries.Length, 33)
@@ -542,14 +602,38 @@ StudyTopicSelector_RebuildTopicPhase() {
     }
     Hotkey("a", StudyTopicSelector_AddEntry, "On")
     Hotkey("r", StudyTopicSelector_ArmRemove, "On")
+    Hotkey("Enter", StudyTopicSelector_OnTopicEnter, "On")
     Hotkey("Backspace", StudyTopicSelector_BackFromTopic, "On")
     StudyTopicSelector_BindRobustEscape()
     if (g_StudyTopicSelectorActive)
         SetTimer(StudyTopicSelector_TrackActiveMonitorTick, 115)
 }
 
+StudyTopicSelector_OnTopicEnter(*) {
+    global g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase
+    if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
+        return
+    ch := StudyTopicSelector_SelectedChar()
+    if (ch = "")
+        return
+    if (ch = "a") {
+        StudyTopicSelector_AddEntry()
+        return
+    }
+    if (ch = "r") {
+        StudyTopicSelector_ArmRemove()
+        return
+    }
+    StudyTopicSelector_HandleKey(ch)
+}
+
+StudyTopicSelector_OnTopicListActivate(*) {
+    StudyTopicSelector_OnTopicEnter()
+}
+
 StudyTopicSelector_BackFromTopic(*) {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorLv, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory,
         g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyTopicSelectorPendingRemove
 
     if (!g_StudyTopicSelectorActive || g_StudyTopicSelectorPhase != "topic")
@@ -565,6 +649,7 @@ StudyTopicSelector_BackFromTopic(*) {
     g_StudyTopicSelectorPhase := "category"
     StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
+    g_StudyTopicSelectorLv := false
     StudyTopicSelector_ShowCategoryPhase()
     g_StudyTopicSelectorLastForegroundMonitorIdx := GetMonitorIndexForForeground_StandardBar()
 }
@@ -694,7 +779,8 @@ StudyTopicSelector_Cancel(*) {
 
 ; Always completes teardown even if Active was already false or Gui already destroyed (retry-safe).
 StudyTopicSelector_ForceReset() {
-    global g_StudyTopicSelectorGui, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase, g_StudyTopicSelectorCategory,
+    global g_StudyTopicSelectorGui, g_StudyTopicSelectorLv, g_StudyTopicSelectorActive, g_StudyTopicSelectorPhase,
+        g_StudyTopicSelectorCategory,
         g_StudyTopicSelectorLastForegroundMonitorIdx, g_StudyLinksGui, g_StudyArticleLinksGui, g_StudyFavoriteLinksGui,
         g_StudyLinkSubmenuGui, g_StudyTopicSelectorPendingRemove
 
@@ -716,6 +802,7 @@ StudyTopicSelector_ForceReset() {
     }
     try StudyTopicSelector_SafeDestroyGui(g_StudyTopicSelectorGui)
     g_StudyTopicSelectorGui := false
+    g_StudyTopicSelectorLv := false
     try StudyTopicSelector_SafeDestroyGui(g_StudyLinksGui)
     g_StudyLinksGui := false
     try StudyTopicSelector_SafeDestroyGui(g_StudyArticleLinksGui)

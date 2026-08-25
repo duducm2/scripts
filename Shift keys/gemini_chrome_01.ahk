@@ -149,7 +149,7 @@ ToggleGeminiDrawer() {
     }
 }
 
-; Shift + L : Model list manager (1-9/letters, a add, r remove, f Fast, d Deep)
+; Shift + L : Model list manager (Insert/a add, E edit, Delete remove, f/d Fast/Deep)
 +l:: {
     try ShowAiCompanionModelSelector(AI_COMPANION_GEMINI)
     catch {

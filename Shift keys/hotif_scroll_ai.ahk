@@ -309,26 +309,26 @@ Cursor_IsElementVisibleByName(name, hwnd := 0, typeList := "", matchmode := "") 
 }
 
 global g_VSCodeShortcutMenuGui := false
+global g_VSCodeShortcutMenuLv := false
 global g_VSCodeShortcutMenuActive := false
 
 ShowVSCodeShortcutMenu() {
-    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuActive
+    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuLv, g_VSCodeShortcutMenuActive
     if (g_VSCodeShortcutMenuActive)
         return
 
-    g_VSCodeShortcutMenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_VSCodeShortcutMenuGui.BackColor := "1E1E2E"
-    g_VSCodeShortcutMenuGui.MarginX := 20
-    g_VSCodeShortcutMenuGui.MarginY := 15
-
-    g_VSCodeShortcutMenuGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "VS Code quick shortcuts")
-    g_VSCodeShortcutMenuGui.Add("Text", "w320 h1 Background45475A")
-    g_VSCodeShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "(empty for future use)")
-    g_VSCodeShortcutMenuGui.Add("Text", "w320 h1 Background45475A y+10")
-    g_VSCodeShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_VSCodeShortcutMenuGui.Add("Text", "w320 Center", "Press Esc to close")
+    g_VSCodeShortcutMenuGui := Gui("+AlwaysOnTop +ToolWindow", "VS Code shortcuts")
+    g_VSCodeShortcutMenuGui.SetFont("s10", "Segoe UI")
+    g_VSCodeShortcutMenuGui.Add("Text", "w420", "Esc / Close = dismiss (no actions yet)")
+    g_VSCodeShortcutMenuLv := g_VSCodeShortcutMenuGui.Add("ListView", "w420 h90 -Multi", ["Char", "Action",
+        "Detail"])
+    g_VSCodeShortcutMenuLv.Add("", "", "(empty for future use)", "")
+    try g_VSCodeShortcutMenuLv.ModifyCol(1, 50)
+    try g_VSCodeShortcutMenuLv.ModifyCol(2, 200)
+    try g_VSCodeShortcutMenuLv.ModifyCol(3, 140)
+    g_VSCodeShortcutMenuGui.Add("Button", "w100", "Close").OnEvent("Click", VSCodeShortcutMenu_Cancel)
+    g_VSCodeShortcutMenuGui.OnEvent("Close", VSCodeShortcutMenu_Cancel)
+    g_VSCodeShortcutMenuGui.OnEvent("Escape", VSCodeShortcutMenu_Cancel)
 
     activeWin := 0
     try
@@ -357,11 +357,11 @@ ShowVSCodeShortcutMenu() {
         }
     }
 
-    g_VSCodeShortcutMenuGui.Show("AutoSize Hide")
-    g_VSCodeShortcutMenuGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    g_VSCodeShortcutMenuGui.Show("x" . cx . " y" . cy . " NA")
+    guiW := 440
+    guiH := 180
+    cx := monitorLeft + (monitorWidth - guiW) // 2
+    cy := monitorTop + (monitorHeight - guiH) // 2
+    g_VSCodeShortcutMenuGui.Show("x" . cx . " y" . cy . " w" . guiW . " h" . guiH . " NA")
 
     g_VSCodeShortcutMenuActive := true
     Hotkey("Escape", VSCodeShortcutMenu_Cancel, "On")
@@ -372,7 +372,7 @@ VSCodeShortcutMenu_Cancel(*) {
 }
 
 VSCodeShortcutMenu_Close() {
-    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuActive
+    global g_VSCodeShortcutMenuGui, g_VSCodeShortcutMenuLv, g_VSCodeShortcutMenuActive
     if (!g_VSCodeShortcutMenuActive)
         return
     g_VSCodeShortcutMenuActive := false
@@ -381,6 +381,7 @@ VSCodeShortcutMenu_Close() {
         try g_VSCodeShortcutMenuGui.Destroy()
     }
     g_VSCodeShortcutMenuGui := false
+    g_VSCodeShortcutMenuLv := false
 }
 
 Cursor_GetVisibleElementByName(name, hwnd := 0, typeList := "", matchmode := "") {

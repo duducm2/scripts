@@ -675,38 +675,36 @@ CursorShortcutMenu_EscapePoll() {
 }
 
 ShowCursorShortcutMenu() {
-    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive
+    global g_CursorShortcutMenuGui, g_CursorShortcutMenuLv, g_CursorShortcutMenuActive
     if (g_CursorShortcutMenuActive)
         return
 
-    g_CursorShortcutMenuGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_CursorShortcutMenuGui.BackColor := "1E1E2E"
-    g_CursorShortcutMenuGui.MarginX := 20
-    g_CursorShortcutMenuGui.MarginY := 15
+    g_CursorShortcutMenuGui := Gui("+AlwaysOnTop +ToolWindow", "Cursor shortcuts")
+    g_CursorShortcutMenuGui.SetFont("s10", "Segoe UI")
+    g_CursorShortcutMenuGui.Add("Text", "w560",
+        "Char = run   Enter/double-click = run   Esc = cancel")
+    g_CursorShortcutMenuLv := g_CursorShortcutMenuGui.Add("ListView", "w560 h200 -Multi", ["Char", "Action",
+        "Category"])
+    g_CursorShortcutMenuLv.OnEvent("DoubleClick", CursorShortcutMenu_OnListActivate)
+    g_CursorShortcutMenuGui.Add("Button", "w100", "Close").OnEvent("Click", CursorShortcutMenu_Cancel)
+    g_CursorShortcutMenuGui.OnEvent("Close", CursorShortcutMenu_Cancel)
+    g_CursorShortcutMenuGui.OnEvent("Escape", CursorShortcutMenu_Cancel)
 
-    g_CursorShortcutMenuGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Select shortcut")
-    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A")
+    g_CursorShortcutMenuLv.Add("", "1", "hello world one", "Placeholder")
+    g_CursorShortcutMenuLv.Add("", "2", "hello world two", "Placeholder")
+    g_CursorShortcutMenuLv.Add("", "R", "Run (terminal permission)", "Terminal permissions")
+    g_CursorShortcutMenuLv.Add("", "A", "Allowlist (any permission button)", "Terminal permissions")
+    g_CursorShortcutMenuLv.Add("", "F", "Mark as fixed", "Terminal permissions")
+    g_CursorShortcutMenuLv.Add("", "P", "Proceed", "Terminal permissions")
+    g_CursorShortcutMenuLv.Add("", "E", "Fetch", "Terminal permissions")
+    try g_CursorShortcutMenuLv.ModifyCol(1, 50)
+    try g_CursorShortcutMenuLv.ModifyCol(2, 300)
+    try g_CursorShortcutMenuLv.ModifyCol(3, 180)
+    try g_CursorShortcutMenuLv.Modify(1, "Select Focus Vis")
+    catch {
+    }
 
-    g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[1] hello world one")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[2] hello world two")
-
-    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+8")
-    g_CursorShortcutMenuGui.SetFont("s10 c6C7086", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "Terminal permissions")
-    g_CursorShortcutMenuGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[R] Run (terminal permission)")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[A] Allowlist (any permission button)")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[F] Mark as fixed")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[P] Proceed")
-    g_CursorShortcutMenuGui.Add("Text", "w300", "[E] Fetch")
-
-    g_CursorShortcutMenuGui.Add("Text", "w300 h1 Background45475A y+10")
-    g_CursorShortcutMenuGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_CursorShortcutMenuGui.Add("Text", "w300 Center", "Press 1–2 | R · A · F · P · E | Esc to cancel")
-
-    ; Center on same monitor as active window (same logic as Utils ShowAiModelSelector)
+    ; Center on same monitor as active window
     activeWin := 0
     try
         activeWin := WinGetID("A")
@@ -732,15 +730,17 @@ ShowCursorShortcutMenu() {
             }
         }
     }
-    g_CursorShortcutMenuGui.Show("AutoSize Hide")
-    g_CursorShortcutMenuGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
+    guiW := 580
+    guiH := 280
+    cx := monitorLeft + (monitorWidth - guiW) // 2
+    cy := monitorTop + (monitorHeight - guiH) // 2
     global g_CursorShortcutMenuPrevHwnd
     g_CursorShortcutMenuPrevHwnd := activeWin
-    ; Avoid "NA": if focus stays in Cursor/Chromium, Esc is consumed there first (ShowAiModelSelector).
-    g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy)
+    g_CursorShortcutMenuGui.Show("x" . cx . " y" . cy . " w" . guiW . " h" . guiH)
     try WinActivate(g_CursorShortcutMenuGui.Hwnd)
+    try g_CursorShortcutMenuLv.Focus()
+    catch {
+    }
 
     g_CursorShortcutMenuActive := true
     try HotIf()
@@ -753,7 +753,37 @@ ShowCursorShortcutMenu() {
     Hotkey("f", (*) => CursorShortcutMenu_HandleKey("f"), "On")
     Hotkey("p", (*) => CursorShortcutMenu_HandleKey("p"), "On")
     Hotkey("e", (*) => CursorShortcutMenu_HandleKey("e"), "On")
+    Hotkey("Enter", CursorShortcutMenu_OnEnter, "On")
     CursorShortcutMenu_BindRobustEscape()
+}
+
+CursorShortcutMenu_OnEnter(*) {
+    global g_CursorShortcutMenuActive, g_CursorShortcutMenuLv
+    if (!g_CursorShortcutMenuActive || !IsObject(g_CursorShortcutMenuLv))
+        return
+    row := 0
+    try row := g_CursorShortcutMenuLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_CursorShortcutMenuLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return
+    ch := ""
+    try ch := g_CursorShortcutMenuLv.GetText(row, 1)
+    catch {
+        return
+    }
+    CursorShortcutMenu_HandleKey(StrLower(Trim(ch)))
+}
+
+CursorShortcutMenu_OnListActivate(*) {
+    CursorShortcutMenu_OnEnter()
 }
 
 CursorShortcutMenu_HandleKey(key) {
@@ -782,7 +812,7 @@ CursorShortcutMenu_Cancel(*) {
 }
 
 CursorShortcutMenu_Close() {
-    global g_CursorShortcutMenuGui, g_CursorShortcutMenuActive, g_CursorShortcutMenuPrevHwnd
+    global g_CursorShortcutMenuGui, g_CursorShortcutMenuLv, g_CursorShortcutMenuActive, g_CursorShortcutMenuPrevHwnd
     if (!g_CursorShortcutMenuActive)
         return
     g_CursorShortcutMenuActive := false
@@ -793,11 +823,13 @@ CursorShortcutMenu_Close() {
     try Hotkey("f", "Off")
     try Hotkey("p", "Off")
     try Hotkey("e", "Off")
+    try Hotkey("Enter", "Off")
     CursorShortcutMenu_UnbindRobustEscape()
     if (IsObject(g_CursorShortcutMenuGui) && g_CursorShortcutMenuGui.Hwnd) {
         try g_CursorShortcutMenuGui.Destroy()
     }
     g_CursorShortcutMenuGui := false
+    g_CursorShortcutMenuLv := false
     prevHwnd := g_CursorShortcutMenuPrevHwnd
     g_CursorShortcutMenuPrevHwnd := 0
     if (prevHwnd && WinExist("ahk_id " prevHwnd)) {

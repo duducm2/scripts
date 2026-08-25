@@ -10,6 +10,7 @@
 ; Used when user presses [C] Transfer in Gemini copy-decision banner.
 ; =============================================================================
 global g_CursorTransferSelectorGui := false
+global g_CursorTransferSelectorLv := false
 global g_CursorTransferSelectorActive := false
 global g_CursorTransferSelectorResult := ""   ; "" = waiting, 0 = cancel, integer = selected hwnd
 global g_CursorTransferWindowList := []      ; up to 9 { hwnd, title }
@@ -34,7 +35,8 @@ CursorTransfer_GetTargetAppName() {
 }
 
 CursorTransfer_SelectorClose() {
-    global g_CursorTransferSelectorActive, g_CursorTransferSelectorGui, g_CursorTransferHotkeyHandlers
+    global g_CursorTransferSelectorActive, g_CursorTransferSelectorGui, g_CursorTransferSelectorLv,
+        g_CursorTransferHotkeyHandlers
     if (!g_CursorTransferSelectorActive)
         return
     g_CursorTransferSelectorActive := false
@@ -50,6 +52,7 @@ CursorTransfer_SelectorClose() {
         try g_CursorTransferSelectorGui.Destroy()
     }
     g_CursorTransferSelectorGui := false
+    g_CursorTransferSelectorLv := false
 }
 
 CursorTransfer_SelectorHandleKey(index, *) {
@@ -87,6 +90,37 @@ CursorTransfer_SelectorEscape(*) {
     global g_CursorTransferSelectorResult
     g_CursorTransferSelectorResult := 0
     CursorTransfer_SelectorClose()
+}
+
+CursorTransfer_SelectorOnEnter(*) {
+    global g_CursorTransferSelectorActive, g_CursorTransferSelectorLv
+    if (!g_CursorTransferSelectorActive || !IsObject(g_CursorTransferSelectorLv))
+        return
+    row := 0
+    try row := g_CursorTransferSelectorLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_CursorTransferSelectorLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return
+    ch := ""
+    try ch := g_CursorTransferSelectorLv.GetText(row, 1)
+    catch {
+        return
+    }
+    if (!RegExMatch(ch, "^\d+$"))
+        return
+    CursorTransfer_SelectorHandleKey(Integer(ch))
+}
+
+CursorTransfer_SelectorOnListActivate(*) {
+    CursorTransfer_SelectorOnEnter()
 }
 
 ; Return project order index from g_Projects for a window title; 0 = no match.
@@ -587,29 +621,34 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         } else {
             list := enriched
         }
-        ; Number keys 1-9 (like #!+C / SelectAiModelInHandy modal).
+        ; Number keys 1-9 (Utility Shortcuts ListView aesthetic).
         loop list.Length {
             list[A_Index].hotkeyChar := String(A_Index)
         }
         g_CursorTransferWindowList := list
         g_CursorTransferSelectorResult := ""
         g_CursorTransferSelectorActive := true
-        g_CursorTransferSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow")
-        g_CursorTransferSelectorGui.BackColor := "1E1E2E"
-        g_CursorTransferSelectorGui.MarginX := 20
-        g_CursorTransferSelectorGui.MarginY := 15
+        global g_CursorTransferSelectorLv
+        g_CursorTransferSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Transfer to " . appDisplayName)
+        g_CursorTransferSelectorGui.SetFont("s10", "Segoe UI")
+        g_CursorTransferSelectorGui.Add("Text", "w720",
+            "Char = select   Enter/double-click = select   N or Esc = cancel")
+        g_CursorTransferSelectorLv := g_CursorTransferSelectorGui.Add("ListView", "w720 h220 -Multi", ["Char",
+            "Window"])
+        g_CursorTransferSelectorLv.OnEvent("DoubleClick", CursorTransfer_SelectorOnListActivate)
+        g_CursorTransferSelectorGui.Add("Button", "w100", "Close").OnEvent("Click", CursorTransfer_SelectorEscape)
+        g_CursorTransferSelectorGui.OnEvent("Close", CursorTransfer_SelectorEscape)
         g_CursorTransferSelectorGui.OnEvent("Escape", CursorTransfer_SelectorEscape)
-        g_CursorTransferSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-        transferSelGuiW := 720
-        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "📋 Transfer to " . appDisplayName)
-        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " h1 Background45475A")
-        g_CursorTransferSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
         for w in list {
-            g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW, "[" . w.hotkeyChar . "] " . w.displayName)
+            g_CursorTransferSelectorLv.Add("", w.hotkeyChar, w.displayName)
         }
-        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " h1 Background45475A y+10")
-        g_CursorTransferSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-        g_CursorTransferSelectorGui.Add("Text", "w" . transferSelGuiW . " Center", "Press 1-9 | N or Esc to cancel")
+        try g_CursorTransferSelectorLv.ModifyCol(1, 50)
+        try g_CursorTransferSelectorLv.ModifyCol(2, 640)
+        if (g_CursorTransferSelectorLv.GetCount() > 0) {
+            try g_CursorTransferSelectorLv.Modify(1, "Select Focus Vis")
+            catch {
+            }
+        }
         g_CursorTransferSelectorGui.Show("AutoSize Hide")
         g_CursorTransferSelectorGui.GetPos(&gx, &gy, &gw, &gh)
         ; Center on centerOnHwnd's monitor when provided; otherwise foreground window's monitor (dictation / transfer flow).
@@ -664,6 +703,8 @@ CursorTransfer_ShowWindowSelector(centerOnHwnd := 0) {
         g_CursorTransferHotkeyHandlers.Push({ key: "*N", callback: CursorTransfer_SelectorEscape })
         Hotkey("*n", CursorTransfer_SelectorEscape, "On")
         g_CursorTransferHotkeyHandlers.Push({ key: "*n", callback: CursorTransfer_SelectorEscape })
+        Hotkey("*Enter", CursorTransfer_SelectorOnEnter, "On")
+        g_CursorTransferHotkeyHandlers.Push({ key: "*Enter", callback: CursorTransfer_SelectorOnEnter })
     } catch {
     }
     start := A_TickCount

@@ -22,16 +22,16 @@ Same chords on all three companions (context `#HotIf`).
 
 ### Shift+L list UI
 
-| Key                  | Action                                                      |
-| -------------------- | ----------------------------------------------------------- |
-| `1`–`9` then letters | Select a listed model (`a`/`r`/`f`/`d` reserved)            |
-| `a`                  | Add model — **one** InputBox for the exact UIA-visible name |
-| `r`                  | Arm remove — next item key deletes that list entry          |
-| `f`                  | Set **Fast** name (InputBox; does not apply until Shift+Q)  |
-| `d`                  | Set **Deep** name (InputBox; does not apply until Shift+M)  |
-| Esc                  | Cancel (or cancel pending remove)                           |
+| Key                  | Action                                                                          |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `1`–`9` then letters | Select / apply a listed model (`a`/`e`/`f`/`d` reserved)                        |
+| Insert / `a`         | Add model — **one** InputBox for the exact UIA-visible name                     |
+| `e` / Edit           | Edit focused row (model rename, or Fast/Deep when those rows are focused)       |
+| Delete               | Remove focused **model** row (confirm); Fast/Deep rows are not deleted this way |
+| `f` / `d`            | Set **Fast** / **Deep** name (InputBox; applied later by Shift+Q / Shift+M)     |
+| Esc                  | Cancel                                                                          |
 
-The modal is AlwaysOnTop. Before any InputBox it is torn down so the prompt is not covered, then rebuilt afterward.
+The modal uses Utility Shortcuts ListView chrome (`+AlwaysOnTop +ToolWindow`, Char-first ListView, Add/Edit/Delete/Close). Before any InputBox or delete confirm it is torn down (or owned) so prompts are not covered, then rebuilt afterward. Enter / double-click activate the focused row.
 
 Letter/digit hotkeys are registered under a **cleared `HotIf`** with `$*` prefixes so they still fire while the modal GUI has focus (caller `#HotIf` would otherwise require Chrome+companion still active).
 

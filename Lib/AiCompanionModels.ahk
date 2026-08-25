@@ -234,9 +234,33 @@ AiCompanionModels_RemoveModel(companion, index) {
     return AiCompanionModels_Save(companion, fast, deep, cfg.models)
 }
 
-; Max selectable numbered/lettered slots (1-9 + letters skipping a/r/f/d).
+; Rename Models[index]; keep Fast/Deep in sync when they matched the old name.
+AiCompanionModels_RenameModel(companion, index, newName) {
+    cfg := AiCompanionModels_Load(companion)
+    if (index < 1 || index > cfg.models.Length)
+        return false
+    newName := Trim(newName)
+    if (newName = "")
+        return false
+    oldName := cfg.models[index]
+    for i, name in cfg.models {
+        if (i != index && name = newName)
+            return false
+    }
+    cfg.models[index] := newName
+    fast := cfg.fast
+    deep := cfg.deep
+    if (fast = oldName)
+        fast := newName
+    if (deep = oldName)
+        deep := newName
+    return AiCompanionModels_Save(companion, fast, deep, cfg.models)
+}
+
+; Max selectable numbered/lettered slots (1-9 + letters skipping a/e/f/d).
+; a = add, e = edit (Utility Shortcuts style); f/d = Fast/Deep roles.
 AiCompanionModels_ItemLetters() {
-    return "bceghijklmnopqstuvwxyz"
+    return "bcghijklmnopqrstuvwxyz"
 }
 
 AiCompanionModels_IndexFromKey(key) {

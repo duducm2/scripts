@@ -7,7 +7,7 @@
 
 ; =============================================================================
 ; Peek PDF - Win+Alt+Shift+X
-; If Peek is open: activate it. Otherwise: show study-topic selector (captionless Catppuccin text modal).
+; If Peek is open: activate it. Otherwise: show study-topic selector (Utility Shortcuts ListView aesthetic).
 ; =============================================================================
 
 ; Study topics for Win+Alt+Shift+X selector.
@@ -49,6 +49,7 @@ global g_StudyTopics := Map(
 #include %A_ScriptDir%\lib\study\StudyFavoriteLink.ahk
 
 global g_StudyTopicSelectorGui := false
+global g_StudyTopicSelectorLv := false
 global g_StudyTopicSelectorActive := false
 global g_StudyTopicSelectorPhase := ""           ; "category" | "topic"
 global g_StudyTopicSelectorCategory := ""        ; "mnemonics" | "plans"
@@ -805,6 +806,7 @@ StudyTopicSelector_UnbindCategoryHotkeys() {
     try Hotkey("4", "Off")
     try Hotkey("5", "Off")
     try Hotkey("6", "Off")
+    try Hotkey("Enter", "Off")
 }
 
 StudyTopicSelector_UnbindDigitHotkeys() {
@@ -813,6 +815,9 @@ StudyTopicSelector_UnbindDigitHotkeys() {
     }
     loop 26 {
         try Hotkey(Chr(96 + A_Index), "Off")
+    }
+    try Hotkey("Enter", "Off")
+    catch {
     }
 }
 
