@@ -850,7 +850,7 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     }
 }
 
-; Bluetooth list: soft green = connected, gray = disconnected (NM_CUSTOMDRAW).
+; Bluetooth list: orange = isolated, soft green = connected, gray = disconnected (NM_CUSTOMDRAW).
 AudioBt_LvEnableRowColors(lv) {
     if (!IsObject(lv))
         return
@@ -874,10 +874,16 @@ AudioBt_LvEnableRowColors(lv) {
 }
 
 AudioBt_LvRowBkColor(row) {
-    ; COLORREF is BGR. Soft green #E3F5DC → 0xDCF5E3; gray #E8E8E8 → 0xE8E8E8.
+    ; COLORREF is BGR.
+    ; Isolated soft orange #FFE4C4 → 0xC4E4FF; connected #E3F5DC → 0xDCF5E3; disconnected #E8E8E8.
     if !IsObject(row)
         return ""
     state := row.state
+    iso := ""
+    if row.HasProp("iso")
+        iso := row.iso
+    if (iso != "" || InStr(state, "Isolated"))
+        return 0xC4E4FF
     if InStr(state, "Disconnected")
         return 0xE8E8E8
     if InStr(state, "Connected")
