@@ -84,8 +84,11 @@ global OUTLOOK_BANNER_MS := 2000
 global OUTLOOK_BANNER_FAIL_MS := 3000
 global OUTLOOK_ACTIVATE_PROMPT_TIMEOUT_MS := 6000
 global OUTLOOK_SWITCH_VERIFY_TIMEOUT_MS := 700
+global OUTLOOK_LAUNCH_READY_MS := 15000
 
 global g_OutlookActivatePromptPending := false
+; "mail" | "calendar" | "" — set while the activate-Outlook banner is shown so Yes can finish navigation.
+global g_OutlookActivatePromptTargetModule := ""
 
 ; Feature flags. Rollout order: 1) HWND cache + state waits, 2) COM core.
 ; Parity: #!+b #!+g #!+v behave as before. Safety: no blind key injection; no leaked SetTitleMatchMode.
@@ -327,12 +330,12 @@ EnsureOutlookMailActive() {
 }
 
 ; Shared fallback executor for Mail/Calendar hotkeys (preserves message and priority order).
-ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg) {
+ActivateOutlookWithFallback(primaryFn, secondaryFn, failureMsg, targetModule := "") {
     if primaryFn()
         return
     if secondaryFn()
         return
-    PromptActivateOutlookBanner(failureMsg)
+    PromptActivateOutlookBanner(failureMsg, targetModule)
 }
 
 GetOutlookMainModuleState() {
@@ -487,7 +490,7 @@ NavigateOutlookToModule(targetModule, failureMsg) {
         calendarActivated := ActivateOutlookCalendar()
     if !(mailboxActivated || calendarActivated) {
         StandardLoadingBar_Hide(0)
-        PromptActivateOutlookBanner(failureMsg)
+        PromptActivateOutlookBanner(failureMsg, targetModule)
         return
     }
 
@@ -553,11 +556,12 @@ ActivateOrLaunchOutlook() {
     }
 }
 
-PromptActivateOutlookBanner(failureMsg) {
-    global g_OutlookActivatePromptPending
+PromptActivateOutlookBanner(failureMsg, targetModule := "") {
+    global g_OutlookActivatePromptPending, g_OutlookActivatePromptTargetModule
     if g_OutlookActivatePromptPending
         return
     g_OutlookActivatePromptPending := true
+    g_OutlookActivatePromptTargetModule := targetModule
 
     message := failureMsg "`n❓ Would you like to activate Outlook?"
     keyCallbacks := Map(
@@ -569,21 +573,61 @@ PromptActivateOutlookBanner(failureMsg) {
         OutlookActivatePrompt_OnTimeout, "1E1E2E", 620, 17, "", true, "[Y] Activate Outlook  [N] Cancel")
 }
 
+WaitForOutlookMainWindow(timeoutMs := 0) {
+    if (timeoutMs <= 0)
+        timeoutMs := OUTLOOK_LAUNCH_READY_MS
+    deadline := A_TickCount + timeoutMs
+    loop {
+        ; Resolve without writing 0 into the HWND cache while Outlook is still starting.
+        if (OutlookHwndCache._ResolveMailbox() > 0 || OutlookHwndCache._ResolveCalendar() > 0)
+            return true
+        if (A_TickCount >= deadline)
+            return false
+        Sleep 200
+    }
+}
+
 OutlookActivatePrompt_OnYes(*) {
-    global g_OutlookActivatePromptPending
+    global g_OutlookActivatePromptPending, g_OutlookActivatePromptTargetModule
     g_OutlookActivatePromptPending := false
+    targetModule := g_OutlookActivatePromptTargetModule
+    g_OutlookActivatePromptTargetModule := ""
+
     ActivateOrLaunchOutlook()
+
+    if (targetModule != "mail" && targetModule != "calendar")
+        return
+
+    StandardLoadingBar_Show("⏳ Outlook: waiting for window...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+        centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
+    if !WaitForOutlookMainWindow() {
+        StandardLoadingBar_Hide(0)
+        ShowCenteredOverlay_Utils("❌ Outlook: Did not become ready in time.", OUTLOOK_BANNER_FAIL_MS,
+            BANNER_ACCENT_ERROR)
+        return
+    }
+    StandardLoadingBar_Hide(0)
+
+    OutlookHwndCache.InvalidateMailbox()
+    OutlookHwndCache.InvalidateCalendar()
+
+    failureMsg := (targetModule = "mail")
+        ? "⚠ Outlook: Mailbox and Calendar are not open (activation failed)"
+        : "⚠ Outlook: Calendar and Mailbox are not open (activation failed)"
+    NavigateOutlookToModule(targetModule, failureMsg)
 }
 
 OutlookActivatePrompt_OnNo(*) {
-    global g_OutlookActivatePromptPending
+    global g_OutlookActivatePromptPending, g_OutlookActivatePromptTargetModule
     g_OutlookActivatePromptPending := false
+    g_OutlookActivatePromptTargetModule := ""
     ShowCenteredOverlay_Utils("ℹ Outlook activation cancelled.", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
 }
 
 OutlookActivatePrompt_OnTimeout(*) {
-    global g_OutlookActivatePromptPending
+    global g_OutlookActivatePromptPending, g_OutlookActivatePromptTargetModule
     g_OutlookActivatePromptPending := false
+    g_OutlookActivatePromptTargetModule := ""
     ShowCenteredOverlay_Utils("ℹ Outlook activation prompt timed out.", OUTLOOK_BANNER_MS, BANNER_ACCENT_INTERMEDIATE)
 }
 
