@@ -17,20 +17,48 @@ HandyReplay_FindNamed(el, typeId, names) {
     return 0
 }
 
-HandyReplay_HistoryListVisible(el) {
+HandyReplay_ElementIsOnScreen(el) {
     if !el
         return false
     try {
-        if (el.FindFirst({ Type: 50000, Name: "Play" }) || el.FindFirst({ Type: 50000, Name: "Reproduzir" }))
-            return true
+        if el.GetPropertyValue(UIA.Property.IsOffscreen)
+            return false
     } catch {
+        try {
+            if el.IsOffscreen
+                return false
+        } catch {
+        }
     }
     try {
-        if (el.FindFirst({ Type: 50020, Name: "HISTORY" }))
-            return true
+        pos := el.Location
+        if (!IsObject(pos) || pos.w <= 0 || pos.h <= 0)
+            return false
     } catch {
+        return false
     }
+    return true
+}
+
+; History content chrome (title or folder button) — present only on History view.
+HandyReplay_HistoryContentChromeVisible(el) {
+    if !el
+        return false
+    if HandyReplay_FindNamed(el, 50020, ["HISTORY", "HISTÓRICO"])
+        return true
+    if HandyReplay_FindNamed(el, 50000, ["Open Recordings Folder", "Abrir pasta de gravações"])
+        return true
     return false
+}
+
+HandyReplay_HistoryHasPlay(el) {
+    if !el
+        return false
+    return HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"]) != 0
+}
+
+HandyReplay_HistoryListVisible(el) {
+    return HandyReplay_HistoryContentChromeVisible(el) || HandyReplay_HistoryHasPlay(el)
 }
 
 ; Sidebar nav row: Group with cursor-pointer + flex gap-2 containing the tab label Text.
@@ -77,10 +105,39 @@ HandyReplay_FindHistorySidebarRow(el) {
     return HandyReplay_FindSidebarRow(el, ["History", "Histórico"])
 }
 
-HandyReplay_HistoryTabActive(el) {
-    if HandyReplay_HistoryListVisible(el)
-        return true
+; Last-resort locator from handy.md dump: RootWebArea → root → History Group (index 4).
+HandyReplay_FindHistorySidebarRowByPath(el) {
+    if !el
+        return 0
+    try {
+        row := el.ElementFromPath("1,1,2,1,1,1,2,1,1,1,1,2,1,4")
+        if !row
+            return 0
+        try {
+            if row.FindFirst({ Type: 50020, Name: "History" })
+                return row
+        } catch {
+        }
+        try {
+            if row.FindFirst({ Type: 50020, Name: "Histórico" })
+                return row
+        } catch {
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Name-based row, then text→parent walk (inside FindSidebarRow), then ElementFromPath.
+HandyReplay_LocateHistorySidebarRow(el) {
     row := HandyReplay_FindHistorySidebarRow(el)
+    if row
+        return row
+    return HandyReplay_FindHistorySidebarRowByPath(el)
+}
+
+HandyReplay_HistorySidebarSelected(el) {
+    row := HandyReplay_LocateHistorySidebarRow(el)
     if !row
         return false
     cn := ""
@@ -88,13 +145,39 @@ HandyReplay_HistoryTabActive(el) {
     return InStr(cn, "bg-logo-primary")
 }
 
-HandyReplay_WaitHistoryTab(hwnd, maxWaitMs := 800) {
+; Light check: already on History — do not re-click.
+HandyReplay_HistoryTabActiveLight(el) {
+    if !el
+        return false
+    if HandyReplay_HistorySidebarSelected(el)
+        return true
+    return HandyReplay_HistoryContentChromeVisible(el)
+}
+
+; Strict post-click gates: selected sidebar + content chrome (+ Play when recordings exist).
+; If chrome is present but no Play yet, still accept (empty list / slow paint); Play wait handles R.
+HandyReplay_HistoryTabActiveStrict(el) {
+    if !el
+        return false
+    if !HandyReplay_HistorySidebarSelected(el)
+        return false
+    if !HandyReplay_HistoryContentChromeVisible(el)
+        return false
+    return true
+}
+
+; Backward-compatible alias used by older call sites / Wait helpers.
+HandyReplay_HistoryTabActive(el) {
+    return HandyReplay_HistoryTabActiveLight(el)
+}
+
+HandyReplay_WaitHistoryTab(hwnd, maxWaitMs := 2000, strict := true) {
     global UIA
     start := A_TickCount
     loop {
         try {
             el := UIA.ElementFromHandle(hwnd)
-            if HandyReplay_HistoryTabActive(el)
+            if (strict ? HandyReplay_HistoryTabActiveStrict(el) : HandyReplay_HistoryTabActiveLight(el))
                 return true
         } catch {
         }
@@ -105,10 +188,65 @@ HandyReplay_WaitHistoryTab(hwnd, maxWaitMs := 800) {
     return false
 }
 
-; One explicit click strategy (invoke / legacy / uiaLeft / control / mouse).
+; Primary quality gate: UIA locate → valid on-screen Location → real screen Click.
+HandyReplay_ClickElementWithCursor(el, hwnd) {
+    if !el
+        return false
+    if !HandyReplay_ElementIsOnScreen(el)
+        return false
+
+    saveMode := A_CoordModeMouse
+    CoordMode("Mouse", "Screen")
+    try {
+        if !WinExist("ahk_id " hwnd)
+            return false
+        if !WinActive("ahk_id " hwnd) {
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 0.5)
+        }
+        Sleep 40
+
+        MouseGetPos(&prevX, &prevY)
+        cx := 0
+        cy := 0
+        gotPoint := false
+
+        try {
+            pt := el.GetClickablePoint()
+            if (IsObject(pt) && (pt.x || pt.y)) {
+                cx := pt.x
+                cy := pt.y
+                gotPoint := true
+            }
+        } catch {
+        }
+
+        if !gotPoint {
+            pos := el.Location
+            if (!IsObject(pos) || pos.w <= 0 || pos.h <= 0)
+                return false
+            cx := pos.x + pos.w // 2
+            cy := pos.y + pos.h // 2
+        }
+
+        Click(cx " " cy)
+        Sleep 60
+        MouseMove(prevX, prevY)
+        return true
+    } catch {
+        return false
+    } finally {
+        try CoordMode("Mouse", saveMode)
+    }
+}
+
+; One explicit click strategy (cursor / uiaLeft / control / legacy / invoke).
 HandyReplay_ApplyClickStrategy(el, hwnd, method) {
     if !el
         return false
+    if (method = "cursor" || method = "mouse") {
+        return HandyReplay_ClickElementWithCursor(el, hwnd)
+    }
     if (method = "invoke") {
         try {
             if (el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)) {
@@ -145,75 +283,72 @@ HandyReplay_ApplyClickStrategy(el, hwnd, method) {
         }
         return false
     }
-    if (method = "mouse") {
-        try {
-            pos := el.Location
-            if (pos.w <= 0 || pos.h <= 0)
-                return false
-            saveMode := A_CoordModeMouse
-            CoordMode("Mouse", "Screen")
-            MouseGetPos(&prevX, &prevY)
-            if !WinActive("ahk_id " hwnd) {
-                WinActivate("ahk_id " hwnd)
-                WinWaitActive("ahk_id " hwnd, , 0.4)
-            }
-            cx := pos.x + pos.w // 2
-            cy := pos.y + pos.h // 2
-            Click cx " " cy
-            Sleep 40
-            MouseMove(prevX, prevY)
-            CoordMode("Mouse", saveMode)
-            return true
-        } catch {
-        }
-        return false
-    }
     return false
 }
 
 ; Try several UIA + real-mouse click paths until one runs without throwing.
 HandyReplay_ClickWithStrategies(el, hwnd) {
-    for method in ["invoke", "legacy", "uiaLeft", "control", "mouse"] {
+    for method in ["cursor", "uiaLeft", "control", "legacy", "invoke"] {
         if HandyReplay_ApplyClickStrategy(el, hwnd, method)
             return true
     }
     return false
 }
 
-; Switch to History from General (or any tab); retries with different click methods.
+; Switch to History from General (or any tab); cursor-click first, verify-after-each.
 HandyReplay_EnsureHistoryTab(hwnd) {
     global UIA
     try {
+        if !hwnd || !WinExist("ahk_id " hwnd)
+            return false
+
         try WinActivate("ahk_id " hwnd)
         if !WinActive("ahk_id " hwnd)
             WinWaitActive("ahk_id " hwnd, , 0.5)
-        Sleep 80
+
+        ; Sidebar / footer must be interactive before we hunt History.
+        try Handy_WaitForMainUiReady(hwnd, 2500)
 
         el := UIA.ElementFromHandle(hwnd)
         if !el
             return false
-        if HandyReplay_HistoryTabActive(el)
+        if HandyReplay_HistoryTabActiveLight(el)
             return true
 
-        row := HandyReplay_FindHistorySidebarRow(el)
-        if !row
-            return false
-
-        loop 3 {
-            for method in ["mouse", "uiaLeft", "control", "legacy", "invoke"] {
-                HandyReplay_ApplyClickStrategy(row, hwnd, method)
-                if HandyReplay_WaitHistoryTab(hwnd, 500)
-                    return true
-            }
-            Sleep 100
+        loop 4 {
             el := UIA.ElementFromHandle(hwnd)
-            row := HandyReplay_FindHistorySidebarRow(el)
-            if !row
+            if !el
                 break
+
+            if HandyReplay_HistoryTabActiveLight(el)
+                return true
+
+            row := HandyReplay_LocateHistorySidebarRow(el)
+            if !row {
+                Sleep 120
+                continue
+            }
+
+            ; Cursor click is the primary verified path for Tauri/webview Groups.
+            for method in ["cursor", "uiaLeft", "control"] {
+                if !HandyReplay_ApplyClickStrategy(row, hwnd, method)
+                    continue
+                if HandyReplay_WaitHistoryTab(hwnd, 2000, true)
+                    return true
+                ; Soft accept: chrome appeared even if selected class lagged.
+                try {
+                    elCheck := UIA.ElementFromHandle(hwnd)
+                    if (HandyReplay_HistoryContentChromeVisible(elCheck) && HandyReplay_HistorySidebarSelected(elCheck))
+                        return true
+                } catch {
+                }
+            }
+
+            Sleep 150
         }
 
         try el := UIA.ElementFromHandle(hwnd)
-        return HandyReplay_HistoryTabActive(el)
+        return HandyReplay_HistoryTabActiveStrict(el)
     } catch {
         return false
     }
@@ -230,7 +365,7 @@ HandyReplay_WaitFirstPlay(hwnd, maxWaitMs := 2000) {
         try {
             el := UIA.ElementFromHandle(hwnd)
             play := HandyReplay_FindFirstPlay(el)
-            if play
+            if (play && HandyReplay_ElementIsOnScreen(play))
                 return play
         } catch {
         }
@@ -242,16 +377,15 @@ HandyReplay_WaitFirstPlay(hwnd, maxWaitMs := 2000) {
 }
 
 HandyReplay_ClickFirstPlay(hwnd) {
-    play := HandyReplay_WaitFirstPlay(hwnd, 2000)
+    play := HandyReplay_WaitFirstPlay(hwnd, 2500)
     if !play
         return false
+    ; Prefer real cursor click; fall back to other strategies only if cursor fails.
+    if HandyReplay_ClickElementWithCursor(play, hwnd)
+        return true
     if HandyReplay_ClickWithStrategies(play, hwnd)
         return true
-    try play.Invoke()
-    catch {
-        return false
-    }
-    return true
+    return false
 }
 
 ; End-to-end: activate/launch Handy → History → first Play. Leaves Handy open.
