@@ -26,6 +26,22 @@
     ShowHotstringSelector("Macros")
 }
 
+; Macros [L] — open OS clipboard (expected http/https link) in Google Chrome.
+OpenClipboardLinkInChrome() {
+    url := Trim(A_Clipboard)
+    if !StudyLink_IsValidHttpUrl(url) {
+        ShowCenteredOverlay_Utils("❌ Clipboard is not a link.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !StudyLink_OpenUrlInChrome(url, true) {
+        ShowCenteredOverlay_Utils("❌ Could not open Chrome.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    ShowCenteredOverlay_Utils("✅ Opening link in Chrome…", 1200, BANNER_ACCENT_SUCCESS)
+}
+
+RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open clipboard link in Chrome", "l")
+
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; If a main text field is saved for that exe+title (assets/data/paste_field_mappings.ini),
 ; focus it via UIA before paste; if unknown, after paste ask [Y]/[N] to persist the focused field.
