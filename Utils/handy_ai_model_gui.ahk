@@ -1,83 +1,90 @@
 ; =============================================================================
 ; Utils module: handy_ai_model_gui.ahk
-; ShowAiModelSelector GUI
-; Extracted verbatim from Utils.ahk; loaded via #include into the
+; ShowAiModelSelector GUI (Utility Shortcuts / project-selector ListView aesthetic)
+; Extracted from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
+global g_AiModelSelectorLv := false
+global g_AiModelHotkeyHandlers := []
+
 ; =============================================================================
-; ShowAiModelSelector() - Display selection GUI with immediate key capture
+; ShowAiModelSelector() - ListView picker with digit / Enter / Esc capture
 ; =============================================================================
 ShowAiModelSelector() {
-    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_HandyAiModels
+    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_AiModelSelectorLv
+    global g_HandyAiModels, g_OnEscapePressed
 
-    ; Don't show if already active
     if (g_AiModelSelectorActive)
         return
 
     currentSlot := Handy_GetPersistedAiModelSlot()
 
-    ; Create selection GUI
-    g_AiModelSelectorGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Owner")
-    g_AiModelSelectorGui.BackColor := "1E1E2E"
-    g_AiModelSelectorGui.MarginX := 20
-    g_AiModelSelectorGui.MarginY := 15
+    g_AiModelSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Handy AI Model")
+    g_AiModelSelectorGui.SetFont("s10", "Segoe UI")
+    g_AiModelSelectorGui.Add("Text", "w700",
+        "Char = select   Enter/double-click = select   Esc = cancel")
+    g_AiModelSelectorLv := g_AiModelSelectorGui.Add("ListView", "w700 h120 -Multi", ["Char", "Model",
+        "Description", "Status"])
+    g_AiModelSelectorLv.OnEvent("DoubleClick", AiModelSelector_OnListActivate)
+    g_AiModelSelectorGui.Add("Button", "w100", "Close").OnEvent("Click", AiModelSelector_Cancel)
+    g_AiModelSelectorGui.OnEvent("Close", AiModelSelector_Cancel)
+    g_AiModelSelectorGui.OnEvent("Escape", AiModelSelector_Cancel)
 
-    ; Title
-    g_AiModelSelectorGui.SetFont("s14 cCDD6F4 Bold", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "🎙️ Select AI Model")
-    g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A")  ; separator
-
-    ; Model options (green row = last saved slot from data\handy_ai_model.ini)
-    g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-    for num, model in g_HandyAiModels {
-        if (num = currentSlot) {
-            g_AiModelSelectorGui.SetFont("s12 cA6E3A1 Bold", "Segoe UI")
-            g_AiModelSelectorGui.Add("Text", "w280 Background313244", "[" . num . "] " . model.name)
-            g_AiModelSelectorGui.SetFont("s9 cA6E3A1", "Segoe UI")
-            g_AiModelSelectorGui.Add("Text", "w280 y+2 Background313244", "    " . model.desc)
-        } else {
-            g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
-            g_AiModelSelectorGui.Add("Text", "w280", "[" . num . "] " . model.name)
-            g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-            g_AiModelSelectorGui.Add("Text", "w280 y+2", "    " . model.desc)
+    focusRow := 0
+    loop 3 {
+        num := A_Index
+        if (!g_HandyAiModels.Has(num))
+            continue
+        model := g_HandyAiModels[num]
+        status := (num = currentSlot) ? "Current" : ""
+        row := g_AiModelSelectorLv.Add("", String(num), model.name, model.desc, status)
+        if (num = currentSlot)
+            focusRow := row
+    }
+    try g_AiModelSelectorLv.ModifyCol(1, 50)
+    try g_AiModelSelectorLv.ModifyCol(2, 180)
+    try g_AiModelSelectorLv.ModifyCol(3, 360)
+    try g_AiModelSelectorLv.ModifyCol(4, 80)
+    if (focusRow > 0) {
+        try g_AiModelSelectorLv.Modify(focusRow, "Select Focus Vis")
+        catch {
         }
-        g_AiModelSelectorGui.SetFont("s12 cCDD6F4", "Segoe UI")
+    } else if (g_AiModelSelectorLv.GetCount() > 0) {
+        try g_AiModelSelectorLv.Modify(1, "Select Focus Vis")
+        catch {
+        }
     }
 
-    ; Footer
-    g_AiModelSelectorGui.Add("Text", "w280 h1 Background45475A y+10")
-    g_AiModelSelectorGui.SetFont("s9 c6C7086", "Segoe UI")
-    g_AiModelSelectorGui.Add("Text", "w280 Center", "Green row = last saved model")
-    g_AiModelSelectorGui.Add("Text", "w280 Center y+4", "Press 1-3 | Esc to cancel")
+    AiModelSelector_PositionAndShow()
+    g_AiModelSelectorActive := true
+    g_OnEscapePressed := AiModelSelector_Cancel
+    try g_AiModelSelectorLv.Focus()
+    catch {
+    }
+    AiModelSelector_BindModalHotkeys()
+}
 
-    ; Get active window to determine which monitor to center on
+AiModelSelector_PositionAndShow() {
+    global g_AiModelSelectorGui
+
     activeWin := 0
-    try {
-        activeWin := WinGetID("A")
-    } catch {
+    try activeWin := WinGetID("A")
+    catch {
         activeWin := 0
     }
-
-    ; Default to primary monitor work area
     MonitorGetWorkArea(1, &monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
     monitorWidth := monitorRight - monitorLeft
     monitorHeight := monitorBottom - monitorTop
-
-    ; If we have an active window, find which monitor contains its center
     if (activeWin && activeWin != 0) {
         rect := Buffer(16, 0)
         if (DllCall("GetWindowRect", "ptr", activeWin, "ptr", rect)) {
-            ; Calculate window center
             winLeft := NumGet(rect, 0, "int")
             winTop := NumGet(rect, 4, "int")
             winRight := NumGet(rect, 8, "int")
             winBottom := NumGet(rect, 12, "int")
-
             centerX := winLeft + (winRight - winLeft) // 2
             centerY := winTop + (winBottom - winTop) // 2
-
-            ; Find which monitor contains the window center
             monitorCount := MonitorGetCount()
             loop monitorCount {
                 idx := A_Index
@@ -95,65 +102,154 @@ ShowAiModelSelector() {
         }
     }
 
-    ; Measure GUI size and center on the active monitor
-    g_AiModelSelectorGui.Show("AutoSize Hide")
-    g_AiModelSelectorGui.GetPos(&gx, &gy, &gw, &gh)
-    cx := monitorLeft + (monitorWidth - gw) // 2
-    cy := monitorTop + (monitorHeight - gh) // 2
-    g_AiModelSelectorGui.Show("x" . cx . " y" . cy . " NA")
-
-    g_AiModelSelectorActive := true
-
-    ; Enable hotkeys for 1-3 and Escape
-    Hotkey("1", AiModelSelector_HandleKey, "On")
-    Hotkey("2", AiModelSelector_HandleKey, "On")
-    Hotkey("3", AiModelSelector_HandleKey, "On")
-    Hotkey("Escape", AiModelSelector_Cancel, "On")
+    guiW := 720
+    guiH := 220
+    guiX := monitorLeft + (monitorWidth - guiW) // 2
+    guiY := monitorTop + (monitorHeight - guiH) // 2
+    if (guiX < monitorLeft + 20)
+        guiX := monitorLeft + 20
+    if (guiY < monitorTop + 20)
+        guiY := monitorTop + 20
+    g_AiModelSelectorGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH)
 }
 
-; Handle key press in AI model selector
-AiModelSelector_HandleKey(key) {
-    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_HandyAiModels
+AiModelSelector_SelectorHwnd() {
+    global g_AiModelSelectorGui
+    if (!IsObject(g_AiModelSelectorGui))
+        return 0
+    try
+        return g_AiModelSelectorGui.Hwnd
+    catch
+        return 0
+}
 
-    if (!g_AiModelSelectorActive)
+AiModelSelector_UnbindModalHotkeys() {
+    global g_AiModelHotkeyHandlers
+    hwnd := AiModelSelector_SelectorHwnd()
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+        }
+    }
+    for handler in g_AiModelHotkeyHandlers {
+        try Hotkey(handler.key, "Off")
+        catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
+        }
+    }
+    g_AiModelHotkeyHandlers := []
+}
+
+AiModelSelector_BindModalHotkeys() {
+    global g_AiModelHotkeyHandlers
+    AiModelSelector_UnbindModalHotkeys()
+    hwnd := AiModelSelector_SelectorHwnd()
+    if (!hwnd)
         return
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
+    }
 
-    ; Get the selection number
-    selection := Integer(key)
+    loop 3 {
+        key := String(A_Index)
+        cb := AiModelSelector_Select.Bind(A_Index)
+        try {
+            Hotkey(key, cb, "On")
+            g_AiModelHotkeyHandlers.Push({ key: key, handler: cb })
+        } catch {
+        }
+    }
+    try {
+        Hotkey("Enter", AiModelSelector_OnEnter, "On")
+        g_AiModelHotkeyHandlers.Push({ key: "Enter", handler: AiModelSelector_OnEnter })
+    } catch {
+    }
+    try {
+        Hotkey("Escape", AiModelSelector_Cancel, "On")
+        g_AiModelHotkeyHandlers.Push({ key: "Escape", handler: AiModelSelector_Cancel })
+    } catch {
+    }
 
-    ; Close selector GUI
-    AiModelSelector_Close()
-
-    ; Execute the selection
-    if (g_HandyAiModels.Has(selection)) {
-        ExecuteHandyAiModelSelection(selection)
+    try HotIf()
+    catch {
     }
 }
 
-; Cancel AI model selector
+AiModelSelector_Select(selection, *) {
+    global g_AiModelSelectorActive, g_HandyAiModels
+    if (!g_AiModelSelectorActive)
+        return
+    AiModelSelector_Close()
+    if (g_HandyAiModels.Has(selection))
+        ExecuteHandyAiModelSelection(selection)
+}
+
+AiModelSelector_SelectedSlot() {
+    global g_AiModelSelectorLv
+    if (!IsObject(g_AiModelSelectorLv))
+        return 0
+    row := 0
+    try row := g_AiModelSelectorLv.GetNext(0, "Focused")
+    catch {
+        row := 0
+    }
+    if (row < 1) {
+        try row := g_AiModelSelectorLv.GetNext(0, "Selected")
+        catch {
+            row := 0
+        }
+    }
+    if (row < 1)
+        return 0
+    ch := ""
+    try ch := g_AiModelSelectorLv.GetText(row, 1)
+    catch {
+        return 0
+    }
+    if (!RegExMatch(ch, "^\d+$"))
+        return 0
+    return Integer(ch)
+}
+
+AiModelSelector_OnEnter(*) {
+    global g_AiModelSelectorActive
+    if (!g_AiModelSelectorActive)
+        return
+    slot := AiModelSelector_SelectedSlot()
+    if (slot > 0)
+        AiModelSelector_Select(slot)
+}
+
+AiModelSelector_OnListActivate(*) {
+    AiModelSelector_OnEnter()
+}
+
 AiModelSelector_Cancel(*) {
     AiModelSelector_Close()
 }
 
-; Close the selector GUI and disable hotkeys
 AiModelSelector_Close() {
-    global g_AiModelSelectorGui, g_AiModelSelectorActive
+    global g_AiModelSelectorGui, g_AiModelSelectorActive, g_AiModelSelectorLv, g_OnEscapePressed
 
     if (!g_AiModelSelectorActive)
         return
 
     g_AiModelSelectorActive := false
-
-    ; Disable hotkeys
-    try Hotkey("1", "Off")
-    try Hotkey("2", "Off")
-    try Hotkey("3", "Off")
-    try Hotkey("Escape", AiModelSelector_Cancel, "Off")
+    AiModelSelector_UnbindModalHotkeys()
+    if (g_OnEscapePressed = AiModelSelector_Cancel)
+        g_OnEscapePressed := ""
     Utils_EnsureGlobalEscapeHotkey()
 
-    ; Destroy GUI
-    if (IsObject(g_AiModelSelectorGui) && g_AiModelSelectorGui.Hwnd) {
+    if (IsObject(g_AiModelSelectorGui)) {
         try g_AiModelSelectorGui.Destroy()
+        catch {
+        }
     }
     g_AiModelSelectorGui := false
+    g_AiModelSelectorLv := false
 }

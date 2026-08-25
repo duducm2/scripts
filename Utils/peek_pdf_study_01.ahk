@@ -7,7 +7,7 @@
 
 ; =============================================================================
 ; Peek PDF - Win+Alt+Shift+X
-; If Peek is open: activate it. Otherwise: show study-topic selector (same aesthetic as Win+Alt+Shift+C).
+; If Peek is open: activate it. Otherwise: show study-topic selector (captionless Catppuccin text modal).
 ; =============================================================================
 
 ; Study topics for Win+Alt+Shift+X selector.

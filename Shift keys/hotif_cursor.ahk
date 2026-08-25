@@ -8,7 +8,7 @@
 #HotIf IsCursorActive() && WinGetClass("A") != "#32770"
 
 ; Alt + M : Quick shortcut menu for Cursor
-; GUI styled like Select AI Model (Utils.ahk): dark theme, Press 1–2 | R · A · F · P | Esc to cancel.
+; Captionless dark-theme key menu (legacy Catppuccin style; Handy #!+C now uses ListView).
 global g_CursorShortcutMenuGui := false
 global g_CursorShortcutMenuActive := false
 global g_CursorShortcutMenuEscPollPrev := false
