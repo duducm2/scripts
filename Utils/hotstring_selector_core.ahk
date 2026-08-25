@@ -33,9 +33,11 @@ global g_UtilitySelectorRows := []
 global g_UtilitySelectorMode := "top"
 global g_UtilitySelectorCategory := ""
 
-global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "Hotstrings", "Sequences", "Finance", "Memory Palace"]
+global g_UtilityTopCategories := ["Prompts", "Projects", "Macros", "Hotstrings", "Sequences", "Finance",
+    "Memory Palace",
+    "Push"]
 global g_UtilityTopCategoryById := Map("r", "Prompts", "p", "Projects", "m", "Macros", "h", "Hotstrings", "s",
-    "Sequences", "f", "Finance", "n", "Memory Palace")
+    "Sequences", "f", "Finance", "n", "Memory Palace", "g", "Push")
 
 global g_HotstringCharSequence := ["1", "2", "3", "4", "5", "q", "w", "e", "r", "t", "a", "s", "d", "f", "g", "z", "x",
     "c", "v", "b", "6", "7", "8", "9", "0", "y", "u", "i", "o", "p", "h", "j", "k", "l", "n", "m", ",", "."]
