@@ -1231,7 +1231,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+P] > Copy the last message in {AI_PROVIDER}
     
     === DESKTOP ===
-    [Win+Alt+Shift+O] > Cut newest Desktop item (file/folder), then return to previous window
+    [Win+Alt+Shift+O] > Newest Desktop item: 1× cut (return to previous window); 2× open; hold 700ms+ copy path as text
     
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
