@@ -355,8 +355,9 @@ ClipAngelExport_Alert(msg) {
 ClipAngelExport_NameForm(existing) {
     isEdit := IsObject(existing)
     ClipAngelExport_DialogsBegin()
+    ; InputBox does not support Owner=hwnd (MsgBox does).
     ib := InputBox("Name for Desktop .txt file", isEdit ? "Edit name" : "Add name",
-        "w320" . ClipAngelExport_OwnerOpt(), isEdit ? existing["name"] : "")
+        "w320", isEdit ? existing["name"] : "")
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
         return
