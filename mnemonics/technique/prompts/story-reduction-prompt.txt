@@ -95,7 +95,7 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 ```
 
 - Preserve stable `id` values when palaces survive reduction; `palace_number` may be left empty (importer assigns next free index) or renumbered if empty palaces are removed. Keep a clear `title`.
-- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character; no copyrighted names).
+- Refresh every surviving row’s `image_prompt` (foreground only; depth slots; one character as lookalike — `README §Image composition rules`; NEVER paste `character_name` or any real/celebrity/historical/IP name into `image_prompt`).
 - `depth_slots_used` = post-reduction beast count (0–5).
 - `image_rel_path` — keep existing paths when still valid; else leave empty for **[Q]** attach.
 
@@ -137,6 +137,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 - NEVER assign two characters to one palace or zero characters after collapse.
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving palaces.
+- NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 
 ---
 
@@ -155,7 +156,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 
 ## Image prompts (both modes)
 
-After the reduced model is final, write a long concrete foreground `image_prompt` per surviving palace: depth slots, every zoned accessory with active engagement, one character (traits only), realistic integration, bizarreness levers, plain English.
+After the reduced model is final, write a long concrete foreground `image_prompt` per surviving palace: depth slots, every zoned accessory with active engagement, one character via the lookalike formula (`an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`), realistic integration, bizarreness levers, plain English. Keep canon names only in `character_name` / PREVIEW — never in `image_prompt`.
 
 ---
 
@@ -171,6 +172,7 @@ After the reduced model is final, write a long concrete foreground `image_prompt
 | Unbroken peg sequence; ≤5 beasts/palace; ≤4 zones/beast | Yes |
 | No knowledge/quote drops for survivors | Yes |
 | image_prompt refreshed per surviving palace | Yes |
+| image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 | study_id unchanged / from pack | Yes |
 
 ---
