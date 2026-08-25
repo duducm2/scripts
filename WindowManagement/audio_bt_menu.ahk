@@ -684,6 +684,8 @@ AudioBt_CreateGui(lvHeight := 360) {
     g_AudioBtLv := g_AudioBtGui.Add("ListView", "w720 h" lvHeight " -Multi", lvCols)
     g_AudioBtLv.SetFont("s14", "Segoe UI")
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
+    if (g_AudioBtMode = "BT")
+        AudioBt_LvEnableRowColors(g_AudioBtLv)
     g_AudioBtGui.Add("Button", "w100 Section", (g_AudioBtMode = "root") ? "Close" : "Back").OnEvent("Click",
         AudioBt_OnEscape)
     g_AudioBtGui.OnEvent("Close", (*) => AudioBt_Cleanup())
@@ -843,6 +845,77 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     try g_AudioBtLv.ModifyCol(3, 180)
     if (g_AudioBtRows.Length > 0)
         ListView_SelectRowFocused(g_AudioBtLv, selectRow)
+    try DllCall("InvalidateRect", "ptr", g_AudioBtLv.Hwnd, "ptr", 0, "int", 1)
+    catch {
+    }
+}
+
+; Bluetooth list: soft green = connected, gray = disconnected (NM_CUSTOMDRAW).
+AudioBt_LvEnableRowColors(lv) {
+    if (!IsObject(lv))
+        return
+    try hwnd := lv.Hwnd
+    catch {
+        return
+    }
+    if (!hwnd)
+        return
+    ; LVS_EX_DOUBLEBUFFER reduces flicker while custom-drawing row backgrounds.
+    try SendMessage(0x1036, 0x010000, 0x010000, hwnd) ; LVM_SETEXTENDEDLISTVIEWSTYLE
+    catch {
+    }
+    ; Clear Explorer theme so clrTextBk from custom draw is honored.
+    try DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
+    catch {
+    }
+    try lv.OnNotify(-12, AudioBt_LvCustomDraw) ; NM_CUSTOMDRAW
+    catch {
+    }
+}
+
+AudioBt_LvRowBkColor(row) {
+    ; COLORREF is BGR. Soft green #E3F5DC → 0xDCF5E3; gray #E8E8E8 → 0xE8E8E8.
+    if !IsObject(row)
+        return ""
+    state := row.state
+    if InStr(state, "Disconnected")
+        return 0xE8E8E8
+    if InStr(state, "Connected")
+        return 0xDCF5E3
+    return ""
+}
+
+AudioBt_LvCustomDraw(LV, L) {
+    global g_AudioBtMode, g_AudioBtRows
+    Critical -1
+    static SizeNMHDR := A_PtrSize * 3
+    static SizeNCD := SizeNMHDR + 16 + (A_PtrSize * 5)
+    static OffItem := SizeNMHDR + 16 + (A_PtrSize * 2)
+    static OffCT := SizeNCD
+    static OffCB := OffCT + 4
+    if (g_AudioBtMode != "BT")
+        return 0
+    drawStage := NumGet(L + SizeNMHDR, "UInt")
+    if (drawStage = 0x000001) ; CDDS_PREPAINT
+        return 0x20 ; CDRF_NOTIFYITEMDRAW
+    if (drawStage != 0x010001) ; CDDS_ITEMPREPAINT
+        return 0
+    row := NumGet(L + OffItem, "UPtr") + 1
+    item := row - 1
+    ; Keep system selection highlight so the focused row stays obvious.
+    try {
+        if DllCall("SendMessage", "ptr", LV.Hwnd, "uint", 0x102C, "ptr", item, "ptr", 0x0002, "uint") ; LVIS_SELECTED
+            return 0
+    } catch {
+    }
+    if (row < 1 || row > g_AudioBtRows.Length)
+        return 0
+    bk := AudioBt_LvRowBkColor(g_AudioBtRows[row])
+    if (bk = "")
+        return 0
+    NumPut("UInt", 0x000000, L + OffCT) ; text
+    NumPut("UInt", bk, L + OffCB)
+    return 0x02 ; CDRF_NEWFONT
 }
 
 AudioBt_PopulateIgnoredLv() {
