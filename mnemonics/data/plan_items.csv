@@ -1,4 +1,4 @@
-﻿id,plan_id,section_path,text,checked,sort_order
+id,plan_id,section_path,text,checked,sort_order
 PITEM_0001,PLAN_0001,Backlog,dumb zone,0,1
 PITEM_0002,PLAN_0001,Backlog,Meta prompt,0,2
 PITEM_0003,PLAN_0001,Backlog,"ETL (Extract, Transform, Load)",0,3
@@ -624,3 +624,4 @@ PITEM_0622,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Revea
 PITEM_0623,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),Jobs-to-be-Done (JTBD) and competitive context as WTP constraints,0,89
 PITEM_0624,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDiff (maximum difference scaling),0,90
 PITEM_0625,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
+PITEM_0626,PLAN_0004,Backlog,TEST,0,3
