@@ -10,7 +10,7 @@ Prefer this document over [`docs/archive/autoslot-rearrange-audit/`](../archive/
 
 ## Gates
 
-- AutoSlot **ON** (Window tools **Win+Alt+Shift+W** → **[5]**; preference in `assets/data/wm_autoslot.ini`).
+- AutoSlot **ON** (preference in `assets/data/wm_autoslot.ini`; menu `WM_WindowTools_ShowMenu` **[5]** has no hotkey).
 - **More than one** monitor.
 - Capacity: **2 slots** per ordinal monitor; up to **4** ordinals → **8** max.
 - Lone maximized / work-area-filled window = **1 slot** (free half remains for Place / Ctrl+Alt+Win+6 fill / Ctrl+Alt+Win+Y list). Windows hidden behind a maximized window do not fill the free half.

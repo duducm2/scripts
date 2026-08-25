@@ -40,15 +40,16 @@
 
 ; =============================================================================
 ; Window tools (maximize lone / hidden list / fill free slots / exit F11 fullscreen)
-; Menu: Win+Alt+Shift+W — direct CAW: Z=[1], U=[2], 6=[3], P=[4]; X=Snap 50/50 (not in menu)
+; Direct CAW: Z=[1], U=[2], 6=[3], P=[4]; X=Snap 50/50 (not in menu).
+; Menu (WM_WindowTools_ShowMenu) has no hotkey — AutoSlot [5] via assets\data\wm_autoslot.ini.
 ; Ctrl+Alt+Win+6: sole AutoSlot background→slot fill (no auto fill on close/move).
+; Win+Alt+Shift+W → Utility Shortcuts Macros (Utils\utility_shortcuts.ahk).
 ; =============================================================================
 ^!#z:: WM_WindowTools_OnMaximizeLonely()
 ^!#6:: WM_WindowTools_OnTileBackground()
 ^!#u:: WM_WindowTools_OnShowMinimizedList()
 ^!#p:: WM_WindowTools_OnExitF11Fullscreen()
 ^!#x:: WM_SnapHalfPairActiveWindow()
-#!+w:: WM_WindowTools_ShowMenu()
 
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()

@@ -1273,7 +1273,6 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+6] > Minimizes windows
     [Win+Alt+Shift+9] > 1× AI Quick Download (configured click sequences → Desktop → cut; manage via Win+Alt+Shift+U → Sequences) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back)
     [Win+Alt+Shift+M] > Maximizes the current window
-    [Win+Alt+Shift+W] > Window tools menu: [1] maximize lone; [2] hidden background list (open → free AutoSlot slot when ON); [3] fill free AutoSlot slots / tile bg (slotted windows stay); [4] exit F11 fullscreen — direct CAW: Z=[1], U=[2], 6=[3], P=[4]
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
     [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)
     [Ctrl+Alt+Shift+C] > Switch to second previous window (Alt+Tab twice; MEH+C; WindowManagement.ahk)
@@ -1282,10 +1281,10 @@ GLOBAL_CHEAT_SHEET_RAW := "
     Canonical list for WindowManagement.ahk — see also === WINDOWS === for Win+Alt+Shift equivalents
     [Ctrl+Alt+Win+V] > Maximize active window (also Win+Alt+Shift+M; ZMK hold on minimize/close key)
     [Ctrl+Alt+Win+X] > Snap 50/50: half-width active window + pair recent window in other half
-    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-    [Ctrl+Alt+Win+6] > Window tools [3]: fill free AutoSlot slots from background (AutoSlot ON; slotted windows stay); else tile bg ≤2/mon skipping slotted (also Win+Alt+Shift+W → 3)
-    [Ctrl+Alt+Win+U] > Window tools [2]: hidden background list — open into free AutoSlot half/empty (AutoSlot ON) or restore in place (OFF); close mode arms with list UI (also Win+Alt+Shift+W → 2)
-    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen (also Win+Alt+Shift+W → 4)
+    [Ctrl+Alt+Win+Z] > Window tools [1]: maximize lone visible window per monitor
+    [Ctrl+Alt+Win+6] > Window tools [3]: fill free AutoSlot slots from background (AutoSlot ON; slotted windows stay); else tile bg ≤2/mon skipping slotted
+    [Ctrl+Alt+Win+U] > Window tools [2]: hidden background list — open into free AutoSlot half/empty (AutoSlot ON) or restore in place (OFF); close mode arms with list UI
+    [Ctrl+Alt+Win+P] > Window tools [4]: exit F11 fullscreen
     [Ctrl+Alt+Win+A] > Move window to monitor 1 (left-most)
     [Ctrl+Alt+Win+S] > Move window to monitor 2
     [Ctrl+Alt+Win+D] > Move window to monitor 3
@@ -1315,6 +1314,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === GENERAL ===
     [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes)
+    [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M)
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle

@@ -27,7 +27,7 @@ Phase-2 baseline rollback ref: `c9d4ba714bef4f8c0915db6f1be466f9cdb62272`
 | `background_scan.ahk`      | 472    | Background scan, title excludes, collection       |
 | `project_selector_02.ahk`  | 491    | Selection mode and preview handlers, part 2       |
 | `move_monitor.ahk`         | 334    | Move to ordered monitor; MEH+B/C Alt+Tab          |
-| `window_tools.ahk`         | 258    | `Win+Alt+Shift+W` tools menu                      |
+| `window_tools.ahk`         | 258    | Window tools menu (no hotkey; CAW for [1]-[4])    |
 | `hotkeys.ahk`              | 84     | Global hotkey label bindings                      |
 | `globals.ahk`              | 57     | Globals + startup timers                          |
 | `helpers.ahk`              | 57     | Notifications, activation helpers                 |

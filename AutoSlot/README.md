@@ -12,15 +12,15 @@ AutoSlot ignores **AutoHotkeyGUI** windows, AutoHotkey host processes, and windo
 
 ## Enable / disable
 
-From **Win+Alt+Shift+W** (Window tools), press **[5]** to toggle AutoSlot ON/OFF. Preference: `assets/data/wm_autoslot.ini` (`[AutoSlot] Enabled=1|0`). Default ON when the ini is missing. When OFF, place and fill are no-ops.
+Toggle AutoSlot via `assets/data/wm_autoslot.ini` (`[AutoSlot] Enabled=1|0`). Default ON when the ini is missing. When OFF, place and fill are no-ops. (`WM_WindowTools_ShowMenu` option **[5]** still toggles in code but has no hotkey.)
 
 ## Quick reference
 
 | Action                    | Hotkey / UI                                                                   |
 | ------------------------- | ----------------------------------------------------------------------------- |
-| Toggle AutoSlot           | Win+Alt+Shift+W → **[5]**                                                     |
-| Background fill           | Ctrl+Alt+Win+6 / Window tools **[3]**                                         |
-| Open from background list | Ctrl+Alt+Win+Y                                                                |
+| Toggle AutoSlot           | `wm_autoslot.ini` (`Enabled=1\|0`); menu **[5]** has no hotkey                |
+| Background fill           | Ctrl+Alt+Win+6                                                                |
+| Open from background list | Ctrl+Alt+Win+U                                                                |
 | Manual 50/50              | Ctrl+Alt+Win+X                                                                |
 | Move to monitor           | Ctrl+Alt+Win+A/S/D/F                                                          |
 | User ignore list          | Win+Alt+Shift+L → **[R]** add / **[I]** manage (`autoslot_user_excludes.ini`) |

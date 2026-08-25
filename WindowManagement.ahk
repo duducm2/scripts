@@ -18,7 +18,7 @@ global WM_USE_EVENT_HOOK_CACHE := false
 ;   WindowManagement\helpers.ahk              - notifications, activation, cursor-centering helpers
 ;   WindowManagement\globals.ahk              - global vars + startup timers (auto-execute; keep #include in place)
 ;   WindowManagement\tile_snap.ahk            - tile background, snap half-pair, maximize helpers
-;   WindowManagement\window_tools.ahk         - Win+Alt+Shift+W window tools menu
+;   WindowManagement\window_tools.ahk         - window tools menu (no hotkey; CAW chords for [1]-[4])
 ;   WindowManagement\background_scan.ahk      - background window scan and title excludes
 ;   WindowManagement\minimized_list.ahk       - hidden/minimized background window list GUI
 ;   WindowManagement\hotkeys.ahk              - global hotkey bindings (minimize/maximize/move/close/cycle)
@@ -75,7 +75,7 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ; [WM module] Tile background, snap half-pair, maximize helpers -> WindowManagement\tile_snap.ahk
 #include %A_ScriptDir%\WindowManagement\tile_snap.ahk
 
-; [WM module] Win+Alt+Shift+W window tools menu -> WindowManagement\window_tools.ahk
+; [WM module] Window tools menu (no hotkey; CAW Z/U/6/P) -> WindowManagement\window_tools.ahk
 #include %A_ScriptDir%\WindowManagement\window_tools.ahk
 ; [WM module] Background window scan, excludes, and collection -> WindowManagement\background_scan.ahk
 #include %A_ScriptDir%\WindowManagement\background_scan.ahk
@@ -144,10 +144,11 @@ _DebugLog_WM(loc, msg, data, hypothesisId := "") {
 ;    - Win+Alt+Shift+M: Maximize active window
 ;    - Ctrl+Alt+Win+V: Maximize active window (same as above; for ZMK / external keyboards)
 ;    - Ctrl+Alt+Win+X: Snap 50/50 pair (DWM gapless placement with margin + gutter)
-;    - Ctrl+Alt+Win+Z: Window tools [1] maximize lone visible window per monitor (also Win+Alt+Shift+W → 1)
-;    - Ctrl+Alt+Win+6: Window tools [3] tile background windows (also Win+Alt+Shift+W → 3)
-;    - Ctrl+Alt+Win+U: Window tools [2] hidden background window list (also Win+Alt+Shift+W → 2)
-;    - Ctrl+Alt+Win+P: Window tools [4] exit F11 fullscreen (also Win+Alt+Shift+W → 4)
+;    - Ctrl+Alt+Win+Z: Window tools [1] maximize lone visible window per monitor
+;    - Ctrl+Alt+Win+6: Window tools [3] tile background windows
+;    - Ctrl+Alt+Win+U: Window tools [2] hidden background window list
+;    - Ctrl+Alt+Win+P: Window tools [4] exit F11 fullscreen
+;    - AutoSlot toggle: edit assets\data\wm_autoslot.ini (menu WM_WindowTools_ShowMenu [5] has no hotkey)
 ;
 ; 6. ALT-TAB ALTERNATIVES
 ;    - Ctrl+Alt+Shift+B: Switch to previous window (Alt+Tab once)

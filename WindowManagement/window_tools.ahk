@@ -1,12 +1,14 @@
 ; =============================================================================
 ; WindowManagement module: window_tools.ahk
-; Win+Alt+Shift+W window tools menu
+; Window tools menu (WM_WindowTools_ShowMenu) — no hotkey; CAW chords for [1]-[4]
 ; Extracted verbatim from WindowManagement.ahk; loaded via #include into the
 ; WindowManagement.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
 ; =============================================================================
-; Win+Alt+Shift+W — window tools menu (Interactive Input) + minimized list GUI
+; Window tools menu (Interactive Input) + minimized list GUI
+; No hotkey. Direct: CAW+Z=[1], CAW+U=[2], CAW+6=[3], CAW+P=[4].
+; AutoSlot [5]: edit assets\data\wm_autoslot.ini (Enabled=1|0).
 ; =============================================================================
 
 ; F11 fullscreen helpers: WM_WindowIsF11Fullscreen*, WM_ExitF11FullscreenForHwnd, WM_EnterF11FullscreenForHwnd (Utils.ahk)

@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: utility_shortcuts.ahk
-; Utility shortcuts #!+U, #!+L and ^!# secondary triggers
+; Utility shortcuts #!+U, #!+W, #!+L and ^!# secondary triggers
 ; Extracted verbatim from Utils.ahk; loaded via #include into the
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
@@ -17,6 +17,13 @@
     } else {
         ShowHotstringSelector()
     }
+}
+
+; Win+Alt+Shift+W — Utility Shortcuts → Macros
+; Same UI as #!+U then [M]; toggles closed if Macros is already open.
+#!+w::
+{
+    ShowHotstringSelector("Macros")
 }
 
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).

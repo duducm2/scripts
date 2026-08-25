@@ -19,7 +19,8 @@
 ; Foreground monitor swap (suite MoveWinToMonitor when AutoSlot ON):
 ;   Full/halfAlone/half↔pair; full/halfAlone/half↔full|single. Toast + quiet only.
 ;
-; Enable toggle: Win+Alt+Shift+W [5]; persisted in assets\data\wm_autoslot.ini.
+; Enable toggle: edit assets\data\wm_autoslot.ini ([AutoSlot] Enabled=1|0).
+; Menu path WM_WindowTools_ShowMenu [5] has no hotkey.
 ; =============================================================================
 
 global g_AutoSlotHook := 0
