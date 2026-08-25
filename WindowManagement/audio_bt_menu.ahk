@@ -850,7 +850,7 @@ AudioBt_PopulateDeviceLv(keepName := "") {
     }
 }
 
-; Device lists: blue = isolated, gray = everything else. ◆ marks isolated for colorblind reading.
+; Device lists: soft green = isolated, gray = everything else. ◆ marks isolated for colorblind reading.
 AudioBt_LvEnableRowColors(lv) {
     if (!IsObject(lv))
         return
@@ -890,11 +890,11 @@ AudioBt_StateDisplay(row) {
 }
 
 AudioBt_LvRowBkColor(row) {
-    ; COLORREF is BGR. Isolated soft blue #C5DCF5 → 0xF5DCC5; general gray #D6D6D6.
+    ; COLORREF is BGR. Isolated soft green #E3F5DC → 0xDCF5E3; general gray #D6D6D6.
     if !IsObject(row)
         return ""
     if AudioBt_RowIsIsolated(row)
-        return 0xF5DCC5
+        return 0xDCF5E3
     return 0xD6D6D6
 }
 
