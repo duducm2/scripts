@@ -1,65 +1,70 @@
-Task:
-Extract information from unstructured text and fill/update CSV rows using the provided column schema.
-
-Before processing:
-
-1. Confirm BOTH inputs are present (unstructured text + CSV with headers).
-2. If either is missing, stop and ask the user to provide it.
-
-Inputs:
-
-- Unstructured data: <paste or attach here>
-- Structured CSV (headers + optional existing rows): <paste or attach here>
-
-Processing rules:
-
-1. Treat the CSV header row as the authoritative column schema.
-2. Map facts from the unstructured text to those columns only.
-3. Create new rows for distinct records found in the text.
-4. Update existing rows only when the unstructured text clearly adds or corrects them.
-5. Do not invent values; leave cells empty when information is absent or ambiguous.
-6. Preserve column order from the template.
-7. Use the same separator as the input CSV (comma or semicolon); default to semicolon if unclear.
-
-Output (CRITICAL — read before responding):
-
-Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
-
-WRONG (do not output): stakeholder\_id, STK\_001
-RIGHT: stakeholder_id, STK_001
-
-Put the CSV inside a fenced code block labeled csv. Example:
-
-```csv
-meeting_id,meeting_date,participant
-2026-04-27,QMAI alignment,Rafael
-```
-
-Rules for the code block contents:
-1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
-2. Inside the block: raw plain text only. Never escape characters with backslashes.
-3. No markdown escaping anywhere — not in headers, IDs, or cell text.
-4. Underscores are literal: write meeting_id, not meeting\_id.
-5. The backslash character must not appear unless it is real data in a cell.
-6. Copy column names exactly from the input schema.
-7. One row per line inside the code block (header on line 1, each data row on its own line).
-8. Quote fields only when required by CSV rules (commas or semicolons inside a cell), not to "protect" underscores.
-
-Optional experimental output (use only if the user asks for copy-friendly mode):
-- Use a plain ```text fence instead of ```csv, or output raw CSV lines with no fence at all.
-- Still follow every rule above (no backslashes, one row per line, no commentary).
-
-Optional task-specific instructions:
-
-<Add column-specific rules, date formats, enums, or merge logic here>
-
----
-Reminder for the human (do not include in AI output):
-Before sending this prompt, attach or paste:
-
-1. Unstructured source text
-2. CSV file or CSV block with column headers
-
-After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc).
-Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. meeting\_id → meeting_id).
-
+Task:
+Extract information from unstructured text and fill/update CSV rows. Use a provided column schema when given; otherwise infer a sensible schema from the content.
+
+Before processing:
+
+1. Confirm unstructured text is present. If missing, stop and ask for it.
+2. CSV with headers is optional. If provided, treat it as the authoritative schema. If omitted, design a clear column structure using best judgment (see rule 8).
+
+Inputs:
+
+- Unstructured data: <paste or attach here>
+- Structured CSV (headers + optional existing rows) — optional: <paste or attach here>
+
+Processing rules:
+
+1. If a CSV header row is provided, treat it as the authoritative column schema.
+2. Map facts from the unstructured text to those columns only (when a schema was given).
+3. Create new rows for distinct records found in the text.
+4. Update existing rows only when the unstructured text clearly adds or corrects them.
+5. Do not invent values; leave cells empty when information is absent or ambiguous.
+6. Preserve column order from the template when a template was given.
+7. Use the same separator as the input CSV (comma or semicolon); default to semicolon if unclear.
+8. When no CSV schema is provided: invent a practical, flat schema using best judgment.
+   - Prefer clear, concise snake_case column names.
+   - Include only columns that help organize the extracted facts (avoid speculative unused columns).
+   - Prefer one row per distinct entity/record found in the text.
+   - Keep types consistent within each column (dates, IDs, names, etc.).
+   - Prefer semicolon as separator unless the user asked for something else.
+
+Output (CRITICAL — read before responding):
+
+Chat UIs may treat underscores as markdown formatting. Underscores in column names and IDs are data, not formatting — never prefix them (or *, #, etc.) with a backslash.
+
+WRONG (do not output): stakeholder\_id, STK\_001
+RIGHT: stakeholder_id, STK_001
+
+Put the CSV inside a fenced code block labeled csv. Example:
+
+```csv
+meeting_id,meeting_date,participant
+2026-04-27,QMAI alignment,Rafael
+```
+
+Rules for the code block contents:
+1. Output ONLY the CSV (header + data rows). No commentary before or after the block.
+2. Inside the block: raw plain text only. Never escape characters with backslashes.
+3. No markdown escaping anywhere — not in headers, IDs, or cell text.
+4. Underscores are literal: write meeting_id, not meeting\_id.
+5. The backslash character must not appear unless it is real data in a cell.
+6. Copy column names exactly from the input schema when one was provided; otherwise use the inferred header names consistently.
+7. One row per line inside the code block (header on line 1, each data row on its own line).
+8. Quote fields only when required by CSV rules (commas or semicolons inside a cell), not to "protect" underscores.
+
+Optional experimental output (use only if the user asks for copy-friendly mode):
+- Use a plain ```text fence instead of ```csv, or output raw CSV lines with no fence at all.
+- Still follow every rule above (no backslashes, one row per line, no commentary).
+
+Optional task-specific instructions:
+
+<Add column-specific rules, date formats, enums, or merge logic here>
+
+---
+Reminder for the human (do not include in AI output):
+Before sending this prompt, attach or paste:
+
+1. Unstructured source text (required)
+2. CSV file or CSV block with column headers (optional — if omitted, the AI will invent a schema)
+
+After Shift+C or D2C copy from Copilot: run mdunesc (Utility Selector macro E, or type mdunesc).
+Copilot adds invisible \ before _ on copy — mdunesc strips them (e.g. meeting\_id → meeting_id).
