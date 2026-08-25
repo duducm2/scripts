@@ -1,10 +1,13 @@
 ; =============================================================================
 ; Utils module: desktop_cut_newest.ahk
-; Cut or open newest Desktop item (file or folder).
-; Trigger: Win+Alt+Shift+O tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
+; Cut, open, or copy-path newest Desktop item (file or folder).
+; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation):
 ;   1× = cut newest Desktop item, restore previous window
-;   2× = open newest Desktop item with the default app
+;   2× within 400 ms (AI_QD_DOUBLE_TAP_MS / ZMK tap-dance) = open with default app
+;   hold 700 ms+ (PRONUNCIATION_HOLD_MS / Fast Copy / cheat sheet) = copy path as text
 ; =============================================================================
+
+DESKTOP_CUT_NEWEST_HOLD_MS := 700
 
 ; Returns full path of newest item under desktopPath, or "" if none.
 ; Newest = later of Creation vs Modified; skips desktop.ini; includes files and folders.
@@ -97,7 +100,35 @@ DesktopCutNewest_OpenNewest() {
     ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
 }
 
-; --- Win+Alt+Shift+O tap-dance ------------------------------------------------
+DesktopCutNewest_CopyPath() {
+    desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    if (desktopPath = "") {
+        ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    newest := DesktopCutNewest_ResolveNewestPath(desktopPath)
+    if (newest = "") {
+        ShowCenteredOverlay_Utils("⚠ Desktop is empty", 2000, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+
+    try {
+        A_Clipboard := newest
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Failed to copy path", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !ClipWait(1) {
+        ShowCenteredOverlay_Utils("❌ Clipboard did not update", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    SplitPath(newest, &name)
+    ShowCenteredOverlay_Utils("📋 Path: " name, 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; --- Win+Alt+Shift+O tap / double-tap / hold ---------------------------------
 global g_DesktopCutNewest_DoubleTapArmed := false
 global g_DesktopCutNewest_LastPressTick := 0
 global g_DesktopCutNewest_DoubleTapTimer := 0
@@ -113,6 +144,17 @@ class DesktopCutNewest_DoubleTapTimerObj {
     }
 }
 
+DesktopCutNewest_DisarmDoubleTap() {
+    global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_DoubleTapTimer
+    global g_DesktopCutNewest_LastPressTick
+    g_DesktopCutNewest_DoubleTapArmed := false
+    g_DesktopCutNewest_LastPressTick := 0
+    if (g_DesktopCutNewest_DoubleTapTimer) {
+        SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
+        g_DesktopCutNewest_DoubleTapTimer := 0
+    }
+}
+
 DesktopCutNewest_OnHotkey() {
     global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_LastPressTick
     global g_DesktopCutNewest_DoubleTapTimer
@@ -123,21 +165,32 @@ DesktopCutNewest_OnHotkey() {
         thresholdMs := 400
     }
 
-    now := A_TickCount
-    elapsed := (g_DesktopCutNewest_LastPressTick > 0) ? (now - g_DesktopCutNewest_LastPressTick) : 9999
+    ; Detect double-tap on key-down (before KeyWait) so a slow release cannot miss the window.
+    pressTime := A_TickCount
+    elapsed := (g_DesktopCutNewest_LastPressTick > 0) ? (pressTime - g_DesktopCutNewest_LastPressTick) : 9999
+    isSecondTap := g_DesktopCutNewest_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
 
-    if (g_DesktopCutNewest_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs) {
-        g_DesktopCutNewest_DoubleTapArmed := false
-        g_DesktopCutNewest_LastPressTick := 0
-        if (g_DesktopCutNewest_DoubleTapTimer) {
-            SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
-            g_DesktopCutNewest_DoubleTapTimer := 0
-        }
+    KeyWait "o", "T" . (DESKTOP_CUT_NEWEST_HOLD_MS / 1000)
+    isHold := (A_TickCount - pressTime) >= DESKTOP_CUT_NEWEST_HOLD_MS
+
+    if (isHold) {
+        DesktopCutNewest_DisarmDoubleTap()
+        DesktopCutNewest_CopyPath()
+        return
+    }
+
+    if (isSecondTap) {
+        DesktopCutNewest_DisarmDoubleTap()
         DesktopCutNewest_OpenNewest()
         return
     }
 
-    g_DesktopCutNewest_LastPressTick := now
+    ; Arm after quick release: window starts now (matches #!+8 / #!+9).
+    if (g_DesktopCutNewest_DoubleTapTimer) {
+        SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
+        g_DesktopCutNewest_DoubleTapTimer := 0
+    }
+    g_DesktopCutNewest_LastPressTick := A_TickCount
     g_DesktopCutNewest_DoubleTapArmed := true
     g_DesktopCutNewest_DoubleTapTimer := ObjBindMethod(DesktopCutNewest_DoubleTapTimerObj, "OnSingleTapTimeout")
     SetTimer(g_DesktopCutNewest_DoubleTapTimer, -thresholdMs)
