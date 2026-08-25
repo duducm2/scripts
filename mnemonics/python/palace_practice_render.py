@@ -125,7 +125,6 @@ def render_palace_section_md(
     character = dash(md_escape(palace.get("character") or ""))
     beast_count = int(palace.get("beast_count") or 0)
     atom_count = int(palace.get("atom_count") or 0)
-    prompt = md_escape(palace.get("image_prompt") or "")
 
     open_attr = " open" if open_default else ""
     atom_short = "atom" if atom_count == 1 else "atoms"
@@ -150,16 +149,6 @@ def render_palace_section_md(
     lines.append(
         f"<p><em>{beast_count} {_beast_noun(beast_count)} · {atom_count} {_atom_noun(atom_count)}</em></p>"
     )
-    lines.append("")
-
-    if prompt:
-        lines.append("**🖼️ Image prompt**")
-        lines.append("")
-        lines.append("```")
-        lines.append(prompt)
-        lines.append("```")
-    else:
-        lines.append("_No image prompt saved._")
     lines.append("")
 
     atoms = palace.get("atoms") or []

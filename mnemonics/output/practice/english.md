@@ -7,8 +7,6 @@
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bs] Bone Shark
@@ -62,8 +60,6 @@ _No image prompt saved._
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bq] Boulder quail
@@ -102,8 +98,6 @@ _No image prompt saved._
 ![Memory Palace 16](images/english/16.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -186,8 +180,6 @@ _No image prompt saved._
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bh] Bitter hare
@@ -255,8 +247,6 @@ _No image prompt saved._
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bf] Blackwater ferret
@@ -295,8 +285,6 @@ _No image prompt saved._
 ![Memory Palace 13](images/english/13.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -379,8 +367,6 @@ _No image prompt saved._
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [At] atlas
@@ -461,8 +447,6 @@ _No image prompt saved._
 ![Memory Palace 11](images/english/11.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -545,8 +529,6 @@ _No image prompt saved._
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Aj] Ajax
@@ -628,8 +610,6 @@ _No image prompt saved._
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ah] Ah!—a sigh
@@ -668,8 +648,6 @@ _No image prompt saved._
 ![Memory Palace 8](images/english/8.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -752,8 +730,6 @@ _No image prompt saved._
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [X] Xena, warrior woman
@@ -835,8 +811,6 @@ _No image prompt saved._
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [T] toucan
@@ -904,8 +878,6 @@ A Wombat writes a letter with a quill. It gets no response, so it puts the pen d
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [R] rat
@@ -944,8 +916,6 @@ A floating Skull hovers at the end of the street. It stares at a paragraph full 
 ![Memory Palace 4](images/english/4.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -1028,8 +998,6 @@ The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a br
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [K] Kitten
@@ -1068,8 +1036,6 @@ A Lion wears a detective hat. He looks at the ground with a glass. He ignores th
 ![Memory Palace 2](images/english/2.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -1151,8 +1117,6 @@ Go to the last street.
 ![Memory Palace 1](images/english/1.png)
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

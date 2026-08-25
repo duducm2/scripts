@@ -7,8 +7,6 @@
 
 <p><em>2 beasts · 6 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [N] Neanderthal
@@ -116,8 +114,6 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [J] jester
@@ -184,8 +180,6 @@ A hairy marmoset ignores a massive factory assembly line and instead gently spla
 ![Memory Palace 3](images/skills/3.jpg)
 
 <p><em>2 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -278,8 +272,6 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [F] frog
@@ -318,8 +310,6 @@ _No image prompt saved._
 ![Memory Palace 1](images/skills/1.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

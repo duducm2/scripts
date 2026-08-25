@@ -7,8 +7,6 @@
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [I] imp
@@ -75,8 +73,6 @@ A transparent lion sits on a high balcony edge, loudly crunching on glowing, met
 ![Memory Palace 2](images/communication/2.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -158,8 +154,6 @@ A multi-headed Hydra bursts out of a tiny metal mailbox, biting into shockingly 
 ![Memory Palace 1](images/communication/1.png)
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

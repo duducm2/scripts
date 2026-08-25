@@ -7,11 +7,13 @@
 
 global g_ClipAngelNameGui := false
 global g_ClipAngelNameLv := false
+global g_ClipAngelNameHint := false
 global g_ClipAngelNameRows := []
 global g_ClipAngelNameHotkeys := []
 global g_ClipAngelNameSourcePath := ""
 global g_ClipAngelNameFinalPath := ""
 global g_ClipAngelNamePicked := false
+global g_ClipAngelNameExt := "txt"
 
 ClipAngelExport_NamesCsvPath() {
     return A_ScriptDir "\assets\data\clipangel_desktop_names.csv"
@@ -173,13 +175,46 @@ ClipAngelExport_SanitizeFileName(name) {
     return s
 }
 
-ClipAngelExport_UniqueNamedPath(desktopDir, baseName) {
-    path := desktopDir "\" baseName ".txt"
+ClipAngelExport_SanitizeExt(ext) {
+    s := Trim(ext)
+    while (SubStr(s, 1, 1) = ".")
+        s := SubStr(s, 2)
+    s := ClipAngelExport_SanitizeFileName(s)
+    s := StrReplace(s, " ", "")
+    if (s = "")
+        return ""
+    return StrLower(s)
+}
+
+; Split "name.ext" into base + ext. Returns true if an extension was found.
+ClipAngelExport_SplitNameExt(raw, &baseOut, &extOut) {
+    s := Trim(raw)
+    baseOut := s
+    extOut := ""
+    dot := InStr(s, ".", false, -1)
+    if (!dot || dot = 1 || dot = StrLen(s))
+        return false
+    baseCand := SubStr(s, 1, dot - 1)
+    extCand := ClipAngelExport_SanitizeExt(SubStr(s, dot + 1))
+    if (extCand = "" || ClipAngelExport_SanitizeFileName(baseCand) = "")
+        return false
+    baseOut := baseCand
+    extOut := extCand
+    return true
+}
+
+ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext := "") {
+    global g_ClipAngelNameExt
+    if (ext = "")
+        ext := g_ClipAngelNameExt
+    if (ext = "")
+        ext := "txt"
+    path := desktopDir "\" baseName "." ext
     if !FileExist(path)
         return path
     i := 2
     loop {
-        path := desktopDir "\" baseName "-" i ".txt"
+        path := desktopDir "\" baseName "-" i "." ext
         if !FileExist(path)
             return path
         i += 1
@@ -271,7 +306,7 @@ ClipAngelExport_BindHotkeys(pairs) {
 }
 
 ClipAngelExport_CloseGui() {
-    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameRows
+    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameRows
     ClipAngelExport_UnbindHotkeys()
     try {
         if (IsObject(g_ClipAngelNameGui))
@@ -280,6 +315,7 @@ ClipAngelExport_CloseGui() {
     }
     g_ClipAngelNameGui := false
     g_ClipAngelNameLv := false
+    g_ClipAngelNameHint := false
     g_ClipAngelNameRows := []
 }
 
@@ -420,15 +456,20 @@ ClipAngelExport_Delete(*) {
     ClipAngelExport_Refresh()
 }
 
-ClipAngelExport_ApplyName(name) {
-    global g_ClipAngelNameSourcePath, g_ClipAngelNameFinalPath, g_ClipAngelNamePicked
+ClipAngelExport_ApplyName(name, extOverride := "") {
+    global g_ClipAngelNameSourcePath, g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
     clean := ClipAngelExport_SanitizeFileName(name)
     if (clean = "") {
         ClipAngelExport_Alert("Name is not a valid filename.")
         return false
     }
+    ext := extOverride != "" ? ClipAngelExport_SanitizeExt(extOverride) : g_ClipAngelNameExt
+    if (ext = "") {
+        ClipAngelExport_Alert("Extension is required.")
+        return false
+    }
     SplitPath(g_ClipAngelNameSourcePath, , &desktopDir)
-    dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean)
+    dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean, ext)
     if (dest = g_ClipAngelNameSourcePath) {
         g_ClipAngelNameFinalPath := g_ClipAngelNameSourcePath
         g_ClipAngelNamePicked := true
@@ -459,18 +500,56 @@ ClipAngelExport_UseSelected(*) {
 }
 
 ; One-shot typed name for this file only (not saved to the CSV list).
+; Accepts "name" (uses current ext) or "name.ext" (overrides ext for this file).
 ClipAngelExport_UseTyped(*) {
+    global g_ClipAngelNameExt
     ClipAngelExport_DialogsBegin()
-    ib := InputBox("Filename for this Desktop .txt (not saved to list)", "Type file name", "w360", "")
+    ib := InputBox("Filename (optional .ext). Not saved to list.`nCurrent ext: ." . g_ClipAngelNameExt,
+        "Type file name", "w360", "")
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
         return
-    name := Trim(ib.Value)
-    if (name = "") {
+    raw := Trim(ib.Value)
+    if (raw = "") {
         ClipAngelExport_Alert("Name is required.")
         return
     }
-    ClipAngelExport_ApplyName(name)
+    base := raw
+    ext := ""
+    if ClipAngelExport_SplitNameExt(raw, &base, &ext)
+        ClipAngelExport_ApplyName(base, ext)
+    else
+        ClipAngelExport_ApplyName(raw)
+}
+
+ClipAngelExport_UpdateHint() {
+    global g_ClipAngelNameHint, g_ClipAngelNameExt
+    if (!IsObject(g_ClipAngelNameHint))
+        return
+    ext := g_ClipAngelNameExt != "" ? g_ClipAngelNameExt : "txt"
+    g_ClipAngelNameHint.Value := "[Enter] use   [T] type once   [X] ext (." . ext
+        . ")   [A] add   [E] edit   Delete   Esc keep temp"
+}
+
+; Change extension for this rename session (list picks + bare typed names).
+ClipAngelExport_SetExt(*) {
+    global g_ClipAngelNameExt
+    ClipAngelExport_DialogsBegin()
+    ib := InputBox("Extension without dot (e.g. md, csv, json)", "Set file extension",
+        "w320", g_ClipAngelNameExt)
+    ClipAngelExport_DialogsEnd()
+    if (ib.Result != "OK")
+        return
+    ext := ClipAngelExport_SanitizeExt(ib.Value)
+    if (ext = "") {
+        ClipAngelExport_Alert("Extension is required.")
+        return
+    }
+    g_ClipAngelNameExt := ext
+    ClipAngelExport_UpdateHint()
+    try ShowCenteredOverlay_Utils("ℹ Extension: ." . ext, 1200, BANNER_ACCENT_INFO)
+    catch {
+    }
 }
 
 ClipAngelExport_Cancel(*) {
@@ -479,18 +558,19 @@ ClipAngelExport_Cancel(*) {
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
 ClipAngelExport_PromptRename(sourcePath) {
-    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameSourcePath
-    global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked
+    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
+    global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
     g_ClipAngelNameSourcePath := sourcePath
     g_ClipAngelNameFinalPath := sourcePath
     g_ClipAngelNamePicked := false
+    g_ClipAngelNameExt := "txt"
 
     ClipAngelExport_CloseGui()
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameGui.Add("Text", "x12 y10 w390",
-        "[Enter] use   [T] type once   [A] add   [E] edit   Delete   Esc keep temp")
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y40 w390 h320 Grid -Multi", ["Name"])
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h36")
+    ClipAngelExport_UpdateHint()
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y50 w390 h310 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_Cancel())
@@ -498,13 +578,14 @@ ClipAngelExport_PromptRename(sourcePath) {
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_UseSelected()],
         ["t", (*) => ClipAngelExport_UseTyped()],
+        ["x", (*) => ClipAngelExport_SetExt()],
         ["a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
         ["e", (*) => ClipAngelExport_Edit()],
         ["Delete", (*) => ClipAngelExport_Delete()],
         ["Escape", (*) => ClipAngelExport_Cancel()]
     ])
-    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 400)
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
     try WinWaitClose("ahk_id " g_ClipAngelNameGui.Hwnd)
     catch {
     }

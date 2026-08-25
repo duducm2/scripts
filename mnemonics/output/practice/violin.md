@@ -7,12 +7,6 @@
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-**🖼️ Image prompt**
-
-```
-ForegroundLeft: Arachne weaving a pizza from lute strings anchored to an iron gate. MidgroundRight: Skyscraper-sized bird of paradise painting a car engine with three glowing strings on a brick wall. BackgroundCenter: Microscopic cat sawing a lira da braccio on the distant pavement. Aerial: Dragon freezing statues on a street lamp. ForegroundRight: Zombie eagle regurgitating a wooden box onto a parked carriage. Johann Sebastian Bach stands in the center conducting the chaos.
-```
-
 #### Knowledge Atoms
 
 ### 🟧 [A] Arachne

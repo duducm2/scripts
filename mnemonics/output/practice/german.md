@@ -7,8 +7,6 @@
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Aq] [aquatic leech]
@@ -33,8 +31,6 @@ _No image prompt saved._
 ![Memory Palace 10](images/german/10.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -117,8 +113,6 @@ _No image prompt saved._
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ag] [Agaric fungi]
@@ -186,8 +180,6 @@ _No image prompt saved._
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ad] adder
@@ -242,8 +234,6 @@ The main difference lies in **how air is obstructed** (manner of articulation) a
 ![Memory Palace 7](images/german/7.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -326,8 +316,6 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [W] Wombat
@@ -366,8 +354,6 @@ _No image prompt saved._
 ![Memory Palace 5](images/german/5.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -450,8 +436,6 @@ _No image prompt saved._
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [N] Neanderthal
@@ -518,8 +502,6 @@ _No image prompt saved._
 ![Memory Palace 3](images/german/3.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -602,8 +584,6 @@ _No image prompt saved._
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [F] frog
@@ -656,8 +636,6 @@ _No image prompt saved._
 ![Memory Palace 1](images/german/1.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

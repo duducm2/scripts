@@ -7,8 +7,6 @@
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [P] panther
@@ -89,8 +87,6 @@ A toucan with three beaks builds a tiny monastery on a near-right corner. One be
 ![Memory Palace 3](images/taoism/3.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -173,8 +169,6 @@ An owl of shifting light perches on a near-right wall. It sheds feathers that fe
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [F] frog
@@ -255,8 +249,6 @@ A jester in bright yellow robes holds out a peach from a near-right doorway. One
 ![Memory Palace 1](images/taoism/1.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

@@ -7,8 +7,6 @@
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bu] [butterfly] Context: Qualitative questions seek meanings, motives, lived experience, and process, while avoiding count-based or causal-test questions. ?? Z1 Head | Qualitative purpose: glowing interview screens fused into the butterfly�s eyes, projecting lived memories as blue dust � sensory: visual ?? Z2 Forelimbs | Avoid causal testing: brittle calculator claws crush a yes-or-no SSL question until it leaks burnt rubber smoke � sensory: olfactory Quote: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Quote: "Does SSL increase trust?" Narrative: A colossal butterfly lands on the left street gate, and the glowing interview screens fused into its eyes project the exact quote as blue dust: "the goal is to create research questions that explore processes, meanings, motivations, interpretations, and lived experiences instead of measuring frequency or testing numerical relationships." Nikola Tesla touches the dust with a coil, and every number on the street melts into tiny spoken memories. The butterfly�s forelimbs crush a brittle calculator shell, releasing burnt rubber smoke while the shell repeats the forbidden question: "Does SSL increase trust?"
@@ -75,8 +73,6 @@ https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intell
 ![Memory Palace 18](images/science/18.png)
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -145,8 +141,6 @@ A colossal Bone toucan lands perfectly on an old, dusty book resting on a high s
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bn] Bone Neanderthal
@@ -200,8 +194,6 @@ A towering Bone panther hovers over a balcony, completely dwarfing the city stre
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bk] Bone kitten
@@ -254,8 +246,6 @@ A Bone marmoset climbs a huge floating crown made of category cards and jams one
 ![Memory Palace 15](images/science/15.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -338,8 +328,6 @@ The Bone jester kneels near the Bosch prototype in motley and ringing bells, gua
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Bb] Bone Bear
@@ -406,8 +394,6 @@ A giant bee[cite: 8] lands nearby on the street, holding a hot cup of coffee wit
 ![Memory Palace 13](images/science/13.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -490,8 +476,6 @@ A large bat hangs upside down from the library chandelier. Completely ignoring t
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [As] asp
@@ -559,8 +543,6 @@ A long-beaked avocet[cite: 3] lands beside a yellow square sponge character[cite
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ao] aoudad
@@ -627,8 +609,6 @@ An armadillo completely ignores a beautifully shaped syntax statue standing next
 ![Memory Palace 10](images/science/10.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -711,8 +691,6 @@ _No image prompt saved._
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ae] aerialist
@@ -794,8 +772,6 @@ An Airedale terrier wearing a raincoat interrupts the trial. It acts as a TV wea
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ac] acorn
@@ -834,8 +810,6 @@ A long adder snake swings high above the courtroom on a flying trapeze, hissing 
 ![Memory Palace 7](images/science/7.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -918,8 +892,6 @@ The Abyssinian cat rests at the end of the street. It points a brass telescope a
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [S] skull
@@ -1001,8 +973,6 @@ A heavy wombat stands at the end of the street. The wombat balances a set of sca
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [O] owl
@@ -1070,8 +1040,6 @@ _No image prompt saved._
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [L] Lion
@@ -1124,8 +1092,6 @@ _No image prompt saved._
 ![Memory Palace 3](images/science/3.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -1208,8 +1174,6 @@ _No image prompt saved._
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [C] cat
@@ -1276,8 +1240,6 @@ A slimy frog leaps through the market, knocking over the eagle's scale and ignor
 ![Memory Palace 1](images/science/1.png)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

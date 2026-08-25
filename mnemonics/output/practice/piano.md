@@ -7,12 +7,6 @@
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-**🖼️ Image prompt**
-
-```
-Depth slot ForegroundLeft (left wall): an enormous alligator balancing vertically on its tail on a giant piano key while holding a massive, ornate mirror in its jaws. Depth slot MidgroundRight (bench): a heavy, glowing amulet floating in mid-air and shooting a thick downward laser beam to scorch a straight line into the pavement. Depth slot BackgroundCenter (street end): a skyscraper-sized angel with bare feet hopping between painted street lines and the smooth concrete spaces between them. Depth slot Aerial (roof): a wild aoudad ramming its curved horns into a floating staff and dipping its head into a deep puddle. Depth slot ForegroundRight (lamp post): a silver-backed ape furiously crushing small lowercase letter blocks into powder while stacking massive uppercase block letters into a monument, with Claude Monet standing nearby.
-```
-
 #### Knowledge Atoms
 
 ### 🟧 [Al] alligator
@@ -94,8 +88,6 @@ visual 👁️
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Aj] Ajax
@@ -135,8 +127,6 @@ An enormous Akita dog sits straight up on a street bench, its heavy head defying
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [Ai] Airedale terrier
@@ -161,8 +151,6 @@ A colossal Airedale terrier claps its massive front paws together in a deafening
 ![Memory Palace 8](images/piano/8.png)
 
 <p><em>3 beasts · 3 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -216,8 +204,6 @@ A massive, semi-transparent cloud shaped like a human face floats above the stre
 ![Memory Palace 7](images/piano/7.png)
 
 <p><em>3 beasts · 4 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -289,8 +275,6 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 ![Memory Palace 6](images/piano/6.png)
 
 <p><em>5 beasts · 7 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -409,8 +393,6 @@ An Abyssinian cat creeps low under a glowing melody wire and transforms the lite
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [S] skull
@@ -491,8 +473,6 @@ A super-strong wombat lifts a heavy piano completely upside down with one paw wh
 ![Memory Palace 4](images/piano/4.png)
 
 <p><em>3 beasts · 6 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -598,8 +578,6 @@ A rat presses the piano pedal with its heavy tail. The keys are let go, but the 
 ![Memory Palace 3](images/piano/3.png)
 
 <p><em>5 beasts · 8 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -737,8 +715,6 @@ An owl spreads its wings above the street piano and lands on eight sung step mar
 ![Memory Palace 2](images/piano/2.png)
 
 <p><em>5 beasts · 11 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -924,8 +900,6 @@ A jester sits at the piano while Maurice Ravel places soft cushions under the je
 ![Memory Palace 1](images/piano/1.png)
 
 <p><em>5 beasts · 11 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 

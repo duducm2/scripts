@@ -135,7 +135,7 @@ Prompt context files resolve from `mnemonics/technique/` first.
 
 Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, AI import **[I]**, and quick image attach **[Q]** (loading bar shown during generation).
 
-**Layout (GitHub mobile):** Export mirrors the dashboard hierarchy — collapsible Memory Palaces only (`<details>`; newest open by default). Beasts are flat headings (`### 🟧 …`, always expanded) with stacked **Concept / Quote / Story / Sensory** field blocks. Emoji markers match the dashboard/technique canon: `🟧` beast, `🟦` zone (when set), `💡` concept only, sensory channel map (`👁️👂✋👃👅🌡️`, emoji then word), `🖼️` image prompt. GitHub’s Markdown renderer does not apply dashboard CSS (no dark/gold theme); structural and label parity is intentional for phone recall.
+**Layout (GitHub mobile):** Export mirrors the dashboard hierarchy — collapsible Memory Palaces only (`<details>`; newest open by default). Beasts are flat headings (`### 🟧 …`, always expanded) with stacked **Concept / Quote / Story / Sensory** field blocks. Emoji markers match the dashboard/technique canon: `🟧` beast, `🟦` zone (when set), `💡` concept only, sensory channel map (`👁️👂✋👃👅🌡️`, emoji then word). Image prompts are omitted (recall-only). GitHub’s Markdown renderer does not apply dashboard CSS (no dark/gold theme); structural and label parity is intentional for phone recall.
 
 Batch browse on GitHub:
 

@@ -7,8 +7,6 @@
 
 <p><em>1 beast · 2 Knowledge Atoms</em></p>
 
-_No image prompt saved._
-
 #### Knowledge Atoms
 
 ### 🟧 [I] imp
@@ -51,8 +49,6 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 ![Memory Palace 2](images/AI/2.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
@@ -134,8 +130,6 @@ A massive Hydra coils around a fire hydrant, injecting thick blue context-gel in
 ![Memory Palace 1](images/AI/1.png)
 
 <p><em>3 beasts · 5 Knowledge Atoms</em></p>
-
-_No image prompt saved._
 
 #### Knowledge Atoms
 
