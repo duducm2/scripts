@@ -1,7 +1,9 @@
 ; =============================================================================
 ; Utils module: desktop_cut_newest.ahk
-; Cut newest Desktop item (file or folder) to clipboard, restore previous window.
-; Trigger: Win+Alt+Shift+O
+; Cut or open newest Desktop item (file or folder).
+; Trigger: Win+Alt+Shift+O tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
+;   1× = cut newest Desktop item, restore previous window
+;   2× = open newest Desktop item with the default app
 ; =============================================================================
 
 ; Returns full path of newest item under desktopPath, or "" if none.
@@ -29,15 +31,20 @@ DesktopCutNewest_ResolveNewestPath(desktopPath) {
     return newestPath
 }
 
-DesktopCutNewest_Trigger() {
-    origHwnd := WinExist("A")
+DesktopCutNewest_ResolveDesktopPath() {
     desktopPath := ""
     try desktopPath := GetDesktopToRecyclePath()
     catch
         desktopPath := A_Desktop
     if (!desktopPath || !DirExist(desktopPath))
         desktopPath := A_Desktop
-    if (!DirExist(desktopPath)) {
+    return DirExist(desktopPath) ? desktopPath : ""
+}
+
+DesktopCutNewest_Trigger() {
+    origHwnd := WinExist("A")
+    desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    if (desktopPath = "") {
         ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
         return
     }
@@ -64,4 +71,74 @@ DesktopCutNewest_Trigger() {
         try WinActivate("ahk_id " origHwnd)
         WinWaitActive("ahk_id " origHwnd, , 1)
     }
+}
+
+DesktopCutNewest_OpenNewest() {
+    desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    if (desktopPath = "") {
+        ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    newest := DesktopCutNewest_ResolveNewestPath(desktopPath)
+    if (newest = "") {
+        ShowCenteredOverlay_Utils("⚠ Desktop is empty", 2000, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+
+    try {
+        Run('"' . newest . '"')
+    } catch as err {
+        ShowCenteredOverlay_Utils("❌ Failed to open Desktop item", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    SplitPath(newest, &name)
+    ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; --- Win+Alt+Shift+O tap-dance ------------------------------------------------
+global g_DesktopCutNewest_DoubleTapArmed := false
+global g_DesktopCutNewest_LastPressTick := 0
+global g_DesktopCutNewest_DoubleTapTimer := 0
+
+class DesktopCutNewest_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_DoubleTapTimer
+        if (!g_DesktopCutNewest_DoubleTapArmed)
+            return
+        g_DesktopCutNewest_DoubleTapArmed := false
+        g_DesktopCutNewest_DoubleTapTimer := 0
+        DesktopCutNewest_Trigger()
+    }
+}
+
+DesktopCutNewest_OnHotkey() {
+    global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_LastPressTick
+    global g_DesktopCutNewest_DoubleTapTimer
+
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch {
+        thresholdMs := 400
+    }
+
+    now := A_TickCount
+    elapsed := (g_DesktopCutNewest_LastPressTick > 0) ? (now - g_DesktopCutNewest_LastPressTick) : 9999
+
+    if (g_DesktopCutNewest_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs) {
+        g_DesktopCutNewest_DoubleTapArmed := false
+        g_DesktopCutNewest_LastPressTick := 0
+        if (g_DesktopCutNewest_DoubleTapTimer) {
+            SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
+            g_DesktopCutNewest_DoubleTapTimer := 0
+        }
+        DesktopCutNewest_OpenNewest()
+        return
+    }
+
+    g_DesktopCutNewest_LastPressTick := now
+    g_DesktopCutNewest_DoubleTapArmed := true
+    g_DesktopCutNewest_DoubleTapTimer := ObjBindMethod(DesktopCutNewest_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_DesktopCutNewest_DoubleTapTimer, -thresholdMs)
 }
