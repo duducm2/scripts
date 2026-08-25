@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+3 row(s) · therapist, hairdresser, and supermarket.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Therapist,"180,00",expense,CAT_SAUDE,Appointments,ACC_MERCADOP,,
+Hairdresser,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
+Supermarket,"57,07",card_expense,CAT_MERCADO,Other,ACC_MERCADOP,CARD_MP,
+===END_FILE===
