@@ -49,3 +49,4 @@ TX051,2026-08-24,Transfer,"50,00",transfer,,,ACC_MERCADOP,,ACC_99PAY
 TX052,2026-08-24,Therapist,"180,00",expense,CAT_SAUDE,Appointments,ACC_MERCADOP,,
 TX053,2026-08-24,Hairdresser,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
 TX054,2026-08-24,Supermarket,"57,07",card_expense,CAT_MERCADO,Other,ACC_MERCADOP,CARD_MP,
+TX055,2026-08-25,transfer,"40,00",transfer,,,ACC_MERCADOP,,ACC_99PAY
