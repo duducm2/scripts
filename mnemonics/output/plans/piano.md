@@ -8,8 +8,6 @@
 
 - [ ] What is a vibrato tenor and similar words like this one in Western music
 
-- [ ] TEST
-
 ## Phase 1: Biomechanical Foundation and Spatial Mapping (Months 1-3)
 
 ### Month 1: Posture and Keyboard Geography
