@@ -420,19 +420,12 @@ ClipAngelExport_Delete(*) {
     ClipAngelExport_Refresh()
 }
 
-ClipAngelExport_UseSelected(*) {
+ClipAngelExport_ApplyName(name) {
     global g_ClipAngelNameSourcePath, g_ClipAngelNameFinalPath, g_ClipAngelNamePicked
-    sel := ClipAngelExport_Selected()
-    if (!sel) {
-        try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
-        catch {
-        }
-        return
-    }
-    clean := ClipAngelExport_SanitizeFileName(sel["name"])
+    clean := ClipAngelExport_SanitizeFileName(name)
     if (clean = "") {
-        ClipAngelExport_Alert("Selected name is not a valid filename.")
-        return
+        ClipAngelExport_Alert("Name is not a valid filename.")
+        return false
     }
     SplitPath(g_ClipAngelNameSourcePath, , &desktopDir)
     dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean)
@@ -440,16 +433,44 @@ ClipAngelExport_UseSelected(*) {
         g_ClipAngelNameFinalPath := g_ClipAngelNameSourcePath
         g_ClipAngelNamePicked := true
         ClipAngelExport_CloseGui()
-        return
+        return true
     }
     try {
         FileMove(g_ClipAngelNameSourcePath, dest)
         g_ClipAngelNameFinalPath := dest
         g_ClipAngelNamePicked := true
         ClipAngelExport_CloseGui()
+        return true
     } catch Error as e {
         ClipAngelExport_Alert("Could not rename: " . e.Message)
+        return false
     }
+}
+
+ClipAngelExport_UseSelected(*) {
+    sel := ClipAngelExport_Selected()
+    if (!sel) {
+        try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    ClipAngelExport_ApplyName(sel["name"])
+}
+
+; One-shot typed name for this file only (not saved to the CSV list).
+ClipAngelExport_UseTyped(*) {
+    ClipAngelExport_DialogsBegin()
+    ib := InputBox("Filename for this Desktop .txt (not saved to list)", "Type file name", "w360", "")
+    ClipAngelExport_DialogsEnd()
+    if (ib.Result != "OK")
+        return
+    name := Trim(ib.Value)
+    if (name = "") {
+        ClipAngelExport_Alert("Name is required.")
+        return
+    }
+    ClipAngelExport_ApplyName(name)
 }
 
 ClipAngelExport_Cancel(*) {
@@ -468,7 +489,7 @@ ClipAngelExport_PromptRename(sourcePath) {
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
     g_ClipAngelNameGui.Add("Text", "x12 y10 w390",
-        "[Enter] use   [A] add   [E] edit   Delete   Esc keep temp name")
+        "[Enter] use   [T] type once   [A] add   [E] edit   Delete   Esc keep temp")
     g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y40 w390 h320 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
@@ -476,6 +497,7 @@ ClipAngelExport_PromptRename(sourcePath) {
     ClipAngelExport_Refresh()
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_UseSelected()],
+        ["t", (*) => ClipAngelExport_UseTyped()],
         ["a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
         ["e", (*) => ClipAngelExport_Edit()],
