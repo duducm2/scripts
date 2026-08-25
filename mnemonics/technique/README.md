@@ -244,13 +244,14 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 - **File-wide uniqueness:** In one mnemonic list file (`mnemonics-<topic>.md` or a portal file), **each character name MAY appear at most once**. NEVER reuse a character already assigned to another street in the same file.
 - **Pool exhausted:** If unused names in `characters.json` are fewer than streets needing assignment, flag this in the AI quality summary—NEVER silently skip a street or reuse a name.
 - **Portal scope:** Uniqueness applies **per file**. Avoid reusing a character from the main list in a linked portal file when both are reviewed as one palace.
+- **Name vs image split:** Keep the canon name in `character_name`, PREVIEW titles, and Story/Narrative text (human recall). For **image generation** (`image_prompt` and Background Preservation), NEVER use that name — use the lookalike formula in **Image composition rules**.
 
 **Check before adding a character:**
 
 1. Scan the **full existing study list** for character names already in use.
 2. Pick only **unused** names from `characters.json`.
 3. Assign **exactly one** unused character to each new street—do not repeat a name from step 1.
-4. Confirm every street in your output has its one character woven into narratives and the matching image prompt.
+4. Confirm every street has its one character in narratives/`character_name`, and the matching `image_prompt` uses the lookalike formula (no real/IP names).
 
 **Character preservation after SMASH / REMOVE:**
 
@@ -331,7 +332,21 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 - **Placement:** Composite foreground elements into the fixed background as physically grounded inserts.
 - **Depth slots (required):** Assign each beast on a street its depth slot per **Streets and Depth Slots**. One beast per slot; no clustering on the same depth plane or lateral zone; no pavement-only anchors when structures exist in frame.
 - **Mnemonic salience:** Preserve story memorability through **realistic rendering** of symbolic, strange, exaggerated, metaphorical foreground details. Every beat SHOULD reflect the **Bizarreness Gate**. Prefer dramatic expressions, texture, absurd contrast, bizarre juxtapositions, non-graphic grotesque elements, adult-safe non-explicit sensual tension, startling but non-graphic impact over explicit depictions.
-- **Copyright Workaround:** To avoid blocks from image generators (like Gemini), do not use copyrighted names (e.g., "Yoda"). Instead, describe a character with similar features (e.g., "a small green alien with pointy ears and a robe").
+- **Character likeness / image-safety (mandatory for all image prompts):** Image generators often block named real people (living or historical), celebrities, and copyrighted/IP characters. Treat every palace character as an **original lookalike**, never as that named person or franchise character.
+
+  **Rules:**
+  1. In `image_prompt` (and any text sent to an image model): NEVER write real person names, celebrity names, historical figure names, or IP/franchise character names (e.g. no "Johann Sebastian Bach", "Michael Jackson", "Ada Lovelace", "Yoda", "Hermione Granger").
+  2. Describe an **original fictional person** who shares the memorable visual traits of the assigned character (age band, era/clothing, hair, signature props, posture, vibe) so recall still works.
+  3. Explicitly disclaim identity in the same sentence: e.g. `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure / not any copyrighted character`.
+  4. `character_name` in CSV/PREVIEW/stories MAY keep the canon name for human recall; only the image path must stay nameless.
+
+  **Lookalike formula (use this shape in every `image_prompt`):**
+  `an original fictional [brief role] who resembles [age band], [hair/face cues], [era or signature clothing], [1–2 signature props or gestures] — not any real, living, historical, or named public figure and not any copyrighted character`
+
+  **Examples:**
+  - Canon `Johann Sebastian Bach` → `an original fictional 18th-century composer-like man (older adult, white powdered wig, dark baroque coat, conducting with a baton) — not any real or named historical person`
+  - Canon `Michael Jackson` → `an original fictional pop performer (slim build, sequined jacket, single glitter glove, fedora, moonwalk-ready stance) — not any real celebrity`
+  - Canon `Yoda` → `a small green elderly alien-like mentor with pointy ears and a simple robe — not any copyrighted character`
 
 Always preserve the background's recognizability. The street MUST remain the anchor of the memory image; beasts and characters are foreground additions, not replacements for the place.
 

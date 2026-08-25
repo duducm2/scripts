@@ -127,7 +127,7 @@ Rules:
 - `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached palaces + new rows).
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
 - `depth_slots_used` — 0–5 (beast count / depth slots for that palace).
-- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section.
+- `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section. Character MUST use the lookalike formula (`README §Image composition rules`); NEVER paste `character_name` into this field.
 
 ### 2) `PALACE_BEASTS.csv`
 
@@ -194,7 +194,8 @@ Rules:
 
 ### 4. Image prompts
 
-- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character (visual traits, no copyrighted names); plain English; bizarreness levers reflected.
+- One `image_prompt` per palace row: foreground only; depth slots + structural anchors; one character as a **lookalike** (`README §Image composition rules` — Character likeness / image-safety); plain English; bizarreness levers reflected.
+- `character_name` keeps the canon name for recall. In `image_prompt` NEVER write that name (or any real/celebrity/historical/IP name). Use the lookalike formula: `an original fictional [role] who resembles [traits] — not any real, living, historical, or named public figure and not any copyrighted character`.
 - Coordinate with prompt **g** (background preserve) when the human composites later — your job is the text in `image_prompt`.
 
 ### 5. Common failure modes (NEVER)
@@ -202,6 +203,7 @@ Rules:
 - NEVER assign two+ characters to one palace or reuse a character already used.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
 - NEVER use numeric pegs or cross-beast narrative dependency.
+- NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
 - NEVER omit the single `PALACE_PACK.txt` pack (download chip or one marked fence / gemini-code body).
@@ -222,6 +224,7 @@ Rules:
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | image_prompt filled per new palace | Yes |
+| image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 
 ---
 
