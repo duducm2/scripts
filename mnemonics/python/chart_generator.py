@@ -1479,8 +1479,10 @@ def build_html(
     }}
 
     function pickStudyItem(id) {{
-      selectStudy(id, {{ focusLatest: true }});
+      selectStudy(id, {{ focusLatest: false }});
       closeStudyModal({{ focusLatest: false }});
+      if (dashboardView !== 'practice') setDashboardView('practice');
+      openLatestPalace();
     }}
 
     function handleStudyModalKey(e) {{
