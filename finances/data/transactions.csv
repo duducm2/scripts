@@ -46,3 +46,6 @@ TX048,2026-08-23,Phone screen protector,"20,00",card_expense,CAT_CELULAR,,,CARD_
 TX049,2026-08-23,Lunch,"36,00",card_expense,CAT_ALIMENTA,,,CARD_MP,
 TX050,2026-08-23,Sunscreen,"16,50",card_expense,CAT_MERCADO,Personal care,,CARD_MP,
 TX051,2026-08-24,Transfer,"50,00",transfer,,,ACC_MERCADOP,,ACC_99PAY
+TX052,2026-08-24,Therapist,"180,00",expense,CAT_SAUDE,Appointments,ACC_MERCADOP,,
+TX053,2026-08-24,Hairdresser,"30,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
+TX054,2026-08-24,Supermarket,"57,07",card_expense,CAT_MERCADO,Other,ACC_MERCADOP,CARD_MP,
