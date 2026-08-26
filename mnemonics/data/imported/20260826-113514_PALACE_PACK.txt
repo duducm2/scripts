@@ -1,0 +1,51 @@
+﻿===PREVIEW===
+STUDY_COMMUNICATIO · 2 palaces · 10 beasts · 10 atoms
+Packing: 5+5
+
+PALACE 1 - The Sketch Studio (The Brooding Painter) [PALACE_COMMUNICATIO_01]
+  [A] Ant - Concept: Clear speaking is the direct result of clear thinking; ideas must be tested first. | Quote: "clear speaking is the result of clear thinking" | Story: A giant Ant violently sketches a brain using its sharp antennae, tearing the canvas to prove that the picture must be clear before it speaks. | Sensory: visual
+  [B] Bat - Concept: The clarity formula requires massive bad output over a high frequency to distill the essence. | Quote: "the formula for clarity on any idea is clarity equals bad output times frequency" | Story: A Bat continuously vomits bad drawings of bulls into a fast-spinning, loud blender, producing a single crystal-clear diamond. | Sensory: auditory
+  [C] Cat - Concept: Texture means consciously promoting evocative words from your deep lexicon to your automatic surface lexicon. | Quote: "he was baptized in perfume" | Story: A Cat dives deep into a pool of alphabet soup, dredging up glowing, heavy words and forcefully slapping them onto the surface layer. | Sensory: kinesthetic
+  [D] Dog - Concept: Texture is bending and twisting words to strike the listener forcefully. | Quote: "texture is the ability to bend twist and and gum words together..." | Story: A Dog violently chews and gums a dictionary, twisting the pages into a literal lightning bolt that it hurls at a stunned listener. | Sensory: visual
+  [E] Elk - Concept: The TAKES framework grounds abstract ideas in sensory memory (Time, Audio, Kinesthetic, Eyes, Smell) giving them blood and bone. | Quote: "you can only explain the world as much as you've explored it" | Story: An Elk slices its own leg to show blood and bone, while violently throwing a ticking clock, a severed ear, and a nose at the speaker to ground the memory. | Sensory: visual
+
+PALACE 2 - The Biological Stage (The Stoic Orator) [PALACE_COMMUNICATIO_02]
+  [F] Fox - Concept: Anchor explanations in lived experience to color the outline of your speech. | Quote: "populate or color your speech with your life use your life and your experiences to color in the outline" | Story: A Fox takes a massive bucket of its own glowing life experiences and aggressively splatters it all over a faint, boring outline of a speech. | Sensory: visual
+  [G] Goat - Concept: The Vocal Ego is an elite representation of yourself used to systematically review and upgrade word choices. | Quote: "the vocal ego is a representation of the elite version of you that 2% version of you" | Story: A Goat wearing a golden tuxedo aggressively slaps a cheap transcript out of the speaker's hand, handing back a glowing, upgraded scroll. | Sensory: kinesthetic
+  [H] Horse - Concept: True comfort requires stabilizing the body, mind, and spirit well before uttering a single word. | Quote: "comfort is built before you speak" | Story: A Horse forcefully box-breathes, expanding its massive diaphragm until it balances an entire heavy stage on its back before it neighs. | Sensory: kinesthetic
+  [I] Iguana - Concept: Speaking out of alignment with one's deep-rooted values creates internal unrest. | Quote: "the soul cannot settle when the mouth is dishonest" | Story: An Iguana tries to speak dishonestly, causing its soul (a glowing ghost) to violently thrash and rip out of its chest, unable to settle. | Sensory: visual
+  [J] Jaguar - Concept: Foundational biological inputs like diet and sleep directly dictate cognitive security and speech clarity. | Quote: "they mattered because that they affect your thinking and they affect your speaking" | Story: A Jaguar aggressively tracks a giant spreadsheet made of raw meat and pillows, roaring as the biological fuel hits its brain like a laser beam. | Sensory: auditory
+
+Discard candidates: none
+===END_PREVIEW===
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_COMMUNICATIO_01,STUDY_COMMUNICATIO,1,The Sketch Studio,The Brooding Painter,,5,"an interior of a cluttered art studio filled with easels and crumpled sketches, a large physical sketch pad in the center, featuring an original fictional brooding artist who resembles a young French painter from the 1900s with messy hair and a paint-stained smock - not any real, living, historical, or named public figure and not any copyrighted character."
+PALACE_COMMUNICATIO_02,STUDY_COMMUNICATIO,2,The Biological Stage,The Stoic Orator,,5,"a grand wooden stage illuminated by a single harsh spotlight, scattered with physiological tracking spreadsheets and a large microphone, featuring an original fictional stoic orator who resembles an ancient Greek philosopher with a flowing white beard and a draped toga - not any real, living, historical, or named public figure and not any copyrighted character."
+===END_FILE===
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_COMMUNICATIO_01_A,PALACE_COMMUNICATIO_01,A,Ant,bestiary,visual,0,1
+BEAST_COMMUNICATIO_01_B,PALACE_COMMUNICATIO_01,B,Bat,bestiary,auditory,0,2
+BEAST_COMMUNICATIO_01_C,PALACE_COMMUNICATIO_01,C,Cat,bestiary,kinesthetic,0,3
+BEAST_COMMUNICATIO_01_D,PALACE_COMMUNICATIO_01,D,Dog,bestiary,visual,0,4
+BEAST_COMMUNICATIO_01_E,PALACE_COMMUNICATIO_01,E,Elk,bestiary,visual,0,5
+BEAST_COMMUNICATIO_02_F,PALACE_COMMUNICATIO_02,F,Fox,bestiary,visual,0,1
+BEAST_COMMUNICATIO_02_G,PALACE_COMMUNICATIO_02,G,Goat,bestiary,kinesthetic,0,2
+BEAST_COMMUNICATIO_02_H,PALACE_COMMUNICATIO_02,H,Horse,bestiary,kinesthetic,0,3
+BEAST_COMMUNICATIO_02_I,PALACE_COMMUNICATIO_02,I,Iguana,bestiary,visual,0,4
+BEAST_COMMUNICATIO_02_J,PALACE_COMMUNICATIO_02,J,Jaguar,bestiary,auditory,0,5
+===END_FILE===
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_COMMUNICATIO_01_A,single,,,"Clear speaking is the direct result of clear thinking; ideas must be tested first.","""clear speaking is the result of clear thinking""","A giant Ant violently sketches a brain using its sharp antennae, tearing the canvas to prove that the picture must be clear before it speaks.",visual,,1
+,BEAST_COMMUNICATIO_01_B,single,,,"The clarity formula requires massive bad output over a high frequency to distill the essence.","""the formula for clarity on any idea is clarity equals bad output times frequency""","A Bat continuously vomits bad drawings of bulls into a fast-spinning, loud blender, producing a single crystal-clear diamond.",auditory,,1
+,BEAST_COMMUNICATIO_01_C,single,,,"Texture means consciously promoting evocative words from your deep lexicon to your automatic surface lexicon.","""he was baptized in perfume""","A Cat dives deep into a pool of alphabet soup, dredging up glowing, heavy words and forcefully slapping them onto the surface layer.",kinesthetic,,1
+,BEAST_COMMUNICATIO_01_D,single,,,"Texture is bending and twisting words to strike the listener forcefully.","""texture is the ability to bend twist and and gum words together in creative ways to be able to say phrases that just strike like a lightning bolt""","A Dog violently chews and gums a dictionary, twisting the pages into a literal lightning bolt that it hurls at a stunned listener.",visual,,1
+,BEAST_COMMUNICATIO_01_E,single,,,"The TAKES framework grounds abstract ideas in sensory memory (Time, Audio, Kinesthetic, Eyes, Smell) giving them blood and bone.","""you can only explain the world as much as you've explored it""","An Elk slices its own leg to show blood and bone, while violently throwing a ticking clock, a severed ear, and a nose at the speaker to ground the memory.",visual,,1
+,BEAST_COMMUNICATIO_02_F,single,,,"Anchor explanations in lived experience to color the outline of your speech.","""populate or color your speech with your life use your life and your experiences to color in the outline""","A Fox takes a massive bucket of its own glowing life experiences and aggressively splatters it all over a faint, boring outline of a speech.",visual,,1
+,BEAST_COMMUNICATIO_02_G,single,,,"The Vocal Ego is an elite representation of yourself used to systematically review and upgrade word choices.","""the vocal ego is a representation of the elite version of you that 2% version of you""","A Goat wearing a golden tuxedo aggressively slaps a cheap transcript out of the speaker's hand, handing back a glowing, upgraded scroll.",kinesthetic,,1
+,BEAST_COMMUNICATIO_02_H,single,,,"True comfort requires stabilizing the body, mind, and spirit well before uttering a single word.","""comfort is built before you speak""","A Horse forcefully box-breathes, expanding its massive diaphragm until it balances an entire heavy stage on its back before it neighs.",kinesthetic,,1
+,BEAST_COMMUNICATIO_02_I,single,,,"Speaking out of alignment with one's deep-rooted values creates internal unrest.","""the soul cannot settle when the mouth is dishonest""","An Iguana tries to speak dishonestly, causing its soul (a glowing ghost) to violently thrash and rip out of its chest, unable to settle.",visual,,1
+,BEAST_COMMUNICATIO_02_J,single,,,"Foundational biological inputs like diet and sleep directly dictate cognitive security and speech clarity.","""they mattered because that they affect your thinking and they affect your speaking""","A Jaguar aggressively tracks a giant spreadsheet made of raw meat and pillows, roaring as the biological fuel hits its brain like a laser beam.",auditory,,1
+===END_FILE===
