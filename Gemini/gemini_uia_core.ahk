@@ -41,12 +41,23 @@ GeminiStateInvalidate() {
 ; --- Helper Functions --------------------------------------------------------
 ; FindGeminiPromptField and GEMINI_PROMPT_FIELD_NAMES are defined in Utils.ahk (included above).
 
-; True if button name is the "Copy [last response]" button (EN or PT), not "Copy prompt".
+; True if button name is the "Copy [last response]" button (EN or PT), not "Copy prompt" / "Copy code".
 IsGeminiCopyResponseButton(name) {
-    if (!name || InStr(name, "prompt"))
+    if (!name || InStr(name, "prompt") || InStr(name, "code"))
         return false
     for n in GEMINI_COPY_RESPONSE_NAMES {
         if (name = n || InStr(name, n, false))
+            return true
+    }
+    return false
+}
+
+; True if button name is the code-fence "Copy code" button (EN or PT), not "Copy prompt" / bare "Copy".
+IsGeminiCopyCodeButton(name) {
+    if (!name || InStr(name, "prompt"))
+        return false
+    for n in GEMINI_COPY_CODE_NAMES {
+        if (name = n || InStr(name, n, false) = 1)
             return true
     }
     return false

@@ -22,6 +22,8 @@ GEMINI_ENTERPRISE_POST_COPY_SYNC_TIMEOUT_MS := 2000
 GEMINI_ENTERPRISE_CLIPBOARD_POLL_MS := 10
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt".
 GEMINI_ENTERPRISE_COPY_RESPONSE_NAMES := ["Copy response", "Copy Response", "Copy message", "Copy", "Copiar"]
+; Copy code-snippet button names (EN/PT). Distinct from response "Copy" and "Copy prompt".
+GEMINI_ENTERPRISE_COPY_CODE_NAMES := ["Copy code", "Copiar código"]
 
 global g_GeminiEnterpriseCachedHwnd := 0
 global g_GeminiEnterpriseHotkeyActive := false
@@ -817,6 +819,8 @@ GeminiEnterprise_IsCopyResponseButton(name) {
         return false
     if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
         return false
+    if (InStr(name, "code", false))
+        return false
     for n in GEMINI_ENTERPRISE_COPY_RESPONSE_NAMES {
         if (name = n)
             return true
@@ -825,6 +829,18 @@ GeminiEnterprise_IsCopyResponseButton(name) {
         return true
     if (InStr(name, "Copy message", false) = 1)
         return true
+    return false
+}
+
+GeminiEnterprise_IsCopyCodeButton(name) {
+    if (!name)
+        return false
+    if (InStr(name, "prompt", false))
+        return false
+    for n in GEMINI_ENTERPRISE_COPY_CODE_NAMES {
+        if (name = n || InStr(name, n, false) = 1)
+            return true
+    }
     return false
 }
 
@@ -887,6 +903,65 @@ GeminiEnterprise_GetLastCopyButton(uia) {
     return lastEl ? lastEl : arr[arr.Length]
 }
 
+GeminiEnterprise_GetCopyCodeButtonsArray(uia) {
+    out := []
+    if (!IsObject(uia))
+        return out
+    scope := uia
+    usedPanel := false
+    try {
+        panel := GeminiEnterprise_FindFirstInUia(uia, [{ AutomationId: "main-panel" }])
+        if (IsObject(panel)) {
+            scope := panel
+            usedPanel := true
+        }
+    } catch {
+    }
+    try {
+        allButtons := scope.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (GeminiEnterprise_IsCopyCodeButton(button.Name))
+                out.Push(button)
+        }
+    } catch {
+    }
+    if (out.Length = 0 && usedPanel) {
+        try {
+            allButtons := uia.FindAll({ Type: "Button" })
+            for button in allButtons {
+                if (GeminiEnterprise_IsCopyCodeButton(button.Name))
+                    out.Push(button)
+            }
+        } catch {
+        }
+    }
+    return out
+}
+
+GeminiEnterprise_GetLastCopyCodeButton(uia) {
+    arr := GeminiEnterprise_GetCopyCodeButtonsArray(uia)
+    if (arr.Length = 0)
+        return 0
+    lastEl := 0
+    lastTop := ""
+    for btn in arr {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : arr[arr.Length]
+}
+
 GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) {
     restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
     playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
@@ -920,6 +995,53 @@ GeminiEnterprise_CopyLastMessageToClipboard(options := "", enterpriseHwnd := 0) 
         if (playChimeAndNotify) {
             try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
             ShowCenteredOverlay_Utils("Copied!", 800, BANNER_ACCENT_SUCCESS)
+        }
+        if (restoreWindow)
+            Send "!{Tab}"
+        else {
+            root := GeminiEnterprise_ReadRootFromHwnd(enterpriseHwnd)
+            if (IsObject(root))
+                GeminiEnterprise_FocusComposer(root, false)
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+GeminiEnterprise_CopyLastCodeSnippetToClipboard(options := "", enterpriseHwnd := 0) {
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    try {
+        SetTitleMatchMode(2)
+        if (!enterpriseHwnd)
+            enterpriseHwnd := GetGeminiEnterpriseWindowHwnd()
+        if (!enterpriseHwnd)
+            return false
+        if (!alreadyActive) {
+            if !GeminiEnterprise_ActivateWindow(enterpriseHwnd)
+                return false
+            Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        }
+        GeminiEnterprise_ScrollFeedToBottom(enterpriseHwnd)
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " enterpriseHwnd)
+        Sleep GEMINI_ENTERPRISE_UIA_SETTLE_MS
+        copyBtn := GeminiEnterprise_GetLastCopyCodeButton(uia)
+        if (!copyBtn)
+            return false
+        A_Clipboard := ""
+        if (!GeminiEnterprise_ClickUiaElement(copyBtn)) {
+            try copyBtn.Click()
+            catch {
+                return false
+            }
+        }
+        if !ClipWait(2)
+            return false
+        if (playChimeAndNotify) {
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            ShowCenteredOverlay_Utils("Code copied!", 800, BANNER_ACCENT_SUCCESS)
         }
         if (restoreWindow)
             Send "!{Tab}"

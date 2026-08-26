@@ -8,6 +8,8 @@
 ; --- Config ---------------------------------------------------------------
 ; Copy response button names (EN/PT). Excludes "Copy prompt" / "Copiar prompt" which are different controls.
 GEMINI_COPY_RESPONSE_NAMES := ["Copy", "Copiar"]
+; Copy code-snippet button names (EN/PT). Distinct from response "Copy" and "Copy prompt".
+GEMINI_COPY_CODE_NAMES := ["Copy code", "Copiar código"]
 
 ; TTS Pause/Resume button names (EN/PT). Used by FindGeminiPauseResumeButton during read-aloud verification.
 GEMINI_TTS_PAUSE_NAMES := ["Pause", "Pausar"]
@@ -149,6 +151,47 @@ GetLastGeminiCopyButton(uia) {
         return 0
     ; Prefer the visually lowest button (largest BoundingRectangle.t), which should correspond
     ; to the last assistant response in the chat, and ignore offscreen/zero-size elements.
+    lastEl := 0
+    lastTop := ""
+    for btn in arr {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : arr[arr.Length]
+}
+
+; Returns array of "Copy code" buttons in document order; empty array on error.
+GetGeminiCopyCodeButtonsArray(uia) {
+    out := []
+    if (!IsObject(uia))
+        return out
+    try {
+        allButtons := uia.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (IsGeminiCopyCodeButton(button.Name))
+                out.Push(button)
+        }
+    } catch {
+    }
+    return out
+}
+
+; Returns the visually lowest "Copy code" button (most recent snippet) or 0.
+GetLastGeminiCopyCodeButton(uia) {
+    arr := GetGeminiCopyCodeButtonsArray(uia)
+    if (arr.Length = 0)
+        return 0
     lastEl := 0
     lastTop := ""
     for btn in arr {

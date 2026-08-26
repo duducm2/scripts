@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Gemini module: hotkey_read_copy.ahk
-; #!+P, CopyLastGeminiMessageToClipboard, and read-aloud IPC
+; #!+P (1× copy last message / 2× copy last code), CopyLastGeminiMessageToClipboard,
+; CopyLastGeminiCodeSnippetToClipboard, and read-aloud IPC
 ; (Win+Alt+Shift+O lives in Utils: DesktopCutNewest_Trigger)
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
@@ -80,10 +81,68 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; Win+Alt+Shift+P : Click the last Copy button in Gemini (activates Gemini, scrolls to bottom with Ctrl+End, then copies last response)
-; Works in EN ("Copy") and PT ("Copiar") UI. Uses tree order: last Copy button in the UI tree = last response.
-; Stays on Gemini (no Alt+Tab); leaves caret in Ask field + ready chime after copy.
-#!+p:: {
+; Copy last Gemini code-fence snippet to clipboard (#!+p double-tap). Same options as CopyLastGeminiMessageToClipboard.
+CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
+    t0 := A_TickCount
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    try {
+        GeminiState.Invalidate()
+        SetTitleMatchMode(2)
+        if !geminiHwnd
+            geminiHwnd := GetGeminiWindowHwnd()
+        if !geminiHwnd {
+            GeminiPerfLog("copy_code", t0)
+            return false
+        }
+        if (!alreadyActive) {
+            try {
+                WinActivate("ahk_id " geminiHwnd)
+            } catch {
+                ShowCenteredOverlay_Utils("❌ Error: Target window not found.", 2000, BANNER_ACCENT_ERROR)
+                return false
+            }
+            if !WinWaitActive("ahk_exe chrome.exe", , GEMINI_ACTIVATE_WAIT_MS // 1000)
+                return false
+            Sleep GEMINI_TAB_SWITCH_MS
+        }
+
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " geminiHwnd)
+        Sleep GEMINI_UIA_SETTLE_MS
+
+        Send "^{End}"
+        Sleep GEMINI_SCROLL_SETTLE_MS
+
+        lastCodeButton := GetLastGeminiCopyCodeButton(uia)
+        if (!lastCodeButton) {
+            GeminiPerfLog("copy_code", t0)
+            return false
+        }
+        A_Clipboard := ""
+        lastCodeButton.Click()
+        if !ClipWait(2) {
+            GeminiPerfLog("copy_code", t0)
+            return false
+        }
+        if (playChimeAndNotify) {
+            PlayCopyCompletedChime()
+            ShowNotification("Code copied!", 800, "FFFF00", "000000", 24)
+        }
+        if (restoreWindow)
+            Send "!{Tab}"
+        else
+            FocusGeminiAskFieldForHwnd(geminiHwnd, false)
+        GeminiPerfLog("copy_code", t0)
+        return true
+    } catch {
+        GeminiPerfLog("copy_code", t0)
+        return false
+    }
+}
+
+; Companion-aware copy last message (#!+p single-tap).
+HotkeyCopy_RunCopyLastMessage() {
     try {
         t0 := A_TickCount
         companion := ResolveGlobalAICompanion()
@@ -114,6 +173,88 @@ CopyLastGeminiMessageToClipboard(options := "", geminiHwnd := 0) {
     } catch as err {
         ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
     }
+}
+
+; Companion-aware copy last code snippet (#!+p double-tap).
+HotkeyCopy_RunCopyLastCode() {
+    try {
+        t0 := A_TickCount
+        companion := ResolveGlobalAICompanion()
+        if (companion = "enterprise") {
+            if (!GeminiEnterprise_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
+                ShowNotification("No code snippet found – ensure Gemini Enterprise has a code block", 2500, "FF6666",
+                    "FFFFFF", 22)
+            else if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
+                root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+                if (IsObject(root))
+                    GeminiEnterprise_FocusComposer(root, true)
+            }
+            return
+        }
+        if (companion = "copilot") {
+            if (!CopilotWeb_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
+                ShowNotification("No code snippet found – ensure Copilot has a code block", 2500, "FF6666", "FFFFFF",
+                    22)
+            else if (hwnd := GetCopilotWebWindowHwnd())
+                CopilotWeb_FocusComposerForHwnd(hwnd, true)
+            return
+        }
+        if (!CopyLastGeminiCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
+            ShowNotification("No code snippet found – ensure Gemini has a code block", 2500, "FF6666", "FFFFFF", 22)
+        else if (hwnd := GetGeminiWindowHwnd())
+            FocusGeminiAskFieldForHwnd(hwnd, true)
+        GeminiPerfLog("hotkey_copy_code", t0)
+    } catch as err {
+        ShowNotification("Copy code error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
+    }
+}
+
+; Win+Alt+Shift+P tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS):
+;   1× = copy last message/response
+;   2× = copy most recent code snippet ("Copy code", not "Copy" / "Copy prompt")
+; Stays on companion (no Alt+Tab); leaves caret in Ask/composer + ready chime after copy.
+global g_HotkeyCopy_DoubleTapArmed := false
+global g_HotkeyCopy_LastPressTick := 0
+global g_HotkeyCopy_DoubleTapTimer := 0
+
+class HotkeyCopy_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global g_HotkeyCopy_DoubleTapArmed, g_HotkeyCopy_DoubleTapTimer
+        if (!g_HotkeyCopy_DoubleTapArmed)
+            return
+        g_HotkeyCopy_DoubleTapArmed := false
+        g_HotkeyCopy_DoubleTapTimer := 0
+        SetTimer((*) => HotkeyCopy_RunCopyLastMessage(), -1)
+    }
+}
+
+#!+p:: {
+    global g_HotkeyCopy_DoubleTapArmed, g_HotkeyCopy_LastPressTick, g_HotkeyCopy_DoubleTapTimer
+
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch {
+        thresholdMs := 400
+    }
+
+    now := A_TickCount
+    elapsed := (g_HotkeyCopy_LastPressTick > 0) ? (now - g_HotkeyCopy_LastPressTick) : 9999
+
+    if (g_HotkeyCopy_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs) {
+        g_HotkeyCopy_DoubleTapArmed := false
+        g_HotkeyCopy_LastPressTick := 0
+        if (g_HotkeyCopy_DoubleTapTimer) {
+            SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
+            g_HotkeyCopy_DoubleTapTimer := 0
+        }
+        SetTimer((*) => HotkeyCopy_RunCopyLastCode(), -1)
+        return
+    }
+
+    g_HotkeyCopy_LastPressTick := now
+    g_HotkeyCopy_DoubleTapArmed := true
+    g_HotkeyCopy_DoubleTapTimer := ObjBindMethod(HotkeyCopy_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_HotkeyCopy_DoubleTapTimer, -thresholdMs)
 }
 
 ; Custom message so WindowManagement.ahk can trigger copy without Send (Send does not trigger hotkeys in another script).

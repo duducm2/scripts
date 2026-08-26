@@ -16,6 +16,8 @@ COPILOT_WEB_CLIPBOARD_POLL_MS := 10
 COPILOT_WEB_FIRST_LAUNCH_WAIT_MS := 2500
 
 COPILOT_COPY_RESPONSE_NAMES := ["Copy Response", "Copy", "Copiar"]
+; Copy code-snippet button names (EN/PT). Distinct from response "Copy" / "Copy Response" / "Copy prompt".
+COPILOT_COPY_CODE_NAMES := ["Copy code", "Copy Code", "Copiar código"]
 
 global g_CopilotWebCachedHwnd := 0
 global g_CopilotWebHotkeyActive := false
@@ -613,12 +615,26 @@ CopilotWeb_IsCopyResponseButton(name) {
         return false
     if (InStr(name, "Copy prompt", false) || InStr(name, "Copiar prompt", false))
         return false
+    if (InStr(name, "code", false))
+        return false
     for n in COPILOT_COPY_RESPONSE_NAMES {
         if (name = n)
             return true
     }
     if (InStr(name, "Copy Response", false) = 1)
         return true
+    return false
+}
+
+CopilotWeb_IsCopyCodeButton(name) {
+    if (!name)
+        return false
+    if (InStr(name, "prompt", false))
+        return false
+    for n in COPILOT_COPY_CODE_NAMES {
+        if (name = n || InStr(name, n, false) = 1)
+            return true
+    }
     return false
 }
 
@@ -639,6 +655,45 @@ CopilotWeb_GetCopyButtonsArray(uia) {
 
 CopilotWeb_GetLastCopyButton(uia) {
     arr := CopilotWeb_GetCopyButtonsArray(uia)
+    if (arr.Length = 0)
+        return 0
+    lastEl := 0
+    lastTop := ""
+    for btn in arr {
+        try {
+            br := btn.BoundingRectangle
+        } catch {
+            continue
+        }
+        if (!IsObject(br))
+            continue
+        if ((br.r - br.l) <= 0 || (br.b - br.t) <= 0)
+            continue
+        if (lastEl = 0 || br.t >= lastTop) {
+            lastEl := btn
+            lastTop := br.t
+        }
+    }
+    return lastEl ? lastEl : arr[arr.Length]
+}
+
+CopilotWeb_GetCopyCodeButtonsArray(uia) {
+    out := []
+    if (!IsObject(uia))
+        return out
+    try {
+        allButtons := uia.FindAll({ Type: "Button" })
+        for button in allButtons {
+            if (CopilotWeb_IsCopyCodeButton(button.Name))
+                out.Push(button)
+        }
+    } catch {
+    }
+    return out
+}
+
+CopilotWeb_GetLastCopyCodeButton(uia) {
+    arr := CopilotWeb_GetCopyCodeButtonsArray(uia)
     if (arr.Length = 0)
         return 0
     lastEl := 0
@@ -731,6 +786,46 @@ CopilotWeb_CopyLastMessageToClipboard(options := "", copilotHwnd := 0) {
         if (playChimeAndNotify) {
             try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
             CopilotWeb_Notify("Copied!", 800, 24)
+        }
+        if (restoreWindow)
+            Send "!{Tab}"
+        else
+            CopilotWeb_FocusComposerForHwnd(copilotHwnd, false)
+        return true
+    } catch {
+        return false
+    }
+}
+
+CopilotWeb_CopyLastCodeSnippetToClipboard(options := "", copilotHwnd := 0) {
+    restoreWindow := (options = "" || !options.HasProp("restoreWindow")) ? true : options.restoreWindow
+    playChimeAndNotify := (options = "" || !options.HasProp("playChimeAndNotify")) ? true : options.playChimeAndNotify
+    alreadyActive := (options != "" && options.HasProp("alreadyActive")) ? options.alreadyActive : false
+    try {
+        SetTitleMatchMode(2)
+        if (!copilotHwnd)
+            copilotHwnd := GetCopilotWebWindowHwnd()
+        if (!copilotHwnd)
+            return false
+        if (!alreadyActive) {
+            if !CopilotWeb_ActivateWindow(copilotHwnd)
+                return false
+            Sleep COPILOT_WEB_TAB_SETTLE_MS
+        }
+        uia := alreadyActive ? UIA_Browser() : UIA_Browser("ahk_id " copilotHwnd)
+        Sleep COPILOT_WEB_UIA_SETTLE_MS
+        Send "^{End}"
+        Sleep COPILOT_WEB_SCROLL_SETTLE_MS
+        copyBtn := CopilotWeb_GetLastCopyCodeButton(uia)
+        if (!copyBtn)
+            return false
+        A_Clipboard := ""
+        copyBtn.Click()
+        if !ClipWait(2)
+            return false
+        if (playChimeAndNotify) {
+            try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            CopilotWeb_Notify("Code copied!", 800, 24)
         }
         if (restoreWindow)
             Send "!{Tab}"
