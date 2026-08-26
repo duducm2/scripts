@@ -488,6 +488,71 @@ Palace_ResolvePalaceIdRef(palaceId, palaces, palaceIdRemap := 0, studyIdHint := 
     return ""
 }
 
+; Canon beast id for a resolved palace + peg: BEAST_COMMUNICATIO_06_Ab
+Palace_CanonBeastId(palaceId, peg) {
+    pegPart := Trim(peg)
+    if (pegPart = "")
+        pegPart := "X"
+    parts := Palace_ParsePalaceIdParts(palaceId)
+    if (IsObject(parts))
+        return "BEAST_" . Palace_Slug(parts["mid"]) . "_" . Format("{:02d}", parts["num"]) . "_" . pegPart
+    return "BEAST_" . Palace_Slug(palaceId) . "_" . pegPart
+}
+
+; Parse BEAST_<middle>_<peg> → Map mid, peg; else false.
+Palace_ParseBeastIdParts(beastId) {
+    id := Trim(beastId)
+    if (SubStr(id, 1, 6) != "BEAST_")
+        return false
+    rest := SubStr(id, 7)
+    if (!RegExMatch(rest, "i)^(.+)_([A-Za-z][A-Za-z0-9]*)$", &m))
+        return false
+    return Map("mid", m[1], "peg", m[2])
+}
+
+; True when beast ids match exactly or share slug-equivalent middle + same peg (case-insensitive).
+Palace_BeastIdsSoftEqual(a, b) {
+    if (Trim(a) = Trim(b))
+        return true
+    pa := Palace_ParseBeastIdParts(a)
+    pb := Palace_ParseBeastIdParts(b)
+    if (!IsObject(pa) || !IsObject(pb))
+        return false
+    if (StrUpper(pa["peg"]) != StrUpper(pb["peg"]))
+        return false
+    return Palace_Slug(pa["mid"]) = Palace_Slug(pb["mid"])
+}
+
+; Resolve atom beast_id: remap → exact → soft-equal → peg on palace hint.
+Palace_ResolveBeastIdRef(beastId, beasts, beastIdRemap := 0, palaceIdHint := "") {
+    bid := Trim(beastId)
+    if (bid = "")
+        return ""
+    if (IsObject(beastIdRemap) && beastIdRemap.Has(bid))
+        return beastIdRemap[bid]
+    if (Palace_FindById(beasts, bid))
+        return bid
+    for b in beasts {
+        if (Palace_BeastIdsSoftEqual(bid, b["id"]))
+            return b["id"]
+    }
+    if (palaceIdHint != "") {
+        parts := Palace_ParseBeastIdParts(bid)
+        pegNeedle := ""
+        if (IsObject(parts))
+            pegNeedle := StrUpper(parts["peg"])
+        for b in beasts {
+            if (b.Has("palace_id") && b["palace_id"] != palaceIdHint)
+                continue
+            if (pegNeedle != "" && StrUpper(Trim(b.Has("peg_code") ? b["peg_code"] : "")) = pegNeedle)
+                return b["id"]
+            if (Palace_BeastIdsSoftEqual(bid, b["id"]))
+                return b["id"]
+        }
+    }
+    return ""
+}
+
 Palace_NextPalaceNumber(palaces, studyId) {
     maxNum := 0
     for p in palaces {
