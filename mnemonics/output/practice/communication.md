@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 6: Memory Palace 6: How to Speak Pt 2</strong> · Character: Doc Brown (Back to the Future) · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 6](images/communication/6.png)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
@@ -42,7 +42,7 @@ olfactory 👃
 <details>
 <summary><strong>Memory Palace 5: Memory Palace 5: How to Speak Pt 1</strong> · Character: Sherlock Holmes · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 5](images/communication/5.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
