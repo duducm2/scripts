@@ -364,15 +364,14 @@ Palace_PackTruncationError(fname, sectionSalvaged, laterMissing := "") {
     return msg
 }
 
-; Write Desktop paste-for-AI note when mnemonic pack import fails. Overwrites prior file.
+; Write Desktop AI-companion fix note when mnemonic pack import fails. Overwrites prior file.
 ; Returns path written, or "" on failure.
 Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         return ""
     guidance := Palace_AiCompanionFixGuidance(errorMsg)
-    body := "=== PASTE THIS INTO THE AI COMPANION CHAT ===`r`n`r`n"
-        . "The Desktop Memory Palace importer rejected my last PALACE_PACK. Fix and re-deliver.`r`n`r`n"
+    body := "The Desktop Memory Palace importer rejected my last PALACE_PACK. Fix and re-deliver.`r`n`r`n"
         . "IMPORT ERROR`r`n"
         . errorMsg . "`r`n`r`n"
     if (Trim(extraNotes) != "")
