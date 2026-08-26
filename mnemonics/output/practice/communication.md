@@ -1,69 +1,83 @@
 # Communication
 
 <details open>
-<summary><strong>Memory Palace 3: Leading Myself</strong> · Character: (unassigned palace 3) · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 3: Leading Myself</strong> · Character: Alan Turing · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 3](images/communication/3.png)
 
-<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
-### 🟧 [I] imp
+### 🟧 [M] marmoset
 
 **Concept**
-💡 Enable others to grow and contribute to their maximum potential.
+💡 Clear speaking requires clear thinking.
 
 **Quote**
-“Possibilita que os outros cresçam e contribuam ao máximo com o seu potencial.”
+“clear speaking is the result of clear thinking”
 
 **Story**
-A tiny imp stands on a brick wall, glowing with a blinding, radioactive light that hurts the eyes. Naruto hits the imp with a glowing blue energy sphere, causing the small creature to rapidly mutate into a muscular giant, visually unlocking its absolute maximum potential in a brilliant flash.
+A colossal marmoset balances on a street lamp, scrubbing its glowing transparent brain with a giant wire brush. Alan Turing feeds it a complex math puzzle, and the beast screams out perfectly articulated, crystal-clear answers that shatter the nearby windows.
 
 **Sensory**
-👁️ visual
+auditory 👂
 
-### 🟧 [J] jester
+### 🟧 [N] Neanderthal
 
 **Concept**
-💡 Deal with your own personality in a self-reflective way.
+💡 Clarity equals bad output multiplied by frequency.
 
 **Quote**
-“Lida com a sua própria personalidade de forma autorreflexiva.”
+“the formula for clarity on any idea is clarity equals bad output times frequency”
 
 **Story**
-A completely flat, two-dimensional jester lies stuck on a wooden bench, wrapped in freezing cold mirror shards. Naruto carefully peels the agonizingly cold, sharp mirrors off the jester's face, forcing the clown to tangibly feel and reflect on his own bizarre personality.
+A brutish Neanderthal stands near the front left gate, relentlessly smashing a broken stone tablet over and over. Alan Turing watches closely as the high frequency of bad, clumsy strikes miraculously polishes the stone into a perfectly clear, flawless diamond lens.
 
 **Sensory**
-✋ tactile
+visual 👁️
 
-### 🟧 [K] kitten
+### 🟧 [O] owl
 
 **Concept**
-💡 Have a clear sense of internal orientation and manage personal resources effectively.
+💡 Texture is creatively bending words into striking phrases.
 
 **Quote**
-“Tem um claro sentido de orientação interna e gere de forma eficaz os seus recursos pessoais.”
+“texture is the ability to bend twist and and gum words together in creative ways to be able to say phrases that just strike like a lightning bolt”
 
 **Story**
-A colossal kitten blocks a distant building facade, purring with the ear-splitting, aggressive roar of a chainsaw engine. Naruto manages this chaotic noise by shoving a giant metallic compass into the kitten's ear, instantly tuning the loud roar into a perfectly directed, rhythmic heartbeat.
+A skyscraper-sized owl perches on a midground brick wall, aggressively chewing thick rubber dictionary pages into a sticky paste. It forcefully spits the chewed, gummed words out, which instantly harden and strike the pavement like a dazzling, crackling lightning bolt.
 
 **Sensory**
-👂 auditory
+tactile ✋
 
-### 🟧 [L] lion
+### 🟧 [P] panther
 
 **Concept**
-💡 Learn continuously to grow personally and professionally.
+💡 Use personal experiences to color in your speech outlines.
 
 **Quote**
-“Aprende continuamente para crescer a nível pessoal e profissional.”
+“populate or color your speech with your life use your life and your experiences to color in the outline”
 
 **Story**
-A transparent lion sits on a high balcony edge, loudly crunching on glowing, metallic books that taste like spicy iron. Naruto feeds the lion endless stacks of these iron manuals, tasting the metallic spark of continuous learning as the beast physically thickens with professional growth.
+A sleek panther paces at the far end of the street, bleeding vibrant, dripping neon paint from its paws. As it walks, it fills in a giant hollow chalk outline on the road with the vivid, wet colors of its own life experiences.
 
 **Sensory**
-👅 gustatory
+visual 👁️
+
+### 🟧 [Q] rat
+
+**Concept**
+💡 The vocal ego represents your elite, top 2% self.
+
+**Quote**
+“the vocal ego is a representation of the elite version of you that 2% version of you”
+
+**Story**
+A microscopic rat wearing a tiny gold crown struts on the right-side curb, screaming with the deep, booming voice of an elite opera singer. It commands the dirt and pebbles to form a shining podium, representing the absolute pinnacle of its arrogant vocal ego.
+
+**Sensory**
+auditory 👂
 
 </details>
 
