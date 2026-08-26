@@ -147,7 +147,7 @@ Rules:
 - `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).
-- **Packing rule:** fill every palace to **exactly 5 beasts** before opening the next; fewer than 5 only when the remaining beast pool is < 5.
+- **Packing rule:** fill every palace to **exactly 5 beasts** before opening the next. The **only** palace that may have fewer than 5 is the **last palace** (highest `palace_number`) — and only when remaining beasts < 5. Wrong: palace 5 has 1 beast while palaces 6–8 have 5. Right for 16 beasts across 4 palaces: `5+5+5+1` with the `1` on the last palace.
 
 ### 3) `PALACE_ATOMS.csv`
 
@@ -186,9 +186,12 @@ Rules:
 ### 2. Palace packing (minimize palace count)
 
 - Assign **exactly 5 beasts to each Memory Palace**.
-- Allocate fewer than 5 beasts to a palace **only** when the remaining pool of beasts to place is less than 5 (final palace only).
-- NEVER open a new palace while a prior palace in this pack still has open slots and ≥1 beast remains.
+- The **only** Memory Palace allowed to have fewer than 5 beasts is the **last one** (highest `palace_number` in this study after packing). Put the remainder there **only** when remaining beasts < 5.
+- Worked example: 16 beasts → 4 palaces as `5 + 5 + 5 + 1` (the single beast on the **last** palace). **Invalid:** `1 + 5 + 5 + 5` (sparse palace earlier than the last).
+- Continuous / append sessions: if the study’s current last palace has 1–4 beasts, **fill that palace to 5 first** with new beasts before creating any higher-numbered palace.
+- NEVER open a new palace while any earlier palace (by `palace_number`) has fewer than 5 beasts and ≥1 beast remains to place.
 - Palace count = ceil(beast_count / 5). Set `depth_slots_used` to the beast count on that palace (1–5).
+- In PREVIEW, beasts under each palace MUST total 5 except the **last** palace (which may list 1–4). If an earlier palace has fewer than 5 while a later palace exists, **rewrite the pack** before delivery — do not ship `1+5+5+5`. The Desktop importer **rejects** that packing.
 
 ### 3. Story construction (encode into CSV rows)
 
@@ -209,6 +212,7 @@ Rules:
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
 - NEVER use numeric pegs or cross-beast narrative dependency.
 - NEVER under-fill a palace (1–4 beasts) when ≥5 beasts remain to place in this pack.
+- NEVER leave a sparse palace (1–4 beasts) unless it is the **last** palace by `palace_number` (no higher-numbered palace may exist while an earlier one is under-filled).
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
@@ -226,7 +230,7 @@ Rules:
 | Three FILE sections with exact markers | Yes |
 | Exact headers for palaces / beasts / atoms | Yes |
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
-| Max 5 beasts per palace; every palace has 5 beasts except a final remainder < 5; depth_slots_used coherent | Yes |
+| Every non-final palace has exactly 5 beasts; any remainder < 5 is only on the highest palace_number; depth_slots_used coherent | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | image_prompt filled per new palace | Yes |

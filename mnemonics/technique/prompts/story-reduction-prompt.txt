@@ -108,7 +108,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 - Re-peg with bestiary shifting (`README §Bestiary Shifting Logic`): unbroken A, B, C, … with no gaps.
 - `is_smashed=1` when the beast has zoned atoms; else `0`.
 - Max 5 beasts per Memory Palace.
-- **Packing rule (minimize palace count):** after re-sequencing, fill every surviving palace to **exactly 5 beasts** before opening/keeping the next; fewer than 5 **only** when the remaining beast pool is < 5. Collapse empty palaces; never leave a sparse palace (1–4) when ≥5 beasts remain to pack.
+- **Packing rule (minimize palace count):** after re-sequencing, fill every surviving palace to **exactly 5 beasts** before the next. The **only** under-filled palace (1–4 beasts) allowed is the **last** one (highest `palace_number`). Example: 16 beasts → `5+5+5+1` with the `1` on the last palace — **never** `1+5+5+5`. Collapse empty palaces; never leave a sparse earlier palace while any later palace exists. The Desktop importer **rejects** sparse non-final palaces.
 
 ### `PALACE_ATOMS.csv`
 
@@ -136,6 +136,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 - NEVER emit 5+ zoned atoms on one beast.
 - NEVER leave peg gaps or >5 beasts per palace.
 - NEVER under-fill a palace (1–4 beasts) when ≥5 beasts remain after reduction.
+- NEVER leave a sparse palace (1–4) unless it is the **last** palace by `palace_number` (no higher-numbered palace may exist while an earlier one is under-filled).
 - NEVER assign two characters to one palace or zero characters after collapse.
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving palaces.
@@ -172,7 +173,7 @@ After the reduced model is final, write a long concrete foreground `image_prompt
 | Same PREVIEW pasted in chat before the download chip / fence | Yes |
 | Three FILE sections with exact markers | Yes |
 | Mode SMASH or REMOVE applied | Yes |
-| Unbroken peg sequence; pack 5 beasts/palace (remainder < 5 only on last); ≤4 zones/beast | Yes |
+| Unbroken peg sequence; pack 5/palace with remainder < 5 only on highest palace_number; ≤4 zones/beast | Yes |
 | No knowledge/quote drops for survivors | Yes |
 | image_prompt refreshed per surviving palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |

@@ -401,9 +401,107 @@ Palace_SplitPalacePack(path) {
         }
         result[key] := rows
     }
+    packCheck := Palace_ValidatePackBeastPacking(result["palaces"], result["beasts"])
+    if (!packCheck["ok"]) {
+        result["csvNotes"] := csvNotes
+        result["error"] := packCheck["error"]
+        return result
+    }
     result["csvNotes"] := csvNotes
     result["ok"] := true
     return result
+}
+
+; Reject packs where any non-final palace (by palace_number) has 1–4 beasts.
+; Only the highest-numbered palace in the pack (per study) may be under-filled.
+Palace_ValidatePackBeastPacking(palaceRows, beastRows) {
+    out := Map("ok", true, "error", "")
+    if (!IsObject(palaceRows) || !IsObject(beastRows) || !palaceRows.Length || !beastRows.Length)
+        return out
+    metaById := Map()
+    for p in palaceRows {
+        pid := Trim(p.Has("id") ? p["id"] : "")
+        if (pid = "")
+            continue
+        num := 0
+        try num := Integer(p.Has("palace_number") ? p["palace_number"] : 0)
+        catch {
+            num := 0
+        }
+        studyId := Trim(p.Has("study_id") ? p["study_id"] : "")
+        metaById[pid] := Map("num", num, "study", studyId, "title", Trim(p.Has("title") ? p["title"] : pid))
+    }
+    counts := Map()
+    for b in beastRows {
+        pid := Trim(b.Has("palace_id") ? b["palace_id"] : "")
+        if (pid = "")
+            continue
+        if (!counts.Has(pid))
+            counts[pid] := 0
+        counts[pid] += 1
+    }
+    ; studyId -> { maxNum, pattern parts sorted later }
+    byStudy := Map()
+    for pid, meta in metaById {
+        nBeasts := counts.Has(pid) ? counts[pid] : 0
+        if (nBeasts <= 0)
+            continue
+        if (nBeasts > 5) {
+            out["ok"] := false
+            out["error"] := "Packing error: " . meta["title"] . " has " . nBeasts
+                . " beasts (max 5)"
+            return out
+        }
+        sid := meta["study"]
+        if (sid = "")
+            sid := "_"
+        if (!byStudy.Has(sid))
+            byStudy[sid] := Map("maxNum", -1, "rows", [])
+        if (meta["num"] > byStudy[sid]["maxNum"])
+            byStudy[sid]["maxNum"] := meta["num"]
+        byStudy[sid]["rows"].Push(Map("pid", pid, "num", meta["num"], "n", nBeasts, "title", meta["title"]))
+    }
+    for sid, info in byStudy {
+        maxNum := info["maxNum"]
+        pattern := []
+        ; Sort rows by palace_number ascending for error pattern
+        rows := info["rows"]
+        loop {
+            swapped := false
+            i := 1
+            while (i < rows.Length) {
+                if (rows[i]["num"] > rows[i + 1]["num"]) {
+                    tmp := rows[i]
+                    rows[i] := rows[i + 1]
+                    rows[i + 1] := tmp
+                    swapped := true
+                }
+                i += 1
+            }
+            if (!swapped)
+                break
+        }
+        for row in rows {
+            pattern.Push(row["n"])
+            if (row["n"] < 5 && row["num"] < maxNum) {
+                patStr := ""
+                for n in pattern
+                    patStr .= (patStr = "" ? "" : "+") . n
+                ; finish pattern for message
+                j := pattern.Length + 1
+                while (j <= rows.Length) {
+                    patStr .= "+" . rows[j]["n"]
+                    j += 1
+                }
+                out["ok"] := false
+                out["error"] := "Packing error: palace " . row["num"] . " (" . row["title"]
+                . ") has " . row["n"] . " beast(s) but later palaces exist — only the last"
+                . " palace may have <5 (got " . patStr . "; need 5+5+…+remainder on last)"
+                return out
+            }
+        }
+    }
+    return out
 }
 
 ; Resolve newest Desktop PLAN_PACK (or gemini-code with PLANS.csv). Empty if none.
@@ -499,6 +597,13 @@ Palace_ImportMnemonicsFromDesktop(*) {
         if (summary != "")
             msg .= " — " . summary
         Palace_Notify(msg, 3200, BANNER_ACCENT_ERROR)
+        Palace_ShowMainMenu()
+        return false
+    }
+
+    packCheck := Palace_ValidatePackBeastPacking(palaceRows, beastRows)
+    if (!packCheck["ok"]) {
+        Palace_Notify(packCheck["error"], 4500, BANNER_ACCENT_ERROR)
         Palace_ShowMainMenu()
         return false
     }
