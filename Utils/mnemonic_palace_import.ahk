@@ -560,6 +560,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
         palaceIdRemap[id] := id
         rowIn := resolved["row"]
         img := rowIn.Has("image_rel_path") ? Trim(rowIn["image_rel_path"]) : ""
+        if (img != "") {
+            absImg := Palace_ResolveImagePath(img)
+            if (absImg = "" || !FileExist(absImg))
+                img := ""
+        }
         promptIn := rowIn.Has("image_prompt") ? Trim(rowIn["image_prompt"]) : ""
         existing := resolved["existing"]
         if (IsObject(existing)) {
@@ -811,7 +816,8 @@ Palace_PalacesMissingImage() {
     missing := []
     for p in palaces {
         img := Trim(p.Has("image_rel_path") ? p["image_rel_path"] : "")
-        if (img = "")
+        abs := (img = "") ? "" : Palace_ResolveImagePath(img)
+        if (abs = "" || !FileExist(abs))
             missing.Push(p)
     }
     ; Sort by study title then palace_number
@@ -831,7 +837,7 @@ Palace_PalacesMissingImage() {
             try nb := Integer(b.Has("palace_number") ? b["palace_number"] : 0)
             catch {
             }
-            if (sa > sb || (sa = sb && na > nb)) {
+            if (StrCompare(sa, sb) > 0 || (sa = sb && na > nb)) {
                 missing[i] := b
                 missing[i + 1] := a
                 swapped := true
@@ -933,7 +939,7 @@ Palace_PickHighestPalace(palaces, studyId) {
 Palace_QuickAttachDesktopImage(*) {
     Palace_EnsureData()
     if (!Palace_PalacesMissingImage().Length) {
-        Palace_Notify("All Memory Palaces already have an image path", 2500, BANNER_ACCENT_ERROR)
+        Palace_Notify("All Memory Palaces already have an image", 2500, BANNER_ACCENT_ERROR)
         return false
     }
     palace := Palace_PickPalaceMissingImage()

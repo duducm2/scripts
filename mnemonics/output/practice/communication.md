@@ -70,7 +70,7 @@ gustatory 👅
 <details>
 <summary><strong>Memory Palace 4: The Mechanics of Speaking</strong> · Character: Alan Turing · 4 beasts · 3 atoms</summary>
 
-_No image_
+![Memory Palace 4](images/communication/4.jpg)
 
 <p><em>4 beasts · 3 Knowledge Atoms</em></p>
 
