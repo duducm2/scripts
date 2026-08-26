@@ -2,7 +2,8 @@
 ; Utils module: ai_quick_download.ahk
 ; Quick Download: focus AI companion → configured click sequences → Desktop wait → cut newest.
 ; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
-; Slot chain (scroll / sibling clicks / Desktop wait / cut) lives in click_sequences.ini.
+; Slot chain (scroll / sibling clicks / Desktop wait / rename via #!+P name list / cut)
+; lives in click_sequences.ini.
 ; =============================================================================
 
 ; Tap-dance interval (ms) — matches Teams_R_DoubleTapThresholdMs / ZMK tap-dance.

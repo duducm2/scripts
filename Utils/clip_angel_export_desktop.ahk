@@ -557,13 +557,21 @@ ClipAngelExport_Cancel(*) {
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
+; Default extension is taken from sourcePath (fallback "txt").
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
     g_ClipAngelNameSourcePath := sourcePath
     g_ClipAngelNameFinalPath := sourcePath
     g_ClipAngelNamePicked := false
-    g_ClipAngelNameExt := "txt"
+    srcExt := ""
+    try SplitPath(sourcePath, , , &srcExt)
+    catch {
+        srcExt := ""
+    }
+    g_ClipAngelNameExt := (srcExt != "") ? ClipAngelExport_SanitizeExt(srcExt) : "txt"
+    if (g_ClipAngelNameExt = "")
+        g_ClipAngelNameExt := "txt"
 
     ClipAngelExport_CloseGui()
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")

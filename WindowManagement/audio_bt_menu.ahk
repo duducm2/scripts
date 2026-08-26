@@ -1459,7 +1459,7 @@ AudioBt_Show() {
 }
 
 ; Win+Alt+Shift+9 tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
-;   1× = AI Companion Quick Download (configured click sequences → Desktop wait → cut)
+;   1× = AI Companion Quick Download (click sequences → Desktop wait → #!+P name list → cut)
 ;   2× = Audio / Bluetooth quick selector (toggle)
 global g_AudioBt_DoubleTapArmed := false
 global g_AudioBt_LastPressTick := 0

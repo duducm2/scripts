@@ -87,8 +87,34 @@ ClickSeqScript_DesktopCut() {
     try StandardLoadingBar_Hide(0)
     catch {
     }
-    try DesktopCutNewest_Trigger()
-    catch as e {
+
+    path := ""
+    try {
+        if (ctx.HasProp("lastPath"))
+            path := ctx.lastPath
+    } catch {
+        path := ""
+    }
+
+    ; Same Desktop name list / ext UI as #!+P (clipangel_desktop_names.csv).
+    if (path != "" && FileExist(path)) {
+        try {
+            path := ClipAngelExport_PromptRename(path)
+            ctx.lastPath := path
+        } catch {
+        }
+    }
+
+    try {
+        if (path != "" && FileExist(path)) {
+            if !DesktopCutNewest_CutPath(path) {
+                ClickSeq_SetFail("❌ Quick Download: cut failed")
+                return false
+            }
+        } else {
+            DesktopCutNewest_Trigger()
+        }
+    } catch as e {
         ClickSeq_SetFail("❌ Quick Download: cut failed — " . SubStr(e.Message, 1, 60))
         return false
     }

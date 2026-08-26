@@ -45,7 +45,6 @@ DesktopCutNewest_ResolveDesktopPath() {
 }
 
 DesktopCutNewest_Trigger() {
-    origHwnd := WinExist("A")
     desktopPath := DesktopCutNewest_ResolveDesktopPath()
     if (desktopPath = "") {
         ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
@@ -57,23 +56,34 @@ DesktopCutNewest_Trigger() {
         ShowCenteredOverlay_Utils("⚠ Desktop is empty", 2000, BANNER_ACCENT_INTERMEDIATE)
         return
     }
+    DesktopCutNewest_CutPath(newest)
+}
 
-    if !Clipboard_CutFiles([newest]) {
+; Cut a specific Desktop file/folder path to the clipboard (CF_HDROP move).
+DesktopCutNewest_CutPath(path) {
+    origHwnd := WinExist("A")
+    if (!path || !FileExist(path)) {
+        ShowCenteredOverlay_Utils("❌ Desktop item not found", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+
+    if !Clipboard_CutFiles([path]) {
         ShowCenteredOverlay_Utils("❌ Failed to cut Desktop item", 2500, BANNER_ACCENT_ERROR)
-        return
+        return false
     }
-    if !Clipboard_ContainsFilePath(newest) {
+    if !Clipboard_ContainsFilePath(path) {
         ShowCenteredOverlay_Utils("❌ Cut verify failed", 2500, BANNER_ACCENT_ERROR)
-        return
+        return false
     }
 
-    SplitPath(newest, &name)
+    SplitPath(path, &name)
     ShowCenteredOverlay_Utils("✂️ Cut: " name, 1800, BANNER_ACCENT_SUCCESS)
 
     if (origHwnd && WinExist("ahk_id " origHwnd)) {
         try WinActivate("ahk_id " origHwnd)
         WinWaitActive("ahk_id " origHwnd, , 1)
     }
+    return true
 }
 
 DesktopCutNewest_OpenNewest() {
