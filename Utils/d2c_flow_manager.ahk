@@ -73,6 +73,7 @@ class D2C_FlowManager {
 
     PromptForGeminiSubmit() {
         this.CurrentPhase := "PromptingSubmit"
+        cancelCb := this.OnSubmitN.Bind(this)
         keyCallbacks := Map(
             "G", this.OnSubmitG.Bind(this),
             "A", this.OnSubmitA.Bind(this),
@@ -93,7 +94,8 @@ class D2C_FlowManager {
             "L", this.OnSubmitL.Bind(this),
             "C", this.OnSubmitC.Bind(this),
             "B", this.OnSubmitB.Bind(this),
-            "N", this.OnSubmitN.Bind(this)
+            "N", cancelCb,
+            "Escape", cancelCb
         )
         StandardLoadingBar_ShowWithKeys(
             "❓ Send dictation? (5s)",
@@ -102,7 +104,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N] Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
             true,
             true,
             true

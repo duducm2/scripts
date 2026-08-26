@@ -1,10 +1,24 @@
 ;---------------------------------------- Github ----------------------------------------------------
 ; https://github.com/duducm2/zmk-sofle/blob/main/keymap-drawer/eyelash_sofle.svg
 ;---------------------------------------- Scripts -------------------------------
+#Requires AutoHotkey v2.0+
+#SingleInstance Force
 
 #Include env.ahk
 
-; Preflight: catch env.ahk drift before Utils loads lib/CopilotWeb.ahk
+; Thin bootstrap only: do NOT #include full Utils.ahk.
+; Full Utils would take D2C_Dictation_Hotkey_Owner / Escape I10 before git pull, then
+; leave Act owning post-dictation UX with stale in-memory code while children load new Utils.
+; See Utils/dictation_toggle.ahk Dictation_IsOwnerProcess (AppLaunchers only).
+#Include %A_ScriptDir%\Utils\git_cli.ahk
+#Include %A_ScriptDir%\Utils\standard_loading_bar.ahk
+
+; standard_loading_bar keys-overlay paths reference this; Act never uses ShowWithKeys.
+; Stub avoids pulling print_screen_escape (second Escape host breaks AppLaunchers modals).
+Utils_EnsureGlobalEscapeHotkey() {
+}
+
+; Preflight: catch env.ahk drift before launching hosts that load lib/CopilotWeb.ahk
 verifyPs1 := A_ScriptDir "\infra\ipc\Verify-EnvAhk.ps1"
 if FileExist(verifyPs1) {
     exitCode := RunWait(
@@ -17,8 +31,6 @@ if FileExist(verifyPs1) {
         ExitApp exitCode
     }
 }
-
-#Include %A_ScriptDir%\Utils.ahk
 
 GitInRepoOrFail(repoDir, gitArgs, timeoutMs := 120000) {
     ; Prevent silent hangs: disable interactive credential prompts (GCM + terminal),
@@ -50,7 +62,7 @@ GitInRepoOrFail(repoDir, gitArgs, timeoutMs := 120000) {
 if (IS_WORK_ENVIRONMENT) {
     response := MsgBox("Can we proceed with Act?", "Act automation", "YesNo")
     if (response = "No") {
-        return
+        ExitApp
     }
 }
 
@@ -58,7 +70,7 @@ scriptsFolder := GetScriptsRepoPath()
 if (!scriptsFolder) {
     MsgBox("Scripts repo folder not found. Check WORK_SCRIPTS_PATH and PERSONAL_SCRIPTS_PATH in env.ahk.",
         "Act automation", "Icon!")
-    return
+    ExitApp
 }
 
 StandardLoadingBar_Show("⏳ Updating scripts...", BANNER_ACCENT_INTERMEDIATE)
@@ -72,7 +84,7 @@ notesFolder := GetNotesRepoPath()
 if (!notesFolder) {
     StandardLoadingBar_Hide(0)
     MsgBox("Notes repo folder not found. Check NOTES_REPO_PATH_* in env.ahk.", "Act automation", "Icon!")
-    return
+    ExitApp
 }
 
 StandardLoadingBar_Update("⏳ Updating notes...")
@@ -95,6 +107,7 @@ Run GetScriptPath("WindowManagement.ahk")
 Run GetScriptPath("Spotify.ahk")
 ; Do not Run Utils.ahk here: AppLaunchers.ahk already #includes Utils.ahk. A second Utils process duplicates
 ; keyboard hooks (e.g. global Escape) and breaks modals that rely on g_OnEscapePressed / I10 in AppLaunchers.
+; Dictation (~#!+0 / Send dictation?) is owned only by AppLaunchers (Dictation_IsOwnerProcess).
 Run GetScriptPath("Mousemaster.ahk")
 
 if (IS_WORK_ENVIRONMENT) {
@@ -114,3 +127,5 @@ habitsFolder := notesFolder . "\habits"
 StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
 StandardLoadingBar_Hide(500)
 Sleep 1000
+; Exit so Act never remains as a lingering Utils/hotkey host after bootstrap.
+ExitApp
