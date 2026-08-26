@@ -41,6 +41,14 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 **Sensory**
 🌡️ thermal
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -121,6 +129,14 @@ A massive Hydra coils around a fire hydrant, injecting thick blue context-gel in
 
 **Sensory**
 👃 olfactory
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -208,5 +224,13 @@ A colossal house cat clings to the aerial street lamp, reeking of wet fur. Its j
 
 **Sensory**
 🌡️ thermal
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

@@ -37,6 +37,14 @@ A skeletal acorn rolls into the MidgroundRight alleyway, exhaling a toxic cloud 
 **Sensory**
 olfactory 👃
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -117,6 +125,14 @@ A colossal aardvark clings to the ForegroundRight lamp post, loudly vomiting tho
 
 **Sensory**
 gustatory 👅
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -199,6 +215,14 @@ A featherless vulture squats on the ForegroundRight parked car, aggressively sho
 **Sensory**
 👅 gustatory
 
+#### Notes
+
+Test
+
+#### Gallery
+
+![Gallery image](images/communication/4-gallery-0001.jpg)
+
 </details>
 
 <details>
@@ -279,6 +303,14 @@ A microscopic rat wearing a tiny gold crown struts on the right-side curb, screa
 
 **Sensory**
 auditory 👂
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -361,6 +393,14 @@ A multi-headed Hydra bursts out of a tiny metal mailbox, biting into shockingly 
 **Sensory**
 👅 gustatory
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -413,5 +453,13 @@ A small cat jumps down onto the pavement, completely ignoring the crying bird. I
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

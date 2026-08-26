@@ -77,9 +77,50 @@ def copy_palace_image(
     return ""
 
 
+def copy_gallery_image(
+    image_rel: str,
+    slug: str,
+    practice_dir: Path,
+    notes_root: Path | None,
+    output_dir: Path | None,
+) -> str:
+    """Copy one gallery image into practice/images/{slug}/; return MD-relative path or empty."""
+    if not (image_rel or "").strip():
+        return ""
+    src = resolve_image(notes_root, image_rel.strip(), output_dir)
+    if not src or not src.exists():
+        norm = image_rel.replace("\\", "/")
+        if norm.startswith(PRACTICE_PREFIX):
+            rel_tail = norm[len(PRACTICE_PREFIX) :]
+            existing = practice_dir / "images" / rel_tail.replace("/", "\\")
+            if not existing.exists():
+                existing = practice_dir / "images" / rel_tail
+            if existing.exists():
+                slug_part = slug_filename(slug)
+                name = existing.name
+                return f"images/{slug_part}/{name}"
+        return ""
+    slug_part = slug_filename(slug)
+    dest_dir = practice_dir / "images" / slug_part.replace("/", "\\")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name
+    try:
+        same = src.resolve() == dest.resolve()
+    except OSError:
+        same = False
+    if not same:
+        try:
+            shutil.copy2(src, dest)
+        except PermissionError:
+            if not dest.exists():
+                raise
+    return f"images/{slug_part}/{src.name}"
+
+
 def build_study_markdown(
     study_card: dict[str, Any],
     image_md_paths: dict[str, str],
+    gallery_md_paths: dict[str, list[tuple[str, str]]] | None = None,
 ) -> str:
     title = md_escape(study_card.get("title") or study_card.get("id") or "Study")
     lines: list[str] = [
@@ -99,6 +140,7 @@ def build_study_markdown(
                 palace,
                 image_md_paths.get(pid, ""),
                 open_default=(i == 0),
+                gallery_md_paths=(gallery_md_paths or {}).get(pid, []),
             )
         )
 
@@ -128,13 +170,23 @@ def write_study(
     slug = slug_filename(study_card.get("notes_rel_path") or study_id)
 
     image_md_paths: dict[str, str] = {}
+    gallery_md_paths: dict[str, list[tuple[str, str]]] = {}
     for palace in study_card.get("palaces") or []:
         pid = palace.get("id", "")
         rel = copy_palace_image(palace, slug, practice_dir, notes_root, output_dir)
         if rel:
             image_md_paths[pid] = rel
+        gallery_entries: list[tuple[str, str]] = []
+        for gi in palace.get("gallery_images") or []:
+            gi_rel = (gi.get("image_rel_path") or "").strip()
+            md_rel = copy_gallery_image(
+                gi_rel, slug, practice_dir, notes_root, output_dir
+            )
+            if md_rel:
+                gallery_entries.append((gi.get("caption") or "", md_rel))
+        gallery_md_paths[pid] = gallery_entries
 
-    md_text = build_study_markdown(study_card, image_md_paths)
+    md_text = build_study_markdown(study_card, image_md_paths, gallery_md_paths)
     out_path = practice_md_path(practice_dir, slug)
     if dry_run:
         print(f"[dry-run] would write {out_path}")

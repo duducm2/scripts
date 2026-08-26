@@ -105,6 +105,14 @@ The owl's sharp beak rips a giant, screaming letter "B" out of a cake, firing ho
 **Sensory**
 ✋ tactile
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -171,6 +179,14 @@ A hairy marmoset ignores a massive factory assembly line and instead gently spla
 
 **Sensory**
 ✋ tactile
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -263,6 +279,14 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 **Sensory**
 ✋ tactile
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -301,6 +325,14 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -382,5 +414,13 @@ Down the street at a parked car, the air smells intensely of burning ozone as a 
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

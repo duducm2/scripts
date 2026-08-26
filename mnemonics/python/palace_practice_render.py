@@ -119,6 +119,7 @@ def render_palace_section_md(
     image_rel: str,
     *,
     open_default: bool = False,
+    gallery_md_paths: list[tuple[str, str]] | None = None,
 ) -> list[str]:
     num = palace.get("number", "")
     ptitle = md_escape(palace.get("title") or "")
@@ -160,6 +161,27 @@ def render_palace_section_md(
         lines.append("")
         for group in group_atoms_by_beast(atoms):
             lines.extend(render_beast_cluster_md(group["beast"], group["atoms"]))
+
+    notes = md_escape(palace.get("palace_notes") or "")
+    lines.append("#### Notes")
+    lines.append("")
+    if notes:
+        lines.append(notes)
+    else:
+        lines.append("_No notes._")
+    lines.append("")
+
+    lines.append("#### Gallery")
+    lines.append("")
+    gallery = gallery_md_paths or []
+    if not gallery:
+        lines.append("_No gallery images._")
+        lines.append("")
+    else:
+        for caption, rel in gallery:
+            cap = md_escape(caption) if caption else f"Gallery image"
+            lines.append(f"![{cap}]({rel})")
+            lines.append("")
 
     lines.append("</details>")
     lines.append("")

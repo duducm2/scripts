@@ -56,7 +56,7 @@ def _write_csv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> No
 def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
     data = {
         kind: _read_csv(data_dir / f"{kind}.csv")
-        for kind in ("studies", "palaces", "beasts", "atoms")
+        for kind in ("studies", "palaces", "palace_images", "beasts", "atoms")
     }
     data["atoms"] = [normalize_atom_concept_sensory(a) for a in data["atoms"]]
     return data
@@ -110,8 +110,11 @@ def snapshot(
     palaces = data["palaces"]
     beasts = data["beasts"]
     atoms = data["atoms"]
+    palace_images = data.get("palace_images") or []
 
-    issues = validate_dataset(data["studies"], palaces, beasts, atoms)
+    issues = validate_dataset(
+        data["studies"], palaces, beasts, atoms, palace_images
+    )
 
     study_cards: list[dict[str, Any]] = []
     for study in studies:
@@ -146,6 +149,31 @@ def snapshot(
             img_path = resolve_image(
                 notes_root, st.get("image_rel_path", ""), output_dir
             )
+            gallery_rows = [
+                gi
+                for gi in palace_images
+                if gi.get("palace_id") == st_id
+            ]
+            gallery_rows.sort(
+                key=lambda x: (
+                    int(x.get("sort_order") or 0),
+                    x.get("id") or "",
+                )
+            )
+            gallery_images: list[dict[str, Any]] = []
+            for gi in gallery_rows:
+                gi_rel = gi.get("image_rel_path") or ""
+                gi_path = resolve_image(notes_root, gi_rel, output_dir)
+                gallery_images.append(
+                    {
+                        "id": gi.get("id", ""),
+                        "image_rel_path": gi_rel,
+                        "caption": gi.get("caption", ""),
+                        "sort_order": gi.get("sort_order", ""),
+                        "image_abs": str(gi_path) if gi_path else "",
+                        "image_exists": bool(gi_path),
+                    }
+                )
             palace_cards.append(
                 {
                     "id": st_id,
@@ -156,6 +184,8 @@ def snapshot(
                     "image_abs": str(img_path) if img_path else "",
                     "image_exists": bool(img_path),
                     "image_prompt": st.get("image_prompt", ""),
+                    "palace_notes": st.get("palace_notes", ""),
+                    "gallery_images": gallery_images,
                     "beast_count": len(st_beasts),
                     "atom_count": atom_count,
                     "depth_slots": st.get("depth_slots_used", ""),

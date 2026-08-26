@@ -51,6 +51,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -89,6 +97,14 @@
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -171,6 +187,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -238,6 +262,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -276,6 +308,14 @@
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -358,6 +398,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -438,6 +486,14 @@
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -520,6 +576,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -601,6 +665,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -639,6 +711,14 @@
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -721,6 +801,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -802,6 +890,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -869,6 +965,14 @@ A Wombat writes a letter with a quill. It gets no response, so it puts the pen d
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -907,6 +1011,14 @@ A floating Skull hovers at the end of the street. It stares at a paragraph full 
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -989,6 +1101,14 @@ The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a br
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1027,6 +1147,14 @@ A Lion wears a detective hat. He looks at the ground with a glass. He ignores th
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -1109,6 +1237,14 @@ Go to the last street.
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1175,5 +1311,13 @@ Go to the second street.
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

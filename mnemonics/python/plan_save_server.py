@@ -12,6 +12,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from palace_save import save_images, save_notes  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
 from study_plans_save import save_payload  # noqa: E402
 
@@ -52,20 +53,61 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
                     "service": "plan_save_server",
-                    "features": ["add_backlog", "remove_backlog", "plans_csv"],
+                    "features": [
+                        "add_backlog",
+                        "remove_backlog",
+                        "plans_csv",
+                        "palace_notes",
+                        "palace_images",
+                    ],
                 },
             )
             return
         self._json(404, {"ok": False, "error": "not found"})
 
     def do_POST(self) -> None:
-        if self.path.rstrip("/") != "/save":
-            self._json(404, {"ok": False, "error": "not found"})
-            return
+        path = self.path.rstrip("/")
         try:
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length) if length else b"{}"
             payload = json.loads(raw.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._json(400, {"ok": False, "error": "invalid JSON"})
+            return
+
+        if path == "/palace/notes":
+            try:
+                result = save_notes(
+                    str(payload.get("palace_id") or ""),
+                    str(payload.get("notes") if payload.get("notes") is not None else ""),
+                    self.data_dir,
+                    self.output_dir,
+                    self.studies_root,
+                )
+                code = 200 if result.get("ok") else 400
+                self._json(code, result)
+            except OSError as e:
+                self._json(500, {"ok": False, "error": str(e)})
+            return
+
+        if path == "/palace/images":
+            try:
+                result = save_images(
+                    payload,
+                    self.data_dir,
+                    self.output_dir,
+                    self.studies_root,
+                )
+                code = 200 if result.get("ok") else 400
+                self._json(code, result)
+            except OSError as e:
+                self._json(500, {"ok": False, "error": str(e)})
+            return
+
+        if path != "/save":
+            self._json(404, {"ok": False, "error": "not found"})
+            return
+        try:
             result = save_payload(
                 payload,
                 self.data_dir,
@@ -74,8 +116,6 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
             )
             code = 200 if result.get("ok") else 400
             self._json(code, result)
-        except json.JSONDecodeError:
-            self._json(400, {"ok": False, "error": "invalid JSON"})
         except OSError as e:
             self._json(500, {"ok": False, "error": str(e)})
 

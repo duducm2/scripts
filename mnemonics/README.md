@@ -117,7 +117,7 @@ py -3 mnemonics\python\study_plans_md.py `
   --sync-all
 ```
 
-**Save (dashboard):** Opening the dashboard via **[D]** starts a local save server (`127.0.0.1:8765`). In the Plans panel, **Save** writes checkbox progress to `mnemonics/studies/*/*-plan.md` and refreshes `output/plans/`. Then **[P] Push to cloud** commits for GitHub.
+**Save (dashboard):** Opening the dashboard via **[D]** starts a local save server (`127.0.0.1:8765`). In the Plans panel, **Save** writes checkbox progress to `mnemonics/studies/*/*-plan.md` and refreshes `output/plans/`. Palace overlay **notes** and **gallery** saves use the same server (`/palace/notes`, `/palace/images`) and refresh `output/practice/*.md`. Then **[P] Push to cloud** commits for GitHub.
 
 ## Technique (SSOT)
 
@@ -136,6 +136,12 @@ Prompt context files resolve from `mnemonics/technique/` first.
 Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, AI import **[I]**, and quick image attach **[Q]** (loading bar shown during generation).
 
 **Layout (GitHub mobile):** Export mirrors the dashboard hierarchy — collapsible Memory Palaces only (`<details>`; newest open by default). Beasts are flat headings (`### 🟧 …`, always expanded) with stacked **Concept / Quote / Story / Sensory** field blocks. Emoji markers match the dashboard/technique canon: `🟧` beast, `🟦` zone (when set), `💡` concept only, sensory channel map (`👁️👂✋👃👅🌡️`, emoji then word). Image prompts are omitted (recall-only). GitHub’s Markdown renderer does not apply dashboard CSS (no dark/gold theme); structural and label parity is intentional for phone recall.
+
+Each palace block ends with **Notes** (`palace_notes` on `palaces.csv`) and **Gallery** (supplementary images in `palace_images.csv`, separate from the hero scene image). Order in export: Knowledge Atoms → Notes → Gallery.
+
+### Dashboard notes and gallery
+
+In the palace overlay (bottom sections): type notes (auto-save ~800ms or **Save notes**); manage a supplementary image gallery (**Add image**, caption, reorder, delete). Saves go to CSV via the local save server started with **[D]** (`127.0.0.1:8765`, routes `/palace/notes` and `/palace/images`) and refresh the study’s practice Markdown. Hero scene images (`image_rel_path`, **[Q]** attach) are unchanged.
 
 Batch browse on GitHub:
 

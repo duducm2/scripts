@@ -61,6 +61,22 @@ def build_html(
                 latest_id = sid  # palaces already descending by number
             img_abs = st.get("image_abs") or ""
             prompt = st.get("image_prompt") or ""
+            gallery = []
+            for gi in st.get("gallery_images") or []:
+                gi_abs = gi.get("image_abs") or ""
+                gallery.append(
+                    {
+                        "id": gi.get("id", ""),
+                        "caption": gi.get("caption", ""),
+                        "sort_order": gi.get("sort_order", ""),
+                        "image_rel_path": gi.get("image_rel_path", ""),
+                        "image_uri": (
+                            file_uri(gi_abs)
+                            if gi.get("image_exists") and gi_abs
+                            else ""
+                        ),
+                    }
+                )
             palace_data[sid] = {
                 "id": sid,
                 "study_id": study["id"],
@@ -72,6 +88,8 @@ def build_html(
                 "image_uri": (
                     file_uri(img_abs) if st.get("image_exists") and img_abs else ""
                 ),
+                "palace_notes": st.get("palace_notes") or "",
+                "gallery_images": gallery,
                 "atoms": st.get("atoms") or [],
             }
             if st.get("image_exists") and img_abs:
@@ -529,6 +547,134 @@ def build_html(
       max-height: none;
       color: var(--text);
       font-size: 0.88rem;
+    }}
+    .overlay-notes, .overlay-gallery {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+    }}
+    .overlay-notes h3, .overlay-gallery h3 {{
+      margin: 0 0 0.65rem;
+      color: var(--gold);
+      font-size: 1.05rem;
+    }}
+    .overlay-notes textarea {{
+      width: 100%;
+      min-height: 12rem;
+      box-sizing: border-box;
+      background: #0a0b0e;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      resize: vertical;
+    }}
+    .overlay-notes .notes-toolbar {{
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-top: 0.65rem;
+      flex-wrap: wrap;
+    }}
+    .overlay-notes .notes-status {{
+      color: var(--muted);
+      font-size: 0.82rem;
+    }}
+    .overlay-notes .notes-status.ok {{ color: #7dcea0; }}
+    .overlay-notes .notes-status.err {{ color: #e07070; }}
+    .overlay-gallery .gallery-toolbar {{
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }}
+    .overlay-gallery .gallery-status {{
+      color: var(--muted);
+      font-size: 0.82rem;
+    }}
+    .overlay-gallery .gallery-status.ok {{ color: #7dcea0; }}
+    .overlay-gallery .gallery-status.err {{ color: #e07070; }}
+    .gallery-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }}
+    .gallery-card {{
+      background: #0a0b0e;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }}
+    .gallery-card img {{
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: contain;
+      display: block;
+      background: #050608;
+    }}
+    .gallery-card .gallery-missing {{
+      color: var(--muted);
+      padding: 2.5rem 1rem;
+      text-align: center;
+      min-height: 120px;
+    }}
+    .gallery-card-body {{
+      padding: 0.65rem 0.75rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }}
+    .gallery-card-body input[type="text"] {{
+      width: 100%;
+      box-sizing: border-box;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.88rem;
+    }}
+    .gallery-card-actions {{
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }}
+    .btn-gallery, .btn-notes-save {{
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }}
+    .btn-gallery:hover, .btn-notes-save:hover {{
+      background: var(--gold);
+      color: #1a1408;
+    }}
+    .btn-gallery.danger {{
+      color: #e07070;
+      border-color: #e07070;
+    }}
+    .btn-gallery.danger:hover {{
+      background: #e07070;
+      color: #1a1408;
+    }}
+    .gallery-empty {{
+      color: var(--muted);
+      margin: 0;
+      padding: 1rem 0;
+    }}
+    #galleryFileInput {{
+      display: none;
     }}
     .practice {{
       display: flex;
@@ -1283,7 +1429,7 @@ def build_html(
     {method_body}
   </div>
   {plans_body}
-  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. <strong>P</strong> plans · <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. Notes auto-save at bottom; gallery add/edit/delete. <strong>P</strong> plans · <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -1315,6 +1461,23 @@ def build_html(
         <div id="ovAtoms"></div>
       </div>
       <div class="overlay-prompt" id="ovPrompt"></div>
+      <div class="overlay-notes" id="ovNotes">
+        <h3>Notes</h3>
+        <textarea id="ovNotesInput" placeholder="Palace notes for recall, links, reminders…"></textarea>
+        <div class="notes-toolbar">
+          <button type="button" class="btn-notes-save" id="btnNotesSave">Save notes</button>
+          <span class="notes-status" id="ovNotesStatus"></span>
+        </div>
+      </div>
+      <div class="overlay-gallery" id="ovGallery">
+        <h3>Gallery</h3>
+        <div class="gallery-toolbar">
+          <button type="button" class="btn-gallery" id="btnGalleryAdd">Add image</button>
+          <span class="gallery-status" id="ovGalleryStatus"></span>
+        </div>
+        <input type="file" id="galleryFileInput" accept="image/*"/>
+        <div class="gallery-grid" id="ovGalleryGrid"></div>
+      </div>
     </div>
   </div>
 
@@ -1331,6 +1494,13 @@ def build_html(
     const ovCount = document.getElementById('ovCount');
     const ovImage = document.getElementById('ovImage');
     const ovPrompt = document.getElementById('ovPrompt');
+    const ovNotesInput = document.getElementById('ovNotesInput');
+    const ovNotesStatus = document.getElementById('ovNotesStatus');
+    const btnNotesSave = document.getElementById('btnNotesSave');
+    const ovGalleryGrid = document.getElementById('ovGalleryGrid');
+    const ovGalleryStatus = document.getElementById('ovGalleryStatus');
+    const btnGalleryAdd = document.getElementById('btnGalleryAdd');
+    const galleryFileInput = document.getElementById('galleryFileInput');
     const ovAtoms = document.getElementById('ovAtoms');
     const btnClose = document.getElementById('btnClose');
     const btnPrevPalace = document.getElementById('btnPrevPalace');
@@ -1352,6 +1522,10 @@ def build_html(
     const studyModalFoot = document.getElementById('studyModalFoot');
     let searchTimer = null;
     let currentOverlayPalaceId = '';
+    let notesSaveTimer = null;
+    let notesDirty = false;
+    let notesSaving = false;
+    let galleryBusy = false;
     let dashboardView = 'practice';
     let mermaidReady = false;
     const PLANS_STORAGE_KEY = 'mnemonics_plans_v1';
@@ -1392,6 +1566,7 @@ def build_html(
 
     function stepPalace(delta) {{
       // delta +1 = older (toward end of newest-first list), -1 = newer
+      if (notesDirty) savePalaceNotes(true);
       const st = PALACE_DATA[currentOverlayPalaceId];
       const order = palaceOrderFor(st);
       const idx = order.indexOf(currentOverlayPalaceId);
@@ -1573,6 +1748,248 @@ def build_html(
       }}
     }}
 
+    function dashboardSaveBase() {{
+      return (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+    }}
+
+    function setNotesStatus(text, kind) {{
+      if (!ovNotesStatus) return;
+      ovNotesStatus.textContent = text || '';
+      ovNotesStatus.className = 'notes-status' + (kind ? (' ' + kind) : '');
+    }}
+
+    function setGalleryStatus(text, kind) {{
+      if (!ovGalleryStatus) return;
+      ovGalleryStatus.textContent = text || '';
+      ovGalleryStatus.className = 'gallery-status' + (kind ? (' ' + kind) : '');
+    }}
+
+    function palaceActionError(data, res, verb) {{
+      let msg = (data && data.error) ? data.error : '';
+      if (!msg && data && data.ok === false) {{
+        msg = 'Save server outdated — press [D] again';
+      }}
+      if (!msg) msg = verb + ' failed (' + res.status + ')';
+      return msg + ' — reopen dashboard from Memory Palace [D].';
+    }}
+
+    async function savePalaceNotes(force) {{
+      if (!currentOverlayPalaceId || !ovNotesInput) return;
+      if (notesSaving) return;
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      if (!st) return;
+      const notes = ovNotesInput.value;
+      if (!force && notes === (st.palace_notes || '')) {{
+        notesDirty = false;
+        return;
+      }}
+      notesSaving = true;
+      setNotesStatus('Saving…', '');
+      if (btnNotesSave) btnNotesSave.disabled = true;
+      try {{
+        const res = await fetch(dashboardSaveBase() + '/palace/notes', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{ palace_id: currentOverlayPalaceId, notes }})
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok) {{
+          setNotesStatus(palaceActionError(data, res, 'Notes save'), 'err');
+          return;
+        }}
+        st.palace_notes = notes;
+        notesDirty = false;
+        setNotesStatus('Saved', 'ok');
+      }} catch (e) {{
+        setNotesStatus('Save server unavailable — reopen dashboard from Memory Palace [D].', 'err');
+      }} finally {{
+        notesSaving = false;
+        if (btnNotesSave) btnNotesSave.disabled = false;
+      }}
+    }}
+
+    function scheduleNotesSave() {{
+      notesDirty = true;
+      if (notesSaveTimer) clearTimeout(notesSaveTimer);
+      notesSaveTimer = setTimeout(() => savePalaceNotes(false), 800);
+    }}
+
+    function renderGalleryGrid(st) {{
+      if (!ovGalleryGrid) return;
+      const items = (st && st.gallery_images) ? st.gallery_images.slice() : [];
+      items.sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      if (!items.length) {{
+        ovGalleryGrid.innerHTML = '<p class="gallery-empty">No gallery images yet. Use Add image for supplementary recall photos.</p>';
+        return;
+      }}
+      ovGalleryGrid.innerHTML = items.map(img => {{
+        const preview = img.image_uri
+          ? '<img src="' + esc(img.image_uri) + '" alt="' + esc(img.caption || 'Gallery image') + '" loading="lazy"/>'
+          : '<div class="gallery-missing">Image missing</div>';
+        return '<article class="gallery-card" data-gallery-id="' + esc(img.id) + '">'
+          + preview
+          + '<div class="gallery-card-body">'
+          + '<input type="text" class="gallery-caption" value="' + esc(img.caption || '') + '" placeholder="Caption (optional)" data-gallery-id="' + esc(img.id) + '"/>'
+          + '<div class="gallery-card-actions">'
+          + '<button type="button" class="btn-gallery" data-gallery-save="' + esc(img.id) + '">Save caption</button>'
+          + '<button type="button" class="btn-gallery" data-gallery-up="' + esc(img.id) + '">↑</button>'
+          + '<button type="button" class="btn-gallery" data-gallery-down="' + esc(img.id) + '">↓</button>'
+          + '<button type="button" class="btn-gallery danger" data-gallery-delete="' + esc(img.id) + '">Delete</button>'
+          + '</div></div></article>';
+      }}).join('');
+      ovGalleryGrid.querySelectorAll('[data-gallery-save]').forEach(btn => {{
+        btn.addEventListener('click', () => updateGalleryCaption(btn.getAttribute('data-gallery-save')));
+      }});
+      ovGalleryGrid.querySelectorAll('[data-gallery-up]').forEach(btn => {{
+        btn.addEventListener('click', () => moveGalleryImage(btn.getAttribute('data-gallery-up'), -1));
+      }});
+      ovGalleryGrid.querySelectorAll('[data-gallery-down]').forEach(btn => {{
+        btn.addEventListener('click', () => moveGalleryImage(btn.getAttribute('data-gallery-down'), 1));
+      }});
+      ovGalleryGrid.querySelectorAll('[data-gallery-delete]').forEach(btn => {{
+        btn.addEventListener('click', () => deleteGalleryImage(btn.getAttribute('data-gallery-delete')));
+      }});
+    }}
+
+    async function postGalleryAction(payload, verb) {{
+      if (galleryBusy) return null;
+      galleryBusy = true;
+      setGalleryStatus(verb + '…', '');
+      if (btnGalleryAdd) btnGalleryAdd.disabled = true;
+      try {{
+        const res = await fetch(dashboardSaveBase() + '/palace/images', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify(payload)
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok) {{
+          setGalleryStatus(palaceActionError(data, res, verb), 'err');
+          return null;
+        }}
+        return data;
+      }} catch (e) {{
+        setGalleryStatus('Save server unavailable — reopen dashboard from Memory Palace [D].', 'err');
+        return null;
+      }} finally {{
+        galleryBusy = false;
+        if (btnGalleryAdd) btnGalleryAdd.disabled = false;
+      }}
+    }}
+
+    function syncGalleryFromResponse(st, data) {{
+      if (!st || !data) return;
+      if (data.action === 'delete') {{
+        st.gallery_images = (st.gallery_images || []).filter(img => img.id !== data.image_id);
+      }} else if (data.image) {{
+        const imgs = st.gallery_images || [];
+        const idx = imgs.findIndex(img => img.id === data.image.id);
+        const entry = {{
+          id: data.image.id,
+          caption: data.image.caption || '',
+          sort_order: data.image.sort_order || '',
+          image_rel_path: data.image.image_rel_path || '',
+          image_uri: ''
+        }};
+        if (idx >= 0) imgs[idx] = entry;
+        else imgs.push(entry);
+        st.gallery_images = imgs;
+      }}
+      renderGalleryGrid(st);
+      setGalleryStatus('Saved', 'ok');
+    }}
+
+    async function updateGalleryCaption(imageId) {{
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      if (!st) return;
+      const input = ovGalleryGrid.querySelector('.gallery-caption[data-gallery-id="' + CSS.escape(imageId) + '"]');
+      const caption = input ? input.value : '';
+      const data = await postGalleryAction({{
+        action: 'update',
+        palace_id: currentOverlayPalaceId,
+        image_id: imageId,
+        caption
+      }}, 'Save caption');
+      syncGalleryFromResponse(st, data);
+    }}
+
+    async function moveGalleryImage(imageId, delta) {{
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      if (!st) return;
+      const items = (st.gallery_images || []).slice().sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      const idx = items.findIndex(img => img.id === imageId);
+      if (idx < 0) return;
+      const swapIdx = idx + delta;
+      if (swapIdx < 0 || swapIdx >= items.length) return;
+      const tmp = items[idx];
+      items[idx] = items[swapIdx];
+      items[swapIdx] = tmp;
+      items.forEach((img, i) => {{ img.sort_order = String(i + 1); }});
+      st.gallery_images = items;
+      renderGalleryGrid(st);
+      for (const img of items) {{
+        const data = await postGalleryAction({{
+          action: 'update',
+          palace_id: currentOverlayPalaceId,
+          image_id: img.id,
+          sort_order: img.sort_order
+        }}, 'Reorder');
+        if (!data) return;
+      }}
+      setGalleryStatus('Order saved', 'ok');
+    }}
+
+    async function deleteGalleryImage(imageId) {{
+      if (!window.confirm('Delete this gallery image?')) return;
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      if (!st) return;
+      const data = await postGalleryAction({{
+        action: 'delete',
+        palace_id: currentOverlayPalaceId,
+        image_id: imageId
+      }}, 'Delete');
+      syncGalleryFromResponse(st, data);
+    }}
+
+    function readFileAsDataUrl(file) {{
+      return new Promise((resolve, reject) => {{
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      }});
+    }}
+
+    async function addGalleryImageFromFile(file) {{
+      if (!file || !currentOverlayPalaceId) return;
+      const st = PALACE_DATA[currentOverlayPalaceId];
+      if (!st) return;
+      let dataUrl = '';
+      try {{
+        dataUrl = await readFileAsDataUrl(file);
+      }} catch (e) {{
+        setGalleryStatus('Could not read image file.', 'err');
+        return;
+      }}
+      const data = await postGalleryAction({{
+        action: 'add',
+        palace_id: currentOverlayPalaceId,
+        data_b64: dataUrl,
+        mime: file.type || ''
+      }}, 'Add image');
+      if (!data || !data.image) return;
+      const entry = {{
+        id: data.image.id,
+        caption: data.image.caption || '',
+        sort_order: data.image.sort_order || '',
+        image_rel_path: data.image.image_rel_path || '',
+        image_uri: dataUrl
+      }};
+      st.gallery_images = (st.gallery_images || []).concat([entry]);
+      renderGalleryGrid(st);
+      setGalleryStatus('Image added — reopen dashboard [D] if preview is missing.', 'ok');
+    }}
+
     function renderPromptBlock(prompt, id) {{
       const t = (prompt || '').toString().trim();
       if (!t) return '<p class="prompt-empty">No image prompt saved.</p>';
@@ -1664,6 +2081,13 @@ def build_html(
       }}
       const atoms = st.atoms || [];
       ovAtoms.innerHTML = renderPalaceAtoms(atoms, focusAtomId);
+      if (ovNotesInput) {{
+        ovNotesInput.value = st.palace_notes || '';
+        notesDirty = false;
+        setNotesStatus('', '');
+      }}
+      renderGalleryGrid(st);
+      setGalleryStatus('', '');
       updatePalaceNav(id);
       overlay.classList.add('open');
       overlay.setAttribute('aria-hidden', 'false');
@@ -1677,6 +2101,7 @@ def build_html(
     }}
 
     function closeOverlay() {{
+      if (notesDirty) savePalaceNotes(true);
       overlay.classList.remove('open');
       overlay.setAttribute('aria-hidden', 'true');
       currentOverlayPalaceId = '';
@@ -1707,6 +2132,16 @@ def build_html(
       }});
     }});
     btnClose.addEventListener('click', closeOverlay);
+    if (ovNotesInput) ovNotesInput.addEventListener('input', scheduleNotesSave);
+    if (btnNotesSave) btnNotesSave.addEventListener('click', () => savePalaceNotes(true));
+    if (btnGalleryAdd && galleryFileInput) {{
+      btnGalleryAdd.addEventListener('click', () => galleryFileInput.click());
+      galleryFileInput.addEventListener('change', () => {{
+        const file = galleryFileInput.files && galleryFileInput.files[0];
+        galleryFileInput.value = '';
+        if (file) addGalleryImageFromFile(file);
+      }});
+    }}
     if (btnPrevPalace) btnPrevPalace.addEventListener('click', () => stepPalace(1));
     if (btnNextPalace) btnNextPalace.addEventListener('click', () => stepPalace(-1));
     function openLatestPalace() {{

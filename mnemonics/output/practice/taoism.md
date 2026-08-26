@@ -79,6 +79,14 @@ A toucan with three beaks builds a tiny monastery on a near-right corner. One be
 **Sensory**
 👃 olfactory
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -159,6 +167,14 @@ An owl of shifting light perches on a near-right wall. It sheds feathers that fe
 
 **Sensory**
 ✋ tactile
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -241,6 +257,14 @@ A jester in bright yellow robes holds out a peach from a near-right doorway. One
 **Sensory**
 👅 gustatory
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -321,5 +345,13 @@ An eagle on a near-right lamp post drops three chests. One smells like a sudden 
 
 **Sensory**
 👃 olfactory
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

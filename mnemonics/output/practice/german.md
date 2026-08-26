@@ -23,6 +23,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -104,6 +112,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -171,6 +187,14 @@
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -225,6 +249,14 @@ The main difference lies in **how air is obstructed** (manner of articulation) a
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -307,6 +339,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -345,6 +385,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -427,6 +475,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -493,6 +549,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -575,6 +639,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -627,6 +699,14 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -708,5 +788,13 @@ A giant acorn rolls out of the hole the cat made. It bounces fast on the front o
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

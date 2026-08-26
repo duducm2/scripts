@@ -79,6 +79,14 @@ A silver-backed ape goes berserk and furiously crushes small lowercase letter bl
 **Sensory**
 visual 👁️
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -118,6 +126,14 @@ An enormous Akita dog sits straight up on a street bench, its heavy head defying
 **Sensory**
 👁️ visual
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -142,6 +158,14 @@ A colossal Airedale terrier claps its massive front paws together in a deafening
 
 **Sensory**
 👂 auditory
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -195,6 +219,14 @@ A massive, semi-transparent cloud shaped like a human face floats above the stre
 
 **Sensory**
 👂 auditory
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -266,6 +298,14 @@ An aerialist swings upside down from a streetlamp, leaving a thick trail of burn
 
 **Sensory**
 👁️ visual
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -384,6 +424,14 @@ An Abyssinian cat creeps low under a glowing melody wire and transforms the lite
 **Sensory**
 ✋ tactile
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -464,6 +512,14 @@ A super-strong wombat lifts a heavy piano completely upside down with one paw wh
 
 **Sensory**
 ✋ tactile
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -569,6 +625,14 @@ A rat presses the piano pedal with its heavy tail. The keys are let go, but the 
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -706,6 +770,14 @@ An owl spreads its wings above the street piano and lands on eight sung step mar
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -892,6 +964,14 @@ A jester sits at the piano while Maurice Ravel places soft cushions under the je
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1076,5 +1156,13 @@ An eagle draws small boxes on the road like measures. Wolfgang Amadeus Mozart dr
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

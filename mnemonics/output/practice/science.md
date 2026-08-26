@@ -65,6 +65,14 @@ https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intell
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -132,6 +140,14 @@ A colossal Bone toucan lands perfectly on an old, dusty book resting on a high s
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -185,6 +201,14 @@ A towering Bone panther hovers over a balcony, completely dwarfing the city stre
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -237,6 +261,14 @@ A Bone marmoset climbs a huge floating crown made of category cards and jams one
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -319,6 +351,14 @@ The Bone jester kneels near the Bosch prototype in motley and ringing bells, gua
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -385,6 +425,14 @@ A giant bee[cite: 8] lands nearby on the street, holding a hot cup of coffee wit
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -467,6 +515,14 @@ A large bat hangs upside down from the library chandelier. Completely ignoring t
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -534,6 +590,14 @@ A long-beaked avocet[cite: 3] lands beside a yellow square sponge character[cite
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -600,6 +664,14 @@ An armadillo completely ignores a beautifully shaped syntax statue standing next
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -682,6 +754,14 @@ An armadillo completely ignores a beautifully shaped syntax statue standing next
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -763,6 +843,14 @@ An Airedale terrier wearing a raincoat interrupts the trial. It acts as a TV wea
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -801,6 +889,14 @@ A long adder snake swings high above the courtroom on a flying trapeze, hissing 
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -883,6 +979,14 @@ The Abyssinian cat rests at the end of the street. It points a brass telescope a
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -964,6 +1068,14 @@ A heavy wombat stands at the end of the street. The wombat balances a set of sca
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1031,6 +1143,14 @@ A heavy wombat stands at the end of the street. The wombat balances a set of sca
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1083,6 +1203,14 @@ A heavy wombat stands at the end of the street. The wombat balances a set of sca
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>
 
@@ -1165,6 +1293,14 @@ A heavy wombat stands at the end of the street. The wombat balances a set of sca
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1232,6 +1368,14 @@ A slimy frog leaps through the market, knocking over the eagle's scale and ignor
 **Sensory**
 —
 
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
 </details>
 
 <details>
@@ -1270,5 +1414,13 @@ The bird of paradise flaps the big map and stamps a dark ink smudge (like a tiny
 
 **Sensory**
 —
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
 
 </details>

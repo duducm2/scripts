@@ -135,6 +135,12 @@ Palace_PalaceDelete(*) {
             beastOut.Push(r)
     }
     Palace_Save("beasts", beastOut)
+    imgOut := []
+    for r in Palace_Load("palace_images") {
+        if (r["palace_id"] != st["id"])
+            imgOut.Push(r)
+    }
+    Palace_Save("palace_images", imgOut)
     palaceOut := []
     for r in Palace_Load("palaces") {
         if (r["id"] != st["id"])
@@ -184,6 +190,8 @@ Palace_PalaceForm(existing) {
     eSlots := g.Add("Edit", "w80", isEdit ? existing["depth_slots_used"] : "0")
     g.Add("Text", "y+8", "Image prompt (optional; empty for legacy)")
     ePrompt := g.Add("Edit", "w360 r5", isEdit && existing.Has("image_prompt") ? existing["image_prompt"] : "")
+    g.Add("Text", "y+8", "Palace notes (optional)")
+    eNotes := g.Add("Edit", "w360 r5", isEdit && existing.Has("palace_notes") ? existing["palace_notes"] : "")
     saved := false
     g.Add("Button", "y+16 w100 Default", "Save").OnEvent("Click", SavePalace)
     g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
@@ -234,7 +242,8 @@ Palace_PalaceForm(existing) {
             "character_name", charName,
             "image_rel_path", img,
             "depth_slots_used", Trim(eSlots.Value),
-            "image_prompt", ePrompt.Value
+            "image_prompt", ePrompt.Value,
+            "palace_notes", eNotes.Value
         )
         if (isEdit) {
             out := []

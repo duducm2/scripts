@@ -15,6 +15,14 @@ PALACES_HEADERS = [
     "image_rel_path",
     "depth_slots_used",
     "image_prompt",
+    "palace_notes",
+]
+PALACE_IMAGES_HEADERS = [
+    "id",
+    "palace_id",
+    "image_rel_path",
+    "caption",
+    "sort_order",
 ]
 BEASTS_HEADERS = [
     "id",
@@ -53,6 +61,7 @@ PLAN_RESOURCES_HEADERS = ["id", "plan_id", "section_path", "line", "sort_order"]
 HEADERS = {
     "studies": STUDIES_HEADERS,
     "palaces": PALACES_HEADERS,
+    "palace_images": PALACE_IMAGES_HEADERS,
     "beasts": BEASTS_HEADERS,
     "atoms": ATOMS_HEADERS,
     "plans": PLANS_HEADERS,
@@ -84,6 +93,7 @@ def validate_dataset(
     palaces: list[dict[str, str]],
     beasts: list[dict[str, str]],
     atoms: list[dict[str, str]],
+    palace_images: list[dict[str, str]] | None = None,
 ) -> list[str]:
     issues: list[str] = []
     study_ids = {s["id"] for s in studies if s.get("id")}
@@ -140,6 +150,12 @@ def validate_dataset(
         err = validate_beast_atoms(group)
         if err:
             issues.append(f"Beast {bid}: {err}")
+
+    for img in palace_images or []:
+        if img.get("palace_id") not in palace_ids:
+            issues.append(
+                f"Palace image {img.get('id')} has unknown palace_id {img.get('palace_id')}"
+            )
 
     return issues
 
