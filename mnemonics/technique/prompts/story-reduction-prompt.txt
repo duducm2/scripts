@@ -108,6 +108,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 - Re-peg with bestiary shifting (`README §Bestiary Shifting Logic`): unbroken A, B, C, … with no gaps.
 - `is_smashed=1` when the beast has zoned atoms; else `0`.
 - Max 5 beasts per Memory Palace.
+- **Packing rule (minimize palace count):** after re-sequencing, fill every surviving palace to **exactly 5 beasts** before opening/keeping the next; fewer than 5 **only** when the remaining beast pool is < 5. Collapse empty palaces; never leave a sparse palace (1–4) when ≥5 beasts remain to pack.
 
 ### `PALACE_ATOMS.csv`
 
@@ -134,6 +135,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 - NEVER drop remaining atoms’ knowledge or verbatim quotes.
 - NEVER emit 5+ zoned atoms on one beast.
 - NEVER leave peg gaps or >5 beasts per palace.
+- NEVER under-fill a palace (1–4 beasts) when ≥5 beasts remain after reduction.
 - NEVER assign two characters to one palace or zero characters after collapse.
 - NEVER put CSV/Markdown streets in chat as the primary deliverable.
 - NEVER skip refreshing `image_prompt` for surviving palaces.
@@ -146,13 +148,14 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 1. Each merge group → one smashed beast after re-sequencing. Pegs not listed stay single-atom.
 2. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
 3. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own concept + quote preserved; story encodes zone beats.
-4. Re-peg A, B, C, …; collapse empty palaces; max 5 beasts per palace; one character per palace.
+4. Re-peg A, B, C, …; pack beasts **5 per palace** (remainder < 5 on the last palace only); collapse empty palaces; one character per palace.
 
 ## Procedure — REMOVE mode
 
 1. Remove atoms whose **current** peg is listed.
 2. Bestiary shifting for remaining beasts; update beast names/pegs.
 3. Rewrite palace/beast/atom rows; preserve quotes; keep smashed structure when survivors stay zoned.
+4. Re-pack survivors **5 beasts per palace** (remainder < 5 only on the last palace); collapse empty palaces; one character per palace.
 
 ## Image prompts (both modes)
 
@@ -169,7 +172,7 @@ After the reduced model is final, write a long concrete foreground `image_prompt
 | Same PREVIEW pasted in chat before the download chip / fence | Yes |
 | Three FILE sections with exact markers | Yes |
 | Mode SMASH or REMOVE applied | Yes |
-| Unbroken peg sequence; ≤5 beasts/palace; ≤4 zones/beast | Yes |
+| Unbroken peg sequence; pack 5 beasts/palace (remainder < 5 only on last); ≤4 zones/beast | Yes |
 | No knowledge/quote drops for survivors | Yes |
 | image_prompt refreshed per surviving palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |

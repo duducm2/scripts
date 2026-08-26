@@ -140,8 +140,8 @@ Locations taken from your hometown, e.g. using Google Maps.
 
 - **Crucial constraint:** Maximum **5 Beasts per Street**. NEVER place more than 5 Beasts on any single street.
 - **Shared street background (visual only):** All beasts on a street composite into the **same Google Maps background**—but each beast occupies a **distinct depth slot** with a **structural anchor** within that image.
-- **Street size target:** Prefer **exactly 5 beasts per street**. The final street of a topic MAY have fewer if the topic ends before reaching five.
-- Streets are dynamically assigned per study topic; the Story Generator MUST state **how many** streets the topic requires (`Total streets required: N`).
+- **Street packing (minimize street count):** Assign **exactly 5 beasts to each street**. Allocate fewer than 5 **only** when the remaining pool of beasts for that topic/session is less than 5 (the final street only). NEVER open a new street while a prior street in the same allocation still has open slots and ≥1 beast remains to place.
+- Streets are dynamically assigned per study topic; the Story Generator MUST state **how many** streets the topic requires (`Total streets required: N` = ceil(beast_count / 5)).
 - A later continuous session MAY add more beasts to a street until it reaches five; when the topic needs more capacity, add **new** streets in that same flow.
 - **Character anchor (required):** Exactly one character from `characters.json` anchors each street—see **Characters**.
 - **Maps capture tip (user):** Prefer Street View locations with visible depth cues—facades, roofs, gates, corners—not flat homogeneous pavement filling the frame.

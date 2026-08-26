@@ -147,6 +147,7 @@ Rules:
 - `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).
+- **Packing rule:** fill every palace to **exactly 5 beasts** before opening the next; fewer than 5 only when the remaining beast pool is < 5.
 
 ### 3) `PALACE_ATOMS.csv`
 
@@ -182,10 +183,12 @@ Rules:
 - Build reserved character set from attached palaces before assignment.
 - Load bestiary `code` for pegs.
 
-### 2. Palace count
+### 2. Palace packing (minimize palace count)
 
-- Prefer **exactly 5 beasts per Memory Palace**; final palace may have fewer.
-- Compute palace count from beast count (÷ 5 rule).
+- Assign **exactly 5 beasts to each Memory Palace**.
+- Allocate fewer than 5 beasts to a palace **only** when the remaining pool of beasts to place is less than 5 (final palace only).
+- NEVER open a new palace while a prior palace in this pack still has open slots and ≥1 beast remains.
+- Palace count = ceil(beast_count / 5). Set `depth_slots_used` to the beast count on that palace (1–5).
 
 ### 3. Story construction (encode into CSV rows)
 
@@ -205,6 +208,7 @@ Rules:
 - NEVER assign two+ characters to one palace or reuse a character already used.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
 - NEVER use numeric pegs or cross-beast narrative dependency.
+- NEVER under-fill a palace (1–4 beasts) when ≥5 beasts remain to place in this pack.
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
@@ -222,7 +226,7 @@ Rules:
 | Three FILE sections with exact markers | Yes |
 | Exact headers for palaces / beasts / atoms | Yes |
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
-| Max 5 beasts per palace; depth_slots_used coherent | Yes |
+| Max 5 beasts per palace; every palace has 5 beasts except a final remainder < 5; depth_slots_used coherent | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | image_prompt filled per new palace | Yes |
