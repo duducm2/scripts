@@ -364,6 +364,85 @@ Palace_PackTruncationError(fname, sectionSalvaged, laterMissing := "") {
     return msg
 }
 
+; Write Desktop paste-for-AI note when mnemonic pack import fails. Overwrites prior file.
+; Returns path written, or "" on failure.
+Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
+    errorMsg := Trim(errorMsg)
+    if (errorMsg = "")
+        return ""
+    guidance := Palace_AiCompanionFixGuidance(errorMsg)
+    body := "=== PASTE THIS INTO THE AI COMPANION CHAT ===`r`n`r`n"
+        . "The Desktop Memory Palace importer rejected my last PALACE_PACK. Fix and re-deliver.`r`n`r`n"
+        . "IMPORT ERROR`r`n"
+        . errorMsg . "`r`n`r`n"
+    if (Trim(extraNotes) != "")
+        body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
+    body .= "WHAT YOU MUST DO`r`n"
+        . guidance . "`r`n`r`n"
+        . "DELIVERY RULES (mandatory)`r`n"
+        . "- Deliver one complete PALACE_PACK.txt (download chip preferred; else one marked code fence).`r`n"
+        . "- Never claim you saved to Desktop / disk. I save the file myself.`r`n"
+        . "- Pack must include ===PREVIEW=== … ===END_PREVIEW=== and all three:`r`n"
+        . "  ===FILE: PALACE_PALACES.csv=== … ===END_FILE===`r`n"
+        . "  ===FILE: PALACE_BEASTS.csv=== … ===END_FILE===`r`n"
+        . "  ===FILE: PALACE_ATOMS.csv=== … ===END_FILE===`r`n"
+        .
+        "- Each FILE body is pure CSV with a full header + every row. Never truncate mid-header (e.g. never end at id,pa).`r`n"
+        .
+        "- If length limits cut a FILE section: say so, then continue in the next message with only the remaining FILE blocks.`r`n"
+        . "- Do not tell me to save an incomplete fence.`r`n"
+        . "- Beast packing: fill every non-final palace to exactly 5 beasts; only the last palace may have 1–4.`r`n"
+        . "- Paste the full PREVIEW in chat before the download chip / fence.`r`n`r`n"
+        . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Memory Palace [I] again.`r`n"
+    path := A_Desktop . "\PALACE_AI_FIX.txt"
+    try {
+        Palace_WriteUtf8(path, body)
+        return path
+    } catch {
+        return ""
+    }
+}
+
+; Tailored fix bullets from the importer error string.
+Palace_AiCompanionFixGuidance(errorMsg) {
+    e := StrLower(errorMsg)
+    if (InStr(e, "packing error")) {
+        return "- Your beast packing is invalid.`r`n"
+        . "- Rewrite so every palace except the highest palace_number has exactly 5 beasts.`r`n"
+        . "- Put any remainder (1–4) only on the last palace. Never ship patterns like 1+5+5 or 4+5.`r`n"
+        . "- Then re-emit the full pack (PREVIEW + all three FILE sections)."
+    }
+    if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")) {
+        return "- The pack file was truncated or a FILE section was incomplete.`r`n"
+        .
+        "- Re-emit a complete pack in one artifact (or continue remaining ===FILE=== blocks in the next message).`r`n"
+        . "- Ensure each CSV header is complete and every row is present before ===END_FILE===.`r`n"
+        . "- Prefer the download chip over a long fence if the UI truncates."
+    }
+    if (InStr(e, "empty pack") || InStr(e, "no rows")) {
+        return "- The pack parsed but had no usable palace/beast/atom rows.`r`n"
+        . "- Re-emit with exact CSV headers and real data rows in all three FILE sections.`r`n"
+        . "- PREVIEW must list every atom (Concept | Quote | Story | Sensory)."
+    }
+    if (InStr(e, "0 imported")) {
+        return "- Rows were present but none imported (likely bad study_id / palace_id / beast_id links).`r`n"
+        . "- Re-check ids match the study and cross-link correctly across the three CSV sections.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
+    return "- Read the IMPORT ERROR above and reframe the output as one complete, valid PALACE_PACK.`r`n"
+    . "- Do not paste Markdown streets as the primary deliverable."
+}
+
+; Notify + Desktop AI fix note. Returns true if the .txt was written.
+Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
+    path := Palace_WriteAiCompanionImportError(errorMsg, extraNotes)
+    notify := errorMsg
+    if (path != "")
+        notify .= " — AI fix → Desktop PALACE_AI_FIX.txt"
+    Palace_Notify(notify, notifyMs, BANNER_ACCENT_ERROR)
+    return path != ""
+}
+
 ; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
 ; preview lines: PALACE N — Title (Char) [PALACE_ID] then [Peg] name — Concept: … | Quote: "…" | Story: … | Sensory: …
 Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
@@ -762,7 +841,12 @@ Palace_ImportMnemonicsFromDesktop(*) {
         }
         split := Palace_SplitPalacePack(pathPack)
         if (!split["ok"]) {
-            Palace_Notify(split["error"], 2800, BANNER_ACCENT_ERROR)
+            notes := ""
+            if (split.Has("csvNotes") && IsObject(split["csvNotes"]) && split["csvNotes"].Length) {
+                for note in split["csvNotes"]
+                    notes .= (notes = "" ? "" : "`r`n") . note
+            }
+            Palace_FailAiImport(split["error"], 3200, notes)
             Palace_ShowMainMenu()
             return false
         }
@@ -800,14 +884,17 @@ Palace_ImportMnemonicsFromDesktop(*) {
         msg := "No rows found in Desktop PALACE pack"
         if (summary != "")
             msg .= " — " . summary
-        Palace_Notify(msg, 3200, BANNER_ACCENT_ERROR)
+        notes := ""
+        for note in csvNotes
+            notes .= (notes = "" ? "" : "`r`n") . note
+        Palace_FailAiImport(msg, 3200, notes)
         Palace_ShowMainMenu()
         return false
     }
 
     packCheck := Palace_ValidatePackBeastPacking(palaceRows, beastRows)
     if (!packCheck["ok"]) {
-        Palace_Notify(packCheck["error"], 4500, BANNER_ACCENT_ERROR)
+        Palace_FailAiImport(packCheck["error"], 4500)
         Palace_ShowMainMenu()
         return false
     }
@@ -1121,7 +1208,10 @@ Palace_ImportMnemonicsFromDesktop(*) {
         msg := "0 imported — Desktop files kept"
         if (summary != "")
             msg .= " — " . summary
-        Palace_Notify(msg, 3500, BANNER_ACCENT_ERROR)
+        notes := ""
+        for note in csvNotes
+            notes .= (notes = "" ? "" : "`r`n") . note
+        Palace_FailAiImport(msg, 3500, notes)
         Palace_ShowMainMenu()
         return false
     }
