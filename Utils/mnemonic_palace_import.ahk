@@ -364,15 +364,14 @@ Palace_PackTruncationError(fname, sectionSalvaged, laterMissing := "") {
     return msg
 }
 
-; Write Desktop paste-for-AI note when mnemonic pack import fails. Overwrites prior file.
+; Write Desktop AI-companion fix note when mnemonic pack import fails. Overwrites prior file.
 ; Returns path written, or "" on failure.
 Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         return ""
     guidance := Palace_AiCompanionFixGuidance(errorMsg)
-    body := "=== PASTE THIS INTO THE AI COMPANION CHAT ===`r`n`r`n"
-        . "The Desktop Memory Palace importer rejected my last PALACE_PACK. Fix and re-deliver.`r`n`r`n"
+    body := "The Desktop Memory Palace importer rejected my last PALACE_PACK. Fix and re-deliver.`r`n`r`n"
         . "IMPORT ERROR`r`n"
         . errorMsg . "`r`n`r`n"
     if (Trim(extraNotes) != "")
@@ -392,7 +391,8 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         "- If length limits cut a FILE section: say so, then continue in the next message with only the remaining FILE blocks.`r`n"
         . "- Do not tell me to save an incomplete fence.`r`n"
         . "- Beast packing: fill every non-final palace to exactly 5 beasts; only the last palace may have 1–4.`r`n"
-        . "- Paste the full PREVIEW in chat before the download chip / fence.`r`n`r`n"
+        .
+        "- Put PREVIEW only inside the pack — do not duplicate PREVIEW/CSV in chat outside the pack artifact.`r`n`r`n"
         . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Memory Palace [I] again.`r`n"
     path := A_Desktop . "\PALACE_AI_FIX.txt"
     try {

@@ -16,6 +16,80 @@ Finance_DesktopNewest(pattern) {
     return newest
 }
 
+; Write Desktop AI-companion fix note when finance AI import fails. Overwrites prior file.
+; kind: "daily" | "monthly". Returns path written, or "".
+Finance_WriteAiCompanionImportError(errorMsg, kind := "daily", extraNotes := "") {
+    errorMsg := Trim(errorMsg)
+    if (errorMsg = "")
+        return ""
+    packName := (kind = "monthly") ? "FINANCE_MONTHLY.txt" : "FINANCE_DAILY.txt"
+    fileMarker := (kind = "monthly") ? "FINANCE_MONTHLY.csv" : "FINANCE_DAILY.csv"
+    guidance := Finance_AiCompanionFixGuidance(errorMsg, kind)
+    body := "The Desktop Finance importer rejected my last " . packName . ". Fix and re-deliver.`r`n`r`n"
+        . "IMPORT ERROR`r`n"
+        . errorMsg . "`r`n`r`n"
+    if (Trim(extraNotes) != "")
+        body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
+    body .= "WHAT YOU MUST DO`r`n"
+        . guidance . "`r`n`r`n"
+        . "DELIVERY RULES (mandatory)`r`n"
+        . "- Deliver one complete " . packName . " (download chip preferred; else one marked code fence).`r`n"
+        . "- Never claim you saved to Desktop / disk. I save the file myself.`r`n"
+        . "- Pack must include ===PREVIEW=== … ===END_PREVIEW=== and:`r`n"
+        . "  ===FILE: " . fileMarker . "=== … ===END_FILE===`r`n"
+        . "- FILE body is pure CSV with the exact header + every data row.`r`n"
+        . "- Brazilian comma decimals; quote amount fields.`r`n"
+        . "- Do not invent amounts, ids, or rows you cannot parse.`r`n`r`n"
+        . "After you fix it, I will save " . packName . " to Desktop and re-import.`r`n"
+    path := A_Desktop . "\FINANCE_AI_FIX.txt"
+    try {
+        Finance_WriteUtf8(path, body)
+        return path
+    } catch {
+        return ""
+    }
+}
+
+Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
+    e := StrLower(errorMsg)
+    if (InStr(e, "no finance_daily") || InStr(e, "no finance_monthly")) {
+        return "- No pack file was found on Desktop.`r`n"
+        . "- Re-deliver " . ((kind = "monthly") ? "FINANCE_MONTHLY.txt" : "FINANCE_DAILY.txt")
+        . " via download chip or one marked fence so I can save it and import."
+    }
+    if (InStr(e, "0 monthly")) {
+        return "- Rows were present but none applied (bad entity_type / entity_id).`r`n"
+        . "- Re-check entity_id against attached accounts.csv / goals.csv.`r`n"
+        . "- entity_type must be account or goal. Re-emit a corrected FINANCE_MONTHLY pack."
+    }
+    if (InStr(e, "no data rows") || InStr(e, "no rows")) {
+        if (kind = "monthly") {
+            return "- The pack had no usable monthly adjustment rows.`r`n"
+            . "- Re-emit with header: entity_type,entity_id,adjustment_amount,description`r`n"
+            . "- entity_type = account | goal; entity_id must match attached accounts/goals.`r`n"
+            . "- Keep signed Brazilian decimals in adjustment_amount."
+        }
+        return "- The pack had no usable transaction rows.`r`n"
+        .
+        "- Re-emit with header: description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id`r`n"
+        . "- type = expense | income | transfer | card_expense; amount always positive with comma decimals.`r`n"
+        . "- category_id / account_id / card_id must match attached context CSVs (never invent ids)."
+    }
+    return "- Read the IMPORT ERROR above and reframe as one complete, valid "
+    . ((kind = "monthly") ? "FINANCE_MONTHLY" : "FINANCE_DAILY") . " pack.`r`n"
+    . "- Prefer download chip; else one marked fence. Never claim a disk save."
+}
+
+; Notify + Desktop AI fix note. Returns true if the .txt was written.
+Finance_FailAiImport(errorMsg, kind := "daily", notifyMs := 2200, extraNotes := "") {
+    path := Finance_WriteAiCompanionImportError(errorMsg, kind, extraNotes)
+    notify := errorMsg
+    if (path != "")
+        notify .= " — AI fix → Desktop FINANCE_AI_FIX.txt"
+    Finance_Notify(notify, notifyMs, BANNER_ACCENT_ERROR)
+    return path != ""
+}
+
 ; Skip Gemini preambles (e.g. "FILE: FINANCE_DAILY.csv") so the header row is first.
 Finance_ReadAiImportCsv(path) {
     text := Finance_ReadUtf8(path)
@@ -577,7 +651,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             path := Finance_DesktopNewestDailyCodeDump()
     }
     if (path = "" || !FileExist(path)) {
-        Finance_Notify("No FINANCE_DAILY file on Desktop", 2000, BANNER_ACCENT_ERROR)
+        Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000)
         return false
     }
     sourcePath := path
@@ -589,7 +663,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         }
     }
     if (!rows.Length) {
-        Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
+        Finance_FailAiImport("File has no data rows", "daily", 2200)
         return false
     }
     cats := Finance_Load("categories")
@@ -617,7 +691,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
         return false
     if (!parsed.Length) {
-        Finance_Notify("No rows to import", 1800, BANNER_ACCENT_ERROR)
+        Finance_FailAiImport("No rows to import", "daily", 2200)
         return false
     }
     txs := Finance_Load("transactions")
@@ -685,7 +759,7 @@ Finance_ImportMonthly(*) {
     if (path = "")
         path := Finance_DesktopNewestMonthlyCodeDump()
     if (path = "") {
-        Finance_Notify("No FINANCE_MONTHLY file on Desktop", 2000, BANNER_ACCENT_ERROR)
+        Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
         return
     }
     sourcePath := path
@@ -697,7 +771,7 @@ Finance_ImportMonthly(*) {
         }
     }
     if (!rows.Length) {
-        Finance_Notify("File has no data rows", 1800, BANNER_ACCENT_ERROR)
+        Finance_FailAiImport("File has no data rows", "monthly", 2200)
         return
     }
     accs := Finance_Load("accounts")
@@ -759,6 +833,10 @@ Finance_ImportMonthly(*) {
     Finance_Save("goals", goals)
     Finance_Save("transactions", txs)
     Finance_RecomputeBudgetSpent(Finance_CurrentYearMonth())
+    if (!n) {
+        Finance_FailAiImport("0 monthly adjustments applied — check entity_type/entity_id", "monthly", 2800)
+        return
+    }
     Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
     Finance_ShowMainMenu()
