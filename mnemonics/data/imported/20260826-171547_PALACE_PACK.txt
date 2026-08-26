@@ -1,0 +1,47 @@
+﻿===PREVIEW===
+Mode REMOVE · STUDY_COMMUNICATIO · 2 palaces · 7 beasts · 7 atoms
+Scope: palaces 5-6 · pegs W-Af
+Packing: 5+2
+Changes: Removed atoms at old Aa, Ab, Ad. Peg map: Ac->Aa, Ae->Ab, Af->Ac.
+
+PALACE 5 - Memory Palace 5: How to Speak Pt 1 (Sherlock Holmes) [PALACE_COMMUNICATIO_05]
+  [W] wombat - Concept: Success relies on acquired knowledge and practice over talent. | Quote: "Your success in life will be determined largely by your a..." | Story: A skyscraper-sized wombat sits on the ForegroundLeft gat... | Sensory: tactile ✋
+  [X] Xena, warrior woman - Concept: Talks must open with an empowerment promise for the audience. | Quote: "You want to tell people what they're going to know at the..." | Story: Xena stands on the MidgroundRight parked car, unleashing... | Sensory: auditory 👂
+  [Y] yak - Concept: Cycle through main points three times to bypass natural fog. | Quote: "at any given moment about 20% of you will be fogged out n..." | Story: A glowing yak floats in the BackgroundCenter, vomiting a ... | Sensory: visual 👁️
+  [Z] Zeus - Concept: Provide structural landmarks and ask questions to re-engage. | Quote: "you need to provide some Landmark places where you're ann..." | Story: Zeus hovers in the Aerial depth slot on a roof, throwing... | Sensory: olfactory 👃
+  [Aa] aardvark - Concept: Eliminate heavy text on slides because reading annoys listeners. | Quote: "people in your audience know how to read and reading wil..." | Story: A colossal aardvark clings to the ForegroundRight lam... | Sensory: gustatory 👅
+
+PALACE 6 - Memory Palace 6: How to Speak Pt 2 (Doc Brown) [PALACE_COMMUNICATIO_06]
+  [Ab] Abyssinian cat - Concept: Package ideas with a Symbol, Slogan, Surprise, Idea, and Story. | Quote: "your ideas are like your children and you don't want the..." | Story: A glowing Abyssinian cat climbs the ForegroundLeft bri... | Sensory: auditory 👂
+  [Ac] acorn - Concept: End with a definitive salute or summary, never a weak thank you. | Quote: "when you say thank you even worse thank you for listenin..." | Story: A skeletal acorn rolls into the MidgroundRight alleyw... | Sensory: olfactory 👃
+
+Discard candidates: none | Removed 3 atoms requested by user.
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_COMMUNICATIO_05,STUDY_COMMUNICATIO,5,Memory Palace 5: How to Speak Pt 1,Sherlock Holmes,communication/images/5.png,5,"an original fictional Victorian detective who resembles a tall, lean man with a deerstalker hat and Inverness cape, holding a curved pipe - not any real, living, historical, or named public figure and not any copyrighted character, standing on the street observing bizarre phenomena. Depth slot: ForegroundLeft iron gate features a skyscraper-sized wombat carving into a steel beam. Depth slot: MidgroundRight parked car features a woman in leather warrior armor shouting visible armor-creating soundwaves. Depth slot: BackgroundCenter road features a glowing yak surrounded by a triple-layered neon fence. Depth slot: Aerial roof features an ancient Greek mythological man throwing electric thunderbolts that smoke with ozone. Depth slot: ForegroundRight lamp post features a colossal aardvark vomiting tiny alphabet letters."
+PALACE_COMMUNICATIO_06,STUDY_COMMUNICATIO,6,Memory Palace 6: How to Speak Pt 2,Doc Brown (Back to the Future),communication/images/6.png,2,"an original fictional eccentric scientist who resembles an older man with wild white hair, a white lab coat, wearing silver goggles and holding a glowing remote control - not any real, living, historical, or named public figure and not any copyrighted character, reacting to surreal events on the street. Depth slot: ForegroundLeft brick wall features a glowing Abyssinian cat weaving luxurious silk suits. Depth slot: MidgroundRight alleyway features a bone-like skeletal acorn exhaling a toxic green cloud."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_COMMUNICATIO_W,PALACE_COMMUNICATIO_05,W,wombat,Lynne Kelly,tactile,0,1
+BEAST_COMMUNICATIO_X,PALACE_COMMUNICATIO_05,X,"Xena, warrior woman",Lynne Kelly,auditory,0,2
+BEAST_COMMUNICATIO_Y,PALACE_COMMUNICATIO_05,Y,yak,Lynne Kelly,visual,0,3
+BEAST_COMMUNICATIO_Z,PALACE_COMMUNICATIO_05,Z,Zeus,Lynne Kelly,olfactory,0,4
+BEAST_COMMUNICATIO_AA,PALACE_COMMUNICATIO_05,Aa,aardvark,Lynne Kelly,gustatory,0,5
+BEAST_COMMUNICATIO_AB,PALACE_COMMUNICATIO_06,Ab,Abyssinian cat,Lynne Kelly,auditory,0,1
+BEAST_COMMUNICATIO_AC,PALACE_COMMUNICATIO_06,Ac,acorn,Lynne Kelly,olfactory,0,2
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_COMMUNICATIO_W,single,,,"Success relies on acquired knowledge and practice over talent.","""Your success in life will be determined largely by your ability to speak your ability to write and the quality of your ideas in that order""","A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving microscopic formulas into a steel beam with its heavy claws. Sherlock Holmes runs his bare hands over the deep, jagged scratches, feeling the physical weight of knowledge and practice overwhelming the tiny speck of talent etched at the end.","tactile ✋",,1
+,BEAST_COMMUNICATIO_X,single,,,"Talks must open with an empowerment promise for the audience.","""You want to tell people what they're going to know at the end of the hour that they didn't know at the beginning of the hour it's an empowerment promise""","Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic battle cry that instantly materializes as solid glowing armor on the people around her. Sherlock Holmes listens as the empowering soundwaves loudly promise unbreakable strength, echoing down the street until the hour ends.","auditory 👂",,2
+,BEAST_COMMUNICATIO_Y,single,,,"Cycle through main points three times to bypass natural fog.","""at any given moment about 20% of you will be fogged out no matter what the lecture is so if you want to ensure that the probability that everybody gets it is high you need to say it three times""","A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence that circles its body exactly three times to trap a cloud of thick fog. Sherlock Holmes peers through his magnifying glass, watching the intensely bright, repeating cycles of light completely burn away the 20 percent of fog blocking the street.","visual 👁️",,3
+,BEAST_COMMUNICATIO_Z,single,,,"Provide structural landmarks and ask questions to re-engage.","""you need to provide some Landmark places where you're announcing that it's a good time to get back on""","Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell intensely of burning ozone to mark specific landing zones on the pavement. Sherlock Holmes sniffs the sharp, electrical punctuation in the air, using the distinct scent as a landmark to safely step back onto the scorched pathway.","olfactory 👃",,4
+,BEAST_COMMUNICATIO_AA,single,,,"Eliminate heavy text on slides because reading annoys listeners.","""people in your audience know how to read and reading will just annoy them""","A colossal aardvark clings to the ForegroundRight lamp post, loudly vomiting thousands of tiny, bitter-tasting alphabet soup letters onto the pavement. Sherlock Holmes scoops up the messy text and eats it, gagging on the sour, annoying flavor of too many written words crowding his mouth instead of a clear voice.","gustatory 👅",,5
+,BEAST_COMMUNICATIO_AB,single,,,"Package ideas with a Symbol, Slogan, Surprise, Idea, and Story.","""your ideas are like your children and you don't want them to go into the world in rags""","A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a five-part harmony that magically weaves luxurious silk suits out of thin air for its floating kittens. Doc Brown cheers at the booming song, listening as the rich, melodic notes dress the naked ideas in perfectly tailored, unforgettable clothing.","auditory 👂",,1
+,BEAST_COMMUNICATIO_AC,single,,,"End with a definitive salute or summary, never a weak thank you.","""when you say thank you even worse thank you for listening it suggests that everybody has stayed that long out of politeness and that they had a profound desire to be somewhere else""","A skeletal acorn rolls into the MidgroundRight alleyway, exhaling a toxic cloud that smells of rotting garbage every time it squeaks a polite apology. Doc Brown covers his nose and strictly commands the nut to deliver a sharp military salute instead, instantly clearing the foul stench of weakness from the air.","olfactory 👃",,2
+===END_FILE===

@@ -1,6 +1,126 @@
 # Communication
 
 <details open>
+<summary><strong>Memory Palace 6: Memory Palace 6: How to Speak Pt 2</strong> · Character: Doc Brown (Back to the Future) · 2 beasts · 2 atoms</summary>
+
+_No image_
+
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Ab] Abyssinian cat
+
+**Concept**
+💡 Package ideas with a Symbol, Slogan, Surprise, Idea, and Story.
+
+**Quote**
+“"your ideas are like your children and you don't want them to go into the world in rags"”
+
+**Story**
+A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a five-part harmony that magically weaves luxurious silk suits out of thin air for its floating kittens. Doc Brown cheers at the booming song, listening as the rich, melodic notes dress the naked ideas in perfectly tailored, unforgettable clothing.
+
+**Sensory**
+auditory 👂
+
+### 🟧 [Ac] acorn
+
+**Concept**
+💡 End with a definitive salute or summary, never a weak thank you.
+
+**Quote**
+“"when you say thank you even worse thank you for listening it suggests that everybody has stayed that long out of politeness and that they had a profound desire to be somewhere else"”
+
+**Story**
+A skeletal acorn rolls into the MidgroundRight alleyway, exhaling a toxic cloud that smells of rotting garbage every time it squeaks a polite apology. Doc Brown covers his nose and strictly commands the nut to deliver a sharp military salute instead, instantly clearing the foul stench of weakness from the air.
+
+**Sensory**
+olfactory 👃
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 5: Memory Palace 5: How to Speak Pt 1</strong> · Character: Sherlock Holmes · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [W] wombat
+
+**Concept**
+💡 Success relies on acquired knowledge and practice over talent.
+
+**Quote**
+“"Your success in life will be determined largely by your ability to speak your ability to write and the quality of your ideas in that order"”
+
+**Story**
+A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving microscopic formulas into a steel beam with its heavy claws. Sherlock Holmes runs his bare hands over the deep, jagged scratches, feeling the physical weight of knowledge and practice overwhelming the tiny speck of talent etched at the end.
+
+**Sensory**
+tactile ✋
+
+### 🟧 [X] Xena, warrior woman
+
+**Concept**
+💡 Talks must open with an empowerment promise for the audience.
+
+**Quote**
+“"You want to tell people what they're going to know at the end of the hour that they didn't know at the beginning of the hour it's an empowerment promise"”
+
+**Story**
+Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic battle cry that instantly materializes as solid glowing armor on the people around her. Sherlock Holmes listens as the empowering soundwaves loudly promise unbreakable strength, echoing down the street until the hour ends.
+
+**Sensory**
+auditory 👂
+
+### 🟧 [Y] yak
+
+**Concept**
+💡 Cycle through main points three times to bypass natural fog.
+
+**Quote**
+“"at any given moment about 20% of you will be fogged out no matter what the lecture is so if you want to ensure that the probability that everybody gets it is high you need to say it three times"”
+
+**Story**
+A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence that circles its body exactly three times to trap a cloud of thick fog. Sherlock Holmes peers through his magnifying glass, watching the intensely bright, repeating cycles of light completely burn away the 20 percent of fog blocking the street.
+
+**Sensory**
+visual 👁️
+
+### 🟧 [Z] Zeus
+
+**Concept**
+💡 Provide structural landmarks and ask questions to re-engage.
+
+**Quote**
+“"you need to provide some Landmark places where you're announcing that it's a good time to get back on"”
+
+**Story**
+Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell intensely of burning ozone to mark specific landing zones on the pavement. Sherlock Holmes sniffs the sharp, electrical punctuation in the air, using the distinct scent as a landmark to safely step back onto the scorched pathway.
+
+**Sensory**
+olfactory 👃
+
+### 🟧 [Aa] aardvark
+
+**Concept**
+💡 Eliminate heavy text on slides because reading annoys listeners.
+
+**Quote**
+“"people in your audience know how to read and reading will just annoy them"”
+
+**Story**
+A colossal aardvark clings to the ForegroundRight lamp post, loudly vomiting thousands of tiny, bitter-tasting alphabet soup letters onto the pavement. Sherlock Holmes scoops up the messy text and eats it, gagging on the sour, annoying flavor of too many written words crowding his mouth instead of a clear voice.
+
+**Sensory**
+gustatory 👅
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 4: The Elite Lexicon</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/communication/4.png)
