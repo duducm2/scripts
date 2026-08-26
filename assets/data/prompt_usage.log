@@ -91,3 +91,5 @@
 2026-08-25 23:05:20|g|🛡️ Preserve background for image generation|gemini|default|ctx=1|direct
 2026-08-25 23:07:21|g|🛡️ Preserve background for image generation|gemini|default|ctx=1|direct
 2026-08-25 23:08:49|g|🛡️ Preserve background for image generation|gemini|default|ctx=1|direct
+2026-08-25 23:09:50|4|📖 Creating mnemonic stories|gemini|default|ctx=3+1|direct
+2026-08-25 23:10:30|a|📝 Story reduction|gemini|default|ctx=3+1|direct

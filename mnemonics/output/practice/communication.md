@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 5: The Psychology of Speaking</strong> · Character: Ada Lovelace · 4 beasts · 4 atoms</summary>
 
-_No image_
+![Memory Palace 5](images/communication/5.jpg)
 
 <p><em>4 beasts · 4 Knowledge Atoms</em></p>
 

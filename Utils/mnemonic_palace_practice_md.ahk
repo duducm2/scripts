@@ -87,7 +87,7 @@ Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
     for slug in slugs
         cmd .= ' --delete-slug "' . slug . '"'
 
-    try StandardLoadingBar_Show("Syncing practice notes…", BANNER_ACCENT_INTERMEDIATE)
+    try StandardLoadingBar_Show("⏳ Syncing practice notes…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
     exitCode := 0
@@ -107,7 +107,7 @@ Palace_SyncPracticeMd(studyIds := "", deleteSlugs := "") {
         Palace_Notify("Practice sync failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
         return false
     }
-    try StandardLoadingBar_Hide(400)
+    try StandardLoadingBar_Hide(0)
     catch {
     }
     return true

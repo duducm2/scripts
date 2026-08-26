@@ -800,13 +800,13 @@ Palace_ImportMnemonicsFromDesktop(*) {
             Palace_ArchiveImported(pathAtoms)
     }
 
-    Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
-        2800, BANNER_ACCENT_SUCCESS)
     syncIds := []
     for sid, _ in syncStudyIds
         syncIds.Push(sid)
     if (syncIds.Length)
         Palace_SyncPracticeMd(syncIds)
+    Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
+        2800, BANNER_ACCENT_SUCCESS)
     Palace_ShowMainMenu()
     return true
 }
@@ -989,8 +989,8 @@ Palace_QuickAttachDesktopImage(*) {
     }
     existing["image_rel_path"] := rel
     Palace_Save("palaces", palaces)
-    Palace_Notify("Attached image → " . palace["title"] . " (" . rel . ")", 2800, BANNER_ACCENT_SUCCESS)
     Palace_SyncPracticeMd([palace["study_id"]])
+    Palace_Notify("Attached image → " . palace["title"] . " (" . rel . ")", 2800, BANNER_ACCENT_SUCCESS)
     return true
 }
 

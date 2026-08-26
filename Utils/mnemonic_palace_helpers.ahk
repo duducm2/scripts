@@ -783,7 +783,25 @@ Palace_CenterGui(guiObj, w := 920, h := 620) {
 Palace_Notify(msg, ms := 1800, accent := "") {
     if (accent = "")
         accent := BANNER_ACCENT_INFO
-    try ShowCenteredOverlay_Utils("Memory Palace: " . msg, ms, accent)
+    emoji := "ℹ "
+    if (accent = BANNER_ACCENT_SUCCESS)
+        emoji := "✅ "
+    else if (accent = BANNER_ACCENT_ERROR)
+        emoji := "❌ "
+    else if (accent = BANNER_ACCENT_INTERMEDIATE)
+        emoji := "⚠ "
+    text := Trim(msg)
+    ; Docs: every banner message must start with an emoji.
+    hasEmoji := false
+    for p in ["✅", "❌", "⚠", "ℹ", "⏳", "❓", "📋", "🔄"] {
+        if (SubStr(text, 1, StrLen(p)) = p) {
+            hasEmoji := true
+            break
+        }
+    }
+    if (!hasEmoji)
+        text := emoji . "Memory Palace: " . text
+    try ShowCenteredOverlay_Utils(text, ms, accent)
     catch {
         TrayTip("Memory Palace", msg)
     }
