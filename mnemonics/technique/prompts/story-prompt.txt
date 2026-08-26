@@ -116,7 +116,7 @@ Technique README may still say "street"; map **Street → Memory Palace** when f
 
 Confirm every required item. If any is missing, ask before generating.
 
-1. **Video transcription** — Markdown transcript (Phase 1 / prompt **5**). Cursor cannot access YouTube.
+1. **Video transcription** — Markdown from prompt **5** (Transcript Youtube Video), **or** curated concept Markdown from prompt **6** (Curate knowledge atoms). Cursor cannot access YouTube; use Gemini for raw transcripts when needed.
 2. **Context pack / existing CSVs** (preferred) — attached `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` slices for the target study. If a Markdown study list is attached instead, treat it only as prior-knowledge inventory (do not emit Markdown as output).
 3. **Characters** — `studies/technique/characters.json`.
 4. **Bestiary** — `studies/technique/bestiary.json`.

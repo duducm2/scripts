@@ -12,17 +12,18 @@ This system helps you memorize complex topics (e.g. Piano, English Grammar, Comm
 
 **Constraint:** Cursor IDE AI cannot access YouTube. Produce the transcript in a web AI (e.g. Gemini), then use that transcript in Cursor for story generation and later steps.
 
-| Step                         | Owner                | Prompt / action                                                                                                    | Attach (📎)                                                                                         |
-| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **0 — Plan**                 | You                  | Open `studies/[topic]/plan.md` for topic research, video picks, checklists                                         | —                                                                                                   |
-| **1 — Watch**                | You                  | Watch the recommended YouTube video enough to grasp the concept                                                    | —                                                                                                   |
-| **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                                  |
-| **3 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Video transcription · existing study list `.md` · `characters.json` · `bestiary.json` · this README |
-| **4 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · full mnemonic story · merge groups or peg letters to remove · `bestiary.json`      |
-| **5 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 3 or 4                                             |
-| **6 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                      |
-| **7 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                   |
-| **8 — Markdown assembly**    | You                  | Paste finalized story into `mnemonics-<topic>.md`; set `![Street N](images/N.png)` links                           | —                                                                                                   |
+| Step                         | Owner                | Prompt / action                                                                                                    | Attach (📎)                                                                                                          |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **0 — Plan**                 | You                  | Open `studies/[topic]/plan.md` for topic research, video picks, checklists                                         | —                                                                                                                    |
+| **1 — Watch**                | You                  | Watch the recommended YouTube video enough to grasp the concept                                                    | —                                                                                                                    |
+| **2 — Transcribe**           | Gemini               | `prompts/video-transcription-prompt.txt`                                                                           | YouTube video link                                                                                                   |
+| **3 — Curate atoms**         | Cursor (when needed) | `prompts/concept-curation-prompt.txt` — when the transcript/text is too long or dense                              | Source transcript/text · optional practice `.md` · this README                                                       |
+| **4 — Story Architect**      | Cursor               | `prompts/story-prompt.txt`                                                                                         | Transcription **or** curated concept `.md` · existing study list · `characters.json` · `bestiary.json` · this README |
+| **5 — Story Reduction**      | Cursor (when needed) | `prompts/story-reduction-prompt.txt` in **SMASH** or **REMOVE** mode                                               | Reduction mode · full mnemonic story · merge groups or peg letters to remove · `bestiary.json`                       |
+| **6 — Maps capture**         | You                  | Google Maps: **N** locations, one Street View screenshot per street                                                | Use latest `🖼️ Mnemonic image prompts` from step 4 or 5                                                              |
+| **7 — Foreground composite** | External image AI    | `prompts/image-background-preservation-prompt.txt` **above** matching street line from `🖼️ Mnemonic image prompts` | Street screenshot · matching image prompt line                                                                       |
+| **8 — Save files**           | You                  | Store snapshots and composites in `studies/[Topic]/images/` as `N.png` matching Street N                           | —                                                                                                                    |
+| **9 — Markdown assembly**    | You                  | Paste finalized story into `mnemonics-<topic>.md`; set `![Street N](images/N.png)` links                           | —                                                                                                                    |
 
 **Key terms:**
 
@@ -44,8 +45,9 @@ flowchart TB
   end
 
   subgraph pathPostTranscript [Post-transcript pipeline]
-    transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect.</span>"]
-    storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Video transcription · 📎 Existing study list <code>.md</code> · 📎 <code>characters.json</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
+    transcribeNode["<b>Transcribe</b> — <code>video-transcription-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>YouTube video link</span> <span style='color:#888'>(Gemini · Input section)</span><br/><br/><span style='color:#9cdcfe'>You:</span> Paste the link in Gemini.<br/><span style='color:#b5cea8'><b>Save</b></span> Markdown transcript.<br/><span style='color:#888'>Required before Story Architect (or Curate).</span>"]
+    curateNode["<b>Curate atoms</b> — <code>concept-curation-prompt.txt</code><br/><br/><span style='color:#c586c0'>📎</span> <span style='color:#dcdcaa'>Source transcript/text · optional practice <code>.md</code> · README</span><br/><br/><span style='color:#9cdcfe'>You:</span> when the source is too long/dense.<br/><span style='color:#b5cea8'><b>Save</b></span> curated concept Markdown.<br/><span style='color:#888'>Optional; feeds Story Architect as transcription.</span>"]
+    storyNode["<b>Story Architect</b> — <code>story-prompt.txt</code><br/><br/><span style='color:#888'>Match <b>Input (always last)</b> in the prompt; attach with <code>@</code>:</span><br/><span style='color:#dcdcaa'>📎 Transcription <b>or</b> curated concept <code>.md</code> · 📎 Existing study list <code>.md</code> · 📎 <code>characters.json</code> · 📎 <code>bestiary.json</code> · 📎 <code>studies/technique/README.md</code></span><br/><span style='color:#888'>Framework rules: covered by the README attachment (no extra theory paste).</span><br/><br/><span style='color:#ce9178'><b>You get:</b></span> <code>Total streets required: N</code> · new streets · image placeholders · <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(no per-street tracking comments)</span>."]
     refineNode["<b>Story Reduction</b> — <code>story-reduction-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Reduction mode SMASH or REMOVE · 📎 Full mnemonic story · 📎 Merge groups or peg letters to remove · 📎 <code>bestiary.json</code></span><br/><span style='color:#9cdcfe'>You:</span> run when merging atoms or trimming pegs<br/><span style='color:#ce9178'><b>You get:</b></span> refreshed story · refreshed <code>🖼️ Mnemonic image prompts</code> <span style='color:#888'>(accessory-detail prompts)</span>."]
     mapsNode["<b>Google Maps</b><br/><br/><span style='color:#9cdcfe'>You:</span> N locations · one screenshot per street.<br/><span style='color:#888'>Use the latest <code>🖼️ Mnemonic image prompts</code> from the current story output.</span>"]
       genNode["<b>Foreground Composite</b> — <code>image-background-preservation-prompt.txt</code><br/><br/><span style='color:#dcdcaa'>📎 Street screenshot · 📎 Matching line from <code>🖼️ Mnemonic image prompts</code></span><br/><span style='color:#9cdcfe'>You:</span> place the preservation prompt above the street prompt, then add mnemonic foreground elements without altering the place."]
@@ -53,13 +55,13 @@ flowchart TB
     mdNodeA["<b>Markdown assembly</b><br/><br/><span style='color:#9cdcfe'>You:</span> Paste story into <code>mnemonics-&lt;topic&gt;.md</code> · set <code>images/N.png</code> links."]
   end
 
-   planNode --> watchNode --> transcribeNode --> storyNode --> refineNode --> mapsNode --> genNode --> filesNode --> mdNodeA
+   planNode --> watchNode --> transcribeNode --> curateNode --> storyNode --> refineNode --> mapsNode --> genNode --> filesNode --> mdNodeA
 
   classDef human fill:#243524,stroke:#5d9a5d,stroke-width:2px,color:#e8e8e8
   classDef ai fill:#1a3048,stroke:#569cd6,stroke-width:2px,color:#e8e8e8
 
   class planNode,watchNode,mapsNode,filesNode,mdNodeA human
-   class transcribeNode,storyNode,refineNode,genNode ai
+  class transcribeNode,curateNode,storyNode,refineNode,genNode ai
 ```
 
 **Legend**
@@ -67,11 +69,11 @@ flowchart TB
 | Node fill (dark preview) | Meaning                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | **Green-tinted**         | Human-primary: you act without a chat/model paste as the main step (plan, watch, Maps, save files, edit Markdown). |
-| **Blue-tinted**          | AI-primary: transcript in Gemini; Story / Reduction with built-in image prompts; foreground composite.             |
+| **Blue-tinted**          | AI-primary: transcript in Gemini; Curate / Story / Reduction; foreground composite.                                |
 
 **Inside nodes:** **📎** = attach that item to context (matches the prompt file's **Input (always last)** section; in Cursor use **`@`** on files). **Pale yellow** = paste into that AI; **orange** = model output; **blue** (label text) = your actions; **gray** = notes.
 
-_Read **top to bottom** inside each subgraph. After prep, the pipeline is linear: always transcript-backed Story Architect, then reduction when needed, then Maps, image composition, and Markdown._
+_Read **top to bottom** inside each subgraph. After prep, the pipeline is linear: transcript → optional Curate → Story Architect → reduction when needed → Maps, image composition, and Markdown._
 
 ---
 
@@ -440,8 +442,9 @@ Prompts are loaded via AutoHotkey. Use these exact names in the model:
 
 | Key | Model name                               | File                                       |
 | --- | ---------------------------------------- | ------------------------------------------ |
-| W   | Creating mnemonic stories                | `story-prompt.txt`                         |
-| e   | Transcript Youtube Video                 | `video-transcription-prompt.txt`           |
+| 4   | Creating mnemonic stories                | `story-prompt.txt`                         |
+| 5   | Transcript Youtube Video                 | `video-transcription-prompt.txt`           |
+| 6   | Curate knowledge atoms                   | `concept-curation-prompt.txt`              |
 | a   | Story reduction - merge or remove pegs   | `story-reduction-prompt.txt`               |
 | g   | Preserve background for image generation | `image-background-preservation-prompt.txt` |
 

@@ -1,6 +1,6 @@
 ## Role
 
-Delivery note: output is **chat/Markdown text** for the next prompt — not Desktop `PALACE_*.csv` files (those come from story prompt **4** / reduction **a**).
+Delivery note: output is **chat/Markdown text** for the next prompt — not Desktop `PALACE_*.csv` files (those come from story prompt **4** / reduction **a**). Optional next step for long transcripts: Curate knowledge atoms (**6**), then Creating mnemonic stories (**4**).
 
 You are the **Transcript Producer**. You turn a YouTube video into a Markdown document that a downstream **Story Architect** AI will consume to build a mnemonic story.
 

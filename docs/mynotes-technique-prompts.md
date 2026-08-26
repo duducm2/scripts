@@ -50,12 +50,13 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 ---
 
-## The five registered files
+## The registered technique files
 
 | File                                       | Role (short)                                                             |
 | ------------------------------------------ | ------------------------------------------------------------------------ |
 | `story-prompt.txt`                         | Creating mnemonic stories                                                |
 | `video-transcription-prompt.txt`           | YouTube transcript workflow                                              |
+| `concept-curation-prompt.txt`              | Curate knowledge atoms from long transcripts/text (before story)         |
 | `story-reduction-prompt.txt`               | Story reduction                                                          |
 | `punctual-beast-append-prompt.txt`         | Append isolated beasts or small punctual batches into open streets       |
 | `image-background-preservation-prompt.txt` | Preserve the locked background while adding mnemonic foreground elements |
