@@ -150,10 +150,13 @@ HotkeyCopy_RunCopyLastMessage() {
             if (!GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
                 ShowNotification("Copy failed – ensure Gemini Enterprise is open and has a response", 2500, "FF6666",
                     "FFFFFF", 22)
-            else if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
-                root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-                if (IsObject(root))
-                    GeminiEnterprise_FocusComposer(root, true)
+            else {
+                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
+                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+                    if (IsObject(root))
+                        GeminiEnterprise_FocusComposer(root, true)
+                }
+                SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
             }
             return
         }
@@ -161,14 +164,20 @@ HotkeyCopy_RunCopyLastMessage() {
             if (!CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
                 ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF",
                     22)
-            else if (hwnd := GetCopilotWebWindowHwnd())
-                CopilotWeb_FocusComposerForHwnd(hwnd, true)
+            else {
+                if (hwnd := GetCopilotWebWindowHwnd())
+                    CopilotWeb_FocusComposerForHwnd(hwnd, true)
+                SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
+            }
             return
         }
         if (!CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
             ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
-        else if (hwnd := GetGeminiWindowHwnd())
-            FocusGeminiAskFieldForHwnd(hwnd, true)
+        else {
+            if (hwnd := GetGeminiWindowHwnd())
+                FocusGeminiAskFieldForHwnd(hwnd, true)
+            SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
+        }
         GeminiPerfLog("hotkey_copy", t0)
     } catch as err {
         ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
@@ -190,7 +199,7 @@ HotkeyCopy_RunCopyLastCode() {
                     if (IsObject(root))
                         GeminiEnterprise_FocusComposer(root, true)
                 }
-                SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
+                SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
             }
             return
         }
@@ -201,7 +210,7 @@ HotkeyCopy_RunCopyLastCode() {
             else {
                 if (hwnd := GetCopilotWebWindowHwnd())
                     CopilotWeb_FocusComposerForHwnd(hwnd, true)
-                SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
+                SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
             }
             return
         }
@@ -210,7 +219,7 @@ HotkeyCopy_RunCopyLastCode() {
         else {
             if (hwnd := GetGeminiWindowHwnd())
                 FocusGeminiAskFieldForHwnd(hwnd, true)
-            SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
+            SetTimer((*) => ClipAngelExport_PromptAfterHotkeyCopy(), -1)
         }
         GeminiPerfLog("hotkey_copy_code", t0)
     } catch as err {

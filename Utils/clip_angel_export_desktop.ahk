@@ -613,11 +613,29 @@ ClipAngelExport_OnConfirmDesktop(*) {
     ClipAngel_ExportLastClipToDesktop()
 }
 
-; After #!+p double-tap code copy: 3s Y/N prompt. Y = export last clip to Desktop; N or timeout = dismiss.
-ClipAngelExport_PromptAfterCodeCopy() {
-    keyCallbacks := Map("Y", ClipAngelExport_OnConfirmDesktop, "N", ClipAngelExport_OnCancelDesktop)
+ClipAngelExport_OnFavoriteClip(*) {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    clip := Trim(A_Clipboard)
+    if (clip = "" || StrLen(clip) < 10) {
+        ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    MarkLastClipAsFavorite("first", true)
+}
+
+; After #!+p 1×/2× successful copy: 3s Y/F/N. Y = Desktop export; F = favorite; N or timeout = dismiss.
+ClipAngelExport_PromptAfterHotkeyCopy() {
+    keyCallbacks := Map(
+        "Y", ClipAngelExport_OnConfirmDesktop,
+        "F", ClipAngelExport_OnFavoriteClip,
+        "N", ClipAngelExport_OnCancelDesktop)
     StandardLoadingBar_ShowWithKeys(
-        "❓ Save last clip to Desktop? (3s)",
+        "❓ Save to Desktop or favorite? (3s)",
         keyCallbacks,
         3000,
         0,
@@ -627,8 +645,13 @@ ClipAngelExport_PromptAfterCodeCopy() {
         17,
         "",
         false,
-        "[Y] Yes  [N] No",
+        "[Y] Desktop  [F] Favorite  [N] No",
         true)
+}
+
+; Back-compat alias used by earlier code-copy wiring.
+ClipAngelExport_PromptAfterCodeCopy() {
+    ClipAngelExport_PromptAfterHotkeyCopy()
 }
 
 ClipAngel_ExportLastClipToDesktop() {
