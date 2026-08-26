@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 7: Visual and Physical Delivery</strong> · Character: Carl Sagan · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 7](images/communication/7.jpg)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
@@ -42,7 +42,7 @@ auditory 👂
 <details>
 <summary><strong>Memory Palace 6: Presentation Tactics</strong> · Character: Steve Jobs · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 6](images/communication/6.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
