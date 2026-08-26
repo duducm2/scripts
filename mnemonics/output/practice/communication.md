@@ -1,69 +1,203 @@
 # Communication
 
 <details open>
-<summary><strong>Memory Palace 5: The Psychology of Speaking</strong> · Character: Ada Lovelace · 4 beasts · 4 atoms</summary>
+<summary><strong>Memory Palace 7: Visual and Physical Delivery</strong> · Character: Carl Sagan · 2 beasts · 2 atoms</summary>
 
-![Memory Palace 5](images/communication/5.jpg)
+_No image_
 
-<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
 #### Knowledge Atoms
 
-### 🟧 [Q] Quetzalcoatl
+### 🟧 [Ae] aerialist
 
 **Concept**
-💡 Align body and mind before speaking.
+💡 Package ideas with a symbol, slogan, surprise, salient idea, and story to be remembered.
 
 **Quote**
-“comfort is built before you speak”
+“if you want your presentation ideas to be remembered...”
 
 **Story**
-A Quetzalcoatl the size of a bus sleeps on the wall, radiating freezing cold anxiety. Ada Lovelace rubs a burning hot, glowing brick against its belly, physically building deep comfort before it opens its mouth.
-
-**Sensory**
-thermal 🌡️
-
-### 🟧 [R] rat
-
-**Concept**
-💡 Eliminate anxiety by focusing on serving the audience.
-
-**Quote**
-“fear and anxiety disappears when the mind is focused on serving”
-
-**Story**
-A floating, neon rat shoots blinding light from the mailbox. Ada Lovelace redirects the rat's burning eye beams away from itself and onto a silver platter, visually focusing its mind on serving others.
-
-**Sensory**
-visual 👁️
-
-### 🟧 [S] skull
-
-**Concept**
-💡 Use deeply held beliefs as scaffolding for speech.
-
-**Quote**
-“your values are the scaffolding of speech and when you seat in when you sit in the saddle of your values you always know which way to go”
-
-**Story**
-A gigantic skull wears a heavy steel saddle welded to its core bones at the end of the street. Ada Lovelace sits in the solid iron saddle of values, feeling the unbending scaffolding lock her words in the right direction.
+A microscopic aerialist in the foreground left wears a heavy...
 
 **Sensory**
 tactile ✋
 
-### 🟧 [T] toucan
+### 🟧 [Af] Afghan hound
 
 **Concept**
-💡 Optimize diet and sleep for cognitive clarity.
+💡 Conclude by projecting strength and listing contributions, rather than weakly saying thank you.
 
 **Quote**
-“they affect your thinking and they affect your speaking and I've basically treated my body as kind of a science lab”
+“when you say thank you even worse thank you for listening...”
 
 **Story**
-A toucan stands upside down on a balcony, chewing on literal science lab beakers filled with glowing blue liquid. Ada Lovelace drinks the thick, sweet liquid from the beaker, feeling it physically clear her brain fog.
+An Afghan hound, standing colossally in the midground right...
+
+**Sensory**
+auditory 👂
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 6: Presentation Tactics</strong> · Character: Steve Jobs · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Z] Zeus
+
+**Concept**
+💡 Wait at least seven seconds after asking a question to force mental engagement.
+
+**Quote**
+“how long can I pause uh I counted 7 Seconds...”
+
+**Story**
+Zeus sits in the foreground left, completely frozen...
+
+**Sensory**
+thermal 🌡️
+
+### 🟧 [Aa] aardvark
+
+**Concept**
+💡 Simplify slides drastically because the brain cannot read and listen simultaneously.
+
+**Quote**
+“we have only one language processor...”
+
+**Story**
+A towering aardvark in the midground right spits a flood...
 
 **Sensory**
 gustatory 👅
+
+### 🟧 [Ab] Abyssinian cat
+
+**Concept**
+💡 Using a laser pointer forces you to turn away, breaking audience connection.
+
+**Quote**
+“you can't use a laser pointer without turning your head...”
+
+**Story**
+A microscopic Abyssinian cat in the background center contorts...
+
+**Sensory**
+visual 👁️
+
+### 🟧 [Ac] acorn
+
+**Concept**
+💡 Use a hyper-complex slide exactly once to demonstrate impossible complexity.
+
+**Quote**
+“this is the kind of slide you can get away with exactly once...”
+
+**Story**
+An impossibly tangled acorn hovering on an aerial wire...
+
+**Sensory**
+visual 👁️
+
+### 🟧 [Ad] adder
+
+**Concept**
+💡 The universal trait of an inspiring presentation is the speaker's genuine passion.
+
+**Quote**
+“they were inspired when someone exhibited passion...”
+
+**Story**
+A gigantic adder in the foreground right violently erupts...
+
+**Sensory**
+thermal 🌡️
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 5: The Psychology of Speaking</strong> · Character: Ada Lovelace · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 5](images/communication/5.jpg)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [U] unicorn
+
+**Concept**
+💡 Success is driven by speaking and writing over the quality of ideas.
+
+**Quote**
+“your success in life will be determined largely...”
+
+**Story**
+A skyscraper-sized unicorn whinnies deafeningly...
+
+**Sensory**
+auditory 👂
+
+### 🟧 [V] vulture
+
+**Concept**
+💡 Start a talk by promising the new capabilities the audience will gain.
+
+**Quote**
+“what you want to do instead is start with an empowerment promise...”
+
+**Story**
+A gigantic vulture perched in the midground right vomits...
+
+**Sensory**
+visual 👁️
+
+### 🟧 [W] wombat
+
+**Concept**
+💡 Repeat critical ideas three times to catch audiences during attention lapses.
+
+**Quote**
+“at any given moment about 20% of you will be fogged out...”
+
+**Story**
+A microscopic wombat in the background center rapidly burrows...
+
+**Sensory**
+tactile ✋
+
+### 🟧 [X] Xena, warrior woman
+
+**Concept**
+💡 Explicitly state what your idea is not to prevent confusion.
+
+**Quote**
+“in explaining my idea I want to build a fence around it...”
+
+**Story**
+Xena, incredibly massive on an aerial balcony, violently hammers...
+
+**Sensory**
+tactile ✋
+
+### 🟧 [Y] yak
+
+**Concept**
+💡 Provide clear structural markers to help distracted listeners re-engage.
+
+**Quote**
+“you need to provide some Landmark places...”
+
+**Story**
+A hovering yak in the foreground right rings a colossal iron bell...
+
+**Sensory**
+auditory 👂
 
 </details>
 

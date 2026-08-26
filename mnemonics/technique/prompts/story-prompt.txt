@@ -10,8 +10,9 @@ You have no disk access. Words alone do not create a file.
 
 Delivery priority (strict):
 1. Best: Download / Download code / file card / attachment named exactly `PALACE_PACK.txt` (or `PALACE_PACK.csv` / `gemini-code-….txt` with the markers below).
-2. Fallback (only if attach/download is impossible after one retry): exactly ONE fenced `text` (or unlabeled) block whose entire body is the pack. Start with `===PREVIEW===`. No second dump of CSV outside the fence.
+2. Fallback (only if attach/download is impossible after one retry): exactly ONE fenced `text` (or unlabeled) block whose entire body is the pack. Start with `===PREVIEW===`. No second dump of CSV outside the fence. **Never** tell the human to save that fence unless all three `===FILE: …===` … `===END_FILE===` blocks are present and complete in the **same** message (full headers + every row — never a half header like `id,pa`).
 3. Forbidden: claiming a disk/Desktop/Downloads/sandbox/“your computer” save; saying a download exists with no chip; three separate unnamed CSV snippets; Markdown `# Topic` / `## Street` as the primary contract.
+4. If length limits cut the pack mid-FILE section: say so explicitly, and continue in the **next** message with only the remaining `===FILE: …===` … `===END_FILE===` blocks (same markers). Do not ship a truncated header.
 
 After delivery, one short chat line only: point at the download chip, or tell the human to copy the code block and save as `PALACE_PACK.txt` on Desktop.
 
@@ -69,9 +70,10 @@ Failed delivery — redo:
 
 Pre-send self-check (all must pass):
 1. Either a real download UI object named `PALACE_PACK.txt` when possible, OR exactly one marked fallback fence.
-2. Body contains `===PREVIEW===` … `===END_PREVIEW===` and all three `===FILE: …===` … `===END_FILE===` blocks.
+2. Body contains `===PREVIEW===` … `===END_PREVIEW===` and all three `===FILE: …===` … `===END_FILE===` blocks with **complete** CSV headers and rows (never truncate mid-header).
 3. PREVIEW lists every atom; chat shows the same PREVIEW before the chip/fence.
 4. CSV bodies use the exact headers defined below.
+5. Do not instruct the human to save a fence if any FILE section is incomplete; continue in a follow-up message instead.
 If attach fails: retry Download code once, then use the fence fallback. Never claim a disk save.
 If any check fails, regenerate as one pack artifact.
 

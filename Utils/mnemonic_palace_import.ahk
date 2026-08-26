@@ -301,6 +301,220 @@ Palace_DesktopNewestPackPath() {
     return newest
 }
 
+; Strip chat prose / markdown fences so extract starts at PREVIEW or first PALACE FILE.
+Palace_NormalizePackText(text) {
+    if (Trim(text) = "")
+        return ""
+    text := StrReplace(text, "`r`n", "`n")
+    text := StrReplace(text, "`r", "`n")
+    startPos := 0
+    for needle in ["===PREVIEW===", "---PREVIEW---", "===FILE: PALACE_", "---FILE: PALACE_", "===FILE: PLAN",
+        "---FILE: PLAN"] {
+        p := InStr(text, needle, false)
+        if (p && (!startPos || p < startPos))
+            startPos := p
+    }
+    if (startPos > 1)
+        text := SubStr(text, startPos)
+    ; Three backticks = Chr(96)x3. Literal ``` cannot appear in AHK strings (backtick is escape).
+    fence := Chr(96) . Chr(96) . Chr(96)
+    if (SubStr(text, 1, 3) = fence) {
+        nl := InStr(text, "`n")
+        if (nl)
+            text := SubStr(text, nl + 1)
+    }
+    while (RegExMatch(text, "\n" . fence . "[ \t]*$"))
+        text := RegExReplace(text, "\n" . fence . "[ \t]*$", "")
+    if (Trim(text) = fence)
+        return ""
+    return Trim(text, "`r`n `t")
+}
+
+; True when the first CSV line looks like a complete header for this pack section key.
+Palace_PackSectionHeaderOk(key, body) {
+    first := ""
+    for line in StrSplit(StrReplace(StrReplace(body, "`r`n", "`n"), "`r", "`n"), "`n") {
+        t := Trim(line)
+        if (t = "")
+            continue
+        first := StrLower(t)
+        break
+    }
+    if (first = "")
+        return false
+    if (key = "palaces")
+        return InStr(first, "study_id")
+        && (InStr(first, "palace_number") || InStr(first, "street_number") || InStr(first, "title"))
+    if (key = "beasts")
+        return InStr(first, "peg_code")
+        && (InStr(first, "palace_id") || InStr(first, "street_id"))
+    if (key = "atoms")
+        return InStr(first, "beast_id")
+    return true
+}
+
+Palace_PackTruncationError(fname, sectionSalvaged, laterMissing := "") {
+    msg := "Pack truncated mid-" . fname
+        . " — re-download/save the full pack (file ends inside this section"
+    if (laterMissing != "")
+        msg .= "; " . laterMissing . " missing"
+    else if (sectionSalvaged)
+        msg .= "; incomplete CSV"
+    msg .= ")"
+    return msg
+}
+
+; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
+; preview lines: PALACE N — Title (Char) [PALACE_ID] then [Peg] name — Concept: … | Quote: "…" | Story: … | Sensory: …
+Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
+    out := Map("ok", false, "beasts", [], "atoms", [], "note", "")
+    preview := Trim(preview)
+    if (preview = "")
+        return out
+    beasts := []
+    atoms := []
+    currentPalaceId := ""
+    sortOrder := 0
+    for line in StrSplit(StrReplace(StrReplace(preview, "`r`n", "`n"), "`r", "`n"), "`n") {
+        t := Trim(line)
+        if (t = "")
+            continue
+        if (RegExMatch(t, "i)PALACE\s+\d+.+\[([^\]]+)\]", &pm)) {
+            currentPalaceId := Trim(pm[1])
+            sortOrder := 0
+            continue
+        }
+        if (currentPalaceId = "")
+            continue
+        ; Peg line — em dash or hyphen before Concept
+        if (!RegExMatch(t, "i)^\[([A-Za-z]+)\]\s+(.+?)\s+[—\-–]+\s*Concept:\s*(.*)$", &bm))
+            continue
+        peg := Trim(bm[1])
+        name := Trim(bm[2])
+        rest := Trim(bm[3])
+        concept := rest
+        quote := ""
+        story := ""
+        sensory := ""
+        if (RegExMatch(rest, "i)^(.*?)\s*\|\s*Quote:\s*(.*?)\s*\|\s*Story:\s*(.*?)\s*\|\s*Sensory:\s*(.*?)\s*$", &am)) {
+            concept := Trim(am[1])
+            quote := Trim(am[2])
+            story := Trim(am[3])
+            sensory := Trim(am[4])
+            if (SubStr(quote, 1, 1) = '"' && SubStr(quote, -1) = '"')
+                quote := SubStr(quote, 2, StrLen(quote) - 2)
+            else if (SubStr(quote, 1, 1) = '"')
+                quote := SubStr(quote, 2)
+        }
+        if (peg = "" || name = "")
+            continue
+        sortOrder += 1
+        base := RegExReplace(currentPalaceId, "i)^PALACE_", "")
+        base := RegExReplace(base, "_\d+$", "")
+        if (base = "")
+            base := "X"
+        beastId := "BEAST_" . base . "_" . peg
+        beasts.Push(Map(
+            "id", beastId,
+            "palace_id", currentPalaceId,
+            "peg_code", peg,
+            "beast_name", name,
+            "beast_source", "Lynne Kelly",
+            "sensory_channel", sensory,
+            "is_smashed", "0",
+            "sort_order", String(sortOrder)
+        ))
+        atoms.Push(Map(
+            "id", "",
+            "beast_id", beastId,
+            "kind", "single",
+            "zone", "",
+            "zone_label", "",
+            "concept", concept,
+            "quote", quote,
+            "story", story,
+            "sensory", sensory,
+            "ipa", "",
+            "sort_order", "1"
+        ))
+    }
+    if (!beasts.Length)
+        return out
+    out["ok"] := true
+    out["beasts"] := beasts
+    out["atoms"] := atoms
+    out["note"] := "Salvaged " . beasts.Length . " beast(s)/atom(s) from PREVIEW (CSV FILE truncated)"
+    return out
+}
+
+; When beasts/atoms FILE sections fail, try PREVIEW salvage. Returns true if result filled.
+Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, failKey) {
+    preview := result.Has("preview") ? result["preview"] : ""
+    palaces := result.Has("palaces") ? result["palaces"] : []
+    if (!IsObject(palaces) || !palaces.Length || Trim(preview) = "") {
+        ; #region agent log
+        Palace_AgentDebugLog("A", "PreviewSalvage:skip", "no preview or palaces", Map("failKey", failKey))
+        ; #endregion
+        return false
+    }
+    synth := Palace_SynthesizeBeastsAtomsFromPreview(preview, palaces)
+    ; #region agent log
+    Palace_AgentDebugLog("A", "PreviewSalvage:result", "preview synth", Map(
+        "failKey", failKey,
+        "ok", synth["ok"] ? 1 : 0,
+        "beastCount", synth["beasts"].Length,
+        "atomCount", synth["atoms"].Length
+    ))
+    ; #endregion
+    if (!synth["ok"])
+        return false
+    result["beasts"] := synth["beasts"]
+    result["atoms"] := synth["atoms"]
+    csvNotes.Push(synth["note"])
+    return true
+}
+
+; #region agent log
+Palace_AgentDebugLog(hypothesisId, location, message, dataObj := 0) {
+    try {
+        SplitPath(A_LineFile, , &utilsDir)
+        SplitPath(utilsDir, , &scriptsRoot)
+        logPath := scriptsRoot . "\debug-1fcd48.log"
+        esc(s) {
+            s := StrReplace(String(s), "\", "\\")
+            s := StrReplace(s, '"', "'")
+            s := StrReplace(s, "`n", " ")
+            s := StrReplace(s, "`r", "")
+            return s
+        }
+        payload := "{"
+            . '"sessionId":"1fcd48"'
+            . ',"runId":"pre-fix"'
+            . ',"hypothesisId":"' . esc(hypothesisId) . '"'
+            . ',"location":"' . esc(location) . '"'
+            . ',"message":"' . esc(message) . '"'
+            . ',"timestamp":' . A_TickCount
+            . ',"data":{'
+        if (IsObject(dataObj)) {
+            first := true
+            for k, v in dataObj {
+                if (!first)
+                    payload .= ","
+                first := false
+                payload .= '"' . esc(k) . '":"' . esc(v) . '"'
+            }
+        }
+        payload .= "}}`n"
+        f := FileOpen(logPath, "a", "UTF-8")
+        if (f) {
+            f.Write(payload)
+            f.Close()
+        }
+    } catch {
+    }
+}
+; #endregion
+
 ; Extract pure CSV body between ===FILE: name=== / ---FILE: name--- and matching END_FILE.
 ; If END_FILE is missing, salvages until the next FILE marker or EOF (&salvaged set true).
 ; Also matches fileName without a trailing .csv (e.g. PALACE_ATOMS).
@@ -359,13 +573,30 @@ Palace_ExtractPackPreview(text) {
 ; result["csvNotes"] lists malformed CSV rows skipped under strict field-count checks.
 Palace_SplitPalacePack(path) {
     result := Map("ok", false, "error", "", "preview", "", "palaces", [], "beasts", [], "atoms", [], "csvNotes", [])
-    text := Palace_ReadUtf8(path)
+    rawText := Palace_ReadUtf8(path)
+    text := Palace_NormalizePackText(rawText)
+    ; #region agent log
+    tailRaw := (StrLen(rawText) > 80) ? SubStr(rawText, -79) : rawText
+    Palace_AgentDebugLog("A", "SplitPalacePack:entry", "pack read", Map(
+        "path", path,
+        "rawLen", StrLen(rawText),
+        "normLen", StrLen(text),
+        "hasPreview", InStr(text, "===PREVIEW===") ? 1 : 0,
+        "hasBeastsOpener", InStr(text, "===FILE: PALACE_BEASTS") ? 1 : 0,
+        "hasAtomsOpener", InStr(text, "===FILE: PALACE_ATOMS") ? 1 : 0,
+        "tail", tailRaw
+    ))
+    ; #endregion
     if (text = "") {
         result["error"] := "Empty pack file"
+        ; #region agent log
+        Palace_AgentDebugLog("E", "SplitPalacePack:empty", "empty after normalize", Map("path", path))
+        ; #endregion
         return result
     }
     result["preview"] := Palace_ExtractPackPreview(text)
     csvNotes := []
+    prevSalvaged := false
     specs := [
         ["palaces", "PALACE_PALACES.csv", "palace_number"],
         ["beasts", "PALACE_BEASTS.csv", "peg_code"],
@@ -377,8 +608,58 @@ Palace_SplitPalacePack(path) {
         hint := spec[3]
         sectionSalvaged := false
         body := Palace_ExtractPackFileSection(text, fname, &sectionSalvaged)
+        headerOk := (body = "") ? 0 : (Palace_PackSectionHeaderOk(key, body) ? 1 : 0)
+        bodyHead := (StrLen(body) > 60) ? SubStr(body, 1, 60) : body
+        ; #region agent log
+        Palace_AgentDebugLog("C", "SplitPalacePack:section", "section extract", Map(
+            "key", key,
+            "bodyLen", StrLen(body),
+            "salvaged", sectionSalvaged ? 1 : 0,
+            "headerOk", headerOk,
+            "bodyHead", bodyHead
+        ))
+        ; #endregion
         if (body = "") {
-            result["error"] := "Missing section " . fname
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
+                ; #region agent log
+                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-empty", "preview salvage after empty body", Map(
+                    "key", key, "beastCount", result["beasts"].Length))
+                ; #endregion
+                break
+            }
+            if (prevSalvaged) {
+                prevName := (key = "beasts") ? "PALACE_PALACES.csv" : "PALACE_BEASTS.csv"
+                later := (key = "beasts") ? "BEASTS/ATOMS" : "ATOMS"
+                result["error"] := Palace_PackTruncationError(prevName, true, later)
+            } else
+                result["error"] := "Missing section " . fname
+            ; #region agent log
+            Palace_AgentDebugLog("A", "SplitPalacePack:fail-empty-body", result["error"], Map("key", key))
+            ; #endregion
+            return result
+        }
+        if (!Palace_PackSectionHeaderOk(key, body)) {
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
+                ; #region agent log
+                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-header", "preview salvage after bad header", Map(
+                    "key", key,
+                    "bodyHead", bodyHead,
+                    "beastCount", result["beasts"].Length
+                ))
+                ; #endregion
+                break
+            }
+            later := ""
+            if (key = "palaces")
+                later := "BEASTS/ATOMS"
+            else if (key = "beasts")
+                later := "ATOMS"
+            result["csvNotes"] := csvNotes
+            result["error"] := Palace_PackTruncationError(fname, sectionSalvaged, later)
+            ; #region agent log
+            Palace_AgentDebugLog("C", "SplitPalacePack:fail-header", result["error"], Map("key", key, "bodyHead",
+                bodyHead))
+            ; #endregion
             return result
         }
         if (sectionSalvaged)
@@ -394,21 +675,79 @@ Palace_SplitPalacePack(path) {
         try FileDelete(tmp)
         catch {
         }
+        ; #region agent log
+        Palace_AgentDebugLog("B", "SplitPalacePack:rows", "csv parse", Map("key", key, "rowCount", rows.Length))
+        ; #endregion
         if (!rows.Length) {
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
+                ; #region agent log
+                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-zero-rows", "preview salvage after zero rows", Map(
+                    "key", key, "beastCount", result["beasts"].Length))
+                ; #endregion
+                break
+            }
+            later := ""
+            if (key = "palaces")
+                later := "BEASTS/ATOMS"
+            else if (key = "beasts")
+                later := "ATOMS"
             result["csvNotes"] := csvNotes
-            result["error"] := fname . " has no valid rows (pack may be truncated)"
+            result["error"] := Palace_PackTruncationError(fname, sectionSalvaged, later)
+            ; #region agent log
+            Palace_AgentDebugLog("A", "SplitPalacePack:fail-zero-rows", result["error"], Map("key", key))
+            ; #endregion
             return result
         }
+        if (key = "beasts" && sectionSalvaged) {
+            atomsBody := Palace_ExtractPackFileSection(text, "PALACE_ATOMS.csv")
+            if (atomsBody = "") {
+                result["beasts"] := rows
+                synth := Palace_SynthesizeBeastsAtomsFromPreview(result["preview"], result["palaces"])
+                if (synth["ok"] && synth["atoms"].Length) {
+                    result["atoms"] := synth["atoms"]
+                    csvNotes.Push("Salvaged " . synth["atoms"].Length . " atom(s) from PREVIEW (ATOMS FILE missing)")
+                    ; #region agent log
+                    Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-no-atoms", "preview atoms only", Map(
+                        "beastCount", result["beasts"].Length,
+                        "atomCount", result["atoms"].Length
+                    ))
+                    ; #endregion
+                    break
+                }
+                result["csvNotes"] := csvNotes
+                result["error"] := Palace_PackTruncationError(fname, true, "ATOMS")
+                ; #region agent log
+                Palace_AgentDebugLog("A", "SplitPalacePack:fail-no-atoms", result["error"], Map("key", key))
+                ; #endregion
+                return result
+            }
+        }
         result[key] := rows
+        prevSalvaged := sectionSalvaged
     }
     packCheck := Palace_ValidatePackBeastPacking(result["palaces"], result["beasts"])
     if (!packCheck["ok"]) {
         result["csvNotes"] := csvNotes
         result["error"] := packCheck["error"]
+        ; #region agent log
+        Palace_AgentDebugLog("D", "SplitPalacePack:fail-packing", result["error"], Map(
+            "palaceCount", result["palaces"].Length,
+            "beastCount", result["beasts"].Length
+        ))
+        ; #endregion
         return result
     }
     result["csvNotes"] := csvNotes
     result["ok"] := true
+    ; #region agent log
+    Palace_AgentDebugLog("A", "SplitPalacePack:ok", "pack ok", Map(
+        "runId", "post-fix",
+        "palaceCount", result["palaces"].Length,
+        "beastCount", result["beasts"].Length,
+        "atomCount", result["atoms"].Length,
+        "csvNotes", csvNotes.Length
+    ))
+    ; #endregion
     return result
 }
 
@@ -1136,7 +1475,7 @@ Palace_WriteTempCsvFromSection(body) {
 }
 
 Palace_ImportPlansFromDesktop(pathPack) {
-    text := Palace_ReadUtf8(pathPack)
+    text := Palace_NormalizePackText(Palace_ReadUtf8(pathPack))
     if (text = "") {
         Palace_Notify("Empty PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
         Palace_ShowMainMenu()
