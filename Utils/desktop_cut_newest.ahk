@@ -90,7 +90,10 @@ DesktopCutNewest_OpenNewest() {
     }
 
     try {
-        Run('"' . newest . '"')
+        if (DesktopCutNewest_ShouldOpenInNewChromeWindow(newest))
+            DesktopCutNewest_OpenInNewChromeWindow(newest)
+        else
+            Run('"' . newest . '"')
     } catch as err {
         ShowCenteredOverlay_Utils("❌ Failed to open Desktop item", 2500, BANNER_ACCENT_ERROR)
         return
@@ -98,6 +101,53 @@ DesktopCutNewest_OpenNewest() {
 
     SplitPath(newest, &name)
     ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; True when Windows would open this path with Chrome (so we can force --new-window).
+DesktopCutNewest_ShouldOpenInNewChromeWindow(path) {
+    if (!path || !FileExist(path))
+        return false
+    SplitPath(path, , , &ext)
+    if (ext = "")
+        return false
+    extDot := "." . StrLower(ext)
+    cmd := DesktopCutNewest_GetAssocOpenCommand(extDot)
+    if (cmd != "" && InStr(cmd, "chrome", false))
+        return true
+    ; Common browser types when Chrome is the daily driver and assoc lookup is empty/odd.
+    static browserExts := Map("html", 1, "htm", 1, "pdf", 1, "svg", 1, "mhtml", 1, "webp", 1)
+    return browserExts.Has(StrLower(ext))
+}
+
+; ASSOCSTR_COMMAND for ".ext" via AssocQueryStringW; "" on failure.
+DesktopCutNewest_GetAssocOpenCommand(extWithDot) {
+    if (!extWithDot)
+        return ""
+    ; ASSOCF_NONE = 0, ASSOCSTR_COMMAND = 1
+    pcch := 0
+    hr := DllCall("shlwapi\AssocQueryStringW", "UInt", 0, "UInt", 1, "WStr", extWithDot, "Ptr", 0, "Ptr", 0,
+        "UInt*", &pcch, "UInt")
+    if (pcch < 2)
+        return ""
+    buf := Buffer(pcch * 2, 0)
+    hr := DllCall("shlwapi\AssocQueryStringW", "UInt", 0, "UInt", 1, "WStr", extWithDot, "Ptr", 0, "Ptr", buf,
+        "UInt*", &pcch, "UInt")
+    if (hr != 0)
+        return ""
+    return StrGet(buf, "UTF-16")
+}
+
+DesktopCutNewest_PathToFileUrl(path) {
+    p := StrReplace(path, "\", "/")
+    if (RegExMatch(p, "i)^[a-z]:"))
+        p := "/" . p
+    p := StrReplace(p, " ", "%20")
+    return "file://" . p
+}
+
+DesktopCutNewest_OpenInNewChromeWindow(path) {
+    fileUrl := DesktopCutNewest_PathToFileUrl(path)
+    Run('chrome.exe --new-window "' . fileUrl . '"')
 }
 
 DesktopCutNewest_CopyPath() {
