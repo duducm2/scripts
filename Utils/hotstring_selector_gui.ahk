@@ -37,7 +37,8 @@ UtilitySelector_ActiveMonitorWorkArea() {
             }
         }
     }
-    return { left: monitorLeft, top: monitorTop, width: monitorWidth, height: monitorHeight }
+    return { left: monitorLeft, top: monitorTop, right: monitorRight, bottom: monitorBottom, width: monitorWidth,
+        height: monitorHeight }
 }
 
 UtilitySelector_GuiIsAlive() {
@@ -59,10 +60,25 @@ UtilitySelector_IsPromptsView() {
 }
 
 ; Prompts needs a wider client area so File paths are readable; other views stay compact.
-UtilitySelector_ViewMetrics() {
+; Widths are client-area sizes for Gui.Show (not outer Gui.Move dimensions).
+UtilitySelector_ViewMetrics(mon := false) {
     if (UtilitySelector_IsPromptsView())
-        return { contentW: 1140, guiW: 1170, guiH: 560, lvHFilter: 360, lvH: 400, pathDetailH: 26 }
-    return { contentW: 820, guiW: 850, guiH: 520, lvHFilter: 392, lvH: 420, pathDetailH: 0 }
+        m := { contentW: 1140, guiW: 1170, guiH: 560, lvHFilter: 360, lvH: 400, pathDetailH: 26 }
+    else
+        m := { contentW: 820, guiW: 850, guiH: 520, lvHFilter: 392, lvH: 420, pathDetailH: 0 }
+    if (!IsObject(mon))
+        return m
+    ; Keep the window fully on the active work area (small / scaled work monitors).
+    maxW := Max(640, mon.width - 40)
+    maxH := Max(420, mon.height - 40)
+    if (m.guiW > maxW) {
+        shrink := m.guiW - maxW
+        m.guiW := maxW
+        m.contentW := Max(600, m.contentW - shrink)
+    }
+    if (m.guiH > maxH)
+        m.guiH := maxH
+    return m
 }
 
 UtilitySelector_UpdateSelectedPathDetail(*) {
@@ -206,10 +222,20 @@ UtilitySelector_LayoutControls() {
 
     if (!IsObject(g_HotstringSelectorHint) || !IsObject(g_HotstringSelectorLv))
         return
+    ; Prefer current window client width once shown; fall back to view metrics.
+    hw := 0
+    try {
+        g_HotstringSelectorGui.GetClientPos(, , &hw)
+    } catch {
+        hw := 0
+    }
     m := UtilitySelector_ViewMetrics()
+    if (hw < 600)
+        hw := m.contentW
+    else
+        hw := Max(600, hw - 20)
     showFilter := UtilitySelector_IsPromptsView()
     showPath := showFilter
-    hw := m.contentW
     try g_HotstringSelectorHint.Move(, , hw)
     catch {
     }
@@ -266,13 +292,6 @@ UtilitySelector_LayoutControls() {
         } catch {
         }
     }
-    if (IsObject(g_HotstringSelectorGui)) {
-        try {
-            g_HotstringSelectorGui.GetPos(&gx, &gy)
-            g_HotstringSelectorGui.Move(gx, gy, m.guiW, m.guiH)
-        } catch {
-        }
-    }
     UtilitySelector_UpdateSelectedPathDetail()
 }
 
@@ -319,7 +338,7 @@ UtilitySelector_CreateGui() {
 UtilitySelector_PositionAndShow() {
     global g_HotstringSelectorGui, g_UtilitySelectorNoActivate
     mon := UtilitySelector_ActiveMonitorWorkArea()
-    m := UtilitySelector_ViewMetrics()
+    m := UtilitySelector_ViewMetrics(mon)
     guiW := m.guiW
     guiH := m.guiH
     guiX := mon.left + (mon.width - guiW) // 2
@@ -328,11 +347,15 @@ UtilitySelector_PositionAndShow() {
         guiX := mon.left + 20
     if (guiY < mon.top + 20)
         guiY := mon.top + 20
-    if (g_UtilitySelectorNoActivate) {
-        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH . " NA")
-    } else {
-        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH)
-    }
+    ; Clamp so the window cannot sit mostly off-screen on narrow work monitors.
+    if (guiX + guiW > mon.right - 10)
+        guiX := Max(mon.left + 10, mon.right - guiW - 10)
+    if (guiY + guiH > mon.bottom - 10)
+        guiY := Max(mon.top + 10, mon.bottom - guiH - 10)
+    showOpts := "x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH
+    if (g_UtilitySelectorNoActivate)
+        showOpts .= " NA"
+    g_HotstringSelectorGui.Show(showOpts)
     UtilitySelector_LayoutControls()
     if (!g_UtilitySelectorNoActivate)
         UtilitySelector_FocusAfterShow()
@@ -372,8 +395,9 @@ UtilitySelector_RebuildGui() {
     }
     UtilitySelector_UnbindModalHotkeys()
     UtilitySelector_RefreshView()
+    ; Re-Show with view metrics so Prompts↔other size changes don't use Gui.Move (outer vs client mismatch).
+    UtilitySelector_PositionAndShow()
     g_UtilitySelectorSuppressFilterKillFocus := false
-    UtilitySelector_FocusAfterShow()
 }
 
 UtilitySelector_StartIpc(*) {
