@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+3 row(s) · Hair saloon expense, lunch card purchase, and card reimbursement.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Hair saloon,"40,00",expense,CAT_BELEZA,Hairdresser,ACC_MERCADOP,,
+Lunch,"30,62",card_expense,CAT_ALIMENTA,,ACC_MERCADOP,CARD_MP,
+Reimbursement,"203,45",income,CAT_REEMBOLS,,ACC_MERCADOP,,
+===END_FILE===
