@@ -99,6 +99,19 @@ DesktopCutNewest_OpenNewest() {
         return
     }
 
+    beforeMap := Map()
+    try {
+        for hwnd in WinGetList()
+            beforeMap[hwnd] := true
+    } catch {
+    }
+    fgBefore := WinExist("A")
+
+    ; Let the launched app take foreground (Windows focus-stealing guard).
+    try DllCall("AllowSetForegroundWindow", "UInt", 0xFFFFFFFF)  ; ASFW_ANY
+    catch {
+    }
+
     try {
         if (DesktopCutNewest_ShouldOpenInNewChromeWindow(newest))
             DesktopCutNewest_OpenInNewChromeWindow(newest)
@@ -109,8 +122,81 @@ DesktopCutNewest_OpenNewest() {
         return
     }
 
+    newHwnd := DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, 5000)
+    if (newHwnd)
+        DesktopCutNewest_ActivateHwnd(newHwnd)
+
     SplitPath(newest, &name)
     ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
+
+    ; Overlay / AutoSlot can steal focus — finish on the opened window.
+    if (newHwnd)
+        DesktopCutNewest_ActivateHwnd(newHwnd)
+}
+
+; First new visible top-level window after open, or FG if it changed (reuse case).
+DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, timeoutMs := 5000) {
+    if (!IsObject(beforeMap))
+        beforeMap := Map()
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        try {
+            for hwnd in WinGetList() {
+                if beforeMap.Has(hwnd)
+                    continue
+                if !WinExist("ahk_id " hwnd)
+                    continue
+                try {
+                    if !DllCall("IsWindowVisible", "Ptr", hwnd)
+                        continue
+                    ; Skip owned popups / tool windows without a normal title when possible.
+                    if (DllCall("GetWindow", "Ptr", hwnd, "UInt", 4))  ; GW_OWNER
+                        continue
+                } catch {
+                    continue
+                }
+                return hwnd
+            }
+            fg := WinExist("A")
+            if (fg && fg != fgBefore)
+                return fg
+        } catch {
+        }
+        Sleep 50
+    }
+    fg := WinExist("A")
+    return (fg && fg != fgBefore) ? fg : 0
+}
+
+DesktopCutNewest_ActivateHwnd(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        try {
+            pid := WinGetPID("ahk_id " hwnd)
+            if (pid)
+                DllCall("AllowSetForegroundWindow", "UInt", pid)
+        } catch {
+        }
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            WinRestore("ahk_id " hwnd)
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 0.8)
+            return true
+        DllCall("SetForegroundWindow", "Ptr", hwnd)
+        DllCall("BringWindowToTop", "Ptr", hwnd)
+        WinActivate("ahk_id " hwnd)
+        if WinWaitActive("ahk_id " hwnd, , 0.5)
+            return true
+        ; Last-resort nudge used elsewhere when focus lock blocks WinActivate.
+        WinSetAlwaysOnTop("On", "ahk_id " hwnd)
+        Sleep 40
+        WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
+        WinActivate("ahk_id " hwnd)
+        return !!WinActive("ahk_id " hwnd)
+    } catch {
+        return false
+    }
 }
 
 ; True when Windows would open this path with Chrome (so we can force --new-window).
