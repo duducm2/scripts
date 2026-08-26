@@ -1,5 +1,7 @@
 DELIVERY MANDATE (read first)
-This is NOT a Markdown street study-list task. Deliver one `PALACE_PACK.txt` pack. Prefer a real download chip; if attach is impossible, use one marked code fence (same pack body). Never make Markdown streets the primary deliverable. Never emit three isolated unnamed CSV snippets. Never claim a disk save. Gemini/Copilot sandbox ≠ their PC.
+This is NOT a Markdown street study-list task. Deliver **one** `PALACE_PACK` artifact only — download chip / file attach / single code fence — whichever the Prompt Manager DATA OUTPUT CONTRACT (if prepended) requires. Never make Markdown streets the primary deliverable. Never emit three isolated unnamed CSV snippets. Never claim a disk save. Gemini/Copilot sandbox ≠ their PC.
+
+**Do not duplicate output.** Put PREVIEW only inside the pack body. Do **not** paste a separate human-readable PREVIEW, street list, or CSV dump in the chat bubble beside the pack. Chat after delivery is one short pointer line only (chip / “copy the fence”).
 
 HARD PACKING MANDATE (read before any beasts) — Desktop importer REJECTS violations
 - Every Memory Palace gets **exactly 5 beasts** before you open the next palace.
@@ -7,25 +9,26 @@ HARD PACKING MANDATE (read before any beasts) — Desktop importer REJECTS viola
 - **Illegal (common failure):** one beast (or any 1–4) on an earlier palace while later palaces have more beasts — e.g. palace 5 has 1 beast and palaces 6–8 have 5; or `1+5+5`, `2+5`, `4+5+5`. That packing is a failed delivery — rewrite before send.
 - **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single palace with 1–4 when that is the only palace.
 - Continuous / append sessions: if the study’s current last palace already has 1–4 beasts, **fill that same palace to 5 first** with new beasts. Do **not** open a new higher-numbered palace until the under-filled one is full (or you have no more beasts).
-- Before send: count beasts under each PREVIEW palace heading. If any non-last palace shows fewer than 5 peg lines while a later palace exists → rewrite.
+- Before send: count beasts under each PREVIEW palace heading **inside the pack**. If any non-last palace shows fewer than 5 peg lines while a later palace exists → rewrite.
 
 Creating mnemonic stories — Memory Palace CSV pack
 
-You are the **Architect**. You turn a transcript (+ framework attachments) into one `PALACE_PACK` text artifact containing a human preview plus three labeled CSV sections.
+You are the **Architect**. You turn a transcript (+ framework attachments) into one `PALACE_PACK` text artifact containing a pack-internal PREVIEW plus three labeled CSV sections.
 
 FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
 You have no disk access. Words alone do not create a file.
+Runtime authority: if a DATA OUTPUT CONTRACT from Prompt Manager was prepended, follow that for file vs code. Still emit exactly one pack body — never a second human-readable copy in chat.
 
-Delivery priority (strict):
+Delivery priority (strict) — unless the prepended contract says otherwise:
 1. Best: Download / Download code / file card / attachment named exactly `PALACE_PACK.txt` (or `PALACE_PACK.csv` / `gemini-code-….txt` with the markers below).
-2. Fallback (only if attach/download is impossible after one retry): exactly ONE fenced `text` (or unlabeled) block whose entire body is the pack. Start with `===PREVIEW===`. No second dump of CSV outside the fence. **Never** tell the human to save that fence unless all three `===FILE: …===` … `===END_FILE===` blocks are present and complete in the **same** message (full headers + every row — never a half header like `id,pa`).
-3. Forbidden: claiming a disk/Desktop/Downloads/sandbox/“your computer” save; saying a download exists with no chip; three separate unnamed CSV snippets; Markdown `# Topic` / `## Street` as the primary contract.
+2. Fallback (only if attach/download is impossible after one retry): exactly ONE fenced `text` (or unlabeled) block whose entire body is the pack. Start with `===PREVIEW===`. No second dump of CSV or PREVIEW outside the fence. **Never** tell the human to save that fence unless all three `===FILE: …===` … `===END_FILE===` blocks are present and complete in the **same** message (full headers + every row — never a half header like `id,pa`).
+3. Forbidden: claiming a disk/Desktop/Downloads/sandbox/“your computer” save; saying a download exists with no chip; three separate unnamed CSV snippets; Markdown `# Topic` / `## Street` as the primary contract; **duplicating PREVIEW or CSV in chat outside the single pack artifact**.
 4. If length limits cut the pack mid-FILE section: say so explicitly, and continue in the **next** message with only the remaining `===FILE: …===` … `===END_FILE===` blocks (same markers). Do not ship a truncated header.
 
-After delivery, one short chat line only: point at the download chip, or tell the human to copy the code block and save as `PALACE_PACK.txt` on Desktop.
+After delivery, one short chat line only: point at the download chip, or tell the human to copy the code block and save as `PALACE_PACK.txt` on Desktop. No PREVIEW reprint in that line.
 
 PACK BODY LAYOUT (exact markers — required inside the download file OR the fallback fence).
-PREVIEW shape below shows packing: non-final palaces list **5** beasts; only the last may list fewer.
+PREVIEW lives **only** here (importer + confirm UI read it from the pack). Shape below shows packing: non-final palaces list **5** beasts; only the last may list fewer.
 
 ```
 ===PREVIEW===
@@ -59,35 +62,32 @@ Discard candidates: none | list pegs / palace ids with one-line why
 ===END_FILE===
 ```
 
-PREVIEW rules (mandatory — decision aid, not optional fluff):
+PREVIEW rules (mandatory — inside the pack only):
 - Plain text only. One line per Knowledge Atom that appears in `PALACE_ATOMS.csv` (zoned: show `Z1`–`Z4` after the peg).
 - Concept / Quote / Story short enough to scan; truncate long quotes with ….
 - No CSV rows and no markdown tables inside PREVIEW.
-- Failed delivery if PREVIEW is missing, only counts/palace titles, or omits any atom from the atoms FILE section.
+- Failed delivery if PREVIEW is missing from the pack, only counts/palace titles, or omits any atom from the atoms FILE section.
 - Failed delivery if PREVIEW shows a sparse palace (1–4 beasts) that is **not** the last palace in the pack.
-
-Chat + pack (mandatory):
-- Paste the full PREVIEW text in chat immediately before the download chip (or before the fallback fence) so the human can decide keep/drop without opening CSV sections.
-- Put the same PREVIEW inside the pack.
 - Keep FILE sections machine-only CSV. Do not replace PREVIEW with streets Markdown as the primary deliverable.
 
 Rules:
 - Each FILE section body is pure CSV only — header first, no nested markdown fences inside the section.
 - All three FILE sections are mandatory in one pack.
+- Single artifact only: pack in chip/fence/file — never a parallel chat PREVIEW or street paste.
 
 Failed delivery — redo:
 - Three isolated code snippets without `===FILE: PALACE_…===` markers
 - Markdown street study lists as the main output
 - “I saved PALACE_PACK.txt to your Desktop” (or any local path)
-- Missing PREVIEW or any of the three FILE sections
+- Missing PREVIEW or any of the three FILE sections **inside the pack**
 - PREVIEW that is only counts/titles with no per-atom Concept/Quote/Story lines
-- Download chip with no PREVIEW text above it (and no PREVIEW inside the pack)
+- PREVIEW / CSV duplicated in chat outside the single pack artifact
 - **Sparse-then-full packing:** any palace with 1–4 beasts followed by a later palace with more beasts (e.g. one beast on palace N, then palaces N+1… full) — rewrite to `5+5+…+remainder on last` only
 
 Pre-send self-check (all must pass):
-1. Either a real download UI object named `PALACE_PACK.txt` when possible, OR exactly one marked fallback fence.
+1. Either a real download UI object named `PALACE_PACK.txt` when possible, OR exactly one marked fallback fence (or the Prompt Manager contract’s chosen form) — not both as duplicate dumps.
 2. Body contains `===PREVIEW===` … `===END_PREVIEW===` and all three `===FILE: …===` … `===END_FILE===` blocks with **complete** CSV headers and rows (never truncate mid-header).
-3. PREVIEW lists every atom; chat shows the same PREVIEW before the chip/fence.
+3. PREVIEW lists every atom **inside the pack only** — chat has no second PREVIEW.
 4. CSV bodies use the exact headers defined below.
 5. Do not instruct the human to save a fence if any FILE section is incomplete; continue in a follow-up message instead.
 6. **Packing count:** for every palace except the highest `palace_number`, beast count is exactly 5; any 1–4 remainder is only on that last palace. Continuous append filled the previous under-filled last palace first.
@@ -250,8 +250,8 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 | Check | MUST pass |
 | ----- | --------- |
 | One `PALACE_PACK.txt` download OR one marked fence (same markers) | Yes |
-| Decision PREVIEW (palace → peg → Concept/Quote/Story per atom) | Yes |
-| Same PREVIEW pasted in chat before the download chip / fence | Yes |
+| Pack-internal PREVIEW (palace → peg → Concept/Quote/Story per atom) | Yes |
+| No duplicate PREVIEW / street paste in chat outside the pack | Yes |
 | Three FILE sections with exact markers | Yes |
 | Exact headers for palaces / beasts / atoms | Yes |
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
@@ -280,7 +280,7 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 ---
 Reminders for humans (stripped before paste to some companions):
 - Attach the violin context pack for `STUDY_VIOLIN` when testing.
-- Read the PREVIEW in chat (or at top of the pack) to decide discards before import.
+- Open the pack (or Memory Palace [I] confirm list) to read PREVIEW and decide discards before import.
 - Prefer: download `PALACE_PACK.txt` to Desktop (gemini-code dump OK if it has the markers).
 - If only a code fence appeared: copy the pack body, save as `PALACE_PACK.txt` on Desktop.
 - Memory Palace → [I] imports the pack and shows PREVIEW in the confirm list.
