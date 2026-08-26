@@ -302,18 +302,38 @@ Palace_DesktopNewestPackPath() {
 }
 
 ; Extract pure CSV body between ===FILE: name=== / ---FILE: name--- and matching END_FILE.
-Palace_ExtractPackFileSection(text, fileName) {
-    for style in ["===", "---"] {
-        needle := style . "FILE: " . fileName . style
-        endNeedle := style . "END_FILE" . style
-        pos := InStr(text, needle, false)
-        if (!pos)
-            continue
-        rest := SubStr(text, pos + StrLen(needle))
-        endPos := InStr(rest, endNeedle, false)
-        if (!endPos)
-            continue
-        return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+; If END_FILE is missing, salvages until the next FILE marker or EOF (&salvaged set true).
+; Also matches fileName without a trailing .csv (e.g. PALACE_ATOMS).
+Palace_ExtractPackFileSection(text, fileName, &salvaged := false) {
+    salvaged := false
+    names := [fileName]
+    if (RegExMatch(fileName, "i)\.csv$"))
+        names.Push(RegExReplace(fileName, "i)\.csv$", ""))
+    else
+        names.Push(fileName . ".csv")
+    for name in names {
+        for style in ["===", "---"] {
+            needle := style . "FILE: " . name . style
+            endNeedle := style . "END_FILE" . style
+            pos := InStr(text, needle, false)
+            if (!pos)
+                continue
+            rest := SubStr(text, pos + StrLen(needle))
+            endPos := InStr(rest, endNeedle, false)
+            if (endPos)
+                return Trim(SubStr(rest, 1, endPos - 1), "`r`n `t")
+            ; Truncated pack: cut at next FILE section (either style) or take EOF.
+            nextPos := 0
+            for style2 in ["===", "---"] {
+                n2 := InStr(rest, "`n" . style2 . "FILE:", false)
+                if (n2 && (!nextPos || n2 < nextPos))
+                    nextPos := n2
+            }
+            salvaged := true
+            if (nextPos)
+                return Trim(SubStr(rest, 1, nextPos - 1), "`r`n `t")
+            return Trim(rest, "`r`n `t")
+        }
     }
     return ""
 }
@@ -355,11 +375,14 @@ Palace_SplitPalacePack(path) {
         key := spec[1]
         fname := spec[2]
         hint := spec[3]
-        body := Palace_ExtractPackFileSection(text, fname)
+        sectionSalvaged := false
+        body := Palace_ExtractPackFileSection(text, fname, &sectionSalvaged)
         if (body = "") {
             result["error"] := "Missing section " . fname
             return result
         }
+        if (sectionSalvaged)
+            csvNotes.Push(fname . ": missing END_FILE; salvaged until next section/EOF")
         tmp := A_Temp . "\palace_pack_" . key . ".csv"
         Palace_WriteUtf8(tmp, body)
         sectionNotes := []
@@ -370,6 +393,11 @@ Palace_SplitPalacePack(path) {
             csvNotes.Push(fname . ": " . note)
         try FileDelete(tmp)
         catch {
+        }
+        if (!rows.Length) {
+            result["csvNotes"] := csvNotes
+            result["error"] := fname . " has no valid rows (pack may be truncated)"
+            return result
         }
         result[key] := rows
     }
