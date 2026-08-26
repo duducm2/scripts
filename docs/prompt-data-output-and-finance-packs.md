@@ -29,6 +29,7 @@ ListView **Out** column: blank, `txt·file`, or `txt·code`.
 
 - `finance-daily-transactions.txt` (char `d`) — `DataOutputFormat=code`
 - `finance-monthly-investments.txt` (char `m`) — `DataOutputFormat=code`
+- `concept-curation-prompt.txt` (char `6`) — `DataOutputFormat=code` (grab-able Markdown fence)
 - `story-prompt.txt`, `story-reduction-prompt.txt`, `plan-prompt.txt` — typically `file` unless changed in the editor
 
 Change **Data output** in Prompt Manager (`#!+h` or `#!+U` → Prompts → Edit) and save. Body prose alone does **not** flip file vs code.

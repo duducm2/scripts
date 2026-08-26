@@ -63,7 +63,7 @@ Adjust in [`env.ahk`](../env.ahk) if your layout differs.
 
 Registration lives in [`assets/data/prompts.ini`](../assets/data/prompts.ini): each technique row uses `Source=technique` and `FilePath=<basename>`. The Utility Shortcuts Prompts view loads the file **at paste time** via `PromptData_ReadBody()` in [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). Add/edit/delete of metadata is done in the Prompts ListView (Insert / E / Delete); the `.txt` file is never deleted.
 
-Pack prompts (`story-prompt`, `story-reduction-prompt`, `plan-prompt`) also use `ExpectsDataOutput` / `DataOutputFormat` so AIB delivery is **file** or **code**. See [`prompt-data-output-and-finance-packs.md`](prompt-data-output-and-finance-packs.md).
+Pack prompts (`story-prompt`, `story-reduction-prompt`, `plan-prompt`) also use `ExpectsDataOutput` / `DataOutputFormat` so AIB delivery is **file** or **code**. `concept-curation-prompt.txt` is seeded as **code** (one grab-able fence). See [`prompt-data-output-and-finance-packs.md`](prompt-data-output-and-finance-packs.md).
 
 Prompts with no `---` divider paste in full. Prompts that use a last-line `---` divider still go through `PasteStrippedPromptOfferReminders` / `ReplaceComposerWithStrippedReminders`.
 
