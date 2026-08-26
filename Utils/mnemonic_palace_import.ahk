@@ -448,24 +448,12 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
 }
 
 ; When beasts/atoms FILE sections fail, try PREVIEW salvage. Returns true if result filled.
-Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, failKey) {
+Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, failKey := "") {
     preview := result.Has("preview") ? result["preview"] : ""
     palaces := result.Has("palaces") ? result["palaces"] : []
-    if (!IsObject(palaces) || !palaces.Length || Trim(preview) = "") {
-        ; #region agent log
-        Palace_AgentDebugLog("A", "PreviewSalvage:skip", "no preview or palaces", Map("failKey", failKey))
-        ; #endregion
+    if (!IsObject(palaces) || !palaces.Length || Trim(preview) = "")
         return false
-    }
     synth := Palace_SynthesizeBeastsAtomsFromPreview(preview, palaces)
-    ; #region agent log
-    Palace_AgentDebugLog("A", "PreviewSalvage:result", "preview synth", Map(
-        "failKey", failKey,
-        "ok", synth["ok"] ? 1 : 0,
-        "beastCount", synth["beasts"].Length,
-        "atomCount", synth["atoms"].Length
-    ))
-    ; #endregion
     if (!synth["ok"])
         return false
     result["beasts"] := synth["beasts"]
@@ -473,47 +461,6 @@ Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, failKey) {
     csvNotes.Push(synth["note"])
     return true
 }
-
-; #region agent log
-Palace_AgentDebugLog(hypothesisId, location, message, dataObj := 0) {
-    try {
-        SplitPath(A_LineFile, , &utilsDir)
-        SplitPath(utilsDir, , &scriptsRoot)
-        logPath := scriptsRoot . "\debug-1fcd48.log"
-        esc(s) {
-            s := StrReplace(String(s), "\", "\\")
-            s := StrReplace(s, '"', "'")
-            s := StrReplace(s, "`n", " ")
-            s := StrReplace(s, "`r", "")
-            return s
-        }
-        payload := "{"
-            . '"sessionId":"1fcd48"'
-            . ',"runId":"pre-fix"'
-            . ',"hypothesisId":"' . esc(hypothesisId) . '"'
-            . ',"location":"' . esc(location) . '"'
-            . ',"message":"' . esc(message) . '"'
-            . ',"timestamp":' . A_TickCount
-            . ',"data":{'
-        if (IsObject(dataObj)) {
-            first := true
-            for k, v in dataObj {
-                if (!first)
-                    payload .= ","
-                first := false
-                payload .= '"' . esc(k) . '":"' . esc(v) . '"'
-            }
-        }
-        payload .= "}}`n"
-        f := FileOpen(logPath, "a", "UTF-8")
-        if (f) {
-            f.Write(payload)
-            f.Close()
-        }
-    } catch {
-    }
-}
-; #endregion
 
 ; Extract pure CSV body between ===FILE: name=== / ---FILE: name--- and matching END_FILE.
 ; If END_FILE is missing, salvages until the next FILE marker or EOF (&salvaged set true).
@@ -573,25 +520,9 @@ Palace_ExtractPackPreview(text) {
 ; result["csvNotes"] lists malformed CSV rows skipped under strict field-count checks.
 Palace_SplitPalacePack(path) {
     result := Map("ok", false, "error", "", "preview", "", "palaces", [], "beasts", [], "atoms", [], "csvNotes", [])
-    rawText := Palace_ReadUtf8(path)
-    text := Palace_NormalizePackText(rawText)
-    ; #region agent log
-    tailRaw := (StrLen(rawText) > 80) ? SubStr(rawText, -79) : rawText
-    Palace_AgentDebugLog("A", "SplitPalacePack:entry", "pack read", Map(
-        "path", path,
-        "rawLen", StrLen(rawText),
-        "normLen", StrLen(text),
-        "hasPreview", InStr(text, "===PREVIEW===") ? 1 : 0,
-        "hasBeastsOpener", InStr(text, "===FILE: PALACE_BEASTS") ? 1 : 0,
-        "hasAtomsOpener", InStr(text, "===FILE: PALACE_ATOMS") ? 1 : 0,
-        "tail", tailRaw
-    ))
-    ; #endregion
+    text := Palace_NormalizePackText(Palace_ReadUtf8(path))
     if (text = "") {
         result["error"] := "Empty pack file"
-        ; #region agent log
-        Palace_AgentDebugLog("E", "SplitPalacePack:empty", "empty after normalize", Map("path", path))
-        ; #endregion
         return result
     }
     result["preview"] := Palace_ExtractPackPreview(text)
@@ -608,47 +539,20 @@ Palace_SplitPalacePack(path) {
         hint := spec[3]
         sectionSalvaged := false
         body := Palace_ExtractPackFileSection(text, fname, &sectionSalvaged)
-        headerOk := (body = "") ? 0 : (Palace_PackSectionHeaderOk(key, body) ? 1 : 0)
-        bodyHead := (StrLen(body) > 60) ? SubStr(body, 1, 60) : body
-        ; #region agent log
-        Palace_AgentDebugLog("C", "SplitPalacePack:section", "section extract", Map(
-            "key", key,
-            "bodyLen", StrLen(body),
-            "salvaged", sectionSalvaged ? 1 : 0,
-            "headerOk", headerOk,
-            "bodyHead", bodyHead
-        ))
-        ; #endregion
         if (body = "") {
-            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
-                ; #region agent log
-                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-empty", "preview salvage after empty body", Map(
-                    "key", key, "beastCount", result["beasts"].Length))
-                ; #endregion
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key))
                 break
-            }
             if (prevSalvaged) {
                 prevName := (key = "beasts") ? "PALACE_PALACES.csv" : "PALACE_BEASTS.csv"
                 later := (key = "beasts") ? "BEASTS/ATOMS" : "ATOMS"
                 result["error"] := Palace_PackTruncationError(prevName, true, later)
             } else
                 result["error"] := "Missing section " . fname
-            ; #region agent log
-            Palace_AgentDebugLog("A", "SplitPalacePack:fail-empty-body", result["error"], Map("key", key))
-            ; #endregion
             return result
         }
         if (!Palace_PackSectionHeaderOk(key, body)) {
-            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
-                ; #region agent log
-                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-header", "preview salvage after bad header", Map(
-                    "key", key,
-                    "bodyHead", bodyHead,
-                    "beastCount", result["beasts"].Length
-                ))
-                ; #endregion
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key))
                 break
-            }
             later := ""
             if (key = "palaces")
                 later := "BEASTS/ATOMS"
@@ -656,10 +560,6 @@ Palace_SplitPalacePack(path) {
                 later := "ATOMS"
             result["csvNotes"] := csvNotes
             result["error"] := Palace_PackTruncationError(fname, sectionSalvaged, later)
-            ; #region agent log
-            Palace_AgentDebugLog("C", "SplitPalacePack:fail-header", result["error"], Map("key", key, "bodyHead",
-                bodyHead))
-            ; #endregion
             return result
         }
         if (sectionSalvaged)
@@ -675,17 +575,9 @@ Palace_SplitPalacePack(path) {
         try FileDelete(tmp)
         catch {
         }
-        ; #region agent log
-        Palace_AgentDebugLog("B", "SplitPalacePack:rows", "csv parse", Map("key", key, "rowCount", rows.Length))
-        ; #endregion
         if (!rows.Length) {
-            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key)) {
-                ; #region agent log
-                Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-zero-rows", "preview salvage after zero rows", Map(
-                    "key", key, "beastCount", result["beasts"].Length))
-                ; #endregion
+            if ((key = "beasts" || key = "atoms") && Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, key))
                 break
-            }
             later := ""
             if (key = "palaces")
                 later := "BEASTS/ATOMS"
@@ -693,9 +585,6 @@ Palace_SplitPalacePack(path) {
                 later := "ATOMS"
             result["csvNotes"] := csvNotes
             result["error"] := Palace_PackTruncationError(fname, sectionSalvaged, later)
-            ; #region agent log
-            Palace_AgentDebugLog("A", "SplitPalacePack:fail-zero-rows", result["error"], Map("key", key))
-            ; #endregion
             return result
         }
         if (key = "beasts" && sectionSalvaged) {
@@ -706,19 +595,10 @@ Palace_SplitPalacePack(path) {
                 if (synth["ok"] && synth["atoms"].Length) {
                     result["atoms"] := synth["atoms"]
                     csvNotes.Push("Salvaged " . synth["atoms"].Length . " atom(s) from PREVIEW (ATOMS FILE missing)")
-                    ; #region agent log
-                    Palace_AgentDebugLog("A", "SplitPalacePack:salvaged-no-atoms", "preview atoms only", Map(
-                        "beastCount", result["beasts"].Length,
-                        "atomCount", result["atoms"].Length
-                    ))
-                    ; #endregion
                     break
                 }
                 result["csvNotes"] := csvNotes
                 result["error"] := Palace_PackTruncationError(fname, true, "ATOMS")
-                ; #region agent log
-                Palace_AgentDebugLog("A", "SplitPalacePack:fail-no-atoms", result["error"], Map("key", key))
-                ; #endregion
                 return result
             }
         }
@@ -729,25 +609,10 @@ Palace_SplitPalacePack(path) {
     if (!packCheck["ok"]) {
         result["csvNotes"] := csvNotes
         result["error"] := packCheck["error"]
-        ; #region agent log
-        Palace_AgentDebugLog("D", "SplitPalacePack:fail-packing", result["error"], Map(
-            "palaceCount", result["palaces"].Length,
-            "beastCount", result["beasts"].Length
-        ))
-        ; #endregion
         return result
     }
     result["csvNotes"] := csvNotes
     result["ok"] := true
-    ; #region agent log
-    Palace_AgentDebugLog("A", "SplitPalacePack:ok", "pack ok", Map(
-        "runId", "post-fix",
-        "palaceCount", result["palaces"].Length,
-        "beastCount", result["beasts"].Length,
-        "atomCount", result["atoms"].Length,
-        "csvNotes", csvNotes.Length
-    ))
-    ; #endregion
     return result
 }
 
