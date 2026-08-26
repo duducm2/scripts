@@ -184,10 +184,13 @@ HotkeyCopy_RunCopyLastCode() {
             if (!GeminiEnterprise_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
                 ShowNotification("No code snippet found – ensure Gemini Enterprise has a code block", 2500, "FF6666",
                     "FFFFFF", 22)
-            else if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
-                root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-                if (IsObject(root))
-                    GeminiEnterprise_FocusComposer(root, true)
+            else {
+                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
+                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+                    if (IsObject(root))
+                        GeminiEnterprise_FocusComposer(root, true)
+                }
+                SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
             }
             return
         }
@@ -195,14 +198,20 @@ HotkeyCopy_RunCopyLastCode() {
             if (!CopilotWeb_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
                 ShowNotification("No code snippet found – ensure Copilot has a code block", 2500, "FF6666", "FFFFFF",
                     22)
-            else if (hwnd := GetCopilotWebWindowHwnd())
-                CopilotWeb_FocusComposerForHwnd(hwnd, true)
+            else {
+                if (hwnd := GetCopilotWebWindowHwnd())
+                    CopilotWeb_FocusComposerForHwnd(hwnd, true)
+                SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
+            }
             return
         }
         if (!CopyLastGeminiCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
             ShowNotification("No code snippet found – ensure Gemini has a code block", 2500, "FF6666", "FFFFFF", 22)
-        else if (hwnd := GetGeminiWindowHwnd())
-            FocusGeminiAskFieldForHwnd(hwnd, true)
+        else {
+            if (hwnd := GetGeminiWindowHwnd())
+                FocusGeminiAskFieldForHwnd(hwnd, true)
+            SetTimer((*) => ClipAngelExport_PromptAfterCodeCopy(), -1)
+        }
         GeminiPerfLog("hotkey_copy_code", t0)
     } catch as err {
         ShowNotification("Copy code error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)

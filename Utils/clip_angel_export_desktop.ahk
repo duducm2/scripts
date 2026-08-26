@@ -593,6 +593,44 @@ ClipAngelExport_PromptRename(sourcePath) {
     return g_ClipAngelNameFinalPath
 }
 
+ClipAngelExport_OnCancelDesktop(*) {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+}
+
+ClipAngelExport_OnConfirmDesktop(*) {
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+    ClipAngel_ExportLastClipToDesktop()
+}
+
+; After #!+p double-tap code copy: 3s Y/N prompt. Y = export last clip to Desktop; N or timeout = dismiss.
+ClipAngelExport_PromptAfterCodeCopy() {
+    keyCallbacks := Map("Y", ClipAngelExport_OnConfirmDesktop, "N", ClipAngelExport_OnCancelDesktop)
+    StandardLoadingBar_ShowWithKeys(
+        "❓ Save last clip to Desktop? (3s)",
+        keyCallbacks,
+        3000,
+        0,
+        ClipAngelExport_OnCancelDesktop,
+        BANNER_ACCENT_INTERMEDIATE,
+        520,
+        17,
+        "",
+        false,
+        "[Y] Yes  [N] No",
+        true)
+}
+
 ClipAngel_ExportLastClipToDesktop() {
     if !ClipAngel_TryAcquireAutomationLock()
         return

@@ -137,17 +137,18 @@ These wrap `StandardLoadingBar_*` with preset styles:
 
 ### Gemini.ahk
 
-| Lines     | Context                                                                                                                                                                                                    |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 172–206   | `ShowSmallLoadingIndicator` / `HideSmallLoadingIndicator` wrappers (Information Only / Loading)                                                                                                            |
-| 235–264   | Async TTS state display                                                                                                                                                                                    |
-| 390–500   | Read aloud flow                                                                                                                                                                                            |
-| 742–828   | First-time init (Opening Gemini, Sending prompt)                                                                                                                                                           |
-| 914–959   | `#!+8` pronunciation: Interactive Input (2s `ShowWithKeys` + progress); on auto-detect timeout, **Loading** `⏳ Detecting language…` during IPC/daemon; then `GeminiAsyncLookup` **Loading** `⏳ Loading…` |
-| 946–1107  | Async lookup/TTS loading                                                                                                                                                                                   |
-| 1220      | `ShowWithKeys` for pronunciation completion (close keys)                                                                                                                                                   |
-| 1317–1318 | `ShowWithKeys` "❓ Copy response?" with `promptKeys` `"[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"`                                                                                                     |
-| 1328–1449 | Additional loading states                                                                                                                                                                                  |
+| Lines     | Context                                                                                                                                                                                                                    |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 172–206   | `ShowSmallLoadingIndicator` / `HideSmallLoadingIndicator` wrappers (Information Only / Loading)                                                                                                                            |
+| 235–264   | Async TTS state display                                                                                                                                                                                                    |
+| 390–500   | Read aloud flow                                                                                                                                                                                                            |
+| 742–828   | First-time init (Opening Gemini, Sending prompt)                                                                                                                                                                           |
+| 914–959   | `#!+8` pronunciation: Interactive Input (2s `ShowWithKeys` + progress); on auto-detect timeout, **Loading** `⏳ Detecting language…` during IPC/daemon; then `GeminiAsyncLookup` **Loading** `⏳ Loading…`                 |
+| 946–1107  | Async lookup/TTS loading                                                                                                                                                                                                   |
+| 1220      | `ShowWithKeys` for pronunciation completion (close keys)                                                                                                                                                                   |
+| 1317–1318 | `ShowWithKeys` "❓ Copy response?" with `promptKeys` `"[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer"`                                                                                                                     |
+| `#!+p` 2× | After successful code-snippet copy: `ClipAngelExport_PromptAfterCodeCopy` — `ShowWithKeys` "❓ Save last clip to Desktop? (3s)" with `[Y] Yes  [N] No`; Y runs `ClipAngel_ExportLastClipToDesktop`; N or timeout dismisses |
+| 1328–1449 | Additional loading states                                                                                                                                                                                                  |
 
 ### Shift keys.ahk
 
