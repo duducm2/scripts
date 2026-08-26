@@ -78,7 +78,7 @@ If **Reduction mode** is missing or ambiguous, ask before generating.
 5. **Bestiary** — `studies/technique/bestiary.json`.
 6. **README** — `studies/technique/README.md`. Cite `README §<Section Name>`.
 
-**study_id:** keep the study from the attached pack (violin test: `STUDY_VIOLIN`). Do not invent study IDs.
+**study_id:** keep the **exact** study id from the attached pack / `studies.csv` (violin test: `STUDY_VIOLIN`; long names may be truncated, e.g. `STUDY_COMMUNICATIO`). Do not invent study IDs. The importer also accepts full-word aliases. Quote CSV fields that contain commas (especially `concept` / `quote` / `story` / `image_prompt`).
 
 Output MUST be a **replacement** `PALACE_PACK` for import (full set for the affected study scope), not a summary.
 

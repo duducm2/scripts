@@ -1,6 +1,126 @@
 # Communication
 
 <details open>
+<summary><strong>Memory Palace 5: The Psychology of Speaking</strong> · Character: Ada Lovelace · 4 beasts · 4 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 4 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Q] Quetzalcoatl
+
+**Concept**
+💡 Align body and mind before speaking.
+
+**Quote**
+“comfort is built before you speak”
+
+**Story**
+A Quetzalcoatl the size of a bus sleeps on the wall, radiating freezing cold anxiety. Ada Lovelace rubs a burning hot, glowing brick against its belly, physically building deep comfort before it opens its mouth.
+
+**Sensory**
+thermal 🌡️
+
+### 🟧 [R] rat
+
+**Concept**
+💡 Eliminate anxiety by focusing on serving the audience.
+
+**Quote**
+“fear and anxiety disappears when the mind is focused on serving”
+
+**Story**
+A floating, neon rat shoots blinding light from the mailbox. Ada Lovelace redirects the rat's burning eye beams away from itself and onto a silver platter, visually focusing its mind on serving others.
+
+**Sensory**
+visual 👁️
+
+### 🟧 [S] skull
+
+**Concept**
+💡 Use deeply held beliefs as scaffolding for speech.
+
+**Quote**
+“your values are the scaffolding of speech and when you seat in when you sit in the saddle of your values you always know which way to go”
+
+**Story**
+A gigantic skull wears a heavy steel saddle welded to its core bones at the end of the street. Ada Lovelace sits in the solid iron saddle of values, feeling the unbending scaffolding lock her words in the right direction.
+
+**Sensory**
+tactile ✋
+
+### 🟧 [T] toucan
+
+**Concept**
+💡 Optimize diet and sleep for cognitive clarity.
+
+**Quote**
+“they affect your thinking and they affect your speaking and I've basically treated my body as kind of a science lab”
+
+**Story**
+A toucan stands upside down on a balcony, chewing on literal science lab beakers filled with glowing blue liquid. Ada Lovelace drinks the thick, sweet liquid from the beaker, feeling it physically clear her brain fog.
+
+**Sensory**
+gustatory 👅
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 4: The Mechanics of Speaking</strong> · Character: Alan Turing · 4 beasts · 3 atoms</summary>
+
+_No image_
+
+<p><em>4 beasts · 3 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [M] marmoset
+
+**Concept**
+💡 Clarity requires diagnosing bad outputs and repeating them.
+
+**Quote**
+“The formula for clarity on any idea is clarity equals bad output times frequency”
+
+**Story**
+A microscopic marmoset stands on the gate, shouting out terrible equations. Turing multiplies the marmoset's bad output until the shrieking sound magically rings with perfect crystal clarity.
+
+**Sensory**
+auditory 👂
+
+### 🟧 [N] Neanderthal
+
+**Concept**
+💡 Use uncommon words from your deep lexicon for creative impact.
+
+**Quote**
+“texture is about word choice it's the difference between saying 'Yeah that's a tough challenge and that's a thorny problem.'”
+
+**Story**
+A colossal Neanderthal crashes onto the parked car, vomiting 35,000 thorny vines. Turing carefully touches the sharp thorns, twisting the physical texture of the words into a beautiful, sharp sculpture.
+
+**Sensory**
+tactile ✋
+
+### 🟧 [P] panther
+
+**Concept**
+💡 A mental model of your elite future self for analyzing word choices.
+
+**Quote**
+“the vocal ego is a representation of the elite version of you that 2% version of you here's how future Joseph speaks”
+
+**Story**
+A glowing panther perches on a lamp post, spitting out an elite AI hologram. Turing bites into the hologram's glowing text, tasting pure electric gold as he upgrades into his future self.
+
+**Sensory**
+gustatory 👅
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 3: Leading Myself</strong> · Character: (unassigned palace 3) · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 3](images/communication/3.png)

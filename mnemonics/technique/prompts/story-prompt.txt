@@ -105,7 +105,9 @@ Confirm every required item. If any is missing, ask before generating.
 
 **study_id (mandatory):**
 - Violin test: use `STUDY_VIOLIN` and attach that study’s context pack when available.
-- Otherwise: use the `study_id` from the attached pack / studies row. Do **not** invent study IDs.
+- Otherwise: use the **exact** `study_id` from the attached pack / `studies.csv` row (may be truncated to a 12-char slug, e.g. `STUDY_COMMUNICATIO`). Do **not** invent study IDs. The importer also accepts full-word aliases (e.g. `STUDY_COMMUNICATION` → `STUDY_COMMUNICATIO`).
+- Prefer palace ids like `PALACE_<same study slug>_<NN>` matching existing rows when updating.
+- Quote any CSV field that contains commas, quotes, or newlines (especially `concept`, `quote`, `story`, `image_prompt`).
 
 ---
 

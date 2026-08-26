@@ -1,0 +1,47 @@
+﻿===PREVIEW===
+Mode REMOVE · STUDY_COMMUNICATION · 2 palaces · 8 beasts · 8 atoms
+Changes: Removed peg M (marmoset). Shifted former N–U down to M–T.
+
+PALACE 4 — The Mechanics of Speaking (Alan Turing) [PALACE_COMMUNICATION_04]
+  [M] marmoset — Concept: Clarity requires diagnosing bad outputs and repeating them. | Quote: "The formula for clarity..." | Story: A microscopic marmoset stands on the gate, shouting out terrible equations... | Sensory: auditory 👂
+  [N] Neanderthal — Concept: Use uncommon words from your deep lexicon for creative impact. | Quote: "texture is about word choice..." | Story: A colossal Neanderthal crashes onto the parked car, vomiting 35,000 thorny vines... | Sensory: tactile ✋
+  [O] owl — Concept: Use Time, Audio, Kinesthetic, Eyesight, and Smell to describe memories. | Quote: "the simplest formula we teach..." | Story: An owl balances on the distant facade, radiating the overwhelming smell of fresh grass... | Sensory: olfactory 👃
+  [P] panther — Concept: A mental model of your elite future self for analyzing word choices. | Quote: "the vocal ego is a representation..." | Story: A glowing panther perches on a lamp post, spitting out an elite AI hologram... | Sensory: gustatory 👅
+PALACE 5 — The Psychology of Speaking (Ada Lovelace) [PALACE_COMMUNICATION_05]
+  [Q] Quetzalcoatl — Concept: Align body and mind before speaking. | Quote: "comfort is built before you speak" | Story: A Quetzalcoatl the size of a bus sleeps on the wall, radiating freezing cold anxiety... | Sensory: thermal 🌡️
+  [R] rat — Concept: Eliminate anxiety by focusing on serving the audience. | Quote: "fear and anxiety disappears..." | Story: A floating, neon rat shoots blinding light from the mailbox... | Sensory: visual 👁️
+  [S] skull — Concept: Use deeply held beliefs as scaffolding for speech. | Quote: "your values are the scaffolding..." | Story: A gigantic skull wears a heavy steel saddle welded to its core bones... | Sensory: tactile ✋
+  [T] toucan — Concept: Optimize diet and sleep for cognitive clarity. | Quote: "they affect your thinking..." | Story: A toucan stands upside down on a balcony, chewing on literal science lab beakers... | Sensory: gustatory 👅
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_COMMUNICATION_04,STUDY_COMMUNICATION,4,The Mechanics of Speaking,Alan Turing,communication/images/4.png,4,"Depth slot: ForegroundLeft (gate) - a microscopic marmoset shouting equations; Depth slot: MidgroundRight (parked car) - a colossal Neanderthal vomiting thorny vines; Depth slot: BackgroundCenter (distant facade) - an owl radiating wind and grass; Depth slot: Aerial (lamp post) - a glowing panther spitting a hologram. An original fictional 1940s mathematician (older adult, tweed jacket, messy hair, holding a notepad) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
+PALACE_COMMUNICATION_05,STUDY_COMMUNICATION,5,The Psychology of Speaking,Ada Lovelace,communication/images/5.png,4,"Depth slot: ForegroundLeft (wall) - a bus-sized Quetzalcoatl radiating freezing cold; Depth slot: MidgroundRight (mailbox) - a floating neon rat shooting blinding light beams; Depth slot: BackgroundCenter (street end) - a gigantic skull wearing a heavy steel saddle; Depth slot: Aerial (balcony) - a toucan standing upside down chewing on glass beakers. An original fictional 19th-century noblewoman (adult, dark Victorian dress, elegant updo, holding a mechanical brass gear) — not any real, living, historical, or named public figure and not any copyrighted character — interacts with the beasts on the street."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_COMMUNICATION_M,PALACE_COMMUNICATION_04,M,marmoset,Lynne Kelly,auditory 👂,0,1
+BEAST_COMMUNICATION_N,PALACE_COMMUNICATION_04,N,Neanderthal,Lynne Kelly,tactile ✋,0,2
+BEAST_COMMUNICATION_O,PALACE_COMMUNICATION_04,O,owl,Lynne Kelly,olfactory 👃,0,3
+BEAST_COMMUNICATION_P,PALACE_COMMUNICATION_04,P,panther,Lynne Kelly,gustatory 👅,0,4
+BEAST_COMMUNICATION_Q,PALACE_COMMUNICATION_05,Q,Quetzalcoatl,Lynne Kelly,thermal 🌡️,0,1
+BEAST_COMMUNICATION_R,PALACE_COMMUNICATION_05,R,rat,Lynne Kelly,visual 👁️,0,2
+BEAST_COMMUNICATION_S,PALACE_COMMUNICATION_05,S,skull,Lynne Kelly,tactile ✋,0,3
+BEAST_COMMUNICATION_T,PALACE_COMMUNICATION_05,T,toucan,Lynne Kelly,gustatory 👅,0,4
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_COMMUNICATION_M,single,,,Clarity requires diagnosing bad outputs and repeating them.,"The formula for clarity on any idea is clarity equals bad output times frequency","A microscopic marmoset stands on the gate, shouting out terrible equations. Turing multiplies the marmoset's bad output until the shrieking sound magically rings with perfect crystal clarity.",auditory 👂,,1
+,BEAST_COMMUNICATION_N,single,,,Use uncommon words from your deep lexicon for creative impact.,"texture is about word choice it's the difference between saying 'Yeah that's a tough challenge and that's a thorny problem.'","A colossal Neanderthal crashes onto the parked car, vomiting 35,000 thorny vines. Turing carefully touches the sharp thorns, twisting the physical texture of the words into a beautiful, sharp sculpture.",tactile ✋,,1
+,BEAST_COMMUNICATION_O,single,,,Use Time, Audio, Kinesthetic, Eyesight, and Smell to describe memories.,"the simplest formula we teach to find that and describe it is called takes time audio kesthetic eyes and smell","An owl balances on the distant facade, radiating the overwhelming smell of fresh grass and ocean wind. Turing breathes deeply into the owl's feathers, absorbing the time and sensory details all at once.",olfactory 👃,,1
+,BEAST_COMMUNICATION_P,single,,,A mental model of your elite future self for analyzing word choices.,"the vocal ego is a representation of the elite version of you that 2% version of you here's how future Joseph speaks","A glowing panther perches on a lamp post, spitting out an elite AI hologram. Turing bites into the hologram's glowing text, tasting pure electric gold as he upgrades into his future self.",gustatory 👅,,1
+,BEAST_COMMUNICATION_Q,single,,,Align body and mind before speaking.,comfort is built before you speak,"A Quetzalcoatl the size of a bus sleeps on the wall, radiating freezing cold anxiety. Ada Lovelace rubs a burning hot, glowing brick against its belly, physically building deep comfort before it opens its mouth.",thermal 🌡️,,1
+,BEAST_COMMUNICATION_R,single,,,Eliminate anxiety by focusing on serving the audience.,fear and anxiety disappears when the mind is focused on serving,"A floating, neon rat shoots blinding light from the mailbox. Ada Lovelace redirects the rat's burning eye beams away from itself and onto a silver platter, visually focusing its mind on serving others.",visual 👁️,,1
+,BEAST_COMMUNICATION_S,single,,,Use deeply held beliefs as scaffolding for speech.,"your values are the scaffolding of speech and when you seat in when you sit in the saddle of your values you always know which way to go","A gigantic skull wears a heavy steel saddle welded to its core bones at the end of the street. Ada Lovelace sits in the solid iron saddle of values, feeling the unbending scaffolding lock her words in the right direction.",tactile ✋,,1
+,BEAST_COMMUNICATION_T,single,,,Optimize diet and sleep for cognitive clarity.,"they affect your thinking and they affect your speaking and I've basically treated my body as kind of a science lab","A toucan stands upside down on a balcony, chewing on literal science lab beakers filled with glowing blue liquid. Ada Lovelace drinks the thick, sweet liquid from the beaker, feeling it physically clear her brain fog.",gustatory 👅,,1
+===END_FILE===

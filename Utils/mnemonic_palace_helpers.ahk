@@ -280,7 +280,7 @@ Palace_CsvEscape(val) {
     return s
 }
 
-Palace_ReadCsv(fileName) {
+Palace_ReadCsv(fileName, strict := false, skipNotes := 0) {
     path := InStr(fileName, "\") || InStr(fileName, "/") ? fileName : Palace_DataDir() . "\" . fileName
     rows := []
     text := Palace_ReadUtf8(path)
@@ -290,13 +290,21 @@ Palace_ReadCsv(fileName) {
     text := StrReplace(text, "`r", "`n")
     lines := StrSplit(text, "`n")
     headers := []
+    lineNo := 0
     for idx, line in lines {
         if (Trim(line) = "")
             continue
+        lineNo += 1
         fields := Palace_SplitCsvLine(line)
         if (headers.Length = 0) {
             for h in fields
                 headers.Push(Trim(h))
+            continue
+        }
+        if (strict && fields.Length != headers.Length) {
+            msg := "CSV line " . lineNo . ": " . fields.Length . " fields, expected " . headers.Length
+            if (IsObject(skipNotes))
+                skipNotes.Push(msg)
             continue
         }
         row := Map()
@@ -377,6 +385,107 @@ Palace_IdExists(rows, id) {
             return true
     }
     return false
+}
+
+; Soft-resolve AI/full-word study ids to canon (e.g. STUDY_COMMUNICATION → STUDY_COMMUNICATIO).
+Palace_ResolveStudyId(raw, studies) {
+    id := Trim(raw)
+    if (id = "")
+        return ""
+    if (Palace_FindById(studies, id))
+        return id
+    suffix := ""
+    if (SubStr(id, 1, 6) = "STUDY_")
+        suffix := SubStr(id, 7)
+    else
+        suffix := id
+    if (suffix = "")
+        return ""
+    short := "STUDY_" . Palace_Slug(suffix)
+    if (short != id && Palace_FindById(studies, short))
+        return short
+    needle := Palace_Slug(suffix)
+    for s in studies {
+        sid := s.Has("id") ? Trim(s["id"]) : ""
+        if (sid = "")
+            continue
+        sidSuffix := (SubStr(sid, 1, 6) = "STUDY_") ? SubStr(sid, 7) : sid
+        if (Palace_Slug(sidSuffix) = needle)
+            return sid
+        title := s.Has("title") ? s["title"] : ""
+        if (title != "" && Palace_Slug(title) = needle)
+            return sid
+    }
+    return ""
+}
+
+; Slug used inside PALACE_<slug>_<NN> (study id without STUDY_ prefix).
+Palace_StudySlugFromId(studyId) {
+    id := Trim(studyId)
+    if (SubStr(id, 1, 6) = "STUDY_")
+        return Palace_Slug(SubStr(id, 7))
+    return Palace_Slug(id)
+}
+
+; Canon palace id for a study + number: PALACE_COMMUNICATIO_04
+Palace_CanonPalaceId(studyId, num) {
+    pad := Format("{:02d}", Integer(num))
+    return "PALACE_" . Palace_StudySlugFromId(studyId) . "_" . pad
+}
+
+; Parse PALACE_<middle>_<digits> → Map mid, num; else false.
+Palace_ParsePalaceIdParts(palaceId) {
+    id := Trim(palaceId)
+    if (SubStr(id, 1, 7) = "STREET_")
+        id := "PALACE_" . SubStr(id, 8)
+    if (SubStr(id, 1, 7) != "PALACE_")
+        return false
+    rest := SubStr(id, 8)
+    if (!RegExMatch(rest, "i)^(.+)_(\d+)$", &m))
+        return false
+    return Map("mid", m[1], "num", Integer(m[2]))
+}
+
+; True when two palace ids match exactly or share slug-equivalent middle + same number.
+Palace_PalaceIdsSoftEqual(a, b) {
+    if (Trim(a) = Trim(b))
+        return true
+    pa := Palace_ParsePalaceIdParts(a)
+    pb := Palace_ParsePalaceIdParts(b)
+    if (!IsObject(pa) || !IsObject(pb))
+        return false
+    if (pa["num"] != pb["num"])
+        return false
+    return Palace_Slug(pa["mid"]) = Palace_Slug(pb["mid"])
+}
+
+; Rewrite pack palace id to canon form for a resolved study (PALACE_COMMUNICATION_04 → PALACE_COMMUNICATIO_04).
+Palace_RewritePalaceIdForStudy(packId, studyId) {
+    parts := Palace_ParsePalaceIdParts(packId)
+    if (!IsObject(parts))
+        return ""
+    return Palace_CanonPalaceId(studyId, parts["num"])
+}
+
+; Resolve a palace_id reference: remap → exact → soft-equal against loaded palaces → study rewrite.
+Palace_ResolvePalaceIdRef(palaceId, palaces, palaceIdRemap := 0, studyIdHint := "") {
+    pid := Trim(palaceId)
+    if (pid = "")
+        return ""
+    if (IsObject(palaceIdRemap) && palaceIdRemap.Has(pid))
+        return palaceIdRemap[pid]
+    if (Palace_FindById(palaces, pid))
+        return pid
+    for p in palaces {
+        if (Palace_PalaceIdsSoftEqual(pid, p["id"]))
+            return p["id"]
+    }
+    if (studyIdHint != "") {
+        rewritten := Palace_RewritePalaceIdForStudy(pid, studyIdHint)
+        if (rewritten != "" && Palace_FindById(palaces, rewritten))
+            return rewritten
+    }
+    return ""
 }
 
 Palace_NextPalaceNumber(palaces, studyId) {

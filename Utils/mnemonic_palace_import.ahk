@@ -61,7 +61,8 @@ Palace_ArchiveImported(path) {
 }
 
 ; Strip Gemini preambles; find a header that looks like palace CSV.
-Palace_ReadAiImportCsv(path, headerHint := "beast_id") {
+; When skipNotes is an Array, malformed rows (field count ≠ header) are skipped and noted.
+Palace_ReadAiImportCsv(path, headerHint := "beast_id", skipNotes := 0) {
     text := Palace_ReadUtf8(path)
     if (text = "")
         return []
@@ -89,8 +90,11 @@ Palace_ReadAiImportCsv(path, headerHint := "beast_id") {
             break
         }
     }
-    if (!start)
+    if (!start) {
+        if (IsObject(skipNotes))
+            return Palace_ReadCsv(path, true, skipNotes)
         return Palace_ReadCsv(path)
+    }
     cleaned := ""
     loop lines.Length {
         if (A_Index < start)
@@ -101,11 +105,41 @@ Palace_ReadAiImportCsv(path, headerHint := "beast_id") {
     }
     tmp := A_Temp . "\palace_ai_import_norm.csv"
     Palace_WriteUtf8(tmp, cleaned)
-    rows := Palace_ReadCsv(tmp)
+    if (IsObject(skipNotes))
+        rows := Palace_ReadCsv(tmp, true, skipNotes)
+    else
+        rows := Palace_ReadCsv(tmp)
     try FileDelete(tmp)
     catch {
     }
     return rows
+}
+
+Palace_ImportNoteSkip(skipCounts, reason) {
+    r := Trim(reason)
+    if (r = "")
+        return
+    if (!skipCounts.Has(r))
+        skipCounts[r] := 0
+    skipCounts[r] += 1
+}
+
+Palace_ImportSkipSummary(skipCounts, csvNotes := 0) {
+    parts := []
+    if (IsObject(csvNotes)) {
+        for note in csvNotes
+            parts.Push(note)
+    }
+    for reason, n in skipCounts
+        parts.Push(n . "× " . reason)
+    if (!parts.Length)
+        return ""
+    out := parts[1]
+    loop parts.Length - 1
+        out .= "; " . parts[A_Index + 1]
+    if (StrLen(out) > 180)
+        out := SubStr(out, 1, 177) . "..."
+    return out
 }
 
 ; Map legacy street_* column names to palace_* on import rows.
@@ -120,11 +154,14 @@ Palace_NormalizePalaceImportRow(r) {
 }
 
 ; Resolve import row. On create, pushes a stub onto palaces so later rows get the next number.
+; Returns packId (original pack id) so caller can build palaceIdRemap when it differs from canon id.
 Palace_ResolvePalaceImportRow(r, studies, &palaces) {
     r := Palace_NormalizePalaceImportRow(r)
-    studyId := r.Has("study_id") ? Trim(r["study_id"]) : ""
-    if (studyId = "" || !Palace_FindById(studies, studyId))
-        return Map("ok", false, "skip", "unknown study_id " . studyId)
+    rawStudy := r.Has("study_id") ? Trim(r["study_id"]) : ""
+    studyId := Palace_ResolveStudyId(rawStudy, studies)
+    if (studyId = "")
+        return Map("ok", false, "skip", "unknown study_id " . rawStudy)
+    r["study_id"] := studyId
     titleP := r.Has("title") ? Trim(r["title"]) : ""
     if (titleP = "")
         return Map("ok", false, "skip", "missing title")
@@ -134,8 +171,22 @@ Palace_ResolvePalaceImportRow(r, studies, &palaces) {
         packId := "PALACE_" . SubStr(packId, 8)
 
     existing := false
-    if (packId != "")
+    if (packId != "") {
         existing := Palace_FindById(palaces, packId)
+        if (!IsObject(existing)) {
+            rewritten := Palace_RewritePalaceIdForStudy(packId, studyId)
+            if (rewritten != "" && rewritten != packId)
+                existing := Palace_FindById(palaces, rewritten)
+        }
+        if (!IsObject(existing)) {
+            for p in palaces {
+                if (p.Has("study_id") && p["study_id"] = studyId && Palace_PalaceIdsSoftEqual(packId, p["id"])) {
+                    existing := p
+                    break
+                }
+            }
+        }
+    }
     if (!IsObject(existing))
         existing := Palace_FindPalaceByTitle(palaces, studyId, titleP)
 
@@ -150,7 +201,11 @@ Palace_ResolvePalaceImportRow(r, studies, &palaces) {
         if (packNum != "") {
             try {
                 Integer(packNum)
-                if (!Palace_PalaceNumberInUse(palaces, studyId, packNum, packId))
+                exceptId := packId
+                rewritten := Palace_RewritePalaceIdForStudy(packId, studyId)
+                if (rewritten != "")
+                    exceptId := rewritten
+                if (!Palace_PalaceNumberInUse(palaces, studyId, packNum, exceptId))
                     usePackNum := true
             } catch {
             }
@@ -159,13 +214,9 @@ Palace_ResolvePalaceImportRow(r, studies, &palaces) {
             num := String(Integer(packNum))
         else
             num := String(Palace_NextPalaceNumber(palaces, studyId))
-        pad := Format("{:02d}", Integer(num))
-        if (packId != "" && !Palace_IdExists(palaces, packId))
-            id := packId
-        else
-            id := "PALACE_" . Palace_Slug(studyId) . "_" . pad
+        id := Palace_CanonPalaceId(studyId, num)
         if (Palace_IdExists(palaces, id))
-            id := Palace_SlugId("PALACE_", studyId . "_" . num, palaces)
+            id := Palace_SlugId("PALACE_", Palace_StudySlugFromId(studyId) . "_" . num, palaces)
         palaces.Push(Map(
             "id", id,
             "study_id", studyId,
@@ -180,7 +231,7 @@ Palace_ResolvePalaceImportRow(r, studies, &palaces) {
         existing := false
     }
     return Map("ok", true, "skip", "", "studyId", studyId, "title", titleP, "num", num, "id", id,
-        "existing", existing, "row", r)
+        "packId", packId, "existing", existing, "row", r)
 }
 
 Palace_NormalizeBeastImportRow(r) {
@@ -285,14 +336,16 @@ Palace_ExtractPackPreview(text) {
 }
 
 ; Split a PALACE_PACK / gemini-code body into row arrays. Requires all three FILE sections.
+; result["csvNotes"] lists malformed CSV rows skipped under strict field-count checks.
 Palace_SplitPalacePack(path) {
-    result := Map("ok", false, "error", "", "preview", "", "palaces", [], "beasts", [], "atoms", [])
+    result := Map("ok", false, "error", "", "preview", "", "palaces", [], "beasts", [], "atoms", [], "csvNotes", [])
     text := Palace_ReadUtf8(path)
     if (text = "") {
         result["error"] := "Empty pack file"
         return result
     }
     result["preview"] := Palace_ExtractPackPreview(text)
+    csvNotes := []
     specs := [
         ["palaces", "PALACE_PALACES.csv", "palace_number"],
         ["beasts", "PALACE_BEASTS.csv", "peg_code"],
@@ -309,14 +362,18 @@ Palace_SplitPalacePack(path) {
         }
         tmp := A_Temp . "\palace_pack_" . key . ".csv"
         Palace_WriteUtf8(tmp, body)
-        rows := Palace_ReadAiImportCsv(tmp, hint)
+        sectionNotes := []
+        rows := Palace_ReadAiImportCsv(tmp, hint, sectionNotes)
         if (key = "palaces" && !rows.Length)
-            rows := Palace_ReadAiImportCsv(tmp, "street_number")
+            rows := Palace_ReadAiImportCsv(tmp, "street_number", sectionNotes)
+        for note in sectionNotes
+            csvNotes.Push(fname . ": " . note)
         try FileDelete(tmp)
         catch {
         }
         result[key] := rows
     }
+    result["csvNotes"] := csvNotes
     result["ok"] := true
     return result
 }
@@ -364,6 +421,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
     palaceRows := []
     beastRows := []
     atomRows := []
+    csvNotes := []
 
     if (pathPalaces = "" && pathBeasts = "" && pathAtoms = "") {
         pathPack := Palace_DesktopNewestPackPath()
@@ -382,20 +440,37 @@ Palace_ImportMnemonicsFromDesktop(*) {
         beastRows := split["beasts"]
         atomRows := split["atoms"]
         packPreview := split["preview"]
+        if (split.Has("csvNotes"))
+            csvNotes := split["csvNotes"]
     } else {
         if (pathPalaces != "") {
-            palaceRows := Palace_ReadAiImportCsv(pathPalaces, "palace_number")
+            notesP := []
+            palaceRows := Palace_ReadAiImportCsv(pathPalaces, "palace_number", notesP)
             if (!palaceRows.Length)
-                palaceRows := Palace_ReadAiImportCsv(pathPalaces, "street_number")
+                palaceRows := Palace_ReadAiImportCsv(pathPalaces, "street_number", notesP)
+            for note in notesP
+                csvNotes.Push("palaces: " . note)
         }
-        if (pathBeasts != "")
-            beastRows := Palace_ReadAiImportCsv(pathBeasts, "peg_code")
-        if (pathAtoms != "")
-            atomRows := Palace_ReadAiImportCsv(pathAtoms, "beast_id")
+        if (pathBeasts != "") {
+            notesB := []
+            beastRows := Palace_ReadAiImportCsv(pathBeasts, "peg_code", notesB)
+            for note in notesB
+                csvNotes.Push("beasts: " . note)
+        }
+        if (pathAtoms != "") {
+            notesA := []
+            atomRows := Palace_ReadAiImportCsv(pathAtoms, "beast_id", notesA)
+            for note in notesA
+                csvNotes.Push("atoms: " . note)
+        }
     }
 
     if (!palaceRows.Length && !beastRows.Length && !atomRows.Length) {
-        Palace_Notify("No rows found in Desktop PALACE pack", 2500, BANNER_ACCENT_ERROR)
+        summary := Palace_ImportSkipSummary(Map(), csvNotes)
+        msg := "No rows found in Desktop PALACE pack"
+        if (summary != "")
+            msg .= " — " . summary
+        Palace_Notify(msg, 3200, BANNER_ACCENT_ERROR)
         Palace_ShowMainMenu()
         return false
     }
@@ -407,6 +482,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
             labels.Push(line)
         labels.Push("--- Import rows ---")
     }
+    if (csvNotes.Length) {
+        labels.Push("--- CSV warnings ---")
+        for note in csvNotes
+            labels.Push(note)
+    }
     studiesPreview := Palace_Load("studies")
     palacesPreview := Palace_Load("palaces")
     if (palaceRows.Length) {
@@ -417,7 +497,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 labels.Push("Skip: " . resolved["skip"])
                 continue
             }
-            labels.Push("Memory Palace " . resolved["num"] . ": " . resolved["title"])
+            labels.Push("Memory Palace " . resolved["num"] . ": " . resolved["title"]
+                . " [" . resolved["id"] . "]")
         }
     }
     if (beastRows.Length) {
@@ -456,13 +537,16 @@ Palace_ImportMnemonicsFromDesktop(*) {
     nPalaces := 0
     nBeasts := 0
     nAtoms := 0
+    palaceIdRemap := Map()
     beastIdRemap := Map()
     syncStudyIds := Map()
+    skipCounts := Map()
 
     ; --- Palaces: upsert by id / title; auto-assign palace_number when needed ---
     for r in palaceRows {
         resolved := Palace_ResolvePalaceImportRow(r, studies, &palaces)
         if (!resolved["ok"]) {
+            Palace_ImportNoteSkip(skipCounts, resolved["skip"])
             Palace_Notify("Skip palace: " . resolved["skip"], 2200, BANNER_ACCENT_ERROR)
             continue
         }
@@ -470,6 +554,10 @@ Palace_ImportMnemonicsFromDesktop(*) {
         titleP := resolved["title"]
         num := resolved["num"]
         id := resolved["id"]
+        packPalaceId := resolved.Has("packId") ? Trim(resolved["packId"]) : ""
+        if (packPalaceId != "" && packPalaceId != id)
+            palaceIdRemap[packPalaceId] := id
+        palaceIdRemap[id] := id
         rowIn := resolved["row"]
         img := rowIn.Has("image_rel_path") ? Trim(rowIn["image_rel_path"]) : ""
         promptIn := rowIn.Has("image_prompt") ? Trim(rowIn["image_prompt"]) : ""
@@ -533,15 +621,20 @@ Palace_ImportMnemonicsFromDesktop(*) {
         replacePalaceIds := Map()
         for r in beastRows {
             r := Palace_NormalizeBeastImportRow(r)
-            palaceId := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
+            rawPalaceId := r.Has("palace_id") ? Trim(r["palace_id"]) : ""
             peg := r.Has("peg_code") ? Trim(r["peg_code"]) : ""
             name := r.Has("beast_name") ? Trim(r["beast_name"]) : ""
-            if (palaceId = "" || !Palace_FindById(palaces, palaceId)) {
-                Palace_Notify("Skip beast: unknown palace_id " . palaceId, 2200, BANNER_ACCENT_ERROR)
+            palaceId := Palace_ResolvePalaceIdRef(rawPalaceId, palaces, palaceIdRemap)
+            if (palaceId = "") {
+                Palace_ImportNoteSkip(skipCounts, "unknown palace_id " . rawPalaceId)
+                Palace_Notify("Skip beast: unknown palace_id " . rawPalaceId, 2200, BANNER_ACCENT_ERROR)
                 continue
             }
-            if (peg = "" || name = "")
+            r["palace_id"] := palaceId
+            if (peg = "" || name = "") {
+                Palace_ImportNoteSkip(skipCounts, "beast missing peg/name")
                 continue
+            }
             insertable.Push(r)
             replacePalaceIds[palaceId] := true
         }
@@ -607,6 +700,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             if (beastId != "" && beastIdRemap.Has(beastId))
                 beastId := beastIdRemap[beastId]
             if (beastId = "" || !Palace_FindById(beasts, beastId)) {
+                Palace_ImportNoteSkip(skipCounts, "unknown beast_id " . beastId)
                 Palace_Notify("Skip atom: unknown beast_id " . beastId, 2200, BANNER_ACCENT_ERROR)
                 continue
             }
@@ -644,6 +738,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         for beastId, proposed in pendingByBeast {
             err := Palace_ValidateBeastAtoms(beastId, proposed)
             if (err != "") {
+                Palace_ImportNoteSkip(skipCounts, "atoms " . beastId . ": " . err)
                 Palace_Notify("Skip atoms for " . beastId . ": " . err, 2800, BANNER_ACCENT_ERROR)
                 continue
             }
@@ -680,7 +775,11 @@ Palace_ImportMnemonicsFromDesktop(*) {
     }
 
     if (nPalaces + nBeasts + nAtoms = 0) {
-        Palace_Notify("Import produced no rows — Desktop files kept", 2800, BANNER_ACCENT_ERROR)
+        summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
+        msg := "0 imported — Desktop files kept"
+        if (summary != "")
+            msg .= " — " . summary
+        Palace_Notify(msg, 3500, BANNER_ACCENT_ERROR)
         Palace_ShowMainMenu()
         return false
     }
