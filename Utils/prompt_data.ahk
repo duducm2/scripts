@@ -1050,6 +1050,36 @@ PromptData_ToStoredPath(absPath) {
     return p
 }
 
+; ListView label: prefer script-relative path; otherwise keep a readable tail (…\parent\file).
+PromptData_DisplayContextPath(entryOrPath) {
+    abs := PromptData_ContextEntryPath(entryOrPath)
+    if (abs = "")
+        return ""
+    stored := PromptData_ToStoredPath(abs)
+    if (stored != "" && StrLower(stored) != StrLower(abs))
+        return stored
+    return PromptData_CompactPathForDisplay(abs)
+}
+
+PromptData_CompactPathForDisplay(path, maxChars := 64) {
+    p := StrReplace(Trim(path), "/", "\")
+    if (p = "" || StrLen(p) <= maxChars)
+        return p
+    SplitPath p, &name, &dir
+    parent := ""
+    if (dir != "")
+        SplitPath dir, &parent
+    tail := (parent != "") ? (parent "\" name) : name
+    if (tail != "" && StrLen(tail) + 4 <= maxChars)
+        return "...\" . tail
+    if (name != "" && StrLen(name) + 4 <= maxChars)
+        return "...\" . name
+    keep := maxChars - 3
+    if (keep < 8)
+        keep := 8
+    return "..." . SubStr(p, 1 - keep)
+}
+
 PromptData_ResolvePath(prompt) {
     if (!IsObject(prompt))
         return ""

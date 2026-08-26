@@ -292,7 +292,11 @@ PromptContextPresets_MgrReloadSide(side) {
     selected := PromptContextPresets_MgrSelectedRow(side)
     lv.Delete()
     for e in PromptContextPresets_MgrPathsRef(side)
-        lv.Add("", PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(e))
+        lv.Add("", PromptData_DisplayContextPath(e), PromptData_ContextCompactLabel(e),
+        PromptData_ContextCsvKeepLabel(e))
+    try lv.ModifyCol(1, "AutoHdr")
+    catch {
+    }
     if (selected >= 1 && selected <= PromptContextPresets_MgrPathsRef(side).Length)
         lv.Modify(selected, "Select Focus Vis")
     else
@@ -367,8 +371,11 @@ PromptContextPresets_MgrRefreshRow(side, row) {
     if (!IsObject(lv) || row < 1 || row > arr.Length)
         return
     e := arr[row]
-    lv.Modify(row, , PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(
-        e))
+    lv.Modify(row, , PromptData_DisplayContextPath(e), PromptData_ContextCompactLabel(e),
+    PromptData_ContextCsvKeepLabel(e))
+    try lv.ModifyCol(1, "AutoHdr")
+    catch {
+    }
 }
 
 PromptContextPresets_OnCompactClick(side) {

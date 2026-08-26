@@ -128,7 +128,7 @@ PromptEditor_Layout() {
     padX := 22
     padY := 14
     colGap := 16
-    tabW := 760
+    tabW := 920
     tabH := 720
     ; Insets inside the tab page (applied via Gui.Margin after UseTab — not absolute x/y).
     innerX := 18
@@ -771,7 +771,11 @@ PromptEditor_ReloadList(side) {
     selected := PromptEditor_SelectedRow(side)
     lv.Delete()
     for e in PromptEditor_PathsRef(side)
-        lv.Add("", PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(e))
+        lv.Add("", PromptData_DisplayContextPath(e), PromptData_ContextCompactLabel(e),
+        PromptData_ContextCsvKeepLabel(e))
+    try lv.ModifyCol(1, "AutoHdr")
+    catch {
+    }
     if (selected >= 1 && selected <= PromptEditor_PathsRef(side).Length)
         lv.Modify(selected, "Select Focus Vis")
     else
@@ -784,8 +788,11 @@ PromptEditor_RefreshRow(side, row) {
     if (!IsObject(lv) || row < 1 || row > arr.Length)
         return
     e := arr[row]
-    lv.Modify(row, , PromptData_ContextEntryPath(e), PromptData_ContextCompactLabel(e), PromptData_ContextCsvKeepLabel(
-        e))
+    lv.Modify(row, , PromptData_DisplayContextPath(e), PromptData_ContextCompactLabel(e),
+    PromptData_ContextCsvKeepLabel(e))
+    try lv.ModifyCol(1, "AutoHdr")
+    catch {
+    }
 }
 
 PromptEditor_SelectedRow(side) {
@@ -976,7 +983,10 @@ PromptEditor_ReloadSelectableList(side) {
         return
     lv.Delete()
     for e in PromptEditor_SelectablePathsRef(side)
-        lv.Add("", PromptData_ContextEntryPath(e))
+        lv.Add("", PromptData_DisplayContextPath(e))
+    try lv.ModifyCol(1, "AutoHdr")
+    catch {
+    }
 }
 
 PromptEditor_AppendSelectablePaths(side, incoming) {
