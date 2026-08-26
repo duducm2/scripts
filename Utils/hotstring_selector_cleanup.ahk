@@ -11,7 +11,7 @@ CleanupHotstringSelector() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory, g_UtilitySelectorHotkeysBound
     global g_UtilitySelectorNoActivate, g_UtilitySelectorRows, g_OnEscapePressed
     global g_UtilitySelectorFilterQuery, g_UtilitySelectorFilterTyping, g_UtilitySelectorSuppressFilterKillFocus
-    global g_HotstringSelectorFilterCtrl
+    global g_HotstringSelectorFilterCtrl, g_HotstringSelectorPathDetail
 
     g_HotstringSelectorActive := false
     g_UtilitySelectorFilterTyping := false
@@ -19,6 +19,11 @@ CleanupHotstringSelector() {
     g_UtilitySelectorFilterQuery := ""
     if (IsObject(g_HotstringSelectorFilterCtrl)) {
         try g_HotstringSelectorFilterCtrl.Value := ""
+        catch {
+        }
+    }
+    if (IsObject(g_HotstringSelectorPathDetail)) {
+        try g_HotstringSelectorPathDetail.Value := ""
         catch {
         }
     }

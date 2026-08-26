@@ -58,6 +58,41 @@ UtilitySelector_IsPromptsView() {
     return (g_UtilitySelectorMode = "category" && g_UtilitySelectorCategory = "Prompts")
 }
 
+; Prompts needs a wider client area so File paths are readable; other views stay compact.
+UtilitySelector_ViewMetrics() {
+    if (UtilitySelector_IsPromptsView())
+        return { contentW: 1140, guiW: 1170, guiH: 560, lvHFilter: 360, lvH: 400, pathDetailH: 26 }
+    return { contentW: 820, guiW: 850, guiH: 520, lvHFilter: 392, lvH: 420, pathDetailH: 0 }
+}
+
+UtilitySelector_UpdateSelectedPathDetail(*) {
+    global g_HotstringSelectorLv, g_HotstringSelectorPathLabel, g_HotstringSelectorPathDetail
+    show := UtilitySelector_IsPromptsView()
+    if (IsObject(g_HotstringSelectorPathLabel)) {
+        try g_HotstringSelectorPathLabel.Visible := show
+        catch {
+        }
+    }
+    if (IsObject(g_HotstringSelectorPathDetail)) {
+        try g_HotstringSelectorPathDetail.Visible := show
+        catch {
+        }
+    }
+    if (!show || !IsObject(g_HotstringSelectorPathDetail) || !IsObject(g_HotstringSelectorLv))
+        return
+    path := ""
+    row := UtilitySelector_SelectedIndex()
+    if (row > 0) {
+        try path := g_HotstringSelectorLv.GetText(row, 5)
+        catch {
+            path := ""
+        }
+    }
+    try g_HotstringSelectorPathDetail.Value := path
+    catch {
+    }
+}
+
 UtilitySelector_ApplyChrome() {
     global g_HotstringSelectorGui, g_HotstringSelectorLv, g_HotstringSelectorHint
     global g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit, g_HotstringSelectorBtnDelete
@@ -94,9 +129,9 @@ UtilitySelector_ApplyChrome() {
     if (g_UtilitySelectorCategory = "Prompts") {
         try g_HotstringSelectorLv.ModifyCol(1, 50, "Char")
         try g_HotstringSelectorLv.ModifyCol(2, 90, "Category")
-        try g_HotstringSelectorLv.ModifyCol(3, 280, "Name")
-        try g_HotstringSelectorLv.ModifyCol(4, 90, "Out")
-        try g_HotstringSelectorLv.ModifyCol(5, 280, "File")
+        try g_HotstringSelectorLv.ModifyCol(3, 260, "Name")
+        try g_HotstringSelectorLv.ModifyCol(4, 70, "Out")
+        try g_HotstringSelectorLv.ModifyCol(5, 640, "File")
         return
     }
     if (g_UtilitySelectorCategory = "Hotstrings") {
@@ -164,24 +199,29 @@ UtilitySelector_ApplyFilterChrome() {
 }
 
 UtilitySelector_LayoutControls() {
-    global g_HotstringSelectorHint, g_HotstringSelectorFilterLabel, g_HotstringSelectorFilterCtrl
-    global g_HotstringSelectorLv, g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit
-    global g_HotstringSelectorBtnDelete, g_HotstringSelectorBtnClose
+    global g_HotstringSelectorGui, g_HotstringSelectorHint, g_HotstringSelectorFilterLabel
+    global g_HotstringSelectorFilterCtrl, g_HotstringSelectorLv, g_HotstringSelectorBtnAdd
+    global g_HotstringSelectorBtnEdit, g_HotstringSelectorBtnDelete, g_HotstringSelectorBtnClose
+    global g_HotstringSelectorPathLabel, g_HotstringSelectorPathDetail
 
     if (!IsObject(g_HotstringSelectorHint) || !IsObject(g_HotstringSelectorLv))
         return
+    m := UtilitySelector_ViewMetrics()
     showFilter := UtilitySelector_IsPromptsView()
+    showPath := showFilter
+    hw := m.contentW
+    try g_HotstringSelectorHint.Move(, , hw)
+    catch {
+    }
     try {
-        g_HotstringSelectorHint.GetPos(&hx, &hy, &hw, &hh)
+        g_HotstringSelectorHint.GetPos(&hx, &hy, , &hh)
     } catch {
         return
     }
-    if (hw < 1)
-        hw := 820
     filterY := hy + hh + 6
     filterH := 24
     lvY := showFilter ? (filterY + filterH + 8) : filterY
-    lvH := showFilter ? 392 : 420
+    lvH := showFilter ? m.lvHFilter : m.lvH
     if (IsObject(g_HotstringSelectorFilterLabel) && showFilter) {
         try g_HotstringSelectorFilterLabel.Move(hx, filterY, 70, filterH)
         catch {
@@ -195,7 +235,25 @@ UtilitySelector_LayoutControls() {
     try g_HotstringSelectorLv.Move(hx, lvY, hw, lvH)
     catch {
     }
-    btnY := lvY + lvH + 8
+    pathY := lvY + lvH + 6
+    pathH := m.pathDetailH
+    if (IsObject(g_HotstringSelectorPathLabel)) {
+        try {
+            if (showPath)
+                g_HotstringSelectorPathLabel.Move(hx, pathY, 40, pathH)
+            g_HotstringSelectorPathLabel.Visible := showPath
+        } catch {
+        }
+    }
+    if (IsObject(g_HotstringSelectorPathDetail)) {
+        try {
+            if (showPath)
+                g_HotstringSelectorPathDetail.Move(hx + 44, pathY, hw - 44, pathH)
+            g_HotstringSelectorPathDetail.Visible := showPath
+        } catch {
+        }
+    }
+    btnY := showPath ? (pathY + pathH + 8) : (lvY + lvH + 8)
     if (IsObject(g_HotstringSelectorBtnAdd)) {
         try {
             g_HotstringSelectorBtnAdd.Move(hx, btnY)
@@ -208,6 +266,14 @@ UtilitySelector_LayoutControls() {
         } catch {
         }
     }
+    if (IsObject(g_HotstringSelectorGui)) {
+        try {
+            g_HotstringSelectorGui.GetPos(&gx, &gy)
+            g_HotstringSelectorGui.Move(gx, gy, m.guiW, m.guiH)
+        } catch {
+        }
+    }
+    UtilitySelector_UpdateSelectedPathDetail()
 }
 
 UtilitySelector_CreateGui() {
@@ -216,6 +282,7 @@ UtilitySelector_CreateGui() {
     global g_HotstringSelectorFilterEnterBtn
     global g_HotstringSelectorBtnAdd, g_HotstringSelectorBtnEdit, g_HotstringSelectorBtnDelete
     global g_HotstringSelectorBtnClose
+    global g_HotstringSelectorPathLabel, g_HotstringSelectorPathDetail
     global g_HotstringSelectorGuiReady
 
     g_HotstringSelectorGui := Gui("+AlwaysOnTop +ToolWindow", "Utility Shortcuts")
@@ -229,6 +296,10 @@ UtilitySelector_CreateGui() {
     g_HotstringSelectorLv := g_HotstringSelectorGui.Add("ListView", "xm w820 h420 -Multi", ["Char", "Category", "Count",
         "Out", "File"])
     g_HotstringSelectorLv.OnEvent("DoubleClick", UtilitySelector_OnListActivate)
+    g_HotstringSelectorLv.OnEvent("ItemFocus", UtilitySelector_UpdateSelectedPathDetail)
+    g_HotstringSelectorLv.OnEvent("Click", UtilitySelector_UpdateSelectedPathDetail)
+    g_HotstringSelectorPathLabel := g_HotstringSelectorGui.Add("Text", "xm w40 Hidden", "File:")
+    g_HotstringSelectorPathDetail := g_HotstringSelectorGui.Add("Edit", "yp w780 Hidden ReadOnly -WantReturn", "")
 
     g_HotstringSelectorBtnAdd := g_HotstringSelectorGui.Add("Button", "w100 Section", "Add")
     g_HotstringSelectorBtnAdd.OnEvent("Click", UtilitySelector_OnAdd)
@@ -248,8 +319,9 @@ UtilitySelector_CreateGui() {
 UtilitySelector_PositionAndShow() {
     global g_HotstringSelectorGui, g_UtilitySelectorNoActivate
     mon := UtilitySelector_ActiveMonitorWorkArea()
-    guiW := 850
-    guiH := 520
+    m := UtilitySelector_ViewMetrics()
+    guiW := m.guiW
+    guiH := m.guiH
     guiX := mon.left + (mon.width - guiW) // 2
     guiY := mon.top + (mon.height - guiH) // 2
     if (guiX < mon.left + 20)
@@ -257,9 +329,9 @@ UtilitySelector_PositionAndShow() {
     if (guiY < mon.top + 20)
         guiY := mon.top + 20
     if (g_UtilitySelectorNoActivate) {
-        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " NA")
+        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH . " NA")
     } else {
-        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY)
+        g_HotstringSelectorGui.Show("x" . guiX . " y" . guiY . " w" . guiW . " h" . guiH)
     }
     UtilitySelector_LayoutControls()
     if (!g_UtilitySelectorNoActivate)

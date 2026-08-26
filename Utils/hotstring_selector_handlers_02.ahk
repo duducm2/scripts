@@ -383,9 +383,9 @@ UtilitySelector_PopulateLv() {
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
         try g_HotstringSelectorLv.ModifyCol(2, 90)
-        try g_HotstringSelectorLv.ModifyCol(3, 280)
-        try g_HotstringSelectorLv.ModifyCol(4, 90)
-        try g_HotstringSelectorLv.ModifyCol(5, 280)
+        try g_HotstringSelectorLv.ModifyCol(3, 260)
+        try g_HotstringSelectorLv.ModifyCol(4, 70)
+        try g_HotstringSelectorLv.ModifyCol(5, "AutoHdr")
         if (g_UtilitySelectorRows.Length > 0) {
             try {
                 if (g_UtilitySelectorFilterTyping)
@@ -395,6 +395,7 @@ UtilitySelector_PopulateLv() {
             } catch {
             }
         }
+        UtilitySelector_UpdateSelectedPathDetail()
         return
     }
 
