@@ -159,6 +159,11 @@ DesktopCutNewest_OnHotkey() {
     global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_LastPressTick
     global g_DesktopCutNewest_DoubleTapTimer
 
+    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
+    ; released (those start with O already up and would otherwise arm single-tap cut).
+    if !GetKeyState("o", "P")
+        return
+
     thresholdMs := 400
     try thresholdMs := AI_QD_DOUBLE_TAP_MS
     catch {
@@ -176,6 +181,9 @@ DesktopCutNewest_OnHotkey() {
     if (isHold) {
         DesktopCutNewest_DisarmDoubleTap()
         DesktopCutNewest_CopyPath()
+        ; Stay in this thread until physical release so a repeat cannot start mid-hold
+        ; and arm single-tap after we return.
+        KeyWait "o"
         return
     }
 
