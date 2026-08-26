@@ -34,18 +34,27 @@ global g_DictationFlagGuis := []  ; Recording language flags, one GUI per monito
 global g_DictationFlagSlot := -1  ; Slot last shown (-1 = none; 0 = unknown/? fallback)
 global g_DictationFlagFollowCache := ""  ; Skip redundant flag Move when geometry/slot unchanged
 
-; Ensure only one script process handles the dictation hotkey logic.
+; AppLaunchers.ahk is the single long-lived owner for ~#!+0, Recording flag, and
+; Send dictation? banner — same script-name pin as HandyAi_IsOwnerProcess().
+; Act / Shift keys / Gemini / WM / Teams / Outlook include Utils but must not own.
+Dictation_IsOwnerProcess() {
+    return A_ScriptName = "AppLaunchers.ahk"
+}
+
+; Primary: script-name pin. Secondary: named mutex guards against a second AppLaunchers.
 InitializeDictationHotkeyOwnership() {
     global g_DictationHotkeyOwnerHandle, g_DictationHotkeyIsOwner
+    g_DictationHotkeyIsOwner := false
+    g_DictationHotkeyOwnerHandle := 0
+    if (!Dictation_IsOwnerProcess())
+        return
+
     mutexName := "Local\D2C_Dictation_Hotkey_Owner"
     hMutex := DllCall("CreateMutex", "Ptr", 0, "Int", 0, "Str", mutexName, "Ptr")
-    if (!hMutex) {
-        g_DictationHotkeyIsOwner := false
+    if (!hMutex)
         return
-    }
     err := DllCall("GetLastError", "UInt")
-    if (err = 183) { ; ERROR_ALREADY_EXISTS
-        g_DictationHotkeyIsOwner := false
+    if (err = 183) { ; ERROR_ALREADY_EXISTS — another AppLaunchers already owns
         DllCall("CloseHandle", "Ptr", hMutex)
         return
     }
@@ -453,16 +462,34 @@ DictationCompletionChimeOrWaitForClipboard() {
     }
 }
 
+; True when Handy Recording overlay is present (EN + common PT titles).
+Dictation_RecordingWindowExists() {
+    static titles := [
+        "Recording ahk_exe handy.exe",
+        "Recording Overlay ahk_exe handy.exe",
+        "Gravação ahk_exe handy.exe",
+        "Gravacao ahk_exe handy.exe",
+        "Gravando ahk_exe handy.exe"
+    ]
+    for t in titles {
+        try {
+            if WinExist(t)
+                return true
+        } catch {
+        }
+    }
+    return false
+}
+
 CheckDictationRecordingWindow() {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartClipboardText
     global g_DictationSoundPlayed, g_DictationCompletionChimeScheduled, g_DictationPulseTimer, g_KeepIndicatorVisible
-    ; Check if the "Recording" window exists
-    windowExists := false
-    try {
-        windowExists := WinExist("Recording ahk_exe handy.exe")
-    } catch {
-        windowExists := false
-    }
+    global g_DictationHotkeyIsOwner
+    ; Non-owners must never drive Recording flag / chime / banner (Act used to steal this).
+    if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
+        return
+
+    windowExists := Dictation_RecordingWindowExists()
 
     ; Handle Start: window exists
     if (windowExists) {
@@ -556,6 +583,9 @@ StopDictationCheckTimer() {
 ; Toggle dictation mode on/off
 ; The check timer handles everything automatically, this just triggers an immediate check
 ToggleDictationMode() {
+    global g_DictationHotkeyIsOwner
+    if (!IsSet(g_DictationHotkeyIsOwner) || !g_DictationHotkeyIsOwner)
+        return
     ; Trigger immediate check (the timer will handle showing/hiding)
     ; This provides instant detection if window already exists
     CheckDictationRecordingWindow()
@@ -597,11 +627,12 @@ OnExit(CleanupDictationIndicator)
 ; Toggle dictation mode with Win+Alt+Shift+0
 ; ~ prefix: key passes through to handy.exe. First press starts dictation, second stops and copies.
 ; Uses KeyWait + state machine + recursion guard to prevent duplicate triggers (typematic repeats).
+; Only AppLaunchers owns this path (Dictation_IsOwnerProcess / g_DictationHotkeyIsOwner).
 ~#!+0::
 {
     global g_DictationActive, g_LastStateTransitionTick, g_DictationStartSound
     global g_ProgrammaticDictationStop, g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
-    global g_DictationHotkeyIsOwner
+    global g_DictationHotkeyIsOwner, g_DictationCompletionChimeScheduled
     static lastHotkeyTick := 0
     static isProcessing := false
 
@@ -632,30 +663,66 @@ OnExit(CleanupDictationIndicator)
     ; so by the time we reach if/else it can be false even when user intended to stop.
     dictationWasActiveOnKeyPress := g_DictationActive
 
-    keyWaitStart := A_TickCount
     KeyWait("0", "L")
 
-    if (!g_DictationActive) {
+    if (dictationWasActiveOnKeyPress) {
+        ; Explicit STOP. Never fall into the start branch if Recording closed during KeyWait
+        ; (that re-showed the recording flag and skipped/queued the command banner wrongly).
+        g_PendingGeminiPromptAfterDictation := true
+        g_D2C_DictationSubmitMenuCycleFinished := false
+        g_DictationGeminiConfirmBannerVisible := false
+
+        if (!g_DictationActive) {
+            ; Monitor already ended the session during KeyWait — chime may have run before
+            ; pendingGemini was set. Force banner path once.
+            try HideDictationIndicator()
+            catch {
+            }
+            try StopDictationPulseTimer()
+            catch {
+            }
+            if (!g_DictationCompletionChimeScheduled)
+                SetTimer(Dictation_ForceSubmitMenuAfterStop, -50)
+        } else {
+            ToggleDictationMode()
+        }
+    } else if (!g_DictationActive) {
+        ; START
         g_DictationActive := true
         g_LastStateTransitionTick := A_TickCount
         ShowDictationIndicator()
         StartDictationPulseTimer()
-        ; Sound: monitoring loop plays when window detected (zero latency)
-
         try {
             RunSetMicVolumeScript()
         } catch {
         }
-    }
-
-    ; User was stopping dictation (had been active when they pressed key) -> show Gemini confirm after completion
-    if (dictationWasActiveOnKeyPress) {
-        g_PendingGeminiPromptAfterDictation := true
-        g_D2C_DictationSubmitMenuCycleFinished := false
-        g_DictationGeminiConfirmBannerVisible := false  ; Allow 5s banner to show for this cycle (reset from previous N cancel)
+        ToggleDictationMode()
     } else {
+        ToggleDictationMode()
     }
 
-    ToggleDictationMode()
     isProcessing := false
+}
+
+; After an explicit stop where the monitor already cleared g_DictationActive during KeyWait.
+Dictation_ForceSubmitMenuAfterStop(*) {
+    global g_PendingGeminiPromptAfterDictation, g_D2C_DictationSubmitMenuCycleFinished
+    try HideDictationIndicator()
+    catch {
+    }
+    try StopDictationPulseTimer()
+    catch {
+    }
+    if (g_D2C_DictationSubmitMenuCycleFinished)
+        return
+    Critical "On"
+    pending := g_PendingGeminiPromptAfterDictation
+    g_PendingGeminiPromptAfterDictation := false
+    Critical "Off"
+    if (!pending)
+        return
+    try {
+        D2C_FlowManager.GetInstance().StartFromDictation()
+    } catch {
+    }
 }

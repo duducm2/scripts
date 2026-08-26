@@ -62,9 +62,18 @@ SafePlayPrintScreenSound() {
 ; True when SendEscape() must not inject Escape (Handy dictation/recording UI). Physical Escape uses Escape:: below.
 IsHandyDictationEscapeSuppressed() {
     global g_DictationActive
-    return g_DictationActive || WinActive("Recording ahk_exe handy.exe") || WinActive(
+    if (g_DictationActive)
+        return true
+    ; Prefer shared detector when loaded (AppLaunchers / Utils hosts include dictation_toggle).
+    try {
+        if (Dictation_RecordingWindowExists())
+            return true
+    } catch {
+    }
+    return WinActive("Recording ahk_exe handy.exe") || WinActive(
         "Recording Overlay ahk_exe handy.exe") || WinExist("Recording ahk_exe handy.exe") || WinExist(
-            "Recording Overlay ahk_exe handy.exe")
+            "Recording Overlay ahk_exe handy.exe") || WinExist("Gravação ahk_exe handy.exe") || WinExist(
+                "Gravando ahk_exe handy.exe")
 }
 
 ; Helper to send Escape while respecting dictation state (no-op when suppressed; see IsHandyDictationEscapeSuppressed).
