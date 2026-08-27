@@ -333,6 +333,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] ClipAngel last clip → Desktop (.txt) -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk
+; [Utils module] Import Management job search CSV bridge -> Utils\import_mgmt_*.ahk
+#include %A_ScriptDir%\Utils\import_mgmt_helpers.ahk
+#include %A_ScriptDir%\Utils\import_mgmt_import.ahk
+#include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
 ; [Utils module] Utility Shortcuts [G] commit+push scripts + notes repos -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
 ; [Utils module] Utility shortcuts #!+U / #!+W Macros and ^!# secondary triggers -> Utils\utility_shortcuts.ahk

@@ -1,0 +1,102 @@
+DELIVERY MANDATE (read first)
+Deliver one `JOB_SEARCH_UPDATE.txt` pack in this reply. Prefer a real download chip; if attach is impossible, use one marked code fence (same pack body). You cannot write to the human's disk — never say you saved, wrote, or stored a file there. Gemini/Copilot sandbox ≠ their PC.
+
+Job search status update — structured extraction
+
+You convert a voice dictation of job search news into one `JOB_SEARCH_UPDATE.txt` pack (preview + labeled CSV section).
+
+Examples:
+- "The Coca Cola job opportunity was unsuccessful" → update Coca Cola row, status=rejected
+- "I applied to Google for a backend role via LinkedIn yesterday" → new or update row with company, role, source, status=applied
+- "Got an interview with Bosch next week" → update status=interviewing, add note if spoken
+
+FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
+Runtime authority: if a DATA OUTPUT CONTRACT from Prompt Manager was prepended to this message, follow that for file vs code. Words alone do not create a file; you have no disk access.
+You have no disk access. Words alone do not create a file.
+
+Delivery priority (strict):
+1. Best: Download / Download code / file card / attachment named exactly `JOB_SEARCH_UPDATE.txt` (or `gemini-code-….txt` with the markers below).
+2. Fallback (only if attach/download is impossible after one retry): exactly ONE fenced `text` (or unlabeled) block whose entire body is the pack. Start with `===PREVIEW===`. No second copy of CSV outside the fence.
+3. Forbidden: claiming a disk/Desktop/Downloads/sandbox/"your computer" save; saying a download exists with no chip; multiple unnamed CSV snippets; markdown tables as the primary deliverable; CSV rows loose in the chat bubble.
+
+After delivery, one short chat line only: point at the download chip, or tell the human to copy the code block and save as `JOB_SEARCH_UPDATE.txt` on Desktop.
+
+PACK BODY LAYOUT (exact markers — required inside the download file OR the fallback fence):
+
+```
+===PREVIEW===
+N row(s) · brief coverage / skips
+===END_PREVIEW===
+
+===FILE: JOB_SEARCH_UPDATE.csv===
+<pure CSV: header + rows>
+===END_FILE===
+```
+
+Rules:
+- Preview is plain text only (coverage / skips). Importer ignores it.
+- The FILE section body is pure CSV only — header first, no nested markdown fences inside the section.
+
+Failed delivery — redo:
+- Loose id,company,... rows with neither a download control nor a marked fence
+- Multiple fences or unnamed CSV snippets without pack markers
+- "File is ready / available to download" with no Download control and no fallback fence
+- Markdown tables of opportunities as the main output
+- "I saved / wrote / stored JOB_SEARCH_UPDATE.txt on your disk / computer / Desktop / Downloads"
+- Any local path (`C:\`, `/mnt`, `Downloads`) presented as where the pack now lives
+
+Pre-send self-check (all must pass):
+1. Either a real download UI object named `JOB_SEARCH_UPDATE.txt` when possible, OR exactly one marked fallback fence (not both as primary dumps).
+2. Body contains `===PREVIEW===` … `===END_PREVIEW===` and `===FILE: JOB_SEARCH_UPDATE.csv===` … `===END_FILE===`.
+3. CSV body uses the exact header below.
+If attach fails: retry Download code once, then use the fence fallback. Never claim a disk save.
+If any check fails, regenerate the pack.
+
+CSV body format (inside the FILE section):
+- Pure CSV only: first line is the header row below. No preamble, no `FILE:` line, no markdown, no prose inside the section.
+- Use UTF-8.
+- Use a comma as the field separator.
+- Dates: YYYY-MM-DD only.
+
+COLUMNS (header required)
+id,company,role_title,status,status_date,applied_date,source,notes
+
+STATUS ENUM (required when status is present)
+applied | screening | interviewing | offer | rejected | withdrawn | on_hold
+
+Natural language mapping (examples):
+- unsuccessful / rejected / no go / didn't get it / passed → rejected
+- applied / submitted application → applied
+- phone screen / recruiter call / screening → screening
+- interview / onsite / technical round → interviewing
+- offer / got the job / they offered → offer
+- withdrew / pulled out → withdrawn
+- paused / waiting / on hold → on_hold
+
+MATCHING RULES
+- Read attached opportunities.csv for existing rows.
+- For updates: prefer matching by exact `id` from context. Else match by company name (ignore case, accents, punctuation; tolerate "Coca Cola" vs "Coca-Cola").
+- When updating an existing row: include `id` (preferred) or `company` plus only the fields that changed. Copy `id` from context — do not invent a new id for an existing company.
+- When adding a new opportunity: include at least `company`. Set `status=applied` unless dictation says otherwise. Assign `id` as JOB_<COMPANY_SLUG> (uppercase letters/digits only, e.g. JOB_COCACOLA) when not in context.
+- Do not invent companies or statuses you cannot parse. Omit ambiguous rows from the CSV.
+
+DATE RULES
+- status_date: when status changes and no date is spoken, use today's date (YYYY-MM-DD).
+- applied_date: only when the speaker mentions when they applied.
+
+CONTEXT FILES (attached by Utility Shortcuts → Prompts)
+- opportunities.csv — existing job opportunities with ids, companies, and current status
+
+Use opportunities.csv for id and company matching. Never invent ids when updating an existing row.
+
+DICTATION
+Paste the raw dictation below this line.
+
+Reminder: prefer Download code / file card named `JOB_SEARCH_UPDATE.txt`; if attach fails, one marked code fence with the same pack. Never say it was saved to disk.
+---
+Human reminders (for the person sending this prompt — do not include in AI output):
+
+After the AI responds:
+- Prefer: Quick Download (Win+Alt+Shift+9) on the download chip, then Import Management → [I] AI import
+- If only a code fence appeared: copy the pack body, save as `JOB_SEARCH_UPDATE.txt` on Desktop, then Import Management → [I]
+- No rename required: importer extracts the CSV section from `JOB_SEARCH_UPDATE.txt` or a marked `gemini-code-….txt`
