@@ -267,6 +267,39 @@ Palace_IsPlanSaveServerRunning(port := 0) {
     }
 }
 
+; Idempotent: import *-plan.md into CSV for studies that have no plans.csv row yet.
+; Does not use --force, so existing CSV edits are never overwritten.
+Palace_MigratePlansToCsv(showUi := false) {
+    py := Palace_PythonDir() . "\migrate_plans_to_csv.py"
+    if (!FileExist(py))
+        return false
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        if (showUi)
+            Palace_Notify("Python not found for plan migration", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    dataDir := Palace_DataDir()
+    notesRoot := Palace_NotesStudiesRoot()
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '"'
+    if (notesRoot != "")
+        cmd .= ' --studies-root "' . notesRoot . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    } catch as e {
+        if (showUi)
+            Palace_Notify("Plan migration failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if (exitCode != 0) {
+        if (showUi)
+            Palace_Notify("Plan migration failed (exit " . exitCode . ")", 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    return true
+}
+
 Palace_OpenDashboard() {
     try StandardLoadingBar_Show("⏳ Opening Memory Palace dashboard…", BANNER_ACCENT_INTERMEDIATE, {
         passive: false
@@ -274,6 +307,12 @@ Palace_OpenDashboard() {
     catch {
     }
     Palace_EnsureData()
+    try StandardLoadingBar_Update("⏳ Migrating plan Markdown into CSV…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    ; Fill empty plans.csv from *-plan.md so backlog Add/Save can find study plans.
+    ; Failure is non-blocking — dashboard still opens from MD fallback if needed.
+    Palace_MigratePlansToCsv(true)
     try StandardLoadingBar_Update("⏳ Restarting plan save server…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
