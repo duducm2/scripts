@@ -1,0 +1,8 @@
+﻿===PREVIEW===
+1 row
+===END_PREVIEW===
+
+===FILE: JOB_SEARCH_UPDATE.csv===
+id,company,role_title,job_url,status,status_date,applied_date,source,notes
+JOB_PEPSI,Pepsi,Backend Engineer,https://linkedin.com/jobs/123,rejected,2026-08-27,,,
+===END_FILE===

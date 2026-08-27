@@ -8,6 +8,7 @@ You convert a voice dictation of job search news into one `JOB_SEARCH_UPDATE.txt
 Examples:
 - "The Coca Cola job opportunity was unsuccessful" → update Coca Cola row, status=rejected
 - "I applied to Google for a backend role via LinkedIn yesterday" → new or update row with company, role, source, status=applied
+- "Applied to the Pepsi backend role, link is linkedin.com/jobs/123" → set job_url=https://linkedin.com/jobs/123
 - "Got an interview with Bosch next week" → update status=interviewing, add note if spoken
 
 FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
@@ -59,7 +60,13 @@ CSV body format (inside the FILE section):
 - Dates: YYYY-MM-DD only.
 
 COLUMNS (header required)
-id,company,role_title,status,status_date,applied_date,source,notes
+id,company,role_title,job_url,status,status_date,applied_date,source,notes
+
+JOB URL
+- Include job_url only when the speaker mentions a link/URL or when adding a new opportunity with a known posting URL.
+- Must be a full URL (https://…). Prefix with https:// when the speaker omits the scheme (e.g. linkedin.com/jobs/123 → https://linkedin.com/jobs/123).
+- Do not invent URLs. Omit job_url when no link was spoken.
+- For updates: emit job_url only when the URL changed or was newly provided.
 
 STATUS ENUM (required when status is present)
 applied | screening | interviewing | offer | rejected | withdrawn | on_hold
@@ -85,7 +92,7 @@ DATE RULES
 - applied_date: only when the speaker mentions when they applied.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts)
-- opportunities.csv — existing job opportunities with ids, companies, and current status
+- opportunities.csv — existing job opportunities with ids, companies, job_url, and current status
 
 Use opportunities.csv for id and company matching. Never invent ids when updating an existing row.
 

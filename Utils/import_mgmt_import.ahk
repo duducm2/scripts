@@ -219,7 +219,8 @@ ImportMgmt_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         . "- Never claim you saved to Desktop / disk. I save the file myself.`r`n"
         . "- Pack must include ===PREVIEW=== … ===END_PREVIEW=== and:`r`n"
         . "  ===FILE: JOB_SEARCH_UPDATE.csv=== … ===END_FILE===`r`n"
-        . "- FILE body is pure CSV with header: id,company,role_title,status,status_date,applied_date,source,notes`r`n"
+        .
+        "- FILE body is pure CSV with header: id,company,role_title,job_url,status,status_date,applied_date,source,notes`r`n"
         . "- status must be one of: applied | screening | interviewing | offer | rejected | withdrawn | on_hold`r`n"
         . "- Match existing rows by id or company from attached opportunities.csv.`r`n`r`n"
         . "After you fix it, I will save JOB_SEARCH_UPDATE.txt to Desktop and re-import.`r`n"

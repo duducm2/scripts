@@ -1,13 +1,75 @@
-# Prompt data output and finance/mnemonic packs
+# Prompt data output and pack imports
 
-Documentation for future agents working on Utility Shortcuts prompts, AIB delivery, and Finance / Memory Palace pack imports.
+Documentation for future agents working on Utility Shortcuts prompts, AIB delivery, and pack imports (Finance, Memory Palace, Import Management / job search).
+
+This doc is the **canonical reference** for how prompts and importers are linked.
 
 ## Summary
 
 1. **Prompt Manager metadata** decides whether AIB must emit structured data and whether delivery is a **downloadable `.txt` file** or a **single code fence**.
 2. At paste/send time, AHK **injects a short DATA OUTPUT CONTRACT** from that metadata (runtime authority for file vs code).
 3. Pack bodies use `===PREVIEW===` / `===FILE: …csv===` markers. Importers accept Desktop `.txt` packs and convert CSV sections locally.
-4. Never claim the companion wrote to the user’s Desktop/disk; Gemini/Copilot sandboxes are not the PC.
+4. **Context CSVs** attached to prompts let the AI match existing rows; importers write back to those CSVs, closing the loop.
+5. Never claim the companion wrote to the user's Desktop/disk; Gemini/Copilot sandboxes are not the PC.
+
+---
+
+## Prompt-import bridge (overview)
+
+Every pack-import domain follows the same loop:
+
+```mermaid
+flowchart LR
+  subgraph promptSide [Prompt side]
+    PromptMgr["Prompt Manager prompts.ini"]
+    PromptBody["Prompt .txt body"]
+    ContextCsv["Context CSV attached"]
+  end
+  subgraph aiSide [AI companion]
+    Pack["Desktop pack .txt"]
+  end
+  subgraph importSide [Import side]
+    Launcher["Sub-app launcher"]
+    Importer["import_*.ahk"]
+    LocalCsv["Local data CSV"]
+  end
+  PromptMgr --> PromptBody
+  ContextCsv --> PromptBody
+  PromptBody --> Pack
+  Pack --> Importer
+  Launcher --> Importer
+  Importer --> LocalCsv
+  ContextCsv -.->|"next run reads updated rows"| LocalCsv
+```
+
+### How the pieces connect
+
+| Piece                                                                                                                 | Role                                                                              |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Prompt char** (`Char=` in [`assets/data/prompts.ini`](../assets/data/prompts.ini))                                  | Opens the prompt from Utility Shortcuts (`#!+U` → Prompts) or dictation flow      |
+| **`ExpectsDataOutput=1`**                                                                                             | Marks the prompt as requiring structured AIB output                               |
+| **`DataOutputFormat`** (`file` / `code`)                                                                              | Controls injected delivery contract: download chip vs single code fence           |
+| **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                      |
+| **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)               |
+| **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files                                        |
+| **Import launcher**                                                                                                   | Sub-app menu item that runs the importer on the newest Desktop match              |
+| **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context |
+
+### Pack-import domains
+
+| Domain          | Shortcuts     | Prompt (char) | Pack file               | Context                                                                     | Importer                                                            | Confirm UI       |
+| --------------- | ------------- | ------------- | ----------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------- |
+| Finance daily   | `[F]` → `[I]` | `[d]`         | `FINANCE_DAILY.txt`     | categories, accounts, cards                                                 | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
+| Finance monthly | `[F]` → `[I]` | `[m]`         | `FINANCE_MONTHLY.txt`   | accounts, goals                                                             | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
+| Memory Palace   | `[N]` → `[I]` | `[4]` / `[a]` | `PALACE_PACK.txt`       | technique files                                                             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
+| Study plans     | `[N]` → `[J]` | `[n]`         | `PLAN_PACK.txt`         | —                                                                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
+| Job search      | `[J]` → `[I]` | `[j]`         | `JOB_SEARCH_UPDATE.txt` | [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv) | [`import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)         | No (auto-upsert) |
+
+Typical human workflow:
+
+1. Open prompt (Utility Shortcuts or dictation) with dictation/context attached.
+2. AI returns a pack → save to Desktop (Quick Download `#!+Shift+9`, or copy fence).
+3. Open sub-app launcher → **AI import** → importer parses pack, upserts local CSV, archives source file.
 
 ---
 
@@ -29,6 +91,7 @@ ListView **Out** column: blank, `txt·file`, or `txt·code`.
 
 - `finance-daily-transactions.txt` (char `d`) — `DataOutputFormat=code`
 - `finance-monthly-investments.txt` (char `m`) — `DataOutputFormat=code`
+- `job-search-status-update.txt` (char `j`) — `DataOutputFormat=code`
 - `concept-curation-prompt.txt` (char `6`) — `DataOutputFormat=code` (grab-able Markdown fence)
 - `story-prompt.txt`, `story-reduction-prompt.txt`, `plan-prompt.txt` — typically `file` unless changed in the editor
 
@@ -49,7 +112,7 @@ The long FILE DELIVERY PROTOCOL inside each `.txt` body is documentation/fallbac
 
 ## Pack body layout (shared)
 
-Used by finance and mnemonic pack prompts:
+Used by finance, mnemonic, and job-search pack prompts:
 
 ```
 ===PREVIEW===
@@ -86,19 +149,55 @@ Post-import daily opens Transactions; card expenses show **card name**; transfer
 
 ---
 
+## Import Management — job search (txt → CSV)
+
+**Prompt:** [`assets/prompt/job-search-status-update.txt`](../assets/prompt/job-search-status-update.txt) (char `j`)  
+**Import:** [`Utils/import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)  
+**Helpers:** [`Utils/import_mgmt_helpers.ahk`](../Utils/import_mgmt_helpers.ahk)  
+**Launcher:** [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)  
+**Data:** [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv)  
+**ClipAngel name:** `NAME_JOBSEARCH` → `JOB_SEARCH_UPDATE`
+
+Flow:
+
+1. Utility Shortcuts → Prompts → **[j]** with voice dictation; `opportunities.csv` attached as context.
+2. AI returns `JOB_SEARCH_UPDATE.txt` pack → save to Desktop.
+3. Utility Shortcuts → **[J]** Import Management → **[I]** AI import.
+4. `ImportMgmt_MaterializeAiCsv` extracts CSV section; upserts rows by `id` or normalized `company` (no confirm UI).
+5. Archive source pack to `job_search/data/imported/`; toast on success. On failure, writes `Desktop/JOB_SEARCH_AI_FIX.txt`.
+
+**CSV columns:**
+
+| Column         | Purpose                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| `id`           | Primary key, e.g. `JOB_COCACOLA`                                                                |
+| `company`      | Employer name (fuzzy match key)                                                                 |
+| `role_title`   | Position title                                                                                  |
+| `job_url`      | Full URL to job posting                                                                         |
+| `status`       | `applied` \| `screening` \| `interviewing` \| `offer` \| `rejected` \| `withdrawn` \| `on_hold` |
+| `status_date`  | Date status last changed (`YYYY-MM-DD`)                                                         |
+| `applied_date` | Date applied (`YYYY-MM-DD`, optional)                                                           |
+| `source`       | e.g. LinkedIn, referral                                                                         |
+| `notes`        | Free text                                                                                       |
+
+View/edit the CSV in Excel or any external tool; there is no in-app CSV viewer.
+
+---
+
 ## Pack prompt delivery prose
 
 Files (prefer download; if attach fails, one marked fence; never fake disk save):
 
 - [`assets/prompt/finance-daily-transactions.txt`](../assets/prompt/finance-daily-transactions.txt)
 - [`assets/prompt/finance-monthly-investments.txt`](../assets/prompt/finance-monthly-investments.txt)
+- [`assets/prompt/job-search-status-update.txt`](../assets/prompt/job-search-status-update.txt)
 - [`mnemonics/technique/prompts/story-prompt.txt`](../mnemonics/technique/prompts/story-prompt.txt)
 - [`mnemonics/technique/prompts/story-reduction-prompt.txt`](../mnemonics/technique/prompts/story-reduction-prompt.txt)
 - [`mnemonics/technique/prompts/plan-prompt.txt`](../mnemonics/technique/prompts/plan-prompt.txt)
 
 Human footers: Quick Download on chip, or copy fence → save as pack name on Desktop → import.
 
-Mnemonic import still uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) (same marker style).
+Mnemonic import uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) (same marker style).
 
 ---
 
@@ -113,6 +212,7 @@ Mnemonic import still uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemoni
 ## Pitfalls for agents
 
 - **AHK strings:** never write markdown fence literals as `"```"`; build with `Chr(96)` (see `Finance_MdFence`).
-- **Do not** treat “I saved to your Desktop” as success; companions have no disk write to the user PC.
+- **Do not** treat "I saved to your Desktop" as success; companions have no disk write to the user PC.
 - Changing `DataOutputFormat` in the Prompt Manager is enough to flip file vs code without rewriting every pack prompt body.
 - Saving prompts via the editor rewrites `prompts.ini`; preserve `ExpectsDataOutput` / `DataOutputFormat` in Load/Save/Normalize/`PromptFromEditorResult`.
+- When adding CSV columns, update prompt header, `*_Headers()` in helpers, error-fix text in importer, and this doc. Use `*_Migrate*Csv()` in `EnsureData()` for existing installs.

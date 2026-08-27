@@ -21,6 +21,22 @@ ImportMgmt_EnsureData() {
     path := ImportMgmt_DataDir() . "\opportunities.csv"
     if (!FileExist(path))
         ImportMgmt_WriteCsv("opportunities.csv", [], ImportMgmt_Headers())
+    else
+        ImportMgmt_MigrateOpportunitiesCsv()
+}
+
+ImportMgmt_MigrateOpportunitiesCsv() {
+    path := ImportMgmt_DataDir() . "\opportunities.csv"
+    if (!FileExist(path))
+        return
+    text := ImportMgmt_ReadUtf8(path)
+    if (text = "")
+        return
+    firstLine := StrSplit(text, "`n")[1]
+    if (InStr(firstLine, "job_url"))
+        return
+    rows := ImportMgmt_ReadCsv(path)
+    ImportMgmt_Save(rows)
 }
 
 ImportMgmt_WriteUtf8(path, content) {
@@ -143,7 +159,7 @@ ImportMgmt_WriteCsv(fileName, rows, headers) {
 }
 
 ImportMgmt_Headers() {
-    return ["id", "company", "role_title", "status", "status_date", "applied_date", "source", "notes"]
+    return ["id", "company", "role_title", "job_url", "status", "status_date", "applied_date", "source", "notes"]
 }
 
 ImportMgmt_Save(rows) {
