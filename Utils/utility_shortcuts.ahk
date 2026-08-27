@@ -26,11 +26,47 @@
     ShowHotstringSelector("Macros")
 }
 
-; Macros [L] — open OS clipboard in Chrome: http/https link, or Google search if not a link.
+; Copy selected text, or the word under the mouse cursor; fallback to prior clipboard text.
+OpenClipboardLinkInChrome_ResolveText() {
+    savedClipAll := ClipboardAll()
+    savedClipText := Trim(A_Clipboard)
+    try {
+        MouseGetPos(, , &hwndUnder)
+        if (hwndUnder) {
+            try WinActivate("ahk_id " hwndUnder)
+            Sleep 50
+        }
+
+        A_Clipboard := ""
+        if (TryCopySelectionToClipboard_QuickLookAware()) {
+            text := Trim(A_Clipboard)
+            if (text != "")
+                return text
+        }
+
+        A_Clipboard := ""
+        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+        Sleep 40
+        Click 2
+        Sleep 80
+        Send "^c"
+        if ClipWait(0.7) {
+            text := Trim(A_Clipboard)
+            if (text != "")
+                return text
+        }
+
+        return savedClipText
+    } finally {
+        try A_Clipboard := savedClipAll
+    }
+}
+
+; Macros [L] — copy hovered/selected text or clipboard; open link in Chrome or Google search.
 OpenClipboardLinkInChrome() {
-    text := Trim(A_Clipboard)
+    text := OpenClipboardLinkInChrome_ResolveText()
     if (text = "") {
-        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ No text to open or search.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     if StudyLink_IsValidHttpUrl(text) {
@@ -47,7 +83,7 @@ OpenClipboardLinkInChrome() {
     ShowCenteredOverlay_Utils(banner, 1200, BANNER_ACCENT_SUCCESS)
 }
 
-RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open clipboard link in Chrome / Google search", "l")
+RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open hovered text in Chrome / Google search", "l")
 
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; If a main text field is saved for that exe+title (assets/data/paste_field_mappings.ini),
