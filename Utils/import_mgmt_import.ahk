@@ -166,6 +166,9 @@ ImportMgmt_ReadAiImportCsv(path) {
         c := r.Has("company") ? StrLower(Trim(r["company"])) : ""
         if (c = "company")
             continue
+        a := r.Has("action") ? StrLower(Trim(r["action"])) : ""
+        if (a = "action")
+            continue
         cleaned_rows.Push(r)
     }
     return cleaned_rows
@@ -179,7 +182,8 @@ ImportMgmt_DesktopNewestCodeDump() {
         if (body = "")
             continue
         lower := StrLower(body)
-        hasJob := InStr(lower, "company,role_title,status") || InStr(lower, "id,company,role_title")
+        hasJob := InStr(lower, "action,company") || InStr(lower, "company,role_title,status")
+        || InStr(lower, "id,company,role_title")
         || InStr(lower, "file: job_search_update")
         if (!hasJob)
             continue
@@ -215,6 +219,26 @@ ImportMgmt_AiCompanionFixGuidance(errorMsg) {
         "- Fix the failed row(s); keep successful rows correct. Match ids/companies from attached opportunities.csv.`r`n"
         . "- Do not omit rows that already imported — include the full set so the pack is complete."
     }
+    if (InStr(e, "invalid action")) {
+        return "- action must be empty (upsert), add, update, or delete.`r`n"
+        . "- delete rows need action=delete plus id or company from opportunities.csv.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
+    if (InStr(e, "already exists")) {
+        return "- action=add was used but the opportunity already exists.`r`n"
+        . "- Use action=update or empty action for upsert, or action=delete to remove.`r`n"
+        . "- Match id/company from attached opportunities.csv."
+    }
+    if (InStr(e, "no matching opportunity to update")) {
+        return "- action=update was used but no row matched id/company.`r`n"
+        . "- Copy id from opportunities.csv or use action=add for new rows.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
+    if (InStr(e, "no matching opportunity to delete") || InStr(e, "delete requires")) {
+        return "- action=delete requires a matching id or company from opportunities.csv.`r`n"
+        . "- Emit only action=delete plus id (preferred) or company; other fields may be empty.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
     if (InStr(e, "invalid status")) {
         return "- One or more rows had an invalid status value.`r`n"
         . "- status must be exactly: applied | screening | interviewing | offer | rejected | withdrawn | on_hold`r`n"
@@ -232,8 +256,9 @@ ImportMgmt_AiCompanionFixGuidance(errorMsg) {
     if (InStr(e, "no data rows") || InStr(e, "no rows applied")) {
         return "- The pack had no usable opportunity rows or none could be applied.`r`n"
         .
-        "- Re-emit with header: id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
-        . "- Each data row needs company (new) or matching id/company (update). status must use the valid enum."
+        "- Re-emit with header: action,id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
+        . "- action: empty=upsert | add | update | delete. delete needs id or company.`r`n"
+        . "- Each add/update row needs company (new) or matching id/company. status must use the valid enum."
     }
     return "- Read the IMPORT ERROR above and reframe as one complete, valid JOB_SEARCH_UPDATE pack.`r`n"
     . "- Prefer download chip; else one marked fence. Never claim a disk save."
@@ -257,7 +282,8 @@ ImportMgmt_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         . "- Pack must include ===PREVIEW=== … ===END_PREVIEW=== and:`r`n"
         . "  ===FILE: JOB_SEARCH_UPDATE.csv=== … ===END_FILE===`r`n"
         .
-        "- FILE body is pure CSV with header: id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
+        "- FILE body is pure CSV with header: action,id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
+        . "- action: empty=upsert | add | update | delete (pack-only; not stored in opportunities.csv)`r`n"
         . "- status must be one of: applied | screening | interviewing | offer | rejected | withdrawn | on_hold`r`n"
         . "- Match existing rows by id or company from attached opportunities.csv.`r`n`r`n"
         . "After you fix it, I will save JOB_SEARCH_UPDATE.txt to Desktop and re-import.`r`n"
@@ -350,20 +376,28 @@ ImportMgmt_ImportFromDesktop(*) {
     opportunities := ImportMgmt_Load()
     nUpdated := 0
     nAdded := 0
+    nDeleted := 0
     errors := []
     for incoming in rows {
+        id := ""
+        company := ""
         try {
-            id := incoming.Has("id") ? Trim(incoming["id"]) : ""
-            company := incoming.Has("company") ? Trim(incoming["company"]) : ""
-            existing := false
-            if (id != "")
-                existing := ImportMgmt_FindById(opportunities, id)
-            if (!IsObject(existing) && company != "")
-                existing := ImportMgmt_FindByCompany(opportunities, company)
-            if (IsObject(existing)) {
+            action := ImportMgmt_NormalizeAction(incoming.Has("action") ? incoming["action"] : "")
+            resolved := ImportMgmt_ResolveImportRow(opportunities, incoming)
+            id := resolved["id"]
+            company := resolved["company"]
+            existing := resolved["existing"]
+            if (action = "delete") {
+                opportunities := ImportMgmt_DeleteImportRow(opportunities, incoming)
+                nDeleted += 1
+            } else if (IsObject(existing)) {
+                if (action = "add")
+                    throw Error("Opportunity already exists")
                 ImportMgmt_MergeImportRow(existing, incoming)
                 nUpdated += 1
             } else {
+                if (action = "update")
+                    throw Error("No matching opportunity to update")
                 newRow := ImportMgmt_NewRowFromImport(incoming, opportunities)
                 opportunities.Push(newRow)
                 nAdded += 1
@@ -375,7 +409,7 @@ ImportMgmt_ImportFromDesktop(*) {
             errors.Push(label . ": " . e.Message)
         }
     }
-    nApplied := nUpdated + nAdded
+    nApplied := nUpdated + nAdded + nDeleted
     nParsed := rows.Length
     if (!nApplied) {
         extraNotes := ""
@@ -397,6 +431,19 @@ ImportMgmt_ImportFromDesktop(*) {
         return false
     }
     ImportMgmt_ArchiveImported(sourcePath)
-    ImportMgmt_Notify("Imported " . nApplied . " row(s)", 1800, BANNER_ACCENT_SUCCESS)
+    parts := []
+    if (nAdded)
+        parts.Push(nAdded . " new")
+    if (nUpdated)
+        parts.Push(nUpdated . " update(s)")
+    if (nDeleted)
+        parts.Push(nDeleted . " deleted")
+    msg := "Imported "
+    loop parts.Length {
+        if (A_Index > 1)
+            msg .= ", "
+        msg .= parts[A_Index]
+    }
+    ImportMgmt_Notify(msg, 1800, BANNER_ACCENT_SUCCESS)
     return true
 }

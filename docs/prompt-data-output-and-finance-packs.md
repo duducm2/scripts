@@ -27,7 +27,7 @@ Every importer follows the same stages. Function names differ by prefix (`Financ
 | Discover    | Newest Desktop file matching pack name                | `ImportMgmt_DesktopNewest`, `ImportMgmt_DesktopNewestCodeDump`     |
 | Materialize | Extract `===FILE: …csv===` body; strip fences/preview | `ImportMgmt_MaterializeAiCsv`, `ImportMgmt_ExtractPackFileSection` |
 | Parse       | Normalize to row Maps                                 | `ImportMgmt_ReadAiImportCsv`, `ImportMgmt_ReadCsv`                 |
-| Upsert      | Match by id/keys; merge or append                     | `ImportMgmt_MergeImportRow`, `ImportMgmt_NewRowFromImport`         |
+| Upsert      | Match by id/keys; merge, append, or delete via `action` | `ImportMgmt_MergeImportRow`, `ImportMgmt_NewRowFromImport`, `ImportMgmt_DeleteImportRow` |
 | Outcome     | Save, archive, notify, or write fix file              | `ImportMgmt_ImportFromDesktop`                                     |
 
 Finance adds a **confirm UI** before save. Job search is **auto-upsert** (no ListView). Memory Palace upserts palaces/beasts/atoms with strict cross-link validation.
@@ -36,7 +36,7 @@ Finance adds a **confirm UI** before save. Job search is **auto-upsert** (no Lis
 
 | Outcome                    | Local CSV                    | Archive Desktop pack     | Fix file on Desktop | Toast   |
 | -------------------------- | ---------------------------- | ------------------------ | ------------------- | ------- |
-| All rows applied           | Saved                        | Yes → `*/data/imported/` | No                  | Success |
+| All rows applied           | Saved                        | Yes → `*/data/imported/` | No                  | Success (e.g. "Imported 1 new, 2 update(s), 1 deleted") |
 | Partial (some rows failed) | Saved (successful rows only) | **No** (keep for retry)  | **Yes**             | Error   |
 | Total failure (0 rows)     | Not saved                    | No                       | **Yes**             | Error   |
 
@@ -68,6 +68,7 @@ Utility Shortcuts category wiring: [`Utils/hotstring_selector_core.ahk`](../Util
 6. Wire Utility Shortcuts category in `hotstring_selector_core.ahk` / `handlers_02.ahk`; `#include` from `Utils.ahk`.
 7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable.
 8. **Update this doc** (domain table, columns, fix file name, flow steps).
+9. Pack-only columns (e.g. job search `action`) must appear in the pack prompt header but **not** in `*_Headers()` / stored CSV unless intentionally persisted.
 
 ---
 
@@ -250,14 +251,24 @@ Flow:
 1. Utility Shortcuts → Prompts → **[j]** with voice dictation; `opportunities.csv` attached as context.
 2. AI returns `JOB_SEARCH_UPDATE.txt` pack → save to Desktop.
 3. Utility Shortcuts → **[J]** Import Management → **[I]** AI import.
-4. `ImportMgmt_MaterializeAiCsv` extracts CSV section; upserts rows by `id` or normalized `company` (no confirm UI).
-5. **Full success:** archive source pack to `job_search/data/imported/`; success toast.
+4. `ImportMgmt_MaterializeAiCsv` extracts CSV section; routes each row by pack `action` column: upsert (default), strict add/update, or delete by `id`/`company` (no confirm UI).
+5. **Full success:** archive source pack to `job_search/data/imported/`; success toast (e.g. "Imported 1 new, 2 update(s), 1 deleted").
 6. **Partial or total failure:** write `Desktop/JOB_SEARCH_AI_FIX.txt`, keep pack on Desktop, error toast. Partial success still saves rows that passed to `opportunities.csv`.
 
-**CSV columns:**
+**CRUD via AI pack (no manual ListView UI):**
+
+| Operation | How |
+| --------- | --- |
+| **Read** | `opportunities.csv` attached as prompt context |
+| **Create** | Pack row with empty/`add` action + new company |
+| **Update** | Pack row with empty/`update` action + matching id/company |
+| **Delete** | Pack row with `action=delete` + id or company |
+
+**Pack CSV columns** (header in prompt; `action` is pack-only):
 
 | Column            | Purpose                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------- |
+| `action`          | Pack-only: empty=upsert \| `add` \| `update` \| `delete` — not stored in `opportunities.csv`   |
 | `id`              | Primary key, e.g. `JOB_COCACOLA`                                                                |
 | `company`         | Employer name (fuzzy match key)                                                                 |
 | `role_title`      | Position title                                                                                  |
@@ -268,7 +279,7 @@ Flow:
 | `applied_date`    | Date applied (`YYYY-MM-DD`, optional)                                                           |
 | `notes`           | Free text (follow-ups, interview dates, personal reminders — not the full job ad)               |
 
-View/edit the CSV in Excel or any external tool; there is no in-app CSV viewer.
+**Stored CSV** (`opportunities.csv`) uses data columns only — no `action` column. View/edit in Excel or any external tool; there is no in-app ListView CRUD.
 
 ---
 
