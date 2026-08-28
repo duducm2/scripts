@@ -1,0 +1,11 @@
+﻿===PREVIEW===
+4 row(s) · 4 transfers parsed
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Transfer to Nubank checking account,"900,00",transfer,,,ACC_MERCADOP,,ACC_NUBANKMA
+Transfer from Nubank savings to checking,"127,40",transfer,,,ACC_TRANSITI,,ACC_NUBANKMA
+Transfer back to Mercado Pago checking account,"140,00",transfer,,,ACC_NUBANKMA,,ACC_MERCADOP
+Transfer from 99Pay to Mercado Pago checking account,"99,00",transfer,,,ACC_99PAY,,ACC_MERCADOP
+===END_FILE===
