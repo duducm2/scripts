@@ -1,0 +1,32 @@
+﻿===PREVIEW===
+11 row(s) emitted.
+- FGTS: 54104,01 → 55040,40 (+936,39)
+- BoschLife: 13824,22 → 13827,22 (+3,00)
+- Nubank (checking account): 50,00 → 56,83 (+6,83)
+- Nubank (short-term): 5100,07 → 5127,40 (+27,33)
+- Mercado Pago (checking account): 7048,52 → 7156,54 (+108,02)
+- Meli dólares: 0,00 → 40,68 (+40,68)
+- Mercado Pago (long-term): 63178,40 → 63339,74 (+161,34)
+- Mercado Pago (short-term): 11907,32 → 12031,20 (+123,88)
+- 99 Pay (short-term): 5070,00 → 5099,78 (+29,78)
+- Emergency fund: +100,00 (stated allocation)
+- Private pension: +350,00 (stated allocation)
+
+Skipped accounts/goals:
+- Meal voucher (no updates provided)
+===END_PREVIEW===
+
+===FILE: FINANCE_MONTHLY.csv===
+entity_type,entity_id,adjustment_amount,description
+account,ACC_FGTS,"+936,39",FGTS: 54104,01 → 55040,40 (+936,39)
+account,ACC_BOSCHLIF,"+3,00",BoschLife: 13824,22 → 13827,22 (+3,00)
+account,ACC_NUBANKMA,"+6,83",Nubank (checking account): 50,00 → 56,83 (+6,83)
+account,ACC_TRANSITI,"+27,33",Nubank (short-term): 5100,07 → 5127,40 (+27,33)
+account,ACC_MERCADOP,"+108,02",Mercado Pago (checking account): 7048,52 → 7156,54 (+108,02)
+account,ACC_MELIDOLA,"+40,68",Meli dólares: 0,00 → 40,68 (+40,68)
+account,ACC_MERCADOP3,"+161,34",Mercado Pago (long-term): 63178,40 → 63339,74 (+161,34)
+account,ACC_MERCADOP2,"+123,88",Mercado Pago (short-term): 11907,32 → 12031,20 (+123,88)
+account,ACC_99PAY,"+29,78",99 Pay (short-term): 5070,00 → 5099,78 (+29,78)
+goal,GOAL_EMERG,"+100,00",Emergency fund: +100,00 allocation
+goal,GOAL_PREV,"+350,00",Private pension: +350,00 allocation
+===END_FILE===
