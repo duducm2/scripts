@@ -143,7 +143,11 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             clipCopy := clip
             onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
         }
-        PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd)
+        global g_UtilitySelectorRestoreHwnd
+        attachCount := (doAttach && contextEntries.Length) ? contextEntries.Length : 0
+        companionId := (attachCount > 0 || InsertFiles_IsAiChatForeground()) ? ResolveGlobalAICompanion() : ""
+        submitOpts := { hwnd: g_UtilitySelectorRestoreHwnd, companionId: companionId, attachCount: attachCount }
+        PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd, submitOpts)
     } else if (doAppendClipboard && clip != "") {
         g_lastExpansion := 0
         InsertText(clip)
@@ -484,6 +488,82 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
     return false
 }
 
+; [S] send: wait for upload idle + enabled Send per companion, then submit (mirrors D2C_FlowManager).
+PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
+    companionId := StrLower(Trim(companionId))
+    if (companionId = "" && (attachCount > 0 || InsertFiles_IsAiChatForeground()))
+        companionId := ResolveGlobalAICompanion()
+    if (companionId != "" && (!hwnd || !WinExist("ahk_id " hwnd))) {
+        if (companionId = "enterprise") {
+            try hwnd := GetGeminiEnterpriseWindowHwnd()
+            catch {
+            }
+        } else if (companionId = "copilot") {
+            try hwnd := GetCopilotWebWindowHwnd()
+            catch {
+            }
+        } else {
+            try hwnd := FindGeminiChromeHwnd()
+            catch {
+            }
+        }
+    }
+    if (!hwnd)
+        hwnd := WinExist("A")
+    if (!hwnd)
+        return false
+
+    if (attachCount > 0 || companionId != "") {
+        ready := false
+        try ready := PromptContext_WaitForSendReady(hwnd, companionId, 45000)
+        catch {
+        }
+        if (!ready && attachCount > 0) {
+            try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
+            catch {
+            }
+        }
+    }
+
+    if (companionId = "enterprise") {
+        Sleep 1000
+        endTick := A_TickCount + 5000
+        while (A_TickCount < endTick) {
+            if (GeminiEnterprise_ComposerGetText(hwnd) != "")
+                break
+            Sleep 200
+        }
+        try {
+            uia := UIA_Browser("ahk_id " hwnd)
+            return GeminiEnterprise_TrySubmit(uia)
+        } catch {
+            Send "{Enter}"
+            return true
+        }
+    } else if (companionId = "copilot") {
+        Sleep 1000
+        endTick := A_TickCount + 5000
+        while (A_TickCount < endTick) {
+            if (CopilotWeb_ComposerGetText(hwnd) != "")
+                break
+            Sleep 200
+        }
+        try {
+            uia := UIA_Browser("ahk_id " hwnd)
+            return CopilotWeb_TrySubmit(uia)
+        } catch {
+            Send "{Enter}"
+            return true
+        }
+    } else if (companionId = "gemini") {
+        return Gemini_WaitForPromptContentAndSubmit(hwnd)
+    }
+    if (attachCount > 0)
+        Sleep 400
+    Send "{Enter}"
+    return true
+}
+
 UtilitySelector_RestoreConsumerGeminiFocus(*) {
     SetTitleMatchMode(2)
     geminiHwnd := 0
@@ -521,23 +601,37 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
     restoreFocus := ""
     playGeminiChime := false
+    companionHwnd := 0
     try {
         if (companion = "enterprise") {
             GeminiEnterprise_OpenOrFocus()
             restoreFocus := GeminiEnterprise_OpenOrFocus
+            try companionHwnd := GetGeminiEnterpriseWindowHwnd()
+            catch {
+            }
         } else if (companion = "copilot") {
             CopilotWeb_OpenOrFocus()
             restoreFocus := CopilotWeb_OpenOrFocus
+            try companionHwnd := GetCopilotWebWindowHwnd()
+            catch {
+            }
         } else {
             UtilitySelector_RestoreConsumerGeminiFocus()
             restoreFocus := UtilitySelector_RestoreConsumerGeminiFocus
             playGeminiChime := true
+            try companionHwnd := FindGeminiChromeHwnd()
+            catch {
+            }
+            if (!companionHwnd)
+                companionHwnd := WinExist("A")
         }
         if (doAttach)
             UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
     } finally {
         HotstringGeminiBanner_Hide()
     }
+    attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
+    submitOpts := { hwnd: companionHwnd, companionId: companion, attachCount: attachCount }
     if (doPasteBody) {
         onAfter := ""
         if (appendClip != "") {
@@ -551,7 +645,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         } else if (playGeminiChime) {
             onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         }
-        PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus)
+        PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus, submitOpts)
     } else if (appendClip != "") {
         g_lastExpansion := 0
         InsertText(appendClip)

@@ -149,7 +149,7 @@ PromptPaste_ShowOptionsAndWait() {
     return g_PromptPasteWaitChoice
 }
 
-PromptPaste_ApplyChoice(choice, fullText, onAfterPaste := "", restoreFocus := "") {
+PromptPaste_ApplyChoice(choice, fullText, onAfterPaste := "", restoreFocus := "", submitOpts := "") {
     if (fullText = "" || choice = "")
         return
     includeReminders := (choice = "reminders")
@@ -167,6 +167,18 @@ PromptPaste_ApplyChoice(choice, fullText, onAfterPaste := "", restoreFocus := ""
         catch {
         }
     }
-    if (doSend)
-        Send "{Enter}"
+    if (doSend) {
+        hwnd := 0
+        companionId := ""
+        attachCount := 0
+        if (IsObject(submitOpts)) {
+            if (submitOpts.HasProp("hwnd"))
+                hwnd := submitOpts.hwnd
+            if (submitOpts.HasProp("companionId"))
+                companionId := submitOpts.companionId
+            if (submitOpts.HasProp("attachCount"))
+                attachCount := submitOpts.attachCount
+        }
+        PromptPaste_SubmitWhenReady(hwnd, companionId, attachCount)
+    }
 }
