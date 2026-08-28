@@ -21,9 +21,9 @@
 
 **🔗 Resources:**
 
-- [Piano Posture - 4 Steps for Excellent Piano Posture](https://www.youtube.com/watch?v=BmTcXlfT1OE)
-- [Proper Piano Posture](https://www.youtube.com/watch?v=2mxlG5bzcyQ)
-- [What is proper piano posture?](https://www.youtube.com/watch?v=AZECDHp9fqk)
+- ▶ [Piano Posture - 4 Steps for Excellent Piano Posture](https://www.youtube.com/watch?v=BmTcXlfT1OE)
+- ▶ [Proper Piano Posture](https://www.youtube.com/watch?v=2mxlG5bzcyQ)
+- ▶ [What is proper piano posture?](https://www.youtube.com/watch?v=AZECDHp9fqk)
 
 #### Keyboard Geography and Note Names
 
@@ -34,9 +34,9 @@
 
 **🔗 Resources:**
 
-- [Keyboard Geography and Note Names](https://www.youtube.com/watch?v=Twaa5OxC_vc)
-- [Sight-Reading Made Simple (Part 1)](https://www.youtube.com/watch?v=gEI7uYOCQXo)
-- [Piano Keyboard Layout](https://www.youtube.com/watch?v=TjlBbYdIayg)
+- ▶ [Keyboard Geography and Note Names](https://www.youtube.com/watch?v=Twaa5OxC_vc)
+- ▶ [Sight-Reading Made Simple (Part 1)](https://www.youtube.com/watch?v=gEI7uYOCQXo)
+- ▶ [Piano Keyboard Layout](https://www.youtube.com/watch?v=TjlBbYdIayg)
 
 ### Month 2: Treble and Bass Clef Reading
 
@@ -49,9 +49,9 @@
 
 **🔗 Resources:**
 
-- [Treble Clef and Bass Clef Notes](https://www.youtube.com/watch?v=Y9EZ5qbFzsI)
-- [Finding Notes on the Piano](https://www.youtube.com/watch?v=eaduTvdaqh0)
-- [Music Theory Basics - Key Signatures](https://www.youtube.com/watch?v=yfsu94Wo64U)
+- ▶ [Treble Clef and Bass Clef Notes](https://www.youtube.com/watch?v=Y9EZ5qbFzsI)
+- ▶ [Finding Notes on the Piano](https://www.youtube.com/watch?v=eaduTvdaqh0)
+- ▶ [Music Theory Basics - Key Signatures](https://www.youtube.com/watch?v=yfsu94Wo64U)
 
 #### Bass Clef Reading
 
@@ -62,9 +62,9 @@
 
 **🔗 Resources:**
 
-- [The Treble Clef And Bass Clef](https://www.youtube.com/watch?v=SGszzTGm4wA)
-- [Ledger Lines Made Easy](https://www.youtube.com/watch?v=YDjkkQu2Q40)
-- [Learn Music Theory](https://www.youtube.com/watch?v=YYoEiKA33C0)
+- ▶ [The Treble Clef And Bass Clef](https://www.youtube.com/watch?v=SGszzTGm4wA)
+- ▶ [Ledger Lines Made Easy](https://www.youtube.com/watch?v=YDjkkQu2Q40)
+- ▶ [Learn Music Theory](https://www.youtube.com/watch?v=YYoEiKA33C0)
 
 ### Month 3: Rhythm and Hands-Together Coordination
 
@@ -77,9 +77,9 @@
 
 **🔗 Resources:**
 
-- [How to Count Basic Rhythms](https://www.youtube.com/watch?v=x3CK4-G5Eg4)
-- [Time Signatures Explained](https://www.youtube.com/watch?v=SPy7K3GD3kY)
-- [10 Essential Rhythm Patterns](https://www.youtube.com/watch?v=OpMQTxvbNlU)
+- ▶ [How to Count Basic Rhythms](https://www.youtube.com/watch?v=x3CK4-G5Eg4)
+- ▶ [Time Signatures Explained](https://www.youtube.com/watch?v=SPy7K3GD3kY)
+- ▶ [10 Essential Rhythm Patterns](https://www.youtube.com/watch?v=OpMQTxvbNlU)
 
 #### Hands-Together Coordination
 
@@ -90,9 +90,9 @@
 
 **🔗 Resources:**
 
-- [5 Exercises to Play with Two Hands](https://www.youtube.com/watch?v=db9Ek6BGOq4)
-- [11 Easy Hand Independence Exercises](https://www.youtube.com/watch?v=OL6WjT2eges)
-- [7 Helpful Two Hand Exercises](https://www.youtube.com/watch?v=3xSHAT-cPac)
+- ▶ [5 Exercises to Play with Two Hands](https://www.youtube.com/watch?v=db9Ek6BGOq4)
+- ▶ [11 Easy Hand Independence Exercises](https://www.youtube.com/watch?v=OL6WjT2eges)
+- ▶ [7 Helpful Two Hand Exercises](https://www.youtube.com/watch?v=3xSHAT-cPac)
 
 ## Phase 2: Technical Expansion and Harmonic Geometry (Months 4-6)
 
@@ -108,9 +108,9 @@
 
 **🔗 Resources:**
 
-- [Articulations | Classical Piano Beginner](https://www.youtube.com/watch?v=RomRKvAKVS0)
-- [Piano Lesson: Dynamics](https://www.youtube.com/watch?v=WlgpuH6hrqQ)
-- [Articulations for Piano](https://www.youtube.com/watch?v=htYn4K4GPf4)
+- ▶ [Articulations | Classical Piano Beginner](https://www.youtube.com/watch?v=RomRKvAKVS0)
+- ▶ [Piano Lesson: Dynamics](https://www.youtube.com/watch?v=WlgpuH6hrqQ)
+- ▶ [Articulations for Piano](https://www.youtube.com/watch?v=htYn4K4GPf4)
 
 #### Major Scales (C, G, D) and Finger Independence
 
@@ -121,9 +121,9 @@
 
 **🔗 Resources:**
 
-- [Finger Independence Challenge](https://www.youtube.com/watch?v=UuACq_0ozIY)
-- [Finger Independence Challenge](https://www.youtube.com/watch?v=Hq5st0vxH4I)
-- [Master the art of finger independence](https://www.youtube.com/watch?v=MYtRA5WAfRw)
+- ▶ [Finger Independence Challenge](https://www.youtube.com/watch?v=UuACq_0ozIY)
+- ▶ [Finger Independence Challenge](https://www.youtube.com/watch?v=Hq5st0vxH4I)
+- ▶ [Master the art of finger independence](https://www.youtube.com/watch?v=MYtRA5WAfRw)
 
 ### Month 5: Intervals, Key Signatures, and Triads
 
@@ -137,9 +137,9 @@
 
 **🔗 Resources:**
 
-- [Intervals and Key Signatures Explained](https://www.youtube.com/watch?v=Hi9bUcnHLBo)
-- [Scales and intervals explained](https://www.youtube.com/watch?v=FeSGhAYvCII)
-- [Figuring out Major Keys](https://www.youtube.com/watch?v=2lVeHHBYCEY)
+- ▶ [Intervals and Key Signatures Explained](https://www.youtube.com/watch?v=Hi9bUcnHLBo)
+- ▶ [Scales and intervals explained](https://www.youtube.com/watch?v=FeSGhAYvCII)
+- ▶ [Figuring out Major Keys](https://www.youtube.com/watch?v=2lVeHHBYCEY)
 
 #### Triads and Inversions
 
@@ -151,9 +151,9 @@
 
 **🔗 Resources:**
 
-- [Master Piano Chord Inversion](https://www.youtube.com/watch?v=aIFoh4t6G18)
-- [Triad Inversion](https://www.youtube.com/watch?v=5IghJab3UYU)
-- [All Triads and Inversions](https://www.youtube.com/watch?v=r7k2tkYY53E)
+- ▶ [Master Piano Chord Inversion](https://www.youtube.com/watch?v=aIFoh4t6G18)
+- ▶ [Triad Inversion](https://www.youtube.com/watch?v=5IghJab3UYU)
+- ▶ [All Triads and Inversions](https://www.youtube.com/watch?v=r7k2tkYY53E)
 
 ### Month 6: Chord Progressions, Pedal Technique, and Musical Expression Preview
 
@@ -167,9 +167,9 @@
 
 **🔗 Resources:**
 
-- [4 Chord Progressions Behind Thousands of Songs](https://www.youtube.com/watch?v=PlRhgYmZTeo)
-- [Best Piano Chord Progressions](https://www.youtube.com/watch?v=Y_LVaXAmn3Q)
-- [Turn Simple Chords Into Real Music](https://www.youtube.com/watch?v=HdKFCtSrKao)
+- ▶ [4 Chord Progressions Behind Thousands of Songs](https://www.youtube.com/watch?v=PlRhgYmZTeo)
+- ▶ [Best Piano Chord Progressions](https://www.youtube.com/watch?v=Y_LVaXAmn3Q)
+- ▶ [Turn Simple Chords Into Real Music](https://www.youtube.com/watch?v=HdKFCtSrKao)
 
 #### Sustain Pedal Technique
 
@@ -181,9 +181,9 @@
 
 **🔗 Resources:**
 
-- [Comprehensive Piano Pedal Tutorial](https://www.youtube.com/watch?v=KrLcJbMPu0k)
-- [How to use the Sustain Pedal](https://www.youtube.com/watch?v=U2GGFG8Lzck)
-- [Damper pedal piano tutorial](https://www.youtube.com/watch?v=kiF29oEw3VM)
+- ▶ [Comprehensive Piano Pedal Tutorial](https://www.youtube.com/watch?v=KrLcJbMPu0k)
+- ▶ [How to use the Sustain Pedal](https://www.youtube.com/watch?v=U2GGFG8Lzck)
+- ▶ [Damper pedal piano tutorial](https://www.youtube.com/watch?v=kiF29oEw3VM)
 
 ## Phase 3: Aural Integration and Expressive Fluency (Months 7-9)
 
@@ -199,9 +199,9 @@
 
 **🔗 Resources:**
 
-- [What is Music Phrasing?](https://www.youtube.com/watch?v=7YqbYk5BM3U)
-- [Structure of Phrasing](https://www.youtube.com/watch?v=Uyv76ugs6uo)
-- [Expressive Piano Series](https://www.youtube.com/watch?v=D6EvhHIKHtU)
+- ▶ [What is Music Phrasing?](https://www.youtube.com/watch?v=7YqbYk5BM3U)
+- ▶ [Structure of Phrasing](https://www.youtube.com/watch?v=Uyv76ugs6uo)
+- ▶ [Expressive Piano Series](https://www.youtube.com/watch?v=D6EvhHIKHtU)
 
 #### Sight-Reading System and Pattern Chunking
 
@@ -213,9 +213,9 @@
 
 **🔗 Resources:**
 
-- [Sight-Reading Tips](https://www.youtube.com/watch?v=qP53j8CxDdg)
-- [Improve Sight Reading by Chunking](https://www.youtube.com/watch?v=JGYvmW_gJxA)
-- [How to Sight Read](https://www.youtube.com/watch?v=6xaROR9G8SY)
+- ▶ [Sight-Reading Tips](https://www.youtube.com/watch?v=qP53j8CxDdg)
+- ▶ [Improve Sight Reading by Chunking](https://www.youtube.com/watch?v=JGYvmW_gJxA)
+- ▶ [How to Sight Read](https://www.youtube.com/watch?v=6xaROR9G8SY)
 
 ### Month 8: Arpeggios and Accompaniment Patterns
 
@@ -230,9 +230,9 @@
 
 **🔗 Resources:**
 
-- [5 Piano Arpeggio Patterns](https://www.youtube.com/watch?v=jKyFrBKHAZk)
-- [5 Arpeggios and Accompaniment](https://www.youtube.com/watch?v=MDtZktJ-iP4)
-- [4 Easy Piano Patterns](https://www.youtube.com/watch?v=bVuUiE1G0eo)
+- ▶ [5 Piano Arpeggio Patterns](https://www.youtube.com/watch?v=jKyFrBKHAZk)
+- ▶ [5 Arpeggios and Accompaniment](https://www.youtube.com/watch?v=MDtZktJ-iP4)
+- ▶ [4 Easy Piano Patterns](https://www.youtube.com/watch?v=bVuUiE1G0eo)
 
 ### Month 9: Style Basics and Preliminary Performance Exposure
 
@@ -246,9 +246,9 @@
 
 **🔗 Resources:**
 
-- [Getting Started with Classical Piano](https://www.youtube.com/watch?v=ESrNzuObudY)
-- [Baroque Style Piano Chords](https://www.youtube.com/watch?v=kyBupucAqlM)
-- [Improvisation From Baroque & Classical](https://www.youtube.com/watch?v=eGKDLkoX2Ek)
+- ▶ [Getting Started with Classical Piano](https://www.youtube.com/watch?v=ESrNzuObudY)
+- ▶ [Baroque Style Piano Chords](https://www.youtube.com/watch?v=kyBupucAqlM)
+- ▶ [Improvisation From Baroque & Classical](https://www.youtube.com/watch?v=eGKDLkoX2Ek)
 
 ## Phase 4: Improvisational Mastery and Performance Output (Months 10-12)
 
@@ -264,9 +264,9 @@
 
 **🔗 Resources:**
 
-- [The Ultimate Guide To Ear Training](https://www.youtube.com/watch?v=U8xQfdKPRXs)
-- [Interval Training Tutorial](https://www.youtube.com/watch?v=_nBgzj2--_A)
-- [Tell the Difference Between Chords](https://www.youtube.com/watch?v=YA-TXGYxOSw)
+- ▶ [The Ultimate Guide To Ear Training](https://www.youtube.com/watch?v=U8xQfdKPRXs)
+- ▶ [Interval Training Tutorial](https://www.youtube.com/watch?v=_nBgzj2--_A)
+- ▶ [Tell the Difference Between Chords](https://www.youtube.com/watch?v=YA-TXGYxOSw)
 
 ### Month 11: Melody by Ear and Improvisation
 
@@ -280,9 +280,9 @@
 
 **🔗 Resources:**
 
-- [How to Play ANY Song By Ear](https://www.youtube.com/watch?v=bKFRBmG0aTQ)
-- [Piano By Ear - The Language of Music](https://www.youtube.com/watch?v=3sXrWz763J8)
-- [Play Piano By Ear Later in Life](https://www.youtube.com/watch?v=ep6YOMnyjI0)
+- ▶ [How to Play ANY Song By Ear](https://www.youtube.com/watch?v=bKFRBmG0aTQ)
+- ▶ [Piano By Ear - The Language of Music](https://www.youtube.com/watch?v=3sXrWz763J8)
+- ▶ [Play Piano By Ear Later in Life](https://www.youtube.com/watch?v=ep6YOMnyjI0)
 
 #### Improvisation (Pentatonic and Chord-Tone)
 
@@ -295,9 +295,9 @@
 
 **🔗 Resources:**
 
-- [Neo Soul Piano Improv with Pentatonic Scale](https://www.youtube.com/watch?v=YpNKyXMb9HI)
-- [The ONLY Scale You Need](https://www.youtube.com/watch?v=9negqvipGuc)
-- [Minor Pentatonic Scale](https://www.youtube.com/watch?v=W164rUS0LVA)
+- ▶ [Neo Soul Piano Improv with Pentatonic Scale](https://www.youtube.com/watch?v=YpNKyXMb9HI)
+- ▶ [The ONLY Scale You Need](https://www.youtube.com/watch?v=9negqvipGuc)
+- ▶ [Minor Pentatonic Scale](https://www.youtube.com/watch?v=W164rUS0LVA)
 
 ### Month 12: Performance Preparation and Consolidation
 
@@ -313,9 +313,9 @@
 
 **🔗 Resources:**
 
-- [How to Prepare for a Performance](https://www.youtube.com/watch?v=YeJ-QJ4F9d0)
-- [Get Perfect Piano Recording](https://www.youtube.com/watch?v=3RQIBZSwwOg)
-- [Practising to Record](https://www.youtube.com/watch?v=tg8m7kNzmDg)
+- ▶ [How to Prepare for a Performance](https://www.youtube.com/watch?v=YeJ-QJ4F9d0)
+- ▶ [Get Perfect Piano Recording](https://www.youtube.com/watch?v=3RQIBZSwwOg)
+- ▶ [Practising to Record](https://www.youtube.com/watch?v=tg8m7kNzmDg)
 
 ## Practice Schedule (Standard 45-Minute Session Architecture)
 
@@ -326,11 +326,19 @@
 - [ ] Repertoire Block (15 min): Primary piece, sight-reading, or style-specific application
 - [ ] Review and Reflection (5 min): Metric logging, visualization dashboard update, weekly reflection
 
+**🔗 Resources:**
+
+- 🔍 [Session Structure — YouTube learning resources](https://www.youtube.com/results?search_query=Session+Structure+piano+tutorial)
+
 ## Progress Tracking
 
 ### Practice Consistency
 
 - [ ] 5-6 sessions per week completed
+
+**🔗 Resources:**
+
+- 🔍 [Practice Consistency — YouTube learning resources](https://www.youtube.com/results?search_query=Practice+Consistency+piano+tutorial)
 
 ### Tempo Progression
 
@@ -338,17 +346,29 @@
 - [ ] I-V-vi-IV Arpeggios - Target: 100 BPM
 - [ ] Style-Specific Repertoire - Target: 110 BPM
 
+**🔗 Resources:**
+
+- 🔍 [Tempo Progression — YouTube learning resources](https://www.youtube.com/results?search_query=Tempo+Progression+piano+tutorial)
+
 ### Accuracy Trend
 
 - [ ] Monitor Wrong Notes (%)
 - [ ] Monitor Rhythm/Meter Errors (%)
 - [ ] Monitor In-Piece Restarts
 
+**🔗 Resources:**
+
+- 🔍 [Accuracy Trend — YouTube learning resources](https://www.youtube.com/results?search_query=Accuracy+Trend+piano+tutorial)
+
 ### Repertoire Readiness
 
 - [ ] Chopin Prelude in E Minor
 - [ ] Clementi Sonatina Op. 36
 - [ ] "Let It Be" Lead Sheet
+
+**🔗 Resources:**
+
+- 🔍 [Repertoire Readiness — YouTube learning resources](https://www.youtube.com/results?search_query=Repertoire+Readiness+piano+tutorial)
 
 ### Skill Radar (Semi-Monthly Self-Assessment)
 
@@ -359,6 +379,10 @@
 - [ ] Ear Training
 - [ ] Improvisation
 
+**🔗 Resources:**
+
+- 🔍 [Skill Radar (Semi-Monthly Self-Assessment) — YouTube learning resources](https://www.youtube.com/results?search_query=Skill+Radar+%28Semi-Monthly+Self-Assessment%29+piano+tutorial)
+
 ## Goals (End of Year 1)
 
 - [ ] Fluent sight-reading across multiple genres
@@ -368,3 +392,7 @@
 - [ ] Recorded performance documentation (monthly snapshots)
 - [ ] Consistent 5-6 session/week practice discipline
 - [ ] Zero postural injuries or chronic tension
+
+**🔗 Resources:**
+
+- 🔍 [Goals (End of Year 1) — YouTube learning resources](https://www.youtube.com/results?search_query=Goals+%28End+of+Year+1%29+piano+tutorial)

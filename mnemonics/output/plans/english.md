@@ -18,8 +18,8 @@
 
 **🔗 Resources:**
 
-- [All the grammar you need to master to say you have a C1 level in English](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
-- [Passive Voice in English (Advanced): Active And Passive Voice Rules](https://www.youtube.com/watch?v=LVv5cRTjgc8)
+- ▶ [All the grammar you need to master to say you have a C1 level in English](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
+- ▶ [Passive Voice in English (Advanced): Active And Passive Voice Rules](https://www.youtube.com/watch?v=LVv5cRTjgc8)
 
 ##### Articles and Determiners
 
@@ -29,15 +29,19 @@
 
 **🔗 Resources:**
 
-- [Transform Your English with Determiners: Complete Guide](https://www.youtube.com/watch?v=vebrAg8_ZeU)
-- [English Grammar Advanced | Determiners and Quantifiers](https://www.youtube.com/watch?v=JVW6LqA_jNk)
-- [Determiners In English Grammar With Examples | Quantifiers](https://www.youtube.com/watch?v=WwYEeRzPnsY)
+- ▶ [Transform Your English with Determiners: Complete Guide](https://www.youtube.com/watch?v=vebrAg8_ZeU)
+- ▶ [English Grammar Advanced | Determiners and Quantifiers](https://www.youtube.com/watch?v=JVW6LqA_jNk)
+- ▶ [Determiners In English Grammar With Examples | Quantifiers](https://www.youtube.com/watch?v=WwYEeRzPnsY)
 
 ##### Sentence Structure
 
 - [ ] Simple, Compound, and Complex sentences
 - [ ] Compound-complex sentences
 - [ ] Subject-Verb Agreement (Collective nouns, Indefinite pronouns, Inverted structures)
+
+**🔗 Resources:**
+
+- 🔍 [Sentence Structure — YouTube learning resources](https://www.youtube.com/results?search_query=Sentence+Structure+English+grammar+C1+tutorial)
 
 #### Month 2: Conditional & Modal Systems
 
@@ -51,8 +55,8 @@
 
 **🔗 Resources:**
 
-- [MODAL VERBS: All you need to know about CAN, COULD, MAY, MIGHT, MUST, SHOULD, SHALL, WILL and WOULD](https://www.youtube.com/watch?v=36wG9pSYu7Q)
-- [85 Modal Verb Rules (including 30 Advanced English rules for C2)](https://www.youtube.com/watch?v=sqGkCpvC4K4)
+- ▶ [MODAL VERBS: All you need to know about CAN, COULD, MAY, MIGHT, MUST, SHOULD, SHALL, WILL and WOULD](https://www.youtube.com/watch?v=36wG9pSYu7Q)
+- ▶ [85 Modal Verb Rules (including 30 Advanced English rules for C2)](https://www.youtube.com/watch?v=sqGkCpvC4K4)
 
 ##### Conditional Sentences
 
@@ -65,8 +69,8 @@
 
 **🔗 Resources:**
 
-- [ALL CONDITIONALS | 0,1,2,3 and MIXED CONDITIONALS - English Grammar](https://www.youtube.com/watch?v=O_a-79E0ZUk)
-- [Compare ALL English Conditional Sentences (with examples!)](https://www.youtube.com/watch?v=mJS9Dh5hPNg)
+- ▶ [ALL CONDITIONALS | 0,1,2,3 and MIXED CONDITIONALS - English Grammar](https://www.youtube.com/watch?v=O_a-79E0ZUk)
+- ▶ [Compare ALL English Conditional Sentences (with examples!)](https://www.youtube.com/watch?v=mJS9Dh5hPNg)
 
 #### Month 3: Complex Verb Patterns
 
@@ -79,7 +83,7 @@
 
 **🔗 Resources:**
 
-- [Master Reported Speech in 15 minutes! (3 Simple Steps)](https://www.youtube.com/watch?v=Mi9UPE2C91I)
+- ▶ [Master Reported Speech in 15 minutes! (3 Simple Steps)](https://www.youtube.com/watch?v=Mi9UPE2C91I)
 
 ##### Causative Verbs / Causative Constructions
 
@@ -89,7 +93,7 @@
 
 **🔗 Resources:**
 
-- [CAUSATIVE VERBS - HAVE | GET | MAKE | LET - English grammar lesson](https://www.youtube.com/watch?v=z960ck7wBBs)
+- ▶ [CAUSATIVE VERBS - HAVE | GET | MAKE | LET - English grammar lesson](https://www.youtube.com/watch?v=z960ck7wBBs)
 
 ##### Verbs of Perception
 
@@ -98,8 +102,8 @@
 
 **🔗 Resources:**
 
-- [Verbs of perception: watch someone do vs. watch someone doing](https://www.youtube.com/watch?v=JXIJUeY146k)
-- [Grammar Series - Verbs of Perception](https://www.youtube.com/watch?v=VgTtRgeeTqs)
+- ▶ [Verbs of perception: watch someone do vs. watch someone doing](https://www.youtube.com/watch?v=JXIJUeY146k)
+- ▶ [Grammar Series - Verbs of Perception](https://www.youtube.com/watch?v=VgTtRgeeTqs)
 
 ##### Infinitive vs. Gerund
 
@@ -110,7 +114,7 @@
 
 **🔗 Resources:**
 
-- [66 Gerund and Infinitive Rules (Advanced English)](https://www.youtube.com/watch?v=H01VLV0IMqQ)
+- ▶ [66 Gerund and Infinitive Rules (Advanced English)](https://www.youtube.com/watch?v=H01VLV0IMqQ)
 
 ##### Advanced Grammar Components
 
@@ -122,12 +126,12 @@
 
 **🔗 Resources:**
 
-- [Everything You Need to Know about the English Subjunctive in 25 Minutes](https://www.youtube.com/watch?v=Rnz19FxwznA)
-- [If I Was vs If I Were | Common English Mistake | Subjunctive Mood](https://www.youtube.com/watch?v=ZYoCKZ34tys)
-- [CLEFT SENTENCES Made Easy | All 6 Types Explained](https://www.youtube.com/watch?v=zubBOxy6Qu4)
-- [Inversion - Advanced English Grammar](https://www.youtube.com/watch?v=JvKVbVxmPHw)
-- [BBC English Masterclass: Inversion 1: After Negative or Limiting Adverbs](https://www.youtube.com/watch?v=AzNxZGC-Hg0)
-- [Grammar Hacks: Speak Like a Native with Ellipsis & Substitution!](https://www.youtube.com/watch?v=0pBya-GXe2g)
+- ▶ [Everything You Need to Know about the English Subjunctive in 25 Minutes](https://www.youtube.com/watch?v=Rnz19FxwznA)
+- ▶ [If I Was vs If I Were | Common English Mistake | Subjunctive Mood](https://www.youtube.com/watch?v=ZYoCKZ34tys)
+- ▶ [CLEFT SENTENCES Made Easy | All 6 Types Explained](https://www.youtube.com/watch?v=zubBOxy6Qu4)
+- ▶ [Inversion - Advanced English Grammar](https://www.youtube.com/watch?v=JvKVbVxmPHw)
+- ▶ [BBC English Masterclass: Inversion 1: After Negative or Limiting Adverbs](https://www.youtube.com/watch?v=AzNxZGC-Hg0)
+- ▶ [Grammar Hacks: Speak Like a Native with Ellipsis & Substitution!](https://www.youtube.com/watch?v=0pBya-GXe2g)
 
 ### 2. Sentence Construction & Syntax
 
@@ -142,7 +146,7 @@
 
 **🔗 Resources:**
 
-- [Upgrade Your English: Use Relative Clauses Like a Native Speaker](https://www.youtube.com/watch?v=4KYsJbYoqDg)
+- ▶ [Upgrade Your English: Use Relative Clauses Like a Native Speaker](https://www.youtube.com/watch?v=4KYsJbYoqDg)
 
 #### Months 2-3: Complex Constructions
 
@@ -153,6 +157,10 @@
 - [ ] Correlative conjunctions (both...and, either...or, not only...but also, neither...nor)
 - [ ] Transitional words (Addition, Contrast, Cause/Effect, Time)
 
+**🔗 Resources:**
+
+- 🔍 [Conjunctions and Linking Words — YouTube learning resources](https://www.youtube.com/results?search_query=Conjunctions+and+Linking+Words+English+grammar+C1+tutorial)
+
 ##### Advanced Constructions
 
 - [ ] Participle Clauses (Having finished the work, he left; Being tired, she went to bed early; The book written by him)
@@ -160,8 +168,8 @@
 
 **🔗 Resources:**
 
-- [Advanced English Grammar: How to Use Participle Clauses](https://www.youtube.com/watch?v=YtRQRYUkkrI)
-- [Nominalization in English | Turn Verbs and Adjectives into Nouns for Academic Writing](https://www.youtube.com/watch?v=ny04gdSiItA)
+- ▶ [Advanced English Grammar: How to Use Participle Clauses](https://www.youtube.com/watch?v=YtRQRYUkkrI)
+- ▶ [Nominalization in English | Turn Verbs and Adjectives into Nouns for Academic Writing](https://www.youtube.com/watch?v=ny04gdSiItA)
 
 ### 3. Parts of Speech
 
@@ -174,7 +182,7 @@
 
 **🔗 Resources:**
 
-- [English for Beginners: Countable & Uncountable Nouns](https://www.youtube.com/watch?v=bhgzqbv9Rxk)
+- ▶ [English for Beginners: Countable & Uncountable Nouns](https://www.youtube.com/watch?v=bhgzqbv9Rxk)
 
 #### Pronouns
 
@@ -185,7 +193,7 @@
 
 **🔗 Resources:**
 
-- [Subject, Object, Possessive & Reflexive Pronouns for Beginners](https://www.youtube.com/watch?v=HzVVzdSKd2A)
+- ▶ [Subject, Object, Possessive & Reflexive Pronouns for Beginners](https://www.youtube.com/watch?v=HzVVzdSKd2A)
 
 #### Adjectives and Adverbs
 
@@ -196,7 +204,7 @@
 
 **🔗 Resources:**
 
-- [Word Order of Adjectives - Learn English Grammar](https://www.youtube.com/watch?v=46_M9mS71R8)
+- ▶ [Word Order of Adjectives - Learn English Grammar](https://www.youtube.com/watch?v=46_M9mS71R8)
 
 #### Adverbs vs. Prepositions
 
@@ -205,7 +213,7 @@
 
 **🔗 Resources:**
 
-- [Preposition or Adverb](https://www.youtube.com/watch?v=7-PhPbA-Y8o)
+- ▶ [Preposition or Adverb](https://www.youtube.com/watch?v=7-PhPbA-Y8o)
 
 ### 4. Vocabulary Development
 
@@ -217,7 +225,7 @@
 
 **🔗 Resources:**
 
-- [Prepositions Explained: Master Place, Time & Direction Easily](https://www.youtube.com/watch?v=gkXlBPOStag)
+- ▶ [Prepositions Explained: Master Place, Time & Direction Easily](https://www.youtube.com/watch?v=gkXlBPOStag)
 
 #### Phrasal Verbs
 
@@ -229,7 +237,7 @@
 
 **🔗 Resources:**
 
-- [Best Way to Remember Phrasal Verbs (Easiest Method!)](https://www.youtube.com/watch?v=utVSFiBe9Vs)
+- ▶ [Best Way to Remember Phrasal Verbs (Easiest Method!)](https://www.youtube.com/watch?v=utVSFiBe9Vs)
 
 #### Advanced Vocabulary Components
 
@@ -243,13 +251,13 @@
 
 **🔗 Resources:**
 
-- [10 ADVANCED COLLOCATIONS YOU NEED TO KNOW! C1 & C2 level vocabulary](https://www.youtube.com/watch?v=gHmMWBpUzgc)
-- [20 MUST-LEARN Advanced Adverb Collocations | TOTAL ENGLISH BOOST](https://www.youtube.com/watch?v=nkCUV2AcfiQ)
-- [Most Common English Idioms | Speak Like a Native](https://www.youtube.com/watch?v=8pon6QezXyw)
-- [100 Powerful Academic Collocations for Professional, High-Level English](https://www.youtube.com/watch?v=jAYhLE6bfk8)
-- [PREFIXES & SUFFIXES | English Lesson](https://www.youtube.com/watch?v=uc8AgRPyFe8)
-- [Word Formation Practice: Prefixes & Suffixes for Beginners](https://www.youtube.com/watch?v=Ql9Dqv-UE6k)
-- [Formal, Neutral, Informal: Say it the right way in English!](https://www.youtube.com/watch?v=YMomUIxSrFQ)
+- ▶ [10 ADVANCED COLLOCATIONS YOU NEED TO KNOW! C1 & C2 level vocabulary](https://www.youtube.com/watch?v=gHmMWBpUzgc)
+- ▶ [20 MUST-LEARN Advanced Adverb Collocations | TOTAL ENGLISH BOOST](https://www.youtube.com/watch?v=nkCUV2AcfiQ)
+- ▶ [Most Common English Idioms | Speak Like a Native](https://www.youtube.com/watch?v=8pon6QezXyw)
+- ▶ [100 Powerful Academic Collocations for Professional, High-Level English](https://www.youtube.com/watch?v=jAYhLE6bfk8)
+- ▶ [PREFIXES & SUFFIXES | English Lesson](https://www.youtube.com/watch?v=uc8AgRPyFe8)
+- ▶ [Word Formation Practice: Prefixes & Suffixes for Beginners](https://www.youtube.com/watch?v=Ql9Dqv-UE6k)
+- ▶ [Formal, Neutral, Informal: Say it the right way in English!](https://www.youtube.com/watch?v=YMomUIxSrFQ)
 
 #### Confusing Word Pairs
 
@@ -267,16 +275,20 @@
 
 **🔗 Resources:**
 
-- [PREPOSITIONS in English: under, below, beneath, underneath](https://www.youtube.com/watch?v=7jIqZjfx_uM)
-- [Stop Confusing TO and FOR! Simple English Grammar Lesson](https://www.youtube.com/watch?v=rea5vPw8-dk)
-- [Someone vs Somebody | Which One Should You Use?](https://www.youtube.com/watch?v=eEy9sDWPppE)
-- [Writing: Transitions – THEREFORE, THUS, CONSEQUENTLY](https://www.youtube.com/watch?v=vL05g8eW10s)
-- [The Pronunciation and Meaning of: Though, Thought, Tough, Thorough, Through, and Throughout](https://www.youtube.com/watch?v=-Bjk92yDWEM)
-- [Stop Confusing These Words | Lose or Loose? Advice or Advise? Affect or Effect?](https://www.youtube.com/watch?v=2q33rqAhtak)
+- ▶ [PREPOSITIONS in English: under, below, beneath, underneath](https://www.youtube.com/watch?v=7jIqZjfx_uM)
+- ▶ [Stop Confusing TO and FOR! Simple English Grammar Lesson](https://www.youtube.com/watch?v=rea5vPw8-dk)
+- ▶ [Someone vs Somebody | Which One Should You Use?](https://www.youtube.com/watch?v=eEy9sDWPppE)
+- ▶ [Writing: Transitions – THEREFORE, THUS, CONSEQUENTLY](https://www.youtube.com/watch?v=vL05g8eW10s)
+- ▶ [The Pronunciation and Meaning of: Though, Thought, Tough, Thorough, Through, and Throughout](https://www.youtube.com/watch?v=-Bjk92yDWEM)
+- ▶ [Stop Confusing These Words | Lose or Loose? Advice or Advise? Affect or Effect?](https://www.youtube.com/watch?v=2q33rqAhtak)
 
 #### Useful Words
 
 - [ ] Due (Expected, Due diligence)
+
+**🔗 Resources:**
+
+- 🔍 [Useful Words — YouTube learning resources](https://www.youtube.com/results?search_query=Useful+Words+English+grammar+C1+tutorial)
 
 ## Phase 2: Productive Skills Excellence (Months 4-9)
 
@@ -289,6 +301,10 @@
 - [ ] Individual sounds (Vowels, Consonants, Diphthongs)
 - [ ] Minimal pairs practice
 
+**🔗 Resources:**
+
+- 🔍 [Phonetics and Phonology — YouTube learning resources](https://www.youtube.com/results?search_query=Phonetics+and+Phonology+English+grammar+C1+tutorial)
+
 ##### Suprasegmental Features
 
 - [ ] Word stress patterns
@@ -296,13 +312,17 @@
 - [ ] Intonation patterns
 - [ ] Connected speech (Linking, Elision, Assimilation)
 
+**🔗 Resources:**
+
+- 🔍 [Suprasegmental Features — YouTube learning resources](https://www.youtube.com/results?search_query=Suprasegmental+Features+English+grammar+C1+tutorial)
+
 ##### Accent Reduction
 
 - [ ] Target accent selection and practice with native models
 
 **🔗 Resources:**
 
-- [Connected Speech in English Pronunciation (COMPLETE MASTER CLASS)](https://www.youtube.com/watch?v=Nbp--6rPq0Q)
+- ▶ [Connected Speech in English Pronunciation (COMPLETE MASTER CLASS)](https://www.youtube.com/watch?v=Nbp--6rPq0Q)
 
 #### Months 6-7: Fluency Development
 
@@ -311,12 +331,20 @@
 - [ ] Turn-taking in conversations
 - [ ] Topic development and coherence
 
+**🔗 Resources:**
+
+- 🔍 [Discourse Competence — YouTube learning resources](https://www.youtube.com/results?search_query=Discourse+Competence+English+grammar+C1+tutorial)
+
 ##### Functional Language
 
 - [ ] Expressing opinions, Agreeing/Disagreeing
 - [ ] Making suggestions, Giving advice
 - [ ] Describing, narrating, explaining
 - [ ] Presenting arguments and persuading
+
+**🔗 Resources:**
+
+- 🔍 [Functional Language — YouTube learning resources](https://www.youtube.com/results?search_query=Functional+Language+English+grammar+C1+tutorial)
 
 ##### Conversational Strategies
 
@@ -326,8 +354,8 @@
 
 **🔗 Resources:**
 
-- [The Art of Conversation: Mastering Turn-taking in English](https://www.youtube.com/watch?v=82e4SD7-Hvc)
-- [Discourse Markers: Sound Fluent & Natural](https://www.youtube.com/watch?v=RIDroWSpyvg)
+- ▶ [The Art of Conversation: Mastering Turn-taking in English](https://www.youtube.com/watch?v=82e4SD7-Hvc)
+- ▶ [Discourse Markers: Sound Fluent & Natural](https://www.youtube.com/watch?v=RIDroWSpyvg)
 
 #### Months 8-9: Advanced Speaking Skills
 
@@ -337,11 +365,19 @@
 - [ ] Signposting language
 - [ ] Visual aids and body language
 
+**🔗 Resources:**
+
+- 🔍 [Presentations and Public Speaking — YouTube learning resources](https://www.youtube.com/results?search_query=Presentations+and+Public+Speaking+English+grammar+C1+tutorial)
+
 ##### Debate and Argumentation
 
 - [ ] Constructing logical arguments (Claim, Evidence, Reasoning)
 - [ ] Counterarguments and rebuttals
 - [ ] Logical fallacies to avoid
+
+**🔗 Resources:**
+
+- 🔍 [Debate and Argumentation — YouTube learning resources](https://www.youtube.com/results?search_query=Debate+and+Argumentation+English+grammar+C1+tutorial)
 
 ##### Sociolinguistic Competence
 
@@ -351,8 +387,8 @@
 
 **🔗 Resources:**
 
-- [50 Phrases You NEED to Sound Confident & Professional in Presentations](https://www.youtube.com/watch?v=Ri4zLmpyz-E)
-- [English Debate Skills and Argumentation](https://www.youtube.com/watch?v=bIxm-2FLEOk)
+- ▶ [50 Phrases You NEED to Sound Confident & Professional in Presentations](https://www.youtube.com/watch?v=Ri4zLmpyz-E)
+- ▶ [English Debate Skills and Argumentation](https://www.youtube.com/watch?v=bIxm-2FLEOk)
 
 ### 6. Listening Comprehension
 
@@ -364,7 +400,7 @@
 
 **🔗 Resources:**
 
-- [Active Listening Skills Training](https://www.youtube.com/watch?v=Ra6L83XwLko)
+- ▶ [Active Listening Skills Training](https://www.youtube.com/watch?v=Ra6L83XwLko)
 
 #### Months 7-9: Advanced Listening
 
@@ -374,7 +410,7 @@
 
 **🔗 Resources:**
 
-- [How to study efficiently: The Cornell Notes Method](https://www.youtube.com/watch?v=xSYnGhlnzyw)
+- ▶ [How to study efficiently: The Cornell Notes Method](https://www.youtube.com/watch?v=xSYnGhlnzyw)
 
 ### 7. Writing Proficiency
 
@@ -386,8 +422,8 @@
 
 **🔗 Resources:**
 
-- [How to Write a Topic Sentence? | Scribbr](https://www.youtube.com/watch?v=2R-9T9TgGnE)
-- [Linking words for your English exam: Alternatives to the most common connectors](https://www.youtube.com/watch?v=r76lyzmwroY)
+- ▶ [How to Write a Topic Sentence? | Scribbr](https://www.youtube.com/watch?v=2R-9T9TgGnE)
+- ▶ [Linking words for your English exam: Alternatives to the most common connectors](https://www.youtube.com/watch?v=r76lyzmwroY)
 
 #### Months 7-9: Advanced Writing Skills
 
@@ -397,8 +433,8 @@
 
 **🔗 Resources:**
 
-- [Writing Emails In English - Formal, Semi-Formal or Informal?](https://www.youtube.com/watch?v=xKuWPbJvD-Q)
-- [English Creative Writing Tips for Beginners](https://www.youtube.com/watch?v=izS48xjdDOs)
+- ▶ [Writing Emails In English - Formal, Semi-Formal or Informal?](https://www.youtube.com/watch?v=xKuWPbJvD-Q)
+- ▶ [English Creative Writing Tips for Beginners](https://www.youtube.com/watch?v=izS48xjdDOs)
 
 ### 8. Reading Comprehension
 
@@ -410,8 +446,8 @@
 
 **🔗 Resources:**
 
-- [Boost Your Reading Speed: Mastering Skimming Techniques](https://www.youtube.com/watch?v=r1lWGoDX27c)
-- [Reading Strategies: Context Clues](https://www.youtube.com/watch?v=VxZ12vCjfUA)
+- ▶ [Boost Your Reading Speed: Mastering Skimming Techniques](https://www.youtube.com/watch?v=r1lWGoDX27c)
+- ▶ [Reading Strategies: Context Clues](https://www.youtube.com/watch?v=VxZ12vCjfUA)
 
 #### Months 7-9: Advanced Reading
 
@@ -421,7 +457,7 @@
 
 **🔗 Resources:**
 
-- [TOP Speed Reading Techniques to Help You Read Faster](https://www.youtube.com/watch?v=nOp9KAXgOOU)
+- ▶ [TOP Speed Reading Techniques to Help You Read Faster](https://www.youtube.com/watch?v=nOp9KAXgOOU)
 
 ## Phase 3: Refinement & Mastery (Months 10-12)
 
@@ -434,7 +470,7 @@
 
 **🔗 Resources:**
 
-- [English Culture: Manners & How to be polite](https://www.youtube.com/watch?v=8hV7lJyC3Eg)
+- ▶ [English Culture: Manners & How to be polite](https://www.youtube.com/watch?v=8hV7lJyC3Eg)
 
 #### Month 11: Specialized English
 
@@ -446,18 +482,22 @@
 
 **🔗 Resources:**
 
-- [Basic English vs Business English: Speak Smart at Work](https://www.youtube.com/shorts/svGXsNBrHDg)
-- [Clear and Concise Technical Writing](https://www.youtube.com/watch?v=lbzggxg_Xfo)
-- [Learn MEDICAL Vocabulary in English](https://www.youtube.com/watch?v=IW22_OnpS5Y)
-- [Learn Business English Vocabulary - Basic Legal Vocabulary](https://www.youtube.com/watch?v=sDcTXidHhNU)
-- [Discourse Analysis 101: What Is It & When To Use It (With Examples)](https://www.youtube.com/watch?v=EKqXWuWcJvI)
-- [Discourse Markers: English Language Revision](https://www.youtube.com/watch?v=upXa6zdcSUw)
+- ▶ [Basic English vs Business English: Speak Smart at Work](https://www.youtube.com/shorts/svGXsNBrHDg)
+- ▶ [Clear and Concise Technical Writing](https://www.youtube.com/watch?v=lbzggxg_Xfo)
+- ▶ [Learn MEDICAL Vocabulary in English](https://www.youtube.com/watch?v=IW22_OnpS5Y)
+- ▶ [Learn Business English Vocabulary - Basic Legal Vocabulary](https://www.youtube.com/watch?v=sDcTXidHhNU)
+- ▶ [Discourse Analysis 101: What Is It & When To Use It (With Examples)](https://www.youtube.com/watch?v=EKqXWuWcJvI)
+- ▶ [Discourse Markers: English Language Revision](https://www.youtube.com/watch?v=upXa6zdcSUw)
 
 #### Month 12: Mastery & Certification
 
 - [ ] Comprehensive Review of weak areas
 - [ ] Certification Preparation (Cambridge CPE, IELTS, TOEFL)
 - [ ] Portfolio Development (Writing/Speaking samples, Learning journal)
+
+**🔗 Resources:**
+
+- 🔍 [Month 12: Mastery & Certification — YouTube learning resources](https://www.youtube.com/results?search_query=Month+12%3A+Mastery+%26+Certification+English+grammar+C1+tutorial)
 
 ## Additional Components
 
@@ -466,6 +506,10 @@
 - [ ] Fluency Development (Natural rhythm, smooth transitions)
 - [ ] Confidence Building (Overcoming fear of mistakes, self-efficacy)
 
+**🔗 Resources:**
+
+- 🔍 [10. Fluency & Confidence — YouTube learning resources](https://www.youtube.com/results?search_query=10.+Fluency+%26+Confidence+English+grammar+C1+tutorial)
+
 ## Resources & Tools
 
 ### Assessment Tools
@@ -473,10 +517,18 @@
 - [ ] Self-Assessment (CEFR grid, Cambridge placement, EF SET)
 - [ ] Official Tests (Cambridge, IELTS, TOEFL, TOEIC)
 
+**🔗 Resources:**
+
+- 🔍 [Assessment Tools — YouTube learning resources](https://www.youtube.com/results?search_query=Assessment+Tools+English+grammar+C1+tutorial)
+
 ### Grammar Resources
 
 - [ ] Textbooks (Advanced Grammar in Use, Practical English Usage)
 - [ ] Online (Grammarly, Purdue OWL, British Council)
+
+**🔗 Resources:**
+
+- 🔍 [Grammar Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Grammar+Resources+English+grammar+C1+tutorial)
 
 ### Vocabulary Resources
 
@@ -484,16 +536,28 @@
 - [ ] Lists (AWL, Oxford 3000/5000)
 - [ ] Tools (Anki, Quizlet, Memrise)
 
+**🔗 Resources:**
+
+- 🔍 [Vocabulary Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Vocabulary+Resources+English+grammar+C1+tutorial)
+
 ### Pronunciation Resources
 
 - [ ] Textbooks (English Pronunciation in Use, Ship or Sheep?)
 - [ ] Online (Forvo, YouGlish, Sounds of Speech)
 - [ ] Apps (ELSA Speak, Speechling)
 
+**🔗 Resources:**
+
+- 🔍 [Pronunciation Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Pronunciation+Resources+English+grammar+C1+tutorial)
+
 ### Speaking Resources
 
 - [ ] Language Exchange (iTalki, Tandem, HelloTalk)
 - [ ] Practice Materials (TED Talks, Debate.org, Toastmasters)
+
+**🔗 Resources:**
+
+- 🔍 [Speaking Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Speaking+Resources+English+grammar+C1+tutorial)
 
 ### Listening Resources
 
@@ -502,6 +566,10 @@
 - [ ] Academic (Coursera, edX, MIT OCW, Khan Academy)
 - [ ] Entertainment (Netflix, YouTube, Audiobooks)
 
+**🔗 Resources:**
+
+- 🔍 [Listening Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Listening+Resources+English+grammar+C1+tutorial)
+
 ### Reading Resources
 
 - [ ] News & Magazines (The Economist, The Atlantic, The New Yorker, The Guardian)
@@ -509,10 +577,18 @@
 - [ ] Academic (Google Scholar, JSTOR, ResearchGate)
 - [ ] Online (Medium, Quora, Reddit)
 
+**🔗 Resources:**
+
+- 🔍 [Reading Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Reading+Resources+English+grammar+C1+tutorial)
+
 ### Writing Resources
 
 - [ ] Tools (Grammarly, Hemingway, ProWritingAid)
 - [ ] Guides (Purdue OWL, The Elements of Style)
+
+**🔗 Resources:**
+
+- 🔍 [Writing Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Writing+Resources+English+grammar+C1+tutorial)
 
 ## Progress Tracking
 
@@ -527,6 +603,10 @@
 - [ ] Listening: Daily practice completed
 - [ ] Self-assessment completed
 
+**🔗 Resources:**
+
+- 🔍 [Weekly Checklist — YouTube learning resources](https://www.youtube.com/results?search_query=Weekly+Checklist+English+grammar+C1+tutorial)
+
 ### Monthly Milestones
 
 - [ ] Practice test completed and scored
@@ -535,6 +615,10 @@
 - [ ] Speaking session recorded and self-assessed
 - [ ] Progress review and plan adjustment
 
+**🔗 Resources:**
+
+- 🔍 [Monthly Milestones — YouTube learning resources](https://www.youtube.com/results?search_query=Monthly+Milestones+English+grammar+C1+tutorial)
+
 ### Quarterly Goals
 
 - [ ] Comprehensive skills assessment
@@ -542,3 +626,7 @@
 - [ ] Celebrate achievements
 - [ ] Set new targets for next quarter
 - [ ] Review and update resources
+
+**🔗 Resources:**
+
+- 🔍 [Quarterly Goals — YouTube learning resources](https://www.youtube.com/results?search_query=Quarterly+Goals+English+grammar+C1+tutorial)

@@ -56,6 +56,9 @@ class PlanSaveHandler(BaseHTTPRequestHandler):
                     "features": [
                         "add_backlog",
                         "remove_backlog",
+                        "add_resource",
+                        "edit_resource",
+                        "remove_resource",
                         "plans_csv",
                         "palace_notes",
                         "palace_images",

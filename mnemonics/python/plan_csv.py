@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from plan_resources import enrich_resource_row, format_export_line
 from schemas import HEADERS, PLAN_ITEMS_HEADERS, PLAN_RESOURCES_HEADERS, PLANS_HEADERS
 
 BACKLOG_SECTION_PATH = "Backlog"
@@ -115,10 +116,10 @@ def plan_row_to_payload(
     sections: list[dict[str, Any]] = []
     flat_todos: list[dict[str, Any]] = []
 
-    res_by_section: dict[str, list[str]] = {}
+    res_by_section: dict[str, list[dict[str, Any]]] = {}
     for r in plan_res:
         sp = (r.get("section_path") or "").strip() or BACKLOG_SECTION_PATH
-        res_by_section.setdefault(sp, []).append(r.get("line") or "")
+        res_by_section.setdefault(sp, []).append(enrich_resource_row(r))
 
     for it in plan_items:
         text = (it.get("text") or "").strip()
@@ -146,8 +147,11 @@ def plan_row_to_payload(
     def attach_resources(nodes: list[dict[str, Any]], prefix: list[str]) -> None:
         for n in nodes:
             path = " > ".join(prefix + [n["title"]])
+            n["section_path"] = path
             if path in res_by_section:
                 n["resources"] = list(res_by_section[path])
+            else:
+                n["resources"] = []
             attach_resources(n.get("children") or [], prefix + [n["title"]])
 
     attach_resources(sections, [])
@@ -191,7 +195,11 @@ def render_plan_markdown(payload: dict[str, Any]) -> str:
                 lines.append(RESOURCES_MARKER)
                 lines.append("")
                 for r in resources:
-                    lines.append(r if r.startswith("-") else f"- {r}")
+                    if isinstance(r, dict):
+                        line = r.get("line") or ""
+                        lines.append(format_export_line(line) if line else "")
+                    else:
+                        lines.append(format_export_line(str(r)))
                 lines.append("")
             walk(n.get("children") or [])
 

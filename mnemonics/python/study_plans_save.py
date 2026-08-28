@@ -17,6 +17,7 @@ from plan_csv import (  # noqa: E402
     next_id,
     save_plan_tables,
 )
+from plan_resources import build_resource_line  # noqa: E402
 from study_plan_parser import (  # noqa: E402
     default_studies_root,
     enrich_plan,
@@ -137,6 +138,113 @@ def remove_backlog_item_csv(
     return {"ok": True, "study_id": study_id}
 
 
+def add_resource_csv(
+    data_dir: Path,
+    study_id: str,
+    section_path: str,
+    title: str,
+    url: str,
+) -> dict[str, Any]:
+    title = (title or "").strip()
+    url = (url or "").strip()
+    section_path = (section_path or "").strip()
+    if not section_path:
+        return {"ok": False, "error": "section_path required", "study_id": study_id}
+    if not title or not url:
+        return {"ok": False, "error": "title and url required", "study_id": study_id}
+
+    tables = load_plan_tables(data_dir)
+    plan = _plan_for_study(tables, study_id)
+    if not plan:
+        return {"ok": False, "error": "plan not found", "study_id": study_id}
+
+    res_ids = {r.get("id") for r in tables["plan_resources"] if r.get("id")}
+    rid = next_id("PRES_", res_ids)
+    max_sort = 0
+    for r in tables["plan_resources"]:
+        if r.get("plan_id") != plan["id"]:
+            continue
+        if (r.get("section_path") or "") != section_path:
+            continue
+        try:
+            max_sort = max(max_sort, int(r.get("sort_order") or "0"))
+        except ValueError:
+            pass
+    tables["plan_resources"].append(
+        {
+            "id": rid,
+            "plan_id": plan["id"],
+            "section_path": section_path,
+            "line": build_resource_line(title, url),
+            "sort_order": str(max_sort + 1),
+        }
+    )
+    save_plan_tables(
+        data_dir, tables["plans"], tables["plan_items"], tables["plan_resources"]
+    )
+    return {"ok": True, "study_id": study_id, "resource_id": rid}
+
+
+def edit_resource_csv(
+    data_dir: Path,
+    study_id: str,
+    resource_id: str,
+    title: str,
+    url: str,
+) -> dict[str, Any]:
+    title = (title or "").strip()
+    url = (url or "").strip()
+    if not resource_id:
+        return {"ok": False, "error": "resource_id required", "study_id": study_id}
+    if not title or not url:
+        return {"ok": False, "error": "title and url required", "study_id": study_id}
+
+    tables = load_plan_tables(data_dir)
+    plan = _plan_for_study(tables, study_id)
+    if not plan:
+        return {"ok": False, "error": "plan not found", "study_id": study_id}
+
+    found = False
+    new_resources: list[dict[str, str]] = []
+    for r in tables["plan_resources"]:
+        if r.get("id") == resource_id and r.get("plan_id") == plan["id"]:
+            r = dict(r)
+            r["line"] = build_resource_line(title, url)
+            found = True
+        new_resources.append(r)
+    if not found:
+        return {"ok": False, "error": "resource not found", "study_id": study_id}
+    save_plan_tables(
+        data_dir, tables["plans"], tables["plan_items"], new_resources
+    )
+    return {"ok": True, "study_id": study_id, "resource_id": resource_id}
+
+
+def remove_resource_csv(
+    data_dir: Path, study_id: str, resource_id: str
+) -> dict[str, Any]:
+    if not resource_id:
+        return {"ok": False, "error": "resource_id required", "study_id": study_id}
+
+    tables = load_plan_tables(data_dir)
+    plan = _plan_for_study(tables, study_id)
+    if not plan:
+        return {"ok": False, "error": "plan not found", "study_id": study_id}
+
+    before = len(tables["plan_resources"])
+    tables["plan_resources"] = [
+        r
+        for r in tables["plan_resources"]
+        if not (r.get("id") == resource_id and r.get("plan_id") == plan["id"])
+    ]
+    if len(tables["plan_resources"]) == before:
+        return {"ok": False, "error": "resource not found", "study_id": study_id}
+    save_plan_tables(
+        data_dir, tables["plans"], tables["plan_items"], tables["plan_resources"]
+    )
+    return {"ok": True, "study_id": study_id}
+
+
 def refresh_plan_payload(
     study_id: str,
     studies_root: Path,
@@ -231,6 +339,67 @@ def remove_backlog_item(
     return result
 
 
+def add_resource(
+    study_id: str,
+    section_path: str,
+    title: str,
+    url: str,
+    data_dir: Path,
+    studies_root: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    if dry_run:
+        return {"ok": True, "dry_run": True, "study_id": study_id}
+    result = add_resource_csv(data_dir, study_id, section_path, title, url)
+    if not result.get("ok"):
+        return result
+    _sync_study_md(study_id, data_dir, studies_root, output_dir)
+    plan = refresh_plan_payload(study_id, studies_root, data_dir)
+    result["plan"] = plan
+    return result
+
+
+def edit_resource(
+    study_id: str,
+    resource_id: str,
+    title: str,
+    url: str,
+    data_dir: Path,
+    studies_root: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    if dry_run:
+        return {"ok": True, "dry_run": True, "study_id": study_id}
+    result = edit_resource_csv(data_dir, study_id, resource_id, title, url)
+    if not result.get("ok"):
+        return result
+    _sync_study_md(study_id, data_dir, studies_root, output_dir)
+    plan = refresh_plan_payload(study_id, studies_root, data_dir)
+    result["plan"] = plan
+    return result
+
+
+def remove_resource(
+    study_id: str,
+    resource_id: str,
+    data_dir: Path,
+    studies_root: Path,
+    output_dir: Path,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    if dry_run:
+        return {"ok": True, "dry_run": True, "study_id": study_id}
+    result = remove_resource_csv(data_dir, study_id, resource_id)
+    if not result.get("ok"):
+        return result
+    _sync_study_md(study_id, data_dir, studies_root, output_dir)
+    plan = refresh_plan_payload(study_id, studies_root, data_dir)
+    result["plan"] = plan
+    return result
+
+
 def save_payload(
     payload: dict[str, Any],
     data_dir: Path,
@@ -251,6 +420,37 @@ def save_payload(
         return remove_backlog_item(
             str(payload.get("study_id") or ""),
             str(payload.get("todo_id") or ""),
+            data_dir,
+            studies_root,
+            output_dir,
+            dry_run=dry_run,
+        )
+    if payload.get("action") == "add_resource":
+        return add_resource(
+            str(payload.get("study_id") or ""),
+            str(payload.get("section_path") or ""),
+            str(payload.get("title") or ""),
+            str(payload.get("url") or ""),
+            data_dir,
+            studies_root,
+            output_dir,
+            dry_run=dry_run,
+        )
+    if payload.get("action") == "edit_resource":
+        return edit_resource(
+            str(payload.get("study_id") or ""),
+            str(payload.get("resource_id") or ""),
+            str(payload.get("title") or ""),
+            str(payload.get("url") or ""),
+            data_dir,
+            studies_root,
+            output_dir,
+            dry_run=dry_run,
+        )
+    if payload.get("action") == "remove_resource":
+        return remove_resource(
+            str(payload.get("study_id") or ""),
+            str(payload.get("resource_id") or ""),
             data_dir,
             studies_root,
             output_dir,

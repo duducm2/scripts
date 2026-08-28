@@ -1375,25 +1375,140 @@ def build_html(
       border-color: #5a3030;
       background: #2a1a1a;
     }}
-    .plan-resources {{
-      margin: 0.35rem 0 0.85rem 1.5rem;
+    .plan-sources {{
+      margin: 0.5rem 0 0.85rem 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+    }}
+    .plan-sources-label {{
+      width: 100%;
+      font-size: 0.78rem;
+      font-weight: 650;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.1rem;
+    }}
+    .plan-source-chip {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      max-width: 100%;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      padding: 0.2rem 0.45rem 0.2rem 0.35rem;
+      font-size: 0.86rem;
+      line-height: 1.3;
     }}
-    .plan-resources summary {{
+    .plan-source-chip:hover {{
+      border-color: #4a6a9a;
+      background: #1a2438;
+    }}
+    .plan-source-link {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: #cfe4ff;
+      text-decoration: none;
+      min-width: 0;
+    }}
+    .plan-source-link:hover {{ color: #fff; }}
+    .plan-source-title {{
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 18rem;
+    }}
+    .plan-source-icon {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.15rem;
+      height: 1.15rem;
+      flex-shrink: 0;
+    }}
+    .plan-source-icon svg {{
+      width: 1.05rem;
+      height: 1.05rem;
+      display: block;
+    }}
+    .plan-source-actions {{
+      display: inline-flex;
+      gap: 0.15rem;
+      margin-left: 0.1rem;
+    }}
+    .plan-source-actions button {{
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      border-radius: 4px;
+      padding: 0 0.25rem;
+      font: inherit;
+      font-size: 0.78rem;
+      line-height: 1.2;
       cursor: pointer;
+    }}
+    .plan-source-actions button:hover {{
+      color: #e8b4b4;
+      border-color: #5a3030;
+      background: #2a1a1a;
+    }}
+    .plan-source-empty {{
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-style: italic;
+    }}
+    .plan-source-add {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px dashed var(--line);
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      background: transparent;
       color: var(--gold);
-      font-weight: 650;
-      font-size: 0.92rem;
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
     }}
-    .plan-resources ul {{
-      margin: 0.45rem 0 0;
-      padding-left: 1.2rem;
+    .plan-source-add:hover {{
+      border-color: var(--gold);
+      background: #1a2438;
     }}
-    .plan-resources li {{ margin: 0.2rem 0; line-height: 1.45; }}
-    .plan-resources a {{ color: #9ec8ff; }}
+    .plan-source-form {{
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.25rem;
+    }}
+    .plan-source-form input {{
+      flex: 1 1 10rem;
+      min-width: 8rem;
+      background: #0f1520;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 0.35rem 0.5rem;
+      font: inherit;
+      font-size: 0.85rem;
+    }}
+    .plan-source-form button {{
+      background: #243524;
+      border: 1px solid #5d9a5d;
+      color: #e8e8e8;
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font: inherit;
+      cursor: pointer;
+    }}
+    .plan-source-form button.plan-source-cancel {{
+      background: transparent;
+      border-color: var(--line);
+      color: var(--muted);
+    }}
     .plans-empty {{ color: var(--muted); padding: 2rem 0; }}
     .plans-empty.hidden {{ display: none; }}
   </style>
@@ -2370,10 +2485,85 @@ def build_html(
       return s;
     }}
 
+    function resourceIconSvg(kind) {{
+      if (kind === 'youtube') {{
+        return '<span class="plan-source-icon" aria-hidden="true">'
+          + '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'
+          + '<rect x="2" y="5" width="20" height="14" rx="3" fill="#FF0000"/>'
+          + '<path d="M10 9.5v5l5-2.5-5-2.5z" fill="#fff"/>'
+          + '</svg></span>';
+      }}
+      const emoji = {{
+        book: '📖', docs: '📄', article: '📝', search: '🔍', link: '🔗'
+      }}[kind] || '🔗';
+      return '<span class="plan-source-icon" aria-hidden="true">' + emoji + '</span>';
+    }}
+
+    function normalizeResources(resources) {{
+      if (!resources || !resources.length) return [];
+      return resources.map(r => {{
+        if (typeof r === 'string') {{
+          const m = r.match(/\\[([^\\]]*)\\]\\(([^)]+)\\)/);
+          const title = m ? m[1] : r;
+          const url = m ? m[2] : '';
+          return {{ id: '', title: title, url: url, kind: 'link', icon: 'link', line: r }};
+        }}
+        return r;
+      }});
+    }}
+
+    function renderPlanSources(section, studyId) {{
+      const resources = normalizeResources(section.resources || []);
+      const sectionPath = section.section_path || '';
+      const hasTodos = (section.todos || []).length > 0;
+      const hasChildren = (section.children || []).length > 0;
+      const isLeaf = hasTodos && !hasChildren;
+      let html = '<div class="plan-sources" data-section-path="' + esc(sectionPath) + '">';
+      html += '<div class="plan-sources-label">Sources</div>';
+      if (!resources.length) {{
+        if (isLeaf) {{
+          html += '<span class="plan-source-empty">No sources yet</span>';
+        }}
+      }} else {{
+        resources.forEach(r => {{
+          const kind = r.kind || r.icon || 'link';
+          const title = r.title || r.url || 'Link';
+          const url = r.url || '';
+          const rid = r.id || '';
+          html += '<span class="plan-source-chip">';
+          if (url) {{
+            html += '<a class="plan-source-link" href="' + esc(url) + '" target="_blank" rel="noopener">'
+              + resourceIconSvg(kind)
+              + '<span class="plan-source-title">' + esc(title) + '</span></a>';
+          }} else {{
+            html += '<span class="plan-source-link">' + resourceIconSvg(kind)
+              + '<span class="plan-source-title">' + esc(title) + '</span></span>';
+          }}
+          html += '<span class="plan-source-actions">'
+            + '<button type="button" class="plan-source-edit" data-resource-id="' + esc(rid)
+            + '" data-resource-title="' + esc(title) + '" data-resource-url="' + esc(url)
+            + '" title="Edit source" aria-label="Edit source">✎</button>'
+            + '<button type="button" class="plan-source-remove" data-resource-id="' + esc(rid)
+            + '" title="Remove source" aria-label="Remove source">×</button>'
+            + '</span></span>';
+        }});
+      }}
+      if (sectionPath) {{
+        html += '<button type="button" class="plan-source-add" data-section-path="' + esc(sectionPath)
+          + '">+ Add source</button>';
+        html += '<div class="plan-source-form hidden" data-form-section="' + esc(sectionPath) + '">'
+          + '<input type="text" class="plan-source-title-input" placeholder="Title" autocomplete="off"/>'
+          + '<input type="url" class="plan-source-url-input" placeholder="https://…" autocomplete="off"/>'
+          + '<button type="button" class="plan-source-save">Save</button>'
+          + '<button type="button" class="plan-source-cancel">Cancel</button>'
+          + '</div>';
+      }}
+      html += '</div>';
+      return html;
+    }}
+
     function renderPlanResources(lines) {{
-      if (!lines || !lines.length) return '';
-      const items = lines.map(line => '<li>' + mdInline(line.replace(/^[-*]\\s*/, '')) + '</li>').join('');
-      return '<details class="plan-resources"><summary>Resources</summary><ul>' + items + '</ul></details>';
+      return renderPlanSources({{ resources: lines, section_path: '', todos: [], children: [] }}, '');
     }}
 
     function stripPlanTopicEmoji(text) {{
@@ -2413,15 +2603,15 @@ def build_html(
       return 'h' + n;
     }}
 
-    function renderPlanSection(section, plan) {{
+    function renderPlanSection(section, plan, studyId) {{
       const lvl = section.level || 2;
       const tag = headingTag(lvl);
       let html = '<section class="plan-section level-' + lvl + '" id="' + esc(section.anchor || '') + '">'
         + '<' + tag + '>' + esc(section.title || '') + '</' + tag + '>'
         + renderPlanTodos(section.todos || [], plan)
-        + renderPlanResources(section.resources || []);
+        + renderPlanSources(section, studyId);
       (section.children || []).forEach(child => {{
-        html += renderPlanSection(child, plan);
+        html += renderPlanSection(child, plan, studyId);
       }});
       html += '</section>';
       return html;
@@ -2567,7 +2757,7 @@ def build_html(
         + '<button type="button" id="btnPlansBacklogAdd">Add</button>'
         + '</div></div>';
       (plan.sections || []).forEach(sec => {{
-        html += renderPlanSection(sec, plan);
+        html += renderPlanSection(sec, plan, studyId);
       }});
       if (content) {{
         content.innerHTML = html;
@@ -2583,6 +2773,63 @@ def build_html(
           btn.addEventListener('click', () => {{
             const todoId = btn.getAttribute('data-backlog-remove');
             removeBacklogItem(studyId, todoId);
+          }});
+        }});
+        content.querySelectorAll('.plan-source-add').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            const wrap = btn.closest('.plan-sources');
+            const form = wrap ? wrap.querySelector('.plan-source-form') : null;
+            if (form) {{
+              form.classList.remove('hidden');
+              form.removeAttribute('data-edit-id');
+              form.querySelectorAll('input').forEach(inp => {{ inp.value = ''; }});
+              const ti = form.querySelector('.plan-source-title-input');
+              if (ti) ti.focus();
+            }}
+          }});
+        }});
+        content.querySelectorAll('.plan-source-form .plan-source-cancel').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            const form = btn.closest('.plan-source-form');
+            if (form) {{
+              form.classList.add('hidden');
+              form.removeAttribute('data-edit-id');
+              form.querySelectorAll('input').forEach(inp => {{ inp.value = ''; }});
+            }}
+          }});
+        }});
+        content.querySelectorAll('.plan-source-form .plan-source-save').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            const form = btn.closest('.plan-source-form');
+            if (!form) return;
+            const sp = form.getAttribute('data-form-section') || '';
+            const title = (form.querySelector('.plan-source-title-input') || {{}}).value || '';
+            const url = (form.querySelector('.plan-source-url-input') || {{}}).value || '';
+            const editId = form.getAttribute('data-edit-id') || '';
+            if (editId) {{
+              editResource(studyId, editId, title.trim(), url.trim());
+            }} else {{
+              addResource(studyId, sp, title.trim(), url.trim());
+            }}
+          }});
+        }});
+        content.querySelectorAll('.plan-source-edit').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            const wrap = btn.closest('.plan-sources');
+            const form = wrap ? wrap.querySelector('.plan-source-form') : null;
+            if (!form) return;
+            form.classList.remove('hidden');
+            form.setAttribute('data-edit-id', btn.getAttribute('data-resource-id') || '');
+            const ti = form.querySelector('.plan-source-title-input');
+            const ui = form.querySelector('.plan-source-url-input');
+            if (ti) ti.value = btn.getAttribute('data-resource-title') || '';
+            if (ui) ui.value = btn.getAttribute('data-resource-url') || '';
+            if (ti) ti.focus();
+          }});
+        }});
+        content.querySelectorAll('.plan-source-remove').forEach(btn => {{
+          btn.addEventListener('click', () => {{
+            removeResource(studyId, btn.getAttribute('data-resource-id') || '');
           }});
         }});
         const addBtn = document.getElementById('btnPlansBacklogAdd');
@@ -2675,6 +2922,106 @@ def build_html(
         PLANS_DATA.plans[studyId] = data.plan;
         renderPlansForStudy(studyId);
         setPlansSaveStatus('Backlog item removed from plan file.', 'ok');
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
+      }}
+    }}
+
+    async function addResource(studyId, sectionPath, title, url) {{
+      if (!title || !url) {{
+        setPlansSaveStatus('Enter both title and URL for the source.', 'err');
+        return;
+      }}
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      setPlansSaveStatus('Adding source…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{
+            action: 'add_resource',
+            study_id: studyId,
+            section_path: sectionPath,
+            title: title,
+            url: url,
+          }}),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok || !data.plan) {{
+          setPlansSaveStatus(backlogActionError(data, res, 'Add source'), 'err');
+          return;
+        }}
+        PLANS_DATA.plans[studyId] = data.plan;
+        renderPlansForStudy(studyId);
+        setPlansSaveStatus('Source added to plan.', 'ok');
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
+      }}
+    }}
+
+    async function editResource(studyId, resourceId, title, url) {{
+      if (!resourceId || !title || !url) {{
+        setPlansSaveStatus('Enter both title and URL for the source.', 'err');
+        return;
+      }}
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      setPlansSaveStatus('Updating source…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{
+            action: 'edit_resource',
+            study_id: studyId,
+            resource_id: resourceId,
+            title: title,
+            url: url,
+          }}),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok || !data.plan) {{
+          setPlansSaveStatus(backlogActionError(data, res, 'Edit source'), 'err');
+          return;
+        }}
+        PLANS_DATA.plans[studyId] = data.plan;
+        renderPlansForStudy(studyId);
+        setPlansSaveStatus('Source updated.', 'ok');
+      }} catch (e) {{
+        setPlansSaveStatus(
+          'Save server unavailable — reopen dashboard from Memory Palace [D].',
+          'err'
+        );
+      }}
+    }}
+
+    async function removeResource(studyId, resourceId) {{
+      if (!resourceId) return;
+      const saveBase = (PLANS_DATA.save_url || 'http://127.0.0.1:8765').replace(/\\/$/, '');
+      setPlansSaveStatus('Removing source…', '');
+      try {{
+        const res = await fetch(saveBase + '/save', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{
+            action: 'remove_resource',
+            study_id: studyId,
+            resource_id: resourceId,
+          }}),
+        }});
+        const data = await res.json().catch(() => ({{}}));
+        if (!res.ok || !data.ok || !data.plan) {{
+          setPlansSaveStatus(backlogActionError(data, res, 'Remove source'), 'err');
+          return;
+        }}
+        PLANS_DATA.plans[studyId] = data.plan;
+        renderPlansForStudy(studyId);
+        setPlansSaveStatus('Source removed from plan.', 'ok');
       }} catch (e) {{
         setPlansSaveStatus(
           'Save server unavailable — reopen dashboard from Memory Palace [D].',
