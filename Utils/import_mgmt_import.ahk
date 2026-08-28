@@ -205,17 +205,51 @@ ImportMgmt_ArchiveImported(path) {
     }
 }
 
+ImportMgmt_AiCompanionFixGuidance(errorMsg) {
+    e := StrLower(errorMsg)
+    if (InStr(e, "partial import") || InStr(e, "skipped") || RegExMatch(e, "of \d+ row")) {
+        return "- Some rows imported; others failed (see EXTRA NOTES for each failure).`r`n"
+        . "- Re-deliver one complete JOB_SEARCH_UPDATE.txt with every row from the original pack.`r`n"
+        . "- Fix the failed row(s); keep successful rows correct. Match ids/companies from attached opportunities.csv.`r`n"
+        . "- Do not omit rows that already imported — include the full set so the pack is complete."
+    }
+    if (InStr(e, "invalid status")) {
+        return "- One or more rows had an invalid status value.`r`n"
+        . "- status must be exactly: applied | screening | interviewing | offer | rejected | withdrawn | on_hold`r`n"
+        . "- Re-emit a corrected full pack with valid status for every row."
+    }
+    if (InStr(e, "requires company") || InStr(e, "missing company")) {
+        return "- New opportunities require a non-empty company name.`r`n"
+        . "- For updates, include id (preferred) or company so the row matches opportunities.csv.`r`n"
+        . "- Re-emit a corrected full pack."
+    }
+    if (InStr(e, "no job_search") || InStr(e, "no file")) {
+        return "- No JOB_SEARCH_UPDATE pack was found on Desktop.`r`n"
+        . "- Re-deliver JOB_SEARCH_UPDATE.txt via download chip or one marked fence."
+    }
+    if (InStr(e, "no data rows") || InStr(e, "no rows applied")) {
+        return "- The pack had no usable opportunity rows or none could be applied.`r`n"
+        . "- Re-emit with header: id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
+        . "- Each data row needs company (new) or matching id/company (update). status must use the valid enum."
+    }
+    return "- Read the IMPORT ERROR above and reframe as one complete, valid JOB_SEARCH_UPDATE pack.`r`n"
+    . "- Prefer download chip; else one marked fence. Never claim a disk save."
+}
+
 ImportMgmt_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
     errorMsg := Trim(errorMsg)
     if (errorMsg = "")
         return ""
+    guidance := ImportMgmt_AiCompanionFixGuidance(errorMsg)
     body := "The Desktop Job Search importer rejected my last JOB_SEARCH_UPDATE.txt. Fix and re-deliver.`r`n`r`n"
         . "IMPORT ERROR`r`n"
         . errorMsg . "`r`n`r`n"
     if (Trim(extraNotes) != "")
         body .= "EXTRA NOTES`r`n" . Trim(extraNotes) . "`r`n`r`n"
     body .= "WHAT YOU MUST DO`r`n"
-        . "- Re-deliver one complete JOB_SEARCH_UPDATE.txt (download chip preferred; else one marked code fence).`r`n"
+        . guidance . "`r`n`r`n"
+        . "DELIVERY RULES (mandatory)`r`n"
+        . "- Deliver one complete JOB_SEARCH_UPDATE.txt (download chip preferred; else one marked code fence).`r`n"
         . "- Never claim you saved to Desktop / disk. I save the file myself.`r`n"
         . "- Pack must include ===PREVIEW=== … ===END_PREVIEW=== and:`r`n"
         . "  ===FILE: JOB_SEARCH_UPDATE.csv=== … ===END_FILE===`r`n"
@@ -338,22 +372,28 @@ ImportMgmt_ImportFromDesktop(*) {
             errors.Push(label . ": " . e.Message)
         }
     }
-    if (!nUpdated && !nAdded) {
-        extra := errors.Length ? "`r`n" . errors[1] : ""
-        ImportMgmt_FailAiImport("No rows applied" . extra, 2200)
+    nApplied := nUpdated + nAdded
+    nParsed := rows.Length
+    if (!nApplied) {
+        extraNotes := ""
+        for err in errors
+            extraNotes .= (extraNotes = "" ? "" : "`r`n") . err
+        ImportMgmt_FailAiImport("No rows applied", 2200, extraNotes)
         return false
     }
     ImportMgmt_Save(opportunities)
+    if (errors.Length > 0 || nApplied < nParsed) {
+        errorMsg := "Partial import: " . nApplied . " of " . nParsed . " row(s) applied"
+        extraNotes := ""
+        for err in errors
+            extraNotes .= (extraNotes = "" ? "" : "`r`n") . err
+        if (nApplied > 0)
+            extraNotes .= (extraNotes = "" ? "" : "`r`n") . "`r`nAlready applied " . nApplied
+            . " row(s) to opportunities.csv — re-deliver a corrected full pack."
+        ImportMgmt_FailAiImport(errorMsg, 3500, extraNotes)
+        return false
+    }
     ImportMgmt_ArchiveImported(sourcePath)
-    msg := "Imported "
-    parts := []
-    if (nUpdated)
-        parts.Push(nUpdated . " update(s)")
-    if (nAdded)
-        parts.Push(nAdded . " new")
-    msg .= parts.Length ? parts[1] . (parts.Length > 1 ? ", " . parts[2] : "") : "0 rows"
-    if (errors.Length)
-        msg .= " (" . errors.Length . " skipped)"
-    ImportMgmt_Notify(msg, 1800, BANNER_ACCENT_SUCCESS)
+    ImportMgmt_Notify("Imported " . nApplied . " row(s)", 1800, BANNER_ACCENT_SUCCESS)
     return true
 }

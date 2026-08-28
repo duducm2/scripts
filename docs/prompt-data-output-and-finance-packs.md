@@ -69,7 +69,27 @@ Typical human workflow:
 
 1. Open prompt (Utility Shortcuts or dictation) with dictation/context attached.
 2. AI returns a pack → save to Desktop (Quick Download `#!+Shift+9`, or copy fence).
-3. Open sub-app launcher → **AI import** → importer parses pack, upserts local CSV, archives source file.
+3. Open sub-app launcher → **AI import** → importer parses pack, upserts local CSV, archives source file on full success.
+
+### AI fix recovery
+
+When import fails completely or only some rows apply, importers write a Desktop fix note for the AI companion to correct its output:
+
+| Domain        | Fix file on Desktop     |
+| ------------- | ----------------------- |
+| Finance       | `FINANCE_AI_FIX.txt`    |
+| Memory Palace | `PALACE_AI_FIX.txt`     |
+| Job search    | `JOB_SEARCH_AI_FIX.txt` |
+
+Each fix file contains: **IMPORT ERROR**, **EXTRA NOTES** (per-row failures when applicable), **WHAT YOU MUST DO** (tailored guidance), and **DELIVERY RULES**.
+
+Recovery workflow:
+
+1. Importer writes fix file + error toast (mentions Desktop path).
+2. Paste fix file into the AI companion.
+3. AI re-delivers a corrected pack → save to Desktop → run **AI import** again.
+
+**Partial import (job search):** rows that passed validation are saved to `opportunities.csv`; the source pack stays on Desktop (not archived) until all rows import successfully.
 
 ---
 
@@ -164,7 +184,8 @@ Flow:
 2. AI returns `JOB_SEARCH_UPDATE.txt` pack → save to Desktop.
 3. Utility Shortcuts → **[J]** Import Management → **[I]** AI import.
 4. `ImportMgmt_MaterializeAiCsv` extracts CSV section; upserts rows by `id` or normalized `company` (no confirm UI).
-5. Archive source pack to `job_search/data/imported/`; toast on success. On failure, writes `Desktop/JOB_SEARCH_AI_FIX.txt`.
+5. **Full success:** archive source pack to `job_search/data/imported/`; success toast.
+6. **Partial or total failure:** write `Desktop/JOB_SEARCH_AI_FIX.txt`, keep pack on Desktop, error toast. Partial success still saves rows that passed to `opportunities.csv`.
 
 **CSV columns:**
 
