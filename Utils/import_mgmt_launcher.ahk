@@ -117,10 +117,16 @@ ImportMgmt_ShowMainMenu() {
     g_ImportMgmtGui.Add("Text", "x20 y278 w520",
         "PLAN_PACK*.txt → study plans")
 
+    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
+    g_ImportMgmtGui.Add("Text", "x20 y308 w520", "[N]  Desktop names")
+    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+    g_ImportMgmtGui.Add("Text", "x20 y334 w520",
+        "Manage pack filenames — copy, add, edit, delete")
+
     g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y322 w520",
-        "Also available: Finance [F] and Memory Palace [N] launchers")
-    g_ImportMgmtGui.Add("Text", "x20 y342 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y378 w520",
+        "Also available: Finance [F] and Memory Palace launchers")
+    g_ImportMgmtGui.Add("Text", "x20 y398 w520",
         "[H] help   Backspace utility shortcuts   Esc close")
 
     ImportMgmt_BindHotkeys([
@@ -128,11 +134,12 @@ ImportMgmt_ShowMainMenu() {
         ["m", ImportMgmt_OnImportFinanceMonthly],
         ["p", ImportMgmt_OnImportPalacePack],
         ["l", ImportMgmt_OnImportPlanPack],
+        ["n", ImportMgmt_OnDesktopNames],
         ["h", ImportMgmt_OnHelp],
         ["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()],
         ["Escape", (*) => ImportMgmt_CloseGui()]
     ])
-    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 380)
+    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 430)
 }
 
 ImportMgmt_OnHelp(*) {
@@ -169,7 +176,7 @@ ImportMgmt_ShowHelp() {
     }
     g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
-        "Esc / Backspace — main menu")
+    "Esc / Backspace — main menu")
     g_ImportMgmtGui.OnEvent("Close", (*) => ImportMgmt_ShowMainMenu())
     g_ImportMgmtGui.OnEvent("Escape", (*) => ImportMgmt_ShowMainMenu())
     ImportMgmt_BindHotkeys([
@@ -184,8 +191,9 @@ ImportMgmt_HelpText() {
     . "[D] Finance daily    FINANCE_DAILY.txt      →  transactions`r`n"
     . "[M] Finance monthly  FINANCE_MONTHLY.txt    →  accounts / goals`r`n"
     . "[P] Palace pack      PALACE_PACK.txt        →  palaces / beasts / atoms`r`n"
-    . "[L] Study plan       PLAN_PACK.txt          →  study plans`r`n`r`n"
-    . "Same imports also live under Finance [F] and Memory Palace [N].`r`n`r`n"
+    . "[L] Study plan       PLAN_PACK.txt          →  study plans`r`n"
+    . "[N] Desktop names    clipangel_desktop_names.csv  →  CRUD + copy`r`n`r`n"
+    . "Same imports also live under Finance [F] and Memory Palace launchers.`r`n`r`n"
     . "CANONICAL DESKTOP NAMES (always overwrite)`r`n"
     . "Save AI packs with the exact filename above on Desktop.`r`n"
     . "Never add updated, corrected, v2, or similar suffixes.`r`n"
@@ -199,6 +207,11 @@ ImportMgmt_HelpText() {
     . "  • Confirm dialog before save; appends transactions or monthly adjustments.`r`n`r`n"
     . "[P] Palace mnemonic pack / [L] Study plan pack`r`n"
     . "  • Pack upsert with cross-link validation; confirm before save.`r`n`r`n"
+    . "DESKTOP PACK NAMES ([N])`r`n"
+    . "  • Registry: assets/data/clipangel_desktop_names.csv`r`n"
+    . "  • [Enter] or [C] copies the bare name (e.g. FINANCE_DAILY) to clipboard`r`n"
+    . "  • [A] add, [E] edit, Delete remove; Esc / Backspace returns to this menu`r`n"
+    . "  • ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
     . "OUTCOMES`r`n"
     . "• Full success: local CSV saved; Desktop pack archived to */data/imported/`r`n"
     . "• Failure: Desktop fix file written (FINANCE_AI_FIX.txt or PALACE_AI_FIX.txt)`r`n`r`n"
@@ -232,4 +245,9 @@ ImportMgmt_OnImportPalacePack(*) {
 
 ImportMgmt_OnImportPlanPack(*) {
     Palace_ImportPlanPackFromDesktop()
+}
+
+ImportMgmt_OnDesktopNames(*) {
+    ImportMgmt_CloseGui()
+    ClipAngelExport_ShowNamesManager(ImportMgmt_ShowMainMenu)
 }

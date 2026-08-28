@@ -68,7 +68,7 @@ Utility Shortcuts category wiring: [`Utils/hotstring_selector_core.ahk`](../Util
 4. Create `*_import.ahk`: discover → materialize → parse → upsert → outcome; add `*_FailAiImport` + `*_WriteAiCompanionImportError` + `*_AiCompanionFixGuidance`.
 5. Create `*_launcher.ahk` with `[I] AI import` menu item.
 6. Wire Utility Shortcuts category in `hotstring_selector_core.ahk` / `handlers_02.ahk`; `#include` from `Utils.ahk`.
-7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable.
+7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable (Import Management `[J]` → `[N]`).
 8. **Update this doc** (domain table, columns, fix file name, flow steps).
 9. Pack-only columns must appear in the pack prompt header but **not** in `*_Headers()` / stored CSV unless intentionally persisted.
 
@@ -114,16 +114,16 @@ flowchart LR
 
 ### How the pieces connect
 
-| Piece                                                                                                                 | Role                                                                              |
-| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Prompt char** (`Char=` in [`assets/data/prompts.ini`](../assets/data/prompts.ini))                                  | Opens the prompt from Utility Shortcuts (`#!+U` → Prompts) or dictation flow      |
-| **`ExpectsDataOutput=1`**                                                                                             | Marks the prompt as requiring structured AIB output                               |
-| **`DataOutputFormat`** (`file` / `code`)                                                                              | Controls injected delivery contract: download chip vs single code fence           |
-| **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                      |
-| **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)               |
-| **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files                                        |
-| **Import launcher**                                                                                                   | Sub-app menu item that runs the importer on the newest Desktop match              |
-| **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context |
+| Piece                                                                                                                 | Role                                                                                |
+| --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Prompt char** (`Char=` in [`assets/data/prompts.ini`](../assets/data/prompts.ini))                                  | Opens the prompt from Utility Shortcuts (`#!+U` → Prompts) or dictation flow        |
+| **`ExpectsDataOutput=1`**                                                                                             | Marks the prompt as requiring structured AIB output                                 |
+| **`DataOutputFormat`** (`file` / `code`)                                                                              | Controls injected delivery contract: download chip vs single code fence             |
+| **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                        |
+| **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)                 |
+| **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files; CRUD + copy via Import Management `[N]` |
+| **Import launcher**                                                                                                   | Sub-app menu item that runs the importer on the newest Desktop match                |
+| **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context   |
 
 ### Pack-import domains
 
@@ -134,7 +134,9 @@ flowchart LR
 | Memory Palace   | `[N]` → `[I]` | `[P]`                   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes        |
 | Study plans     | `[N]` → `[J]` | `[L]`                   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes        |
 
-Import Management help: `[J]` → `[H]` (canonical names, overwrite policy, per-import rules).
+Import Management help: `[J]` → `[H]` (canonical names, overwrite policy, per-import rules, desktop name registry).
+
+**Desktop pack names:** `[J]` → `[N]` opens the name registry ([`clip_angel_export_desktop.ahk`](../Utils/clip_angel_export_desktop.ahk)). `[Enter]` or `[C]` copies the bare CSV `name` (e.g. `FINANCE_DAILY`) to the clipboard; `[A]` / `[E]` / Delete maintain the list. ClipAngel export uses the same registry when renaming files.
 
 Typical human workflow:
 
@@ -243,13 +245,14 @@ Post-import daily opens Transactions; card expenses show **card name**; transfer
 
 Utility Shortcuts **`[J]`** opens a menu that delegates to finance and palace importers:
 
-| Key   | Import                  |
-| ----- | ----------------------- |
-| `[D]` | Finance daily           |
-| `[M]` | Finance monthly         |
-| `[P]` | Palace mnemonic pack    |
-| `[L]` | Study plan pack         |
-| `[H]` | Help (per-import rules) |
+| Key   | Import                                        |
+| ----- | --------------------------------------------- |
+| `[D]` | Finance daily                                 |
+| `[M]` | Finance monthly                               |
+| `[P]` | Palace mnemonic pack                          |
+| `[L]` | Study plan pack                               |
+| `[N]` | Desktop pack names (CRUD + copy to clipboard) |
+| `[H]` | Help (per-import rules)                       |
 
 Same imports are also available from Finance `[F]` and Memory Palace `[N]` launchers.
 

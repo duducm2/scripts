@@ -14,6 +14,7 @@ global g_ClipAngelNameSourcePath := ""
 global g_ClipAngelNameFinalPath := ""
 global g_ClipAngelNamePicked := false
 global g_ClipAngelNameExt := "txt"
+global g_ClipAngelNameOnClose := unset
 
 ClipAngelExport_NamesCsvPath() {
     return A_ScriptDir "\assets\data\clipangel_desktop_names.csv"
@@ -554,6 +555,72 @@ ClipAngelExport_SetExt(*) {
 
 ClipAngelExport_Cancel(*) {
     ClipAngelExport_CloseGui()
+}
+
+ClipAngelExport_CopySelected(*) {
+    sel := ClipAngelExport_Selected()
+    if (!sel) {
+        try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
+        catch {
+        }
+        return
+    }
+    A_Clipboard := sel["name"]
+    try ShowCenteredOverlay_Utils("Copied: " . sel["name"], 1200, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
+ClipAngelExport_ManagerClose(*) {
+    global g_ClipAngelNameOnClose
+    cb := g_ClipAngelNameOnClose
+    g_ClipAngelNameOnClose := unset
+    ClipAngelExport_CloseGui()
+    if (IsSet(cb) && cb) {
+        try cb.Call()
+        catch {
+        }
+    }
+}
+
+ClipAngelExport_UpdateManagerHint() {
+    global g_ClipAngelNameHint
+    if (!IsObject(g_ClipAngelNameHint))
+        return
+    g_ClipAngelNameHint.Value := "[Enter] / [C] copy name   [A] add   [E] edit   Delete   Esc back"
+}
+
+; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]).
+ClipAngelExport_ShowNamesManager(onClose := unset) {
+    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameOnClose
+    if (IsObject(g_ClipAngelNameGui)) {
+        try WinActivate("ahk_id " g_ClipAngelNameGui.Hwnd)
+        catch {
+        }
+        return
+    }
+    ClipAngelExport_CloseGui()
+    g_ClipAngelNameOnClose := onClose
+    g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Desktop pack names")
+    g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h36")
+    ClipAngelExport_UpdateManagerHint()
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y50 w390 h310 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_CopySelected())
+    g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_ManagerClose())
+    g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_ManagerClose())
+    ClipAngelExport_Refresh()
+    ClipAngelExport_BindHotkeys([
+        ["Enter", (*) => ClipAngelExport_CopySelected()],
+        ["c", (*) => ClipAngelExport_CopySelected()],
+        ["a", (*) => ClipAngelExport_Add()],
+        ["Insert", (*) => ClipAngelExport_Add()],
+        ["e", (*) => ClipAngelExport_Edit()],
+        ["Delete", (*) => ClipAngelExport_Delete()],
+        ["Backspace", (*) => ClipAngelExport_ManagerClose()],
+        ["Escape", (*) => ClipAngelExport_ManagerClose()]
+    ])
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
