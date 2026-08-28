@@ -106,7 +106,6 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         "body_attach_clipboard"
         || mode = "auto_send")
     doAppendClipboard := (mode = "body_plus_clipboard") || appendClipboard
-    doAutoSend := (mode = "auto_send")
     contextEntries := ""
     pickedCount := 0
     if (doAttach) {
@@ -125,16 +124,21 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     }
     CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, doAutoSend, clip, contextEntries)
+        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, clip, contextEntries)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
     Sleep 150
     if (doAttach)
         UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
-    if (doPasteBody)
-        PasteStrippedPromptOfferReminders(body)
-    if (doAppendClipboard && clip != "") {
+    if (doPasteBody) {
+        onAfter := ""
+        if (doAppendClipboard && clip != "") {
+            clipCopy := clip
+            onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
+        }
+        PromptPaste_ShowOptionsThenPaste(body, onAfter, UtilitySelector_RestorePreviousHwnd)
+    } else if (doAppendClipboard && clip != "") {
         g_lastExpansion := 0
         InsertText(clip)
     }
@@ -474,93 +478,77 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
     return false
 }
 
-UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, doAutoSend :=
-    false, appendClip := "", contextEntries := "") {
+UtilitySelector_RestoreConsumerGeminiFocus(*) {
+    SetTitleMatchMode(2)
+    geminiHwnd := 0
+    try {
+        for hwnd in WinGetList("ahk_exe chrome.exe") {
+            try {
+                if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
+                    geminiHwnd := hwnd
+                    break
+                }
+            } catch {
+            }
+        }
+    } catch {
+    }
+    if (geminiHwnd) {
+        WinActivate("ahk_id " geminiHwnd)
+        WinWaitActive("ahk_id " geminiHwnd, , 2)
+    } else {
+        WinActivate("ahk_exe chrome.exe")
+        WinWaitActive("ahk_exe chrome.exe", , 2)
+    }
+    try {
+        uia := UIA_Browser()
+        Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+    } catch {
+    }
+}
+
+UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
+    contextEntries := "") {
     global g_lastExpansion
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
     HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
+    restoreFocus := ""
+    playGeminiChime := false
     try {
         if (companion = "enterprise") {
             GeminiEnterprise_OpenOrFocus()
-            if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
-            if (doPasteBody) {
-                InsertText(expansion)
-                try ReplaceComposerWithStrippedReminders(expansion)
-                catch {
-                }
-            }
-            if (appendClip != "") {
-                g_lastExpansion := 0
-                InsertText(appendClip)
-            }
-            if (doAutoSend)
-                Send "{Enter}"
+            restoreFocus := GeminiEnterprise_OpenOrFocus
         } else if (companion = "copilot") {
             CopilotWeb_OpenOrFocus()
-            if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
-            if (doPasteBody) {
-                InsertText(expansion)
-                try ReplaceComposerWithStrippedReminders(expansion)
-                catch {
-                }
-            }
-            if (appendClip != "") {
-                g_lastExpansion := 0
-                InsertText(appendClip)
-            }
-            if (doAutoSend)
-                Send "{Enter}"
+            restoreFocus := CopilotWeb_OpenOrFocus
         } else {
-            SetTitleMatchMode(2)
-            geminiHwnd := 0
-            try {
-                for hwnd in WinGetList("ahk_exe chrome.exe") {
-                    try {
-                        if IsConsumerGeminiChromeTitle(WinGetTitle("ahk_id " hwnd)) {
-                            geminiHwnd := hwnd
-                            break
-                        }
-                    } catch {
-                    }
-                }
-            } catch {
-            }
-
-            if (geminiHwnd) {
-                WinActivate("ahk_id " geminiHwnd)
-                WinWaitActive("ahk_id " geminiHwnd, , 2)
-            } else {
-                WinActivate("ahk_exe chrome.exe")
-                WinWaitActive("ahk_exe chrome.exe", , 2)
-            }
-
-            try {
-                uia := UIA_Browser()
-                Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
-            } catch {
-            }
-
-            if (doAttach)
-                UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
-            if (doPasteBody) {
-                InsertText(expansion)
-                ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
-                try ReplaceComposerWithStrippedReminders(expansion)
-                catch {
-                }
-            }
-            if (appendClip != "") {
-                g_lastExpansion := 0
-                InsertText(appendClip)
-            }
-            if (doAutoSend)
-                Send "{Enter}"
+            UtilitySelector_RestoreConsumerGeminiFocus()
+            restoreFocus := UtilitySelector_RestoreConsumerGeminiFocus
+            playGeminiChime := true
         }
+        if (doAttach)
+            UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
     } finally {
         HotstringGeminiBanner_Hide()
+    }
+    if (doPasteBody) {
+        onAfter := ""
+        if (appendClip != "") {
+            clipCopy := appendClip
+            if (playGeminiChime) {
+                onAfter := (*) => (ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav"),
+                g_lastExpansion := 0, InsertText(clipCopy))
+            } else {
+                onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
+            }
+        } else if (playGeminiChime) {
+            onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
+        }
+        PromptPaste_ShowOptionsThenPaste(expansion, onAfter, restoreFocus)
+    } else if (appendClip != "") {
+        g_lastExpansion := 0
+        InsertText(appendClip)
     }
 }
 

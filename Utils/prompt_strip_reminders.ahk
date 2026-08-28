@@ -4,7 +4,9 @@
 ; Loaded via #include into Utils.ahk.
 ; =============================================================================
 
-global g_PendingPromptHumanReminders := ""
+global g_PendingPromptPasteFullText := ""
+global g_PendingPromptPasteOnAfter := ""
+global g_PendingPromptPasteRestoreFocus := ""
 
 ; Keep text through the last standalone "---" line, then two blank lines for comments.
 ; Returns "" if no --- divider is found (caller shows error).
@@ -84,53 +86,90 @@ ReplaceComposerWithStrippedReminders(fullText, settleMs := 250) {
     return ReplaceFocusedEditWithText(stripped)
 }
 
-PromptHumanReminders_ClearPending(*) {
-    global g_PendingPromptHumanReminders
-    g_PendingPromptHumanReminders := ""
-}
-
-PromptHumanReminders_OnYes(*) {
-    global g_PendingPromptHumanReminders, g_lastExpansion
-    reminders := g_PendingPromptHumanReminders
-    g_PendingPromptHumanReminders := ""
-    if (reminders = "")
-        return
-    g_lastExpansion := 0
-    InsertText(reminders)
-}
-
-PromptHumanReminders_OnTimeout(*) {
-    PromptHumanReminders_ClearPending()
-}
-
-; Strip in memory, paste once, then optional 3s Y banner to append reminders.
-PasteStrippedPromptOfferReminders(fullText) {
-    global g_PendingPromptHumanReminders
+PromptPaste_ResolveText(fullText, includeReminders) {
+    if (includeReminders)
+        return fullText
     stripped := StripPromptHumanReminders(fullText)
-    reminders := ExtractPromptHumanReminders(fullText)
-    if (stripped = "") {
-        InsertText(fullText)
+    return (stripped != "") ? stripped : fullText
+}
+
+PromptPaste_ClearPending(*) {
+    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
+    g_PendingPromptPasteFullText := ""
+    g_PendingPromptPasteOnAfter := ""
+    g_PendingPromptPasteRestoreFocus := ""
+}
+
+PromptPaste_ExecuteChoice(choice) {
+    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
+    fullText := g_PendingPromptPasteFullText
+    onAfter := g_PendingPromptPasteOnAfter
+    restoreFocus := g_PendingPromptPasteRestoreFocus
+    PromptPaste_ClearPending()
+    if (fullText = "")
         return
+    includeReminders := (choice = "reminders")
+    doSend := (choice = "send")
+    if (restoreFocus != "") {
+        try restoreFocus()
+        catch {
+        }
+        Sleep 80
     }
-    InsertText(stripped)
-    if (reminders = "")
+    textToPaste := PromptPaste_ResolveText(fullText, includeReminders)
+    InsertText(textToPaste)
+    if (onAfter != "") {
+        try onAfter()
+        catch {
+        }
+    }
+    if (doSend)
+        Send "{Enter}"
+}
+
+PromptPaste_OnIncludeReminders(*) {
+    PromptPaste_ExecuteChoice("reminders")
+}
+
+PromptPaste_OnPasteOnly(*) {
+    PromptPaste_ExecuteChoice("strip")
+}
+
+PromptPaste_OnSendNow(*) {
+    PromptPaste_ExecuteChoice("send")
+}
+
+PromptPaste_OnTimeout(*) {
+    PromptPaste_OnPasteOnly()
+}
+
+; Pre-paste banner: Y = full text, Esc/timeout = strip, S = strip + Enter after paste (and onAfter).
+PromptPaste_ShowOptionsThenPaste(fullText, onAfterPaste := "", restoreFocus := "") {
+    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
+    if (fullText = "")
         return
-    g_PendingPromptHumanReminders := reminders
+    g_PendingPromptPasteFullText := fullText
+    g_PendingPromptPasteOnAfter := onAfterPaste
+    g_PendingPromptPasteRestoreFocus := restoreFocus
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
-    keyCallbacks := Map("Y", PromptHumanReminders_OnYes, "Escape", PromptHumanReminders_ClearPending)
+    keyCallbacks := Map(
+        "Y", PromptPaste_OnIncludeReminders,
+        "S", PromptPaste_OnSendNow,
+        "Escape", PromptPaste_OnPasteOnly
+    )
     StandardLoadingBar_ShowWithKeys(
-        "❓ Paste human reminders? (3s)",
+        "❓ Paste prompt? (3s)",
         keyCallbacks,
         3000,
         0,
-        PromptHumanReminders_OnTimeout,
+        PromptPaste_OnTimeout,
         BANNER_ACCENT_INTERMEDIATE,
         420,
         17,
         "",
         true,
-        "[Y] Yes  [Esc] Skip",
+        "[Y] Include reminders  [S] Send now  [Esc] Paste",
         true,
         true,
         true

@@ -1520,10 +1520,10 @@ Paste modes
 • body_plus_clipboard — paste body then append clipboard.
 • body_attach_clipboard — same as default (explicit).
 • attach_only — attach context files only.
-• auto_send — paste body/attach like default, then Enter (Gemini path).
+• auto_send — same attach/paste as default; send is chosen at paste time via [S] on the pre-paste banner (all paths).
 
 Author notes
-• Content after a --- line is stripped before send (human reminders).
+• Content after a --- line is human reminders; default paste (Esc) strips them. Use [Y] on the pre-paste banner to include them, or [S] to strip and submit.
 
 Context tab (Edit prompt)
 • General — name, category, char, prompt file, tags, variables, paste mode, draft.
