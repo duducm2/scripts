@@ -46,13 +46,13 @@ flowchart TD
 
 ## Global hotkey matrix
 
-| Chord                | Gemini (personal)                       | Copilot (work)                           | Gemini Enterprise (work)                                              |
-| -------------------- | --------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
-| Win+Alt+Shift+I      | Open/focus consumer Gemini + prompt     | Open/focus Copilot + composer            | Open/focus Enterprise + prompt                                        |
-| Win+Alt+Shift+P      | 1× copy last message; 2× copy last code | 1× copy last response; 2× copy last code | 1× copy last response; 2× copy last code                              |
-| Win+Alt+Shift+8      | Pronunciation lookup                    | Copilot pronunciation                    | Enterprise pronunciation (picker → submit → banner)                   |
-| Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2        | Same → Copilot                           | Same → Enterprise                                                     |
-| Ctrl+Alt+Win+L / D2C | Paste/submit + monitor                  | Copilot paste/submit                     | Enterprise paste/submit; post-response copy/read-aloud → prompt focus |
+| Chord                | Gemini (personal)                                                                                                          | Copilot (work)                                          | Gemini Enterprise (work)                                              |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- |
+| Win+Alt+Shift+I      | Open/focus consumer Gemini + prompt                                                                                        | Open/focus Copilot + composer                           | Open/focus Enterprise + prompt                                        |
+| Win+Alt+Shift+P      | 1× copy last message; 2× copy last code; then 5s post-copy banner (Desktop/Favorite/Transfer/Read/Paste window/Clip Angel) | Same + Copilot copy paths; Read uses Copilot read-aloud | Same copy; post-copy banner omits Read (Enterprise)                   |
+| Win+Alt+Shift+8      | Pronunciation lookup                                                                                                       | Copilot pronunciation                                   | Enterprise pronunciation (picker → submit → banner)                   |
+| Ctrl+Alt+Win+4       | Toggle Gemini Chrome tab 1 <-> 2                                                                                           | Same → Copilot                                          | Same → Enterprise                                                     |
+| Ctrl+Alt+Win+L / D2C | Paste/submit + monitor                                                                                                     | Copilot paste/submit                                    | Enterprise paste/submit; post-response copy/read-aloud → prompt focus |
 
 Entry points: [`Gemini/gemini_open.ahk`](../Gemini/gemini_open.ahk), [`Gemini/hotkey_read_copy.ahk`](../Gemini/hotkey_read_copy.ahk), [`Gemini/hotkey_pronunciation.ahk`](../Gemini/hotkey_pronunciation.ahk), [`Utils/utility_shortcuts.ahk`](../Utils/utility_shortcuts.ahk), [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk).
 

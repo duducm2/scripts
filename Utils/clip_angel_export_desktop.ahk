@@ -2,6 +2,7 @@
 ; Utils module: clip_angel_export_desktop.ahk
 ; Copy Clip Angel Row 0 (newest clip) preview text to a UTF-8 .txt on Desktop,
 ; then prompt to rename from a persisted name list (inline CRUD).
+; Also hosts HotkeyCopy_ShowPostCopyBanner (#!+p 1×/2× post-copy destination menu).
 ; Utility Shortcuts: #!+U → Macros → [c]
 ; =============================================================================
 
@@ -668,7 +669,10 @@ ClipAngelExport_PromptRename(sourcePath) {
     return g_ClipAngelNameFinalPath
 }
 
-ClipAngelExport_OnCancelDesktop(*) {
+; Post-#!+p banner context: origin window + companion for Transfer / Read / Paste / Clip Angel.
+global g_HotkeyCopy_PostCopyContext := { originHwnd: 0, isCode: false, companion: "" }
+
+HotkeyCopy_ClosePostCopyBanner() {
     try StandardLoadingBar_CloseKeysOverlay()
     catch {
     }
@@ -677,24 +681,18 @@ ClipAngelExport_OnCancelDesktop(*) {
     }
 }
 
+ClipAngelExport_OnCancelDesktop(*) {
+    HotkeyCopy_ClosePostCopyBanner()
+}
+
 ClipAngelExport_OnConfirmDesktop(*) {
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
+    HotkeyCopy_ClosePostCopyBanner()
     Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
     ClipAngel_ExportLastClipToDesktop()
 }
 
 ClipAngelExport_OnFavoriteClip(*) {
-    try StandardLoadingBar_CloseKeysOverlay()
-    catch {
-    }
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
+    HotkeyCopy_ClosePostCopyBanner()
     clip := Trim(A_Clipboard)
     if (clip = "" || StrLen(clip) < 10) {
         ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
@@ -703,30 +701,185 @@ ClipAngelExport_OnFavoriteClip(*) {
     MarkLastClipAsFavorite("first", true)
 }
 
-; After #!+p 1×/2× successful copy: 3s Y/F/N. Y = Desktop export; F = favorite; N or timeout = dismiss.
-ClipAngelExport_PromptAfterHotkeyCopy() {
+; [C] Transfer clipboard to a Cursor/VS Code window (same as D2C Copy response? C).
+HotkeyCopy_OnTransfer(*) {
+    global g_HotkeyCopy_PostCopyContext
+    HotkeyCopy_ClosePostCopyBanner()
+    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+    clipRaw := A_Clipboard
+    clip := Trim(clipRaw)
+    if (clip = "" || StrLen(clip) < 10) {
+        ShowCenteredOverlay_Utils("❌ Clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    targetHwnd := CursorTransfer_ShowWindowSelector(0)
+    if (!targetHwnd) {
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            WinActivate("ahk_id " originHwnd)
+        try A_Clipboard := clipRaw
+        return
+    }
+    try A_Clipboard := clipRaw
+    CursorTransfer_ActivateFocusPaste(targetHwnd, originHwnd)
+}
+
+; [R] Read aloud already-copied message (1× only; skip for code / Enterprise).
+; Uses Gemini.ahk IPC (same as D2C DoCopyCore) so Utils need not call Gemini-only functions.
+HotkeyCopy_OnRead(*) {
+    global g_HotkeyCopy_PostCopyContext
+    HotkeyCopy_ClosePostCopyBanner()
+    companion := g_HotkeyCopy_PostCopyContext.companion
+    if (companion = "enterprise") {
+        ShowCenteredOverlay_Utils("❌ Read aloud not supported for Gemini Enterprise", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+    WM_TRIGGER_READ_ALOUD := 0x8004
+    WM_TRIGGER_COPILOT_READ_ALOUD := 0x8006
+    wmRead := (companion = "copilot") ? WM_TRIGGER_COPILOT_READ_ALOUD : WM_TRIGGER_READ_ALOUD
+    targetHwnd := GetGeminiScriptMsgTargetHwnd()
+    if (!targetHwnd) {
+        ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    prevDH := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        ; wParam=1: already copied; skip internal Copy. lParam: origin for focus restore.
+        SendMessage(wmRead, 1, originHwnd, , "ahk_id " targetHwnd, , , , 120000)
+    } catch {
+        ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
+    } finally {
+        DetectHiddenWindows prevDH
+    }
+}
+
+; [W] Paste clipboard to a picked visible window (same as D2C Send dictation? W / #!+L).
+HotkeyCopy_OnPasteWindow(*) {
+    global g_HotkeyCopy_PostCopyContext
+    HotkeyCopy_ClosePostCopyBanner()
+    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+    D2C_FlowManager.GetInstance().PasteClipboardToVisibleWindow(originHwnd)
+}
+
+; [O] Open Clip Angel on newest clip and Edit text (F4) — same path as D2C Send dictation? O.
+HotkeyCopy_OnClipAngelEdit(*) {
+    global g_HotkeyCopy_PostCopyContext
+    HotkeyCopy_ClosePostCopyBanner()
+    if !ClipAngel_TryAcquireAutomationLock()
+        return
+
+    StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
+    try {
+        originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
+
+        ActivateClipAngelWithFocusCorrection(true, originMon, true)
+        clipHwnd := ClipAngel_MainHwnd()
+        if (!clipHwnd) {
+            StandardLoadingBar_Update("❌ Clip Angel: window not found", BANNER_ACCENT_ERROR)
+            return
+        }
+
+        if (!WinWaitActive("ahk_id " clipHwnd, , 0.6)) {
+            StandardLoadingBar_Update("❌ Clip Angel: failed to activate", BANNER_ACCENT_ERROR)
+            return
+        }
+
+        StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
+        ClipAngel_LeaveFavoritesFilter(clipHwnd)
+        priorSendLevel := A_SendLevel
+        SendLevel 0
+        SendInput "{Tab}"
+        Sleep 40
+        SendInput "^a"
+        Sleep 40
+        SendInput "^c"
+        try ClipWait(0.3)
+        catch {
+        }
+        SendInput "{F10}"
+        ClipAngel_UiaWaitPreviewFocused(clipHwnd, 150)
+        SendInput "{Up}"
+        Sleep 40
+        SendInput "{F4}"
+        SendLevel priorSendLevel
+
+        StandardLoadingBar_Update("⏳ Clip Angel: maximizing...", BANNER_ACCENT_INTERMEDIATE)
+        TryMaximizeWindow(clipHwnd)
+        StandardLoadingBar_Update("✅ Clip Angel: ready", BANNER_ACCENT_SUCCESS)
+    } finally {
+        StandardLoadingBar_Hide(350)
+        ClipAngel_ReleaseAutomationLock()
+    }
+}
+
+; After #!+p 1×/2× successful copy: 5s destination banner (Desktop / Favorite / Transfer / …).
+; isCode: true after double-tap code copy (omits Read aloud).
+HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
+    global g_HotkeyCopy_PostCopyContext
+    companion := ""
+    try companion := ResolveGlobalAICompanion()
+    catch {
+        companion := ""
+    }
+    g_HotkeyCopy_PostCopyContext := { originHwnd: originHwnd, isCode: isCode, companion: companion }
+
     keyCallbacks := Map(
         "Y", ClipAngelExport_OnConfirmDesktop,
         "F", ClipAngelExport_OnFavoriteClip,
-        "N", ClipAngelExport_OnCancelDesktop)
+        "C", HotkeyCopy_OnTransfer,
+        "W", HotkeyCopy_OnPasteWindow,
+        "O", HotkeyCopy_OnClipAngelEdit,
+        "N", ClipAngelExport_OnCancelDesktop,
+        "Escape", ClipAngelExport_OnCancelDesktop)
+
+    ; Read aloud only for full message (1×); Enterprise has no read-aloud path yet.
+    if (!isCode && companion != "enterprise")
+        keyCallbacks["R"] := HotkeyCopy_OnRead
+
+    if (isCode) {
+        title := "❓ Copied code — what next? (5s)"
+        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+    } else if (companion = "enterprise") {
+        title := "❓ Copied message — what next? (5s)"
+        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+    } else {
+        title := "❓ Copied message — what next? (5s)"
+        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+    }
+
+    timeoutMs := 5000
+    try timeoutMs := D2C_SUBMIT_MENU_TIMEOUT_MS
+    catch {
+        timeoutMs := 5000
+    }
+
     StandardLoadingBar_ShowWithKeys(
-        "❓ Save to Desktop or favorite? (3s)",
+        title,
         keyCallbacks,
-        3000,
+        timeoutMs,
         0,
         ClipAngelExport_OnCancelDesktop,
         BANNER_ACCENT_INTERMEDIATE,
-        520,
+        900,
         17,
         "",
         false,
-        "[Y] Desktop  [F] Favorite  [N] No",
+        pk,
+        true,
         true)
 }
 
-; Back-compat alias used by earlier code-copy wiring.
+; Back-compat aliases.
+ClipAngelExport_PromptAfterHotkeyCopy() {
+    HotkeyCopy_ShowPostCopyBanner(false)
+}
+
 ClipAngelExport_PromptAfterCodeCopy() {
-    ClipAngelExport_PromptAfterHotkeyCopy()
+    HotkeyCopy_ShowPostCopyBanner(true)
 }
 
 ClipAngel_ExportLastClipToDesktop() {

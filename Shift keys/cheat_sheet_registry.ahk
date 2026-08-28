@@ -1228,7 +1228,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === AI CHAT (Chrome) ===
     [Win+Alt+Shift+I] > Opens {AI_PROVIDER}
     [Win+Alt+Shift+8] > Pronunciation lookup ({AI_PROVIDER}): 1× English, 2× German, hold = EN/DE/PT ListView
-    [Win+Alt+Shift+P] > {AI_PROVIDER}: 1× copy last message; 2× (within 400ms) copy last code; then 3s [Y] Desktop [F] Favorite [N] No
+    [Win+Alt+Shift+P] > {AI_PROVIDER}: 1× copy last message; 2× (within 400ms) copy last code; then 5s [Y] Desktop [F] Favorite [C] Transfer [R] Read (1× only) [W] Paste window [O] Clip Angel [N] No
     
     === DESKTOP ===
     [Win+Alt+Shift+O] > Newest Desktop item: 1× cut (return to previous window); 2× open; hold 700ms+ copy path as text
