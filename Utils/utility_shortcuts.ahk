@@ -26,11 +26,80 @@
     ShowHotstringSelector("Macros")
 }
 
-; Copy selected text, or the word under the mouse cursor; fallback to prior clipboard text.
-OpenClipboardLinkInChrome_ResolveText() {
+; Extract the first http(s) URL from plain text; normalize bare www. hosts.
+OpenClipboardLinkInChrome_ExtractHttpUrl(text) {
+    t := Trim(text)
+    if (t = "")
+        return ""
+    if StudyLink_IsValidHttpUrl(t)
+        return t
+    if RegExMatch(t, "i)(https?://[^\s`"<>]+)", &m) {
+        url := RegExReplace(m[1], "[)\].,;:!?]+$")
+        if StudyLink_IsValidHttpUrl(url)
+            return url
+    }
+    if RegExMatch(t, "i)\b((?:https?://|www\.)[^\s`"<>]+)", &m2) {
+        url := RegExReplace(m2[1], "[)\].,;:!?]+$")
+        if (SubStr(StrLower(url), 1, 4) = "www.")
+            url := "https://" url
+        if StudyLink_IsValidHttpUrl(url)
+            return url
+    }
+    return ""
+}
+
+OpenClipboardLinkInChrome_UiaElementUrl(el) {
+    if !IsObject(el)
+        return ""
+    fields := []
+    for prop in ["Value", "LegacyIAccessibleValue", "HelpText", "Name"] {
+        try fields.Push(el.%prop%)
+        catch {
+        }
+    }
+    for field in fields {
+        url := OpenClipboardLinkInChrome_ExtractHttpUrl(field)
+        if (url != "")
+            return url
+    }
+    return ""
+}
+
+; Prefer UIA at the mouse point — copy/double-click often returns anchor text, not href.
+OpenClipboardLinkInChrome_UiaUrlFromPoint(mx := "", my := "") {
+    if (mx = "" || my = "")
+        MouseGetPos(&mx, &my)
+    el := 0
+    try el := UIA.SmallestElementFromPoint(mx, my)
+    catch {
+        try el := UIA.ElementFromPoint(mx, my)
+        catch
+            return ""
+    }
+    loop 12 {
+        if !IsObject(el)
+            break
+        url := OpenClipboardLinkInChrome_UiaElementUrl(el)
+        if (url != "")
+            return url
+        try el := el.Parent
+        catch
+            break
+    }
+    return ""
+}
+
+; Resolve URL and/or plain text from hover, selection, or clipboard fallback.
+OpenClipboardLinkInChrome_ResolveTarget(&url := "", &text := "") {
+    url := ""
+    text := ""
     savedClipAll := ClipboardAll()
     savedClipText := Trim(A_Clipboard)
     try {
+        url := OpenClipboardLinkInChrome_UiaUrlFromPoint()
+        if (url != "")
+            return
+
         MouseGetPos(, , &hwndUnder)
         if (hwndUnder) {
             try WinActivate("ahk_id " hwndUnder)
@@ -40,8 +109,9 @@ OpenClipboardLinkInChrome_ResolveText() {
         A_Clipboard := ""
         if (TryCopySelectionToClipboard_QuickLookAware()) {
             text := Trim(A_Clipboard)
-            if (text != "")
-                return text
+            url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
+            if (url != "" || text != "")
+                return
         }
 
         A_Clipboard := ""
@@ -52,25 +122,28 @@ OpenClipboardLinkInChrome_ResolveText() {
         Send "^c"
         if ClipWait(0.7) {
             text := Trim(A_Clipboard)
-            if (text != "")
-                return text
+            url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
+            if (url != "" || text != "")
+                return
         }
 
-        return savedClipText
+        text := savedClipText
+        url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
     } finally {
         try A_Clipboard := savedClipAll
     }
 }
 
-; Macros [L] — copy hovered/selected text or clipboard; open link in Chrome or Google search.
+; Macros [L] — hovered hyperlink, selected text, or clipboard; open in Chrome or Google search.
 OpenClipboardLinkInChrome() {
-    text := OpenClipboardLinkInChrome_ResolveText()
-    if (text = "") {
+    url := ""
+    text := ""
+    OpenClipboardLinkInChrome_ResolveTarget(&url, &text)
+    if (url = "" && text = "") {
         ShowCenteredOverlay_Utils("❌ No text to open or search.", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    if StudyLink_IsValidHttpUrl(text) {
-        url := text
+    if (url != "") {
         banner := "✅ Opening link in Chrome…"
     } else {
         url := "https://www.google.com/search?q=" . StudyLink_UrlEncode(text)
