@@ -490,11 +490,42 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
 
 ; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
 PROMPT_PASTE_AUTO_SEND_CAP_MS := 15000
+PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
 
 PromptPaste_SendRemainingMs(tDeadline) {
     if (!tDeadline)
         return PROMPT_PASTE_AUTO_SEND_CAP_MS
     return Max(0, tDeadline - A_TickCount)
+}
+
+; Reserve time at end of cap for focus + Enter/submit + generation confirm (D2C-style).
+PromptPaste_SendWaitBudget(tDeadline) {
+    return Max(0, PromptPaste_SendRemainingMs(tDeadline) - PROMPT_PASTE_SEND_MIN_SUBMIT_MS)
+}
+
+PromptPaste_FocusCompanionComposer(hwnd, companionId) {
+    companionId := StrLower(Trim(companionId))
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if (!WinActive("ahk_id " hwnd)) {
+        WinActivate("ahk_id " hwnd)
+        if (!WinWaitActive("ahk_id " hwnd, , 2))
+            return false
+    }
+    try {
+        if (companionId = "enterprise") {
+            root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+            return IsObject(root) && GeminiEnterprise_FocusComposer(root, false)
+        }
+        if (companionId = "copilot")
+            return CopilotWeb_FocusComposerForHwnd(hwnd, false)
+        if (companionId = "gemini") {
+            uia := UIA_Browser("ahk_id " hwnd)
+            return !!Gemini_FocusPromptWithChime(uia, { playChime: false, useAnchorFallback: true })
+        }
+    } catch {
+    }
+    return WinActive("ahk_id " hwnd)
 }
 
 PromptPaste_UiaForCompanion(hwnd, companionId) {
@@ -546,7 +577,7 @@ PromptPaste_WaitForGenerationStarted(hwnd, companionId, timeoutMs := 5000) {
     return false
 }
 
-PromptPaste_SubmitCompanionNoActivate(hwnd, companionId, tDeadline := 0) {
+PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
     companionId := StrLower(Trim(companionId))
     if (!hwnd || !WinExist("ahk_id " hwnd))
@@ -555,60 +586,51 @@ PromptPaste_SubmitCompanionNoActivate(hwnd, companionId, tDeadline := 0) {
         return true
     if (PromptPaste_SendRemainingMs(tDeadline) <= 0)
         return false
-    if (companionId = "enterprise") {
-        try {
-            uia := UIA_Browser("ahk_id " hwnd)
-            return GeminiEnterprise_TrySubmit(uia)
-        } catch {
-            return false
-        }
-    }
-    if (companionId = "copilot") {
-        try {
-            uia := UIA_Browser("ahk_id " hwnd)
-            return CopilotWeb_TrySubmit(uia)
-        } catch {
-            return false
-        }
-    }
-    if (companionId = "gemini") {
-        uia := 0
-        try uia := UIA_Browser("ahk_id " hwnd)
-        catch {
-            return false
-        }
-        if (!IsObject(uia))
-            return false
-        contentMs := Min(g_GeminiDelayedSubmit_WaitContentMaxMs, PromptPaste_SendRemainingMs(tDeadline))
-        if (contentMs <= 0)
-            return false
-        if (!Gemini_WaitForPromptContent(uia, contentMs))
-            return false
-        for fallback in ["enter", "ctrlEnter"] {
-            if (PromptPaste_SendRemainingMs(tDeadline) <= 0)
-                break
-            Gemini_TrySubmitOnce(uia, fallback)
-            endTick := tDeadline ? Min(A_TickCount + 2000, tDeadline) : (A_TickCount + 2000)
-            while (A_TickCount < endTick) {
-                if (Gemini_SubmitAttemptSucceeded(uia))
-                    return true
-                Sleep 200
-            }
-        }
-        return false
-    }
     prevHwnd := WinExist("A")
+    result := false
     try {
-        if (!WinActive("ahk_id " hwnd)) {
+        if (companionId != "") {
+            if (!PromptPaste_FocusCompanionComposer(hwnd, companionId))
+                return false
+            Sleep 200
+        } else if (!WinActive("ahk_id " hwnd)) {
             WinActivate("ahk_id " hwnd)
             WinWaitActive("ahk_id " hwnd, , 1)
         }
-        Send "{Enter}"
-        return true
+        if (companionId = "enterprise") {
+            try {
+                uia := UIA_Browser("ahk_id " hwnd)
+                result := GeminiEnterprise_TrySubmit(uia)
+            } catch {
+                result := false
+            }
+        } else if (companionId = "copilot") {
+            try {
+                uia := UIA_Browser("ahk_id " hwnd)
+                result := CopilotWeb_TrySubmit(uia)
+            } catch {
+                result := false
+            }
+        } else if (companionId = "gemini") {
+            uia := 0
+            try uia := UIA_Browser("ahk_id " hwnd)
+            catch {
+                uia := 0
+            }
+            if (IsObject(uia)) {
+                contentMs := Min(g_GeminiDelayedSubmit_WaitContentMaxMs, PromptPaste_SendRemainingMs(tDeadline))
+                if (contentMs > 0 && Gemini_WaitForPromptContent(uia, contentMs))
+                    result := Gemini_TrySubmit(hwnd, uia)
+            }
+        } else {
+            Send "{Enter}"
+            result := true
+        }
     } finally {
         if (prevHwnd && prevHwnd != hwnd && WinExist("ahk_id " prevHwnd))
             WinActivate("ahk_id " prevHwnd)
     }
+    return result
 }
 
 ; [Y] send: non-blocking loading bar, wait for upload idle, UIA submit, confirm generation started.
@@ -655,20 +677,20 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             catch {
             }
             ready := false
-            waitMs := PromptPaste_SendRemainingMs(tDeadline)
+            waitMs := PromptPaste_SendWaitBudget(tDeadline)
             if (waitMs > 0) {
                 try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs)
                 catch {
                 }
             }
-            if (!ready && attachCount > 0) {
+            if (!ready && attachCount > 0 && PromptPaste_SendRemainingMs(tDeadline) > PROMPT_PASTE_SEND_MIN_SUBMIT_MS) {
                 try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
                 catch {
                 }
             }
         }
 
-        if (PromptPaste_SendRemainingMs(tDeadline) <= 0) {
+        if (PromptPaste_SendRemainingMs(tDeadline) <= PROMPT_PASTE_SEND_MIN_SUBMIT_MS / 2) {
             ok := false
         } else if (companionId != "" && PromptPaste_CompanionIsGenerating(hwnd, companionId)) {
             ok := true
@@ -678,7 +700,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
                 catch {
                 }
             }
-            submitted := PromptPaste_SubmitCompanionNoActivate(hwnd, companionId, tDeadline)
+            submitted := PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
             if (companionId != "") {
                 if (showBar) {
                     try StandardLoadingBar_Update("⏳ Confirming…", BANNER_ACCENT_INTERMEDIATE)
@@ -686,8 +708,9 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
                     }
                 }
                 confirmMs := PromptPaste_SendRemainingMs(tDeadline)
-                ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs)) ||
-                submitted
+                ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs))
+                if (!ok && submitted)
+                    ok := PromptPaste_CompanionIsGenerating(hwnd, companionId)
             } else {
                 ok := submitted
             }
