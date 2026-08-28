@@ -1,0 +1,7 @@
+﻿===PREVIEW===
+1 row(s) · Added/Upserted Bosch IT Product Owner role
+===END_PREVIEW===
+===FILE: JOB_SEARCH_UPDATE.csv===
+action,id,company,role_title,job_url,job_description,status,status_date,applied_date,notes
+,JOB_BOSCH,Bosch,IT PRODUCT OWNER - 35575,https://jobs.smartrecruiters.com/BoschGroup/744000144780020-it-product-owner-35575?trid=78213a3f-df44-4484-80e3-5cc61c646da9&rsid=f5316a20-cd56-483c-85cf-c25269a6dfef,"We are seeking a strategic and customer-focused IT Product Owner to support the vision, roadmap, and delivery of our Distributor and Branch Product Information Portal. This platform supports the full product lifecycle, including Product Information, Training, Marketing, Sales, and Warranty applications, serving both internal stakeholders and external customers. A key initial focus of this role will be to support the business transition from JCI to Bosch, ensuring continuity, optimization, and enhancement of the portal experience during this critical transformation. The Product Owner will drive alignment across Product Manager and Development teams while maintaining strong delivery execution in an agile environment.",applied,2026-08-28,,Waiting for their response
+===END_FILE===
