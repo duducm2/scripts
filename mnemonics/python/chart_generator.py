@@ -1307,8 +1307,41 @@ def build_html(
       cursor: default;
     }}
     .plan-section {{
-      margin-bottom: 1.75rem;
+      margin-bottom: 1rem;
       scroll-margin-top: 0.75rem;
+    }}
+    .plan-section.level-2 {{
+      background: #161922;
+      border-left: 3px solid var(--gold);
+      border-radius: 0 10px 10px 0;
+      padding: 0.85rem 1rem 1rem;
+      margin-bottom: 1.5rem;
+    }}
+    .plan-section.level-3 {{
+      background: #1a1e28;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem 0.75rem;
+      margin-top: 0.65rem;
+    }}
+    .plan-section.plan-topic-card {{
+      background: #1e2430;
+      border: 1px solid #3a4560;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.65rem;
+    }}
+    .plan-section.level-2.plan-topic-card {{
+      background: #181c26;
+      border: 1px solid #3a4560;
+      border-left: 3px solid var(--gold);
+    }}
+    .plan-section.level-3.plan-topic-card {{
+      background: #1c2130;
+    }}
+    .plan-topic-body {{
+      min-height: 0;
     }}
     .plan-section h3, .plan-section h4, .plan-section h5, .plan-section h6 {{
       color: var(--text);
@@ -1320,11 +1353,16 @@ def build_html(
       color: var(--gold);
       border-bottom: 1px solid var(--line);
       padding-bottom: 0.35rem;
-      margin-top: 0.25rem;
+      margin-top: 0;
     }}
-    .plan-section.level-3 > h4 {{ font-size: 1.12rem; margin-top: 0.5rem; }}
-    .plan-section.level-4 > h5 {{ font-size: 1.02rem; color: var(--muted); }}
+    .plan-section.level-3 > h4 {{ font-size: 1.12rem; margin-top: 0; }}
+    .plan-section.level-4 > h5 {{ font-size: 1.02rem; color: var(--text); }}
     .plan-section.level-5 > h6 {{ font-size: 0.95rem; color: var(--muted); }}
+    .plan-topic-card > h5, .plan-topic-card > h6 {{
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 0.45rem;
+    }}
     .plan-todos {{
       list-style: none;
       margin: 0 0 0.65rem;
@@ -1376,78 +1414,90 @@ def build_html(
       background: #2a1a1a;
     }}
     .plan-sources {{
-      margin: 0.5rem 0 0.85rem 0;
+      margin: 0.65rem 0 0;
+      padding-top: 0.45rem;
+      border-top: 1px solid var(--line);
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
+      gap: 0.3rem 0.4rem;
       align-items: center;
+    }}
+    .plan-sources-footer {{
+      margin-top: auto;
     }}
     .plan-sources-label {{
       width: 100%;
-      font-size: 0.78rem;
-      font-weight: 650;
-      color: var(--gold);
-      letter-spacing: 0.02em;
-      margin-bottom: 0.1rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 0.05rem;
     }}
     .plan-source-chip {{
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.25rem;
       max-width: 100%;
-      background: var(--panel);
-      border: 1px solid var(--line);
+      background: rgba(28, 31, 40, 0.6);
+      border: 1px solid rgba(42, 46, 58, 0.9);
       border-radius: 999px;
-      padding: 0.2rem 0.45rem 0.2rem 0.35rem;
-      font-size: 0.86rem;
-      line-height: 1.3;
+      padding: 0.12rem 0.35rem 0.12rem 0.28rem;
+      font-size: 0.78rem;
+      line-height: 1.25;
     }}
-    .plan-source-chip:hover {{
+    .plan-source-chip:hover, .plan-source-chip:focus-within {{
       border-color: #4a6a9a;
-      background: #1a2438;
+      background: rgba(26, 36, 56, 0.85);
     }}
     .plan-source-link {{
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      color: #cfe4ff;
+      gap: 0.28rem;
+      color: #a8c4e8;
       text-decoration: none;
       min-width: 0;
     }}
-    .plan-source-link:hover {{ color: #fff; }}
+    .plan-source-link:hover {{ color: #dce8f8; }}
     .plan-source-title {{
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 18rem;
+      max-width: 14rem;
     }}
     .plan-source-icon {{
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 1.15rem;
-      height: 1.15rem;
+      width: 0.95rem;
+      height: 0.95rem;
       flex-shrink: 0;
     }}
     .plan-source-icon svg {{
-      width: 1.05rem;
-      height: 1.05rem;
+      width: 0.9rem;
+      height: 0.9rem;
       display: block;
     }}
     .plan-source-actions {{
       display: inline-flex;
-      gap: 0.15rem;
-      margin-left: 0.1rem;
+      gap: 0.05rem;
+      margin-left: 0.05rem;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }}
+    .plan-source-chip:hover .plan-source-actions,
+    .plan-source-chip:focus-within .plan-source-actions {{
+      opacity: 1;
     }}
     .plan-source-actions button {{
       background: transparent;
       border: 1px solid transparent;
       color: var(--muted);
-      border-radius: 4px;
-      padding: 0 0.25rem;
+      border-radius: 3px;
+      padding: 0 0.2rem;
       font: inherit;
-      font-size: 0.78rem;
-      line-height: 1.2;
+      font-size: 0.72rem;
+      line-height: 1.1;
       cursor: pointer;
     }}
     .plan-source-actions button:hover {{
@@ -1457,56 +1507,71 @@ def build_html(
     }}
     .plan-source-empty {{
       color: var(--muted);
-      font-size: 0.85rem;
-      font-style: italic;
+      font-size: 0.75rem;
+      font-style: normal;
+      opacity: 0.85;
     }}
     .plan-source-add {{
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      border: 1px dashed var(--line);
-      border-radius: 999px;
-      padding: 0.15rem 0.55rem;
+      display: inline;
+      border: none;
+      padding: 0;
       background: transparent;
-      color: var(--gold);
+      color: var(--muted);
       font: inherit;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }}
     .plan-source-add:hover {{
-      border-color: var(--gold);
-      background: #1a2438;
+      color: #a8c4e8;
+      background: transparent;
     }}
     .plan-source-form {{
       width: 100%;
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-top: 0.25rem;
+      flex-wrap: nowrap;
+      gap: 0.3rem;
+      margin-top: 0.2rem;
+      align-items: center;
     }}
+    .plan-source-form.hidden {{ display: none; }}
     .plan-source-form input {{
-      flex: 1 1 10rem;
-      min-width: 8rem;
-      background: #0f1520;
+      flex: 1 1 6rem;
+      min-width: 5rem;
+      background: #12161f;
       border: 1px solid var(--line);
-      border-radius: 6px;
+      border-radius: 4px;
       color: var(--text);
-      padding: 0.35rem 0.5rem;
+      padding: 0.22rem 0.4rem;
       font: inherit;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
+    }}
+    .plan-source-form input:focus {{
+      outline: none;
+      border-color: #4a6a9a;
     }}
     .plan-source-form button {{
-      background: #243524;
-      border: 1px solid #5d9a5d;
-      color: #e8e8e8;
-      border-radius: 6px;
-      padding: 0.35rem 0.65rem;
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 4px;
+      padding: 0.22rem 0.45rem;
       font: inherit;
+      font-size: 0.75rem;
       cursor: pointer;
+    }}
+    .plan-source-form button:hover {{
+      color: var(--text);
+      border-color: #4a6a9a;
+    }}
+    .plan-source-form button.plan-source-save {{
+      color: #a8c4e8;
     }}
     .plan-source-form button.plan-source-cancel {{
       background: transparent;
-      border-color: var(--line);
+      border-color: transparent;
       color: var(--muted);
     }}
     .plans-empty {{ color: var(--muted); padding: 2rem 0; }}
@@ -2517,13 +2582,14 @@ def build_html(
       const sectionPath = section.section_path || '';
       const hasTodos = (section.todos || []).length > 0;
       const hasChildren = (section.children || []).length > 0;
-      const isLeaf = hasTodos && !hasChildren;
-      let html = '<div class="plan-sources" data-section-path="' + esc(sectionPath) + '">';
+      const hasResources = resources.length > 0;
+      const showFooter = sectionPath && (hasTodos || hasResources || hasChildren);
+      if (!showFooter) return '';
+
+      let html = '<div class="plan-sources plan-sources-footer" data-section-path="' + esc(sectionPath) + '">';
       html += '<div class="plan-sources-label">Sources</div>';
-      if (!resources.length) {{
-        if (isLeaf) {{
-          html += '<span class="plan-source-empty">No sources yet</span>';
-        }}
+      if (!hasResources) {{
+        html += '<span class="plan-source-empty">No sources</span>';
       }} else {{
         resources.forEach(r => {{
           const kind = r.kind || r.icon || 'link';
@@ -2548,16 +2614,14 @@ def build_html(
             + '</span></span>';
         }});
       }}
-      if (sectionPath) {{
-        html += '<button type="button" class="plan-source-add" data-section-path="' + esc(sectionPath)
-          + '">+ Add source</button>';
-        html += '<div class="plan-source-form hidden" data-form-section="' + esc(sectionPath) + '">'
-          + '<input type="text" class="plan-source-title-input" placeholder="Title" autocomplete="off"/>'
-          + '<input type="url" class="plan-source-url-input" placeholder="https://…" autocomplete="off"/>'
-          + '<button type="button" class="plan-source-save">Save</button>'
-          + '<button type="button" class="plan-source-cancel">Cancel</button>'
-          + '</div>';
-      }}
+      html += ' <button type="button" class="plan-source-add" data-section-path="' + esc(sectionPath)
+        + '">+ add source</button>';
+      html += '<div class="plan-source-form hidden" data-form-section="' + esc(sectionPath) + '">'
+        + '<input type="text" class="plan-source-title-input" placeholder="Title" autocomplete="off"/>'
+        + '<input type="url" class="plan-source-url-input" placeholder="URL" autocomplete="off"/>'
+        + '<button type="button" class="plan-source-save">Save</button>'
+        + '<button type="button" class="plan-source-cancel">Cancel</button>'
+        + '</div>';
       html += '</div>';
       return html;
     }}
@@ -2606,13 +2670,17 @@ def build_html(
     function renderPlanSection(section, plan, studyId) {{
       const lvl = section.level || 2;
       const tag = headingTag(lvl);
-      let html = '<section class="plan-section level-' + lvl + '" id="' + esc(section.anchor || '') + '">'
+      const hasTodos = (section.todos || []).length > 0;
+      const topicCls = hasTodos ? ' plan-topic-card' : '';
+      let html = '<section class="plan-section level-' + lvl + topicCls + '" id="' + esc(section.anchor || '') + '">'
         + '<' + tag + '>' + esc(section.title || '') + '</' + tag + '>'
-        + renderPlanTodos(section.todos || [], plan)
-        + renderPlanSources(section, studyId);
+        + '<div class="plan-topic-body">'
+        + renderPlanTodos(section.todos || [], plan);
       (section.children || []).forEach(child => {{
         html += renderPlanSection(child, plan, studyId);
       }});
+      html += '</div>'
+        + renderPlanSources(section, studyId);
       html += '</section>';
       return html;
     }}
