@@ -35,6 +35,6 @@ Expect attached: study `palaces.csv` / `studies` context, plus technique README 
 
 ---
 Reminders for humans:
-- After download, save as `PALACE_PALACES.txt` (or `.csv`) on Desktop.
+- After download, save as `PALACE_PALACES.txt` (or `.csv`) on Desktop. For full PALACE_PACK imports, always use `PALACE_PACK.txt` and overwrite any prior copy (never use updated/corrected suffixes).
 - Open Utility Shortcuts → [N] Memory Palace → [I] to import.
 - Legacy Desktop name `PALACE_STREETS*.csv` / `.txt` is still accepted by the importer.

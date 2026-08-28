@@ -286,7 +286,7 @@ Palace_ResolveDesktopPalacesPath() {
 Palace_DesktopNewestPackPath() {
     path := Palace_DesktopNewestCsvOrTxt("PALACE_PACK")
     if (path != "")
-        return path
+        return PackImport_NormalizeDesktopSource(path, "PALACE_PACK.txt")
     newest := ""
     newestTime := 0
     loop files A_Desktop . "\gemini-code*.txt", "F" {
@@ -299,7 +299,9 @@ Palace_DesktopNewestPackPath() {
             newest := A_LoopFileFullPath
         }
     }
-    return newest
+    if (newest = "")
+        return ""
+    return PackImport_NormalizeDesktopSource(newest, "PALACE_PACK.txt")
 }
 
 ; Strip chat prose / markdown fences so extract starts at PREVIEW or first PALACE FILE.
@@ -393,7 +395,9 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         . "- Do not tell me to save an incomplete fence.`r`n"
         . "- Beast packing: fill every non-final palace to exactly 5 beasts; only the last palace may have 1–4.`r`n"
         .
-        "- Put PREVIEW only inside the pack — do not duplicate PREVIEW/CSV in chat outside the pack artifact.`r`n`r`n"
+        "- Put PREVIEW only inside the pack — do not duplicate PREVIEW/CSV in chat outside the pack artifact.`r`n"
+        . "- Re-deliver using the exact canonical filename (PALACE_PACK.txt). Overwrite any prior Desktop copy.`r`n"
+        . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Memory Palace [I] again.`r`n"
     path := A_Desktop . "\PALACE_AI_FIX.txt"
     try {
@@ -833,7 +837,7 @@ Palace_ValidatePackBeastPacking(palaceRows, beastRows) {
 Palace_ResolveDesktopPlanPackPath() {
     pathPlanPack := Palace_DesktopNewestCsvOrTxt("PLAN_PACK")
     if (pathPlanPack != "")
-        return pathPlanPack
+        return PackImport_NormalizeDesktopSource(pathPlanPack, "PLAN_PACK.txt")
     newest := ""
     newestTime := 0
     loop files A_Desktop . "\gemini-code*.txt", "F" {
@@ -846,7 +850,9 @@ Palace_ResolveDesktopPlanPackPath() {
             newest := A_LoopFileFullPath
         }
     }
-    return newest
+    if (newest = "")
+        return ""
+    return PackImport_NormalizeDesktopSource(newest, "PLAN_PACK.txt")
 }
 
 ; Main menu [J]: PLAN_PACK only.

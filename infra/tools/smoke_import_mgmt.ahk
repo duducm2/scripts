@@ -22,13 +22,29 @@ pack := "===PREVIEW===`n1 row · Coca Cola rejected`n===END_PREVIEW===`n`n"
     . "id,company,role_title,status,status_date,applied_date,source,notes`n"
     . "JOB_COCACOLA,Coca Cola,,rejected,2026-08-27,,,Unsuccessful`n"
     . "===END_FILE==="
-testPath := A_Desktop . "\JOB_SEARCH_UPDATE_SMOKE.txt"
-ImportMgmt_WriteUtf8(testPath, pack)
+variantPath := A_Desktop . "\JOB_SEARCH_UPDATE_updated.txt"
+canonicalPath := A_Desktop . "\JOB_SEARCH_UPDATE.txt"
+try FileDelete(variantPath)
+catch {
+}
+try FileDelete(canonicalPath)
+catch {
+}
+ImportMgmt_WriteUtf8(variantPath, pack)
 
 ok := ImportMgmt_ImportFromDesktop()
 if (!ok) {
     FileAppend("FAIL: import returned false`n", "*")
     ExitApp 1
+}
+
+if (!FileExist(canonicalPath)) {
+    FileAppend("FAIL: canonical JOB_SEARCH_UPDATE.txt missing after import`n", "*")
+    ExitApp 5
+}
+if (FileExist(variantPath)) {
+    FileAppend("FAIL: variant JOB_SEARCH_UPDATE_updated.txt still on Desktop`n", "*")
+    ExitApp 6
 }
 
 after := ImportMgmt_Load()

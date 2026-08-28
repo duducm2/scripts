@@ -22,29 +22,32 @@ Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV dat
 
 Every importer follows the same stages. Function names differ by prefix (`Finance_`, `Palace_`, `ImportMgmt_`):
 
-| Stage       | Purpose                                               | Job search functions                                               |
-| ----------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
-| Discover    | Newest Desktop file matching pack name                | `ImportMgmt_DesktopNewest`, `ImportMgmt_DesktopNewestCodeDump`     |
-| Materialize | Extract `===FILE: …csv===` body; strip fences/preview | `ImportMgmt_MaterializeAiCsv`, `ImportMgmt_ExtractPackFileSection` |
-| Parse       | Normalize to row Maps                                 | `ImportMgmt_ReadAiImportCsv`, `ImportMgmt_ReadCsv`                 |
-| Upsert      | Match by id/keys; merge, append, or delete via `action` | `ImportMgmt_MergeImportRow`, `ImportMgmt_NewRowFromImport`, `ImportMgmt_DeleteImportRow` |
-| Outcome     | Save, archive, notify, or write fix file              | `ImportMgmt_ImportFromDesktop`                                     |
+| Stage       | Purpose                                                  | Job search functions                                                                                |
+| ----------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Discover    | Newest Desktop file matching pack name                   | `ImportMgmt_DesktopNewest`, `ImportMgmt_DesktopNewestCodeDump`                                      |
+| Normalize   | Move variant names to canonical Desktop path (overwrite) | `PackImport_NormalizeDesktopSource` ([`pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk)) |
+| Materialize | Extract `===FILE: …csv===` body; strip fences/preview    | `ImportMgmt_MaterializeAiCsv`, `ImportMgmt_ExtractPackFileSection`                                  |
+| Parse       | Normalize to row Maps                                    | `ImportMgmt_ReadAiImportCsv`, `ImportMgmt_ReadCsv`                                                  |
+| Upsert      | Match by id/keys; merge, append, or delete via `action`  | `ImportMgmt_MergeImportRow`, `ImportMgmt_NewRowFromImport`, `ImportMgmt_DeleteImportRow`            |
+| Outcome     | Save, archive, notify, or write fix file                 | `ImportMgmt_ImportFromDesktop`                                                                      |
 
 Finance adds a **confirm UI** before save. Job search is **auto-upsert** (no ListView). Memory Palace upserts palaces/beasts/atoms with strict cross-link validation.
 
 ### Import outcome matrix
 
-| Outcome                    | Local CSV                    | Archive Desktop pack     | Fix file on Desktop | Toast   |
-| -------------------------- | ---------------------------- | ------------------------ | ------------------- | ------- |
+| Outcome                    | Local CSV                    | Archive Desktop pack     | Fix file on Desktop | Toast                                                   |
+| -------------------------- | ---------------------------- | ------------------------ | ------------------- | ------------------------------------------------------- |
 | All rows applied           | Saved                        | Yes → `*/data/imported/` | No                  | Success (e.g. "Imported 1 new, 2 update(s), 1 deleted") |
-| Partial (some rows failed) | Saved (successful rows only) | **No** (keep for retry)  | **Yes**             | Error   |
-| Total failure (0 rows)     | Not saved                    | No                       | **Yes**             | Error   |
+| Partial (some rows failed) | Saved (successful rows only) | **No** (keep for retry)  | **Yes**             | Error                                                   |
+| Total failure (0 rows)     | Not saved                    | No                       | **Yes**             | Error                                                   |
 
 Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `JOB_SEARCH_AI_FIX.txt`.
 
 Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
 
-Partial import recovery (job search): paste fix file into AI → re-deliver **full** corrected pack → save to Desktop → `[J]` Import Management → `[I]`.
+Partial import recovery (job search): paste fix file into AI → re-deliver **full** corrected pack → save/overwrite canonical name on Desktop → `[J]` Import Management → `[I]`.
+
+**Desktop canonical overwrite:** After discovery, importers consolidate `*_updated*`, `* (updated)*`, `gemini-code-….txt`, and other variants to the exact canonical pack filename (e.g. `FINANCE_DAILY.txt`) by overwriting any prior Desktop copy. Fix files (`*_AI_FIX.txt`) are always written to fixed paths (overwrite). AI fix **DELIVERY RULES** forbid `updated` / `corrected` / `v2` suffixes on re-delivered packs.
 
 ### Module index (code)
 
@@ -53,6 +56,8 @@ Partial import recovery (job search): paste fix file into AI → re-deliver **fu
 | Finance       | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                 | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                 | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`                                                       |
 | Memory Palace | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv`                                                      |
 | Job search    | [`Utils/import_mgmt_helpers.ahk`](../Utils/import_mgmt_helpers.ahk)         | [`Utils/import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)         | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv) |
+
+Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
 
 Prompt wiring: [`assets/data/prompts.ini`](../assets/data/prompts.ini), [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). ClipAngel Desktop names: [`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv).
 
@@ -125,19 +130,21 @@ flowchart LR
 
 ### Pack-import domains
 
-| Domain          | Shortcuts     | Prompt (char) | Pack file               | Context                                                                     | Importer                                                            | Confirm UI       |
-| --------------- | ------------- | ------------- | ----------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------- |
-| Finance daily   | `[F]` → `[I]` | `[d]`         | `FINANCE_DAILY.txt`     | categories, accounts, cards                                                 | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
-| Finance monthly | `[F]` → `[I]` | `[m]`         | `FINANCE_MONTHLY.txt`   | accounts, goals                                                             | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
-| Memory Palace   | `[N]` → `[I]` | `[4]` / `[a]` | `PALACE_PACK.txt`       | technique files                                                             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
-| Study plans     | `[N]` → `[J]` | `[n]`         | `PLAN_PACK.txt`         | —                                                                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
-| Job search      | `[J]` → `[I]` | `[j]`         | `JOB_SEARCH_UPDATE.txt` | [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv) | [`import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)         | No (auto-upsert) |
+| Domain          | Shortcuts     | Import Management `[J]` | Prompt (char) | Pack file               | Context                                                                     | Importer                                                            | Confirm UI       |
+| --------------- | ------------- | ----------------------- | ------------- | ----------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------- |
+| Finance daily   | `[F]` → `[I]` | `[D]`                   | `[d]`         | `FINANCE_DAILY.txt`     | categories, accounts, cards                                                 | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
+| Finance monthly | `[F]` → `[I]` | `[M]`                   | `[m]`         | `FINANCE_MONTHLY.txt`   | accounts, goals                                                             | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes              |
+| Memory Palace   | `[N]` → `[I]` | `[P]`                   | `[4]` / `[a]` | `PALACE_PACK.txt`       | technique files                                                             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
+| Study plans     | `[N]` → `[J]` | `[L]`                   | `[n]`         | `PLAN_PACK.txt`         | —                                                                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes              |
+| Job search      | `[J]` → `[I]` | `[I]`                   | `[j]`         | `JOB_SEARCH_UPDATE.txt` | [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv) | [`import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)         | No (auto-upsert) |
+
+Import Management help: `[J]` → `[H]` (canonical names, overwrite policy, fix-file recovery).
 
 Typical human workflow:
 
 1. Open prompt (Utility Shortcuts or dictation) with dictation/context attached.
 2. AI returns a pack → save to Desktop (Quick Download `#!+Shift+9`, or copy fence).
-3. Open sub-app launcher → **AI import** → importer parses pack, upserts local CSV, archives source file on full success.
+3. Open sub-app launcher → **AI import** (or Import Management `[J]` for any domain) → importer normalizes Desktop name, parses pack, upserts local CSV, archives source file on full success.
 
 ### AI fix recovery
 
@@ -155,7 +162,7 @@ Recovery workflow:
 
 1. Importer writes fix file + error toast (mentions Desktop path).
 2. Paste fix file into the AI companion.
-3. AI re-delivers a corrected pack → save to Desktop → run **AI import** again.
+3. AI re-delivers a corrected pack → save/overwrite the **canonical** filename on Desktop → run **AI import** again (Finance `[F]`, Memory Palace `[N]`, or Import Management `[J]`).
 
 **Partial import (job search):** rows that passed validation are saved to `opportunities.csv`; the source pack stays on Desktop (not archived) until all rows import successfully.
 
@@ -228,10 +235,11 @@ Extension convention for downloadable packs: **`.txt`**. App code extracts CSV a
 Flow:
 
 1. Discover newest `FINANCE_DAILY*.txt` / `FINANCE_MONTHLY*.txt` on Desktop (then `.csv` / `.ini` / `gemini-code*.txt`).
-2. `Finance_MaterializeAiCsv` — extract `===FILE: …===` (tries `.csv` then `.txt` section name), strip markdown fences via `Chr(96)` fence helper (do **not** put raw ` ``` ` inside AHK string literals — backtick is the escape char), or fall back to header row after stripping PREVIEW.
-3. Parse CSV → editable/confirm UI with **resolved names and BRL amounts** (not raw ids).
-4. Daily: `Finance_ImportConfirmEditable`; monthly: multi-column confirm.
-5. Archive source `.txt`; write app CSVs.
+2. `PackImport_NormalizeDesktopSource` → canonical `FINANCE_DAILY.txt` or `FINANCE_MONTHLY.txt` (overwrite variants).
+3. `Finance_MaterializeAiCsv` — extract `===FILE: …===` (tries `.csv` then `.txt` section name), strip markdown fences via `Chr(96)` fence helper (do **not** put raw ` ``` ` inside AHK string literals — backtick is the escape char), or fall back to header row after stripping PREVIEW.
+4. Parse CSV → editable/confirm UI with **resolved names and BRL amounts** (not raw ids).
+5. Daily: `Finance_ImportConfirmEditable`; monthly: multi-column confirm.
+6. Archive source `.txt`; write app CSVs.
 
 Post-import daily opens Transactions; card expenses show **card name**; transfers show `source → dest`.
 
@@ -249,26 +257,26 @@ Post-import daily opens Transactions; card expenses show **card name**; transfer
 Flow:
 
 1. Utility Shortcuts → Prompts → **[j]** with voice dictation; `opportunities.csv` attached as context.
-2. AI returns `JOB_SEARCH_UPDATE.txt` pack → save to Desktop.
-3. Utility Shortcuts → **[J]** Import Management → **[I]** AI import.
-4. `ImportMgmt_MaterializeAiCsv` extracts CSV section; routes each row by pack `action` column: upsert (default), strict add/update, or delete by `id`/`company` (no confirm UI).
+2. AI returns `JOB_SEARCH_UPDATE.txt` pack → save/overwrite canonical name on Desktop.
+3. Utility Shortcuts → **[J]** Import Management → **[I]** AI import (finance/palace imports also available via **[D]** / **[M]** / **[P]** / **[L]**).
+4. `PackImport_NormalizeDesktopSource` → `JOB_SEARCH_UPDATE.txt`; `ImportMgmt_MaterializeAiCsv` extracts CSV section; routes each row by pack `action` column: upsert (default), strict add/update, or delete by `id`/`company` (no confirm UI).
 5. **Full success:** archive source pack to `job_search/data/imported/`; success toast (e.g. "Imported 1 new, 2 update(s), 1 deleted").
 6. **Partial or total failure:** write `Desktop/JOB_SEARCH_AI_FIX.txt`, keep pack on Desktop, error toast. Partial success still saves rows that passed to `opportunities.csv`.
 
 **CRUD via AI pack (no manual ListView UI):**
 
-| Operation | How |
-| --------- | --- |
-| **Read** | `opportunities.csv` attached as prompt context |
-| **Create** | Pack row with empty/`add` action + new company |
+| Operation  | How                                                       |
+| ---------- | --------------------------------------------------------- |
+| **Read**   | `opportunities.csv` attached as prompt context            |
+| **Create** | Pack row with empty/`add` action + new company            |
 | **Update** | Pack row with empty/`update` action + matching id/company |
-| **Delete** | Pack row with `action=delete` + id or company |
+| **Delete** | Pack row with `action=delete` + id or company             |
 
 **Pack CSV columns** (header in prompt; `action` is pack-only):
 
 | Column            | Purpose                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `action`          | Pack-only: empty=upsert \| `add` \| `update` \| `delete` — not stored in `opportunities.csv`   |
+| `action`          | Pack-only: empty=upsert \| `add` \| `update` \| `delete` — not stored in `opportunities.csv`    |
 | `id`              | Primary key, e.g. `JOB_COCACOLA`                                                                |
 | `company`         | Employer name (fuzzy match key)                                                                 |
 | `role_title`      | Position title                                                                                  |

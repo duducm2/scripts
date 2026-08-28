@@ -312,6 +312,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\finance_budgets.ahk
 #include %A_ScriptDir%\Utils\finance_goals.ahk
 #include %A_ScriptDir%\Utils\finance_recurring.ahk
+; [Utils module] Canonical Desktop pack paths for AI imports -> Utils\pack_import_desktop.ahk
+#include %A_ScriptDir%\Utils\pack_import_desktop.ahk
 #include %A_ScriptDir%\Utils\finance_import.ahk
 #include %A_ScriptDir%\Utils\finance_git_sync.ahk
 ; [Utils module] Win+Alt+Shift+D → Finance -> Utils\finance_hotkey_d.ahk

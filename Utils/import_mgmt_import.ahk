@@ -285,7 +285,9 @@ ImportMgmt_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         "- FILE body is pure CSV with header: action,id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
         . "- action: empty=upsert | add | update | delete (pack-only; not stored in opportunities.csv)`r`n"
         . "- status must be one of: applied | screening | interviewing | offer | rejected | withdrawn | on_hold`r`n"
-        . "- Match existing rows by id or company from attached opportunities.csv.`r`n`r`n"
+        . "- Match existing rows by id or company from attached opportunities.csv.`r`n"
+        . "- Re-deliver using the exact canonical filename (JOB_SEARCH_UPDATE.txt). Overwrite any prior Desktop copy.`r`n"
+        . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save JOB_SEARCH_UPDATE.txt to Desktop and re-import.`r`n"
     path := A_Desktop . "\JOB_SEARCH_AI_FIX.txt"
     try {
@@ -357,6 +359,11 @@ ImportMgmt_ImportFromDesktop(*) {
         path := ImportMgmt_DesktopNewest("JOB_SEARCH_UPDATE*.csv")
     if (path = "")
         path := ImportMgmt_DesktopNewestCodeDump()
+    if (path = "" || !FileExist(path)) {
+        ImportMgmt_FailAiImport("No JOB_SEARCH_UPDATE file on Desktop", 2000)
+        return false
+    }
+    path := PackImport_NormalizeDesktopSource(path, "JOB_SEARCH_UPDATE.txt")
     if (path = "" || !FileExist(path)) {
         ImportMgmt_FailAiImport("No JOB_SEARCH_UPDATE file on Desktop", 2000)
         return false

@@ -40,7 +40,9 @@ Finance_WriteAiCompanionImportError(errorMsg, kind := "daily", extraNotes := "")
         . "  ===FILE: " . fileMarker . "=== … ===END_FILE===`r`n"
         . "- FILE body is pure CSV with the exact header + every data row.`r`n"
         . "- Brazilian comma decimals; quote amount fields.`r`n"
-        . "- Do not invent amounts, ids, or rows you cannot parse.`r`n`r`n"
+        . "- Do not invent amounts, ids, or rows you cannot parse.`r`n"
+        . "- Re-deliver using the exact canonical filename (" . packName . "). Overwrite any prior Desktop copy.`r`n"
+        . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
         . "After you fix it, I will save " . packName . " to Desktop and re-import.`r`n"
     path := A_Desktop . "\FINANCE_AI_FIX.txt"
     try {
@@ -655,6 +657,11 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000)
         return false
     }
+    path := PackImport_NormalizeDesktopSource(path, "FINANCE_DAILY.txt")
+    if (path = "" || !FileExist(path)) {
+        Finance_FailAiImport("No FINANCE_DAILY file on Desktop", "daily", 2000)
+        return false
+    }
     sourcePath := path
     csvPath := Finance_MaterializeAiCsv(path, "FINANCE_DAILY.csv")
     rows := Finance_ReadAiImportCsv(csvPath)
@@ -760,6 +767,11 @@ Finance_ImportMonthly(*) {
     if (path = "")
         path := Finance_DesktopNewestMonthlyCodeDump()
     if (path = "") {
+        Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
+        return
+    }
+    path := PackImport_NormalizeDesktopSource(path, "FINANCE_MONTHLY.txt")
+    if (path = "" || !FileExist(path)) {
         Finance_FailAiImport("No FINANCE_MONTHLY file on Desktop", "monthly", 2000)
         return
     }

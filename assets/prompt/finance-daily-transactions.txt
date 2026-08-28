@@ -96,5 +96,5 @@ Human reminders (for the person sending this prompt — do not include in AI out
 
 After the AI responds:
 - Prefer: Quick Download (Win+Alt+Shift+9) on the download chip, then Finance import
-- If only a code fence appeared: copy the pack body, save as `FINANCE_DAILY.txt` on Desktop, then Finance import
-- No rename required: importer extracts the CSV section from `FINANCE_DAILY.txt` or a marked `gemini-code-….txt`
+- If only a code fence appeared: copy the pack body, save as `FINANCE_DAILY.txt` on Desktop (overwrite any prior copy; never use updated/corrected suffixes), then Finance import
+- No rename required: importer extracts the CSV section from `FINANCE_DAILY.txt` or a marked `gemini-code-….txt` and consolidates variants to the canonical name
