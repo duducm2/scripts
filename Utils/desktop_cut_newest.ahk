@@ -99,12 +99,9 @@ DesktopCutNewest_OpenNewest() {
         return
     }
 
-    beforeMap := Map()
-    try {
-        for hwnd in WinGetList()
-            beforeMap[hwnd] := true
-    } catch {
-    }
+    SplitPath(newest, &name)
+    browser := DesktopCutNewest_ResolveBrowserLaunch(newest)
+    beforeMap := DesktopCutNewest_SnapshotWindowMap(browser ? browser.exeName : "")
     fgBefore := WinExist("A")
 
     ; Let the launched app take foreground (Windows focus-stealing guard).
@@ -113,8 +110,8 @@ DesktopCutNewest_OpenNewest() {
     }
 
     try {
-        if (DesktopCutNewest_ShouldOpenInNewChromeWindow(newest))
-            DesktopCutNewest_OpenInNewChromeWindow(newest)
+        if (browser)
+            DesktopCutNewest_OpenInBrowserNewWindow(newest, browser)
         else
             Run('"' . newest . '"')
     } catch as err {
@@ -122,50 +119,141 @@ DesktopCutNewest_OpenNewest() {
         return
     }
 
-    newHwnd := DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, 5000)
+    newHwnd := DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, browser ? 8000 : 5000, browser,
+        name)
+    if (!newHwnd)
+        newHwnd := DesktopCutNewest_FindWindowByTitleHint(name)
+
     if (newHwnd)
         DesktopCutNewest_ActivateHwnd(newHwnd)
 
-    SplitPath(newest, &name)
     ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
 
-    ; Overlay / AutoSlot can steal focus — finish on the opened window.
+    ; Overlay / AutoSlot can steal focus — re-activate after the banner clears.
     if (newHwnd)
-        DesktopCutNewest_ActivateHwnd(newHwnd)
+        DesktopCutNewest_ScheduleActivate(newHwnd, 1900)
+}
+
+DesktopCutNewest_SnapshotWindowMap(exeName := "") {
+    snap := Map()
+    try {
+        listSpec := exeName ? ("ahk_exe " exeName) : ""
+        for hwnd in WinGetList(listSpec)
+            snap[hwnd] := true
+    } catch {
+    }
+    return snap
 }
 
 ; First new visible top-level window after open, or FG if it changed (reuse case).
-DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, timeoutMs := 5000) {
+; When browser is set, only new windows for that exe count (avoids tab-in-existing-window).
+DesktopCutNewest_WaitForOpenedWindow(beforeMap, fgBefore, timeoutMs := 5000, browser := "", titleHint := "") {
     if (!IsObject(beforeMap))
         beforeMap := Map()
+    listSpec := (IsObject(browser) && browser.exeName) ? ("ahk_exe " browser.exeName) : ""
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         try {
-            for hwnd in WinGetList() {
+            best := 0
+            for hwnd in WinGetList(listSpec) {
                 if beforeMap.Has(hwnd)
                     continue
-                if !WinExist("ahk_id " hwnd)
+                if !DesktopCutNewest_IsCandidateOpenWindow(hwnd)
                     continue
-                try {
-                    if !DllCall("IsWindowVisible", "Ptr", hwnd)
-                        continue
-                    ; Skip owned popups / tool windows without a normal title when possible.
-                    if (DllCall("GetWindow", "Ptr", hwnd, "UInt", 4))  ; GW_OWNER
-                        continue
-                } catch {
-                    continue
-                }
-                return hwnd
+                if (titleHint != "" && DesktopCutNewest_TitleMatchesHint(hwnd, titleHint))
+                    return hwnd
+                if (!best)
+                    best := hwnd
             }
+            if (best)
+                return best
             fg := WinExist("A")
-            if (fg && fg != fgBefore)
-                return fg
+            if (fg && fg != fgBefore) {
+                if (listSpec = "" || DesktopCutNewest_HwndMatchesExe(fg, browser ? browser.exeName : ""))
+                    return fg
+            }
         } catch {
         }
         Sleep 50
     }
     fg := WinExist("A")
-    return (fg && fg != fgBefore) ? fg : 0
+    if (fg && fg != fgBefore) {
+        if (listSpec = "" || DesktopCutNewest_HwndMatchesExe(fg, browser ? browser.exeName : ""))
+            return fg
+    }
+    return 0
+}
+
+DesktopCutNewest_IsCandidateOpenWindow(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    try {
+        if !DllCall("IsWindowVisible", "Ptr", hwnd)
+            return false
+        if (DllCall("GetWindow", "Ptr", hwnd, "UInt", 4))  ; GW_OWNER
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+DesktopCutNewest_HwndMatchesExe(hwnd, exeName) {
+    if (exeName = "")
+        return true
+    try return (StrLower(WinGetProcessName("ahk_id " hwnd)) = StrLower(exeName))
+    catch
+        return false
+}
+
+DesktopCutNewest_TitleMatchesHint(hwnd, titleHint) {
+    if (titleHint = "")
+        return false
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+        if (title = "")
+            return false
+        hint := StrLower(titleHint)
+        titleLower := StrLower(title)
+        if (InStr(titleLower, hint))
+            return true
+        SplitPath(titleHint, &hintName, , &hintExt)
+        if (hintExt != "" && InStr(titleLower, StrLower(hintName)))
+            return true
+    } catch {
+    }
+    return false
+}
+
+DesktopCutNewest_FindWindowByTitleHint(titleHint) {
+    if (titleHint = "")
+        return 0
+    try {
+        for hwnd in WinGetList() {
+            if !DesktopCutNewest_IsCandidateOpenWindow(hwnd)
+                continue
+            if DesktopCutNewest_TitleMatchesHint(hwnd, titleHint)
+                return hwnd
+        }
+    } catch {
+    }
+    return 0
+}
+
+DesktopCutNewest_ScheduleActivate(hwnd, delayMs := 1500) {
+    if (!hwnd || delayMs < 1)
+        return
+    DesktopCutNewest_ScheduleActivateObj.hwnd := hwnd
+    SetTimer(DesktopCutNewest_ScheduleActivateObj.OnTimer, -delayMs)
+}
+
+class DesktopCutNewest_ScheduleActivateObj {
+    static hwnd := 0
+    static OnTimer() {
+        hwnd := DesktopCutNewest_ScheduleActivateObj.hwnd
+        DesktopCutNewest_ScheduleActivateObj.hwnd := 0
+        DesktopCutNewest_ActivateHwnd(hwnd)
+    }
 }
 
 DesktopCutNewest_ActivateHwnd(hwnd) {
@@ -183,6 +271,7 @@ DesktopCutNewest_ActivateHwnd(hwnd) {
         WinActivate("ahk_id " hwnd)
         if WinWaitActive("ahk_id " hwnd, , 0.8)
             return true
+        DllCall("SwitchToThisWindow", "Ptr", hwnd, "Int", 1)
         DllCall("SetForegroundWindow", "Ptr", hwnd)
         DllCall("BringWindowToTop", "Ptr", hwnd)
         WinActivate("ahk_id " hwnd)
@@ -199,20 +288,47 @@ DesktopCutNewest_ActivateHwnd(hwnd) {
     }
 }
 
-; True when Windows would open this path with Chrome (so we can force --new-window).
-DesktopCutNewest_ShouldOpenInNewChromeWindow(path) {
+; When Windows opens this path with a browser, return {exe, exeName, flag} for a new window.
+DesktopCutNewest_ResolveBrowserLaunch(path) {
     if (!path || !FileExist(path))
-        return false
+        return ""
     SplitPath(path, , , &ext)
     if (ext = "")
-        return false
+        return ""
     extDot := "." . StrLower(ext)
-    cmd := DesktopCutNewest_GetAssocOpenCommand(extDot)
-    if (cmd != "" && InStr(cmd, "chrome", false))
-        return true
-    ; Common browser types when Chrome is the daily driver and assoc lookup is empty/odd.
-    static browserExts := Map("html", 1, "htm", 1, "pdf", 1, "svg", 1, "mhtml", 1, "webp", 1)
-    return browserExts.Has(StrLower(ext))
+    browser := DesktopCutNewest_ParseBrowserFromAssocCommand(DesktopCutNewest_GetAssocOpenCommand(extDot))
+    if (browser)
+        return browser
+    ; Web formats only — daily driver is chrome.exe elsewhere in this repo.
+    static webExts := Map("html", 1, "htm", 1, "svg", 1, "mhtml", 1, "xhtml", 1)
+    if (webExts.Has(StrLower(ext)))
+        return { exe: "chrome.exe", exeName: "chrome.exe", flag: "--new-window" }
+    return ""
+}
+
+DesktopCutNewest_ParseBrowserFromAssocCommand(cmd) {
+    if (cmd = "")
+        return ""
+    exe := ""
+    if RegExMatch(cmd, '"(?P<exe>[^"]+\.exe)"', &m)
+        exe := m.exe
+    else if RegExMatch(cmd, '(?i)([A-Z]:\\[^\s"]+\.exe)', &m)
+        exe := m[1]
+    if (exe = "")
+        return ""
+    exeName := StrLower(RegExReplace(exe, ".*\\", ""))
+    static browserFlags := Map(
+        "chrome.exe", "--new-window",
+        "msedge.exe", "--new-window",
+        "brave.exe", "--new-window",
+        "chromium.exe", "--new-window",
+        "vivaldi.exe", "--new-window",
+        "opera.exe", "--new-window",
+        "firefox.exe", "-new-window"
+    )
+    if !browserFlags.Has(exeName)
+        return ""
+    return { exe: exe, exeName: exeName, flag: browserFlags[exeName] }
 }
 
 ; ASSOCSTR_COMMAND for ".ext" via AssocQueryStringW; "" on failure.
@@ -241,9 +357,11 @@ DesktopCutNewest_PathToFileUrl(path) {
     return "file://" . p
 }
 
-DesktopCutNewest_OpenInNewChromeWindow(path) {
+DesktopCutNewest_OpenInBrowserNewWindow(path, browser) {
+    if (!IsObject(browser) || browser.exe = "")
+        throw Error("No browser launch info")
     fileUrl := DesktopCutNewest_PathToFileUrl(path)
-    Run('chrome.exe --new-window "' . fileUrl . '"')
+    Run('"' . browser.exe . '" ' . browser.flag . ' "' . fileUrl . '"')
 }
 
 DesktopCutNewest_CopyPath() {
