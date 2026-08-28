@@ -1,4 +1,1 @@
-﻿id,company,role_title,job_url,job_description,status,status_date,applied_date,notes
-JOB_COCACOLA,Coca-Cola,,,,applied,2026-08-28,,
-JOB_PEPSI,Pepsi,Backend Engineer,https://linkedin.com/jobs/123,,rejected,2026-08-27,,
-JOB_GOOGLE,Google,Engineer,,,applied,applied,2026-08-28,
+﻿id,company,role_title,job_url,status,status_date,applied_date,source,notes
