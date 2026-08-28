@@ -116,7 +116,7 @@ PromptPaste_OnTimeout(*) {
     PromptPaste_FinishWait("strip")
 }
 
-; Show banner immediately; block until Y / Esc / S / timeout. Returns "reminders", "strip", or "send".
+; Show banner immediately; block until Y / H / Esc / timeout. Returns "reminders", "strip", or "send".
 PromptPaste_ShowOptionsAndWait() {
     global g_PromptPasteWaitChoice, g_PromptPasteWaitActive
     g_PromptPasteWaitChoice := ""
@@ -124,8 +124,8 @@ PromptPaste_ShowOptionsAndWait() {
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     keyCallbacks := Map(
-        "Y", PromptPaste_OnIncludeReminders,
-        "S", PromptPaste_OnSendNow,
+        "Y", PromptPaste_OnSendNow,
+        "H", PromptPaste_OnIncludeReminders,
         "Escape", PromptPaste_OnPasteOnly
     )
     StandardLoadingBar_ShowWithKeys(
@@ -139,7 +139,7 @@ PromptPaste_ShowOptionsAndWait() {
         17,
         "",
         true,
-        "[Y] Include reminders  [S] Send now  [Esc] Paste",
+        "[Y] Send now  [H] Human notes  [Esc] Paste",
         true,
         true,
         true

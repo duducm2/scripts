@@ -65,7 +65,7 @@ Registration lives in [`assets/data/prompts.ini`](../assets/data/prompts.ini): e
 
 Pack prompts (`story-prompt`, `story-reduction-prompt`, `plan-prompt`) also use `ExpectsDataOutput` / `DataOutputFormat` so AIB delivery is **file** or **code**. `concept-curation-prompt.txt` is seeded as **code** (one grab-able fence). See [`prompt-data-output-and-finance-packs.md`](prompt-data-output-and-finance-packs.md).
 
-Before pasting from Utility Shortcuts → Prompts, a 3s banner appears **immediately** after you pick a prompt (before context attach): **[Y]** include human reminders (below `---`), **[Esc]** paste stripped (default), or **[S]** paste stripped and send Enter. **[S]** shows a loading bar (you can switch windows while it runs), waits for uploads and an enabled Send button, submits without trapping focus, and confirms the companion started generating (stop button). Attach/paste run after your choice. Shift-keys composer strip still uses `ReplaceComposerWithStrippedReminders`.
+Before pasting from Utility Shortcuts → Prompts, a 3s banner appears **immediately** after you pick a prompt (before context attach): **[Y]** paste stripped and send Enter, **[Esc]** paste stripped (default), or **[H]** include human reminders (below `---`). **[Y]** auto-send is capped at **15s** total (upload wait + submit + confirm); shows a loading bar you can leave while it runs. Shift-keys composer strip still uses `ReplaceComposerWithStrippedReminders`.
 
 ---
 

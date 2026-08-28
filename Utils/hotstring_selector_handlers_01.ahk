@@ -488,6 +488,15 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
     return false
 }
 
+; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
+PROMPT_PASTE_AUTO_SEND_CAP_MS := 15000
+
+PromptPaste_SendRemainingMs(tDeadline) {
+    if (!tDeadline)
+        return PROMPT_PASTE_AUTO_SEND_CAP_MS
+    return Max(0, tDeadline - A_TickCount)
+}
+
 PromptPaste_UiaForCompanion(hwnd, companionId) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return 0
@@ -537,13 +546,15 @@ PromptPaste_WaitForGenerationStarted(hwnd, companionId, timeoutMs := 5000) {
     return false
 }
 
-PromptPaste_SubmitCompanionNoActivate(hwnd, companionId) {
+PromptPaste_SubmitCompanionNoActivate(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
     companionId := StrLower(Trim(companionId))
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     if (PromptPaste_CompanionIsGenerating(hwnd, companionId))
         return true
+    if (PromptPaste_SendRemainingMs(tDeadline) <= 0)
+        return false
     if (companionId = "enterprise") {
         try {
             uia := UIA_Browser("ahk_id " hwnd)
@@ -568,11 +579,16 @@ PromptPaste_SubmitCompanionNoActivate(hwnd, companionId) {
         }
         if (!IsObject(uia))
             return false
-        if (!Gemini_WaitForPromptContent(uia, g_GeminiDelayedSubmit_WaitContentMaxMs))
+        contentMs := Min(g_GeminiDelayedSubmit_WaitContentMaxMs, PromptPaste_SendRemainingMs(tDeadline))
+        if (contentMs <= 0)
+            return false
+        if (!Gemini_WaitForPromptContent(uia, contentMs))
             return false
         for fallback in ["enter", "ctrlEnter"] {
+            if (PromptPaste_SendRemainingMs(tDeadline) <= 0)
+                break
             Gemini_TrySubmitOnce(uia, fallback)
-            endTick := A_TickCount + 2000
+            endTick := tDeadline ? Min(A_TickCount + 2000, tDeadline) : (A_TickCount + 2000)
             while (A_TickCount < endTick) {
                 if (Gemini_SubmitAttemptSucceeded(uia))
                     return true
@@ -595,7 +611,7 @@ PromptPaste_SubmitCompanionNoActivate(hwnd, companionId) {
     }
 }
 
-; [S] send: non-blocking loading bar, wait for upload idle, UIA submit, confirm generation started.
+; [Y] send: non-blocking loading bar, wait for upload idle, UIA submit, confirm generation started.
 PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
     companionId := StrLower(Trim(companionId))
     if (companionId = "" && (attachCount > 0 || InsertFiles_IsAiChatForeground()))
@@ -622,6 +638,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
 
     showBar := (attachCount > 0 || companionId != "")
     ok := false
+    tDeadline := A_TickCount + PROMPT_PASTE_AUTO_SEND_CAP_MS
     try {
         if (showBar) {
             try StandardLoadingBar_Show("⏳ Waiting to send…", BANNER_ACCENT_INTERMEDIATE, {
@@ -638,8 +655,11 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             catch {
             }
             ready := false
-            try ready := PromptContext_WaitForSendReady(hwnd, companionId, 45000)
-            catch {
+            waitMs := PromptPaste_SendRemainingMs(tDeadline)
+            if (waitMs > 0) {
+                try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs)
+                catch {
+                }
             }
             if (!ready && attachCount > 0) {
                 try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
@@ -648,7 +668,9 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             }
         }
 
-        if (companionId != "" && PromptPaste_CompanionIsGenerating(hwnd, companionId)) {
+        if (PromptPaste_SendRemainingMs(tDeadline) <= 0) {
+            ok := false
+        } else if (companionId != "" && PromptPaste_CompanionIsGenerating(hwnd, companionId)) {
             ok := true
         } else {
             if (showBar) {
@@ -656,14 +678,16 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
                 catch {
                 }
             }
-            submitted := PromptPaste_SubmitCompanionNoActivate(hwnd, companionId)
+            submitted := PromptPaste_SubmitCompanionNoActivate(hwnd, companionId, tDeadline)
             if (companionId != "") {
                 if (showBar) {
                     try StandardLoadingBar_Update("⏳ Confirming…", BANNER_ACCENT_INTERMEDIATE)
                     catch {
                     }
                 }
-                ok := PromptPaste_WaitForGenerationStarted(hwnd, companionId, 5000) || submitted
+                confirmMs := PromptPaste_SendRemainingMs(tDeadline)
+                ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs)) ||
+                submitted
             } else {
                 ok := submitted
             }
@@ -682,7 +706,8 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             catch {
             }
         } else {
-            try ShowCenteredOverlay_Utils("⚠ Send may not have started", 2200, BANNER_ACCENT_ERROR)
+            msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (15s)" : "⚠ Send may not have started"
+            try ShowCenteredOverlay_Utils(msg, 2200, BANNER_ACCENT_ERROR)
             catch {
             }
         }

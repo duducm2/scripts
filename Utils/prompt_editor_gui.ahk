@@ -1520,10 +1520,10 @@ Paste modes
 • body_plus_clipboard — paste body then append clipboard.
 • body_attach_clipboard — same as default (explicit).
 • attach_only — attach context files only.
-• auto_send — same attach/paste as default; send is chosen at paste time via [S] on the banner (shown right after you pick a prompt).
+• auto_send — same attach/paste as default; send is chosen at paste time via [Y] on the banner (shown right after you pick a prompt).
 
 Author notes
-• Content after a --- line is human reminders; default paste (Esc) strips them. The banner appears immediately when you select a prompt; use [Y] to include reminders or [S] to strip and submit.
+• Content after a --- line is human reminders; default paste (Esc) strips them. The banner appears immediately when you select a prompt; use [H] to include human notes, or [Y] to strip and submit.
 
 Context tab (Edit prompt)
 • General — name, category, char, prompt file, tags, variables, paste mode, draft.
