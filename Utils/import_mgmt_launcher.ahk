@@ -1,18 +1,85 @@
 ; =============================================================================
 ; Utils module: import_mgmt_launcher.ahk
-; Import Management main menu (Utility Shortcuts [J])
+; Import Management main menu (Utility Shortcuts [J]) — finance & palace imports
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
+global g_ImportMgmtGui := false
+global g_ImportMgmtHotkeys := []
+
 ImportMgmt_LaunchApp() {
-    ImportMgmt_EnsureData()
     ImportMgmt_ShowMainMenu()
+}
+
+ImportMgmt_CloseGui() {
+    global g_ImportMgmtGui
+    ImportMgmt_UnbindHotkeys()
+    try {
+        if (IsObject(g_ImportMgmtGui))
+            g_ImportMgmtGui.Destroy()
+    } catch {
+    }
+    g_ImportMgmtGui := false
+}
+
+ImportMgmt_UnbindHotkeys() {
+    global g_ImportMgmtHotkeys
+    try HotIf(ImportMgmt_HotIfKeys)
+    catch {
+    }
+    for key in g_ImportMgmtHotkeys {
+        try Hotkey(key, "Off")
+        catch {
+        }
+    }
+    g_ImportMgmtHotkeys := []
+    try HotIf()
+    catch {
+    }
+}
+
+ImportMgmt_HotIfKeys(*) {
+    global g_ImportMgmtGui
+    if (!IsObject(g_ImportMgmtGui))
+        return false
+    try {
+        return WinActive("ahk_id " g_ImportMgmtGui.Hwnd)
+    } catch {
+        return false
+    }
+}
+
+ImportMgmt_BindHotkeys(pairs) {
+    global g_ImportMgmtGui, g_ImportMgmtHotkeys
+    ImportMgmt_UnbindHotkeys()
+    if (!IsObject(g_ImportMgmtGui))
+        return
+    try HotIf(ImportMgmt_HotIfKeys)
+    catch {
+        return
+    }
+    for p in pairs {
+        try {
+            Hotkey(p[1], p[2], "On")
+            g_ImportMgmtHotkeys.Push(p[1])
+        } catch {
+        }
+    }
+    try HotIf()
+    catch {
+    }
+}
+
+ImportMgmt_CenterGui(guiObj, w := 560, h := 220) {
+    MonitorGetWorkArea(MonitorGetPrimary(), &L, &T, &R, &B)
+    x := L + ((R - L) - w) // 2
+    y := T + ((B - T) - h) // 2
+    guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
 }
 
 ImportMgmt_ShowMainMenu() {
     global g_ImportMgmtGui
     ImportMgmt_CloseGui()
-    ImportMgmt_EnsureData()
 
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
@@ -27,43 +94,36 @@ ImportMgmt_ShowMainMenu() {
         "Import AI-exported packs from Desktop into local CSV data")
 
     g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y84 w520", "[I]  Job search")
+    g_ImportMgmtGui.Add("Text", "x20 y84 w520", "[D]  Finance daily")
     g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x20 y110 w520",
-        "JOB_SEARCH_UPDATE*.txt → opportunities.csv")
-
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y140 w520", "[D]  Finance daily")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y166 w520",
         "FINANCE_DAILY*.txt → transactions")
 
     g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y196 w520", "[M]  Finance monthly")
+    g_ImportMgmtGui.Add("Text", "x20 y140 w520", "[M]  Finance monthly")
     g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y222 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y166 w520",
         "FINANCE_MONTHLY*.txt → accounts / goals adjustments")
 
     g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y252 w520", "[P]  Palace mnemonic pack")
+    g_ImportMgmtGui.Add("Text", "x20 y196 w520", "[P]  Palace mnemonic pack")
     g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y278 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y222 w520",
         "PALACE_PACK*.txt → palaces / beasts / atoms")
 
     g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y308 w520", "[L]  Study plan pack")
+    g_ImportMgmtGui.Add("Text", "x20 y252 w520", "[L]  Study plan pack")
     g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y334 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y278 w520",
         "PLAN_PACK*.txt → study plans")
 
     g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y378 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y322 w520",
         "Also available: Finance [F] and Memory Palace [N] launchers")
-    g_ImportMgmtGui.Add("Text", "x20 y398 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y342 w520",
         "[H] help   Backspace utility shortcuts   Esc close")
 
     ImportMgmt_BindHotkeys([
-        ["i", ImportMgmt_OnImportJobSearch],
         ["d", ImportMgmt_OnImportFinanceDaily],
         ["m", ImportMgmt_OnImportFinanceMonthly],
         ["p", ImportMgmt_OnImportPalacePack],
@@ -72,7 +132,7 @@ ImportMgmt_ShowMainMenu() {
         ["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()],
         ["Escape", (*) => ImportMgmt_CloseGui()]
     ])
-    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 440)
+    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 380)
 }
 
 ImportMgmt_OnHelp(*) {
@@ -85,7 +145,7 @@ ImportMgmt_ShowHelp() {
 
     body := ImportMgmt_HelpText()
     winW := 620
-    winH := 520
+    winH := 480
     bodyW := winW - 32
     bodyH := winH - 100
 
@@ -109,7 +169,7 @@ ImportMgmt_ShowHelp() {
     }
     g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
-    "Esc / Backspace — main menu")
+        "Esc / Backspace — main menu")
     g_ImportMgmtGui.OnEvent("Close", (*) => ImportMgmt_ShowMainMenu())
     g_ImportMgmtGui.OnEvent("Escape", (*) => ImportMgmt_ShowMainMenu())
     ImportMgmt_BindHotkeys([
@@ -121,7 +181,6 @@ ImportMgmt_ShowHelp() {
 
 ImportMgmt_HelpText() {
     return "IMPORT KEYS (Utility Shortcuts [J])`r`n"
-    . "[I] Job search       JOB_SEARCH_UPDATE.txt  →  opportunities.csv`r`n"
     . "[D] Finance daily    FINANCE_DAILY.txt      →  transactions`r`n"
     . "[M] Finance monthly  FINANCE_MONTHLY.txt    →  accounts / goals`r`n"
     . "[P] Palace pack      PALACE_PACK.txt        →  palaces / beasts / atoms`r`n"
@@ -135,14 +194,17 @@ ImportMgmt_HelpText() {
     . "1. Run the pack prompt (#!+U → Prompts, or dictation flow).`r`n"
     . "2. Save the pack to Desktop (Quick Download or copy fence).`r`n"
     . "3. Press the import key here — newest matching pack is imported.`r`n`r`n"
+    . "PER-IMPORT RULES`r`n"
+    . "[D] Finance daily / [M] Finance monthly`r`n"
+    . "  • Confirm dialog before save; appends transactions or monthly adjustments.`r`n`r`n"
+    . "[P] Palace mnemonic pack / [L] Study plan pack`r`n"
+    . "  • Pack upsert with cross-link validation; confirm before save.`r`n`r`n"
     . "OUTCOMES`r`n"
     . "• Full success: local CSV saved; Desktop pack archived to */data/imported/`r`n"
-    . "• Partial failure (job search): good rows saved; pack stays on Desktop; fix file written`r`n"
-    . "• Total failure: no save; Desktop fix file written`r`n`r`n"
+    . "• Failure: Desktop fix file written (FINANCE_AI_FIX.txt or PALACE_AI_FIX.txt)`r`n`r`n"
     . "AI FIX FILES (written on failure — always overwrite)`r`n"
-    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | JOB_SEARCH_AI_FIX.txt`r`n"
-    . "Paste fix file into AI → re-deliver full corrected pack → save canonical name → import again.`r`n"
-    . "Job search partial import: re-deliver the FULL pack (include rows that already imported).`r`n`r`n"
+    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt`r`n"
+    . "Paste fix file into AI → re-deliver corrected pack → save canonical name → import again.`r`n`r`n"
     . "PACK FORMAT`r`n"
     . "===PREVIEW=== … ===END_PREVIEW===`r`n"
     . "===FILE: PACK.csv=== … ===END_FILE===`r`n"
@@ -154,10 +216,6 @@ ImportMgmt_ReturnToUtilityShortcuts() {
     try ShowHotstringSelector()
     catch {
     }
-}
-
-ImportMgmt_OnImportJobSearch(*) {
-    ImportMgmt_ImportFromDesktop()
 }
 
 ImportMgmt_OnImportFinanceDaily(*) {

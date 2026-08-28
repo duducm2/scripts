@@ -877,7 +877,6 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
     PromptData_EnsurePlanPromptEntry()
-    PromptData_EnsureJobSearchPromptEntry()
     PromptData_MigrateCatalogIntoSelectable()
     return g_PromptEntries
 }
@@ -919,50 +918,6 @@ PromptData_EnsurePlanPromptEntry() {
         filePathDraft: "",
         personal_context_files: [],
         work_context_files: [],
-        personal_selectable_context_files: [],
-        work_selectable_context_files: [],
-        selectContextCatalog: ""
-    }))
-    PromptData_Save(list)
-}
-
-; Upsert Job search status update into live prompts.ini (existing installs never get DefaultEntries again).
-PromptData_EnsureJobSearchPromptEntry() {
-    global g_PromptEntries
-    list := g_PromptEntries
-    if (!IsObject(list))
-        list := []
-    needle := "job-search-status-update.txt"
-    for prompt in list {
-        fp := StrLower(StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\"))
-        if (InStr(fp, needle))
-            return
-    }
-    taken := Map()
-    for prompt in list {
-        c := StrLower(Trim(prompt.HasProp("char") ? prompt.char : ""))
-        if (c != "")
-            taken[c] := true
-    }
-    charVal := "j"
-    if (taken.Has(charVal))
-        charVal := ""
-    list.Push(PromptData_NormalizeEntry({
-        name: "Job search status update",
-        char: charVal,
-        category: "Import Management",
-        author: "",
-        filePath: "assets\prompt\job-search-status-update.txt",
-        source: "file",
-        tags: "",
-        pasteMode: "default",
-        attachAsTxt: 1,
-        expectsDataOutput: 1,
-        dataOutputFormat: "code",
-        variables: "",
-        filePathDraft: "",
-        personal_context_files: ["job_search\data\opportunities.csv"],
-        work_context_files: ["job_search\data\opportunities.csv"],
         personal_selectable_context_files: [],
         work_selectable_context_files: [],
         selectContextCatalog: ""

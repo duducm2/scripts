@@ -1,9 +1,0 @@
-﻿===PREVIEW===
-2 row(s) · Added new opportunities for Coca-Cola and Pepsi
-===END_PREVIEW===
-
-===FILE: JOB_SEARCH_UPDATE.csv===
-id,company,role_title,status,status_date,applied_date,source,notes
-JOB_COCACOLA,Coca-Cola,,applied,2026-08-27,,,
-JOB_PEPSI,Pepsi,,applied,2026-08-27,,,
-===END_FILE===

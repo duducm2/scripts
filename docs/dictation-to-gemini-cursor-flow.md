@@ -116,7 +116,7 @@ For a complete list of where Hand Off audio cues are used, see `docs/hand_off_wa
 ## Related
 
 - [paste-field-mapping.md](paste-field-mapping.md) — learn-and-persist main text field for `#!+L` / D2C **[W]**.
-- [prompt-data-output-and-finance-packs.md](prompt-data-output-and-finance-packs.md) — Prompt Manager `ExpectsDataOutput` / `DataOutputFormat`, injected AIB delivery contract, finance/mnemonic/job-search `.txt` packs, import pipeline, partial-import AI fix recovery (`*_AI_FIX.txt` on Desktop). Send dictation **[D]/[G]/[A]/[T]** load prompts by char and honor that metadata (file vs code is not controlled by `.txt` body prose alone). Job search uses manual Prompt **[j]** + Import Management **[J]** → **[I]**.
+- [prompt-data-output-and-finance-packs.md](prompt-data-output-and-finance-packs.md) — Prompt Manager `ExpectsDataOutput` / `DataOutputFormat`, injected AIB delivery contract, finance/mnemonic `.txt` packs, import pipeline, partial-import AI fix recovery (`*_AI_FIX.txt` on Desktop). Send dictation **[D]/[G]/[A]/[T]** load prompts by char and honor that metadata (file vs code is not controlled by `.txt` body prose alone). Import Management **[J]** delegates to finance and palace imports.
 
 ## Happy path (no cancel)
 

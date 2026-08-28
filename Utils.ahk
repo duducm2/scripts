@@ -21,7 +21,7 @@ global UIA_ControlType_Button := 50000
 ; Early BANNER_ACCENT_* and GEMINI_PROMPT_* globals stay here (must load first).
 ; lib\CopilotWeb.ahk #include stays inline before d2c_flow_manager module.
 ; See Utils/MODULARIZATION_PROGRESS.md for the full module list.
-; Pack imports (Finance, Memory Palace, Job search): docs/prompt-data-output-and-finance-packs.md
+; Pack imports (Finance, Memory Palace): docs/prompt-data-output-and-finance-packs.md
 ; -----------------------------------------------------------------------------
 
 ; -----------------------------------------------------------------------------
@@ -336,10 +336,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] ClipAngel last clip → Desktop (.txt) -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk
-; [Utils module] Import Management job search CSV bridge -> Utils\import_mgmt_*.ahk
+; [Utils module] Import Management hub (finance & palace imports) -> Utils\import_mgmt_launcher.ahk
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md
-#include %A_ScriptDir%\Utils\import_mgmt_helpers.ahk
-#include %A_ScriptDir%\Utils\import_mgmt_import.ahk
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
 ; [Utils module] Utility Shortcuts [G] commit+push scripts + notes repos -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
