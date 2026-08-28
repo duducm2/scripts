@@ -1149,9 +1149,20 @@ function applyTheme(theme) {{
   const applyBtn = document.getElementById('periodApply');
   if (applyBtn) applyBtn.addEventListener('click', applyPeriod);
   const backBtn = document.getElementById('catViewBack');
-  if (backBtn) backBtn.addEventListener('click', () => {{
+  function goBackToDashboard() {{
+    if (!activeCategory) return;
     closeCategoryView();
     drawAll();
+  }}
+  if (backBtn) backBtn.addEventListener('click', goBackToDashboard);
+  document.addEventListener('keydown', (e) => {{
+    if (e.key !== 'Backspace') return;
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable))
+      return;
+    if (!activeCategory) return;
+    e.preventDefault();
+    goBackToDashboard();
   }});
   const fromEl = document.getElementById('periodFrom');
   const toEl = document.getElementById('periodTo');
