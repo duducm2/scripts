@@ -9,3 +9,4 @@ Synced from `plans.csv` / `plan_items.csv` for mobile access.
 | German | [german.md](german.md) |
 | Piano | [piano.md](piano.md) |
 | Science | [science.md](science.md) |
+| Product Owner | [product-owner.md](product-owner.md) |

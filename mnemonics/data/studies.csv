@@ -1,4 +1,4 @@
-id,title,notes_rel_path,sort_order,active
+﻿id,title,notes_rel_path,sort_order,active
 STUDY_AI,Ai,AI,1,1
 STUDY_COMMUNICATIO,Communication,communication,2,1
 STUDY_ENGLISH,English,english,3,1
@@ -7,3 +7,4 @@ STUDY_PIANO,Piano,piano,5,1
 STUDY_SCIENCE,Science,science,6,1
 STUDY_SKILLS,Skills,skills,7,1
 STUDY_TAOISM,Taoism,taoism,8,1
+STUDY_PRODUCTOWNER,Product Owner,product-owner,9,1
