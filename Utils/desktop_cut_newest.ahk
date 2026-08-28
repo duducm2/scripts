@@ -241,17 +241,20 @@ DesktopCutNewest_FindWindowByTitleHint(titleHint) {
 }
 
 DesktopCutNewest_ScheduleActivate(hwnd, delayMs := 1500) {
+    global g_DesktopCutNewest_ScheduleActivateHwnd, g_DesktopCutNewest_ScheduleActivateTimer
     if (!hwnd || delayMs < 1)
         return
-    DesktopCutNewest_ScheduleActivateObj.hwnd := hwnd
-    SetTimer(DesktopCutNewest_ScheduleActivateObj.OnTimer, -delayMs)
+    g_DesktopCutNewest_ScheduleActivateHwnd := hwnd
+    if (!g_DesktopCutNewest_ScheduleActivateTimer)
+        g_DesktopCutNewest_ScheduleActivateTimer := ObjBindMethod(DesktopCutNewest_ScheduleActivateObj, "OnTimer")
+    SetTimer(g_DesktopCutNewest_ScheduleActivateTimer, -delayMs)
 }
 
 class DesktopCutNewest_ScheduleActivateObj {
-    static hwnd := 0
     static OnTimer() {
-        hwnd := DesktopCutNewest_ScheduleActivateObj.hwnd
-        DesktopCutNewest_ScheduleActivateObj.hwnd := 0
+        global g_DesktopCutNewest_ScheduleActivateHwnd
+        hwnd := g_DesktopCutNewest_ScheduleActivateHwnd
+        g_DesktopCutNewest_ScheduleActivateHwnd := 0
         DesktopCutNewest_ActivateHwnd(hwnd)
     }
 }
@@ -396,6 +399,8 @@ DesktopCutNewest_CopyPath() {
 global g_DesktopCutNewest_DoubleTapArmed := false
 global g_DesktopCutNewest_LastPressTick := 0
 global g_DesktopCutNewest_DoubleTapTimer := 0
+global g_DesktopCutNewest_ScheduleActivateHwnd := 0
+global g_DesktopCutNewest_ScheduleActivateTimer := 0
 
 class DesktopCutNewest_DoubleTapTimerObj {
     static OnSingleTapTimeout() {
