@@ -41,7 +41,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Sentence Structure — YouTube learning resources](https://www.youtube.com/results?search_query=Sentence+Structure+English+grammar+C1+tutorial)
+- ▶ [English Sentence Structure - English with Lucy](https://www.youtube.com/watch?v=8GrsPiE4IhU)
 
 #### Month 2: Conditional & Modal Systems
 
@@ -159,7 +159,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Conjunctions and Linking Words — YouTube learning resources](https://www.youtube.com/results?search_query=Conjunctions+and+Linking+Words+English+grammar+C1+tutorial)
+- ▶ [Linking Words in English - BBC Learning English](https://www.youtube.com/watch?v=KVGCT3f0Zjs)
 
 ##### Advanced Constructions
 
@@ -288,7 +288,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Useful Words — YouTube learning resources](https://www.youtube.com/results?search_query=Useful+Words+English+grammar+C1+tutorial)
+- ▶ [How to Learn Vocabulary - English with Lucy](https://www.youtube.com/watch?v=JuanJyFz6Zs)
 
 ## Phase 2: Productive Skills Excellence (Months 4-9)
 
@@ -303,7 +303,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phonetics and Phonology — YouTube learning resources](https://www.youtube.com/results?search_query=Phonetics+and+Phonology+English+grammar+C1+tutorial)
+- ▶ [English Phonetics - Rachel's English](https://www.youtube.com/watch?v=n4NVPg2kHv4)
 
 ##### Suprasegmental Features
 
@@ -314,7 +314,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Suprasegmental Features — YouTube learning resources](https://www.youtube.com/results?search_query=Suprasegmental+Features+English+grammar+C1+tutorial)
+- ▶ [Word Stress and Intonation - Rachel's English](https://www.youtube.com/watch?v=OUnEjGlOzQA)
 
 ##### Accent Reduction
 
@@ -333,7 +333,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Discourse Competence — YouTube learning resources](https://www.youtube.com/results?search_query=Discourse+Competence+English+grammar+C1+tutorial)
+- ▶ [Discourse Markers - BBC Learning English](https://www.youtube.com/watch?v=KVGCT3f0Zjs)
 
 ##### Functional Language
 
@@ -344,7 +344,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Functional Language — YouTube learning resources](https://www.youtube.com/results?search_query=Functional+Language+English+grammar+C1+tutorial)
+- ▶ [Functional Language for Fluency - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ##### Conversational Strategies
 
@@ -367,7 +367,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Presentations and Public Speaking — YouTube learning resources](https://www.youtube.com/results?search_query=Presentations+and+Public+Speaking+English+grammar+C1+tutorial)
+- ▶ [How to Give a Great Presentation - TED](https://www.youtube.com/watch?v=Unzc731iCUY)
 
 ##### Debate and Argumentation
 
@@ -377,7 +377,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Debate and Argumentation — YouTube learning resources](https://www.youtube.com/results?search_query=Debate+and+Argumentation+English+grammar+C1+tutorial)
+- ▶ [How to Argue - TED-Ed](https://www.youtube.com/watch?v=3d29eWBpJYA)
 
 ##### Sociolinguistic Competence
 
@@ -497,7 +497,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Month 12: Mastery & Certification — YouTube learning resources](https://www.youtube.com/results?search_query=Month+12%3A+Mastery+%26+Certification+English+grammar+C1+tutorial)
+- ▶ [How to Reach C1 English - English with Lucy](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
 
 ## Additional Components
 
@@ -508,7 +508,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [10. Fluency & Confidence — YouTube learning resources](https://www.youtube.com/results?search_query=10.+Fluency+%26+Confidence+English+grammar+C1+tutorial)
+- ▶ [Build Speaking Confidence - English with Lucy](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ## Resources & Tools
 
@@ -519,7 +519,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Assessment Tools — YouTube learning resources](https://www.youtube.com/results?search_query=Assessment+Tools+English+grammar+C1+tutorial)
+- ▶ [Self-Assessment for English Learners - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ### Grammar Resources
 
@@ -528,7 +528,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Grammar Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Grammar+Resources+English+grammar+C1+tutorial)
+- ▶ [Best Grammar Resources - English with Lucy](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
 
 ### Vocabulary Resources
 
@@ -538,7 +538,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Vocabulary Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Vocabulary+Resources+English+grammar+C1+tutorial)
+- ▶ [Vocabulary Learning Methods - English with Lucy](https://www.youtube.com/watch?v=JuanJyFz6Zs)
 
 ### Pronunciation Resources
 
@@ -548,7 +548,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Pronunciation Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Pronunciation+Resources+English+grammar+C1+tutorial)
+- ▶ [Pronunciation Resources - Rachel's English](https://www.youtube.com/watch?v=n4NVPg2kHv4)
 
 ### Speaking Resources
 
@@ -557,7 +557,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Speaking Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Speaking+Resources+English+grammar+C1+tutorial)
+- ▶ [Speaking Practice Methods - English with Lucy](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ### Listening Resources
 
@@ -568,7 +568,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Listening Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Listening+Resources+English+grammar+C1+tutorial)
+- ▶ [Improve English Listening - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ### Reading Resources
 
@@ -579,7 +579,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Reading Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Reading+Resources+English+grammar+C1+tutorial)
+- ▶ [Reading Strategies for Advanced Learners - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ### Writing Resources
 
@@ -588,7 +588,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Writing Resources — YouTube learning resources](https://www.youtube.com/results?search_query=Writing+Resources+English+grammar+C1+tutorial)
+- ▶ [Academic Writing Tips - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ## Progress Tracking
 
@@ -605,7 +605,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Weekly Checklist — YouTube learning resources](https://www.youtube.com/results?search_query=Weekly+Checklist+English+grammar+C1+tutorial)
+- ▶ [Weekly Study Planning - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Monthly Milestones
 
@@ -617,7 +617,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Monthly Milestones — YouTube learning resources](https://www.youtube.com/results?search_query=Monthly+Milestones+English+grammar+C1+tutorial)
+- ▶ [Monthly Goal Setting - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Quarterly Goals
 
@@ -629,4 +629,4 @@
 
 **🔗 Resources:**
 
-- 🔍 [Quarterly Goals — YouTube learning resources](https://www.youtube.com/results?search_query=Quarterly+Goals+English+grammar+C1+tutorial)
+- ▶ [Quarterly Planning - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)

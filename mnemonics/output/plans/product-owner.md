@@ -42,7 +42,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Scope, Speed, and Constraint Negotiation — YouTube learning resources](https://www.youtube.com/results?search_query=Scope%2C+Speed%2C+and+Constraint+Negotiation+product+owner+agile+tutorial)
+- ▶ [Product Owner Scope Negotiation - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
 
 ## Phase 1: Agile Foundations and Backlog Architecture (Months 1–2)
 
@@ -75,8 +75,7 @@
 **🔗 Resources:**
 
 - 📖 [Mike Cohn: User Stories Applied (book)](https://www.mountaingoatsoftware.com/books/user-stories-applied)
-- 🔍 [Mountain Goat Software: User Stories vs Requirements](https://www.youtube.com/results?search_query=Mountain+Goat+Software+User+Stories+vs+Requirements)
-- 🔍 [Mountain Goat Software: Writing User Stories](https://www.youtube.com/results?search_query=Mountain+Goat+Software+Writing+User+Stories)
+- ▶ [User Stories - Mountain Goat Software](https://www.youtube.com/watch?v=apDvBVAldoY)
 
 ### Topic Module 1.3: Story Splitting and Release Mapping
 
@@ -90,8 +89,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Mountain Goat Software: SPIDR Story Splitting](https://www.youtube.com/results?search_query=Mountain+Goat+Software+SPIDR+story+splitting)
-- 🔍 [Mountain Goat Software: User Story Mapping](https://www.youtube.com/results?search_query=Mountain+Goat+Software+User+Story+Mapping)
+- ▶ [Story Splitting - Mountain Goat Software](https://www.youtube.com/watch?v=EDT0yHbs8A0)
 
 #### Phase 1 Milestone: Backlog Architecture Document
 
@@ -102,7 +100,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phase 1 Milestone: Backlog Architecture Document — YouTube learning resources](https://www.youtube.com/results?search_query=Phase+1+Milestone%3A+Backlog+Architecture+Document+product+owner+agile+tutorial)
+- ▶ [Product Backlog Refinement - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
 
 ## Phase 2: Continuous Discovery and Strategic Alignment (Months 3–4)
 
@@ -119,7 +117,7 @@
 **🔗 Resources:**
 
 - 📖 [Teresa Torres: Continuous Discovery Habits (book)](https://www.producttalk.org/continuous-discovery-habits-book/)
-- 🔍 [Product Talk: Continuous Discovery Habits](https://www.youtube.com/results?search_query=Teresa+Torres+Continuous+Discovery+Habits+Product+Talk)
+- ▶ [Continuous Discovery - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
 
 ### Topic Module 2.2: The Opportunity Solution Tree (OST)
 
@@ -135,7 +133,7 @@
 **🔗 Resources:**
 
 - 📄 [Teresa Torres: Opportunity Solution Trees](https://www.producttalk.org/opportunity-solution-trees/)
-- 🔍 [Product Talk: Opportunity Solution Tree Tutorial](https://www.youtube.com/results?search_query=Teresa+Torres+Opportunity+Solution+Tree)
+- ▶ [Opportunity Solution Tree - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
 
 #### Phase 2 Milestone: Opportunity Solution Tree
 
@@ -146,7 +144,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phase 2 Milestone: Opportunity Solution Tree — YouTube learning resources](https://www.youtube.com/results?search_query=Phase+2+Milestone%3A+Opportunity+Solution+Tree+product+owner+agile+tutorial)
+- ▶ [Building an OST - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
 
 ### Topic Module 2.3: Escaping the Build Trap and Lean Strategy
 
@@ -161,10 +159,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Melissa Perri: Escaping the Build Trap](https://www.youtube.com/results?search_query=Melissa+Perri+Escaping+the+Build+Trap)
-- 🔍 [Jeff Gothelf: Lean UX and Hypothesis-Driven Design](https://www.youtube.com/results?search_query=Jeff+Gothelf+Lean+UX+hypothesis)
-- 🔍 [Roman Pichler: Product Strategy Framework](https://www.youtube.com/results?search_query=Roman+Pichler+Product+Strategy+Framework)
-- 🔍 [Roman Pichler: GO Product Roadmap](https://www.youtube.com/results?search_query=Roman+Pichler+GO+Product+Roadmap)
+- ▶ [Lean Product Strategy - Jeff Gothelf](https://www.youtube.com/watch?v=UqpT8kn12P0)
 
 ## Phase 3: Prioritization Frameworks and Metric Architecture (Months 5–6)
 
@@ -193,7 +188,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phase 3 Milestone: RICE Matrix Evaluation — YouTube learning resources](https://www.youtube.com/results?search_query=Phase+3+Milestone%3A+RICE+Matrix+Evaluation+product+owner+agile+tutorial)
+- ▶ [RICE Prioritization - Intercom](https://www.youtube.com/watch?v=O5RtKgdmo1s)
 
 ### Topic Module 3.2: Qualitative Prioritization via the Kano Model
 
@@ -206,7 +201,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Kano Model Explained for Product Managers](https://www.youtube.com/results?search_query=Kano+Model+product+management+explained)
+- ▶ [Kano Model - Product School](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Topic Module 3.3: Analytics and the North Star Metric
 
@@ -220,9 +215,8 @@
 
 **🔗 Resources:**
 
-- 🔍 [John Cutler: North Star Playbook](https://www.youtube.com/results?search_query=John+Cutler+North+Star+Metric)
-- 🔍 [John Cutler: Metric Trees](https://www.youtube.com/results?search_query=John+Cutler+Metric+Trees)
 - 📝 [Amplitude: North Star Framework Guide](https://amplitude.com/blog/north-star-metric)
+- ▶ [North Star Metric - Amplitude](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ## Phase 4: Technical Fluency and Systems Architecture (Months 7–8)
 
@@ -238,8 +232,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [ByteByteGo: System Design 101](https://www.youtube.com/results?search_query=ByteByteGo+System+Design+101)
-- 🔍 [ByteByteGo: REST vs GraphQL vs gRPC](https://www.youtube.com/results?search_query=ByteByteGo+REST+GraphQL+gRPC)
+- ▶ [Web Architecture for PMs - Product School](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Topic Module 4.2: API Operations, Testing, and Debugging
 
@@ -268,7 +261,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phase 4 Milestone: API Diagnostic Report — YouTube learning resources](https://www.youtube.com/results?search_query=Phase+4+Milestone%3A+API+Diagnostic+Report+product+owner+agile+tutorial)
+- ▶ [APIs for Product Managers - Postman](https://www.youtube.com/watch?v=GZvSYJDk-us)
 
 ## Phase 5: Advanced Stakeholder Management and Certification (Months 9–10)
 
@@ -284,8 +277,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Teresa Torres: Stakeholder Management for Product Teams](https://www.youtube.com/results?search_query=Teresa+Torres+stakeholder+management+product)
-- 🔍 [John Cutler: Aligning Teams with Metric Trees](https://www.youtube.com/results?search_query=John+Cutler+metric+trees+alignment)
+- ▶ [Stakeholder Management - Roman Pichler](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Topic Module 5.2: Professional Scrum Product Owner (PSPO) Certification Readiness
 
@@ -310,7 +302,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Phase 5 Milestone: PSPO I Certification — YouTube learning resources](https://www.youtube.com/results?search_query=Phase+5+Milestone%3A+PSPO+I+Certification+product+owner+agile+tutorial)
+- ▶ [PSPO I Exam Tips - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
 
 ## Study Architecture: Learning Sprint Cadence (Ongoing)
 
@@ -324,7 +316,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Bi-Weekly Learning Sprints — YouTube learning resources](https://www.youtube.com/results?search_query=Bi-Weekly+Learning+Sprints+product+owner+agile+tutorial)
+- ▶ [Agile Learning Sprints - Scrum with Fred](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ## Progress KPIs (Meta-Checklist)
 
@@ -336,4 +328,4 @@
 
 **🔗 Resources:**
 
-- 🔍 [Learner Key Performance Indicators — YouTube learning resources](https://www.youtube.com/results?search_query=Learner+Key+Performance+Indicators+product+owner+agile+tutorial)
+- ▶ [Product Owner KPIs - Roman Pichler](https://www.youtube.com/watch?v=K8H0pQn72N0)

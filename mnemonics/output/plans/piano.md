@@ -328,7 +328,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Session Structure — YouTube learning resources](https://www.youtube.com/results?search_query=Session+Structure+piano+tutorial)
+- ▶ [How to Practise Piano - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ## Progress Tracking
 
@@ -338,7 +338,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Practice Consistency — YouTube learning resources](https://www.youtube.com/results?search_query=Practice+Consistency+piano+tutorial)
+- ▶ [Building Practice Consistency - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Tempo Progression
 
@@ -348,7 +348,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Tempo Progression — YouTube learning resources](https://www.youtube.com/results?search_query=Tempo+Progression+piano+tutorial)
+- ▶ [Slow Practice Method - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Accuracy Trend
 
@@ -358,7 +358,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Accuracy Trend — YouTube learning resources](https://www.youtube.com/results?search_query=Accuracy+Trend+piano+tutorial)
+- ▶ [Accuracy in Piano Practice - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Repertoire Readiness
 
@@ -368,7 +368,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Repertoire Readiness — YouTube learning resources](https://www.youtube.com/results?search_query=Repertoire+Readiness+piano+tutorial)
+- ▶ [Preparing Repertoire - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Skill Radar (Semi-Monthly Self-Assessment)
 
@@ -381,7 +381,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Skill Radar (Semi-Monthly Self-Assessment) — YouTube learning resources](https://www.youtube.com/results?search_query=Skill+Radar+%28Semi-Monthly+Self-Assessment%29+piano+tutorial)
+- ▶ [Self-Assessment for Pianists - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ## Goals (End of Year 1)
 
@@ -395,4 +395,4 @@
 
 **🔗 Resources:**
 
-- 🔍 [Goals (End of Year 1) — YouTube learning resources](https://www.youtube.com/results?search_query=Goals+%28End+of+Year+1%29+piano+tutorial)
+- ▶ [Piano Goals and Progress - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)

@@ -27,7 +27,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Python Fundamentals and IDE Mastery — YouTube learning resources](https://www.youtube.com/results?search_query=Python+Fundamentals+and+IDE+Mastery+machine+learning+data+science+tutorial)
+- ▶ [Python for Beginners - freeCodeCamp](https://www.youtube.com/watch?v=rfscVS0vtbw)
 
 #### Applied Statistics and Linear Algebra
 
@@ -38,7 +38,8 @@
 
 **🔗 Resources:**
 
-- 🔍 [Applied Statistics and Linear Algebra — YouTube learning resources](https://www.youtube.com/results?search_query=Applied+Statistics+and+Linear+Algebra+machine+learning+data+science+tutorial)
+- ▶ [Statistics Fundamentals - StatQuest](https://www.youtube.com/watch?v=qBigTkBDMWs)
+- ▶ [Linear Algebra Essence - 3Blue1Brown](https://www.youtube.com/watch?v=fNk_zzaMoSs)
 
 ### Month 2: Data Wrangling and SQL Integration
 
@@ -51,7 +52,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Data Manipulation with Pandas — YouTube learning resources](https://www.youtube.com/results?search_query=Data+Manipulation+with+Pandas+machine+learning+data+science+tutorial)
+- ▶ [Python Pandas Tutorial - Corey Schafer](https://www.youtube.com/watch?v=vmEHCJwhgG0)
 
 #### Relational Databases (SQL)
 
@@ -62,7 +63,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Relational Databases (SQL) — YouTube learning resources](https://www.youtube.com/results?search_query=Relational+Databases+%28SQL%29+machine+learning+data+science+tutorial)
+- ▶ [SQL Full Course - freeCodeCamp](https://www.youtube.com/watch?v=HXV3cyQiF80)
 
 ### Month 3: Exploratory Data Analysis (EDA) and Visualization
 
@@ -75,7 +76,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Visual Storytelling — YouTube learning resources](https://www.youtube.com/results?search_query=Visual+Storytelling+machine+learning+data+science+tutorial)
+- ▶ [Data Visualization for Data Science - Ken Jee](https://www.youtube.com/watch?v=0UlihRp2Ads)
 
 #### Feature Engineering
 
@@ -86,7 +87,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Feature Engineering — YouTube learning resources](https://www.youtube.com/results?search_query=Feature+Engineering+machine+learning+data+science+tutorial)
+- ▶ [Feature Engineering - StatQuest](https://www.youtube.com/watch?v=6PeL4tN9tVE)
 
 ## Phase 2: Predictive Modeling and Advanced Algorithms (Months 4-6)
 
@@ -101,7 +102,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Regression and Classification — YouTube learning resources](https://www.youtube.com/results?search_query=Regression+and+Classification+machine+learning+data+science+tutorial)
+- ▶ [Machine Learning Fundamentals - StatQuest](https://www.youtube.com/watch?v=GwIoYPEg3ok)
 
 #### Model Evaluation Metrics
 
@@ -112,7 +113,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Model Evaluation Metrics — YouTube learning resources](https://www.youtube.com/results?search_query=Model+Evaluation+Metrics+machine+learning+data+science+tutorial)
+- ▶ [ROC and AUC - StatQuest](https://www.youtube.com/watch?v=4jRBrMpHDlc)
 
 ### Month 5: Unsupervised Machine Learning and Web Scraping
 
@@ -125,7 +126,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Clustering and Dimensionality Reduction — YouTube learning resources](https://www.youtube.com/results?search_query=Clustering+and+Dimensionality+Reduction+machine+learning+data+science+tutorial)
+- ▶ [Principal Component Analysis - StatQuest](https://www.youtube.com/watch?v=FgakZw6K1QQ)
 
 #### Web Scraping for Custom Datasets
 
@@ -136,7 +137,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Web Scraping for Custom Datasets — YouTube learning resources](https://www.youtube.com/results?search_query=Web+Scraping+for+Custom+Datasets+machine+learning+data+science+tutorial)
+- ▶ [Python Web Scraping - Corey Schafer](https://www.youtube.com/watch?v=XGkEhqBRx-Y)
 
 ### Month 6: Experimentation and Causal Inference
 
@@ -149,7 +150,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [A/B Testing and Hypothesis Validation — YouTube learning resources](https://www.youtube.com/results?search_query=A%2FB+Testing+and+Hypothesis+Validation+machine+learning+data+science+tutorial)
+- ▶ [A/B Testing - StatQuest](https://www.youtube.com/watch?v=UsYh8EqgAJE)
 
 #### Advanced Feature Selection
 
@@ -160,7 +161,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Advanced Feature Selection — YouTube learning resources](https://www.youtube.com/results?search_query=Advanced+Feature+Selection+machine+learning+data+science+tutorial)
+- ▶ [Ridge, Lasso, ElasticNet - StatQuest](https://www.youtube.com/watch?v=Q81rr3jDCNE)
 
 ## Phase 3: Deep Learning and Unstructured Data (Months 7-9)
 
@@ -175,7 +176,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Deep Learning Architectures — YouTube learning resources](https://www.youtube.com/results?search_query=Deep+Learning+Architectures+machine+learning+data+science+tutorial)
+- ▶ [Neural Networks - 3Blue1Brown](https://www.youtube.com/watch?v=aircAruvnKk)
 
 #### Regularization and Optimization
 
@@ -186,7 +187,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Regularization and Optimization — YouTube learning resources](https://www.youtube.com/results?search_query=Regularization+and+Optimization+machine+learning+data+science+tutorial)
+- ▶ [Gradient Descent - StatQuest](https://www.youtube.com/watch?v=sDv2f5w14Ns)
 
 ### Month 8: Natural Language Processing (NLP)
 
@@ -199,7 +200,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Text Processing and Embeddings — YouTube learning resources](https://www.youtube.com/results?search_query=Text+Processing+and+Embeddings+machine+learning+data+science+tutorial)
+- ▶ [Word Embeddings - StatQuest](https://www.youtube.com/watch?v=fBekMeEAupI)
 
 #### Sequential Modeling
 
@@ -210,7 +211,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Sequential Modeling — YouTube learning resources](https://www.youtube.com/results?search_query=Sequential+Modeling+machine+learning+data+science+tutorial)
+- ▶ [Recurrent Neural Networks - StatQuest](https://www.youtube.com/watch?v=AsNTP8Kwu80)
 
 ### Month 9: Transformer Models and Generative AI Integration
 
@@ -223,7 +224,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Advanced NLP architectures — YouTube learning resources](https://www.youtube.com/results?search_query=Advanced+NLP+architectures+machine+learning+data+science+tutorial)
+- ▶ [Transformers Explained - StatQuest](https://www.youtube.com/watch?v=zxQyTKU3KM)
 
 ## Phase 4: MLOps and Production Systems (Months 10-12)
 
@@ -238,7 +239,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [API Development — YouTube learning resources](https://www.youtube.com/results?search_query=API+Development+machine+learning+data+science+tutorial)
+- ▶ [FastAPI Course - freeCodeCamp](https://www.youtube.com/watch?v=0sOvCWFmrtA)
 
 #### Containerization
 
@@ -249,7 +250,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Containerization — YouTube learning resources](https://www.youtube.com/results?search_query=Containerization+machine+learning+data+science+tutorial)
+- ▶ [Docker Full Course - freeCodeCamp](https://www.youtube.com/watch?v=fG4ZBpHkMjM)
 
 ### Month 11: MLOps and Continuous Integration
 
@@ -262,7 +263,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Model Tracking and CI/CD — YouTube learning resources](https://www.youtube.com/results?search_query=Model+Tracking+and+CI%2FCD+machine+learning+data+science+tutorial)
+- ▶ [MLOps Explained - TechWorld with Nana](https://www.youtube.com/watch?v=06-AZXmD0pQ)
 
 ### Month 12: Capstone Project and Portfolio Consolidation
 
@@ -276,7 +277,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [End-to-End E-commerce Trust System — YouTube learning resources](https://www.youtube.com/results?search_query=End-to-End+E-commerce+Trust+System+machine+learning+data+science+tutorial)
+- ▶ [Data Science Portfolio Tips - Ken Jee](https://www.youtube.com/watch?v=4u4w7JWqz-U)
 
 ## Practice Schedule (Standard Analytical Session Architecture)
 
@@ -289,7 +290,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Session Structure — YouTube learning resources](https://www.youtube.com/results?search_query=Session+Structure+machine+learning+data+science+tutorial)
+- ▶ [How to Study Data Science - Ken Jee](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
 
 ## Progress Tracking
 
@@ -299,7 +300,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Practice Consistency — YouTube learning resources](https://www.youtube.com/results?search_query=Practice+Consistency+machine+learning+data+science+tutorial)
+- ▶ [Building Consistent Study Habits - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Execution Progression
 
@@ -309,7 +310,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Execution Progression — YouTube learning resources](https://www.youtube.com/results?search_query=Execution+Progression+machine+learning+data+science+tutorial)
+- ▶ [How to Track Your Learning - Data Science Jay](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
 
 ### Accuracy Trend
 
@@ -319,7 +320,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Accuracy Trend — YouTube learning resources](https://www.youtube.com/results?search_query=Accuracy+Trend+machine+learning+data+science+tutorial)
+- ▶ [Confusion Matrix - StatQuest](https://www.youtube.com/watch?v=fSytzGwwBVw)
 
 ### Portfolio Readiness
 
@@ -329,7 +330,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Portfolio Readiness — YouTube learning resources](https://www.youtube.com/results?search_query=Portfolio+Readiness+machine+learning+data+science+tutorial)
+- ▶ [Data Science Portfolio - Ken Jee](https://www.youtube.com/watch?v=4u4w7JWqz-U)
 
 ### Skill Radar (Semi-Monthly Self-Assessment)
 
@@ -342,7 +343,7 @@
 
 **🔗 Resources:**
 
-- 🔍 [Skill Radar (Semi-Monthly Self-Assessment) — YouTube learning resources](https://www.youtube.com/results?search_query=Skill+Radar+%28Semi-Monthly+Self-Assessment%29+machine+learning+data+science+tutorial)
+- ▶ [Self-Assessment for Data Scientists - Ken Jee](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
 
 ## Goals (End of Year 1)
 
@@ -356,4 +357,4 @@
 
 **🔗 Resources:**
 
-- 🔍 [Goals (End of Year 1) — YouTube learning resources](https://www.youtube.com/results?search_query=Goals+%28End+of+Year+1%29+machine+learning+data+science+tutorial)
+- ▶ [Data Science Roadmap - Ken Jee](https://www.youtube.com/watch?v=ua-CiDNNj30)
