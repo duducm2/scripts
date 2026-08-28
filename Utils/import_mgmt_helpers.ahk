@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: import_mgmt_helpers.ahk
 ; CSV storage, job opportunity helpers for Import Management
+; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
 global g_ImportMgmtGui := false

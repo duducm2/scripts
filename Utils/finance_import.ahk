@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: finance_import.ahk
 ; Import AI-generated FINANCE_DAILY / FINANCE_MONTHLY files from Desktop
+; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
 Finance_DesktopNewest(pattern) {

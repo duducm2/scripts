@@ -79,6 +79,16 @@ Baseline rollback ref: `5951bd39f6a834418f2f9d37f671394e12cdcd7d`
 | `mouse_jump_hotkeys.ahk`             | 31     | `#!+Arrow` five-step                              |
 | `handy_selector_hotkey.ahk`          | 14     | `#!+C` handy selector                             |
 
+## Pack-import modules (not in table above — added after modularization)
+
+Canonical agent documentation: [`docs/prompt-data-output-and-finance-packs.md`](../docs/prompt-data-output-and-finance-packs.md)
+
+| Module                                                                                        | Feature                                    |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `finance_helpers.ahk` / `finance_import.ahk` / `finance_launcher.ahk`                         | Finance daily/monthly pack import          |
+| `mnemonic_palace_helpers.ahk` / `mnemonic_palace_import.ahk` / `mnemonic_palace_launcher.ahk` | Memory Palace + plan pack import           |
+| `import_mgmt_helpers.ahk` / `import_mgmt_import.ahk` / `import_mgmt_launcher.ahk`             | Import Management / job search pack import |
+
 Note: `context_file_browser.ahk` exceeds the 900-line target; split further only if edits become unwieldy.
 
 ## Per-step workflow

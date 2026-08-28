@@ -4,6 +4,73 @@ Documentation for future agents working on Utility Shortcuts prompts, AIB delive
 
 This doc is the **canonical reference** for how prompts and importers are linked.
 
+> **Start here** if you are an AI agent working on pack prompts, importers, CSV schemas, partial-import recovery, or a new import domain.
+
+## For future agents — import system reference
+
+### What this system does
+
+Utility Shortcuts connects **AI companions** (Gemini/Copilot) to **local CSV data** through a repeatable pipeline:
+
+1. **Prompt** (`.txt` + `prompts.ini` metadata) tells the AI what structured pack to emit.
+2. **Context CSVs** attached at send time give the AI existing rows/ids to match.
+3. Human saves the AI **pack** (`.txt` on Desktop) — the companion never writes to disk directly.
+4. **Importer** (`*_import.ahk`) discovers the newest Desktop pack, extracts CSV, upserts local data.
+5. On failure or partial failure, importer writes a **Desktop fix file** for the AI to correct output.
+
+### Shared import pipeline (all domains)
+
+Every importer follows the same stages. Function names differ by prefix (`Finance_`, `Palace_`, `ImportMgmt_`):
+
+| Stage       | Purpose                                               | Job search functions                                               |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| Discover    | Newest Desktop file matching pack name                | `ImportMgmt_DesktopNewest`, `ImportMgmt_DesktopNewestCodeDump`     |
+| Materialize | Extract `===FILE: …csv===` body; strip fences/preview | `ImportMgmt_MaterializeAiCsv`, `ImportMgmt_ExtractPackFileSection` |
+| Parse       | Normalize to row Maps                                 | `ImportMgmt_ReadAiImportCsv`, `ImportMgmt_ReadCsv`                 |
+| Upsert      | Match by id/keys; merge or append                     | `ImportMgmt_MergeImportRow`, `ImportMgmt_NewRowFromImport`         |
+| Outcome     | Save, archive, notify, or write fix file              | `ImportMgmt_ImportFromDesktop`                                     |
+
+Finance adds a **confirm UI** before save. Job search is **auto-upsert** (no ListView). Memory Palace upserts palaces/beasts/atoms with strict cross-link validation.
+
+### Import outcome matrix
+
+| Outcome                    | Local CSV                    | Archive Desktop pack     | Fix file on Desktop | Toast   |
+| -------------------------- | ---------------------------- | ------------------------ | ------------------- | ------- |
+| All rows applied           | Saved                        | Yes → `*/data/imported/` | No                  | Success |
+| Partial (some rows failed) | Saved (successful rows only) | **No** (keep for retry)  | **Yes**             | Error   |
+| Total failure (0 rows)     | Not saved                    | No                       | **Yes**             | Error   |
+
+Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `JOB_SEARCH_AI_FIX.txt`.
+
+Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
+
+Partial import recovery (job search): paste fix file into AI → re-deliver **full** corrected pack → save to Desktop → `[J]` Import Management → `[I]`.
+
+### Module index (code)
+
+| Domain        | Helpers                                                                     | Import                                                                    | Launcher                                                                      | Data                                                                        |
+| ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Finance       | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                 | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                 | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`                                                       |
+| Memory Palace | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv`                                                      |
+| Job search    | [`Utils/import_mgmt_helpers.ahk`](../Utils/import_mgmt_helpers.ahk)         | [`Utils/import_mgmt_import.ahk`](../Utils/import_mgmt_import.ahk)         | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | [`job_search/data/opportunities.csv`](../job_search/data/opportunities.csv) |
+
+Prompt wiring: [`assets/data/prompts.ini`](../assets/data/prompts.ini), [`Utils/prompt_data.ahk`](../Utils/prompt_data.ahk). ClipAngel Desktop names: [`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv).
+
+Utility Shortcuts category wiring: [`Utils/hotstring_selector_core.ahk`](../Utils/hotstring_selector_core.ahk) (`g_UtilityTopCategories`), [`Utils/hotstring_selector_handlers_02.ahk`](../Utils/hotstring_selector_handlers_02.ahk) (`UtilitySelector_SwitchToCategory`).
+
+### Checklist — adding a new pack-import domain
+
+1. Create `data/*.csv` + `*_helpers.ahk` (`*_Headers`, `*_ReadCsv`, `*_Save`, `*_EnsureData`, optional `*_Migrate*Csv`).
+2. Create pack prompt in `assets/prompt/` with `===PREVIEW===` / `===FILE: PACK_NAME.csv===` markers and strict CSV header.
+3. Register in `prompts.ini` (`ExpectsDataOutput=1`, `DataOutputFormat`, context files).
+4. Create `*_import.ahk`: discover → materialize → parse → upsert → outcome; add `*_FailAiImport` + `*_WriteAiCompanionImportError` + `*_AiCompanionFixGuidance`.
+5. Create `*_launcher.ahk` with `[I] AI import` menu item.
+6. Wire Utility Shortcuts category in `hotstring_selector_core.ahk` / `handlers_02.ahk`; `#include` from `Utils.ahk`.
+7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable.
+8. **Update this doc** (domain table, columns, fix file name, flow steps).
+
+---
+
 ## Summary
 
 1. **Prompt Manager metadata** decides whether AIB must emit structured data and whether delivery is a **downloadable `.txt` file** or a **single code fence**.
@@ -237,3 +304,5 @@ Mnemonic import uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_pala
 - Changing `DataOutputFormat` in the Prompt Manager is enough to flip file vs code without rewriting every pack prompt body.
 - Saving prompts via the editor rewrites `prompts.ini`; preserve `ExpectsDataOutput` / `DataOutputFormat` in Load/Save/Normalize/`PromptFromEditorResult`.
 - When adding CSV columns, update prompt header, `*_Headers()` in helpers, error-fix text in importer, and this doc. Use `*_Migrate*Csv()` in `EnsureData()` for existing installs.
+- **Partial import (auto-upsert domains):** if `nApplied < nParsed` or any row errors, call `*_FailAiImport`, save successful rows, and **do not archive** the Desktop pack. Success toast alone is wrong when rows were skipped.
+- **AI fix files** must include per-row errors in EXTRA NOTES and tailored guidance via `*_AiCompanionFixGuidance()`. Mirror Finance/Palace patterns; do not invent a one-off error UX.

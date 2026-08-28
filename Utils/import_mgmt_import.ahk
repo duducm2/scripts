@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: import_mgmt_import.ahk
 ; Import AI-generated JOB_SEARCH_UPDATE packs from Desktop into opportunities.csv
+; Agent docs: docs/prompt-data-output-and-finance-packs.md (canonical import system reference)
 ; =============================================================================
 
 ImportMgmt_DesktopNewest(pattern) {
@@ -210,7 +211,8 @@ ImportMgmt_AiCompanionFixGuidance(errorMsg) {
     if (InStr(e, "partial import") || InStr(e, "skipped") || RegExMatch(e, "of \d+ row")) {
         return "- Some rows imported; others failed (see EXTRA NOTES for each failure).`r`n"
         . "- Re-deliver one complete JOB_SEARCH_UPDATE.txt with every row from the original pack.`r`n"
-        . "- Fix the failed row(s); keep successful rows correct. Match ids/companies from attached opportunities.csv.`r`n"
+        .
+        "- Fix the failed row(s); keep successful rows correct. Match ids/companies from attached opportunities.csv.`r`n"
         . "- Do not omit rows that already imported — include the full set so the pack is complete."
     }
     if (InStr(e, "invalid status")) {
@@ -229,7 +231,8 @@ ImportMgmt_AiCompanionFixGuidance(errorMsg) {
     }
     if (InStr(e, "no data rows") || InStr(e, "no rows applied")) {
         return "- The pack had no usable opportunity rows or none could be applied.`r`n"
-        . "- Re-emit with header: id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
+        .
+        "- Re-emit with header: id,company,role_title,job_url,job_description,status,status_date,applied_date,notes`r`n"
         . "- Each data row needs company (new) or matching id/company (update). status must use the valid enum."
     }
     return "- Read the IMPORT ERROR above and reframe as one complete, valid JOB_SEARCH_UPDATE pack.`r`n"

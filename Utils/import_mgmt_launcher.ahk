@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: import_mgmt_launcher.ahk
 ; Import Management main menu (Utility Shortcuts [J])
+; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
 ImportMgmt_LaunchApp() {

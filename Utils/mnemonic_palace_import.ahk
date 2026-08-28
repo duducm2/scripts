@@ -1,6 +1,7 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_import.ahk
 ; Import AI-generated PALACE_PACK / PALACE_*.txt|.csv from Desktop + quick image attach
+; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
 Palace_DesktopNewest(pattern) {
