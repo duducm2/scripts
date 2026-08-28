@@ -150,4 +150,11 @@
 2026-08-27 20:21:41|j|Job search status update|gemini|default|ctx=1|direct
 2026-08-28 10:03:42|j|Job search status update|enterprise|default|ctx=1|direct
 2026-08-28 10:11:36|j|Job search status update|enterprise|default|ctx=1|direct
+<<<<<<< Updated upstream
 2026-08-28 10:45:17|j|Job search status update|gemini|default|ctx=1|direct
+=======
+2026-08-28 10:29:41|j|Job search status update|enterprise|default|ctx=1|direct
+2026-08-28 10:34:29|j|Job search status update|enterprise|default|ctx=1|direct
+2026-08-28 10:39:27|j|Job search status update|enterprise|default|ctx=1|direct
+>>>>>>> Stashed changes
+2026-08-28 10:50:48|j|Job search status update|enterprise|default|ctx=1|direct
