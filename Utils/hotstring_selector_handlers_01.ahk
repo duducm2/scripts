@@ -106,6 +106,11 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         "body_attach_clipboard"
         || mode = "auto_send")
     doAppendClipboard := (mode = "body_plus_clipboard") || appendClipboard
+    pasteChoice := ""
+    if (doPasteBody) {
+        CleanupHotstringSelector()
+        pasteChoice := PromptPaste_ShowOptionsAndWait()
+    }
     contextEntries := ""
     pickedCount := 0
     if (doAttach) {
@@ -122,9 +127,10 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
         catch {
         }
     }
-    CleanupHotstringSelector()
+    if (!doPasteBody)
+        CleanupHotstringSelector()
     if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, clip, contextEntries)
+        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, clip, contextEntries, pasteChoice)
         return
     }
     UtilitySelector_RestorePreviousHwnd()
@@ -137,7 +143,7 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
             clipCopy := clip
             onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
         }
-        PromptPaste_ShowOptionsThenPaste(body, onAfter, UtilitySelector_RestorePreviousHwnd)
+        PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd)
     } else if (doAppendClipboard && clip != "") {
         g_lastExpansion := 0
         InsertText(clip)
@@ -508,7 +514,7 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 }
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
-    contextEntries := "") {
+    contextEntries := "", pasteChoice := "") {
     global g_lastExpansion
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
@@ -545,7 +551,7 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
         } else if (playGeminiChime) {
             onAfter := (*) => ScriptSoundPlay(A_ScriptDir . "\assets\sounds\gemini-focused.wav")
         }
-        PromptPaste_ShowOptionsThenPaste(expansion, onAfter, restoreFocus)
+        PromptPaste_ApplyChoice(pasteChoice, expansion, onAfter, restoreFocus)
     } else if (appendClip != "") {
         g_lastExpansion := 0
         InsertText(appendClip)
