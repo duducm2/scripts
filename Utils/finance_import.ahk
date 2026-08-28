@@ -70,6 +70,9 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
             return "- The pack had no usable monthly adjustment rows.`r`n"
             . "- Re-emit with header: entity_type,entity_id,adjustment_amount,description`r`n"
             . "- entity_type = account | goal; entity_id must match attached accounts/goals.`r`n"
+            . "- adjustment_amount = reported balance minus current_balance/current_amount from attached CSVs.`r`n"
+            .
+            "- Positive = gain/contribution (income · Investments); negative = loss/withdrawal (expense · Adjustment).`r`n"
             . "- Keep signed Brazilian decimals in adjustment_amount."
         }
         return "- The pack had no usable transaction rows.`r`n"
@@ -795,6 +798,8 @@ Finance_ImportMonthly(*) {
         eid := r.Has("entity_id") ? Trim(r["entity_id"]) : ""
         adj := Finance_ParseDecimal(r.Has("adjustment_amount") ? r["adjustment_amount"] : "0")
         desc := r.Has("description") ? r["description"] : ""
+        if (adj = 0)
+            continue
         typeLabel := et = "goal" ? "Goal" : (et = "account" ? "Account" : et)
         name := et = "goal" ? Finance_NameOrUnknown(goals, eid) : Finance_NameOrUnknown(accs, eid)
         previewRows.Push(Map(
@@ -813,20 +818,24 @@ Finance_ImportMonthly(*) {
         eid := r.Has("entity_id") ? Trim(r["entity_id"]) : ""
         adj := Finance_ParseDecimal(r.Has("adjustment_amount") ? r["adjustment_amount"] : "0")
         desc := r.Has("description") ? r["description"] : "Monthly adjustment"
+        if (adj = 0)
+            continue
         if (et = "account") {
             acc := Finance_FindById(accs, eid)
             if (!acc)
                 continue
             Finance_AdjustAccount(accs, eid, adj)
+            isGain := adj >= 0
             tx := Map(
                 "id", Finance_NextId("TX", txs),
                 "date", Finance_Today(),
-                "description", desc,
-                "amount", Finance_FormatCsvDecimal(Abs(adj)),
-                "type", adj >= 0 ? "income" : "expense",
-                "category_id", adj >= 0 ? Finance_CatIdByName("Investments") : Finance_CatIdByName(
-                    "Adjustment"),
-            "subcategory", "",
+                "description", desc != "Monthly adjustment" ? desc : (isGain ? "Monthly investment gain" :
+                    "Monthly investment loss"),
+            "amount", Finance_FormatCsvDecimal(Abs(adj)),
+            "type", isGain ? "income" : "expense",
+            "category_id", isGain ? Finance_CatIdByName("Investments") : Finance_CatIdByName(
+                "Adjustment"),
+            "subcategory", isGain ? "" : "Investment loss",
             "account_id", eid,
             "card_id", "",
             "transfer_account_id", ""

@@ -3,7 +3,7 @@ Deliver one `FINANCE_MONTHLY.txt` pack in this reply. Prefer a real download chi
 
 Monthly investments and goals — structured extraction
 
-You convert a voice dictation about monthly investment P/L and money moved into goals into one `FINANCE_MONTHLY.txt` pack (preview + labeled CSV section).
+You convert a voice dictation about monthly investment P/L and money moved into goals into one `FINANCE_MONTHLY.txt` pack (preview + labeled CSV section). Use the attached CSVs as the book of record for current balances before this import.
 
 FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
 Runtime authority: if a DATA OUTPUT CONTRACT from Prompt Manager was prepended to this message, follow that for file vs code. Words alone do not create a file; you have no disk access.
@@ -53,23 +53,50 @@ CSV body format (inside the FILE section):
 - Use a comma as the field separator.
 - Use a comma as the decimal separator (Brazilian). Quote adjustment_amount.
 - Convert any dot decimals to comma decimals.
-- Signs: profits and contributions are positive; losses and withdrawals are negative. Keep the sign in the field (example: "+1523,45" or "-500,00").
+- Signs: gains and contributions are positive; losses and withdrawals are negative. Keep the sign in the field (example: "+1523,45" or "-500,00").
+- Do not invent amounts. Compute every adjustment from attached balances or from an explicit delta the speaker states.
 
 COLUMNS (header required)
 entity_type,entity_id,adjustment_amount,description
+
+CONTEXT FILES (attached by Utility Shortcuts → Prompts)
+- accounts.csv — id, name, current_balance (book balance before this import), and other columns
+- goals.csv — id, name, current_amount, target_amount, target_date (book progress before this import)
+
+Use only these attached CSVs for id mapping. Do not invent ids.
+
+CALCULATION RULES (mandatory)
+Book balances come from the attached CSVs, not from memory or prior chat.
+
+Accounts (entity_type=account):
+- If the speaker gives a new/reported balance: adjustment_amount = reported_balance − current_balance (from accounts.csv for that id).
+- If the speaker gives an explicit change (gain, loss, contribution, withdrawal, yield): use that signed amount directly as adjustment_amount.
+- Include only accounts the speaker mentions or clearly reviews. Do not emit rows for untouched accounts.
+- Positive adjustment → gain or new contribution. Importer records income under Investments.
+- Negative adjustment → loss or withdrawal. Importer records expense under Adjustment with subcategory Investment loss.
+- If computed adjustment is exactly zero, omit the row and note in PREVIEW.
+
+Goals (entity_type=goal):
+- If the speaker gives a new goal balance: adjustment_amount = reported_balance − current_amount (from goals.csv for that id).
+- If the speaker gives a monthly contribution or allocation amount: use that positive signed amount as adjustment_amount.
+- Monthly objective reference (when the speaker funds goals or asks to allocate toward monthly objectives without naming each amount):
+  months_remaining = whole months from today until target_date (minimum 1)
+  monthly_needed = max(0, (target_amount − current_amount) / months_remaining)
+  Use stated amounts when given; otherwise use monthly_needed per funded goal. Round to 2 decimal places (Brazilian comma).
+- Include goal rows only for goals the speaker funds, names, or explicitly asks to allocate toward.
+- Goal rows update goal progress only; they do not create income/expense transactions.
 
 RULES
 - entity_type: account | goal
 - entity_id: primary key from the attached CSVs (accounts.csv id or goals.csv id).
 - Match names to ids (ignore accents/case). If unmatched, skip the row and add a note in PREVIEW explaining why (do not invent ids).
-- description: short English or Portuguese summary of the spoken reason.
-- Do not change categories. Do not create transactions except via these balance adjustments.
+- description: short English or Portuguese summary — include old→new balance or gain/loss when helpful (example: "Mercado Pago LT: 63178,40 → 64800,00 (+1621,60 yield)").
+- Do not change categories. Do not create transactions except via account balance adjustments (importer creates Investments income or Adjustment expense from the sign).
 
-CONTEXT FILES (attached by Utility Shortcuts → Prompts)
-- accounts.csv — account names with ids (investment balances)
-- goals.csv — goal names with ids and amounts
-
-Use only these attached CSVs for id mapping. Do not invent ids.
+PREVIEW content (required detail)
+- Per emitted row: entity name, book balance, reported/new balance or stated delta, computed adjustment_amount.
+- Summarize skipped accounts/goals, zero deltas, and unmatched names.
+- When monthly_needed was used for goals, list the computed monthly_needed per goal in PREVIEW.
 
 DICTATION
 Paste the raw dictation below this line.
