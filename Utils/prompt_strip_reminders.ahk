@@ -4,9 +4,8 @@
 ; Loaded via #include into Utils.ahk.
 ; =============================================================================
 
-global g_PendingPromptPasteFullText := ""
-global g_PendingPromptPasteOnAfter := ""
-global g_PendingPromptPasteRestoreFocus := ""
+global g_PromptPasteWaitChoice := ""
+global g_PromptPasteWaitActive := false
 
 ; Keep text through the last standalone "---" line, then two blank lines for comments.
 ; Returns "" if no --- divider is found (caller shows error).
@@ -93,64 +92,35 @@ PromptPaste_ResolveText(fullText, includeReminders) {
     return (stripped != "") ? stripped : fullText
 }
 
-PromptPaste_ClearPending(*) {
-    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
-    g_PendingPromptPasteFullText := ""
-    g_PendingPromptPasteOnAfter := ""
-    g_PendingPromptPasteRestoreFocus := ""
-}
-
-PromptPaste_ExecuteChoice(choice) {
-    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
-    fullText := g_PendingPromptPasteFullText
-    onAfter := g_PendingPromptPasteOnAfter
-    restoreFocus := g_PendingPromptPasteRestoreFocus
-    PromptPaste_ClearPending()
-    if (fullText = "")
+PromptPaste_FinishWait(choice) {
+    global g_PromptPasteWaitChoice, g_PromptPasteWaitActive
+    if (!g_PromptPasteWaitActive)
         return
-    includeReminders := (choice = "reminders")
-    doSend := (choice = "send")
-    if (restoreFocus != "") {
-        try restoreFocus()
-        catch {
-        }
-        Sleep 80
-    }
-    textToPaste := PromptPaste_ResolveText(fullText, includeReminders)
-    InsertText(textToPaste)
-    if (onAfter != "") {
-        try onAfter()
-        catch {
-        }
-    }
-    if (doSend)
-        Send "{Enter}"
+    g_PromptPasteWaitChoice := choice
+    g_PromptPasteWaitActive := false
 }
 
 PromptPaste_OnIncludeReminders(*) {
-    PromptPaste_ExecuteChoice("reminders")
+    PromptPaste_FinishWait("reminders")
 }
 
 PromptPaste_OnPasteOnly(*) {
-    PromptPaste_ExecuteChoice("strip")
+    PromptPaste_FinishWait("strip")
 }
 
 PromptPaste_OnSendNow(*) {
-    PromptPaste_ExecuteChoice("send")
+    PromptPaste_FinishWait("send")
 }
 
 PromptPaste_OnTimeout(*) {
-    PromptPaste_OnPasteOnly()
+    PromptPaste_FinishWait("strip")
 }
 
-; Pre-paste banner: Y = full text, Esc/timeout = strip, S = strip + Enter after paste (and onAfter).
-PromptPaste_ShowOptionsThenPaste(fullText, onAfterPaste := "", restoreFocus := "") {
-    global g_PendingPromptPasteFullText, g_PendingPromptPasteOnAfter, g_PendingPromptPasteRestoreFocus
-    if (fullText = "")
-        return
-    g_PendingPromptPasteFullText := fullText
-    g_PendingPromptPasteOnAfter := onAfterPaste
-    g_PendingPromptPasteRestoreFocus := restoreFocus
+; Show banner immediately; block until Y / Esc / S / timeout. Returns "reminders", "strip", or "send".
+PromptPaste_ShowOptionsAndWait() {
+    global g_PromptPasteWaitChoice, g_PromptPasteWaitActive
+    g_PromptPasteWaitChoice := ""
+    g_PromptPasteWaitActive := true
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
     keyCallbacks := Map(
@@ -174,4 +144,29 @@ PromptPaste_ShowOptionsThenPaste(fullText, onAfterPaste := "", restoreFocus := "
         true,
         true
     )
+    while (g_PromptPasteWaitActive)
+        Sleep 30
+    return g_PromptPasteWaitChoice
+}
+
+PromptPaste_ApplyChoice(choice, fullText, onAfterPaste := "", restoreFocus := "") {
+    if (fullText = "" || choice = "")
+        return
+    includeReminders := (choice = "reminders")
+    doSend := (choice = "send")
+    if (restoreFocus != "") {
+        try restoreFocus()
+        catch {
+        }
+        Sleep 80
+    }
+    textToPaste := PromptPaste_ResolveText(fullText, includeReminders)
+    InsertText(textToPaste)
+    if (onAfterPaste != "") {
+        try onAfterPaste()
+        catch {
+        }
+    }
+    if (doSend)
+        Send "{Enter}"
 }

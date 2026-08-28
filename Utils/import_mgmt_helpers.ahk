@@ -206,6 +206,49 @@ ImportMgmt_FindByCompany(rows, company) {
     return false
 }
 
+ImportMgmt_NormalizeAction(val) {
+    s := StrLower(Trim(val))
+    if (s = "" || s = "upsert")
+        return ""
+    if (s = "add" || s = "create")
+        return "add"
+    if (s = "update")
+        return "update"
+    if (s = "delete" || s = "remove")
+        return "delete"
+    throw Error("Invalid action: " . val)
+}
+
+ImportMgmt_ResolveImportRow(rows, incoming) {
+    id := incoming.Has("id") ? Trim(incoming["id"]) : ""
+    company := incoming.Has("company") ? Trim(incoming["company"]) : ""
+    existing := false
+    if (id != "")
+        existing := ImportMgmt_FindById(rows, id)
+    if (!IsObject(existing) && company != "")
+        existing := ImportMgmt_FindByCompany(rows, company)
+    return Map("existing", existing, "id", id, "company", company)
+}
+
+ImportMgmt_DeleteImportRow(rows, incoming) {
+    resolved := ImportMgmt_ResolveImportRow(rows, incoming)
+    id := resolved["id"]
+    company := resolved["company"]
+    if (id = "" && company = "")
+        throw Error("Delete requires id or company")
+    existing := resolved["existing"]
+    if (!IsObject(existing))
+        throw Error("No matching opportunity to delete")
+    matchId := existing["id"]
+    out := []
+    for r in rows {
+        if (r.Has("id") && r["id"] = matchId)
+            continue
+        out.Push(r)
+    }
+    return out
+}
+
 ImportMgmt_IdExists(rows, id) {
     for row in rows {
         if (row.Has("id") && row["id"] = id)
