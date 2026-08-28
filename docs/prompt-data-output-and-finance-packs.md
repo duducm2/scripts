@@ -168,17 +168,17 @@ Flow:
 
 **CSV columns:**
 
-| Column         | Purpose                                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------------- |
-| `id`           | Primary key, e.g. `JOB_COCACOLA`                                                                |
-| `company`      | Employer name (fuzzy match key)                                                                 |
-| `role_title`   | Position title                                                                                  |
-| `job_url`      | Full URL to job posting                                                                         |
-| `status`       | `applied` \| `screening` \| `interviewing` \| `offer` \| `rejected` \| `withdrawn` \| `on_hold` |
-| `status_date`  | Date status last changed (`YYYY-MM-DD`)                                                         |
-| `applied_date` | Date applied (`YYYY-MM-DD`, optional)                                                           |
-| `source`       | e.g. LinkedIn, referral                                                                         |
-| `notes`        | Free text                                                                                       |
+| Column            | Purpose                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `id`              | Primary key, e.g. `JOB_COCACOLA`                                                                |
+| `company`         | Employer name (fuzzy match key)                                                                 |
+| `role_title`      | Position title                                                                                  |
+| `job_url`         | Full URL to job posting (replaces a separate source field)                                      |
+| `job_description` | Full job opening text (summary, responsibilities, requirements, location, etc.)                 |
+| `status`          | `applied` \| `screening` \| `interviewing` \| `offer` \| `rejected` \| `withdrawn` \| `on_hold` |
+| `status_date`     | Date status last changed (`YYYY-MM-DD`)                                                         |
+| `applied_date`    | Date applied (`YYYY-MM-DD`, optional)                                                           |
+| `notes`           | Free text (follow-ups, interview dates, personal reminders — not the full job ad)               |
 
 View/edit the CSV in Excel or any external tool; there is no in-app CSV viewer.
 

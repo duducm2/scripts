@@ -7,9 +7,10 @@ You convert a voice dictation of job search news into one `JOB_SEARCH_UPDATE.txt
 
 Examples:
 - "The Coca Cola job opportunity was unsuccessful" → update Coca Cola row, status=rejected
-- "I applied to Google for a backend role via LinkedIn yesterday" → new or update row with company, role, source, status=applied
+- "I applied to Google for a backend role via LinkedIn yesterday" → new or update row with company, role, job_url if spoken, status=applied
 - "Applied to the Pepsi backend role, link is linkedin.com/jobs/123" → set job_url=https://linkedin.com/jobs/123
 - "Got an interview with Bosch next week" → update status=interviewing, add note if spoken
+- Paste or dictate a full job ad → set job_description to the opening text (requirements, responsibilities, location, etc.)
 
 FILE DELIVERY PROTOCOL (mandatory) — Gemini and Copilot
 Runtime authority: if a DATA OUTPUT CONTRACT from Prompt Manager was prepended to this message, follow that for file vs code. Words alone do not create a file; you have no disk access.
@@ -60,13 +61,21 @@ CSV body format (inside the FILE section):
 - Dates: YYYY-MM-DD only.
 
 COLUMNS (header required)
-id,company,role_title,job_url,status,status_date,applied_date,source,notes
+id,company,role_title,job_url,job_description,status,status_date,applied_date,notes
 
 JOB URL
-- Include job_url only when the speaker mentions a link/URL or when adding a new opportunity with a known posting URL.
+- Include job_url when the speaker mentions a link/URL or when adding a new opportunity with a known posting URL.
 - Must be a full URL (https://…). Prefix with https:// when the speaker omits the scheme (e.g. linkedin.com/jobs/123 → https://linkedin.com/jobs/123).
 - Do not invent URLs. Omit job_url when no link was spoken.
 - For updates: emit job_url only when the URL changed or was newly provided.
+- Do not output a separate source column — the URL identifies where the posting lives (LinkedIn, company site, etc.).
+
+JOB DESCRIPTION
+- job_description holds the full job opening text: role summary, responsibilities, requirements, location, seniority, stack, compensation if stated, etc.
+- Include when the speaker pastes or dictates job ad content, or when adding a new opportunity with enough detail to describe the role.
+- Preserve meaning; light cleanup is OK (fix obvious dictation errors). Do not invent requirements or benefits not in the input.
+- Quote the field in CSV when it contains commas, quotes, or line breaks.
+- For updates: emit job_description only when new text was provided or the description changed. Omit when only status/other fields changed.
 
 STATUS ENUM (required when status is present)
 applied | screening | interviewing | offer | rejected | withdrawn | on_hold
@@ -92,7 +101,7 @@ DATE RULES
 - applied_date: only when the speaker mentions when they applied.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts)
-- opportunities.csv — existing job opportunities with ids, companies, job_url, and current status
+- opportunities.csv — existing job opportunities with ids, companies, job_url, job_description, and current status
 
 Use opportunities.csv for id and company matching. Never invent ids when updating an existing row.
 

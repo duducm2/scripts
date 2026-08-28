@@ -32,10 +32,21 @@ ImportMgmt_MigrateOpportunitiesCsv() {
     text := ImportMgmt_ReadUtf8(path)
     if (text = "")
         return
-    firstLine := StrSplit(text, "`n")[1]
-    if (InStr(firstLine, "job_url"))
+    headers := ImportMgmt_Headers()
+    canonical := ""
+    loop headers.Length {
+        if (A_Index > 1)
+            canonical .= ","
+        canonical .= headers[A_Index]
+    }
+    firstLine := Trim(StrSplit(text, "`n")[1])
+    if (firstLine = canonical)
         return
     rows := ImportMgmt_ReadCsv(path)
+    for row in rows {
+        if (row.Has("source"))
+            row.Delete("source")
+    }
     ImportMgmt_Save(rows)
 }
 
@@ -159,7 +170,8 @@ ImportMgmt_WriteCsv(fileName, rows, headers) {
 }
 
 ImportMgmt_Headers() {
-    return ["id", "company", "role_title", "job_url", "status", "status_date", "applied_date", "source", "notes"]
+    return ["id", "company", "role_title", "job_url", "job_description", "status", "status_date", "applied_date",
+        "notes"]
 }
 
 ImportMgmt_Save(rows) {
