@@ -3,6 +3,10 @@
 ; Send dictation? [R] — open Handy, History tab, play last recording
 ; =============================================================================
 
+HandyReplay_ClickStrategyOrder() {
+    return ["invoke", "control", "legacy", "uiaLeft", "cursor"]
+}
+
 HandyReplay_FindNamed(el, typeId, names) {
     if !el
         return 0
@@ -15,6 +19,66 @@ HandyReplay_FindNamed(el, typeId, names) {
         }
     }
     return 0
+}
+
+; Chromium a11y + main UI ready before UIA reads/clicks on the Tauri webview.
+HandyReplay_PrepareUia(hwnd) {
+    global UIA
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return false
+    try UIA.ActivateChromiumAccessibility("ahk_id " hwnd, 300)
+    catch {
+    }
+    try Handy_WaitForMainUiReady(hwnd, 2500)
+    catch {
+    }
+    return true
+}
+
+HandyReplay_GetWindowRect(hwnd) {
+    if !hwnd || !WinExist("ahk_id " hwnd)
+        return ""
+    try {
+        WinGetPos(&x, &y, &w, &h, "ahk_id " hwnd)
+        if (w <= 0 || h <= 0)
+            return ""
+        return { left: x, top: y, right: x + w, bottom: y + h }
+    } catch {
+        return ""
+    }
+}
+
+HandyReplay_PointInRect(x, y, rect, tolerance := 2) {
+    if !IsObject(rect)
+        return false
+    return (x >= rect.left - tolerance && x <= rect.right + tolerance
+        && y >= rect.top - tolerance && y <= rect.bottom + tolerance)
+}
+
+; Prefer BoundingRectangle center. UIA-v2 GetClickablePoint unpacks X with & 0xffff,
+; which corrupts negative multi-monitor coordinates (e.g. -2258 → 63278).
+HandyReplay_ResolveClickPoint(el, &cx, &cy) {
+    cx := 0
+    cy := 0
+    if !el
+        return false
+    try {
+        pos := el.Location
+        if (IsObject(pos) && pos.w > 0 && pos.h > 0) {
+            cx := pos.x + pos.w // 2
+            cy := pos.y + pos.h // 2
+            return true
+        }
+    } catch {
+    }
+    return false
+}
+
+HandyReplay_ValidateClickPoint(hwnd, cx, cy) {
+    rect := HandyReplay_GetWindowRect(hwnd)
+    if !IsObject(rect)
+        return false
+    return HandyReplay_PointInRect(cx, cy, rect)
 }
 
 HandyReplay_ElementIsOnScreen(el) {
@@ -188,7 +252,7 @@ HandyReplay_WaitHistoryTab(hwnd, maxWaitMs := 2000, strict := true) {
     return false
 }
 
-; Primary quality gate: UIA locate → valid on-screen Location → real screen Click.
+; Last-resort screen click: only when Handy is foreground and point validates.
 HandyReplay_ClickElementWithCursor(el, hwnd) {
     if !el
         return false
@@ -202,33 +266,19 @@ HandyReplay_ClickElementWithCursor(el, hwnd) {
             return false
         if !WinActive("ahk_id " hwnd) {
             WinActivate("ahk_id " hwnd)
-            WinWaitActive("ahk_id " hwnd, , 0.5)
+            if !WinWaitActive("ahk_id " hwnd, , 2)
+                return false
         }
         Sleep 40
 
-        MouseGetPos(&prevX, &prevY)
         cx := 0
         cy := 0
-        gotPoint := false
+        if !HandyReplay_ResolveClickPoint(el, &cx, &cy)
+            return false
+        if !HandyReplay_ValidateClickPoint(hwnd, cx, cy)
+            return false
 
-        try {
-            pt := el.GetClickablePoint()
-            if (IsObject(pt) && (pt.x || pt.y)) {
-                cx := pt.x
-                cy := pt.y
-                gotPoint := true
-            }
-        } catch {
-        }
-
-        if !gotPoint {
-            pos := el.Location
-            if (!IsObject(pos) || pos.w <= 0 || pos.h <= 0)
-                return false
-            cx := pos.x + pos.w // 2
-            cy := pos.y + pos.h // 2
-        }
-
+        MouseGetPos(&prevX, &prevY)
         Click(cx " " cy)
         Sleep 60
         MouseMove(prevX, prevY)
@@ -240,7 +290,7 @@ HandyReplay_ClickElementWithCursor(el, hwnd) {
     }
 }
 
-; One explicit click strategy (cursor / uiaLeft / control / legacy / invoke).
+; One explicit click strategy (invoke / control / legacy / uiaLeft / cursor).
 HandyReplay_ApplyClickStrategy(el, hwnd, method) {
     if !el
         return false
@@ -286,28 +336,28 @@ HandyReplay_ApplyClickStrategy(el, hwnd, method) {
     return false
 }
 
-; Try several UIA + real-mouse click paths until one runs without throwing.
+; Try several UIA click paths; safer webview methods before raw screen click.
 HandyReplay_ClickWithStrategies(el, hwnd) {
-    for method in ["cursor", "uiaLeft", "control", "legacy", "invoke"] {
+    for method in HandyReplay_ClickStrategyOrder() {
         if HandyReplay_ApplyClickStrategy(el, hwnd, method)
             return true
     }
     return false
 }
 
-; Switch to History from General (or any tab); cursor-click first, verify-after-each.
+; Switch to History from General (or any tab); verify-after-each strategy attempt.
 HandyReplay_EnsureHistoryTab(hwnd) {
     global UIA
     try {
         if !hwnd || !WinExist("ahk_id " hwnd)
             return false
 
+        HandyReplay_PrepareUia(hwnd)
         try WinActivate("ahk_id " hwnd)
-        if !WinActive("ahk_id " hwnd)
-            WinWaitActive("ahk_id " hwnd, , 0.5)
-
-        ; Sidebar / footer must be interactive before we hunt History.
-        try Handy_WaitForMainUiReady(hwnd, 2500)
+        if !WinActive("ahk_id " hwnd) {
+            if !WinWaitActive("ahk_id " hwnd, , 2)
+                return false
+        }
 
         el := UIA.ElementFromHandle(hwnd)
         if !el
@@ -329,8 +379,7 @@ HandyReplay_EnsureHistoryTab(hwnd) {
                 continue
             }
 
-            ; Cursor click is the primary verified path for Tauri/webview Groups.
-            for method in ["cursor", "uiaLeft", "control"] {
+            for method in HandyReplay_ClickStrategyOrder() {
                 if !HandyReplay_ApplyClickStrategy(row, hwnd, method)
                     continue
                 if HandyReplay_WaitHistoryTab(hwnd, 2000, true)
@@ -354,6 +403,28 @@ HandyReplay_EnsureHistoryTab(hwnd) {
     }
 }
 
+; First Play/Reproduzir in tree order whose click point lies inside Handy (newest entry).
+HandyReplay_FindBestPlay(el, hwnd) {
+    if !el || !hwnd
+        return 0
+    for nm in ["Play", "Reproduzir"] {
+        try {
+            for btn in el.FindAll({ Type: 50000, Name: nm }) {
+                if !HandyReplay_ElementIsOnScreen(btn)
+                    continue
+                cx := 0
+                cy := 0
+                if !HandyReplay_ResolveClickPoint(btn, &cx, &cy)
+                    continue
+                if HandyReplay_ValidateClickPoint(hwnd, cx, cy)
+                    return btn
+            }
+        } catch {
+        }
+    }
+    return 0
+}
+
 HandyReplay_FindFirstPlay(el) {
     return HandyReplay_FindNamed(el, 50000, ["Play", "Reproduzir"])
 }
@@ -364,8 +435,8 @@ HandyReplay_WaitFirstPlay(hwnd, maxWaitMs := 2000) {
     loop {
         try {
             el := UIA.ElementFromHandle(hwnd)
-            play := HandyReplay_FindFirstPlay(el)
-            if (play && HandyReplay_ElementIsOnScreen(play))
+            play := HandyReplay_FindBestPlay(el, hwnd)
+            if play
                 return play
         } catch {
         }
@@ -380,35 +451,21 @@ HandyReplay_ClickFirstPlay(hwnd) {
     play := HandyReplay_WaitFirstPlay(hwnd, 2500)
     if !play
         return false
-    ; Prefer real cursor click; fall back to other strategies only if cursor fails.
-    if HandyReplay_ClickElementWithCursor(play, hwnd)
-        return true
-    if HandyReplay_ClickWithStrategies(play, hwnd)
-        return true
-    return false
+    return HandyReplay_ClickWithStrategies(play, hwnd)
 }
 
 ; End-to-end: activate/launch Handy → History → first Play. Leaves Handy open.
 HandyReplay_PlayLastRecording() {
-    StandardLoadingBar_Show("⏳ Opening Handy — please wait...", BANNER_ACCENT_INTERMEDIATE, {
-        fontSize: 17,
-        trackActiveMonitor: true
-    })
-    barOwned := true
     try {
-        StandardLoadingBar_Update("⏳ Activating Handy...")
         hwnd := Handy_ActivateOrLaunch()
         if (!hwnd) {
-            StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ Could not open Handy.", 2000, BANNER_ACCENT_ERROR)
-            barOwned := false
             return false
         }
 
-        StandardLoadingBar_Update("⏳ Opening History...")
-        ; Overlay would intercept Click("left") / mouse clicks on Handy's webview.
-        StandardLoadingBar_Hide(0)
-        barOwned := false
+        HandyReplay_PrepareUia(hwnd)
+        Sleep 80
+
         if (!HandyReplay_EnsureHistoryTab(hwnd)) {
             ShowCenteredOverlay_Utils("❌ Handy History tab not found.", 2200, BANNER_ACCENT_ERROR)
             return false
@@ -421,9 +478,7 @@ HandyReplay_PlayLastRecording() {
 
         ShowCenteredOverlay_Utils("✅ Playing last recording", 1500, BANNER_ACCENT_SUCCESS)
         return true
-    } finally {
-        if (barOwned) {
-            try StandardLoadingBar_Hide(0)
-        }
+    } catch {
+        return false
     }
 }
