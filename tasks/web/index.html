@@ -276,6 +276,23 @@
       .habit-card.emoji-hidden {
         display: none !important;
       }
+      .section-hidden {
+        display: none !important;
+      }
+      .top-row.section-solo {
+        grid-template-columns: 1fr;
+      }
+      .kb-selected,
+      details.project.kb-selected > summary,
+      .task.kb-selected,
+      .habit-row.kb-selected {
+        outline: 2px solid var(--gold);
+        outline-offset: -2px;
+        background: rgba(241, 196, 15, 0.08);
+      }
+      details.project.kb-selected > summary {
+        border-radius: 8px 8px 0 0;
+      }
       .habit-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -481,11 +498,13 @@
         const state = {
           data: null,
           filter: "work",
-          view: "dashboard", // dashboard | projects | tasks | info | import
+          view: "dashboard", // dashboard | import
           projectId: "",
           taskId: "",
           emojiFilter: "",
+          sectionFocus: "", // "" | work | personal | habits
           importPreview: null,
+          sel: null, // { kind: "project"|"task"|"habit", id }
         };
 
         const $ = (sel) => document.querySelector(sel);
@@ -606,8 +625,8 @@
             .map(([e, n]) => {
               const k = EMOJI_KEY_BY[e] || "";
               const label = EMOJI_LABELS[e] || "other";
-              const keyHint = k ? ` <kbd>${k.toUpperCase()}</kbd>` : "";
-              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="Filter ${label}${k ? " (" + k.toUpperCase() + ")" : ""}">
+              const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
+              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="Filter ${label}${k ? " (Shift+" + k.toUpperCase() + ")" : ""}">
         <span class="em">${esc(e)}</span>
         <span class="lbl">${esc(label)}</span>
         <span class="n">${n}</span>${keyHint}
@@ -728,6 +747,8 @@
       <div class="top-row">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${habitsHtml()}`;
           applyEmojiFilter(state.emojiFilter);
+          applySectionFocus(state.sectionFocus);
+          applySelection(false);
         }
 
         function renderImport() {
@@ -751,7 +772,7 @@
       <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import">Import</button>
       <button class="btn" data-act="migrate">Migrate MD</button>
       <button class="btn" data-act="git-push">Push</button>
-      <span class="sub"><kbd>1</kbd> Work <kbd>2</kbd> Personal <kbd>3</kbd> Habits · <kbd>E</kbd> expand · <kbd>T</kbd>⚡ <kbd>W</kbd>⏳ <kbd>G</kbd>🔲 <kbd>U</kbd>❓</span>`;
+      <span class="sub">Letters jump · arrows select · <kbd>⇧1</kbd> Work <kbd>⇧2</kbd> Personal <kbd>⇧3</kbd> Habits (hide others) · <kbd>⇧E</kbd> expand · <kbd>⇧T</kbd>⚡ <kbd>⇧W</kbd>⏳ <kbd>⇧G</kbd>🔲 <kbd>⇧U</kbd>❓ · <kbd>⇧C</kbd> done · <kbd>⇧A</kbd> add · <kbd>Del</kbd> delete</span>`;
         }
 
         function render() {
@@ -769,6 +790,346 @@
             filt === "habits" ? "sec-habits" : "sec-" + filt,
           );
           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function updateFocusLbl() {
+          const lbl = $("#emojiFilterLbl");
+          if (!lbl) return;
+          const parts = [];
+          if (state.sectionFocus) {
+            const name =
+              state.sectionFocus === "work"
+                ? "Work"
+                : state.sectionFocus === "personal"
+                  ? "Personal"
+                  : "Habits";
+            parts.push(name + " only");
+          }
+          if (state.emojiFilter) {
+            parts.push(
+              (EMOJI_LABELS[state.emojiFilter] || state.emojiFilter) + " emoji",
+            );
+          }
+          lbl.textContent = parts.length
+            ? "Showing " + parts.join(" · ") + " — Esc clears"
+            : "";
+        }
+
+        function applySectionFocus(filt, opts = {}) {
+          const toggle = !!opts.toggle;
+          if (toggle && filt && state.sectionFocus === filt) filt = "";
+          state.sectionFocus = filt || "";
+          const personal = document.getElementById("sec-personal");
+          const work = document.getElementById("sec-work");
+          const habits = document.getElementById("sec-habits");
+          const top = document.querySelector(".top-row");
+          const f = state.sectionFocus;
+          if (personal)
+            personal.classList.toggle(
+              "section-hidden",
+              !!f && f !== "personal",
+            );
+          if (work)
+            work.classList.toggle("section-hidden", !!f && f !== "work");
+          if (habits)
+            habits.classList.toggle("section-hidden", !!f && f !== "habits");
+          if (top)
+            top.classList.toggle(
+              "section-solo",
+              f === "work" || f === "personal",
+            );
+          updateFocusLbl();
+          if (f) scrollToSection(f);
+          applySelection(true);
+        }
+
+        function titleFirstChar(title) {
+          const m = String(title || "")
+            .normalize("NFKC")
+            .match(/[A-Za-z0-9]/);
+          return m ? m[0].toLowerCase() : "";
+        }
+
+        function collectTargets() {
+          const out = [];
+          const pushProj = (proj) => {
+            if (proj.classList.contains("emoji-hidden")) return;
+            const id =
+              proj.getAttribute("data-id") || proj.getAttribute("data-pid");
+            if (!id) return;
+            const title =
+              proj.querySelector(".proj-title")?.textContent?.trim() || "";
+            out.push({ kind: "project", id, title, el: proj });
+            if (!proj.open) return;
+            proj.querySelectorAll(".task:not(.emoji-hidden)").forEach((t) => {
+              const tid = t.getAttribute("data-id");
+              if (!tid) return;
+              out.push({
+                kind: "task",
+                id: tid,
+                title: t.querySelector(".title")?.textContent?.trim() || "",
+                el: t,
+              });
+            });
+          };
+          ["sec-personal", "sec-work"].forEach((sid) => {
+            const sec = document.getElementById(sid);
+            if (!sec || sec.classList.contains("section-hidden")) return;
+            sec
+              .querySelectorAll("details.project")
+              .forEach((proj) => pushProj(proj));
+          });
+          const habitsSec = document.getElementById("sec-habits");
+          if (habitsSec && !habitsSec.classList.contains("section-hidden")) {
+            habitsSec
+              .querySelectorAll(".habit-row:not(.emoji-hidden)")
+              .forEach((h) => {
+                if (h.closest(".habit-card.emoji-hidden")) return;
+                const id = h.getAttribute("data-id");
+                if (!id) return;
+                out.push({
+                  kind: "habit",
+                  id,
+                  title: h.querySelector(".title")?.textContent?.trim() || "",
+                  el: h,
+                });
+              });
+          }
+          return out;
+        }
+
+        function applySelection(scroll) {
+          document
+            .querySelectorAll(".kb-selected")
+            .forEach((el) => el.classList.remove("kb-selected"));
+          if (!state.sel) return;
+          const targets = collectTargets();
+          const hit = targets.find(
+            (t) => t.kind === state.sel.kind && t.id === state.sel.id,
+          );
+          if (!hit) {
+            state.sel = null;
+            return;
+          }
+          hit.el.classList.add("kb-selected");
+          if (scroll)
+            hit.el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+
+        function setSelection(kind, id, scroll) {
+          if (!kind || !id) {
+            state.sel = null;
+            applySelection(false);
+            return;
+          }
+          state.sel = { kind, id };
+          applySelection(scroll !== false);
+        }
+
+        function moveSelection(delta) {
+          const targets = collectTargets();
+          if (!targets.length) return;
+          let idx = targets.findIndex(
+            (t) =>
+              state.sel && t.kind === state.sel.kind && t.id === state.sel.id,
+          );
+          if (idx < 0) {
+            idx = delta > 0 ? 0 : targets.length - 1;
+          } else {
+            idx = (idx + delta + targets.length) % targets.length;
+          }
+          setSelection(targets[idx].kind, targets[idx].id, true);
+        }
+
+        function letterJump(ch) {
+          const targets = collectTargets().filter(
+            (t) => titleFirstChar(t.title) === ch,
+          );
+          if (!targets.length) return;
+          let idx = targets.findIndex(
+            (t) =>
+              state.sel && t.kind === state.sel.kind && t.id === state.sel.id,
+          );
+          idx = idx < 0 ? 0 : (idx + 1) % targets.length;
+          setSelection(targets[idx].kind, targets[idx].id, true);
+        }
+
+        function selectedTaskId() {
+          if (!state.sel) return "";
+          if (state.sel.kind === "task" || state.sel.kind === "habit")
+            return state.sel.id;
+          return "";
+        }
+
+        function selectedProjectId() {
+          if (!state.sel) return "";
+          if (state.sel.kind === "project") return state.sel.id;
+          if (state.sel.kind === "task") {
+            const t = (state.data.tasks || []).find(
+              (x) => x.id === state.sel.id,
+            );
+            return t?.project_id || "";
+          }
+          return "";
+        }
+
+        async function runShiftCommand(key) {
+          const k = key.toLowerCase();
+          if (k === "1") {
+            applySectionFocus("work", { toggle: true });
+            return;
+          }
+          if (k === "2") {
+            applySectionFocus("personal", { toggle: true });
+            return;
+          }
+          if (k === "3") {
+            applySectionFocus("habits", { toggle: true });
+            return;
+          }
+          if (k === "e") {
+            const nodes = document.querySelectorAll("details.project");
+            const openAll = Array.from(nodes).some((n) => !n.open);
+            nodes.forEach((n) => {
+              n.open = openAll;
+            });
+            applySelection(false);
+            return;
+          }
+          if (EMOJI_KEYS[k]) {
+            const em = EMOJI_KEYS[k];
+            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            applySelection(true);
+            return;
+          }
+          if (k === "f") {
+            applyEmojiFilter("");
+            applySelection(false);
+            return;
+          }
+          if (k === "c") {
+            const tid = selectedTaskId();
+            if (!tid) {
+              toast("Select a task first");
+              return;
+            }
+            await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
+              method: "POST",
+              body: JSON.stringify({ key: "done" }),
+            });
+            await refresh();
+            return;
+          }
+          if (k === "i") {
+            const tid = selectedTaskId();
+            if (!tid) {
+              toast("Select a task first");
+              return;
+            }
+            await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
+              method: "POST",
+              body: JSON.stringify({ key: "important" }),
+            });
+            await refresh();
+            return;
+          }
+          if (k === "a") {
+            const pid = selectedProjectId();
+            if (pid) {
+              const p = (state.data.projects || []).find((x) => x.id === pid);
+              taskForm({
+                project_id: pid,
+                filter: p?.filter || state.filter || "work",
+              });
+            } else {
+              projectForm(null);
+            }
+            return;
+          }
+          if (k === "n") {
+            if (state.sel?.kind === "project") {
+              infoListModal("project", state.sel.id);
+              return;
+            }
+            const tid = selectedTaskId();
+            if (tid) {
+              const t = (state.data.tasks || []).find((x) => x.id === tid);
+              if (t) state.projectId = t.project_id;
+              infoListModal("task", tid);
+              return;
+            }
+            toast("Select a project or task");
+            return;
+          }
+          if (k === "v") {
+            let ptype = "";
+            let pid = "";
+            if (state.sel?.kind === "project") {
+              ptype = "project";
+              pid = state.sel.id;
+            } else if (selectedTaskId()) {
+              ptype = "task";
+              pid = selectedTaskId();
+            }
+            if (!pid) {
+              toast("Select a project or task");
+              return;
+            }
+            state._attTarget = { ptype, pid };
+            const inp = document.createElement("input");
+            inp.type = "file";
+            inp.accept = "image/*";
+            inp.onchange = async () => {
+              if (inp.files?.[0]) await uploadImage(ptype, pid, inp.files[0]);
+            };
+            inp.click();
+            return;
+          }
+          if (k === "backspace") {
+            await deleteSelection();
+          }
+        }
+
+        async function deleteSelection() {
+          if (!state.sel) {
+            toast("Nothing selected");
+            return;
+          }
+          if (state.sel.kind === "project") {
+            if (!confirm("Delete project and its tasks/info/attachments?"))
+              return;
+            await api("/api/projects/" + encodeURIComponent(state.sel.id), {
+              method: "DELETE",
+            });
+            state.sel = null;
+            toast("Deleted");
+            await refresh();
+            return;
+          }
+          if (state.sel.kind === "task" || state.sel.kind === "habit") {
+            if (!confirm("Delete task and its info/attachments?")) return;
+            await api("/api/tasks/" + encodeURIComponent(state.sel.id), {
+              method: "DELETE",
+            });
+            state.sel = null;
+            toast("Deleted");
+            await refresh();
+          }
+        }
+
+        function editSelection() {
+          if (!state.sel) return;
+          if (state.sel.kind === "project") {
+            projectForm(
+              (state.data.projects || []).find((p) => p.id === state.sel.id),
+            );
+            return;
+          }
+          taskForm((state.data.tasks || []).find((t) => t.id === state.sel.id));
+        }
+
+        function modalOpen() {
+          return !!$("#modalHost")?.innerHTML;
         }
 
         function infoListModal(parentType, parentId) {
@@ -864,10 +1225,7 @@
             card.classList.toggle("emoji-hidden", visible === 0);
           });
           const lbl = $("#emojiFilterLbl");
-          if (lbl)
-            lbl.textContent = state.emojiFilter
-              ? `Showing ${EMOJI_LABELS[state.emojiFilter] || state.emojiFilter} only — Esc clears`
-              : "";
+          if (lbl) updateFocusLbl();
           document.querySelectorAll(".emoji-chip").forEach((chip) => {
             chip.classList.toggle(
               "active",
@@ -875,6 +1233,7 @@
                 chip.getAttribute("data-emoji") === state.emojiFilter,
             );
           });
+          applySelection(false);
         }
 
         function modal(html) {
@@ -1053,7 +1412,18 @@
           if (chip) {
             const em = chip.getAttribute("data-emoji") || "";
             applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            applySelection(true);
             return;
+          }
+          const habitRow = e.target.closest(".habit-row[data-id]");
+          const taskRow = e.target.closest(".task[data-id]");
+          const projRow = e.target.closest("details.project[data-id]");
+          if (habitRow) {
+            setSelection("habit", habitRow.getAttribute("data-id"), false);
+          } else if (taskRow) {
+            setSelection("task", taskRow.getAttribute("data-id"), false);
+          } else if (projRow && e.target.closest("summary")) {
+            setSelection("project", projRow.getAttribute("data-id"), false);
           }
           const actEl = e.target.closest("[data-act]");
           if (!actEl) return;
@@ -1226,7 +1596,7 @@
           }
         });
 
-        document.addEventListener("keydown", (e) => {
+        document.addEventListener("keydown", async (e) => {
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           const tag = (e.target?.tagName || "").toLowerCase();
           if (
@@ -1236,46 +1606,118 @@
             e.target?.isContentEditable
           )
             return;
+
           if (e.key === "Escape") {
+            e.preventDefault();
             if (!$("#lightbox").hidden) {
               $("#lightbox").hidden = true;
               return;
             }
-            if ($("#modalHost").innerHTML) {
+            if (modalOpen()) {
               closeModal();
               return;
             }
             if (state.emojiFilter) {
               applyEmojiFilter("");
+              applySelection(false);
+              return;
+            }
+            if (state.sectionFocus) {
+              applySectionFocus("");
+              return;
+            }
+            if (state.sel) {
+              setSelection(null, null, false);
               return;
             }
             return;
           }
-          const k = e.key.toLowerCase();
-          if (k === "1") {
-            scrollToSection("work");
+
+          if (modalOpen() || state.view === "import") return;
+
+          if (e.key === "ArrowDown") {
             e.preventDefault();
+            moveSelection(1);
+            return;
           }
-          if (k === "2") {
-            scrollToSection("personal");
+          if (e.key === "ArrowUp") {
             e.preventDefault();
+            moveSelection(-1);
+            return;
           }
-          if (k === "3") {
-            scrollToSection("habits");
+          if (e.key === "Home") {
             e.preventDefault();
+            const targets = collectTargets();
+            if (targets.length)
+              setSelection(targets[0].kind, targets[0].id, true);
+            return;
           }
-          if (k === "e" && state.view !== "import") {
-            const nodes = document.querySelectorAll("details.project");
-            const openAll = Array.from(nodes).some((n) => !n.open);
-            nodes.forEach((n) => {
-              n.open = openAll;
-            });
+          if (e.key === "End") {
             e.preventDefault();
+            const targets = collectTargets();
+            if (targets.length)
+              setSelection(
+                targets[targets.length - 1].kind,
+                targets[targets.length - 1].id,
+                true,
+              );
+            return;
           }
-          if (EMOJI_KEYS[k] && state.view !== "import") {
-            const em = EMOJI_KEYS[k];
-            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+          if (e.key === "Enter") {
             e.preventDefault();
+            editSelection();
+            return;
+          }
+          if (e.key === "Delete") {
+            e.preventDefault();
+            try {
+              await deleteSelection();
+            } catch (err) {
+              toast(err.message || String(err));
+            }
+            return;
+          }
+
+          if (e.shiftKey) {
+            const sk =
+              e.key === "Backspace" ? "backspace" : (e.key || "").toLowerCase();
+            if (
+              sk.length === 1 ||
+              sk === "backspace" ||
+              sk === "!" ||
+              sk === "@" ||
+              sk === "#"
+            ) {
+              // Shift+1 often yields "!" on some layouts — map Digits via code
+              let cmd = sk;
+              if (e.code === "Digit1") cmd = "1";
+              else if (e.code === "Digit2") cmd = "2";
+              else if (e.code === "Digit3") cmd = "3";
+              else if (sk === "backspace") cmd = "backspace";
+              else if (sk.length !== 1) return;
+              e.preventDefault();
+              try {
+                await runShiftCommand(cmd);
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+            }
+            return;
+          }
+
+          // Plain letter jump (1/2/3 reserved via Shift for sections)
+          if (/^[a-z0-9]$/i.test(e.key) && !/^[123]$/.test(e.key)) {
+            e.preventDefault();
+            letterJump(e.key.toLowerCase());
+            return;
+          }
+          // Plain 1/2/3 also focus a single category (same as Shift+1/2/3)
+          if (e.key === "1" || e.key === "2" || e.key === "3") {
+            e.preventDefault();
+            applySectionFocus(
+              e.key === "1" ? "work" : e.key === "2" ? "personal" : "habits",
+              { toggle: true },
+            );
           }
         });
 
