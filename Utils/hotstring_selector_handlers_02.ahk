@@ -30,6 +30,11 @@ UtilitySelector_SwitchToCategory(category) {
         Palace_LaunchApp()
         return
     }
+    if (category = "Tasks") {
+        CleanupHotstringSelector()
+        Task_LaunchApp()
+        return
+    }
     if (category = "Import Management") {
         CleanupHotstringSelector()
         ImportMgmt_LaunchApp()
@@ -332,7 +337,7 @@ UtilitySelector_PromptNameMatches(name, query) {
 UtilitySelector_HintText() {
     global g_UtilitySelectorMode, g_UtilitySelectorCategory
     if (g_UtilitySelectorMode = "top")
-        return "Char = open category   [S] Sequences   [F] Finance   [N] Memory Palace   [J] Import Management   [G] Push   Enter/double-click = open   Esc = close"
+        return "Char = open category   [S] Sequences   [F] Finance   [N] Memory Palace   [T] Tasks   [J] Import Management   [G] Push   Enter/double-click = open   Esc = close"
     if (g_UtilitySelectorCategory = "Prompts")
         return "Filter by name, tags, path   Enter = paste first match   Shift+Enter = paste + clipboard   Char = paste   double-click = paste   Insert = add   E = edit   H = history (in editor)   Delete = remove   L = Gemini arm   Backspace = back   Esc = close"
     if (g_UtilitySelectorCategory = "Hotstrings")
@@ -356,7 +361,8 @@ UtilitySelector_PopulateLv() {
         ClickSeqData_Load(false, true)
         counts := Map("Prompts", g_PromptEntries.Length, "Projects", UtilitySelector_ProjectCountCached(),
         "Macros", UtilitySelector_MacroCountCached(), "Hotstrings", g_HotstringEntries.Length,
-        "Sequences", ClickSeqData_SequenceCount(), "Finance", 1, "Memory Palace", 1, "Import Management", 1, "Push", 1)
+        "Sequences", ClickSeqData_SequenceCount(), "Finance", 1, "Memory Palace", 1, "Tasks", 1,
+        "Import Management", 1, "Push", 1)
         idByCat := Map()
         for id, cat in g_UtilityTopCategoryById
             idByCat[cat] := id

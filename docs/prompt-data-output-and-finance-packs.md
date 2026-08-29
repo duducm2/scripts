@@ -1,10 +1,12 @@
 # Prompt data output and pack imports
 
-Documentation for future agents working on Utility Shortcuts prompts, AIB delivery, and pack imports (Finance, Memory Palace, Import Management).
+Documentation for future agents working on Utility Shortcuts prompts, AIB delivery, and pack imports (Finance, Memory Palace, Tasks, Import Management).
 
 This doc is the **canonical reference** for how prompts and importers are linked.
 
 > **Start here** if you are an AI agent working on pack prompts, importers, CSV schemas, partial-import recovery, or a new import domain.
+
+**Tasks domain (v1):** Utility Shortcuts `[T]` → CSV under `tasks/data/`. Bootstrap via Markdown migrate (`tasks/python/migrate_from_md.py` / launcher `[M]`); AI `TASK_PACK` import is deferred. Dashboard: `tasks/python/chart_generator.py`.
 
 ## For future agents — import system reference
 
@@ -48,11 +50,12 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 
 ### Module index (code)
 
-| Domain            | Helpers                                                                     | Import                                                                    | Launcher                                                                      | Data                   |
-| ----------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
-| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                 | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                 | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
-| Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv` |
-| Import Management | —                                                                           | — (delegates to finance/palace importers)                                 | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
+| Domain            | Helpers                                                                     | Import                                                                                                     | Launcher                                                                      | Data                   |
+| ----------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
+| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                 | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                  | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
+| Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                  | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv` |
+| Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk)                       | MD migrate: [`tasks/python/migrate_from_md.py`](../tasks/python/migrate_from_md.py) (AI pack import later) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk)                       | `tasks/data/*.csv`     |
+| Import Management | —                                                                           | — (delegates to finance/palace importers)                                                                  | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
 

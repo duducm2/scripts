@@ -21,7 +21,7 @@ global UIA_ControlType_Button := 50000
 ; Early BANNER_ACCENT_* and GEMINI_PROMPT_* globals stay here (must load first).
 ; lib\CopilotWeb.ahk #include stays inline before d2c_flow_manager module.
 ; See Utils/MODULARIZATION_PROGRESS.md for the full module list.
-; Pack imports (Finance, Memory Palace): docs/prompt-data-output-and-finance-packs.md
+; Pack imports (Finance, Memory Palace, Tasks): docs/prompt-data-output-and-finance-packs.md
 ; -----------------------------------------------------------------------------
 
 ; -----------------------------------------------------------------------------
@@ -316,7 +316,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\pack_import_desktop.ahk
 #include %A_ScriptDir%\Utils\finance_import.ahk
 #include %A_ScriptDir%\Utils\finance_git_sync.ahk
-; [Utils module] Win+Alt+Shift+D → Finance -> Utils\finance_hotkey_d.ahk
+; [Utils module] Win+Alt+Shift+D tap-dance → Tasks / Finance / Memory Palace -> Utils\finance_hotkey_d.ahk
 #include %A_ScriptDir%\Utils\finance_hotkey_d.ahk
 
 ; [Utils module] Memory Palace (Utility Shortcuts [N])
@@ -331,6 +331,15 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk
+
+; [Utils module] Tasks (Utility Shortcuts [T])
+#include %A_ScriptDir%\Utils\task_helpers.ahk
+#include %A_ScriptDir%\Utils\task_launcher.ahk
+#include %A_ScriptDir%\Utils\task_projects.ahk
+#include %A_ScriptDir%\Utils\task_tasks.ahk
+#include %A_ScriptDir%\Utils\task_info.ahk
+#include %A_ScriptDir%\Utils\task_migrate.ahk
+
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk
 

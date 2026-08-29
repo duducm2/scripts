@@ -1,0 +1,26 @@
+id,parent_type,parent_id,kind,ref,description,sort_order
+ATT_0001,task,TASK_0001,image,attachments\20260829-TASK_0001-20260828-092144.png,20260828-092144.png,60
+ATT_0002,task,TASK_0004,url,https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92/r/session/3474856530242243373?pli=1,https://vertexaisearch.cloud.google.com/u/1/eu/home/cid/bcb383f1-26d8-41fd-9a55-623f7e93de92/r/session/3474856530242243373?pli=1,120
+ATT_0003,project,PROJ_0004,image,attachments\20260829-PROJ_0004-20260828-142108.png,20260828-142108.png,180
+ATT_0004,project,PROJ_0004,image,attachments\20260829-PROJ_0004-20260828-101254.png,20260828-101254.png,200
+ATT_0005,project,PROJ_0004,image,attachments\20260829-PROJ_0004-20260828-101317.png,20260828-101317.png,210
+ATT_0006,task,TASK_0007,image,attachments\20260829-TASK_0007-20260820-105844.png,20260820-105844.png,230
+ATT_0007,task,TASK_0007,url,https://bosch.sharepoint.com/sites/msteams_659a2057/SitePages/crisisCommunicationHome.aspx,https://bosch.sharepoint.com/sites/msteams_659a2057/SitePages/crisisCommunicationHome.aspx,250
+ATT_0008,task,TASK_0008,url,https://opencode.ai/go,https://opencode.ai/go,360
+ATT_0009,task,TASK_0009,image,attachments\20260829-TASK_0009-20260812-103754.png,20260812-103754.png,380
+ATT_0010,task,TASK_0009,image,attachments\20260829-TASK_0009-20260812-171426.png,20260812-171426.png,390
+ATT_0011,task,TASK_0017,file,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - Data Insights SO - Piloto PT B2B\documents\0-others\business-model\costs.xlsx,700
+ATT_0012,info,INFO_0033,url,https://forms.office.com/e/uGVi4LaXff,https://forms.office.com/e/uGVi4LaXff,780
+ATT_0013,task,TASK_0029,image,attachments\20260829-TASK_0029-20260817-165019.png,20260817-165019.png,990
+ATT_0014,task,TASK_0033,image,attachments\20260829-TASK_0033-20260824-110249.png,20260824-110249.png,1110
+ATT_0015,project,PROJ_0014,file,C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\work\ai-roleplay\meeting-1.txt,C:\Users\fie7ca\OneDrive - Bosch Group\14-my-notes\work\ai-roleplay\meeting-1.txt,1240
+ATT_0016,project,PROJ_0014,image,attachments\20260829-PROJ_0014-20260825-112514.png,20260825-112514.png,1290
+ATT_0017,project,PROJ_0014,image,attachments\20260829-PROJ_0014-20260825-112750.png,20260825-112750.png,1320
+ATT_0018,project,PROJ_0014,image,attachments\20260829-PROJ_0014-20260825-112558.png,20260825-112558.png,1330
+ATT_0019,info,INFO_0073,url,https://www.linkedin.com/jobs/view/4452391795/,https://www.linkedin.com/jobs/view/4452391795/,1440
+ATT_0020,info,INFO_0074,url,https://www.linkedin.com/jobs/view/4449189767/,https://www.linkedin.com/jobs/view/4449189767/,1460
+ATT_0021,task,TASK_0039,image,attachments\20260829-TASK_0039-20260818-160723.png,20260818-160723.png,1490
+ATT_0022,task,TASK_0041,image,attachments\20260829-TASK_0041-20260413-222711.png,20260413-222711.png,1530
+ATT_0023,task,TASK_0042,image,attachments\20260829-TASK_0042-20260301-203740.png,20260301-203740.png,1560
+ATT_0024,task,TASK_0049,image,attachments\20260829-TASK_0049-20260717-204839.png,20260717-204839.png,1690
+ATT_0025,task,TASK_0050,image,attachments\20260829-TASK_0050-20260717-204123.png,20260717-204123.png,1710
