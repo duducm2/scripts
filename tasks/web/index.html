@@ -657,6 +657,44 @@
       .import-actions .btn kbd {
         margin-left: 6px;
       }
+      .inline-create {
+        display: none;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px 24px 12px;
+        border-bottom: 1px solid var(--line);
+        background: #1a1a1c;
+      }
+      .inline-create.active {
+        display: flex;
+      }
+      .inline-create .ctx {
+        color: var(--muted);
+        font-size: 12px;
+        max-width: 280px;
+      }
+      .inline-create .ctx strong {
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .inline-create input[type="text"] {
+        flex: 1 1 220px;
+        min-width: 160px;
+        background: #252528;
+        border: 1px solid var(--gold);
+        border-radius: 8px;
+        color: var(--text);
+        padding: 8px 12px;
+        font: inherit;
+        font-size: 14px;
+      }
+      .inline-create input[type="text"]:focus {
+        outline: none;
+      }
+      .modal .field-row[hidden] {
+        display: none !important;
+      }
       .crumb {
         color: var(--muted);
         font-size: 13px;
@@ -690,6 +728,7 @@
       </div>
     </header>
     <div class="strip" id="strip"></div>
+    <div id="inlineCreate" class="inline-create" aria-hidden="true"></div>
     <div id="view"></div>
     <div id="toast"></div>
     <div id="lightbox" hidden><img src="" alt="" /></div>
@@ -742,6 +781,7 @@
           importPreview: null,
           importSource: "task_pack", // selected import kind
           pwSide: "personal", // last side for Personal/Work first-item toggle
+          inlineCreate: null, // { project_id, section_id, filter, kind }
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
@@ -1310,7 +1350,7 @@
         <div class="help-group"><h4>Actions</h4><div class="help-rows">
           ${row("Enter", "Edit selection")}
           ${row("Del", "Delete selection")}
-          ${row("⇧A", "Add task (or project if none selected)")}
+          ${row("⇧A", "Inline add task (or project if none selected)")}
           ${row("⇧B", "Add section (project selected)")}
           ${row("⇧C", "Mark done")}
           ${row("⇧D", "Habit → Personal inbox (General)")}
@@ -1863,10 +1903,17 @@
             const pid = selectedProjectId();
             if (pid) {
               const p = (state.data.projects || []).find((x) => x.id === pid);
-              taskForm({
+              beginInlineTaskCreate({
                 project_id: pid,
                 filter: p?.filter || state.filter || "work",
               });
+            } else if (
+              state.sel?.kind === "section" ||
+              state.sectionFocus === "personal" ||
+              state.sectionFocus === "work" ||
+              state.sectionFocus === "habits"
+            ) {
+              beginInlineTaskCreate({});
             } else {
               projectForm(null);
             }
@@ -1986,6 +2033,7 @@
         }
 
         function goHome() {
+          cancelInlineCreate();
           if (!$("#lightbox")?.hidden) {
             $("#lightbox").hidden = true;
             const img = $("#lightbox")?.querySelector("img");
@@ -2002,6 +2050,10 @@
         }
 
         function goBack() {
+          if (state.inlineCreate) {
+            cancelInlineCreate();
+            return true;
+          }
           if (!$("#lightbox")?.hidden) {
             $("#lightbox").hidden = true;
             const img = $("#lightbox")?.querySelector("img");
@@ -2202,27 +2254,232 @@
           };
         }
 
+        function inboxTitleFor(filt) {
+          if (filt === "personal") return "Personal inbox";
+          if (filt === "habits") return "Habits & Health";
+          return "Work inbox";
+        }
+
+        function resolveTaskCreateContext(hint = {}) {
+          let project_id = (hint.project_id || "").trim();
+          let section_id = (hint.section_id || "").trim();
+          let filter = (hint.filter || "").trim().toLowerCase();
+          let kind = (hint.kind || "punctual").trim().toLowerCase();
+
+          if (state.sel?.kind === "section") {
+            const sec = (state.data.sections || []).find(
+              (s) => s.id === state.sel.id,
+            );
+            if (sec) {
+              project_id = project_id || sec.project_id;
+              section_id = section_id || sec.id;
+              const p = (state.data.projects || []).find(
+                (x) => x.id === sec.project_id,
+              );
+              filter = filter || p?.filter || "";
+            }
+          } else if (
+            state.sel?.kind === "task" ||
+            state.sel?.kind === "habit"
+          ) {
+            const t = (state.data.tasks || []).find(
+              (x) => x.id === state.sel.id,
+            );
+            if (t) {
+              project_id = project_id || t.project_id;
+              section_id = section_id || t.section_id;
+              filter = filter || t.filter || "";
+            }
+          } else if (state.sel?.kind === "project") {
+            project_id = project_id || state.sel.id;
+            const p = (state.data.projects || []).find(
+              (x) => x.id === project_id,
+            );
+            filter = filter || p?.filter || "";
+          }
+
+          if (!filter) {
+            if (
+              state.sectionFocus === "personal" ||
+              state.sectionFocus === "work" ||
+              state.sectionFocus === "habits"
+            )
+              filter = state.sectionFocus;
+            else filter = state.pwSide || state.filter || "work";
+          }
+          if (!["work", "personal", "habits"].includes(filter)) filter = "work";
+
+          if (!project_id) {
+            const want = inboxTitleFor(filter).toLowerCase();
+            const p =
+              projectsFor(filter).find(
+                (x) => (x.title || "").trim().toLowerCase() === want,
+              ) || projectsFor(filter)[0];
+            project_id = p?.id || "";
+          } else {
+            const p = (state.data.projects || []).find(
+              (x) => x.id === project_id,
+            );
+            if (p?.filter) filter = p.filter;
+          }
+
+          if (!section_id && project_id) {
+            const secs = sectionsFor(project_id);
+            section_id =
+              secs.find((s) => (s.title || "").toLowerCase() === "general")
+                ?.id ||
+              secs[0]?.id ||
+              "";
+          }
+
+          return { project_id, section_id, filter, kind };
+        }
+
+        function cancelInlineCreate() {
+          state.inlineCreate = null;
+          const bar = $("#inlineCreate");
+          if (bar) {
+            bar.classList.remove("active");
+            bar.innerHTML = "";
+            bar.setAttribute("aria-hidden", "true");
+          }
+        }
+
+        function renderInlineCreateBar() {
+          const bar = $("#inlineCreate");
+          if (!bar || !state.inlineCreate) {
+            cancelInlineCreate();
+            return;
+          }
+          const ctx = state.inlineCreate;
+          const p = (state.data.projects || []).find(
+            (x) => x.id === ctx.project_id,
+          );
+          const s = (state.data.sections || []).find(
+            (x) => x.id === ctx.section_id,
+          );
+          const where = [p?.title || "Project", s?.title || "General"]
+            .filter(Boolean)
+            .join(" · ");
+          bar.classList.add("active");
+          bar.setAttribute("aria-hidden", "false");
+          bar.innerHTML = `
+      <span class="ctx"><strong>${esc(ctx.filter)}</strong> · ${esc(where)}</span>
+      <input type="text" id="inlineTitle" placeholder="Task title — Enter to add, Backspace to cancel" autocomplete="off" />
+      <button type="button" class="btn" data-act="inline-save">Add</button>
+      <button type="button" class="btn" data-act="inline-cancel">Cancel</button>`;
+          const inp = $("#inlineTitle");
+          inp?.focus();
+          inp?.addEventListener("keydown", async (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await commitInlineCreate();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+            }
+          });
+        }
+
+        async function beginInlineTaskCreate(hint = {}) {
+          if (state.view !== "dashboard") {
+            state.view = "dashboard";
+            await refresh();
+          }
+          let ctx = resolveTaskCreateContext(hint);
+          if (!ctx.project_id) {
+            const r = await api("/api/projects", {
+              method: "POST",
+              body: JSON.stringify({
+                title: inboxTitleFor(ctx.filter),
+                filter: ctx.filter,
+              }),
+            });
+            await refresh();
+            ctx = resolveTaskCreateContext({
+              ...hint,
+              project_id: r.project.id,
+              filter: ctx.filter,
+            });
+          }
+          if (!ctx.project_id) {
+            toast("No project available");
+            return;
+          }
+          if (!ctx.section_id) {
+            await refresh();
+            ctx = resolveTaskCreateContext({
+              ...hint,
+              project_id: ctx.project_id,
+              filter: ctx.filter,
+            });
+          }
+          state.inlineCreate = ctx;
+          if (ctx.filter === "personal" || ctx.filter === "work") {
+            if (state.sectionFocus && state.sectionFocus !== ctx.filter)
+              applySectionFocus(ctx.filter);
+          }
+          renderInlineCreateBar();
+        }
+
+        async function commitInlineCreate() {
+          const ctx = state.inlineCreate;
+          if (!ctx) return;
+          const title = ($("#inlineTitle")?.value || "").trim();
+          if (!title) {
+            toast("Title required");
+            $("#inlineTitle")?.focus();
+            return;
+          }
+          const r = await api("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify({
+              title,
+              project_id: ctx.project_id,
+              section_id: ctx.section_id,
+              filter: ctx.filter,
+              kind: ctx.kind || "punctual",
+              emoji: "🔲",
+            }),
+          });
+          cancelInlineCreate();
+          toast("Task added — Enter to edit details");
+          await refresh();
+          if (r.task?.id) setSelection("task", r.task.id, true);
+        }
+
         function taskForm(existing) {
-          const filt = existing?.filter || state.filter || "work";
+          if (!existing?.id) {
+            beginInlineTaskCreate(existing || {});
+            return;
+          }
+          const filt = existing.filter || state.filter || "work";
           const projs = projectsFor(filt);
-          const pid =
-            existing?.project_id || state.projectId || projs[0]?.id || "";
+          const pid = existing.project_id || projs[0]?.id || "";
           const defaultSec =
-            existing?.section_id ||
+            existing.section_id ||
             sectionsFor(pid).find(
               (s) => (s.title || "").toLowerCase() === "general",
             )?.id ||
             "";
-          modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} task</h3>
-      <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
+          const dueVal =
+            existing.kind === "habitual"
+              ? existing.next_due || existing.due_date || ""
+              : existing.due_date || "";
+          const isHabit = existing.kind === "habitual";
+          modal(`<div class="modal"><h3>Edit task</h3>
+      <label>Title</label><input id="mTitle" value="${esc(existing.title || "")}"/>
       <label>Project</label><select id="mProj">${projs.map((p) => `<option value="${esc(p.id)}" ${pid === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select>
       <label>Section</label><select id="mSection">${sectionOptionsHtml(pid, defaultSec)}</select>
-      <label>Filter</label><select id="mFilt">${["work", "personal", "habits"].map((f) => `<option ${(existing?.filter || filt) === f ? "selected" : ""}>${f}</option>`).join("")}</select>
-      <label>Kind</label><select id="mKind"><option value="punctual" ${!existing || existing.kind === "punctual" ? "selected" : ""}>punctual</option><option value="habitual" ${existing?.kind === "habitual" ? "selected" : ""}>habitual</option></select>
-      <label>Recurrence</label><select id="mRec"><option value="">(none)</option>${RECURRENCE_ORDER.map((r) => `<option value="${r}" ${existing?.recurrence === r ? "selected" : ""}>${RECURRENCE_LABELS[r]}</option>`).join("")}</select>
-      <label>Emoji</label><input id="mEmoji" value="${esc(existing?.emoji || "🔲")}"/>
-      <label>Due date</label><input id="mDue" value="${esc(existing?.due_date || "")}" placeholder="YYYY-MM-DD"/>
-      <label>Next due</label><input id="mNext" value="${esc(existing?.next_due || "")}" placeholder="YYYY-MM-DD"/>
+      <label>Filter</label><select id="mFilt">${["work", "personal", "habits"].map((f) => `<option value="${f}" ${filt === f ? "selected" : ""}>${f}</option>`).join("")}</select>
+      <label>Kind</label><select id="mKind"><option value="punctual" ${!isHabit ? "selected" : ""}>punctual</option><option value="habitual" ${isHabit ? "selected" : ""}>habitual</option></select>
+      <div class="field-row" id="mRecWrap" ${isHabit ? "" : "hidden"}>
+        <label>Recurrence</label><select id="mRec"><option value="">(none)</option>${RECURRENCE_ORDER.map((r) => `<option value="${r}" ${existing.recurrence === r ? "selected" : ""}>${RECURRENCE_LABELS[r]}</option>`).join("")}</select>
+      </div>
+      <label>Emoji <span class="sub">(optional)</span></label><input id="mEmoji" value="${esc(existing.emoji === "🔲" ? "" : existing.emoji || "")}" placeholder="Leave blank for default"/>
+      <label>Due date</label><input id="mDue" value="${esc(dueVal)}" placeholder="YYYY-MM-DD"/>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-task">Save</button></div></div>`);
           const syncSections = () => {
             const sel = $("#mSection");
@@ -2230,7 +2487,12 @@
             const np = $("#mProj")?.value || "";
             if (sel) sel.innerHTML = sectionOptionsHtml(np, cur);
           };
+          const syncKind = () => {
+            const wrap = $("#mRecWrap");
+            if (wrap) wrap.hidden = $("#mKind")?.value !== "habitual";
+          };
           $("#mProj")?.addEventListener("change", syncSections);
+          $("#mKind")?.addEventListener("change", syncKind);
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -2239,19 +2501,22 @@
               closeModal();
             if (e.target.dataset.m === "save-task") {
               try {
+                const kind = $("#mKind").value;
+                const due = ($("#mDue").value || "").trim();
+                const emoji = ($("#mEmoji").value || "").trim() || "🔲";
                 await api("/api/tasks", {
                   method: "POST",
                   body: JSON.stringify({
-                    id: existing?.id || "",
+                    id: existing.id,
                     title: $("#mTitle").value,
                     project_id: $("#mProj").value,
                     section_id: $("#mSection").value,
                     filter: $("#mFilt").value,
-                    kind: $("#mKind").value,
-                    recurrence: $("#mRec").value,
-                    emoji: $("#mEmoji").value,
-                    due_date: $("#mDue").value,
-                    next_due: $("#mNext").value,
+                    kind,
+                    recurrence: kind === "habitual" ? $("#mRec").value : "",
+                    emoji,
+                    due_date: due,
+                    next_due: kind === "habitual" ? due : "",
                   }),
                 });
                 closeModal();
@@ -2428,7 +2693,15 @@
             if (act === "add-task") {
               const pid = actEl.getAttribute("data-pid") || id;
               const f = actEl.getAttribute("data-f") || state.filter || "work";
-              taskForm({ project_id: pid, filter: f });
+              beginInlineTaskCreate({ project_id: pid, filter: f });
+              return;
+            }
+            if (act === "inline-save") {
+              await commitInlineCreate();
+              return;
+            }
+            if (act === "inline-cancel") {
+              cancelInlineCreate();
               return;
             }
             if (act === "add-section") {
@@ -2566,6 +2839,16 @@
             if (e.key === "Escape") {
               e.preventDefault();
               goHome();
+              return;
+            }
+            if (
+              e.key === "Backspace" &&
+              e.target?.id === "inlineTitle" &&
+              !(e.target.value || "")
+            ) {
+              e.preventDefault();
+              cancelInlineCreate();
+              return;
             }
             return;
           }
