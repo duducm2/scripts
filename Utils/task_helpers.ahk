@@ -30,6 +30,52 @@ Task_AttachmentsDir() {
     return Task_DataDir() . "\attachments"
 }
 
+; Delete a managed file under tasks/data/attachments (image/text sidecars only).
+; Skips urls and absolute paths outside the attachments folder.
+Task_DeleteManagedAttachmentFile(att) {
+    if (!IsObject(att))
+        return
+    kind := att.Has("kind") ? att["kind"] : ""
+    ref := Trim(att.Has("ref") ? att["ref"] : "")
+    if (ref = "")
+        return
+    if (kind != "image" && kind != "text")
+        return
+    path := ""
+    norm := StrReplace(ref, "/", "\")
+    if (InStr(norm, "attachments\") = 1)
+        path := Task_DataDir() . "\" . norm
+    else {
+        attachRoot := Task_AttachmentsDir()
+        if (InStr(norm, attachRoot . "\") = 1 || norm = attachRoot)
+            path := norm
+        else
+            return
+    }
+    if (path != "" && FileExist(path)) {
+        try FileDelete(path)
+        catch {
+        }
+    }
+}
+
+; Drop matching attachment rows and delete their managed files from disk.
+Task_PurgeAttachments(shouldDrop) {
+    attOut := []
+    for a in Task_Load("attachments") {
+        drop := false
+        try drop := shouldDrop(a)
+        catch {
+            drop := false
+        }
+        if (drop)
+            Task_DeleteManagedAttachmentFile(a)
+        else
+            attOut.Push(a)
+    }
+    Task_Save("attachments", attOut)
+}
+
 Task_OutputDir() {
     dir := A_ScriptDir . "\tasks\output"
     if (!DirExist(dir))
@@ -706,7 +752,7 @@ Task_AddBrowseChrome(guiObj, levelNoun) {
     guiObj.Add("Text", "x12 y8 w860 cF1C40F BackgroundTrans", crumb . "  ·  filter: " . filt)
     guiObj.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
     guiObj.Add("Text", "x12 y32 w860 cA0A0A0 BackgroundTrans",
-        "1 Work  2 Personal  3 Habits   A add  E edit  Del  Enter drill  Backspace up  C/W/I/U/G emoji  V paste  N info"
+        "1 Work  2 Personal  3 Habits   A add  E edit  Del  Enter drill  Backspace up  C/I/U/G/W emoji  V paste  N info"
     )
     guiObj.SetFont("s10 cWhite Norm", "Segoe UI")
     return 56
@@ -931,8 +977,8 @@ Task_Terms() {
     return [
         ["Project", "Container for tasks. Flat list; MD headings become section_path on children."],
         ["Task", "Actionable punctual item. Habits are separate (kind=habitual) and do not count as open."],
-        ["Habit", "Recurring item. Review in [K]; W/P sends a punctual copy to Work/Personal and advances next_due."],
-        ["Filter", "While browsing: 1=Work  2=Personal  3=Habits. Inbox and lists follow the active filter."],
+        ["Habit", "Recurring item (kind=habitual). Track due items on the Tasks dashboard."],
+        ["Filter", "Browse starts on Work. While browsing: 1=Work  2=Personal  3=Habits."],
         ["Emoji", "🔲 general  ⏳ waiting  ⚡ important  ✅ done  ❓ doubt  ℹ️ info  or any custom."],
         ["Info point", "Non-actionable note attached to a project or task (large text)."],
         ["Attachment", "image | url | file | text refs under tasks/data/attachments or absolute paths."]

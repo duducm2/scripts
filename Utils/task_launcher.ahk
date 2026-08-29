@@ -6,6 +6,8 @@
 global g_TaskDashboardHwnd := 0
 
 Task_LaunchApp() {
+    try Finance_CloseGui()
+    try Palace_CloseGui()
     Task_EnsureData()
     Task_ShowMainMenu()
 }
@@ -38,12 +40,10 @@ Task_ShowMainMenu() {
         projects.Length . " projects  ·  " . tasks.Length . " tasks  ·  "
         . infos.Length . " info  ·  " . openN . " open  ·  filter: " . Task_FilterLabel(g_TaskFilter))
     g_TaskGui.SetFont("s9 cF1C40F", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y72 w880", "Browse with 1/2/3 for Work / Personal / Habits. Inbox is punctual only.")
+    g_TaskGui.Add("Text", "x20 y72 w880", "Browse starts on Work. While browsing: 1 Work · 2 Personal · 3 Habits.")
 
     items := [
-        ["B", "Browse", "Projects → tasks → info (filter with 1/2/3)"],
-        ["1", "Inbox", "Open punctual tasks in current filter"],
-        ["K", "Habits due", "Due habits → W/P send to Work/Personal"],
+        ["B", "Browse", "Projects → tasks → info (starts Work; 1/2/3 filter)"],
         ["I", "AI import", "Desktop TASK_PACK → projects / tasks / info"],
         ["D", "Dashboard", "Charts and lists in Chrome"],
         ["M", "Migrate MD", "Import work / punctual / habits.md"],
@@ -71,17 +71,17 @@ Task_ShowMainMenu() {
     }
 
     g_TaskGui.SetFont("s9 c808080", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y440 w880",
+    g_TaskGui.Add("Text", "x20 y360 w880",
         "Backspace utility shortcuts   Esc close   I import   M migrate   D dashboard")
 
     Task_BindHotkeys([
-        ["b", Task_OnBrowse], ["1", Task_OnInbox], ["k", Task_OnHabits],
+        ["b", Task_OnBrowse],
         ["i", Task_OnImport], ["d", Task_OnDash], ["m", Task_OnMigrate],
         ["h", Task_OnHelp], ["p", Task_OnGitPush],
         ["Backspace", (*) => Task_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Task_CloseGui()]
     ])
-    Task_CenterGui(g_TaskGui, 900, 500)
+    Task_CenterGui(g_TaskGui, 900, 420)
 }
 
 Task_ReturnToUtilityShortcuts() {
@@ -93,24 +93,10 @@ Task_ReturnToUtilityShortcuts() {
 
 Task_OnBrowse(*) {
     global g_TaskBrowseProjectId, g_TaskBrowseTaskId
+    Task_SetFilter("work")
     g_TaskBrowseProjectId := ""
     g_TaskBrowseTaskId := ""
     Task_ShowProjects()
-}
-
-Task_OnInbox(*) {
-    global g_TaskBrowseProjectId, g_TaskBrowseTaskId
-    g_TaskBrowseProjectId := ""
-    g_TaskBrowseTaskId := ""
-    Task_ShowTasksInbox(false)
-}
-
-Task_OnHabits(*) {
-    global g_TaskBrowseProjectId, g_TaskBrowseTaskId
-    Task_SetFilter("habits")
-    g_TaskBrowseProjectId := ""
-    g_TaskBrowseTaskId := ""
-    Task_ShowTasksInbox(true)
 }
 
 Task_OnImport(*) {

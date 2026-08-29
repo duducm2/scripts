@@ -6,6 +6,8 @@
 global g_PalaceDashboardHwnd := 0
 
 Palace_LaunchApp() {
+    try Finance_CloseGui()
+    try Task_CloseGui()
     Palace_EnsureData()
     Palace_ShowMainMenu()
 }

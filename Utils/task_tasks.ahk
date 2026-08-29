@@ -331,14 +331,10 @@ Task_CascadeDeleteTask(taskId) {
             infoOut.Push(i)
     }
     Task_Save("info_points", infoOut)
-    attOut := []
-    for a in Task_Load("attachments") {
-        drop := (a["parent_type"] = "task" && a["parent_id"] = taskId)
+    Task_PurgeAttachments((a) => (
+        (a["parent_type"] = "task" && a["parent_id"] = taskId)
         || (a["parent_type"] = "info" && infoIds.Has(a["parent_id"]))
-        if (!drop)
-            attOut.Push(a)
-    }
-    Task_Save("attachments", attOut)
+    ))
     taskOut := []
     for t in Task_Load("tasks") {
         if (t["id"] != taskId)

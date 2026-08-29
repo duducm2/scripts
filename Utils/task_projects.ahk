@@ -160,19 +160,11 @@ Task_CascadeDeleteProject(projectId) {
             infoOut.Push(i)
     }
     Task_Save("info_points", infoOut)
-    attOut := []
-    for a in Task_Load("attachments") {
-        drop := false
-        if (a["parent_type"] = "project" && a["parent_id"] = projectId)
-            drop := true
-        else if (a["parent_type"] = "task" && taskIds.Has(a["parent_id"]))
-            drop := true
-        else if (a["parent_type"] = "info" && infoIds.Has(a["parent_id"]))
-            drop := true
-        if (!drop)
-            attOut.Push(a)
-    }
-    Task_Save("attachments", attOut)
+    Task_PurgeAttachments((a) => (
+        (a["parent_type"] = "project" && a["parent_id"] = projectId)
+        || (a["parent_type"] = "task" && taskIds.Has(a["parent_id"]))
+        || (a["parent_type"] = "info" && infoIds.Has(a["parent_id"]))
+    ))
     taskOut := []
     for t in Task_Load("tasks") {
         if (t["project_id"] != projectId)

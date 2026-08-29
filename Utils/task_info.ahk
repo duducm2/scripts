@@ -46,7 +46,7 @@ Task_ShowTasksForProjectOrInbox() {
     if (g_TaskBrowseProjectId != "")
         Task_ShowTasksForProject()
     else
-        Task_ShowTasksInbox(false)
+        Task_ShowProjects()
 }
 
 Task_InfoRefresh(parentType, parentId) {
@@ -95,12 +95,8 @@ Task_InfoDelete(parentType, parentId) {
             out.Push(i)
     }
     Task_Save("info_points", out)
-    attOut := []
-    for a in Task_Load("attachments") {
-        if (!(a["parent_type"] = "info" && a["parent_id"] = info["id"]))
-            attOut.Push(a)
-    }
-    Task_Save("attachments", attOut)
+    infoId := info["id"]
+    Task_PurgeAttachments((a) => a["parent_type"] = "info" && a["parent_id"] = infoId)
     Task_InfoRefresh(parentType, parentId)
     Task_Notify("Info removed", 1200, BANNER_ACCENT_SUCCESS)
 }

@@ -6,6 +6,8 @@
 global g_FinanceMenuLabels := []
 
 Finance_LaunchApp() {
+    try Task_CloseGui()
+    try Palace_CloseGui()
     Finance_EnsureData()
     Finance_ShowMainMenu()
 }
