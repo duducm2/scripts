@@ -223,6 +223,9 @@
       .task-section {
         padding: 0 0 6px;
       }
+      .task-section.collapsed > .task-list {
+        display: none;
+      }
       .task-section-label {
         padding: 4px 12px 2px;
         font-size: 11px;
@@ -231,6 +234,24 @@
         text-transform: uppercase;
         color: var(--muted);
         opacity: 0.85;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .task-section-label::before {
+        content: "▾";
+        font-size: 9px;
+        opacity: 0.7;
+        width: 10px;
+      }
+      .task-section.collapsed > .task-section-label::before {
+        content: "▸";
+      }
+      .task-section.kb-selected > .task-section-label {
+        color: var(--gold);
+        opacity: 1;
       }
       .task-section.emoji-hidden {
         display: none !important;
@@ -351,10 +372,37 @@
       .top-row.section-solo {
         grid-template-columns: 1fr;
       }
+      .column.bento {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+        gap: 14px;
+        align-items: start;
+      }
+      .column.bento > .section-head,
+      .column.bento > .empty {
+        grid-column: 1 / -1;
+      }
+      .column.bento > .project {
+        margin-bottom: 0;
+        min-height: 0;
+      }
+      .habits-wrap.bento .habit-cards {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+        gap: 16px;
+      }
+      @media (min-width: 1400px) {
+        .column.bento {
+          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        }
+        .habits-wrap.bento .habit-cards {
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        }
+      }
       .kb-selected,
       details.project.kb-selected > summary,
       .task.kb-selected,
-      .habit-row.kb-selected {
+      .habit-row.kb-selected,
+      .task-section.kb-selected > .task-section-label {
         outline: 2px solid var(--gold);
         outline-offset: -2px;
         background: rgba(241, 196, 15, 0.08);
@@ -519,6 +567,36 @@
         justify-content: flex-end;
         margin-top: 14px;
       }
+      .help-modal {
+        width: min(560px, 100%);
+      }
+      .help-groups {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .help-group h4 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .help-rows {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 14px;
+        align-items: baseline;
+      }
+      .help-rows kbd {
+        justify-self: start;
+        white-space: nowrap;
+      }
+      .help-rows span {
+        color: var(--text);
+        font-size: 13px;
+      }
       .crumb {
         color: var(--muted);
         font-size: 13px;
@@ -604,7 +682,9 @@
           sectionFocus: "", // "" | work | personal | habits
           search: "",
           importPreview: null,
-          sel: null, // { kind: "project"|"task"|"habit", id }
+          sel: null, // { kind: "project"|"section"|"task"|"habit", id }
+          collapsedProjects: new Set(),
+          collapsedSections: new Set(),
         };
 
         const $ = (sel) => document.querySelector(sel);
@@ -873,7 +953,10 @@
             );
           const parts = secs.map((s) => {
             const list = sortTasks(pl.listForSection(s.id).slice());
-            return `<div class="task-section" data-sid="${esc(s.id)}">
+            const collapsed = state.collapsedSections.has(s.id)
+              ? " collapsed"
+              : "";
+            return `<div class="task-section${collapsed}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
         <div class="task-section-label">${highlightTitle(s.title)}</div>
         ${list.length ? `<ul class="task-list">${list.map(taskLi).join("")}</ul>` : ""}
       </div>`;
@@ -883,7 +966,11 @@
             pts.filter((t) => !t.section_id || !known.has(t.section_id))
           ).slice();
           if (orphans.length) {
-            parts.push(`<div class="task-section">
+            const oid = `other:${p.id}`;
+            const collapsed = state.collapsedSections.has(oid)
+              ? " collapsed"
+              : "";
+            parts.push(`<div class="task-section${collapsed}" data-id="${esc(oid)}" data-sid="">
         <div class="task-section-label">Other</div>
         <ul class="task-list">${sortTasks(orphans).map(taskLi).join("")}</ul>
       </div>`);
@@ -927,7 +1014,8 @@
             const pts = plan.pts;
             visibleOpen = visibleOpen.concat(pts);
             const pThumbs = thumbsHtml("project", p.id);
-            blocks.push(`<details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+            const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary><span class="proj-title">${highlightTitle(p.title)}</span><span class="proj-count">${pts.length}</span></summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
@@ -1066,10 +1154,61 @@
 
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
-      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import">Import</button>
-      <button class="btn" data-act="migrate">Migrate MD</button>
-      <button class="btn" data-act="git-push">Push</button>
-      <span class="sub">Letters jump · <kbd>/</kbd> search · arrows select · <kbd>⇧1</kbd> Work <kbd>⇧2</kbd> Personal <kbd>⇧3</kbd> Habits · <kbd>⇧E</kbd> expand · <kbd>⇧T</kbd>⚡ <kbd>⇧W</kbd>⏳ <kbd>⇧G</kbd>🔲 <kbd>⇧U</kbd>❓ · <kbd>⇧C</kbd> done · <kbd>⇧A</kbd> add · <kbd>⇧S</kbd> section · <kbd>Del</kbd> delete</span>`;
+      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+P)">Import</button>
+      <button class="btn" data-act="migrate" title="Migrate MD (Shift+M)">Migrate MD</button>
+      <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H)">Help</button>`;
+        }
+
+        function helpModal() {
+          const row = (keys, label) =>
+            `<kbd>${keys}</kbd><span>${label}</span>`;
+          modal(`<div class="modal help-modal"><h3>Keyboard shortcuts</h3>
+      <div class="help-groups">
+        <div class="help-group"><h4>Navigate</h4><div class="help-rows">
+          ${row("↑ ↓", "Move selection")}
+          ${row("← →", "Collapse / expand project or section")}
+          ${row("Home / End", "First / last item")}
+          ${row("a–z 0–9", "Jump to title starting with letter")}
+          ${row("/", "Focus search")}
+          ${row("Esc", "Clear search, filters, or selection")}
+        </div></div>
+        <div class="help-group"><h4>Focus category</h4><div class="help-rows">
+          ${row("1 or ⇧1", "Work only (bento)")}
+          ${row("2 or ⇧2", "Personal only (bento)")}
+          ${row("3 or ⇧3", "Habits only (bento)")}
+        </div></div>
+        <div class="help-group"><h4>Actions</h4><div class="help-rows">
+          ${row("Enter", "Edit selection")}
+          ${row("Del", "Delete selection")}
+          ${row("⇧A", "Add task (or project if none selected)")}
+          ${row("⇧S", "Add section (project selected)")}
+          ${row("⇧C", "Mark done")}
+          ${row("⇧I", "Mark important")}
+          ${row("⇧N", "Info points")}
+          ${row("⇧V", "Attach image")}
+          ${row("⇧E", "Expand / collapse all projects")}
+          ${row("⇧F", "Clear emoji filter")}
+        </div></div>
+        <div class="help-group"><h4>Emoji filter</h4><div class="help-rows">
+          ${row("⇧T", "⚡ Important")}
+          ${row("⇧W", "⏳ Waiting")}
+          ${row("⇧G", "🔲 General")}
+          ${row("⇧U", "❓ Doubt")}
+        </div></div>
+        <div class="help-group"><h4>App</h4><div class="help-rows">
+          ${row("⇧P", "Import pack")}
+          ${row("⇧M", "Migrate MD")}
+          ${row("⇧H", "This help")}
+        </div></div>
+      </div>
+      <div class="modal-actions"><button class="btn" data-m="cancel">Close</button></div></div>`);
+          $("#modalHost").onclick = (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            )
+              closeModal();
+          };
         }
 
         function clearSearch() {
@@ -1136,20 +1275,28 @@
           const habits = document.getElementById("sec-habits");
           const top = document.querySelector(".top-row");
           const f = state.sectionFocus;
-          if (personal)
+          if (personal) {
             personal.classList.toggle(
               "section-hidden",
               !!f && f !== "personal",
             );
-          if (work)
+            personal.classList.toggle("bento", f === "personal");
+          }
+          if (work) {
             work.classList.toggle("section-hidden", !!f && f !== "work");
-          if (habits)
+            work.classList.toggle("bento", f === "work");
+          }
+          if (habits) {
             habits.classList.toggle("section-hidden", !!f && f !== "habits");
-          if (top)
+            habits.classList.toggle("bento", f === "habits");
+          }
+          if (top) {
             top.classList.toggle(
               "section-solo",
               f === "work" || f === "personal",
             );
+            top.classList.toggle("section-hidden", f === "habits");
+          }
           updateFocusLbl();
           if (f) scrollToSection(f);
           applySelection(true);
@@ -1173,16 +1320,46 @@
               proj.querySelector(".proj-title")?.textContent?.trim() || "";
             out.push({ kind: "project", id, title, el: proj });
             if (!proj.open) return;
-            proj.querySelectorAll(".task:not(.emoji-hidden)").forEach((t) => {
-              const tid = t.getAttribute("data-id");
-              if (!tid) return;
-              out.push({
-                kind: "task",
-                id: tid,
-                title: t.querySelector(".title")?.textContent?.trim() || "",
-                el: t,
+            proj
+              .querySelectorAll(":scope > .task-section:not(.emoji-hidden)")
+              .forEach((sec) => {
+                const sid = sec.getAttribute("data-id");
+                if (!sid) return;
+                const stitle =
+                  sec
+                    .querySelector(".task-section-label")
+                    ?.textContent?.trim() || "";
+                out.push({ kind: "section", id: sid, title: stitle, el: sec });
+                if (sec.classList.contains("collapsed")) return;
+                sec
+                  .querySelectorAll(".task:not(.emoji-hidden)")
+                  .forEach((t) => {
+                    const tid = t.getAttribute("data-id");
+                    if (!tid) return;
+                    out.push({
+                      kind: "task",
+                      id: tid,
+                      title:
+                        t.querySelector(".title")?.textContent?.trim() || "",
+                      el: t,
+                    });
+                  });
               });
-            });
+            // tasks not wrapped in a section (legacy / empty layouts)
+            proj
+              .querySelectorAll(
+                ":scope > .task-list > .task:not(.emoji-hidden)",
+              )
+              .forEach((t) => {
+                const tid = t.getAttribute("data-id");
+                if (!tid) return;
+                out.push({
+                  kind: "task",
+                  id: tid,
+                  title: t.querySelector(".title")?.textContent?.trim() || "",
+                  el: t,
+                });
+              });
           };
           ["sec-personal", "sec-work"].forEach((sid) => {
             const sec = document.getElementById(sid);
@@ -1208,6 +1385,93 @@
               });
           }
           return out;
+        }
+
+        function setProjectExpanded(id, expanded) {
+          if (expanded) state.collapsedProjects.delete(id);
+          else state.collapsedProjects.add(id);
+          const el = document.querySelector(
+            `details.project[data-id="${CSS.escape(id)}"]`,
+          );
+          if (el) el.open = !!expanded;
+        }
+
+        function setSectionExpanded(id, expanded) {
+          if (expanded) state.collapsedSections.delete(id);
+          else state.collapsedSections.add(id);
+          const el = document.querySelector(
+            `.task-section[data-id="${CSS.escape(id)}"]`,
+          );
+          if (el) el.classList.toggle("collapsed", !expanded);
+        }
+
+        function hierarchyNav(dir) {
+          if (!state.sel) return;
+          const targets = collectTargets();
+          const idx = targets.findIndex(
+            (t) =>
+              state.sel && t.kind === state.sel.kind && t.id === state.sel.id,
+          );
+          if (idx < 0) return;
+          const hit = targets[idx];
+
+          if (hit.kind === "project") {
+            if (dir > 0) {
+              if (!hit.el.open) {
+                setProjectExpanded(hit.id, true);
+                applySelection(true);
+                return;
+              }
+              const next = targets[idx + 1];
+              if (next && next.el.closest("details.project") === hit.el)
+                setSelection(next.kind, next.id, true);
+              return;
+            }
+            if (hit.el.open) {
+              setProjectExpanded(hit.id, false);
+              applySelection(true);
+            }
+            return;
+          }
+
+          if (hit.kind === "section") {
+            if (dir > 0) {
+              if (hit.el.classList.contains("collapsed")) {
+                setSectionExpanded(hit.id, true);
+                applySelection(true);
+                return;
+              }
+              const next = targets[idx + 1];
+              if (next && next.el.closest(".task-section") === hit.el)
+                setSelection(next.kind, next.id, true);
+              return;
+            }
+            if (!hit.el.classList.contains("collapsed")) {
+              setSectionExpanded(hit.id, false);
+              applySelection(true);
+              return;
+            }
+            const proj = hit.el.closest("details.project");
+            const pid =
+              proj?.getAttribute("data-id") || proj?.getAttribute("data-pid");
+            if (pid) setSelection("project", pid, true);
+            return;
+          }
+
+          if (hit.kind === "task") {
+            if (dir < 0) {
+              const sec = hit.el.closest(".task-section");
+              const sid = sec?.getAttribute("data-id");
+              if (sid) {
+                setSelection("section", sid, true);
+                return;
+              }
+              const proj = hit.el.closest("details.project");
+              const pid =
+                proj?.getAttribute("data-id") || proj?.getAttribute("data-pid");
+              if (pid) setSelection("project", pid, true);
+            }
+          }
         }
 
         function applySelection(scroll) {
@@ -1302,9 +1566,22 @@
           if (k === "e") {
             const nodes = document.querySelectorAll("details.project");
             const openAll = Array.from(nodes).some((n) => !n.open);
-            nodes.forEach((n) => {
-              n.open = openAll;
-            });
+            if (openAll) {
+              state.collapsedProjects.clear();
+              state.collapsedSections.clear();
+              nodes.forEach((n) => {
+                n.open = true;
+              });
+              document
+                .querySelectorAll(".task-section.collapsed")
+                .forEach((s) => s.classList.remove("collapsed"));
+            } else {
+              nodes.forEach((n) => {
+                const id = n.getAttribute("data-id");
+                if (id) state.collapsedProjects.add(id);
+                n.open = false;
+              });
+            }
             applySelection(false);
             return;
           }
@@ -1406,9 +1683,33 @@
             inp.click();
             return;
           }
+          if (k === "p") {
+            state.view = "import";
+            state.importPreview = null;
+            render();
+            return;
+          }
+          if (k === "m") {
+            await runMigrateMd();
+            return;
+          }
+          if (k === "h") {
+            helpModal();
+            return;
+          }
           if (k === "backspace") {
             await deleteSelection();
           }
+        }
+
+        async function runMigrateMd() {
+          if (!confirm("Overwrite tasks CSV from notes MD files?")) return;
+          const r = await api("/api/migrate", {
+            method: "POST",
+            body: "{}",
+          });
+          toast(r.message || "Migrated");
+          await refresh();
         }
 
         async function deleteSelection() {
@@ -1446,6 +1747,7 @@
             );
             return;
           }
+          if (state.sel.kind === "section") return;
           taskForm((state.data.tasks || []).find((t) => t.id === state.sel.id));
         }
 
@@ -1780,11 +2082,18 @@
           }
           const habitRow = e.target.closest(".habit-row[data-id]");
           const taskRow = e.target.closest(".task[data-id]");
+          const secRow = e.target.closest(".task-section[data-id]");
           const projRow = e.target.closest("details.project[data-id]");
           if (habitRow) {
             setSelection("habit", habitRow.getAttribute("data-id"), false);
           } else if (taskRow) {
             setSelection("task", taskRow.getAttribute("data-id"), false);
+          } else if (secRow && e.target.closest(".task-section-label")) {
+            const sid = secRow.getAttribute("data-id");
+            setSelection("section", sid, false);
+            if (e.detail === 2 && sid) {
+              setSectionExpanded(sid, secRow.classList.contains("collapsed"));
+            }
           } else if (projRow && e.target.closest("summary")) {
             setSelection("project", projRow.getAttribute("data-id"), false);
           }
@@ -1807,6 +2116,10 @@
               state.view = "import";
               state.importPreview = null;
               render();
+              return;
+            }
+            if (act === "help") {
+              helpModal();
               return;
             }
             if (act === "add-project") {
@@ -1923,22 +2236,7 @@
               return;
             }
             if (act === "migrate") {
-              if (!confirm("Overwrite tasks CSV from notes MD files?")) return;
-              const r = await api("/api/migrate", {
-                method: "POST",
-                body: "{}",
-              });
-              toast(r.message || "Migrated");
-              await refresh();
-              return;
-            }
-            if (act === "git-push") {
-              toast("Pushing…");
-              const r = await api("/api/git-push", {
-                method: "POST",
-                body: "{}",
-              });
-              toast(r.message || "Done");
+              await runMigrateMd();
               return;
             }
           } catch (err) {
@@ -2038,6 +2336,16 @@
             moveSelection(-1);
             return;
           }
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            hierarchyNav(1);
+            return;
+          }
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            hierarchyNav(-1);
+            return;
+          }
           if (e.key === "Home") {
             e.preventDefault();
             const targets = collectTargets();
@@ -2115,6 +2423,15 @@
         });
 
         // boot
+        document.addEventListener("toggle", (e) => {
+          const proj = e.target;
+          if (!(proj instanceof HTMLDetailsElement)) return;
+          if (!proj.classList.contains("project")) return;
+          const id = proj.getAttribute("data-id");
+          if (!id) return;
+          if (proj.open) state.collapsedProjects.delete(id);
+          else state.collapsedProjects.add(id);
+        });
         const searchInp = $("#globalSearch");
         if (searchInp) {
           searchInp.value = state.search || "";
