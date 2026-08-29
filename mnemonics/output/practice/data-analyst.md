@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · Character: Ada Lovelace · 4 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 1](images/data-analyst/1.jpg)
 
 <p><em>4 beasts · 5 Knowledge Atoms</em></p>
 
