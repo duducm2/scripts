@@ -1226,7 +1226,7 @@
       <div class="toolbar import-actions" style="padding:4px 0 12px">
         <button class="btn" data-act="import-preview" title="Preview (P)">Preview <kbd>P</kbd></button>
         <button class="btn" data-act="import-commit" ${prev?.ok ? "" : "disabled"} title="Confirm (C)">Confirm <kbd>C</kbd></button>
-        <button class="btn" data-act="goto-dash" title="Home (H) / Back (B)">Home <kbd>H</kbd></button>
+        <button class="btn" data-act="goto-dash" title="Home (Esc)">Home <kbd>Esc</kbd></button>
       </div>
       <pre class="sub" style="white-space:pre-wrap">${prev ? esc(JSON.stringify(prev.counts || prev, null, 2)) : "No preview yet"}</pre>
       ${prev?.errors?.length ? `<p class="empty">${esc(prev.errors.join(" · "))}</p>` : ""}
@@ -1278,11 +1278,6 @@
             await runImportCommit();
             return;
           }
-          if (ch === "b" || ch === "h") {
-            state.view = "dashboard";
-            state.importPreview = null;
-            render();
-          }
         }
 
         function renderToolbar() {
@@ -1304,7 +1299,8 @@
           ${row("Home / End", "First / last item")}
           ${row("a–z 0–9", "Jump to title starting with letter")}
           ${row("Alt+S", "Focus search")}
-          ${row("Esc", "Clear search, filters, or selection")}
+          ${row("Esc", "Home — dashboard, clear filters/modals/selection")}
+          ${row("Backspace", "Go back one step")}
         </div></div>
         <div class="help-group"><h4>Focus category</h4><div class="help-rows">
           ${row("1 or ⇧1", "Work only (bento)")}
@@ -1334,7 +1330,8 @@
           ${row("1", "Select TASK_PACK")}
           ${row("P", "Preview")}
           ${row("C", "Confirm import")}
-          ${row("B / H / Esc", "Home (dashboard)")}
+          ${row("Esc", "Home (dashboard)")}
+          ${row("Backspace", "Go back one step")}
         </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
           ${row("⇧P", "Open Import")}
@@ -1364,11 +1361,9 @@
           if (code === "Digit1" || code === "Numpad1") return "1";
           if (code === "Digit2" || code === "Numpad2") return "2";
           if (code === "Digit3" || code === "Numpad3") return "3";
-          if (code === "Backspace") return "backspace";
           if (code.startsWith("Key") && code.length === 4)
             return code.slice(3).toLowerCase();
           const k = (e.key || "").toLowerCase();
-          if (k === "backspace") return "backspace";
           if (k.length === 1 && /[a-z0-9]/.test(k)) return k;
           if (k === "!" || k === "@" || k === "#") {
             if (k === "!") return "1";
@@ -1939,9 +1934,6 @@
             helpModal();
             return;
           }
-          if (k === "backspace") {
-            await deleteSelection();
-          }
         }
 
         async function runMigrateMd() {
@@ -1991,6 +1983,58 @@
           }
           if (state.sel.kind === "section") return;
           taskForm((state.data.tasks || []).find((t) => t.id === state.sel.id));
+        }
+
+        function goHome() {
+          if (!$("#lightbox")?.hidden) {
+            $("#lightbox").hidden = true;
+            const img = $("#lightbox")?.querySelector("img");
+            if (img) img.src = "";
+          }
+          if (modalOpen()) closeModal();
+          state.view = "dashboard";
+          state.importPreview = null;
+          if (searchNeedle()) clearSearch();
+          if (state.emojiFilter) applyEmojiFilter("");
+          if (state.sectionFocus) applySectionFocus("");
+          if (state.sel) setSelection(null, null, false);
+          if (state.data) render();
+        }
+
+        function goBack() {
+          if (!$("#lightbox")?.hidden) {
+            $("#lightbox").hidden = true;
+            const img = $("#lightbox")?.querySelector("img");
+            if (img) img.src = "";
+            return true;
+          }
+          if (modalOpen()) {
+            closeModal();
+            return true;
+          }
+          if (state.view === "import") {
+            goHome();
+            return true;
+          }
+          if (searchNeedle()) {
+            clearSearch();
+            if (state.view === "dashboard" && state.data) renderDashboard();
+            return true;
+          }
+          if (state.emojiFilter) {
+            applyEmojiFilter("");
+            applySelection(false);
+            return true;
+          }
+          if (state.sectionFocus) {
+            applySectionFocus("");
+            return true;
+          }
+          if (state.sel) {
+            setSelection(null, null, false);
+            return true;
+          }
+          return false;
         }
 
         function modalOpen() {
@@ -2348,10 +2392,7 @@
 
           try {
             if (act === "goto-dash") {
-              state.view = "dashboard";
-              state.projectId = "";
-              state.taskId = "";
-              render();
+              goHome();
               return;
             }
             if (act === "goto-import") {
@@ -2522,52 +2563,21 @@
             tag === "select" ||
             e.target?.isContentEditable
           ) {
-            if (e.key === "Escape" && e.target?.id === "globalSearch") {
+            if (e.key === "Escape") {
               e.preventDefault();
-              if (state.search) {
-                clearSearch();
-                if (state.view === "dashboard" && state.data) renderDashboard();
-              } else {
-                e.target.blur();
-              }
+              goHome();
             }
             return;
           }
 
           if (e.key === "Escape") {
             e.preventDefault();
-            if (!$("#lightbox").hidden) {
-              $("#lightbox").hidden = true;
-              return;
-            }
-            if (modalOpen()) {
-              closeModal();
-              return;
-            }
-            if (state.view === "import") {
-              state.view = "dashboard";
-              state.importPreview = null;
-              render();
-              return;
-            }
-            if (searchNeedle()) {
-              clearSearch();
-              if (state.view === "dashboard" && state.data) renderDashboard();
-              return;
-            }
-            if (state.emojiFilter) {
-              applyEmojiFilter("");
-              applySelection(false);
-              return;
-            }
-            if (state.sectionFocus) {
-              applySectionFocus("");
-              return;
-            }
-            if (state.sel) {
-              setSelection(null, null, false);
-              return;
-            }
+            goHome();
+            return;
+          }
+          if (e.key === "Backspace") {
+            e.preventDefault();
+            goBack();
             return;
           }
 
@@ -2602,7 +2612,7 @@
 
           if (state.view === "import") {
             const ch = (e.key || "").toLowerCase();
-            if (/^[1pcbh]$/.test(ch)) {
+            if (/^[1pc]$/.test(ch)) {
               e.preventDefault();
               try {
                 await handleImportKey(ch);
