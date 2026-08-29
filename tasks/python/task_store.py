@@ -740,8 +740,32 @@ class TaskStore:
         title = INBOX_TITLES.get(filt, "Inbox")
         for p in self.load("projects"):
             if p.get("filter") == filt and (p.get("title") or "").strip().lower() == title.lower():
+                self.ensure_general_section(p["id"])
                 return p
         return self.upsert_project({"title": title, "filter": filt})["project"]
+
+    def spawn_personal_from_habit(self, task_id: str) -> dict:
+        """Create a punctual Personal-inbox / General task from a missed habit."""
+        habit = self.find("tasks", task_id)
+        if not habit:
+            return {"ok": False, "error": "task not found"}
+        if habit.get("kind") != "habitual":
+            return {"ok": False, "error": "not a habitual task"}
+        title = (habit.get("title") or "").strip()
+        if not title:
+            return {"ok": False, "error": "habit has no title"}
+        inbox = self.ensure_inbox_project("personal")
+        gen = self.ensure_general_section(inbox["id"])
+        return self.upsert_task(
+            {
+                "title": title,
+                "project_id": inbox["id"],
+                "section_id": gen["id"],
+                "filter": "personal",
+                "kind": "punctual",
+                "emoji": STATUS_EMOJIS["general"],
+            }
+        )
 
 
 def _add_months(dt: datetime, months: int) -> datetime:

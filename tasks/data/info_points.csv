@@ -1,20 +1,20 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at
-INFO_0001,project,PROJ_0001,[See also: Punctual Notes](punctual.md),[See also: Punctual Notes](punctual.md),ℹ️,,20,2026-08-29 13:32:04
-INFO_0002,project,PROJ_0001,[See also: Habits Notes](habits.md),[See also: Habits Notes](habits.md),ℹ️,,30,2026-08-29 13:32:04
-INFO_0003,task,TASK_0001,Perguntas que eu tenho:,Perguntas que eu tenho:,ℹ️,Tasks/Doctoral degree,70,2026-08-29 13:32:04
+INFO_0001,project,PROJ_0001,[See also: Punctual Notes](punctual.md),[See also: Punctual Notes](punctual.md),ℹ️,,20,2026-08-29 15:48:39
+INFO_0002,project,PROJ_0001,[See also: Habits Notes](habits.md),[See also: Habits Notes](habits.md),ℹ️,,30,2026-08-29 15:48:39
+INFO_0003,task,TASK_0001,Perguntas que eu tenho:,Perguntas que eu tenho:,ℹ️,Tasks/Doctoral degree,70,2026-08-29 15:48:39
 INFO_0004,task,TASK_0001,- Conseguiríamos um trabalho online para eu trabalhar de noite?,"- Conseguiríamos um trabalho online para eu trabalhar de noite?
-- Posso ter dois contratos de trabalho?",ℹ️,Tasks/Doctoral degree,80,2026-08-29 13:32:04
-INFO_0005,project,PROJ_0004,Next steps,Next steps,ℹ️,Tasks/TAR,170,2026-08-29 13:32:04
-INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,Tasks/TAR,190,2026-08-29 13:32:04
-INFO_0007,task,TASK_0007,Portal,Portal,ℹ️,Tasks/TAR,240,2026-08-29 13:32:04
-INFO_0008,task,TASK_0007,Transparency,Transparency,ℹ️,Tasks/My Values,260,2026-08-29 13:32:04
-INFO_0009,task,TASK_0007,Collaboration,Collaboration,ℹ️,Tasks/My Values,270,2026-08-29 13:32:04
-INFO_0010,task,TASK_0007,Respect,Respect,ℹ️,Tasks/My Values,280,2026-08-29 13:32:04
-INFO_0011,task,TASK_0007,Patiance,Patiance,ℹ️,Tasks/My Values,290,2026-08-29 13:32:04
-INFO_0012,task,TASK_0007,Understand of greater forces,Understand of greater forces,ℹ️,Tasks/My Values,300,2026-08-29 13:32:04
-INFO_0013,task,TASK_0007,Compassion,Compassion,ℹ️,Tasks/My Values,310,2026-08-29 13:32:04
-INFO_0014,task,TASK_0007,"Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to a","Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to as BUD. This concept also exists in PT, alongside other areas apart from UX. She also believes it would be advantageous for me to focus on the Product Owner role.",ℹ️,Tasks/Reunião com a Débora 8.24th,320,2026-08-29 13:32:04
-INFO_0015,task,TASK_0007,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,ℹ️,Tasks/Meeting with Barbara,330,2026-08-29 13:32:04
+- Posso ter dois contratos de trabalho?",ℹ️,Tasks/Doctoral degree,80,2026-08-29 15:48:39
+INFO_0005,project,PROJ_0004,Next steps,Next steps,ℹ️,Tasks/TAR,170,2026-08-29 15:48:39
+INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,Tasks/TAR,190,2026-08-29 15:48:39
+INFO_0007,task,TASK_0007,Portal,Portal,ℹ️,Tasks/TAR,240,2026-08-29 15:48:39
+INFO_0008,task,TASK_0007,Transparency,Transparency,ℹ️,Tasks/My Values,260,2026-08-29 15:48:39
+INFO_0009,task,TASK_0007,Collaboration,Collaboration,ℹ️,Tasks/My Values,270,2026-08-29 15:48:39
+INFO_0010,task,TASK_0007,Respect,Respect,ℹ️,Tasks/My Values,280,2026-08-29 15:48:39
+INFO_0011,task,TASK_0007,Patiance,Patiance,ℹ️,Tasks/My Values,290,2026-08-29 15:48:39
+INFO_0012,task,TASK_0007,Understand of greater forces,Understand of greater forces,ℹ️,Tasks/My Values,300,2026-08-29 15:48:39
+INFO_0013,task,TASK_0007,Compassion,Compassion,ℹ️,Tasks/My Values,310,2026-08-29 15:48:39
+INFO_0014,task,TASK_0007,"Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to a","Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to as BUD. This concept also exists in PT, alongside other areas apart from UX. She also believes it would be advantageous for me to focus on the Product Owner role.",ℹ️,Tasks/Reunião com a Débora 8.24th,320,2026-08-29 15:48:39
+INFO_0015,task,TASK_0007,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,ℹ️,Tasks/Meeting with Barbara,330,2026-08-29 15:48:39
 INFO_0016,task,TASK_0011,Contribution Goals,"Contribution Goals
 0 - Não atingido
 1 - Parcialmente atingido
@@ -33,28 +33,28 @@ Análise estruturada e consistente, com identificação clara de padrões, dores
 Insights priorizados com base em impacto e recorrência, conectados ao negócio
 Proposta de solução bem definida (QMAI ou nova), com conceito, proposta de valor e próximos passos claros
 Protótipos das telas desenvolvidos, representando a solução proposta
-Sempre que possível, implementação inicial (piloto/MVP) realizada para validação da solução",ℹ️,"Tasks/Checar esta meta, se precisamos revisar",420,2026-08-29 13:32:04
-INFO_0017,project,PROJ_0009,Check your PowerPoint confidenciality level,Check your PowerPoint confidenciality level,ℹ️,Projects/Always,480,2026-08-29 13:32:04
-INFO_0018,project,PROJ_0009,Send Customer Feedback,Send Customer Feedback,ℹ️,Projects/Always,490,2026-08-29 13:32:04
-INFO_0019,project,PROJ_0009,Create a project case,Create a project case,ℹ️,Projects/Always,500,2026-08-29 13:32:04
-INFO_0020,project,PROJ_0009,Create Project KPIs,Create Project KPIs,ℹ️,Projects/Always,510,2026-08-29 13:32:04
+Sempre que possível, implementação inicial (piloto/MVP) realizada para validação da solução",ℹ️,"Tasks/Checar esta meta, se precisamos revisar",420,2026-08-29 15:48:39
+INFO_0017,project,PROJ_0009,Check your PowerPoint confidenciality level,Check your PowerPoint confidenciality level,ℹ️,Projects/Always,480,2026-08-29 15:48:39
+INFO_0018,project,PROJ_0009,Send Customer Feedback,Send Customer Feedback,ℹ️,Projects/Always,490,2026-08-29 15:48:39
+INFO_0019,project,PROJ_0009,Create a project case,Create a project case,ℹ️,Projects/Always,500,2026-08-29 15:48:39
+INFO_0020,project,PROJ_0009,Create Project KPIs,Create Project KPIs,ℹ️,Projects/Always,510,2026-08-29 15:48:39
 INFO_0021,project,PROJ_0010,RISE,"RISE
 Data insights
 BPM
-AI Roleplay",ℹ️,Projects/Allocation,530,2026-08-29 13:32:04
-INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,Projects/BPM,550,2026-08-29 13:32:04
-INFO_0023,task,TASK_0013,"Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, t","Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, também tem outra. O quanto a gente vai deixar ela específica para a visão de mundo de cada uma delas ou generalizar?",ℹ️,Projects/BPM,570,2026-08-29 13:32:04
-INFO_0024,task,TASK_0013,Sprint finish at end of August.,Sprint finish at end of August.,ℹ️,Projects/BPM,580,2026-08-29 13:32:04
-INFO_0025,task,TASK_0013,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,ℹ️,Projects/API,590,2026-08-29 13:32:04
-INFO_0026,task,TASK_0013,Provavelmente terão duas APIs com o Genesys o Apolo.,Provavelmente terão duas APIs com o Genesys o Apolo.,ℹ️,Projects/API,600,2026-08-29 13:32:04
-INFO_0027,task,TASK_0013,"As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.","As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",ℹ️,Projects/API,610,2026-08-29 13:32:04
-INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,Projects/Piloto PT B2B - Data insights,630,2026-08-29 13:32:04
-INFO_0029,task,TASK_0014,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,ℹ️,Projects/Prototype,650,2026-08-29 13:32:04
-INFO_0030,task,TASK_0014,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.","Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",ℹ️,Projects/Prototype/Prototype updates,660,2026-08-29 13:32:04
-INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 13:32:04
-INFO_0032,task,TASK_0020,O forms precisa ter o nome da indicação do key user.,O forms precisa ter o nome da indicação do key user.,ℹ️,Projects/Communication Plan/Forms,760,2026-08-29 13:32:04
-INFO_0033,task,TASK_0020,https://forms.office.com/e/uGVi4LaXff,https://forms.office.com/e/uGVi4LaXff,ℹ️,Projects/Communication Plan/Forms,770,2026-08-29 13:32:04
-INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 13:32:04
+AI Roleplay",ℹ️,Projects/Allocation,530,2026-08-29 15:48:39
+INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,Projects/BPM,550,2026-08-29 15:48:39
+INFO_0023,task,TASK_0013,"Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, t","Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, também tem outra. O quanto a gente vai deixar ela específica para a visão de mundo de cada uma delas ou generalizar?",ℹ️,Projects/BPM,570,2026-08-29 15:48:39
+INFO_0024,task,TASK_0013,Sprint finish at end of August.,Sprint finish at end of August.,ℹ️,Projects/BPM,580,2026-08-29 15:48:39
+INFO_0025,task,TASK_0013,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,ℹ️,Projects/API,590,2026-08-29 15:48:39
+INFO_0026,task,TASK_0013,Provavelmente terão duas APIs com o Genesys o Apolo.,Provavelmente terão duas APIs com o Genesys o Apolo.,ℹ️,Projects/API,600,2026-08-29 15:48:39
+INFO_0027,task,TASK_0013,"As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.","As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",ℹ️,Projects/API,610,2026-08-29 15:48:39
+INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,Projects/Piloto PT B2B - Data insights,630,2026-08-29 15:48:39
+INFO_0029,task,TASK_0014,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,ℹ️,Projects/Prototype,650,2026-08-29 15:48:39
+INFO_0030,task,TASK_0014,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.","Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",ℹ️,Projects/Prototype/Prototype updates,660,2026-08-29 15:48:39
+INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39
+INFO_0032,task,TASK_0020,O forms precisa ter o nome da indicação do key user.,O forms precisa ter o nome da indicação do key user.,ℹ️,Projects/Communication Plan/Forms,760,2026-08-29 15:48:39
+INFO_0033,task,TASK_0020,https://forms.office.com/e/uGVi4LaXff,https://forms.office.com/e/uGVi4LaXff,ℹ️,Projects/Communication Plan/Forms,770,2026-08-29 15:48:39
+INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 15:48:39
 INFO_0035,task,TASK_0025,Abertura e contextualização do treinamento,"Abertura e contextualização do treinamento
 Explicar os objetivos do treinamento.
 Apresentar a visão geral do programa RISE.
@@ -71,10 +71,10 @@ Resultados e fechamento
 Apoiar a transição da apresentação dos resultados para o fechamento.
 Receber a palavra do apresentador técnico no momento final.
 Explicar os próximos passos do programa RISE.
-Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme instruído pelo Rafael.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,850,2026-08-29 13:32:04
-INFO_0036,task,TASK_0025,Tirar foto,Tirar foto,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,860,2026-08-29 13:32:04
-INFO_0037,task,TASK_0025,Margem de 1 minuto por cada grupo.,Margem de 1 minuto por cada grupo.,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,870,2026-08-29 13:32:04
-INFO_0038,task,TASK_0025,Para os treinamentos de colaboradores: 4 grupos de 5,Para os treinamentos de colaboradores: 4 grupos de 5,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,880,2026-08-29 13:32:04
+Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme instruído pelo Rafael.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,850,2026-08-29 15:48:39
+INFO_0036,task,TASK_0025,Tirar foto,Tirar foto,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,860,2026-08-29 15:48:39
+INFO_0037,task,TASK_0025,Margem de 1 minuto por cada grupo.,Margem de 1 minuto por cada grupo.,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,870,2026-08-29 15:48:39
+INFO_0038,task,TASK_0025,Para os treinamentos de colaboradores: 4 grupos de 5,Para os treinamentos de colaboradores: 4 grupos de 5,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,880,2026-08-29 15:48:39
 INFO_0039,task,TASK_0025,Slide 9,"Slide 9
 Pensando na evolução do papel do gestor, qual será sua principal função na Era da IA?
 Vigiar e controlar as tarefas diárias da equipe
@@ -90,74 +90,74 @@ Você precisa preparar um material para orçar prestação de serviços e montar
 Slide 17
     Você já possui a licença ""Advanced"" do Google Gemini Enterprise, que permite a criação de agentes de IA?
         Sim.
-        Não.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Quiz,890,2026-08-29 13:32:04
-INFO_0040,task,TASK_0025,Sessão Key users: gemini enterprise para key users,Sessão Key users: gemini enterprise para key users,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,900,2026-08-29 13:32:04
-INFO_0041,task,TASK_0025,O treinamento de key-users é mandatório? sim,O treinamento de key-users é mandatório? sim,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,910,2026-08-29 13:32:04
-INFO_0042,task,TASK_0027,Júlia e Débora,Júlia e Débora,ℹ️,Projects/Parte 2 – N8N,940,2026-08-29 13:32:04
-INFO_0043,task,TASK_0028,"Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia","Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia, mais perto do almoço.",ℹ️,Projects/Parte 2 – N8N,960,2026-08-29 13:32:04
-INFO_0044,task,TASK_0028,Trazer um overview para o Rafael.,Trazer um overview para o Rafael.,ℹ️,Projects/Parte 2 – N8N,970,2026-08-29 13:32:04
-INFO_0045,task,TASK_0032,Do this after 09.03,Do this after 09.03,ℹ️,Projects/Parte 2 – N8N,1030,2026-08-29 13:32:04
-INFO_0046,task,TASK_0032,We need to inform that there are no costs on the sandbox.,We need to inform that there are no costs on the sandbox.,ℹ️,Projects/Parte 2 – N8N,1040,2026-08-29 13:32:04
-INFO_0047,task,TASK_0032,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,ℹ️,Projects/Parte 2 – N8N,1050,2026-08-29 13:32:04
-INFO_0048,task,TASK_0032,Solicitação de Acesso - https://go.n8n.bosch.com/,Solicitação de Acesso - https://go.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1060,2026-08-29 13:32:04
-INFO_0049,task,TASK_0032,Plataforma - https://i1-s.n8n.bosch.com/,Plataforma - https://i1-s.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1070,2026-08-29 13:32:04
-INFO_0050,task,TASK_0032,E-mail:,E-mail:,ℹ️,Projects/Parte 2 – N8N,1080,2026-08-29 13:32:04
+        Não.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Quiz,890,2026-08-29 15:48:39
+INFO_0040,task,TASK_0025,Sessão Key users: gemini enterprise para key users,Sessão Key users: gemini enterprise para key users,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,900,2026-08-29 15:48:39
+INFO_0041,task,TASK_0025,O treinamento de key-users é mandatório? sim,O treinamento de key-users é mandatório? sim,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,910,2026-08-29 15:48:39
+INFO_0042,task,TASK_0027,Júlia e Débora,Júlia e Débora,ℹ️,Projects/Parte 2 – N8N,940,2026-08-29 15:48:39
+INFO_0043,task,TASK_0028,"Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia","Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia, mais perto do almoço.",ℹ️,Projects/Parte 2 – N8N,960,2026-08-29 15:48:39
+INFO_0044,task,TASK_0028,Trazer um overview para o Rafael.,Trazer um overview para o Rafael.,ℹ️,Projects/Parte 2 – N8N,970,2026-08-29 15:48:39
+INFO_0045,task,TASK_0032,Do this after 09.03,Do this after 09.03,ℹ️,Projects/Parte 2 – N8N,1030,2026-08-29 15:48:39
+INFO_0046,task,TASK_0032,We need to inform that there are no costs on the sandbox.,We need to inform that there are no costs on the sandbox.,ℹ️,Projects/Parte 2 – N8N,1040,2026-08-29 15:48:39
+INFO_0047,task,TASK_0032,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,ℹ️,Projects/Parte 2 – N8N,1050,2026-08-29 15:48:39
+INFO_0048,task,TASK_0032,Solicitação de Acesso - https://go.n8n.bosch.com/,Solicitação de Acesso - https://go.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1060,2026-08-29 15:48:39
+INFO_0049,task,TASK_0032,Plataforma - https://i1-s.n8n.bosch.com/,Plataforma - https://i1-s.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1070,2026-08-29 15:48:39
+INFO_0050,task,TASK_0032,E-mail:,E-mail:,ℹ️,Projects/Parte 2 – N8N,1080,2026-08-29 15:48:39
 INFO_0051,task,TASK_0032,"Bom dia, key-users! Espero que estejam bem.","Bom dia, key-users! Espero que estejam bem.
 Vocês agora foram treinados no Gemini Enterprise, mas o caminho continua! Nosso próximo desafio é a plataforma N8N. De qualquer forma, o aprendizado vai valer muito a pena. O N8N ajudará você, e aos seus colegas de time, a construir automações com Agentes de IA.
 Para deixarmos tudo pronto para o treinamento, pedimos que vocês façam a solicitação de acesso à plataforma aqui (https://go.n8n.bosch.com/).
 Depois de liberados, vocês podem acessar a plataforma neste link (https://i1-s.n8n.bosch.com/) e acessar sua documentação aqui (https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html).
-Contem conosco nesta jornada de aprendizado.",ℹ️,Projects/Parte 2 – N8N,1090,2026-08-29 13:32:04
-INFO_0052,task,TASK_0033,Apresentação explicativa do N8N,Apresentação explicativa do N8N,ℹ️,Projects/N8N,1120,2026-08-29 13:32:04
-INFO_0053,task,TASK_0033,N8N precisa da solicitação de acesso.,N8N precisa da solicitação de acesso.,ℹ️,Projects/N8N,1130,2026-08-29 13:32:04
-INFO_0054,task,TASK_0033,"Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.","Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.",ℹ️,Projects/N8N,1140,2026-08-29 13:32:04
-INFO_0055,task,TASK_0033,Trazer um exemplo.,Trazer um exemplo.,ℹ️,Projects/N8N,1150,2026-08-29 13:32:04
-INFO_0056,task,TASK_0033,A mensagem .,A mensagem .,ℹ️,Projects/N8N,1160,2026-08-29 13:32:04
-INFO_0057,task,TASK_0033,Reference aos key-users pode tentar 3 horas.,Reference aos key-users pode tentar 3 horas.,ℹ️,Projects/N8N,1170,2026-08-29 13:32:04
-INFO_0058,task,TASK_0033,"Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.","Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.",ℹ️,Projects/N8N,1180,2026-08-29 13:32:04
-INFO_0059,task,TASK_0033,"Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.","Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.",ℹ️,Projects/N8N,1190,2026-08-29 13:32:04
-INFO_0060,task,TASK_0033,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,ℹ️,Projects/N8N,1200,2026-08-29 13:32:04
-INFO_0061,task,TASK_0033,"Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.","Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.",ℹ️,Projects/N8N,1210,2026-08-29 13:32:04
-INFO_0062,project,PROJ_0014,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem ,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem que condizer com o tom de voz da empresa contratante.,ℹ️,Projects/AI Roleplay,1250,2026-08-29 13:32:04
-INFO_0063,project,PROJ_0014,Um agente pode solicitar um treinamento ou o gestor solicitar.,Um agente pode solicitar um treinamento ou o gestor solicitar.,ℹ️,Projects/AI Roleplay,1260,2026-08-29 13:32:04
-INFO_0064,project,PROJ_0014,Tem um quiz no final do treinamento.,Tem um quiz no final do treinamento.,ℹ️,Projects/AI Roleplay,1270,2026-08-29 13:32:04
-INFO_0065,project,PROJ_0014,Fluxo do agente,Fluxo do agente,ℹ️,Projects/AI Roleplay,1280,2026-08-29 13:32:04
-INFO_0066,project,PROJ_0014,Não precisa se preocupar nas diferenças entre usuários.,Não precisa se preocupar nas diferenças entre usuários.,ℹ️,Projects/AI Roleplay,1300,2026-08-29 13:32:04
-INFO_0067,project,PROJ_0014,"Cada pilar do Figma, é um usuário","Cada pilar do Figma, é um usuário",ℹ️,Projects/AI Roleplay,1310,2026-08-29 13:32:04
-INFO_0068,project,PROJ_0015,"link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">","link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">",ℹ️,,1350,2026-08-29 13:32:04
-INFO_0069,task,TASK_0037,Vaga no Linkedin que te mandaram a umas semanas atrás,Vaga no Linkedin que te mandaram a umas semanas atrás,ℹ️,Activities,1390,2026-08-29 13:32:04
-INFO_0070,task,TASK_0037,Vaga no Linkedin que a Débora enviou da colega delas,Vaga no Linkedin que a Débora enviou da colega delas,ℹ️,Activities,1400,2026-08-29 13:32:04
-INFO_0071,task,TASK_0037,Smart Recruiters,Smart Recruiters,ℹ️,Activities,1410,2026-08-29 13:32:04
-INFO_0072,task,TASK_0037,https://www.instagram.com/p/DY4wrVqyXv0/?hl=en Study about this dataset center in Paulinia and Campinas too,https://www.instagram.com/p/DY4wrVqyXv0/?hl=en Study about this dataset center in Paulinia and Campinas too,ℹ️,Activities,1420,2026-08-29 13:32:04
-INFO_0073,task,TASK_0037,https://www.linkedin.com/jobs/view/4452391795/,https://www.linkedin.com/jobs/view/4452391795/,ℹ️,Activities,1430,2026-08-29 13:32:04
-INFO_0074,task,TASK_0037,https://www.linkedin.com/jobs/view/4449189767/,https://www.linkedin.com/jobs/view/4449189767/,ℹ️,Activities,1450,2026-08-29 13:32:04
-INFO_0075,task,TASK_0039,2192280785,2192280785,ℹ️,Activities,1500,2026-08-29 13:32:04
-INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,Activities,1550,2026-08-29 13:32:04
-INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 13:32:04
-INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 13:32:04
-INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 13:32:04
-INFO_0080,task,TASK_0047,Presentation: 30m,Presentation: 30m,ℹ️,,1650,2026-08-29 13:32:04
-INFO_0081,task,TASK_0048,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,ℹ️,,1670,2026-08-29 13:32:04
-INFO_0082,task,TASK_0054,Draft a precise subject line for the introductory email to a prospective doctoral advisor,Draft a precise subject line for the introductory email to a prospective doctoral advisor,ℹ️,,1770,2026-08-29 13:32:04
-INFO_0083,task,TASK_0054,Prepare and attach an academic CV and a published article,Prepare and attach an academic CV and a published article,ℹ️,,1780,2026-08-29 13:32:04
-INFO_0084,task,TASK_0056,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,ℹ️,Backlog,1820,2026-08-29 13:32:04
-INFO_0085,task,TASK_0056,⏳ Analyze the additional costs associated with Australian and British PhD programs.,⏳ Analyze the additional costs associated with Australian and British PhD programs.,ℹ️,Backlog,1830,2026-08-29 13:32:04
-INFO_0086,project,PROJ_0018,There is no Brazilian doctoral program that is 100% online,There is no Brazilian doctoral program that is 100% online,ℹ️,Backlog/Information,1850,2026-08-29 13:32:04
-INFO_0087,project,PROJ_0018,The Carolina Bori Platform (Plataforma Carolina Bori) is the official digital system created by the Brazilian Ministry of Education (MEC) to manage and streamline the validation of academic degrees ob,The Carolina Bori Platform (Plataforma Carolina Bori) is the official digital system created by the Brazilian Ministry of Education (MEC) to manage and streamline the validation of academic degrees obtained outside Brazil.,ℹ️,Backlog/Information,1860,2026-08-29 13:32:04
-INFO_0088,project,PROJ_0018,The Catolina platform probably won't validate a 100% online doctoral degree,The Catolina platform probably won't validate a 100% online doctoral degree,ℹ️,Backlog/Information,1870,2026-08-29 13:32:04
-INFO_0089,project,PROJ_0019,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 13:32:04
+Contem conosco nesta jornada de aprendizado.",ℹ️,Projects/Parte 2 – N8N,1090,2026-08-29 15:48:39
+INFO_0052,task,TASK_0033,Apresentação explicativa do N8N,Apresentação explicativa do N8N,ℹ️,Projects/N8N,1120,2026-08-29 15:48:39
+INFO_0053,task,TASK_0033,N8N precisa da solicitação de acesso.,N8N precisa da solicitação de acesso.,ℹ️,Projects/N8N,1130,2026-08-29 15:48:39
+INFO_0054,task,TASK_0033,"Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.","Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.",ℹ️,Projects/N8N,1140,2026-08-29 15:48:39
+INFO_0055,task,TASK_0033,Trazer um exemplo.,Trazer um exemplo.,ℹ️,Projects/N8N,1150,2026-08-29 15:48:39
+INFO_0056,task,TASK_0033,A mensagem .,A mensagem .,ℹ️,Projects/N8N,1160,2026-08-29 15:48:39
+INFO_0057,task,TASK_0033,Reference aos key-users pode tentar 3 horas.,Reference aos key-users pode tentar 3 horas.,ℹ️,Projects/N8N,1170,2026-08-29 15:48:39
+INFO_0058,task,TASK_0033,"Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.","Recap explicando que essa rodada é uma nova ferramenta como alternativa. Assim, eles entendem que é diferente do Gemini Enterprise.",ℹ️,Projects/N8N,1180,2026-08-29 15:48:39
+INFO_0059,task,TASK_0033,"Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.","Ajustar a sessão de colaboradores e deixar mais parecida com a dos gestores, algo mais genérico para que aqueles quiserem se aprofundar, possam fazer.",ℹ️,Projects/N8N,1190,2026-08-29 15:48:39
+INFO_0060,task,TASK_0033,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,Se tiver uma quantidade alta de colaboradores nós expandimos para mais.,ℹ️,Projects/N8N,1200,2026-08-29 15:48:39
+INFO_0061,task,TASK_0033,"Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.","Quando uma pessoa se autonominar key-user, o gestor precisa aprovar antes.",ℹ️,Projects/N8N,1210,2026-08-29 15:48:39
+INFO_0062,project,PROJ_0014,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem ,O AI Roleplay é um módulo do QMAI. ℹ️ O AI Roleplay analisa as transcrições de ligações e analisa problemas. O AI Roleplay cria um treinamento específico para aquela pessoa ou time. O Treinamento tem que condizer com o tom de voz da empresa contratante.,ℹ️,Projects/AI Roleplay,1250,2026-08-29 15:48:39
+INFO_0063,project,PROJ_0014,Um agente pode solicitar um treinamento ou o gestor solicitar.,Um agente pode solicitar um treinamento ou o gestor solicitar.,ℹ️,Projects/AI Roleplay,1260,2026-08-29 15:48:39
+INFO_0064,project,PROJ_0014,Tem um quiz no final do treinamento.,Tem um quiz no final do treinamento.,ℹ️,Projects/AI Roleplay,1270,2026-08-29 15:48:39
+INFO_0065,project,PROJ_0014,Fluxo do agente,Fluxo do agente,ℹ️,Projects/AI Roleplay,1280,2026-08-29 15:48:39
+INFO_0066,project,PROJ_0014,Não precisa se preocupar nas diferenças entre usuários.,Não precisa se preocupar nas diferenças entre usuários.,ℹ️,Projects/AI Roleplay,1300,2026-08-29 15:48:39
+INFO_0067,project,PROJ_0014,"Cada pilar do Figma, é um usuário","Cada pilar do Figma, é um usuário",ℹ️,Projects/AI Roleplay,1310,2026-08-29 15:48:39
+INFO_0068,project,PROJ_0015,"link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">","link rel=""stylesheet"" type=""text/css"" href=""styles/styles.css"">",ℹ️,,1350,2026-08-29 15:48:39
+INFO_0069,task,TASK_0037,Vaga no Linkedin que te mandaram a umas semanas atrás,Vaga no Linkedin que te mandaram a umas semanas atrás,ℹ️,Activities,1390,2026-08-29 15:48:39
+INFO_0070,task,TASK_0037,Vaga no Linkedin que a Débora enviou da colega delas,Vaga no Linkedin que a Débora enviou da colega delas,ℹ️,Activities,1400,2026-08-29 15:48:39
+INFO_0071,task,TASK_0037,Smart Recruiters,Smart Recruiters,ℹ️,Activities,1410,2026-08-29 15:48:39
+INFO_0072,task,TASK_0037,https://www.instagram.com/p/DY4wrVqyXv0/?hl=en Study about this dataset center in Paulinia and Campinas too,https://www.instagram.com/p/DY4wrVqyXv0/?hl=en Study about this dataset center in Paulinia and Campinas too,ℹ️,Activities,1420,2026-08-29 15:48:39
+INFO_0073,task,TASK_0037,https://www.linkedin.com/jobs/view/4452391795/,https://www.linkedin.com/jobs/view/4452391795/,ℹ️,Activities,1430,2026-08-29 15:48:39
+INFO_0074,task,TASK_0037,https://www.linkedin.com/jobs/view/4449189767/,https://www.linkedin.com/jobs/view/4449189767/,ℹ️,Activities,1450,2026-08-29 15:48:39
+INFO_0075,task,TASK_0039,2192280785,2192280785,ℹ️,Activities,1500,2026-08-29 15:48:39
+INFO_0076,task,TASK_0042,We also had some problems with authentication along the way,We also had some problems with authentication along the way,ℹ️,Activities,1550,2026-08-29 15:48:39
+INFO_0077,task,TASK_0042,"R$ 600,00","R$ 600,00",ℹ️,,1570,2026-08-29 15:48:39
+INFO_0078,task,TASK_0045,"Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.","Update the ""agradecimentos"", removing Márcia and Creusa. Add CLeuza.",ℹ️,,1610,2026-08-29 15:48:39
+INFO_0079,task,TASK_0045,"Minoxidil: 6/6, Revoc: 2/2 (60 pills)","Minoxidil: 6/6, Revoc: 2/2 (60 pills)",ℹ️,,1620,2026-08-29 15:48:39
+INFO_0080,task,TASK_0047,Presentation: 30m,Presentation: 30m,ℹ️,,1650,2026-08-29 15:48:39
+INFO_0081,task,TASK_0048,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,DOI do Repositório de Dados de Pesquisa da Unicamp (REDU): https://doi.org/10.25824/redu/ONWYJO,ℹ️,,1670,2026-08-29 15:48:39
+INFO_0082,task,TASK_0054,Draft a precise subject line for the introductory email to a prospective doctoral advisor,Draft a precise subject line for the introductory email to a prospective doctoral advisor,ℹ️,,1770,2026-08-29 15:48:39
+INFO_0083,task,TASK_0054,Prepare and attach an academic CV and a published article,Prepare and attach an academic CV and a published article,ℹ️,,1780,2026-08-29 15:48:39
+INFO_0084,task,TASK_0056,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,Verify whether both British and Australian PhD programs offer scholarships or if it is restricted to the Australian program.,ℹ️,Backlog,1820,2026-08-29 15:48:39
+INFO_0085,task,TASK_0056,⏳ Analyze the additional costs associated with Australian and British PhD programs.,⏳ Analyze the additional costs associated with Australian and British PhD programs.,ℹ️,Backlog,1830,2026-08-29 15:48:39
+INFO_0086,project,PROJ_0018,There is no Brazilian doctoral program that is 100% online,There is no Brazilian doctoral program that is 100% online,ℹ️,Backlog/Information,1850,2026-08-29 15:48:39
+INFO_0087,project,PROJ_0018,The Carolina Bori Platform (Plataforma Carolina Bori) is the official digital system created by the Brazilian Ministry of Education (MEC) to manage and streamline the validation of academic degrees ob,The Carolina Bori Platform (Plataforma Carolina Bori) is the official digital system created by the Brazilian Ministry of Education (MEC) to manage and streamline the validation of academic degrees obtained outside Brazil.,ℹ️,Backlog/Information,1860,2026-08-29 15:48:39
+INFO_0088,project,PROJ_0018,The Catolina platform probably won't validate a 100% online doctoral degree,The Catolina platform probably won't validate a 100% online doctoral degree,ℹ️,Backlog/Information,1870,2026-08-29 15:48:39
+INFO_0089,project,PROJ_0019,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when add,Fluvoxamina (Revoc brand) (watch for GI/activation; review interactions when adding new meds),ℹ️,Daily,1920,2026-08-29 15:48:39
 INFO_0090,project,PROJ_0019,Maintain ongoing literature review,"Maintain ongoing literature review
 Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
-Monitor storage usage (keep under 5 GB)",ℹ️,Weekly,1990,2026-08-29 13:32:04
+Monitor storage usage (keep under 5 GB)",ℹ️,Weekly,1990,2026-08-29 15:48:39
 INFO_0091,project,PROJ_0020,Age 45+: Colorectal cancer screening (prefer colonoscopy every 10 years if avera,"Age 45+: Colorectal cancer screening (prefer colonoscopy every 10 years if average risk)
 Age 50+: Prostate cancer screening: shared decision-making for PSA testing (commonly every 1–2 years if chosen)
-Age 70+: Bone density (DEXA) once; repeat per results/risk",ℹ️,Age-Specific Screening Add-ons,2320,2026-08-29 13:32:04
-INFO_0092,project,PROJ_0026,No special vaccine (annual Influenza/COVID ongoing),No special vaccine (annual Influenza/COVID ongoing),ℹ️,Year-by-Year Timeline (Key Dates with Age)/2026 (Age 29),2650,2026-08-29 13:32:04
-INFO_0093,project,PROJ_0057,"2025, 2027, 2029, 2031, 2033, 2035, 2037, 2039, 2041, 2043, 2045, 2047, 2049, 20","2025, 2027, 2029, 2031, 2033, 2035, 2037, 2039, 2041, 2043, 2045, 2047, 2049, 2051, 2053, 2055, 2057, 2059, 2061, 2063, 2065, 2067, 2069, 2071, 2073, 2075, 2077, 2079, 2081, 2083, 2085, 2087, 2089, 2091, 2093, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Eye exam every 2 years (2025 → 2095),3740,2026-08-29 13:32:04
-INFO_0094,project,PROJ_0057,"2025, 2028, 2031, 2034, 2037, 2040, 2043, 2046, 2049, 2052, 2055, 2058, 2061, 20","2025, 2028, 2031, 2034, 2037, 2040, 2043, 2046, 2049, 2052, 2055, 2058, 2061, 2064, 2067, 2070, 2073, 2076, 2079, 2082, 2085, 2088, 2091, 2094",ℹ️,Recurring Years Lists (For Quick Reference)/A1c every 3 years (2025 → 2094),3750,2026-08-29 13:32:04
-INFO_0095,project,PROJ_0057,"2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070, 2075, 2080, 2085, 20","2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070, 2075, 2080, 2085, 2090, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Lipid profile every 5 years (2025 → 2095),3760,2026-08-29 13:32:04
-INFO_0096,project,PROJ_0057,"2035, 2045, 2055, 2065, 2075, 2085, 2095","2035, 2045, 2055, 2065, 2075, 2085, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Td/Tdap boosters every 10 years after 2025,3770,2026-08-29 13:32:04
+Age 70+: Bone density (DEXA) once; repeat per results/risk",ℹ️,Age-Specific Screening Add-ons,2320,2026-08-29 15:48:39
+INFO_0092,project,PROJ_0026,No special vaccine (annual Influenza/COVID ongoing),No special vaccine (annual Influenza/COVID ongoing),ℹ️,Year-by-Year Timeline (Key Dates with Age)/2026 (Age 29),2650,2026-08-29 15:48:39
+INFO_0093,project,PROJ_0057,"2025, 2027, 2029, 2031, 2033, 2035, 2037, 2039, 2041, 2043, 2045, 2047, 2049, 20","2025, 2027, 2029, 2031, 2033, 2035, 2037, 2039, 2041, 2043, 2045, 2047, 2049, 2051, 2053, 2055, 2057, 2059, 2061, 2063, 2065, 2067, 2069, 2071, 2073, 2075, 2077, 2079, 2081, 2083, 2085, 2087, 2089, 2091, 2093, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Eye exam every 2 years (2025 → 2095),3740,2026-08-29 15:48:39
+INFO_0094,project,PROJ_0057,"2025, 2028, 2031, 2034, 2037, 2040, 2043, 2046, 2049, 2052, 2055, 2058, 2061, 20","2025, 2028, 2031, 2034, 2037, 2040, 2043, 2046, 2049, 2052, 2055, 2058, 2061, 2064, 2067, 2070, 2073, 2076, 2079, 2082, 2085, 2088, 2091, 2094",ℹ️,Recurring Years Lists (For Quick Reference)/A1c every 3 years (2025 → 2094),3750,2026-08-29 15:48:39
+INFO_0095,project,PROJ_0057,"2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070, 2075, 2080, 2085, 20","2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2065, 2070, 2075, 2080, 2085, 2090, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Lipid profile every 5 years (2025 → 2095),3760,2026-08-29 15:48:39
+INFO_0096,project,PROJ_0057,"2035, 2045, 2055, 2065, 2075, 2085, 2095","2035, 2045, 2055, 2065, 2075, 2085, 2095",ℹ️,Recurring Years Lists (For Quick Reference)/Td/Tdap boosters every 10 years after 2025,3770,2026-08-29 15:48:39
 INFO_0097,project,PROJ_0058,Moving abroad: keep this cadence; local policies may change brand/sequence (e.g.,"Moving abroad: keep this cadence; local policies may change brand/sequence (e.g., pneumococcal product). Bring this plan to new clinicians for mapping to local schedules
 Keep proof of vaccines (digital and paper). Log each dose/date in this canvas under the relevant year
 If a clinician adjusts lab frequency, follow clinical direction over this template
@@ -165,4 +165,4 @@ Schedule anchors you can adopt now:
 Dental: Jan and Jul every year
 Annual set (same month each year): Influenza, COVID booster, dermatology, comprehensive physical
 Eye exam: schedule in 2025, then every two years same month
-Medication check-ins: set quarterly or semiannual reminders per your prescriber",ℹ️,Operating Notes,3790,2026-08-29 13:32:04
+Medication check-ins: set quarterly or semiannual reminders per your prescriber",ℹ️,Operating Notes,3790,2026-08-29 15:48:39

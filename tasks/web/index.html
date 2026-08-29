@@ -636,7 +636,7 @@
           type="search"
           id="globalSearch"
           placeholder="Search…"
-          title="Search (Shift+S)"
+          title="Search (Alt+S)"
           autocomplete="off"
           spellcheck="false"
         />
@@ -1111,6 +1111,7 @@
             ${due ? `<span class="due">${esc(due)}</span>` : ""}
             <span class="row-actions">
               <button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
+              <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
               <button class="btn" data-act="edit-task">Edit</button>
             </span>
           </li>`;
@@ -1181,7 +1182,7 @@
           ${row("← →", "Collapse / expand project or section")}
           ${row("Home / End", "First / last item")}
           ${row("a–z 0–9", "Jump to title starting with letter")}
-          ${row("⇧S", "Focus search")}
+          ${row("Alt+S", "Focus search")}
           ${row("Esc", "Clear search, filters, or selection")}
         </div></div>
         <div class="help-group"><h4>Focus category</h4><div class="help-rows">
@@ -1195,6 +1196,7 @@
           ${row("⇧A", "Add task (or project if none selected)")}
           ${row("⇧B", "Add section (project selected)")}
           ${row("⇧C", "Mark done")}
+          ${row("⇧D", "Habit → Personal inbox (General)")}
           ${row("⇧I", "Mark important")}
           ${row("⇧N", "Info points")}
           ${row("⇧V", "Attach image")}
@@ -1575,6 +1577,28 @@
           return "";
         }
 
+        function selectedHabitId() {
+          if (state.sel?.kind === "habit") return state.sel.id;
+          if (state.sel?.kind === "task") {
+            const t = (state.data.tasks || []).find(
+              (x) => x.id === state.sel.id,
+            );
+            if (t?.kind === "habitual") return t.id;
+          }
+          return "";
+        }
+
+        async function sendHabitToPersonal(habitId) {
+          const r = await api(
+            "/api/tasks/" + encodeURIComponent(habitId) + "/to-personal",
+            { method: "POST", body: "{}" },
+          );
+          toast("Sent to Personal · General");
+          await refresh();
+          applySectionFocus("personal");
+          if (r.task?.id) setSelection("task", r.task.id, true);
+        }
+
         function selectedProjectId() {
           if (!state.sel) return "";
           if (state.sel.kind === "project") return state.sel.id;
@@ -1647,6 +1671,15 @@
             await refresh();
             return;
           }
+          if (k === "d") {
+            const tid = selectedHabitId();
+            if (!tid) {
+              toast("Select a habit first");
+              return;
+            }
+            await sendHabitToPersonal(tid);
+            return;
+          }
           if (k === "i") {
             const tid = selectedTaskId();
             if (!tid) {
@@ -1671,10 +1704,6 @@
             } else {
               projectForm(null);
             }
-            return;
-          }
-          if (k === "s") {
-            focusSearch();
             return;
           }
           if (k === "b") {
@@ -2217,6 +2246,10 @@
               await refresh();
               return;
             }
+            if (act === "habit-to-personal") {
+              await sendHabitToPersonal(id);
+              return;
+            }
             if (act === "info-project") {
               infoListModal("project", id);
               return;
@@ -2305,7 +2338,17 @@
         });
 
         document.addEventListener("keydown", async (e) => {
-          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.ctrlKey || e.metaKey) return;
+          if (e.altKey) {
+            const isS =
+              e.code === "KeyS" || (e.key || "").toLowerCase() === "s";
+            if (isS) {
+              e.preventDefault();
+              e.stopPropagation();
+              focusSearch();
+            }
+            return;
+          }
           const tag = (e.target?.tagName || "").toLowerCase();
           if (
             tag === "input" ||
@@ -2370,12 +2413,6 @@
               e.preventDefault();
               e.stopPropagation();
               helpModal();
-              return;
-            }
-            if (cmd === "s") {
-              e.preventDefault();
-              e.stopPropagation();
-              focusSearch();
               return;
             }
             if (state.view === "import") return;

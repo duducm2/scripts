@@ -177,6 +177,10 @@ class TaskHandler(BaseHTTPRequestHandler):
                 key = payload.get("key") or payload.get("emoji") or ""
                 self._json(200, store.set_task_emoji(tid, key))
                 return
+            if path.startswith("/api/tasks/") and path.endswith("/to-personal"):
+                tid = path[len("/api/tasks/") : -len("/to-personal")]
+                self._json(200, store.spawn_personal_from_habit(tid))
+                return
             if path == "/api/info":
                 self._json(200, store.upsert_info(payload))
                 return
