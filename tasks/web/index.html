@@ -1337,7 +1337,7 @@
           ${row("← →", "Collapse / expand project or section")}
           ${row("⇧J", "Toggle first Personal ↔ Work item")}
           ${row("Home / End", "First / last item")}
-          ${row("a–z 0–9", "Jump to title starting with letter")}
+          ${row("a–z 0–9", "Jump to next title starting with letter (from selection down)")}
           ${row("Alt+S", "Focus search")}
           ${row("Esc", "Home — dashboard, clear filters/modals/selection")}
           ${row("Backspace", "Go back one step")}
@@ -1720,16 +1720,22 @@
         }
 
         function letterJump(ch) {
-          const targets = collectTargets().filter(
-            (t) => titleFirstChar(t.title) === ch,
-          );
-          if (!targets.length) return;
-          let idx = targets.findIndex(
+          const all = collectTargets();
+          if (!all.length) return;
+          const cur = all.findIndex(
             (t) =>
               state.sel && t.kind === state.sel.kind && t.id === state.sel.id,
           );
-          idx = idx < 0 ? 0 : (idx + 1) % targets.length;
-          setSelection(targets[idx].kind, targets[idx].id, true);
+          // Windows-style: search downward from the item after the selection, wrap at end
+          const n = all.length;
+          const from = cur < 0 ? 0 : (cur + 1) % n;
+          for (let i = 0; i < n; i++) {
+            const idx = (from + i) % n;
+            if (titleFirstChar(all[idx].title) === ch) {
+              setSelection(all[idx].kind, all[idx].id, true);
+              return;
+            }
+          }
         }
 
         function currentPwSide() {
