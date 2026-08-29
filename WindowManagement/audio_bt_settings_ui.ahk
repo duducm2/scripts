@@ -13,7 +13,11 @@ AudioBt_SettingsDisconnectNames() {
 }
 
 AudioBt_SettingsExpandNames() {
-    return ["Mais configurações", "More settings", "More options"]
+    return ["Mais opções", "Mais configurações", "More settings", "More options"]
+}
+
+AudioBt_SettingsConnectedTextNames() {
+    return ["Conectado", "Connected"]
 }
 
 AudioBt_SettingsWinSpec() {
@@ -52,22 +56,69 @@ AudioBt_SettingsClickNamed(scope, names) {
     return ClickSeq_Invoke(el)
 }
 
-AudioBt_SettingsRowMatches(groupName, deviceName) {
+AudioBt_SettingsRowMatches(elName, deviceName) {
     n := Trim(deviceName)
-    if (n = "" || groupName = "")
+    if (n = "" || elName = "")
         return false
-    return InStr(groupName, n ", ") = 1 || InStr(groupName, n ",") = 1
+    if (Trim(elName) = n)
+        return true
+    return InStr(elName, n ", ") = 1 || InStr(elName, n ",") = 1
 }
 
-AudioBt_SettingsRowConnected(groupName) {
-    if InStr(groupName, "Estado Conectado") || InStr(groupName, "Status Connected")
+AudioBt_SettingsRowConnected(elName) {
+    if (elName = "")
+        return false
+    if InStr(elName, "Estado Conectado") || InStr(elName, "Status Connected")
+        return true
+    t := Trim(elName)
+    return (t = "Conectado" || t = "Connected")
+}
+
+AudioBt_SettingsRowIsConnected(row) {
+    if !row
+        return false
+    try nm := row.Name
+    catch
+        nm := ""
+    if AudioBt_SettingsRowConnected(nm)
+        return true
+    scope := AudioBt_SettingsClickScope(row)
+    if !scope
+        scope := row
+    if AudioBt_SettingsFindNamed(scope, AudioBt_SettingsConnectedTextNames(), "Text")
         return true
     return false
+}
+
+; Prefer ListItem / DevicesHeroControlButton so Conectar is in scope (sibling of name Group).
+AudioBt_SettingsClickScope(row) {
+    if !row
+        return 0
+    try {
+        heroBtn := ClipAngel_UiaFindFirst(row, { AutomationId: "DevicesHeroControlButton" })
+        if heroBtn
+            return heroBtn
+    }
+    return row
 }
 
 AudioBt_SettingsFindRow(root, deviceName) {
     if !root
         return 0
+    list := ClipAngel_UiaFindFirst(root, { AutomationId: "SystemSettings_Devices_HeroControlDeviceList_ListView" })
+    if list {
+        try {
+            items := list.FindAll({ Type: "ListItem" })
+            loop items.Length {
+                el := items[A_Index]
+                try nm := el.Name
+                catch
+                    continue
+                if AudioBt_SettingsRowMatches(nm, deviceName)
+                    return el
+            }
+        }
+    }
     try {
         els := root.FindAll({ Type: "Group" })
         loop els.Length {
@@ -90,6 +141,8 @@ AudioBt_SettingsWaitPage(hwnd, timeoutMs := 15000) {
             toggle := ClipAngel_UiaFindFirst(root, { AutomationId: "SystemSettings_Device_BluetoothRadioToggle_ToggleSwitch" })
             if !toggle
                 toggle := ClipAngel_UiaFindFirst(root, { AutomationId: "SystemSettings_Devices_AudioDeviceList_SettingsListItemsRepeater" })
+            if !toggle
+                toggle := ClipAngel_UiaFindFirst(root, { AutomationId: "SystemSettings_Devices_HeroControlDeviceList_ListView" })
             if toggle
                 return root
         }
@@ -131,7 +184,8 @@ AudioBt_SettingsEnsureOpen(&opened) {
 AudioBt_SettingsExpand(row) {
     if !row
         return false
-    btn := AudioBt_SettingsFindNamed(row, AudioBt_SettingsExpandNames())
+    scope := AudioBt_SettingsClickScope(row)
+    btn := AudioBt_SettingsFindNamed(scope, AudioBt_SettingsExpandNames())
     if !btn
         return false
     if !ClickSeq_Invoke(btn)
@@ -141,11 +195,13 @@ AudioBt_SettingsExpand(row) {
 }
 
 AudioBt_SettingsDisconnectRow(row) {
-    if AudioBt_SettingsClickNamed(row, AudioBt_SettingsDisconnectNames())
+    scope := AudioBt_SettingsClickScope(row)
+    if AudioBt_SettingsClickNamed(scope, AudioBt_SettingsDisconnectNames())
         return true
     if !AudioBt_SettingsExpand(row)
         return false
-    return AudioBt_SettingsClickNamed(row, AudioBt_SettingsDisconnectNames())
+    scope := AudioBt_SettingsClickScope(row)
+    return AudioBt_SettingsClickNamed(scope, AudioBt_SettingsDisconnectNames())
 }
 
 AudioBt_SettingsSkipOther(groupName) {
@@ -195,7 +251,7 @@ AudioBt_SettingsDropOtherAudio(root, keepName) {
             continue
         if AudioBt_SettingsSkipOther(nm)
             continue
-        if !AudioBt_SettingsRowConnected(nm)
+        if !AudioBt_SettingsRowIsConnected(el)
             continue
         AudioBt_SettingsDisconnectRow(el)
         Sleep(400)
@@ -207,10 +263,7 @@ AudioBt_SettingsWaitRowConnected(hwnd, deviceName, timeoutMs := 8000) {
     while (A_TickCount < deadline) {
         root := AudioBt_SettingsRoot(hwnd)
         row := AudioBt_SettingsFindRow(root, deviceName)
-        try nm := row ? row.Name : ""
-        catch
-            nm := ""
-        if AudioBt_SettingsRowConnected(nm)
+        if AudioBt_SettingsRowIsConnected(row)
             return true
         Sleep(250)
     }
@@ -239,13 +292,11 @@ AudioBt_SettingsUiConnect(deviceName) {
             result.err := "Device not found in Settings: " deviceName
             return result
         }
-        try rowName := row.Name
-        catch
-            rowName := ""
+        scope := AudioBt_SettingsClickScope(row)
         clicked := false
-        if AudioBt_SettingsFindNamed(row, AudioBt_SettingsConnectNames()) {
-            clicked := AudioBt_SettingsClickNamed(row, AudioBt_SettingsConnectNames())
-        } else if AudioBt_SettingsRowConnected(rowName) {
+        if AudioBt_SettingsFindNamed(scope, AudioBt_SettingsConnectNames()) {
+            clicked := AudioBt_SettingsClickNamed(scope, AudioBt_SettingsConnectNames())
+        } else if AudioBt_SettingsRowIsConnected(row) {
             if !AudioBt_SettingsDisconnectRow(row) {
                 result.err := "Could not disconnect " deviceName " in Settings"
                 return result
@@ -255,10 +306,11 @@ AudioBt_SettingsUiConnect(deviceName) {
                 Sleep(300)
                 root := AudioBt_SettingsRoot(hwnd)
                 row := AudioBt_SettingsFindRow(root, deviceName)
-                if AudioBt_SettingsFindNamed(row, AudioBt_SettingsConnectNames())
+                scope := AudioBt_SettingsClickScope(row)
+                if AudioBt_SettingsFindNamed(scope, AudioBt_SettingsConnectNames())
                     break
             }
-            clicked := AudioBt_SettingsClickNamed(row, AudioBt_SettingsConnectNames())
+            clicked := AudioBt_SettingsClickNamed(scope, AudioBt_SettingsConnectNames())
         } else {
             result.err := "No Connect button for " deviceName
             return result
