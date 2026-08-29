@@ -234,7 +234,7 @@ ToggleAICompanionChromeTab() {
 #UseHook False
 #InputLevel 0
 ^!#8:: DesktopToRecycle_Trigger()
-; Win+Alt+Shift+O (same tiering as #!+8): 1× cut, 2× open, hold 700ms+ copy path
+; Win+Alt+Shift+O: 1× cut, 2× open, 3× paste clipboard file→Desktop, hold 700ms+ copy path
 #!+o:: DesktopCutNewest_OnHotkey()
 ; Ctrl+Alt+Win+9 / +B - Handy Nemotron Portuguese / Parakeet Unified English (slots 2 and 1)
 ^!#9:: ExecuteHandyAiModelSelection(HANDY_AI_SLOT_PORTUGUESE)

@@ -2,7 +2,7 @@
 ; Gemini module: hotkey_read_copy.ahk
 ; #!+P (1× copy last message / 2× copy last code), CopyLastGeminiMessageToClipboard,
 ; CopyLastGeminiCodeSnippetToClipboard, and read-aloud IPC
-; (Win+Alt+Shift+O lives in Utils: DesktopCutNewest_Trigger)
+; (Win+Alt+Shift+O lives in Utils: DesktopCutNewest_OnHotkey — cut / open / paste clipboard / copy path)
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
 ; =============================================================================

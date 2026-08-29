@@ -1,9 +1,10 @@
 ; =============================================================================
 ; Utils module: desktop_cut_newest.ahk
-; Cut, open, or copy-path newest Desktop item (file or folder).
-; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation):
+; Cut, open, copy-path newest Desktop item, or paste clipboard file to Desktop.
+; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation + 3×):
 ;   1× = cut newest Desktop item, restore previous window
 ;   2× within 400 ms (AI_QD_DOUBLE_TAP_MS / ZMK tap-dance) = open with default app
+;   3× within 400 ms windows = paste a copy of the clipboard file(s) onto Desktop
 ;   hold 700 ms+ (PRONUNCIATION_HOLD_MS / Fast Copy / cheat sheet) = copy path as text
 ; =============================================================================
 
@@ -395,38 +396,126 @@ DesktopCutNewest_CopyPath() {
     ShowCenteredOverlay_Utils("📋 Path: " name, 1800, BANNER_ACCENT_SUCCESS)
 }
 
-; --- Win+Alt+Shift+O tap / double-tap / hold ---------------------------------
-global g_DesktopCutNewest_DoubleTapArmed := false
+; Unique Desktop dest for srcPath (name.ext → name (1).ext → …).
+DesktopCutNewest_UniqueDestPath(desktopPath, srcPath) {
+    SplitPath(srcPath, &name, , &ext, &nameNoExt)
+    if (name = "")
+        return ""
+    dest := desktopPath "\" name
+    if !FileExist(dest)
+        return dest
+    isDir := !!DirExist(srcPath)
+    i := 1
+    loop {
+        if (!isDir && ext != "")
+            candidate := desktopPath "\" nameNoExt " (" i ")." ext
+        else
+            candidate := desktopPath "\" name " (" i ")"
+        if !FileExist(candidate)
+            return candidate
+        i += 1
+        if (i > 9999)
+            return ""
+    }
+}
+
+; 3×: copy clipboard CF_HDROP file(s)/folder(s) onto Desktop (leave originals).
+DesktopCutNewest_PasteClipboardToDesktop() {
+    desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    if (desktopPath = "") {
+        ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if !Clipboard_HasFileDrop() {
+        ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    paths := Clipboard_GetFilePaths()
+    if (!paths || paths.Length < 1) {
+        ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    copiedNames := []
+    for src in paths {
+        if (src = "" || !FileExist(src)) {
+            ShowCenteredOverlay_Utils("❌ Clipboard file not found", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        dest := DesktopCutNewest_UniqueDestPath(desktopPath, src)
+        if (dest = "") {
+            ShowCenteredOverlay_Utils("❌ Could not build Desktop path", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        try {
+            if DirExist(src)
+                DirCopy(src, dest)
+            else
+                FileCopy(src, dest)
+        } catch {
+            ShowCenteredOverlay_Utils("❌ Failed to paste to Desktop", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        if !FileExist(dest) {
+            ShowCenteredOverlay_Utils("❌ Paste verify failed", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        SplitPath(dest, &destName)
+        copiedNames.Push(destName)
+    }
+
+    if (copiedNames.Length = 1)
+        ShowCenteredOverlay_Utils("📎 Pasted: " copiedNames[1], 1800, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("📎 Pasted " copiedNames.Length " items to Desktop", 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; --- Win+Alt+Shift+O tap / double / triple / hold ----------------------------
+global g_DesktopCutNewest_TapCount := 0
 global g_DesktopCutNewest_LastPressTick := 0
-global g_DesktopCutNewest_DoubleTapTimer := 0
+global g_DesktopCutNewest_TapTimer := 0
 global g_DesktopCutNewest_ScheduleActivateHwnd := 0
 global g_DesktopCutNewest_ScheduleActivateTimer := 0
 
-class DesktopCutNewest_DoubleTapTimerObj {
-    static OnSingleTapTimeout() {
-        global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_DoubleTapTimer
-        if (!g_DesktopCutNewest_DoubleTapArmed)
-            return
-        g_DesktopCutNewest_DoubleTapArmed := false
-        g_DesktopCutNewest_DoubleTapTimer := 0
-        DesktopCutNewest_Trigger()
+class DesktopCutNewest_TapTimerObj {
+    static OnTapTimeout() {
+        global g_DesktopCutNewest_TapCount, g_DesktopCutNewest_TapTimer
+        count := g_DesktopCutNewest_TapCount
+        g_DesktopCutNewest_TapCount := 0
+        g_DesktopCutNewest_TapTimer := 0
+        if (count = 1)
+            DesktopCutNewest_Trigger()
+        else if (count = 2)
+            DesktopCutNewest_OpenNewest()
     }
 }
 
-DesktopCutNewest_DisarmDoubleTap() {
-    global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_DoubleTapTimer
+DesktopCutNewest_DisarmTapDance() {
+    global g_DesktopCutNewest_TapCount, g_DesktopCutNewest_TapTimer
     global g_DesktopCutNewest_LastPressTick
-    g_DesktopCutNewest_DoubleTapArmed := false
+    g_DesktopCutNewest_TapCount := 0
     g_DesktopCutNewest_LastPressTick := 0
-    if (g_DesktopCutNewest_DoubleTapTimer) {
-        SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
-        g_DesktopCutNewest_DoubleTapTimer := 0
+    if (g_DesktopCutNewest_TapTimer) {
+        SetTimer(g_DesktopCutNewest_TapTimer, 0)
+        g_DesktopCutNewest_TapTimer := 0
     }
+}
+
+DesktopCutNewest_ArmTapTimer(thresholdMs) {
+    global g_DesktopCutNewest_LastPressTick, g_DesktopCutNewest_TapTimer
+    if (g_DesktopCutNewest_TapTimer) {
+        SetTimer(g_DesktopCutNewest_TapTimer, 0)
+        g_DesktopCutNewest_TapTimer := 0
+    }
+    g_DesktopCutNewest_LastPressTick := A_TickCount
+    g_DesktopCutNewest_TapTimer := ObjBindMethod(DesktopCutNewest_TapTimerObj, "OnTapTimeout")
+    SetTimer(g_DesktopCutNewest_TapTimer, -thresholdMs)
 }
 
 DesktopCutNewest_OnHotkey() {
-    global g_DesktopCutNewest_DoubleTapArmed, g_DesktopCutNewest_LastPressTick
-    global g_DesktopCutNewest_DoubleTapTimer
+    global g_DesktopCutNewest_TapCount, g_DesktopCutNewest_LastPressTick
 
     ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
     ; released (those start with O already up and would otherwise arm single-tap cut).
@@ -439,16 +528,16 @@ DesktopCutNewest_OnHotkey() {
         thresholdMs := 400
     }
 
-    ; Detect double-tap on key-down (before KeyWait) so a slow release cannot miss the window.
+    ; Count taps on key-down (before KeyWait) so a slow release cannot miss the window.
     pressTime := A_TickCount
     elapsed := (g_DesktopCutNewest_LastPressTick > 0) ? (pressTime - g_DesktopCutNewest_LastPressTick) : 9999
-    isSecondTap := g_DesktopCutNewest_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
+    inWindow := (g_DesktopCutNewest_TapCount > 0) && elapsed >= 0 && elapsed < thresholdMs
 
     KeyWait "o", "T" . (DESKTOP_CUT_NEWEST_HOLD_MS / 1000)
     isHold := (A_TickCount - pressTime) >= DESKTOP_CUT_NEWEST_HOLD_MS
 
     if (isHold) {
-        DesktopCutNewest_DisarmDoubleTap()
+        DesktopCutNewest_DisarmTapDance()
         DesktopCutNewest_CopyPath()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.
@@ -456,19 +545,19 @@ DesktopCutNewest_OnHotkey() {
         return
     }
 
-    if (isSecondTap) {
-        DesktopCutNewest_DisarmDoubleTap()
-        DesktopCutNewest_OpenNewest()
+    if (inWindow) {
+        g_DesktopCutNewest_TapCount += 1
+        if (g_DesktopCutNewest_TapCount >= 3) {
+            DesktopCutNewest_DisarmTapDance()
+            DesktopCutNewest_PasteClipboardToDesktop()
+            return
+        }
+        ; 2×: wait for a possible 3× before opening.
+        DesktopCutNewest_ArmTapTimer(thresholdMs)
         return
     }
 
-    ; Arm after quick release: window starts now (matches #!+8 / #!+9).
-    if (g_DesktopCutNewest_DoubleTapTimer) {
-        SetTimer(g_DesktopCutNewest_DoubleTapTimer, 0)
-        g_DesktopCutNewest_DoubleTapTimer := 0
-    }
-    g_DesktopCutNewest_LastPressTick := A_TickCount
-    g_DesktopCutNewest_DoubleTapArmed := true
-    g_DesktopCutNewest_DoubleTapTimer := ObjBindMethod(DesktopCutNewest_DoubleTapTimerObj, "OnSingleTapTimeout")
-    SetTimer(g_DesktopCutNewest_DoubleTapTimer, -thresholdMs)
+    ; First tap: arm single-tap window (matches #!+8 / #!+9 timing).
+    g_DesktopCutNewest_TapCount := 1
+    DesktopCutNewest_ArmTapTimer(thresholdMs)
 }

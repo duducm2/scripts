@@ -1233,7 +1233,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+P] > {AI_PROVIDER}: 1× copy last message; 2× (within 400ms) copy last code; then 5s [Y] Desktop [F] Favorite [C] Transfer [R] Read (1× only) [W] Paste window [O] Clip Angel [N] No
     
     === DESKTOP ===
-    [Win+Alt+Shift+O] > Newest Desktop item: 1× cut (return to previous window); 2× open; hold 700ms+ copy path as text
+    [Win+Alt+Shift+O] > Newest Desktop item: 1× cut (return to previous window); 2× open; 3× paste clipboard file copy to Desktop; hold 700ms+ copy path as text
     
     === HANDY DICTATION ===
     [Win+Alt+Shift+0] > Start/stop dictation (transcription to clipboard)
