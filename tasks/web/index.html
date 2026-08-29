@@ -1435,11 +1435,8 @@
           else renderDashboard();
         }
 
-        function scrollToSection(filt) {
-          const el = document.getElementById(
-            filt === "habits" ? "sec-habits" : "sec-" + filt,
-          );
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        function scrollToPageHeader() {
+          window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
         }
 
         function updateFocusLbl() {
@@ -1500,7 +1497,7 @@
             top.classList.toggle("section-hidden", f === "habits");
           }
           updateFocusLbl();
-          if (f) scrollToSection(f);
+          if (f) scrollToPageHeader();
           applySelection(true);
         }
 
