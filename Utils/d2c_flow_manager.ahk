@@ -5,6 +5,62 @@
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
+; After visible-window pick (#!+L / D2C [W]): Y = paste+Enter, Esc = abort, timeout = paste only.
+global g_PasteWindowAutoSendChoice := ""
+global g_PasteWindowAutoSendActive := false
+
+PasteWindow_FinishAutoSendWait(choice) {
+    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive
+    if (!g_PasteWindowAutoSendActive)
+        return
+    g_PasteWindowAutoSendChoice := choice
+    g_PasteWindowAutoSendActive := false
+}
+
+PasteWindow_OnAutoSendY(*) {
+    PasteWindow_FinishAutoSendWait("send")
+}
+
+PasteWindow_OnAutoSendEsc(*) {
+    PasteWindow_FinishAutoSendWait("cancel")
+}
+
+PasteWindow_OnAutoSendTimeout(*) {
+    PasteWindow_FinishAutoSendWait("paste")
+}
+
+; Show banner immediately; block until Y / Esc / timeout. Returns "send", "cancel", or "paste".
+PasteWindow_ShowAutoSendOptionsAndWait() {
+    global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive
+    g_PasteWindowAutoSendChoice := ""
+    g_PasteWindowAutoSendActive := true
+    StandardLoadingBar_CloseKeysOverlay()
+    StandardLoadingBar_Hide(0)
+    keyCallbacks := Map(
+        "Y", PasteWindow_OnAutoSendY,
+        "Escape", PasteWindow_OnAutoSendEsc
+    )
+    StandardLoadingBar_ShowWithKeys(
+        "❓ Paste to window? (3s)",
+        keyCallbacks,
+        3000,
+        0,
+        PasteWindow_OnAutoSendTimeout,
+        BANNER_ACCENT_INTERMEDIATE,
+        420,
+        17,
+        "",
+        true,
+        "[Y] Send after paste  [Esc] Cancel",
+        true,
+        true,
+        true
+    )
+    while (g_PasteWindowAutoSendActive)
+        Sleep 30
+    return g_PasteWindowAutoSendChoice
+}
+
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
 ; Replaces legacy fragmented functions with a central authority to prevent race conditions.
@@ -164,6 +220,7 @@ class D2C_FlowManager {
 
     ; Shared by menu [W] and #!+L global hotkey.
     ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
+    ; After pick: banner Y = paste+Enter, Esc = abort, timeout = paste only.
     ; If exe+title has a saved main field (paste_field_mappings.ini), focus it first.
     ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
     PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
@@ -173,11 +230,16 @@ class D2C_FlowManager {
         if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
             return false
 
-        SetTimer(this._FinishDeferredPaste.Bind(this, targetHwnd, onDone), -50)
+        choice := PasteWindow_ShowAutoSendOptionsAndWait()
+        if (choice = "cancel" || choice = "")
+            return false
+
+        autoSend := (choice = "send")
+        SetTimer(this._FinishDeferredPaste.Bind(this, targetHwnd, onDone, autoSend), -50)
         return true
     }
 
-    _FinishDeferredPaste(targetHwnd, onDone) {
+    _FinishDeferredPaste(targetHwnd, onDone, autoSend := false) {
         if (!WinExist("ahk_id " targetHwnd)) {
             if (onDone)
                 onDone.Call()
@@ -204,6 +266,10 @@ class D2C_FlowManager {
         Sleep 40
         Send "^v"
         Sleep 80
+        if (autoSend) {
+            Send "{Enter}"
+            Sleep 80
+        }
 
         if (!mappingResult.hasMapping)
             PasteField_PromptSaveMainField(targetHwnd)
@@ -225,7 +291,7 @@ class D2C_FlowManager {
         if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone)) {
             return
         }
-        ; Picker cancelled — restore submit menu; keep OriginHwnd.
+        ; Picker cancelled or post-pick Esc — restore submit menu; keep OriginHwnd.
         this.PromptForGeminiSubmit()
     }
 

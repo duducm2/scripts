@@ -1317,7 +1317,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     === GENERAL ===
     [Win+Alt+Shift+U] > Utility Shortcuts (Prompts, Projects, Macros, Hotstrings, Sequences, Finance, Memory Palace, Push [G] scripts+notes)
     [Win+Alt+Shift+W] > Utility Shortcuts → Macros (same as #!+U then M)
-    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
+    [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; after pick: Y=paste+Enter, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
     [Win+Alt+Shift+X] > Memory Palace (same as Utility Shortcuts [N])
