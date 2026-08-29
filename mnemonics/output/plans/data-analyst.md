@@ -32,7 +32,9 @@
 
 **🔗 Resources:**
 
-- 🔍 [Kevin Stratvert: Advanced Excel (search Full Course on channel)](https://www.youtube.com/results?search_query=Kevin+Stratvert+Advanced+Excel+Full+Course)
+- 🔗 [XLOOKUP function (Microsoft Support)](https://support.microsoft.com/en-us/office/xlookup-function-b7fd680e-6d10-43e6-84f9-88eae8bf5929)
+- 🔗 [INDEX function (Microsoft Support)](https://support.microsoft.com/en-us/office/index-function-a5dcf0dd-996d-40a3-be95-3a391f4e6b2f)
+- 🔗 [MATCH function (Microsoft Support)](https://support.microsoft.com/en-us/office/match-function-e8dffd45-c762-47d6-bf89-533f4a37673a)
 
 ### 3. Dimensional Aggregation
 
@@ -43,7 +45,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Excel Number Formatting for Data Analysts | Beginner Tutorial](https://www.youtube.com/watch?v=WqZ90oyB0hc)
+- 🔗 [Create a PivotTable to analyze worksheet data (Microsoft Support)](https://support.microsoft.com/en-us/office/create-a-pivottable-to-analyze-worksheet-data-a9a84538-bfe9-40a9-a8e9-f99134456576)
 
 ### 4. Automated ETL Pipelines
 
@@ -55,6 +57,8 @@
 **🔗 Resources:**
 
 - ▶ [Excel for Data Analysts: Master ETL with Power Query](https://www.youtube.com/watch?v=RxYwM2x4VCs)
+- 🔗 [Power Query documentation (Microsoft Learn)](https://learn.microsoft.com/en-us/power-query/)
+- 🔗 [Power Query M formula language reference](https://learn.microsoft.com/en-us/powerquery-m/)
 
 ### 5. Capstone Synthesis
 
@@ -79,6 +83,8 @@
 
 - ▶ [SQL Tutorial for Beginners (Alex The Analyst)](https://www.youtube.com/watch?v=h0nxCDiD-zg)
 - ▶ [SQL Basics Tutorial For Beginners | Select + From Statements](https://www.youtube.com/watch?v=PyYgERKq25I)
+- 📄 [PostgreSQL Tutorial (official)](https://www.postgresql.org/docs/current/tutorial.html)
+- 🔗 [Mode Analytics SQL Tutorial (written)](https://mode.com/sql-tutorial)
 
 ### 2. Aggregation Logic
 
@@ -100,6 +106,7 @@
 **🔗 Resources:**
 
 - ▶ [Intermediate SQL Tutorial | Aliasing](https://www.youtube.com/watch?v=Dk7he_yEs4U)
+- 📄 [PostgreSQL: Joins](https://www.postgresql.org/docs/current/tutorial-join.html)
 
 ### 4. Query Modularity
 
@@ -110,6 +117,7 @@
 **🔗 Resources:**
 
 - ▶ [SQL for Data Analytics - Learn SQL in 4 Hours (Luke Barousse)](https://www.youtube.com/watch?v=7mz73uXD9DA)
+- 📄 [PostgreSQL: WITH Queries (CTEs)](https://www.postgresql.org/docs/current/queries-with.html)
 
 ### 5. Advanced Analytics
 
@@ -120,6 +128,7 @@
 **🔗 Resources:**
 
 - 🔗 [Intermediate SQL for Data Analytics (Luke Barousse)](https://www.lukebarousse.com/int-sql)
+- 📄 [PostgreSQL: Window Functions](https://www.postgresql.org/docs/current/tutorial-window.html)
 
 ### 6. Portfolio Integration
 
@@ -142,6 +151,7 @@
 **🔗 Resources:**
 
 - ▶ [Power BI Tutorial for Beginners (Kevin Stratvert)](https://www.youtube.com/watch?v=NNSHu0rkew8)
+- 🔗 [Get started with Power BI Desktop (Microsoft Learn)](https://learn.microsoft.com/en-us/power-bi/fundamentals/desktop-getting-started)
 
 ### 2. Advanced Power Query
 
@@ -161,7 +171,8 @@
 
 **🔗 Resources:**
 
-- ▶ [How to Install Power BI | Building First Visualization / Relationships](https://www.youtube.com/watch?v=g0m5sEHPU-s)
+- 🔗 [Understand star schema and the importance for Power BI (Microsoft Learn)](https://learn.microsoft.com/en-us/power-bi/guidance/star-schema)
+- 🔗 [Kimball dimensional modeling techniques (primer)](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/)
 
 ### 4. DAX and Evaluation Context
 
@@ -173,6 +184,8 @@
 **🔗 Resources:**
 
 - ▶ [Power BI Intro to Data Analysis Advanced Tutorial (Learnit)](https://www.youtube.com/watch?v=GpAXwNaUiLY)
+- 🔗 [Row context and filter context in DAX (SQLBI)](https://www.sqlbi.com/articles/row-context-and-filter-context-in-dax/)
+- 🔗 [Introducing CALCULATE in DAX (SQLBI)](https://www.sqlbi.com/articles/introducing-calculate-in-dax/)
 
 ### 5. Dashboard UX and Portfolio
 
@@ -185,6 +198,7 @@
 
 - ▶ [Learn Power BI in Under 3 Hours (Full Project)](https://www.youtube.com/watch?v=I0vQ_VLZTWg)
 - ▶ [Power BI Full Course Tutorial (8+ Hours)](https://www.youtube.com/watch?v=e6QD8lP-m6E)
+- 🔗 [Visualization types in Power BI (Microsoft Learn)](https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-types-for-reports-and-q-and-a)
 
 ## Phase 4: Programmatic Manipulation and Advanced Transformation (Chemical Engineering Laboratory)
 
@@ -197,6 +211,7 @@
 **🔗 Resources:**
 
 - 🔗 [Python for Data Analytics (Luke Barousse)](https://www.lukebarousse.com/python)
+- 📄 [Installing pandas (official)](https://pandas.pydata.org/docs/getting_started/install.html)
 
 ### 2. Data Structures
 
@@ -208,6 +223,7 @@
 
 - ▶ [Learn PANDAS in 5 minutes | Pandas Ultraquick Tutorial (Keith Galli)](https://www.youtube.com/watch?v=m1_33jhhiLE)
 - ▶ [Keith Galli channel (Pandas tutorials)](https://www.youtube.com/c/KGMIT/videos)
+- 📄 [10 minutes to pandas (official)](https://pandas.pydata.org/docs/user_guide/10min.html)
 
 ### 3. Exploratory Data Analysis
 
@@ -218,6 +234,7 @@
 **🔗 Resources:**
 
 - ▶ [Exploratory Data Analysis in Pandas (Alex The Analyst)](https://www.youtube.com/watch?v=Liv6eeb1VfE)
+- 📄 [Essential basic functionality (pandas docs)](https://pandas.pydata.org/docs/user_guide/basics.html)
 
 ### 4. Vectorization and Aggregation
 
@@ -227,7 +244,8 @@
 
 **🔗 Resources:**
 
-- ▶ [Complete Python Pandas Data Science Tutorial (Keith Galli)](https://www.youtube.com/watch?v=m1_33jhhiLE)
+- 📄 [Group by: split-apply-combine (pandas docs)](https://pandas.pydata.org/docs/user_guide/groupby.html)
+- 📄 [Merge, join, concatenate and compare (pandas docs)](https://pandas.pydata.org/docs/user_guide/merging.html)
 
 ### 5. Statistical Visualization
 
@@ -238,6 +256,7 @@
 **🔗 Resources:**
 
 - ▶ [Data Analyst Portfolio Project | Correlation in Python](https://www.youtube.com/watch?v=iPYVYBtUTyE)
+- 📄 [seaborn tutorial (official)](https://seaborn.pydata.org/tutorial.html)
 
 ## Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium)
 
@@ -250,6 +269,7 @@
 **🔗 Resources:**
 
 - ▶ [Master the Art of Data Storytelling (Official Book Ginger)](https://www.youtube.com/watch?v=53gZrM42ig8)
+- 📖 [Storytelling with Data — Cole Nussbaumer Knaflic (book)](https://www.storytellingwithdata.com/book)
 
 ### 2. Cognitive Load Reduction
 
@@ -260,7 +280,7 @@
 **🔗 Resources:**
 
 - ▶ [Storytelling with Data | Cole Nussbaumer Knaflic | Talks at Google](https://www.youtube.com/watch?v=8EMW7io4rSI)
-- ▶ [Storytelling with Data (book summary)](https://www.youtube.com/watch?v=53gZrM42ig8)
+- 🔗 [storytellingwithdata.com blog / examples](https://www.storytellingwithdata.com/blog)
 
 ### 3. SQL and BI Project Execution
 
@@ -291,4 +311,5 @@
 
 **🔗 Resources:**
 
-- 🔗 [How to Create a Portfolio Website for FREE (Alex The Analyst)](https://www.classcentral.com/course/youtube-data-analyst-portfolio-projects-92262)
+- 🔗 [GitHub Docs: About READMEs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
+- 🔗 [Creating a GitHub Pages site (GitHub Docs)](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
