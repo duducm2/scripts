@@ -12,8 +12,6 @@
 
 - [ ] Data lake
 
-- [ ] data governance
-
 ## Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3)
 
 ### Month 1: Python Programming and Applied Statistics
@@ -25,21 +23,12 @@
 - [ ] Establish virtual environment discipline (venv/conda)
 - [ ] Execute terminal operations seamlessly within the editor
 
-**🔗 Resources:**
-
-- ▶ [Python for Beginners - freeCodeCamp](https://www.youtube.com/watch?v=rfscVS0vtbw)
-
 #### Applied Statistics and Linear Algebra
 
 - [ ] Master descriptive statistics (mean, variance, standard deviation)
 - [ ] Map linear algebra concepts (matrices, vectors, dot products)
 - [ ] Calculate probability distributions (Normal, Binomial, Poisson)
 - [ ] Transition theoretical math into programmatic logic
-
-**🔗 Resources:**
-
-- ▶ [Statistics Fundamentals - StatQuest](https://www.youtube.com/watch?v=qBigTkBDMWs)
-- ▶ [Linear Algebra Essence - 3Blue1Brown](https://www.youtube.com/watch?v=fNk_zzaMoSs)
 
 ### Month 2: Data Wrangling and SQL Integration
 
@@ -50,20 +39,12 @@
 - [ ] Handle missing values and execute data imputation techniques
 - [ ] Optimize script execution for large in-memory datasets
 
-**🔗 Resources:**
-
-- ▶ [Python Pandas Tutorial - Corey Schafer](https://www.youtube.com/watch?v=vmEHCJwhgG0)
-
 #### Relational Databases (SQL)
 
 - [ ] Query structured data to feed Month 2 Pandas workflows
 - [ ] Execute complex joins and window functions
 - [ ] Optimize query performance for analytical extraction
 - [ ] Integrate SQL queries directly into Python scripts
-
-**🔗 Resources:**
-
-- ▶ [SQL Full Course - freeCodeCamp](https://www.youtube.com/watch?v=HXV3cyQiF80)
 
 ### Month 3: Exploratory Data Analysis (EDA) and Visualization
 
@@ -74,20 +55,12 @@
 - [ ] Eliminate chart junk to highlight core data narratives
 - [ ] Build interactive dashboards for multidimensional data
 
-**🔗 Resources:**
-
-- ▶ [Data Visualization for Data Science - Ken Jee](https://www.youtube.com/watch?v=0UlihRp2Ads)
-
 #### Feature Engineering
 
 - [ ] Transform raw variables into predictive signals based on EDA findings
 - [ ] Encode categorical variables (One-Hot, Target Encoding)
 - [ ] Scale numerical features (Standardization, Normalization)
 - [ ] Establish a reproducible feature pipeline
-
-**🔗 Resources:**
-
-- ▶ [Feature Engineering - StatQuest](https://www.youtube.com/watch?v=6PeL4tN9tVE)
 
 ## Phase 2: Predictive Modeling and Advanced Algorithms (Months 4-6)
 
@@ -100,20 +73,12 @@
 - [ ] Execute tree-based models (Random Forest, Gradient Boosting)
 - [ ] Isolate target variables and map decision boundaries
 
-**🔗 Resources:**
-
-- ▶ [Machine Learning Fundamentals - StatQuest](https://www.youtube.com/watch?v=GwIoYPEg3ok)
-
 #### Model Evaluation Metrics
 
 - [ ] Quantify model accuracy using precision, recall, and F1-score
 - [ ] Plot ROC-AUC curves to measure classification thresholds
 - [ ] Evaluate regression performance (RMSE, MAE, R-squared)
 - [ ] Prevent data leakage during cross-validation
-
-**🔗 Resources:**
-
-- ▶ [ROC and AUC - StatQuest](https://www.youtube.com/watch?v=4jRBrMpHDlc)
 
 ### Month 5: Unsupervised Machine Learning and Web Scraping
 
@@ -124,20 +89,12 @@
 - [ ] Identify latent patterns in continuous data streams
 - [ ] Validate cluster cohesion and separation (Silhouette Score)
 
-**🔗 Resources:**
-
-- ▶ [Principal Component Analysis - StatQuest](https://www.youtube.com/watch?v=FgakZw6K1QQ)
-
 #### Web Scraping for Custom Datasets
 
 - [ ] Scrape e-commerce metrics (SSL presence, customer opinions) using BeautifulSoup/Selenium
 - [ ] Extract unstructured web data to fuel Month 5 clustering algorithms
 - [ ] Automate pagination and handle dynamic DOM rendering
 - [ ] Structure scraped outputs into relational schemas
-
-**🔗 Resources:**
-
-- ▶ [Python Web Scraping - Corey Schafer](https://www.youtube.com/watch?v=XGkEhqBRx-Y)
 
 ### Month 6: Experimentation and Causal Inference
 
@@ -148,20 +105,12 @@
 - [ ] Evaluate experiment results using t-tests and p-values
 - [ ] Distinguish correlation from causal impact
 
-**🔗 Resources:**
-
-- ▶ [A/B Testing - StatQuest](https://www.youtube.com/watch?v=UsYh8EqgAJE)
-
 #### Advanced Feature Selection
 
 - [ ] Prune suboptimal features from Month 4 and Month 5 models
 - [ ] Implement Recursive Feature Elimination (RFE)
 - [ ] Calculate feature importance metrics and SHAP values
 - [ ] Optimize the trade-off between model complexity and interpretability
-
-**🔗 Resources:**
-
-- ▶ [Ridge, Lasso, ElasticNet - StatQuest](https://www.youtube.com/watch?v=Q81rr3jDCNE)
 
 ## Phase 3: Deep Learning and Unstructured Data (Months 7-9)
 
@@ -174,20 +123,12 @@
 - [ ] Implement activation functions (ReLU, Sigmoid, Softmax)
 - [ ] Build and train networks using PyTorch or TensorFlow
 
-**🔗 Resources:**
-
-- ▶ [Neural Networks - 3Blue1Brown](https://www.youtube.com/watch?v=aircAruvnKk)
-
 #### Regularization and Optimization
 
 - [ ] Mitigate neural network overfitting using Dropout and L2 regularization
 - [ ] Tune hyperparameters (learning rate, batch size)
 - [ ] Implement early stopping mechanisms
 - [ ] Monitor training loss vs. validation loss epochs
-
-**🔗 Resources:**
-
-- ▶ [Gradient Descent - StatQuest](https://www.youtube.com/watch?v=sDv2f5w14Ns)
 
 ### Month 8: Natural Language Processing (NLP)
 
@@ -198,20 +139,12 @@
 - [ ] Map text to dense vectors using Word2Vec or GloVe
 - [ ] Transition text representations into deep learning inputs
 
-**🔗 Resources:**
-
-- ▶ [Word Embeddings - StatQuest](https://www.youtube.com/watch?v=fBekMeEAupI)
-
 #### Sequential Modeling
 
 - [ ] Train RNNs and LSTMs on temporal/sequential data
 - [ ] Analyze sentiment polarity within text corpus
 - [ ] Implement attention mechanisms for long-context understanding
 - [ ] Evaluate language models against baseline heuristics
-
-**🔗 Resources:**
-
-- ▶ [Recurrent Neural Networks - StatQuest](https://www.youtube.com/watch?v=AsNTP8Kwu80)
 
 ### Month 9: Transformer Models and Generative AI Integration
 
@@ -221,10 +154,6 @@
 - [ ] Fine-tune pre-trained models (BERT, RoBERTa) on domain-specific data
 - [ ] Execute zero-shot and few-shot inference techniques
 - [ ] Integrate LLM APIs into data pipelines for unstructured parsing
-
-**🔗 Resources:**
-
-- ▶ [Transformers Explained - StatQuest](https://www.youtube.com/watch?v=zxQyTKU3KM)
 
 ## Phase 4: MLOps and Production Systems (Months 10-12)
 
@@ -237,20 +166,12 @@
 - [ ] Handle concurrent model inference requests
 - [ ] Document endpoints automatically via Swagger/OpenAPI
 
-**🔗 Resources:**
-
-- ▶ [FastAPI Course - freeCodeCamp](https://www.youtube.com/watch?v=0sOvCWFmrtA)
-
 #### Containerization
 
 - [ ] Containerize the FastAPI application using Docker
 - [ ] Establish isolated, reproducible production environments
 - [ ] Manage environment variables and secrets securely
 - [ ] Optimize image sizes for faster deployment cycles
-
-**🔗 Resources:**
-
-- ▶ [Docker Full Course - freeCodeCamp](https://www.youtube.com/watch?v=fG4ZBpHkMjM)
 
 ### Month 11: MLOps and Continuous Integration
 
@@ -260,10 +181,6 @@
 - [ ] Automate testing and deployment pipelines via GitHub Actions
 - [ ] Establish model drift detection mechanisms
 - [ ] Execute automated retraining triggers based on data degradation
-
-**🔗 Resources:**
-
-- ▶ [MLOps Explained - TechWorld with Nana](https://www.youtube.com/watch?v=06-AZXmD0pQ)
 
 ### Month 12: Capstone Project and Portfolio Consolidation
 
@@ -275,10 +192,6 @@
 - [ ] Compile the repository structure, documentation, and architecture diagrams
 - [ ] Complete clinical playback analysis of the model's predictive performance
 
-**🔗 Resources:**
-
-- ▶ [Data Science Portfolio Tips - Ken Jee](https://www.youtube.com/watch?v=4u4w7JWqz-U)
-
 ## Practice Schedule (Standard Analytical Session Architecture)
 
 ### Session Structure
@@ -288,19 +201,11 @@
 - [ ] Application Block (25 min): Writing scripts, training models, or debugging pipelines
 - [ ] Review and Reflection (5 min): Metric logging, code optimization, weekly reflection
 
-**🔗 Resources:**
-
-- ▶ [How to Study Data Science - Ken Jee](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
-
 ## Progress Tracking
 
 ### Practice Consistency
 
 - [ ] 5-6 sessions per week completed
-
-**🔗 Resources:**
-
-- ▶ [Building Consistent Study Habits - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Execution Progression
 
@@ -308,29 +213,17 @@
 - [ ] Supervised Training - Target: > 85% F1-Score on baseline
 - [ ] API Response Time - Target: < 200ms latency
 
-**🔗 Resources:**
-
-- ▶ [How to Track Your Learning - Data Science Jay](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
-
 ### Accuracy Trend
 
 - [ ] Monitor Data Leakage Incidents
 - [ ] Monitor Prediction Residuals
 - [ ] Monitor Pipeline Crash Rates
 
-**🔗 Resources:**
-
-- ▶ [Confusion Matrix - StatQuest](https://www.youtube.com/watch?v=fSytzGwwBVw)
-
 ### Portfolio Readiness
 
 - [ ] EDA Notebook on E-commerce metrics
 - [ ] Classification Model API
 - [ ] End-to-End MLOps Pipeline
-
-**🔗 Resources:**
-
-- ▶ [Data Science Portfolio - Ken Jee](https://www.youtube.com/watch?v=4u4w7JWqz-U)
 
 ### Skill Radar (Semi-Monthly Self-Assessment)
 
@@ -341,10 +234,6 @@
 - [ ] MLOps & Deployment
 - [ ] Data Storytelling
 
-**🔗 Resources:**
-
-- ▶ [Self-Assessment for Data Scientists - Ken Jee](https://www.youtube.com/watch?v=0L3ZzBTJFJc)
-
 ## Goals (End of Year 1)
 
 - [ ] Fluent script execution across local and cloud environments
@@ -354,7 +243,3 @@
 - [ ] Deployed portfolio documentation (monthly snapshots)
 - [ ] Consistent 5-6 session/week analytical discipline
 - [ ] Zero unmanaged technical debt in primary repositories
-
-**🔗 Resources:**
-
-- ▶ [Data Science Roadmap - Ken Jee](https://www.youtube.com/watch?v=ua-CiDNNj30)

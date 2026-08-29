@@ -28,7 +28,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Philosophy of Science Intro - CrashCourse](https://www.youtube.com/watch?v=BDqvzFYzPTM)
+- 🔍 [Alexander Koryagin: Philosophy of Science, Introduction | Course Overview](https://www.youtube.com/results?search_query=Alexander+Koryagin+Philosophy+of+Science+Introduction+Course+Overview)
 
 ##### 2. Advanced Literature Review and Gap Identification
 
@@ -40,7 +40,7 @@
 
 **🔗 Resources:**
 
-- ▶ [How to Do a Literature Review - Andy Stapleton](https://www.youtube.com/watch?v=t2d7Ru_qycs)
+- 🔍 [Andy Stapleton: How To Do A Literature Review (STRESS-FREE!)](https://www.youtube.com/results?search_query=Andy+Stapleton+How+To+Do+A+Literature+Review+STRESS-FREE)
 
 ##### 3. Reference Management and Bibliographic Frameworks
 
@@ -52,7 +52,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Zotero Tutorial - Andy Stapleton](https://www.youtube.com/watch?v=JVPDCbX1G0U)
+- 🔍 [Andy Stapleton: How to use Zotero's full potential](https://www.youtube.com/results?search_query=Andy+Stapleton+How+to+use+Zotero+full+potential)
 
 ### Phase 2: Methodological Design and Statistical Rigor
 
@@ -69,7 +69,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Qualitative Research Methods - Yale](https://www.youtube.com/watch?v=6Phcgl4_VXg)
+- 🔍 [Yale University (Leslie Curry): Fundamentals of Qualitative Research Methods Playlist](https://www.youtube.com/results?search_query=Yale+Leslie+Curry+Fundamentals+of+Qualitative+Research+Methods)
 
 ##### 5. Quantitative Research and Study Design Architecture
 
@@ -80,7 +80,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Study Design - Global Health with Greg Martin](https://www.youtube.com/watch?v=GPadprS2G8o)
+- 🔍 [Global Health with Greg Martin: Research Methods - Introduction](https://www.youtube.com/results?search_query=Global+Health+Greg+Martin+Research+Methods+Introduction)
 
 ##### 6. Core Statistical Concepts and Probability Theory
 
@@ -92,7 +92,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Statistics Fundamentals - StatQuest](https://www.youtube.com/watch?v=qBigTkBDMWs)
+- 🔍 [StatQuest with Josh Starmer: Statistics Fundamentals Playlist](https://www.youtube.com/results?search_query=StatQuest+Josh+Starmer+Statistics+Fundamentals+Playlist)
 
 ##### 7. Applied Biostatistics and R Programming
 
@@ -104,7 +104,7 @@
 
 **🔗 Resources:**
 
-- ▶ [R Programming for Research - Global Health with Greg Martin](https://www.youtube.com/watch?v=_V8eKsto3Ug)
+- 🔍 [MarinStatsLectures: R Programming & Statistics Full Tutorial Series](https://www.youtube.com/results?search_query=MarinStatsLectures+R+Programming+Statistics+Full+Tutorial+Series)
 
 ### Phase 3: Data Integrity, Ethics, and Management
 
@@ -119,7 +119,7 @@
 
 **🔗 Resources:**
 
-- ▶ [FAIR Data Principles - Utrecht University](https://www.youtube.com/watch?v=4JB1G0elGOA)
+- 🔍 [Utrecht University: Is my data FAIR? | Research Data management](https://www.youtube.com/results?search_query=Utrecht+University+Is+my+data+FAIR+Research+Data+management)
 
 ##### 9. Research Ethics and Scientific Integrity
 
@@ -131,7 +131,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Research Ethics - NIH](https://www.youtube.com/watch?v=86zWBjDaXPk)
+- 🔍 [NIH VideoCast: IPPCR Ethics in the Conduct of Research (James L. Gulley)](https://www.youtube.com/results?search_query=NIH+IPPCR+Ethics+in+the+Conduct+of+Research+James+Gulley)
 
 ### Phase 4: Scientific Writing, Publication, and Dissemination
 
@@ -147,7 +147,7 @@
 
 **🔗 Resources:**
 
-- ▶ [IMRaD Structure - SAGE Research Methods](https://www.youtube.com/watch?v=QYd2F4aNyNM)
+- 🔍 [SAGES: IMRAD Structure Part I & II](https://www.youtube.com/results?search_query=SAGES+IMRAD+Structure+Part+I+II)
 
 ##### 11. Advanced Scientific Writing and Stylistic Nuance
 
@@ -158,7 +158,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Scientific Writing Tips - Andy Stapleton](https://www.youtube.com/watch?v=GWRU5nAWvL4)
+- 🔍 [Stanford University / Kristin Sainani: Writing in the Sciences (Full Course Playlist)](https://www.youtube.com/results?search_query=Kristin+Sainani+Writing+in+the+Sciences+Stanford)
 
 ##### 12. Delivering High-Impact Scientific Presentations
 
@@ -169,7 +169,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Scientific Presentations - Nature Masterclasses](https://www.youtube.com/watch?v=sT_-lpeBlUQ)
+- 🔍 [MIT CompBio (Manolis Kellis): Lecture 25 - How to Present](https://www.youtube.com/results?search_query=MIT+Manolis+Kellis+Lecture+25+How+to+Present)
 
 ### Phase 5: Funding, Grantsmanship, and Independence
 
@@ -184,7 +184,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Grant Writing Basics - NIH](https://www.youtube.com/watch?v=OnAwOgQ5Zd0)
+- 🔍 [NIH Funding: NIH Grants Fundamentals and Grants Process Playlists](https://www.youtube.com/results?search_query=NIH+Grants+Fundamentals+Grants+Process+Playlist)
 
 ##### 14. Strategic Grant Writing for Career Independence
 
@@ -195,7 +195,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Grant Writing Strategy - Andy Stapleton](https://www.youtube.com/watch?v=GWRU5nAWvL4)
+- 🔍 [Sarah Dobson: Research Grant Writing Fundamentals](https://www.youtube.com/results?search_query=Sarah+Dobson+Research+Grant+Writing+Fundamentals+NIH)
 
 ## Autonomous Execution Framework
 
@@ -205,20 +205,12 @@
 - [ ] Afternoon: Methodological and programmatic execution (60–90 min)
 - [ ] Evening: Structural deconstruction and rhetorical output (45–60 min)
 
-**🔗 Resources:**
-
-- ▶ [Daily Research Routine - Andy Stapleton](https://www.youtube.com/watch?v=GWRU5nAWvL4)
-
 ### Weekly Macro-Routine
 
 - [ ] Monday – Wednesday: Acquisition & theory
 - [ ] Thursday – Friday: Data synthesis & drafting
 - [ ] Saturday: Simulation & peer review
 - [ ] Sunday: Consolidation & bibliographic maintenance
-
-**🔗 Resources:**
-
-- ▶ [Weekly Research Planning - Andy Stapleton](https://www.youtube.com/watch?v=GWRU5nAWvL4)
 
 ## Willingness to Pay
 
@@ -281,7 +273,3 @@
 - [ ] Jobs-to-be-Done (JTBD) and competitive context as WTP constraints
 - [ ] MaxDiff (maximum difference scaling)
 - [ ] Value metrics, packaging, and monetization linked to WTP
-
-**🔗 Resources:**
-
-- ▶ [Conjoint Analysis Intro - Kellogg](https://www.youtube.com/watch?v=5rUv4lGMfL8)

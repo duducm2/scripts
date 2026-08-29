@@ -39,10 +39,6 @@
 - [ ] Compound-complex sentences
 - [ ] Subject-Verb Agreement (Collective nouns, Indefinite pronouns, Inverted structures)
 
-**🔗 Resources:**
-
-- ▶ [English Sentence Structure - English with Lucy](https://www.youtube.com/watch?v=8GrsPiE4IhU)
-
 #### Month 2: Conditional & Modal Systems
 
 ##### Modal Verbs
@@ -156,10 +152,6 @@
 - [ ] Subordinating conjunctions (although, because, unless, whereas, while, since, etc.)
 - [ ] Correlative conjunctions (both...and, either...or, not only...but also, neither...nor)
 - [ ] Transitional words (Addition, Contrast, Cause/Effect, Time)
-
-**🔗 Resources:**
-
-- ▶ [Linking Words in English - BBC Learning English](https://www.youtube.com/watch?v=KVGCT3f0Zjs)
 
 ##### Advanced Constructions
 
@@ -286,10 +278,6 @@
 
 - [ ] Due (Expected, Due diligence)
 
-**🔗 Resources:**
-
-- ▶ [How to Learn Vocabulary - English with Lucy](https://www.youtube.com/watch?v=JuanJyFz6Zs)
-
 ## Phase 2: Productive Skills Excellence (Months 4-9)
 
 ### 5. Speaking & Pronunciation
@@ -301,20 +289,12 @@
 - [ ] Individual sounds (Vowels, Consonants, Diphthongs)
 - [ ] Minimal pairs practice
 
-**🔗 Resources:**
-
-- ▶ [English Phonetics - Rachel's English](https://www.youtube.com/watch?v=n4NVPg2kHv4)
-
 ##### Suprasegmental Features
 
 - [ ] Word stress patterns
 - [ ] Sentence stress and rhythm
 - [ ] Intonation patterns
 - [ ] Connected speech (Linking, Elision, Assimilation)
-
-**🔗 Resources:**
-
-- ▶ [Word Stress and Intonation - Rachel's English](https://www.youtube.com/watch?v=OUnEjGlOzQA)
 
 ##### Accent Reduction
 
@@ -331,20 +311,12 @@
 - [ ] Turn-taking in conversations
 - [ ] Topic development and coherence
 
-**🔗 Resources:**
-
-- ▶ [Discourse Markers - BBC Learning English](https://www.youtube.com/watch?v=KVGCT3f0Zjs)
-
 ##### Functional Language
 
 - [ ] Expressing opinions, Agreeing/Disagreeing
 - [ ] Making suggestions, Giving advice
 - [ ] Describing, narrating, explaining
 - [ ] Presenting arguments and persuading
-
-**🔗 Resources:**
-
-- ▶ [Functional Language for Fluency - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ##### Conversational Strategies
 
@@ -365,19 +337,11 @@
 - [ ] Signposting language
 - [ ] Visual aids and body language
 
-**🔗 Resources:**
-
-- ▶ [How to Give a Great Presentation - TED](https://www.youtube.com/watch?v=Unzc731iCUY)
-
 ##### Debate and Argumentation
 
 - [ ] Constructing logical arguments (Claim, Evidence, Reasoning)
 - [ ] Counterarguments and rebuttals
 - [ ] Logical fallacies to avoid
-
-**🔗 Resources:**
-
-- ▶ [How to Argue - TED-Ed](https://www.youtube.com/watch?v=3d29eWBpJYA)
 
 ##### Sociolinguistic Competence
 
@@ -495,20 +459,12 @@
 - [ ] Certification Preparation (Cambridge CPE, IELTS, TOEFL)
 - [ ] Portfolio Development (Writing/Speaking samples, Learning journal)
 
-**🔗 Resources:**
-
-- ▶ [How to Reach C1 English - English with Lucy](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
-
 ## Additional Components
 
 ### 10. Fluency & Confidence
 
 - [ ] Fluency Development (Natural rhythm, smooth transitions)
 - [ ] Confidence Building (Overcoming fear of mistakes, self-efficacy)
-
-**🔗 Resources:**
-
-- ▶ [Build Speaking Confidence - English with Lucy](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ## Resources & Tools
 
@@ -517,18 +473,10 @@
 - [ ] Self-Assessment (CEFR grid, Cambridge placement, EF SET)
 - [ ] Official Tests (Cambridge, IELTS, TOEFL, TOEIC)
 
-**🔗 Resources:**
-
-- ▶ [Self-Assessment for English Learners - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
-
 ### Grammar Resources
 
 - [ ] Textbooks (Advanced Grammar in Use, Practical English Usage)
 - [ ] Online (Grammarly, Purdue OWL, British Council)
-
-**🔗 Resources:**
-
-- ▶ [Best Grammar Resources - English with Lucy](https://www.youtube.com/watch?v=w7ZZdVlpOeo)
 
 ### Vocabulary Resources
 
@@ -536,28 +484,16 @@
 - [ ] Lists (AWL, Oxford 3000/5000)
 - [ ] Tools (Anki, Quizlet, Memrise)
 
-**🔗 Resources:**
-
-- ▶ [Vocabulary Learning Methods - English with Lucy](https://www.youtube.com/watch?v=JuanJyFz6Zs)
-
 ### Pronunciation Resources
 
 - [ ] Textbooks (English Pronunciation in Use, Ship or Sheep?)
 - [ ] Online (Forvo, YouGlish, Sounds of Speech)
 - [ ] Apps (ELSA Speak, Speechling)
 
-**🔗 Resources:**
-
-- ▶ [Pronunciation Resources - Rachel's English](https://www.youtube.com/watch?v=n4NVPg2kHv4)
-
 ### Speaking Resources
 
 - [ ] Language Exchange (iTalki, Tandem, HelloTalk)
 - [ ] Practice Materials (TED Talks, Debate.org, Toastmasters)
-
-**🔗 Resources:**
-
-- ▶ [Speaking Practice Methods - English with Lucy](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ### Listening Resources
 
@@ -566,10 +502,6 @@
 - [ ] Academic (Coursera, edX, MIT OCW, Khan Academy)
 - [ ] Entertainment (Netflix, YouTube, Audiobooks)
 
-**🔗 Resources:**
-
-- ▶ [Improve English Listening - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
-
 ### Reading Resources
 
 - [ ] News & Magazines (The Economist, The Atlantic, The New Yorker, The Guardian)
@@ -577,18 +509,10 @@
 - [ ] Academic (Google Scholar, JSTOR, ResearchGate)
 - [ ] Online (Medium, Quora, Reddit)
 
-**🔗 Resources:**
-
-- ▶ [Reading Strategies for Advanced Learners - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
-
 ### Writing Resources
 
 - [ ] Tools (Grammarly, Hemingway, ProWritingAid)
 - [ ] Guides (Purdue OWL, The Elements of Style)
-
-**🔗 Resources:**
-
-- ▶ [Academic Writing Tips - BBC Learning English](https://www.youtube.com/watch?v=0Tw9kQ8MZpY)
 
 ## Progress Tracking
 
@@ -603,10 +527,6 @@
 - [ ] Listening: Daily practice completed
 - [ ] Self-assessment completed
 
-**🔗 Resources:**
-
-- ▶ [Weekly Study Planning - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ### Monthly Milestones
 
 - [ ] Practice test completed and scored
@@ -615,10 +535,6 @@
 - [ ] Speaking session recorded and self-assessed
 - [ ] Progress review and plan adjustment
 
-**🔗 Resources:**
-
-- ▶ [Monthly Goal Setting - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ### Quarterly Goals
 
 - [ ] Comprehensive skills assessment
@@ -626,7 +542,3 @@
 - [ ] Celebrate achievements
 - [ ] Set new targets for next quarter
 - [ ] Review and update resources
-
-**🔗 Resources:**
-
-- ▶ [Quarterly Planning - Ali Abdaal](https://www.youtube.com/watch?v=K8H0pQn72N0)

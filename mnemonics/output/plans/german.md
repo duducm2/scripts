@@ -23,7 +23,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German Pronunciation - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)
+- 🔍 [Deutsch für Euch: German Pronunciation & Alphabet](https://www.youtube.com/results?search_query=Deutsch+f%C3%BCr+Euch+Pronunciation)
+- 🔍 [Fluent Forever: German Pronunciation - Vowels and Consonants](https://www.youtube.com/results?search_query=Fluent+Forever+German+Pronunciation)
 
 #### 2. Core Grammar: Sentence Structure & Verbs
 
@@ -36,7 +37,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German Sentence Structure - Learn German with Anja](https://www.youtube.com/watch?v=Z-2LcfZgXnU)
+- 🔍 [Lingoni German (Jenny): Complete A1 Playlist](https://www.youtube.com/results?search_query=Lingoni+German+A1+Playlist)
+- 🔍 [Learn German with Anja: Full A1 Course](https://www.youtube.com/results?search_query=Learn+German+with+Anja+Full+A1+Course)
 
 #### 3. Core Grammar: Nouns, Cases & Negation
 
@@ -48,7 +50,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German Cases Explained - Learn German with Anja](https://www.youtube.com/watch?v=8ZrDVQFGQ8o)
+- 🔍 [YourGermanTeacher: A1.1 Grammar - Nominative and Accusative](https://www.youtube.com/results?search_query=YourGermanTeacher+A1.1+Nominative+Accusative)
+- 🔍 [Learn German with Herr Antrim: A1 Beginner Crash Course](https://www.youtube.com/results?search_query=Learn+German+with+Herr+Antrim+A1)
 
 #### 4. Vocabulary Acquisition (500–650 Words)
 
@@ -59,7 +62,7 @@
 
 **🔗 Resources:**
 
-- ▶ [1000 Most Common German Words - Lingoni German](https://www.youtube.com/watch?v=jtMP-ucXEYQ)
+- 🔍 [Natürlich German: A1 Comprehensible Input (Storytelling)](https://www.youtube.com/results?search_query=Naturlich+German+A1)
 
 #### 5. Listening, Reading, and Writing
 
@@ -79,10 +82,6 @@
 - [ ] Take a free online A1 mock exam (Goethe-Institut or telc website).
 - [ ] Self-Assessment: Can you introduce yourself, order food, and form basic present-tense sentences without looking at notes? Do not progress until scoring >75% on the mock exam.
 
-**🔗 Resources:**
-
-- ▶ [German A1 Exam Tips - Herr Antrim](https://www.youtube.com/watch?v=0ZrDVQFGQ8o)
-
 ### Months 4–6: CEFR Level A2 (Advanced Beginner)
 
 #### 1. Advanced Syntax: Subordinate Clauses & Word Order
@@ -93,7 +92,7 @@
 
 **🔗 Resources:**
 
-- ▶ [German Subordinate Clauses - Deutsch mit Marija](https://www.youtube.com/watch?v=Z-2LcfZgXnU)
+- 🔍 [Learn German with Anja: Subordinate Clauses (dass, weil, wenn)](https://www.youtube.com/results?search_query=Learn+German+with+Anja+Subordinate+Clauses)
 
 #### 2. Temporal Scope: Past Tenses
 
@@ -103,7 +102,7 @@
 
 **🔗 Resources:**
 
-- ▶ [German Past Tenses - Learn German with Anja](https://www.youtube.com/watch?v=Z-2LcfZgXnU)
+- 🔍 [YourGermanTeacher: The Perfekt Tense in German](https://www.youtube.com/results?search_query=YourGermanTeacher+Perfekt+Tense)
 
 #### 3. Morphological Complexity: Dative, Genitive & Adjectives
 
@@ -117,7 +116,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German Dative Case - Learn German with Anja](https://www.youtube.com/watch?v=8ZrDVQFGQ8o)
+- 🔍 [Lingoni German (Jenny): Complete A2 Playlist](https://www.youtube.com/results?search_query=Lingoni+German+A2+Playlist)
+- 🔍 [Learn German: Dative Case and Wechselpräpositionen](https://www.youtube.com/results?search_query=German+Dative+Case+Wechselprapositionen)
 
 #### 4. Vocabulary (up to 1,500 Words), Speaking & Early Culture
 
@@ -149,10 +149,6 @@
 - [ ] Complete a full Goethe-Zertifikat A2 mock exam under timed conditions.
 - [ ] Ensure you can naturally deploy the _Perfekt_ tense in speech before moving to Phase 2.
 
-**🔗 Resources:**
-
-- ▶ [German A2 Exam Tips - Herr Antrim](https://www.youtube.com/watch?v=0ZrDVQFGQ8o)
-
 ## Phase 2: Independent User (B1 – B2) – Intermediate Fluency and Expression
 
 ### Months 7–10: CEFR Level B1 (Intermediate)
@@ -166,7 +162,7 @@
 
 **🔗 Resources:**
 
-- ▶ [German B1 Grammar - Lingoni German](https://www.youtube.com/watch?v=jtMP-ucXEYQ)
+- 🔍 [YourGermanTeacher: B1 Grammar - Relative Clauses & Konjunktiv II](https://www.youtube.com/results?search_query=YourGermanTeacher+B1+Relative+Clauses+Konjunktiv+II)
 
 #### 2. Advanced Verbs, Tenses & Adjectives
 
@@ -178,7 +174,7 @@
 
 **🔗 Resources:**
 
-- ▶ [German Verb Tenses - Deutsch mit Marija](https://www.youtube.com/watch?v=Z-2LcfZgXnU)
+- 🔍 [Lingoni German: B1 Playlist (Grammar & Verbs)](https://www.youtube.com/results?search_query=Lingoni+German+B1+Playlist)
 
 #### 3. Vocabulary (up to 3,000 Words), Pragmatics & Live Interaction
 
@@ -210,10 +206,6 @@
 - [ ] Record a 3-minute spontaneous audio describing an image or past event.
 - [ ] Take a telc or Goethe B1 Mock exam. Do not progress until scoring >80%.
 
-**🔗 Resources:**
-
-- ▶ [German B1 Exam Tips - Herr Antrim](https://www.youtube.com/watch?v=0ZrDVQFGQ8o)
-
 ### Months 11–15: CEFR Level B2 (Upper Intermediate)
 
 #### 1. Nuanced Grammar & Collocations
@@ -227,7 +219,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German B2 Grammar - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)
+- 🔍 [YourGermanTeacher: Nomen-Verb-Verbindungen Mastery](https://www.youtube.com/results?search_query=Nomen-Verb-Verbindungen+German+B2)
+- 🔍 [Learn German with Herr Antrim: B2 Grammar Master Classes](https://www.youtube.com/results?search_query=Learn+German+with+Herr+Antrim+B2+Grammar)
 
 #### 2. Vocabulary (5,000–6,000 Words) & Intensive Live Interaction
 
@@ -256,10 +249,6 @@
 - [ ] Take a full B2 Mock Exam (reading, listening, writing, speaking).
 - [ ] Engage in a 15-minute debate on a randomly assigned topic with a native speaker without resorting to English.
 
-**🔗 Resources:**
-
-- ▶ [German B2 Exam Tips - Herr Antrim](https://www.youtube.com/watch?v=0ZrDVQFGQ8o)
-
 ## Phase 3: Proficient User (C1 – C2) – Advanced Mastery and Academic Fluency
 
 ### Months 16–21: CEFR Level C1 (Advanced)
@@ -272,7 +261,8 @@
 
 **🔗 Resources:**
 
-- ▶ [Advanced German Style - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)
+- 🔍 [Deutsch mit Marija: C1/C2 Grammar & Sprachgefühl](https://www.youtube.com/results?search_query=Deutsch+mit+Marija+C1+C2)
+- 🔍 [Djudsland: Mastering C1/C2 Schreiben & Nominalstil](https://www.youtube.com/results?search_query=Djudsland+Mastering+C1+Schreiben)
 
 #### 2. Specialized Vocabulary & Pragmatics
 
@@ -282,7 +272,8 @@
 
 **🔗 Resources:**
 
-- ▶ [German C1 Vocabulary - Lingoni German](https://www.youtube.com/watch?v=jtMP-ucXEYQ)
+- 🔍 [SmarterGerman: Advanced C1 Vocabulary & Learning Techniques](https://www.youtube.com/results?search_query=SmarterGerman+C1)
+- 🔍 [Learn German (Original): B2-C1 Podcasts - Mastery of Füllwörter](https://www.youtube.com/results?search_query=Learn+German+Original+C1+Podcast)
 
 #### 3. Academic Reading, Listening, and Essay Structuring
 
@@ -298,10 +289,6 @@
 
 - [ ] C1 Mock exam. Output must reflect complex stylistic variations (e.g., flawless _Nominalstil_).
 
-**🔗 Resources:**
-
-- ▶ [German C1 Exam Tips - Herr Antrim](https://www.youtube.com/watch?v=0ZrDVQFGQ8o)
-
 ### Months 22–36: CEFR Level C2 (Mastery)
 
 #### 1. Total Immersion & Near-Native Application
@@ -312,7 +299,9 @@
 
 **🔗 Resources:**
 
-- ▶ [German Immersion Tips - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)
+- 🔍 [Easy German: C2 / Dialects and Cultural Sociological Dives](https://www.youtube.com/results?search_query=Easy+German+C2+Dialects)
+- 🔍 [Simplicissimus / STRG_F: High-production German Video Essays](https://www.youtube.com/results?search_query=Simplicissimus+STRG_F)
+- 🔍 [TEDx (German): Native-Level Formal Presentations](https://www.youtube.com/results?search_query=TEDx+Deutsch)
 
 ## Autonomous Execution Framework: Daily and Weekly Protocols
 
@@ -323,19 +312,11 @@
 - [ ] Review 10–20 new words using Spaced Repetition Software (Anki or Quizlet).
 - [ ] Vocalize the word, state its definite article (der/die/das), plural form, and generate a contextualized sample sentence.
 
-**🔗 Resources:**
-
-- ▶ [Daily German Vocabulary Routine - Learn German Original](https://www.youtube.com/watch?v=jtMP-ucXEYQ)
-
 #### Afternoon: Comprehensible Input & Phonetic Mimicry (30–45 Minutes)
 
 - [ ] Consume passive and active listening content appropriate for your CEFR level.
 - [ ] **Active Shadowing:** Select a 2-minute segment. Listen, pause, and repeat aloud, mimicking intonation, rhythm, and articulation perfectly.
 - [ ] **Optional (A1–A2):** Use [Slow German](https://www.youtube.com/results?search_query=Slow+German+Annik+Rubens) for shadowing: read the transcript from [slowgerman.com](https://slowgerman.com/), then listen and repeat phrase by phrase.
-
-**🔗 Resources:**
-
-- ▶ [Comprehensible Input - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)
 
 #### Evening: Syntactic Construction & Output Generation (30–45 Minutes)
 
@@ -343,17 +324,9 @@
 - [ ] Write 5 to 10 original, complex sentences physically applying the newly learned grammatical rule.
 - [ ] **Active Feedback Loop:** Instantly validate your sentences using AI tools (e.g., ChatGPT/Claude) instructed to act as a strict German grammar teacher. Submit longer paragraphs weekly to native speakers on LangCorrect or to your tutor to prevent fossilizing errors.
 
-**🔗 Resources:**
-
-- ▶ [German Output Practice - Learn German with Anja](https://www.youtube.com/watch?v=Z-2LcfZgXnU)
-
 ### Weekly Macro-Routine (Thematic Cycles)
 
 - [ ] **Monday – Wednesday (Acquisition):** Focus entirely on ingesting new structural grammar rules and thematic vocabulary clusters.
 - [ ] **Thursday – Friday (Application & Correction):** Transition to output. Write short essays, emails, or record audio diaries. **Mandatory:** Submit this output for external correction.
 - [ ] **Saturday (Simulation & Live Interaction):**
 - [ ] **Sunday (Passive Recovery):** Discard active study. Consume German media (podcasts, vlogs, music, films) purely for entertainment to allow subconscious consolidation.
-
-**🔗 Resources:**
-
-- ▶ [Weekly German Study Routine - Easy German](https://www.youtube.com/watch?v=RUyadIt-GOs)

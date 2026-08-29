@@ -3,6 +3,8 @@
 ; Memory Palace main menu (Utility Shortcuts [N])
 ; =============================================================================
 
+global g_PalaceDashboardHwnd := 0
+
 Palace_LaunchApp() {
     Palace_EnsureData()
     Palace_ShowMainMenu()
@@ -376,22 +378,300 @@ Palace_OpenDashboard() {
     try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
-    tmpHtml := A_Temp . "\palace_dashboard_" . A_TickCount . ".html"
+    tmpHtml := A_Temp . "\palace_dashboard.html"
     try FileCopy(html, tmpHtml, 1)
     catch {
         tmpHtml := html
     }
     fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
-    try Run('chrome.exe --new-window "' . fileUrl . '"')
-    catch as e {
+    if (!Palace_OpenDashboardInChrome(fileUrl)) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
-        Palace_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        Palace_Notify("Chrome failed to open dashboard", 2500, BANNER_ACCENT_ERROR)
         return
     }
     try StandardLoadingBar_Hide(400)
     catch {
     }
     Palace_CloseGui()
+}
+
+; Typed contract: positive HWND if chrome.exe window still exists, else 0.
+Palace_DashboardHwndValid(hwnd) {
+    try hwnd := Integer(hwnd)
+    catch {
+        return 0
+    }
+    if (!(hwnd is Integer) || hwnd <= 0)
+        return 0
+    if (!WinExist("ahk_id " hwnd))
+        return 0
+    try {
+        if (WinGetProcessName("ahk_id " hwnd) != "chrome.exe")
+            return 0
+    } catch {
+        return 0
+    }
+    return hwnd
+}
+
+Palace_DashboardHwndCacheGet() {
+    global g_PalaceDashboardHwnd
+    hwnd := Palace_DashboardHwndValid(g_PalaceDashboardHwnd)
+    if (hwnd)
+        return hwnd
+    raw := Trim(Palace_Setting("General", "DashboardChromeHwnd", ""))
+    if (raw = "" || raw = "0")
+        return 0
+    hwnd := Palace_DashboardHwndValid(raw)
+    if (hwnd) {
+        g_PalaceDashboardHwnd := hwnd
+        return hwnd
+    }
+    return 0
+}
+
+Palace_DashboardHwndCacheSet(hwnd) {
+    global g_PalaceDashboardHwnd
+    hwnd := Palace_DashboardHwndValid(hwnd)
+    g_PalaceDashboardHwnd := hwnd
+    Palace_SetSetting("General", "DashboardChromeHwnd", hwnd ? String(hwnd) : "")
+    return hwnd
+}
+
+Palace_DashboardHwndCacheClear() {
+    Palace_DashboardHwndCacheSet(0)
+}
+
+; Dedicated Memory Palace Chrome window title (not Google Search, etc.).
+; Includes SPA atom titles like "Memory Palace 3: AI Pricing & Elo Mechanics".
+Palace_IsDashboardChromeWindowTitle(title) {
+    t := Trim(String(title))
+    if (t = "")
+        return false
+    if (InStr(t, "Google Search") || InStr(t, " - Search") || InStr(t, "Search - "))
+        return false
+    ; Starts with "Memory Palace" (home, atom view, or "… - Google Chrome").
+    if (RegExMatch(t, "i)^Memory Palace(\b|$)"))
+        return true
+    return false
+}
+
+; True if the active document URL is our stable TEMP dashboard file.
+Palace_DashboardWindowShowsDashboardFile(hwnd) {
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return false
+        doc := root.FindFirst({ Type: "Document" })
+        if (!doc)
+            return false
+        return InStr(String(doc.Value), "palace_dashboard.html") > 0
+    } catch {
+        return false
+    }
+}
+
+; Real Chrome omnibox only — never the first page Edit (Notes textarea).
+Palace_DashboardFindOmnibox(hwnd) {
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if (!root)
+            return 0
+        for criteria in [{ Type: "Edit", AcceleratorKey: "Ctrl+L" }, { Type: "Edit", Name: "Address and search bar" }, { Type: "Edit",
+            AutomationId: "view_1012" }] {
+            try {
+                el := root.FindFirst(criteria)
+                if (el)
+                    return el
+            } catch {
+            }
+        }
+    } catch {
+    }
+    return 0
+}
+
+; Set omnibox Value + Enter. Does not use UIA_Browser.SetURL (mistargets Notes).
+Palace_DashboardNavigateViaOmnibox(hwnd, fileUrl) {
+    omnibox := Palace_DashboardFindOmnibox(hwnd)
+    if (!omnibox)
+        return false
+    try {
+        omnibox.SetFocus()
+        Sleep(40)
+        try omnibox.ValuePattern.SetValue(fileUrl)
+        catch {
+            try omnibox.Value := fileUrl
+            catch {
+                return false
+            }
+        }
+        Sleep(40)
+        if (!InStr(String(omnibox.Value), "palace_dashboard.html"))
+            return false
+        ControlSend("{Enter}", , "ahk_id " hwnd)
+        Sleep(300)
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Ctrl+L → paste → Enter (after WinActivate). Avoids typing into Notes.
+Palace_DashboardNavigateViaClipboard(hwnd, fileUrl) {
+    clipSaved := ClipboardAll()
+    try {
+        A_Clipboard := fileUrl
+        if (!ClipWait(1))
+            return false
+        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
+        Sleep(40)
+        Send "^l"
+        Sleep(100)
+        Send "^a^v"
+        Sleep(80)
+        Send "{Enter}"
+        Sleep(300)
+        return true
+    } catch {
+        return false
+    } finally {
+        try A_Clipboard := clipSaved
+        catch {
+        }
+    }
+}
+
+; Activate hwnd and load fileUrl. Returns true on success.
+; Never call UIA_Browser.Navigate/SetURL — those can Write into the Notes Edit
+; and ControlSend Ctrl+L, which leaves a stray "l" in the textarea.
+Palace_DashboardNavigate(hwnd, fileUrl) {
+    hwnd := Palace_DashboardHwndValid(hwnd)
+    if (!hwnd)
+        return false
+    try {
+        WinActivate("ahk_id " hwnd)
+        if (!WinWaitActive("ahk_id " hwnd, , 2))
+            return false
+        ; Already on dashboard file (file overwritten): F5 refresh, no omnibox.
+        if (Palace_DashboardWindowShowsDashboardFile(hwnd)) {
+            ControlSend("{F5}", , "ahk_id " hwnd)
+            Sleep(400)
+            Palace_DashboardHwndCacheSet(hwnd)
+            return true
+        }
+        if (Palace_DashboardNavigateViaOmnibox(hwnd, fileUrl)
+        || Palace_DashboardNavigateViaClipboard(hwnd, fileUrl)) {
+            Palace_DashboardHwndCacheSet(hwnd)
+            return true
+        }
+        return false
+    } catch {
+        return false
+    }
+}
+
+; Cache-first open/refresh. Avoids full UIA tab scans. Returns true/false.
+Palace_OpenDashboardInChrome(fileUrl) {
+    ; Fast path: cached HWND.
+    hwnd := Palace_DashboardHwndCacheGet()
+    if (hwnd) {
+        if (Palace_DashboardNavigate(hwnd, fileUrl))
+            return true
+        Palace_DashboardHwndCacheClear()
+    }
+
+    ; Miss path: lightweight Win32 title scan (no per-window tab UIA).
+    candidates := []
+    for h in WinGetList("ahk_exe chrome.exe") {
+        try title := WinGetTitle("ahk_id " h)
+        catch {
+            continue
+        }
+        if (Palace_IsDashboardChromeWindowTitle(title))
+            candidates.Push(h)
+    }
+    if (candidates.Length) {
+        keeper := candidates[1]
+        if (Palace_DashboardNavigate(keeper, fileUrl)) {
+            ; Close other dedicated dashboard windows only.
+            loop candidates.Length {
+                if (A_Index = 1)
+                    continue
+                other := candidates[A_Index]
+                try {
+                    otherTitle := WinGetTitle("ahk_id " other)
+                    if (otherTitle = "Memory Palace" || otherTitle = "Memory Palace - Google Chrome")
+                        WinClose("ahk_id " other)
+                } catch {
+                }
+            }
+            try WinActivate("ahk_id " keeper)
+            catch {
+            }
+            return true
+        }
+        Palace_DashboardHwndCacheClear()
+    }
+
+    ; Cold path: new Chrome window, then cache HWND.
+    baseline := Map()
+    for h in WinGetList("ahk_exe chrome.exe")
+        baseline[h] := true
+    try Run('chrome.exe --new-window "' . fileUrl . '"')
+    catch {
+        return false
+    }
+
+    deadline := A_TickCount + 8000
+    newHwnd := 0
+    while (A_TickCount < deadline) {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (baseline.Has(h))
+                continue
+            try title := WinGetTitle("ahk_id " h)
+            catch {
+                title := ""
+            }
+            if (Palace_IsDashboardChromeWindowTitle(title) || title = "") {
+                newHwnd := h
+                if (Palace_IsDashboardChromeWindowTitle(title))
+                    break 2
+            }
+        }
+        Sleep(100)
+    }
+    if (!newHwnd) {
+        ; Fallback: any Memory Palace titled chrome window.
+        for h in WinGetList("ahk_exe chrome.exe") {
+            try title := WinGetTitle("ahk_id " h)
+            catch {
+                continue
+            }
+            if (Palace_IsDashboardChromeWindowTitle(title)) {
+                newHwnd := h
+                break
+            }
+        }
+    }
+    if (!newHwnd)
+        return false
+    ; Wait briefly for title to settle to Memory Palace.
+    settleDeadline := A_TickCount + 3000
+    while (A_TickCount < settleDeadline) {
+        try title := WinGetTitle("ahk_id " newHwnd)
+        catch {
+            title := ""
+        }
+        if (Palace_IsDashboardChromeWindowTitle(title))
+            break
+        Sleep(80)
+    }
+    Palace_DashboardHwndCacheSet(newHwnd)
+    try WinActivate("ahk_id " newHwnd)
+    catch {
+    }
+    return true
 }

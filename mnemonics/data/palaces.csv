@@ -1,7 +1,7 @@
-﻿id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt,palace_notes
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt,palace_notes
 PALACE_AI_01,STUDY_AI,1,Foundations & Semantic Interoperability,(unassigned palace 1),practice/images/AI/1.png,3,,
 PALACE_AI_02,STUDY_AI,2,The Semantic Layer & RAG Structure,Ada Lovelace,practice/images/AI/2.png,5,,
-PALACE_AI_03,STUDY_AI,3,AI Pricing & Elo Mechanics,Michael Jackson,practice/images/AI/3.jpg,1,,
+PALACE_AI_03,STUDY_AI,3,AI Pricing & Elo Mechanics,Michael Jackson,practice/images/AI/3.jpg,1,,file:///C:/Users/eduev/AppData/Local/Temp/palace_dashboard.html?t=318971546
 PALACE_COMMUNICATIO_01,STUDY_COMMUNICATIO,1,The Foundations of Rhetoric,(unassigned palace 1),practice/images/communication/1.png,3,,
 PALACE_COMMUNICATIO_02,STUDY_COMMUNICATIO,2,Leading the Business and Others,(unassigned palace 2),practice/images/communication/2.png,5,,
 PALACE_COMMUNICATIO_03,STUDY_COMMUNICATIO,3,Leading Myself,Alan Turing,practice/images/communication/3.png,5,"an original fictional 1940s mathematician who resembles a young intellectual in a tweed suit, holding a mechanical cipher component - not any real or named historical person; Depth slot 1 ForegroundLeft: A brutish Neanderthal relentlessly smashing a broken stone tablet; Depth slot 2 MidgroundRight: A skyscraper-sized owl perched on a midground brick wall chewing rubber pages; Depth slot 3 BackgroundCenter: A sleek panther pacing at the far end bleeding neon paint; Depth slot 4 Aerial: A colossal marmoset balancing on a street lamp scrubbing its brain; Depth slot 5 ForegroundRight: A microscopic rat wearing a tiny gold crown strutting on the curb and screaming.",

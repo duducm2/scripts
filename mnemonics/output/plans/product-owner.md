@@ -14,10 +14,6 @@
 
 ### From Usability to Business Value
 
-**🔗 Resources:**
-
-- 🔗 [test](https://google.com/)
-
 #### Customer Value and Knowledge Value
 
 - [ ] Watch Kniberg's value curve and internalize Customer Value vs Knowledge Value
@@ -39,10 +35,6 @@
 - [ ] Reframe value definition from frictionless journeys to Customer + Knowledge Value composite
 - [ ] Replace feature-completeness scope pushes with thin functional slices
 - [ ] Replace "more time to perfect" requests with ruthless scope cuts on fixed deadlines
-
-**🔗 Resources:**
-
-- ▶ [Product Owner Scope Negotiation - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
 
 ## Phase 1: Agile Foundations and Backlog Architecture (Months 1–2)
 
@@ -75,7 +67,8 @@
 **🔗 Resources:**
 
 - 📖 [Mike Cohn: User Stories Applied (book)](https://www.mountaingoatsoftware.com/books/user-stories-applied)
-- ▶ [User Stories - Mountain Goat Software](https://www.youtube.com/watch?v=apDvBVAldoY)
+- 🔍 [Mountain Goat Software: User Stories vs Requirements](https://www.youtube.com/results?search_query=Mountain+Goat+Software+User+Stories+vs+Requirements)
+- 🔍 [Mountain Goat Software: Writing User Stories](https://www.youtube.com/results?search_query=Mountain+Goat+Software+Writing+User+Stories)
 
 ### Topic Module 1.3: Story Splitting and Release Mapping
 
@@ -89,7 +82,8 @@
 
 **🔗 Resources:**
 
-- ▶ [Story Splitting - Mountain Goat Software](https://www.youtube.com/watch?v=EDT0yHbs8A0)
+- 🔍 [Mountain Goat Software: SPIDR Story Splitting](https://www.youtube.com/results?search_query=Mountain+Goat+Software+SPIDR+story+splitting)
+- 🔍 [Mountain Goat Software: User Story Mapping](https://www.youtube.com/results?search_query=Mountain+Goat+Software+User+Story+Mapping)
 
 #### Phase 1 Milestone: Backlog Architecture Document
 
@@ -97,10 +91,6 @@
 - [ ] Ensure no story is split along technical boundaries
 - [ ] Write minimum viable Conditions of Satisfaction for each story without over-prescribing solutions
 - [ ] Present Backlog Architecture Document in a sprint review for feedback
-
-**🔗 Resources:**
-
-- ▶ [Product Backlog Refinement - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
 
 ## Phase 2: Continuous Discovery and Strategic Alignment (Months 3–4)
 
@@ -117,7 +107,7 @@
 **🔗 Resources:**
 
 - 📖 [Teresa Torres: Continuous Discovery Habits (book)](https://www.producttalk.org/continuous-discovery-habits-book/)
-- ▶ [Continuous Discovery - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
+- 🔍 [Product Talk: Continuous Discovery Habits](https://www.youtube.com/results?search_query=Teresa+Torres+Continuous+Discovery+Habits+Product+Talk)
 
 ### Topic Module 2.2: The Opportunity Solution Tree (OST)
 
@@ -133,7 +123,7 @@
 **🔗 Resources:**
 
 - 📄 [Teresa Torres: Opportunity Solution Trees](https://www.producttalk.org/opportunity-solution-trees/)
-- ▶ [Opportunity Solution Tree - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
+- 🔍 [Product Talk: Opportunity Solution Tree Tutorial](https://www.youtube.com/results?search_query=Teresa+Torres+Opportunity+Solution+Tree)
 
 #### Phase 2 Milestone: Opportunity Solution Tree
 
@@ -141,10 +131,6 @@
 - [ ] Brainstorm 12 distinct Solutions (3 per opportunity minimum)
 - [ ] Design 4 assumption experiments linked to specific solutions
 - [ ] Present completed OST in sprint review for critical feedback
-
-**🔗 Resources:**
-
-- ▶ [Building an OST - Product Talk](https://www.youtube.com/watch?v=9P87-HA-UR4)
 
 ### Topic Module 2.3: Escaping the Build Trap and Lean Strategy
 
@@ -159,7 +145,10 @@
 
 **🔗 Resources:**
 
-- ▶ [Lean Product Strategy - Jeff Gothelf](https://www.youtube.com/watch?v=UqpT8kn12P0)
+- 🔍 [Melissa Perri: Escaping the Build Trap](https://www.youtube.com/results?search_query=Melissa+Perri+Escaping+the+Build+Trap)
+- 🔍 [Jeff Gothelf: Lean UX and Hypothesis-Driven Design](https://www.youtube.com/results?search_query=Jeff+Gothelf+Lean+UX+hypothesis)
+- 🔍 [Roman Pichler: Product Strategy Framework](https://www.youtube.com/results?search_query=Roman+Pichler+Product+Strategy+Framework)
+- 🔍 [Roman Pichler: GO Product Roadmap](https://www.youtube.com/results?search_query=Roman+Pichler+GO+Product+Roadmap)
 
 ## Phase 3: Prioritization Frameworks and Metric Architecture (Months 5–6)
 
@@ -186,10 +175,6 @@
 - [ ] Document Confidence and Effort reasoning for each item
 - [ ] Present prioritized matrix in sprint review and defend top vs bottom rankings
 
-**🔗 Resources:**
-
-- ▶ [RICE Prioritization - Intercom](https://www.youtube.com/watch?v=O5RtKgdmo1s)
-
 ### Topic Module 3.2: Qualitative Prioritization via the Kano Model
 
 #### Kano Feature Categories
@@ -201,7 +186,7 @@
 
 **🔗 Resources:**
 
-- ▶ [Kano Model - Product School](https://www.youtube.com/watch?v=K8H0pQn72N0)
+- 🔍 [Kano Model Explained for Product Managers](https://www.youtube.com/results?search_query=Kano+Model+product+management+explained)
 
 ### Topic Module 3.3: Analytics and the North Star Metric
 
@@ -215,8 +200,9 @@
 
 **🔗 Resources:**
 
+- 🔍 [John Cutler: North Star Playbook](https://www.youtube.com/results?search_query=John+Cutler+North+Star+Metric)
+- 🔍 [John Cutler: Metric Trees](https://www.youtube.com/results?search_query=John+Cutler+Metric+Trees)
 - 📝 [Amplitude: North Star Framework Guide](https://amplitude.com/blog/north-star-metric)
-- ▶ [North Star Metric - Amplitude](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ## Phase 4: Technical Fluency and Systems Architecture (Months 7–8)
 
@@ -232,7 +218,8 @@
 
 **🔗 Resources:**
 
-- ▶ [Web Architecture for PMs - Product School](https://www.youtube.com/watch?v=K8H0pQn72N0)
+- 🔍 [ByteByteGo: System Design 101](https://www.youtube.com/results?search_query=ByteByteGo+System+Design+101)
+- 🔍 [ByteByteGo: REST vs GraphQL vs gRPC](https://www.youtube.com/results?search_query=ByteByteGo+REST+GraphQL+gRPC)
 
 ### Topic Module 4.2: API Operations, Testing, and Debugging
 
@@ -259,10 +246,6 @@
 - [ ] Document one UI-to-API triage example using DevTools + Postman
 - [ ] Present API Diagnostic Report in sprint review
 
-**🔗 Resources:**
-
-- ▶ [APIs for Product Managers - Postman](https://www.youtube.com/watch?v=GZvSYJDk-us)
-
 ## Phase 5: Advanced Stakeholder Management and Certification (Months 9–10)
 
 ### Topic Module 5.1: Stakeholder Alignment and Strategic Refusal
@@ -277,7 +260,8 @@
 
 **🔗 Resources:**
 
-- ▶ [Stakeholder Management - Roman Pichler](https://www.youtube.com/watch?v=K8H0pQn72N0)
+- 🔍 [Teresa Torres: Stakeholder Management for Product Teams](https://www.youtube.com/results?search_query=Teresa+Torres+stakeholder+management+product)
+- 🔍 [John Cutler: Aligning Teams with Metric Trees](https://www.youtube.com/results?search_query=John+Cutler+metric+trees+alignment)
 
 ### Topic Module 5.2: Professional Scrum Product Owner (PSPO) Certification Readiness
 
@@ -300,10 +284,6 @@
 - [ ] Pass Scrum.org Professional Scrum Product Owner I assessment (≥85%)
 - [ ] Document empiricism and value-driven development mastery in sprint retrospective
 
-**🔗 Resources:**
-
-- ▶ [PSPO I Exam Tips - Scrum.org](https://www.youtube.com/watch?v=502ILHjI9hU)
-
 ## Study Architecture: Learning Sprint Cadence (Ongoing)
 
 ### Bi-Weekly Learning Sprints
@@ -314,10 +294,6 @@
 - [ ] Sprint Review: present physical artifacts to peer, mentor, or Agile coach
 - [ ] Sprint Retrospective: adjust study habits to optimize next sprint velocity
 
-**🔗 Resources:**
-
-- ▶ [Agile Learning Sprints - Scrum with Fred](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ## Progress KPIs (Meta-Checklist)
 
 ### Learner Key Performance Indicators
@@ -325,7 +301,3 @@
 - [ ] Framework Synthesis Rate: combine frameworks (e.g., RICE-prioritize OST assumption experiments)
 - [ ] Technical Translation Accuracy: map UI bugs to API failures via DevTools/Postman with correct HTTP codes
 - [ ] Assessment Readiness: sustain >95% on Scrum Open and mock exams before PSPO I attempt
-
-**🔗 Resources:**
-
-- ▶ [Product Owner KPIs - Roman Pichler](https://www.youtube.com/watch?v=K8H0pQn72N0)

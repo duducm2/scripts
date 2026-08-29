@@ -43,7 +43,7 @@ A colossal, skyscraper-sized imp phases through the solid iron front gate, reeki
 
 #### Notes
 
-_No notes._
+file:///C:/Users/eduev/AppData/Local/Temp/palace_dashboard.html?t=318971546
 
 #### Gallery
 

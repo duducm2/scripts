@@ -117,6 +117,7 @@ Palace_EnsureSettings() {
         . "ShowBeastCounts=1`n"
         . "`n[General]`n"
         . "LastStudyId=`n"
+        . "DashboardChromeHwnd=`n"
         . "NotesStudiesRoot=`n"
     Palace_WriteUtf8(path, content)
 }

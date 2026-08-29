@@ -326,19 +326,11 @@
 - [ ] Repertoire Block (15 min): Primary piece, sight-reading, or style-specific application
 - [ ] Review and Reflection (5 min): Metric logging, visualization dashboard update, weekly reflection
 
-**🔗 Resources:**
-
-- ▶ [How to Practise Piano - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ## Progress Tracking
 
 ### Practice Consistency
 
 - [ ] 5-6 sessions per week completed
-
-**🔗 Resources:**
-
-- ▶ [Building Practice Consistency - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Tempo Progression
 
@@ -346,29 +338,17 @@
 - [ ] I-V-vi-IV Arpeggios - Target: 100 BPM
 - [ ] Style-Specific Repertoire - Target: 110 BPM
 
-**🔗 Resources:**
-
-- ▶ [Slow Practice Method - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ### Accuracy Trend
 
 - [ ] Monitor Wrong Notes (%)
 - [ ] Monitor Rhythm/Meter Errors (%)
 - [ ] Monitor In-Piece Restarts
 
-**🔗 Resources:**
-
-- ▶ [Accuracy in Piano Practice - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ### Repertoire Readiness
 
 - [ ] Chopin Prelude in E Minor
 - [ ] Clementi Sonatina Op. 36
 - [ ] "Let It Be" Lead Sheet
-
-**🔗 Resources:**
-
-- ▶ [Preparing Repertoire - Graham Fitch](https://www.youtube.com/watch?v=K8H0pQn72N0)
 
 ### Skill Radar (Semi-Monthly Self-Assessment)
 
@@ -379,10 +359,6 @@
 - [ ] Ear Training
 - [ ] Improvisation
 
-**🔗 Resources:**
-
-- ▶ [Self-Assessment for Pianists - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
-
 ## Goals (End of Year 1)
 
 - [ ] Fluent sight-reading across multiple genres
@@ -392,7 +368,3 @@
 - [ ] Recorded performance documentation (monthly snapshots)
 - [ ] Consistent 5-6 session/week practice discipline
 - [ ] Zero postural injuries or chronic tension
-
-**🔗 Resources:**
-
-- ▶ [Piano Goals and Progress - Josh Wright TV](https://www.youtube.com/watch?v=K8H0pQn72N0)
