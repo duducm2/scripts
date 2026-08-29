@@ -741,6 +741,7 @@
           search: "",
           importPreview: null,
           importSource: "task_pack", // selected import kind
+          pwSide: "personal", // last side for Personal/Work first-item toggle
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
@@ -1299,6 +1300,7 @@
         <div class="help-group"><h4>Navigate</h4><div class="help-rows">
           ${row("↑ ↓", "Move selection")}
           ${row("← →", "Collapse / expand project or section")}
+          ${row("⇧J", "Toggle first Personal ↔ Work item")}
           ${row("Home / End", "First / last item")}
           ${row("a–z 0–9", "Jump to title starting with letter")}
           ${row("Alt+S", "Focus search")}
@@ -1695,6 +1697,46 @@
           setSelection(targets[idx].kind, targets[idx].id, true);
         }
 
+        function currentPwSide() {
+          if (!state.sel) return state.pwSide || "personal";
+          const targets = collectTargets();
+          const hit = targets.find(
+            (t) => t.kind === state.sel.kind && t.id === state.sel.id,
+          );
+          if (hit?.el?.closest("#sec-personal")) return "personal";
+          if (hit?.el?.closest("#sec-work")) return "work";
+          return state.pwSide || "personal";
+        }
+
+        function firstTargetInCategory(filt) {
+          const sec = document.getElementById("sec-" + filt);
+          if (!sec || sec.classList.contains("section-hidden")) return null;
+          return (
+            collectTargets().find((t) => t.el.closest("#sec-" + filt)) || null
+          );
+        }
+
+        function toggleFirstPersonalWork() {
+          const from = currentPwSide();
+          const next = from === "personal" ? "work" : "personal";
+          if (state.sectionFocus === "habits" || state.sectionFocus === from) {
+            applySectionFocus(next);
+          } else if (state.sectionFocus && state.sectionFocus !== next) {
+            applySectionFocus(next);
+          }
+          let hit = firstTargetInCategory(next);
+          if (!hit) {
+            applySectionFocus(next);
+            hit = firstTargetInCategory(next);
+          }
+          if (!hit) {
+            toast("No " + (next === "work" ? "Work" : "Personal") + " items");
+            return;
+          }
+          state.pwSide = next;
+          setSelection(hit.kind, hit.id, true);
+        }
+
         function selectedTaskId() {
           if (!state.sel) return "";
           if (state.sel.kind === "task" || state.sel.kind === "habit")
@@ -1770,6 +1812,10 @@
               });
             }
             applySelection(false);
+            return;
+          }
+          if (k === "j") {
+            toggleFirstPersonalWork();
             return;
           }
           if (EMOJI_KEYS[k]) {
