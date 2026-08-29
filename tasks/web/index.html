@@ -1395,7 +1395,7 @@
           ${row("⇧D", "Habit → Personal inbox (General)")}
           ${row("⇧I", "Mark important")}
           ${row("⇧N", "Info points")}
-          ${row("⇧V", "Attach image")}
+          ${row("⇧V", "Paste clipboard image (project / section→project / task)")}
           ${row("⇧E", "Expand / collapse all projects")}
           ${row("⇧F", "Clear emoji filter")}
         </div></div>
@@ -1976,27 +1976,7 @@
             return;
           }
           if (k === "v") {
-            let ptype = "";
-            let pid = "";
-            if (state.sel?.kind === "project") {
-              ptype = "project";
-              pid = state.sel.id;
-            } else if (selectedTaskId()) {
-              ptype = "task";
-              pid = selectedTaskId();
-            }
-            if (!pid) {
-              toast("Select a project or task");
-              return;
-            }
-            state._attTarget = { ptype, pid };
-            const inp = document.createElement("input");
-            inp.type = "file";
-            inp.accept = "image/*";
-            inp.onchange = async () => {
-              if (inp.files?.[0]) await uploadImage(ptype, pid, inp.files[0]);
-            };
-            inp.click();
+            await pasteClipboardImageToSelection();
             return;
           }
           if (k === "p") {
@@ -2630,6 +2610,67 @@
           });
           toast("Image attached");
           await refresh();
+        }
+
+        function resolveAttachmentTarget() {
+          if (!state.sel) return null;
+          if (state.sel.kind === "project")
+            return { ptype: "project", pid: state.sel.id, label: "project" };
+          if (state.sel.kind === "task" || state.sel.kind === "habit")
+            return { ptype: "task", pid: state.sel.id, label: "task" };
+          if (state.sel.kind === "section") {
+            const sec = (state.data.sections || []).find(
+              (s) => s.id === state.sel.id,
+            );
+            if (sec?.project_id)
+              return {
+                ptype: "project",
+                pid: sec.project_id,
+                label: "project (from section)",
+              };
+          }
+          return null;
+        }
+
+        async function pasteClipboardImageToSelection() {
+          const target = resolveAttachmentTarget();
+          if (!target) {
+            toast("Select a project, section, or task first");
+            return;
+          }
+          if (!navigator.clipboard?.read) {
+            toast("Clipboard image read not available in this browser");
+            return;
+          }
+          let file = null;
+          try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+              const type = item.types.find((t) => t.startsWith("image/"));
+              if (!type) continue;
+              const blob = await item.getType(type);
+              const ext = (type.split("/")[1] || "png").replace(
+                /[^a-z0-9]/gi,
+                "",
+              );
+              file = new File([blob], `clipboard.${ext || "png"}`, {
+                type: blob.type || type,
+              });
+              break;
+            }
+          } catch (err) {
+            toast(
+              err?.name === "NotAllowedError"
+                ? "Clipboard permission denied"
+                : err?.message || "Could not read clipboard",
+            );
+            return;
+          }
+          if (!file) {
+            toast("No image in clipboard");
+            return;
+          }
+          await uploadImage(target.ptype, target.pid, file);
         }
 
         document.addEventListener("click", async (e) => {
