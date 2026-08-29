@@ -1,0 +1,37 @@
+﻿===PREVIEW===
+Mode SMASH · STUDY_DATA_ANALYST · 1 palaces · 4 beasts · 5 atoms
+Scope: palaces 1–1 · pegs A–D
+Packing: 4 (remainder only on last palace)
+Changes: Merged B (bird of paradise) into A (Arachne) as Z1/Z2; shifted C->B (bird of paradise), D->C (cat), E->D (dragon)
+
+PALACE 1 — Data Analyst vs Data Scientist Foundations (Ada Lovelace) [PALACE_DATA_ANALYST_01]
+  [A] Arachne Z1 — Concept: Core objective difference: Data Analysts explain past/present to inform decisions; Data Scientists build predictive models to forecast and automate. | Quote: "The primary difference lies in their core focus: a Data Analyst examines historical data to answer specific business questions and identify existing trends, while a Data Scientist builds predictive models, algorithms, and experiments to forecast future outcomes and discover unknowns." | Story: Arachne weaves an enormous glowing spiderweb across a historic stone gate, splitting the silk threads into backwards-pointing silver clocks on the left and self-assembling automated crystal robotic arms reaching forward on the right. | Sensory: visual 👁️
+  [A] Arachne Z2 — Concept: Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?). | Quote: "Descriptive and diagnostic analysis (answering \"What happened?\" and \"Why?\")" | Story: An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars. | Sensory: auditory 👂
+  [B] bird of paradise — Concept: Key objectives: dashboards and KPI tracking vs ML pipelines and algorithmic automation. | Quote: "Dashboards, KPI tracking, business reports, trend identification" | Story: A bird of paradise violently rakes its metallic claws against the parked vintage van's side door, carving neon KPI dials and glowing dashboard gauges that erupt in showers of colored spark metrics. | Sensory: tactile ✋
+  [C] cat — Concept: Data types handled: structured relational tables/spreadsheets vs structured and unstructured multi-modal streams (images, audio, clickstreams). | Quote: "Structured data from relational databases and warehouses" | Story: Perched at the central storefront pillar, a cat exhales icy SQL tables from its mouth that freeze instantly into rigid glass spreadsheets, shattering floating clouds of clickstream smoke. | Sensory: thermal 🌡️
+  [D] dragon — Concept: Core tooling and workflow: SQL/BI dashboards isolating friction vs Python/ML/pipelines training real-time automated churn classifiers. | Quote: "Queries an e-commerce database using SQL to identify that customer churn increased by 15% in Q3, isolates the drop to checkout friction, and presents a visual dashboard to product managers." | Story: High on the rooftop balcony, a dragon tears open an oversized e-commerce invoice with its teeth, releasing an acrid, sharp scent of liquid Python code that dissolves robotic churn traps. | Sensory: olfactory 👃
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_01,STUDY_DATA_ANALYST,1,Data Analyst vs Data Scientist Foundations,Ada Lovelace,data_analyst/images/1.png,4,"A realistic street view featuring an original fictional 19th-century female mathematician-like scholar (young adult, Victorian tailored dark lace dress, hair in ornate side buns, holding brass computing punch cards and a quill) — not any real, living, historical, or named public figure and not any copyrighted character. Depth slot ForegroundLeft (wrought-iron gate): a giant silk spider (Arachne) spinning glowing clockwork webs from its head (Z1) while its front legs mechanically clamp a screeching megaphone projecting x-ray beams (Z2). Depth slot MidgroundRight (parked van): a colorful exotic bird (bird of paradise) scratching glowing KPI dashboard dials into the vehicle door. Depth slot BackgroundCenter (storefront pillar): a frosty cat breathing rigid frozen spreadsheets. Depth slot Aerial (rooftop balcony): a dragon ripping a massive invoice emitting pungent fumes."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATA_ANALYST_01_A,PALACE_DATA_ANALYST_01,A,Arachne,Lynne Kelly,tactile,1,1
+BEAST_DATA_ANALYST_01_B,PALACE_DATA_ANALYST_01,B,bird of paradise,Lynne Kelly,tactile,0,2
+BEAST_DATA_ANALYST_01_C,PALACE_DATA_ANALYST_01,C,cat,Lynne Kelly,thermal,0,3
+BEAST_DATA_ANALYST_01_D,PALACE_DATA_ANALYST_01,D,dragon,Lynne Kelly,olfactory,0,4
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_DATA_ANALYST_01_A,zoned,Z1,Head,"Core objective difference: Data Analysts explain past/present to inform decisions; Data Scientists build predictive models to forecast and automate.","The primary difference lies in their core focus: a Data Analyst examines historical data to answer specific business questions and identify existing trends, while a Data Scientist builds predictive models, algorithms, and experiments to forecast future outcomes and discover unknowns.","Arachne weaves an enormous glowing spiderweb across a historic stone gate, splitting the silk threads into backwards-pointing silver clocks on the left and self-assembling automated crystal robotic arms reaching forward on the right.",visual,,1
+,BEAST_DATA_ANALYST_01_A,zoned,Z2,Forelimbs,"Primary focus: descriptive and diagnostic (What happened? Why?) vs predictive and prescriptive modeling (What will happen? How to optimize?).","Descriptive and diagnostic analysis (answering ""What happened?"" and ""Why?"")","An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.",auditory,,2
+,BEAST_DATA_ANALYST_01_B,single,,,"Key objectives: dashboards and KPI tracking vs ML pipelines and algorithmic automation.","Dashboards, KPI tracking, business reports, trend identification","A bird of paradise violently rakes its metallic claws against the parked vintage van's side door, carving neon KPI dials and glowing dashboard gauges that erupt in showers of colored spark metrics.",tactile,,3
+,BEAST_DATA_ANALYST_01_C,single,,,"Data types handled: structured relational tables/spreadsheets vs structured and unstructured multi-modal streams (images, audio, clickstreams).","Structured data from relational databases and warehouses","Perched at the central storefront pillar, a cat exhales icy SQL tables from its mouth that freeze instantly into rigid glass spreadsheets, shattering floating clouds of clickstream smoke.",thermal,,4
+,BEAST_DATA_ANALYST_01_D,single,,,"Core tooling and workflow: SQL/BI dashboards isolating friction vs Python/ML/pipelines training real-time automated churn classifiers.","Queries an e-commerce database using SQL to identify that customer churn increased by 15% in Q3, isolates the drop to checkout friction, and presents a visual dashboard to product managers.","High on the rooftop balcony, a dragon tears open an oversized e-commerce invoice with its teeth, releasing an acrid, sharp scent of liquid Python code that dissolves robotic churn traps.",olfactory,,5
+===END_FILE===
