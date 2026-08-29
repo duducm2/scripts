@@ -611,6 +611,52 @@
         color: var(--text);
         font-size: 13px;
       }
+      .import-sources {
+        list-style: none;
+        margin: 0 0 16px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .import-source {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #252528;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: var(--text);
+        width: 100%;
+      }
+      .import-source:hover,
+      .import-source.selected {
+        border-color: var(--gold);
+      }
+      .import-source.selected {
+        background: rgba(241, 196, 15, 0.08);
+      }
+      .import-source .key {
+        flex: 0 0 auto;
+      }
+      .import-source .meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .import-source .meta strong {
+        display: block;
+        font-size: 15px;
+      }
+      .import-source .meta .sub {
+        margin-top: 4px;
+      }
+      .import-actions .btn kbd {
+        margin-left: 6px;
+      }
       .crumb {
         color: var(--muted);
         font-size: 13px;
@@ -694,10 +740,20 @@
           sectionFocus: "", // "" | work | personal | habits
           search: "",
           importPreview: null,
+          importSource: "task_pack", // selected import kind
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
         };
+
+        const IMPORT_SOURCES = [
+          {
+            id: "task_pack",
+            key: "1",
+            title: "TASK_PACK",
+            blurb: "Desktop TASK_PACK.txt (Finance/Palace style markers).",
+          },
+        ];
 
         const $ = (sel) => document.querySelector(sel);
         const esc = (s) =>
@@ -1152,17 +1208,80 @@
         function renderImport() {
           $("#strip").innerHTML = "";
           const prev = state.importPreview;
+          const src =
+            IMPORT_SOURCES.find((s) => s.id === state.importSource) ||
+            IMPORT_SOURCES[0];
+          const sources = IMPORT_SOURCES.map((s) => {
+            const selected = s.id === (src?.id || "") ? " selected" : "";
+            return `<button type="button" class="import-source${selected}" data-act="import-select" data-source="${esc(s.id)}">
+        <kbd class="key">${esc(s.key)}</kbd>
+        <span class="meta"><strong>${esc(s.title)}</strong><span class="sub">${esc(s.blurb)}</span></span>
+      </button>`;
+          }).join("");
           $("#view").innerHTML = `<div class="panel">
-      <h2 class="section-title">Import TASK_PACK</h2>
-      <p class="sub">Looks for Desktop TASK_PACK.txt (Finance/Palace style markers).</p>
-      <div class="toolbar" style="padding:12px 0">
-        <button class="btn" data-act="import-preview">Preview</button>
-        <button class="btn" data-act="import-commit" ${prev?.ok ? "" : "disabled"}>Confirm import</button>
-        <button class="btn" data-act="goto-dash">Back</button>
+      <h2 class="section-title">Import</h2>
+      <p class="sub">Choose a source (<kbd>1</kbd>…), then preview / confirm.</p>
+      <div class="import-sources">${sources}</div>
+      <div class="toolbar import-actions" style="padding:4px 0 12px">
+        <button class="btn" data-act="import-preview" title="Preview (P)">Preview <kbd>P</kbd></button>
+        <button class="btn" data-act="import-commit" ${prev?.ok ? "" : "disabled"} title="Confirm (C)">Confirm <kbd>C</kbd></button>
+        <button class="btn" data-act="goto-dash" title="Home (H) / Back (B)">Home <kbd>H</kbd></button>
       </div>
       <pre class="sub" style="white-space:pre-wrap">${prev ? esc(JSON.stringify(prev.counts || prev, null, 2)) : "No preview yet"}</pre>
       ${prev?.errors?.length ? `<p class="empty">${esc(prev.errors.join(" · "))}</p>` : ""}
     </div>`;
+        }
+
+        async function runImportPreview() {
+          if (state.importSource !== "task_pack") {
+            toast("Select an import source");
+            return;
+          }
+          state.importPreview = await api("/api/import/preview", {
+            method: "POST",
+            body: "{}",
+          });
+          toast("Preview ready");
+          render();
+        }
+
+        async function runImportCommit() {
+          if (!state.importPreview?.ok) {
+            toast("Preview first");
+            return;
+          }
+          const r = await api("/api/import/commit", {
+            method: "POST",
+            body: JSON.stringify(state.importPreview || {}),
+          });
+          toast(`Imported +${r.added?.tasks || 0} tasks`);
+          state.importPreview = null;
+          state.view = "dashboard";
+          await refresh();
+        }
+
+        async function handleImportKey(ch) {
+          const src = IMPORT_SOURCES.find((s) => s.key === ch);
+          if (src) {
+            state.importSource = src.id;
+            state.importPreview = null;
+            toast(src.title + " selected");
+            render();
+            return;
+          }
+          if (ch === "p") {
+            await runImportPreview();
+            return;
+          }
+          if (ch === "c") {
+            await runImportCommit();
+            return;
+          }
+          if (ch === "b" || ch === "h") {
+            state.view = "dashboard";
+            state.importPreview = null;
+            render();
+          }
         }
 
         function renderToolbar() {
@@ -1209,8 +1328,14 @@
           ${row("⇧G", "🔲 General")}
           ${row("⇧U", "❓ Doubt")}
         </div></div>
+        <div class="help-group"><h4>Import view</h4><div class="help-rows">
+          ${row("1", "Select TASK_PACK")}
+          ${row("P", "Preview")}
+          ${row("C", "Confirm import")}
+          ${row("B / H / Esc", "Home (dashboard)")}
+        </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
-          ${row("⇧P", "Import pack")}
+          ${row("⇧P", "Open Import")}
           ${row("⇧M", "Migrate MD")}
           ${row("⇧H / F1", "This help")}
         </div></div>
@@ -2290,24 +2415,19 @@
               inp.click();
               return;
             }
-            if (act === "import-preview") {
-              state.importPreview = await api("/api/import/preview", {
-                method: "POST",
-                body: "{}",
-              });
-              toast("Preview ready");
+            if (act === "import-select") {
+              const sid = actEl.getAttribute("data-source") || "task_pack";
+              state.importSource = sid;
+              state.importPreview = null;
               render();
               return;
             }
+            if (act === "import-preview") {
+              await runImportPreview();
+              return;
+            }
             if (act === "import-commit") {
-              const r = await api("/api/import/commit", {
-                method: "POST",
-                body: JSON.stringify(state.importPreview || {}),
-              });
-              toast(`Imported +${r.added?.tasks || 0} tasks`);
-              state.importPreview = null;
-              state.view = "dashboard";
-              await refresh();
+              await runImportCommit();
               return;
             }
             if (act === "migrate") {
@@ -2378,6 +2498,12 @@
               closeModal();
               return;
             }
+            if (state.view === "import") {
+              state.view = "dashboard";
+              state.importPreview = null;
+              render();
+              return;
+            }
             if (searchNeedle()) {
               clearSearch();
               if (state.view === "dashboard" && state.data) renderDashboard();
@@ -2428,7 +2554,18 @@
             return;
           }
 
-          if (state.view === "import") return;
+          if (state.view === "import") {
+            const ch = (e.key || "").toLowerCase();
+            if (/^[1pcbh]$/.test(ch)) {
+              e.preventDefault();
+              try {
+                await handleImportKey(ch);
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+            }
+            return;
+          }
 
           if (e.key === "ArrowDown") {
             e.preventDefault();
