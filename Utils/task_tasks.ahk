@@ -28,15 +28,21 @@ Task_ShowTasksForProject() {
 }
 
 Task_ShowTasksInbox(habitsOnly) {
-    global g_TaskGui, g_TaskLv, g_TaskBrowseProjectId, g_TaskBrowseTaskId
+    global g_TaskGui, g_TaskLv, g_TaskBrowseProjectId, g_TaskBrowseTaskId, g_TaskHabitsView
     Task_CloseGui()
     Task_EnsureData()
     g_TaskBrowseProjectId := ""
     g_TaskBrowseTaskId := ""
+    g_TaskHabitsView := habitsOnly
     title := habitsOnly ? "Tasks — Habits due" : "Tasks — Inbox"
     g_TaskGui := Gui("+AlwaysOnTop +ToolWindow", title)
     g_TaskGui.SetFont("s10", "Segoe UI")
-    lvY := Task_AddBrowseChrome(g_TaskGui, habitsOnly ? "Habits" : "Inbox")
+    lvY := Task_AddBrowseChrome(g_TaskGui, habitsOnly ? "Habits due" : "Inbox")
+    if (habitsOnly) {
+        g_TaskGui.SetFont("s9 cF1C40F Norm", "Segoe UI")
+        g_TaskGui.Add("Text", "x12 y" . (lvY - 18) . " w860 cF1C40F BackgroundTrans",
+            "W → Work inbox   P → Personal inbox   (spawns punctual copy, advances habit)")
+    }
     g_TaskLv := g_TaskGui.Add("ListView", "x12 y" . lvY . " w860 h440 Grid Background2D2D30",
         ["", "Title", "Project", "Kind", "Recur", "Due/Next", "Filter"])
     Task_StyleDarkListView(g_TaskLv)
@@ -44,19 +50,18 @@ Task_ShowTasksInbox(habitsOnly) {
     g_TaskGui.OnEvent("Close", (*) => Task_CloseGui())
     g_TaskGui.OnEvent("Escape", (*) => Task_ShowMainMenu())
     Task_TaskRefresh("", true, habitsOnly)
-    Task_BindTaskListHotkeys(() => Task_ShowMainMenu())
+    Task_BindTaskListHotkeys(() => Task_ShowMainMenu(), habitsOnly)
     Task_LetterJumpStart((entry) => entry["title"])
     Task_CenterGui(g_TaskGui, 890, 540)
 }
 
-Task_BindTaskListHotkeys(backFn) {
-    Task_BindHotkeys([
+Task_BindTaskListHotkeys(backFn, habitsView := false) {
+    pairs := [
         ["a", (*) => Task_TaskAdd()],
         ["Insert", (*) => Task_TaskAdd()],
         ["e", (*) => Task_TaskEdit()],
         ["Delete", (*) => Task_TaskDelete()],
         ["c", (*) => Task_TaskSetEmoji("done")],
-        ["w", (*) => Task_TaskSetEmoji("waiting")],
         ["i", (*) => Task_TaskSetEmoji("important")],
         ["u", (*) => Task_TaskSetEmoji("doubt")],
         ["g", (*) => Task_TaskSetEmoji("general")],
@@ -64,10 +69,29 @@ Task_BindTaskListHotkeys(backFn) {
         ["n", (*) => Task_TaskShowInfo()],
         ["v", (*) => Task_TaskPasteImage()],
         ["Enter", (*) => Task_TaskDrill()],
-        ["f", (*) => Task_OnFilterFromBrowse()],
+        ["1", (*) => Task_BrowseSetFilter("work")],
+        ["2", (*) => Task_BrowseSetFilter("personal")],
+        ["3", (*) => Task_BrowseSetFilter("habits")],
         ["Backspace", backFn],
         ["Escape", backFn]
-    ])
+    ]
+    if (habitsView) {
+        pairs.Push(["w", (*) => Task_HabitSend("work")])
+        pairs.Push(["p", (*) => Task_HabitSend("personal")])
+    } else {
+        pairs.Push(["w", (*) => Task_TaskSetEmoji("waiting")])
+    }
+    Task_BindHotkeys(pairs)
+}
+
+Task_HabitSend(filt) {
+    t := Task_TaskSelected()
+    if (!t) {
+        Task_Notify("Select a habit", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    if (Task_SendHabitToFilter(t, filt))
+        Task_TaskReloadCurrentView()
 }
 
 Task_TaskRefresh(projectId, inboxMode, habitsOnly) {
@@ -81,6 +105,7 @@ Task_TaskRefresh(projectId, inboxMode, habitsOnly) {
     rows := Task_Load("tasks")
     g_TaskLv.Delete()
     g_TaskRows := []
+    pending := []
     for t in rows {
         if (!Task_MatchesFilter(t))
             continue
@@ -88,20 +113,49 @@ Task_TaskRefresh(projectId, inboxMode, habitsOnly) {
             continue
         if (projectId != "" && t["project_id"] != projectId)
             continue
-        if (inboxMode && !Task_IsOpenEmoji(t["emoji"]))
-            continue
-        if (habitsOnly && t["kind"] != "habitual")
-            continue
+        if (habitsOnly) {
+            if (t["kind"] != "habitual")
+                continue
+            if (!Task_HabitIsDue(t))
+                continue
+        } else if (inboxMode) {
+            if (t["kind"] = "habitual")
+                continue
+            if (!Task_IsOpenEmoji(t["emoji"]))
+                continue
+        }
+        pending.Push(t)
+    }
+    if (habitsOnly) {
+        loop pending.Length {
+            i := A_Index
+            loop pending.Length - i {
+                j := i + A_Index
+                di := Trim(pending[i]["next_due"]) != "" ? pending[i]["next_due"] : pending[i]["due_date"]
+                dj := Trim(pending[j]["next_due"]) != "" ? pending[j]["next_due"] : pending[j]["due_date"]
+                if (di = "")
+                    di := "0000-00-00"
+                if (dj = "")
+                    dj := "0000-00-00"
+                if (dj < di) {
+                    tmp := pending[i]
+                    pending[i] := pending[j]
+                    pending[j] := tmp
+                }
+            }
+        }
+    }
+    for t in pending {
         g_TaskRows.Push(t)
         due := Trim(t["next_due"]) != "" ? t["next_due"] : t["due_date"]
-        if (inboxMode) {
+        if (inboxMode || habitsOnly) {
             pt := projTitle.Has(t["project_id"]) ? projTitle[t["project_id"]] : t["project_id"]
             g_TaskLv.Add("", t["emoji"], t["title"], pt, t["kind"], t["recurrence"], due, t["filter"])
         } else {
             g_TaskLv.Add("", t["emoji"], t["title"], t["kind"], t["recurrence"], due, t["section_path"])
         }
     }
-    colN := inboxMode ? 7 : 6
+    colN := (inboxMode || habitsOnly) ? 7 : 6
     loop colN
         g_TaskLv.ModifyCol(A_Index, "AutoHdr")
     Task_StyleDarkListView(g_TaskLv)
@@ -116,16 +170,11 @@ Task_TaskSelected() {
 }
 
 Task_TaskReloadCurrentView() {
-    global g_TaskBrowseProjectId
+    global g_TaskBrowseProjectId, g_TaskHabitsView
     if (g_TaskBrowseProjectId != "")
         Task_ShowTasksForProject()
-    else {
-        title := ""
-        try title := WinGetTitle("A")
-        catch {
-        }
-        Task_ShowTasksInbox(InStr(title, "Habits") > 0)
-    }
+    else
+        Task_ShowTasksInbox(!!g_TaskHabitsView)
 }
 
 Task_TaskDrill(*) {
@@ -310,7 +359,7 @@ Task_TaskForm(existing) {
     }
     projId := isEdit ? existing["project_id"] : g_TaskBrowseProjectId
     proj := Task_FindById(Task_Load("projects"), projId)
-    defFilt := IsObject(proj) ? proj["filter"] : (g_TaskFilter = "all" ? "work" : g_TaskFilter)
+    defFilt := IsObject(proj) ? proj["filter"] : (g_TaskFilter = "all" || g_TaskFilter = "" ? "work" : g_TaskFilter)
 
     Task_DialogsBegin()
     g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit task" : "Add task")

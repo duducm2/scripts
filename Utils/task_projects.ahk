@@ -27,7 +27,9 @@ Task_ShowProjects() {
         ["n", (*) => Task_ProjectShowInfo()],
         ["v", (*) => Task_ProjectPasteImage()],
         ["Enter", (*) => Task_ProjectDrill()],
-        ["f", (*) => Task_OnFilterFromBrowse()],
+        ["1", (*) => Task_BrowseSetFilter("work")],
+        ["2", (*) => Task_BrowseSetFilter("personal")],
+        ["3", (*) => Task_BrowseSetFilter("habits")],
         ["Backspace", (*) => Task_ShowMainMenu()],
         ["Escape", (*) => Task_ShowMainMenu()]
     ])
@@ -35,10 +37,10 @@ Task_ShowProjects() {
     Task_CenterGui(g_TaskGui, 890, 540)
 }
 
-Task_OnFilterFromBrowse(*) {
+Task_BrowseSetFilter(filt) {
+    Task_SetFilter(filt)
+    Task_Notify("Filter: " . Task_FilterLabel(filt), 900, BANNER_ACCENT_INTERMEDIATE)
     global g_TaskBrowseProjectId, g_TaskBrowseTaskId
-    next := Task_CycleFilter()
-    Task_Notify("Filter: " . Task_FilterLabel(next), 1000, BANNER_ACCENT_INTERMEDIATE)
     if (g_TaskBrowseProjectId = "" && g_TaskBrowseTaskId = "")
         Task_ShowProjects()
     else if (g_TaskBrowseTaskId = "")
@@ -201,7 +203,7 @@ Task_ProjectForm(existing) {
     g.Add("Text", , "Title")
     eTitle := g.Add("Edit", "w360", isEdit ? existing["title"] : "")
     g.Add("Text", "y+8", "Filter (work / personal / habits)")
-    defFilt := isEdit ? existing["filter"] : (g_TaskFilter = "all" ? "work" : g_TaskFilter)
+    defFilt := isEdit ? existing["filter"] : (g_TaskFilter = "all" || g_TaskFilter = "" ? "work" : g_TaskFilter)
     eFilt := g.Add("Edit", "w360", defFilt)
     g.Add("Text", "y+8", "Section path (optional)")
     eSec := g.Add("Edit", "w360", isEdit ? existing["section_path"] : "")

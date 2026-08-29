@@ -28,9 +28,20 @@ def build_html(data_dir: Path) -> str:
     attachments = read_csv(data_dir / "attachments.csv")
 
     active_tasks = [t for t in tasks if t.get("active", "1") != "0"]
-    open_tasks = [t for t in active_tasks if t.get("emoji") != "✅"]
-    done_tasks = [t for t in active_tasks if t.get("emoji") == "✅"]
-    habitual = [t for t in open_tasks if t.get("kind") == "habitual"]
+    punctual_open = [
+        t
+        for t in active_tasks
+        if t.get("kind") != "habitual" and t.get("emoji") != "✅"
+    ]
+    open_tasks = punctual_open
+    done_tasks = [t for t in active_tasks if t.get("emoji") == "✅" and t.get("kind") != "habitual"]
+    habitual = [t for t in active_tasks if t.get("kind") == "habitual"]
+    habitual_due = []
+    today = datetime.now().strftime("%Y-%m-%d")
+    for t in habitual:
+        due = (t.get("next_due") or t.get("due_date") or "").strip()
+        if not due or due <= today:
+            habitual_due.append(t)
 
     by_filter = Counter(t.get("filter") or "—" for t in open_tasks)
     by_emoji = Counter(t.get("emoji") or "🔲" for t in open_tasks)

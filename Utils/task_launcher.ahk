@@ -38,13 +38,12 @@ Task_ShowMainMenu() {
         projects.Length . " projects  ·  " . tasks.Length . " tasks  ·  "
         . infos.Length . " info  ·  " . openN . " open  ·  filter: " . Task_FilterLabel(g_TaskFilter))
     g_TaskGui.SetFont("s9 cF1C40F", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y72 w880", "Keyboard-first project → task → info. Filters: work / personal / habits.")
+    g_TaskGui.Add("Text", "x20 y72 w880", "Browse with 1/2/3 for Work / Personal / Habits. Inbox is punctual only.")
 
     items := [
-        ["B", "Browse", "Projects → tasks → info points"],
-        ["1", "Inbox", "Open tasks (not ✅), current filter"],
-        ["K", "Habits due", "Habitual tasks by next_due"],
-        ["F", "Cycle filter", "all → work → personal → habits"],
+        ["B", "Browse", "Projects → tasks → info (filter with 1/2/3)"],
+        ["1", "Inbox", "Open punctual tasks in current filter"],
+        ["K", "Habits due", "Due habits → W/P send to Work/Personal"],
         ["D", "Dashboard", "Charts and lists in Chrome"],
         ["M", "Migrate MD", "Import work / punctual / habits.md"],
         ["H", "Help", "Vocabulary and keys"],
@@ -72,11 +71,11 @@ Task_ShowMainMenu() {
 
     g_TaskGui.SetFont("s9 c808080", "Segoe UI")
     g_TaskGui.Add("Text", "x20 y440 w880",
-        "Backspace utility shortcuts   Esc close   F filter   M migrate   D dashboard")
+        "Backspace utility shortcuts   Esc close   M migrate   D dashboard")
 
     Task_BindHotkeys([
         ["b", Task_OnBrowse], ["1", Task_OnInbox], ["k", Task_OnHabits],
-        ["f", Task_OnFilter], ["d", Task_OnDash], ["m", Task_OnMigrate],
+        ["d", Task_OnDash], ["m", Task_OnMigrate],
         ["h", Task_OnHelp], ["p", Task_OnGitPush],
         ["Backspace", (*) => Task_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Task_CloseGui()]
@@ -107,15 +106,10 @@ Task_OnInbox(*) {
 
 Task_OnHabits(*) {
     global g_TaskBrowseProjectId, g_TaskBrowseTaskId
+    Task_SetFilter("habits")
     g_TaskBrowseProjectId := ""
     g_TaskBrowseTaskId := ""
     Task_ShowTasksInbox(true)
-}
-
-Task_OnFilter(*) {
-    next := Task_CycleFilter()
-    Task_Notify("Filter: " . Task_FilterLabel(next), 1200, BANNER_ACCENT_INTERMEDIATE)
-    Task_ShowMainMenu()
 }
 
 Task_OnDash(*) {
@@ -139,6 +133,7 @@ Task_OnGitPush(*) {
 }
 
 Task_OpenDashboard() {
+    Task_CloseGui()
     Task_EnsureData()
     py := Task_PythonDir() . "\chart_generator.py"
     if (!FileExist(py)) {

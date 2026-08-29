@@ -8,6 +8,7 @@ global g_TaskHotkeys := []
 global g_TaskFilter := "all"
 global g_TaskBrowseProjectId := ""
 global g_TaskBrowseTaskId := ""
+global g_TaskHabitsView := false
 global g_TaskLetterJump := ""
 global g_TaskLv := false
 global g_TaskRows := []
@@ -49,7 +50,7 @@ Task_EnsureSettings() {
     if (FileExist(path))
         return
     content := "[General]`n"
-        . "Filter=all`n"
+        . "Filter=work`n"
         . "LastProjectId=`n"
         . "DashboardChromeHwnd=`n"
         . "`n[Dashboard]`n"
@@ -265,9 +266,9 @@ Task_EnsureData() {
         }
     }
     global g_TaskFilter
-    g_TaskFilter := Task_Setting("General", "Filter", "all")
-    if (g_TaskFilter = "")
-        g_TaskFilter := "all"
+    g_TaskFilter := Task_Setting("General", "Filter", "work")
+    if (g_TaskFilter = "" || g_TaskFilter = "all")
+        g_TaskFilter := "work"
 }
 
 Task_FindById(rows, id) {
@@ -313,7 +314,7 @@ Task_NowStamp() {
 }
 
 Task_FilterLabels() {
-    return ["all", "work", "personal", "habits"]
+    return ["work", "personal", "habits"]
 }
 
 Task_FilterLabel(f) {
@@ -325,32 +326,27 @@ Task_FilterLabel(f) {
         case "habits":
             return "Habits"
         default:
-            return "All"
+            return "Work"
     }
 }
 
-Task_CycleFilter() {
+Task_SetFilter(filt) {
     global g_TaskFilter
-    labels := Task_FilterLabels()
-    idx := 1
-    for i, f in labels {
-        if (f = g_TaskFilter) {
-            idx := i
-            break
-        }
-    }
-    next := labels[Mod(idx, labels.Length) + 1]
-    g_TaskFilter := next
-    Task_SetSetting("General", "Filter", next)
-    return next
+    filt := StrLower(Trim(filt))
+    if (filt != "work" && filt != "personal" && filt != "habits")
+        filt := "work"
+    g_TaskFilter := filt
+    Task_SetSetting("General", "Filter", filt)
+    return filt
 }
 
 Task_MatchesFilter(row) {
     global g_TaskFilter
-    if (g_TaskFilter = "" || g_TaskFilter = "all")
-        return true
+    fWant := g_TaskFilter
+    if (fWant = "" || fWant = "all")
+        fWant := "work"
     f := row.Has("filter") ? row["filter"] : ""
-    return (f = g_TaskFilter)
+    return (f = fWant)
 }
 
 Task_DefaultEmoji() {
@@ -468,6 +464,12 @@ Task_UnbindHotkeys() {
         try Hotkey(item, "Off")
         catch {
         }
+        ; Also clear undecorated form if we bound $Backspace
+        if (SubStr(item, 1, 1) = "$") {
+            try Hotkey(SubStr(item, 2), "Off")
+            catch {
+            }
+        }
     }
     g_TaskHotkeys := []
     try HotIf()
@@ -481,7 +483,14 @@ Task_GuiFocusIsEdit() {
         return false
     try {
         focused := ControlGetFocus("ahk_id " g_TaskGui.Hwnd)
-        return (focused != "" && InStr(focused, "Edit") = 1)
+        if (focused = "")
+            return false
+        ; Edit / RichEdit only — ListView must keep Backspace as "up"
+        if (InStr(focused, "Edit") = 1)
+            return true
+        if (InStr(focused, "RichEdit") = 1)
+            return true
+        return false
     } catch {
         return false
     }
@@ -500,6 +509,31 @@ Task_HotIfTaskKeys(*) {
     }
 }
 
+; Run navigation after the hotkey thread ends so CloseGui can rebind Backspace safely.
+global g_TaskNavPending := false
+global g_TaskNavFn := ""
+
+Task_DeferNav(fn) {
+    global g_TaskNavPending, g_TaskNavFn
+    g_TaskNavFn := fn
+    if (g_TaskNavPending)
+        return
+    g_TaskNavPending := true
+    SetTimer(Task_RunDeferredNav, -15)
+}
+
+Task_RunDeferredNav(*) {
+    global g_TaskNavPending, g_TaskNavFn
+    g_TaskNavPending := false
+    fn := g_TaskNavFn
+    g_TaskNavFn := ""
+    try {
+        if (fn)
+            fn.Call()
+    } catch {
+    }
+}
+
 Task_BindHotkeys(pairs) {
     global g_TaskGui, g_TaskHotkeys
     Task_UnbindHotkeys()
@@ -510,14 +544,45 @@ Task_BindHotkeys(pairs) {
         return
     }
     for p in pairs {
+        key := p[1]
+        fn := p[2]
+        ; Only Backspace needs deferral (Escape often also arrives via Gui.OnEvent).
+        if (key = "Backspace")
+            fn := Task_WrapNav(fn)
+        bindKey := key
+        if (key = "Backspace")
+            bindKey := "$Backspace"
         try {
-            Hotkey(p[1], p[2], "On")
-            g_TaskHotkeys.Push(p[1])
+            Hotkey(bindKey, fn, "On")
+            g_TaskHotkeys.Push(bindKey)
         } catch {
+            try {
+                Hotkey(key, fn, "On")
+                g_TaskHotkeys.Push(key)
+            } catch {
+            }
         }
     }
     try HotIf()
     catch {
+    }
+}
+
+Task_WrapNav(fn) {
+    return (*) => Task_DeferNav(fn)
+}
+
+Task_ActivateListGui() {
+    global g_TaskGui, g_TaskLv
+    try {
+        if (IsObject(g_TaskGui))
+            WinActivate("ahk_id " g_TaskGui.Hwnd)
+    } catch {
+    }
+    try {
+        if (IsObject(g_TaskLv))
+            g_TaskLv.Focus()
+    } catch {
     }
 }
 
@@ -526,6 +591,7 @@ Task_CenterGui(guiObj, w := 920, h := 620) {
     x := L + ((R - L) - w) // 2
     y := T + ((B - T) - h) // 2
     guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
+    Task_ActivateListGui()
 }
 
 Task_Notify(msg, ms := 1800, accent := "") {
@@ -640,7 +706,8 @@ Task_AddBrowseChrome(guiObj, levelNoun) {
     guiObj.Add("Text", "x12 y8 w860 cF1C40F BackgroundTrans", crumb . "  ·  filter: " . filt)
     guiObj.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
     guiObj.Add("Text", "x12 y32 w860 cA0A0A0 BackgroundTrans",
-        "A add  E edit  Del delete  Enter drill  Backspace up  letters jump  C/W/I/U/G emoji  V paste img  N info")
+        "1 Work  2 Personal  3 Habits   A add  E edit  Del  Enter drill  Backspace up  C/W/I/U/G emoji  V paste  N info"
+    )
     guiObj.SetFont("s10 cWhite Norm", "Segoe UI")
     return 56
 }
@@ -749,17 +816,123 @@ Task_CountOpenTasks() {
             continue
         if (t.Has("active") && t["active"] = "0")
             continue
+        if (t.Has("kind") && t["kind"] = "habitual")
+            continue
         if (Task_IsOpenEmoji(t["emoji"]))
             n += 1
     }
     return n
 }
 
+Task_HabitIsDue(t) {
+    if (!IsObject(t) || t["kind"] != "habitual")
+        return false
+    due := Trim(t["next_due"]) != "" ? Trim(t["next_due"]) : Trim(t["due_date"])
+    if (due = "")
+        return true
+    return due <= Task_Today()
+}
+
+Task_FindProjectForFilter(filt) {
+    projects := Task_Load("projects")
+    inboxId := ""
+    firstId := ""
+    for p in projects {
+        if (p.Has("active") && p["active"] = "0")
+            continue
+        if (p["filter"] != filt)
+            continue
+        if (firstId = "")
+            firstId := p["id"]
+        title := StrLower(p["title"])
+        if (InStr(title, "inbox") || InStr(title, "personal inbox") || InStr(title, "work inbox"))
+            return p["id"]
+    }
+    if (firstId != "")
+        return firstId
+    ; Create a seed inbox project for that filter
+    row := Map(
+        "id", Task_NextId("PROJ_", projects),
+        "title", (filt = "work" ? "Work inbox" : (filt = "personal" ? "Personal inbox" : "Habits inbox")),
+        "filter", filt,
+        "section_path", "",
+        "sort_order", Task_NextSortOrder(projects),
+        "active", "1",
+        "created_at", Task_NowStamp()
+    )
+    projects.Push(row)
+    Task_Save("projects", projects)
+    return row["id"]
+}
+
+; Spawn a punctual copy under Work/Personal; keep habit; advance next_due.
+Task_SendHabitToFilter(habit, filt) {
+    if (!IsObject(habit) || habit["kind"] != "habitual") {
+        Task_Notify("Select a habit", 1200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if (filt != "work" && filt != "personal") {
+        Task_Notify("Target must be work or personal", 1500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    projId := Task_FindProjectForFilter(filt)
+    tasks := Task_Load("tasks")
+    copyId := Task_NextId("TASK_", tasks)
+    copy := Map(
+        "id", copyId,
+        "project_id", projId,
+        "title", habit["title"],
+        "emoji", Task_DefaultEmoji(),
+        "kind", "punctual",
+        "recurrence", "",
+        "due_date", Task_Today(),
+        "next_due", "",
+        "section_path", habit["section_path"],
+        "filter", filt,
+        "sort_order", Task_NextSortOrder(tasks),
+        "completed_at", "",
+        "created_at", Task_NowStamp(),
+        "active", "1"
+    )
+    from := Trim(habit["next_due"]) != "" ? habit["next_due"] : Task_Today()
+    habitNext := Task_AdvanceNextDue(habit["recurrence"], from)
+    out := []
+    for t in tasks {
+        if (t["id"] = habit["id"]) {
+            t["next_due"] := habitNext
+            t["completed_at"] := Task_NowStamp()
+            out.Push(t)
+        } else {
+            out.Push(t)
+        }
+    }
+    out.Push(copy)
+    Task_Save("tasks", out)
+
+    infos := Task_Load("info_points")
+    infos.Push(Map(
+        "id", Task_NextId("INFO_", infos),
+        "parent_type", "task",
+        "parent_id", copyId,
+        "title", "From habit",
+        "body", "Spawned from habit " . habit["id"] . " (" . habit["recurrence"] . "). Next habit due: "
+        . habitNext,
+        "emoji", Task_InfoEmoji(),
+        "section_path", "",
+        "sort_order", Task_NextSortOrder(infos),
+        "created_at", Task_NowStamp()
+    ))
+    Task_Save("info_points", infos)
+    Task_Notify("Sent to " . filt . " · habit next " . habitNext, 2200, BANNER_ACCENT_SUCCESS)
+    return true
+}
+
 Task_Terms() {
     return [
         ["Project", "Container for tasks. Flat list; MD headings become section_path on children."],
-        ["Task", "Actionable item. kind=punctual (one-shot) or habitual (recurring)."],
-        ["Filter", "work | personal | habits — list views only; not a hierarchy."],
+        ["Task", "Actionable punctual item. Habits are separate (kind=habitual) and do not count as open."],
+        ["Habit", "Recurring item. Review in [K]; W/P sends a punctual copy to Work/Personal and advances next_due."],
+        ["Filter", "While browsing: 1=Work  2=Personal  3=Habits. Inbox and lists follow the active filter."],
         ["Emoji", "🔲 general  ⏳ waiting  ⚡ important  ✅ done  ❓ doubt  ℹ️ info  or any custom."],
         ["Info point", "Non-actionable note attached to a project or task (large text)."],
         ["Attachment", "image | url | file | text refs under tasks/data/attachments or absolute paths."]
