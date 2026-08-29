@@ -44,6 +44,7 @@ Task_ShowMainMenu() {
         ["B", "Browse", "Projects → tasks → info (filter with 1/2/3)"],
         ["1", "Inbox", "Open punctual tasks in current filter"],
         ["K", "Habits due", "Due habits → W/P send to Work/Personal"],
+        ["I", "AI import", "Desktop TASK_PACK → projects / tasks / info"],
         ["D", "Dashboard", "Charts and lists in Chrome"],
         ["M", "Migrate MD", "Import work / punctual / habits.md"],
         ["H", "Help", "Vocabulary and keys"],
@@ -71,11 +72,11 @@ Task_ShowMainMenu() {
 
     g_TaskGui.SetFont("s9 c808080", "Segoe UI")
     g_TaskGui.Add("Text", "x20 y440 w880",
-        "Backspace utility shortcuts   Esc close   M migrate   D dashboard")
+        "Backspace utility shortcuts   Esc close   I import   M migrate   D dashboard")
 
     Task_BindHotkeys([
         ["b", Task_OnBrowse], ["1", Task_OnInbox], ["k", Task_OnHabits],
-        ["d", Task_OnDash], ["m", Task_OnMigrate],
+        ["i", Task_OnImport], ["d", Task_OnDash], ["m", Task_OnMigrate],
         ["h", Task_OnHelp], ["p", Task_OnGitPush],
         ["Backspace", (*) => Task_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Task_CloseGui()]
@@ -110,6 +111,10 @@ Task_OnHabits(*) {
     g_TaskBrowseProjectId := ""
     g_TaskBrowseTaskId := ""
     Task_ShowTasksInbox(true)
+}
+
+Task_OnImport(*) {
+    Task_ImportPackFromDesktop()
 }
 
 Task_OnDash(*) {

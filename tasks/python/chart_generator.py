@@ -116,7 +116,7 @@ def build_html(data_dir: Path) -> str:
                 continue
             items = "".join(render_task_li(t) for t in pts)
             blocks.append(
-                f'<details class="project">'
+                f'<details class="project" open>'
                 f"<summary>"
                 f'<span class="proj-title">{esc(p.get("title"))}</span>'
                 f'<span class="proj-count">{len(pts)}</span>'
@@ -135,7 +135,7 @@ def build_html(data_dir: Path) -> str:
             orphans.sort(key=sort_key_order_title)
             items = "".join(render_task_li(t) for t in orphans)
             blocks.append(
-                f'<details class="project">'
+                f'<details class="project" open>'
                 f"<summary>"
                 f'<span class="proj-title">Other</span>'
                 f'<span class="proj-count">{len(orphans)}</span>'

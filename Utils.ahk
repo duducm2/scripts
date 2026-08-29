@@ -339,6 +339,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\task_tasks.ahk
 #include %A_ScriptDir%\Utils\task_info.ahk
 #include %A_ScriptDir%\Utils\task_migrate.ahk
+#include %A_ScriptDir%\Utils\task_import.ahk
 
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk

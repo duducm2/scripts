@@ -118,15 +118,21 @@ ImportMgmt_ShowMainMenu() {
         "PLAN_PACK*.txt → study plans")
 
     g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y308 w520", "[N]  Desktop names")
+    g_ImportMgmtGui.Add("Text", "x20 y308 w520", "[T]  Task pack")
     g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x20 y334 w520",
+        "TASK_PACK*.txt → projects / tasks / info")
+
+    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
+    g_ImportMgmtGui.Add("Text", "x20 y364 w520", "[N]  Desktop names")
+    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+    g_ImportMgmtGui.Add("Text", "x20 y390 w520",
         "Manage pack filenames — copy, add, edit, delete")
 
     g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y378 w520",
-        "Also available: Finance [F] and Memory Palace launchers")
-    g_ImportMgmtGui.Add("Text", "x20 y398 w520",
+    g_ImportMgmtGui.Add("Text", "x20 y430 w520",
+        "Also available: Finance [F], Memory Palace, and Tasks launchers")
+    g_ImportMgmtGui.Add("Text", "x20 y450 w520",
         "[H] help   Backspace utility shortcuts   Esc close")
 
     ImportMgmt_BindHotkeys([
@@ -134,12 +140,13 @@ ImportMgmt_ShowMainMenu() {
         ["m", ImportMgmt_OnImportFinanceMonthly],
         ["p", ImportMgmt_OnImportPalacePack],
         ["l", ImportMgmt_OnImportPlanPack],
+        ["t", ImportMgmt_OnImportTaskPack],
         ["n", ImportMgmt_OnDesktopNames],
         ["h", ImportMgmt_OnHelp],
         ["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()],
         ["Escape", (*) => ImportMgmt_CloseGui()]
     ])
-    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 430)
+    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 490)
 }
 
 ImportMgmt_OnHelp(*) {
@@ -192,8 +199,9 @@ ImportMgmt_HelpText() {
     . "[M] Finance monthly  FINANCE_MONTHLY.txt    →  accounts / goals`r`n"
     . "[P] Palace pack      PALACE_PACK.txt        →  palaces / beasts / atoms`r`n"
     . "[L] Study plan       PLAN_PACK.txt          →  study plans`r`n"
+    . "[T] Task pack        TASK_PACK.txt          →  projects / tasks / info`r`n"
     . "[N] Desktop names    clipangel_desktop_names.csv  →  CRUD + copy`r`n`r`n"
-    . "Same imports also live under Finance [F] and Memory Palace launchers.`r`n`r`n"
+    . "Same imports also live under Finance [F], Memory Palace, and Tasks launchers.`r`n`r`n"
     . "CANONICAL DESKTOP NAMES (always overwrite)`r`n"
     . "Save AI packs with the exact filename above on Desktop.`r`n"
     . "Never add updated, corrected, v2, or similar suffixes.`r`n"
@@ -207,6 +215,8 @@ ImportMgmt_HelpText() {
     . "  • Confirm dialog before save; appends transactions or monthly adjustments.`r`n`r`n"
     . "[P] Palace mnemonic pack / [L] Study plan pack`r`n"
     . "  • Pack upsert with cross-link validation; confirm before save.`r`n`r`n"
+    . "[T] Task pack`r`n"
+    . "  • Confirm dialog; match/create projects; append tasks and info points.`r`n`r`n"
     . "DESKTOP PACK NAMES ([N])`r`n"
     . "  • Registry: assets/data/clipangel_desktop_names.csv`r`n"
     . "  • [Enter] or [C] copies the bare name (e.g. FINANCE_DAILY) to clipboard`r`n"
@@ -214,9 +224,9 @@ ImportMgmt_HelpText() {
     . "  • ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
     . "OUTCOMES`r`n"
     . "• Full success: local CSV saved; Desktop pack archived to */data/imported/`r`n"
-    . "• Failure: Desktop fix file written (FINANCE_AI_FIX.txt or PALACE_AI_FIX.txt)`r`n`r`n"
+    . "• Failure: Desktop fix file written (FINANCE_AI_FIX / PALACE_AI_FIX / TASK_AI_FIX)`r`n`r`n"
     . "AI FIX FILES (written on failure — always overwrite)`r`n"
-    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt`r`n"
+    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | TASK_AI_FIX.txt`r`n"
     . "Paste fix file into AI → re-deliver corrected pack → save canonical name → import again.`r`n`r`n"
     . "PACK FORMAT`r`n"
     . "===PREVIEW=== … ===END_PREVIEW===`r`n"
@@ -245,6 +255,10 @@ ImportMgmt_OnImportPalacePack(*) {
 
 ImportMgmt_OnImportPlanPack(*) {
     Palace_ImportPlanPackFromDesktop()
+}
+
+ImportMgmt_OnImportTaskPack(*) {
+    Task_ImportPackFromDesktop()
 }
 
 ImportMgmt_OnDesktopNames(*) {
