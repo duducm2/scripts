@@ -1374,7 +1374,7 @@
         <div class="help-group"><h4>Navigate</h4><div class="help-rows">
           ${row("↑ ↓", "Move selection")}
           ${row("← →", "Collapse / expand project or section")}
-          ${row("⇧J", "Toggle first Personal ↔ Work item")}
+          ${row("⇧J", "First filtered hit (or toggle first Personal ↔ Work)")}
           ${row("Home / End", "First / last item")}
           ${row("a–z 0–9", "Jump to next title starting with letter (from selection down)")}
           ${row("Alt+S", "Focus search")}
@@ -1784,6 +1784,16 @@
         }
 
         function toggleFirstPersonalWork() {
+          // With an active search, jump to the first visible filtered hit
+          if (searchNeedle()) {
+            const targets = collectTargets();
+            if (!targets.length) {
+              toast("No matches");
+              return;
+            }
+            setSelection(targets[0].kind, targets[0].id, true);
+            return;
+          }
           const from = currentPwSide();
           const next = from === "personal" ? "work" : "personal";
           if (state.sectionFocus === "habits" || state.sectionFocus === from) {
@@ -2914,6 +2924,18 @@
             ) {
               e.preventDefault();
               cancelInlineCreate();
+              return;
+            }
+            // Shift+J from search: jump to first filtered hit (don't type "J")
+            if (
+              e.target?.id === "globalSearch" &&
+              e.shiftKey &&
+              shiftCmdFromEvent(e) === "j"
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.target.blur();
+              toggleFirstPersonalWork();
               return;
             }
             return;
