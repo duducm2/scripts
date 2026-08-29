@@ -220,6 +220,21 @@
       details.project:hover > .proj-actions {
         display: flex;
       }
+      .task-section {
+        padding: 0 0 6px;
+      }
+      .task-section-label {
+        padding: 4px 12px 2px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0.85;
+      }
+      .task-section.emoji-hidden {
+        display: none !important;
+      }
       .thumbs {
         flex: 1 1 100%;
         display: flex;
@@ -407,6 +422,34 @@
         color: var(--gold);
         font-size: 12px;
       }
+      .search-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #globalSearch {
+        width: min(280px, 42vw);
+        background: #252528;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--text);
+        padding: 6px 10px;
+        font: inherit;
+        font-size: 13px;
+      }
+      #globalSearch:focus {
+        outline: none;
+        border-color: var(--gold);
+      }
+      #globalSearch::placeholder {
+        color: var(--muted);
+      }
+      mark.search-hit {
+        background: rgba(241, 196, 15, 0.35);
+        color: var(--text);
+        border-radius: 2px;
+        padding: 0 1px;
+      }
       #lightbox {
         position: fixed;
         inset: 0;
@@ -496,7 +539,19 @@
         <h1>Tasks</h1>
         <div class="sub" id="hdrSub">Loading…</div>
       </div>
-      <div class="toolbar" id="mainToolbar"></div>
+      <div class="toolbar">
+        <label class="search-wrap" title="Global search (/)">
+          <input
+            type="search"
+            id="globalSearch"
+            placeholder="Search…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <kbd>/</kbd>
+        </label>
+        <div id="mainToolbar"></div>
+      </div>
     </header>
     <div class="strip" id="strip"></div>
     <div id="view"></div>
@@ -547,6 +602,7 @@
           taskId: "",
           emojiFilter: "",
           sectionFocus: "", // "" | work | personal | habits
+          search: "",
           importPreview: null,
           sel: null, // { kind: "project"|"task"|"habit", id }
         };
@@ -636,11 +692,120 @@
             .join("")}</div>`;
         }
 
+        function searchNeedle() {
+          return (state.search || "").trim().toLowerCase();
+        }
+
+        function titleMatches(text) {
+          const q = searchNeedle();
+          if (!q) return true;
+          return String(text || "")
+            .toLowerCase()
+            .includes(q);
+        }
+
+        function highlightTitle(text) {
+          const q = searchNeedle();
+          const raw = String(text ?? "");
+          if (!q) return esc(raw);
+          const lower = raw.toLowerCase();
+          let i = 0;
+          let out = "";
+          let idx;
+          while ((idx = lower.indexOf(q, i)) !== -1) {
+            out += esc(raw.slice(i, idx));
+            out += `<mark class="search-hit">${esc(raw.slice(idx, idx + q.length))}</mark>`;
+            i = idx + q.length;
+          }
+          out += esc(raw.slice(i));
+          return out || esc(raw);
+        }
+
+        function projectSearchPlan(p, pts) {
+          const q = searchNeedle();
+          const secs = sectionsFor(p.id);
+          if (!q) {
+            return {
+              show: true,
+              projectHit: false,
+              pts,
+              secs,
+              listForSection: (sid) => pts.filter((t) => t.section_id === sid),
+            };
+          }
+          const projectHit = String(p.title || "")
+            .toLowerCase()
+            .includes(q);
+          const secHit = new Set(
+            secs
+              .filter((s) =>
+                String(s.title || "")
+                  .toLowerCase()
+                  .includes(q),
+              )
+              .map((s) => s.id),
+          );
+          const taskHit = new Set(
+            pts
+              .filter((t) =>
+                String(t.title || "")
+                  .toLowerCase()
+                  .includes(q),
+              )
+              .map((t) => t.id),
+          );
+          if (projectHit) {
+            return {
+              show: true,
+              projectHit: true,
+              pts,
+              secs,
+              listForSection: (sid) => pts.filter((t) => t.section_id === sid),
+            };
+          }
+          if (!secHit.size && !taskHit.size) {
+            return {
+              show: false,
+              projectHit: false,
+              pts: [],
+              secs: [],
+              listForSection: () => [],
+            };
+          }
+          const visibleSecs = secs.filter(
+            (s) =>
+              secHit.has(s.id) ||
+              pts.some((t) => t.section_id === s.id && taskHit.has(t.id)),
+          );
+          const listForSection = (sid) => {
+            const inSec = pts.filter((t) => t.section_id === sid);
+            if (secHit.has(sid)) return inSec;
+            return inSec.filter((t) => taskHit.has(t.id));
+          };
+          const visiblePts = pts.filter((t) => {
+            if (taskHit.has(t.id)) return true;
+            if (secHit.has(t.section_id)) return true;
+            return false;
+          });
+          return {
+            show: true,
+            projectHit: false,
+            pts: visiblePts,
+            secs: visibleSecs,
+            listForSection,
+            orphans: pts.filter(
+              (t) =>
+                taskHit.has(t.id) &&
+                (!t.section_id || !secs.some((s) => s.id === t.section_id)),
+            ),
+          };
+        }
+
         function taskLi(t) {
           const due = (t.due_date || t.next_due || "").trim();
           return `<li class="task" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
       <span class="em">${esc(t.emoji || "🔲")}</span>
-      <span class="title" data-act="edit-task">${esc(t.title)}</span>
+      <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
       ${due ? `<span class="due">${esc(due)}</span>` : ""}
       <span class="row-actions">
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
@@ -686,6 +851,66 @@
           return `<div class="section-head"><h2>${esc(heading)}</h2><div class="section-head-right">${emojiLegendHtml(tasks)}${addBtn}</div></div>`;
         }
 
+        function sectionsFor(projectId) {
+          return (state.data.sections || [])
+            .filter((s) => s.project_id === projectId)
+            .sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+        }
+
+        function projectTasksHtml(p, pts, plan) {
+          const pl = plan || projectSearchPlan(p, pts);
+          const secs = pl.secs;
+          const known = new Set(secs.map((s) => s.id));
+          const sortTasks = (list) =>
+            list.sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+          const parts = secs.map((s) => {
+            const list = sortTasks(pl.listForSection(s.id).slice());
+            return `<div class="task-section" data-sid="${esc(s.id)}">
+        <div class="task-section-label">${highlightTitle(s.title)}</div>
+        ${list.length ? `<ul class="task-list">${list.map(taskLi).join("")}</ul>` : ""}
+      </div>`;
+          });
+          const orphans = (
+            pl.orphans ||
+            pts.filter((t) => !t.section_id || !known.has(t.section_id))
+          ).slice();
+          if (orphans.length) {
+            parts.push(`<div class="task-section">
+        <div class="task-section-label">Other</div>
+        <ul class="task-list">${sortTasks(orphans).map(taskLi).join("")}</ul>
+      </div>`);
+          }
+          if (!pl.pts.length && !searchNeedle()) {
+            return (
+              parts.join("") +
+              '<p class="empty" style="padding:0 12px 10px">No open tasks</p>'
+            );
+          }
+          if (!pl.pts.length && searchNeedle() && !parts.join("")) {
+            return '<p class="empty" style="padding:0 12px 10px">No matching tasks</p>';
+          }
+          return parts.join("");
+        }
+
+        function sectionOptionsHtml(projectId, selectedId) {
+          const secs = sectionsFor(projectId);
+          if (!secs.length) return `<option value="">General</option>`;
+          return secs
+            .map(
+              (s) =>
+                `<option value="${esc(s.id)}" ${selectedId === s.id ? "selected" : ""}>${esc(s.title)}</option>`,
+            )
+            .join("");
+        }
+
         function renderColumn(heading, filt) {
           const open = openTasks().filter((t) => t.filter === filt);
           const byProj = {};
@@ -694,38 +919,65 @@
             (byProj[pid] ||= []).push(t);
           });
           const blocks = [];
+          let visibleOpen = [];
           for (const p of projectsFor(filt)) {
-            const pts = byProj[p.id] || [];
+            const allPts = byProj[p.id] || [];
+            const plan = projectSearchPlan(p, allPts);
+            if (!plan.show) continue;
+            const pts = plan.pts;
+            visibleOpen = visibleOpen.concat(pts);
             const pThumbs = thumbsHtml("project", p.id);
-            pts.sort(
-              (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
-            );
             blocks.push(`<details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${esc(p.title)}</span><span class="proj-count">${pts.length}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span><span class="proj-count">${pts.length}</span></summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
+          <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
           <button class="btn" data-act="edit-project">Edit</button>
           <button class="btn" data-act="info-project">Info</button>
           <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
           <button class="btn danger" data-act="del-project">Del</button>
         </div>
         ${pThumbs}
-        ${pts.length ? `<ul class="task-list">${pts.map(taskLi).join("")}</ul>` : '<p class="empty" style="padding:0 12px 10px">No open tasks</p>'}
+        ${projectTasksHtml(p, allPts, plan)}
       </details>`);
           }
           const known = new Set(projectsFor(filt).map((p) => p.id));
-          const orphans = open.filter((t) => !known.has(t.project_id));
+          const orphans = open.filter((t) => {
+            if (known.has(t.project_id)) return false;
+            return !searchNeedle() || titleMatches(t.title);
+          });
           if (orphans.length) {
+            visibleOpen = visibleOpen.concat(orphans);
             blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
           }
-          return `<section class="column panel" id="sec-${esc(filt)}">${sectionHeadHtml(heading, open, filt)}${blocks.join("") || '<p class="empty">No projects</p>'}</section>`;
+          const emptyMsg = searchNeedle()
+            ? '<p class="empty">No matches</p>'
+            : '<p class="empty">No projects</p>';
+          return `<section class="column panel" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("") || emptyMsg}</section>`;
         }
 
         function habitsHtml() {
-          const habitual = (state.data.tasks || []).filter(
-            (t) => t.active !== "0" && t.kind === "habitual",
-          );
+          const q = searchNeedle();
+          const habitual = (state.data.tasks || []).filter((t) => {
+            if (t.active === "0" || t.kind !== "habitual") return false;
+            if (!q) return true;
+            if (
+              String(t.title || "")
+                .toLowerCase()
+                .includes(q)
+            )
+              return true;
+            const p = (state.data.projects || []).find(
+              (x) => x.id === t.project_id,
+            );
+            return !!(
+              p &&
+              String(p.title || "")
+                .toLowerCase()
+                .includes(q)
+            );
+          });
           const by = {};
           habitual.forEach((t) => {
             const k = (t.recurrence || "").toLowerCase();
@@ -737,7 +989,7 @@
           ];
           const head = sectionHeadHtml("Habits", habitual, "habits");
           if (!keys.length)
-            return `<div class="habits-wrap panel" id="sec-habits">${head}<p class="empty">No habits</p></div>`;
+            return `<div class="habits-wrap panel" id="sec-habits">${head}<p class="empty">${q ? "No matches" : "No habits"}</p></div>`;
           const today = new Date().toISOString().slice(0, 10);
           const cards = `<div class="habit-cards">${keys
             .map((k) => {
@@ -755,7 +1007,7 @@
             const dueNow = !due || due <= today;
             return `<li class="habit-row${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
             <span class="em">${esc(t.emoji || "🔲")}</span>
-            <span class="title" data-act="edit-task">${esc(t.title)}</span>
+            <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
             ${due ? `<span class="due">${esc(due)}</span>` : ""}
             <span class="row-actions">
               <button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
@@ -786,12 +1038,13 @@
       <div class="kpi"><div class="lbl">Personal</div><div class="val">${personal}</div></div>
       <div class="kpi"><div class="lbl">Work</div><div class="val">${work}</div></div>
       <div class="kpi"><div class="lbl">Habits due</div><div class="val">${habitsDue}</div></div>
-      <span class="sub" id="emojiFilterLbl">${state.emojiFilter ? "Showing " + (EMOJI_LABELS[state.emojiFilter] || state.emojiFilter) + " — Esc clears" : ""}</span>`;
+      <span class="sub" id="emojiFilterLbl"></span>`;
           $("#view").innerHTML = `
       <div class="top-row">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${habitsHtml()}`;
           applyEmojiFilter(state.emojiFilter);
           applySectionFocus(state.sectionFocus);
+          updateFocusLbl();
           applySelection(false);
         }
 
@@ -816,7 +1069,19 @@
       <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import">Import</button>
       <button class="btn" data-act="migrate">Migrate MD</button>
       <button class="btn" data-act="git-push">Push</button>
-      <span class="sub">Letters jump · arrows select · <kbd>⇧1</kbd> Work <kbd>⇧2</kbd> Personal <kbd>⇧3</kbd> Habits (hide others) · <kbd>⇧E</kbd> expand · <kbd>⇧T</kbd>⚡ <kbd>⇧W</kbd>⏳ <kbd>⇧G</kbd>🔲 <kbd>⇧U</kbd>❓ · <kbd>⇧C</kbd> done · <kbd>⇧A</kbd> add · <kbd>Del</kbd> delete</span>`;
+      <span class="sub">Letters jump · <kbd>/</kbd> search · arrows select · <kbd>⇧1</kbd> Work <kbd>⇧2</kbd> Personal <kbd>⇧3</kbd> Habits · <kbd>⇧E</kbd> expand · <kbd>⇧T</kbd>⚡ <kbd>⇧W</kbd>⏳ <kbd>⇧G</kbd>🔲 <kbd>⇧U</kbd>❓ · <kbd>⇧C</kbd> done · <kbd>⇧A</kbd> add · <kbd>⇧S</kbd> section · <kbd>Del</kbd> delete</span>`;
+        }
+
+        function clearSearch() {
+          state.search = "";
+          const inp = $("#globalSearch");
+          if (inp) inp.value = "";
+        }
+
+        function applySearch(query) {
+          state.search = query ?? "";
+          if (state.view === "dashboard" && state.data) renderDashboard();
+          else updateFocusLbl();
         }
 
         function render() {
@@ -853,6 +1118,9 @@
             parts.push(
               (EMOJI_LABELS[state.emojiFilter] || state.emojiFilter) + " emoji",
             );
+          }
+          if (searchNeedle()) {
+            parts.push('search "' + state.search.trim() + '"');
           }
           lbl.textContent = parts.length
             ? "Showing " + parts.join(" · ") + " — Esc clears"
@@ -1090,6 +1358,15 @@
             }
             return;
           }
+          if (k === "s") {
+            const pid = selectedProjectId();
+            if (!pid) {
+              toast("Select a project first");
+              return;
+            }
+            await promptAddSection(pid);
+            return;
+          }
           if (k === "n") {
             if (state.sel?.kind === "project") {
               infoListModal("project", state.sel.id);
@@ -1258,6 +1535,16 @@
             proj.classList.toggle("emoji-hidden", visible === 0);
             if (visible > 0) proj.open = true;
           });
+          document.querySelectorAll(".task-section").forEach((sec) => {
+            if (!state.emojiFilter) {
+              sec.classList.remove("emoji-hidden");
+              return;
+            }
+            const visible = sec.querySelectorAll(
+              ".task:not(.emoji-hidden)",
+            ).length;
+            sec.classList.toggle("emoji-hidden", visible === 0);
+          });
           document.querySelectorAll(".habit-card").forEach((card) => {
             if (!state.emojiFilter) {
               card.classList.remove("emoji-hidden");
@@ -1328,18 +1615,34 @@
         }
 
         function taskForm(existing) {
-          const projs = projectsFor(existing?.filter || state.filter);
+          const filt = existing?.filter || state.filter || "work";
+          const projs = projectsFor(filt);
+          const pid =
+            existing?.project_id || state.projectId || projs[0]?.id || "";
+          const defaultSec =
+            existing?.section_id ||
+            sectionsFor(pid).find(
+              (s) => (s.title || "").toLowerCase() === "general",
+            )?.id ||
+            "";
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} task</h3>
       <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
-      <label>Project</label><select id="mProj">${projs.map((p) => `<option value="${esc(p.id)}" ${(existing?.project_id || state.projectId) === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select>
-      <label>Filter</label><select id="mFilt">${["work", "personal", "habits"].map((f) => `<option ${(existing?.filter || state.filter) === f ? "selected" : ""}>${f}</option>`).join("")}</select>
+      <label>Project</label><select id="mProj">${projs.map((p) => `<option value="${esc(p.id)}" ${pid === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select>
+      <label>Section</label><select id="mSection">${sectionOptionsHtml(pid, defaultSec)}</select>
+      <label>Filter</label><select id="mFilt">${["work", "personal", "habits"].map((f) => `<option ${(existing?.filter || filt) === f ? "selected" : ""}>${f}</option>`).join("")}</select>
       <label>Kind</label><select id="mKind"><option value="punctual" ${!existing || existing.kind === "punctual" ? "selected" : ""}>punctual</option><option value="habitual" ${existing?.kind === "habitual" ? "selected" : ""}>habitual</option></select>
       <label>Recurrence</label><select id="mRec"><option value="">(none)</option>${RECURRENCE_ORDER.map((r) => `<option value="${r}" ${existing?.recurrence === r ? "selected" : ""}>${RECURRENCE_LABELS[r]}</option>`).join("")}</select>
       <label>Emoji</label><input id="mEmoji" value="${esc(existing?.emoji || "🔲")}"/>
       <label>Due date</label><input id="mDue" value="${esc(existing?.due_date || "")}" placeholder="YYYY-MM-DD"/>
       <label>Next due</label><input id="mNext" value="${esc(existing?.next_due || "")}" placeholder="YYYY-MM-DD"/>
-      <label>Section</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-task">Save</button></div></div>`);
+          const syncSections = () => {
+            const sel = $("#mSection");
+            const cur = sel?.value || "";
+            const np = $("#mProj")?.value || "";
+            if (sel) sel.innerHTML = sectionOptionsHtml(np, cur);
+          };
+          $("#mProj")?.addEventListener("change", syncSections);
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -1354,13 +1657,13 @@
                     id: existing?.id || "",
                     title: $("#mTitle").value,
                     project_id: $("#mProj").value,
+                    section_id: $("#mSection").value,
                     filter: $("#mFilt").value,
                     kind: $("#mKind").value,
                     recurrence: $("#mRec").value,
                     emoji: $("#mEmoji").value,
                     due_date: $("#mDue").value,
                     next_due: $("#mNext").value,
-                    section_path: $("#mSec").value,
                   }),
                 });
                 closeModal();
@@ -1371,6 +1674,22 @@
               }
             }
           };
+        }
+
+        async function promptAddSection(projectId) {
+          const title = prompt("Section name");
+          if (title == null) return;
+          const name = title.trim();
+          if (!name) {
+            toast("Name required");
+            return;
+          }
+          await api("/api/sections", {
+            method: "POST",
+            body: JSON.stringify({ project_id: projectId, title: name }),
+          });
+          toast("Section added");
+          await refresh();
         }
 
         function infoForm(existing) {
@@ -1516,6 +1835,11 @@
               taskForm({ project_id: pid, filter: f });
               return;
             }
+            if (act === "add-section") {
+              const pid = actEl.getAttribute("data-pid") || id;
+              await promptAddSection(pid);
+              return;
+            }
             if (act === "edit-task") {
               taskForm((state.data.tasks || []).find((t) => t.id === id));
               return;
@@ -1648,8 +1972,18 @@
             tag === "textarea" ||
             tag === "select" ||
             e.target?.isContentEditable
-          )
+          ) {
+            if (e.key === "Escape" && e.target?.id === "globalSearch") {
+              e.preventDefault();
+              if (state.search) {
+                clearSearch();
+                if (state.view === "dashboard" && state.data) renderDashboard();
+              } else {
+                e.target.blur();
+              }
+            }
             return;
+          }
 
           if (e.key === "Escape") {
             e.preventDefault();
@@ -1659,6 +1993,11 @@
             }
             if (modalOpen()) {
               closeModal();
+              return;
+            }
+            if (searchNeedle()) {
+              clearSearch();
+              if (state.view === "dashboard" && state.data) renderDashboard();
               return;
             }
             if (state.emojiFilter) {
@@ -1678,6 +2017,16 @@
           }
 
           if (modalOpen() || state.view === "import") return;
+
+          if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            e.preventDefault();
+            const inp = $("#globalSearch");
+            if (inp) {
+              inp.focus();
+              inp.select();
+            }
+            return;
+          }
 
           if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -1766,6 +2115,13 @@
         });
 
         // boot
+        const searchInp = $("#globalSearch");
+        if (searchInp) {
+          searchInp.value = state.search || "";
+          searchInp.addEventListener("input", () => {
+            applySearch(searchInp.value);
+          });
+        }
         if (new URLSearchParams(location.search).get("import") === "1")
           state.view = "import";
         refresh().catch((err) => {

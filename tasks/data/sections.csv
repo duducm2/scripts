@@ -1,0 +1,126 @@
+id,project_id,title,sort_order
+SEC_0001,PROJ_0001,General,0
+SEC_0002,PROJ_0002,General,0
+SEC_0003,PROJ_0003,General,0
+SEC_0004,PROJ_0004,General,0
+SEC_0005,PROJ_0005,General,0
+SEC_0006,PROJ_0006,General,0
+SEC_0007,PROJ_0007,General,0
+SEC_0008,PROJ_0008,General,0
+SEC_0009,PROJ_0009,General,0
+SEC_0010,PROJ_0010,General,0
+SEC_0011,PROJ_0011,General,0
+SEC_0012,PROJ_0012,General,0
+SEC_0013,PROJ_0013,General,0
+SEC_0014,PROJ_0014,General,0
+SEC_0015,PROJ_0015,General,0
+SEC_0016,PROJ_0016,General,0
+SEC_0017,PROJ_0017,General,0
+SEC_0018,PROJ_0018,General,0
+SEC_0019,PROJ_0019,General,0
+SEC_0020,PROJ_0020,General,0
+SEC_0021,PROJ_0021,General,0
+SEC_0022,PROJ_0022,General,0
+SEC_0023,PROJ_0023,General,0
+SEC_0024,PROJ_0024,General,0
+SEC_0025,PROJ_0025,General,0
+SEC_0026,PROJ_0026,General,0
+SEC_0027,PROJ_0027,General,0
+SEC_0028,PROJ_0028,General,0
+SEC_0029,PROJ_0029,General,0
+SEC_0030,PROJ_0030,General,0
+SEC_0031,PROJ_0031,General,0
+SEC_0032,PROJ_0032,General,0
+SEC_0033,PROJ_0033,General,0
+SEC_0034,PROJ_0034,General,0
+SEC_0035,PROJ_0035,General,0
+SEC_0036,PROJ_0036,General,0
+SEC_0037,PROJ_0037,General,0
+SEC_0038,PROJ_0038,General,0
+SEC_0039,PROJ_0039,General,0
+SEC_0040,PROJ_0040,General,0
+SEC_0041,PROJ_0041,General,0
+SEC_0042,PROJ_0042,General,0
+SEC_0043,PROJ_0043,General,0
+SEC_0044,PROJ_0044,General,0
+SEC_0045,PROJ_0045,General,0
+SEC_0046,PROJ_0046,General,0
+SEC_0047,PROJ_0047,General,0
+SEC_0048,PROJ_0048,General,0
+SEC_0049,PROJ_0049,General,0
+SEC_0050,PROJ_0050,General,0
+SEC_0051,PROJ_0051,General,0
+SEC_0052,PROJ_0052,General,0
+SEC_0053,PROJ_0053,General,0
+SEC_0054,PROJ_0054,General,0
+SEC_0055,PROJ_0055,General,0
+SEC_0056,PROJ_0056,General,0
+SEC_0057,PROJ_0057,General,0
+SEC_0058,PROJ_0058,General,0
+SEC_0059,PROJ_0002,Tasks/Doctoral degree,10
+SEC_0060,PROJ_0003,Tasks/Job positions,10
+SEC_0061,PROJ_0004,Tasks/TAR,10
+SEC_0062,PROJ_0005,Tasks/General,10
+SEC_0063,PROJ_0005,"Tasks/Checar esta meta, se precisamos revisar",20
+SEC_0064,PROJ_0006,Tasks/Trainings,10
+SEC_0065,PROJ_0011,Projects/BPM,10
+SEC_0066,PROJ_0012,Projects/Piloto PT B2B - Data insights,10
+SEC_0067,PROJ_0012,Projects/Inputs coming from Nadia.,20
+SEC_0068,PROJ_0012,Projects/Business Model,30
+SEC_0069,PROJ_0013,Projects/RISE,10
+SEC_0070,PROJ_0013,Projects/Governance,20
+SEC_0071,PROJ_0013,Projects/Communication Plan/E-mail,30
+SEC_0072,PROJ_0013,Projects/Communication Plan/VIVA Engage Newsletter,40
+SEC_0073,PROJ_0013,Projects/Communication Plan/TEAMS group,50
+SEC_0074,PROJ_0013,Projects/Parte 1 - Gemini Enterprise/key users section,60
+SEC_0075,PROJ_0013,Projects/Parte 2 – N8N,70
+SEC_0076,PROJ_0013,Projects/N8N,80
+SEC_0077,PROJ_0015,Activities,10
+SEC_0078,PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),10
+SEC_0079,PROJ_0016,Backlog,20
+SEC_0080,PROJ_0017,Backlog,10
+SEC_0081,PROJ_0019,Daily,10
+SEC_0082,PROJ_0019,Weekly,20
+SEC_0083,PROJ_0019,Monthly,30
+SEC_0084,PROJ_0019,Quarterly,40
+SEC_0085,PROJ_0019,Bi-yearly (Every 6 months),50
+SEC_0086,PROJ_0019,Yearly,60
+SEC_0087,PROJ_0019,Every 10 Years (Documents),70
+SEC_0088,PROJ_0019,Every 2 Years,80
+SEC_0089,PROJ_0019,Every 3 Years,90
+SEC_0090,PROJ_0019,Every 5 Years,100
+SEC_0091,PROJ_0021,Medication Monitoring (Fluvoxamina),10
+SEC_0092,PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",10
+SEC_0093,PROJ_0023,Notes from Your Records (Prior Vaccines),10
+SEC_0094,PROJ_0025,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),10
+SEC_0095,PROJ_0026,Year-by-Year Timeline (Key Dates with Age)/2026 (Age 29),10
+SEC_0096,PROJ_0027,Year-by-Year Timeline (Key Dates with Age)/2027 (Age 30),10
+SEC_0097,PROJ_0028,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),10
+SEC_0098,PROJ_0029,Year-by-Year Timeline (Key Dates with Age)/2030 (Age 33),10
+SEC_0099,PROJ_0030,Year-by-Year Timeline (Key Dates with Age)/2032 (Age 35),10
+SEC_0100,PROJ_0031,Year-by-Year Timeline (Key Dates with Age)/2034 (Age 37),10
+SEC_0101,PROJ_0032,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),10
+SEC_0102,PROJ_0033,Year-by-Year Timeline (Key Dates with Age)/2038 (Age 41),10
+SEC_0103,PROJ_0034,Year-by-Year Timeline (Key Dates with Age)/2040 (Age 43),10
+SEC_0104,PROJ_0035,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),10
+SEC_0105,PROJ_0036,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),10
+SEC_0106,PROJ_0037,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),10
+SEC_0107,PROJ_0038,Year-by-Year Timeline (Key Dates with Age)/2050 (Age 53),10
+SEC_0108,PROJ_0039,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),10
+SEC_0109,PROJ_0040,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),10
+SEC_0110,PROJ_0041,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),10
+SEC_0111,PROJ_0042,Year-by-Year Timeline (Key Dates with Age)/2060 (Age 63),10
+SEC_0112,PROJ_0043,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),10
+SEC_0113,PROJ_0044,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),10
+SEC_0114,PROJ_0045,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),10
+SEC_0115,PROJ_0046,Year-by-Year Timeline (Key Dates with Age)/2070 (Age 73),10
+SEC_0116,PROJ_0047,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),10
+SEC_0117,PROJ_0048,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),10
+SEC_0118,PROJ_0049,Year-by-Year Timeline (Key Dates with Age)/2078 (Age 81),10
+SEC_0119,PROJ_0050,Year-by-Year Timeline (Key Dates with Age)/2080 (Age 83),10
+SEC_0120,PROJ_0051,Year-by-Year Timeline (Key Dates with Age)/2082 (Age 85),10
+SEC_0121,PROJ_0052,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),10
+SEC_0122,PROJ_0053,Year-by-Year Timeline (Key Dates with Age)/2088 (Age 91),10
+SEC_0123,PROJ_0054,Year-by-Year Timeline (Key Dates with Age)/2090 (Age 93),10
+SEC_0124,PROJ_0055,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),10
+SEC_0125,PROJ_0056,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),10

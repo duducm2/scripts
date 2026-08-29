@@ -185,6 +185,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         for p in projects:
             if p.get("filter") == filt and (p.get("title") or "").strip().lower() == title.lower():
                 staged[key] = p["id"]
+                store.ensure_general_section(p["id"])
                 return p["id"]
         row = {
             "id": next_id("PROJ_", projects + new_projects),
@@ -198,7 +199,15 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         new_projects.append(row)
         projects.append(row)
         staged[key] = row["id"]
+        store.ensure_general_section(row["id"])
         return row["id"]
+
+    def ensure_section(project_id: str, name: str) -> tuple[str, str]:
+        """section_path column = section display name; return (section_id, mirrored path)."""
+        name = (name or "").strip()
+        sec = store.find_or_create_section(project_id, name or "General")
+        path = store._section_path_for(sec)
+        return sec["id"], path
 
     for r in pack.get("projects") or []:
         title = (r.get("title") or "").strip()
@@ -242,17 +251,19 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
             recurrence = ""
         emoji = (r.get("emoji") or "").strip() or STATUS_EMOJIS["general"]
         proj_id = ensure_project(r.get("project_title") or "", filt)
+        section_id, section_path = ensure_section(proj_id, r.get("section_path") or "")
         tid = next_id("TASK_", tasks + new_tasks)
         row = {
             "id": tid,
             "project_id": proj_id,
+            "section_id": section_id,
             "title": title,
             "emoji": emoji,
             "kind": kind,
             "recurrence": recurrence,
             "due_date": (r.get("due_date") or "").strip(),
             "next_due": (r.get("next_due") or "").strip(),
-            "section_path": (r.get("section_path") or "").strip(),
+            "section_path": section_path,
             "filter": filt,
             "sort_order": next_sort(tasks + new_tasks),
             "completed_at": "",
@@ -305,6 +316,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     store.save("projects", projects)
     store.save("tasks", tasks)
     store.save("info_points", infos)
+    store.migrate_sections()
 
     # archive pack
     path = Path(pack.get("path") or desktop_dir() / "TASK_PACK.txt")

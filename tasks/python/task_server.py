@@ -137,6 +137,9 @@ class TaskHandler(BaseHTTPRequestHandler):
             if path.startswith("/api/projects/"):
                 self._json(200, store.delete_project(path.split("/")[-1]))
                 return
+            if path.startswith("/api/sections/"):
+                self._json(200, store.delete_section(path.split("/")[-1]))
+                return
             if path.startswith("/api/tasks/"):
                 self._json(200, store.delete_task(path.split("/")[-1]))
                 return
@@ -162,6 +165,9 @@ class TaskHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/projects":
                 self._json(200, store.upsert_project(payload))
+                return
+            if path == "/api/sections":
+                self._json(200, store.upsert_section(payload))
                 return
             if path == "/api/tasks":
                 self._json(200, store.upsert_task(payload))

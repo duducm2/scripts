@@ -1,200 +1,200 @@
-id,project_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
-TASK_0001,PROJ_0002,Falar com ele,🔲,punctual,,,,Tasks/Doctoral degree,work,50,,2026-08-29 13:32:04,1
-TASK_0002,PROJ_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,Tasks/Doctoral degree,work,90,,2026-08-29 13:32:04,1
-TASK_0003,PROJ_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,Tasks/Doctoral degree,work,100,,2026-08-29 13:32:04,1
-TASK_0004,PROJ_0002,Checa estas vagas em aberto:,⚡,punctual,,,,Tasks/Doctoral degree,work,110,,2026-08-29 13:32:04,1
-TASK_0005,PROJ_0003,Subscribe to this job opening,⏳,punctual,,,,Tasks/Job positions,work,140,,2026-08-29 13:32:04,1
-TASK_0006,PROJ_0003,Check the opportunities files,⏳,punctual,,,,Tasks/Job positions,work,150,,2026-08-29 13:32:04,1
-TASK_0007,PROJ_0004,What are we gonna do because this meeting will be during your vacation,⚡,punctual,,,,Tasks/TAR,work,220,,2026-08-29 13:32:04,1
-TASK_0008,PROJ_0005,Decide between Cursor and other approaches,⏳,punctual,,,,Tasks/General,work,350,,2026-08-29 13:32:04,1
-TASK_0009,PROJ_0005,Check you can have the Gemini extension and CLI on VS Code,⏳,punctual,,,,Tasks/General,work,370,,2026-08-29 13:32:04,1
-TASK_0010,PROJ_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,Tasks/General,work,400,,2026-08-29 13:32:04,1
-TASK_0011,PROJ_0005,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 13:32:04,1
-TASK_0012,PROJ_0006,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",⏳,punctual,,,,Tasks/Trainings,work,440,,2026-08-29 13:32:04,1
-TASK_0013,PROJ_0011,A Letícia gostaria de incluir a Fran para trazer as expectativas. Ela cuida de CX (customer experience - call center).,⏳,punctual,,,,Projects/BPM,work,560,,2026-08-29 13:32:04,1
-TASK_0014,PROJ_0012,KPIs,⏳,punctual,,,,Projects/Piloto PT B2B - Data insights,work,640,,2026-08-29 13:32:04,1
-TASK_0015,PROJ_0012,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 13:32:04,1
-TASK_0016,PROJ_0012,A PT está usando o NextAPP. Eles tão usando isso? Eles querem conectar com a nossa base? Apenas somente venda.,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,680,,2026-08-29 13:32:04,1
-TASK_0017,PROJ_0012,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 13:32:04,1
-TASK_0018,PROJ_0013,Enviar convite para os colaboradores através da newsletter,🔲,punctual,,,,Projects/RISE,work,730,,2026-08-29 13:32:04,1
-TASK_0019,PROJ_0013,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 13:32:04,1
-TASK_0020,PROJ_0013,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 13:32:04,1
-TASK_0021,PROJ_0013,Communication 1,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,790,,2026-08-29 13:32:04,1
-TASK_0022,PROJ_0013,Communication 2,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,800,,2026-08-29 13:32:04,1
-TASK_0023,PROJ_0013,Communication 1,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,810,,2026-08-29 13:32:04,1
-TASK_0024,PROJ_0013,Communication 2,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,820,,2026-08-29 13:32:04,1
-TASK_0025,PROJ_0013,Communication 3,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 13:32:04,1
-TASK_0026,PROJ_0013,Maybe we should have two sessions the first with 20 people and the second one we wait to reach out to 15 people too go,⏳,punctual,,,,Projects/Parte 1 - Gemini Enterprise/key users section,work,920,,2026-08-29 13:32:04,1
-TASK_0027,PROJ_0013,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 13:32:04,1
-TASK_0028,PROJ_0013,Update the schedule,⏳,punctual,,,,Projects/Parte 2 – N8N,work,950,,2026-08-29 13:32:04,1
-TASK_0029,PROJ_0013,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 13:32:04,2026-08-29 13:32:04,1
-TASK_0030,PROJ_0013,Send the invitation for the N8N training for managers.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1000,,2026-08-29 13:32:04,1
-TASK_0031,PROJ_0013,Send the invitation for the N8N training for colleagues.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1010,,2026-08-29 13:32:04,1
-TASK_0032,PROJ_0013,Send the invitation for the N8N training for key-users. We need to ask the key-users to install N8N too.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1020,,2026-08-29 13:32:04,1
-TASK_0033,PROJ_0013,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 13:32:04,1
-TASK_0034,PROJ_0013,Enviar o convite para os key-users depois do dia 3 de set para não se confundirem,🔲,punctual,,,,Projects/N8N,work,1220,,2026-08-29 13:32:04,1
-TASK_0035,PROJ_0015,You should also check with your mother-in-law if she get in got in touch with the Adony,🔲,punctual,,,,Activities,personal,1360,,2026-08-29 13:32:04,1
-TASK_0036,PROJ_0015,Start look at investing in other countries instead of only brazil,⚡,punctual,,,,Activities,personal,1370,,2026-08-29 13:32:04,1
-TASK_0037,PROJ_0015,Procurar um emprego,⚡,punctual,,,,Activities,personal,1380,,2026-08-29 13:32:04,1
-TASK_0038,PROJ_0015,We need to clean that those shoes that we used at the hospital and the one to run,🔲,punctual,,,,Activities,personal,1470,,2026-08-29 13:32:04,1
-TASK_0039,PROJ_0015,Follow your process with CPFL,🔲,punctual,,,,Activities,personal,1480,,2026-08-29 13:32:04,1
-TASK_0040,PROJ_0015,Update your CV when you finish your master's degree at any new article if you have published,⏳,punctual,,,,Activities,personal,1510,,2026-08-29 13:32:04,1
-TASK_0041,PROJ_0015,Buy the memory craft,⏳,punctual,,,,Activities,personal,1520,,2026-08-29 13:32:04,1
-TASK_0042,PROJ_0015,"Close anything that might generate costs on your Azure, the tools used for your dissertation",⏳,punctual,,,,Activities,personal,1540,,2026-08-29 13:32:04,1
-TASK_0043,PROJ_0015,Check if other companies can offer it for a better price,⏳,punctual,,,,,personal,1580,,2026-08-29 13:32:04,1
-TASK_0044,PROJ_0015,Limpar o túmulo da mãe,🔲,punctual,,,,,personal,1590,,2026-08-29 13:32:04,1
-TASK_0045,PROJ_0015,Why don't you print your theses and also the articles that you published? Would be really cool to have that in your office. Print your articles too,⏳,punctual,,,,,personal,1600,,2026-08-29 13:32:04,1
-TASK_0046,PROJ_0015,Read your dissertation,⏳,punctual,,,,,personal,1630,,2026-08-29 13:32:04,1
-TASK_0047,PROJ_0015,Rehearsal your presentation,⏳,punctual,,,,,personal,1640,,2026-08-29 13:32:04,1
-TASK_0048,PROJ_0015,Check if REDU already approved your repo,⏳,punctual,,,,,personal,1660,,2026-08-29 13:32:04,1
-TASK_0049,PROJ_0015,Do we need to add the suplentes?,⏳,punctual,,,,,personal,1680,,2026-08-29 13:32:04,1
-TASK_0050,PROJ_0015,Ficha catalogográfica,⏳,punctual,,,,,personal,1700,,2026-08-29 13:32:04,1
-TASK_0051,PROJ_0016,Waiting analysis,⏳,punctual,,,,Tarefas para Submissão do Artigo (Revista JIS),personal,1730,,2026-08-29 13:32:04,1
-TASK_0052,PROJ_0016,Candidate to open PhD positions,⏳,punctual,,,,Backlog,personal,1740,,2026-08-29 13:32:04,1
-TASK_0053,PROJ_0016,How to store big vocabularies,⏳,punctual,,,,,personal,1750,,2026-08-29 13:32:04,1
-TASK_0054,PROJ_0016,Send emails to possible professors,⏳,punctual,,,,,personal,1760,,2026-08-29 13:32:04,1
-TASK_0055,PROJ_0017,"Research online PhD programs in South Africa with tuition around 8,000 BRL per year.",⏳,punctual,,,,Backlog,personal,1800,,2026-08-29 13:32:04,1
-TASK_0056,PROJ_0017,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,Backlog,personal,1810,,2026-08-29 13:32:04,1
-TASK_0057,PROJ_0019,Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake,🩺,habitual,daily,,,Daily,habits,1890,,2026-08-29 13:32:04,1
-TASK_0058,PROJ_0019,Physical activity: at least 30 minutes moderate movement,🩺,habitual,daily,,,Daily,habits,1900,,2026-08-29 13:32:04,1
-TASK_0059,PROJ_0019,Medications (daily adherence):,🩺,habitual,daily,,,Daily,habits,1910,,2026-08-29 13:32:04,1
-TASK_0060,PROJ_0019,Sleep: target 7–9 hours; fixed wake time,🩺,habitual,daily,,,Daily,habits,1930,,2026-08-29 13:32:04,1
-TASK_0061,PROJ_0019,"Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)",🩺,habitual,daily,,,Daily,habits,1940,,2026-08-29 13:32:04,1
-TASK_0062,PROJ_0019,Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable,🩺,habitual,weekly,,,Weekly,habits,1950,,2026-08-29 13:32:04,1
-TASK_0063,PROJ_0019,Exercise long session (≥60–90 minutes) or two shorter sessions,🩺,habitual,weekly,,,Weekly,habits,1960,,2026-08-29 13:32:04,1
-TASK_0064,PROJ_0019,Check your grocery list,🔲,habitual,weekly,,,Weekly,habits,1970,,2026-08-29 13:32:04,1
-TASK_0065,PROJ_0019,Academy:,🔲,habitual,weekly,,,Weekly,habits,1980,,2026-08-29 13:32:04,1
-TASK_0066,PROJ_0019,Medication logistics: refill meds; adherence check; pillbox setup,🩺,habitual,monthly,,,Monthly,habits,2000,,2026-08-29 13:32:04,1
-TASK_0067,PROJ_0019,Weight/BP log; note any fluvoxamina changes,🩺,habitual,monthly,,,Monthly,habits,2010,,2026-08-29 13:32:04,1
-TASK_0068,PROJ_0019,Health check-up (self-check; schedule visit if concerns),🩺,habitual,monthly,,,Monthly,habits,2020,,2026-08-29 13:32:04,1
-TASK_0069,PROJ_0019,Check your pills and supplies (minoxidil should not be stockpiled),🩺,habitual,monthly,,,Monthly,habits,2030,,2026-08-29 13:32:04,1
-TASK_0070,PROJ_0019,Update your LATTES resume,🔲,habitual,quarterly,,,Quarterly,habits,2040,,2026-08-29 13:32:04,1
-TASK_0071,PROJ_0019,We need to eventually clean our water filter.,🔲,habitual,quarterly,,,Quarterly,habits,2050,,2026-08-29 13:32:04,1
-TASK_0072,PROJ_0019,We need to eventually clean our coffee machine.,🔲,habitual,quarterly,,,Quarterly,habits,2060,,2026-08-29 13:32:04,1
-TASK_0073,PROJ_0019,Clean your keyboard.,🔲,habitual,quarterly,,,Quarterly,habits,2070,,2026-08-29 13:32:04,1
-TASK_0074,PROJ_0019,Update your lattes curriculum,🔲,habitual,quarterly,,,Quarterly,habits,2080,,2026-08-29 13:32:04,1
-TASK_0075,PROJ_0019,Review Cursor subscription status; current term ends on Nov 3; renew/cancel as needed,🔲,habitual,quarterly,,,Quarterly,habits,2090,,2026-08-29 13:32:04,1
-TASK_0076,PROJ_0019,Dental check-up and cleaning (suggest Jan and Jul each year),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2100,,2026-08-29 13:32:04,1
-TASK_0077,PROJ_0019,Consulta com tricologista (hair health),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2110,,2026-08-29 13:32:04,1
-TASK_0078,PROJ_0019,Levar projetos importantes ao LinkedIn,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2120,,2026-08-29 13:32:04,1
-TASK_0079,PROJ_0019,Reler as anotações dos seus livros pertinentes,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2130,,2026-08-29 13:32:04,1
-TASK_0080,PROJ_0019,Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2140,,2026-08-29 13:32:04,1
-TASK_0081,PROJ_0019,Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2150,,2026-08-29 13:32:04,1
-TASK_0082,PROJ_0019,"Vaccines: Influenza (seasonal, typically Apr–Jun availability) and COVID-19 booster (seasonal availability)",🩺,habitual,yearly,,,Yearly,habits,2160,,2026-08-29 13:32:04,1
-TASK_0083,PROJ_0019,Dermatology full-body skin exam,🩺,habitual,yearly,,,Yearly,habits,2170,,2026-08-29 13:32:04,1
-TASK_0084,PROJ_0019,Comprehensive physical exam (primary care),🩺,habitual,yearly,,,Yearly,habits,2180,,2026-08-29 13:32:04,1
-TASK_0085,PROJ_0019,Scheduling preference: September for your annual comprehensive physical exam,🩺,habitual,yearly,,,Yearly,habits,2190,,2026-08-29 13:32:04,1
-TASK_0086,PROJ_0019,Review skills notes,🔲,habitual,yearly,,,Yearly,habits,2200,,2026-08-29 13:32:04,1
-TASK_0087,PROJ_0019,"Checar validade dos documentos (RG, passaporte, CNH, vistos)",🔲,habitual,yearly,,,Yearly,habits,2210,,2026-08-29 13:32:04,1
-TASK_0088,PROJ_0019,Imposto de Renda (IRPF),🔲,habitual,yearly,,,Yearly,habits,2220,,2026-08-29 13:32:04,1
-TASK_0089,PROJ_0019,Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas),🔲,habitual,yearly,,,Yearly,habits,2230,,2026-08-29 13:32:04,1
-TASK_0090,PROJ_0019,Imprimir as fotos do último ano,🔲,habitual,yearly,,,Yearly,habits,2240,,2026-08-29 13:32:04,1
-TASK_0091,PROJ_0019,Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail,🔲,habitual,yearly,,,Yearly,habits,2250,,2026-08-29 13:32:04,1
-TASK_0092,PROJ_0019,"Pós-graduação: após cumprir todos os créditos, solicitar validação por e-mail à secretaria (não é automática)",🔲,habitual,yearly,,,Yearly,habits,2260,,2026-08-29 13:32:04,1
-TASK_0093,PROJ_0019,Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão,🔲,habitual,every_10y,,,Every 10 Years (Documents),habits,2270,,2026-08-29 13:32:04,1
-TASK_0094,PROJ_0019,Eye exam (optometry/ophthalmology),🩺,habitual,every_2y,,,Every 2 Years,habits,2280,,2026-08-29 13:32:04,1
-TASK_0095,PROJ_0019,Hemoglobin A1c (diabetes screening) if low risk,🩺,habitual,every_3y,,,Every 3 Years,habits,2290,,2026-08-29 13:32:04,1
-TASK_0096,PROJ_0019,Lipid profile (cholesterol) if low cardiovascular risk,🩺,habitual,every_5y,,,Every 5 Years,habits,2300,,2026-08-29 13:32:04,1
-TASK_0097,PROJ_0021,"Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber",🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2340,,2026-08-29 13:32:04,1
-TASK_0098,PROJ_0021,Interaction cautions: review all new meds/supplements for interactions with fluvoxamina,🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2350,,2026-08-29 13:32:04,1
-TASK_0099,PROJ_0022,"Tdap (tetanus, diphtheria, pertussis): one dose in 2025 (Age 28) as adult catch-up, regardless of prior dT",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2370,,2026-08-29 13:32:04,1
-TASK_0100,PROJ_0022,"Td or Tdap boosters every 10 years after 2025: 2035 (Age 38), 2045 (Age 48), 2055 (Age 58), 2065 (Age 68), 2075 (Age 78), 2085 (Age 88), 2095 (Age 98)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2380,,2026-08-29 13:32:04,1
-TASK_0101,PROJ_0022,Varicella (chickenpox/catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2390,,2026-08-29 13:32:04,1
-TASK_0102,PROJ_0022,"Influenza: annually, every year",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2400,,2026-08-29 13:32:04,1
-TASK_0103,PROJ_0022,"COVID-19: annually, every year per local seasonality",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2410,,2026-08-29 13:32:04,1
-TASK_0104,PROJ_0022,Herpes Zoster (Shingrix): 2-dose series at 50 years — 2047 (Age 50) Dose 1; Dose 2 in 2–6 months (still 2047/2048),🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2420,,2026-08-29 13:32:04,1
-TASK_0105,PROJ_0022,"Pneumococcal (at 60 years if average risk): 2057 (Age 60) per current guideline (e.g., single PCV20, or PCV15 followed by PPSV23 depending on policy at that time)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2430,,2026-08-29 13:32:04,1
-TASK_0106,PROJ_0022,Yellow Fever: you received 14/10/2022; generally one dose is lifelong. Booster only if policy/travel risk requires,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2440,,2026-08-29 13:32:04,1
-TASK_0107,PROJ_0022,Hepatitis A/B: your records are considered complete; no routine boosters if immunocompetent,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2450,,2026-08-29 13:32:04,1
-TASK_0108,PROJ_0022,MMR: appears complete; no routine adult boosters if two documented doses,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2460,,2026-08-29 13:32:04,1
-TASK_0109,PROJ_0022,"Travel/occupational vaccines (e.g., meningococcal, hepatitis boosters, rabies pre-exposure): as needed based on destination/risk",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2470,,2026-08-29 13:32:04,1
-TASK_0110,PROJ_0023,COVID-19 bivalente Pfizer: 16/02/2024; prior Pfizer doses 2021–2022; CoronaVac booster 03/11/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2490,,2026-08-29 13:32:04,1
-TASK_0111,PROJ_0023,Influenza trivalente: 04/12/2024 (keep annually),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2500,,2026-08-29 13:32:04,1
-TASK_0112,PROJ_0023,dT (adult diphtheria-tetanus) booster: 04/04/2022 (Tdap still due once; plan in 2025),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2510,,2026-08-29 13:32:04,1
-TASK_0113,PROJ_0023,Yellow Fever: 14/10/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2520,,2026-08-29 13:32:04,1
-TASK_0114,PROJ_0023,Hepatitis A: 2016 (series considered fine),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2530,,2026-08-29 13:32:04,1
-TASK_0115,PROJ_0023,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2540,,2026-08-29 13:32:04,1
-TASK_0116,PROJ_0023,Varicella (catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2550,,2026-08-29 13:32:04,1
-TASK_0117,PROJ_0025,Vaccines: Tdap (once),🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2580,,2026-08-29 13:32:04,1
-TASK_0118,PROJ_0025,"Eye exam (due this year, then every 2 years)",🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2590,,2026-08-29 13:32:04,1
-TASK_0119,PROJ_0025,"Baseline labs: Lipid profile (q5y cadence starts), A1c (q3y cadence starts), HIV and Hepatitis C screening once",🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2600,,2026-08-29 13:32:04,1
-TASK_0120,PROJ_0025,Renovar RG,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2610,,2026-08-29 13:32:04,1
-TASK_0121,PROJ_0025,Mestrado: VALIDAÇÃO DOS CRÉDITOS NECESSÁRIOS (SIGA) — enviar e-mail à secretaria,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2620,,2026-08-29 13:32:04,1
-TASK_0122,PROJ_0025,Azure: trial iniciado em Out/2024 termina em Out/2025 — confirmar cancelamento ou migração,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2630,,2026-08-29 13:32:04,1
-TASK_0123,PROJ_0026,Começar a investir mais para aposentadoria (aumentar aportes/percentuais),🔲,punctual,,2026-01-01,,Year-by-Year Timeline (Key Dates with Age)/2026 (Age 29),habits,2660,,2026-08-29 13:32:04,1
-TASK_0124,PROJ_0027,Eye exam,🩺,punctual,,2027-01-01,,Year-by-Year Timeline (Key Dates with Age)/2027 (Age 30),habits,2680,,2026-08-29 13:32:04,1
-TASK_0125,PROJ_0027,"A1c due (2025 + 2 years would be 2027 if clinician prefers; standard cadence remains 3-year: next 2028). If following strict 3-year, keep for 2028",🩺,punctual,,2027-01-01,,Year-by-Year Timeline (Key Dates with Age)/2027 (Age 30),habits,2690,,2026-08-29 13:32:04,1
-TASK_0126,PROJ_0028,A1c due (q3y),🩺,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2710,,2026-08-29 13:32:04,1
-TASK_0127,PROJ_0028,Eye exam,🩺,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2720,,2026-08-29 13:32:04,1
-TASK_0128,PROJ_0028,Setembro: passaporte vence — providenciar renovação,🔲,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2730,,2026-08-29 13:32:04,1
-TASK_0129,PROJ_0029,Lipid profile due (q5y),🩺,punctual,,2030-01-01,,Year-by-Year Timeline (Key Dates with Age)/2030 (Age 33),habits,2750,,2026-08-29 13:32:04,1
-TASK_0130,PROJ_0029,Eye exam,🩺,punctual,,2030-01-01,,Year-by-Year Timeline (Key Dates with Age)/2030 (Age 33),habits,2760,,2026-08-29 13:32:04,1
-TASK_0131,PROJ_0030,A1c due (q3y),🩺,punctual,,2032-01-01,,Year-by-Year Timeline (Key Dates with Age)/2032 (Age 35),habits,2780,,2026-08-29 13:32:04,1
-TASK_0132,PROJ_0030,Eye exam,🩺,punctual,,2032-01-01,,Year-by-Year Timeline (Key Dates with Age)/2032 (Age 35),habits,2790,,2026-08-29 13:32:04,1
-TASK_0133,PROJ_0031,05 de Dezembro: renovar CNH (carteira de motorista),🔲,punctual,,2034-01-01,,Year-by-Year Timeline (Key Dates with Age)/2034 (Age 37),habits,2810,,2026-08-29 13:32:04,1
-TASK_0134,PROJ_0032,Td/Tdap booster due (10 years after 2025),🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2830,,2026-08-29 13:32:04,1
-TASK_0135,PROJ_0032,Lipid profile due,🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2840,,2026-08-29 13:32:04,1
-TASK_0136,PROJ_0032,Eye exam,🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2850,,2026-08-29 13:32:04,1
-TASK_0137,PROJ_0033,A1c due (q3y),🩺,punctual,,2038-01-01,,Year-by-Year Timeline (Key Dates with Age)/2038 (Age 41),habits,2870,,2026-08-29 13:32:04,1
-TASK_0138,PROJ_0033,Eye exam,🩺,punctual,,2038-01-01,,Year-by-Year Timeline (Key Dates with Age)/2038 (Age 41),habits,2880,,2026-08-29 13:32:04,1
-TASK_0139,PROJ_0034,Lipid profile due,🩺,punctual,,2040-01-01,,Year-by-Year Timeline (Key Dates with Age)/2040 (Age 43),habits,2900,,2026-08-29 13:32:04,1
-TASK_0140,PROJ_0034,Eye exam,🩺,punctual,,2040-01-01,,Year-by-Year Timeline (Key Dates with Age)/2040 (Age 43),habits,2910,,2026-08-29 13:32:04,1
-TASK_0141,PROJ_0035,A1c due (q3y),🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2930,,2026-08-29 13:32:04,1
-TASK_0142,PROJ_0035,Colorectal cancer screening starts (average risk): colonoscopy (then q10y if normal),🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2940,,2026-08-29 13:32:04,1
-TASK_0143,PROJ_0035,Eye exam,🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2950,,2026-08-29 13:32:04,1
-TASK_0144,PROJ_0036,Td/Tdap booster due,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2970,,2026-08-29 13:32:04,1
-TASK_0145,PROJ_0036,Lipid profile due,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2980,,2026-08-29 13:32:04,1
-TASK_0146,PROJ_0036,Eye exam,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2990,,2026-08-29 13:32:04,1
-TASK_0147,PROJ_0037,Herpes Zoster (Shingrix) Dose 1; Dose 2 in 2–6 months,🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3010,,2026-08-29 13:32:04,1
-TASK_0148,PROJ_0037,"PSA screening discussion starts (if chosen, PSA every 1–2 years)",🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3020,,2026-08-29 13:32:04,1
-TASK_0149,PROJ_0037,A1c due (q3y),🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3030,,2026-08-29 13:32:04,1
-TASK_0150,PROJ_0037,Eye exam,🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3040,,2026-08-29 13:32:04,1
-TASK_0151,PROJ_0038,Lipid profile due,🩺,punctual,,2050-01-01,,Year-by-Year Timeline (Key Dates with Age)/2050 (Age 53),habits,3060,,2026-08-29 13:32:04,1
-TASK_0152,PROJ_0038,Eye exam,🩺,punctual,,2050-01-01,,Year-by-Year Timeline (Key Dates with Age)/2050 (Age 53),habits,3070,,2026-08-29 13:32:04,1
-TASK_0153,PROJ_0039,A1c due (q3y),🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3090,,2026-08-29 13:32:04,1
-TASK_0154,PROJ_0039,Colonoscopy if following a 10-year schedule from 2042 → next in 2052 if 2042 was normal,🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3100,,2026-08-29 13:32:04,1
-TASK_0155,PROJ_0039,Eye exam,🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3110,,2026-08-29 13:32:04,1
-TASK_0156,PROJ_0040,Td/Tdap booster due,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3130,,2026-08-29 13:32:04,1
-TASK_0157,PROJ_0040,Lipid profile due,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3140,,2026-08-29 13:32:04,1
-TASK_0158,PROJ_0040,Eye exam,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3150,,2026-08-29 13:32:04,1
-TASK_0159,PROJ_0041,"Pneumococcal vaccine due per guideline (e.g., PCV20 one-time)",🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3170,,2026-08-29 13:32:04,1
-TASK_0160,PROJ_0041,A1c due (q3y),🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3180,,2026-08-29 13:32:04,1
-TASK_0161,PROJ_0041,Eye exam,🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3190,,2026-08-29 13:32:04,1
-TASK_0162,PROJ_0042,Lipid profile due,🩺,punctual,,2060-01-01,,Year-by-Year Timeline (Key Dates with Age)/2060 (Age 63),habits,3210,,2026-08-29 13:32:04,1
-TASK_0163,PROJ_0042,Eye exam,🩺,punctual,,2060-01-01,,Year-by-Year Timeline (Key Dates with Age)/2060 (Age 63),habits,3220,,2026-08-29 13:32:04,1
-TASK_0164,PROJ_0043,A1c due (q3y),🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3240,,2026-08-29 13:32:04,1
-TASK_0165,PROJ_0043,Colonoscopy (10-year from 2052 if normal),🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3250,,2026-08-29 13:32:04,1
-TASK_0166,PROJ_0043,Eye exam,🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3260,,2026-08-29 13:32:04,1
-TASK_0167,PROJ_0044,Td/Tdap booster due,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3280,,2026-08-29 13:32:04,1
-TASK_0168,PROJ_0044,Lipid profile due,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3290,,2026-08-29 13:32:04,1
-TASK_0169,PROJ_0044,Eye exam,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3300,,2026-08-29 13:32:04,1
-TASK_0170,PROJ_0045,Bone density (DEXA) once (men ≥70; adjust per policy),🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3320,,2026-08-29 13:32:04,1
-TASK_0171,PROJ_0045,A1c due (q3y),🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3330,,2026-08-29 13:32:04,1
-TASK_0172,PROJ_0045,Eye exam,🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3340,,2026-08-29 13:32:04,1
-TASK_0173,PROJ_0046,Lipid profile due,🩺,punctual,,2070-01-01,,Year-by-Year Timeline (Key Dates with Age)/2070 (Age 73),habits,3360,,2026-08-29 13:32:04,1
-TASK_0174,PROJ_0046,Eye exam,🩺,punctual,,2070-01-01,,Year-by-Year Timeline (Key Dates with Age)/2070 (Age 73),habits,3370,,2026-08-29 13:32:04,1
-TASK_0175,PROJ_0047,A1c due (q3y),🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3390,,2026-08-29 13:32:04,1
-TASK_0176,PROJ_0047,Colonoscopy (10-year from 2062 if normal) — continuation depends on health status; discuss ongoing benefit/risks,🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3400,,2026-08-29 13:32:04,1
-TASK_0177,PROJ_0047,Eye exam,🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3410,,2026-08-29 13:32:04,1
-TASK_0178,PROJ_0048,Td/Tdap booster due,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3430,,2026-08-29 13:32:04,1
-TASK_0179,PROJ_0048,Lipid profile due,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3440,,2026-08-29 13:32:04,1
-TASK_0180,PROJ_0048,Eye exam,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3450,,2026-08-29 13:32:04,1
-TASK_0181,PROJ_0049,A1c due (q3y),🩺,punctual,,2078-01-01,,Year-by-Year Timeline (Key Dates with Age)/2078 (Age 81),habits,3470,,2026-08-29 13:32:04,1
-TASK_0182,PROJ_0049,Eye exam,🩺,punctual,,2078-01-01,,Year-by-Year Timeline (Key Dates with Age)/2078 (Age 81),habits,3480,,2026-08-29 13:32:04,1
-TASK_0183,PROJ_0050,Lipid profile due,🩺,punctual,,2080-01-01,,Year-by-Year Timeline (Key Dates with Age)/2080 (Age 83),habits,3500,,2026-08-29 13:32:04,1
-TASK_0184,PROJ_0050,Eye exam,🩺,punctual,,2080-01-01,,Year-by-Year Timeline (Key Dates with Age)/2080 (Age 83),habits,3510,,2026-08-29 13:32:04,1
-TASK_0185,PROJ_0051,A1c due (q3y),🩺,punctual,,2082-01-01,,Year-by-Year Timeline (Key Dates with Age)/2082 (Age 85),habits,3530,,2026-08-29 13:32:04,1
-TASK_0186,PROJ_0051,Eye exam,🩺,punctual,,2082-01-01,,Year-by-Year Timeline (Key Dates with Age)/2082 (Age 85),habits,3540,,2026-08-29 13:32:04,1
-TASK_0187,PROJ_0052,Td/Tdap booster due,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3560,,2026-08-29 13:32:04,1
-TASK_0188,PROJ_0052,Lipid profile due,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3570,,2026-08-29 13:32:04,1
-TASK_0189,PROJ_0052,Eye exam,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3580,,2026-08-29 13:32:04,1
-TASK_0190,PROJ_0053,A1c due (q3y),🩺,punctual,,2088-01-01,,Year-by-Year Timeline (Key Dates with Age)/2088 (Age 91),habits,3600,,2026-08-29 13:32:04,1
-TASK_0191,PROJ_0053,Eye exam,🩺,punctual,,2088-01-01,,Year-by-Year Timeline (Key Dates with Age)/2088 (Age 91),habits,3610,,2026-08-29 13:32:04,1
-TASK_0192,PROJ_0054,Lipid profile due,🩺,punctual,,2090-01-01,,Year-by-Year Timeline (Key Dates with Age)/2090 (Age 93),habits,3630,,2026-08-29 13:32:04,1
-TASK_0193,PROJ_0054,Eye exam,🩺,punctual,,2090-01-01,,Year-by-Year Timeline (Key Dates with Age)/2090 (Age 93),habits,3640,,2026-08-29 13:32:04,1
-TASK_0194,PROJ_0055,A1c due (q3y),🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3660,,2026-08-29 13:32:04,1
-TASK_0195,PROJ_0055,Colonoscopy (10-year from 2082 if still appropriate; individualized decision),🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3670,,2026-08-29 13:32:04,1
-TASK_0196,PROJ_0055,Eye exam,🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3680,,2026-08-29 13:32:04,1
-TASK_0197,PROJ_0056,Td/Tdap booster due,🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3700,,2026-08-29 13:32:04,1
-TASK_0198,PROJ_0056,Lipid profile due,🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3710,,2026-08-29 13:32:04,1
-TASK_0199,PROJ_0056,Eye exam (last planned before Age 100 based on 2-year cadence),🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3720,,2026-08-29 13:32:04,1
+id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
+TASK_0001,PROJ_0002,SEC_0059,Falar com ele,🔲,punctual,,,,Tasks/Doctoral degree,work,50,,2026-08-29 13:32:04,1
+TASK_0002,PROJ_0002,SEC_0059,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,Tasks/Doctoral degree,work,90,,2026-08-29 13:32:04,1
+TASK_0003,PROJ_0002,SEC_0059,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,Tasks/Doctoral degree,work,100,,2026-08-29 13:32:04,1
+TASK_0004,PROJ_0002,SEC_0059,Checa estas vagas em aberto:,⚡,punctual,,,,Tasks/Doctoral degree,work,110,,2026-08-29 13:32:04,1
+TASK_0005,PROJ_0003,SEC_0060,Subscribe to this job opening,⏳,punctual,,,,Tasks/Job positions,work,140,,2026-08-29 13:32:04,1
+TASK_0006,PROJ_0003,SEC_0060,Check the opportunities files,⏳,punctual,,,,Tasks/Job positions,work,150,,2026-08-29 13:32:04,1
+TASK_0007,PROJ_0004,SEC_0061,What are we gonna do because this meeting will be during your vacation,⚡,punctual,,,,Tasks/TAR,work,220,,2026-08-29 13:32:04,1
+TASK_0008,PROJ_0005,SEC_0062,Decide between Cursor and other approaches,⏳,punctual,,,,Tasks/General,work,350,,2026-08-29 13:32:04,1
+TASK_0009,PROJ_0005,SEC_0062,Check you can have the Gemini extension and CLI on VS Code,⏳,punctual,,,,Tasks/General,work,370,,2026-08-29 13:32:04,1
+TASK_0010,PROJ_0005,SEC_0062,Check if you would like access to Gemini Agents,⏳,punctual,,,,Tasks/General,work,400,,2026-08-29 13:32:04,1
+TASK_0011,PROJ_0005,SEC_0063,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 13:32:04,1
+TASK_0012,PROJ_0006,SEC_0064,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",⏳,punctual,,,,Tasks/Trainings,work,440,,2026-08-29 13:32:04,1
+TASK_0013,PROJ_0011,SEC_0065,A Letícia gostaria de incluir a Fran para trazer as expectativas. Ela cuida de CX (customer experience - call center).,⏳,punctual,,,,Projects/BPM,work,560,,2026-08-29 13:32:04,1
+TASK_0014,PROJ_0012,SEC_0066,KPIs,⏳,punctual,,,,Projects/Piloto PT B2B - Data insights,work,640,,2026-08-29 13:32:04,1
+TASK_0015,PROJ_0012,SEC_0067,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 13:32:04,1
+TASK_0016,PROJ_0012,SEC_0067,A PT está usando o NextAPP. Eles tão usando isso? Eles querem conectar com a nossa base? Apenas somente venda.,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,680,,2026-08-29 13:32:04,1
+TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 13:32:04,1
+TASK_0018,PROJ_0013,SEC_0069,Enviar convite para os colaboradores através da newsletter,🔲,punctual,,,,Projects/RISE,work,730,,2026-08-29 13:32:04,1
+TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 13:32:04,1
+TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 13:32:04,1
+TASK_0021,PROJ_0013,SEC_0071,Communication 1,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,790,,2026-08-29 13:32:04,1
+TASK_0022,PROJ_0013,SEC_0071,Communication 2,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,800,,2026-08-29 13:32:04,1
+TASK_0023,PROJ_0013,SEC_0072,Communication 1,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,810,,2026-08-29 13:32:04,1
+TASK_0024,PROJ_0013,SEC_0072,Communication 2,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,820,,2026-08-29 13:32:04,1
+TASK_0025,PROJ_0013,SEC_0073,Communication 3,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 13:32:04,1
+TASK_0026,PROJ_0013,SEC_0074,Maybe we should have two sessions the first with 20 people and the second one we wait to reach out to 15 people too go,⏳,punctual,,,,Projects/Parte 1 - Gemini Enterprise/key users section,work,920,,2026-08-29 13:32:04,1
+TASK_0027,PROJ_0013,SEC_0075,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 13:32:04,1
+TASK_0028,PROJ_0013,SEC_0075,Update the schedule,⏳,punctual,,,,Projects/Parte 2 – N8N,work,950,,2026-08-29 13:32:04,1
+TASK_0029,PROJ_0013,SEC_0075,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 13:32:04,2026-08-29 13:32:04,1
+TASK_0030,PROJ_0013,SEC_0075,Send the invitation for the N8N training for managers.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1000,,2026-08-29 13:32:04,1
+TASK_0031,PROJ_0013,SEC_0075,Send the invitation for the N8N training for colleagues.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1010,,2026-08-29 13:32:04,1
+TASK_0032,PROJ_0013,SEC_0075,Send the invitation for the N8N training for key-users. We need to ask the key-users to install N8N too.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1020,,2026-08-29 13:32:04,1
+TASK_0033,PROJ_0013,SEC_0075,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 13:32:04,1
+TASK_0034,PROJ_0013,SEC_0076,Enviar o convite para os key-users depois do dia 3 de set para não se confundirem,🔲,punctual,,,,Projects/N8N,work,1220,,2026-08-29 13:32:04,1
+TASK_0035,PROJ_0015,SEC_0077,You should also check with your mother-in-law if she get in got in touch with the Adony,🔲,punctual,,,,Activities,personal,1360,,2026-08-29 13:32:04,1
+TASK_0036,PROJ_0015,SEC_0077,Start look at investing in other countries instead of only brazil,⚡,punctual,,,,Activities,personal,1370,,2026-08-29 13:32:04,1
+TASK_0037,PROJ_0015,SEC_0077,Procurar um emprego,⚡,punctual,,,,Activities,personal,1380,,2026-08-29 13:32:04,1
+TASK_0038,PROJ_0015,SEC_0077,We need to clean that those shoes that we used at the hospital and the one to run,🔲,punctual,,,,Activities,personal,1470,,2026-08-29 13:32:04,1
+TASK_0039,PROJ_0015,SEC_0077,Follow your process with CPFL,🔲,punctual,,,,Activities,personal,1480,,2026-08-29 13:32:04,1
+TASK_0040,PROJ_0015,SEC_0077,Update your CV when you finish your master's degree at any new article if you have published,⏳,punctual,,,,Activities,personal,1510,,2026-08-29 13:32:04,1
+TASK_0041,PROJ_0015,SEC_0077,Buy the memory craft,⏳,punctual,,,,Activities,personal,1520,,2026-08-29 13:32:04,1
+TASK_0042,PROJ_0015,SEC_0077,"Close anything that might generate costs on your Azure, the tools used for your dissertation",⏳,punctual,,,,Activities,personal,1540,,2026-08-29 13:32:04,1
+TASK_0043,PROJ_0015,SEC_0015,Check if other companies can offer it for a better price,⏳,punctual,,,,,personal,1580,,2026-08-29 13:32:04,1
+TASK_0044,PROJ_0015,SEC_0015,Limpar o túmulo da mãe,🔲,punctual,,,,,personal,1590,,2026-08-29 13:32:04,1
+TASK_0045,PROJ_0015,SEC_0015,Why don't you print your theses and also the articles that you published? Would be really cool to have that in your office. Print your articles too,⏳,punctual,,,,,personal,1600,,2026-08-29 13:32:04,1
+TASK_0046,PROJ_0015,SEC_0015,Read your dissertation,⏳,punctual,,,,,personal,1630,,2026-08-29 13:32:04,1
+TASK_0047,PROJ_0015,SEC_0015,Rehearsal your presentation,⏳,punctual,,,,,personal,1640,,2026-08-29 13:32:04,1
+TASK_0048,PROJ_0015,SEC_0015,Check if REDU already approved your repo,⏳,punctual,,,,,personal,1660,,2026-08-29 13:32:04,1
+TASK_0049,PROJ_0015,SEC_0015,Do we need to add the suplentes?,⏳,punctual,,,,,personal,1680,,2026-08-29 13:32:04,1
+TASK_0050,PROJ_0015,SEC_0015,Ficha catalogográfica,⏳,punctual,,,,,personal,1700,,2026-08-29 13:32:04,1
+TASK_0051,PROJ_0016,SEC_0078,Waiting analysis,⏳,punctual,,,,Tarefas para Submissão do Artigo (Revista JIS),personal,1730,,2026-08-29 13:32:04,1
+TASK_0052,PROJ_0016,SEC_0079,Candidate to open PhD positions,⏳,punctual,,,,Backlog,personal,1740,,2026-08-29 13:32:04,1
+TASK_0053,PROJ_0016,SEC_0016,How to store big vocabularies,⏳,punctual,,,,,personal,1750,,2026-08-29 13:32:04,1
+TASK_0054,PROJ_0016,SEC_0016,Send emails to possible professors,⏳,punctual,,,,,personal,1760,,2026-08-29 13:32:04,1
+TASK_0055,PROJ_0017,SEC_0080,"Research online PhD programs in South Africa with tuition around 8,000 BRL per year.",⏳,punctual,,,,Backlog,personal,1800,,2026-08-29 13:32:04,1
+TASK_0056,PROJ_0017,SEC_0080,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,Backlog,personal,1810,,2026-08-29 13:32:04,1
+TASK_0057,PROJ_0019,SEC_0081,Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake,🩺,habitual,daily,,,Daily,habits,1890,,2026-08-29 13:32:04,1
+TASK_0058,PROJ_0019,SEC_0081,Physical activity: at least 30 minutes moderate movement,🩺,habitual,daily,,,Daily,habits,1900,,2026-08-29 13:32:04,1
+TASK_0059,PROJ_0019,SEC_0081,Medications (daily adherence):,🩺,habitual,daily,,,Daily,habits,1910,,2026-08-29 13:32:04,1
+TASK_0060,PROJ_0019,SEC_0081,Sleep: target 7–9 hours; fixed wake time,🩺,habitual,daily,,,Daily,habits,1930,,2026-08-29 13:32:04,1
+TASK_0061,PROJ_0019,SEC_0081,"Mental health hygiene: brief check-in (mood, anxiety, BDD triggers, coping plan for the day)",🩺,habitual,daily,,,Daily,habits,1940,,2026-08-29 13:32:04,1
+TASK_0062,PROJ_0019,SEC_0082,Mental health reflection: track mood/BDD patterns; update coping strategies; review therapy notes if applicable,🩺,habitual,weekly,,,Weekly,habits,1950,,2026-08-29 13:32:04,1
+TASK_0063,PROJ_0019,SEC_0082,Exercise long session (≥60–90 minutes) or two shorter sessions,🩺,habitual,weekly,,,Weekly,habits,1960,,2026-08-29 13:32:04,1
+TASK_0064,PROJ_0019,SEC_0082,Check your grocery list,🔲,habitual,weekly,,,Weekly,habits,1970,,2026-08-29 13:32:04,1
+TASK_0065,PROJ_0019,SEC_0082,Academy:,🔲,habitual,weekly,,,Weekly,habits,1980,,2026-08-29 13:32:04,1
+TASK_0066,PROJ_0019,SEC_0083,Medication logistics: refill meds; adherence check; pillbox setup,🩺,habitual,monthly,,,Monthly,habits,2000,,2026-08-29 13:32:04,1
+TASK_0067,PROJ_0019,SEC_0083,Weight/BP log; note any fluvoxamina changes,🩺,habitual,monthly,,,Monthly,habits,2010,,2026-08-29 13:32:04,1
+TASK_0068,PROJ_0019,SEC_0083,Health check-up (self-check; schedule visit if concerns),🩺,habitual,monthly,,,Monthly,habits,2020,,2026-08-29 13:32:04,1
+TASK_0069,PROJ_0019,SEC_0083,Check your pills and supplies (minoxidil should not be stockpiled),🩺,habitual,monthly,,,Monthly,habits,2030,,2026-08-29 13:32:04,1
+TASK_0070,PROJ_0019,SEC_0084,Update your LATTES resume,🔲,habitual,quarterly,,,Quarterly,habits,2040,,2026-08-29 13:32:04,1
+TASK_0071,PROJ_0019,SEC_0084,We need to eventually clean our water filter.,🔲,habitual,quarterly,,,Quarterly,habits,2050,,2026-08-29 13:32:04,1
+TASK_0072,PROJ_0019,SEC_0084,We need to eventually clean our coffee machine.,🔲,habitual,quarterly,,,Quarterly,habits,2060,,2026-08-29 13:32:04,1
+TASK_0073,PROJ_0019,SEC_0084,Clean your keyboard.,🔲,habitual,quarterly,,,Quarterly,habits,2070,,2026-08-29 13:32:04,1
+TASK_0074,PROJ_0019,SEC_0084,Update your lattes curriculum,🔲,habitual,quarterly,,,Quarterly,habits,2080,,2026-08-29 13:32:04,1
+TASK_0075,PROJ_0019,SEC_0084,Review Cursor subscription status; current term ends on Nov 3; renew/cancel as needed,🔲,habitual,quarterly,,,Quarterly,habits,2090,,2026-08-29 13:32:04,1
+TASK_0076,PROJ_0019,SEC_0085,Dental check-up and cleaning (suggest Jan and Jul each year),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2100,,2026-08-29 13:32:04,1
+TASK_0077,PROJ_0019,SEC_0085,Consulta com tricologista (hair health),🩺,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2110,,2026-08-29 13:32:04,1
+TASK_0078,PROJ_0019,SEC_0085,Levar projetos importantes ao LinkedIn,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2120,,2026-08-29 13:32:04,1
+TASK_0079,PROJ_0019,SEC_0085,Reler as anotações dos seus livros pertinentes,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2130,,2026-08-29 13:32:04,1
+TASK_0080,PROJ_0019,SEC_0085,Ativar Ciclos de Repensamento: quando e como suas aspirações mudaram; avaliar necessidade de mudança,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2140,,2026-08-29 13:32:04,1
+TASK_0081,PROJ_0019,SEC_0085,Azure: revisar status da assinatura; trial iniciado em Out/2024 cancela após 12 meses — confirmar até Out/2025,🔲,habitual,biannual,,,Bi-yearly (Every 6 months),habits,2150,,2026-08-29 13:32:04,1
+TASK_0082,PROJ_0019,SEC_0086,"Vaccines: Influenza (seasonal, typically Apr–Jun availability) and COVID-19 booster (seasonal availability)",🩺,habitual,yearly,,,Yearly,habits,2160,,2026-08-29 13:32:04,1
+TASK_0083,PROJ_0019,SEC_0086,Dermatology full-body skin exam,🩺,habitual,yearly,,,Yearly,habits,2170,,2026-08-29 13:32:04,1
+TASK_0084,PROJ_0019,SEC_0086,Comprehensive physical exam (primary care),🩺,habitual,yearly,,,Yearly,habits,2180,,2026-08-29 13:32:04,1
+TASK_0085,PROJ_0019,SEC_0086,Scheduling preference: September for your annual comprehensive physical exam,🩺,habitual,yearly,,,Yearly,habits,2190,,2026-08-29 13:32:04,1
+TASK_0086,PROJ_0019,SEC_0086,Review skills notes,🔲,habitual,yearly,,,Yearly,habits,2200,,2026-08-29 13:32:04,1
+TASK_0087,PROJ_0019,SEC_0086,"Checar validade dos documentos (RG, passaporte, CNH, vistos)",🔲,habitual,yearly,,,Yearly,habits,2210,,2026-08-29 13:32:04,1
+TASK_0088,PROJ_0019,SEC_0086,Imposto de Renda (IRPF),🔲,habitual,yearly,,,Yearly,habits,2220,,2026-08-29 13:32:04,1
+TASK_0089,PROJ_0019,SEC_0086,Dezembro: revisar rendimento da previdência privada e contribuir (avaliar outras caixinhas),🔲,habitual,yearly,,,Yearly,habits,2230,,2026-08-29 13:32:04,1
+TASK_0090,PROJ_0019,SEC_0086,Imprimir as fotos do último ano,🔲,habitual,yearly,,,Yearly,habits,2240,,2026-08-29 13:32:04,1
+TASK_0091,PROJ_0019,SEC_0086,Se buscar novas vagas: revisar remetentes bloqueados/filtros no Gmail,🔲,habitual,yearly,,,Yearly,habits,2250,,2026-08-29 13:32:04,1
+TASK_0092,PROJ_0019,SEC_0086,"Pós-graduação: após cumprir todos os créditos, solicitar validação por e-mail à secretaria (não é automática)",🔲,habitual,yearly,,,Yearly,habits,2260,,2026-08-29 13:32:04,1
+TASK_0093,PROJ_0019,SEC_0087,Renovar RG após emissão (até 60 anos); acompanhar pela data de emissão,🔲,habitual,every_10y,,,Every 10 Years (Documents),habits,2270,,2026-08-29 13:32:04,1
+TASK_0094,PROJ_0019,SEC_0088,Eye exam (optometry/ophthalmology),🩺,habitual,every_2y,,,Every 2 Years,habits,2280,,2026-08-29 13:32:04,1
+TASK_0095,PROJ_0019,SEC_0089,Hemoglobin A1c (diabetes screening) if low risk,🩺,habitual,every_3y,,,Every 3 Years,habits,2290,,2026-08-29 13:32:04,1
+TASK_0096,PROJ_0019,SEC_0090,Lipid profile (cholesterol) if low cardiovascular risk,🩺,habitual,every_5y,,,Every 5 Years,habits,2300,,2026-08-29 13:32:04,1
+TASK_0097,PROJ_0021,SEC_0091,"Track side effects, sleep changes, and activation; discuss any concerns promptly with your prescriber",🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2340,,2026-08-29 13:32:04,1
+TASK_0098,PROJ_0021,SEC_0091,Interaction cautions: review all new meds/supplements for interactions with fluvoxamina,🩺,habitual,,,,Medication Monitoring (Fluvoxamina),habits,2350,,2026-08-29 13:32:04,1
+TASK_0099,PROJ_0022,SEC_0092,"Tdap (tetanus, diphtheria, pertussis): one dose in 2025 (Age 28) as adult catch-up, regardless of prior dT",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2370,,2026-08-29 13:32:04,1
+TASK_0100,PROJ_0022,SEC_0092,"Td or Tdap boosters every 10 years after 2025: 2035 (Age 38), 2045 (Age 48), 2055 (Age 58), 2065 (Age 68), 2075 (Age 78), 2085 (Age 88), 2095 (Age 98)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2380,,2026-08-29 13:32:04,1
+TASK_0101,PROJ_0022,SEC_0092,Varicella (chickenpox/catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2390,,2026-08-29 13:32:04,1
+TASK_0102,PROJ_0022,SEC_0092,"Influenza: annually, every year",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2400,,2026-08-29 13:32:04,1
+TASK_0103,PROJ_0022,SEC_0092,"COVID-19: annually, every year per local seasonality",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2410,,2026-08-29 13:32:04,1
+TASK_0104,PROJ_0022,SEC_0092,Herpes Zoster (Shingrix): 2-dose series at 50 years — 2047 (Age 50) Dose 1; Dose 2 in 2–6 months (still 2047/2048),🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2420,,2026-08-29 13:32:04,1
+TASK_0105,PROJ_0022,SEC_0092,"Pneumococcal (at 60 years if average risk): 2057 (Age 60) per current guideline (e.g., single PCV20, or PCV15 followed by PPSV23 depending on policy at that time)",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2430,,2026-08-29 13:32:04,1
+TASK_0106,PROJ_0022,SEC_0092,Yellow Fever: you received 14/10/2022; generally one dose is lifelong. Booster only if policy/travel risk requires,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2440,,2026-08-29 13:32:04,1
+TASK_0107,PROJ_0022,SEC_0092,Hepatitis A/B: your records are considered complete; no routine boosters if immunocompetent,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2450,,2026-08-29 13:32:04,1
+TASK_0108,PROJ_0022,SEC_0092,MMR: appears complete; no routine adult boosters if two documented doses,🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2460,,2026-08-29 13:32:04,1
+TASK_0109,PROJ_0022,SEC_0092,"Travel/occupational vaccines (e.g., meningococcal, hepatitis boosters, rabies pre-exposure): as needed based on destination/risk",🩺,habitual,,,,"Vaccination Plan (Follow-up, from 2025 onward)",habits,2470,,2026-08-29 13:32:04,1
+TASK_0110,PROJ_0023,SEC_0093,COVID-19 bivalente Pfizer: 16/02/2024; prior Pfizer doses 2021–2022; CoronaVac booster 03/11/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2490,,2026-08-29 13:32:04,1
+TASK_0111,PROJ_0023,SEC_0093,Influenza trivalente: 04/12/2024 (keep annually),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2500,,2026-08-29 13:32:04,1
+TASK_0112,PROJ_0023,SEC_0093,dT (adult diphtheria-tetanus) booster: 04/04/2022 (Tdap still due once; plan in 2025),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2510,,2026-08-29 13:32:04,1
+TASK_0113,PROJ_0023,SEC_0093,Yellow Fever: 14/10/2022,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2520,,2026-08-29 13:32:04,1
+TASK_0114,PROJ_0023,SEC_0093,Hepatitis A: 2016 (series considered fine),🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2530,,2026-08-29 13:32:04,1
+TASK_0115,PROJ_0023,SEC_0093,"Childhood series including Polio, DTP, MMR documented; overlaps/duplicates noted historically",🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2540,,2026-08-29 13:32:04,1
+TASK_0116,PROJ_0023,SEC_0093,Varicella (catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2550,,2026-08-29 13:32:04,1
+TASK_0117,PROJ_0025,SEC_0094,Vaccines: Tdap (once),🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2580,,2026-08-29 13:32:04,1
+TASK_0118,PROJ_0025,SEC_0094,"Eye exam (due this year, then every 2 years)",🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2590,,2026-08-29 13:32:04,1
+TASK_0119,PROJ_0025,SEC_0094,"Baseline labs: Lipid profile (q5y cadence starts), A1c (q3y cadence starts), HIV and Hepatitis C screening once",🩺,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2600,,2026-08-29 13:32:04,1
+TASK_0120,PROJ_0025,SEC_0094,Renovar RG,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2610,,2026-08-29 13:32:04,1
+TASK_0121,PROJ_0025,SEC_0094,Mestrado: VALIDAÇÃO DOS CRÉDITOS NECESSÁRIOS (SIGA) — enviar e-mail à secretaria,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2620,,2026-08-29 13:32:04,1
+TASK_0122,PROJ_0025,SEC_0094,Azure: trial iniciado em Out/2024 termina em Out/2025 — confirmar cancelamento ou migração,🔲,punctual,,2025-01-01,,Year-by-Year Timeline (Key Dates with Age)/2025 (Age 28),habits,2630,,2026-08-29 13:32:04,1
+TASK_0123,PROJ_0026,SEC_0095,Começar a investir mais para aposentadoria (aumentar aportes/percentuais),🔲,punctual,,2026-01-01,,Year-by-Year Timeline (Key Dates with Age)/2026 (Age 29),habits,2660,,2026-08-29 13:32:04,1
+TASK_0124,PROJ_0027,SEC_0096,Eye exam,🩺,punctual,,2027-01-01,,Year-by-Year Timeline (Key Dates with Age)/2027 (Age 30),habits,2680,,2026-08-29 13:32:04,1
+TASK_0125,PROJ_0027,SEC_0096,"A1c due (2025 + 2 years would be 2027 if clinician prefers; standard cadence remains 3-year: next 2028). If following strict 3-year, keep for 2028",🩺,punctual,,2027-01-01,,Year-by-Year Timeline (Key Dates with Age)/2027 (Age 30),habits,2690,,2026-08-29 13:32:04,1
+TASK_0126,PROJ_0028,SEC_0097,A1c due (q3y),🩺,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2710,,2026-08-29 13:32:04,1
+TASK_0127,PROJ_0028,SEC_0097,Eye exam,🩺,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2720,,2026-08-29 13:32:04,1
+TASK_0128,PROJ_0028,SEC_0097,Setembro: passaporte vence — providenciar renovação,🔲,punctual,,2028-01-01,,Year-by-Year Timeline (Key Dates with Age)/2028 (Age 31),habits,2730,,2026-08-29 13:32:04,1
+TASK_0129,PROJ_0029,SEC_0098,Lipid profile due (q5y),🩺,punctual,,2030-01-01,,Year-by-Year Timeline (Key Dates with Age)/2030 (Age 33),habits,2750,,2026-08-29 13:32:04,1
+TASK_0130,PROJ_0029,SEC_0098,Eye exam,🩺,punctual,,2030-01-01,,Year-by-Year Timeline (Key Dates with Age)/2030 (Age 33),habits,2760,,2026-08-29 13:32:04,1
+TASK_0131,PROJ_0030,SEC_0099,A1c due (q3y),🩺,punctual,,2032-01-01,,Year-by-Year Timeline (Key Dates with Age)/2032 (Age 35),habits,2780,,2026-08-29 13:32:04,1
+TASK_0132,PROJ_0030,SEC_0099,Eye exam,🩺,punctual,,2032-01-01,,Year-by-Year Timeline (Key Dates with Age)/2032 (Age 35),habits,2790,,2026-08-29 13:32:04,1
+TASK_0133,PROJ_0031,SEC_0100,05 de Dezembro: renovar CNH (carteira de motorista),🔲,punctual,,2034-01-01,,Year-by-Year Timeline (Key Dates with Age)/2034 (Age 37),habits,2810,,2026-08-29 13:32:04,1
+TASK_0134,PROJ_0032,SEC_0101,Td/Tdap booster due (10 years after 2025),🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2830,,2026-08-29 13:32:04,1
+TASK_0135,PROJ_0032,SEC_0101,Lipid profile due,🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2840,,2026-08-29 13:32:04,1
+TASK_0136,PROJ_0032,SEC_0101,Eye exam,🩺,punctual,,2035-01-01,,Year-by-Year Timeline (Key Dates with Age)/2035 (Age 38),habits,2850,,2026-08-29 13:32:04,1
+TASK_0137,PROJ_0033,SEC_0102,A1c due (q3y),🩺,punctual,,2038-01-01,,Year-by-Year Timeline (Key Dates with Age)/2038 (Age 41),habits,2870,,2026-08-29 13:32:04,1
+TASK_0138,PROJ_0033,SEC_0102,Eye exam,🩺,punctual,,2038-01-01,,Year-by-Year Timeline (Key Dates with Age)/2038 (Age 41),habits,2880,,2026-08-29 13:32:04,1
+TASK_0139,PROJ_0034,SEC_0103,Lipid profile due,🩺,punctual,,2040-01-01,,Year-by-Year Timeline (Key Dates with Age)/2040 (Age 43),habits,2900,,2026-08-29 13:32:04,1
+TASK_0140,PROJ_0034,SEC_0103,Eye exam,🩺,punctual,,2040-01-01,,Year-by-Year Timeline (Key Dates with Age)/2040 (Age 43),habits,2910,,2026-08-29 13:32:04,1
+TASK_0141,PROJ_0035,SEC_0104,A1c due (q3y),🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2930,,2026-08-29 13:32:04,1
+TASK_0142,PROJ_0035,SEC_0104,Colorectal cancer screening starts (average risk): colonoscopy (then q10y if normal),🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2940,,2026-08-29 13:32:04,1
+TASK_0143,PROJ_0035,SEC_0104,Eye exam,🩺,punctual,,2042-01-01,,Year-by-Year Timeline (Key Dates with Age)/2042 (Age 45),habits,2950,,2026-08-29 13:32:04,1
+TASK_0144,PROJ_0036,SEC_0105,Td/Tdap booster due,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2970,,2026-08-29 13:32:04,1
+TASK_0145,PROJ_0036,SEC_0105,Lipid profile due,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2980,,2026-08-29 13:32:04,1
+TASK_0146,PROJ_0036,SEC_0105,Eye exam,🩺,punctual,,2045-01-01,,Year-by-Year Timeline (Key Dates with Age)/2045 (Age 48),habits,2990,,2026-08-29 13:32:04,1
+TASK_0147,PROJ_0037,SEC_0106,Herpes Zoster (Shingrix) Dose 1; Dose 2 in 2–6 months,🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3010,,2026-08-29 13:32:04,1
+TASK_0148,PROJ_0037,SEC_0106,"PSA screening discussion starts (if chosen, PSA every 1–2 years)",🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3020,,2026-08-29 13:32:04,1
+TASK_0149,PROJ_0037,SEC_0106,A1c due (q3y),🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3030,,2026-08-29 13:32:04,1
+TASK_0150,PROJ_0037,SEC_0106,Eye exam,🩺,punctual,,2047-01-01,,Year-by-Year Timeline (Key Dates with Age)/2047 (Age 50),habits,3040,,2026-08-29 13:32:04,1
+TASK_0151,PROJ_0038,SEC_0107,Lipid profile due,🩺,punctual,,2050-01-01,,Year-by-Year Timeline (Key Dates with Age)/2050 (Age 53),habits,3060,,2026-08-29 13:32:04,1
+TASK_0152,PROJ_0038,SEC_0107,Eye exam,🩺,punctual,,2050-01-01,,Year-by-Year Timeline (Key Dates with Age)/2050 (Age 53),habits,3070,,2026-08-29 13:32:04,1
+TASK_0153,PROJ_0039,SEC_0108,A1c due (q3y),🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3090,,2026-08-29 13:32:04,1
+TASK_0154,PROJ_0039,SEC_0108,Colonoscopy if following a 10-year schedule from 2042 → next in 2052 if 2042 was normal,🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3100,,2026-08-29 13:32:04,1
+TASK_0155,PROJ_0039,SEC_0108,Eye exam,🩺,punctual,,2052-01-01,,Year-by-Year Timeline (Key Dates with Age)/2052 (Age 55),habits,3110,,2026-08-29 13:32:04,1
+TASK_0156,PROJ_0040,SEC_0109,Td/Tdap booster due,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3130,,2026-08-29 13:32:04,1
+TASK_0157,PROJ_0040,SEC_0109,Lipid profile due,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3140,,2026-08-29 13:32:04,1
+TASK_0158,PROJ_0040,SEC_0109,Eye exam,🩺,punctual,,2055-01-01,,Year-by-Year Timeline (Key Dates with Age)/2055 (Age 58),habits,3150,,2026-08-29 13:32:04,1
+TASK_0159,PROJ_0041,SEC_0110,"Pneumococcal vaccine due per guideline (e.g., PCV20 one-time)",🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3170,,2026-08-29 13:32:04,1
+TASK_0160,PROJ_0041,SEC_0110,A1c due (q3y),🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3180,,2026-08-29 13:32:04,1
+TASK_0161,PROJ_0041,SEC_0110,Eye exam,🩺,punctual,,2057-01-01,,Year-by-Year Timeline (Key Dates with Age)/2057 (Age 60),habits,3190,,2026-08-29 13:32:04,1
+TASK_0162,PROJ_0042,SEC_0111,Lipid profile due,🩺,punctual,,2060-01-01,,Year-by-Year Timeline (Key Dates with Age)/2060 (Age 63),habits,3210,,2026-08-29 13:32:04,1
+TASK_0163,PROJ_0042,SEC_0111,Eye exam,🩺,punctual,,2060-01-01,,Year-by-Year Timeline (Key Dates with Age)/2060 (Age 63),habits,3220,,2026-08-29 13:32:04,1
+TASK_0164,PROJ_0043,SEC_0112,A1c due (q3y),🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3240,,2026-08-29 13:32:04,1
+TASK_0165,PROJ_0043,SEC_0112,Colonoscopy (10-year from 2052 if normal),🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3250,,2026-08-29 13:32:04,1
+TASK_0166,PROJ_0043,SEC_0112,Eye exam,🩺,punctual,,2062-01-01,,Year-by-Year Timeline (Key Dates with Age)/2062 (Age 65),habits,3260,,2026-08-29 13:32:04,1
+TASK_0167,PROJ_0044,SEC_0113,Td/Tdap booster due,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3280,,2026-08-29 13:32:04,1
+TASK_0168,PROJ_0044,SEC_0113,Lipid profile due,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3290,,2026-08-29 13:32:04,1
+TASK_0169,PROJ_0044,SEC_0113,Eye exam,🩺,punctual,,2065-01-01,,Year-by-Year Timeline (Key Dates with Age)/2065 (Age 68),habits,3300,,2026-08-29 13:32:04,1
+TASK_0170,PROJ_0045,SEC_0114,Bone density (DEXA) once (men ≥70; adjust per policy),🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3320,,2026-08-29 13:32:04,1
+TASK_0171,PROJ_0045,SEC_0114,A1c due (q3y),🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3330,,2026-08-29 13:32:04,1
+TASK_0172,PROJ_0045,SEC_0114,Eye exam,🩺,punctual,,2067-01-01,,Year-by-Year Timeline (Key Dates with Age)/2067 (Age 70),habits,3340,,2026-08-29 13:32:04,1
+TASK_0173,PROJ_0046,SEC_0115,Lipid profile due,🩺,punctual,,2070-01-01,,Year-by-Year Timeline (Key Dates with Age)/2070 (Age 73),habits,3360,,2026-08-29 13:32:04,1
+TASK_0174,PROJ_0046,SEC_0115,Eye exam,🩺,punctual,,2070-01-01,,Year-by-Year Timeline (Key Dates with Age)/2070 (Age 73),habits,3370,,2026-08-29 13:32:04,1
+TASK_0175,PROJ_0047,SEC_0116,A1c due (q3y),🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3390,,2026-08-29 13:32:04,1
+TASK_0176,PROJ_0047,SEC_0116,Colonoscopy (10-year from 2062 if normal) — continuation depends on health status; discuss ongoing benefit/risks,🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3400,,2026-08-29 13:32:04,1
+TASK_0177,PROJ_0047,SEC_0116,Eye exam,🩺,punctual,,2072-01-01,,Year-by-Year Timeline (Key Dates with Age)/2072 (Age 75),habits,3410,,2026-08-29 13:32:04,1
+TASK_0178,PROJ_0048,SEC_0117,Td/Tdap booster due,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3430,,2026-08-29 13:32:04,1
+TASK_0179,PROJ_0048,SEC_0117,Lipid profile due,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3440,,2026-08-29 13:32:04,1
+TASK_0180,PROJ_0048,SEC_0117,Eye exam,🩺,punctual,,2075-01-01,,Year-by-Year Timeline (Key Dates with Age)/2075 (Age 78),habits,3450,,2026-08-29 13:32:04,1
+TASK_0181,PROJ_0049,SEC_0118,A1c due (q3y),🩺,punctual,,2078-01-01,,Year-by-Year Timeline (Key Dates with Age)/2078 (Age 81),habits,3470,,2026-08-29 13:32:04,1
+TASK_0182,PROJ_0049,SEC_0118,Eye exam,🩺,punctual,,2078-01-01,,Year-by-Year Timeline (Key Dates with Age)/2078 (Age 81),habits,3480,,2026-08-29 13:32:04,1
+TASK_0183,PROJ_0050,SEC_0119,Lipid profile due,🩺,punctual,,2080-01-01,,Year-by-Year Timeline (Key Dates with Age)/2080 (Age 83),habits,3500,,2026-08-29 13:32:04,1
+TASK_0184,PROJ_0050,SEC_0119,Eye exam,🩺,punctual,,2080-01-01,,Year-by-Year Timeline (Key Dates with Age)/2080 (Age 83),habits,3510,,2026-08-29 13:32:04,1
+TASK_0185,PROJ_0051,SEC_0120,A1c due (q3y),🩺,punctual,,2082-01-01,,Year-by-Year Timeline (Key Dates with Age)/2082 (Age 85),habits,3530,,2026-08-29 13:32:04,1
+TASK_0186,PROJ_0051,SEC_0120,Eye exam,🩺,punctual,,2082-01-01,,Year-by-Year Timeline (Key Dates with Age)/2082 (Age 85),habits,3540,,2026-08-29 13:32:04,1
+TASK_0187,PROJ_0052,SEC_0121,Td/Tdap booster due,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3560,,2026-08-29 13:32:04,1
+TASK_0188,PROJ_0052,SEC_0121,Lipid profile due,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3570,,2026-08-29 13:32:04,1
+TASK_0189,PROJ_0052,SEC_0121,Eye exam,🩺,punctual,,2085-01-01,,Year-by-Year Timeline (Key Dates with Age)/2085 (Age 88),habits,3580,,2026-08-29 13:32:04,1
+TASK_0190,PROJ_0053,SEC_0122,A1c due (q3y),🩺,punctual,,2088-01-01,,Year-by-Year Timeline (Key Dates with Age)/2088 (Age 91),habits,3600,,2026-08-29 13:32:04,1
+TASK_0191,PROJ_0053,SEC_0122,Eye exam,🩺,punctual,,2088-01-01,,Year-by-Year Timeline (Key Dates with Age)/2088 (Age 91),habits,3610,,2026-08-29 13:32:04,1
+TASK_0192,PROJ_0054,SEC_0123,Lipid profile due,🩺,punctual,,2090-01-01,,Year-by-Year Timeline (Key Dates with Age)/2090 (Age 93),habits,3630,,2026-08-29 13:32:04,1
+TASK_0193,PROJ_0054,SEC_0123,Eye exam,🩺,punctual,,2090-01-01,,Year-by-Year Timeline (Key Dates with Age)/2090 (Age 93),habits,3640,,2026-08-29 13:32:04,1
+TASK_0194,PROJ_0055,SEC_0124,A1c due (q3y),🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3660,,2026-08-29 13:32:04,1
+TASK_0195,PROJ_0055,SEC_0124,Colonoscopy (10-year from 2082 if still appropriate; individualized decision),🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3670,,2026-08-29 13:32:04,1
+TASK_0196,PROJ_0055,SEC_0124,Eye exam,🩺,punctual,,2092-01-01,,Year-by-Year Timeline (Key Dates with Age)/2092 (Age 95),habits,3680,,2026-08-29 13:32:04,1
+TASK_0197,PROJ_0056,SEC_0125,Td/Tdap booster due,🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3700,,2026-08-29 13:32:04,1
+TASK_0198,PROJ_0056,SEC_0125,Lipid profile due,🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3710,,2026-08-29 13:32:04,1
+TASK_0199,PROJ_0056,SEC_0125,Eye exam (last planned before Age 100 based on 2-year cadence),🩺,punctual,,2095-01-01,,Year-by-Year Timeline (Key Dates with Age)/2095 (Age 98),habits,3720,,2026-08-29 13:32:04,1

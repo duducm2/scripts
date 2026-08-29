@@ -274,8 +274,10 @@ Task_Headers(kind) {
     switch kind {
         case "projects":
             return ["id", "title", "filter", "section_path", "sort_order", "active", "created_at"]
+        case "sections":
+            return ["id", "project_id", "title", "sort_order"]
         case "tasks":
-            return ["id", "project_id", "title", "emoji", "kind", "recurrence", "due_date", "next_due",
+            return ["id", "project_id", "section_id", "title", "emoji", "kind", "recurrence", "due_date", "next_due",
                 "section_path", "filter", "sort_order", "completed_at", "created_at", "active"]
         case "info_points":
             return ["id", "parent_type", "parent_id", "title", "body", "emoji", "section_path", "sort_order",
@@ -298,7 +300,7 @@ Task_Load(kind) {
 Task_EnsureData() {
     Task_DataDir()
     Task_EnsureSettings()
-    for kind in ["projects", "tasks", "info_points", "attachments"] {
+    for kind in ["projects", "sections", "tasks", "info_points", "attachments"] {
         path := Task_DataDir() . "\" . kind . ".csv"
         if (!FileExist(path)) {
             hdrs := Task_Headers(kind)

@@ -1,4 +1,4 @@
-"""CSV store for the Tasks web app (projects / tasks / info / attachments)."""
+"""CSV store for the Tasks web app (projects / sections / tasks / info / attachments)."""
 
 from __future__ import annotations
 
@@ -11,9 +11,11 @@ from typing import Any
 
 HEADERS = {
     "projects": ["id", "title", "filter", "section_path", "sort_order", "active", "created_at"],
+    "sections": ["id", "project_id", "title", "sort_order"],
     "tasks": [
         "id",
         "project_id",
+        "section_id",
         "title",
         "emoji",
         "kind",
@@ -40,6 +42,8 @@ HEADERS = {
     ],
     "attachments": ["id", "parent_type", "parent_id", "kind", "ref", "description", "sort_order"],
 }
+
+GENERAL_SECTION = "General"
 
 STATUS_EMOJIS = {
     "general": "🔲",
@@ -133,6 +137,162 @@ class TaskStore:
             p = self.path(kind)
             if not p.exists():
                 write_csv(p, headers, [])
+        self.migrate_sections()
+
+    def migrate_sections(self) -> None:
+        """Ensure General per project; backfill task.section_id from section_path."""
+        projects = self.load("projects")
+        sections = self.load("sections")
+        tasks = self.load("tasks")
+        changed_sec = False
+        changed_tasks = False
+
+        by_proj: dict[str, list[dict]] = {}
+        for s in sections:
+            by_proj.setdefault(s.get("project_id") or "", []).append(s)
+
+        general_by_proj: dict[str, str] = {}
+        for p in projects:
+            pid = p.get("id") or ""
+            if not pid:
+                continue
+            gen = next(
+                (
+                    s
+                    for s in by_proj.get(pid, [])
+                    if (s.get("title") or "").strip().lower() == GENERAL_SECTION.lower()
+                ),
+                None,
+            )
+            if not gen:
+                gen = {
+                    "id": next_id("SEC_", sections),
+                    "project_id": pid,
+                    "title": GENERAL_SECTION,
+                    "sort_order": "0",
+                }
+                sections.append(gen)
+                by_proj.setdefault(pid, []).append(gen)
+                changed_sec = True
+            general_by_proj[pid] = gen["id"]
+
+        def find_or_add(pid: str, title: str) -> str:
+            nonlocal changed_sec
+            title = (title or "").strip() or GENERAL_SECTION
+            if title.lower() == GENERAL_SECTION.lower():
+                return general_by_proj[pid]
+            for s in by_proj.get(pid, []):
+                if (s.get("title") or "").strip().lower() == title.lower():
+                    return s["id"]
+            row = {
+                "id": next_id("SEC_", sections),
+                "project_id": pid,
+                "title": title,
+                "sort_order": next_sort(by_proj.get(pid, [])),
+            }
+            sections.append(row)
+            by_proj.setdefault(pid, []).append(row)
+            changed_sec = True
+            return row["id"]
+
+        for t in tasks:
+            pid = t.get("project_id") or ""
+            if not pid or pid not in general_by_proj:
+                continue
+            sid = (t.get("section_id") or "").strip()
+            if sid and any(s.get("id") == sid for s in by_proj.get(pid, [])):
+                # keep section_path in sync
+                sec = next(s for s in by_proj[pid] if s["id"] == sid)
+                title = sec.get("title") or GENERAL_SECTION
+                path = "" if title.lower() == GENERAL_SECTION.lower() else title
+                if (t.get("section_path") or "") != path:
+                    t["section_path"] = path
+                    changed_tasks = True
+                continue
+            path = (t.get("section_path") or "").strip()
+            new_sid = find_or_add(pid, path) if path else general_by_proj[pid]
+            if (t.get("section_id") or "") != new_sid:
+                t["section_id"] = new_sid
+                changed_tasks = True
+            sec = next(s for s in by_proj[pid] if s["id"] == new_sid)
+            title = sec.get("title") or GENERAL_SECTION
+            want_path = "" if title.lower() == GENERAL_SECTION.lower() else title
+            if (t.get("section_path") or "") != want_path:
+                t["section_path"] = want_path
+                changed_tasks = True
+
+        if changed_sec:
+            self.save("sections", sections)
+        if changed_tasks:
+            self.save("tasks", tasks)
+        else:
+            # Ensure section_id column exists on disk even when no row values changed
+            path = self.path("tasks")
+            if path.exists():
+                with path.open("r", encoding="utf-8-sig", newline="") as f:
+                    first = f.readline()
+                if "section_id" not in first:
+                    self.save("tasks", tasks)
+
+    def ensure_general_section(self, project_id: str, sections: list[dict] | None = None) -> dict:
+        rows = sections if sections is not None else self.load("sections")
+        for s in rows:
+            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+                return s
+        row = {
+            "id": next_id("SEC_", rows),
+            "project_id": project_id,
+            "title": GENERAL_SECTION,
+            "sort_order": "0",
+        }
+        rows.append(row)
+        if sections is None:
+            self.save("sections", rows)
+        return row
+
+    def find_or_create_section(self, project_id: str, title: str) -> dict:
+        title = (title or "").strip() or GENERAL_SECTION
+        rows = self.load("sections")
+        for s in rows:
+            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == title.lower():
+                return s
+        if title.lower() == GENERAL_SECTION.lower():
+            row = {
+                "id": next_id("SEC_", rows),
+                "project_id": project_id,
+                "title": GENERAL_SECTION,
+                "sort_order": "0",
+            }
+        else:
+            row = {
+                "id": next_id("SEC_", rows),
+                "project_id": project_id,
+                "title": title,
+                "sort_order": next_sort([s for s in rows if s.get("project_id") == project_id]),
+            }
+        rows.append(row)
+        self.save("sections", rows)
+        return row
+
+    def _section_path_for(self, section: dict) -> str:
+        title = (section.get("title") or "").strip()
+        if not title or title.lower() == GENERAL_SECTION.lower():
+            return ""
+        return title
+
+    def resolve_task_section(self, project_id: str, payload: dict) -> tuple[str, str]:
+        """Return (section_id, section_path) for a task payload."""
+        sid = (payload.get("section_id") or "").strip()
+        if sid:
+            sec = self.find("sections", sid)
+            if sec and sec.get("project_id") == project_id:
+                return sid, self._section_path_for(sec)
+        path = (payload.get("section_path") or "").strip()
+        if path:
+            sec = self.find_or_create_section(project_id, path)
+            return sec["id"], self._section_path_for(sec)
+        gen = self.ensure_general_section(project_id)
+        return gen["id"], ""
 
     def load(self, kind: str) -> list[dict[str, str]]:
         return read_csv(self.path(kind))
@@ -141,7 +301,9 @@ class TaskStore:
         write_csv(self.path(kind), HEADERS[kind], rows)
 
     def state(self) -> dict[str, Any]:
+        self.migrate_sections()
         projects = self.load("projects")
+        sections = self.load("sections")
         tasks = self.load("tasks")
         infos = self.load("info_points")
         attachments = self.load("attachments")
@@ -155,11 +317,13 @@ class TaskStore:
         return {
             "ok": True,
             "projects": projects,
+            "sections": sections,
             "tasks": tasks,
             "info_points": infos,
             "attachments": attachments,
             "counts": {
                 "projects": len(projects),
+                "sections": len(sections),
                 "tasks": len(tasks),
                 "info": len(infos),
                 "attachments": len(attachments),
@@ -201,6 +365,7 @@ class TaskStore:
             if not found:
                 return {"ok": False, "error": "project not found"}
             self.save("projects", out)
+            self.ensure_general_section(rid)
             return {"ok": True, "project": next(x for x in out if x["id"] == rid)}
         row = {
             "id": next_id("PROJ_", rows),
@@ -213,6 +378,7 @@ class TaskStore:
         }
         rows.append(row)
         self.save("projects", rows)
+        self.ensure_general_section(row["id"])
         return {"ok": True, "project": row}
 
     def delete_project(self, project_id: str) -> dict:
@@ -236,7 +402,81 @@ class TaskStore:
             or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
         )
         self.save("tasks", [t for t in tasks if t.get("project_id") != project_id])
+        self.save("sections", [s for s in self.load("sections") if s.get("project_id") != project_id])
         self.save("projects", [p for p in self.load("projects") if p.get("id") != project_id])
+        return {"ok": True}
+
+    # --- sections ---
+    def upsert_section(self, payload: dict) -> dict:
+        rows = self.load("sections")
+        rid = (payload.get("id") or "").strip()
+        title = (payload.get("title") or "").strip()
+        project_id = (payload.get("project_id") or "").strip()
+        if not title:
+            return {"ok": False, "error": "title required"}
+        if rid:
+            out = []
+            found = None
+            for r in rows:
+                if r["id"] == rid:
+                    if (r.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+                        return {"ok": False, "error": "cannot rename General"}
+                    if title.lower() == GENERAL_SECTION.lower():
+                        return {"ok": False, "error": "cannot rename to General"}
+                    r = {**r, "title": title}
+                    found = r
+                out.append(r)
+            if not found:
+                return {"ok": False, "error": "section not found"}
+            self.save("sections", out)
+            # mirror title onto tasks.section_path
+            tasks = self.load("tasks")
+            path = self._section_path_for(found)
+            changed = False
+            for t in tasks:
+                if t.get("section_id") == rid and (t.get("section_path") or "") != path:
+                    t["section_path"] = path
+                    changed = True
+            if changed:
+                self.save("tasks", tasks)
+            return {"ok": True, "section": found}
+        if not project_id:
+            return {"ok": False, "error": "project_id required"}
+        if not self.find("projects", project_id):
+            return {"ok": False, "error": "project not found"}
+        if title.lower() == GENERAL_SECTION.lower():
+            return {"ok": True, "section": self.ensure_general_section(project_id)}
+        for s in rows:
+            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == title.lower():
+                return {"ok": True, "section": s}
+        row = {
+            "id": next_id("SEC_", rows),
+            "project_id": project_id,
+            "title": title,
+            "sort_order": next_sort([s for s in rows if s.get("project_id") == project_id]),
+        }
+        rows.append(row)
+        self.save("sections", rows)
+        return {"ok": True, "section": row}
+
+    def delete_section(self, section_id: str) -> dict:
+        rows = self.load("sections")
+        sec = next((s for s in rows if s.get("id") == section_id), None)
+        if not sec:
+            return {"ok": False, "error": "section not found"}
+        if (sec.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+            return {"ok": False, "error": "cannot delete General"}
+        gen = self.ensure_general_section(sec.get("project_id") or "")
+        tasks = self.load("tasks")
+        changed = False
+        for t in tasks:
+            if t.get("section_id") == section_id:
+                t["section_id"] = gen["id"]
+                t["section_path"] = ""
+                changed = True
+        if changed:
+            self.save("tasks", tasks)
+        self.save("sections", [s for s in rows if s.get("id") != section_id])
         return {"ok": True}
 
     # --- tasks ---
@@ -261,16 +501,18 @@ class TaskStore:
         project_id = (payload.get("project_id") or "").strip()
         if not project_id:
             return {"ok": False, "error": "project_id required"}
+        section_id, section_path = self.resolve_task_section(project_id, payload)
 
         fields = {
             "project_id": project_id,
+            "section_id": section_id,
             "title": title,
             "emoji": emoji,
             "kind": kind,
             "recurrence": recurrence,
             "due_date": (payload.get("due_date") or "").strip(),
             "next_due": (payload.get("next_due") or "").strip(),
-            "section_path": (payload.get("section_path") or "").strip(),
+            "section_path": section_path,
             "filter": filt,
             "active": (payload.get("active") or "1"),
         }
