@@ -193,13 +193,32 @@
         color: var(--due);
       }
       .row-actions {
-        display: flex;
+        display: none;
         flex-wrap: wrap;
         gap: 4px;
+        width: 100%;
+        margin-top: 2px;
+        padding-left: 28px;
+      }
+      .task.kb-selected > .row-actions,
+      .habit-row.kb-selected > .row-actions,
+      .task:hover > .row-actions,
+      .habit-row:hover > .row-actions {
+        display: flex;
       }
       .row-actions .btn {
         padding: 2px 8px;
         font-size: 11px;
+      }
+      .proj-actions {
+        display: none;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 0 12px 8px;
+      }
+      details.project.kb-selected > .proj-actions,
+      details.project:hover > .proj-actions {
+        display: flex;
       }
       .thumbs {
         flex: 1 1 100%;
@@ -231,44 +250,79 @@
       .emoji-legend {
         display: flex;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 2px 8px;
         align-items: center;
         justify-content: flex-end;
       }
       .emoji-chip {
         display: inline-flex;
-        align-items: center;
+        align-items: baseline;
         gap: 3px;
-        background: #252528;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 2px 7px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
         font-size: 11px;
         color: var(--muted);
         cursor: pointer;
-        font: inherit;
-        line-height: 1.2;
+        font-family: inherit;
+        line-height: 1.3;
+        opacity: 0.75;
       }
       .emoji-chip .em {
-        color: var(--text);
+        color: var(--muted);
+        font-size: 12px;
       }
       .emoji-chip .lbl {
         color: var(--muted);
         font-size: 10px;
+        font-weight: 400;
+        letter-spacing: 0.02em;
         text-transform: lowercase;
       }
       .emoji-chip .n {
-        color: var(--gold);
+        color: var(--muted);
+        font-size: 10px;
         font-variant-numeric: tabular-nums;
+        opacity: 0.85;
+      }
+      .emoji-chip kbd {
+        display: none;
       }
       .emoji-chip.active,
       .emoji-chip:hover {
-        border-color: var(--gold);
+        opacity: 1;
+        color: var(--text);
+      }
+      .emoji-chip.active .em,
+      .emoji-chip:hover .em,
+      .emoji-chip.active .lbl,
+      .emoji-chip:hover .lbl,
+      .emoji-chip.active .n,
+      .emoji-chip:hover .n {
         color: var(--gold);
       }
-      .emoji-chip.active .lbl,
-      .emoji-chip:hover .lbl {
+      .section-head-right .btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 11px;
+        padding: 0 4px;
+        opacity: 0.7;
+      }
+      .section-head-right .btn:hover {
         color: var(--gold);
+        opacity: 1;
+        border-color: transparent;
+      }
+      .section-head h2,
+      .section-head .section-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        flex: 0 1 auto;
+        letter-spacing: 0.01em;
       }
       .task.emoji-hidden,
       .habit-row.emoji-hidden,
@@ -312,22 +366,12 @@
         gap: 8px 12px;
         margin: 0 0 12px;
       }
-      .section-head h2,
-      .section-head .section-title {
-        margin: 0;
-        font-size: 18px;
-        color: var(--gold);
-        flex: 0 1 auto;
-      }
       .section-head-right {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         justify-content: flex-end;
-      }
-      .proj-actions {
-        padding: 0 12px 8px;
       }
       .habits-wrap {
         margin-top: 20px;
