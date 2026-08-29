@@ -2,8 +2,9 @@
 ; Utils module: paste_field_mapping.ahk
 ; Learn-and-persist window → main text field mappings for Win+Alt+Shift+L.
 ; Before paste: focus saved field via UIA when a mapping matches.
-; Match gates: (1) exe + title needle, (2) same exe + strict UIA field identity
-;   (AutomationId or ClassName+Type) when the title changed.
+; Match gates: (1) exe + UrlNeedle (browsers) or title needle, (2) same exe +
+;   strict UIA field identity when title/url changed (non-browser; browsers only
+;   when UrlNeedle matches current page).
 ; After paste (no mapping): Interactive Input Y/N to save the focused field.
 ; Persistent store: assets/data/paste_field_mappings.ini
 ; Manage UI: #!+L [M] ListView to delete saved mappings.
@@ -51,12 +52,14 @@ PasteField_LoadMappings() {
         if (exe = "" || exe = "ERROR")
             break
         titleNeedle := ""
+        urlNeedle := ""
         name := ""
         automationId := ""
         className := ""
         typeVal := ""
         uiaAttach := "element"
         try titleNeedle := IniRead(path, section, "TitleNeedle", "")
+        try urlNeedle := IniRead(path, section, "UrlNeedle", "")
         try name := IniRead(path, section, "Name", "")
         try automationId := IniRead(path, section, "AutomationId", "")
         try className := IniRead(path, section, "ClassName", "")
@@ -68,6 +71,7 @@ PasteField_LoadMappings() {
             index: idx,
             exe: exe,
             titleNeedle: titleNeedle = "ERROR" ? "" : titleNeedle,
+            urlNeedle: urlNeedle = "ERROR" ? "" : urlNeedle,
             name: name = "ERROR" ? "" : name,
             automationId: automationId = "ERROR" ? "" : automationId,
             className: className = "ERROR" ? "" : className,
@@ -85,7 +89,71 @@ PasteField_NextMappingIndex() {
     return PasteField_LoadMappings().Length + 1
 }
 
+; host + path, lowercase; strip scheme, query, hash; trim trailing /.
+PasteField_NormalizeUrlNeedle(url) {
+    u := Trim(String(url))
+    if (u = "")
+        return ""
+    u := RegExReplace(u, "i)^https?://", "")
+    hashPos := InStr(u, "#")
+    if (hashPos > 0)
+        u := SubStr(u, 1, hashPos - 1)
+    qPos := InStr(u, "?")
+    if (qPos > 0)
+        u := SubStr(u, 1, qPos - 1)
+    u := Trim(u)
+    while (StrLen(u) > 1 && SubStr(u, -1) = "/")
+        u := SubStr(u, 1, StrLen(u) - 1)
+    return StrLower(u)
+}
+
+; Current page URL needle for Chromium hwnds; "" if unavailable or non-browser.
+PasteField_CaptureUrlNeedle(hwnd) {
+    if (!hwnd)
+        return ""
+    cls := ""
+    try cls := WinGetClass("ahk_id " hwnd)
+    if (!PasteField_IsChromiumClass(cls))
+        return ""
+    try {
+        uia := UIA_Browser("ahk_id " hwnd)
+        url := ""
+        try url := uia.GetCurrentURL(false)
+        catch {
+            url := ""
+        }
+        needle := PasteField_NormalizeUrlNeedle(url)
+        if (needle != "")
+            return needle
+        try url := uia.GetCurrentURL(true)
+        catch {
+            url := ""
+        }
+        return PasteField_NormalizeUrlNeedle(url)
+    } catch {
+        return ""
+    }
+}
+
+; True when currentUrlNeedle equals or is under mapping UrlNeedle (prefix path match).
+PasteField_UrlNeedleMatches(mappingUrlNeedle, currentUrlNeedle) {
+    m := Trim(StrLower(mappingUrlNeedle))
+    c := Trim(StrLower(currentUrlNeedle))
+    if (m = "" || c = "")
+        return false
+    if (c = m)
+        return true
+    if (InStr(c, m) = 1) {
+        next := SubStr(c, StrLen(m) + 1, 1)
+        return (next = "" || next = "/")
+    }
+    return false
+}
+
 PasteField_WindowLabel(hwnd) {
+    urlNeedle := PasteField_CaptureUrlNeedle(hwnd)
+    if (urlNeedle != "")
+        return urlNeedle
     title := ""
     exe := ""
     try title := WinGetTitle("ahk_id " hwnd)
@@ -146,7 +214,15 @@ PasteField_DetectUiaAttach(hwnd) {
     return PasteField_IsChromiumClass(cls) ? "browser" : "element"
 }
 
-; Mapping for hwnd: title gate first, then strict UIA field identity (same exe).
+PasteField_IsBrowserHwnd(hwnd) {
+    if (!hwnd)
+        return false
+    cls := ""
+    try cls := WinGetClass("ahk_id " hwnd)
+    return PasteField_IsChromiumClass(cls)
+}
+
+; Mapping for hwnd: url/title gate first, then strict UIA field identity (same exe).
 PasteField_FindMapping(hwnd) {
     if (!hwnd)
         return ""
@@ -165,17 +241,55 @@ PasteField_FindMapping(hwnd) {
     if (sameExe.Length = 0)
         return ""
 
-    ; Pass 1 — title gate (no UIA). Empty needle matches any title for this exe.
-    for mapping in sameExe {
-        needle := Trim(mapping.titleNeedle)
-        if (needle = "" || InStr(title, needle, false))
-            return mapping
+    isBrowser := PasteField_IsBrowserHwnd(hwnd)
+    currentUrlNeedle := isBrowser ? PasteField_CaptureUrlNeedle(hwnd) : ""
+
+    ; Pass 1 — url (browsers) or title gate (no UIA).
+    if (isBrowser && currentUrlNeedle != "") {
+        best := ""
+        bestLen := -1
+        for mapping in sameExe {
+            urlNeedle := Trim(mapping.HasProp("urlNeedle") ? mapping.urlNeedle : "")
+            if (urlNeedle = "")
+                continue
+            if (!PasteField_UrlNeedleMatches(urlNeedle, currentUrlNeedle))
+                continue
+            if (StrLen(urlNeedle) > bestLen) {
+                best := mapping
+                bestLen := StrLen(urlNeedle)
+            }
+        }
+        if (best)
+            return best
+        ; No UrlNeedle hit — fall through to legacy TitleNeedle for rows without UrlNeedle.
+        for mapping in sameExe {
+            urlNeedle := Trim(mapping.HasProp("urlNeedle") ? mapping.urlNeedle : "")
+            if (urlNeedle != "")
+                continue
+            needle := Trim(mapping.titleNeedle)
+            if (needle = "" || InStr(title, needle, false))
+                return mapping
+        }
+    } else {
+        ; Non-browser, or browser with URL capture failure: TitleNeedle gate.
+        for mapping in sameExe {
+            needle := Trim(mapping.titleNeedle)
+            if (needle = "" || InStr(title, needle, false))
+                return mapping
+        }
     }
 
     ; Pass 2 — strict UIA gate (AutomationId or ClassName+Type). Prefer AutomationId rows.
+    ; Browser: only mappings whose UrlNeedle matches current page (legacy empty UrlNeedle excluded).
     aidCandidates := []
     cnCandidates := []
     for mapping in sameExe {
+        if (isBrowser) {
+            urlNeedle := Trim(mapping.HasProp("urlNeedle") ? mapping.urlNeedle : "")
+            if (urlNeedle = "" || currentUrlNeedle = ""
+                || !PasteField_UrlNeedleMatches(urlNeedle, currentUrlNeedle))
+                continue
+        }
         aid := Trim(mapping.automationId)
         cn := Trim(mapping.className)
         typeVal := Trim(String(mapping.HasProp("type") ? mapping.type : ""))
@@ -376,6 +490,9 @@ PasteField_SaveMapping(hwnd, signature) {
         return false
     titleNeedle := PasteField_DeriveTitleNeedle(title, exe)
     uiaAttach := PasteField_DetectUiaAttach(hwnd)
+    urlNeedle := ""
+    if (uiaAttach = "browser")
+        urlNeedle := PasteField_CaptureUrlNeedle(hwnd)
     path := PasteField_MappingsIniPath()
     try DirCreate(A_ScriptDir "\assets\data")
     idx := PasteField_NextMappingIndex()
@@ -383,6 +500,7 @@ PasteField_SaveMapping(hwnd, signature) {
     try {
         IniWrite(exe, path, section, "Exe")
         IniWrite(titleNeedle, path, section, "TitleNeedle")
+        IniWrite(urlNeedle, path, section, "UrlNeedle")
         IniWrite(signature.HasProp("name") ? signature.name : "", path, section, "Name")
         IniWrite(signature.HasProp("automationId") ? signature.automationId : "", path, section, "AutomationId")
         IniWrite(signature.HasProp("className") ? signature.className : "", path, section, "ClassName")
@@ -417,6 +535,10 @@ PasteField_WriteAllMappings(list) {
             section := "Mapping_" . idx
             IniWrite(mapping.HasProp("exe") ? mapping.exe : "", path, section, "Exe")
             IniWrite(mapping.HasProp("titleNeedle") ? mapping.titleNeedle : "", path, section, "TitleNeedle")
+            urlNeedle := ""
+            if (mapping.HasProp("urlNeedle"))
+                urlNeedle := mapping.urlNeedle
+            IniWrite(urlNeedle, path, section, "UrlNeedle")
             IniWrite(mapping.HasProp("name") ? mapping.name : "", path, section, "Name")
             IniWrite(mapping.HasProp("automationId") ? mapping.automationId : "", path, section, "AutomationId")
             IniWrite(mapping.HasProp("className") ? mapping.className : "", path, section, "ClassName")
@@ -503,7 +625,8 @@ PasteField_ManagePopulateLv() {
     g_PasteFieldManageLv.Delete()
     for mapping in g_PasteFieldManageList {
         exe := mapping.HasProp("exe") ? mapping.exe : ""
-        title := mapping.HasProp("titleNeedle") ? mapping.titleNeedle : ""
+        urlNeedle := Trim(mapping.HasProp("urlNeedle") ? mapping.urlNeedle : "")
+        title := urlNeedle != "" ? urlNeedle : (mapping.HasProp("titleNeedle") ? mapping.titleNeedle : "")
         field := PasteField_ManageFieldLabel(mapping)
         g_PasteFieldManageLv.Add("", exe, PasteField_ManageTruncate(title, 80),
         PasteField_ManageTruncate(field, 80))
@@ -581,7 +704,10 @@ PasteField_ManageOnDelete(*) {
         if (idx >= 1 && idx <= g_PasteFieldManageList.Length) {
             m := g_PasteFieldManageList[idx]
             lab := (m.HasProp("exe") ? m.exe : "")
-            if (m.HasProp("titleNeedle") && m.titleNeedle != "")
+            urlNeedle := Trim(m.HasProp("urlNeedle") ? m.urlNeedle : "")
+            if (urlNeedle != "")
+                lab .= " — " . urlNeedle
+            else if (m.HasProp("titleNeedle") && m.titleNeedle != "")
                 lab .= " — " . m.titleNeedle
             labels.Push(PasteField_ManageTruncate(lab, 50))
         }
@@ -621,7 +747,7 @@ PasteField_ShowMappingsManageUI() {
     g_PasteFieldManageGui := Gui("+AlwaysOnTop +ToolWindow", "Main text field mappings")
     g_PasteFieldManageGui.SetFont("s10", "Segoe UI")
     g_PasteFieldManageGui.Add("Text", "w700", "Select a mapping and press Delete (or the button). Esc closes.")
-    g_PasteFieldManageLv := g_PasteFieldManageGui.Add("ListView", "w700 h420 Multi", ["Exe", "Title", "Field"])
+    g_PasteFieldManageLv := g_PasteFieldManageGui.Add("ListView", "w700 h420 Multi", ["Exe", "Title / URL", "Field"])
     g_PasteFieldManageGui.Add("Button", "w100 Section", "Delete").OnEvent("Click", PasteField_ManageOnDelete)
     g_PasteFieldManageGui.Add("Button", "w100 ys", "Close").OnEvent("Click", PasteField_ManageOnDone)
     g_PasteFieldManageGui.OnEvent("Close", PasteField_ManageOnDone)

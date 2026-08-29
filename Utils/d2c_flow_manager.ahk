@@ -5,7 +5,7 @@
 ; Utils.ahk orchestrator / shared library entry point.
 ; =============================================================================
 
-; After visible-window pick (#!+L / D2C [W]): Y = paste+Enter, Esc = abort, timeout = paste only.
+; After visible-window pick (#!+L / D2C [W]): Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
 global g_PasteWindowAutoSendChoice := ""
 global g_PasteWindowAutoSendActive := false
 
@@ -21,6 +21,10 @@ PasteWindow_OnAutoSendY(*) {
     PasteWindow_FinishAutoSendWait("send")
 }
 
+PasteWindow_OnAutoSendN(*) {
+    PasteWindow_FinishAutoSendWait("paste")
+}
+
 PasteWindow_OnAutoSendEsc(*) {
     PasteWindow_FinishAutoSendWait("cancel")
 }
@@ -29,7 +33,7 @@ PasteWindow_OnAutoSendTimeout(*) {
     PasteWindow_FinishAutoSendWait("paste")
 }
 
-; Show banner immediately; block until Y / Esc / timeout. Returns "send", "cancel", or "paste".
+; Show banner immediately; block until Y / N / Esc / timeout. Returns "send", "cancel", or "paste".
 PasteWindow_ShowAutoSendOptionsAndWait() {
     global g_PasteWindowAutoSendChoice, g_PasteWindowAutoSendActive
     g_PasteWindowAutoSendChoice := ""
@@ -38,6 +42,7 @@ PasteWindow_ShowAutoSendOptionsAndWait() {
     StandardLoadingBar_Hide(0)
     keyCallbacks := Map(
         "Y", PasteWindow_OnAutoSendY,
+        "N", PasteWindow_OnAutoSendN,
         "Escape", PasteWindow_OnAutoSendEsc
     )
     StandardLoadingBar_ShowWithKeys(
@@ -51,7 +56,7 @@ PasteWindow_ShowAutoSendOptionsAndWait() {
         17,
         "",
         true,
-        "[Y] Send after paste  [Esc] Cancel",
+        "[Y] Send after paste  [N] Paste only  [Esc] Cancel",
         true,
         true,
         true
@@ -220,8 +225,8 @@ class D2C_FlowManager {
 
     ; Shared by menu [W] and #!+L global hotkey.
     ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
-    ; After pick: banner Y = paste+Enter, Esc = abort, timeout = paste only.
-    ; If exe+title has a saved main field (paste_field_mappings.ini), focus it first.
+    ; After pick: banner Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
+    ; If exe+title/url has a saved main field (paste_field_mappings.ini), focus it first.
     ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
     PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
         if (!originHwnd)
