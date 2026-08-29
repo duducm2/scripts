@@ -7,22 +7,6 @@
 
 global g_UtilityGitPushBusy := false
 
-; #region agent log
-Utility_GitDebugLog(hypothesisId, location, message, data := "") {
-    try {
-        path := A_ScriptDir . "\debug-ce5d17.log"
-        dataEsc := StrReplace(StrReplace(String(data), "\", "\\"), '"', '\"')
-        msgEsc := StrReplace(StrReplace(String(message), "\", "\\"), '"', '\"')
-        locEsc := StrReplace(StrReplace(String(location), "\", "\\"), '"', '\"')
-        line := '{"sessionId":"ce5d17","hypothesisId":"' . hypothesisId
-            . '","location":"' . locEsc . '","message":"' . msgEsc
-            . '","data":"' . dataEsc . '","timestamp":' . A_TickCount . '}`n'
-        FileAppend(line, path, "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 Utility_GitNotify(msg, ms := 1800, accent := "") {
     if (accent = "")
         accent := BANNER_ACCENT_INFO
@@ -135,24 +119,12 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
 
     if (needPalace) {
         Utility_GitPassiveBar("⏳ Syncing Memory Palace Markdown…")
-        okP := true
-        okL := true
-        try okP := Palace_SyncAllPracticeMd(false)
-        catch {
-            okP := false
-        }
-        try okL := Palace_SyncAllPlansMd(false)
-        catch {
-            okL := false
-        }
-        ; #region agent log
-        Utility_GitDebugLog("E", "utility_git_push.ahk:Prepare", "palace_sync", "practice=" . okP . ";plans=" . okL)
-        ; #endregion
         ; Soft-fail: Drive-locked prune must not abort scripts/notes push
-        if (!okP || !okL) {
-            ; #region agent log
-            Utility_GitDebugLog("E", "utility_git_push.ahk:Prepare", "palace_soft_continue", "ok")
-            ; #endregion
+        try Palace_SyncAllPracticeMd(false)
+        catch {
+        }
+        try Palace_SyncAllPlansMd(false)
+        catch {
         }
     }
     return "ok"
@@ -222,28 +194,18 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
 ; Entry from Utility Shortcuts [G] — arms background worker immediately.
 Utility_GitSyncPush() {
     global g_UtilityGitPushBusy
-    ; #region agent log
-    Utility_GitDebugLog("A", "utility_git_push.ahk:SyncPush", "entry", "busy=" . g_UtilityGitPushBusy)
-    ; #endregion
     if (g_UtilityGitPushBusy) {
         Utility_GitNotify("ℹ Push already running", 1800, BANNER_ACCENT_INFO)
         return
     }
     g_UtilityGitPushBusy := true
-    ; #region agent log
-    Utility_GitDebugLog("A", "utility_git_push.ahk:SyncPush", "armed_timer", "ok")
-    ; #endregion
     SetTimer(Utility_GitSyncPushWorker, -1)
 }
 
 Utility_GitSyncPushWorker() {
     global g_UtilityGitPushBusy
-    outcome := "unset"
     resultMsg := ""
     resultAccent := BANNER_ACCENT_INFO
-    ; #region agent log
-    Utility_GitDebugLog("A", "utility_git_push.ahk:Worker", "worker_start", "")
-    ; #endregion
     try {
         ; Loading Indication for the whole push (animated bar)
         try StandardLoadingBar_Show("⏳ Preparing push…", BANNER_ACCENT_INTERMEDIATE)
@@ -255,12 +217,8 @@ Utility_GitSyncPushWorker() {
 
         scriptsRoot := GitCli_RevParseTopLevel(A_ScriptDir)
         if (scriptsRoot = "") {
-            outcome := "err_scripts_root"
             resultMsg := "❌ Scripts not a git repository"
             resultAccent := BANNER_ACCENT_ERROR
-            ; #region agent log
-            Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "early_exit", outcome)
-            ; #endregion
             return
         }
 
@@ -269,27 +227,15 @@ Utility_GitSyncPushWorker() {
         catch {
             notesRoot := ""
         }
-        ; #region agent log
-        Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "roots", "scripts=" . scriptsRoot . ";notes=" .
-            notesRoot)
-        ; #endregion
         if (notesRoot = "" || !DirExist(notesRoot)) {
-            outcome := "err_notes_root"
             resultMsg := "❌ Notes repo folder not found"
             resultAccent := BANNER_ACCENT_ERROR
-            ; #region agent log
-            Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "early_exit", outcome)
-            ; #endregion
             return
         }
 
         Utility_GitPassiveBar("⏳ Exporting Markdown if needed…")
         prep := Utility_GitPrepareExports(scriptsRoot, notesRoot)
-        ; #region agent log
-        Utility_GitDebugLog("E", "utility_git_push.ahk:Worker", "prep_result", prep)
-        ; #endregion
         if (SubStr(prep, 1, 6) = "error:") {
-            outcome := "err_prep"
             resultMsg := "❌ " . SubStr(prep, 7)
             resultAccent := BANNER_ACCENT_ERROR
             return
@@ -297,10 +243,6 @@ Utility_GitSyncPushWorker() {
 
         scriptsResult := Utility_GitSyncPushOne(scriptsRoot, "Scripts", commitMsg)
         notesResult := Utility_GitSyncPushOne(notesRoot, "Notes", commitMsg)
-        ; #region agent log
-        Utility_GitDebugLog("C", "utility_git_push.ahk:Worker", "push_results", "scripts=" . scriptsResult . ";notes=" .
-            notesResult)
-        ; #endregion
 
         errors := []
         if (SubStr(scriptsResult, 1, 6) = "error:")
@@ -308,14 +250,12 @@ Utility_GitSyncPushWorker() {
         if (SubStr(notesResult, 1, 6) = "error:")
             errors.Push(SubStr(notesResult, 7))
         if (errors.Length > 0) {
-            outcome := "err_push"
             resultMsg := "❌ " . errors[1]
             resultAccent := BANNER_ACCENT_ERROR
             return
         }
 
         if (scriptsResult = "noop" && notesResult = "noop") {
-            outcome := "noop"
             resultMsg := "ℹ Nothing to commit"
             resultAccent := BANNER_ACCENT_INFO
             return
@@ -326,38 +266,21 @@ Utility_GitSyncPushWorker() {
             parts.Push("Scripts")
         if (notesResult = "pushed")
             parts.Push("Notes")
-        if (parts.Length = 2) {
-            outcome := "ok_both"
+        if (parts.Length = 2)
             resultMsg := "✅ Scripts + Notes pushed"
-        } else {
-            outcome := "ok_" . parts[1]
+        else
             resultMsg := "✅ " . parts[1] . " pushed"
-        }
         resultAccent := BANNER_ACCENT_SUCCESS
-        ; #region agent log
-        Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "before_success_notify", outcome)
-        ; #endregion
     } catch as e {
-        outcome := "exception"
         resultMsg := "❌ Push failed: " . e.Message
         resultAccent := BANNER_ACCENT_ERROR
-        ; #region agent log
-        Utility_GitDebugLog("E", "utility_git_push.ahk:Worker", "exception", e.Message)
-        ; #endregion
     } finally {
-        ; #region agent log
-        Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "finally_hide_bar", "outcome=" . outcome)
-        ; #endregion
         g_UtilityGitPushBusy := false
         try StandardLoadingBar_Hide(0)
         catch {
         }
         ; Information Only AFTER Hide so Hide does not wipe the result toast
-        if (resultMsg != "") {
-            ; #region agent log
-            Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "result_toast_after_hide", outcome)
-            ; #endregion
+        if (resultMsg != "")
             Utility_GitNotify(resultMsg, 2800, resultAccent)
-        }
     }
 }

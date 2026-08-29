@@ -1384,7 +1384,66 @@
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
       <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+K)">Import</button>
+      <button class="btn" data-act="goto-github-md" title="Open exported tasks Markdown on GitHub">GitHub MD</button>
       <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H or F1)">Help</button>`;
+        }
+
+        const TASKS_GITHUB_MD = {
+          work: {
+            label: "Work",
+            file: "work/work.md",
+            url: "https://github.com/duducm2/my-notes/blob/main/work/work.md",
+          },
+          personal: {
+            label: "Personal",
+            file: "main/punctual.md",
+            url: "https://github.com/duducm2/my-notes/blob/main/main/punctual.md",
+          },
+          habits: {
+            label: "Habits",
+            file: "main/habits.md",
+            url: "https://github.com/duducm2/my-notes/blob/main/main/habits.md",
+          },
+        };
+
+        function openTasksGithubMd(filt) {
+          const hit = TASKS_GITHUB_MD[filt];
+          if (!hit) {
+            githubMdPicker();
+            return;
+          }
+          window.open(hit.url, "_blank", "noopener,noreferrer");
+          toast("Opened " + hit.label + " on GitHub");
+        }
+
+        function githubMdPicker() {
+          const focus = state.sectionFocus || "";
+          const rows = ["work", "personal", "habits"]
+            .map((f) => {
+              const m = TASKS_GITHUB_MD[f];
+              const hint = focus === f ? " (current focus)" : "";
+              return `<button type="button" class="btn" data-m="gh-md" data-f="${esc(f)}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(m.label)}${esc(hint)} — <span class="sub">${esc(m.file)}</span></button>`;
+            })
+            .join("");
+          modal(`<div class="modal"><h3>Tasks on GitHub</h3>
+      <p class="sub">Exported Markdown in the my-notes repo (updated on Utility Shortcuts [G] push).</p>
+      ${rows}
+      <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button></div></div>`);
+          $("#modalHost").onclick = (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            ) {
+              closeModal();
+              return;
+            }
+            if (e.target.closest("[data-m='gh-md']")) {
+              const btn = e.target.closest("[data-m='gh-md']");
+              const f = btn.getAttribute("data-f");
+              closeModal();
+              openTasksGithubMd(f);
+            }
+          };
         }
 
         function helpModal() {
@@ -1436,6 +1495,7 @@
         </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
           ${row("⇧K", "Open Import")}
+          ${row("GitHub MD", "Exported Work / Personal / Habits Markdown on GitHub")}
           ${row("⇧H / F1", "This help")}
         </div></div>
       </div>
@@ -2810,6 +2870,16 @@
               state.view = "import";
               state.importPreview = null;
               render();
+              return;
+            }
+            if (act === "goto-github-md") {
+              if (
+                state.sectionFocus === "work" ||
+                state.sectionFocus === "personal" ||
+                state.sectionFocus === "habits"
+              )
+                openTasksGithubMd(state.sectionFocus);
+              else githubMdPicker();
               return;
             }
             if (act === "help") {

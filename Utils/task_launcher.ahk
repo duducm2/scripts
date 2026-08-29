@@ -10,8 +10,6 @@ Task_ServerPort() {
 }
 
 Task_LaunchApp(openImport := false) {
-    try Finance_CloseGui()
-    try Palace_CloseGui()
     Task_EnsureData()
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
