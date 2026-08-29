@@ -3,6 +3,7 @@
 ; Win+Alt+Shift+9 tap-dance:
 ;   1× AI Quick Download (configured click sequences → Desktop wait → cut)
 ;   2× Bluetooth audio / Windows sound devices menu
+;   hold 700ms+ Push scripts+notes (Utility Shortcuts [G])
 ; Root picker -> Bluetooth / Input / Output / Help / Ignored submenus.
 ; Device lists: M marks a custom emoji label (persisted in assets\data\audio_bt_emoji.ini).
 ; Loaded via #include into the WindowManagement.ahk process.
@@ -1458,9 +1459,11 @@ AudioBt_Show() {
     AudioBt_ShowRoot()
 }
 
-; Win+Alt+Shift+9 tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
+; Win+Alt+Shift+9 tap / double-tap / hold (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK tap-dance):
 ;   1× = AI Companion Quick Download (click sequences → Desktop wait → #!+P name list → cut)
 ;   2× = Audio / Bluetooth quick selector (toggle)
+;   hold 700ms+ = Utility_GitSyncPush (Utility Shortcuts [G])
+AUDIO_BT_HOLD_MS := 700
 global g_AudioBt_DoubleTapArmed := false
 global g_AudioBt_LastPressTick := 0
 global g_AudioBt_DoubleTapTimer := 0
@@ -1476,9 +1479,25 @@ class AudioBt_DoubleTapTimerObj {
     }
 }
 
+AudioBt_DisarmDoubleTap() {
+    global g_AudioBt_DoubleTapArmed, g_AudioBt_DoubleTapTimer
+    global g_AudioBt_LastPressTick
+    g_AudioBt_DoubleTapArmed := false
+    g_AudioBt_LastPressTick := 0
+    if (g_AudioBt_DoubleTapTimer) {
+        SetTimer(g_AudioBt_DoubleTapTimer, 0)
+        g_AudioBt_DoubleTapTimer := 0
+    }
+}
+
 #!+9:: {
     global g_AudioBt_DoubleTapArmed, g_AudioBt_LastPressTick, g_AudioBt_DoubleTapTimer
     global g_AudioBtActive, g_AudioBtGui
+
+    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
+    ; released (those start with 9 already up and would otherwise arm single-tap QD).
+    if !GetKeyState("9", "P")
+        return
 
     thresholdMs := 400
     try thresholdMs := AI_QD_DOUBLE_TAP_MS
@@ -1486,16 +1505,25 @@ class AudioBt_DoubleTapTimerObj {
         thresholdMs := 400
     }
 
-    now := A_TickCount
-    elapsed := (g_AudioBt_LastPressTick > 0) ? (now - g_AudioBt_LastPressTick) : 9999
+    ; Detect double-tap on key-down (before KeyWait) so a slow release cannot miss the window.
+    pressTime := A_TickCount
+    elapsed := (g_AudioBt_LastPressTick > 0) ? (pressTime - g_AudioBt_LastPressTick) : 9999
+    isSecondTap := g_AudioBt_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
 
-    if (g_AudioBt_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs) {
-        g_AudioBt_DoubleTapArmed := false
-        g_AudioBt_LastPressTick := 0
-        if (g_AudioBt_DoubleTapTimer) {
-            SetTimer(g_AudioBt_DoubleTapTimer, 0)
-            g_AudioBt_DoubleTapTimer := 0
-        }
+    KeyWait "9", "T" . (AUDIO_BT_HOLD_MS / 1000)
+    isHold := (A_TickCount - pressTime) >= AUDIO_BT_HOLD_MS
+
+    if (isHold) {
+        AudioBt_DisarmDoubleTap()
+        Utility_GitSyncPush()
+        ; Stay in this thread until physical release so a repeat cannot start mid-hold
+        ; and arm single-tap after we return.
+        KeyWait "9"
+        return
+    }
+
+    if (isSecondTap) {
+        AudioBt_DisarmDoubleTap()
         if (g_AudioBtActive && IsObject(g_AudioBtGui)) {
             AudioBt_Cleanup()
         } else {
@@ -1504,7 +1532,12 @@ class AudioBt_DoubleTapTimerObj {
         return
     }
 
-    g_AudioBt_LastPressTick := now
+    ; Arm after quick release: window starts now (matches #!+8 / #!+O).
+    if (g_AudioBt_DoubleTapTimer) {
+        SetTimer(g_AudioBt_DoubleTapTimer, 0)
+        g_AudioBt_DoubleTapTimer := 0
+    }
+    g_AudioBt_LastPressTick := A_TickCount
     g_AudioBt_DoubleTapArmed := true
     g_AudioBt_DoubleTapTimer := ObjBindMethod(AudioBt_DoubleTapTimerObj, "OnSingleTapTimeout")
     SetTimer(g_AudioBt_DoubleTapTimer, -thresholdMs)

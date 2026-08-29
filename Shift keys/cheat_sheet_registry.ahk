@@ -1272,7 +1272,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     
     === WINDOWS ===
     [Win+Alt+Shift+6] > Minimizes windows
-    [Win+Alt+Shift+9] > 1× AI Quick Download (configured click sequences → Desktop → cut; manage via Win+Alt+Shift+U → Sequences) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back)
+    [Win+Alt+Shift+9] > 1× AI Quick Download (configured click sequences → Desktop → cut; manage via Win+Alt+Shift+U → Sequences) · 2× Audio / Bluetooth (1/B BT, 2/I Input, 3/O Output, 4/H Help, 5/G Ignored; Enter default, D/E enable, C/X connect, I isolate, N ignore, Esc back) · hold 700ms+ Push scripts+notes (Utility [G])
     [Win+Alt+Shift+M] > Maximizes the current window
     [Win+Alt+Shift+Y] > Focus Mode: Black out all monitors except the one with the active window (toggle)
     [Ctrl+Alt+Shift+B] > Switch to previous window (Alt+Tab once; MEH+B; WindowManagement.ahk)
