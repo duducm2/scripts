@@ -1,209 +1,248 @@
 ; =============================================================================
 ; Utils module: task_launcher.ahk
-; Tasks main menu (Utility Shortcuts [T])
+; Tasks — thin AHK launcher: start localhost server + open Chrome web app
 ; =============================================================================
 
 global g_TaskDashboardHwnd := 0
 
-Task_LaunchApp() {
+Task_ServerPort() {
+    return 8766
+}
+
+Task_LaunchApp(openImport := false) {
     try Finance_CloseGui()
     try Palace_CloseGui()
     Task_EnsureData()
-    Task_ShowMainMenu()
-}
-
-Task_ShowMainMenu() {
-    global g_TaskGui, g_TaskFilter, g_TaskBrowseProjectId, g_TaskBrowseTaskId
-    Task_CloseGui()
-    Task_EnsureData()
-    g_TaskBrowseProjectId := ""
-    g_TaskBrowseTaskId := ""
-
-    projects := Task_Load("projects")
-    tasks := Task_Load("tasks")
-    infos := Task_Load("info_points")
-    openN := Task_CountOpenTasks()
-
-    g_TaskGui := Gui("+AlwaysOnTop +ToolWindow", "Tasks")
-    g_TaskGui.SetFont("s10", "Segoe UI")
-    g_TaskGui.BackColor := "1E1E1E"
-    g_TaskGui.OnEvent("Close", (*) => Task_CloseGui())
-    g_TaskGui.OnEvent("Escape", (*) => Task_CloseGui())
-    try DllCall("dwmapi\DwmSetWindowAttribute", "ptr", g_TaskGui.Hwnd, "uint", 20, "int*", 1, "int", 4)
+    try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
-
-    g_TaskGui.SetFont("s16 cWhite Bold", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y16 w880", "Tasks")
-    g_TaskGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y48 w880",
-        projects.Length . " projects  ·  " . tasks.Length . " tasks  ·  "
-        . infos.Length . " info  ·  " . openN . " open  ·  filter: " . Task_FilterLabel(g_TaskFilter))
-    g_TaskGui.SetFont("s9 cF1C40F", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y72 w880", "Browse starts on Work. While browsing: 1 Work · 2 Personal · 3 Habits.")
-
-    items := [
-        ["B", "Browse", "Projects → tasks → info (starts Work; 1/2/3 filter)"],
-        ["I", "AI import", "Desktop TASK_PACK → projects / tasks / info"],
-        ["D", "Dashboard", "Charts and lists in Chrome"],
-        ["M", "Migrate MD", "Import work / punctual / habits.md"],
-        ["H", "Help", "Vocabulary and keys"],
-        ["P", "Push", "Commit and push scripts repo"]
-    ]
-
-    x0 := 20
-    y0 := 108
-    colW := 440
-    rowH := 78
-    idx := 0
-    for it in items {
-        col := Mod(idx, 2)
-        row := idx // 2
-        x := x0 + col * colW
-        y := y0 + row * rowH
-        g_TaskGui.SetFont("s14 cF1C40F Bold", "Segoe UI")
-        g_TaskGui.Add("Text", "x" . (x + 12) . " y" . (y + 10) . " w40 BackgroundTrans", "[" . it[1] . "]")
-        g_TaskGui.SetFont("s12 cWhite Bold", "Segoe UI")
-        g_TaskGui.Add("Text", "x" . (x + 58) . " y" . (y + 10) . " w340 BackgroundTrans", it[2])
-        g_TaskGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-        g_TaskGui.Add("Text", "x" . (x + 58) . " y" . (y + 36) . " w340 BackgroundTrans", it[3])
-        idx += 1
-    }
-
-    g_TaskGui.SetFont("s9 c808080", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y360 w880",
-        "Backspace utility shortcuts   Esc close   I import   M migrate   D dashboard")
-
-    Task_BindHotkeys([
-        ["b", Task_OnBrowse],
-        ["i", Task_OnImport], ["d", Task_OnDash], ["m", Task_OnMigrate],
-        ["h", Task_OnHelp], ["p", Task_OnGitPush],
-        ["Backspace", (*) => Task_ReturnToUtilityShortcuts()],
-        ["Escape", (*) => Task_CloseGui()]
-    ])
-    Task_CenterGui(g_TaskGui, 900, 420)
-}
-
-Task_ReturnToUtilityShortcuts() {
-    Task_CloseGui()
-    try ShowHotstringSelector()
-    catch {
-    }
-}
-
-Task_OnBrowse(*) {
-    global g_TaskBrowseProjectId, g_TaskBrowseTaskId
-    Task_SetFilter("work")
-    g_TaskBrowseProjectId := ""
-    g_TaskBrowseTaskId := ""
-    Task_ShowProjects()
-}
-
-Task_OnImport(*) {
-    Task_ImportPackFromDesktop()
-}
-
-Task_OnDash(*) {
-    Task_OpenDashboard()
-}
-
-Task_OnMigrate(*) {
-    Task_RunMigrateFromMd()
-}
-
-Task_OnHelp(*) {
-    Task_ShowHelp()
-}
-
-Task_OnGitPush(*) {
-    Task_CloseGui()
-    try Utility_GitSyncPush()
-    catch as e {
-        Task_Notify("Push failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-    }
-}
-
-Task_OpenDashboard() {
-    Task_CloseGui()
-    Task_EnsureData()
-    py := Task_PythonDir() . "\chart_generator.py"
-    if (!FileExist(py)) {
-        Task_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
+    if (!Task_EnsureServer(true)) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
         return
     }
-    dataDir := Task_DataDir()
-    outDir := Task_OutputDir()
+    url := "http://127.0.0.1:" . Task_ServerPort() . "/"
+    if (openImport)
+        url .= "?import=1"
+    url .= (InStr(url, "?") ? "&" : "?") . "t=" . A_TickCount
+    try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    ok := Task_OpenInChrome(url)
+    try StandardLoadingBar_Hide(300)
+    catch {
+    }
+    if (!ok)
+        Task_Notify("Chrome failed to open Tasks", 2500, BANNER_ACCENT_ERROR)
+}
+
+; Import Management [T] / legacy entry
+Task_ImportPackFromDesktop(*) {
+    Task_LaunchApp(true)
+}
+
+Task_CloseWebApp() {
+    global g_TaskDashboardHwnd
+    hwnd := Task_DashboardHwndCacheGet()
+    if (hwnd) {
+        try WinClose("ahk_id " hwnd)
+        catch {
+        }
+    }
+    ; Also close any Chrome window titled Tasks
+    for h in WinGetList("ahk_exe chrome.exe") {
+        try title := WinGetTitle("ahk_id " h)
+        catch {
+            continue
+        }
+        if (Task_IsChromeWindowTitle(title)) {
+            try WinClose("ahk_id " h)
+            catch {
+            }
+        }
+    }
+    Task_DashboardHwndCacheClear()
+    Task_StopServer()
+}
+
+Task_StopServer(port := 0) {
+    if (port = 0)
+        port := Task_ServerPort()
+    q := Chr(39)
+    cmd := "for /f `"tokens=5`" %a in (" . q . "netstat -ano ^| findstr :" . port
+        . " ^| findstr LISTENING" . q . ") do taskkill /F /PID %a >nul 2>&1"
+    loop 3 {
+        try RunWait(A_ComSpec . " /c " . cmd, , "Hide")
+        catch {
+        }
+        Sleep 150
+        if (!Task_IsServerRunning(port))
+            break
+    }
+}
+
+Task_EnsureServer(forceRestart := false) {
+    port := Task_ServerPort()
+    if (forceRestart)
+        Task_StopServer(port)
+    else if (Task_IsServerRunning(port))
+        return true
+    py := Task_PythonDir() . "\task_server.py"
+    if (!FileExist(py)) {
+        Task_Notify("task_server.py not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
     pyCmd := Task_FindPythonCmd()
     if (pyCmd = "") {
-        Task_Notify("Python not found.", 3500, BANNER_ACCENT_ERROR)
-        return
+        Task_Notify("Python not found for Tasks server", 2500, BANNER_ACCENT_ERROR)
+        return false
     }
-    try StandardLoadingBar_Show("Building dashboard…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
-    exitCode := 0
+    dataDir := Task_DataDir()
+    scriptsRoot := A_ScriptDir
+    notesRoot := ""
+    ; sibling notes repo
+    cand := A_ScriptDir . "\..\notes"
     try {
-        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
-    } catch as e {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Task_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-        return
+        if (DirExist(cand))
+            notesRoot := cand
+    } catch {
     }
-    if (exitCode != 0) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Task_Notify("Dashboard failed (exit " . exitCode . ")", 3500, BANNER_ACCENT_ERROR)
-        return
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . scriptsRoot
+        . '" --port ' . port
+    if (notesRoot != "")
+        cmd .= ' --notes-root "' . notesRoot . '"'
+    try Run(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    catch as e {
+        Task_Notify("Tasks server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        return false
     }
-    html := outDir . "\dashboard.html"
-    try StandardLoadingBar_Hide(400)
-    catch {
+    loop 25 {
+        if (Task_IsServerRunning(port))
+            return true
+        Sleep 150
     }
-    if (!FileExist(html)) {
-        Task_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
-        return
-    }
-    tmpHtml := A_Temp . "\tasks_dashboard_" . A_TickCount . ".html"
-    try FileCopy(html, tmpHtml, 1)
-    catch {
-        tmpHtml := html
-    }
-    try Run('chrome.exe --new-window "' . tmpHtml . '"')
-    catch {
-        try Run('"' . tmpHtml . '"')
-        catch as e {
-            Task_Notify("Could not open dashboard: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-            return
-        }
-    }
-    Task_Notify("Dashboard opened", 1400, BANNER_ACCENT_SUCCESS)
+    Task_Notify("Tasks server did not start", 2800, BANNER_ACCENT_ERROR)
+    return false
 }
 
-Task_ShowHelp() {
-    global g_TaskGui
-    Task_CloseGui()
-    g_TaskGui := Gui("+AlwaysOnTop +ToolWindow", "Tasks Help")
-    g_TaskGui.BackColor := "1E1E1E"
-    g_TaskGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y16 w700", "Tasks — help")
-    y := 48
-    for term in Task_Terms() {
-        g_TaskGui.SetFont("s10 cF1C40F Bold", "Segoe UI")
-        g_TaskGui.Add("Text", "x20 y" . y . " w700", term[1])
-        y += 22
-        g_TaskGui.SetFont("s9 cC0C0C0 Norm", "Segoe UI")
-        g_TaskGui.Add("Text", "x20 y" . y . " w700", term[2])
-        y += 36
+Task_IsServerRunning(port := 0) {
+    if (port = 0)
+        port := Task_ServerPort()
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.Send()
+        return (whr.Status = 200)
+    } catch {
+        return false
     }
-    g_TaskGui.SetFont("s9 c808080", "Segoe UI")
-    g_TaskGui.Add("Text", "x20 y" . y . " w700", "Esc / Backspace → main menu")
-    Task_BindHotkeys([
-        ["Escape", (*) => Task_ShowMainMenu()],
-        ["Backspace", (*) => Task_ShowMainMenu()]
-    ])
-    Task_CenterGui(g_TaskGui, 760, y + 60)
+}
+
+Task_IsChromeWindowTitle(title) {
+    t := Trim(title)
+    if (t = "Tasks" || t = "Tasks - Google Chrome")
+        return true
+    if (InStr(t, "Tasks") = 1)
+        return true
+    return false
+}
+
+Task_DashboardHwndValid(hwnd) {
+    try hwnd := Integer(hwnd)
+    catch {
+        return 0
+    }
+    if (!(hwnd is Integer) || hwnd <= 0)
+        return 0
+    try {
+        if !WinExist("ahk_id " hwnd)
+            return 0
+    } catch {
+        return 0
+    }
+    return hwnd
+}
+
+Task_DashboardHwndCacheGet() {
+    global g_TaskDashboardHwnd
+    hwnd := Task_DashboardHwndValid(g_TaskDashboardHwnd)
+    if (hwnd)
+        return hwnd
+    raw := Trim(Task_Setting("General", "DashboardChromeHwnd", ""))
+    if (raw = "")
+        return 0
+    hwnd := Task_DashboardHwndValid(raw)
+    g_TaskDashboardHwnd := hwnd
+    return hwnd
+}
+
+Task_DashboardHwndCacheSet(hwnd) {
+    global g_TaskDashboardHwnd
+    hwnd := Task_DashboardHwndValid(hwnd)
+    g_TaskDashboardHwnd := hwnd
+    Task_SetSetting("General", "DashboardChromeHwnd", hwnd ? String(hwnd) : "")
+}
+
+Task_DashboardHwndCacheClear() {
+    Task_DashboardHwndCacheSet(0)
+}
+
+Task_OpenInChrome(url) {
+    hwnd := Task_DashboardHwndCacheGet()
+    if (hwnd) {
+        try {
+            WinActivate("ahk_id " hwnd)
+            ; navigate via omnibox is fragile; reopen URL
+        } catch {
+        }
+    }
+    baseline := Map()
+    for h in WinGetList("ahk_exe chrome.exe")
+        baseline[h] := true
+    try Run('chrome.exe --new-window "' . url . '"')
+    catch {
+        try Run(url)
+        catch {
+            return false
+        }
+    }
+    deadline := A_TickCount + 8000
+    newHwnd := 0
+    while (A_TickCount < deadline) {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            if (baseline.Has(h))
+                continue
+            try title := WinGetTitle("ahk_id " h)
+            catch {
+                title := ""
+            }
+            if (Task_IsChromeWindowTitle(title) || title = "") {
+                newHwnd := h
+                if (Task_IsChromeWindowTitle(title))
+                    break 2
+            }
+        }
+        Sleep 100
+    }
+    if (!newHwnd) {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            try title := WinGetTitle("ahk_id " h)
+            catch {
+                continue
+            }
+            if (Task_IsChromeWindowTitle(title)) {
+                newHwnd := h
+                break
+            }
+        }
+    }
+    if (newHwnd) {
+        Task_DashboardHwndCacheSet(newHwnd)
+        try WinActivate("ahk_id " newHwnd)
+        catch {
+        }
+        return true
+    }
+    return true ; URL was launched even if HWND not found
 }

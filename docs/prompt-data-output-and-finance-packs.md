@@ -6,7 +6,7 @@ This doc is the **canonical reference** for how prompts and importers are linked
 
 > **Start here** if you are an AI agent working on pack prompts, importers, CSV schemas, partial-import recovery, or a new import domain.
 
-**Tasks domain:** Utility Shortcuts `[T]` → CSV under `tasks/data/`. Markdown migrate (`tasks/python/migrate_from_md.py` / launcher `[M]`); AI pack **`TASK_PACK.txt`** via Tasks `[I]` or Import Management `[T]` (`Utils/task_import.ahk`). Fix file: `TASK_AI_FIX.txt`. Dashboard: `tasks/python/chart_generator.py`.
+**Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). AHK is launcher-only ([`task_launcher.ahk`](../Utils/task_launcher.ahk)). CSV under `tasks/data/`. Migrate MD and AI pack **`TASK_PACK.txt`** run from the web UI (Import / Migrate); Import Management `[T]` opens `?import=1`. Fix file: `TASK_AI_FIX.txt`.
 
 ## For future agents — import system reference
 
@@ -50,12 +50,12 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 
 ### Module index (code)
 
-| Domain            | Helpers                                                                     | Import                                                                                                                                      | Launcher                                                                      | Data                   |
-| ----------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
-| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                 | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                                                   | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
-| Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                                                   | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv` |
-| Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk)                       | [`Utils/task_import.ahk`](../Utils/task_import.ahk) (+ MD migrate: [`tasks/python/migrate_from_md.py`](../tasks/python/migrate_from_md.py)) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk)                       | `tasks/data/*.csv`     |
-| Import Management | —                                                                           | — (delegates to finance/palace/task importers)                                                                                              | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
+| Domain            | Helpers                                                                                                               | Import                                                                                                                                                            | Launcher                                                                      | Data                   |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
+| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                                                           | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                                                                         | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
+| Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk)                                           | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                                                                         | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv` |
+| Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk) + [`tasks/python/task_store.py`](../tasks/python/task_store.py) | [`tasks/python/task_pack_import.py`](../tasks/python/task_pack_import.py) (+ MD migrate: [`tasks/python/migrate_from_md.py`](../tasks/python/migrate_from_md.py)) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk) → web `:8766`         | `tasks/data/*.csv`     |
+| Import Management | —                                                                                                                     | — (delegates to finance/palace/task importers)                                                                                                                    | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
 
@@ -130,13 +130,13 @@ flowchart LR
 
 ### Pack-import domains
 
-| Domain          | Shortcuts     | Import Management `[J]` | Prompt (char) | Pack file             | Context                     | Importer                                                            | Confirm UI |
-| --------------- | ------------- | ----------------------- | ------------- | --------------------- | --------------------------- | ------------------------------------------------------------------- | ---------- |
-| Finance daily   | `[F]` → `[I]` | `[D]`                   | `[d]`         | `FINANCE_DAILY.txt`   | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes        |
-| Finance monthly | `[F]` → `[I]` | `[M]`                   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                 | Yes        |
-| Memory Palace   | `[N]` → `[I]` | `[P]`                   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes        |
-| Study plans     | `[N]` → `[J]` | `[L]`                   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) | Yes        |
-| Tasks           | `[T]` → `[I]` | `[T]`                   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_import.ahk`](../Utils/task_import.ahk)                       | Yes        |
+| Domain          | Shortcuts     | Import Management `[J]` | Prompt (char) | Pack file             | Context                     | Importer                                                             | Confirm UI |
+| --------------- | ------------- | ----------------------- | ------------- | --------------------- | --------------------------- | -------------------------------------------------------------------- | ---------- |
+| Finance daily   | `[F]` → `[I]` | `[D]`                   | `[d]`         | `FINANCE_DAILY.txt`   | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
+| Finance monthly | `[F]` → `[I]` | `[M]`                   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
+| Memory Palace   | `[N]` → `[I]` | `[P]`                   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
+| Study plans     | `[N]` → `[J]` | `[L]`                   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
+| Tasks           | `[T]` web app | `[T]`                   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) via web | Yes (web)  |
 
 Import Management help: `[J]` → `[H]` (canonical names, overwrite policy, per-import rules, desktop name registry).
 

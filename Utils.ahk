@@ -332,14 +332,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk
 
-; [Utils module] Tasks (Utility Shortcuts [T])
+; [Utils module] Tasks (Utility Shortcuts [T] → web app on :8766)
 #include %A_ScriptDir%\Utils\task_helpers.ahk
 #include %A_ScriptDir%\Utils\task_launcher.ahk
-#include %A_ScriptDir%\Utils\task_projects.ahk
-#include %A_ScriptDir%\Utils\task_tasks.ahk
-#include %A_ScriptDir%\Utils\task_info.ahk
-#include %A_ScriptDir%\Utils\task_migrate.ahk
-#include %A_ScriptDir%\Utils\task_import.ahk
+; Legacy AHK GUI modules removed — CRUD lives in tasks/web + task_server.py
 
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk
