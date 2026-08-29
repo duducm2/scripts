@@ -100,4 +100,39 @@
     }
 }
 
+; Shift + C : Collapse side panel
++c:: {
+    try {
+        uia := UIA_Browser()
+        if !uia
+            return
+        Sleep 150
+        root := 0
+        try root := uia.GetCurrentDocumentElement()
+        catch {
+            try root := uia.BrowserElement
+        }
+        if !root
+            return
+
+        btn := 0
+        try btn := root.FindFirst({ Type: 50000, Name: "Collapse side panel", cs: false })
+        if !btn {
+            try btn := root.FindFirst({ Name: "Collapse side panel", cs: false })
+        }
+
+        if (btn) {
+            try {
+                if btn.GetPropertyValue(UIA.Property.IsInvokePatternAvailable)
+                    btn.InvokePattern.Invoke()
+                else
+                    btn.Click()
+            } catch {
+                try btn.Click()
+            }
+        }
+    } catch {
+    }
+}
+
 #HotIf

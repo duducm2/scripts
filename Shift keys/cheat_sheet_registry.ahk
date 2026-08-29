@@ -342,6 +342,7 @@ cheatSheets["Google Maps"] := "
     Google Maps (Shift)
     🔍 [S][S]earch box (place / query)
     📍 [L][L]at/long (copy coordinates to clipboard)
+    📉 [C][C]ollapse side panel
 )"  ; end Google Maps
 
 ; --- Chrome PDF Viewer ------------------------------------------------------
