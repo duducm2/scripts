@@ -1,369 +1,739 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<title>Tasks</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-:root {
-  --bg:#121212; --panel:#1e1e1e; --text:#f2f2f2; --muted:#a0a0a0;
-  --gold:#f1c40f; --line:#333; --due:#e67e22; --danger:#e74c3c;
-}
-* { box-sizing:border-box; }
-body { margin:0; font-family:Segoe UI,system-ui,sans-serif; background:var(--bg); color:var(--text); }
-header { padding:16px 24px 8px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
-h1 { margin:0; font-size:24px; }
-.sub { color:var(--muted); font-size:13px; }
-.toolbar { display:flex; flex-wrap:wrap; gap:8px; padding:0 24px 12px; align-items:center; }
-.btn, button.btn {
-  background:var(--panel); border:1px solid var(--line); color:var(--text);
-  border-radius:8px; padding:6px 12px; cursor:pointer; font:inherit; font-size:13px;
-}
-.btn:hover, .btn.active { border-color:var(--gold); color:var(--gold); }
-.btn.danger:hover { border-color:var(--danger); color:var(--danger); }
-kbd { font:inherit; font-size:11px; color:var(--gold); border:1px solid var(--line); border-radius:4px; padding:0 5px; background:#252528; }
-#toast {
-  position:fixed; bottom:20px; right:20px; background:#252528; border:1px solid var(--gold);
-  padding:10px 14px; border-radius:8px; display:none; z-index:2000; max-width:360px;
-}
-#view { padding:8px 24px 40px; }
-.panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
-.top-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-@media (max-width:900px) { .top-row { grid-template-columns:1fr; } }
-.column h2, .section-title { margin:0 0 12px; font-size:18px; color:var(--gold); }
-.project { border:1px solid var(--line); border-radius:8px; margin-bottom:8px; background:#252528; }
-.project summary {
-  cursor:pointer; list-style:none; display:flex; align-items:center;
-  justify-content:space-between; gap:10px; padding:10px 12px; user-select:none;
-}
-.project summary::-webkit-details-marker { display:none; }
-.project summary::before { content:"▸"; color:var(--gold); margin-right:8px; font-size:12px; }
-.project[open] summary::before { content:"▾"; }
-.proj-title { font-weight:600; flex:1; }
-.proj-count { color:var(--muted); font-size:12px; background:#1a1a1c; border-radius:999px; padding:2px 8px; }
-.task-list, .habit-list, .plain-list { list-style:none; margin:0; padding:0 12px 10px; }
-.task, .habit-row, .plain-row {
-  display:flex; flex-wrap:wrap; align-items:baseline; gap:8px;
-  padding:8px 0; border-top:1px solid var(--line); font-size:13px;
-}
-.task .em, .habit-row .em { flex:0 0 auto; }
-.task .title, .habit-row .title, .plain-row .title { flex:1; min-width:120px; cursor:pointer; }
-.due { color:var(--muted); font-size:11px; white-space:nowrap; }
-.habit-row.due-now .due { color:var(--due); }
-.row-actions { display:flex; flex-wrap:wrap; gap:4px; }
-.row-actions .btn { padding:2px 8px; font-size:11px; }
-.thumbs { flex:1 1 100%; display:flex; flex-wrap:wrap; gap:6px; padding:4px 0 2px 28px; }
-.project > .thumbs { padding:0 12px 10px; }
-.thumb {
-  display:block; padding:0; border:1px solid var(--line); border-radius:6px;
-  background:#1a1a1c; cursor:zoom-in; overflow:hidden; width:72px; height:54px;
-}
-.thumb img { display:block; width:100%; height:100%; object-fit:cover; }
-.emoji-legend { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.emoji-chip {
-  display:inline-flex; align-items:center; gap:4px; background:var(--panel);
-  border:1px solid var(--line); border-radius:999px; padding:2px 8px; font-size:12px;
-  color:inherit; cursor:pointer; font:inherit;
-}
-.emoji-chip.active, .emoji-chip:hover { border-color:var(--gold); color:var(--gold); }
-.task.emoji-hidden, .habit-row.emoji-hidden, .project.emoji-hidden, .habit-card.emoji-hidden { display:none !important; }
-.habit-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-top:16px; }
-.habit-card h2 { margin:0 0 12px; font-size:20px; color:var(--gold); }
-.strip { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 24px 12px; align-items:center; }
-.kpi { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px; min-width:88px; }
-.kpi .lbl { color:var(--muted); font-size:10px; text-transform:uppercase; }
-.kpi .val { font-size:18px; margin-top:2px; color:var(--gold); }
-#lightbox {
-  position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.82);
-  display:flex; align-items:center; justify-content:center; padding:24px; cursor:zoom-out;
-}
-#lightbox[hidden] { display:none; }
-#lightbox img { max-width:min(96vw,1200px); max-height:92vh; border-radius:8px; cursor:default; }
-.modal-bg {
-  position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:1500;
-  display:flex; align-items:center; justify-content:center; padding:20px;
-}
-.modal {
-  background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  padding:16px 18px; width:min(520px,100%); max-height:90vh; overflow:auto;
-}
-.modal h3 { margin:0 0 12px; color:var(--gold); }
-.modal label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
-.modal input, .modal select, .modal textarea {
-  width:100%; background:#252528; border:1px solid var(--line); color:var(--text);
-  border-radius:6px; padding:8px; font:inherit;
-}
-.modal textarea { min-height:120px; }
-.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
-.crumb { color:var(--muted); font-size:13px; margin-bottom:10px; }
-.empty { color:var(--muted); font-size:13px; }
-.hidden { display:none !important; }
-</style>
-</head>
-<body>
-<header>
-  <div>
-    <h1>Tasks</h1>
-    <div class="sub" id="hdrSub">Loading…</div>
-  </div>
-  <div class="toolbar" id="mainToolbar"></div>
-</header>
-<div class="strip" id="strip"></div>
-<div id="view"></div>
-<div id="toast"></div>
-<div id="lightbox" hidden><img src="" alt=""/></div>
-<div id="modalHost"></div>
-<script>
-(() => {
-  const RECURRENCE_ORDER = ["daily","weekly","monthly","quarterly","biannual","yearly","every_2y","every_3y","every_5y","every_10y"];
-  const RECURRENCE_LABELS = {
-    daily:"Daily", weekly:"Weekly", monthly:"Monthly", quarterly:"Quarterly",
-    biannual:"Bi-yearly", yearly:"Yearly", every_2y:"Every 2 years", every_3y:"Every 3 years",
-    every_5y:"Every 5 years", every_10y:"Every 10 years", "":"Other"
-  };
-  const EMOJI_KEYS = { t:"⚡", w:"⏳", g:"🔲", u:"❓" };
-  const state = {
-    data: null,
-    filter: "work",
-    view: "dashboard", // dashboard | projects | tasks | info | import
-    projectId: "",
-    taskId: "",
-    emojiFilter: "",
-    importPreview: null,
-  };
+  <head>
+    <meta charset="utf-8" />
+    <title>Tasks</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg: #121212;
+        --panel: #1e1e1e;
+        --text: #f2f2f2;
+        --muted: #a0a0a0;
+        --gold: #f1c40f;
+        --line: #333;
+        --due: #e67e22;
+        --danger: #e74c3c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          Segoe UI,
+          system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 16px 24px 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 24px 12px;
+        align-items: center;
+      }
+      .btn,
+      button.btn {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+      }
+      .btn:hover,
+      .btn.active {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .btn.danger:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      kbd {
+        font: inherit;
+        font-size: 11px;
+        color: var(--gold);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0 5px;
+        background: #252528;
+      }
+      #toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #252528;
+        border: 1px solid var(--gold);
+        padding: 10px 14px;
+        border-radius: 8px;
+        display: none;
+        z-index: 2000;
+        max-width: 360px;
+      }
+      #view {
+        padding: 8px 24px 40px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+      .top-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 900px) {
+        .top-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .column h2,
+      .section-title {
+        margin: 0 0 12px;
+        font-size: 18px;
+        color: var(--gold);
+      }
+      .project {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: #252528;
+      }
+      .project summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        user-select: none;
+      }
+      .project summary::-webkit-details-marker {
+        display: none;
+      }
+      .project summary::before {
+        content: "▸";
+        color: var(--gold);
+        margin-right: 8px;
+        font-size: 12px;
+      }
+      .project[open] summary::before {
+        content: "▾";
+      }
+      .proj-title {
+        font-weight: 600;
+        flex: 1;
+      }
+      .proj-count {
+        color: var(--muted);
+        font-size: 12px;
+        background: #1a1a1c;
+        border-radius: 999px;
+        padding: 2px 8px;
+      }
+      .task-list,
+      .habit-list,
+      .plain-list {
+        list-style: none;
+        margin: 0;
+        padding: 0 12px 10px;
+      }
+      .task,
+      .habit-row,
+      .plain-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 8px;
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .task .em,
+      .habit-row .em {
+        flex: 0 0 auto;
+      }
+      .task .title,
+      .habit-row .title,
+      .plain-row .title {
+        flex: 1;
+        min-width: 120px;
+        cursor: pointer;
+      }
+      .due {
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .habit-row.due-now .due {
+        color: var(--due);
+      }
+      .row-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .row-actions .btn {
+        padding: 2px 8px;
+        font-size: 11px;
+      }
+      .thumbs {
+        flex: 1 1 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 4px 0 2px 28px;
+      }
+      .project > .thumbs {
+        padding: 0 12px 10px;
+      }
+      .thumb {
+        display: block;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #1a1a1c;
+        cursor: zoom-in;
+        overflow: hidden;
+        width: 72px;
+        height: 54px;
+      }
+      .thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .emoji-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .emoji-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: #252528;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 2px 7px;
+        font-size: 11px;
+        color: var(--muted);
+        cursor: pointer;
+        font: inherit;
+        line-height: 1.2;
+      }
+      .emoji-chip .em {
+        color: var(--text);
+      }
+      .emoji-chip .lbl {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: lowercase;
+      }
+      .emoji-chip .n {
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+      }
+      .emoji-chip.active,
+      .emoji-chip:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .emoji-chip.active .lbl,
+      .emoji-chip:hover .lbl {
+        color: var(--gold);
+      }
+      .task.emoji-hidden,
+      .habit-row.emoji-hidden,
+      .project.emoji-hidden,
+      .habit-card.emoji-hidden {
+        display: none !important;
+      }
+      .habit-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 14px;
+        margin-top: 12px;
+      }
+      .habit-card h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        color: var(--gold);
+      }
+      .section-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+        margin: 0 0 12px;
+      }
+      .section-head h2,
+      .section-head .section-title {
+        margin: 0;
+        font-size: 18px;
+        color: var(--gold);
+        flex: 0 1 auto;
+      }
+      .section-head-right {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .proj-actions {
+        padding: 0 12px 8px;
+      }
+      .habits-wrap {
+        margin-top: 20px;
+      }
+      .habits-wrap > .section-head {
+        margin-bottom: 4px;
+      }
+      .strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        padding: 0 24px 12px;
+        align-items: center;
+      }
+      .kpi {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 12px;
+        min-width: 88px;
+      }
+      .kpi .lbl {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+      .kpi .val {
+        font-size: 18px;
+        margin-top: 2px;
+        color: var(--gold);
+      }
+      #emojiFilterLbl {
+        color: var(--gold);
+        font-size: 12px;
+      }
+      #lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.82);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        cursor: zoom-out;
+      }
+      #lightbox[hidden] {
+        display: none;
+      }
+      #lightbox img {
+        max-width: min(96vw, 1200px);
+        max-height: 92vh;
+        border-radius: 8px;
+        cursor: default;
+      }
+      .modal-bg {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 1500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px 18px;
+        width: min(520px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+      }
+      .modal h3 {
+        margin: 0 0 12px;
+        color: var(--gold);
+      }
+      .modal label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin: 8px 0 4px;
+      }
+      .modal input,
+      .modal select,
+      .modal textarea {
+        width: 100%;
+        background: #252528;
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 8px;
+        font: inherit;
+      }
+      .modal textarea {
+        min-height: 120px;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 14px;
+      }
+      .crumb {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Tasks</h1>
+        <div class="sub" id="hdrSub">Loading…</div>
+      </div>
+      <div class="toolbar" id="mainToolbar"></div>
+    </header>
+    <div class="strip" id="strip"></div>
+    <div id="view"></div>
+    <div id="toast"></div>
+    <div id="lightbox" hidden><img src="" alt="" /></div>
+    <div id="modalHost"></div>
+    <script>
+      (() => {
+        const RECURRENCE_ORDER = [
+          "daily",
+          "weekly",
+          "monthly",
+          "quarterly",
+          "biannual",
+          "yearly",
+          "every_2y",
+          "every_3y",
+          "every_5y",
+          "every_10y",
+        ];
+        const RECURRENCE_LABELS = {
+          daily: "Daily",
+          weekly: "Weekly",
+          monthly: "Monthly",
+          quarterly: "Quarterly",
+          biannual: "Bi-yearly",
+          yearly: "Yearly",
+          every_2y: "Every 2 years",
+          every_3y: "Every 3 years",
+          every_5y: "Every 5 years",
+          every_10y: "Every 10 years",
+          "": "Other",
+        };
+        const EMOJI_KEYS = { t: "⚡", w: "⏳", g: "🔲", u: "❓" };
+        const EMOJI_LABELS = {
+          "⚡": "important",
+          "⏳": "waiting",
+          "🔲": "general",
+          "❓": "doubt",
+          "✅": "done",
+        };
+        const EMOJI_KEY_BY = { "⚡": "t", "⏳": "w", "🔲": "g", "❓": "u" };
+        const state = {
+          data: null,
+          filter: "work",
+          view: "dashboard", // dashboard | projects | tasks | info | import
+          projectId: "",
+          taskId: "",
+          emojiFilter: "",
+          importPreview: null,
+        };
 
-  const $ = (sel) => document.querySelector(sel);
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[c]);
+        const $ = (sel) => document.querySelector(sel);
+        const esc = (s) =>
+          String(s ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
 
-  function toast(msg) {
-    const el = $("#toast");
-    el.textContent = msg;
-    el.style.display = "block";
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => { el.style.display = "none"; }, 2800);
-  }
+        function toast(msg) {
+          const el = $("#toast");
+          el.textContent = msg;
+          el.style.display = "block";
+          clearTimeout(toast._t);
+          toast._t = setTimeout(() => {
+            el.style.display = "none";
+          }, 2800);
+        }
 
-  async function api(path, opts = {}) {
-    const res = await fetch(path, {
-      headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
-      ...opts,
-    });
-    const data = await res.json().catch(() => ({ ok:false, error:"bad json" }));
-    if (!res.ok || data.ok === false) throw new Error(data.error || res.statusText);
-    return data;
-  }
+        async function api(path, opts = {}) {
+          const res = await fetch(path, {
+            headers: {
+              "Content-Type": "application/json",
+              ...(opts.headers || {}),
+            },
+            ...opts,
+          });
+          const data = await res
+            .json()
+            .catch(() => ({ ok: false, error: "bad json" }));
+          if (!res.ok || data.ok === false)
+            throw new Error(data.error || res.statusText);
+          return data;
+        }
 
-  async function refresh() {
-    state.data = await api("/api/state");
-    render();
-  }
+        async function refresh() {
+          state.data = await api("/api/state");
+          render();
+        }
 
-  function projectsFor(filt) {
-    return (state.data.projects || [])
-      .filter((p) => p.active !== "0" && p.filter === filt)
-      .sort((a, b) => Number(a.sort_order||0) - Number(b.sort_order||0) || a.title.localeCompare(b.title));
-  }
+        function projectsFor(filt) {
+          return (state.data.projects || [])
+            .filter((p) => p.active !== "0" && p.filter === filt)
+            .sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+        }
 
-  function openTasks() {
-    return (state.data.tasks || []).filter(
-      (t) => t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅"
-    );
-  }
+        function openTasks() {
+          return (state.data.tasks || []).filter(
+            (t) =>
+              t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅",
+          );
+        }
 
-  function attSrc(a) {
-    const ref = (a.ref || "").replace(/\\/g, "/");
-    if (!ref.startsWith("attachments/")) return "";
-    return "/data/" + ref;
-  }
+        function attSrc(a) {
+          const ref = (a.ref || "").replace(/\\/g, "/");
+          if (!ref.startsWith("attachments/")) return "";
+          return "/data/" + ref;
+        }
 
-  function thumbsHtml(parentType, parentId) {
-    const imgs = (state.data.attachments || []).filter(
-      (a) => a.kind === "image" && a.parent_type === parentType && a.parent_id === parentId
-    );
-    if (!imgs.length) return "";
-    return `<div class="thumbs">${imgs.map((a) => {
-      const src = attSrc(a);
-      if (!src) return "";
-      return `<button type="button" class="thumb" data-full="${esc(src)}" title="${esc(a.description||"")}"><img src="${esc(src)}" alt="" loading="lazy"/></button>`;
-    }).join("")}</div>`;
-  }
+        function thumbsHtml(parentType, parentId) {
+          const imgs = (state.data.attachments || []).filter(
+            (a) =>
+              a.kind === "image" &&
+              a.parent_type === parentType &&
+              a.parent_id === parentId,
+          );
+          if (!imgs.length) return "";
+          return `<div class="thumbs">${imgs
+            .map((a) => {
+              const src = attSrc(a);
+              if (!src) return "";
+              return `<button type="button" class="thumb" data-full="${esc(src)}" title="${esc(a.description || "")}"><img src="${esc(src)}" alt="" loading="lazy"/></button>`;
+            })
+            .join("")}</div>`;
+        }
 
-  function taskLi(t) {
-    const due = (t.due_date || t.next_due || "").trim();
-    return `<li class="task" data-emoji="${esc(t.emoji||"🔲")}" data-id="${esc(t.id)}">
-      <span class="em">${esc(t.emoji||"🔲")}</span>
-      <span class="title" data-act="open-task">${esc(t.title)}</span>
+        function taskLi(t) {
+          const due = (t.due_date || t.next_due || "").trim();
+          return `<li class="task" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
+      <span class="em">${esc(t.emoji || "🔲")}</span>
+      <span class="title" data-act="edit-task">${esc(t.title)}</span>
       ${due ? `<span class="due">${esc(due)}</span>` : ""}
       <span class="row-actions">
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="edit-task">Edit</button>
+        <button class="btn" data-act="info-task">Info</button>
+        <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>
       </span>
       ${thumbsHtml("task", t.id)}
     </li>`;
-  }
+        }
 
-  function renderColumn(heading, filt) {
-    const open = openTasks().filter((t) => t.filter === filt);
-    const byProj = {};
-    open.forEach((t) => {
-      const pid = t.project_id || "";
-      (byProj[pid] ||= []).push(t);
-    });
-    const blocks = [];
-    for (const p of projectsFor(filt)) {
-      const pts = byProj[p.id] || [];
-      const pThumbs = thumbsHtml("project", p.id);
-      if (!pts.length && !pThumbs) continue;
-      pts.sort((a,b) => Number(a.sort_order||0)-Number(b.sort_order||0));
-      blocks.push(`<details class="project" open data-pid="${esc(p.id)}">
+        function emojiLegendHtml(tasks) {
+          const byEmoji = {};
+          (tasks || []).forEach((t) => {
+            const e = t.emoji || "🔲";
+            byEmoji[e] = (byEmoji[e] || 0) + 1;
+          });
+          const entries = Object.entries(byEmoji).sort(
+            (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+          );
+          if (!entries.length)
+            return `<span class="emoji-legend"><span class="empty">none</span></span>`;
+          return `<div class="emoji-legend">${entries
+            .map(([e, n]) => {
+              const k = EMOJI_KEY_BY[e] || "";
+              const label = EMOJI_LABELS[e] || "other";
+              const keyHint = k ? ` <kbd>${k.toUpperCase()}</kbd>` : "";
+              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="Filter ${label}${k ? " (" + k.toUpperCase() + ")" : ""}">
+        <span class="em">${esc(e)}</span>
+        <span class="lbl">${esc(label)}</span>
+        <span class="n">${n}</span>${keyHint}
+      </button>`;
+            })
+            .join("")}</div>`;
+        }
+
+        function sectionHeadHtml(heading, tasks, filt) {
+          const addBtn = filt
+            ? `<button class="btn" data-act="add-project" data-f="${esc(filt)}">+ Project</button>`
+            : "";
+          return `<div class="section-head"><h2>${esc(heading)}</h2><div class="section-head-right">${emojiLegendHtml(tasks)}${addBtn}</div></div>`;
+        }
+
+        function renderColumn(heading, filt) {
+          const open = openTasks().filter((t) => t.filter === filt);
+          const byProj = {};
+          open.forEach((t) => {
+            const pid = t.project_id || "";
+            (byProj[pid] ||= []).push(t);
+          });
+          const blocks = [];
+          for (const p of projectsFor(filt)) {
+            const pts = byProj[p.id] || [];
+            const pThumbs = thumbsHtml("project", p.id);
+            pts.sort(
+              (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
+            );
+            blocks.push(`<details class="project" open data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
         <summary><span class="proj-title">${esc(p.title)}</span><span class="proj-count">${pts.length}</span></summary>
+        <div class="proj-actions row-actions">
+          <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
+          <button class="btn" data-act="edit-project">Edit</button>
+          <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
+          <button class="btn danger" data-act="del-project">Del</button>
+        </div>
         ${pThumbs}
-        ${pts.length ? `<ul class="task-list">${pts.map(taskLi).join("")}</ul>` : ""}
+        ${pts.length ? `<ul class="task-list">${pts.map(taskLi).join("")}</ul>` : '<p class="empty" style="padding:0 12px 10px">No open tasks</p>'}
       </details>`);
-    }
-    const known = new Set(projectsFor(filt).map((p) => p.id));
-    const orphans = open.filter((t) => !known.has(t.project_id));
-    if (orphans.length) {
-      blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
+          }
+          const known = new Set(projectsFor(filt).map((p) => p.id));
+          const orphans = open.filter((t) => !known.has(t.project_id));
+          if (orphans.length) {
+            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
-    }
-    return `<section class="column panel"><h2>${esc(heading)}</h2>${blocks.join("") || '<p class="empty">No open tasks</p>'}</section>`;
-  }
+          }
+          return `<section class="column panel" id="sec-${esc(filt)}">${sectionHeadHtml(heading, open, filt)}${blocks.join("") || '<p class="empty">No projects</p>'}</section>`;
+        }
 
-  function habitsHtml() {
-    const habitual = (state.data.tasks || []).filter((t) => t.active !== "0" && t.kind === "habitual");
-    const by = {};
-    habitual.forEach((t) => {
-      const k = (t.recurrence || "").toLowerCase();
-      (by[k] ||= []).push(t);
-    });
-    const keys = [...RECURRENCE_ORDER.filter((k) => by[k]), ...Object.keys(by).filter((k) => !RECURRENCE_ORDER.includes(k))];
-    if (!keys.length) return '<p class="empty">No habits</p>';
-    const today = new Date().toISOString().slice(0, 10);
-    return `<div class="habit-cards">${keys.map((k) => {
-      const rows = by[k].slice().sort((a,b) => (a.next_due||a.due_date||"").localeCompare(b.next_due||b.due_date||""));
-      return `<article class="habit-card panel"><h2>${esc(RECURRENCE_LABELS[k]||k||"Other")}</h2>
-        <ul class="habit-list">${rows.map((t) => {
-          const due = (t.next_due || t.due_date || "").trim();
-          const dueNow = !due || due <= today;
-          return `<li class="habit-row${dueNow?" due-now":""}" data-emoji="${esc(t.emoji||"🔲")}" data-id="${esc(t.id)}">
-            <span class="em">${esc(t.emoji||"🔲")}</span>
-            <span class="title">${esc(t.title)}</span>
+        function habitsHtml() {
+          const habitual = (state.data.tasks || []).filter(
+            (t) => t.active !== "0" && t.kind === "habitual",
+          );
+          const by = {};
+          habitual.forEach((t) => {
+            const k = (t.recurrence || "").toLowerCase();
+            (by[k] ||= []).push(t);
+          });
+          const keys = [
+            ...RECURRENCE_ORDER.filter((k) => by[k]),
+            ...Object.keys(by).filter((k) => !RECURRENCE_ORDER.includes(k)),
+          ];
+          const head = sectionHeadHtml("Habits", habitual, "habits");
+          if (!keys.length)
+            return `<div class="habits-wrap panel" id="sec-habits">${head}<p class="empty">No habits</p></div>`;
+          const today = new Date().toISOString().slice(0, 10);
+          const cards = `<div class="habit-cards">${keys
+            .map((k) => {
+              const rows = by[k]
+                .slice()
+                .sort((a, b) =>
+                  (a.next_due || a.due_date || "").localeCompare(
+                    b.next_due || b.due_date || "",
+                  ),
+                );
+              return `<article class="habit-card panel"><h2>${esc(RECURRENCE_LABELS[k] || k || "Other")}</h2>
+        <ul class="habit-list">${rows
+          .map((t) => {
+            const due = (t.next_due || t.due_date || "").trim();
+            const dueNow = !due || due <= today;
+            return `<li class="habit-row${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
+            <span class="em">${esc(t.emoji || "🔲")}</span>
+            <span class="title" data-act="edit-task">${esc(t.title)}</span>
             ${due ? `<span class="due">${esc(due)}</span>` : ""}
-            <button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
+            <span class="row-actions">
+              <button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
+              <button class="btn" data-act="edit-task">Edit</button>
+            </span>
           </li>`;
-        }).join("")}</ul></article>`;
-    }).join("")}</div>`;
-  }
+          })
+          .join("")}</ul></article>`;
+            })
+            .join("")}</div>`;
+          return `<div class="habits-wrap" id="sec-habits">${head}${cards}</div>`;
+        }
 
-  function renderDashboard() {
-    const open = openTasks();
-    const personal = open.filter((t) => t.filter === "personal").length;
-    const work = open.filter((t) => t.filter === "work").length;
-    const today = new Date().toISOString().slice(0, 10);
-    const habitsDue = (state.data.tasks || []).filter(
-      (t) => t.active !== "0" && t.kind === "habitual" && (!(t.next_due||t.due_date) || (t.next_due||t.due_date) <= today)
-    ).length;
-    const byEmoji = {};
-    open.forEach((t) => { const e = t.emoji || "🔲"; byEmoji[e] = (byEmoji[e]||0)+1; });
-    const keyBy = { "⚡":"t", "⏳":"w", "🔲":"g", "❓":"u" };
-    const legend = Object.entries(byEmoji).sort((a,b)=>b[1]-a[1]).map(([e,n]) => {
-      const k = keyBy[e] || "";
-      return `<button type="button" class="emoji-chip${state.emojiFilter===e?" active":""}" data-emoji="${esc(e)}" data-key="${esc(k)}">${k?`<kbd>${k.toUpperCase()}</kbd> `:""}<span>${esc(e)}</span><span class="n">×${n}</span></button>`;
-    }).join("") || '<span class="empty">No open tasks</span>';
+        function renderDashboard() {
+          const open = openTasks();
+          const personal = open.filter((t) => t.filter === "personal").length;
+          const work = open.filter((t) => t.filter === "work").length;
+          const today = new Date().toISOString().slice(0, 10);
+          const habitsDue = (state.data.tasks || []).filter(
+            (t) =>
+              t.active !== "0" &&
+              t.kind === "habitual" &&
+              (!(t.next_due || t.due_date) ||
+                (t.next_due || t.due_date) <= today),
+          ).length;
 
-    $("#strip").innerHTML = `
+          $("#strip").innerHTML = `
       <div class="kpi"><div class="lbl">Personal</div><div class="val">${personal}</div></div>
       <div class="kpi"><div class="lbl">Work</div><div class="val">${work}</div></div>
       <div class="kpi"><div class="lbl">Habits due</div><div class="val">${habitsDue}</div></div>
-      <div class="emoji-legend"><span class="sub">Emoji</span>${legend}</div>
-      <span class="sub" id="emojiFilterLbl">${state.emojiFilter ? "Showing "+state.emojiFilter+" — Esc clears" : ""}</span>`;
-    $("#view").innerHTML = `
-      <div class="top-row">${renderColumn("Personal","personal")}${renderColumn("Work","work")}</div>
-      <h2 class="section-title" style="margin-top:20px">Habits</h2>
+      <span class="sub" id="emojiFilterLbl">${state.emojiFilter ? "Showing " + (EMOJI_LABELS[state.emojiFilter] || state.emojiFilter) + " — Esc clears" : ""}</span>`;
+          $("#view").innerHTML = `
+      <div class="top-row">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${habitsHtml()}`;
-    applyEmojiFilter(state.emojiFilter);
-  }
+          applyEmojiFilter(state.emojiFilter);
+        }
 
-  function renderProjects() {
-    $("#strip").innerHTML = "";
-    const rows = projectsFor(state.filter);
-    $("#view").innerHTML = `<div class="panel">
-      <div class="crumb">Filter: <b>${esc(state.filter)}</b> · <kbd>1</kbd> Work <kbd>2</kbd> Personal <kbd>3</kbd> Habits</div>
-      <div class="toolbar" style="padding:0 0 10px">
-        <button class="btn" data-act="add-project">Add project</button>
-        <button class="btn" data-act="goto-dash">Dashboard</button>
-      </div>
-      <ul class="plain-list">${rows.map((p) => {
-        const n = openTasks().filter((t) => t.project_id === p.id).length;
-        return `<li class="plain-row" data-id="${esc(p.id)}">
-          <span class="title" data-act="open-project">${esc(p.title)}</span>
-          <span class="due">${n} open</span>
-          <span class="row-actions">
-            <button class="btn" data-act="edit-project">Edit</button>
-            <button class="btn danger" data-act="del-project">Del</button>
-            <button class="btn" data-act="info-project">Info</button>
-          </span>
-          ${thumbsHtml("project", p.id)}
-        </li>`;
-      }).join("") || '<p class="empty">No projects</p>'}</ul>
-    </div>`;
-  }
-
-  function renderTasks() {
-    $("#strip").innerHTML = "";
-    const p = (state.data.projects || []).find((x) => x.id === state.projectId);
-    const rows = (state.data.tasks || [])
-      .filter((t) => t.project_id === state.projectId && t.active !== "0")
-      .sort((a,b) => Number(a.sort_order||0)-Number(b.sort_order||0));
-    $("#view").innerHTML = `<div class="panel">
-      <div class="crumb"><a href="#" data-act="goto-projects">Projects</a> › ${esc(p?.title||"")}</div>
-      <div class="toolbar" style="padding:0 0 10px">
-        <button class="btn" data-act="add-task">Add task</button>
-        <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(state.projectId)}">Paste/upload image</button>
-        <input type="file" id="fileAtt" accept="image/*" class="hidden"/>
-      </div>
-      <ul class="task-list">${rows.map(taskLi).join("") || '<p class="empty">No tasks</p>'}</ul>
-    </div>`;
-  }
-
-  function renderInfo() {
-    $("#strip").innerHTML = "";
-    const parentType = state.taskId ? "task" : "project";
-    const parentId = state.taskId || state.projectId;
-    const rows = (state.data.info_points || []).filter(
-      (i) => i.parent_type === parentType && i.parent_id === parentId
-    );
-    $("#view").innerHTML = `<div class="panel">
-      <div class="crumb">
-        <a href="#" data-act="goto-projects">Projects</a>
-        ${state.projectId ? ` › <a href="#" data-act="open-project" data-id="${esc(state.projectId)}">Tasks</a>` : ""}
-        › Info
-      </div>
-      <div class="toolbar" style="padding:0 0 10px">
-        <button class="btn" data-act="add-info">Add info</button>
-        <button class="btn" data-act="paste-att" data-ptype="${esc(parentType)}" data-pid="${esc(parentId)}">Paste/upload image</button>
-      </div>
-      <ul class="plain-list">${rows.map((i) => `<li class="plain-row" data-id="${esc(i.id)}">
-        <span class="em">${esc(i.emoji||"ℹ️")}</span>
-        <span class="title" data-act="edit-info">${esc(i.title)}</span>
-        <span class="row-actions">
-          <button class="btn" data-act="edit-info">Edit</button>
-          <button class="btn danger" data-act="del-info">Del</button>
-        </span>
-        ${thumbsHtml("info", i.id)}
-      </li>`).join("") || '<p class="empty">No info</p>'}</ul>
-    </div>`;
-  }
-
-  function renderImport() {
-    $("#strip").innerHTML = "";
-    const prev = state.importPreview;
-    $("#view").innerHTML = `<div class="panel">
+        function renderImport() {
+          $("#strip").innerHTML = "";
+          const prev = state.importPreview;
+          $("#view").innerHTML = `<div class="panel">
       <h2 class="section-title">Import TASK_PACK</h2>
       <p class="sub">Looks for Desktop TASK_PACK.txt (Finance/Palace style markers).</p>
       <div class="toolbar" style="padding:12px 0">
@@ -374,335 +744,549 @@ kbd { font:inherit; font-size:11px; color:var(--gold); border:1px solid var(--li
       <pre class="sub" style="white-space:pre-wrap">${prev ? esc(JSON.stringify(prev.counts || prev, null, 2)) : "No preview yet"}</pre>
       ${prev?.errors?.length ? `<p class="empty">${esc(prev.errors.join(" · "))}</p>` : ""}
     </div>`;
-  }
+        }
 
-  function renderToolbar() {
-    const f = state.filter;
-    $("#mainToolbar").innerHTML = `
-      <button class="btn${state.view==="dashboard"?" active":""}" data-act="goto-dash">Dashboard</button>
-      <button class="btn${state.view==="projects"||state.view==="tasks"||state.view==="info"?" active":""}" data-act="goto-projects">Browse</button>
-      <button class="btn${f==="work"?" active":""}" data-act="set-filter" data-f="work"><kbd>1</kbd> Work</button>
-      <button class="btn${f==="personal"?" active":""}" data-act="set-filter" data-f="personal"><kbd>2</kbd> Personal</button>
-      <button class="btn${f==="habits"?" active":""}" data-act="set-filter" data-f="habits"><kbd>3</kbd> Habits</button>
-      <button class="btn" data-act="goto-import">Import</button>
+        function renderToolbar() {
+          $("#mainToolbar").innerHTML = `
+      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import">Import</button>
       <button class="btn" data-act="migrate">Migrate MD</button>
       <button class="btn" data-act="git-push">Push</button>
-      <span class="sub"><kbd>E</kbd> expand · <kbd>T</kbd>⚡ <kbd>W</kbd>⏳ <kbd>G</kbd>🔲 <kbd>U</kbd>❓</span>`;
-  }
+      <span class="sub"><kbd>1</kbd> Work <kbd>2</kbd> Personal <kbd>3</kbd> Habits · <kbd>E</kbd> expand · <kbd>T</kbd>⚡ <kbd>W</kbd>⏳ <kbd>G</kbd>🔲 <kbd>U</kbd>❓</span>`;
+        }
 
-  function render() {
-    if (!state.data) return;
-    const c = state.data.counts || {};
-    $("#hdrSub").textContent = `${c.projects||0} projects · ${c.tasks||0} tasks · ${c.info||0} info · ${c.open||0} open`;
-    renderToolbar();
-    if (state.view === "dashboard") renderDashboard();
-    else if (state.view === "projects") renderProjects();
-    else if (state.view === "tasks") renderTasks();
-    else if (state.view === "info") renderInfo();
-    else if (state.view === "import") renderImport();
-  }
+        function render() {
+          if (!state.data) return;
+          const c = state.data.counts || {};
+          $("#hdrSub").textContent =
+            `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
+          renderToolbar();
+          if (state.view === "import") renderImport();
+          else renderDashboard();
+        }
 
-  function applyEmojiFilter(emoji) {
-    state.emojiFilter = emoji || "";
-    document.querySelectorAll(".task, .habit-row").forEach((el) => {
-      const match = !state.emojiFilter || el.getAttribute("data-emoji") === state.emojiFilter;
-      el.classList.toggle("emoji-hidden", !match);
-    });
-    document.querySelectorAll("details.project").forEach((proj) => {
-      if (!state.emojiFilter) { proj.classList.remove("emoji-hidden"); return; }
-      const visible = proj.querySelectorAll(".task:not(.emoji-hidden)").length;
-      proj.classList.toggle("emoji-hidden", visible === 0);
-      if (visible > 0) proj.open = true;
-    });
-    document.querySelectorAll(".habit-card").forEach((card) => {
-      if (!state.emojiFilter) { card.classList.remove("emoji-hidden"); return; }
-      const visible = card.querySelectorAll(".habit-row:not(.emoji-hidden)").length;
-      card.classList.toggle("emoji-hidden", visible === 0);
-    });
-    const lbl = $("#emojiFilterLbl");
-    if (lbl) lbl.textContent = state.emojiFilter ? `Showing ${state.emojiFilter} only — Esc clears` : "";
-    document.querySelectorAll(".emoji-chip").forEach((chip) => {
-      chip.classList.toggle("active", !!state.emojiFilter && chip.getAttribute("data-emoji") === state.emojiFilter);
-    });
-  }
+        function scrollToSection(filt) {
+          const el = document.getElementById(
+            filt === "habits" ? "sec-habits" : "sec-" + filt,
+          );
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
 
-  function modal(html) {
-    const host = $("#modalHost");
-    host.innerHTML = `<div class="modal-bg">${html}</div>`;
-    return host;
-  }
-  function closeModal() { $("#modalHost").innerHTML = ""; }
+        function infoListModal(parentType, parentId) {
+          state.projectId =
+            parentType === "project" ? parentId : state.projectId;
+          state.taskId = parentType === "task" ? parentId : "";
+          const rows = (state.data.info_points || []).filter(
+            (i) => i.parent_type === parentType && i.parent_id === parentId,
+          );
+          modal(`<div class="modal"><h3>Info</h3>
+      <div class="toolbar" style="padding:0 0 10px">
+        <button class="btn" data-m="add-info-here">+ Info</button>
+        <button class="btn" data-m="cancel">Close</button>
+      </div>
+      <ul class="plain-list">${
+        rows
+          .map(
+            (i) => `<li class="plain-row" data-id="${esc(i.id)}">
+        <span class="title">${esc(i.title)}</span>
+        <span class="row-actions">
+          <button class="btn" data-act="edit-info">Edit</button>
+          <button class="btn danger" data-act="del-info">Del</button>
+        </span>
+      </li>`,
+          )
+          .join("") || '<p class="empty">No info points</p>'
+      }</ul></div>`);
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            ) {
+              closeModal();
+              return;
+            }
+            if (e.target.dataset.m === "add-info-here") {
+              closeModal();
+              infoForm(null);
+              return;
+            }
+            const actEl = e.target.closest("[data-act]");
+            if (!actEl) return;
+            const act = actEl.getAttribute("data-act");
+            const id =
+              e.target.closest("[data-id]")?.getAttribute("data-id") || "";
+            if (act === "edit-info") {
+              closeModal();
+              infoForm((state.data.info_points || []).find((i) => i.id === id));
+            }
+            if (act === "del-info") {
+              if (!confirm("Delete info?")) return;
+              try {
+                await api("/api/info/" + encodeURIComponent(id), {
+                  method: "DELETE",
+                });
+                toast("Deleted");
+                await refresh();
+                infoListModal(parentType, parentId);
+              } catch (err) {
+                toast(err.message);
+              }
+            }
+          };
+        }
 
-  function projectForm(existing) {
-    modal(`<div class="modal"><h3>${existing?"Edit":"Add"} project</h3>
-      <label>Title</label><input id="mTitle" value="${esc(existing?.title||"")}"/>
+        function applyEmojiFilter(emoji) {
+          state.emojiFilter = emoji || "";
+          document.querySelectorAll(".task, .habit-row").forEach((el) => {
+            const match =
+              !state.emojiFilter ||
+              el.getAttribute("data-emoji") === state.emojiFilter;
+            el.classList.toggle("emoji-hidden", !match);
+          });
+          document.querySelectorAll("details.project").forEach((proj) => {
+            if (!state.emojiFilter) {
+              proj.classList.remove("emoji-hidden");
+              return;
+            }
+            const visible = proj.querySelectorAll(
+              ".task:not(.emoji-hidden)",
+            ).length;
+            proj.classList.toggle("emoji-hidden", visible === 0);
+            if (visible > 0) proj.open = true;
+          });
+          document.querySelectorAll(".habit-card").forEach((card) => {
+            if (!state.emojiFilter) {
+              card.classList.remove("emoji-hidden");
+              return;
+            }
+            const visible = card.querySelectorAll(
+              ".habit-row:not(.emoji-hidden)",
+            ).length;
+            card.classList.toggle("emoji-hidden", visible === 0);
+          });
+          const lbl = $("#emojiFilterLbl");
+          if (lbl)
+            lbl.textContent = state.emojiFilter
+              ? `Showing ${EMOJI_LABELS[state.emojiFilter] || state.emojiFilter} only — Esc clears`
+              : "";
+          document.querySelectorAll(".emoji-chip").forEach((chip) => {
+            chip.classList.toggle(
+              "active",
+              !!state.emojiFilter &&
+                chip.getAttribute("data-emoji") === state.emojiFilter,
+            );
+          });
+        }
+
+        function modal(html) {
+          const host = $("#modalHost");
+          host.innerHTML = `<div class="modal-bg">${html}</div>`;
+          return host;
+        }
+        function closeModal() {
+          $("#modalHost").innerHTML = "";
+        }
+
+        function projectForm(existing) {
+          modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} project</h3>
+      <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
       <label>Filter</label><select id="mFilt">
-        ${["work","personal","habits"].map((f)=>`<option value="${f}" ${((existing?.filter||state.filter)===f)?"selected":""}>${f}</option>`).join("")}
+        ${["work", "personal", "habits"].map((f) => `<option value="${f}" ${(existing?.filter || state.filter) === f ? "selected" : ""}>${f}</option>`).join("")}
       </select>
-      <label>Section path</label><input id="mSec" value="${esc(existing?.section_path||"")}"/>
+      <label>Section path</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions">
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-project">Save</button>
       </div></div>`);
-    $("#modalHost").onclick = async (e) => {
-      if (e.target.dataset.m === "cancel" || e.target.classList.contains("modal-bg")) closeModal();
-      if (e.target.dataset.m === "save-project") {
-        try {
-          await api("/api/projects", { method:"POST", body: JSON.stringify({
-            id: existing?.id || "",
-            title: $("#mTitle").value,
-            filter: $("#mFilt").value,
-            section_path: $("#mSec").value,
-          })});
-          closeModal(); toast("Saved"); await refresh();
-        } catch (err) { toast(err.message); }
-      }
-    };
-  }
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            )
+              closeModal();
+            if (e.target.dataset.m === "save-project") {
+              try {
+                await api("/api/projects", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    id: existing?.id || "",
+                    title: $("#mTitle").value,
+                    filter: $("#mFilt").value,
+                    section_path: $("#mSec").value,
+                  }),
+                });
+                closeModal();
+                toast("Saved");
+                await refresh();
+              } catch (err) {
+                toast(err.message);
+              }
+            }
+          };
+        }
 
-  function taskForm(existing) {
-    const projs = projectsFor(existing?.filter || state.filter);
-    modal(`<div class="modal"><h3>${existing?"Edit":"Add"} task</h3>
-      <label>Title</label><input id="mTitle" value="${esc(existing?.title||"")}"/>
-      <label>Project</label><select id="mProj">${projs.map((p)=>`<option value="${esc(p.id)}" ${(existing?.project_id||state.projectId)===p.id?"selected":""}>${esc(p.title)}</option>`).join("")}</select>
-      <label>Filter</label><select id="mFilt">${["work","personal","habits"].map((f)=>`<option ${((existing?.filter||state.filter)===f)?"selected":""}>${f}</option>`).join("")}</select>
-      <label>Kind</label><select id="mKind"><option value="punctual" ${(!existing||existing.kind==="punctual")?"selected":""}>punctual</option><option value="habitual" ${existing?.kind==="habitual"?"selected":""}>habitual</option></select>
-      <label>Recurrence</label><select id="mRec"><option value="">(none)</option>${RECURRENCE_ORDER.map((r)=>`<option value="${r}" ${existing?.recurrence===r?"selected":""}>${RECURRENCE_LABELS[r]}</option>`).join("")}</select>
-      <label>Emoji</label><input id="mEmoji" value="${esc(existing?.emoji||"🔲")}"/>
-      <label>Due date</label><input id="mDue" value="${esc(existing?.due_date||"")}" placeholder="YYYY-MM-DD"/>
-      <label>Next due</label><input id="mNext" value="${esc(existing?.next_due||"")}" placeholder="YYYY-MM-DD"/>
-      <label>Section</label><input id="mSec" value="${esc(existing?.section_path||"")}"/>
+        function taskForm(existing) {
+          const projs = projectsFor(existing?.filter || state.filter);
+          modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} task</h3>
+      <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
+      <label>Project</label><select id="mProj">${projs.map((p) => `<option value="${esc(p.id)}" ${(existing?.project_id || state.projectId) === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select>
+      <label>Filter</label><select id="mFilt">${["work", "personal", "habits"].map((f) => `<option ${(existing?.filter || state.filter) === f ? "selected" : ""}>${f}</option>`).join("")}</select>
+      <label>Kind</label><select id="mKind"><option value="punctual" ${!existing || existing.kind === "punctual" ? "selected" : ""}>punctual</option><option value="habitual" ${existing?.kind === "habitual" ? "selected" : ""}>habitual</option></select>
+      <label>Recurrence</label><select id="mRec"><option value="">(none)</option>${RECURRENCE_ORDER.map((r) => `<option value="${r}" ${existing?.recurrence === r ? "selected" : ""}>${RECURRENCE_LABELS[r]}</option>`).join("")}</select>
+      <label>Emoji</label><input id="mEmoji" value="${esc(existing?.emoji || "🔲")}"/>
+      <label>Due date</label><input id="mDue" value="${esc(existing?.due_date || "")}" placeholder="YYYY-MM-DD"/>
+      <label>Next due</label><input id="mNext" value="${esc(existing?.next_due || "")}" placeholder="YYYY-MM-DD"/>
+      <label>Section</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-task">Save</button></div></div>`);
-    $("#modalHost").onclick = async (e) => {
-      if (e.target.dataset.m === "cancel" || e.target.classList.contains("modal-bg")) closeModal();
-      if (e.target.dataset.m === "save-task") {
-        try {
-          await api("/api/tasks", { method:"POST", body: JSON.stringify({
-            id: existing?.id || "",
-            title: $("#mTitle").value,
-            project_id: $("#mProj").value,
-            filter: $("#mFilt").value,
-            kind: $("#mKind").value,
-            recurrence: $("#mRec").value,
-            emoji: $("#mEmoji").value,
-            due_date: $("#mDue").value,
-            next_due: $("#mNext").value,
-            section_path: $("#mSec").value,
-          })});
-          closeModal(); toast("Saved"); await refresh();
-        } catch (err) { toast(err.message); }
-      }
-    };
-  }
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            )
+              closeModal();
+            if (e.target.dataset.m === "save-task") {
+              try {
+                await api("/api/tasks", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    id: existing?.id || "",
+                    title: $("#mTitle").value,
+                    project_id: $("#mProj").value,
+                    filter: $("#mFilt").value,
+                    kind: $("#mKind").value,
+                    recurrence: $("#mRec").value,
+                    emoji: $("#mEmoji").value,
+                    due_date: $("#mDue").value,
+                    next_due: $("#mNext").value,
+                    section_path: $("#mSec").value,
+                  }),
+                });
+                closeModal();
+                toast("Saved");
+                await refresh();
+              } catch (err) {
+                toast(err.message);
+              }
+            }
+          };
+        }
 
-  function infoForm(existing) {
-    const parentType = state.taskId ? "task" : "project";
-    const parentId = state.taskId || state.projectId;
-    modal(`<div class="modal"><h3>${existing?"Edit":"Add"} info</h3>
-      <label>Title</label><input id="mTitle" value="${esc(existing?.title||"")}"/>
-      <label>Body</label><textarea id="mBody">${esc(existing?.body||"")}</textarea>
-      <label>Section</label><input id="mSec" value="${esc(existing?.section_path||"")}"/>
+        function infoForm(existing) {
+          const parentType = state.taskId ? "task" : "project";
+          const parentId = state.taskId || state.projectId;
+          modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} info</h3>
+      <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
+      <label>Body</label><textarea id="mBody">${esc(existing?.body || "")}</textarea>
+      <label>Section</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-info">Save</button></div></div>`);
-    $("#modalHost").onclick = async (e) => {
-      if (e.target.dataset.m === "cancel" || e.target.classList.contains("modal-bg")) closeModal();
-      if (e.target.dataset.m === "save-info") {
-        try {
-          await api("/api/info", { method:"POST", body: JSON.stringify({
-            id: existing?.id || "",
-            title: $("#mTitle").value,
-            body: $("#mBody").value,
-            section_path: $("#mSec").value,
-            parent_type: parentType,
-            parent_id: parentId,
-          })});
-          closeModal(); toast("Saved"); await refresh();
-        } catch (err) { toast(err.message); }
-      }
-    };
-  }
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            )
+              closeModal();
+            if (e.target.dataset.m === "save-info") {
+              try {
+                await api("/api/info", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    id: existing?.id || "",
+                    title: $("#mTitle").value,
+                    body: $("#mBody").value,
+                    section_path: $("#mSec").value,
+                    parent_type: parentType,
+                    parent_id: parentId,
+                  }),
+                });
+                closeModal();
+                toast("Saved");
+                await refresh();
+              } catch (err) {
+                toast(err.message);
+              }
+            }
+          };
+        }
 
-  async function uploadImage(parentType, parentId, file) {
-    const buf = await file.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let binary = "";
-    const chunk = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunk) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-    }
-    const b64 = btoa(binary);
-    await api("/api/attachments", {
-      method: "POST",
-      body: JSON.stringify({
-        parent_type: parentType,
-        parent_id: parentId,
-        kind: "image",
-        filename: file.name || "paste.png",
-        data_base64: b64,
-        description: file.name || "clipboard image",
-      }),
-    });
-    toast("Image attached");
-    await refresh();
-  }
+        async function uploadImage(parentType, parentId, file) {
+          const buf = await file.arrayBuffer();
+          const bytes = new Uint8Array(buf);
+          let binary = "";
+          const chunk = 0x8000;
+          for (let i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(
+              null,
+              bytes.subarray(i, i + chunk),
+            );
+          }
+          const b64 = btoa(binary);
+          await api("/api/attachments", {
+            method: "POST",
+            body: JSON.stringify({
+              parent_type: parentType,
+              parent_id: parentId,
+              kind: "image",
+              filename: file.name || "paste.png",
+              data_base64: b64,
+              description: file.name || "clipboard image",
+            }),
+          });
+          toast("Image attached");
+          await refresh();
+        }
 
-  document.addEventListener("click", async (e) => {
-    const thumb = e.target.closest(".thumb");
-    if (thumb) {
-      e.preventDefault();
-      const lb = $("#lightbox");
-      lb.querySelector("img").src = thumb.getAttribute("data-full") || "";
-      lb.hidden = false;
-      return;
-    }
-    if (e.target === $("#lightbox") || e.target.closest("#lightbox")) {
-      if (e.target.id === "lightbox" || e.target.tagName === "DIV") {
-        $("#lightbox").hidden = true;
-        $("#lightbox").querySelector("img").src = "";
-      }
-    }
-    const chip = e.target.closest(".emoji-chip");
-    if (chip) {
-      const em = chip.getAttribute("data-emoji") || "";
-      applyEmojiFilter(state.emojiFilter === em ? "" : em);
-      return;
-    }
-    const actEl = e.target.closest("[data-act]");
-    if (!actEl) return;
-    const act = actEl.getAttribute("data-act");
-    const row = e.target.closest("[data-id]");
-    const id = row?.getAttribute("data-id") || actEl.getAttribute("data-id") || "";
+        document.addEventListener("click", async (e) => {
+          const thumb = e.target.closest(".thumb");
+          if (thumb) {
+            e.preventDefault();
+            const lb = $("#lightbox");
+            lb.querySelector("img").src = thumb.getAttribute("data-full") || "";
+            lb.hidden = false;
+            return;
+          }
+          if (e.target === $("#lightbox") || e.target.closest("#lightbox")) {
+            if (e.target.id === "lightbox" || e.target.tagName === "DIV") {
+              $("#lightbox").hidden = true;
+              $("#lightbox").querySelector("img").src = "";
+            }
+          }
+          const chip = e.target.closest(".emoji-chip");
+          if (chip) {
+            const em = chip.getAttribute("data-emoji") || "";
+            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            return;
+          }
+          const actEl = e.target.closest("[data-act]");
+          if (!actEl) return;
+          const act = actEl.getAttribute("data-act");
+          const row = e.target.closest("[data-id]");
+          const id =
+            row?.getAttribute("data-id") || actEl.getAttribute("data-id") || "";
 
-    try {
-      if (act === "goto-dash") { state.view = "dashboard"; state.projectId=""; state.taskId=""; render(); return; }
-      if (act === "goto-projects") { state.view = "projects"; state.projectId=""; state.taskId=""; render(); return; }
-      if (act === "goto-import") { state.view = "import"; state.importPreview=null; render(); return; }
-      if (act === "set-filter") {
-        state.filter = actEl.getAttribute("data-f") || "work";
-        if (state.view === "dashboard") state.view = "projects";
-        render(); return;
-      }
-      if (act === "open-project") {
-        state.projectId = id || actEl.getAttribute("data-id") || state.projectId;
-        state.taskId = "";
-        state.view = "tasks";
-        render(); return;
-      }
-      if (act === "open-task") {
-        state.taskId = id;
-        const t = (state.data.tasks||[]).find((x)=>x.id===id);
-        if (t) state.projectId = t.project_id;
-        state.view = "info";
-        render(); return;
-      }
-      if (act === "info-project") { state.projectId = id; state.taskId=""; state.view="info"; render(); return; }
-      if (act === "add-project") { projectForm(null); return; }
-      if (act === "edit-project") { projectForm((state.data.projects||[]).find((p)=>p.id===id)); return; }
-      if (act === "del-project") {
-        if (!confirm("Delete project and its tasks/info/attachments?")) return;
-        await api("/api/projects/" + encodeURIComponent(id), { method:"DELETE" });
-        toast("Deleted"); await refresh(); return;
-      }
-      if (act === "add-task") { taskForm({ project_id: state.projectId, filter: state.filter }); return; }
-      if (act === "edit-task") { taskForm((state.data.tasks||[]).find((t)=>t.id===id)); return; }
-      if (act === "del-task") {
-        if (!confirm("Delete task and its info/attachments?")) return;
-        await api("/api/tasks/" + encodeURIComponent(id), { method:"DELETE" });
-        toast("Deleted"); await refresh(); return;
-      }
-      if (act === "emoji") {
-        const key = actEl.getAttribute("data-key");
-        await api("/api/tasks/" + encodeURIComponent(id) + "/emoji", { method:"POST", body: JSON.stringify({ key }) });
-        await refresh(); return;
-      }
-      if (act === "add-info") { infoForm(null); return; }
-      if (act === "edit-info") { infoForm((state.data.info_points||[]).find((i)=>i.id===id)); return; }
-      if (act === "del-info") {
-        if (!confirm("Delete info?")) return;
-        await api("/api/info/" + encodeURIComponent(id), { method:"DELETE" });
-        toast("Deleted"); await refresh(); return;
-      }
-      if (act === "paste-att") {
-        const ptype = actEl.getAttribute("data-ptype");
-        const pid = actEl.getAttribute("data-pid");
-        state._attTarget = { ptype, pid };
-        const inp = document.createElement("input");
-        inp.type = "file"; inp.accept = "image/*";
-        inp.onchange = async () => {
-          if (inp.files?.[0]) await uploadImage(ptype, pid, inp.files[0]);
-        };
-        inp.click();
-        return;
-      }
-      if (act === "import-preview") {
-        state.importPreview = await api("/api/import/preview", { method:"POST", body:"{}" });
-        toast("Preview ready"); render(); return;
-      }
-      if (act === "import-commit") {
-        const r = await api("/api/import/commit", { method:"POST", body: JSON.stringify(state.importPreview || {}) });
-        toast(`Imported +${r.added?.tasks||0} tasks`); state.importPreview=null; state.view="dashboard"; await refresh(); return;
-      }
-      if (act === "migrate") {
-        if (!confirm("Overwrite tasks CSV from notes MD files?")) return;
-        const r = await api("/api/migrate", { method:"POST", body:"{}" });
-        toast(r.message || "Migrated"); await refresh(); return;
-      }
-      if (act === "git-push") {
-        toast("Pushing…");
-        const r = await api("/api/git-push", { method:"POST", body:"{}" });
-        toast(r.message || "Done"); return;
-      }
-    } catch (err) {
-      toast(err.message || String(err));
-    }
-  });
+          try {
+            if (act === "goto-dash") {
+              state.view = "dashboard";
+              state.projectId = "";
+              state.taskId = "";
+              render();
+              return;
+            }
+            if (act === "goto-import") {
+              state.view = "import";
+              state.importPreview = null;
+              render();
+              return;
+            }
+            if (act === "add-project") {
+              const f = actEl.getAttribute("data-f") || "work";
+              state.filter = f;
+              projectForm(null);
+              return;
+            }
+            if (act === "edit-project") {
+              projectForm((state.data.projects || []).find((p) => p.id === id));
+              return;
+            }
+            if (act === "del-project") {
+              if (!confirm("Delete project and its tasks/info/attachments?"))
+                return;
+              await api("/api/projects/" + encodeURIComponent(id), {
+                method: "DELETE",
+              });
+              toast("Deleted");
+              await refresh();
+              return;
+            }
+            if (act === "add-task") {
+              const pid = actEl.getAttribute("data-pid") || id;
+              const f = actEl.getAttribute("data-f") || state.filter || "work";
+              taskForm({ project_id: pid, filter: f });
+              return;
+            }
+            if (act === "edit-task") {
+              taskForm((state.data.tasks || []).find((t) => t.id === id));
+              return;
+            }
+            if (act === "del-task") {
+              if (!confirm("Delete task and its info/attachments?")) return;
+              await api("/api/tasks/" + encodeURIComponent(id), {
+                method: "DELETE",
+              });
+              toast("Deleted");
+              await refresh();
+              return;
+            }
+            if (act === "emoji") {
+              const key = actEl.getAttribute("data-key");
+              await api("/api/tasks/" + encodeURIComponent(id) + "/emoji", {
+                method: "POST",
+                body: JSON.stringify({ key }),
+              });
+              await refresh();
+              return;
+            }
+            if (act === "info-project") {
+              infoListModal("project", id);
+              return;
+            }
+            if (act === "info-task") {
+              const t = (state.data.tasks || []).find((x) => x.id === id);
+              if (t) state.projectId = t.project_id;
+              infoListModal("task", id);
+              return;
+            }
+            if (act === "add-info") {
+              infoForm(null);
+              return;
+            }
+            if (act === "edit-info") {
+              infoForm((state.data.info_points || []).find((i) => i.id === id));
+              return;
+            }
+            if (act === "del-info") {
+              if (!confirm("Delete info?")) return;
+              await api("/api/info/" + encodeURIComponent(id), {
+                method: "DELETE",
+              });
+              toast("Deleted");
+              await refresh();
+              return;
+            }
+            if (act === "paste-att") {
+              const ptype = actEl.getAttribute("data-ptype");
+              const pid = actEl.getAttribute("data-pid");
+              state._attTarget = { ptype, pid };
+              const inp = document.createElement("input");
+              inp.type = "file";
+              inp.accept = "image/*";
+              inp.onchange = async () => {
+                if (inp.files?.[0]) await uploadImage(ptype, pid, inp.files[0]);
+              };
+              inp.click();
+              return;
+            }
+            if (act === "import-preview") {
+              state.importPreview = await api("/api/import/preview", {
+                method: "POST",
+                body: "{}",
+              });
+              toast("Preview ready");
+              render();
+              return;
+            }
+            if (act === "import-commit") {
+              const r = await api("/api/import/commit", {
+                method: "POST",
+                body: JSON.stringify(state.importPreview || {}),
+              });
+              toast(`Imported +${r.added?.tasks || 0} tasks`);
+              state.importPreview = null;
+              state.view = "dashboard";
+              await refresh();
+              return;
+            }
+            if (act === "migrate") {
+              if (!confirm("Overwrite tasks CSV from notes MD files?")) return;
+              const r = await api("/api/migrate", {
+                method: "POST",
+                body: "{}",
+              });
+              toast(r.message || "Migrated");
+              await refresh();
+              return;
+            }
+            if (act === "git-push") {
+              toast("Pushing…");
+              const r = await api("/api/git-push", {
+                method: "POST",
+                body: "{}",
+              });
+              toast(r.message || "Done");
+              return;
+            }
+          } catch (err) {
+            toast(err.message || String(err));
+          }
+        });
 
-  document.addEventListener("paste", async (e) => {
-    if (!state._attTarget && state.view !== "tasks" && state.view !== "info") return;
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const it of items) {
-      if (it.type.startsWith("image/")) {
-        e.preventDefault();
-        const file = it.getAsFile();
-        const ptype = state._attTarget?.ptype || (state.taskId ? "info" : "project");
-        const pid = state._attTarget?.pid || state.taskId || state.projectId;
-        if (file && pid) await uploadImage(ptype, pid, file);
-        return;
-      }
-    }
-  });
+        document.addEventListener("paste", async (e) => {
+          if (!state._attTarget) return;
+          const items = e.clipboardData?.items;
+          if (!items) return;
+          for (const it of items) {
+            if (it.type.startsWith("image/")) {
+              e.preventDefault();
+              const file = it.getAsFile();
+              const ptype =
+                state._attTarget?.ptype || (state.taskId ? "info" : "project");
+              const pid =
+                state._attTarget?.pid || state.taskId || state.projectId;
+              if (file && pid) await uploadImage(ptype, pid, file);
+              return;
+            }
+          }
+        });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const tag = (e.target?.tagName || "").toLowerCase();
-    if (tag === "input" || tag === "textarea" || tag === "select" || e.target?.isContentEditable) return;
-    if (e.key === "Escape") {
-      if (!$("#lightbox").hidden) { $("#lightbox").hidden = true; return; }
-      if ($("#modalHost").innerHTML) { closeModal(); return; }
-      if (state.emojiFilter) { applyEmojiFilter(""); return; }
-      return;
-    }
-    const k = e.key.toLowerCase();
-    if (k === "1") { state.filter="work"; if (state.view==="dashboard") state.view="projects"; render(); e.preventDefault(); }
-    if (k === "2") { state.filter="personal"; if (state.view==="dashboard") state.view="projects"; render(); e.preventDefault(); }
-    if (k === "3") { state.filter="habits"; if (state.view==="dashboard") state.view="projects"; render(); e.preventDefault(); }
-    if (k === "e" && state.view === "dashboard") {
-      const nodes = document.querySelectorAll("details.project");
-      const openAll = Array.from(nodes).some((n) => !n.open);
-      nodes.forEach((n) => { n.open = openAll; });
-      e.preventDefault();
-    }
-    if (EMOJI_KEYS[k] && state.view === "dashboard") {
-      const em = EMOJI_KEYS[k];
-      applyEmojiFilter(state.emojiFilter === em ? "" : em);
-      e.preventDefault();
-    }
-  });
+        document.addEventListener("keydown", (e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const tag = (e.target?.tagName || "").toLowerCase();
+          if (
+            tag === "input" ||
+            tag === "textarea" ||
+            tag === "select" ||
+            e.target?.isContentEditable
+          )
+            return;
+          if (e.key === "Escape") {
+            if (!$("#lightbox").hidden) {
+              $("#lightbox").hidden = true;
+              return;
+            }
+            if ($("#modalHost").innerHTML) {
+              closeModal();
+              return;
+            }
+            if (state.emojiFilter) {
+              applyEmojiFilter("");
+              return;
+            }
+            return;
+          }
+          const k = e.key.toLowerCase();
+          if (k === "1") {
+            scrollToSection("work");
+            e.preventDefault();
+          }
+          if (k === "2") {
+            scrollToSection("personal");
+            e.preventDefault();
+          }
+          if (k === "3") {
+            scrollToSection("habits");
+            e.preventDefault();
+          }
+          if (k === "e" && state.view !== "import") {
+            const nodes = document.querySelectorAll("details.project");
+            const openAll = Array.from(nodes).some((n) => !n.open);
+            nodes.forEach((n) => {
+              n.open = openAll;
+            });
+            e.preventDefault();
+          }
+          if (EMOJI_KEYS[k] && state.view !== "import") {
+            const em = EMOJI_KEYS[k];
+            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            e.preventDefault();
+          }
+        });
 
-  // boot
-  if (new URLSearchParams(location.search).get("import") === "1") state.view = "import";
-  refresh().catch((err) => { $("#hdrSub").textContent = err.message; toast(err.message); });
-})();
-</script>
-</body>
+        // boot
+        if (new URLSearchParams(location.search).get("import") === "1")
+          state.view = "import";
+        refresh().catch((err) => {
+          $("#hdrSub").textContent = err.message;
+          toast(err.message);
+        });
+      })();
+    </script>
+  </body>
 </html>
