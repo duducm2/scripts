@@ -163,7 +163,6 @@
         padding: 0 12px 10px;
       }
       .task,
-      .habit-row,
       .plain-row {
         display: flex;
         flex-wrap: wrap;
@@ -173,12 +172,10 @@
         border-top: 1px solid var(--line);
         font-size: 13px;
       }
-      .task .em,
-      .habit-row .em {
+      .task .em {
         flex: 0 0 auto;
       }
       .task .title,
-      .habit-row .title,
       .plain-row .title {
         flex: 1;
         min-width: 120px;
@@ -189,7 +186,7 @@
         font-size: 11px;
         white-space: nowrap;
       }
-      .habit-row.due-now .due {
+      .task.due-now .due {
         color: var(--due);
       }
       .row-actions {
@@ -201,9 +198,7 @@
         padding-left: 28px;
       }
       .task.kb-selected > .row-actions,
-      .habit-row.kb-selected > .row-actions,
-      .task:hover > .row-actions,
-      .habit-row:hover > .row-actions {
+      .task:hover > .row-actions {
         display: flex;
       }
       .row-actions .btn {
@@ -249,9 +244,44 @@
       .task-section.collapsed > .task-section-label::before {
         content: "▸";
       }
+      /* Default bucket — quieter than named sections */
+      .task-section.is-general {
+        margin: 2px 8px 8px;
+        padding-bottom: 4px;
+        border-left: 2px solid #3a3a3e;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03),
+          transparent 48%
+        );
+        border-radius: 0 6px 6px 0;
+      }
+      .task-section.is-general > .task-section-label {
+        text-transform: none;
+        letter-spacing: 0.02em;
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.55;
+        color: var(--muted);
+      }
+      .task-section.is-general > .task-section-label::before {
+        content: "–";
+        opacity: 0.5;
+      }
+      .task-section.is-general.collapsed > .task-section-label::before {
+        content: "+";
+      }
+      .task-section:not(.is-general) > .task-section-label {
+        color: #c8c8c8;
+        opacity: 0.9;
+        font-weight: 600;
+      }
       .task-section.kb-selected > .task-section-label {
         color: var(--gold);
         opacity: 1;
+      }
+      .task-section.is-general.kb-selected {
+        border-left-color: var(--gold);
       }
       .task-section.emoji-hidden {
         display: none !important;
@@ -361,9 +391,7 @@
         letter-spacing: 0.01em;
       }
       .task.emoji-hidden,
-      .habit-row.emoji-hidden,
-      .project.emoji-hidden,
-      .habit-card.emoji-hidden {
+      .project.emoji-hidden {
         display: none !important;
       }
       .section-hidden {
@@ -391,31 +419,14 @@
         page-break-inside: avoid;
         -webkit-column-break-inside: avoid;
       }
-      .habits-wrap.bento .habit-cards {
-        display: block;
-        column-width: 300px;
-        column-gap: 16px;
-      }
-      .habits-wrap.bento .habit-card {
-        display: inline-block;
-        width: 100%;
-        margin: 0 0 16px;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        -webkit-column-break-inside: avoid;
-      }
       @media (min-width: 1400px) {
         .column.bento {
           column-width: 380px;
-        }
-        .habits-wrap.bento .habit-cards {
-          column-width: 320px;
         }
       }
       .kb-selected,
       details.project.kb-selected > summary,
       .task.kb-selected,
-      .habit-row.kb-selected,
       .task-section.kb-selected > .task-section-label {
         outline: 2px solid var(--gold);
         outline-offset: -2px;
@@ -423,17 +434,6 @@
       }
       details.project.kb-selected > summary {
         border-radius: 8px 8px 0 0;
-      }
-      .habit-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 14px;
-        margin-top: 12px;
-      }
-      .habit-card h2 {
-        margin: 0 0 12px;
-        font-size: 20px;
-        color: var(--gold);
       }
       .section-head {
         display: flex;
@@ -450,11 +450,8 @@
         gap: 10px;
         justify-content: flex-end;
       }
-      .habits-wrap {
+      .habits-column {
         margin-top: 20px;
-      }
-      .habits-wrap > .section-head {
-        margin-bottom: 4px;
       }
       .strip {
         display: flex;
@@ -991,19 +988,32 @@
         }
 
         function taskLi(t) {
-          const due = (t.due_date || t.next_due || "").trim();
-          return `<li class="task" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
-      <span class="em">${esc(t.emoji || "🔲")}</span>
-      <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
-      ${due ? `<span class="due">${esc(due)}</span>` : ""}
-      <span class="row-actions">
-        <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
+          const isHabit = t.kind === "habitual";
+          const due = (
+            isHabit
+              ? t.next_due || t.due_date || ""
+              : t.due_date || t.next_due || ""
+          ).trim();
+          const today = new Date().toISOString().slice(0, 10);
+          const dueNow = isHabit && (!due || due <= today);
+          const actions = isHabit
+            ? `<button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
+        <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
+        <button class="btn" data-act="edit-task">Edit</button>
+        <button class="btn" data-act="info-task">Info</button>
+        <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
+        <button class="btn danger" data-act="del-task">Del</button>`
+            : `<button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
-        <button class="btn danger" data-act="del-task">Del</button>
-      </span>
+        <button class="btn danger" data-act="del-task">Del</button>`;
+          return `<li class="task${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}">
+      <span class="em">${esc(t.emoji || "🔲")}</span>
+      <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
+      ${due ? `<span class="due">${esc(due)}</span>` : ""}
+      <span class="row-actions">${actions}</span>
       ${thumbsHtml("task", t.id)}
     </li>`;
         }
@@ -1062,10 +1072,13 @@
             );
           const parts = secs.map((s) => {
             const list = sortTasks(pl.listForSection(s.id).slice());
+            const isGeneral =
+              (s.title || "").trim().toLowerCase() === "general";
             const collapsed = state.collapsedSections.has(s.id)
               ? " collapsed"
               : "";
-            return `<div class="task-section${collapsed}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
+            const genClass = isGeneral ? " is-general" : "";
+            return `<div class="task-section${collapsed}${genClass}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
         <div class="task-section-label">${highlightTitle(s.title)}</div>
         ${list.length ? `<ul class="task-list">${list.map(taskLi).join("")}</ul>` : ""}
       </div>`;
@@ -1154,9 +1167,9 @@
           return `<section class="column panel" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("") || emptyMsg}</section>`;
         }
 
-        function habitsHtml() {
+        function habitTasksList() {
           const q = searchNeedle();
-          const habitual = (state.data.tasks || []).filter((t) => {
+          return (state.data.tasks || []).filter((t) => {
             if (t.active === "0" || t.kind !== "habitual") return false;
             if (!q) return true;
             if (
@@ -1168,55 +1181,81 @@
             const p = (state.data.projects || []).find(
               (x) => x.id === t.project_id,
             );
-            return !!(
+            if (
               p &&
               String(p.title || "")
                 .toLowerCase()
                 .includes(q)
+            )
+              return true;
+            const sec = (state.data.sections || []).find(
+              (s) => s.id === t.section_id,
+            );
+            return !!(
+              sec &&
+              String(sec.title || "")
+                .toLowerCase()
+                .includes(q)
             );
           });
-          const by = {};
+        }
+
+        function renderHabitsColumn() {
+          const habitual = habitTasksList();
+          const byProj = {};
           habitual.forEach((t) => {
-            const k = (t.recurrence || "").toLowerCase();
-            (by[k] ||= []).push(t);
+            const pid = t.project_id || "";
+            (byProj[pid] ||= []).push(t);
           });
-          const keys = [
-            ...RECURRENCE_ORDER.filter((k) => by[k]),
-            ...Object.keys(by).filter((k) => !RECURRENCE_ORDER.includes(k)),
-          ];
-          const head = sectionHeadHtml("Habits", habitual, "habits");
-          if (!keys.length)
-            return `<div class="habits-wrap panel" id="sec-habits">${head}<p class="empty">${q ? "No matches" : "No habits"}</p></div>`;
-          const today = new Date().toISOString().slice(0, 10);
-          const cards = `<div class="habit-cards">${keys
-            .map((k) => {
-              const rows = by[k]
-                .slice()
-                .sort((a, b) =>
-                  (a.next_due || a.due_date || "").localeCompare(
-                    b.next_due || b.due_date || "",
-                  ),
-                );
-              return `<article class="habit-card panel"><h2>${esc(RECURRENCE_LABELS[k] || k || "Other")}</h2>
-        <ul class="habit-list">${rows
-          .map((t) => {
-            const due = (t.next_due || t.due_date || "").trim();
-            const dueNow = !due || due <= today;
-            return `<li class="habit-row${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}">
-            <span class="em">${esc(t.emoji || "🔲")}</span>
-            <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
-            ${due ? `<span class="due">${esc(due)}</span>` : ""}
-            <span class="row-actions">
-              <button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
-              <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
-              <button class="btn" data-act="edit-task">Edit</button>
-            </span>
-          </li>`;
-          })
-          .join("")}</ul></article>`;
-            })
-            .join("")}</div>`;
-          return `<div class="habits-wrap" id="sec-habits">${head}${cards}</div>`;
+          const idSet = new Set([
+            ...projectsFor("habits").map((p) => p.id),
+            ...Object.keys(byProj).filter(Boolean),
+          ]);
+          const projects = (state.data.projects || [])
+            .filter((p) => p.active !== "0" && idSet.has(p.id))
+            .sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+          const blocks = [];
+          let visible = [];
+          for (const p of projects) {
+            const allPts = byProj[p.id] || [];
+            const plan = projectSearchPlan(p, allPts);
+            if (!plan.show) continue;
+            visible = visible.concat(plan.pts);
+            const pThumbs = thumbsHtml("project", p.id);
+            const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
+            blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span><span class="proj-count">${plan.pts.length}</span></summary>
+        <div class="proj-actions row-actions">
+          <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
+          <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
+          <button class="btn" data-act="edit-project">Edit</button>
+          <button class="btn" data-act="info-project">Info</button>
+          <button class="btn" data-act="paste-att" data-ptype="project" data-pid="${esc(p.id)}">Img</button>
+          <button class="btn danger" data-act="del-project">Del</button>
+        </div>
+        ${pThumbs}
+        ${projectTasksHtml(p, allPts, plan)}
+      </details>`);
+          }
+          const known = new Set(projects.map((p) => p.id));
+          const orphans = habitual.filter(
+            (t) =>
+              !known.has(t.project_id) &&
+              (!searchNeedle() || titleMatches(t.title)),
+          );
+          if (orphans.length) {
+            visible = visible.concat(orphans);
+            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
+        <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
+          }
+          const emptyMsg = searchNeedle()
+            ? '<p class="empty">No matches</p>'
+            : '<p class="empty">No habits</p>';
+          return `<section class="column panel habits-column" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("") || emptyMsg}</section>`;
         }
 
         function renderDashboard() {
@@ -1239,7 +1278,7 @@
       <span class="sub" id="emojiFilterLbl"></span>`;
           $("#view").innerHTML = `
       <div class="top-row">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
-      ${habitsHtml()}`;
+      ${renderHabitsColumn()}`;
           applyEmojiFilter(state.emojiFilter);
           applySectionFocus(state.sectionFocus);
           updateFocusLbl();
@@ -1535,8 +1574,12 @@
                   .forEach((t) => {
                     const tid = t.getAttribute("data-id");
                     if (!tid) return;
+                    const kind =
+                      t.getAttribute("data-kind") === "habitual"
+                        ? "habit"
+                        : "task";
                     out.push({
-                      kind: "task",
+                      kind,
                       id: tid,
                       title:
                         t.querySelector(".title")?.textContent?.trim() || "",
@@ -1552,37 +1595,23 @@
               .forEach((t) => {
                 const tid = t.getAttribute("data-id");
                 if (!tid) return;
+                const kind =
+                  t.getAttribute("data-kind") === "habitual" ? "habit" : "task";
                 out.push({
-                  kind: "task",
+                  kind,
                   id: tid,
                   title: t.querySelector(".title")?.textContent?.trim() || "",
                   el: t,
                 });
               });
           };
-          ["sec-personal", "sec-work"].forEach((sid) => {
+          ["sec-personal", "sec-work", "sec-habits"].forEach((sid) => {
             const sec = document.getElementById(sid);
             if (!sec || sec.classList.contains("section-hidden")) return;
             sec
               .querySelectorAll("details.project")
               .forEach((proj) => pushProj(proj));
           });
-          const habitsSec = document.getElementById("sec-habits");
-          if (habitsSec && !habitsSec.classList.contains("section-hidden")) {
-            habitsSec
-              .querySelectorAll(".habit-row:not(.emoji-hidden)")
-              .forEach((h) => {
-                if (h.closest(".habit-card.emoji-hidden")) return;
-                const id = h.getAttribute("data-id");
-                if (!id) return;
-                out.push({
-                  kind: "habit",
-                  id,
-                  title: h.querySelector(".title")?.textContent?.trim() || "",
-                  el: h,
-                });
-              });
-          }
           return out;
         }
 
@@ -2050,6 +2079,7 @@
           if (state.sectionFocus) applySectionFocus("");
           if (state.sel) setSelection(null, null, false);
           if (state.data) render();
+          scrollToPageHeader();
         }
 
         function goBack() {
@@ -2161,7 +2191,7 @@
 
         function applyEmojiFilter(emoji) {
           state.emojiFilter = emoji || "";
-          document.querySelectorAll(".task, .habit-row").forEach((el) => {
+          document.querySelectorAll(".task").forEach((el) => {
             const match =
               !state.emojiFilter ||
               el.getAttribute("data-emoji") === state.emojiFilter;
@@ -2187,16 +2217,6 @@
               ".task:not(.emoji-hidden)",
             ).length;
             sec.classList.toggle("emoji-hidden", visible === 0);
-          });
-          document.querySelectorAll(".habit-card").forEach((card) => {
-            if (!state.emojiFilter) {
-              card.classList.remove("emoji-hidden");
-              return;
-            }
-            const visible = card.querySelectorAll(
-              ".habit-row:not(.emoji-hidden)",
-            ).length;
-            card.classList.toggle("emoji-hidden", visible === 0);
           });
           const lbl = $("#emojiFilterLbl");
           if (lbl) updateFocusLbl();
@@ -2634,7 +2654,9 @@
             applySelection(true);
             return;
           }
-          const habitRow = e.target.closest(".habit-row[data-id]");
+          const habitRow = e.target.closest(
+            ".task[data-kind='habitual'][data-id]",
+          );
           const taskRow = e.target.closest(".task[data-id]");
           const secRow = e.target.closest(".task-section[data-id]");
           const projRow = e.target.closest("details.project[data-id]");
