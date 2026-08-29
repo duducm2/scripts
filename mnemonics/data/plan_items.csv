@@ -827,3 +827,96 @@ PITEM_0825,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Developmen
 PITEM_0826,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium) > 3. SQL and BI Project Execution",Chain SQL exploration output into a dimensional Power BI model for executives,0,87
 PITEM_0827,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium) > 4. Python Project Execution",Prove programmatic capability beyond BI tools with messy-data cleaning notebook,0,88
 PITEM_0828,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium) > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",0,89
+PITEM_0829,PLAN_0008,Backlog,Archive source curriculum PDF (Senior Data Science Study Plan) under research/ for reference,0,1
+PITEM_0830,PLAN_0008,Backlog,Defer Memory Palace blueprint until ready — leave palaces blank for now,0,2
+PITEM_0831,PLAN_0008,Backlog,"This track includes ML, deep learning, and MLOps (unlike the Data Analyst no-ML constraint)",0,3
+PITEM_0832,PLAN_0008,Backlog,"Leverage existing Python, SQL, Power BI, Azure, and UX experimentation strengths while closing senior gaps",0,4
+PITEM_0833,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.1: Algorithmic Intuition,Master the mathematics and logic behind k-fold cross-validation,0,5
+PITEM_0834,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.1: Algorithmic Intuition,Prevent data leakage during feature engineering and nested validation,0,6
+PITEM_0835,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.1: Algorithmic Intuition,Deconstruct the bias-variance tradeoff and its impact on generalization,0,7
+PITEM_0836,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.1: Algorithmic Intuition,Use StatQuest to rebuild intuition for baseline tabular ML algorithms without treating APIs as black boxes,0,8
+PITEM_0837,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.2: Advanced Tree Models,Understand XGBoost objective functions and sequential gradient boosting mechanics,0,9
+PITEM_0838,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.2: Advanced Tree Models,Trace how XGBoost calculates similarity scores during tree growth,0,10
+PITEM_0839,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.2: Advanced Tree Models,Explain how XGBoost handles missing data natively,0,11
+PITEM_0840,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.2: Advanced Tree Models,Connect mechanical XGBoost understanding to feature engineering and corporate tabular debugging,0,12
+PITEM_0841,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.3: Dimensionality Reduction,Calculate PCA eigenvectors and eigenvalues manually on a small matrix,0,13
+PITEM_0842,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.3: Dimensionality Reduction,Interpret principal components as linear transformations of high-dimensional feature space,0,14
+PITEM_0843,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.3: Dimensionality Reduction,Compare PCA vs t-SNE for visualization of complex feature spaces,0,15
+PITEM_0844,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.3: Dimensionality Reduction,Link dimensionality reduction to InfoVis / PhraseNets-style interpretation of high-dimensional data,0,16
+PITEM_0845,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.1: Empirical Risk,Define supervised learning using Stanford CS229 formal mathematical notation,0,17
+PITEM_0846,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.1: Empirical Risk,Derive cost functions for linear and logistic regression with matrix calculus,0,18
+PITEM_0847,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.1: Empirical Risk,Explain empirical risk minimization and generalized linear models (GLMs),0,19
+PITEM_0848,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.1: Empirical Risk,Diagnose why models converge or fail to find a global minimum under geometric constraints,0,20
+PITEM_0849,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.2: Optimization,Analyze gradient descent variations and their geometric convergence properties,0,21
+PITEM_0850,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.2: Optimization,Relate learning rate and curvature to underfitting / overfitting failure modes,0,22
+PITEM_0851,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.2: Optimization,Construct intuition for bespoke regularization terms on proprietary data,0,23
+PITEM_0852,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.3: Advanced Classifiers,Implement an SVM objective and identify support vectors,0,24
+PITEM_0853,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.3: Advanced Classifiers,Apply the Kernel Trick to map non-linear data into higher-dimensional spaces,0,25
+PITEM_0854,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.3: Advanced Classifiers,"State the bias-variance tradeoff mathematically, not only conceptually",0,26
+PITEM_0855,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.1: Variance Reduction (CUPED),Define the mathematical formula for CUPED (Controlled-experiment Using Pre-Experiment Data),0,27
+PITEM_0856,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.1: Variance Reduction (CUPED),Calculate a CUPED-adjusted metric using pre-experiment covariates,0,28
+PITEM_0857,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.1: Variance Reduction (CUPED),Estimate traffic / sample-size reductions and time-to-decision gains from variance reduction,0,29
+PITEM_0858,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.1: Variance Reduction (CUPED),Contrast CUPED with traditional fixed-horizon A/B testing for micro-conversion detection,0,30
+PITEM_0859,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.2: Multi-Armed Bandits,Contrast static A/B testing with Multi-Armed Bandit exploration–exploitation dynamics,0,31
+PITEM_0860,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.2: Multi-Armed Bandits,Implement Thompson Sampling to dynamically route traffic to high-performing variants,0,32
+PITEM_0861,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.2: Multi-Armed Bandits,Quantify regret minimization for short-lived campaigns and dynamic pricing scenarios,0,33
+PITEM_0862,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.3: Causal Inference,Construct a Directed Acyclic Graph (DAG) mapping causal assumptions and confounders,0,34
+PITEM_0863,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.3: Causal Inference,Calculate Average Treatment Effect (ATE) using the Potential Outcomes framework,0,35
+PITEM_0864,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.3: Causal Inference,State the fundamental problem of causal inference and when RCTs are impossible,0,36
+PITEM_0865,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.3: Causal Inference,Estimate treatment effects from observational / historical logs when A/B tests are unethical or infeasible,0,37
+PITEM_0866,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.1: Micrograd,Build a scalar-valued autograd engine from scratch (Karpathy micrograd),0,38
+PITEM_0867,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.1: Micrograd,Implement manual backpropagation through a DAG using the chain rule,0,39
+PITEM_0868,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.1: Micrograd,Explain how loss derivatives cascade backward through individual weights,0,40
+PITEM_0869,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.2: Makemore and MLPs,Construct a bigram character-level language model with torch.Tensor broadcasting,0,41
+PITEM_0870,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.2: Makemore and MLPs,Evaluate with negative log-likelihood and proper train/val/test splits,0,42
+PITEM_0871,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.2: Makemore and MLPs,Build a Multi-Layer Perceptron with embedding tables and hyperparameter tuning,0,43
+PITEM_0872,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.2: Makemore and MLPs,Visually diagnose forward-pass activation statistics,0,44
+PITEM_0873,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.3: Network Stabilization,Implement Kaiming initialization to prevent vanishing / exploding gradients,0,45
+PITEM_0874,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.3: Network Stabilization,Build Batch Normalization from scratch including Bessel's correction,0,46
+PITEM_0875,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.3: Network Stabilization,"Become a backprop ninja: manually backprop through cross-entropy, BatchNorm, and linear layers without autograd",0,47
+PITEM_0876,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.4: Convolutional Sequences,Recreate DeepMind WaveNet-style architecture for hierarchical sequence modeling,0,48
+PITEM_0877,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.4: Convolutional Sequences,Implement causal dilated convolutions to expand receptive field efficiently,0,49
+PITEM_0878,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.4: Convolutional Sequences,"Treat modern frameworks as optimized wrappers for math you can recreate, not opaque APIs",0,50
+PITEM_0879,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.1: Experiment Tracking,"Configure a local MLflow server to log hyperparameters, metrics, and artifacts",0,51
+PITEM_0880,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.1: Experiment Tracking,"Register, stage, and version models in the MLflow Model Registry",0,52
+PITEM_0881,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.1: Experiment Tracking,Replace ad-hoc notebook tracking with fully reproducible experiment runs,0,53
+PITEM_0882,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.2: Pipeline Orchestration,Convert procedural Jupyter experiments into modular object-oriented Python scripts,0,54
+PITEM_0883,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.2: Pipeline Orchestration,"Build an automated scheduled training pipeline with Prefect, Mage, or Airflow",0,55
+PITEM_0884,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.2: Pipeline Orchestration,"Orchestrate data ingestion, feature engineering, and training as a DAG of tasks",0,56
+PITEM_0885,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.3: Cloud Deployment,Containerize a prediction service with Docker for environment parity,0,57
+PITEM_0886,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.3: Cloud Deployment,Deploy a scheduled batch scoring job on cloud infrastructure (AWS or Azure),0,58
+PITEM_0887,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.3: Cloud Deployment,Deploy a real-time FastAPI/Flask inference endpoint for low-latency serving,0,59
+PITEM_0888,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.3: Cloud Deployment,Sketch a streaming path using cloud event infrastructure (e.g. Kinesis/Lambda patterns),0,60
+PITEM_0889,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.4: Model Monitoring,Configure Evidently AI (or similar) to compute covariate shift and concept drift metrics,0,61
+PITEM_0890,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.4: Model Monitoring,Wire Prometheus / Grafana-style alerts for production performance degradation,0,62
+PITEM_0891,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.4: Model Monitoring,Connect monitoring alerts back to tensor-level debugging intuition from Phase 3,0,63
+PITEM_0892,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.1: Requirements Engineering,Translate ambiguous business objectives into quantifiable offline ML evaluation metrics,0,64
+PITEM_0893,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.1: Requirements Engineering,"Align model success criteria with macro ROI / product metrics (CSI, NPS, conversion)",0,65
+PITEM_0894,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.2: Data Supply Chains,Design architectures balancing batch processing vs streaming feature engineering,0,66
+PITEM_0895,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.2: Data Supply Chains,Map how data supply chains dictate production model performance (Chip Huyen),0,67
+PITEM_0896,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.2: Data Supply Chains,Connect CUPED's need for pre-experiment covariates to low-latency join / feature-store architecture,0,68
+PITEM_0897,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.3: Feature Stores,Diagram API and infrastructure boundaries of a centralized organizational feature store,0,69
+PITEM_0898,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.3: Feature Stores,Explain how feature stores reduce redundant computation across isolated ML use cases,0,70
+PITEM_0899,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.4: Adaptive Environments,Establish continuous retraining loops based on delayed feedback attribution,0,71
+PITEM_0900,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.4: Adaptive Environments,Document anti-patterns in deployed ML systems and continuous evaluation strategies,0,72
+PITEM_0901,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.4: Adaptive Environments,Practice communicating system-design trade-offs to executive and engineering stakeholders,0,73
+PITEM_0902,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.1: Algorithmic Intuition,Tune hyperparameters with nested CV so validation folds never leak into model selection,0,74
+PITEM_0903,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.2: Advanced Tree Models,Debug a misbehaving XGBoost model by inspecting leaf weights and feature importance patterns,0,75
+PITEM_0904,PLAN_0008,Phase 0: Solidifying Statistical and Machine Learning Fundamentals > Topic 0.3: Dimensionality Reduction,Produce a PCA scree plot and decide how many components to retain for downstream modeling,0,76
+PITEM_0905,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.1: Empirical Risk,Read one CS229 lecture note section and restate the supervised learning setup in your own notation,0,77
+PITEM_0906,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.2: Optimization,"Compare batch, mini-batch, and stochastic gradient descent on a toy convex loss",0,78
+PITEM_0907,PLAN_0008,Phase 1: Rigorous Algorithmic Foundations > Topic 1.3: Advanced Classifiers,Sketch why a linear SVM fails on XOR and how a kernel resolves it,0,79
+PITEM_0908,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.1: Variance Reduction (CUPED),Write a short memo: when CUPED helps vs when pre-experiment covariates are unavailable,0,80
+PITEM_0909,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.2: Multi-Armed Bandits,"List enterprise use cases where bandits beat fixed A/B (promos, headlines, pricing)",0,81
+PITEM_0910,PLAN_0008,Phase 2: Advanced Experimentation and Causal Inference > Topic 2.3: Causal Inference,Identify confounders in a historical policy-change scenario using a DAG,0,82
+PITEM_0911,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.1: Micrograd,Unit-test your autograd engine against PyTorch gradients on a tiny expression graph,0,83
+PITEM_0912,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.2: Makemore and MLPs,Log train vs validation loss curves and diagnose overfitting in the MLP,0,84
+PITEM_0913,PLAN_0008,Phase 3: Deep Learning and Modern Architectures > Topic 3.3: Network Stabilization,Visualize activation histograms before vs after BatchNorm,0,85
+PITEM_0914,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.1: Experiment Tracking,Compare two MLflow runs side-by-side and promote the winner to Staging,0,86
+PITEM_0915,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.2: Pipeline Orchestration,Add retries and failure alerts to at least one orchestrated training task,0,87
+PITEM_0916,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.3: Cloud Deployment,Document latency budget for the REST inference path from client to model,0,88
+PITEM_0917,PLAN_0008,Phase 4: Machine Learning Operations (MLOps) > Topic 4.4: Model Monitoring,Define alert thresholds for data drift that trigger investigation not blind retrain,0,89
+PITEM_0918,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.1: Requirements Engineering,Write an offline metric card that executives can map to a business KPI,0,90
+PITEM_0919,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.2: Data Supply Chains,Draw a one-page architecture: batch training path vs online inference path,0,91
+PITEM_0920,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.3: Feature Stores,List three features that must be point-in-time correct to avoid training-serving skew,0,92
+PITEM_0921,PLAN_0008,Phase 5: Machine Learning System Design > Topic 5.4: Adaptive Environments,Propose a delayed-feedback labeling strategy for a conversion or trust metric,0,93
