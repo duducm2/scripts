@@ -61,11 +61,7 @@ class GeminiAsyncLookup {
             StandardLoadingBar_Hide(0)
             return
         }
-        ; For pronunciation lookup (#!+8), always use the trash tab (second Gemini tab).
-        ; Chrome convention: Ctrl+2 selects the second tab in the window.
-        Send("^2")
-        Sleep 150
-        ShowGeminiTabBanner(2, this.GeminiHwnd)
+        ; Stay on the current (first) Gemini tab — do not switch to trash/tab 2.
         uia := UIA_Browser()
         Sleep 300
         promptField := Gemini_FocusPromptSameAsOpenHotkey(uia)
