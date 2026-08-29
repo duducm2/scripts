@@ -489,7 +489,7 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
 }
 
 ; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
-PROMPT_PASTE_AUTO_SEND_CAP_MS := 15000
+PROMPT_PASTE_AUTO_SEND_CAP_MS := 10000
 PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
 
 PromptPaste_SendRemainingMs(tDeadline) {
@@ -729,7 +729,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             catch {
             }
         } else {
-            msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (15s)" : "⚠ Send may not have started"
+            msg := (A_TickCount >= tDeadline) ? "⚠ Send timed out (10s)" : "⚠ Send may not have started"
             try ShowCenteredOverlay_Utils(msg, 2200, BANNER_ACCENT_ERROR)
             catch {
             }
