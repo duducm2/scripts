@@ -757,10 +757,10 @@
           every_10y: "Every 10 years",
           "": "Other",
         };
-        const EMOJI_KEYS = { t: "⚡", w: "⏳", g: "🔲", u: "❓" };
+        const EMOJI_KEYS = { t: "⚡", q: "⏳", g: "🔲", u: "❓" };
         const EMOJI_API_KEYS = {
           t: "important",
-          w: "waiting",
+          q: "waiting",
           g: "general",
           u: "doubt",
         };
@@ -771,7 +771,7 @@
           "❓": "doubt",
           "✅": "done",
         };
-        const EMOJI_KEY_BY = { "⚡": "t", "⏳": "w", "🔲": "g", "❓": "u" };
+        const EMOJI_KEY_BY = { "⚡": "t", "⏳": "q", "🔲": "g", "❓": "u" };
         const state = {
           data: null,
           filter: "work",
@@ -1423,7 +1423,7 @@
         </div></div>
         <div class="help-group"><h4>Emoji tags</h4><div class="help-rows">
           ${row("⇧T", "⚡ Important — tag selection, or filter if none")}
-          ${row("⇧W", "⏳ Waiting — tag selection, or filter if none")}
+          ${row("⇧Q", "⏳ Waiting — tag selection, or filter if none")}
           ${row("⇧G", "🔲 General — tag selection, or filter if none")}
           ${row("⇧U", "❓ Doubt — tag selection, or filter if none")}
           ${row("⇧I", "⚡ Important on selection (same as ⇧T)")}
