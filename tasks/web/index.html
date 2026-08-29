@@ -211,8 +211,9 @@
         gap: 4px;
         padding: 0 12px 8px;
       }
-      details.project.kb-selected > .proj-actions,
-      details.project:hover > .proj-actions {
+      /* Only when open — forcing display on closed <details> expands cards and causes layout blink */
+      details.project[open].kb-selected > .proj-actions,
+      details.project[open]:hover > .proj-actions {
         display: flex;
       }
       .task-section {
@@ -400,28 +401,27 @@
       .top-row.section-solo {
         grid-template-columns: 1fr;
       }
-      /* Masonry packing: fill columns top-to-bottom so short cards leave no row gaps */
+      /* Solo category: CSS grid stays stable when cards grow (multi-column reflows/blinks) */
       .column.bento {
-        display: block;
-        column-width: 360px;
-        column-gap: 14px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 14px;
+        align-items: start;
       }
       .column.bento > .section-head,
       .column.bento > .empty {
-        column-span: all;
-        margin-bottom: 12px;
+        grid-column: 1 / -1;
+        margin-bottom: 0;
       }
       .column.bento > .project {
-        display: inline-block;
-        width: 100%;
-        margin: 0 0 14px;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        -webkit-column-break-inside: avoid;
+        margin: 0;
+        width: auto;
+        max-width: 100%;
+        min-width: 0;
       }
       @media (min-width: 1400px) {
         .column.bento {
-          column-width: 380px;
+          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
         }
       }
       .kb-selected,
@@ -758,6 +758,12 @@
           "": "Other",
         };
         const EMOJI_KEYS = { t: "⚡", w: "⏳", g: "🔲", u: "❓" };
+        const EMOJI_API_KEYS = {
+          t: "important",
+          w: "waiting",
+          g: "general",
+          u: "doubt",
+        };
         const EMOJI_LABELS = {
           "⚡": "important",
           "⏳": "waiting",
@@ -1034,7 +1040,7 @@
               const k = EMOJI_KEY_BY[e] || "";
               const label = EMOJI_LABELS[e] || "other";
               const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
-              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="Filter ${label}${k ? " (Shift+" + k.toUpperCase() + ")" : ""}">
+              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + label : "Filter " + label}">
         <span class="em">${esc(e)}</span>
         <span class="lbl">${esc(label)}</span>
         <span class="n">${n}</span>${keyHint}
@@ -1120,6 +1126,23 @@
             .join("");
         }
 
+        function focusColumnClass(filt) {
+          const f = state.sectionFocus || "";
+          const parts = ["column", "panel"];
+          if (filt === "habits") parts.push("habits-column");
+          if (f && f !== filt) parts.push("section-hidden");
+          if (f === filt) parts.push("bento");
+          return parts.join(" ");
+        }
+
+        function focusTopRowClass() {
+          const f = state.sectionFocus || "";
+          const parts = ["top-row"];
+          if (f === "habits") parts.push("section-hidden");
+          if (f === "work" || f === "personal") parts.push("section-solo");
+          return parts.join(" ");
+        }
+
         function renderColumn(heading, filt) {
           const open = openTasks().filter((t) => t.filter === filt);
           const byProj = {};
@@ -1164,7 +1187,7 @@
           const emptyMsg = searchNeedle()
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No projects</p>';
-          return `<section class="column panel" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("") || emptyMsg}</section>`;
+          return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("") || emptyMsg}</section>`;
         }
 
         function habitTasksList() {
@@ -1255,7 +1278,7 @@
           const emptyMsg = searchNeedle()
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No habits</p>';
-          return `<section class="column panel habits-column" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("") || emptyMsg}</section>`;
+          return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("") || emptyMsg}</section>`;
         }
 
         function renderDashboard() {
@@ -1277,10 +1300,9 @@
       <div class="kpi"><div class="lbl">Habits due</div><div class="val">${habitsDue}</div></div>
       <span class="sub" id="emojiFilterLbl"></span>`;
           $("#view").innerHTML = `
-      <div class="top-row">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
+      <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${renderHabitsColumn()}`;
           applyEmojiFilter(state.emojiFilter);
-          applySectionFocus(state.sectionFocus);
           updateFocusLbl();
           applySelection(false);
         }
@@ -1361,7 +1383,7 @@
 
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
-      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+P)">Import</button>
+      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+K)">Import</button>
       <button class="btn" data-act="migrate" title="Migrate MD (Shift+M)">Migrate MD</button>
       <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H or F1)">Help</button>`;
         }
@@ -1390,20 +1412,21 @@
           ${row("Enter", "Edit selection")}
           ${row("Del", "Delete selection")}
           ${row("⇧A", "Inline add task (or project if none selected)")}
+          ${row("⇧P", "Add project (filter from focus / selection)")}
           ${row("⇧B", "Add section (project selected)")}
-          ${row("⇧C", "Mark done")}
+          ${row("⇧C", "Mark done (✅)")}
           ${row("⇧D", "Habit → Personal inbox (General)")}
-          ${row("⇧I", "Mark important")}
           ${row("⇧N", "Info points")}
           ${row("⇧V", "Paste clipboard image (project / section→project / task)")}
           ${row("⇧E", "Expand / collapse all projects")}
           ${row("⇧F", "Clear emoji filter")}
         </div></div>
-        <div class="help-group"><h4>Emoji filter</h4><div class="help-rows">
-          ${row("⇧T", "⚡ Important")}
-          ${row("⇧W", "⏳ Waiting")}
-          ${row("⇧G", "🔲 General")}
-          ${row("⇧U", "❓ Doubt")}
+        <div class="help-group"><h4>Emoji tags</h4><div class="help-rows">
+          ${row("⇧T", "⚡ Important — tag selection, or filter if none")}
+          ${row("⇧W", "⏳ Waiting — tag selection, or filter if none")}
+          ${row("⇧G", "🔲 General — tag selection, or filter if none")}
+          ${row("⇧U", "❓ Doubt — tag selection, or filter if none")}
+          ${row("⇧I", "⚡ Important on selection (same as ⇧T)")}
         </div></div>
         <div class="help-group"><h4>Import view</h4><div class="help-rows">
           ${row("1", "Select TASK_PACK")}
@@ -1413,7 +1436,7 @@
           ${row("Backspace", "Go back one step")}
         </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
-          ${row("⇧P", "Open Import")}
+          ${row("⇧K", "Open Import")}
           ${row("⇧M", "Migrate MD")}
           ${row("⇧H / F1", "This help")}
         </div></div>
@@ -1507,37 +1530,22 @@
         function applySectionFocus(filt, opts = {}) {
           const toggle = !!opts.toggle;
           if (toggle && filt && state.sectionFocus === filt) filt = "";
+          const prev = state.sectionFocus || "";
           state.sectionFocus = filt || "";
+          const f = state.sectionFocus;
           const personal = document.getElementById("sec-personal");
           const work = document.getElementById("sec-work");
           const habits = document.getElementById("sec-habits");
           const top = document.querySelector(".top-row");
-          const f = state.sectionFocus;
-          if (personal) {
-            personal.classList.toggle(
-              "section-hidden",
-              !!f && f !== "personal",
-            );
-            personal.classList.toggle("bento", f === "personal");
-          }
-          if (work) {
-            work.classList.toggle("section-hidden", !!f && f !== "work");
-            work.classList.toggle("bento", f === "work");
-          }
-          if (habits) {
-            habits.classList.toggle("section-hidden", !!f && f !== "habits");
-            habits.classList.toggle("bento", f === "habits");
-          }
-          if (top) {
-            top.classList.toggle(
-              "section-solo",
-              f === "work" || f === "personal",
-            );
-            top.classList.toggle("section-hidden", f === "habits");
-          }
+          if (personal) personal.className = focusColumnClass("personal");
+          if (work) work.className = focusColumnClass("work");
+          if (habits) habits.className = focusColumnClass("habits");
+          if (top) top.className = focusTopRowClass();
           updateFocusLbl();
-          if (f) scrollToPageHeader();
-          applySelection(true);
+          // Only scroll when the focus mode actually changes (not on every re-apply)
+          if (opts.scrollHeader !== false && f && f !== prev)
+            scrollToPageHeader();
+          applySelection(opts.selectScroll !== false);
         }
 
         function titleFirstChar(title) {
@@ -1791,19 +1799,21 @@
               toast("No matches");
               return;
             }
-            setSelection(targets[0].kind, targets[0].id, true);
+            setSelection(targets[0].kind, targets[0].id, false);
+            scrollToPageHeader();
             return;
           }
           const from = currentPwSide();
           const next = from === "personal" ? "work" : "personal";
+          const focusOpts = { selectScroll: false };
           if (state.sectionFocus === "habits" || state.sectionFocus === from) {
-            applySectionFocus(next);
+            applySectionFocus(next, focusOpts);
           } else if (state.sectionFocus && state.sectionFocus !== next) {
-            applySectionFocus(next);
+            applySectionFocus(next, focusOpts);
           }
           let hit = firstTargetInCategory(next);
           if (!hit) {
-            applySectionFocus(next);
+            applySectionFocus(next, focusOpts);
             hit = firstTargetInCategory(next);
           }
           if (!hit) {
@@ -1811,7 +1821,8 @@
             return;
           }
           state.pwSide = next;
-          setSelection(hit.kind, hit.id, true);
+          setSelection(hit.kind, hit.id, false);
+          scrollToPageHeader();
         }
 
         function selectedTaskId() {
@@ -1830,6 +1841,28 @@
             if (t?.kind === "habitual") return t.id;
           }
           return "";
+        }
+
+        async function setSelectedTaskEmoji(keyOrEmoji) {
+          const tid = selectedTaskId();
+          if (!tid) {
+            toast("Select a task first");
+            return;
+          }
+          const prev = state.sel;
+          await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
+            method: "POST",
+            body: JSON.stringify({ key: keyOrEmoji }),
+          });
+          await refresh();
+          if (prev?.id) {
+            const t = (state.data.tasks || []).find((x) => x.id === prev.id);
+            const kind =
+              t?.kind === "habitual" || prev.kind === "habit"
+                ? "habit"
+                : "task";
+            setSelection(kind, prev.id, false);
+          }
         }
 
         async function sendHabitToPersonal(habitId) {
@@ -1896,6 +1929,11 @@
             return;
           }
           if (EMOJI_KEYS[k]) {
+            const tid = selectedTaskId();
+            if (tid) {
+              await setSelectedTaskEmoji(EMOJI_API_KEYS[k] || EMOJI_KEYS[k]);
+              return;
+            }
             const em = EMOJI_KEYS[k];
             applyEmojiFilter(state.emojiFilter === em ? "" : em);
             applySelection(true);
@@ -1907,16 +1945,7 @@
             return;
           }
           if (k === "c") {
-            const tid = selectedTaskId();
-            if (!tid) {
-              toast("Select a task first");
-              return;
-            }
-            await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
-              method: "POST",
-              body: JSON.stringify({ key: "done" }),
-            });
-            await refresh();
+            await setSelectedTaskEmoji("done");
             return;
           }
           if (k === "d") {
@@ -1929,16 +1958,7 @@
             return;
           }
           if (k === "i") {
-            const tid = selectedTaskId();
-            if (!tid) {
-              toast("Select a task first");
-              return;
-            }
-            await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
-              method: "POST",
-              body: JSON.stringify({ key: "important" }),
-            });
-            await refresh();
+            await setSelectedTaskEmoji("important");
             return;
           }
           if (k === "a") {
@@ -1990,6 +2010,15 @@
             return;
           }
           if (k === "p") {
+            if (state.view !== "dashboard") {
+              state.view = "dashboard";
+              await refresh();
+            }
+            state.filter = defaultProjectFilter();
+            projectForm(null);
+            return;
+          }
+          if (k === "k") {
             state.view = "import";
             state.importPreview = null;
             render();
@@ -2229,17 +2258,51 @@
           $("#modalHost").innerHTML = "";
         }
 
+        function defaultProjectFilter() {
+          if (
+            state.sectionFocus === "work" ||
+            state.sectionFocus === "personal" ||
+            state.sectionFocus === "habits"
+          )
+            return state.sectionFocus;
+          if (state.sel?.kind === "project") {
+            const p = (state.data.projects || []).find(
+              (x) => x.id === state.sel.id,
+            );
+            if (p?.filter) return p.filter;
+          }
+          if (state.sel?.kind === "section") {
+            const sec = (state.data.sections || []).find(
+              (s) => s.id === state.sel.id,
+            );
+            const p = (state.data.projects || []).find(
+              (x) => x.id === sec?.project_id,
+            );
+            if (p?.filter) return p.filter;
+          }
+          if (state.sel?.kind === "task" || state.sel?.kind === "habit") {
+            const t = (state.data.tasks || []).find(
+              (x) => x.id === state.sel.id,
+            );
+            if (t?.filter) return t.filter;
+          }
+          const f = state.filter || state.pwSide || "work";
+          return ["work", "personal", "habits"].includes(f) ? f : "work";
+        }
+
         function projectForm(existing) {
+          const filt = existing?.filter || defaultProjectFilter();
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} project</h3>
       <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
       <label>Filter</label><select id="mFilt">
-        ${["work", "personal", "habits"].map((f) => `<option value="${f}" ${(existing?.filter || state.filter) === f ? "selected" : ""}>${f}</option>`).join("")}
+        ${["work", "personal", "habits"].map((f) => `<option value="${f}" ${filt === f ? "selected" : ""}>${f}</option>`).join("")}
       </select>
       <label>Section path</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions">
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-project">Save</button>
       </div></div>`);
+          $("#mTitle")?.focus();
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -2277,7 +2340,7 @@
           let project_id = (hint.project_id || "").trim();
           let section_id = (hint.section_id || "").trim();
           let filter = (hint.filter || "").trim().toLowerCase();
-          let kind = (hint.kind || "punctual").trim().toLowerCase();
+          let kind = (hint.kind || "").trim().toLowerCase();
 
           if (state.sel?.kind === "section") {
             const sec = (state.data.sections || []).find(
@@ -2302,6 +2365,7 @@
               project_id = project_id || t.project_id;
               section_id = section_id || t.section_id;
               filter = filter || t.filter || "";
+              kind = kind || t.kind || "";
             }
           } else if (state.sel?.kind === "project") {
             project_id = project_id || state.sel.id;
@@ -2345,6 +2409,11 @@
               "";
           }
 
+          // Habits column only lists kind=habitual; default new habits there.
+          if (!kind) kind = filter === "habits" ? "habitual" : "punctual";
+          if (!["punctual", "habitual"].includes(kind)) kind = "punctual";
+          if (filter === "habits") kind = "habitual";
+
           return { project_id, section_id, filter, kind };
         }
 
@@ -2376,8 +2445,9 @@
             .join(" · ");
           bar.classList.add("active");
           bar.setAttribute("aria-hidden", "false");
+          const kindHint = ctx.kind === "habitual" ? " · habitual" : "";
           bar.innerHTML = `
-      <span class="ctx"><strong>${esc(ctx.filter)}</strong> · ${esc(where)}</span>
+      <span class="ctx"><strong>${esc(ctx.filter)}</strong>${esc(kindHint)} · ${esc(where)}</span>
       <input type="text" id="inlineTitle" placeholder="Task title — Enter to add, Backspace to cancel" autocomplete="off" />
       <button type="button" class="btn" data-act="inline-save">Add</button>
       <button type="button" class="btn" data-act="inline-cancel">Cancel</button>`;
@@ -2430,7 +2500,11 @@
             });
           }
           state.inlineCreate = ctx;
-          if (ctx.filter === "personal" || ctx.filter === "work") {
+          if (
+            ctx.filter === "personal" ||
+            ctx.filter === "work" ||
+            ctx.filter === "habits"
+          ) {
             if (state.sectionFocus && state.sectionFocus !== ctx.filter)
               applySectionFocus(ctx.filter);
           }
@@ -2446,21 +2520,33 @@
             $("#inlineTitle")?.focus();
             return;
           }
+          const kind = ctx.kind || "punctual";
+          const payload = {
+            title,
+            project_id: ctx.project_id,
+            section_id: ctx.section_id,
+            filter: ctx.filter,
+            kind,
+            emoji: "🔲",
+          };
+          if (kind === "habitual") {
+            payload.next_due = new Date().toISOString().slice(0, 10);
+          }
           const r = await api("/api/tasks", {
             method: "POST",
-            body: JSON.stringify({
-              title,
-              project_id: ctx.project_id,
-              section_id: ctx.section_id,
-              filter: ctx.filter,
-              kind: ctx.kind || "punctual",
-              emoji: "🔲",
-            }),
+            body: JSON.stringify(payload),
           });
           cancelInlineCreate();
-          toast("Task added — Enter to edit details");
+          toast(
+            kind === "habitual"
+              ? "Habit added — Enter to set recurrence"
+              : "Task added — Enter to edit details",
+          );
           await refresh();
-          if (r.task?.id) setSelection("task", r.task.id, true);
+          if (r.task?.id) {
+            const sk = r.task.kind === "habitual" ? "habit" : "task";
+            setSelection(sk, r.task.id, true);
+          }
         }
 
         function taskForm(existing) {
