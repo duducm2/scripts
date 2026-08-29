@@ -17,10 +17,10 @@
 **Quote**
 “The consonant essentially takes over the role of the vowel, like in bottle or apple.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bt] Bone Toad
@@ -31,10 +31,10 @@
 **Quote**
 “In American English, when a /t/ precedes a syllabic /n/, the /t/ is typically pronounced as a glottal stop, like in button.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bu] butterfly
@@ -45,10 +45,10 @@
 **Quote**
 “Syllabic M regularly occurs in words ending in 'thm' or 'sm', such as rhythm and chasm.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -78,10 +78,10 @@ _No gallery images._
 **Quote**
 “Sounds are added, there's intrusion from a new sound.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Br] brontosaurus
@@ -92,10 +92,10 @@ _No gallery images._
 **Quote**
 “There are usually only three sounds that can be added. We either have a 'w', a 'y', or an 'r' sound added.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -125,10 +125,10 @@ _No gallery images._
 **Quote**
 “What happens in connected speech is that sounds change, sounds are lost, and sounds are added.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bm] Bone marmoset
@@ -139,10 +139,10 @@ _No gallery images._
 **Quote**
 “A sound changes to become more similar, so more similar, assimilation.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bn] Blazing nightjar
@@ -153,10 +153,10 @@ _No gallery images._
 **Quote**
 “Because we get ready to say 'Barcelona' we close our lips already, and instead of an 'n' sound we say 'm'.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bo] bower-bird
@@ -167,10 +167,10 @@ _No gallery images._
 **Quote**
 “When sounds are lost they're deleted, so we call this elision.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bp] Blackwater penguin
@@ -181,10 +181,10 @@ _No gallery images._
 **Quote**
 “Most of the time in English, that means that a final 't' or 'd' sound is lost.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -214,10 +214,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bi] bison
@@ -228,10 +228,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bj] Basil jellyfish
@@ -242,10 +242,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bk] Bloodmoon kestrel
@@ -256,10 +256,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -289,10 +289,10 @@ _No gallery images._
 **Quote**
 “It is their relative values, not their absolute values, that matter linguistically.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bg] Boulder giraffe
@@ -303,10 +303,10 @@ _No gallery images._
 **Quote**
 “The instructor points out that the International Phonetic Alphabet (IPA) chart provides a completely separate set of symbols specifically for suprasegmentals.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -336,10 +336,10 @@ _No gallery images._
 **Quote**
 “You can look at language as a building and think of consonants as the bricks and the vowels as a mortar that connects the bricks together.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Az] Aztec
@@ -350,10 +350,10 @@ _No gallery images._
 **Quote**
 “Suprasegmental is a word made of supra, the prefix beyond, and segment: beyond the segment level. You will get to super segmental features when you compare segments to each other, you put them in a contrast.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ba] bat
@@ -364,10 +364,10 @@ _No gallery images._
 **Quote**
 “In English, stress can affect length.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bb] Brass bison
@@ -378,10 +378,10 @@ _No gallery images._
 **Quote**
 “Stress in English can also result in exaggerated pitch; it can make a low pitch lower and it can make a high pitch higher.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Be] bee
@@ -392,10 +392,10 @@ _No gallery images._
 **Quote**
 “Pitch pattern at sentence level is called intonation. Voice pitch can change with the rate of vibration of the vocal folds independently of stress.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -425,10 +425,10 @@ _No gallery images._
 **Quote**
 “Dis talks about the negation, the opposite of something.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Au] auroch
@@ -439,10 +439,10 @@ _No gallery images._
 **Quote**
 “Miss, think of it like a mistake.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Av] avocet
@@ -453,10 +453,10 @@ _No gallery images._
 **Quote**
 “Use im with words that begin with P, M, or B.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Aw] awassi sheep
@@ -467,10 +467,10 @@ _No gallery images._
 **Quote**
 “Insecure says that you are not confident about yourself.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ax] axolotl
@@ -481,10 +481,10 @@ _No gallery images._
 **Quote**
 “When you want to say repeat something, do it again, add re before the verb.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -514,10 +514,10 @@ _No gallery images._
 **Quote**
 “A prefix is something that goes before a word." and "Suffixes are things that go afterwards.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ap] ape
@@ -528,10 +528,10 @@ _No gallery images._
 **Quote**
 “Any verb plus able, it's possible to do this thing.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Aq] aquatic leech
@@ -542,10 +542,10 @@ _No gallery images._
 **Quote**
 “Ish with a time means not exactly this time.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ar] armadillo
@@ -556,10 +556,10 @@ _No gallery images._
 **Quote**
 “Un means not, but more like not complete.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [As] asp
@@ -570,10 +570,10 @@ _No gallery images._
 **Quote**
 “Un can also mean to reverse an action.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -603,10 +603,10 @@ _No gallery images._
 **Quote**
 “Nominalization means turning words into nouns.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ak] Akita (dog breed)
@@ -617,10 +617,10 @@ _No gallery images._
 **Quote**
 “Jane shares the enjoyment of Indian food with her husband.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Al] alligator
@@ -631,10 +631,10 @@ _No gallery images._
 **Quote**
 “The beauty of London is why I am going there.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Am] amulet
@@ -645,10 +645,10 @@ _No gallery images._
 **Quote**
 “The engineers are discussing the development of the building.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [An] angel
@@ -659,10 +659,10 @@ _No gallery images._
 **Quote**
 “The writing of books for pleasure leads to the provision of a passive income.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -692,10 +692,10 @@ _No gallery images._
 **Quote**
 “Having been fined for speeding before, she is now a careful driver.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ai] Airedale terrier
@@ -706,10 +706,10 @@ _No gallery images._
 **Quote**
 “Reading the newspaper, the cat jumped onto the table.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -739,10 +739,10 @@ _No gallery images._
 **Quote**
 “He slammed the door waking the baby.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ad] adder
@@ -753,10 +753,10 @@ _No gallery images._
 **Quote**
 “Singing loudly, I met a girl.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ae] aerialist
@@ -767,10 +767,10 @@ _No gallery images._
 **Quote**
 “Having thanked the hosts, the guests left the party.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Af] Afghan hound
@@ -781,10 +781,10 @@ _No gallery images._
 **Quote**
 “Surrounded by water, Venice is built on over a 100 islands.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ag] Agaric fungi
@@ -795,10 +795,10 @@ _No gallery images._
 **Quote**
 “Used correctly, participle clauses make your writing more concise.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -828,10 +828,10 @@ _No gallery images._
 **Quote**
 “A participle clause is a type of subordinate or dependent adverbial clause. It uses a participle to give extra information about time, reason, result, manner, or condition.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Y] yak
@@ -842,10 +842,10 @@ _No gallery images._
 **Quote**
 “The subject of the participle clause and the main clause must be the same.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Z] Zeus
@@ -856,10 +856,10 @@ _No gallery images._
 **Quote**
 “Leaving in a hurry, John forgot to collect his coat.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Aa] aardvark
@@ -870,10 +870,10 @@ _No gallery images._
 **Quote**
 “Hoping to improve my French, I joined a class.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ab] Abyssinian cat
@@ -884,10 +884,10 @@ _No gallery images._
 **Quote**
 “Not wanting to wake him, I left quietly.”
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -917,11 +917,11 @@ _No gallery images._
 **Quote**
 “It was hot, so I took off my jacket.”
 
-**Story**
-A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
-
 **Sensory**
 —
+
+**Story**
+A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
 
 ### 🟧 [U] unicorn
 
@@ -931,11 +931,11 @@ A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decid
 **Quote**
 “I regret to inform you that you have failed your C1 English exam; therefore, we are unable to offer you the job.”
 
-**Story**
-A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
-
 **Sensory**
 —
+
+**Story**
+A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
 
 ### 🟧 [V] vulture
 
@@ -945,11 +945,11 @@ A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a 
 **Quote**
 “We have therefore decided not to offer you the job.”
 
-**Story**
-A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
-
 **Sensory**
 —
+
+**Story**
+A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
 
 ### 🟧 [W] wombat
 
@@ -959,11 +959,11 @@ A Vulture perches on a desk like a boss. It places the word "therefore" right be
 **Quote**
 “As she never replies, I'd stop writing to her.”
 
-**Story**
-A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
-
 **Sensory**
 —
+
+**Story**
+A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
 
 #### Notes
 
@@ -992,11 +992,11 @@ _No gallery images._
 **Quote**
 “He might come today, but I doubt it.”
 
-**Story**
-A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
-
 **Sensory**
 —
+
+**Story**
+A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
 
 ### 🟧 [S] skull
 
@@ -1006,11 +1006,11 @@ A Rat looks at a calendar on the wall. Someone says "He will come today." The Ra
 **Quote**
 “It just makes your writing much more concise and it makes it flow better as well.”
 
-**Story**
-A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
-
 **Sensory**
 —
+
+**Story**
+A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
 
 #### Notes
 
@@ -1039,11 +1039,11 @@ _No gallery images._
 **Quote**
 “Ellipsis just means you're deleting words from sentences—unnecessary words or redundant words.”
 
-**Story**
-It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
-
 **Sensory**
 —
+
+**Story**
+It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
 
 ### 🟧 [N] Neanderthal
 
@@ -1053,11 +1053,11 @@ It holds a red pen and reads a long sentence on a screen. It aggressively crosse
 **Quote**
 “The more words you use in a sentence, the more confusing the sentence gets.”
 
-**Story**
-A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
-
 **Sensory**
 —
+
+**Story**
+A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
 
 ### 🟧 [O] owl
 
@@ -1067,11 +1067,11 @@ A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest
 **Quote**
 “She can play the guitar and he can too.”
 
-**Story**
-An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
-
 **Sensory**
 —
+
+**Story**
+An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
 
 ### 🟧 [P] panther
 
@@ -1081,11 +1081,11 @@ An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl 
 **Quote**
 “Substitution is exactly what it says it is: you're substituting words, you're replacing words in a phrase or even part of a phrase as well to avoid repeating the same words.”
 
-**Story**
-A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
-
 **Sensory**
 —
+
+**Story**
+A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
 
 ### 🟧 [Q] Quetzalcoatl
 
@@ -1095,11 +1095,11 @@ A black Panther stalks a sentence written on the ground. It pounces on a repeate
 **Quote**
 “The auxiliary verb needs to correspond with the types of verbs that you're using... it also needs to correspond in tense as well.”
 
-**Story**
-The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
-
 **Sensory**
 —
+
+**Story**
+The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
 
 #### Notes
 
@@ -1128,11 +1128,11 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
-
 **Sensory**
 —
+
+**Story**
+A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
 
 ### 🟧 [L] Lion
 
@@ -1142,11 +1142,11 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 **Quote**
 —
 
-**Story**
-A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
-
 **Sensory**
 —
+
+**Story**
+A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
 
 #### Notes
 
@@ -1175,11 +1175,11 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your relative pronoun, you can take it out.
-
 **Sensory**
 —
+
+**Story**
+A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your relative pronoun, you can take it out.
 
 ### 🟧 [G] Goat
 
@@ -1189,11 +1189,11 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 **Quote**
 —
 
-**Story**
-A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
-
 **Sensory**
 —
+
+**Story**
+A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
 
 ### 🟧 [H] Hydra
 
@@ -1203,11 +1203,11 @@ A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the
 **Quote**
 —
 
-**Story**
-The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Clefts.
-
 **Sensory**
 —
+
+**Story**
+The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Clefts.
 
 ### 🟧 [I] Imp
 
@@ -1217,11 +1217,11 @@ The Hydra holds a heavy car battery in its main head. It moves the battery all t
 **Quote**
 —
 
-**Story**
-Example: "What they need is more time." (Not "are"—use is even though "they" is plural.)
-
 **Sensory**
 —
+
+**Story**
+Example: "What they need is more time." (Not "are"—use is even though "they" is plural.)
 
 ### 🟧 [J] Jester
 
@@ -1231,11 +1231,11 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 **Quote**
 —
 
-**Story**
-Go to the last street.
-
 **Sensory**
 —
+
+**Story**
+Go to the last street.
 
 #### Notes
 
@@ -1264,11 +1264,11 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
-
 **Sensory**
 —
+
+**Story**
+Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
 
 ### 🟧 [B] Bird of Paradise
 
@@ -1278,11 +1278,11 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 **Quote**
 —
 
-**Story**
-Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my passport that she dropped." This shows why we use cleft sentences: For Emphasis and Correction.
-
 **Sensory**
 —
+
+**Story**
+Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my passport that she dropped." This shows why we use cleft sentences: For Emphasis and Correction.
 
 ### 🟧 [C] Cat
 
@@ -1292,11 +1292,11 @@ Next to her, a Bird of Paradise opens its colorful feathers. It wants you to loo
 **Quote**
 —
 
-**Story**
-A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are plural (two people). But the Dragon uses fire to make them use a singular verb. He shouts: "It is Matt and Jessica who are having the party, not me." The rule is: Use the singular "Be," even for plural subjects.
-
 **Sensory**
 —
+
+**Story**
+A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are plural (two people). But the Dragon uses fire to make them use a singular verb. He shouts: "It is Matt and Jessica who are having the party, not me." The rule is: Use the singular "Be," even for plural subjects.
 
 ### 🟧 [E] Eagle
 
@@ -1306,11 +1306,11 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 **Quote**
 —
 
-**Story**
-Go to the second street.
-
 **Sensory**
 —
+
+**Story**
+Go to the second street.
 
 #### Notes
 

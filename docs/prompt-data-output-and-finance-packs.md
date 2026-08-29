@@ -8,6 +8,8 @@ This doc is the **canonical reference** for how prompts and importers are linked
 
 **Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). AHK is launcher-only ([`task_launcher.ahk`](../Utils/task_launcher.ahk)). CSV under `tasks/data/`. Migrate MD and AI pack **`TASK_PACK.txt`** run from the web UI (Import / Migrate); Import Management `[T]` opens `?import=1`. Fix file: `TASK_AI_FIX.txt`.
 
+**Push (all domains):** Utility Shortcuts top-level `[G]` / category **Push** is the only commit+push entrypoint ([`utility_git_push.ahk`](../Utils/utility_git_push.ahk)). It runs in the background, exports Tasks Markdown to the notes repo when `tasks/data` is dirty (`export_to_md.py` → `work.md` / `punctual.md` / `habits.md`), syncs Memory Palace practice+plans MD when `mnemonics/data` is dirty, then commits and pushes **scripts** and **notes**. Finance/Palace/Tasks in-app push keys were removed.
+
 ## For future agents — import system reference
 
 ### What this system does

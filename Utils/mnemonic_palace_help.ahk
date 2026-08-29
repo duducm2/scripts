@@ -41,7 +41,7 @@ Palace_ShowHelp() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
-    "Esc / Backspace — main menu. [L] Plans · [J] import plan pack · [I] mnemonic pack (.txt|.csv; auto palace numbers) · [O] plans on GitHub · [P] push. [R] regen Markdown. Browse [L] plans under a study. Dashboard: P plans · M method · L latest · Save (Plans panel)."
+    "Esc / Backspace — main menu. [L] Plans · [J] import plan pack · [I] mnemonic pack (.txt|.csv; auto palace numbers) · [O] plans on GitHub · push via Utility Shortcuts [G]. [R] regen Markdown. Browse [L] plans under a study. Dashboard: P plans · M method · L latest · Save (Plans panel)."
     )
     g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
     g_PalaceGui.OnEvent("Escape", (*) => Palace_ShowMainMenu())

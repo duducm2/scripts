@@ -1,7 +1,27 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
 ; Commit and push scripts + notes repos from Utility Shortcuts top-level [G]
+; Pre-exports Tasks MD + Palace practice/plans MD when CSV data is dirty.
+; Runs in the background so the UI stays usable.
 ; =============================================================================
+
+global g_UtilityGitPushBusy := false
+
+; #region agent log
+Utility_GitDebugLog(hypothesisId, location, message, data := "") {
+    try {
+        path := A_ScriptDir . "\debug-ce5d17.log"
+        dataEsc := StrReplace(StrReplace(String(data), "\", "\\"), '"', '\"')
+        msgEsc := StrReplace(StrReplace(String(message), "\", "\\"), '"', '\"')
+        locEsc := StrReplace(StrReplace(String(location), "\", "\\"), '"', '\"')
+        line := '{"sessionId":"ce5d17","hypothesisId":"' . hypothesisId
+            . '","location":"' . locEsc . '","message":"' . msgEsc
+            . '","data":"' . dataEsc . '","timestamp":' . A_TickCount . '}`n'
+        FileAppend(line, path, "UTF-8")
+    } catch {
+    }
+}
+; #endregion
 
 Utility_GitNotify(msg, ms := 1800, accent := "") {
     if (accent = "")
@@ -43,15 +63,105 @@ Utility_GitFormatPushError(r) {
     return line
 }
 
-; Returns "pushed", "noop", or "error:…"
-Utility_GitSyncPushOne(repoDir, label, commitMsg) {
-    prefix := label . ": "
-    try StandardLoadingBar_Update("⏳ " . prefix . "Checking git status…")
+Utility_GitPassiveBar(msg) {
+    ; Milestone updates on the active Loading Indication (animated bar).
+    try StandardLoadingBar_Update(msg)
     catch {
-        try StandardLoadingBar_Show("⏳ " . prefix . "Checking git status…", BANNER_ACCENT_INTERMEDIATE)
+        try StandardLoadingBar_Show(msg, BANNER_ACCENT_INTERMEDIATE)
         catch {
         }
     }
+}
+
+; True if porcelain status mentions a path under prefix (forward or backslash).
+Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
+    pref := StrLower(StrReplace(prefixFwd, "\", "/"))
+    prefAlt := StrReplace(pref, "/", "\")
+    for line in StrSplit(porcelain, "`n", "`r") {
+        t := Trim(line)
+        if (t = "")
+            continue
+        ; XY<space>path  or  XY path / rename with " -> "
+        low := StrLower(t)
+        if (InStr(low, pref) || InStr(low, prefAlt))
+            return true
+    }
+    return false
+}
+
+Utility_GitExportTasksMd(scriptsRoot, notesRoot) {
+    py := scriptsRoot . "\tasks\python\export_to_md.py"
+    if (!FileExist(py))
+        return "error:export_to_md.py not found"
+    pyCmd := ""
+    try pyCmd := Task_FindPythonCmd()
+    catch {
+        pyCmd := ""
+    }
+    if (pyCmd = "")
+        return "error:Python not found for Tasks MD export"
+    dataDir := scriptsRoot . "\tasks\data"
+    work := notesRoot . "\work\work.md"
+    punctual := notesRoot . "\main\punctual.md"
+    habits := notesRoot . "\main\habits.md"
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir
+        . '" --work "' . work . '" --punctual "' . punctual . '" --habits "' . habits . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . " /c " . cmd, scriptsRoot, "Hide")
+    } catch as e {
+        return "error:Tasks MD export failed: " . e.Message
+    }
+    if (exitCode != 0)
+        return "error:Tasks MD export failed (exit " . exitCode . ")"
+    return "ok"
+}
+
+Utility_GitPrepareExports(scriptsRoot, notesRoot) {
+    status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
+    if (status.exitCode != 0)
+        return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
+
+    porcelain := status.stdout
+    needTasks := Utility_GitStatusHasPathPrefix(porcelain, "tasks/data/")
+    needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
+
+    if (needTasks) {
+        Utility_GitPassiveBar("⏳ Exporting Tasks Markdown…")
+        r := Utility_GitExportTasksMd(scriptsRoot, notesRoot)
+        if (SubStr(r, 1, 6) = "error:")
+            return r
+    }
+
+    if (needPalace) {
+        Utility_GitPassiveBar("⏳ Syncing Memory Palace Markdown…")
+        okP := true
+        okL := true
+        try okP := Palace_SyncAllPracticeMd(false)
+        catch {
+            okP := false
+        }
+        try okL := Palace_SyncAllPlansMd(false)
+        catch {
+            okL := false
+        }
+        ; #region agent log
+        Utility_GitDebugLog("E", "utility_git_push.ahk:Prepare", "palace_sync", "practice=" . okP . ";plans=" . okL)
+        ; #endregion
+        ; Soft-fail: Drive-locked prune must not abort scripts/notes push
+        if (!okP || !okL) {
+            ; #region agent log
+            Utility_GitDebugLog("E", "utility_git_push.ahk:Prepare", "palace_soft_continue", "ok")
+            ; #endregion
+        }
+    }
+    return "ok"
+}
+
+; Returns "pushed", "noop", or "error:…"
+Utility_GitSyncPushOne(repoDir, label, commitMsg) {
+    prefix := label . ": "
+    Utility_GitPassiveBar("⏳ " . prefix . "Checking git status…")
 
     repo := GitCli_RevParseTopLevel(repoDir)
     if (repo = "")
@@ -69,16 +179,12 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
     if (changed = 0)
         return "noop"
 
-    try StandardLoadingBar_Update("⏳ " . prefix . "Staging changes…")
-    catch {
-    }
+    Utility_GitPassiveBar("⏳ " . prefix . "Staging changes…")
     add := GitCli_Run(repo, "add -A", 60000)
     if (add.exitCode != 0)
         return "error:" . label . " add failed: " . Utility_GitFirstErrorLine(add)
 
-    try StandardLoadingBar_Update("⏳ " . prefix . "Committing…")
-    catch {
-    }
+    Utility_GitPassiveBar("⏳ " . prefix . "Committing…")
     msgFile := A_Temp . "\utility-git-msg-" . A_TickCount . "-" . label . ".txt"
     try FileDelete(msgFile)
     catch {
@@ -98,9 +204,7 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
         return "error:" . label . " commit failed: " . err
     }
 
-    try StandardLoadingBar_Update("⏳ " . prefix . "Pushing to remote…")
-    catch {
-    }
+    Utility_GitPassiveBar("⏳ " . prefix . "Pushing to remote…")
     push := GitCli_Run(repo, "push", 120000)
     if (push.exitCode != 0) {
         branch := GitCli_CaptureStdout(repo, "branch --show-current", 15000)
@@ -115,9 +219,34 @@ Utility_GitSyncPushOne(repoDir, label, commitMsg) {
     return "pushed"
 }
 
+; Entry from Utility Shortcuts [G] — arms background worker immediately.
 Utility_GitSyncPush() {
+    global g_UtilityGitPushBusy
+    ; #region agent log
+    Utility_GitDebugLog("A", "utility_git_push.ahk:SyncPush", "entry", "busy=" . g_UtilityGitPushBusy)
+    ; #endregion
+    if (g_UtilityGitPushBusy) {
+        Utility_GitNotify("ℹ Push already running", 1800, BANNER_ACCENT_INFO)
+        return
+    }
+    g_UtilityGitPushBusy := true
+    ; #region agent log
+    Utility_GitDebugLog("A", "utility_git_push.ahk:SyncPush", "armed_timer", "ok")
+    ; #endregion
+    SetTimer(Utility_GitSyncPushWorker, -1)
+}
+
+Utility_GitSyncPushWorker() {
+    global g_UtilityGitPushBusy
+    outcome := "unset"
+    resultMsg := ""
+    resultAccent := BANNER_ACCENT_INFO
+    ; #region agent log
+    Utility_GitDebugLog("A", "utility_git_push.ahk:Worker", "worker_start", "")
+    ; #endregion
     try {
-        try StandardLoadingBar_Show("⏳ Checking git status…", BANNER_ACCENT_INTERMEDIATE)
+        ; Loading Indication for the whole push (animated bar)
+        try StandardLoadingBar_Show("⏳ Preparing push…", BANNER_ACCENT_INTERMEDIATE)
         catch {
         }
 
@@ -126,7 +255,12 @@ Utility_GitSyncPush() {
 
         scriptsRoot := GitCli_RevParseTopLevel(A_ScriptDir)
         if (scriptsRoot = "") {
-            Utility_GitNotify("❌ Scripts not a git repository", 2500, BANNER_ACCENT_ERROR)
+            outcome := "err_scripts_root"
+            resultMsg := "❌ Scripts not a git repository"
+            resultAccent := BANNER_ACCENT_ERROR
+            ; #region agent log
+            Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "early_exit", outcome)
+            ; #endregion
             return
         }
 
@@ -135,13 +269,38 @@ Utility_GitSyncPush() {
         catch {
             notesRoot := ""
         }
+        ; #region agent log
+        Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "roots", "scripts=" . scriptsRoot . ";notes=" .
+            notesRoot)
+        ; #endregion
         if (notesRoot = "" || !DirExist(notesRoot)) {
-            Utility_GitNotify("❌ Notes repo folder not found", 2500, BANNER_ACCENT_ERROR)
+            outcome := "err_notes_root"
+            resultMsg := "❌ Notes repo folder not found"
+            resultAccent := BANNER_ACCENT_ERROR
+            ; #region agent log
+            Utility_GitDebugLog("B", "utility_git_push.ahk:Worker", "early_exit", outcome)
+            ; #endregion
+            return
+        }
+
+        Utility_GitPassiveBar("⏳ Exporting Markdown if needed…")
+        prep := Utility_GitPrepareExports(scriptsRoot, notesRoot)
+        ; #region agent log
+        Utility_GitDebugLog("E", "utility_git_push.ahk:Worker", "prep_result", prep)
+        ; #endregion
+        if (SubStr(prep, 1, 6) = "error:") {
+            outcome := "err_prep"
+            resultMsg := "❌ " . SubStr(prep, 7)
+            resultAccent := BANNER_ACCENT_ERROR
             return
         }
 
         scriptsResult := Utility_GitSyncPushOne(scriptsRoot, "Scripts", commitMsg)
         notesResult := Utility_GitSyncPushOne(notesRoot, "Notes", commitMsg)
+        ; #region agent log
+        Utility_GitDebugLog("C", "utility_git_push.ahk:Worker", "push_results", "scripts=" . scriptsResult . ";notes=" .
+            notesResult)
+        ; #endregion
 
         errors := []
         if (SubStr(scriptsResult, 1, 6) = "error:")
@@ -149,12 +308,16 @@ Utility_GitSyncPush() {
         if (SubStr(notesResult, 1, 6) = "error:")
             errors.Push(SubStr(notesResult, 7))
         if (errors.Length > 0) {
-            Utility_GitNotify("❌ " . errors[1], 4000, BANNER_ACCENT_ERROR)
+            outcome := "err_push"
+            resultMsg := "❌ " . errors[1]
+            resultAccent := BANNER_ACCENT_ERROR
             return
         }
 
         if (scriptsResult = "noop" && notesResult = "noop") {
-            Utility_GitNotify("ℹ Nothing to commit", 1800, BANNER_ACCENT_INFO)
+            outcome := "noop"
+            resultMsg := "ℹ Nothing to commit"
+            resultAccent := BANNER_ACCENT_INFO
             return
         }
 
@@ -163,15 +326,38 @@ Utility_GitSyncPush() {
             parts.Push("Scripts")
         if (notesResult = "pushed")
             parts.Push("Notes")
-        if (parts.Length = 2)
-            Utility_GitNotify("✅ Scripts + Notes pushed", 2500, BANNER_ACCENT_SUCCESS)
-        else
-            Utility_GitNotify("✅ " . parts[1] . " pushed", 2500, BANNER_ACCENT_SUCCESS)
+        if (parts.Length = 2) {
+            outcome := "ok_both"
+            resultMsg := "✅ Scripts + Notes pushed"
+        } else {
+            outcome := "ok_" . parts[1]
+            resultMsg := "✅ " . parts[1] . " pushed"
+        }
+        resultAccent := BANNER_ACCENT_SUCCESS
+        ; #region agent log
+        Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "before_success_notify", outcome)
+        ; #endregion
     } catch as e {
-        Utility_GitNotify("❌ Push failed: " . e.Message, 3500, BANNER_ACCENT_ERROR)
+        outcome := "exception"
+        resultMsg := "❌ Push failed: " . e.Message
+        resultAccent := BANNER_ACCENT_ERROR
+        ; #region agent log
+        Utility_GitDebugLog("E", "utility_git_push.ahk:Worker", "exception", e.Message)
+        ; #endregion
     } finally {
+        ; #region agent log
+        Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "finally_hide_bar", "outcome=" . outcome)
+        ; #endregion
+        g_UtilityGitPushBusy := false
         try StandardLoadingBar_Hide(0)
         catch {
+        }
+        ; Information Only AFTER Hide so Hide does not wipe the result toast
+        if (resultMsg != "") {
+            ; #region agent log
+            Utility_GitDebugLog("F", "utility_git_push.ahk:Worker", "result_toast_after_hide", outcome)
+            ; #endregion
+            Utility_GitNotify(resultMsg, 2800, resultAccent)
         }
     }
 }

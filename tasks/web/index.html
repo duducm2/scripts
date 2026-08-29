@@ -1384,7 +1384,6 @@
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
       <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+K)">Import</button>
-      <button class="btn" data-act="migrate" title="Migrate MD (Shift+M)">Migrate MD</button>
       <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H or F1)">Help</button>`;
         }
 
@@ -1437,7 +1436,6 @@
         </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
           ${row("⇧K", "Open Import")}
-          ${row("⇧M", "Migrate MD")}
           ${row("⇧H / F1", "This help")}
         </div></div>
       </div>
@@ -2024,24 +2022,10 @@
             render();
             return;
           }
-          if (k === "m") {
-            await runMigrateMd();
-            return;
-          }
           if (k === "h") {
             helpModal();
             return;
           }
-        }
-
-        async function runMigrateMd() {
-          if (!confirm("Overwrite tasks CSV from notes MD files?")) return;
-          const r = await api("/api/migrate", {
-            method: "POST",
-            body: "{}",
-          });
-          toast(r.message || "Migrated");
-          await refresh();
         }
 
         async function deleteSelection() {
@@ -2950,10 +2934,6 @@
             }
             if (act === "import-commit") {
               await runImportCommit();
-              return;
-            }
-            if (act === "migrate") {
-              await runMigrateMd();
               return;
             }
           } catch (err) {

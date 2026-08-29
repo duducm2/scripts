@@ -53,7 +53,6 @@ Finance_ShowMainMenu() {
         ["L", "Recurring bills", "Tracking only, no auto-charge"],
         ["K", "Categories", "CRUD, search, filter"],
         ["I", "AI import", "Desktop daily / monthly"],
-        ["P", "Push to cloud", "Commit and push scripts repo"],
         ["S", "Settings", "Dashboard widgets"]
     ]
 
@@ -81,12 +80,12 @@ Finance_ShowMainMenu() {
 
     g_FinanceGui.SetFont("s9 c808080", "Segoe UI")
     g_FinanceGui.Add("Text", "x20 y586 w880",
-        "Backspace utility shortcuts   Esc close   letters open a module   P push   S settings")
+        "Backspace utility shortcuts   Esc close   letters open a module   S settings")
 
     Finance_BindHotkeys([
         ["d", Finance_OnDash], ["t", Finance_OnTx], ["a", Finance_OnAcc], ["c", Finance_OnCard],
         ["b", Finance_OnBud], ["g", Finance_OnGoals], ["l", Finance_OnRec], ["k", Finance_OnCat],
-        ["i", Finance_OnImp], ["p", Finance_OnGitPush], ["s", Finance_OnSet],
+        ["i", Finance_OnImp], ["s", Finance_OnSet],
         ["Backspace", (*) => Finance_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Finance_CloseGui()]
     ])
@@ -126,9 +125,6 @@ Finance_OnCat(*) {
 }
 Finance_OnImp(*) {
     Finance_ShowImportMenu()
-}
-Finance_OnGitPush(*) {
-    Finance_GitSyncPush()
 }
 Finance_OnSet(*) {
     Finance_ShowSettings()

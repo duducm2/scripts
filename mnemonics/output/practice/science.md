@@ -17,10 +17,10 @@
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bv] [Bone vulture] Context: A strong how-question asks how people experience, interpret, perceive, or make sense of something in context. Quote: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Narrative: A Bone vulture swells to the size of a house facade and pecks a giant paper template stuck to the distant wall. With every peck, it croaks the exact formula: "How do [people/group] experience, interpret, perceive, negotiate, construct, or make sense of [phenomenon] in [context]?" Nikola Tesla watches the pecked holes turn into tiny doors, each showing a different user making sense of an online store.
@@ -31,10 +31,10 @@
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bw] [Bone wombat] Context: A strong why-question asks why people give meaning, value, trust, distrust, concern, or risk to something. Quote: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Narrative: A Bone wombat floats above a street lamp, far heavier than the air should allow. It claws the exact quote into visible thunder: "Why do [people/group] attribute meaning, value, concern, trust, or distrust to [phenomenon] in [context]?" Nikola Tesla raises a coil, and the thunder tastes like lemon while each word sparks toward trust symbols, reviews, return policies, and warning signs.
@@ -45,10 +45,10 @@
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Bx] [Bone Xena, warrior woman] Context: For e-commerce trust, one strong question can combine how users build trust and why they see some signals as credible or risky. Quote: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Narrative: Bone Xena stands on the right street corner and opens a shield so wide that it bends the road like soft cloth. She carves the exact research-ready question across the shield: "How do users construct trust in unfamiliar e-commerce websites, and why do they attribute credibility or risk to specific signals such as SSL indicators, customer reviews, flexibility policies, and interface design?" Nikola Tesla pulls a lightning wire from the shield, and SSL locks, review stars, return-policy scrolls, and interface buttons orbit the warrior like tiny moons.
@@ -59,11 +59,11 @@
 **Quote**
 —
 
-**Story**
-https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
-
 **Sensory**
 —
+
+**Story**
+https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
 
 #### Notes
 
@@ -92,11 +92,11 @@ _No gallery images._
 **Quote**
 “a strong research question typically has a clear singular Focus so don't try to cram multiple questions into one”
 
-**Story**
-The Bone Quetzalcoatl phases directly through the solid brick wall, defying physics. Its skeletal head bites the exact center of a giant glowing dartboard, hissing the first quote as sparks fly visibly into its empty eye sockets. Simultaneously, its massive feathered forelimbs violently smash three magnifying glasses together into a single laser beam, spewing the second quote as bone dust physically grinds the glass into one sharp point. Batman watches the impossibly large skeletal snake rewrite the rules of reality.
-
 **Sensory**
 —
+
+**Story**
+The Bone Quetzalcoatl phases directly through the solid brick wall, defying physics. Its skeletal head bites the exact center of a giant glowing dartboard, hissing the first quote as sparks fly visibly into its empty eye sockets. Simultaneously, its massive feathered forelimbs violently smash three magnifying glasses together into a single laser beam, spewing the second quote as bone dust physically grinds the glass into one sharp point. Batman watches the impossibly large skeletal snake rewrite the rules of reality.
 
 ### 🟧 [Br] brontosaurus
 
@@ -106,11 +106,11 @@ The Bone Quetzalcoatl phases directly through the solid brick wall, defying phys
 **Quote**
 “your research question should take the statement that is your research aim it should then narrow that down to a tighter Focus area and present it as a question”
 
-**Story**
-A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. Its head roars the first quote so loudly the soundwaves paint a blurry cloud across the sky, deafening Batman. Below, its massive forelimbs grab a fully inflated hot air balloon, violently squeezing the rubber into a dense, tiny, glowing question mark as it thunders the second quote, forcing the massive balloon to physically shrink in its grip.
-
 **Sensory**
 —
+
+**Story**
+A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. Its head roars the first quote so loudly the soundwaves paint a blurry cloud across the sky, deafening Batman. Below, its massive forelimbs grab a fully inflated hot air balloon, violently squeezing the rubber into a dense, tiny, glowing question mark as it thunders the second quote, forcing the massive balloon to physically shrink in its grip.
 
 ### 🟧 [Bs] Bone skull
 
@@ -120,11 +120,11 @@ A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. It
 **Quote**
 “even a super super tantalizing and thought-provoking research question isn't going to be of much value if you can't feasibly answer it”
 
-**Story**
-A floating Bone skull hovers over the distant crosswalk, trying to bite a tantalizing, glowing diamond floating in the air. Its bony jaw physically phases right through the gem because it is completely impossible to catch. Frustrated by the impossible task, the skull squawks the exact quote into the night air while Batman tries to grab the gem himself.
-
 **Sensory**
 —
+
+**Story**
+A floating Bone skull hovers over the distant crosswalk, trying to bite a tantalizing, glowing diamond floating in the air. Its bony jaw physically phases right through the gem because it is completely impossible to catch. Frustrated by the impossible task, the skull squawks the exact quote into the night air while Batman tries to grab the gem himself.
 
 ### 🟧 [Bt] Bone toucan
 
@@ -134,11 +134,11 @@ A floating Bone skull hovers over the distant crosswalk, trying to bite a tantal
 **Quote**
 “without a welldefined research Gap you're going to risk wasting your effort running after a question that's already been adequately answered”
 
-**Story**
-A colossal Bone toucan lands perfectly on an old, dusty book resting on a high street lamp, shrinking the entire street with its disproportionate scale. It frantically uses its heavy beak to dig a deep, perfectly square gap straight through the thick pages, loudly vibrating its hollow bones to speak the quote so it does not waste time reading the same old text.
-
 **Sensory**
 —
+
+**Story**
+A colossal Bone toucan lands perfectly on an old, dusty book resting on a high street lamp, shrinking the entire street with its disproportionate scale. It frantically uses its heavy beak to dig a deep, perfectly square gap straight through the thick pages, loudly vibrating its hollow bones to speak the quote so it does not waste time reading the same old text.
 
 #### Notes
 
@@ -167,11 +167,11 @@ _No gallery images._
 **Quote**
 “The 'action' part means that the data doesn't just sit on a shelf; it is directly translated into tools for healing, organizing, and fighting back against institutional violence.”
 
-**Story**
-A colossal Bone Neanderthal stomps onto the street next to a brick gate, towering over Darth Vader. The glowing whiteboard diagram fused into its skull pulses with blinding light as it roars the first quote. It then crushes the glowing orb of knowledge in its huge skeletal hands, sending out intense tactile shockwaves that ripple the ground while it bellows the second quote. Finally, a dusty academic shelf violently bursts from its ribcage with a deafening crash, magically forging the falling papers into glowing shields as the beast thunders the final quote.
-
 **Sensory**
 —
+
+**Story**
+A colossal Bone Neanderthal stomps onto the street next to a brick gate, towering over Darth Vader. The glowing whiteboard diagram fused into its skull pulses with blinding light as it roars the first quote. It then crushes the glowing orb of knowledge in its huge skeletal hands, sending out intense tactile shockwaves that ripple the ground while it bellows the second quote. Finally, a dusty academic shelf violently bursts from its ribcage with a deafening crash, magically forging the falling papers into glowing shields as the beast thunders the final quote.
 
 ### 🟧 [Bo] bower-bird
 
@@ -181,11 +181,11 @@ A colossal Bone Neanderthal stomps onto the street next to a brick gate, towerin
 **Quote**
 “It is a continuous spiral of plan, act, observe, and reflect, where each cycle informs the next.”
 
-**Story**
-A giant bower-bird weaves a nest out of four colored arrows that glow like neon tubes on a lamp post. Darth Vader watches as the bird flies in a perfect, never-ending spiral, leaving a trail of fire in the air. With every blazing loop it completes, the bird perfectly squawks the quote.
-
 **Sensory**
 —
+
+**Story**
+A giant bower-bird weaves a nest out of four colored arrows that glow like neon tubes on a lamp post. Darth Vader watches as the bird flies in a perfect, never-ending spiral, leaving a trail of fire in the air. With every blazing loop it completes, the bird perfectly squawks the quote.
 
 ### 🟧 [Bp] Bone panther
 
@@ -195,11 +195,11 @@ A giant bower-bird weaves a nest out of four colored arrows that glow like neon 
 **Quote**
 “Participatory Action Research is a model where the people most impacted by a social issue are the ones actually designing and conducting the research.”
 
-**Story**
-A towering Bone panther hovers over a balcony, completely dwarfing the city street. It drops giant, glowing blueprint scrolls directly into the hands of a group of battered citizens, aggressively batting Darth Vader away when he tries to intercept them. The giant skeletal feline hisses the quote as the blueprints magically assemble into floating research tools in the citizens' hands.
-
 **Sensory**
 —
+
+**Story**
+A towering Bone panther hovers over a balcony, completely dwarfing the city street. It drops giant, glowing blueprint scrolls directly into the hands of a group of battered citizens, aggressively batting Darth Vader away when he tries to intercept them. The giant skeletal feline hisses the quote as the blueprints magically assemble into floating research tools in the citizens' hands.
 
 #### Notes
 
@@ -228,11 +228,11 @@ _No gallery images._
 **Quote**
 “Open coding is the first stage, where you break the qualitative data into smaller meaningful pieces and label them as concepts.”
 
-**Story**
-A tiny Bone kitten scratches a giant transcript projected on a wall until the paper splits into glowing bone-shaped pieces. Charles Darwin points to the instructor�s line on the screen while the kitten meows the exact words: "Open coding is the first stage, where you break the qualitative data into smaller meaningful pieces and label them as concepts." Each broken piece floats upward and freezes as a sharp label, far too heavy for such a small kitten.
-
 **Sensory**
 —
+
+**Story**
+A tiny Bone kitten scratches a giant transcript projected on a wall until the paper splits into glowing bone-shaped pieces. Charles Darwin points to the instructor�s line on the screen while the kitten meows the exact words: "Open coding is the first stage, where you break the qualitative data into smaller meaningful pieces and label them as concepts." Each broken piece floats upward and freezes as a sharp label, far too heavy for such a small kitten.
 
 ### 🟧 [Bl] bloodhound
 
@@ -242,11 +242,11 @@ A tiny Bone kitten scratches a giant transcript projected on a wall until the pa
 **Quote**
 “Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them.”
 
-**Story**
-A colossal bloodhound bites loose concept tags and pulls them into a spinning wheel fixed to a street gate. Charles Darwin taps the on-screen diagram as the bloodhound barks the exact words: "Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them." The tags snap together with loud magnetic clicks, and the wheel smells like hot metal and wet dog.
-
 **Sensory**
 —
+
+**Story**
+A colossal bloodhound bites loose concept tags and pulls them into a spinning wheel fixed to a street gate. Charles Darwin taps the on-screen diagram as the bloodhound barks the exact words: "Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them." The tags snap together with loud magnetic clicks, and the wheel smells like hot metal and wet dog.
 
 ### 🟧 [Bm] Bone marmoset
 
@@ -256,11 +256,11 @@ A colossal bloodhound bites loose concept tags and pulls them into a spinning wh
 **Quote**
 “Selective coding is the final integration stage, where you identify one core category that explains the main pattern in the data.”
 
-**Story**
-A Bone marmoset climbs a huge floating crown made of category cards and jams one bright core card into the center. Charles Darwin holds up the final slide as the marmoset screeches the exact words: "Selective coding is the final integration stage, where you identify one core category that explains the main pattern in the data." The whole crown bends space toward the core card, as if every category is being pulled by a tiny academic black hole.
-
 **Sensory**
 —
+
+**Story**
+A Bone marmoset climbs a huge floating crown made of category cards and jams one bright core card into the center. Charles Darwin holds up the final slide as the marmoset screeches the exact words: "Selective coding is the final integration stage, where you identify one core category that explains the main pattern in the data." The whole crown bends space toward the core card, as if every category is being pulled by a tiny academic black hole.
 
 #### Notes
 
@@ -289,11 +289,11 @@ _No gallery images._
 **Quote**
 “�Indexicality is critical to this process, meaning people make sense of things based strictly on the context or circumstances in which they are encountered.�”
 
-**Story**
-The Bone frog carries the theory pack through the same Bosch UX street. Ada Lovelace stands near a test table and watches the frog act like a living theory map. The frog shows that people do not just �see� reality. They live through situations, label what things mean, and read each sign through its context. The floating windows show lived experience. The sticky labels show shared social meaning. The small note under its paw shows that the same thing can mean something different depending on where it appears.
-
 **Sensory**
 —
+
+**Story**
+The Bone frog carries the theory pack through the same Bosch UX street. Ada Lovelace stands near a test table and watches the frog act like a living theory map. The frog shows that people do not just �see� reality. They live through situations, label what things mean, and read each sign through its context. The floating windows show lived experience. The sticky labels show shared social meaning. The small note under its paw shows that the same thing can mean something different depending on where it appears.
 
 ### 🟧 [Bg] Bone goat
 
@@ -303,11 +303,11 @@ The Bone frog carries the theory pack through the same Bosch UX street. Ada Love
 **Quote**
 “�IPA is built on a double hermeneutic. This means the researcher is trying to make sense of the participant trying to make sense of their own world. Participants are treated as active sense-makers, not passive subjects.�”
 
-**Story**
-The Bone goat stands beside a Bosch UX interview table. The goat is not counting clicks or only checking task time. It looks into a clear water tank on its back, where memory bubbles from one participant�s life float slowly. The goat reminds the researcher that IPA has two layers: the participant explains their world, and the UX researcher interprets that explanation with care.
-
 **Sensory**
 —
+
+**Story**
+The Bone goat stands beside a Bosch UX interview table. The goat is not counting clicks or only checking task time. It looks into a clear water tank on its back, where memory bubbles from one participant�s life float slowly. The goat reminds the researcher that IPA has two layers: the participant explains their world, and the UX researcher interprets that explanation with care.
 
 ### 🟧 [Bh] Bone Hydra
 
@@ -317,11 +317,11 @@ The Bone goat stands beside a Bosch UX interview table. The goat is not counting
 **Quote**
 “�Define the research question: Ask open-ended questions about human experience.�”
 
-**Story**
-The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does not ask a narrow yes-or-no question. One head lowers the wide paper funnel onto the prototype and asks people how trust forms while they look at signs, opinions, choices, and support. The Hydra keeps the question open so the participant can explain the experience in their own words.
-
 **Sensory**
 —
+
+**Story**
+The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does not ask a narrow yes-or-no question. One head lowers the wide paper funnel onto the prototype and asks people how trust forms while they look at signs, opinions, choices, and support. The Hydra keeps the question open so the participant can explain the experience in their own words.
 
 ### 🟧 [Bi] bison
 
@@ -331,11 +331,11 @@ The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does n
 **Quote**
 “�Conceptual comments explore what this might mean on a deeper level.�”
 
-**Story**
-The bison stands heavy and slow beside a Bosch research board. A thick transcript blanket covers its back, and the bison reads it line by line, then reads it again. It places notes in the margins to catch what the user says about trust. It listens for words, tone, and metaphors. It also looks under the surface, asking what the participant�s words may mean for their deeper sense of safety, control, and doubt.
-
 **Sensory**
 —
+
+**Story**
+The bison stands heavy and slow beside a Bosch research board. A thick transcript blanket covers its back, and the bison reads it line by line, then reads it again. It places notes in the margins to catch what the user says about trust. It listens for words, tone, and metaphors. It also looks under the surface, asking what the participant�s words may mean for their deeper sense of safety, control, and doubt.
 
 ### 🟧 [Bj] Bone jester
 
@@ -345,11 +345,11 @@ The bison stands heavy and slow beside a Bosch research board. A thick transcrip
 **Quote**
 “�Successfully applying IPA requires the researcher to embrace reflexivity. The researcher is part of the meaning-making process, not a robot. Acknowledging personal biases, assumptions, and the interpretative role ensures the analysis remains close to the data and allows participant voices to guide the findings.�”
 
-**Story**
-The Bone jester kneels near the Bosch prototype in motley and ringing bells, guarding one participant case file before touching the others. It builds themes for that person first, using direct quote strips on its back as proof. Only after that does it connect colored threads across cases. Its mirror badge is the key reminder: the UX researcher is part of the meaning-making work, so their assumptions must stay visible. The split notebook in its mouth keeps the method contrast clear: Grounded Theory tries to build a theory from data, while IPA stays closer to how a specific person makes sense of an experience.
-
 **Sensory**
 —
+
+**Story**
+The Bone jester kneels near the Bosch prototype in motley and ringing bells, guarding one participant case file before touching the others. It builds themes for that person first, using direct quote strips on its back as proof. Only after that does it connect colored threads across cases. Its mirror badge is the key reminder: the UX researcher is part of the meaning-making work, so their assumptions must stay visible. The split notebook in its mouth keeps the method contrast clear: Grounded Theory tries to build a theory from data, while IPA stays closer to how a specific person makes sense of an experience.
 
 #### Notes
 
@@ -378,11 +378,11 @@ _No gallery images._
 **Quote**
 “"Reasoning is the process of using existing knowledge to draw conclusions, make predictions, or construct explanations."[cite: 1]”
 
-**Story**
-A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] Sherlock Holmes[cite: 7] hands the bear facts he already knows, and the bear uses them to build a clear path upward to explain a mystery.[cite: 1]
-
 **Sensory**
 —
+
+**Story**
+A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] Sherlock Holmes[cite: 7] hands the bear facts he already knows, and the bear uses them to build a clear path upward to explain a mystery.[cite: 1]
 
 ### 🟧 [Bc] Bone Cat
 
@@ -392,11 +392,11 @@ A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] She
 **Quote**
 “Deductive reasoning is basically called a top-down approach, which means from generalizations to particulars, or from hypothesis to evidence."[cite: 1]”
 
-**Story**
-A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a large block that says "All" down the stairs, watching it shrink into a tiny block that says "One" as it hits the bottom.[cite: 1] Then, the Bone Cat[cite: 8] runs down and bites the tiny block hard to test if it is real.[cite: 1] Because the starting block at the top was made of solid truth, the Bone Cat[cite: 8] finds the final piece is also perfectly solid and true.[cite: 1]
-
 **Sensory**
 —
+
+**Story**
+A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a large block that says "All" down the stairs, watching it shrink into a tiny block that says "One" as it hits the bottom.[cite: 1] Then, the Bone Cat[cite: 8] runs down and bites the tiny block hard to test if it is real.[cite: 1] Because the starting block at the top was made of solid truth, the Bone Cat[cite: 8] finds the final piece is also perfectly solid and true.[cite: 1]
 
 ### 🟧 [Bd] Bone Dog
 
@@ -406,11 +406,11 @@ A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a 
 **Quote**
 “Inductive reasoning moves from specific to general."[cite: 1]”
 
-**Story**
-A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] It carries a few specific drops of coffee from the floor high into the sky to form a large, general cloud.[cite: 1] While floating, the Bone Dog[cite: 8] holds a clipboard in its paws and gathers real coffee cups from the ground to prove its guess that the coffee is tasty.[cite: 1]
-
 **Sensory**
 —
+
+**Story**
+A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] It carries a few specific drops of coffee from the floor high into the sky to form a large, general cloud.[cite: 1] While floating, the Bone Dog[cite: 8] holds a clipboard in its paws and gathers real coffee cups from the ground to prove its guess that the coffee is tasty.[cite: 1]
 
 ### 🟧 [Be] bee
 
@@ -420,11 +420,11 @@ A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] I
 **Quote**
 “Abductive reasoning or abduction is making a probable conclusion from what you know."[cite: 1]”
 
-**Story**
-A giant bee[cite: 8] lands nearby on the street, holding a hot cup of coffee with a question mark painted on it to make a highly likely guess about who left it there.[cite: 1] It then uses its stinger to lift a blanket on the ground, revealing that the footprint evidence is completely missing.[cite: 1] Because a big piece is hidden, the bee[cite: 8] knows it can only guess the final answer.[cite: 1]
-
 **Sensory**
 —
+
+**Story**
+A giant bee[cite: 8] lands nearby on the street, holding a hot cup of coffee with a question mark painted on it to make a highly likely guess about who left it there.[cite: 1] It then uses its stinger to lift a blanket on the ground, revealing that the footprint evidence is completely missing.[cite: 1] Because a big piece is hidden, the bee[cite: 8] knows it can only guess the final answer.[cite: 1]
 
 #### Notes
 
@@ -453,11 +453,11 @@ _No gallery images._
 **Quote**
 “Strauss and Corbin explicitly shifted away from Glaser�s philosophy of natural emergence. Instead, they engineered a highly prescriptive, analytical coding framework designed to generate theories systematically and verify them simultaneously within the data.”
 
-**Story**
-An awassi sheep steps into the library wearing rigid metal frames to enforce strict structural rules. It holds a carved stone wheel in its hooves, using it to force broken pieces of a plant into highly specific slots, carefully mapping the exact causes and effects between each broken fragment. It bleats loudly at the axolotl floating nearby.
-
 **Sensory**
 —
+
+**Story**
+An awassi sheep steps into the library wearing rigid metal frames to enforce strict structural rules. It holds a carved stone wheel in its hooves, using it to force broken pieces of a plant into highly specific slots, carefully mapping the exact causes and effects between each broken fragment. It bleats loudly at the axolotl floating nearby.
 
 ### 🟧 [Ax] axolotl
 
@@ -467,11 +467,11 @@ An awassi sheep steps into the library wearing rigid metal frames to enforce str
 **Quote**
 “"Charmaz argued that researchers are not neutral observers; their past experiences, cultural backgrounds, academic training, and personal biases are inextricably woven into the very fabric of the data collection and theory generation processes."”
 
-**Story**
-A pink axolotl swims in a floating water bubble, actively wrapping its slippery body around Socrates. It whispers that human biases and past experiences always weave into the data, proving that the observer and the subject build the truth together. The axolotl spits a splash of water at the aye-aye to emphasize its point.
-
 **Sensory**
 —
+
+**Story**
+A pink axolotl swims in a floating water bubble, actively wrapping its slippery body around Socrates. It whispers that human biases and past experiences always weave into the data, proving that the observer and the subject build the truth together. The axolotl spits a splash of water at the aye-aye to emphasize its point.
 
 ### 🟧 [Ay] aye-aye
 
@@ -481,11 +481,11 @@ A pink axolotl swims in a floating water bubble, actively wrapping its slippery 
 **Quote**
 “"By forcing the researcher to code exclusively with gerunds... the analysis remains dynamically focused on actions, processes, and changes over time."”
 
-**Story**
-A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips out any paper that uses static nouns, throwing the crumpled pages directly at the Aztec warrior. The aye-aye only types active, moving words ending in "ing" with its long, bony finger to keep the focus completely on changing actions rather than frozen topics.
-
 **Sensory**
 —
+
+**Story**
+A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips out any paper that uses static nouns, throwing the crumpled pages directly at the Aztec warrior. The aye-aye only types active, moving words ending in "ing" with its long, bony finger to keep the focus completely on changing actions rather than frozen topics.
 
 ### 🟧 [Az] Aztec
 
@@ -495,11 +495,11 @@ A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips
 **Quote**
 “"Memo-writing operates as the vital connective tissue of the analysis. Memos are continuous, informal, analytical notes written by the researcher throughout the entire lifecycle of the project."”
 
-**Story**
-An Aztec warrior decorated with bright feathers ignores the crumpled paper and walks right across the aye-aye's typewriter keys. He carries small, messy sticky notes in his teeth. He stretches sticky strings across the room, pasting the informal notes between the bare bones of the library's skeletons. These notes act as the vital tissue that holds the entire project together.
-
 **Sensory**
 —
+
+**Story**
+An Aztec warrior decorated with bright feathers ignores the crumpled paper and walks right across the aye-aye's typewriter keys. He carries small, messy sticky notes in his teeth. He stretches sticky strings across the room, pasting the informal notes between the bare bones of the library's skeletons. These notes act as the vital tissue that holds the entire project together.
 
 ### 🟧 [Ba] bat
 
@@ -509,11 +509,11 @@ An Aztec warrior decorated with bright feathers ignores the crumpled paper and w
 **Quote**
 “"Abduction is a highly sophisticated form of reasoning where the researcher examines complex data, forms a number of provisional hypotheses to explain that data, and then explicitly returns to the field to collect more data to prove or disprove those hypotheses during the ongoing analysis."”
 
-**Story**
-A large bat hangs upside down from the library chandelier. Completely ignoring the Aztec's sticky strings, it squeaks at a strange shadow, makes a quick guess about what the shadow is, and flies out the open door to find real evidence. It constantly flies back and forth, testing its temporary guesses against fresh clues in the field.
-
 **Sensory**
 —
+
+**Story**
+A large bat hangs upside down from the library chandelier. Completely ignoring the Aztec's sticky strings, it squeaks at a strange shadow, makes a quick guess about what the shadow is, and flies out the open door to find real evidence. It constantly flies back and forth, testing its temporary guesses against fresh clues in the field.
 
 #### Notes
 
@@ -542,11 +542,11 @@ _No gallery images._
 **Quote**
 “"We are going to link data analysis with theory."[cite: 1] "Data analysis takes place during data collection."[cite: 1] "Theoretical saturation you reach when your theory is so sophisticated that every new data point, every new interview does not lead to more refinement of your concepts or your categories."[cite: 1]”
 
-**Story**
-A slippery asp[cite: 3] slithers between a classic detective in a deerstalker hat[cite: 5] and a glowing brain, linking raw clues directly to thoughts as they arrive. The snake holds a perfect, polished diamond in its tail, refusing to let the auroch[cite: 3] polish it further because the gem is already perfectly refined.
-
 **Sensory**
 —
+
+**Story**
+A slippery asp[cite: 3] slithers between a classic detective in a deerstalker hat[cite: 5] and a glowing brain, linking raw clues directly to thoughts as they arrive. The snake holds a perfect, polished diamond in its tail, refusing to let the auroch[cite: 3] polish it further because the gem is already perfectly refined.
 
 ### 🟧 [At] atlas
 
@@ -556,11 +556,11 @@ A slippery asp[cite: 3] slithers between a classic detective in a deerstalker ha
 **Quote**
 “"The most important concept in Grounded Theory is constant comparison."[cite: 1] "What you do is compare data with data, data with concepts, concepts with data, and then you start to compare concepts with concepts."[cite: 1] "Every concept is temporary and they're provisional, they give some guidance but that's it, you shouldn't pin them down, they're not written in stone."[cite: 1]”
 
-**Story**
-A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spiky-haired martial artist in an orange gi[cite: 5] watches as the atlas constantly looks back and forth, comparing every single clue. The atlas juggles water drops into ice cubes to form a star, then draws temporary rules in the sand that easily wash away, knowing early ideas aren't locked in place.
-
 **Sensory**
 —
+
+**Story**
+A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spiky-haired martial artist in an orange gi[cite: 5] watches as the atlas constantly looks back and forth, comparing every single clue. The atlas juggles water drops into ice cubes to form a star, then draws temporary rules in the sand that easily wash away, knowing early ideas aren't locked in place.
 
 ### 🟧 [Au] auroch
 
@@ -570,11 +570,11 @@ A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spi
 **Quote**
 “"What you try to do is not representation, but saturation."[cite: 1]”
 
-**Story**
-A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squeeze rain from a dark cloud into a sponge held by the atlas[cite: 3]. Instead of counting the drops, the beast just watches until the sponge is totally full and cannot absorb any more, showing that capacity, not a simple count, is the true goal.
-
 **Sensory**
 —
+
+**Story**
+A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squeeze rain from a dark cloud into a sponge held by the atlas[cite: 3]. Instead of counting the drops, the beast just watches until the sponge is totally full and cannot absorb any more, showing that capacity, not a simple count, is the true goal.
 
 ### 🟧 [Av] avocet
 
@@ -584,11 +584,11 @@ A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squee
 **Quote**
 “"All is data."[cite: 1]”
 
-**Story**
-A long-beaked avocet[cite: 3] lands beside a yellow square sponge character[cite: 5] and the auroch[cite: 3]. It wildly grabs trash, old newspapers, shiny coins, and pieces of the early sand drawings, throwing every single item into a huge pot to prove that absolutely no piece of garbage is useless.
-
 **Sensory**
 —
+
+**Story**
+A long-beaked avocet[cite: 3] lands beside a yellow square sponge character[cite: 5] and the auroch[cite: 3]. It wildly grabs trash, old newspapers, shiny coins, and pieces of the early sand drawings, throwing every single item into a huge pot to prove that absolutely no piece of garbage is useless.
 
 #### Notes
 
@@ -617,11 +617,11 @@ _No gallery images._
 **Quote**
 “"Taxonomies are a hierarchical structure that allow us to classify things... think of a bunch of different boxes and individuals can fit in one or many of those boxes."”
 
-**Story**
-Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden boxes. The aoudad organizes people and items, tossing them into one or more of these specific boxes to classify them, completely ignoring the armadillo chewing nearby.
-
 **Sensory**
 —
+
+**Story**
+Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden boxes. The aoudad organizes people and items, tossing them into one or more of these specific boxes to classify them, completely ignoring the armadillo chewing nearby.
 
 ### 🟧 [Ap] ape
 
@@ -631,11 +631,11 @@ Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden b
 **Quote**
 “"[An ontology is] either a set of n-tuples or a web of concepts that helps computers or AI understand your data."”
 
-**Story**
-A large ape hangs upside down from the aoudad's boxes and reaches for Neo's computer screen. It spins a glowing, wet web of concepts between the screen and the boxes, linking data points together so the AI inside the machine can finally read and understand the files.
-
 **Sensory**
 —
+
+**Story**
+A large ape hangs upside down from the aoudad's boxes and reaches for Neo's computer screen. It spins a glowing, wet web of concepts between the screen and the boxes, linking data points together so the AI inside the machine can finally read and understand the files.
 
 ### 🟧 [Aq] aquatic leech
 
@@ -645,11 +645,11 @@ A large ape hangs upside down from the aoudad's boxes and reaches for Neo's comp
 **Quote**
 “"A taxonomy gives us just a skeleton maybe, and an ontology gives us the skeleton and fleshes out the various connections between all the different members."”
 
-**Story**
-An aquatic leech slithers along a bare bone skeleton sitting on the desk. It leaves a thick web of glowing red strings behind that attach to the ape's web, fleshing out the connections between all the isolated joints and joining them into a complete system.
-
 **Sensory**
 —
+
+**Story**
+An aquatic leech slithers along a bare bone skeleton sitting on the desk. It leaves a thick web of glowing red strings behind that attach to the ape's web, fleshing out the connections between all the isolated joints and joining them into a complete system.
 
 ### 🟧 [Ar] armadillo
 
@@ -659,11 +659,11 @@ An aquatic leech slithers along a bare bone skeleton sitting on the desk. It lea
 **Quote**
 “"Semantics means we care about meaning, we care about understanding, rather than just the syntax, shape, or structure of the data."”
 
-**Story**
-An armadillo completely ignores a beautifully shaped syntax statue standing next to the aoudad's boxes. Instead, it curls up and chews aggressively on a glowing human brain to show that it only cares about deep understanding and true meaning, totally ignoring the outside structure of the statue.
-
 **Sensory**
 —
+
+**Story**
+An armadillo completely ignores a beautifully shaped syntax statue standing next to the aoudad's boxes. Instead, it curls up and chews aggressively on a glowing human brain to show that it only cares about deep understanding and true meaning, totally ignoring the outside structure of the statue.
 
 #### Notes
 
@@ -692,10 +692,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ak] [Akita (dog breed)]
@@ -706,10 +706,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Al] [alligator]
@@ -720,10 +720,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Am] [amulet]
@@ -734,10 +734,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [An] [angel]
@@ -748,10 +748,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -781,11 +781,11 @@ _No gallery images._
 **Quote**
 “"We have an initial belief, we receive some new information, and we revise our beliefs in this case in a probabilistic sense in light of this new information."”
 
-**Story**
-An Aerialist hangs upside down in a grand courtroom. She acts as the judge, declaring that all beliefs are temporary and must be changed when new facts emerge. She points her gavel at an Afghan hound who is waiting to present a case.
-
 **Sensory**
 —
+
+**Story**
+An Aerialist hangs upside down in a grand courtroom. She acts as the judge, declaring that all beliefs are temporary and must be changed when new facts emerge. She points her gavel at an Afghan hound who is waiting to present a case.
 
 ### 🟧 [Af] Afghan hound
 
@@ -795,11 +795,11 @@ An Aerialist hangs upside down in a grand courtroom. She acts as the judge, decl
 **Quote**
 “"In the unconditional setting, we had the probability of A equal to 1 over 6."”
 
-**Story**
-The tall Afghan hound steps forward with a six-sided die in its mouth. He explains that before anyone knows the result, every number has an equal chance of winning. He drops the die on the floor, ignoring the giant mushrooms growing nearby, to prove the baseline state of the court.
-
 **Sensory**
 —
+
+**Story**
+The tall Afghan hound steps forward with a six-sided die in its mouth. He explains that before anyone knows the result, every number has an equal chance of winning. He drops the die on the floor, ignoring the giant mushrooms growing nearby, to prove the baseline state of the court.
 
 ### 🟧 [Ag] Agaric fungi
 
@@ -809,11 +809,11 @@ The tall Afghan hound steps forward with a six-sided die in its mouth. He explai
 **Quote**
 “"This sort of vertical line, this bar, represents a conditioning situation."”
 
-**Story**
-A cluster of giant red-and-white Agaric fungi grows right through the courtroom floor. One mushroom announces that the secret die roll was an even number. This restricts the possibilities. The mushroom then paints a large vertical bar on the wall to show that the court's decision is now conditional on this new clue.
-
 **Sensory**
 —
+
+**Story**
+A cluster of giant red-and-white Agaric fungi grows right through the courtroom floor. One mushroom announces that the secret die roll was an even number. This restricts the possibilities. The mushroom then paints a large vertical bar on the wall to show that the court's decision is now conditional on this new clue.
 
 ### 🟧 [Ah] Ah!�a sigh
 
@@ -823,11 +823,11 @@ A cluster of giant red-and-white Agaric fungi grows right through the courtroom 
 **Quote**
 “"Many people don't see this new information attached to door C because they don't see any physical change to door C; it was originally closed and remained closed."”
 
-**Story**
-A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh over the courtroom. It acts as a game show host and reveals a goat behind a magical door. It sighs because the jury is confused. It explains that the other closed door now has better odds, even though it looks exactly the same as before.
-
 **Sensory**
 —
+
+**Story**
+A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh over the courtroom. It acts as a game show host and reveals a goat behind a magical door. It sighs because the jury is confused. It explains that the other closed door now has better odds, even though it looks exactly the same as before.
 
 ### 🟧 [Ai] Airedale terrier
 
@@ -837,11 +837,11 @@ A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh ove
 **Quote**
 “"A rational actor takes this data on board, updates their internal probabilities about the likelihood of rain, and alters their behavior."”
 
-**Story**
-An Airedale terrier wearing a raincoat interrupts the trial. It acts as a TV weather forecaster, predicting a high chance of rain based on imperfect data. Hearing this, the Aerialist quickly climbs higher on her silks, sensibly updating her plans to stay dry based on the terrier's news.
-
 **Sensory**
 —
+
+**Story**
+An Airedale terrier wearing a raincoat interrupts the trial. It acts as a TV weather forecaster, predicting a high chance of rain based on imperfect data. Hearing this, the Aerialist quickly climbs higher on her silks, sensibly updating her plans to stay dry based on the terrier's news.
 
 #### Notes
 
@@ -870,11 +870,11 @@ _No gallery images._
 **Quote**
 “"The null hypothesis is what we expect to see based on the knowledge that we currently have. The null hypothesis is commonly the 'no difference' hypothesis... We have to assume that the null hypothesis is true unless it can be proven to be wrong."”
 
-**Story**
-Albert Einstein walks into a large courtroom and places a giant acorn on the judge's desk. The acorn wears a white curly judge's wig and sits firmly in the center. Marie Curie steps forward holding a glass jar containing a calm bee and a wasp, demonstrating zero difference between them to the court. The acorn judge demands to be treated as the absolute truth, acting as a strict guard of the old rules until someone brings strong enough proof to defeat it.
-
 **Sensory**
 —
+
+**Story**
+Albert Einstein walks into a large courtroom and places a giant acorn on the judge's desk. The acorn wears a white curly judge's wig and sits firmly in the center. Marie Curie steps forward holding a glass jar containing a calm bee and a wasp, demonstrating zero difference between them to the court. The acorn judge demands to be treated as the absolute truth, acting as a strict guard of the old rules until someone brings strong enough proof to defeat it.
 
 ### 🟧 [Ad] adder
 
@@ -884,11 +884,11 @@ Albert Einstein walks into a large courtroom and places a giant acorn on the jud
 **Quote**
 “"The alternative hypothesis presents a new idea, which could overturn or nullify the null hypothesis. If we accept the alternative hypothesis, we have to reject the null hypothesis, and the same would be true in reverse. It may be that the weight of evidence starts to fall in favor of the alternative hypothesis, and increasingly so, until we accept this new knowledge as truth."”
 
-**Story**
-A long adder snake swings high above the courtroom on a flying trapeze, hissing a brand new, shocking idea. The snake drops heavy red mushrooms onto a large brass balance scale below. It realizes its mouth can only hold one truth at a time; if the new evidence is heavy enough to tip the scale and crash down, the snake spits out its old beliefs and traps the acorn judge in a heavy rope net to replace it entirely.
-
 **Sensory**
 —
+
+**Story**
+A long adder snake swings high above the courtroom on a flying trapeze, hissing a brand new, shocking idea. The snake drops heavy red mushrooms onto a large brass balance scale below. It realizes its mouth can only hold one truth at a time; if the new evidence is heavy enough to tip the scale and crash down, the snake spits out its old beliefs and traps the acorn judge in a heavy rope net to replace it entirely.
 
 #### Notes
 
@@ -917,11 +917,11 @@ _No gallery images._
 **Quote**
 “"The paradigm provides a map whose details are elucidated by mature scientific research. And since nature is too complex and varied to be explored at random, that map is as essential as observation and experiment to science's continuing development. Through the theories they embody, paradigms prove to be constitutive of the research activity."”
 
-**Story**
-Xena, warrior woman, holds a giant, detailed map of a complex science lab. She shows the yak that this map contains glowing rules that actually build and structure their entire research game.
-
 **Sensory**
 —
+
+**Story**
+Xena, warrior woman, holds a giant, detailed map of a complex science lab. She shows the yak that this map contains glowing rules that actually build and structure their entire research game.
 
 ### 🟧 [Y] yak
 
@@ -931,11 +931,11 @@ Xena, warrior woman, holds a giant, detailed map of a complex science lab. She s
 **Quote**
 “"An anomaly occurs when a piece of the puzzle just won't fit."”
 
-**Story**
-The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. However, the yak gets stuck holding a unique, lightning-shaped puzzle piece. It tries to smash the piece into the board, but it just will not fit anywhere in the normal setup.
-
 **Sensory**
 —
+
+**Story**
+The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. However, the yak gets stuck holding a unique, lightning-shaped puzzle piece. It tries to smash the piece into the board, but it just will not fit anywhere in the normal setup.
 
 ### 🟧 [Z] Zeus
 
@@ -945,11 +945,11 @@ The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. 
 **Quote**
 “"When, for these reasons or others like them, an anomaly comes to seem more than just another puzzle of normal science, the transition to crisis and to extraordinary science has begun."”
 
-**Story**
-Zeus sees the yak struggling with the broken piece. He realizes this is not just a normal puzzle problem. Zeus starts waving a red alarm flag, shouting to the aardvark that a massive crisis and extraordinary research have started.
-
 **Sensory**
 —
+
+**Story**
+Zeus sees the yak struggling with the broken piece. He realizes this is not just a normal puzzle problem. Zeus starts waving a red alarm flag, shouting to the aardvark that a massive crisis and extraordinary research have started.
 
 ### 🟧 [Aa] aardvark
 
@@ -959,11 +959,11 @@ Zeus sees the yak struggling with the broken piece. He realizes this is not just
 **Quote**
 “"The proliferation of competing articulations, the willingness to try anything, the expression of explicit discontent, the recourse to philosophy and to debate over fundamentals, all these are symptoms of a transition from normal to extraordinary research."”
 
-**Story**
-The aardvark ignores Xena's map entirely. Showing explicit discontent with the crisis, it starts trying anything, knocking over the yak's puzzle and debating philosophy with Zeus. It brings out dozens of competing, random ideas to fix the problem.
-
 **Sensory**
 —
+
+**Story**
+The aardvark ignores Xena's map entirely. Showing explicit discontent with the crisis, it starts trying anything, knocking over the yak's puzzle and debating philosophy with Zeus. It brings out dozens of competing, random ideas to fix the problem.
 
 ### 🟧 [Ab] Abyssinian cat
 
@@ -973,11 +973,11 @@ The aardvark ignores Xena's map entirely. Showing explicit discontent with the c
 **Quote**
 “"A shift in paradigm is like the shift in perception from the rabbit to the duck in the gestalt image... nothing has changed apart from your psychological perspective. Two people with the same sensory impressions can see two different things."”
 
-**Story**
-The Abyssinian cat rests at the end of the street. It points a brass telescope at a drawing of a rabbit on Xena's map. Suddenly, its mind flips, and it sees a duck instead. The physical lines did not change at all, but the cat now sees something completely different from the exact same image.
-
 **Sensory**
 —
+
+**Story**
+The Abyssinian cat rests at the end of the street. It points a brass telescope at a drawing of a rabbit on Xena's map. Suddenly, its mind flips, and it sees a duck instead. The physical lines did not change at all, but the cat now sees something completely different from the exact same image.
 
 #### Notes
 
@@ -1006,11 +1006,11 @@ _No gallery images._
 **Quote**
 “"Freud was able to make just about any data point work in service of his theory."”
 
-**Story**
-A tall marks the start of this street. A floating skull holds a notebook of past events. It tries to force puzzle pieces that do not fit into its eye sockets, twisting every old piece of information to match what it wants to believe. It completely ignores the vulture nearby building a wall.
-
 **Sensory**
 —
+
+**Story**
+A tall marks the start of this street. A floating skull holds a notebook of past events. It tries to force puzzle pieces that do not fit into its eye sockets, twisting every old piece of information to match what it wants to believe. It completely ignores the vulture nearby building a wall.
 
 ### 🟧 [T] toucan
 
@@ -1020,11 +1020,11 @@ A tall marks the start of this street. A floating skull holds a notebook of past
 **Quote**
 “"Einstein's theory was truly risky... because if the future didn't match his predictions, then his theory would be conclusively disproven."”
 
-**Story**
-A colorful toucan flies forward, completely ignoring the skull. Albert Einstein rides on the toucan's back as it leaps over a deep, hazy pit. Albert knows that jumping over the pit is a dangerous test, and if the toucan cannot be tested against the fall, their whole journey is completely useless.
-
 **Sensory**
 —
+
+**Story**
+A colorful toucan flies forward, completely ignoring the skull. Albert Einstein rides on the toucan's back as it leaps over a deep, hazy pit. Albert knows that jumping over the pit is a dangerous test, and if the toucan cannot be tested against the fall, their whole journey is completely useless.
 
 ### 🟧 [U] unicorn
 
@@ -1034,11 +1034,11 @@ A colorful toucan flies forward, completely ignoring the skull. Albert Einstein 
 **Quote**
 “"It's easy to find confirmation of a theory if you're looking for it."”
 
-**Story**
-A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The unicorn only lowers its horn to pierce pieces of meat shaped exactly like the hat. By ignoring everything else on the street, the beast easily finds exactly what it wants to see.
-
 **Sensory**
 —
+
+**Story**
+A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The unicorn only lowers its horn to pierce pieces of meat shaped exactly like the hat. By ignoring everything else on the street, the beast easily finds exactly what it wants to see.
 
 ### 🟧 [V] vulture
 
@@ -1048,11 +1048,11 @@ A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The 
 **Quote**
 “"Science disconfirms while pseudoscience confirms."”
 
-**Story**
-A vulture lands heavily in the middle of the road and builds a thick brick wall that stops the unicorn from running further. The bird spits out fake ideas and shakes its head firmly, using the wall to clearly block bad paths and look for flaws.
-
 **Sensory**
 —
+
+**Story**
+A vulture lands heavily in the middle of the road and builds a thick brick wall that stops the unicorn from running further. The bird spits out fake ideas and shakes its head firmly, using the wall to clearly block bad paths and look for flaws.
 
 ### 🟧 [W] wombat
 
@@ -1062,11 +1062,11 @@ A vulture lands heavily in the middle of the road and builds a thick brick wall 
 **Quote**
 “"Knowledge was about probability and contingency."”
 
-**Story**
-A heavy wombat stands at the end of the street. The wombat balances a set of scales on its broad back, carefully weighing Sherlock Holmes's notebook against a pile of fresh clues dropped by the floating skull. The wombat does not try to be perfect; it just finds which side is heavier right now.
-
 **Sensory**
 —
+
+**Story**
+A heavy wombat stands at the end of the street. The wombat balances a set of scales on its broad back, carefully weighing Sherlock Holmes's notebook against a pile of fresh clues dropped by the floating skull. The wombat does not try to be perfect; it just finds which side is heavier right now.
 
 #### Notes
 
@@ -1095,10 +1095,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [P] panther
@@ -1109,10 +1109,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Q] Quetzalcoatl
@@ -1123,10 +1123,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [R] rat
@@ -1137,10 +1137,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -1170,10 +1170,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [M] Marmoset
@@ -1184,10 +1184,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [N] Neanderthal
@@ -1198,10 +1198,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -1231,10 +1231,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [H] Hydra
@@ -1245,10 +1245,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [I] Imp
@@ -1259,10 +1259,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [J] Jester
@@ -1273,10 +1273,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [K] Kitten
@@ -1287,10 +1287,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -1320,11 +1320,11 @@ _No gallery images._
 **Quote**
 “"Most approaches to measuring WTP present customers with a product or service in isolation, as though their option is to either purchase it or go home empty-handed."”
 
-**Story**
-Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass box. The cat just stares at the single item and ignores the dragon flying above. Steve realizes that locking the buyer in an empty room makes no sense for testing real value.
-
 **Sensory**
 —
+
+**Story**
+Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass box. The cat just stares at the single item and ignores the dragon flying above. Steve realizes that locking the buyer in an empty room makes no sense for testing real value.
 
 ### 🟧 [D] dragon
 
@@ -1334,11 +1334,11 @@ Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass 
 **Quote**
 “"What�s fundamentally different about our procedure is that rather than simply asking whether you would buy or not buy something, we first want an understanding of who the competition is."”
 
-**Story**
-A giant dragon dives from the sky and shatters the cat's glass box with its claws. It drops three different competing candies on the floor. It completely changes the game by demanding to know which of these rivals the buyer would pick if they walked away from the first product.
-
 **Sensory**
 —
+
+**Story**
+A giant dragon dives from the sky and shatters the cat's glass box with its claws. It drops three different competing candies on the floor. It completely changes the game by demanding to know which of these rivals the buyer would pick if they walked away from the first product.
 
 ### 🟧 [E] eagle
 
@@ -1348,11 +1348,11 @@ A giant dragon dives from the sky and shatters the cat's glass box with its claw
 **Quote**
 “"What price for the KitKat would make you equally happy to buy the KitKat for this price or buy the M&Ms for $1.10?"”
 
-**Story**
-A large eagle sits comfortably on the dragon's tail holding a small balancing scale. It places Steve Jobs' chocolate on one side and the dragon's rival candy on the other. It squawks loudly at the buyers, asking exactly what dollar amount would make them feel exactly as happy to buy either one.
-
 **Sensory**
 —
+
+**Story**
+A large eagle sits comfortably on the dragon's tail holding a small balancing scale. It places Steve Jobs' chocolate on one side and the dragon's rival candy on the other. It squawks loudly at the buyers, asking exactly what dollar amount would make them feel exactly as happy to buy either one.
 
 ### 🟧 [F] frog
 
@@ -1362,11 +1362,11 @@ A large eagle sits comfortably on the dragon's tail holding a small balancing sc
 **Quote**
 “"Thanks to CMV�s ability to identify these different segments (that is, �buy� and �no-buy� groups), the researchers gained important insight into why some consumers had much lower WTP than others."”
 
-**Story**
-A slimy frog leaps through the market, knocking over the eagle's scale and ignoring the final at the end of the street. It aggressively uses its long tongue to separate the crowd into two distinct groups: those who actually eat candy, and those who would never buy any sweets at all. By isolating the fake buyers, the true price stands out clearly.
-
 **Sensory**
 —
+
+**Story**
+A slimy frog leaps through the market, knocking over the eagle's scale and ignoring the final at the end of the street. It aggressively uses its long tongue to separate the crowd into two distinct groups: those who actually eat candy, and those who would never buy any sweets at all. By isolating the fake buyers, the true price stands out clearly.
 
 #### Notes
 
@@ -1395,11 +1395,11 @@ _No gallery images._
 **Quote**
 “It answers "What happened in this specific test?"”
 
-**Story**
-A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman in a short lab coat with dark hair in a low bun, like Marie Curie, hands her a cup with exactly three marbles. Arachne ties each marble to one knot, only the group she can touch. She nods toward a gaudy long-tailed bird on a bench, the bird of paradise, which is already lifting a much bigger map toward the sky.
-
 **Sensory**
 —
+
+**Story**
+A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman in a short lab coat with dark hair in a low bun, like Marie Curie, hands her a cup with exactly three marbles. Arachne ties each marble to one knot, only the group she can touch. She nods toward a gaudy long-tailed bird on a bench, the bird of paradise, which is already lifting a much bigger map toward the sky.
 
 ### 🟧 [B] bird of paradise
 
@@ -1409,11 +1409,11 @@ A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman
 **Quote**
 “It answers "Can we confidently expect all users to behave this way?"”
 
-**Story**
-The bird of paradise flaps the big map and stamps a dark ink smudge (like a tiny �p� test mark) that flies off the small web toward the open sky. The woman in the lab coat points at the map, and the bird calls out the teacher�s line about the bigger �all users� question.
-
 **Sensory**
 —
+
+**Story**
+The bird of paradise flaps the big map and stamps a dark ink smudge (like a tiny �p� test mark) that flies off the small web toward the open sky. The woman in the lab coat points at the map, and the bird calls out the teacher�s line about the bigger �all users� question.
 
 #### Notes
 

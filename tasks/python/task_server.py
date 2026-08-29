@@ -81,7 +81,6 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "attachments",
                         "import",
                         "migrate",
-                        "git_push",
                     ],
                 },
             )
@@ -151,7 +150,9 @@ class TaskHandler(BaseHTTPRequestHandler):
                 return
             self._json(404, {"ok": False, "error": "not found"})
         except Exception as e:
-            self._json(500, {"ok": False, "error": str(e), "trace": traceback.format_exc()})
+            self._json(
+                500, {"ok": False, "error": str(e), "trace": traceback.format_exc()}
+            )
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
@@ -217,21 +218,27 @@ class TaskHandler(BaseHTTPRequestHandler):
                 return
             if path == "/api/import/commit":
                 # client may send preview payload; else re-read desktop
-                pack = payload if payload.get("projects") is not None or payload.get("tasks") is not None else None
+                pack = (
+                    payload
+                    if payload.get("projects") is not None
+                    or payload.get("tasks") is not None
+                    else None
+                )
                 if pack and pack.get("ok") is False:
                     self._json(400, pack)
                     return
-                self._json(200, commit_pack(store, pack if pack and pack.get("ok") else None))
+                self._json(
+                    200, commit_pack(store, pack if pack and pack.get("ok") else None)
+                )
                 return
             if path == "/api/migrate":
                 self._json(200, self._migrate())
                 return
-            if path == "/api/git-push":
-                self._json(200, self._git_push())
-                return
             self._json(404, {"ok": False, "error": "not found"})
         except Exception as e:
-            self._json(500, {"ok": False, "error": str(e), "trace": traceback.format_exc()})
+            self._json(
+                500, {"ok": False, "error": str(e), "trace": traceback.format_exc()}
+            )
 
     def _migrate(self) -> dict[str, Any]:
         py = Path(__file__).resolve().parent / "migrate_from_md.py"
@@ -244,7 +251,10 @@ class TaskHandler(BaseHTTPRequestHandler):
                 work, punctual, habits = w, p, h
                 break
         if not work:
-            return {"ok": False, "error": "Could not find work.md / punctual.md / habits.md"}
+            return {
+                "ok": False,
+                "error": "Could not find work.md / punctual.md / habits.md",
+            }
         cmd = [
             sys.executable,
             str(py),
@@ -259,63 +269,11 @@ class TaskHandler(BaseHTTPRequestHandler):
         ]
         r = subprocess.run(cmd, capture_output=True, text=True, cwd=str(py.parent))
         if r.returncode != 0:
-            return {"ok": False, "error": (r.stderr or r.stdout or "migrate failed")[:500]}
+            return {
+                "ok": False,
+                "error": (r.stderr or r.stdout or "migrate failed")[:500],
+            }
         return {"ok": True, "message": (r.stdout or "Migrated").strip()}
-
-    def _git_push(self) -> dict[str, Any]:
-        root = self.scripts_root
-        if not (root / ".git").exists():
-            return {"ok": False, "error": "scripts repo not found"}
-        msgs = []
-        for args in (
-            ["git", "add", "-A"],
-            ["git", "diff", "--cached", "--quiet"],
-        ):
-            pass
-        status = subprocess.run(
-            ["git", "status", "--porcelain"],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        if status.returncode != 0:
-            return {"ok": False, "error": status.stderr or "git status failed"}
-        if not status.stdout.strip():
-            # still try push
-            push = subprocess.run(
-                ["git", "push"],
-                cwd=str(root),
-                capture_output=True,
-                text=True,
-            )
-            if push.returncode != 0:
-                return {"ok": False, "error": (push.stderr or push.stdout or "push failed")[:400]}
-            return {"ok": True, "message": "Nothing to commit; push ok"}
-        commit = subprocess.run(
-            ["git", "add", "-A"],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        if commit.returncode != 0:
-            return {"ok": False, "error": commit.stderr or "git add failed"}
-        commit = subprocess.run(
-            ["git", "commit", "-m", "Tasks web sync"],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        # commit may fail if nothing staged after add — ok
-        push = subprocess.run(
-            ["git", "push"],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-        )
-        if push.returncode != 0:
-            return {"ok": False, "error": (push.stderr or push.stdout or "push failed")[:400]}
-        msgs.append("pushed")
-        return {"ok": True, "message": "Committed and pushed scripts repo"}
 
 
 def make_handler(

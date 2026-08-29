@@ -726,8 +726,17 @@ def build_html(
       padding-bottom: 0.45rem;
       border-bottom: 1px solid var(--line);
     }}
+    .beast-cluster-head .beast-head-row {{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem 0.75rem;
+      margin-top: 0.1rem;
+    }}
     .beast-cluster-head .beast-name {{
-      margin: 0.1rem 0 0;
+      margin: 0;
+      flex: 1;
+      min-width: 0;
       font-size: 1.05rem;
       font-weight: 650;
       line-height: 1.3;
@@ -735,6 +744,28 @@ def build_html(
     }}
     .beast-cluster-head .beast-name .emoji {{
       margin-right: 0.28rem;
+    }}
+    .beast-cluster-head .sensory-chip {{
+      flex-shrink: 0;
+      margin: 0;
+      max-width: min(14rem, 48%);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.3;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .beast-cluster-head .sensory-chip .lbl {{
+      display: inline;
+      margin: 0 0.35rem 0 0;
+      color: var(--gold);
+      font-size: 0.68rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      vertical-align: baseline;
     }}
     .beast-cluster-atoms {{
       display: grid;
@@ -756,6 +787,18 @@ def build_html(
     .atom-card.highlight {{
       border-color: var(--gold);
       box-shadow: 0 0 0 1px var(--gold);
+    }}
+    .atom-card .atom-card-head {{
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem 0.75rem;
+      margin: 0 0 0.4rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed var(--line);
+    }}
+    .atom-card .atom-card-head:empty {{
+      display: none;
     }}
     .atom-card .field {{
       margin: 0.45rem 0 0;
@@ -779,6 +822,9 @@ def build_html(
       border-left: 3px solid var(--gold);
       border-radius: 8px;
     }}
+    .atom-card > .field-concept:first-child {{
+      margin-top: 0;
+    }}
     .atom-card .emoji {{
       margin-right: 0.28rem;
     }}
@@ -786,12 +832,34 @@ def build_html(
       color: var(--gold);
       font-size: 0.82rem;
       font-weight: 650;
-      margin: 0 0 0.4rem;
-      padding-bottom: 0.3rem;
-      border-bottom: 1px dashed var(--line);
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      border: none;
     }}
     .atom-card .zone-tag .emoji {{
       margin-right: 0.28rem;
+    }}
+    .atom-card .sensory-chip {{
+      flex-shrink: 0;
+      margin-left: auto;
+      max-width: 45%;
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.3;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .atom-card .sensory-chip .lbl {{
+      display: inline;
+      margin: 0 0.35rem 0 0;
+      font-size: 0.68rem;
+      letter-spacing: 0.03em;
+      vertical-align: baseline;
     }}
     #btnMethod {{
       background: transparent;
@@ -2193,19 +2261,27 @@ def build_html(
       return groups;
     }}
 
-    function renderAtomCard(a, focusAtomId) {{
+    function sensoryChipHtml(sensory) {{
+      return '<p class="sensory-chip"><span class="lbl">Sensory</span>'
+        + formatSensory(sensory) + '</p>';
+    }}
+
+    function renderAtomCard(a, focusAtomId, {{ sensoryOnCard = true }} = {{}}) {{
       const zone = (a.zone || a.zone_label)
         ? '<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> '
           + dash(a.zone) + (a.zone_label ? ' · ' + dash(a.zone_label) : '') + '</p>'
         : '';
+      const sensory = sensoryOnCard ? sensoryChipHtml(a.sensory) : '';
+      const head = (zone || sensory)
+        ? '<div class="atom-card-head">' + zone + sensory + '</div>'
+        : '';
       const hl = (focusAtomId && a.id === focusAtomId) ? ' highlight' : '';
       return '<article class="atom-card' + hl + '" data-atom-id="' + esc(a.id) + '">'
-        + zone
+        + head
         + '<p class="field field-concept"><span class="lbl">Concept</span>'
         + formatConcept(a.concept) + '</p>'
         + '<p class="field"><span class="lbl">Quote</span>' + formatQuote(a.quote) + '</p>'
         + '<p class="field"><span class="lbl">Story</span>' + dash(a.story) + '</p>'
-        + '<p class="field"><span class="lbl">Sensory</span>' + formatSensory(a.sensory) + '</p>'
         + '</article>';
     }}
 
@@ -2218,13 +2294,20 @@ def build_html(
         const n = g.atoms.length;
         const span = Math.min(Math.max(n, 1), maxCols);
         const innerCols = Math.min(n, maxCols);
-        const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId)).join('');
+        const sensoryOnBeast = n === 1;
+        const headSensory = sensoryOnBeast ? sensoryChipHtml(g.atoms[0].sensory) : '';
+        const cards = g.atoms.map(a => renderAtomCard(a, focusAtomId, {{
+          sensoryOnCard: !sensoryOnBeast
+        }})).join('');
         return '<section class="beast-cluster" style="grid-column: span ' + span
           + '; --beast-cols: ' + innerCols + '">'
           + '<header class="beast-cluster-head">'
           + '<span class="lbl">Beast</span>'
+          + '<div class="beast-head-row">'
           + '<p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> '
           + dash(g.beast) + '</p>'
+          + headSensory
+          + '</div>'
           + '</header>'
           + '<div class="beast-cluster-atoms">' + cards + '</div>'
           + '</section>';

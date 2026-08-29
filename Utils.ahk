@@ -315,7 +315,6 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Canonical Desktop pack paths for AI imports -> Utils\pack_import_desktop.ahk
 #include %A_ScriptDir%\Utils\pack_import_desktop.ahk
 #include %A_ScriptDir%\Utils\finance_import.ahk
-#include %A_ScriptDir%\Utils\finance_git_sync.ahk
 ; [Utils module] Win+Alt+Shift+D tap-dance → Tasks / Finance / Memory Palace -> Utils\finance_hotkey_d.ahk
 #include %A_ScriptDir%\Utils\finance_hotkey_d.ahk
 
@@ -330,7 +329,6 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\mnemonic_palace_plans.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_git_sync.ahk
 
 ; [Utils module] Tasks (Utility Shortcuts [T] → web app on :8766)
 #include %A_ScriptDir%\Utils\task_helpers.ahk
@@ -345,7 +343,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Import Management hub (finance & palace imports) -> Utils\import_mgmt_launcher.ahk
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
-; [Utils module] Utility Shortcuts [G] commit+push scripts + notes repos -> Utils\utility_git_push.ahk
+; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
 ; [Utils module] Utility shortcuts #!+U / #!+W Macros and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk

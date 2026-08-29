@@ -19,11 +19,11 @@
 **Quote**
 “The primary difference lies in their core focus: a Data Analyst examines historical data to answer specific business questions and identify existing trends, while a Data Scientist builds predictive models, algorithms, and experiments to forecast future outcomes and discover unknowns.”
 
-**Story**
-Arachne weaves an enormous glowing spiderweb across a historic stone gate, splitting the silk threads into backwards-pointing silver clocks on the left and self-assembling automated crystal robotic arms reaching forward on the right.
-
 **Sensory**
 👁️ visual
+
+**Story**
+Arachne weaves an enormous glowing spiderweb across a historic stone gate, splitting the silk threads into backwards-pointing silver clocks on the left and self-assembling automated crystal robotic arms reaching forward on the right.
 
 ---
 
@@ -35,11 +35,11 @@ Arachne weaves an enormous glowing spiderweb across a historic stone gate, split
 **Quote**
 “Descriptive and diagnostic analysis (answering "What happened?" and "Why?")”
 
-**Story**
-An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.
-
 **Sensory**
 👂 auditory
+
+**Story**
+An oversized megaphone headpiece clamped to Arachne's forelegs screeches past events loudly while projecting a vivid diagnostic x-ray across the brick pillars.
 
 ### 🟧 [B] bird of paradise
 
@@ -49,11 +49,11 @@ An oversized megaphone headpiece clamped to Arachne's forelegs screeches past ev
 **Quote**
 “Dashboards, KPI tracking, business reports, trend identification”
 
-**Story**
-A bird of paradise violently rakes its metallic claws against the parked vintage van's side door, carving neon KPI dials and glowing dashboard gauges that erupt in showers of colored spark metrics.
-
 **Sensory**
 ✋ tactile
+
+**Story**
+A bird of paradise violently rakes its metallic claws against the parked vintage van's side door, carving neon KPI dials and glowing dashboard gauges that erupt in showers of colored spark metrics.
 
 ### 🟧 [C] cat
 
@@ -63,11 +63,11 @@ A bird of paradise violently rakes its metallic claws against the parked vintage
 **Quote**
 “Structured data from relational databases and warehouses”
 
-**Story**
-Perched at the central storefront pillar, a cat exhales icy SQL tables from its mouth that freeze instantly into rigid glass spreadsheets, shattering floating clouds of clickstream smoke.
-
 **Sensory**
 🌡️ thermal
+
+**Story**
+Perched at the central storefront pillar, a cat exhales icy SQL tables from its mouth that freeze instantly into rigid glass spreadsheets, shattering floating clouds of clickstream smoke.
 
 ### 🟧 [D] dragon
 
@@ -77,11 +77,11 @@ Perched at the central storefront pillar, a cat exhales icy SQL tables from its 
 **Quote**
 “Queries an e-commerce database using SQL to identify that customer churn increased by 15% in Q3, isolates the drop to checkout friction, and presents a visual dashboard to product managers.”
 
-**Story**
-High on the rooftop balcony, a dragon tears open an oversized e-commerce invoice with its teeth, releasing an acrid, sharp scent of liquid Python code that dissolves robotic churn traps.
-
 **Sensory**
 👃 olfactory
+
+**Story**
+High on the rooftop balcony, a dragon tears open an oversized e-commerce invoice with its teeth, releasing an acrid, sharp scent of liquid Python code that dissolves robotic churn traps.
 
 #### Notes
 

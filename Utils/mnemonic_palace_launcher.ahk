@@ -53,8 +53,7 @@ Palace_ShowMainMenu() {
         ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
         ["O", "Plans on GitHub", "Synced study plan Markdown for mobile"],
         ["R", "Regen Markdown", "Force-create all practice + plan .md files"],
-        ["H", "Help", "Vocabulary and mapping rules"],
-        ["P", "Push to cloud", "Commit and push scripts repo"]
+        ["H", "Help", "Vocabulary and mapping rules"]
     ]
 
     x0 := 20
@@ -78,7 +77,7 @@ Palace_ShowMainMenu() {
 
     g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
     g_PalaceGui.Add("Text", "x20 y620 w880",
-        "Backspace utility shortcuts   Esc close   L plans   J import plan   I mnemonic pack   O plans GitHub   P push   R regen"
+        "Backspace utility shortcuts   Esc close   L plans   J import plan   I mnemonic pack   O plans GitHub   R regen   Push via Utility Shortcuts [G]"
     )
 
     Palace_BindHotkeys([
@@ -87,7 +86,7 @@ Palace_ShowMainMenu() {
         ["i", Palace_OnImp], ["j", Palace_OnImportPlan],
         ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
         ["o", Palace_OnPlansGithub], ["r", Palace_OnRegenMarkdown],
-        ["h", Palace_OnHelp], ["p", Palace_OnGitPush],
+        ["h", Palace_OnHelp],
         ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Palace_CloseGui()]
     ])
@@ -151,9 +150,6 @@ Palace_OnRegenMarkdown(*) {
 }
 Palace_OnHelp(*) {
     Palace_ShowHelp()
-}
-Palace_OnGitPush(*) {
-    Palace_GitSyncPush()
 }
 
 Palace_PracticeGithubUrl() {

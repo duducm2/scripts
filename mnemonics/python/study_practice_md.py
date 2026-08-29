@@ -251,8 +251,12 @@ def prune_orphans(output_dir: Path, data_dir: Path, dry_run: bool = False) -> No
                 if dry_run:
                     print(f"[dry-run] would prune orphan {sub}")
                 else:
-                    shutil.rmtree(sub)
-                    print(f"Pruned orphan {sub}")
+                    try:
+                        shutil.rmtree(sub)
+                        print(f"Pruned orphan {sub}")
+                    except OSError as e:
+                        # Google Drive / locked folders must not abort the whole sync
+                        print(f"Warning: could not prune {sub}: {e}", file=sys.stderr)
 
 
 def sync_studies(

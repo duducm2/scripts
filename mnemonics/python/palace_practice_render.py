@@ -58,7 +58,7 @@ def format_quote(value: str | None) -> str:
 
 
 def format_sensory(value: str | None) -> str:
-    """Dashboard overlay order: emoji then channel word (e.g. 👁️ visual)."""
+    """Dashboard chip order: emoji then channel word (e.g. 👁️ visual)."""
     t = (value or "").strip()
     if not t:
         return "—"
@@ -86,8 +86,8 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
 
     lines.extend(format_field_block("Concept", format_concept(atom.get("concept"))))
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
-    lines.extend(format_field_block("Story", dash(atom.get("story"))))
     lines.extend(format_field_block("Sensory", format_sensory(atom.get("sensory"))))
+    lines.extend(format_field_block("Story", dash(atom.get("story"))))
     return lines
 
 

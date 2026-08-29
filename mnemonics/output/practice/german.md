@@ -17,10 +17,10 @@
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -50,10 +50,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Am] [amulet]
@@ -64,10 +64,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [An] [angel]
@@ -78,10 +78,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ao] [aoudad]
@@ -92,10 +92,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ap] [ape]
@@ -106,10 +106,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -139,10 +139,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ah] [Ah!—a sigh]
@@ -153,10 +153,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ai] [Airedale terrier]
@@ -167,10 +167,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Ak] [Akita (dog breed)]
@@ -181,10 +181,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -214,11 +214,11 @@ _No gallery images._
 **Quote**
 “Uvular trill: Can be used as a free variant of the voiced uvular fricative.”
 
-**Story**
-On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
-
 **Sensory**
 —
+
+**Story**
+On the next street, an adder snake slithers around freely. It meets a tall villain in black armor, who points to the deep back of his throat. The snake vibrates its tail far back on a throat model, sliding around as a free and flexible option.
 
 ### 🟧 [Ae] aerialqist
 
@@ -228,11 +228,11 @@ On the next street, an adder snake slithers around freely. It meets a tall villa
 **Quote**
 “Voiced velar fricative: A more fronted variant.”
 
-**Story**
-An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
-
 **Sensory**
 —
+
+**Story**
+An aerialist swings on a trapeze above the snake. She swings her body forward to reach the front part of the villain's throat model. She rubs the surface to make a smooth, vibrating friction sound that sits more to the front.
 
 ### 🟧 [Af] Afghan hound
 
@@ -244,11 +244,11 @@ An aerialist swings on a trapeze above the snake. She swings her body forward to
 **Quote**
 —
 
-**Story**
-The main difference lies in **how air is obstructed** (manner of articulation) and **where it happens** (place of articulation).
-
 **Sensory**
 —
+
+**Story**
+The main difference lies in **how air is obstructed** (manner of articulation) and **where it happens** (place of articulation).
 
 #### Notes
 
@@ -277,11 +277,11 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
-A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
-
 **Sensory**
 —
+
+**Story**
+A yak stands at the corner of the street. It holds a large sign with the word Symbol [zʏmˈboːl]. It tries to make a buzzing sound at the very beginning, but a giant red "X" stops it. A spiky-haired martial artist steps in to help the yak, showing that the buzz cannot start the word. "The alveolar fricative /z/ never occurs word-initially in Standard German. A word like "symbol" is pronounced with a voiced alveolar fricative: Symbol." IPA: Symbol [zʏmˈboːl]
 
 ### 🟧 [Z] Zeus
 
@@ -291,11 +291,11 @@ A yak stands at the corner of the street. It holds a large sign with the word Sy
 **Quote**
 “The velar nasal /ŋ/ only occurs at the end of syllables (syllable coda).”
 
-**Story**
-Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
-
 **Sensory**
 —
+
+**Story**
+Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grabs a singing block, representing the /ŋ/ sound, and forces it to sit at the absolute tail end of the broken piece. He yells at the yak that the sound is trapped at the end.
 
 ### 🟧 [Aa] aardvark
 
@@ -305,11 +305,11 @@ Zeus throws a lightning bolt at the yak's sign, breaking it into pieces. He grab
 **Quote**
 —
 
-**Story**
-An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁaːl]. It pulls out another band that says Metan [meˈtaːn]. Because the aardvark is very relaxed and not stressed, it lets both bands snap back so they become very short. "Most long vowels can be shortened when they appear in an unstressed position (e.g., Moral, Metan)." IPA: Moral [moˈʁaːl], Metan [meˈtaːn]
-
 **Sensory**
 —
+
+**Story**
+An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁaːl]. It pulls out another band that says Metan [meˈtaːn]. Because the aardvark is very relaxed and not stressed, it lets both bands snap back so they become very short. "Most long vowels can be shortened when they appear in an unstressed position (e.g., Moral, Metan)." IPA: Moral [moˈʁaːl], Metan [meˈtaːn]
 
 ### 🟧 [Ab] Abyssinian cat
 
@@ -319,11 +319,11 @@ An aardvark ignores Zeus and pulls on a long rubber band that says Moral [moˈʁ
 **Quote**
 —
 
-**Story**
-An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
-
 **Sensory**
 —
+
+**Story**
+An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak letter 'e' in the word großem [ˈɡʁoːsəm]. The cat pushes the weak letter into a hole in the street, dropping it entirely so it vanishes. "In words like großem, the schwa can be dropped entirely." IPA: großem [ˈɡʁoːsəm]
 
 ### 🟧 [Ac] acorn
 
@@ -333,11 +333,11 @@ An Abyssinian cat plays with the aardvark's snapped bands. It finds a soft, weak
 **Quote**
 “Alveolar trill: Mostly used in southern dialects (Bavarian, Franconian) and in singing.”
 
-**Story**
-A giant acorn rolls out of the hole the cat made. It bounces fast on the front of a tongue model, rolling loudly. The acorn wears a southern alpine hat and sings a loud opera song to the cat and the yak.
-
 **Sensory**
 —
+
+**Story**
+A giant acorn rolls out of the hole the cat made. It bounces fast on the front of a tongue model, rolling loudly. The acorn wears a southern alpine hat and sings a loud opera song to the cat and the yak.
 
 #### Notes
 
@@ -366,10 +366,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [X] Xena, warrior woman
@@ -380,10 +380,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -413,10 +413,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [S] Skull
@@ -427,10 +427,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [T] Toucan
@@ -441,10 +441,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [U] Unicorn
@@ -455,10 +455,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [V] Vulture
@@ -469,10 +469,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -502,10 +502,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [O] owl
@@ -516,10 +516,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [P] panther
@@ -530,10 +530,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [Q] Quetzalcoatl
@@ -544,10 +544,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -577,10 +577,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [J] jester
@@ -591,10 +591,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [K] kitten
@@ -605,10 +605,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [L] lion
@@ -619,10 +619,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [M] marmoset
@@ -633,10 +633,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -666,10 +666,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [G] goat
@@ -680,10 +680,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [H] Hydra
@@ -694,10 +694,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
@@ -727,10 +727,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [B] bird of paradise
@@ -741,10 +741,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [C] cat
@@ -755,10 +755,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [D] dragon
@@ -769,10 +769,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 ### 🟧 [E] eagle
@@ -783,10 +783,10 @@ _No gallery images._
 **Quote**
 —
 
-**Story**
+**Sensory**
 —
 
-**Sensory**
+**Story**
 —
 
 #### Notes
