@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: desktop_cut_newest.ahk
-; Cut, open, copy-path newest Desktop item, or paste clipboard file to Desktop.
+; Cut, open (+ activate with quality gate), copy-path newest Desktop item, or paste clipboard file to Desktop.
 ; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation + 3×):
 ;   1× = cut newest Desktop item, restore previous window
 ;   2× within 400 ms (AI_QD_DOUBLE_TAP_MS / ZMK tap-dance) = open with default app
@@ -115,7 +115,7 @@ DesktopCutNewest_OpenNewest() {
             DesktopCutNewest_OpenInBrowserNewWindow(newest, browser)
         else
             Run('"' . newest . '"')
-    } catch as err {
+    } catch {
         ShowCenteredOverlay_Utils("❌ Failed to open Desktop item", 2500, BANNER_ACCENT_ERROR)
         return
     }
@@ -125,14 +125,26 @@ DesktopCutNewest_OpenNewest() {
     if (!newHwnd)
         newHwnd := DesktopCutNewest_FindWindowByTitleHint(name)
 
-    if (newHwnd)
-        DesktopCutNewest_ActivateHwnd(newHwnd)
+    if (!newHwnd) {
+        ShowCenteredOverlay_Utils("❌ Opened but window not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    ; Quality gate: must be foreground before success. Retry + re-resolve by title if needed.
+    if !DesktopCutNewest_EnsureActivated(newHwnd, 3000) {
+        alt := DesktopCutNewest_FindWindowByTitleHint(name)
+        if (alt)
+            newHwnd := alt
+        if !DesktopCutNewest_EnsureActivated(newHwnd, 2000) {
+            ShowCenteredOverlay_Utils("❌ Could not activate opened window", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+    }
 
     ShowCenteredOverlay_Utils("📂 Open: " name, 1800, BANNER_ACCENT_SUCCESS)
 
-    ; Overlay / AutoSlot can steal focus — re-activate after the banner clears.
-    if (newHwnd)
-        DesktopCutNewest_ScheduleActivate(newHwnd, 1900)
+    ; Overlay / AutoSlot can steal focus — re-activate after the banner and re-check the gate.
+    DesktopCutNewest_ScheduleActivate(newHwnd, 1900, name)
 }
 
 DesktopCutNewest_SnapshotWindowMap(exeName := "") {
@@ -241,11 +253,54 @@ DesktopCutNewest_FindWindowByTitleHint(titleHint) {
     return 0
 }
 
-DesktopCutNewest_ScheduleActivate(hwnd, delayMs := 1500) {
+; Quality gate: window exists, is a visible top-level candidate, not minimized, and is foreground.
+DesktopCutNewest_IsForegroundOk(hwnd) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if !DesktopCutNewest_IsCandidateOpenWindow(hwnd)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            return false
+        if DllCall("IsIconic", "Ptr", hwnd)
+            return false
+    } catch {
+        return false
+    }
+    return !!WinActive("ahk_id " hwnd)
+}
+
+; Activate until quality gate passes (or timeout). Returns true only when foreground-ok.
+DesktopCutNewest_EnsureActivated(hwnd, timeoutMs := 2500) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    if DesktopCutNewest_IsForegroundOk(hwnd)
+        return true
+    deadline := A_TickCount + Max(200, timeoutMs)
+    while (A_TickCount < deadline) {
+        DesktopCutNewest_ActivateHwnd(hwnd)
+        if DesktopCutNewest_IsForegroundOk(hwnd)
+            return true
+        remainingSec := (deadline - A_TickCount) / 1000.0
+        if (remainingSec > 0.05) {
+            try WinWaitActive("ahk_id " hwnd, , Min(remainingSec, 0.5))
+            catch {
+            }
+        }
+        if DesktopCutNewest_IsForegroundOk(hwnd)
+            return true
+        Sleep 60
+    }
+    return DesktopCutNewest_IsForegroundOk(hwnd)
+}
+
+DesktopCutNewest_ScheduleActivate(hwnd, delayMs := 1500, titleHint := "") {
     global g_DesktopCutNewest_ScheduleActivateHwnd, g_DesktopCutNewest_ScheduleActivateTimer
+    global g_DesktopCutNewest_ScheduleActivateTitleHint
     if (!hwnd || delayMs < 1)
         return
     g_DesktopCutNewest_ScheduleActivateHwnd := hwnd
+    g_DesktopCutNewest_ScheduleActivateTitleHint := titleHint
     if (!g_DesktopCutNewest_ScheduleActivateTimer)
         g_DesktopCutNewest_ScheduleActivateTimer := ObjBindMethod(DesktopCutNewest_ScheduleActivateObj, "OnTimer")
     SetTimer(g_DesktopCutNewest_ScheduleActivateTimer, -delayMs)
@@ -253,10 +308,33 @@ DesktopCutNewest_ScheduleActivate(hwnd, delayMs := 1500) {
 
 class DesktopCutNewest_ScheduleActivateObj {
     static OnTimer() {
-        global g_DesktopCutNewest_ScheduleActivateHwnd
+        global g_DesktopCutNewest_ScheduleActivateHwnd, g_DesktopCutNewest_ScheduleActivateTitleHint
         hwnd := g_DesktopCutNewest_ScheduleActivateHwnd
+        titleHint := g_DesktopCutNewest_ScheduleActivateTitleHint
         g_DesktopCutNewest_ScheduleActivateHwnd := 0
-        DesktopCutNewest_ActivateHwnd(hwnd)
+        g_DesktopCutNewest_ScheduleActivateTitleHint := ""
+
+        if (!hwnd || !WinExist("ahk_id " hwnd)) {
+            if (titleHint != "")
+                hwnd := DesktopCutNewest_FindWindowByTitleHint(titleHint)
+        }
+        if (!hwnd) {
+            ShowCenteredOverlay_Utils("❌ Could not activate opened window", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        if DesktopCutNewest_IsForegroundOk(hwnd)
+            return
+        if !DesktopCutNewest_EnsureActivated(hwnd, 2000) {
+            if (titleHint != "") {
+                alt := DesktopCutNewest_FindWindowByTitleHint(titleHint)
+                if (alt && alt != hwnd)
+                    hwnd := alt
+            }
+            if !DesktopCutNewest_EnsureActivated(hwnd, 1500) {
+                ShowCenteredOverlay_Utils("❌ Could not activate opened window", 2500, BANNER_ACCENT_ERROR)
+                return
+            }
+        }
     }
 }
 
@@ -270,23 +348,55 @@ DesktopCutNewest_ActivateHwnd(hwnd) {
                 DllCall("AllowSetForegroundWindow", "UInt", pid)
         } catch {
         }
-        if (WinGetMinMax("ahk_id " hwnd) = -1)
-            WinRestore("ahk_id " hwnd)
-        WinActivate("ahk_id " hwnd)
-        if WinWaitActive("ahk_id " hwnd, , 0.8)
-            return true
-        DllCall("SwitchToThisWindow", "Ptr", hwnd, "Int", 1)
-        DllCall("SetForegroundWindow", "Ptr", hwnd)
-        DllCall("BringWindowToTop", "Ptr", hwnd)
-        WinActivate("ahk_id " hwnd)
-        if WinWaitActive("ahk_id " hwnd, , 0.5)
-            return true
-        ; Last-resort nudge used elsewhere when focus lock blocks WinActivate.
-        WinSetAlwaysOnTop("On", "ahk_id " hwnd)
-        Sleep 40
-        WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
-        WinActivate("ahk_id " hwnd)
-        return !!WinActive("ahk_id " hwnd)
+
+        ; AttachThreadInput helps when another process holds foreground lock.
+        attached := false
+        targetTid := 0
+        fgTid := 0
+        try {
+            targetTid := DllCall("GetWindowThreadProcessId", "Ptr", hwnd, "UInt*", 0, "UInt")
+            fg := DllCall("GetForegroundWindow", "Ptr")
+            if (fg)
+                fgTid := DllCall("GetWindowThreadProcessId", "Ptr", fg, "UInt*", 0, "UInt")
+            curTid := DllCall("GetCurrentThreadId", "UInt")
+            if (fgTid && fgTid != curTid)
+                attached := !!DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 1)
+            if (targetTid && targetTid != curTid && targetTid != fgTid)
+                DllCall("AttachThreadInput", "UInt", curTid, "UInt", targetTid, "Int", 1)
+        } catch {
+        }
+
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1 || DllCall("IsIconic", "Ptr", hwnd))
+                WinRestore("ahk_id " hwnd)
+            try WinShow("ahk_id " hwnd)
+            catch {
+            }
+            WinActivate("ahk_id " hwnd)
+            if WinWaitActive("ahk_id " hwnd, , 0.8)
+                return true
+            DllCall("SwitchToThisWindow", "Ptr", hwnd, "Int", 1)
+            DllCall("SetForegroundWindow", "Ptr", hwnd)
+            DllCall("BringWindowToTop", "Ptr", hwnd)
+            WinActivate("ahk_id " hwnd)
+            if WinWaitActive("ahk_id " hwnd, , 0.5)
+                return true
+            ; Last-resort nudge used elsewhere when focus lock blocks WinActivate.
+            WinSetAlwaysOnTop("On", "ahk_id " hwnd)
+            Sleep 40
+            WinSetAlwaysOnTop("Off", "ahk_id " hwnd)
+            WinActivate("ahk_id " hwnd)
+            return !!WinActive("ahk_id " hwnd)
+        } finally {
+            try {
+                curTid := DllCall("GetCurrentThreadId", "UInt")
+                if (targetTid && targetTid != curTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", targetTid, "Int", 0)
+                if (attached && fgTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 0)
+            } catch {
+            }
+        }
     } catch {
         return false
     }
@@ -477,6 +587,7 @@ global g_DesktopCutNewest_TapCount := 0
 global g_DesktopCutNewest_LastPressTick := 0
 global g_DesktopCutNewest_TapTimer := 0
 global g_DesktopCutNewest_ScheduleActivateHwnd := 0
+global g_DesktopCutNewest_ScheduleActivateTitleHint := ""
 global g_DesktopCutNewest_ScheduleActivateTimer := 0
 
 class DesktopCutNewest_TapTimerObj {
