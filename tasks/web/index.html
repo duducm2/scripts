@@ -3801,6 +3801,34 @@
               infoForm(row);
               return;
             }
+            if (
+              e.key === "Enter" &&
+              e.shiftKey &&
+              !e.ctrlKey &&
+              !e.metaKey &&
+              !e.altKey
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === state.infoSelId,
+              );
+              if (!row) {
+                toast("Select an info point first");
+                return;
+              }
+              const hit = infoHyperlink(row);
+              if (!hit) {
+                toast("No link on this info");
+                return;
+              }
+              try {
+                await openHyperlink(hit);
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
             if (e.key === "Enter") {
               e.preventDefault();
               infoForm(null);
