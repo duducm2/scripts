@@ -140,7 +140,7 @@
         background: #1a1e28;
       }
 
-      /* Palace overlay: image left / atoms right + F fullscreen toggle */
+      /* Palace overlay: image left / atoms cockpit + F fullscreen toggle */
       #overlay.open {
         display: flex;
         flex-direction: column;
@@ -157,21 +157,22 @@
       }
       #overlay .overlay-stage {
         display: grid;
-        grid-template-columns: minmax(260px, 40%) minmax(0, 1fr);
+        /* Snapshot ~1/3; atoms get the majority for a 5-beast fit */
+        grid-template-columns: minmax(220px, 32%) minmax(0, 1fr);
         align-items: stretch;
+        height: calc(100vh - 3.6rem);
         min-height: calc(100vh - 3.6rem);
-        flex: 1 1 auto;
+        max-height: calc(100vh - 3.6rem);
+        flex: 0 0 auto;
       }
       #overlay .overlay-image {
-        position: sticky;
-        top: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        align-self: start;
-        height: calc(100vh - 3.6rem);
-        max-height: calc(100vh - 3.6rem);
-        min-height: 220px;
+        align-self: stretch;
+        height: 100%;
+        max-height: none;
+        min-height: 0;
         width: 100%;
         margin: 0;
         border: none;
@@ -188,34 +189,135 @@
         display: block;
       }
       #overlay .overlay-atoms {
-        overflow: auto;
-        padding: 0.85rem 1rem 1.25rem;
-        max-height: calc(100vh - 3.6rem);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+        max-height: none;
+        overflow: hidden;
+        padding: 0.45rem 0.65rem 0.55rem;
         box-sizing: border-box;
       }
       #overlay .overlay-atoms h3 {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        margin: 0 0 0.75rem;
-        padding: 0.15rem 0 0.55rem;
-        background: linear-gradient(
-          180deg,
-          rgba(8, 9, 12, 0.98) 70%,
-          transparent
-        );
+        flex: 0 0 auto;
+        position: static;
+        margin: 0 0 0.35rem;
+        padding: 0;
+        font-size: 0.92rem;
+        background: none;
       }
       #overlay:not(.image-expanded) #ovAtoms {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
+        grid-auto-rows: minmax(0, 1fr);
+        gap: 0.45rem;
+        align-content: stretch;
+        overflow: hidden;
       }
-      @media (min-width: 1400px) {
+      @media (min-width: 1200px) {
         #overlay:not(.image-expanded) #ovAtoms {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
       }
+      /* Five beasts: 3+2 cockpit — top trio, bottom pair (wider) */
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      }
+      #overlay:not(.image-expanded)
+        #ovAtoms[data-beast-count="5"]
+        .beast-cluster:nth-child(-n + 3) {
+        grid-column: span 2;
+      }
+      #overlay:not(.image-expanded)
+        #ovAtoms[data-beast-count="5"]
+        .beast-cluster:nth-child(n + 4) {
+        grid-column: span 3;
+      }
+      #overlay:not(.image-expanded) .beast-cluster--lead {
+        border-left-color: #e8c56a;
+        box-shadow: inset 0 0 0 1px rgba(232, 197, 106, 0.18);
+      }
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      }
+      @media (min-width: 1200px) {
+        #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-rows: minmax(0, 1fr);
+        }
+      }
       #overlay:not(.image-expanded) .beast-cluster {
-        grid-column: span 1 !important;
+        grid-column: span 1;
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+        gap: 0.35rem;
+        padding: 0.4rem 0.5rem 0.45rem;
+        border-radius: 8px;
+      }
+      #overlay:not(.image-expanded) .beast-cluster-head {
+        padding-bottom: 0.25rem;
+      }
+      #overlay:not(.image-expanded) .beast-cluster-head .lbl {
+        font-size: 0.62rem;
+      }
+      #overlay:not(.image-expanded) .beast-cluster-head .beast-name {
+        font-size: 0.88rem;
+        line-height: 1.2;
+      }
+      #overlay:not(.image-expanded) .beast-cluster-head .sensory-chip {
+        font-size: 0.72rem;
+        max-width: min(11rem, 46%);
+      }
+      #overlay:not(.image-expanded) .beast-cluster-atoms {
+        gap: 0.35rem;
+        min-height: 0;
+        overflow: hidden;
+      }
+      #overlay:not(.image-expanded) .atom-card {
+        padding: 0.4rem 0.5rem;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      #overlay:not(.image-expanded) .atom-card .atom-card-head {
+        margin: 0 0 0.25rem;
+        padding-bottom: 0.2rem;
+      }
+      #overlay:not(.image-expanded) .atom-card .field {
+        margin: 0.28rem 0 0;
+        font-size: 0.78rem;
+        line-height: 1.3;
+      }
+      #overlay:not(.image-expanded) .atom-card .lbl {
+        font-size: 0.62rem;
+        margin-bottom: 0.05rem;
+      }
+      #overlay:not(.image-expanded) .atom-card .field-concept {
+        margin-top: 0.28rem;
+        padding: 0.3rem 0.4rem;
+        border-radius: 5px;
+        flex: 0 1 auto;
+        min-height: 0;
+        max-height: 5.2rem;
+        overflow: hidden;
+      }
+      /* Quote / story max-height — stops long bird/cat copy from forcing scroll */
+      #overlay:not(.image-expanded) .atom-card .field:nth-of-type(2) {
+        max-height: 2.8rem;
+        overflow: hidden;
+      }
+      #overlay:not(.image-expanded) .atom-card .field:nth-of-type(3) {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 4.2rem;
+        overflow: hidden;
       }
       #overlay .overlay-details {
         display: grid;
@@ -235,14 +337,16 @@
       }
       #overlay.image-expanded .overlay-stage {
         grid-template-columns: 1fr;
+        height: calc(100vh - 3.6rem);
         min-height: calc(100vh - 3.6rem);
+        max-height: calc(100vh - 3.6rem);
       }
       #overlay.image-expanded .overlay-atoms,
       #overlay.image-expanded .overlay-details {
         display: none !important;
       }
       #overlay.image-expanded .overlay-image {
-        height: calc(100vh - 3.6rem);
+        height: 100%;
         max-height: none;
         border-right: none;
         cursor: zoom-out;
@@ -255,7 +359,9 @@
       @media (max-width: 900px) {
         #overlay .overlay-stage {
           grid-template-columns: 1fr;
+          height: auto;
           min-height: auto;
+          max-height: none;
         }
         #overlay .overlay-image {
           position: relative;
@@ -265,10 +371,29 @@
           border-bottom: 1px solid var(--line);
         }
         #overlay .overlay-atoms {
+          height: auto;
           max-height: none;
+          overflow: auto;
         }
-        #overlay:not(.image-expanded) #ovAtoms {
+        #overlay:not(.image-expanded) #ovAtoms,
+        #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"],
+        #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] {
           grid-template-columns: 1fr;
+          grid-template-rows: none;
+          grid-auto-rows: auto;
+          overflow: visible;
+        }
+        #overlay:not(.image-expanded)
+          #ovAtoms[data-beast-count="5"]
+          .beast-cluster:nth-child(-n + 3),
+        #overlay:not(.image-expanded)
+          #ovAtoms[data-beast-count="5"]
+          .beast-cluster:nth-child(n + 4) {
+          grid-column: span 1;
+        }
+        #overlay:not(.image-expanded) .beast-cluster {
+          height: auto;
+          overflow: visible;
         }
         #overlay.image-expanded .overlay-image {
           height: calc(100vh - 3.6rem);
@@ -984,17 +1109,32 @@
         </article>`;
       }
 
+      function orderBeastsForCockpit(blist) {
+        /* Five-up: keep peg order, but seat Dragon in bottom-left (wider 3/6 cell). */
+        if (blist.length !== 5) return blist;
+        const copy = blist.slice();
+        const di = copy.findIndex((b) =>
+          /dragon/i.test(String(b.beast_name || b.peg_code || "")),
+        );
+        if (di < 0 || di === 3) return copy;
+        const [dragon] = copy.splice(di, 1);
+        copy.splice(Math.min(3, copy.length), 0, dragon);
+        return copy;
+      }
+
       function renderPalaceAtoms(palaceId) {
-        const blist = beasts(palaceId);
-        if (!blist.length)
+        const blist = orderBeastsForCockpit(beasts(palaceId));
+        const mount = document.getElementById("ovAtoms");
+        if (mount) mount.dataset.beastCount = String(blist.length);
+        if (!blist.length) {
+          if (mount) delete mount.dataset.beastCount;
           return '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
-        const maxCols = 6;
+        }
         return blist
           .map((b) => {
             const ats = atoms(b.id);
             const n = Math.max(ats.length, 1);
-            const span = Math.min(n, maxCols);
-            const innerCols = Math.min(n, maxCols);
+            const innerCols = Math.min(n, 3);
             const sensoryOnBeast = ats.length === 1;
             const headSensory = sensoryOnBeast
               ? sensoryChipHtml(ats[0].sensory_channel || b.sensory_channel)
@@ -1002,7 +1142,10 @@
             const cards =
               ats.map((a) => renderAtomCard(a, !sensoryOnBeast)).join("") ||
               '<p class="empty">No atoms</p>';
-            return `<section class="beast-cluster" style="grid-column: span ${span}; --beast-cols: ${innerCols}">
+            const isDragon = /dragon/i.test(
+              String(b.beast_name || b.peg_code || ""),
+            );
+            return `<section class="beast-cluster${isDragon ? " beast-cluster--lead" : ""}" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
@@ -2023,6 +2166,28 @@
           .catch((e) => toast(String(e.message || e)));
       }
 
+      async function refreshLinkStatus() {
+        const out = document.getElementById("linkOut");
+        if (!out) return;
+        const labels = {
+          video: "Video",
+          article: "Article",
+          favorite: "Favorite",
+        };
+        const lines = [];
+        for (const kind of Object.keys(labels)) {
+          try {
+            const r = await api(`/api/links/${kind}`);
+            lines.push(
+              `${labels[kind]}: ${r.url || (r.ok ? "(none)" : r.error || "error")}`,
+            );
+          } catch (e) {
+            lines.push(`${labels[kind]}: ${e.message || e}`);
+          }
+        }
+        out.textContent = lines.join("\n");
+      }
+
       function renderLinks(root) {
         root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Study links</h2>
           <div class="spa-row">
@@ -2033,8 +2198,9 @@
             <button class="spa-btn" data-k="favorite" data-a="open">Open favorite</button>
             <button class="spa-btn" data-k="favorite" data-a="set">Set favorite URL</button>
           </div>
-          <pre id="linkOut" style="color:var(--muted);white-space:pre-wrap"></pre>
+          <pre id="linkOut" style="color:var(--muted);white-space:pre-wrap">Loading…</pre>
         </div>`;
+        refreshLinkStatus();
         root.querySelectorAll("[data-k]").forEach((btn) => {
           btn.onclick = async () => {
             const kind = btn.dataset.k,
@@ -2047,26 +2213,26 @@
                   method: "POST",
                   body: JSON.stringify({ action: "set", url }),
                 });
-                document.getElementById("linkOut").textContent = JSON.stringify(
-                  r,
-                  null,
-                  2,
-                );
                 toast(r.ok ? "Saved" : r.error || "fail");
+                await refreshLinkStatus();
               } else {
+                toast("Opening…");
                 const r = await api(`/api/links/${kind}`, {
                   method: "POST",
                   body: JSON.stringify({ action: "open" }),
                 });
-                document.getElementById("linkOut").textContent = JSON.stringify(
-                  r,
-                  null,
-                  2,
-                );
-                toast(r.ok ? "Opened" : r.error || "fail");
+                const url = r.opened || r.url || "";
+                if (url) {
+                  window.open(url, "_blank", "noopener");
+                  toast("Opened");
+                } else {
+                  toast(r.error || "No URL stored");
+                }
+                await refreshLinkStatus();
               }
             } catch (e) {
               toast(String(e.message || e));
+              await refreshLinkStatus();
             }
           };
         });

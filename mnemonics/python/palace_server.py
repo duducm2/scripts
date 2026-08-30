@@ -112,12 +112,26 @@ def study_link_set(key: str, link_url: str) -> dict[str, Any]:
 
 
 def _parse_link_url(raw: str) -> str:
-    for part in (raw or "").replace("\r", "").split("\n"):
+    """Extract URL from Study Link API body (AHK-compatible form encoding).
+
+    Apps Script returns a single line like ``key=subtopic&url=https://…``.
+    ``url`` is always the last field and may itself contain ``&`` (e.g. ``&t=``),
+    so we take everything after the first ``url=`` and URL-decode it.
+    """
+    text = (raw or "").replace("\r", "").strip()
+    if not text:
+        return ""
+    lower = text.lower()
+    if lower.startswith("http://") or lower.startswith("https://"):
+        return text
+    # Prefer last ``url=`` in case of duplicates; value may include ``&``.
+    idx = lower.rfind("url=")
+    if idx >= 0:
+        return urllib.parse.unquote(text[idx + 4 :].strip())
+    for part in text.split("\n"):
         part = part.strip()
         if part.lower().startswith("url="):
-            return part[4:].strip()
-    if raw.lower().startswith("http"):
-        return raw.strip()
+            return urllib.parse.unquote(part[4:].strip())
     return ""
 
 
