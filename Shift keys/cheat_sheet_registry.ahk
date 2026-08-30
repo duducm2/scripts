@@ -1124,6 +1124,7 @@ cheatSheets["Memory Palace"] := "
     
     === Search ===
     🔍 [Alt+S] Focus Knowledge Atom search
+    ⏎ [Enter] (while search results open) Select first match → open palace
     
     === Study links (anywhere in the app) ===
     🎬 [Shift+V] Open stored video in Chrome (new window)

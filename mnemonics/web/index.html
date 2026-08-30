@@ -2387,6 +2387,17 @@
         });
       };
 
+      document.getElementById("atomSearch").onkeydown = (e) => {
+        if (e.key !== "Enter") return;
+        const box = document.getElementById("searchResults");
+        if (!box.classList.contains("open")) return;
+        const first = box.querySelector(".hit");
+        if (!first) return;
+        e.preventDefault();
+        box.classList.remove("open");
+        openPalace(first.dataset.pid);
+      };
+
       function focusAtomSearch() {
         if (studyModalIsOpen()) closeStudyModal({ focusLatest: false });
         const el = document.getElementById("atomSearch");
