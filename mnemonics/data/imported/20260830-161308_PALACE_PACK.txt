@@ -1,0 +1,36 @@
+﻿===PREVIEW===
+STUDY_DATA_ANALYST · 1 palaces · 5 beasts · 5 atoms
+Packing: 5
+
+PALACE 2 — Data Analytics Fundamentals (Alan Turing) [PALACE_DATA_ANALYST_02]
+  [E] eagle — Concept: I analyze raw data to extract useful business insights. — Note: Transforms unorganized datasets into actionable intelligence. | Quote: "Data analytics is the process of analyzing raw data so that we can pull out insights which are useful to companies." | Story: Perched on the iron gatepost, a giant eagle rips open a massive floating jigsaw puzzle box, violently squeezing raw wooden letters into a blinding neon sign reading INSIGHTS. | Sensory: visual
+  [F] frog — Concept: I apply analytics to speed decisions, cut costs, and develop products. — Note: Optimizes operational performance and predicts market behavior. | Quote: "Broadly speaking, data analytics is used to make faster and better business decisions, to reduce overall business costs, and to develop new and innovative products and services." | Story: Beside a parked bakery delivery truck, a neon-striped frog croaks at deafening volume, spitting high-speed golden coin streams that slice red expense ledgers in half. | Sensory: auditory
+  [G] goat — Concept: I evaluate team data to shape future business strategies. — Note: Serves as the cross-functional bridge between raw metrics and executive planning. | Quote: "Work as part of a team to evaluate and analyze key data that will be used to shape future business strategies." | Story: Against the central brick facade, a goat rams its head into an oversized blue architectural blueprint, grinding tactical charts into glowing chalk paste with sandpaper-textured horns. | Sensory: tactile
+  [H] Hydra — Concept: I turn refined data into valuable business insights. — Note: The culmination of a five-step pipeline spanning definition, collection, cleaning, analysis, and presentation. | Quote: "The final step in this process is where data is turned into valuable business insights." | Story: Sprawled across the upper roof tiles, a seven-headed Hydra spews boiling chemical solvent across five descending conveyor belts, crystallizing raw sludge into sparkling ruby ingots that radiate intense heat. | Sensory: thermal
+  [I] imp — Concept: I dig deeper beyond number crunching to understand underlying causes. — Note: Balances quantitative technical skills like SQL with qualitative critical reasoning. | Quote: "It's not just about crunching the numbers and sharing your data. Sometimes you'll need to dig deeper to understand really what's going on." | Story: Next to the front stone curb, an imp burrows frantically into the asphalt with a glowing pitchfork, releasing a pungent sulfur stench as it unearths hidden subterranean data cables. | Sensory: olfactory
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_DATA_ANALYST_02,STUDY_DATA_ANALYST,2,Data Analytics Fundamentals,Alan Turing,data-analyst/images/2.png,5,"A realistic street view featuring an original fictional 1940s mathematician-like man (mid-30s, neat parted brown hair, tweed suit with knitted vest, holding a brass cipher rotor — not any real, living, historical, or named public figure and not any copyrighted character) standing centered. In ForegroundLeft on the gatepost, a giant eagle grips a neon puzzle sign. In MidgroundRight by a parked delivery truck, a neon-striped frog croaks coin streams. In BackgroundCenter against the brick facade, a goat with sandpaper horns butts a large blueprint. In Aerial on the roof tiles, a multi-headed Hydra spews shimmering steam over tiered conveyor belts. In ForegroundRight by the curb, a small horned imp digs into cracked pavement with a pitchfork."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_DATA_ANALYST_02_E,PALACE_DATA_ANALYST_02,E,eagle,Lynne Kelly,visual,0,1
+BEAST_DATA_ANALYST_02_F,PALACE_DATA_ANALYST_02,F,frog,Lynne Kelly,auditory,0,2
+BEAST_DATA_ANALYST_02_G,PALACE_DATA_ANALYST_02,G,goat,Lynne Kelly,tactile,0,3
+BEAST_DATA_ANALYST_02_H,PALACE_DATA_ANALYST_02,H,Hydra,Lynne Kelly,thermal,0,4
+BEAST_DATA_ANALYST_02_I,PALACE_DATA_ANALYST_02,I,imp,Lynne Kelly,olfactory,0,5
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,BEAST_DATA_ANALYST_02_E,single,,,I analyze raw data to extract useful business insights. — Note: Transforms unorganized datasets into actionable intelligence.,"Data analytics is the process of analyzing raw data so that we can pull out insights which are useful to companies.",Perched on the iron gatepost, a giant eagle rips open a massive floating jigsaw puzzle box, violently squeezing raw wooden letters into a blinding neon sign reading INSIGHTS.,visual,,1
+,BEAST_DATA_ANALYST_02_F,single,,,I apply analytics to speed decisions, cut costs, and develop products. — Note: Optimizes operational performance and predicts market behavior.,"Broadly speaking, data analytics is used to make faster and better business decisions, to reduce overall business costs, and to develop new and innovative products and services.",Beside a parked bakery delivery truck, a neon-striped frog croaks at deafening volume, spitting high-speed golden coin streams that slice red expense ledgers in half.,auditory,,2
+,BEAST_DATA_ANALYST_02_G,single,,,I evaluate team data to shape future business strategies. — Note: Serves as the cross-functional bridge between raw metrics and executive planning.,"Work as part of a team to evaluate and analyze key data that will be used to shape future business strategies.",Against the central brick facade, a goat rams its head into an oversized blue architectural blueprint, grinding tactical charts into glowing chalk paste with sandpaper-textured horns.,tactile,,3
+,BEAST_DATA_ANALYST_02_H,single,,,I turn refined data into valuable business insights. — Note: The culmination of a five-step pipeline spanning definition, collection, cleaning, analysis, and presentation.,"The final step in this process is where data is turned into valuable business insights.",Sprawled across the upper roof tiles, a seven-headed Hydra spews boiling chemical solvent across five descending conveyor belts, crystallizing raw sludge into sparkling ruby ingots that radiate intense heat.,thermal,,4
+,BEAST_DATA_ANALYST_02_I,single,,,I dig deeper beyond number crunching to understand underlying causes. — Note: Balances quantitative technical skills like SQL with qualitative critical reasoning.,"It's not just about crunching the numbers and sharing your data. Sometimes you'll need to dig deeper to understand really what's going on.",Next to the front stone curb, an imp burrows frantically into the asphalt with a glowing pitchfork, releasing a pungent sulfur stench as it unearths hidden subterranean data cables.,olfactory,,5
+===END_FILE===

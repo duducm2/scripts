@@ -1,4 +1,4 @@
-id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+﻿id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
 BEAST_AI_01_A,PALACE_AI_01,A,Arachne,,visual,0,1
 BEAST_AI_01_B,PALACE_AI_01,B,bird of paradise,,visual,0,2
 BEAST_AI_01_C,PALACE_AI_01,C,cat,,olfactory,1,3
@@ -302,3 +302,8 @@ BEAST_DATAANALYST_01_A,PALACE_DATAANALYST_01,A,Arachne,Lynne Kelly,tactile,1,1
 BEAST_DATAANALYST_01_B,PALACE_DATAANALYST_01,B,bird of paradise,Lynne Kelly,tactile,0,2
 BEAST_DATAANALYST_01_C,PALACE_DATAANALYST_01,C,cat,Lynne Kelly,thermal,0,3
 BEAST_DATAANALYST_01_D,PALACE_DATAANALYST_01,D,dragon,Lynne Kelly,olfactory,0,4
+BEAST_DATAANALYST_02_E,PALACE_DATAANALYST_02,E,eagle,Lynne Kelly,visual,0,1
+BEAST_DATAANALYST_02_F,PALACE_DATAANALYST_02,F,frog,Lynne Kelly,auditory,0,2
+BEAST_DATAANALYST_02_G,PALACE_DATAANALYST_02,G,goat,Lynne Kelly,tactile,0,3
+BEAST_DATAANALYST_02_H,PALACE_DATAANALYST_02,H,Hydra,Lynne Kelly,thermal,0,4
+BEAST_DATAANALYST_02_I,PALACE_DATAANALYST_02,I,imp,Lynne Kelly,olfactory,0,5

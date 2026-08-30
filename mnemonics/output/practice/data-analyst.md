@@ -1,6 +1,95 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 2: Data Analytics Fundamentals</strong> · Character: Alan Turing · 5 beasts · 5 atoms</summary>
+
+![Memory Palace 2](images/data-analyst/2.jpg)
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [E] eagle
+
+**Concept**
+💡 I analyze raw data to extract useful business insights. — Note: Transforms unorganized datasets into actionable intelligence.
+
+**Quote**
+“Data analytics is the process of analyzing raw data so that we can pull out insights which are useful to companies.”
+
+**Sensory**
+👁️ visual
+
+**Story**
+Perched on the iron gatepost, a giant eagle rips open a massive floating jigsaw puzzle box, violently squeezing raw wooden letters into a blinding neon sign reading INSIGHTS.
+
+### 🟧 [F] frog
+
+**Concept**
+💡 I apply analytics to speed decisions, cut costs, and develop products. — Note: Optimizes operational performance and predicts market behavior.
+
+**Quote**
+“Broadly speaking, data analytics is used to make faster and better business decisions, to reduce overall business costs, and to develop new and innovative products and services.”
+
+**Sensory**
+👂 auditory
+
+**Story**
+Beside a parked bakery delivery truck, a neon-striped frog croaks at deafening volume, spitting high-speed golden coin streams that slice red expense ledgers in half.
+
+### 🟧 [G] goat
+
+**Concept**
+💡 I evaluate team data to shape future business strategies. — Note: Serves as the cross-functional bridge between raw metrics and executive planning.
+
+**Quote**
+“Work as part of a team to evaluate and analyze key data that will be used to shape future business strategies.”
+
+**Sensory**
+✋ tactile
+
+**Story**
+Against the central brick facade, a goat rams its head into an oversized blue architectural blueprint, grinding tactical charts into glowing chalk paste with sandpaper-textured horns.
+
+### 🟧 [H] Hydra
+
+**Concept**
+💡 I turn refined data into valuable business insights. — Note: The culmination of a five-step pipeline spanning definition, collection, cleaning, analysis, and presentation.
+
+**Quote**
+“The final step in this process is where data is turned into valuable business insights.”
+
+**Sensory**
+🌡️ thermal
+
+**Story**
+Sprawled across the upper roof tiles, a seven-headed Hydra spews boiling chemical solvent across five descending conveyor belts, crystallizing raw sludge into sparkling ruby ingots that radiate intense heat.
+
+### 🟧 [I] imp
+
+**Concept**
+💡 I dig deeper beyond number crunching to understand underlying causes. — Note: Balances quantitative technical skills like SQL with qualitative critical reasoning.
+
+**Quote**
+“It's not just about crunching the numbers and sharing your data. Sometimes you'll need to dig deeper to understand really what's going on.”
+
+**Sensory**
+👃 olfactory
+
+**Story**
+Next to the front stone curb, an imp burrows frantically into the asphalt with a glowing pitchfork, releasing a pungent sulfur stench as it unearths hidden subterranean data cables.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 1: Data Analyst vs Data Scientist Foundations</strong> · Character: Ada Lovelace · 4 beasts · 5 atoms</summary>
 
 ![Memory Palace 1](images/data-analyst/1.jpg)
