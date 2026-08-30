@@ -737,13 +737,10 @@ PITEM_0735,PLAN_0006,Study Architecture: Learning Sprint Cadence (Ongoing) > Bi-
 PITEM_0736,PLAN_0006,Progress KPIs (Meta-Checklist) > Learner Key Performance Indicators,"Framework Synthesis Rate: combine frameworks (e.g., RICE-prioritize OST assumption experiments)",0,111
 PITEM_0737,PLAN_0006,Progress KPIs (Meta-Checklist) > Learner Key Performance Indicators,Technical Translation Accuracy: map UI bugs to API failures via DevTools/Postman with correct HTTP codes,0,112
 PITEM_0738,PLAN_0006,Progress KPIs (Meta-Checklist) > Learner Key Performance Indicators,Assessment Readiness: sustain >95% on Scrum Open and mock exams before PSPO I attempt,0,113
-PITEM_0739,PLAN_0007,Backlog,Archive source curriculum PDF (Data Analyst Transition Study Plan) under research/ for reference,0,1
-PITEM_0740,PLAN_0007,Backlog,"Design Memory Palace blueprint: campus or corporate HQ with five wings (Atrium, Archive, Exhibition Hall, Lab, Auditorium) — palaces left blank until ready",0,2
-PITEM_0741,PLAN_0007,Backlog,"Hard constraint: stay in Data Analysis only — no ML, predictive modeling, Scikit-Learn, or TensorFlow",0,3
-PITEM_0742,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,0,4
-PITEM_0743,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Apply tabular best practices for large dataset management,0,5
-PITEM_0744,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,0,6
-PITEM_0745,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,0,7
+PITEM_0742,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,1,4
+PITEM_0743,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,5
+PITEM_0744,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,6
+PITEM_0745,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,1,7
 PITEM_0746,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,0,8
 PITEM_0747,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,0,9
 PITEM_0748,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,0,10

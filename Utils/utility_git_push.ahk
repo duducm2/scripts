@@ -73,49 +73,13 @@ Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
     return false
 }
 
-Utility_GitExportTasksMd(scriptsRoot, notesRoot) {
-    py := scriptsRoot . "\tasks\python\export_to_md.py"
-    if (!FileExist(py))
-        return "error:export_to_md.py not found"
-    pyCmd := ""
-    try pyCmd := Task_FindPythonCmd()
-    catch {
-        pyCmd := ""
-    }
-    if (pyCmd = "")
-        return "error:Python not found for Tasks MD export"
-    dataDir := scriptsRoot . "\tasks\data"
-    work := notesRoot . "\work\work.md"
-    punctual := notesRoot . "\main\punctual.md"
-    habits := notesRoot . "\main\habits.md"
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir
-        . '" --work "' . work . '" --punctual "' . punctual . '" --habits "' . habits . '"'
-    exitCode := 0
-    try {
-        exitCode := RunWait(A_ComSpec . " /c " . cmd, scriptsRoot, "Hide")
-    } catch as e {
-        return "error:Tasks MD export failed: " . e.Message
-    }
-    if (exitCode != 0)
-        return "error:Tasks MD export failed (exit " . exitCode . ")"
-    return "ok"
-}
-
 Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
     porcelain := status.stdout
-    needTasks := Utility_GitStatusHasPathPrefix(porcelain, "tasks/data/")
     needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
-
-    if (needTasks) {
-        Utility_GitPassiveBar("⏳ Exporting Tasks Markdown…")
-        r := Utility_GitExportTasksMd(scriptsRoot, notesRoot)
-        if (SubStr(r, 1, 6) = "error:")
-            return r
-    }
 
     if (needPalace) {
         Utility_GitPassiveBar("⏳ Syncing Memory Palace Markdown…")

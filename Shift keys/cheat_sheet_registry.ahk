@@ -1046,7 +1046,7 @@ cheatSheets["Miro"] := "
 cheatSheets["Tasks"] := "
 (
     Tasks
-    Overlay Win+Alt+Shift+A. GitHub MD toolbar opens exported Markdown on GitHub.
+    Overlay Win+Alt+Shift+A.
     
     === Function keys & misc ===
     ⬆️ [Up] Previous item

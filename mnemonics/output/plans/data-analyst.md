@@ -4,20 +4,14 @@
 
 ## 📃 Backlog
 
-- [ ] Archive source curriculum PDF (Data Analyst Transition Study Plan) under research/ for reference
-
-- [ ] Design Memory Palace blueprint: campus or corporate HQ with five wings (Atrium, Archive, Exhibition Hall, Lab, Auditorium) — palaces left blank until ready
-
-- [ ] Hard constraint: stay in Data Analysis only — no ML, predictive modeling, Scikit-Learn, or TensorFlow
-
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation
 
-- [ ] Master Excel keyboard shortcuts for navigation without relying on the mouse
-- [ ] Apply tabular best practices for large dataset management
-- [ ] Set up a clean workbook structure suitable for analyst workflows
-- [ ] Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts
+- [✅] Master Excel keyboard shortcuts for navigation without relying on the mouse
+- [✅] Apply tabular best practices for large dataset management
+- [✅] Set up a clean workbook structure suitable for analyst workflows
+- [✅] Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts
 
 **🔗 Resources:**
 

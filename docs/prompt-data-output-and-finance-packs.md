@@ -6,11 +6,11 @@ This doc is the **canonical reference** for how prompts and importers are linked
 
 > **Start here** if you are an AI agent working on pack prompts, importers, CSV schemas, partial-import recovery, or a new import domain.
 
-**Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). CSV under `tasks/data/`. Pack import **`TASK_PACK.txt`** is Import Management `[T]` ([`task_import.ahk`](../Utils/task_import.ahk) → Python CLI). MD migrate remains in the web app if present. Fix file: `TASK_AI_FIX.txt`.
+**Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). CSV under `tasks/data/`. Pack import **`TASK_PACK.txt`** is Import Management `[T]` ([`task_import.ahk`](../Utils/task_import.ahk) → Python CLI). Fix file: `TASK_AI_FIX.txt`.
 
 **Memory Palace domain:** Utility Shortcuts `[N]` / `#!+D` **hold** opens the **web app** at `http://127.0.0.1:8767/` (`mnemonics/python/palace_server.py` + `mnemonics/web/index.html`). CSV under `mnemonics/data/`. Thin AHK launcher ensures the server and focuses Chrome titled **Memory Palace**. Pack import (**`PALACE_PACK`** / **`PLAN_PACK`**) and **Quick image** (newest Desktop PNG/JPG → palace missing image) stay Import Management (`#!+X` / Utility `[J]` → `[P]`/`[L]`/`[Q]`). The old `file://` dashboard + write-only `:8765` `plan_save_server` path is **deprecated** (writes live on `:8767`). Fix files: `PALACE_AI_FIX.txt` / plan fix naming via Import Management.
 
-**Push (all domains):** Utility Shortcuts top-level `[G]` / category **Push** is the only commit+push entrypoint ([`utility_git_push.ahk`](../Utils/utility_git_push.ahk)). It runs in the background, exports Tasks Markdown to the notes repo when `tasks/data` is dirty (`export_to_md.py` → `work.md` / `punctual.md` / `habits.md`), syncs Memory Palace practice+plans MD when `mnemonics/data` is dirty, then commits and pushes **scripts** and **notes**. Finance/Palace/Tasks in-app push keys were removed.
+**Push (all domains):** Utility Shortcuts top-level `[G]` / category **Push** is the only commit+push entrypoint ([`utility_git_push.ahk`](../Utils/utility_git_push.ahk)). It runs in the background, syncs Memory Palace practice+plans MD when `mnemonics/data` is dirty, then commits and pushes **scripts** and **notes**. Finance/Palace/Tasks in-app push keys were removed. Tasks live only in `tasks/data/` CSV (no Markdown mirror).
 
 ## For future agents — import system reference
 
@@ -56,12 +56,12 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 
 ### Module index (code)
 
-| Domain            | Helpers                                                                                                               | Import                                                                                                                              | Launcher                                                                      | Data                   |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
-| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                                                           | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                                           | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
+| Domain            | Helpers                                                                                                                                                 | Import                                                                                                                              | Launcher                                                                                    | Data                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------- |
+| Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                                                                                             | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                                           | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                               | `finances/data/*.csv`  |
 | Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk) + [`mnemonics/python/palace_store.py`](../mnemonics/python/palace_store.py) | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                                           | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) → web `:8767` | `mnemonics/data/*.csv` |
-| Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk) + [`tasks/python/task_store.py`](../tasks/python/task_store.py) | [`tasks/python/task_pack_import.py`](../tasks/python/task_pack_import.py) CLI + [`Utils/task_import.ahk`](../Utils/task_import.ahk) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk) → web `:8766`         | `tasks/data/*.csv`     |
-| Import Management | —                                                                                                                     | Hub UI + `ImportMgmt_Run*` → domain importers                                                                                       | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
+| Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk) + [`tasks/python/task_store.py`](../tasks/python/task_store.py)                                   | [`tasks/python/task_pack_import.py`](../tasks/python/task_pack_import.py) CLI + [`Utils/task_import.ahk`](../Utils/task_import.ahk) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk) → web `:8766`                       | `tasks/data/*.csv`     |
+| Import Management | —                                                                                                                                                       | Hub UI + `ImportMgmt_Run*` → domain importers                                                                                       | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)                       | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
 
@@ -123,27 +123,27 @@ flowchart LR
 
 ### How the pieces connect
 
-| Piece                                                                                                                 | Role                                                                                |
-| --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Prompt char** (`Char=` in [`assets/data/prompts.ini`](../assets/data/prompts.ini))                                  | Opens the prompt from Utility Shortcuts (`#!+U` → Prompts) or dictation flow        |
-| **`ExpectsDataOutput=1`**                                                                                             | Marks the prompt as requiring structured AIB output                                 |
-| **`DataOutputFormat`** (`file` / `code`)                                                                              | Controls injected delivery contract: download chip vs single code fence             |
-| **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                        |
-| **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)                 |
-| **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files; CRUD + copy via Import Management `[N]` |
+| Piece                                                                                                                 | Role                                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Prompt char** (`Char=` in [`assets/data/prompts.ini`](../assets/data/prompts.ini))                                  | Opens the prompt from Utility Shortcuts (`#!+U` → Prompts) or dictation flow                                                            |
+| **`ExpectsDataOutput=1`**                                                                                             | Marks the prompt as requiring structured AIB output                                                                                     |
+| **`DataOutputFormat`** (`file` / `code`)                                                                              | Controls injected delivery contract: download chip vs single code fence                                                                 |
+| **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                                                                            |
+| **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)                                                                     |
+| **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files; CRUD + copy via Import Management `[N]`                                                     |
 | **Import Management hub**                                                                                             | Sole AHK import UI (`#!+X` / Utility `[J]` / `#!+F` double-tap) — Char ListView; includes pack imports **and** Palace quick image `[Q]` |
-| **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context   |
+| **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context                                                       |
 
 ### Pack-import domains
 
-| Domain          | Import entry           | Hub key | Prompt (char) | Pack file             | Context                     | Importer                                                                                                     | Confirm UI |
-| --------------- | ---------------------- | ------- | ------------- | --------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
-| Finance daily   | `#!+X` / Utility `[J]` | `[D]`   | `[d]`         | `FINANCE_DAILY.txt`   | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes        |
-| Finance monthly | `#!+X` / Utility `[J]` | `[M]`   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes        |
-| Memory Palace   | `#!+X` / Utility `[J]` | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes        |
-| Study plans     | `#!+X` / Utility `[J]` | `[L]`   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes        |
-| Palace quick image | `#!+X` / Utility `[J]` | `[Q]` | —          | Newest Desktop PNG/JPG | —                        | [`Palace_QuickAttachDesktopImage`](../Utils/mnemonic_palace_import.ahk)                                      | Palace picker |
-| Tasks           | `#!+X` / Utility `[J]` | `[T]`   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)  |
+| Domain             | Import entry           | Hub key | Prompt (char) | Pack file              | Context                     | Importer                                                                                                     | Confirm UI    |
+| ------------------ | ---------------------- | ------- | ------------- | ---------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------- |
+| Finance daily      | `#!+X` / Utility `[J]` | `[D]`   | `[d]`         | `FINANCE_DAILY.txt`    | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes           |
+| Finance monthly    | `#!+X` / Utility `[J]` | `[M]`   | `[m]`         | `FINANCE_MONTHLY.txt`  | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes           |
+| Memory Palace      | `#!+X` / Utility `[J]` | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`      | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
+| Study plans        | `#!+X` / Utility `[J]` | `[L]`   | `[n]`         | `PLAN_PACK.txt`        | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
+| Palace quick image | `#!+X` / Utility `[J]` | `[Q]`   | —             | Newest Desktop PNG/JPG | —                           | [`Palace_QuickAttachDesktopImage`](../Utils/mnemonic_palace_import.ahk)                                      | Palace picker |
+| Tasks              | `#!+X` / Utility `[J]` | `[T]`   | `[t]`         | `TASK_PACK.txt`        | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)     |
 
 Import Management help: `[H]` in the hub ListView (canonical names, overwrite policy, per-import rules, desktop name registry).
 
@@ -259,16 +259,16 @@ Post-import daily opens Transactions; card expenses show **card name**; transfer
 
 Sole AHK import UI: Char-first ListView (Project Selector chrome). Domain Finance/Palace apps no longer expose import menus. Domain parsers remain in `*_import.ahk` / Tasks Python; the hub calls `ImportMgmt_Run*`.
 
-| Key   | Import                                        |
-| ----- | --------------------------------------------- |
-| `[D]` | Finance daily                                 |
-| `[M]` | Finance monthly                               |
-| `[P]` | Palace mnemonic pack                          |
-| `[L]` | Study plan pack                               |
-| `[T]` | Task pack (AHK confirm → Python CLI)          |
+| Key   | Import                                                                        |
+| ----- | ----------------------------------------------------------------------------- |
+| `[D]` | Finance daily                                                                 |
+| `[M]` | Finance monthly                                                               |
+| `[P]` | Palace mnemonic pack                                                          |
+| `[L]` | Study plan pack                                                               |
+| `[T]` | Task pack (AHK confirm → Python CLI)                                          |
 | `[Q]` | Palace quick image (newest Desktop PNG/JPG → palace missing `image_rel_path`) |
-| `[N]` | Desktop pack names (CRUD + copy to clipboard) |
-| `[H]` | Help (per-import rules)                       |
+| `[N]` | Desktop pack names (CRUD + copy to clipboard)                                 |
+| `[H]` | Help (per-import rules)                                                       |
 
 Char / Enter / double-click run the selected workflow. After a hub import: success closes Import Management (Finance daily still opens transactions); AI-fix failure copies the Desktop fix file to the clipboard, shows a ≥5s banner, and closes the hub so you can paste into the AI companion and reopen manually.
 

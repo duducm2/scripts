@@ -73,7 +73,6 @@ def _os_open(target: str) -> None:
 class TaskHandler(BaseHTTPRequestHandler):
     data_dir: Path
     scripts_root: Path
-    notes_candidates: list[Path]
 
     def log_message(self, format: str, *args: Any) -> None:
         sys.stderr.write("[task_server] " + (format % args) + "\n")
@@ -128,7 +127,6 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "crud",
                         "attachments",
                         "import",
-                        "migrate",
                         "open",
                     ],
                 },
@@ -265,60 +263,19 @@ class TaskHandler(BaseHTTPRequestHandler):
                     ),
                 )
                 return
-            if path == "/api/migrate":
-                self._json(200, self._migrate())
-                return
             self._json(404, {"ok": False, "error": "not found"})
         except Exception as e:
             self._json(
                 500, {"ok": False, "error": str(e), "trace": traceback.format_exc()}
             )
 
-    def _migrate(self) -> dict[str, Any]:
-        py = Path(__file__).resolve().parent / "migrate_from_md.py"
-        work = punctual = habits = None
-        for root in self.notes_candidates:
-            w = root / "work" / "work.md"
-            p = root / "main" / "punctual.md"
-            h = root / "main" / "habits.md"
-            if w.is_file() and p.is_file() and h.is_file():
-                work, punctual, habits = w, p, h
-                break
-        if not work:
-            return {
-                "ok": False,
-                "error": "Could not find work.md / punctual.md / habits.md",
-            }
-        cmd = [
-            sys.executable,
-            str(py),
-            "--data-dir",
-            str(self.data_dir),
-            "--work",
-            str(work),
-            "--punctual",
-            str(punctual),
-            "--habits",
-            str(habits),
-        ]
-        r = subprocess.run(cmd, capture_output=True, text=True, cwd=str(py.parent))
-        if r.returncode != 0:
-            return {
-                "ok": False,
-                "error": (r.stderr or r.stdout or "migrate failed")[:500],
-            }
-        return {"ok": True, "message": (r.stdout or "Migrated").strip()}
 
-
-def make_handler(
-    data_dir: Path, scripts_root: Path, notes_candidates: list[Path]
-) -> type[TaskHandler]:
+def make_handler(data_dir: Path, scripts_root: Path) -> type[TaskHandler]:
     class Handler(TaskHandler):
         pass
 
     Handler.data_dir = data_dir
     Handler.scripts_root = scripts_root
-    Handler.notes_candidates = notes_candidates
     return Handler
 
 
@@ -328,22 +285,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--scripts-root", type=Path, required=True)
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=DEFAULT_PORT)
-    p.add_argument("--notes-root", type=Path, default=None)
     args = p.parse_args(argv)
 
     data_dir = args.data_dir.resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     (data_dir / "attachments").mkdir(exist_ok=True)
 
-    notes_candidates: list[Path] = []
-    if args.notes_root:
-        notes_candidates.append(args.notes_root.resolve())
-    # common sibling notes repo
-    sibling = args.scripts_root.resolve().parent / "notes"
-    if sibling.is_dir():
-        notes_candidates.append(sibling)
-
-    handler = make_handler(data_dir, args.scripts_root.resolve(), notes_candidates)
+    handler = make_handler(data_dir, args.scripts_root.resolve())
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Tasks server listening on http://{args.host}:{args.port}", file=sys.stderr)
     try:

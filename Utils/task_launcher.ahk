@@ -190,17 +190,8 @@ Task_EnsureServer(forceRestart := false) {
     }
     dataDir := Task_DataDir()
     scriptsRoot := A_ScriptDir
-    notesRoot := ""
-    cand := A_ScriptDir . "\..\notes"
-    try {
-        if (DirExist(cand))
-            notesRoot := cand
-    } catch {
-    }
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . scriptsRoot
         . '" --port ' . port
-    if (notesRoot != "")
-        cmd .= ' --notes-root "' . notesRoot . '"'
     pid := 0
     try pid := Run(cmd, A_ScriptDir, "Hide")
     catch as e {
