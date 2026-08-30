@@ -514,6 +514,7 @@
       .kb-selected,
       details.project.kb-selected > summary,
       .task.kb-selected,
+      .plain-row.kb-selected,
       .task-section.kb-selected > .task-section-label {
         outline: 2px solid var(--gold);
         outline-offset: -2px;
@@ -637,40 +638,58 @@
         justify-content: flex-end;
         margin-top: 14px;
       }
-      .inline-create {
-        display: none;
+      .inline-create-row {
         align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 10px 24px 12px;
-        border-bottom: 1px solid var(--line);
-        background: #1a1a1c;
       }
-      .inline-create.active {
-        display: flex;
+      .inline-create-row input[type="text"] {
+        flex: 1;
+        min-width: 80px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--gold);
+        border-radius: 0;
+        color: var(--text);
+        padding: 2px 4px;
+        font: inherit;
+        font-size: 13px;
       }
-      .inline-create .ctx {
-        color: var(--muted);
-        font-size: 12px;
-        max-width: 280px;
+      .inline-create-row input[type="text"]:focus {
+        outline: none;
       }
-      .inline-create .ctx strong {
-        color: var(--gold);
+      .task-section.is-inline-create > .task-section-label {
+        text-transform: none;
+        letter-spacing: 0;
         font-weight: 600;
       }
-      .inline-create input[type="text"] {
-        flex: 1 1 220px;
-        min-width: 160px;
-        background: #252528;
-        border: 1px solid var(--gold);
-        border-radius: 8px;
+      .task-section.is-inline-create input[type="text"],
+      .project.is-inline-create input[type="text"] {
+        flex: 1;
+        min-width: 80px;
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--gold);
         color: var(--text);
-        padding: 8px 12px;
+        padding: 2px 4px;
         font: inherit;
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 600;
       }
-      .inline-create input[type="text"]:focus {
+      .task-section.is-inline-create input[type="text"]:focus,
+      .project.is-inline-create input[type="text"]:focus {
         outline: none;
+      }
+      @keyframes just-added-flash {
+        0% {
+          box-shadow: 0 0 0 2px var(--gold);
+          background: rgba(241, 196, 15, 0.18);
+        }
+        100% {
+          box-shadow: none;
+        }
+      }
+      .just-added {
+        animation: just-added-flash 1.2s ease;
       }
       .modal .field-row[hidden] {
         display: none !important;
@@ -707,7 +726,6 @@
         <div id="mainToolbar"></div>
       </div>
     </header>
-    <div id="inlineCreate" class="inline-create" aria-hidden="true"></div>
     <div id="view"></div>
     <div id="toast"></div>
     <div id="lightbox" hidden><img src="" alt="" /></div>
@@ -769,6 +787,9 @@
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
           lastEscAt: 0,
+          infoCtx: null, // { parentType, parentId }
+          infoUi: "", // "" | list | form
+          infoSelId: "",
         };
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
@@ -925,12 +946,7 @@
         }
 
         function thumbsHtml(parentType, parentId) {
-          const imgs = (state.data.attachments || []).filter(
-            (a) =>
-              a.kind === "image" &&
-              a.parent_type === parentType &&
-              a.parent_id === parentId,
-          );
+          const imgs = imageAttachmentsFor(parentType, parentId);
           if (!imgs.length) return "";
           return `<div class="thumbs">${imgs
             .map((a) => {
@@ -939,6 +955,38 @@
               return `<button type="button" class="thumb" data-full="${esc(src)}" title="${esc(a.description || "")}"><img src="${esc(src)}" alt="" loading="lazy"/></button>`;
             })
             .join("")}</div>`;
+        }
+
+        function imageAttachmentsFor(parentType, parentId) {
+          const atts = state.data.attachments || [];
+          const direct = atts.filter(
+            (a) =>
+              a.kind === "image" &&
+              a.parent_type === parentType &&
+              a.parent_id === parentId,
+          );
+          if (parentType === "info") return direct;
+          const infoIds = new Set(
+            (state.data.info_points || [])
+              .filter(
+                (i) => i.parent_type === parentType && i.parent_id === parentId,
+              )
+              .map((i) => i.id),
+          );
+          const nested = atts.filter(
+            (a) =>
+              a.kind === "image" &&
+              a.parent_type === "info" &&
+              infoIds.has(a.parent_id),
+          );
+          const seen = new Set();
+          const out = [];
+          for (const a of direct.concat(nested)) {
+            if (!a.id || seen.has(a.id)) continue;
+            seen.add(a.id);
+            out.push(a);
+          }
+          return out;
         }
 
         function searchNeedle() {
@@ -1146,9 +1194,11 @@
               ? " collapsed"
               : "";
             const genClass = isGeneral ? " is-general" : "";
+            const create = inlineCreateRowHtml(p.id, s.id);
+            const items = create + list.map(taskLi).join("");
             return `<div class="task-section${collapsed}${genClass}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
         <div class="task-section-label">${highlightTitle(s.title)}</div>
-        ${list.length ? `<ul class="task-list">${list.map(taskLi).join("")}</ul>` : ""}
+        ${items ? `<ul class="task-list">${items}</ul>` : ""}
       </div>`;
           });
           const orphans = (
@@ -1165,7 +1215,12 @@
         <ul class="task-list">${sortTasks(orphans).map(taskLi).join("")}</ul>
       </div>`);
           }
-          if (!pl.pts.length && !searchNeedle()) {
+          parts.push(inlineSectionHtml(p.id));
+          if (
+            !pl.pts.length &&
+            !searchNeedle() &&
+            !inlineCreateInProject(p.id)
+          ) {
             return (
               parts.join("") +
               '<p class="empty" style="padding:0 12px 10px">No open tasks</p>'
@@ -1249,7 +1304,8 @@
           const emptyMsg = searchNeedle()
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No projects</p>';
-          return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("") || emptyMsg}</section>`;
+          const extra = inlineProjectHtml(filt);
+          return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
         function habitTasksList() {
@@ -1340,7 +1396,8 @@
           const emptyMsg = searchNeedle()
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No habits</p>';
-          return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("") || emptyMsg}</section>`;
+          const extra = inlineProjectHtml("habits");
+          return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
         function renderDashboard() {
@@ -1350,6 +1407,7 @@
       ${renderHabitsColumn()}`;
           applyEmojiFilter(state.emojiFilter);
           applySelection(false);
+          bindInlineCreateInput();
         }
 
         function renderToolbar() {
@@ -1504,6 +1562,7 @@
             proj
               .querySelectorAll(":scope > .task-section:not(.emoji-hidden)")
               .forEach((sec) => {
+                if (sec.hasAttribute("data-inline-create")) return;
                 const sid = sec.getAttribute("data-id");
                 if (!sid) return;
                 const stitle =
@@ -1513,7 +1572,9 @@
                 out.push({ kind: "section", id: sid, title: stitle, el: sec });
                 if (sec.classList.contains("collapsed")) return;
                 sec
-                  .querySelectorAll(".task:not(.emoji-hidden)")
+                  .querySelectorAll(
+                    ".task:not(.emoji-hidden):not([data-inline-create])",
+                  )
                   .forEach((t) => {
                     const tid = t.getAttribute("data-id");
                     if (!tid) return;
@@ -1646,9 +1707,10 @@
         }
 
         function applySelection(scroll) {
-          document
-            .querySelectorAll(".kb-selected")
-            .forEach((el) => el.classList.remove("kb-selected"));
+          document.querySelectorAll(".kb-selected").forEach((el) => {
+            if (el.closest("#modalHost")) return;
+            el.classList.remove("kb-selected");
+          });
           if (!state.sel) return;
           const targets = collectTargets();
           const hit = targets.find(
@@ -1671,6 +1733,32 @@
           }
           state.sel = { kind, id };
           applySelection(scroll !== false);
+        }
+
+        function flashAdded(kind, id) {
+          if (!kind || !id) return;
+          setSelection(kind, id, true);
+          requestAnimationFrame(() => {
+            const hit = collectTargets().find(
+              (t) => t.kind === kind && t.id === id,
+            );
+            const el = hit?.el;
+            if (!el) return;
+            el.classList.remove("just-added");
+            void el.offsetWidth;
+            el.classList.add("just-added");
+          });
+        }
+
+        function flashInfoRow(id) {
+          if (!id) return;
+          const el = document.querySelector(
+            `#modalHost .plain-row[data-id="${CSS.escape(id)}"]`,
+          );
+          if (!el) return;
+          el.classList.remove("just-added");
+          void el.offsetWidth;
+          el.classList.add("just-added");
         }
 
         function moveSelection(delta) {
@@ -1808,13 +1896,19 @@
           toast("Sent to Personal · General");
           await refresh();
           applySectionFocus("personal");
-          if (r.task?.id) setSelection("task", r.task.id, true);
+          if (r.task?.id) flashAdded("task", r.task.id);
         }
 
         function selectedProjectId() {
           if (!state.sel) return "";
           if (state.sel.kind === "project") return state.sel.id;
-          if (state.sel.kind === "task") {
+          if (state.sel.kind === "section") {
+            const sec = (state.data.sections || []).find(
+              (s) => s.id === state.sel.id,
+            );
+            return sec?.project_id || "";
+          }
+          if (state.sel.kind === "task" || state.sel.kind === "habit") {
             const t = (state.data.tasks || []).find(
               (x) => x.id === state.sel.id,
             );
@@ -1912,7 +2006,7 @@
             ) {
               beginInlineTaskCreate({});
             } else {
-              projectForm(null);
+              beginInlineProjectCreate(defaultProjectFilter());
             }
             return;
           }
@@ -1922,7 +2016,7 @@
               toast("Select a project first");
               return;
             }
-            await promptAddSection(pid);
+            beginInlineSectionCreate(pid);
             return;
           }
           if (k === "n") {
@@ -1950,7 +2044,7 @@
               await refresh();
             }
             state.filter = defaultProjectFilter();
-            projectForm(null);
+            beginInlineProjectCreate(state.filter);
             return;
           }
         }
@@ -2003,6 +2097,9 @@
             if (img) img.src = "";
           }
           if (modalOpen()) closeModal();
+          state.infoUi = "";
+          state.infoCtx = null;
+          state.infoSelId = "";
           state.view = "dashboard";
           if (!keepSearch && searchNeedle()) clearSearch();
           if (state.emojiFilter) applyEmojiFilter("");
@@ -2041,6 +2138,10 @@
             return true;
           }
           if (modalOpen()) {
+            if (state.infoUi) {
+              dismissInfoModal();
+              return true;
+            }
             closeModal();
             return true;
           }
@@ -2069,13 +2170,62 @@
           return !!$("#modalHost")?.innerHTML;
         }
 
-        function infoListModal(parentType, parentId) {
+        function infoRowsForCtx() {
+          const ctx = state.infoCtx;
+          if (!ctx) return [];
+          return (state.data.info_points || []).filter(
+            (i) =>
+              i.parent_type === ctx.parentType && i.parent_id === ctx.parentId,
+          );
+        }
+
+        function paintInfoSel() {
+          document.querySelectorAll("#modalHost .plain-row").forEach((el) => {
+            el.classList.toggle(
+              "kb-selected",
+              el.getAttribute("data-id") === state.infoSelId,
+            );
+          });
+        }
+
+        function dismissInfoModal() {
+          state.infoUi = "";
+          state.infoCtx = null;
+          state.infoSelId = "";
+          closeModal();
+          applySelection(true);
+        }
+
+        function handleInfoEscape() {
+          if (state.infoUi === "form") {
+            const ctx = state.infoCtx;
+            if (ctx) infoListModal(ctx.parentType, ctx.parentId);
+            else dismissInfoModal();
+            return true;
+          }
+          if (state.infoUi === "list") {
+            dismissInfoModal();
+            return true;
+          }
+          return false;
+        }
+
+        function infoListModal(parentType, parentId, preferId) {
           state.projectId =
             parentType === "project" ? parentId : state.projectId;
           state.taskId = parentType === "task" ? parentId : "";
+          state.infoCtx = { parentType, parentId };
+          state.infoUi = "list";
           const rows = (state.data.info_points || []).filter(
             (i) => i.parent_type === parentType && i.parent_id === parentId,
           );
+          if (preferId && rows.some((r) => r.id === preferId))
+            state.infoSelId = preferId;
+          else if (
+            !state.infoSelId ||
+            !rows.some((r) => r.id === state.infoSelId)
+          )
+            state.infoSelId = rows[0]?.id || "";
           modal(`<div class="modal"><h3>Info</h3>
       <div class="toolbar" style="padding:0 0 10px">
         <button class="btn" data-m="add-info-here">+ Info</button>
@@ -2088,8 +2238,10 @@
             const openAttrs = hit
               ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open"`
               : "";
-            return `<li class="plain-row" data-id="${esc(i.id)}">
+            const sel = i.id === state.infoSelId ? " kb-selected" : "";
+            return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
         <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(i.title)}</span>
+        ${thumbsHtml("info", i.id)}
         <span class="row-actions">
           <button class="btn" data-act="edit-info">Edit</button>
           <button class="btn danger" data-act="del-info">Del</button>
@@ -2103,19 +2255,24 @@
               e.target.dataset.m === "cancel" ||
               e.target.classList.contains("modal-bg")
             ) {
-              closeModal();
+              dismissInfoModal();
               return;
             }
             if (e.target.dataset.m === "add-info-here") {
-              closeModal();
               infoForm(null);
               return;
+            }
+            const row = e.target.closest(".plain-row[data-id]");
+            if (row && !e.target.closest("[data-act]")) {
+              state.infoSelId = row.getAttribute("data-id") || "";
+              paintInfoSel();
             }
             const actEl = e.target.closest("[data-act]");
             if (!actEl) return;
             const act = actEl.getAttribute("data-act");
             const id =
               e.target.closest("[data-id]")?.getAttribute("data-id") || "";
+            if (id) state.infoSelId = id;
             if (act === "open-info-link") {
               e.preventDefault();
               await openHyperlink({
@@ -2125,23 +2282,73 @@
               return;
             }
             if (act === "edit-info") {
-              closeModal();
               infoForm((state.data.info_points || []).find((i) => i.id === id));
+              return;
             }
             if (act === "del-info") {
-              if (!confirm("Delete info?")) return;
-              try {
-                await api("/api/info/" + encodeURIComponent(id), {
-                  method: "DELETE",
-                });
-                toast("Deleted");
-                await refresh();
-                infoListModal(parentType, parentId);
-              } catch (err) {
-                toast(err.message);
-              }
+              await deleteInfoPoint(id);
             }
           };
+        }
+
+        async function deleteInfoPoint(id) {
+          if (!id) return;
+          if (!confirm("Delete info?")) return;
+          const ctx = state.infoCtx;
+          const rows = infoRowsForCtx();
+          const idx = rows.findIndex((r) => r.id === id);
+          try {
+            await api("/api/info/" + encodeURIComponent(id), {
+              method: "DELETE",
+            });
+            toast("Deleted");
+            await refresh();
+            if (!ctx) return;
+            const remaining = (state.data.info_points || []).filter(
+              (i) =>
+                i.parent_type === ctx.parentType &&
+                i.parent_id === ctx.parentId,
+            );
+            const pick =
+              remaining[Math.min(Math.max(idx, 0), remaining.length - 1)];
+            state.infoSelId = pick?.id || "";
+            infoListModal(ctx.parentType, ctx.parentId, state.infoSelId);
+          } catch (err) {
+            toast(err.message);
+          }
+        }
+
+        async function saveInfoFromForm(existing) {
+          const ctx = state.infoCtx;
+          const parentType =
+            ctx?.parentType || (state.taskId ? "task" : "project");
+          const parentId = ctx?.parentId || state.taskId || state.projectId;
+          const r = await api("/api/info", {
+            method: "POST",
+            body: JSON.stringify({
+              id: existing?.id || "",
+              title: $("#mTitle").value,
+              body: $("#mBody").value,
+              section_path: $("#mSec")?.value || "",
+              parent_type: parentType,
+              parent_id: parentId,
+            }),
+          });
+          toast("Saved");
+          await refresh();
+          const iid = r.info?.id || existing?.id || "";
+          infoListModal(parentType, parentId, iid);
+          flashInfoRow(iid);
+        }
+
+        function moveInfoSel(dir) {
+          const rows = infoRowsForCtx();
+          if (!rows.length) return;
+          let idx = rows.findIndex((r) => r.id === state.infoSelId);
+          if (idx < 0) idx = dir > 0 ? -1 : 0;
+          idx = Math.max(0, Math.min(rows.length - 1, idx + dir));
+          state.infoSelId = rows[idx].id;
+          paintInfoSel();
         }
 
         function applyEmojiFilter(emoji) {
@@ -2190,6 +2397,9 @@
         }
         function closeModal() {
           $("#modalHost").innerHTML = "";
+          if (state.infoUi === "list" || state.infoUi === "form") {
+            /* caller sets infoUi; do not clear ctx here during list↔form */
+          }
         }
 
         function defaultProjectFilter() {
@@ -2245,7 +2455,7 @@
               closeModal();
             if (e.target.dataset.m === "save-project") {
               try {
-                await api("/api/projects", {
+                const r = await api("/api/projects", {
                   method: "POST",
                   body: JSON.stringify({
                     id: existing?.id || "",
@@ -2257,6 +2467,7 @@
                 closeModal();
                 toast("Saved");
                 await refresh();
+                if (r.project?.id) flashAdded("project", r.project.id);
               } catch (err) {
                 toast(err.message);
               }
@@ -2351,43 +2562,55 @@
           return { project_id, section_id, filter, kind };
         }
 
-        function cancelInlineCreate() {
-          state.inlineCreate = null;
-          const bar = $("#inlineCreate");
-          if (bar) {
-            bar.classList.remove("active");
-            bar.innerHTML = "";
-            bar.setAttribute("aria-hidden", "true");
-          }
+        function inlineCreateInProject(projectId) {
+          const c = state.inlineCreate;
+          return (
+            c?.project_id === projectId &&
+            (c.entity === "task" || c.entity === "section" || !c.entity)
+          );
         }
 
-        function renderInlineCreateBar() {
-          const bar = $("#inlineCreate");
-          if (!bar || !state.inlineCreate) {
-            cancelInlineCreate();
-            return;
-          }
-          const ctx = state.inlineCreate;
-          const p = (state.data.projects || []).find(
-            (x) => x.id === ctx.project_id,
-          );
-          const s = (state.data.sections || []).find(
-            (x) => x.id === ctx.section_id,
-          );
-          const where = [p?.title || "Project", s?.title || "General"]
-            .filter(Boolean)
-            .join(" · ");
-          bar.classList.add("active");
-          bar.setAttribute("aria-hidden", "false");
-          const kindHint = ctx.kind === "habitual" ? " · habitual" : "";
-          bar.innerHTML = `
-      <span class="ctx"><strong>${esc(ctx.filter)}</strong>${esc(kindHint)} · ${esc(where)}</span>
-      <input type="text" id="inlineTitle" placeholder="Task title — Enter to add, Backspace to cancel" autocomplete="off" />
-      <button type="button" class="btn" data-act="inline-save">Add</button>
-      <button type="button" class="btn" data-act="inline-cancel">Cancel</button>`;
+        function inlineCreateRowHtml(projectId, sectionId) {
+          const c = state.inlineCreate;
+          if (!c || c.project_id !== projectId) return "";
+          if ((c.entity || "task") !== "task") return "";
+          if ((c.section_id || "") !== (sectionId || "")) return "";
+          return `<li class="task inline-create-row" data-inline-create="task">
+      <span class="em">🔲</span>
+      <input type="text" id="inlineTitle" placeholder="New task" autocomplete="off" />
+    </li>`;
+        }
+
+        function inlineSectionHtml(projectId) {
+          const c = state.inlineCreate;
+          if (!c || c.entity !== "section" || c.project_id !== projectId)
+            return "";
+          return `<div class="task-section is-inline-create" data-inline-create="section">
+      <div class="task-section-label"><input type="text" id="inlineTitle" placeholder="New section" autocomplete="off" /></div>
+    </div>`;
+        }
+
+        function inlineProjectHtml(filt) {
+          const c = state.inlineCreate;
+          if (!c || c.entity !== "project" || c.filter !== filt) return "";
+          return `<details class="project is-inline-create" open data-inline-create="project">
+      <summary><input type="text" id="inlineTitle" placeholder="New project" autocomplete="off" /></summary>
+    </details>`;
+        }
+
+        function cancelInlineCreate() {
+          state.inlineCreate = null;
+          document.querySelector("[data-inline-create]")?.remove();
+        }
+
+        function bindInlineCreateInput() {
           const inp = $("#inlineTitle");
-          inp?.focus();
-          inp?.addEventListener("keydown", async (e) => {
+          if (!inp || !state.inlineCreate) return;
+          inp.focus();
+          inp.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          inp.addEventListener("mousedown", (e) => e.stopPropagation());
+          inp.addEventListener("click", (e) => e.stopPropagation());
+          inp.addEventListener("keydown", async (e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               e.stopPropagation();
@@ -2398,6 +2621,83 @@
               }
             }
           });
+        }
+
+        function mountInlineCreateRow() {
+          document.querySelector("[data-inline-create]")?.remove();
+          const ctx = state.inlineCreate;
+          if (!ctx || (ctx.entity || "task") !== "task") return;
+          if (!ctx.section_id) {
+            renderDashboard();
+            return;
+          }
+          const sec = document.querySelector(
+            `.task-section[data-id="${CSS.escape(ctx.section_id)}"]`,
+          );
+          if (!sec) {
+            renderDashboard();
+            return;
+          }
+          sec.classList.remove("collapsed");
+          const proj = sec.closest("details.project");
+          if (proj) proj.open = true;
+          let ul = sec.querySelector(":scope > .task-list");
+          if (!ul) {
+            ul = document.createElement("ul");
+            ul.className = "task-list";
+            sec.appendChild(ul);
+          }
+          ul.insertAdjacentHTML(
+            "afterbegin",
+            inlineCreateRowHtml(ctx.project_id, ctx.section_id),
+          );
+          bindInlineCreateInput();
+        }
+
+        function mountInlineSection() {
+          document.querySelector("[data-inline-create]")?.remove();
+          const ctx = state.inlineCreate;
+          if (!ctx?.project_id) {
+            renderDashboard();
+            return;
+          }
+          const proj = document.querySelector(
+            `details.project[data-id="${CSS.escape(ctx.project_id)}"]`,
+          );
+          if (!proj) {
+            renderDashboard();
+            return;
+          }
+          proj.open = true;
+          proj.insertAdjacentHTML(
+            "beforeend",
+            inlineSectionHtml(ctx.project_id),
+          );
+          bindInlineCreateInput();
+        }
+
+        function mountInlineProject() {
+          document.querySelector("[data-inline-create]")?.remove();
+          const ctx = state.inlineCreate;
+          const filt = ctx?.filter || "work";
+          const col = document.getElementById("sec-" + filt);
+          if (!col) {
+            renderDashboard();
+            return;
+          }
+          const html = inlineProjectHtml(filt);
+          const empty = col.querySelector(":scope > .empty");
+          if (empty) empty.remove();
+          col.insertAdjacentHTML("beforeend", html);
+          bindInlineCreateInput();
+        }
+
+        function mountInlineCreate() {
+          const ctx = state.inlineCreate;
+          if (!ctx) return;
+          if (ctx.entity === "section") mountInlineSection();
+          else if (ctx.entity === "project") mountInlineProject();
+          else mountInlineCreateRow();
         }
 
         async function beginInlineTaskCreate(hint = {}) {
@@ -2433,7 +2733,10 @@
               filter: ctx.filter,
             });
           }
-          state.inlineCreate = ctx;
+          cancelInlineCreate();
+          state.inlineCreate = { ...ctx, entity: "task" };
+          state.collapsedProjects.delete(ctx.project_id);
+          if (ctx.section_id) state.collapsedSections.delete(ctx.section_id);
           if (
             ctx.filter === "personal" ||
             ctx.filter === "work" ||
@@ -2442,7 +2745,39 @@
             if (state.sectionFocus && state.sectionFocus !== ctx.filter)
               applySectionFocus(ctx.filter);
           }
-          renderInlineCreateBar();
+          mountInlineCreate();
+        }
+
+        function beginInlineSectionCreate(projectId) {
+          const p = (state.data.projects || []).find((x) => x.id === projectId);
+          const filter = p?.filter || defaultProjectFilter();
+          cancelInlineCreate();
+          state.collapsedProjects.delete(projectId);
+          state.inlineCreate = {
+            entity: "section",
+            project_id: projectId,
+            filter,
+          };
+          if (
+            filter === "personal" ||
+            filter === "work" ||
+            filter === "habits"
+          ) {
+            if (state.sectionFocus && state.sectionFocus !== filter)
+              applySectionFocus(filter);
+          }
+          mountInlineCreate();
+        }
+
+        function beginInlineProjectCreate(filter) {
+          const filt = ["work", "personal", "habits"].includes(filter)
+            ? filter
+            : defaultProjectFilter();
+          cancelInlineCreate();
+          state.inlineCreate = { entity: "project", filter: filt };
+          if (state.sectionFocus && state.sectionFocus !== filt)
+            applySectionFocus(filt);
+          mountInlineCreate();
         }
 
         async function commitInlineCreate() {
@@ -2452,6 +2787,40 @@
           if (!title) {
             toast("Title required");
             $("#inlineTitle")?.focus();
+            return;
+          }
+          const entity = ctx.entity || "task";
+          if (entity === "section") {
+            const r = await api("/api/sections", {
+              method: "POST",
+              body: JSON.stringify({
+                project_id: ctx.project_id,
+                title,
+              }),
+            });
+            cancelInlineCreate();
+            toast("Section added");
+            await refresh();
+            if (r.section?.id) flashAdded("section", r.section.id);
+            return;
+          }
+          if (entity === "project") {
+            const r = await api("/api/projects", {
+              method: "POST",
+              body: JSON.stringify({
+                title,
+                filter: ctx.filter || "work",
+                section_path: "",
+              }),
+            });
+            cancelInlineCreate();
+            toast("Project added");
+            await refresh();
+            if (r.project?.filter)
+              applySectionFocus(r.project.filter, {
+                scrollHeader: false,
+              });
+            if (r.project?.id) flashAdded("project", r.project.id);
             return;
           }
           const kind = ctx.kind || "punctual";
@@ -2479,7 +2848,7 @@
           await refresh();
           if (r.task?.id) {
             const sk = r.task.kind === "habitual" ? "habit" : "task";
-            setSelection(sk, r.task.id, true);
+            flashAdded(sk, r.task.id);
           }
         }
 
@@ -2537,7 +2906,7 @@
                 const kind = $("#mKind").value;
                 const due = ($("#mDue").value || "").trim();
                 const emoji = ($("#mEmoji").value || "").trim() || "🔲";
-                await api("/api/tasks", {
+                const r = await api("/api/tasks", {
                   method: "POST",
                   body: JSON.stringify({
                     id: existing.id,
@@ -2555,6 +2924,10 @@
                 closeModal();
                 toast("Saved");
                 await refresh();
+                if (r.task?.id) {
+                  const sk = r.task.kind === "habitual" ? "habit" : "task";
+                  flashAdded(sk, r.task.id);
+                }
               } catch (err) {
                 toast(err.message);
               }
@@ -2562,56 +2935,55 @@
           };
         }
 
-        async function promptAddSection(projectId) {
-          const title = prompt("Section name");
-          if (title == null) return;
-          const name = title.trim();
-          if (!name) {
-            toast("Name required");
-            return;
-          }
-          await api("/api/sections", {
-            method: "POST",
-            body: JSON.stringify({ project_id: projectId, title: name }),
-          });
-          toast("Section added");
-          await refresh();
+        function promptAddSection(projectId) {
+          beginInlineSectionCreate(projectId);
         }
 
         function infoForm(existing) {
-          const parentType = state.taskId ? "task" : "project";
-          const parentId = state.taskId || state.projectId;
+          const ctx = state.infoCtx;
+          const parentType =
+            ctx?.parentType || (state.taskId ? "task" : "project");
+          const parentId = ctx?.parentId || state.taskId || state.projectId;
+          if (parentType && parentId) state.infoCtx = { parentType, parentId };
+          state.infoUi = "form";
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} info</h3>
       <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
       <label>Body</label><textarea id="mBody">${esc(existing?.body || "")}</textarea>
       <label>Section</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-info">Save</button></div></div>`);
+          $("#mTitle")?.focus();
+          const save = async () => {
+            try {
+              await saveInfoFromForm(existing);
+            } catch (err) {
+              toast(err.message);
+            }
+          };
+          $("#mTitle")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              save();
+            }
+          });
+          $("#mSec")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              save();
+            }
+          });
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
               e.target.classList.contains("modal-bg")
-            )
-              closeModal();
-            if (e.target.dataset.m === "save-info") {
-              try {
-                await api("/api/info", {
-                  method: "POST",
-                  body: JSON.stringify({
-                    id: existing?.id || "",
-                    title: $("#mTitle").value,
-                    body: $("#mBody").value,
-                    section_path: $("#mSec").value,
-                    parent_type: parentType,
-                    parent_id: parentId,
-                  }),
-                });
-                closeModal();
-                toast("Saved");
-                await refresh();
-              } catch (err) {
-                toast(err.message);
-              }
+            ) {
+              if (state.infoCtx)
+                infoListModal(state.infoCtx.parentType, state.infoCtx.parentId);
+              else dismissInfoModal();
+              return;
             }
+            if (e.target.dataset.m === "save-info") await save();
           };
         }
 
@@ -2627,7 +2999,7 @@
             );
           }
           const b64 = btoa(binary);
-          await api("/api/attachments", {
+          const r = await api("/api/attachments", {
             method: "POST",
             body: JSON.stringify({
               parent_type: parentType,
@@ -2640,9 +3012,29 @@
           });
           toast("Image attached");
           await refresh();
+          if (state.infoCtx) {
+            const iid = r.info_id || "";
+            infoListModal(
+              state.infoCtx.parentType,
+              state.infoCtx.parentId,
+              iid,
+            );
+            flashInfoRow(iid);
+          } else if (parentType === "project") {
+            flashAdded("project", parentId);
+          } else if (parentType === "task") {
+            const t = (state.data.tasks || []).find((x) => x.id === parentId);
+            flashAdded(t?.kind === "habitual" ? "habit" : "task", parentId);
+          }
         }
 
         function resolveAttachmentTarget() {
+          if (state.infoCtx)
+            return {
+              ptype: state.infoCtx.parentType,
+              pid: state.infoCtx.parentId,
+              label: "info parent",
+            };
           if (!state.sel) return null;
           if (state.sel.kind === "project")
             return { ptype: "project", pid: state.sel.id, label: "project" };
@@ -2718,6 +3110,7 @@
               $("#lightbox").querySelector("img").src = "";
             }
           }
+          if (e.target.closest("#modalHost")) return;
           const chip = e.target.closest(".emoji-chip");
           if (chip) {
             const em = chip.getAttribute("data-emoji") || "";
@@ -2769,7 +3162,7 @@
             if (act === "add-project") {
               const f = actEl.getAttribute("data-f") || "work";
               state.filter = f;
-              projectForm(null);
+              beginInlineProjectCreate(f);
               return;
             }
             if (act === "edit-project") {
@@ -2802,7 +3195,7 @@
             }
             if (act === "add-section") {
               const pid = actEl.getAttribute("data-pid") || id;
-              await promptAddSection(pid);
+              beginInlineSectionCreate(pid);
               return;
             }
             if (act === "edit-task") {
@@ -2877,21 +3270,20 @@
         });
 
         document.addEventListener("paste", async (e) => {
-          if (!state._attTarget) return;
           const items = e.clipboardData?.items;
           if (!items) return;
+          let file = null;
           for (const it of items) {
             if (it.type.startsWith("image/")) {
-              e.preventDefault();
-              const file = it.getAsFile();
-              const ptype =
-                state._attTarget?.ptype || (state.taskId ? "info" : "project");
-              const pid =
-                state._attTarget?.pid || state.taskId || state.projectId;
-              if (file && pid) await uploadImage(ptype, pid, file);
-              return;
+              file = it.getAsFile();
+              break;
             }
           }
+          if (!file) return;
+          const target = resolveAttachmentTarget() || state._attTarget;
+          if (!target?.ptype || !target?.pid) return;
+          e.preventDefault();
+          await uploadImage(target.ptype, target.pid, file);
         });
 
         document.addEventListener("keydown", async (e) => {
@@ -2907,14 +3299,15 @@
             return;
           }
           const tag = (e.target?.tagName || "").toLowerCase();
-          if (
+          const inField =
             tag === "input" ||
             tag === "textarea" ||
             tag === "select" ||
-            e.target?.isContentEditable
-          ) {
+            e.target?.isContentEditable;
+          if (inField) {
             if (e.key === "Escape") {
               e.preventDefault();
+              if (handleInfoEscape()) return;
               handleEscape();
               return;
             }
@@ -2927,7 +3320,6 @@
               cancelInlineCreate();
               return;
             }
-            // Shift+J from search: jump to first filtered hit (don't type "J")
             if (
               e.target?.id === "globalSearch" &&
               e.shiftKey &&
@@ -2944,9 +3336,55 @@
 
           if (e.key === "Escape") {
             e.preventDefault();
+            if (handleInfoEscape()) return;
             handleEscape();
             return;
           }
+
+          if (
+            e.shiftKey &&
+            shiftCmdFromEvent(e) === "v" &&
+            (state.infoUi === "list" || state.infoUi === "form")
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              await pasteClipboardImageToSelection();
+            } catch (err) {
+              toast(err.message || String(err));
+            }
+            return;
+          }
+
+          if (state.infoUi === "list") {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              infoForm(null);
+              return;
+            }
+            if (e.key === "Delete") {
+              e.preventDefault();
+              await deleteInfoPoint(state.infoSelId);
+              return;
+            }
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              moveInfoSel(1);
+              return;
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              moveInfoSel(-1);
+              return;
+            }
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              dismissInfoModal();
+              return;
+            }
+            return;
+          }
+
           if (e.key === "Backspace") {
             e.preventDefault();
             goBack();

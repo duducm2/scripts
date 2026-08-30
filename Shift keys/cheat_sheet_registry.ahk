@@ -1060,6 +1060,9 @@ cheatSheets["Tasks"] := "
     🗑️ [Delete] Delete selection
     🏠 [Esc] Home — clear Work/Personal/Habits bento, emoji filter, modals, selection (search stays)
     🏠 [Esc][Esc] Home and clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
+    🏠 [Esc] Info list — close and keep task selection
+    ⏎ [Enter] Info list — add info point
+    🗑️ [Delete] Info list — delete highlighted info
     ⬅️ [Backspace] Go back one step
     1️⃣ [1] Import view: select TASK_PACK
     👁️ [P] Import view: Preview
@@ -1078,7 +1081,7 @@ cheatSheets["Tasks"] := "
     📝 [N] Info points
     🔗 Click a URL or file-path info point to open it
     ℹ️ Tag on any task that has info points
-    🖼️ [V] Paste clipboard image
+    🖼️ [V] Paste clipboard image as an info point (task or info page)
     📂 [E] Expand / collapse all projects
     🧹 [F] Clear emoji filter
     ⚡ [T] Important — tag selection, or filter if none

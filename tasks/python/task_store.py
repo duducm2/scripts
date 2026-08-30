@@ -138,6 +138,7 @@ class TaskStore:
             if not p.exists():
                 write_csv(p, headers, [])
         self.migrate_sections()
+        self.migrate_task_images_to_info()
 
     def migrate_sections(self) -> None:
         """Ensure General per project; backfill task.section_id from section_path."""
@@ -233,6 +234,37 @@ class TaskStore:
                     first = f.readline()
                 if "section_id" not in first:
                     self.save("tasks", tasks)
+
+    def migrate_task_images_to_info(self) -> None:
+        """Reparent task/project image attachments onto new info points (once)."""
+        atts = self.load("attachments")
+        changed = False
+        for a in atts:
+            if (a.get("kind") or "").strip() != "image":
+                continue
+            pt = (a.get("parent_type") or "").strip()
+            pid = (a.get("parent_id") or "").strip()
+            if pt not in {"task", "project"} or not pid:
+                continue
+            title = (a.get("description") or "").strip() or "Image"
+            created = self.upsert_info(
+                {
+                    "parent_type": pt,
+                    "parent_id": pid,
+                    "title": title,
+                    "body": "",
+                    "emoji": "ℹ️",
+                }
+            )
+            info = created.get("info") or {}
+            iid = info.get("id") or ""
+            if not iid:
+                continue
+            a["parent_type"] = "info"
+            a["parent_id"] = iid
+            changed = True
+        if changed:
+            self.save("attachments", atts)
 
     def ensure_general_section(self, project_id: str, sections: list[dict] | None = None) -> dict:
         rows = sections if sections is not None else self.load("sections")
@@ -665,11 +697,31 @@ class TaskStore:
         self, parent_type: str, parent_id: str, data: bytes, filename: str, description: str = ""
     ) -> dict:
         safe = re.sub(r"[^\w.\-]+", "_", filename) or "image.png"
-        dest_name = f"{datetime.now().strftime('%Y%m%d-%H%M%S')}-{parent_id}-{safe}"
+        desc = (description or "").strip() or safe
+        pt = (parent_type or "").strip()
+        pid = (parent_id or "").strip()
+        if pt in {"task", "project"} and pid:
+            created = self.upsert_info(
+                {
+                    "parent_type": pt,
+                    "parent_id": pid,
+                    "title": desc,
+                    "body": "",
+                    "emoji": "ℹ️",
+                }
+            )
+            info = created.get("info") or {}
+            if info.get("id"):
+                pt = "info"
+                pid = info["id"]
+        dest_name = f"{datetime.now().strftime('%Y%m%d-%H%M%S')}-{pid}-{safe}"
         dest = self.attach_dir / dest_name
         dest.write_bytes(data)
         ref = f"attachments\\{dest_name}"
-        return self.add_attachment(parent_type, parent_id, "image", ref, description or safe)
+        result = self.add_attachment(pt, pid, "image", ref, desc)
+        if pt == "info":
+            result["info_id"] = pid
+        return result
 
     def delete_attachment(self, att_id: str) -> dict:
         rows = self.load("attachments")
