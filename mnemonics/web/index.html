@@ -255,7 +255,22 @@
         grid-column: 4;
         grid-row: 1;
       }
-      /* Four: 3 beside image + 1 full-width under */
+      /* Four beasts: image left (2 rows) + even 2×2 — no lone full-width card */
+      #overlay[data-beast-count="4"] .overlay-stage {
+        grid-template-columns: minmax(120px, 20%) 1fr 1fr;
+      }
+      #overlay[data-beast-count="4"] .overlay-image {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        max-height: none;
+        height: 100%;
+        align-self: stretch;
+      }
+      #overlay[data-beast-count="4"] .overlay-image img {
+        max-height: none;
+        height: 100%;
+        object-fit: contain;
+      }
       #overlay:not(.image-expanded)
         #ovAtoms[data-beast-count="4"]
         > .beast-cluster:nth-child(1) {
@@ -271,16 +286,16 @@
       #overlay:not(.image-expanded)
         #ovAtoms[data-beast-count="4"]
         > .beast-cluster:nth-child(3) {
-        grid-column: 4;
-        grid-row: 1;
+        grid-column: 2;
+        grid-row: 2;
       }
       #overlay:not(.image-expanded)
         #ovAtoms[data-beast-count="4"]
         > .beast-cluster:nth-child(4) {
-        grid-column: 1 / -1;
+        grid-column: 3;
         grid-row: 2;
       }
-      /* Five: 3 beside image + 2 under image (uses former black void) */
+      /* Five: 3 beside image + 2 under image */
       #overlay:not(.image-expanded)
         #ovAtoms[data-beast-count="5"]
         > .beast-cluster:nth-child(1) {
@@ -359,6 +374,11 @@
       #overlay:not(.image-expanded) .atom-card .lbl {
         font-size: 0.62rem;
         margin-bottom: 0.05rem;
+      }
+      /* Concept-first: hide Quote/Story until Details (D) */
+      #overlay:not(.show-atom-details) .atom-card .field-quote,
+      #overlay:not(.show-atom-details) .atom-card .field-story {
+        display: none !important;
       }
       #overlay:not(.image-expanded) .atom-card .field-concept {
         margin-top: 0.3rem;
@@ -609,6 +629,13 @@
             title="Toggle full-screen image (F)"
           >
             Full image (F)
+          </button>
+          <button
+            type="button"
+            id="btnToggleAtomDetails"
+            title="Show or hide Quote &amp; Story (D)"
+          >
+            Details (D)
           </button>
           <button
             type="button"
@@ -1156,22 +1183,13 @@
             : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
           <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept)}</p>
-          <p class="field"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
-          <p class="field"><span class="lbl">Story</span>${dash(a.story)}</p>
+          <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
+          <p class="field field-story"><span class="lbl">Story</span>${dash(a.story)}</p>
         </article>`;
       }
 
       function orderBeastsForCockpit(blist) {
-        /* Five-up: keep peg order, but seat Dragon in bottom-left (wider 3/6 cell). */
-        if (blist.length !== 5) return blist;
-        const copy = blist.slice();
-        const di = copy.findIndex((b) =>
-          /dragon/i.test(String(b.beast_name || b.peg_code || "")),
-        );
-        if (di < 0 || di === 3) return copy;
-        const [dragon] = copy.splice(di, 1);
-        copy.splice(Math.min(3, copy.length), 0, dragon);
-        return copy;
+        return blist;
       }
 
       function renderPalaceAtoms(palaceId) {
@@ -1194,10 +1212,7 @@
             const cards =
               ats.map((a) => renderAtomCard(a, !sensoryOnBeast)).join("") ||
               '<p class="empty">No atoms</p>';
-            const isDragon = /dragon/i.test(
-              String(b.beast_name || b.peg_code || ""),
-            );
-            return `<section class="beast-cluster${isDragon ? " beast-cluster--lead" : ""}" style="--beast-cols: ${innerCols}">
+            return `<section class="beast-cluster" style="--beast-cols: ${innerCols}">
             <header class="beast-cluster-head">
               <span class="lbl">Beast</span>
               <div class="beast-head-row">
@@ -1247,8 +1262,13 @@
         const beastN = ovAtoms.querySelectorAll(
           ":scope > .beast-cluster",
         ).length;
-        if (beastN) ovAtoms.dataset.beastCount = String(beastN);
-        else delete ovAtoms.dataset.beastCount;
+        if (beastN) {
+          ovAtoms.dataset.beastCount = String(beastN);
+          overlay.dataset.beastCount = String(beastN);
+        } else {
+          delete ovAtoms.dataset.beastCount;
+          delete overlay.dataset.beastCount;
+        }
         document.getElementById("ovNotesInput").value = p.palace_notes || "";
         setNotesStatus("", "");
         renderGalleryGrid(id);
@@ -1266,7 +1286,9 @@
         };
         overlay.classList.add("open");
         overlay.classList.remove("image-expanded");
+        overlay.classList.remove("show-atom-details");
         syncExpandImageButton();
+        syncAtomDetailsButton();
         overlay.setAttribute("aria-hidden", "false");
         const imgPane = document.getElementById("ovImage");
         imgPane.onclick = () => toggleOverlayImageExpand();
@@ -1283,6 +1305,23 @@
           : "Toggle full-screen image (F)";
       }
 
+      function syncAtomDetailsButton() {
+        const ov = document.getElementById("overlay");
+        const btn = document.getElementById("btnToggleAtomDetails");
+        if (!btn) return;
+        const show = ov.classList.contains("show-atom-details");
+        btn.textContent = show ? "Concepts (D)" : "Details (D)";
+        btn.title = show ? "Show concepts only (D)" : "Show Quote & Story (D)";
+        btn.setAttribute("aria-pressed", show ? "true" : "false");
+      }
+
+      function toggleAtomDetails() {
+        const ov = document.getElementById("overlay");
+        if (!ov.classList.contains("open")) return;
+        ov.classList.toggle("show-atom-details");
+        syncAtomDetailsButton();
+      }
+
       function toggleOverlayImageExpand() {
         const ov = document.getElementById("overlay");
         if (!ov.classList.contains("open")) return;
@@ -1293,9 +1332,14 @@
       function closeOverlay() {
         document.getElementById("overlay").classList.remove("open");
         document.getElementById("overlay").classList.remove("image-expanded");
+        document
+          .getElementById("overlay")
+          .classList.remove("show-atom-details");
         document.getElementById("overlay").setAttribute("aria-hidden", "true");
+        delete document.getElementById("overlay").dataset.beastCount;
         state.overlayPalaceId = "";
         syncExpandImageButton();
+        syncAtomDetailsButton();
       }
 
       function setNotesStatus(msg, cls) {
@@ -2374,6 +2418,8 @@
       document.getElementById("btnClose").onclick = () => closeOverlay();
       document.getElementById("btnExpandImage").onclick = () =>
         toggleOverlayImageExpand();
+      document.getElementById("btnToggleAtomDetails").onclick = () =>
+        toggleAtomDetails();
       document.getElementById("btnNotesSave").onclick = () => saveNotes();
       document.getElementById("ovNotesInput").oninput = () => {
         clearTimeout(state.notesTimer);
@@ -2518,6 +2564,16 @@
           ) {
             e.preventDefault();
             toggleOverlayImageExpand();
+            return;
+          }
+          if (
+            (e.key === "d" || e.key === "D") &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey
+          ) {
+            e.preventDefault();
+            toggleAtomDetails();
             return;
           }
           if (e.key === "c" || e.key === "C") {

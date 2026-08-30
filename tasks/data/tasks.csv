@@ -1,6 +1,6 @@
 id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
 TASK_0001,PROJ_0002,SEC_0002,Falar com ele,🔲,punctual,,,,,work,50,,2026-08-29 15:48:39,1
-TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
+TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,100,,2026-08-29 15:48:39,1
 TASK_0004,PROJ_0002,SEC_0002,Checa estas vagas em aberto:,⚡,punctual,,,,,work,110,,2026-08-29 15:48:39,1
 TASK_0005,PROJ_0003,SEC_0003,Subscribe to this job opening,⏳,punctual,,,,,work,140,,2026-08-29 15:48:39,1
@@ -49,11 +49,11 @@ TASK_0048,PROJ_0015,SEC_0015,Check if REDU already approved your repo,✅,punctu
 TASK_0049,PROJ_0015,SEC_0015,Do we need to add the suplentes?,⚡,punctual,,,,,personal,1680,,2026-08-29 15:48:39,1
 TASK_0050,PROJ_0015,SEC_0015,Ficha catalogográfica,⏳,punctual,,,,,personal,1700,,2026-08-29 15:48:39,1
 TASK_0051,PROJ_0016,SEC_0016,Waiting analysis,⏳,punctual,,,,,personal,1730,,2026-08-29 15:48:39,1
-TASK_0052,PROJ_0016,SEC_0079,Candidate to open PhD positions,⏳,punctual,,,,Backlog,personal,1740,,2026-08-29 15:48:39,1
+TASK_0052,PROJ_0015,SEC_0015,Candidate to open PhD positions,⏳,punctual,,,,,personal,1740,,2026-08-29 15:48:39,1
 TASK_0053,PROJ_0015,SEC_0015,How to store big vocabularies,⏳,punctual,,,,,personal,1750,,2026-08-29 15:48:39,1
 TASK_0054,PROJ_0016,SEC_0016,Send emails to possible professors,⏳,punctual,,,,,personal,1760,,2026-08-29 15:48:39,1
-TASK_0055,PROJ_0017,SEC_0017,"Research online PhD programs in South Africa with tuition around 8,000 BRL per year.",⏳,punctual,,,,,personal,1800,,2026-08-29 15:48:39,1
-TASK_0056,PROJ_0017,SEC_0017,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,,personal,1810,,2026-08-29 15:48:39,1
+TASK_0055,PROJ_0024,SEC_0127,"Research online PhD programs in South Africa with tuition around 8,000 BRL per year.",⏳,punctual,,,,,personal,1800,,2026-08-29 15:48:39,1
+TASK_0056,PROJ_0024,SEC_0127,Assess potential scholarship options and funding support for Australian and British PhD programs.,⏳,punctual,,,,,personal,1810,,2026-08-29 15:48:39,1
 TASK_0057,PROJ_0019,SEC_0081,Balanced diet; avoid milk and added sugar; maintain hydration and consistent salt intake,🩺,habitual,daily,2026-09-01,2026-09-01,Daily,habits,1890,,2026-08-29 15:48:39,1
 TASK_0058,PROJ_0019,SEC_0081,Physical activity: at least 30 minutes moderate movement,🩺,habitual,daily,,,Daily,habits,1900,,2026-08-29 15:48:39,1
 TASK_0059,PROJ_0019,SEC_0081,Medications (daily adherence):,🩺,habitual,daily,,,Daily,habits,1910,,2026-08-29 15:48:39,1
@@ -112,4 +112,5 @@ TASK_0115,PROJ_0023,SEC_0093,"Childhood series including Polio, DTP, MMR documen
 TASK_0116,PROJ_0023,SEC_0093,Varicella (catapora): history of disease in childhood; no vaccine needed,🩺,habitual,,,,Notes from Your Records (Prior Vaccines),habits,2550,,2026-08-29 15:48:39,1
 TASK_0204,PROJ_0015,SEC_0015,test,✅,punctual,,,,,personal,3770,2026-08-30 11:49:48,2026-08-30 11:49:44,1
 TASK_0207,PROJ_0015,SEC_0015,Clean your keyboard.,🔲,punctual,,,,,personal,3800,,2026-08-30 13:00:27,1
-TASK_0208,PROJ_0017,SEC_0017,How to store big vocabularies,⏳,punctual,,,,,personal,3810,,2026-08-30 13:20:37,1
+TASK_0208,PROJ_0015,SEC_0015,How to store big vocabularies,⏳,punctual,,,,,personal,3810,,2026-08-30 13:20:37,1
+TASK_0209,PROJ_0024,SEC_0127,Candidate to open PhD positions,⏳,punctual,,,,,personal,3820,,2026-08-30 14:53:57,1

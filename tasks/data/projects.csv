@@ -1,5 +1,4 @@
 id,title,filter,section_path,sort_order,active,created_at
-PROJ_0001,Work inbox,work,,10,1,2026-08-29 15:48:39
 PROJ_0002,Doctoral degree,work,Tasks,40,1,2026-08-29 15:48:39
 PROJ_0003,Job positions,work,Tasks,130,1,2026-08-29 15:48:39
 PROJ_0004,TAR,work,Tasks,160,1,2026-08-29 15:48:39
@@ -15,8 +14,8 @@ PROJ_0013,RISE,work,Projects,720,1,2026-08-29 15:48:39
 PROJ_0014,AI Roleplay,work,Projects,1230,1,2026-08-29 15:48:39
 PROJ_0015,Personal inbox,personal,,1340,1,2026-08-29 15:48:39
 PROJ_0016,Tarefas para Submissão do Artigo (Revista JIS),personal,,1720,1,2026-08-29 15:48:39
-PROJ_0017,Backlog,personal,,1790,1,2026-08-29 15:48:39
 PROJ_0019,Habits & Health,habits,,1880,1,2026-08-29 15:48:39
 PROJ_0021,Medication Monitoring (Fluvoxamina),habits,,2330,1,2026-08-29 15:48:39
 PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",habits,,2360,1,2026-08-29 15:48:39
 PROJ_0023,Notes from Your Records (Prior Vaccines),habits,,2480,1,2026-08-29 15:48:39
+PROJ_0024,PHD,personal,,2490,1,2026-08-30 14:53:43

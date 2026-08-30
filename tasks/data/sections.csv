@@ -1,5 +1,4 @@
 id,project_id,title,sort_order
-SEC_0001,PROJ_0001,General,0
 SEC_0002,PROJ_0002,General,0
 SEC_0003,PROJ_0003,General,0
 SEC_0004,PROJ_0004,General,0
@@ -15,7 +14,6 @@ SEC_0013,PROJ_0013,General,0
 SEC_0014,PROJ_0014,General,0
 SEC_0015,PROJ_0015,General,0
 SEC_0016,PROJ_0016,General,0
-SEC_0017,PROJ_0017,General,0
 SEC_0019,PROJ_0019,General,0
 SEC_0021,PROJ_0021,General,0
 SEC_0022,PROJ_0022,General,0
@@ -45,3 +43,4 @@ SEC_0091,PROJ_0021,Medication Monitoring (Fluvoxamina),10
 SEC_0092,PROJ_0022,"Vaccination Plan (Follow-up, from 2025 onward)",10
 SEC_0093,PROJ_0023,Notes from Your Records (Prior Vaccines),10
 SEC_0126,PROJ_0059,General,0
+SEC_0127,PROJ_0024,General,0

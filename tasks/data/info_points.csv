@@ -1,6 +1,4 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at
-INFO_0001,project,PROJ_0001,[See also: Punctual Notes](punctual.md),[See also: Punctual Notes](punctual.md),ℹ️,,20,2026-08-29 15:48:39
-INFO_0002,project,PROJ_0001,[See also: Habits Notes](habits.md),[See also: Habits Notes](habits.md),ℹ️,,30,2026-08-29 15:48:39
 INFO_0003,task,TASK_0001,Perguntas que eu tenho:,Perguntas que eu tenho:,ℹ️,,70,2026-08-29 15:48:39
 INFO_0004,task,TASK_0001,- Conseguiríamos um trabalho online para eu trabalhar de noite?,"- Conseguiríamos um trabalho online para eu trabalhar de noite?
 - Posso ter dois contratos de trabalho?",ℹ️,,80,2026-08-29 15:48:39
