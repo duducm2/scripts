@@ -19,8 +19,13 @@ Palace_LaunchApp() {
             if (!Palace_EnsureServer(false))
                 return
         }
-        Palace_ActivateWeb(existing)
-        return
+        if (Palace_ActivateWeb(existing))
+            return
+        ; Cached HWND went stale — clear and fall through to open/re-find.
+        Palace_WebHwndCacheClear()
+        existing := Palace_FindExistingWebHwnd()
+        if (existing && Palace_ActivateWeb(existing))
+            return
     }
     try StandardLoadingBar_Show("⏳ Opening Memory Palace…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
@@ -29,6 +34,15 @@ Palace_LaunchApp() {
         try StandardLoadingBar_Hide(0)
         catch {
         }
+        return
+    }
+    ; Race: window may have appeared while the server was starting.
+    existing := Palace_FindExistingWebHwnd()
+    if (existing) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        Palace_ActivateWeb(existing)
         return
     }
     url := "http://127.0.0.1:" . Palace_ServerPort() . "/?t=" . A_TickCount
@@ -198,9 +212,17 @@ Palace_EnsureServer(forceRestart := false) {
 
 Palace_IsChromeWindowTitle(title) {
     t := Trim(title)
+    if (t = "")
+        return false
+    ; Chrome notification badge: "(1) Memory Palace - Google Chrome"
+    t := RegExReplace(t, "^\(\d+\)\s+", "")
     if (t = "Memory Palace" || t = "Memory Palace - Google Chrome")
         return true
     if (InStr(t, "Memory Palace") = 1)
+        return true
+    ; Title still on the localhost URL (tab not fully titled yet, or URL bar mode).
+    port := String(Palace_ServerPort())
+    if (InStr(t, "127.0.0.1:" . port) || InStr(t, "localhost:" . port))
         return true
     return false
 }
@@ -264,6 +286,32 @@ Palace_FindExistingWebHwnd() {
     hwnd := Palace_HwndLooksLikeWeb(Palace_WebHwndCacheGet())
     if (hwnd)
         return hwnd
+    ; Fast path: title contains "Memory Palace" (handles badges / suffixes).
+    prev := A_TitleMatchMode
+    try {
+        SetTitleMatchMode(2)
+        try hit := WinExist("Memory Palace ahk_exe chrome.exe")
+        catch {
+            hit := 0
+        }
+        hwnd := Palace_HwndLooksLikeWeb(hit)
+        if (hwnd) {
+            Palace_WebHwndCacheSet(hwnd)
+            return hwnd
+        }
+        port := String(Palace_ServerPort())
+        try hit := WinExist("127.0.0.1:" . port . " ahk_exe chrome.exe")
+        catch {
+            hit := 0
+        }
+        hwnd := Palace_HwndLooksLikeWeb(hit)
+        if (hwnd) {
+            Palace_WebHwndCacheSet(hwnd)
+            return hwnd
+        }
+    } finally {
+        SetTitleMatchMode(prev)
+    }
     for h in WinGetList("ahk_exe chrome.exe") {
         hwnd := Palace_HwndLooksLikeWeb(h)
         if (hwnd) {
@@ -296,6 +344,12 @@ Palace_ActivateWeb(hwnd) {
 }
 
 Palace_OpenWebInChrome(url) {
+    ; Never spawn a duplicate if we can still see the app window.
+    existing := Palace_FindExistingWebHwnd()
+    if (existing) {
+        Palace_ActivateWeb(existing)
+        return true
+    }
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
@@ -306,11 +360,20 @@ Palace_OpenWebInChrome(url) {
     newHwnd := 0
     prev := A_TitleMatchMode
     try {
-        SetTitleMatchMode(1)
+        SetTitleMatchMode(2)
         if WinWait("Memory Palace ahk_exe chrome.exe", , 10) {
             try newHwnd := WinExist("Memory Palace ahk_exe chrome.exe")
             catch {
                 newHwnd := 0
+            }
+        }
+        if (!newHwnd) {
+            port := String(Palace_ServerPort())
+            if WinWait("127.0.0.1:" . port . " ahk_exe chrome.exe", , 3) {
+                try newHwnd := WinExist("127.0.0.1:" . port . " ahk_exe chrome.exe")
+                catch {
+                    newHwnd := 0
+                }
             }
         }
     } finally {

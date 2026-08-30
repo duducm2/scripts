@@ -39,7 +39,10 @@ LINK_KEYS = {
 
 GLOSSARY = [
     {"term": "Study", "def": "Domain owning Memory Palaces (CSV study_id)."},
-    {"term": "Memory Palace", "def": "Location / former street; one character; up to 5 beasts."},
+    {
+        "term": "Memory Palace",
+        "def": "Location / former street; one character; up to 5 beasts.",
+    },
     {"term": "Character", "def": "Exactly one canon character per palace."},
     {"term": "Beast", "def": "Bestiary peg holder for knowledge atoms."},
     {"term": "Knowledge Atom", "def": "Concept + Quote + Story + Sensory on a beast."},
@@ -229,16 +232,92 @@ class PalaceHandler(BaseHTTPRequestHandler):
             self._json(200, self._store().state())
             return
 
+        if path == "/api/plans/view":
+            from plan_csv import load_plan_tables, plan_row_to_payload  # noqa: E402
+            from study_plan_parser import enrich_plan, slug_filename  # noqa: E402
+
+            qs = urllib.parse.parse_qs(parsed.query)
+            study_id = (qs.get("study_id") or [""])[0].strip()
+            if not study_id:
+                self._json(400, {"ok": False, "error": "study_id required"})
+                return
+            store = self._store()
+            data = store._load_tree()
+            study = next(
+                (s for s in data.get("studies", []) if s.get("id") == study_id),
+                None,
+            )
+            if not study:
+                self._json(404, {"ok": False, "error": "study not found"})
+                return
+            plan = next(
+                (
+                    p
+                    for p in data.get("plans", [])
+                    if p.get("study_id") == study_id and p.get("active", "1") != "0"
+                ),
+                None,
+            )
+            if not plan:
+                plan = next(
+                    (p for p in data.get("plans", []) if p.get("study_id") == study_id),
+                    None,
+                )
+            if not plan:
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "study_id": study_id,
+                        "plan": None,
+                        "github_url": store.state()["meta"]["plans_github"],
+                    },
+                )
+                return
+            slug = slug_filename(study.get("notes_rel_path") or study_id)
+            tables = load_plan_tables(self.data_dir)
+            payload = enrich_plan(
+                plan_row_to_payload(
+                    plan,
+                    tables["plan_items"],
+                    tables["plan_resources"],
+                    slug,
+                )
+            )
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "study_id": study_id,
+                    "plan": payload,
+                    "github_url": store.state()["meta"]["plans_github"],
+                },
+            )
+            return
+
         if path == "/api/glossary":
             self._json(200, {"ok": True, "items": GLOSSARY})
             return
 
         if path == "/api/method":
-            readme = MNEMONICS_ROOT / "technique" / "README.md"
-            text = ""
-            if readme.is_file():
-                text = readme.read_text(encoding="utf-8")
-            self._json(200, {"ok": True, "markdown": text[:120000]})
+            from technique_renderer import (  # noqa: E402
+                build_method_panel,
+                default_technique_dir,
+            )
+
+            technique_dir = default_technique_dir(Path(__file__).resolve().parent)
+            if not technique_dir.is_dir():
+                technique_dir = MNEMONICS_ROOT / "technique"
+            html_body, canon = build_method_panel(technique_dir)
+            self._json(
+                200,
+                {
+                    "ok": True,
+                    "html": html_body,
+                    "canon": canon,
+                    "technique_dir": str(technique_dir),
+                },
+            )
             return
 
         if path.startswith("/media/"):
@@ -294,7 +373,10 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 return
             self._json(404, {"ok": False, "error": "not found"})
         except Exception as e:
-            self._json(500, {"ok": False, "error": str(e), "trace": traceback.format_exc()[-800:]})
+            self._json(
+                500,
+                {"ok": False, "error": str(e), "trace": traceback.format_exc()[-800:]},
+            )
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
@@ -334,7 +416,9 @@ class PalaceHandler(BaseHTTPRequestHandler):
             if path in ("/api/palace/notes", "/palace/notes"):
                 result = save_notes(
                     str(payload.get("palace_id") or ""),
-                    str(payload.get("notes") if payload.get("notes") is not None else ""),
+                    str(
+                        payload.get("notes") if payload.get("notes") is not None else ""
+                    ),
                     self.data_dir,
                     self.output_dir,
                     self.studies_root,
@@ -408,9 +492,7 @@ def main(argv: list[str] | None = None) -> int:
         else (data_dir.parent / "output").resolve()
     )
     studies_root = (
-        args.studies_root.resolve()
-        if args.studies_root
-        else default_studies_root()
+        args.studies_root.resolve() if args.studies_root else default_studies_root()
     )
     scripts_root = (
         args.scripts_root.resolve()
