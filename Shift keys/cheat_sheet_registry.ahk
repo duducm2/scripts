@@ -1049,47 +1049,46 @@ cheatSheets["Tasks"] := "
     Overlay Win+Alt+Shift+A. GitHub MD toolbar opens exported Markdown on GitHub.
     
     === Function keys & misc ===
-    ⬆️ [Up] Move selection up
-    ⬇️ [Down] Move selection down
-    ⬅️ [Left] Collapse project or section
-    ➡️ [Right] Expand project or section
-    🏠 [Home] First item
-    🔚 [End] Last item
-    🔤 [a-z 0-9] Jump to next title starting with letter
-    ⏎ [Enter] Edit selection
-    🗑️ [Delete] Delete selection
-    🏠 [Esc] Home — clear Work/Personal/Habits bento, emoji filter, modals, selection (search stays)
+    ⬆️ [Up] Previous item
+    ⬇️ [Down] Next item
+    ⬅️ [Left] Collapse, or move to parent
+    ➡️ [Right] Expand, or move into first child
+    🏠 [Home] First visible item
+    🔚 [End] Last visible item
+    🔤 [a-z 0-9] Jump to next title starting with that character
+    ⏎ [Enter] Edit selected project or task
+    🗑️ [Delete] Delete selected project or task
+    🏠 [Esc] Close overlay first (inline field, image, Info, modal) — keep Work/Personal/Habits
+    🏠 [Esc] Then Home — clear bento, emoji filter, selection (search stays)
     🏠 [Esc][Esc] Home and clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
-    🏠 [Esc] Info list — close and keep task selection
-    ⏎ [Enter] Info list — add info point
+    🏠 [Esc] Info form — back to list
+    🏠 [Esc] Info list — close and keep dashboard selection and category filter
+    ⬆️ [Up] Info list — previous info
+    ⬇️ [Down] Info list — next info
+    ⏎ [Enter] Info list — add info
+    ⏎ [Enter] Info form (title/section) — save
     🗑️ [Delete] Info list — delete highlighted info
-    ⬅️ [Backspace] Go back one step
-    1️⃣ [1] Import view: select TASK_PACK
-    👁️ [P] Import view: Preview
-    ✅ [C] Import view: Confirm import
+    ⬅️ [Backspace] Step back (inline field, image preview, modal, search, filter, bento, then selection)
     
     === Shift ===
-    💼 [1] Work only (bento; Esc clears)
-    👤 [2] Personal only (bento; Esc clears)
-    🔁 [3] Habits only (bento; Esc clears)
-    🎯 [J] First filtered hit (or toggle first Personal/Work)
-    ➕ [A] Inline add task (or project if none selected)
-    📁 [P] Add project
-    📑 [B] Add section (project selected)
-    ✅ [C] Mark done
-    ➡️ [D] Habit to Personal inbox (General)
-    📝 [N] Info points
-    🔗 Click a URL or file-path info point to open it
-    ℹ️ Tag on any task that has info points
-    🖼️ [V] Paste clipboard image as an info point (task or info page)
-    📂 [E] Expand / collapse all projects
+    💼 [1] Work column only (toggle)
+    👤 [2] Personal column only (toggle)
+    🔁 [3] Habits column only (toggle)
+    🎯 [J] First search hit, or first item in the other of Personal/Work
+    ➕ [A] Inline new task if a column or project is in context; otherwise inline new project
+    📁 [P] Inline new project
+    📑 [B] Inline new section (select a project, section, or task first)
+    ✅ [C] Mark selected task done
+    ➡️ [D] Copy selected habit into Personal · General
+    📝 [N] Open Info for the selected project or task
+    🖼️ [V] Paste clipboard image as an info point (selection or Info window)
+    📂 [E] Expand all projects and sections, or collapse all projects
     🧹 [F] Clear emoji filter
-    ⚡ [T] Important — tag selection, or filter if none
-    ⏳ [Q] Waiting — tag selection, or filter if none
-    🔲 [G] General — tag selection, or filter if none
-    ❓ [U] Doubt — tag selection, or filter if none
-    ⚡ [I] Important on selection (same as T)
-    📦 [K] Open Import (also Utility [J] then [T])
+    ⚡ [T] Important — tag selected task, or filter the list if none selected
+    ⏳ [Q] Waiting — tag selected task, or filter if none selected
+    🔲 [G] General — tag selected task, or filter if none selected
+    ❓ [U] Doubt — tag selected task, or filter if none selected
+    ⚡ [I] Important on the selected task only (does not filter)
     
     === Alt ===
     🔍 [S] Focus search

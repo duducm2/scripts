@@ -11,6 +11,15 @@ Task_ServerPort() {
 
 Task_LaunchApp() {
     Task_EnsureData()
+    existing := Task_FindExistingDashboardHwnd()
+    if (existing) {
+        if (!Task_IsServerRunning()) {
+            if (!Task_EnsureServer(false))
+                return
+        }
+        Task_ActivateDashboard(existing)
+        return
+    }
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
@@ -178,15 +187,55 @@ Task_DashboardHwndCacheClear() {
     Task_DashboardHwndCacheSet(0)
 }
 
-Task_OpenInChrome(url) {
-    hwnd := Task_DashboardHwndCacheGet()
-    if (hwnd) {
-        try {
-            WinActivate("ahk_id " hwnd)
-            ; navigate via omnibox is fragile; reopen URL
-        } catch {
+Task_HwndLooksLikeDashboard(hwnd) {
+    hwnd := Task_DashboardHwndValid(hwnd)
+    if (!hwnd)
+        return 0
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+        return 0
+    }
+    if !Task_IsChromeWindowTitle(title)
+        return 0
+    return hwnd
+}
+
+Task_FindExistingDashboardHwnd() {
+    hwnd := Task_HwndLooksLikeDashboard(Task_DashboardHwndCacheGet())
+    if (hwnd)
+        return hwnd
+    for h in WinGetList("ahk_exe chrome.exe") {
+        hwnd := Task_HwndLooksLikeDashboard(h)
+        if (hwnd) {
+            Task_DashboardHwndCacheSet(hwnd)
+            return hwnd
         }
     }
+    Task_DashboardHwndCacheClear()
+    return 0
+}
+
+Task_ActivateDashboard(hwnd) {
+    hwnd := Task_DashboardHwndValid(hwnd)
+    if (!hwnd)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        return false
+    }
+    try WinWaitActive("ahk_id " hwnd, , 1)
+    catch {
+    }
+    Task_DashboardHwndCacheSet(hwnd)
+    return true
+}
+
+Task_OpenInChrome(url) {
     baseline := Map()
     for h in WinGetList("ahk_exe chrome.exe")
         baseline[h] := true

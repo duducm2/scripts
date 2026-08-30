@@ -123,7 +123,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 | `Google`             | Chrome, no other site sheet, and title is `Google` or ` - Google Search`.                                                                          |
 | `ChatGPT`            | Chrome title contains `chatgpt`.                                                                                                                   |
 | `Gemini`             | Chrome title contains `gemini` (`cheatSheets["Gemini"]`).                                                                                          |
-| `Mobills`            | Chrome title contains `Mobills`.                                                                                                                   |
+| `Mobills`            | Chrome title contains `Mobills`. Hotkeys also require that site: a known other sheet (e.g. `Tasks`) wins over a Mobills URL from another window.   |
 
 ### Editor Alt+S stash and pull (Cursor / VS Code)
 

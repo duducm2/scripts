@@ -53,8 +53,7 @@ GetCheatSheetText() {
         chromeShortcuts := cheatSheets.Has("chrome.exe") ? cheatSheets["chrome.exe"] : ""
         appShortcuts := ""
 
-        ; Normalize Chrome window title by removing the trailing " - Google Chrome"
-        chromeTitle := RegExReplace(title, "i) - Google Chrome$", "")
+        chromeTitle := ChromeTitleWithoutBrowser(title)
 
         siteKey := ""
         if (hwnd) {
@@ -132,6 +131,25 @@ GetCheatSheetText() {
 
     ; Nothing found > blank > caller will show fallback message
     return ""
+}
+
+ChromeTitleWithoutBrowser(title) {
+    t := title
+    t := RegExReplace(t, "i) - Google Chrome$", "")
+    t := RegExReplace(t, "i) - Microsoft.?Edge$", "")
+    t := RegExReplace(t, "i) - Profile [0-9]+$", "")
+    return t
+}
+
+; Same site key the overlay uses, from the focused Chrome/Edge window only.
+ActiveChromeSheetKey() {
+    if !(WinActive("ahk_exe chrome.exe") || WinActive("ahk_exe msedge.exe"))
+        return ""
+    try
+        title := WinGetTitle("A")
+    catch
+        title := ""
+    return PickChromeAppSheetKey(ChromeTitleWithoutBrowser(title))
 }
 
 ; Mirrors the former sequential if-chain: later assignments override earlier ones; Shopee/Google only when still unset.

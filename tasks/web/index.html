@@ -572,7 +572,7 @@
       #lightbox {
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        z-index: 2600;
         background: rgba(0, 0, 0, 0.82);
         display: flex;
         align-items: center;
@@ -2091,11 +2091,7 @@
         function goHome(opts = {}) {
           const keepSearch = !!opts.keepSearch;
           cancelInlineCreate();
-          if (!$("#lightbox")?.hidden) {
-            $("#lightbox").hidden = true;
-            const img = $("#lightbox")?.querySelector("img");
-            if (img) img.src = "";
-          }
+          hideLightbox();
           if (modalOpen()) closeModal();
           state.infoUi = "";
           state.infoCtx = null;
@@ -2111,7 +2107,40 @@
           scrollToPageHeader();
         }
 
+        function hideLightbox() {
+          const lb = $("#lightbox");
+          if (!lb || lb.hidden) return false;
+          lb.hidden = true;
+          const img = lb.querySelector("img");
+          if (img) img.src = "";
+          return true;
+        }
+
+        function closeOtherModal() {
+          if (!modalOpen()) return false;
+          closeModal();
+          state.infoUi = "";
+          state.infoCtx = null;
+          state.infoSelId = "";
+          applySelection(true);
+          return true;
+        }
+
+        // Close inline create, image preview, Info, or other modals.
+        // Does not clear Work/Personal/Habits focus, search, or dashboard selection.
+        function dismissTransientUi() {
+          if (state.inlineCreate) {
+            cancelInlineCreate();
+            return true;
+          }
+          if (hideLightbox()) return true;
+          if (handleInfoEscape()) return true;
+          if (closeOtherModal()) return true;
+          return false;
+        }
+
         function handleEscape() {
+          if (dismissTransientUi()) return;
           const now = Date.now();
           const isDouble =
             state.lastEscAt > 0 &&
@@ -2127,24 +2156,7 @@
         }
 
         function goBack() {
-          if (state.inlineCreate) {
-            cancelInlineCreate();
-            return true;
-          }
-          if (!$("#lightbox")?.hidden) {
-            $("#lightbox").hidden = true;
-            const img = $("#lightbox")?.querySelector("img");
-            if (img) img.src = "";
-            return true;
-          }
-          if (modalOpen()) {
-            if (state.infoUi) {
-              dismissInfoModal();
-              return true;
-            }
-            closeModal();
-            return true;
-          }
+          if (dismissTransientUi()) return true;
           if (searchNeedle()) {
             clearSearch();
             if (state.view === "dashboard" && state.data) renderDashboard();
@@ -3307,7 +3319,6 @@
           if (inField) {
             if (e.key === "Escape") {
               e.preventDefault();
-              if (handleInfoEscape()) return;
               handleEscape();
               return;
             }
@@ -3336,7 +3347,6 @@
 
           if (e.key === "Escape") {
             e.preventDefault();
-            if (handleInfoEscape()) return;
             handleEscape();
             return;
           }

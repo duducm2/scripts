@@ -157,8 +157,6 @@ Mobills_ActivateBrowserForAttach(exe := "ahk_exe chrome.exe", titleNeedle := "Mo
             } catch {
             }
         }
-        if (!bestHwnd && hwnds.Length)
-            bestHwnd := hwnds[1]
         if (!bestHwnd)
             return false
 
@@ -179,10 +177,17 @@ TryAttachBrowser() {
     } catch {
     }
     ; #endregion
-    ; Try Chrome first, then Edge (with one focus recovery retry)
+    ; Attach to the focused Chrome/Edge window only — never a background Mobills tab.
     try {
         result := ""
-        try result := UIA_Browser("ahk_exe chrome.exe")
+        try {
+            hwnd := WinExist("A")
+            if hwnd {
+                exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+                if (exe = "chrome.exe" || exe = "msedge.exe")
+                    result := UIA_Browser("ahk_id " hwnd)
+            }
+        }
         if (result) {
             ; #region agent log
             try {
