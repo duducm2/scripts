@@ -1130,6 +1130,9 @@ cheatSheets["Memory Palace"] := "
     🎬 [Shift+V] Open stored video in Chrome (new window)
     📄 [Shift+A] Open stored article in Chrome (new window)
     ⭐ [Shift+F] Open stored favorite in Chrome (new window)
+    🎬 [Alt+V] Set video from active Chrome tab (address bar)
+    📄 [Alt+A] Set article from active Chrome tab (address bar)
+    ⭐ [Alt+F] Set favorite from active Chrome tab (address bar)
     
     === Palace overlay ===
     🖼 [F] Toggle snapshot full-screen
@@ -1434,6 +1437,9 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Shift+V] > Open study video in Chrome (new window)
     [Shift+A] > Open study article in Chrome (new window)
     [Shift+F] > Open favorite link in Chrome (new window)
+    [Alt+V] > Set study video from active Chrome tab (address bar)
+    [Alt+A] > Set study article from active Chrome tab (address bar)
+    [Alt+F] > Set favorite link from active Chrome tab (address bar)
     [P] > Toggle Practice ↔ Plans
     [L] > Latest palace (selected study)
     [M] > Method
