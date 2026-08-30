@@ -383,24 +383,28 @@ class D2C_FlowManager {
         }
     }
 
-    ; [O] Open Clip Angel (Row 0), Shift+P (native: leave favorites / all-clips view), then Edit text (F4 — same as Shift+E in Shift keys.ahk for ClipAngel). O avoids C = Transfer on Copy response? banner.
+    ; [O] Open Clip Angel (Row 0), then Edit text (F4). Shared with Copy-response [O].
     OnSubmitO(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
         StandardLoadingBar_CloseKeysOverlay()
         HideDictationIndicator()
-
-        if !ClipAngel_TryAcquireAutomationLock() {
+        try {
+            this._OpenClipAngelEditForOrigin(this.OriginHwnd)
+        } finally {
             global g_D2C_DictationSubmitMenuCycleFinished
             g_D2C_DictationSubmitMenuCycleFinished := true
             this.Reset()
-            return
         }
+    }
+
+    ; Open Clip Angel on newest clip and Edit text (F4) — same path as #!+p [O] / HotkeyCopy_OnClipAngelEdit.
+    _OpenClipAngelEditForOrigin(originHwnd := 0) {
+        if !ClipAngel_TryAcquireAutomationLock()
+            return
 
         StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
         try {
-            ; Use the origin window (what the user was looking at) to decide the target monitor for ClipAngel.
-            originHwnd := this.OriginHwnd
             if (!originHwnd)
                 try originHwnd := WinGetID("A")
             originMon := GetAhkMonitorIndexFromHwnd(originHwnd)
@@ -442,9 +446,6 @@ class D2C_FlowManager {
         } finally {
             StandardLoadingBar_Hide(350)
             ClipAngel_ReleaseAutomationLock()
-            global g_D2C_DictationSubmitMenuCycleFinished
-            g_D2C_DictationSubmitMenuCycleFinished := true
-            this.Reset()
         }
     }
 
@@ -988,31 +989,56 @@ class D2C_FlowManager {
             return
         }
         this.CurrentPhase := "PromptingAction"
+        companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
+        ; Same key strip / order as #!+p HotkeyCopy_ShowPostCopyBanner (copy-first on each destination).
         keyCallbacks := Map(
             "Y", this.OnActionY.Bind(this),
+            "F", this.OnActionF.Bind(this),
             "C", this.OnActionC.Bind(this),
-            "R", this.OnActionR.Bind(this),
+            "W", this.OnActionW.Bind(this),
+            "O", this.OnActionO.Bind(this),
             "N", this.OnActionN.Bind(this),
-            "F", this.OnActionF.Bind(this)
+            "Escape", this.OnActionN.Bind(this)
         )
-        pk := "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite"
+        if (companion != "enterprise")
+            keyCallbacks["R"] := this.OnActionR.Bind(this)
+        if (companion = "enterprise")
+            pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+        else
+            pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
-            "❓ Copy response? (5s)",
+            "❓ Response ready — what next? (5s)",
             keyCallbacks,
             D2C_SUBMIT_MENU_TIMEOUT_MS,
             0,
             this.OnActionTimeout.Bind(this),
-            BANNER_ACCENT_INTERMEDIATE, 520, 17, "", true,
+            BANNER_ACCENT_INTERMEDIATE, 900, 17, "", true,
             pk,
             true,
             true
         )
     }
 
+    ; [Y] Copy reply then export last Clip Angel clip to Desktop (same as #!+p [Y]).
     OnActionY(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
-        this.ExecuteAction(false, false)
+        this.CleanupActionPrompt()
+        try {
+            this.DoCopyCore(false, false)
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+            ClipAngel_ExportLastClipToDesktop()
+        } finally {
+            this.Reset()
+        }
     }
 
     OnActionC(*) {
@@ -1027,7 +1053,7 @@ class D2C_FlowManager {
         this.ExecuteAction(true, false)
     }
 
-    ; F: copy last Gemini reply, then mark newest Clip Angel clip as favorite (same as Gemini.ahk CopyAndFavorite).
+    ; [F] Copy reply, then mark newest Clip Angel clip as favorite (same as #!+p [F]).
     OnActionF(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
@@ -1043,6 +1069,61 @@ class D2C_FlowManager {
                 return
             }
             MarkLastClipAsFavorite("first", true)
+        } finally {
+            this.Reset()
+        }
+    }
+
+    ; [W] Copy reply, then paste to a picked visible window (same as #!+p [W]).
+    OnActionW(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        this.CurrentPhase := "PickingVisiblePaste"
+        try {
+            this.DoCopyCore(false, true)
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                this.Reset()
+                return
+            }
+            try A_Clipboard := clipRaw
+            onDone := this._OnActionWDone.Bind(this)
+            if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone))
+                return
+            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                WinActivate("ahk_id " this.OriginHwnd)
+            this.Reset()
+        } catch {
+            this.Reset()
+        }
+    }
+
+    _OnActionWDone() {
+        this.Reset()
+    }
+
+    ; [O] Copy reply, then open Clip Angel Edit (same as #!+p [O]).
+    OnActionO(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        try {
+            this.DoCopyCore(false, true)
+            clipRaw := A_Clipboard
+            clip := Trim(clipRaw)
+            if (clip = "" || StrLen(clip) < 10) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+            this._OpenClipAngelEditForOrigin(this.OriginHwnd)
         } finally {
             this.Reset()
         }
@@ -1126,7 +1207,7 @@ class D2C_FlowManager {
             return
         }
 
-        ; Y / R / C / timeout: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
+        ; Y/F/C/R/W/O: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
         clipBefore := A_Clipboard
         seqBefore := Clipboard_GetSequenceNumber()
         WM_COPY_LAST_GEMINI := 0x8001
