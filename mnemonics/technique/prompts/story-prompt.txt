@@ -3,21 +3,23 @@ This is NOT a Markdown street study-list task. Deliver **one** `PALACE_PACK` art
 
 **Do not duplicate output.** Put PREVIEW only inside the pack body. Do **not** paste a separate human-readable PREVIEW, street list, or CSV dump in the chat bubble beside the pack. Chat after delivery is one short pointer line only (chip / “copy the fence”).
 
-HARD PACKING MANDATE (read before any beasts) — Desktop importer REJECTS violations
-- Every Memory Palace gets **exactly 5 beasts** before you open the next palace.
-- The **only** palace allowed to have 1–4 beasts is the **last** one (highest `palace_number` in this pack / study after packing) — and only when remaining beasts < 5.
-- **Illegal (common failure):** one beast (or any 1–4) on an earlier palace while later palaces have more beasts — e.g. palace 5 has 1 beast and palaces 6–8 have 5; or `1+5+5`, `2+5`, `4+5+5`. That packing is a failed delivery — rewrite before send.
-- **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single palace with 1–4 when that is the only palace.
-- Continuous / append sessions: if the study’s current last palace already has 1–4 beasts, **fill that same palace to 5 first** with new beasts. Do **not** open a new higher-numbered palace until the under-filled one is full (or you have no more beasts).
-- Before send: count beasts under each PREVIEW palace heading **inside the pack**. If any non-last palace shows fewer than 5 peg lines while a later palace exists → rewrite.
+HARD PACKING MANDATE (read before any beasts) — applies to **new Memory Palaces in this pack only** — Desktop importer REJECTS violations inside the pack
+- Scope: packing is evaluated **only among palace / beast rows in this pack**. Existing inventory palaces are never topped up and never appear in the pack.
+- Every **new** Memory Palace in this pack gets **exactly 5 beasts** before you open the next **new** palace.
+- The **only** new palace allowed to have 1–4 beasts is the **last new palace in this pack** (highest `palace_number` among pack rows) — and only when remaining **new** beasts < 5.
+- **Illegal (common failure):** one beast (or any 1–4) on an earlier **pack** palace while a later **pack** palace has more beasts — e.g. `1+5+5`, `2+5`, `4+5+5`. That packing is a failed delivery — rewrite before send.
+- **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single new palace with 1–4 when that is the only palace in the pack.
+- Continuous / append sessions: leave every existing under-filled palace **as-is**. Always open **new** palaces after the highest existing `palace_number`. Do **not** add beasts to inventory palaces to “complete” them to 5.
+- Before send: count beasts under each PREVIEW palace heading **inside the pack**. If any non-last **pack** palace shows fewer than 5 peg lines while a later pack palace exists → rewrite.
 
 EXISTING INVENTORY HARD MANDATE (read before extracting any concept)
 - Attached practice `.md` / study CSVs = **read-only inventory** of Knowledge Atoms **already in the database**. They are not source material to re-encode.
-- This pack MUST contain **only NEW** Knowledge Atoms (concepts not already memorized). Do **not** invent Concept / Quote / Story lines for atoms that already exist.
+- This pack MUST contain **only NEW** Knowledge Atoms (concepts not already memorized) on **only NEW** Memory Palaces. Do **not** invent Concept / Quote / Story lines for atoms that already exist.
 - Treat as already known when the inventory has a **near-duplicate concept** (same rehearsal meaning) **or** a **same / near-identical quote**. Skip those; list each under PREVIEW `Discard candidates:` (one line: already palace N / peg X).
-- NEVER re-emit complete earlier palaces (already at 5 beasts) into this pack “for context” or “to keep the study whole.”
-- Continuous-fill exception (only): when filling the study’s current under-filled last palace, you MAY re-include **that palace’s existing** beasts/atoms **verbatim from inventory** (same Concept / Quote / Story — do **not** rewrite or “improve” them) **plus** only the NEW beasts/atoms that fill open slots. The importer replaces all beasts on any palace present in the pack — omitting those existing pegs would delete them.
-- Failed delivery if PREVIEW or any FILE section re-stories already-known atoms outside that continuous-fill exception.
+- NEVER re-emit any existing palace / beast / atom rows into this pack — not for context, not to keep the study whole, not to top up an under-filled last palace.
+- NEVER add beasts to an existing under-filled palace. Older palaces with 1–4 beasts along the study journey are allowed to stay under-filled forever.
+- Numbering: new `palace_number` values start **after** the highest existing palace in inventory; peg letters continue **after** the last existing peg (do not restart at `A` unless the study has no beasts yet).
+- Failed delivery if PREVIEW or any FILE section re-stories already-known atoms or includes any existing palace id from inventory.
 
 Creating mnemonic stories — Memory Palace CSV pack
 
@@ -36,23 +38,23 @@ Delivery priority (strict) — unless the prepended contract says otherwise:
 After delivery, one short chat line only: point at the download chip, or tell the human to copy the code block and save as `PALACE_PACK.txt` on Desktop. No PREVIEW reprint in that line.
 
 PACK BODY LAYOUT (exact markers — required inside the download file OR the fallback fence).
-PREVIEW lives **only** here (importer + confirm UI read it from the pack). Shape below shows packing: non-final palaces list **5** beasts; only the last may list fewer.
+PREVIEW lives **only** here (importer + confirm UI read it from the pack). Shape below shows packing among **new** palaces in this pack: non-final pack palaces list **5** beasts; only the last new palace may list fewer.
 
 ```
 ===PREVIEW===
 STUDY_… · N palaces · N beasts · N atoms
-Packing: 5+5+…+remainder (remainder only on last palace)
+Packing: 5+5+…+remainder (remainder only on last **new** palace in this pack)
 
-PALACE 1 — <title> (<character>) [<palace_id>]
-  [A] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [B] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [C] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [D] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [E] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-PALACE 2 — <title> (<character>) [<palace_id>]   ← last palace may have 1–4
-  [F] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [G] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
-  [G] <beast> Z2 — …
+PALACE N+1 — <title> (<character>) [<palace_id>]
+  [U] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [V] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [W] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [X] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [Y] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+PALACE N+2 — <title> (<character>) [<palace_id>]   ← last new palace in this pack may have 1–4
+  [Z] <beast> — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [Aa] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
+  [Aa] <beast> Z2 — …
 
 Discard candidates: none | list pegs / palace ids with one-line why (incl. already-known skipped from inventory)
 ===END_PREVIEW===
@@ -75,7 +77,7 @@ PREVIEW rules (mandatory — inside the pack only):
 - Concept / Quote / Story short enough to scan; truncate long quotes with ….
 - No CSV rows and no markdown tables inside PREVIEW.
 - Failed delivery if PREVIEW is missing from the pack, only counts/palace titles, or omits any atom from the atoms FILE section.
-- Failed delivery if PREVIEW shows a sparse palace (1–4 beasts) that is **not** the last palace in the pack.
+- Failed delivery if PREVIEW shows a sparse palace (1–4 beasts) that is **not** the last **new** palace in the pack.
 - Keep FILE sections machine-only CSV. Do not replace PREVIEW with streets Markdown as the primary deliverable.
 
 Rules:
@@ -90,7 +92,7 @@ Failed delivery — redo:
 - Missing PREVIEW or any of the three FILE sections **inside the pack**
 - PREVIEW that is only counts/titles with no per-atom Concept/Quote/Story lines
 - PREVIEW / CSV duplicated in chat outside the single pack artifact
-- **Sparse-then-full packing:** any palace with 1–4 beasts followed by a later palace with more beasts (e.g. one beast on palace N, then palaces N+1… full) — rewrite to `5+5+…+remainder on last` only
+- **Sparse-then-full packing:** any **pack** palace with 1–4 beasts followed by a later **pack** palace with more beasts (e.g. one beast on palace N, then palaces N+1… full) — rewrite to `5+5+…+remainder on last new palace in this pack` only
 
 Pre-send self-check (all must pass):
 1. Either a real download UI object named `PALACE_PACK.txt` when possible, OR exactly one marked fallback fence (or the Prompt Manager contract’s chosen form) — not both as duplicate dumps.
@@ -98,7 +100,7 @@ Pre-send self-check (all must pass):
 3. PREVIEW lists every atom **inside the pack only** — chat has no second PREVIEW.
 4. CSV bodies use the exact headers defined below.
 5. Do not instruct the human to save a fence if any FILE section is incomplete; continue in a follow-up message instead.
-6. **Packing count:** for every palace except the highest `palace_number`, beast count is exactly 5; any 1–4 remainder is only on that last palace. Continuous append filled the previous under-filled last palace first.
+6. **Packing count (this pack only):** for every new palace except the highest `palace_number` **in the pack**, beast count is exactly 5; any 1–4 remainder is only on that last new palace. Existing inventory palaces were left untouched (never topped up / never re-emitted).
 If attach fails: retry Download code once, then use the fence fallback. Never claim a disk save.
 If any check fails, regenerate as one pack artifact.
 
@@ -125,7 +127,7 @@ Technique README may still say "street"; map **Street → Memory Palace** when f
 Confirm every required item. If any is missing, ask before generating.
 
 1. **Video transcription** — Markdown from prompt **5** (Transcript Youtube Video), **or** curated concept Markdown from prompt **6** (Curate knowledge atoms). Cursor cannot access YouTube; use Gemini for raw transcripts when needed.
-2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use ids / last palace / peg / characters only. Never re-emit the whole study as the pack. Do not emit Markdown as output.
+2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use highest palace_number / last peg / reserved characters only. Never re-emit existing palaces or top them up. Do not emit Markdown as output.
 3. **Characters** — `studies/technique/characters.json`.
 4. **Bestiary** — `studies/technique/bestiary.json`.
 5. **README** — `studies/technique/README.md` (framework rules). Cite as `README §<Section Name>`.
@@ -133,7 +135,7 @@ Confirm every required item. If any is missing, ask before generating.
 **study_id (mandatory):**
 - Violin test: use `STUDY_VIOLIN` and attach that study’s context pack when available.
 - Otherwise: use the **exact** `study_id` from the attached pack / `studies.csv` row (may be truncated to a 12-char slug, e.g. `STUDY_COMMUNICATIO`). Do **not** invent study IDs. The importer also accepts full-word aliases (e.g. `STUDY_COMMUNICATION` → `STUDY_COMMUNICATIO`).
-- Prefer palace ids like `PALACE_<same study slug>_<NN>` matching existing rows when updating.
+- Prefer palace ids like `PALACE_<same study slug>_<NN>` for **new** palaces (next free `NN` after inventory). Do **not** reuse ids of existing inventory palaces.
 - Quote any CSV field that contains commas, quotes, or newlines (especially `concept`, `quote`, `story`, `image_prompt`).
 
 ---
@@ -151,11 +153,11 @@ id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,i
 ```
 
 Rules:
-- Prefer `id` like `PALACE_<STUDY_SLUG>_<NN>` (e.g. `PALACE_VIOLIN_01`). Leave empty only if the importer must assign.
-- `palace_number` — optional integer within the study (1, 2, …). Leave empty to let the importer assign the next free index. Prefer a stable `id` and a clear `title` (title is the human identifier).
-- `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached palaces + new rows).
+- Prefer `id` like `PALACE_<STUDY_SLUG>_<NN>` for **new** palaces (e.g. next free `NN` after inventory). Leave empty only if the importer must assign.
+- `palace_number` — optional integer within the study. Prefer values **after** the highest existing palace in inventory (or leave empty for importer next-free). Prefer a stable `id` and a clear `title` (title is the human identifier).
+- `character_name` — exactly one unused canon character per palace (file-wide uniqueness vs attached inventory + new rows).
 - `image_rel_path` — relative to notes studies root when known (e.g. `violin/images/1.png`); leave empty if unknown (human may use Memory Palace **[Q]** later).
-- `depth_slots_used` — 0–5 (beast count / depth slots for that palace).
+- `depth_slots_used` — 0–5 (beast count / depth slots for that **new** palace).
 - `image_prompt` — full foreground image prompt for that palace (Maps background is user-supplied). Put prompts here — not as a separate Markdown `🖼️` section. Character MUST use the lookalike formula (`README §Image composition rules`); NEVER paste `character_name` into this field.
 
 ### 2) `PALACE_BEASTS.csv`
@@ -167,17 +169,17 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 ```
 
 Rules:
-- `palace_id` must match an `id` in this pack’s palaces file (or an attached existing palace).
+- `palace_id` must match an `id` in this pack’s palaces file (new palaces only — never attach beasts to an inventory palace id).
 - Prefer `id` like `BEAST_<palace slug>_<peg>`.
-- `peg_code` — bestiary letter codes only (no numeric pegs); unbroken A–Z within the story scope per README.
+- `peg_code` — bestiary letter codes only (no numeric pegs); unbroken sequence **continuing after the last inventory peg** (do not restart at `A` unless the study has no beasts yet).
 - `beast_name` / `beast_source` from bestiary; `sensory_channel` from the atom’s topic sensory (visual, auditory, …).
 - `is_smashed` — `0` for single-atom beasts; `1` when the beast carries zoned atoms.
 - `sort_order` — order within the palace (1…).
 - Max **5 beasts per Memory Palace** (`README §Streets and Depth Slots`).
-- **Packing rule (HARD — same as HARD PACKING MANDATE):** fill every palace to **exactly 5 beasts** before opening the next. The **only** palace that may have fewer than 5 is the **last palace** (highest `palace_number`) — and only when remaining beasts < 5.
-  - Wrong (importer rejects): palace with 1 beast while later palaces have more — e.g. `1+5+5+5`, `1+5`, `4+5+5`.
-  - Right for 16 beasts across 4 palaces: `5+5+5+1` with the `1` on the **last** palace only.
-  - Continuous append: fill the study’s current under-filled last palace to 5 before creating any new palace.
+- **Packing rule (HARD — same as HARD PACKING MANDATE; this pack’s new palaces only):** fill every **new** palace to **exactly 5 beasts** before opening the next **new** palace. The **only** new palace that may have fewer than 5 is the **last new palace in this pack** (highest `palace_number` among pack rows) — and only when remaining new beasts < 5.
+  - Wrong (importer rejects): pack palace with 1 beast while later pack palaces have more — e.g. `1+5+5+5`, `1+5`, `4+5+5`.
+  - Right for 16 new beasts across 4 new palaces: `5+5+5+1` with the `1` on the **last new** palace only.
+  - Continuous append: never top up an existing under-filled inventory palace; always create new palaces after the inventory tail.
 
 ### 3) `PALACE_ATOMS.csv`
 
@@ -188,7 +190,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 ```
 
 Rules:
-- `beast_id` must match this pack’s beasts (or attached).
+- `beast_id` must match this pack’s beasts (new beasts only).
 - `kind` — `single` or `zoned` (legacy `subtopic` → `zoned`).
 - Mapping: one `single` atom **or** up to four `zoned` atoms (`Z1`–`Z4`) per beast — never mix on the same beast.
 - `single`: leave `zone` and `zone_label` empty.
@@ -210,21 +212,22 @@ Rules:
 - Ingest the transcript. Do not expect a YouTube link.
 - Apply README rules: Knowledge Atom Structure, Streets/Depth Slots (as Memory Palaces), Independent Beast Beats, Bizarreness Gate, Actions palette, Characters, Language & IPA, Peg conventions, Image composition.
 - First build an **already-known set** from attached practice `.md` / atoms CSV (concepts + quotes). Extract only **new** knowledge from the transcript / curated pack; skip every already-known unit (EXISTING INVENTORY HARD MANDATE). If every transcript concept is already known, deliver an empty-new note in chat and **no** pack that re-dumps inventory.
+- Note the highest existing `palace_number` and last peg; new packing starts after that tail without touching under-filled inventory palaces.
 - Build reserved character set from attached palaces before assignment.
 - Load bestiary `code` for pegs.
 
-### 2. Palace packing (minimize palace count) — HARD
+### 2. Palace packing (minimize palace count among **new** palaces) — HARD
 
-Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (importer rejects).
+Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** = failed delivery (importer rejects). Existing inventory palaces are out of scope.
 
-- Assign **exactly 5 beasts to each Memory Palace**.
-- The **only** Memory Palace allowed to have fewer than 5 beasts is the **last one** (highest `palace_number` in this study after packing). Put the remainder there **only** when remaining beasts < 5.
-- Worked example: 16 beasts → 4 palaces as `5 + 5 + 5 + 1` (the single beast on the **last** palace).
-- **Invalid patterns (rewrite):** `1 + 5 + 5 + 5`, `1 + 5`, `2 + 5 + 5`, `4 + 5`, or any pack where an earlier palace has 1–4 beasts and a later palace exists. Especially forbidden: starting a new palace with only one beast while continuing a multi-palace sequence.
-- Continuous / append sessions: if the study’s current last palace has 1–4 beasts, **fill that palace to 5 first** with new beasts before creating any higher-numbered palace. Never “park” a single new beast on a new palace while the previous one still has open slots.
-- NEVER open a new palace while any earlier palace (by `palace_number`) has fewer than 5 beasts and ≥1 beast remains to place.
-- Palace count = ceil(beast_count / 5). Set `depth_slots_used` to the beast count on that palace (1–5).
-- In PREVIEW, beasts under each palace MUST total 5 except the **last** palace (which may list 1–4). Count peg groups under each `PALACE N` heading before send. If an earlier palace has fewer than 5 while a later palace exists, **rewrite the pack** — do not ship. The Desktop importer **rejects** that packing.
+- Assign **exactly 5 beasts to each new Memory Palace** in this pack.
+- The **only** new Memory Palace allowed to have fewer than 5 beasts is the **last new one in this pack** (highest `palace_number` among pack rows). Put the remainder there **only** when remaining new beasts < 5.
+- Worked example: 16 new beasts → 4 new palaces as `5 + 5 + 5 + 1` (the single beast on the **last new** palace).
+- **Invalid patterns (rewrite):** `1 + 5 + 5 + 5`, `1 + 5`, `2 + 5 + 5`, `4 + 5`, or any pack where an earlier **pack** palace has 1–4 beasts and a later **pack** palace exists.
+- Continuous / append sessions: if inventory’s last palace has 1–4 beasts, **leave it alone**. Open new palaces after that highest existing `palace_number`. Never add beasts to inventory palaces to complete them to 5.
+- NEVER open a later **pack** palace while any earlier **pack** palace has fewer than 5 beasts and ≥1 new beast remains to place.
+- New palace count = ceil(new_beast_count / 5). Set `depth_slots_used` to the beast count on that new palace (1–5).
+- In PREVIEW, beasts under each pack palace MUST total 5 except the **last new** palace (which may list 1–4). Count peg groups under each `PALACE …` heading before send. If an earlier pack palace has fewer than 5 while a later pack palace exists, **rewrite the pack** — do not ship. The Desktop importer **rejects** that packing.
 
 ### 3. Story construction (encode into CSV rows)
 
@@ -242,13 +245,14 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 
 ### 5. Common failure modes (NEVER)
 
-- NEVER re-story or re-emit Knowledge Atoms already present in the attached inventory (except verbatim copy of pegs on the under-filled last palace during continuous fill).
+- NEVER re-story or re-emit Knowledge Atoms / beasts / palaces already present in the attached inventory.
+- NEVER top up an existing under-filled inventory palace with new beasts.
 - NEVER dump the whole practice `.md` / study into PREVIEW or FILE sections.
-- NEVER assign two+ characters to one palace or reuse a character already used.
-- NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
+- NEVER assign two+ characters to one palace or reuse a character already used (inventory + this pack).
+- NEVER invent `study_id` / `palace_id` / `beast_id` outside attached inventory ids used for continuity + this pack’s new rows.
 - NEVER use numeric pegs or cross-beast narrative dependency.
-- NEVER under-fill a palace (1–4 beasts) when ≥5 beasts remain to place in this pack.
-- NEVER leave a sparse palace (1–4 beasts) unless it is the **last** palace by `palace_number` (no higher-numbered palace may exist while an earlier one is under-filled).
+- NEVER under-fill a **pack** palace (1–4 beasts) when ≥5 new beasts remain to place in this pack.
+- NEVER leave a sparse **pack** palace (1–4 beasts) unless it is the **last new** palace in this pack (no higher-numbered pack palace may exist while an earlier pack palace is under-filled).
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
@@ -266,8 +270,8 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 | Three FILE sections with exact markers | Yes |
 | Exact headers for palaces / beasts / atoms | Yes |
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
-| Every non-final palace has exactly 5 beasts; any remainder < 5 is only on the highest palace_number; depth_slots_used coherent; no sparse-then-full sequence | Yes |
-| Pack has only NEW atoms (+ optional verbatim continuous-fill of under-filled last palace); already-known skipped in Discard candidates | Yes |
+| Every non-final **pack** palace has exactly 5 beasts; any remainder < 5 is only on the highest `palace_number` **in this pack**; depth_slots_used coherent; no sparse-then-full sequence among pack palaces | Yes |
+| Pack has only NEW palaces / beasts / atoms; inventory left untouched; already-known skipped in Discard candidates | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
@@ -284,7 +288,7 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 
 📎 Video transcription
 
-📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for last palace / peg / character and continuous-fill verbatim copy. Do **not** re-encode inventory atoms into the pack. CSV context packs are also accepted if attached manually.
+📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for next palace_number / next peg / reserved characters. Do **not** re-encode inventory atoms or top up existing under-filled palaces. CSV context packs are also accepted if attached manually.
 
 📎 Characters (`@studies/technique/characters.json` or paste)
 

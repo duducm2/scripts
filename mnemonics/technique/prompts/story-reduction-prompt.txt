@@ -9,12 +9,14 @@ HARD PACKING MANDATE (in-scope only — read before any re-peg) — Desktop impo
 - **Illegal (common failure):** one beast (or any 1–4) on an earlier in-scope palace while later in-scope palaces have more — e.g. `1+5+5`, `2+5`, sparse palace N then fuller N+1. Failed delivery — rewrite before send.
 - **Legal:** `5+5+5+1`, `5+5+3`, `5`, or a single in-scope palace with 1–4.
 - Collapse empty in-scope palaces. Do **not** pull beasts from out-of-scope earlier palaces to fill slots.
+- Out-of-scope under-filled palaces stay untouched forever — never top them up to 5 and never re-emit them “to complete” packing.
 - Before send: count beasts under each PREVIEW in-scope palace heading. If any non-last in-scope palace shows fewer than 5 while a later in-scope palace exists → rewrite.
 
 EXISTING / OUT-OF-SCOPE HARD MANDATE (read before any SMASH/REMOVE)
 - Attached practice `.md` / CSV = **read-only inventory** for locking scope and resolving ids / quotes of **in-scope** rows only.
 - The pack MUST contain **only in-scope** palace / beast / atom rows after reduction. NEVER dump earlier palaces or pegs already outside the locked scope “because they were in the attached file.”
 - Do **not** invent NEW Knowledge Atoms that were not already in the in-scope set before this reduction. Do **not** re-story out-of-scope atoms.
+- Do **not** pull beasts from out-of-scope inventory to fill in-scope slots, and do **not** add beasts to out-of-scope under-filled palaces.
 - In-scope survivors that remain after SMASH/REMOVE are re-emitted (required for upsert) with re-peg / compression rules — that is not a license to rewrite the whole study.
 - Failed delivery if PREVIEW or FILE sections include any palace / peg / atom from outside `Scope:`.
 
@@ -139,7 +141,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 - **Packing rule (HARD — same as HARD PACKING MANDATE; minimize palace count) — apply inside the reduction scope only:** fill every **in-scope** palace to **exactly 5 beasts** before the next. The **only** under-filled palace (1–4 beasts) allowed is the **last in-scope** palace (highest `palace_number` in the pack).
   - Right: 16 in-scope beasts → `5+5+5+1` with the `1` on the last in-scope palace.
   - Wrong (importer rejects): `1+5+5+5`, `1+5`, `2+5+5`, or any sparse earlier in-scope palace while a later in-scope palace exists.
-  - Collapse empty **in-scope** palaces. Do **not** pull beasts from earlier out-of-scope palaces to fill slots. After smash/remove, **re-pack** survivors — do not leave a one-beast palace sitting before fuller later palaces.
+  - Collapse empty **in-scope** palaces. Do **not** pull beasts from earlier out-of-scope palaces to fill slots, and do **not** top up out-of-scope under-filled palaces. After smash/remove, **re-pack** in-scope survivors — do not leave a one-beast in-scope palace sitting before fuller later in-scope palaces.
 
 ### `PALACE_ATOMS.csv`
 

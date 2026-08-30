@@ -194,10 +194,14 @@ Palace_EnsureServer(forceRestart := false) {
         . '" --studies-root "' . studiesRoot . '" --scripts-root "' . scriptsRoot
         . '" --port ' . port
     pid := 0
-    try pid := Run(cmd, A_ScriptDir, "Hide")
+    try Run(cmd, A_ScriptDir, "Hide", &pid)
     catch as e {
         Palace_Notify("Palace server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
+    }
+    try pid := Integer(pid)
+    catch {
+        pid := 0
     }
     if (pid > 0)
         Palace_PidWrite(pid)

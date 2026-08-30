@@ -193,10 +193,14 @@ Task_EnsureServer(forceRestart := false) {
     cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . scriptsRoot
         . '" --port ' . port
     pid := 0
-    try pid := Run(cmd, A_ScriptDir, "Hide")
+    try Run(cmd, A_ScriptDir, "Hide", &pid)
     catch as e {
         Task_Notify("Tasks server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
+    }
+    try pid := Integer(pid)
+    catch {
+        pid := 0
     }
     if (pid > 0)
         Task_PidWrite(pid)

@@ -393,7 +393,8 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         .
         "- If length limits cut a FILE section: say so, then continue in the next message with only the remaining FILE blocks.`r`n"
         . "- Do not tell me to save an incomplete fence.`r`n"
-        . "- Beast packing: fill every non-final palace to exactly 5 beasts; only the last palace may have 1–4.`r`n"
+        .
+        "- Beast packing (palaces in this pack only): fill every non-final pack palace to exactly 5 beasts; only the last pack palace may have 1–4. Do not top up existing study palaces outside the pack.`r`n"
         .
         "- Put PREVIEW only inside the pack — do not duplicate PREVIEW/CSV in chat outside the pack artifact.`r`n"
         . "- Re-deliver using the exact canonical filename (PALACE_PACK.txt). Overwrite any prior Desktop copy.`r`n"
@@ -412,9 +413,10 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
 Palace_AiCompanionFixGuidance(errorMsg) {
     e := StrLower(errorMsg)
     if (InStr(e, "packing error")) {
-        return "- Your beast packing is invalid.`r`n"
-        . "- Rewrite so every palace except the highest palace_number has exactly 5 beasts.`r`n"
-        . "- Put any remainder (1–4) only on the last palace. Never ship patterns like 1+5+5 or 4+5.`r`n"
+        return "- Your beast packing is invalid for palaces in this pack.`r`n"
+        . "- Rewrite so every pack palace except the highest palace_number in the pack has exactly 5 beasts.`r`n"
+        . "- Put any remainder (1–4) only on the last palace in this pack. Never ship patterns like 1+5+5 or 4+5.`r`n"
+        . "- Do not re-emit or top up existing study palaces outside this pack.`r`n"
         . "- Then re-emit the full pack (PREVIEW + all three FILE sections)."
     }
     if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")) {
