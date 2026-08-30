@@ -33,7 +33,7 @@
 | VS Code shortcut menu          | Parallel quick-shortcuts menu     | [`Shift keys/hotif_scroll_ai.ahk`](../Shift%20keys/hotif_scroll_ai.ahk)                                             |
 | Mercado Livre sort menu        | ML sort picker (`+o`)             | [`Shift keys/hotif_mercado_livre.ahk`](../Shift%20keys/hotif_mercado_livre.ahk)                                     |
 
-Finance, Memory Palace browse, click-sequence, and similar apps already use titled `+ToolWindow` + ListView chrome.
+Finance, click-sequence, and similar apps already use titled `+ToolWindow` + ListView chrome. Memory Palace primary UX is the Tasks-style web app on `:8767` (AHK ListView browse remains as leftover modules, not the launch path).
 
 **Migration status:** The former §3 Catppuccin captionless key menus are migrated (behavior parity; chrome only).
 

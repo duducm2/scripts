@@ -4,31 +4,27 @@ Configure the **Google Apps Script** backend and **MacroDroid** for study links.
 
 ## Study material menu (unbound)
 
-Former Study Material entry on `#!+x` was removed. That chord now opens **Memory Palace** (same as Utility Shortcuts `[N]`).
+Former Study Material entry on `#!+x` was removed. **`#!+X` opens Import Management** (same as Utility Shortcuts `[J]`). Memory Palace opens via Utility Shortcuts **`[N]`** or **`#!+D` hold** (web app `http://127.0.0.1:8767/`).
 Mnemonics / Plans / Technique GUI code remains in `peek_pdf_study_*.ahk` but has no dedicated hotkey.
-Study link manage GUIs are opened from Memory Palace (below).
+Study link manage UI lives in the Memory Palace web app (**Links** view).
 
 ## Memory Palace quick links (PC)
 
-Open via **Win+Alt+Shift+X**, or **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N). Keys **1–3** on the main menu:
+Open via **Utility Shortcuts → [N] Memory Palace** (`#!+U`, then N), or hold **`#!+D`**. In the web app, open **Links** (nav **1**):
 
-| Key | Module           | Action                                                                                                  |
-| --- | ---------------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | YouTube subtopic | Manage Study Video → inner `1` open / `2` automate (Share) / `3` manual InputBox → `StudyLink_Set`      |
-| 2   | Article link     | Manage Study Article → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set`  |
-| 3   | Favorite link    | Manage Study Favorite → inner `1` open / `2` Chrome address bar / `3` manual InputBox → `StudyLink_Set` |
+| Key              | Module           | Action                                   |
+| ---------------- | ---------------- | ---------------------------------------- |
+| Links → video    | YouTube subtopic | Open / set video URL via Apps Script API |
+| Links → article  | Article link     | Open / set article URL                   |
+| Links → favorite | Favorite link    | Open / set favorite URL                  |
 
 ## API keys (same web app URL)
 
-| Key | Module | Sheet | PC entry |
-
-| ------------------- | ------------- | ----- | ------------------------- |
-
-| `subtopic` | 1 — YouTube | A1 | Memory Palace `[1]` |
-
-| `subtopic_article` | 2 — Article | A2 | Memory Palace `[2]` |
-
-| `subtopic_favorite` | 3 — Favorite | A3 | Memory Palace `[3]` |
+| Key                 | Module   | Sheet | PC entry                       |
+| ------------------- | -------- | ----- | ------------------------------ |
+| `subtopic`          | Video    | A1    | Memory Palace Links → video    |
+| `subtopic_article`  | Article  | A2    | Memory Palace Links → article  |
+| `subtopic_favorite` | Favorite | A3    | Memory Palace Links → favorite |
 
 **Endpoint** (`STUDY_LINKS_API_URL` in `StudyLinkHelpers.ahk`):
 
@@ -226,7 +222,7 @@ Study Topic → **`[6] Technique`** opens the technique README on GitHub in a ne
 
 2. Run [`infra/tools/TestStudyLinkApi.ahk`](../infra/tools/TestStudyLinkApi.ahk) — YouTube, article, and favorite SET/GET.
 
-3. Manual: Memory Palace `[1]`–`[3]` inner 1–2 each (open via `#!+x` or Utility Shortcuts `[N]`).
+3. Manual: Memory Palace web **Links** (open via Utility Shortcuts `[N]` or hold `#!+D`).
 
 4. Phone: Set then Get for each link type after Apps Script redeploy.
 

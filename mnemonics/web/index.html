@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Memory Palace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/dashboard.css" />
+    <style>
+      /* Secondary app chrome — does not override Practice/Plans dashboard look */
+      .app-more {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        padding: 0.55rem 1.5rem;
+        border-bottom: 1px solid var(--line);
+        background: rgba(18, 20, 26, 0.65);
+      }
+      .app-more button {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.35rem 0.7rem;
+        font: inherit;
+        font-size: 0.88rem;
+        cursor: pointer;
+      }
+      .app-more button:hover,
+      .app-more button.active {
+        color: var(--gold);
+        border-color: var(--gold);
+      }
+      #btnPractice {
+        background: transparent;
+        color: var(--gold);
+        border: 1px solid var(--gold);
+        border-radius: 6px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.95rem;
+        font-weight: 650;
+        cursor: pointer;
+        height: 2.35rem;
+      }
+      #btnPractice:hover,
+      #btnPractice.active {
+        background: var(--gold);
+        color: #1a1408;
+      }
+      #appExtra {
+        padding: 1.25rem 1.5rem 2.5rem;
+      }
+      #appExtra.hidden {
+        display: none !important;
+      }
+      .spa-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.85rem;
+      }
+      .spa-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.65rem;
+      }
+      .spa-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+      .spa-table th,
+      .spa-table td {
+        text-align: left;
+        padding: 0.45rem 0.4rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .spa-table th {
+        color: var(--muted);
+      }
+      .spa-table tr:hover td {
+        background: #242830;
+      }
+      .spa-btn {
+        background: #242830;
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 0.35rem 0.65rem;
+        font: inherit;
+        cursor: pointer;
+      }
+      .spa-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .spa-btn.danger:hover {
+        border-color: #e07070;
+        color: #e07070;
+      }
+      .crumb {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.65rem;
+      }
+      .crumb b {
+        color: var(--gold);
+      }
+      #toast {
+        position: fixed;
+        bottom: 1.1rem;
+        right: 1.1rem;
+        background: #252830;
+        border: 1px solid var(--gold);
+        padding: 0.65rem 0.9rem;
+        border-radius: 8px;
+        display: none;
+        z-index: 3000;
+        max-width: 380px;
+        color: var(--text);
+      }
+      #methodPanel {
+        padding: 1rem 1.5rem 2.5rem;
+      }
+      #methodPanel .method-body {
+        white-space: pre-wrap;
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        max-height: 75vh;
+        overflow: auto;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1rem;
+      }
+      kbd {
+        font: inherit;
+        font-size: 0.78rem;
+        color: var(--gold);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0 0.3rem;
+        background: #1a1e28;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Memory Palace</h1>
+        <p class="sub" id="stats">Loading…</p>
+      </div>
+      <div class="controls">
+        <div>
+          <label for="study">Study</label>
+          <select id="study"></select>
+        </div>
+        <button type="button" id="btnLatest">Latest palace</button>
+        <button type="button" id="btnPractice" class="active" title="Practice (Esc)">Practice</button>
+        <button type="button" id="btnPlans" title="Study plans (L)">Plans</button>
+        <button type="button" id="btnMethod" title="Method docs (M)">Method</button>
+        <div>
+          <label for="atomSearch">Search Knowledge Atoms</label>
+          <input type="search" id="atomSearch" placeholder="Beast, concept, quote, story…" autocomplete="off" />
+        </div>
+      </div>
+    </header>
+    <div id="searchResults" aria-live="polite"></div>
+    <div class="app-more" id="appMore">
+      <button type="button" data-view="browse"><kbd>B</kbd> Browse</button>
+      <button type="button" data-view="links"><kbd>1</kbd> Links</button>
+      <button type="button" data-view="tools"><kbd>T</kbd> Tools</button>
+      <button type="button" data-view="help">Help</button>
+      <span style="color:var(--muted);font-size:0.82rem;align-self:center;margin-left:0.35rem">
+        Pack import: Utility <kbd>J</kbd> / <kbd>#!+X</kbd> · Push: Utility <kbd>G</kbd>
+      </span>
+    </div>
+
+    <main id="practicePanel"></main>
+
+    <div id="plansPanel" class="hidden" aria-hidden="true">
+      <div class="plans-layout" id="plansLayout">
+        <nav class="plans-toc" id="plansToc" aria-label="Plan sections">
+          <div class="plans-toc-head">
+            <h2>Sections</h2>
+            <button type="button" id="btnPlansTocToggle" class="btn-plans-toc-toggle" title="Collapse sections" aria-expanded="true" aria-controls="plansTocList">◀</button>
+          </div>
+          <ul id="plansTocList"></ul>
+        </nav>
+        <div class="plans-main">
+          <div class="plans-header">
+            <div>
+              <h2 id="plansTitle">Study Plan</h2>
+              <p class="plans-sub" id="plansSub"></p>
+            </div>
+            <div class="plans-header-actions">
+              <a id="plansGithub" class="plans-github" href="#" target="_blank" rel="noopener">Plans on GitHub</a>
+              <button type="button" id="btnPlansSave" class="btn-plans-save">Save</button>
+              <button type="button" id="btnPlansReset" class="btn-plans-reset">Reset to file</button>
+            </div>
+          </div>
+          <p class="plans-save-status" id="plansSaveStatus" aria-live="polite"></p>
+          <div class="plans-progress-wrap">
+            <div class="plans-progress-bar" id="plansProgressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+            <span class="plans-progress-label" id="plansProgressLabel">0 / 0 complete</span>
+          </div>
+          <div id="plansContent" class="plans-content"></div>
+          <p class="plans-empty hidden" id="plansEmpty">No study plan for this topic.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="methodPanel" class="hidden" aria-hidden="true">
+      <h2 style="color:var(--gold);margin-top:0">Method</h2>
+      <div class="method-body" id="methodBody">Loading…</div>
+    </div>
+
+    <div id="appExtra" class="hidden" aria-hidden="true"></div>
+
+    <div id="overlay" aria-hidden="true">
+      <div class="overlay-bar">
+        <div>
+          <h2 id="ovTitle">Memory Palace</h2>
+          <p class="count" id="ovCount"></p>
+        </div>
+        <div class="overlay-nav">
+          <button type="button" id="btnPrevPalace" title="Older palace (←)">← Older</button>
+          <span class="nav-pos" id="ovNavPos"></span>
+          <button type="button" id="btnNextPalace" title="Newer palace (→)">Newer →</button>
+          <button type="button" id="btnCopyPrompt" title="Copy image prompt (C)" disabled>Copy prompt</button>
+          <button type="button" id="btnClose">Close</button>
+        </div>
+      </div>
+      <div class="overlay-body">
+        <div class="overlay-image" id="ovImage"></div>
+        <div class="practice">
+          <h3>Practice — Knowledge Atoms</h3>
+          <div id="ovAtoms"></div>
+        </div>
+        <div class="overlay-prompt" id="ovPrompt"></div>
+        <div class="overlay-notes" id="ovNotes">
+          <h3>Notes</h3>
+          <textarea id="ovNotesInput" placeholder="Palace notes for recall, links, reminders…"></textarea>
+          <div class="notes-toolbar">
+            <button type="button" class="btn-notes-save" id="btnNotesSave">Save notes</button>
+            <span class="notes-status" id="ovNotesStatus"></span>
+          </div>
+        </div>
+        <div class="overlay-gallery" id="ovGallery">
+          <h3>Gallery</h3>
+          <div class="gallery-toolbar">
+            <button type="button" class="btn-gallery" id="btnGalleryAdd">Add image</button>
+            <span class="gallery-status" id="ovGalleryStatus"></span>
+          </div>
+          <input type="file" id="galleryFileInput" accept="image/*" />
+          <div class="gallery-grid" id="ovGalleryGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+      const state = {
+        data: null,
+        view: "practice",
+        studyId: "",
+        browse: { studyId: "", palaceId: "", beastId: "" },
+        overlayPalaceId: "",
+        notesTimer: null,
+        planCheckSnapshot: null,
+      };
+
+      async function api(path, opts = {}) {
+        const res = await fetch(path, {
+          headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+          ...opts,
+        });
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); } catch { throw new Error(text.slice(0, 200)); }
+        if (!res.ok && json && json.ok === false) throw new Error(json.error || res.statusText);
+        return json;
+      }
+
+      function toast(msg, ms = 2200) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.style.display = "block";
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => (el.style.display = "none"), ms);
+      }
+
+      function esc(s) {
+        return String(s ?? "").replace(/[&<>"']/g, (c) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+      function escAttr(s) { return esc(s).replace(/\n/g, " "); }
+      function dash(s) { const t = String(s ?? "").trim(); return t ? esc(t) : "—"; }
+
+      function mediaUrl(rel) {
+        if (!rel) return "";
+        const n = String(rel).replace(/\\/g, "/");
+        if (n.startsWith("http") || n.startsWith("file:")) return n;
+        if (n.startsWith("practice/")) return "/media/" + n;
+        return "/media/" + n;
+      }
+
+      function studies() { return state.data?.studies || []; }
+      function palaces(sid) {
+        return (state.data?.palaces || [])
+          .filter((p) => !sid || p.study_id === sid)
+          .sort((a, b) => Number(b.palace_number || 0) - Number(a.palace_number || 0));
+      }
+      function beasts(pid) {
+        return (state.data?.beasts || [])
+          .filter((b) => b.palace_id === pid)
+          .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      }
+      function atoms(bid) {
+        return (state.data?.atoms || [])
+          .filter((a) => a.beast_id === bid)
+          .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      }
+      function gallery(pid) {
+        return (state.data?.palace_images || [])
+          .filter((g) => g.palace_id === pid)
+          .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      }
+      function studyById(id) { return studies().find((s) => s.id === id); }
+      function palaceById(id) { return (state.data?.palaces || []).find((p) => p.id === id); }
+
+      function fillStudySelect() {
+        const sel = document.getElementById("study");
+        const list = studies();
+        if (!state.studyId || !list.some((s) => s.id === state.studyId)) {
+          state.studyId = (list[0] && list[0].id) || "";
+        }
+        sel.innerHTML = list.map((s) =>
+          `<option value="${escAttr(s.id)}" ${s.id === state.studyId ? "selected" : ""}>${esc(s.title)}</option>`
+        ).join("");
+      }
+
+      function setChromeActive() {
+        document.getElementById("btnPractice").classList.toggle("active", state.view === "practice");
+        document.getElementById("btnPlans").classList.toggle("active", state.view === "plans");
+        document.getElementById("btnMethod").classList.toggle("active", state.view === "method");
+        document.querySelectorAll("#appMore [data-view]").forEach((b) => {
+          b.classList.toggle("active", b.dataset.view === state.view);
+        });
+      }
+
+      function showPanel(name) {
+        const panels = {
+          practice: document.getElementById("practicePanel"),
+          plans: document.getElementById("plansPanel"),
+          method: document.getElementById("methodPanel"),
+          extra: document.getElementById("appExtra"),
+        };
+        Object.entries(panels).forEach(([k, el]) => {
+          const on = (name === "practice" && k === "practice")
+            || (name === "plans" && k === "plans")
+            || (name === "method" && k === "method")
+            || (["browse", "links", "tools", "help"].includes(name) && k === "extra");
+          el.classList.toggle("hidden", !on);
+          el.setAttribute("aria-hidden", on ? "false" : "true");
+        });
+      }
+
+      function setView(v) {
+        state.view = v;
+        setChromeActive();
+        showPanel(v);
+        render();
+      }
+
+      async function refresh() {
+        state.data = await api("/api/state");
+        document.getElementById("stats").textContent =
+          `${state.data.studies.length} studies · ${state.data.palaces.length} Memory Palaces · `
+          + `${state.data.beasts.length} beasts · ${state.data.atoms.length} Knowledge Atoms`;
+        fillStudySelect();
+        const gh = state.data.meta?.plans_github || "#";
+        document.getElementById("plansGithub").href = gh;
+        render();
+      }
+
+      function render() {
+        if (!state.data) return;
+        setChromeActive();
+        showPanel(state.view);
+        if (state.view === "practice") renderPractice();
+        else if (state.view === "plans") renderPlans();
+        else if (state.view === "method") renderMethod();
+        else if (state.view === "browse") renderBrowse(document.getElementById("appExtra"));
+        else if (state.view === "links") renderLinks(document.getElementById("appExtra"));
+        else if (state.view === "tools") renderTools(document.getElementById("appExtra"));
+        else if (state.view === "help") renderHelp(document.getElementById("appExtra"));
+      }
+
+      /* ---------- Practice (dashboard aesthetic) ---------- */
+      function renderPromptBlock(prompt, id) {
+        const t = (prompt || "").toString().trim();
+        if (!t) return '<p class="prompt-empty">No image prompt saved.</p>';
+        return '<div class="prompt-block"><div class="prompt-head"><span>Image prompt</span>'
+          + `<button type="button" class="btn-copy" data-copy-id="${escAttr(id)}">Copy prompt</button></div>`
+          + `<pre class="prompt-text">${esc(prompt)}</pre></div>`;
+      }
+
+      function renderPractice() {
+        const sid = state.studyId;
+        const st = studyById(sid);
+        const list = palaces(sid);
+        const root = document.getElementById("practicePanel");
+        let grid = list.map((p) => {
+          const nb = beasts(p.id).length;
+          const na = beasts(p.id).reduce((n, b) => n + atoms(b.id).length, 0);
+          const src = mediaUrl(p.image_rel_path);
+          const img = src
+            ? `<img src="${escAttr(src)}" alt="Memory Palace ${escAttr(p.palace_number)}" loading="lazy"/>`
+            : `<div class="missing">No image</div>`;
+          return `<article class="palace" data-palace-id="${escAttr(p.id)}" tabindex="0" role="button">
+            ${img}
+            <div class="meta">
+              <h3>Memory Palace ${esc(p.palace_number)}: ${esc(p.title)}</h3>
+              <p class="char">${esc(p.character_name || "")}</p>
+              <p class="counts">${nb} beasts · ${na} Knowledge Atoms</p>
+              ${renderPromptBlock(p.image_prompt, p.id)}
+            </div>
+          </article>`;
+        }).join("");
+        if (!grid) grid = `<p class="empty">No Memory Palaces in this study.</p>`;
+        root.innerHTML = `
+          <section class="study">
+            <header class="study-head">
+              <h2>${esc(st?.title || sid || "Study")}</h2>
+              <p>${list.length} Memory Palace${list.length === 1 ? "" : "s"} · newest first</p>
+            </header>
+            <div class="grid">${grid}</div>
+          </section>`;
+        root.querySelectorAll(".palace").forEach((el) => {
+          const open = () => openPalace(el.dataset.palaceId);
+          el.onclick = open;
+          el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
+        });
+        root.querySelectorAll(".btn-copy").forEach((btn) => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const p = palaceById(btn.dataset.copyId);
+            copyPrompt(p?.image_prompt || "", btn);
+          };
+        });
+      }
+
+      async function copyPrompt(text, btn) {
+        try {
+          await navigator.clipboard.writeText(text || "");
+          if (btn) { const o = btn.textContent; btn.textContent = "Copied"; setTimeout(() => btn.textContent = o, 1200); }
+          else toast("Prompt copied");
+        } catch { toast("Copy failed"); }
+      }
+
+      function formatSensory(s) {
+        const t = String(s || "").trim();
+        return t ? esc(t) : "—";
+      }
+      function formatConcept(c) {
+        const t = String(c || "").trim();
+        return t ? `<span class="emoji" aria-hidden="true">💡</span> ${esc(t)}` : "—";
+      }
+      function formatQuote(q) {
+        const t = String(q || "").trim();
+        return t ? esc(t) : "—";
+      }
+
+      function sensoryChipHtml(sensory) {
+        return '<p class="sensory-chip"><span class="lbl">Sensory</span>' + formatSensory(sensory) + "</p>";
+      }
+
+      function renderAtomCard(a, sensoryOnCard = true) {
+        const zone = (a.zone || a.zone_label)
+          ? `<p class="zone-tag"><span class="emoji" aria-hidden="true">🟦</span> ${dash(a.zone)}${a.zone_label ? " · " + dash(a.zone_label) : ""}</p>`
+          : "";
+        const sensory = sensoryOnCard ? sensoryChipHtml(a.sensory_channel || a.sensory) : "";
+        const head = (zone || sensory) ? `<div class="atom-card-head">${zone}${sensory}</div>` : "";
+        return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
+          <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept)}</p>
+          <p class="field"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
+          <p class="field"><span class="lbl">Story</span>${dash(a.story)}</p>
+        </article>`;
+      }
+
+      function renderPalaceAtoms(palaceId) {
+        const blist = beasts(palaceId);
+        if (!blist.length) return '<p class="empty">No Knowledge Atoms on this Memory Palace.</p>';
+        const maxCols = 6;
+        return blist.map((b) => {
+          const ats = atoms(b.id);
+          const n = Math.max(ats.length, 1);
+          const span = Math.min(n, maxCols);
+          const innerCols = Math.min(n, maxCols);
+          const sensoryOnBeast = ats.length === 1;
+          const headSensory = sensoryOnBeast
+            ? sensoryChipHtml(ats[0].sensory_channel || b.sensory_channel)
+            : sensoryChipHtml(b.sensory_channel);
+          const cards = ats.map((a) => renderAtomCard(a, !sensoryOnBeast)).join("")
+            || '<p class="empty">No atoms</p>';
+          return `<section class="beast-cluster" style="grid-column: span ${span}; --beast-cols: ${innerCols}">
+            <header class="beast-cluster-head">
+              <span class="lbl">Beast</span>
+              <div class="beast-head-row">
+                <p class="beast-name"><span class="emoji" aria-hidden="true">🟧</span> ${dash(b.beast_name || b.peg_code)}</p>
+                ${headSensory}
+              </div>
+            </header>
+            <div class="beast-cluster-atoms">${cards}</div>
+          </section>`;
+        }).join("");
+      }
+
+      function openPalace(id) {
+        const p = palaceById(id);
+        if (!p) return;
+        state.overlayPalaceId = id;
+        const list = palaces(p.study_id);
+        const idx = list.findIndex((x) => x.id === id);
+        const overlay = document.getElementById("overlay");
+        document.getElementById("ovTitle").textContent = `Memory Palace ${p.palace_number}: ${p.title}`;
+        const nAtoms = beasts(id).reduce((n, b) => n + atoms(b.id).length, 0);
+        document.getElementById("ovCount").textContent =
+          `${nAtoms} Knowledge Atom${nAtoms === 1 ? "" : "s"}`
+          + (p.character_name ? ` · Character: ${p.character_name}` : "");
+        const src = mediaUrl(p.image_rel_path);
+        document.getElementById("ovImage").innerHTML = src
+          ? `<img src="${escAttr(src)}" alt="Memory Palace ${escAttr(p.palace_number)}"/>`
+          : `<div class="missing-lg">No image</div>`;
+        document.getElementById("ovPrompt").innerHTML = renderPromptBlock(p.image_prompt, p.id);
+        document.getElementById("ovPrompt").querySelectorAll(".btn-copy").forEach((btn) => {
+          btn.onclick = () => copyPrompt(p.image_prompt, btn);
+        });
+        const btnCopy = document.getElementById("btnCopyPrompt");
+        const hasPrompt = !!(p.image_prompt || "").trim();
+        btnCopy.disabled = !hasPrompt;
+        btnCopy.onclick = () => copyPrompt(p.image_prompt, btnCopy);
+        document.getElementById("ovAtoms").innerHTML = renderPalaceAtoms(id);
+        document.getElementById("ovNotesInput").value = p.palace_notes || "";
+        setNotesStatus("", "");
+        renderGalleryGrid(id);
+        document.getElementById("btnPrevPalace").disabled = idx <= 0;
+        document.getElementById("btnNextPalace").disabled = idx < 0 || idx >= list.length - 1;
+        document.getElementById("ovNavPos").textContent = list.length ? `${idx + 1} / ${list.length}` : "";
+        document.getElementById("btnPrevPalace").onclick = () => { if (idx > 0) openPalace(list[idx - 1].id); };
+        document.getElementById("btnNextPalace").onclick = () => { if (idx < list.length - 1) openPalace(list[idx + 1].id); };
+        overlay.classList.add("open");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeOverlay() {
+        document.getElementById("overlay").classList.remove("open");
+        document.getElementById("overlay").setAttribute("aria-hidden", "true");
+        state.overlayPalaceId = "";
+      }
+
+      function setNotesStatus(msg, cls) {
+        const el = document.getElementById("ovNotesStatus");
+        el.textContent = msg;
+        el.className = "notes-status" + (cls ? " " + cls : "");
+      }
+
+      async function saveNotes() {
+        const pid = state.overlayPalaceId;
+        if (!pid) return;
+        const notes = document.getElementById("ovNotesInput").value;
+        setNotesStatus("Saving…", "");
+        try {
+          const r = await api("/api/palace/notes", { method: "POST", body: JSON.stringify({ palace_id: pid, notes }) });
+          if (!r.ok) throw new Error(r.error || "fail");
+          setNotesStatus("Saved", "ok");
+          await refresh();
+          if (state.overlayPalaceId === pid) {
+            /* keep overlay open; re-bind notes value already current */
+          }
+        } catch (e) {
+          setNotesStatus(String(e.message || e), "err");
+        }
+      }
+
+      function renderGalleryGrid(palaceId) {
+        const grid = document.getElementById("ovGalleryGrid");
+        const imgs = gallery(palaceId);
+        if (!imgs.length) {
+          grid.innerHTML = '<p class="gallery-empty">No gallery images yet.</p>';
+          return;
+        }
+        grid.innerHTML = imgs.map((g) => {
+          const src = mediaUrl(g.image_rel_path || g.rel_path);
+          return `<div class="gallery-card">
+            ${src ? `<img src="${escAttr(src)}" alt=""/>` : `<div class="gallery-missing">Missing</div>`}
+            <div class="gallery-card-body">
+              <input type="text" value="${escAttr(g.caption || "")}" data-gid="${escAttr(g.id)}" readonly />
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      /* ---------- Plans (dashboard aesthetic) ---------- */
+      function activePlan(sid) {
+        return (state.data.plans || []).find((p) => p.study_id === sid && p.active !== "0")
+          || (state.data.plans || []).find((p) => p.study_id === sid);
+      }
+
+      function planItems(planId) {
+        return (state.data.plan_items || [])
+          .filter((i) => i.plan_id === planId)
+          .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      }
+
+      function updatePlansProgress(items) {
+        const total = items.length;
+        const done = items.filter((i) => i.checked === "1").length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const bar = document.getElementById("plansProgressBar");
+        bar.style.setProperty("--pct", pct + "%");
+        bar.setAttribute("aria-valuenow", String(pct));
+        document.getElementById("plansProgressLabel").textContent = `${done} / ${total} complete`;
+      }
+
+      function renderPlans() {
+        const sid = state.studyId;
+        const st = studyById(sid);
+        const plan = activePlan(sid);
+        const empty = document.getElementById("plansEmpty");
+        const content = document.getElementById("plansContent");
+        const toc = document.getElementById("plansTocList");
+        document.getElementById("plansTitle").textContent = plan?.title || "Study Plan";
+        document.getElementById("plansSub").textContent = st ? `${st.title}` : sid;
+        if (!plan) {
+          empty.classList.remove("hidden");
+          content.innerHTML = "";
+          toc.innerHTML = "";
+          updatePlansProgress([]);
+          return;
+        }
+        empty.classList.add("hidden");
+        const items = planItems(plan.id);
+        state.planCheckSnapshot = items.map((i) => ({ id: i.id, checked: i.checked === "1" }));
+        const bySec = {};
+        items.forEach((i) => {
+          const sec = i.section_path || "Backlog";
+          (bySec[sec] ||= []).push(i);
+        });
+        const sections = Object.keys(bySec).sort((a, b) => {
+          if (a === "Backlog") return -1;
+          if (b === "Backlog") return 1;
+          return a.localeCompare(b);
+        });
+        toc.innerHTML = sections.map((sec, idx) => {
+          const id = `plan-sec-${idx}`;
+          return `<li class="toc-level-2"><div class="toc-row">
+            <span class="toc-twist leaf">▸</span>
+            <a class="toc-link" href="#${id}">${esc(sec)}</a>
+          </div></li>`;
+        }).join("");
+        let html = "";
+        sections.forEach((sec, idx) => {
+          const id = `plan-sec-${idx}`;
+          const isBacklog = sec === "Backlog";
+          if (isBacklog) {
+            html += `<div class="plans-backlog" id="${id}"><h3>Backlog</h3><ul class="plan-todos">`;
+            bySec[sec].forEach((it) => {
+              const done = it.checked === "1";
+              html += `<li class="plan-todo${done ? " done" : ""}">
+                <input type="checkbox" data-iid="${escAttr(it.id)}" ${done ? "checked" : ""} id="cb-${escAttr(it.id)}"/>
+                <label for="cb-${escAttr(it.id)}">${esc(it.text)}</label>
+              </li>`;
+            });
+            html += `</ul>
+              <div class="plans-backlog-add">
+                <input type="text" id="backlogInput" placeholder="Add backlog item…"/>
+                <button type="button" id="btnBacklogAdd">Add</button>
+              </div>
+            </div>`;
+          } else {
+            html += `<section class="plan-section level-2" id="${id}"><h3>${esc(sec)}</h3><ul class="plan-todos">`;
+            bySec[sec].forEach((it) => {
+              const done = it.checked === "1";
+              html += `<li class="plan-todo${done ? " done" : ""}">
+                <input type="checkbox" data-iid="${escAttr(it.id)}" ${done ? "checked" : ""} id="cb-${escAttr(it.id)}"/>
+                <label for="cb-${escAttr(it.id)}">${esc(it.text)}</label>
+              </li>`;
+            });
+            html += `</ul></section>`;
+          }
+        });
+        content.innerHTML = html || '<p class="empty">No plan items.</p>';
+        updatePlansProgress(items);
+        content.querySelectorAll('input[type="checkbox"][data-iid]').forEach((cb) => {
+          cb.onchange = () => {
+            const li = cb.closest(".plan-todo");
+            if (li) li.classList.toggle("done", cb.checked);
+            const live = [...content.querySelectorAll('input[data-iid]')].map((x) => ({
+              id: x.dataset.iid, checked: x.checked ? "1" : "0",
+            }));
+            updatePlansProgress(live.map((x) => ({ checked: x.checked })));
+          };
+        });
+        const addBtn = document.getElementById("btnBacklogAdd");
+        if (addBtn) {
+          addBtn.onclick = async () => {
+            const inp = document.getElementById("backlogInput");
+            const text = (inp?.value || "").trim();
+            if (!text) return;
+            const r = await api("/api/plan_items", {
+              method: "POST",
+              body: JSON.stringify({ plan_id: plan.id, text, section_path: "Backlog" }),
+            });
+            if (!r.ok) toast(r.error || "fail");
+            else { toast("Item added"); await refresh(); }
+          };
+        }
+      }
+
+      async function savePlanProgress() {
+        const sid = state.studyId;
+        const status = document.getElementById("plansSaveStatus");
+        const todos = [...document.querySelectorAll("#plansContent input[data-iid]")].map((cb) => ({
+          id: cb.dataset.iid,
+          checked: !!cb.checked,
+        }));
+        status.textContent = "Saving…";
+        status.className = "plans-save-status";
+        document.getElementById("btnPlansSave").disabled = true;
+        try {
+          const r = await api("/api/plans/save", { method: "POST", body: JSON.stringify({ study_id: sid, todos }) });
+          if (!r.ok) throw new Error(r.error || "fail");
+          status.textContent = "Saved";
+          status.className = "plans-save-status ok";
+          await refresh();
+        } catch (e) {
+          status.textContent = String(e.message || e);
+          status.className = "plans-save-status err";
+        } finally {
+          document.getElementById("btnPlansSave").disabled = false;
+        }
+      }
+
+      function resetPlanCheckboxes() {
+        if (!state.planCheckSnapshot) return;
+        const map = Object.fromEntries(state.planCheckSnapshot.map((x) => [x.id, x.checked]));
+        document.querySelectorAll("#plansContent input[data-iid]").forEach((cb) => {
+          cb.checked = !!map[cb.dataset.iid];
+          cb.closest(".plan-todo")?.classList.toggle("done", cb.checked);
+        });
+        updatePlansProgress(state.planCheckSnapshot.map((x) => ({ checked: x.checked ? "1" : "0" })));
+        document.getElementById("plansSaveStatus").textContent = "Reset to last loaded state";
+        document.getElementById("plansSaveStatus").className = "plans-save-status";
+      }
+
+      async function renderMethod() {
+        const body = document.getElementById("methodBody");
+        body.textContent = "Loading…";
+        try {
+          const r = await api("/api/method");
+          body.textContent = r.markdown || "(empty)";
+        } catch (e) {
+          body.textContent = String(e.message || e);
+        }
+      }
+
+      /* ---------- Browse / Links / Tools / Help (secondary) ---------- */
+      function renderBrowse(root) {
+        const b = state.browse;
+        let crumb = `<div class="crumb"><b>Browse</b>`;
+        if (b.studyId) crumb += ` › ${esc(studyById(b.studyId)?.title || b.studyId)}`;
+        if (b.palaceId) crumb += ` › ${esc(palaceById(b.palaceId)?.title || b.palaceId)}`;
+        if (b.beastId) crumb += ` › beast`;
+        crumb += `</div>`;
+
+        if (!b.studyId) {
+          root.innerHTML = crumb + `
+            <div class="spa-row"><button class="spa-btn" id="addStudy">Add study</button>
+              <button class="spa-btn" id="up">Back to Practice</button></div>
+            <div class="spa-panel"><table class="spa-table"><thead><tr><th>Title</th><th>Id</th><th>Active</th><th></th></tr></thead>
+            <tbody>${studies().map((s) => `<tr data-id="${escAttr(s.id)}"><td>${esc(s.title)}</td><td>${esc(s.id)}</td><td>${esc(s.active)}</td>
+              <td><button class="spa-btn" data-open="${escAttr(s.id)}">Open</button>
+              <button class="spa-btn" data-edit="${escAttr(s.id)}">Edit</button>
+              <button class="spa-btn danger" data-del="${escAttr(s.id)}">Del</button></td></tr>`).join("")}</tbody></table></div>`;
+          root.querySelector("#up").onclick = () => setView("practice");
+          root.querySelector("#addStudy").onclick = () => editStudy(null);
+          root.querySelectorAll("[data-open]").forEach((btn) => btn.onclick = () => { state.browse.studyId = btn.dataset.open; render(); });
+          root.querySelectorAll("[data-edit]").forEach((btn) => btn.onclick = () => editStudy(studyById(btn.dataset.edit)));
+          root.querySelectorAll("[data-del]").forEach((btn) => btn.onclick = async () => {
+            if (!confirm("Delete study?")) return;
+            await api(`/api/studies/${btn.dataset.del}`, { method: "DELETE" });
+            await refresh();
+          });
+          return;
+        }
+        if (!b.palaceId) {
+          const list = palaces(b.studyId).slice().sort((a, c) => Number(a.palace_number || 0) - Number(c.palace_number || 0));
+          root.innerHTML = crumb + `
+            <div class="spa-row"><button class="spa-btn" id="up">Up</button>
+              <button class="spa-btn" id="addP">Add palace</button>
+              <button class="spa-btn" id="toPlans">Plans</button></div>
+            <div class="spa-panel"><table class="spa-table"><thead><tr><th>#</th><th>Title</th><th>Character</th><th></th></tr></thead>
+            <tbody>${list.map((p) => `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
+              <td><button class="spa-btn" data-open="${escAttr(p.id)}">Open</button>
+              <button class="spa-btn" data-edit="${escAttr(p.id)}">Edit</button>
+              <button class="spa-btn danger" data-del="${escAttr(p.id)}">Del</button></td></tr>`).join("")}</tbody></table></div>`;
+          root.querySelector("#up").onclick = () => { state.browse.studyId = ""; render(); };
+          root.querySelector("#toPlans").onclick = () => { state.studyId = b.studyId; setView("plans"); };
+          root.querySelector("#addP").onclick = () => editPalace(null, b.studyId);
+          root.querySelectorAll("[data-open]").forEach((btn) => btn.onclick = () => { state.browse.palaceId = btn.dataset.open; render(); });
+          root.querySelectorAll("[data-edit]").forEach((btn) => btn.onclick = () => editPalace(palaceById(btn.dataset.edit), b.studyId));
+          root.querySelectorAll("[data-del]").forEach((btn) => btn.onclick = async () => {
+            if (!confirm("Delete palace?")) return;
+            await api(`/api/palaces/${btn.dataset.del}`, { method: "DELETE" });
+            await refresh();
+          });
+          return;
+        }
+        if (!b.beastId) {
+          const list = beasts(b.palaceId);
+          root.innerHTML = crumb + `
+            <div class="spa-row"><button class="spa-btn" id="up">Up</button>
+              <button class="spa-btn" id="addB">Add beast</button>
+              <button class="spa-btn" id="practice">Practice overlay</button></div>
+            <div class="spa-panel"><table class="spa-table"><thead><tr><th>Peg</th><th>Name</th><th>Sensory</th><th></th></tr></thead>
+            <tbody>${list.map((x) => `<tr><td>${esc(x.peg_code)}</td><td>${esc(x.beast_name)}</td><td>${esc(x.sensory_channel)}</td>
+              <td><button class="spa-btn" data-open="${escAttr(x.id)}">Atoms</button>
+              <button class="spa-btn" data-edit="${escAttr(x.id)}">Edit</button>
+              <button class="spa-btn danger" data-del="${escAttr(x.id)}">Del</button></td></tr>`).join("")}</tbody></table></div>`;
+          root.querySelector("#up").onclick = () => { state.browse.palaceId = ""; render(); };
+          root.querySelector("#practice").onclick = () => openPalace(b.palaceId);
+          root.querySelector("#addB").onclick = () => editBeast(null, b.palaceId);
+          root.querySelectorAll("[data-open]").forEach((btn) => btn.onclick = () => { state.browse.beastId = btn.dataset.open; render(); });
+          root.querySelectorAll("[data-edit]").forEach((btn) => btn.onclick = () => editBeast(beasts(b.palaceId).find((x) => x.id === btn.dataset.edit), b.palaceId));
+          root.querySelectorAll("[data-del]").forEach((btn) => btn.onclick = async () => {
+            if (!confirm("Delete beast?")) return;
+            await api(`/api/beasts/${btn.dataset.del}`, { method: "DELETE" });
+            await refresh();
+          });
+          return;
+        }
+        const list = atoms(b.beastId);
+        root.innerHTML = crumb + `
+          <div class="spa-row"><button class="spa-btn" id="up">Up</button>
+            <button class="spa-btn" id="addA">Add atom</button></div>
+          <div class="spa-panel"><table class="spa-table"><thead><tr><th>Kind</th><th>Zone</th><th>Concept</th><th></th></tr></thead>
+          <tbody>${list.map((a) => `<tr><td>${esc(a.kind)}</td><td>${esc(a.zone)}</td><td>${esc(a.concept)}</td>
+            <td><button class="spa-btn" data-edit="${escAttr(a.id)}">Edit</button>
+            <button class="spa-btn danger" data-del="${escAttr(a.id)}">Del</button></td></tr>`).join("")}</tbody></table></div>`;
+        root.querySelector("#up").onclick = () => { state.browse.beastId = ""; render(); };
+        root.querySelector("#addA").onclick = () => editAtom(null, b.beastId);
+        root.querySelectorAll("[data-edit]").forEach((btn) => btn.onclick = () => editAtom(list.find((a) => a.id === btn.dataset.edit), b.beastId));
+        root.querySelectorAll("[data-del]").forEach((btn) => btn.onclick = async () => {
+          if (!confirm("Delete atom?")) return;
+          await api(`/api/atoms/${btn.dataset.del}`, { method: "DELETE" });
+          await refresh();
+        });
+      }
+
+      function editStudy(s) {
+        const title = prompt("Title", s?.title || "");
+        if (title == null || !String(title).trim()) return;
+        const notes_rel_path = prompt("notes_rel_path", s?.notes_rel_path || String(title).toLowerCase().replace(/\s+/g, "-")) || "";
+        const body = { title: String(title).trim(), notes_rel_path, active: s?.active || "1" };
+        if (s?.id) body.id = s.id;
+        api("/api/studies", { method: "POST", body: JSON.stringify(body) })
+          .then(() => refresh()).catch((e) => toast(String(e.message || e)));
+      }
+      function editPalace(p, studyId) {
+        const title = prompt("Title", p?.title || "");
+        if (title == null || !String(title).trim()) return;
+        const character_name = prompt("Character", p?.character_name || "") || "";
+        const palace_number = prompt("Number", p?.palace_number || "") || "";
+        const image_prompt = prompt("Image prompt", p?.image_prompt || "") || "";
+        const body = { study_id: studyId, title: String(title).trim(), character_name, palace_number, image_prompt };
+        if (p?.id) body.id = p.id;
+        api("/api/palaces", { method: "POST", body: JSON.stringify(body) })
+          .then(() => refresh()).catch((e) => toast(String(e.message || e)));
+      }
+      function editBeast(b, palaceId) {
+        const peg_code = prompt("Peg code (non-numeric)", b?.peg_code || "");
+        if (peg_code == null || !String(peg_code).trim()) return;
+        const beast_name = prompt("Beast name", b?.beast_name || "") || "";
+        const sensory_channel = prompt("Sensory", b?.sensory_channel || "visual") || "visual";
+        const body = { palace_id: palaceId, peg_code: String(peg_code).trim(), beast_name, sensory_channel };
+        if (b?.id) body.id = b.id;
+        api("/api/beasts", { method: "POST", body: JSON.stringify(body) })
+          .then(() => refresh()).catch((e) => toast(String(e.message || e)));
+      }
+      function editAtom(a, beastId) {
+        const kind = prompt("Kind (single/zoned)", a?.kind || "single") || "single";
+        const concept = prompt("Concept", a?.concept || "");
+        if (concept == null) return;
+        const quote = prompt("Quote", a?.quote || "") || "";
+        const story = prompt("Story", a?.story || "") || "";
+        const zone = prompt("Zone (optional)", a?.zone || "") || "";
+        const zone_label = prompt("Zone label", a?.zone_label || "") || "";
+        const body = { beast_id: beastId, kind, concept, quote, story, zone, zone_label };
+        if (a?.id) body.id = a.id;
+        api("/api/atoms", { method: "POST", body: JSON.stringify(body) })
+          .then(() => refresh()).catch((e) => toast(String(e.message || e)));
+      }
+
+      function renderLinks(root) {
+        root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Study links</h2>
+          <div class="spa-row">
+            <button class="spa-btn" data-k="video" data-a="open">Open video</button>
+            <button class="spa-btn" data-k="video" data-a="set">Set video URL</button>
+            <button class="spa-btn" data-k="article" data-a="open">Open article</button>
+            <button class="spa-btn" data-k="article" data-a="set">Set article URL</button>
+            <button class="spa-btn" data-k="favorite" data-a="open">Open favorite</button>
+            <button class="spa-btn" data-k="favorite" data-a="set">Set favorite URL</button>
+          </div>
+          <pre id="linkOut" style="color:var(--muted);white-space:pre-wrap"></pre>
+        </div>`;
+        root.querySelectorAll("[data-k]").forEach((btn) => {
+          btn.onclick = async () => {
+            const kind = btn.dataset.k, action = btn.dataset.a;
+            try {
+              if (action === "set") {
+                const url = prompt("URL");
+                if (!url) return;
+                const r = await api(`/api/links/${kind}`, { method: "POST", body: JSON.stringify({ action: "set", url }) });
+                document.getElementById("linkOut").textContent = JSON.stringify(r, null, 2);
+                toast(r.ok ? "Saved" : (r.error || "fail"));
+              } else {
+                const r = await api(`/api/links/${kind}`, { method: "POST", body: JSON.stringify({ action: "open" }) });
+                document.getElementById("linkOut").textContent = JSON.stringify(r, null, 2);
+                toast(r.ok ? "Opened" : (r.error || "fail"));
+              }
+            } catch (e) { toast(String(e.message || e)); }
+          };
+        });
+      }
+
+      function renderTools(root) {
+        const missing = (state.data.palaces || []).filter((p) => !p.image_rel_path);
+        root.innerHTML = `<div class="spa-panel">
+          <h2 style="margin-top:0;color:var(--gold)">Tools</h2>
+          <div class="spa-row">
+            <button class="spa-btn" id="regen">Regen Markdown</button>
+            <a class="spa-btn" target="_blank" href="${escAttr(state.data.meta.practice_github)}">Practice GitHub</a>
+            <a class="spa-btn" target="_blank" href="${escAttr(state.data.meta.plans_github)}">Plans GitHub</a>
+          </div>
+          <h3>Quick image (palaces missing image)</h3>
+          <table class="spa-table"><thead><tr><th>Study</th><th>#</th><th>Title</th><th></th></tr></thead>
+          <tbody>${missing.map((p) => {
+            const s = studyById(p.study_id);
+            return `<tr><td>${esc(s?.title || p.study_id)}</td><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td>
+              <td><button class="spa-btn" data-qi="${escAttr(p.id)}">Attach Desktop image</button></td></tr>`;
+          }).join("") || "<tr><td colspan=4>All palaces have images</td></tr>"}</tbody></table>
+        </div>`;
+        root.querySelector("#regen").onclick = async () => {
+          toast("Regenerating…", 5000);
+          try {
+            const r = await api("/api/regen", { method: "POST", body: "{}" });
+            toast(r.ok ? "Regen done" : "Regen had errors");
+          } catch (e) { toast(String(e.message || e)); }
+        };
+        root.querySelectorAll("[data-qi]").forEach((b) => b.onclick = async () => {
+          try {
+            const r = await api("/api/quick-image", { method: "POST", body: JSON.stringify({ palace_id: b.dataset.qi }) });
+            if (!r.ok) throw new Error(r.error || "fail");
+            toast("Image attached");
+            await refresh();
+          } catch (e) { toast(String(e.message || e)); }
+        });
+      }
+
+      function renderHelp(root) {
+        root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2><div id="g"></div></div>`;
+        api("/api/glossary").then((r) => {
+          document.getElementById("g").innerHTML = (r.items || []).map((i) =>
+            `<p><b>${esc(i.term)}</b> — ${esc(i.def)}</p>`).join("");
+        }).catch((e) => toast(String(e)));
+      }
+
+      /* ---------- Wiring ---------- */
+      document.getElementById("study").onchange = (e) => {
+        state.studyId = e.target.value;
+        if (state.view === "browse") {
+          state.browse = { studyId: "", palaceId: "", beastId: "" };
+        }
+        render();
+      };
+      document.getElementById("btnLatest").onclick = () => {
+        const list = palaces(state.studyId);
+        if (list.length) openPalace(list[0].id);
+        else toast("No palaces");
+      };
+      document.getElementById("btnPractice").onclick = () => setView("practice");
+      document.getElementById("btnPlans").onclick = () => setView("plans");
+      document.getElementById("btnMethod").onclick = () => setView("method");
+      document.getElementById("btnClose").onclick = () => closeOverlay();
+      document.getElementById("btnNotesSave").onclick = () => saveNotes();
+      document.getElementById("ovNotesInput").oninput = () => {
+        clearTimeout(state.notesTimer);
+        state.notesTimer = setTimeout(saveNotes, 800);
+      };
+      document.getElementById("btnPlansSave").onclick = () => savePlanProgress();
+      document.getElementById("btnPlansReset").onclick = () => resetPlanCheckboxes();
+      document.getElementById("btnPlansTocToggle").onclick = () => {
+        const layout = document.getElementById("plansLayout");
+        const collapsed = layout.classList.toggle("toc-collapsed");
+        document.getElementById("btnPlansTocToggle").textContent = collapsed ? "▶" : "◀";
+        document.getElementById("btnPlansTocToggle").setAttribute("aria-expanded", collapsed ? "false" : "true");
+      };
+      document.getElementById("btnGalleryAdd").onclick = () => document.getElementById("galleryFileInput").click();
+      document.getElementById("galleryFileInput").onchange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (!file || !state.overlayPalaceId) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const r = await api("/api/palace/images", {
+              method: "POST",
+              body: JSON.stringify({
+                palace_id: state.overlayPalaceId,
+                action: "add",
+                data_b64: reader.result,
+                mime: file.type,
+                caption: file.name,
+              }),
+            });
+            if (!r.ok) throw new Error(r.error || "fail");
+            document.getElementById("ovGalleryStatus").textContent = "Added";
+            document.getElementById("ovGalleryStatus").className = "gallery-status ok";
+            await refresh();
+            if (state.overlayPalaceId) renderGalleryGrid(state.overlayPalaceId);
+          } catch (err) {
+            document.getElementById("ovGalleryStatus").textContent = String(err.message || err);
+            document.getElementById("ovGalleryStatus").className = "gallery-status err";
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      document.querySelectorAll("#appMore [data-view]").forEach((b) => {
+        b.onclick = () => setView(b.dataset.view);
+      });
+
+      document.getElementById("atomSearch").oninput = (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        const box = document.getElementById("searchResults");
+        if (!q) { box.classList.remove("open"); box.innerHTML = ""; return; }
+        const hits = [];
+        for (const a of state.data?.atoms || []) {
+          const blob = `${a.concept} ${a.quote} ${a.story}`.toLowerCase();
+          if (!blob.includes(q)) continue;
+          const beast = (state.data.beasts || []).find((b) => b.id === a.beast_id);
+          const pal = beast && palaceById(beast.palace_id);
+          if (!pal) continue;
+          hits.push({ a, beast, pal });
+          if (hits.length >= 40) break;
+        }
+        if (!hits.length) {
+          box.innerHTML = '<p class="empty">No matches</p>';
+          box.classList.add("open");
+          return;
+        }
+        box.innerHTML = hits.map((h) =>
+          `<button type="button" class="hit" data-pid="${escAttr(h.pal.id)}">
+            <div>${esc(h.a.concept || "(no concept)")}</div>
+            <div class="meta">${esc(h.pal.title)} · ${esc(h.beast?.beast_name || "")}</div>
+          </button>`).join("");
+        box.classList.add("open");
+        box.querySelectorAll(".hit").forEach((btn) => {
+          btn.onclick = () => { box.classList.remove("open"); openPalace(btn.dataset.pid); };
+        });
+      };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target.matches("input, textarea, select")) return;
+        const ovOpen = document.getElementById("overlay").classList.contains("open");
+        if (ovOpen) {
+          if (e.key === "Escape") { closeOverlay(); return; }
+          if (e.key === "c" || e.key === "C") { document.getElementById("btnCopyPrompt").click(); return; }
+          if (e.key === "ArrowLeft") { document.getElementById("btnPrevPalace").click(); return; }
+          if (e.key === "ArrowRight") { document.getElementById("btnNextPalace").click(); return; }
+        }
+        if (e.key === "Escape") {
+          if (state.view === "browse") {
+            if (state.browse.beastId) state.browse.beastId = "";
+            else if (state.browse.palaceId) state.browse.palaceId = "";
+            else if (state.browse.studyId) state.browse.studyId = "";
+            else { setView("practice"); return; }
+            render();
+            return;
+          }
+          setView("practice");
+          return;
+        }
+        if (e.key === "b" || e.key === "B") setView("browse");
+        if (e.key === "l" || e.key === "L" || e.key === "p" || e.key === "P") setView("plans");
+        if (e.key === "m" || e.key === "M") setView("method");
+        if (e.key === "t" || e.key === "T") setView("tools");
+        if (e.key === "1") setView("links");
+      });
+
+      refresh().catch((e) => {
+        document.getElementById("stats").textContent = "Failed to load";
+        toast(String(e.message || e), 5000);
+      });
+    </script>
+  </body>
+</html>

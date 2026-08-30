@@ -1375,8 +1375,8 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
-    [Win+Alt+Shift+X] > Memory Palace (same as Utility Shortcuts [N])
-    [Win+Alt+Shift+D] > Finance (same as Utility Shortcuts [F])
+    [Win+Alt+Shift+X] > Import Management (same as Utility Shortcuts [J])
+    [Win+Alt+Shift+D] > tap=Tasks :8766 · 2×=Finance · hold=Memory Palace :8767 ([T]/[F]/[N])
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)
     [Win+Alt+Shift+↓] > Show square selector (down direction)
@@ -1423,7 +1423,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [ZMK L0 · Right thumb] tap 1× > Win+Alt+Shift+U — quick string shortcuts
     [ZMK L0 · Right thumb] tap 2× > Win+Alt+Shift+Y — Focus Mode toggle
     [ZMK L0 · Win+Alt+Shift key] > Win+Alt+Shift (modifier chord)
-    [ZMK L0 · X thumb] hold > Win+Alt+Shift+X — Memory Palace
+    [ZMK L0 · X thumb] hold > Win+Alt+Shift+X — Import Management
     [ZMK L0 · X thumb] tap 1× > Win+Alt+Shift+I — open {AI_PROVIDER}
     [ZMK L0 · X thumb] tap 2× > Ctrl+Alt+Win+6 — window tools [3]
     [ZMK L0 · X thumb] tap 3× > Ctrl+Alt+Win+U — window tools [2]

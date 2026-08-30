@@ -1,90 +1,342 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_launcher.ahk
-; Memory Palace main menu (Utility Shortcuts [N])
+; Memory Palace — thin AHK launcher: start localhost :8767 + open Chrome web app
+; (CRUD GUIs remain included for import/helpers; primary UX is mnemonics/web)
 ; =============================================================================
 
 global g_PalaceDashboardHwnd := 0
+global g_PalaceServerPid := 0
+
+Palace_ServerPort() {
+    return 8767
+}
 
 Palace_LaunchApp() {
     Palace_EnsureData()
-    Palace_ShowMainMenu()
+    existing := Palace_FindExistingWebHwnd()
+    if (existing) {
+        if (!Palace_IsServerRunning()) {
+            if (!Palace_EnsureServer(false))
+                return
+        }
+        Palace_ActivateWeb(existing)
+        return
+    }
+    try StandardLoadingBar_Show("⏳ Opening Memory Palace…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    catch {
+    }
+    if (!Palace_EnsureServer(false)) {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        return
+    }
+    url := "http://127.0.0.1:" . Palace_ServerPort() . "/?t=" . A_TickCount
+    try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+    ok := Palace_OpenWebInChrome(url)
+    try StandardLoadingBar_Hide(300)
+    catch {
+    }
+    if (!ok)
+        Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
 }
 
-Palace_ShowMainMenu() {
-    global g_PalaceGui
-    Palace_CloseGui()
-    Palace_EnsureData()
+Palace_PidPath() {
+    return Palace_DataDir() . "\palace_server.pid"
+}
 
-    studies := Palace_Load("studies")
-    palaces := Palace_Load("palaces")
-    beasts := Palace_Load("beasts")
-    atoms := Palace_Load("atoms")
-    plans := Palace_Load("plans")
-
-    g_PalaceGui := Gui("+AlwaysOnTop +ToolWindow", "Memory Palace")
-    g_PalaceGui.SetFont("s10", "Segoe UI")
-    g_PalaceGui.BackColor := "1E1E1E"
-    g_PalaceGui.OnEvent("Close", (*) => Palace_CloseGui())
-    g_PalaceGui.OnEvent("Escape", (*) => Palace_CloseGui())
-
-    g_PalaceGui.SetFont("s16 cWhite Bold", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y16 w880", "Memory Palace")
-    g_PalaceGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y48 w880",
-        studies.Length . " studies  ·  " . palaces.Length . " palaces  ·  "
-        . beasts.Length . " beasts  ·  " . atoms.Length . " atoms  ·  "
-        . plans.Length . " plans")
-    g_PalaceGui.SetFont("s9 cF1C40F", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y72 w880", "1-3 quick links · letters open a module.")
-
-    items := [
-        ["1", "📹 Study Video", "Open / set video link (Google Docs API)"],
-        ["2", "📖 Study Article", "Open / set article link (Google Docs API)"],
-        ["3", "❤️ Favorite", "Open / set favorite link (Google Docs API)"],
-        ["D", "Dashboard", "Study picker and Memory Palace images"],
-        ["B", "Browse", "Studies -> palaces -> beasts -> atoms"],
-        ["L", "Plans", "Browse / edit study plan checklists (CSV)"],
-        ["Q", "Quick image", "Pick palace without image → newest Desktop PNG/JPG"],
-        ["G", "Practice on GitHub", "Synced palace practice notes for mobile"],
-        ["O", "Plans on GitHub", "Synced study plan Markdown for mobile"],
-        ["R", "Regen Markdown", "Force-create all practice + plan .md files"],
-        ["H", "Help", "Vocabulary and mapping rules"]
-    ]
-
-    x0 := 20
-    y0 := 108
-    colW := 440
-    rowH := 72
-    idx := 0
-    for it in items {
-        col := Mod(idx, 2)
-        row := idx // 2
-        x := x0 + col * colW
-        y := y0 + row * rowH
-        g_PalaceGui.SetFont("s14 cF1C40F Bold", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 12) . " y" . (y + 8) . " w40 BackgroundTrans", "[" . it[1] . "]")
-        g_PalaceGui.SetFont("s12 cWhite Bold", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 8) . " w340 BackgroundTrans", it[2])
-        g_PalaceGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-        g_PalaceGui.Add("Text", "x" . (x + 58) . " y" . (y + 32) . " w340 BackgroundTrans", it[3])
-        idx += 1
+Palace_PidRead() {
+    global g_PalaceServerPid
+    pid := 0
+    try pid := Integer(g_PalaceServerPid)
+    catch {
+        pid := 0
     }
+    if (pid > 0) {
+        try {
+            if ProcessExist(pid)
+                return pid
+        } catch {
+        }
+    }
+    path := Palace_PidPath()
+    if (!FileExist(path))
+        return 0
+    raw := ""
+    try raw := Trim(FileRead(path))
+    catch {
+        return 0
+    }
+    try pid := Integer(raw)
+    catch {
+        return 0
+    }
+    if (pid <= 0)
+        return 0
+    try {
+        if ProcessExist(pid)
+            return pid
+    } catch {
+    }
+    return 0
+}
 
-    g_PalaceGui.SetFont("s9 c808080", "Segoe UI")
-    g_PalaceGui.Add("Text", "x20 y560 w880",
-        "Backspace utility shortcuts   Esc close   L plans   O plans GitHub   R regen   Pack import via #!+X / Utility [J]   Push via Utility Shortcuts [G]"
-    )
+Palace_PidWrite(pid) {
+    global g_PalaceServerPid
+    try pid := Integer(pid)
+    catch {
+        pid := 0
+    }
+    g_PalaceServerPid := pid
+    path := Palace_PidPath()
+    if (pid > 0) {
+        try FileDelete(path)
+        catch {
+        }
+        try FileAppend(String(pid), path, "UTF-8")
+        catch {
+        }
+        return
+    }
+    try FileDelete(path)
+    catch {
+    }
+}
 
-    Palace_BindHotkeys([
-        ["1", Palace_OnStudyVideo], ["2", Palace_OnStudyArticle], ["3", Palace_OnStudyFavorite],
-        ["d", Palace_OnDash], ["b", Palace_OnBrowse], ["l", Palace_OnPlans],
-        ["q", Palace_OnQuickImage], ["g", Palace_OnPracticeGithub],
-        ["o", Palace_OnPlansGithub], ["r", Palace_OnRegenMarkdown],
-        ["h", Palace_OnHelp],
-        ["Backspace", (*) => Palace_ReturnToUtilityShortcuts()],
-        ["Escape", (*) => Palace_CloseGui()]
-    ])
-    Palace_CenterGui(g_PalaceGui, 900, 600)
+Palace_KillPidTree(pid) {
+    try pid := Integer(pid)
+    catch {
+        return
+    }
+    if (pid <= 0)
+        return
+    try RunWait(A_ComSpec . " /c taskkill /F /T /PID " . pid . " >nul 2>&1", , "Hide")
+    catch {
+    }
+}
+
+Palace_StopServerNetstat(port) {
+    q := Chr(39)
+    cmd := "for /f `"tokens=5`" %a in (" . q . "netstat -ano ^| findstr :" . port
+        . " ^| findstr LISTENING" . q . ") do taskkill /F /PID %a >nul 2>&1"
+    try RunWait(A_ComSpec . " /c " . cmd, , "Hide")
+    catch {
+    }
+}
+
+Palace_StopServer(port := 0) {
+    if (port = 0)
+        port := Palace_ServerPort()
+    pid := Palace_PidRead()
+    if (pid > 0)
+        Palace_KillPidTree(pid)
+    deadline := A_TickCount + 1500
+    while (A_TickCount < deadline) {
+        if (!Palace_IsServerRunning(port))
+            break
+        Sleep 50
+    }
+    if (Palace_IsServerRunning(port))
+        Palace_StopServerNetstat(port)
+    Palace_PidWrite(0)
+}
+
+Palace_IsServerRunning(port := 0) {
+    if (port = 0)
+        port := Palace_ServerPort()
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.Send()
+        return (whr.Status = 200)
+    } catch {
+        return false
+    }
+}
+
+Palace_EnsureServer(forceRestart := false) {
+    port := Palace_ServerPort()
+    if (forceRestart)
+        Palace_StopServer(port)
+    else if (Palace_IsServerRunning(port))
+        return true
+    py := Palace_PythonDir() . "\palace_server.py"
+    if (!FileExist(py)) {
+        Palace_Notify("palace_server.py not found", 2200, BANNER_ACCENT_ERROR)
+        return false
+    }
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "") {
+        Palace_Notify("Python not found for Memory Palace server", 2500, BANNER_ACCENT_ERROR)
+        return false
+    }
+    dataDir := Palace_DataDir()
+    outDir := Palace_OutputDir()
+    scriptsRoot := A_ScriptDir
+    studiesRoot := A_ScriptDir . "\mnemonics\studies"
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir
+        . '" --studies-root "' . studiesRoot . '" --scripts-root "' . scriptsRoot
+        . '" --port ' . port
+    pid := 0
+    try pid := Run(cmd, A_ScriptDir, "Hide")
+    catch as e {
+        Palace_Notify("Palace server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        return false
+    }
+    if (pid > 0)
+        Palace_PidWrite(pid)
+    loop 30 {
+        if (Palace_IsServerRunning(port))
+            return true
+        Sleep 150
+    }
+    Palace_Notify("Palace server did not start", 2800, BANNER_ACCENT_ERROR)
+    return false
+}
+
+Palace_IsChromeWindowTitle(title) {
+    t := Trim(title)
+    if (t = "Memory Palace" || t = "Memory Palace - Google Chrome")
+        return true
+    if (InStr(t, "Memory Palace") = 1)
+        return true
+    return false
+}
+
+Palace_WebHwndValid(hwnd) {
+    try hwnd := Integer(hwnd)
+    catch {
+        return 0
+    }
+    if (!(hwnd is Integer) || hwnd <= 0)
+        return 0
+    try {
+        if !WinExist("ahk_id " hwnd)
+            return 0
+    } catch {
+        return 0
+    }
+    return hwnd
+}
+
+Palace_WebHwndCacheGet() {
+    global g_PalaceDashboardHwnd
+    hwnd := Palace_WebHwndValid(g_PalaceDashboardHwnd)
+    if (hwnd)
+        return hwnd
+    raw := Trim(IniRead(Palace_SettingsPath(), "General", "WebChromeHwnd", ""))
+    if (raw = "")
+        raw := Trim(IniRead(Palace_SettingsPath(), "General", "DashboardChromeHwnd", ""))
+    hwnd := Palace_WebHwndValid(raw)
+    g_PalaceDashboardHwnd := hwnd
+    return hwnd
+}
+
+Palace_WebHwndCacheSet(hwnd) {
+    global g_PalaceDashboardHwnd
+    hwnd := Palace_WebHwndValid(hwnd)
+    g_PalaceDashboardHwnd := hwnd
+    try IniWrite(hwnd ? String(hwnd) : "", Palace_SettingsPath(), "General", "WebChromeHwnd")
+    catch {
+    }
+}
+
+Palace_WebHwndCacheClear() {
+    Palace_WebHwndCacheSet(0)
+}
+
+Palace_HwndLooksLikeWeb(hwnd) {
+    hwnd := Palace_WebHwndValid(hwnd)
+    if (!hwnd)
+        return 0
+    try title := WinGetTitle("ahk_id " hwnd)
+    catch {
+        return 0
+    }
+    if !Palace_IsChromeWindowTitle(title)
+        return 0
+    return hwnd
+}
+
+Palace_FindExistingWebHwnd() {
+    hwnd := Palace_HwndLooksLikeWeb(Palace_WebHwndCacheGet())
+    if (hwnd)
+        return hwnd
+    for h in WinGetList("ahk_exe chrome.exe") {
+        hwnd := Palace_HwndLooksLikeWeb(h)
+        if (hwnd) {
+            Palace_WebHwndCacheSet(hwnd)
+            return hwnd
+        }
+    }
+    Palace_WebHwndCacheClear()
+    return 0
+}
+
+Palace_ActivateWeb(hwnd) {
+    hwnd := Palace_WebHwndValid(hwnd)
+    if (!hwnd)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = -1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinActivate("ahk_id " hwnd)
+    catch {
+        return false
+    }
+    try WinWaitActive("ahk_id " hwnd, , 1)
+    catch {
+    }
+    Palace_WebHwndCacheSet(hwnd)
+    return true
+}
+
+Palace_OpenWebInChrome(url) {
+    try Run('chrome.exe --new-window "' . url . '"')
+    catch {
+        try Run(url)
+        catch {
+            return false
+        }
+    }
+    newHwnd := 0
+    prev := A_TitleMatchMode
+    try {
+        SetTitleMatchMode(1)
+        if WinWait("Memory Palace ahk_exe chrome.exe", , 10) {
+            try newHwnd := WinExist("Memory Palace ahk_exe chrome.exe")
+            catch {
+                newHwnd := 0
+            }
+        }
+    } finally {
+        SetTitleMatchMode(prev)
+    }
+    newHwnd := Palace_HwndLooksLikeWeb(newHwnd)
+    if (!newHwnd) {
+        for h in WinGetList("ahk_exe chrome.exe") {
+            newHwnd := Palace_HwndLooksLikeWeb(h)
+            if (newHwnd)
+                break
+        }
+    }
+    if (newHwnd) {
+        Palace_WebHwndCacheSet(newHwnd)
+        try WinActivate("ahk_id " newHwnd)
+        catch {
+        }
+        return true
+    }
+    return true
+}
+
+; Legacy menu kept for reference / emergency; primary entry is Palace_LaunchApp → web.
+Palace_ShowMainMenu() {
+    Palace_LaunchApp()
 }
 
 Palace_ReturnToUtilityShortcuts() {
@@ -95,7 +347,7 @@ Palace_ReturnToUtilityShortcuts() {
 }
 
 Palace_OnDash(*) {
-    Palace_OpenDashboard()
+    Palace_LaunchApp()
 }
 Palace_OnStudyVideo(*) {
     Palace_CloseGui()
@@ -290,98 +542,8 @@ Palace_MigratePlansToCsv(showUi := false) {
 }
 
 Palace_OpenDashboard() {
-    try StandardLoadingBar_Show("⏳ Opening Memory Palace dashboard…", BANNER_ACCENT_INTERMEDIATE, {
-        passive: false
-    })
-    catch {
-    }
-    Palace_EnsureData()
-    try StandardLoadingBar_Update("⏳ Migrating plan Markdown into CSV…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
-    ; Fill empty plans.csv from *-plan.md so backlog Add/Save can find study plans.
-    ; Failure is non-blocking — dashboard still opens from MD fallback if needed.
-    Palace_MigratePlansToCsv(true)
-    try StandardLoadingBar_Update("⏳ Restarting plan save server…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
-    ; Restart so save-server code (e.g. add_backlog) is never stale after edits.
-    Palace_EnsurePlanSaveServer(true)
-    py := Palace_PythonDir() . "\chart_generator.py"
-    if (!FileExist(py)) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("chart_generator.py not found", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    dataDir := Palace_DataDir()
-    outDir := Palace_OutputDir()
-    notesRoot := Palace_NotesStudiesRoot()
-    pyCmd := Palace_FindPythonCmd()
-    if (pyCmd = "") {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("Python not found. Install Python or enable the py launcher.", 3500, BANNER_ACCENT_ERROR)
-        return
-    }
-    try StandardLoadingBar_Update("⏳ Syncing technique + plans + building dashboard…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
-    if (notesRoot != "") {
-        cmd .= ' --notes-root "' . notesRoot . '"'
-        cmd .= ' --studies-root "' . notesRoot . '"'
-    }
-    lastStudy := Trim(Palace_Setting("General", "LastStudyId", ""))
-    if (lastStudy != "")
-        cmd .= ' --study-id "' . lastStudy . '"'
-    exitCode := 0
-    try {
-        exitCode := RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
-    } catch as e {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("Python failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    if (exitCode != 0) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("Dashboard Python failed (exit " . exitCode . ")", 3500, BANNER_ACCENT_ERROR)
-        return
-    }
-    html := outDir . "\dashboard.html"
-    if (!FileExist(html)) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
-        return
-    }
-    try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
-    catch {
-    }
-    tmpHtml := A_Temp . "\palace_dashboard.html"
-    try FileCopy(html, tmpHtml, 1)
-    catch {
-        tmpHtml := html
-    }
-    fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
-    if (!Palace_OpenDashboardInChrome(fileUrl)) {
-        try StandardLoadingBar_Hide(0)
-        catch {
-        }
-        Palace_Notify("Chrome failed to open dashboard", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    try StandardLoadingBar_Hide(400)
-    catch {
-    }
-    Palace_CloseGui()
+    ; Legacy entry — primary UX is the web app on :8767 (same as Palace_LaunchApp).
+    Palace_LaunchApp()
 }
 
 ; Typed contract: positive HWND if chrome.exe window still exists, else 0.
