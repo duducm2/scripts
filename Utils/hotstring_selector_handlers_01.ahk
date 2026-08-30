@@ -381,12 +381,40 @@ PromptContext_ResolveAttachPaths(entries, asTxt := false) {
 }
 
 ; After CF_HDROP paste: wait until Gemini/Enterprise upload UI settles before prompt body paste.
-; Self-contained (no Shift-keys helpers) so Utils #Warn stays clean when those symbols are absent.
-PromptContext_IsUploading(uia) {
+; Scoped to companion main pane (Gemini_GetSearchRoot) — avoid Shift-keys helpers for Utils #Warn.
+; Prompt Manager [Y] auto-send: stable Send-enabled + upload-idle (efficiency canon §13 / stable polls).
+PROMPT_PASTE_USE_STABLE_SEND_READY := true
+PROMPT_PASTE_SEND_READY_STABLE_POLLS := 2
+PROMPT_PASTE_SEND_READY_POLL_MS := 200
+PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS := 600
+; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
+PROMPT_PASTE_AUTO_SEND_CAP_MS := 10000
+PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
+
+PromptContext_UploadSearchRoot(uia, companionId := "") {
+    if (!IsObject(uia))
+        return 0
+    companionId := StrLower(Trim(companionId))
+    try {
+        if (companionId = "enterprise" || companionId = "copilot")
+            return uia
+        root := Gemini_GetSearchRoot(uia)
+        if (root)
+            return root
+    } catch {
+    }
+    return uia
+}
+
+PromptContext_IsUploading(uia, companionId := "") {
     if (!IsObject(uia))
         return false
+    root := PromptContext_UploadSearchRoot(uia, companionId)
+    if (!IsObject(root))
+        root := uia
     try {
-        texts := uia.FindAll({ Type: 50020 }) ; Text
+        ; Text under search root only (not full Chrome tree). Trade-off: misses upload UI outside main pane.
+        texts := root.FindAll({ Type: 50020 }) ; Text
         for t in texts {
             name := ""
             try name := t.Name
@@ -406,6 +434,46 @@ PromptContext_IsUploading(uia) {
     return false
 }
 
+PromptContext_SendButtonIsEnabled(sendBtn) {
+    if (!sendBtn)
+        return false
+    try {
+        return !!sendBtn.GetPropertyValue(UIA.Property.IsEnabled)
+    } catch {
+    }
+    try {
+        return !!sendBtn.IsEnabled
+    } catch {
+    }
+    return true ; control found; treat as ready if IsEnabled unavailable
+}
+
+PromptContext_ProbeSendReady(hwnd, uia, companionId) {
+    companionId := StrLower(Trim(companionId))
+    uploadIdle := !PromptContext_IsUploading(uia, companionId)
+    sendBtn := 0
+    hasText := false
+    try {
+        if (companionId = "enterprise") {
+            sendBtn := GeminiEnterprise_FindSubmitButton(uia)
+            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+        } else if (companionId = "copilot") {
+            sendBtn := CopilotWeb_FindSendButton(uia)
+            hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
+        } else {
+            sendBtn := Gemini_FindSendButton(uia)
+            hasText := (GeminiPromptFieldGetTextFromUia(uia) != "")
+        }
+    } catch {
+        return { uploadIdle: uploadIdle, sendEnabled: false, hasText: false }
+    }
+    return {
+        uploadIdle: uploadIdle,
+        sendEnabled: PromptContext_SendButtonIsEnabled(sendBtn),
+        hasText: hasText
+    }
+}
+
 PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     if !InsertFiles_IsAiChatForeground()
         return
@@ -413,11 +481,15 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     ; Base 8s + 2s per file above 2, cap 25s (multi-file finance attach).
     extra := (fileCount > 2) ? ((fileCount - 2) * 2000) : 0
     timeoutMs := Min(8000 + extra, 25000)
+    companionId := ""
+    try companionId := ResolveGlobalAICompanion()
+    catch {
+    }
     uia := ""
     try {
         hwnd := WinGetID("A")
         if (hwnd)
-            uia := UIA_Browser("ahk_id " hwnd)
+            uia := PromptPaste_UiaForCompanion(hwnd, companionId)
     } catch {
         uia := ""
     }
@@ -428,7 +500,7 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     tStart := A_TickCount
     sawUploading := false
     while ((A_TickCount - tStart) < timeoutMs) {
-        up := PromptContext_IsUploading(uia)
+        up := PromptContext_IsUploading(uia, companionId)
         if (up)
             sawUploading := true
         if (!up && (sawUploading || (A_TickCount - tStart) >= minMs))
@@ -439,7 +511,73 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
 
 ; After multi-file attach + body paste: wait until companion Send/Submit is enabled.
 ; Returns true if ready, false on timeout (caller may still attempt submit).
-PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
+; Stable path (PROMPT_PASTE_USE_STABLE_SEND_READY): upload idle + Send enabled + text for N polls.
+PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, attachCount := 0, updateBanner := false) {
+    if (!hwnd || !WinExist("ahk_id " hwnd))
+        return false
+    companionId := StrLower(Trim(companionId))
+    if (!PROMPT_PASTE_USE_STABLE_SEND_READY)
+        return PromptContext_WaitForSendReadyLegacy(hwnd, companionId, timeoutMs)
+
+    pollMs := Max(50, PROMPT_PASTE_SEND_READY_POLL_MS)
+    needStable := Max(1, PROMPT_PASTE_SEND_READY_STABLE_POLLS)
+    minNoInd := (attachCount > 0) ? Max(0, PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS) : 0
+    tStart := A_TickCount
+    sawUploading := false
+    stable := 0
+    bannerPhase := ""
+    uia := 0
+    pollIndex := 0
+
+    while ((A_TickCount - tStart) < timeoutMs) {
+        if (!WinExist("ahk_id " hwnd))
+            return false
+        pollIndex += 1
+        ; Refresh UIA periodically; stale COM after long uploads can miss Send enablement.
+        if (!IsObject(uia) || Mod(pollIndex, 5) = 1) {
+            try uia := PromptPaste_UiaForCompanion(hwnd, companionId)
+            catch {
+                uia := 0
+            }
+        }
+        if (!IsObject(uia)) {
+            stable := 0
+            Sleep pollMs
+            continue
+        }
+
+        probe := PromptContext_ProbeSendReady(hwnd, uia, companionId)
+        if (!probe.uploadIdle)
+            sawUploading := true
+
+        if (updateBanner) {
+            phase := !probe.uploadIdle ? "uploads" : "send"
+            if (phase != bannerPhase) {
+                bannerPhase := phase
+                try {
+                    if (phase = "uploads")
+                        StandardLoadingBar_Update("⏳ Waiting for uploads…", BANNER_ACCENT_INTERMEDIATE)
+                    else
+                        StandardLoadingBar_Update("⏳ Waiting for Send…", BANNER_ACCENT_INTERMEDIATE)
+                } catch {
+                }
+            }
+        }
+
+        idleOk := probe.uploadIdle && (sawUploading || (A_TickCount - tStart) >= minNoInd)
+        if (idleOk && probe.sendEnabled && probe.hasText) {
+            stable += 1
+            if (stable >= needStable)
+                return true
+        } else {
+            stable := 0
+        }
+        Sleep pollMs
+    }
+    return false
+}
+
+PromptContext_WaitForSendReadyLegacy(hwnd, companionId := "", timeoutMs := 45000) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companionId := StrLower(Trim(companionId))
@@ -448,49 +586,19 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000) {
         if (!WinExist("ahk_id " hwnd))
             return false
         uia := 0
-        try uia := UIA_Browser("ahk_id " hwnd)
+        try uia := PromptPaste_UiaForCompanion(hwnd, companionId)
         catch {
             uia := 0
         }
-        if (IsObject(uia) && !PromptContext_IsUploading(uia)) {
-            sendBtn := 0
-            hasText := false
-            try {
-                if (companionId = "enterprise") {
-                    sendBtn := GeminiEnterprise_FindSubmitButton(uia)
-                    hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
-                } else if (companionId = "copilot") {
-                    sendBtn := CopilotWeb_FindSendButton(uia)
-                    hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
-                } else {
-                    sendBtn := Gemini_FindSendButton(uia)
-                    hasText := (GeminiPromptFieldGetTextFromUia(uia) != "")
-                }
-            } catch {
-                sendBtn := 0
-                hasText := false
-            }
-            if (sendBtn && hasText) {
-                enabled := false
-                try enabled := !!sendBtn.GetPropertyValue(UIA.Property.IsEnabled)
-                catch {
-                    try enabled := !!sendBtn.IsEnabled
-                    catch {
-                        enabled := true ; control found; treat as ready if IsEnabled unavailable
-                    }
-                }
-                if (enabled)
-                    return true
-            }
+        if (IsObject(uia)) {
+            probe := PromptContext_ProbeSendReady(hwnd, uia, companionId)
+            if (probe.uploadIdle && probe.sendEnabled && probe.hasText)
+                return true
         }
         Sleep 200
     }
     return false
 }
-
-; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
-PROMPT_PASTE_AUTO_SEND_CAP_MS := 10000
-PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
 
 PromptPaste_SendRemainingMs(tDeadline) {
     if (!tDeadline)
@@ -673,13 +781,15 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
         }
 
         if (attachCount > 0 || companionId != "") {
-            try StandardLoadingBar_Update("⏳ Waiting for uploads…", BANNER_ACCENT_INTERMEDIATE)
+            try StandardLoadingBar_Update(
+                (attachCount > 0) ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…",
+                BANNER_ACCENT_INTERMEDIATE)
             catch {
             }
             ready := false
             waitMs := PromptPaste_SendWaitBudget(tDeadline)
             if (waitMs > 0) {
-                try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs)
+                try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs, attachCount, true)
                 catch {
                 }
             }

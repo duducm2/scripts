@@ -171,6 +171,7 @@ Interesting outcomes from integrating Python for `Gemini.ahk` / `WindowManagemen
 - **Avoid fixed multi-second tails** after Clip Angel or screenshot paste into Gemini when the UI can signal “uploading” via `FastCopyMode_GeminiIsUploadingImage`. Prefer **`Gemini_WaitForUploadIdleWithRefocus`** (bounded loop, refocus while uploading) over `Sleep 2600` so fast uploads return early.
 - **Tune `minNoIndicatorMs` per flow:** Clip Angel mixes text and media — use a **high** minimum (e.g. 2600 ms) when no indicator appeared so behavior stays close to the old fixed delay; screenshot paste can use a **lower** minimum (e.g. 800 ms) because image uploads usually surface the heuristic quickly.
 - **Reuse cached `UIA_Browser` in `finally`:** when Gemini stays foreground, **`FastCopyMode_FocusGeminiPromptField(uia)`** avoids a second `UIA_Browser` attach versus always calling `FocusGeminiAskFieldForHwnd` (see `Shift keys.ahk`, `Gemini_PasteFromClipAngelSequential`).
+- **Prompt Manager `[Y]` auto-send:** [`PromptContext_WaitForSendReady`](../Utils/hotstring_selector_handlers_01.ahk) uses **scoped** upload text (`Gemini_GetSearchRoot` / companion root) plus **stable** Send-enabled + composer text for `PROMPT_PASTE_SEND_READY_STABLE_POLLS` (default 2). When `attachCount > 0` and no upload label appears, require `PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS` before counting stable polls. Early return on pass (do not burn the wait budget). Banner phases: uploads → Send. **Rollback:** `PROMPT_PASTE_USE_STABLE_SEND_READY := false` restores single-poll legacy wait.
 
 ---
 
