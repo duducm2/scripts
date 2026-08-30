@@ -622,9 +622,11 @@ class TaskStore:
     def upsert_info(self, payload: dict) -> dict:
         rows = self.load("info_points")
         rid = (payload.get("id") or "").strip()
-        title = (payload.get("title") or "").strip()
+        title = (
+            payload.get("text") or payload.get("title") or payload.get("body") or ""
+        ).strip()
         if not title:
-            return {"ok": False, "error": "title required"}
+            return {"ok": False, "error": "text required"}
         parent_type = (payload.get("parent_type") or "").strip()
         parent_id = (payload.get("parent_id") or "").strip()
         if parent_type not in {"project", "task"} or not parent_id:
@@ -633,20 +635,16 @@ class TaskStore:
             "parent_type": parent_type,
             "parent_id": parent_id,
             "title": title,
-            "body": payload.get("body") if payload.get("body") is not None else "",
+            "body": "",
             "emoji": (payload.get("emoji") or "ℹ️").strip() or "ℹ️",
-            "section_path": (payload.get("section_path") or "").strip(),
+            "section_path": "",
         }
         if rid:
             out = []
             found = False
             for r in rows:
                 if r["id"] == rid:
-                    # preserve body if not provided
-                    body = fields["body"]
-                    if "body" not in payload:
-                        body = r.get("body") or ""
-                    r = {**r, **fields, "body": body}
+                    r = {**r, **fields}
                     found = True
                 out.append(r)
             if not found:

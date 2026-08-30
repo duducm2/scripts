@@ -43,6 +43,14 @@ def sort_key(row: dict[str, str]) -> tuple:
     return (so, (row.get("title") or "").lower())
 
 
+def info_export_text(info: dict[str, str]) -> str:
+    t = (info.get("title") or "").strip()
+    b = (info.get("body") or "").strip()
+    if t and b and t != b:
+        return t + "\n" + b
+    return t or b
+
+
 def write_area(
     path: Path,
     heading: str,
@@ -135,7 +143,7 @@ def write_area(
 
         for p in projs:
             for info in info_by_parent.get(("project", p["id"]), []):
-                body = (info.get("body") or info.get("title") or "").strip()
+                body = info_export_text(info)
                 if body:
                     lines.append(f"ℹ️ {body}")
                     lines.append("")
@@ -144,7 +152,7 @@ def write_area(
             lines.append(f"## {p.get('title') or 'Project'}")
             lines.append("")
             for info in info_by_parent.get(("project", p["id"]), []):
-                body = (info.get("body") or info.get("title") or "").strip()
+                body = info_export_text(info)
                 if body:
                     lines.append(f"ℹ️ {body}")
                     lines.append("")
@@ -164,7 +172,7 @@ def write_area(
                         line += f" ({due})"
                     lines.append(line)
                     for info in info_by_parent.get(("task", t["id"]), []):
-                        body = (info.get("body") or info.get("title") or "").strip()
+                        body = info_export_text(info)
                         if body:
                             lines.append(f"ℹ️ {body}")
                     lines.append("")

@@ -197,6 +197,8 @@
         flex: 1;
         min-width: 120px;
         cursor: pointer;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
       }
       .task {
         position: relative;
@@ -860,10 +862,16 @@
           return null;
         }
 
+        function infoText(info) {
+          const t = String(info?.title || "").trim();
+          const b = String(info?.body || "").trim();
+          if (t && b && t !== b) return t + "\n" + b;
+          return t || b;
+        }
+
         function infoHyperlink(info) {
           if (!info) return null;
-          const fromText =
-            firstHyperlinkInText(info.title) || firstHyperlinkInText(info.body);
+          const fromText = firstHyperlinkInText(infoText(info));
           if (fromText) return fromText;
           const att = (state.data.attachments || []).find(
             (a) =>
@@ -2252,7 +2260,7 @@
               : "";
             const sel = i.id === state.infoSelId ? " kb-selected" : "";
             return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
-        <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(i.title)}</span>
+        <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
         ${thumbsHtml("info", i.id)}
         <span class="row-actions">
           <button class="btn" data-act="edit-info">Edit</button>
@@ -2335,13 +2343,19 @@
           const parentType =
             ctx?.parentType || (state.taskId ? "task" : "project");
           const parentId = ctx?.parentId || state.taskId || state.projectId;
+          const text = ($("#mText")?.value || "").trim();
+          if (!text) {
+            toast("Text required");
+            $("#mText")?.focus();
+            return;
+          }
           const r = await api("/api/info", {
             method: "POST",
             body: JSON.stringify({
               id: existing?.id || "",
-              title: $("#mTitle").value,
-              body: $("#mBody").value,
-              section_path: $("#mSec")?.value || "",
+              title: text,
+              body: "",
+              section_path: "",
               parent_type: parentType,
               parent_id: parentId,
             }),
@@ -2959,11 +2973,10 @@
           if (parentType && parentId) state.infoCtx = { parentType, parentId };
           state.infoUi = "form";
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} info</h3>
-      <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
-      <label>Body</label><textarea id="mBody">${esc(existing?.body || "")}</textarea>
-      <label>Section</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
+      <textarea id="mText" placeholder="Text">${esc(infoText(existing))}</textarea>
+      <p class="sub">Paste an image with Shift+V. Ctrl+Enter saves.</p>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-info">Save</button></div></div>`);
-          $("#mTitle")?.focus();
+          $("#mText")?.focus();
           const save = async () => {
             try {
               await saveInfoFromForm(existing);
@@ -2971,15 +2984,8 @@
               toast(err.message);
             }
           };
-          $("#mTitle")?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation();
-              save();
-            }
-          });
-          $("#mSec")?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
+          $("#mText")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
               e.stopPropagation();
               save();
@@ -3367,6 +3373,19 @@
           }
 
           if (state.infoUi === "list") {
+            if (e.shiftKey && shiftCmdFromEvent(e) === "e") {
+              e.preventDefault();
+              e.stopPropagation();
+              const row = (state.data.info_points || []).find(
+                (i) => i.id === state.infoSelId,
+              );
+              if (!row) {
+                toast("Select an info point first");
+                return;
+              }
+              infoForm(row);
+              return;
+            }
             if (e.key === "Enter") {
               e.preventDefault();
               infoForm(null);

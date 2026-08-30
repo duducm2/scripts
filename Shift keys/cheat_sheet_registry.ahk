@@ -1066,7 +1066,8 @@ cheatSheets["Tasks"] := "
     ⬆️ [Up] Info list — previous info
     ⬇️ [Down] Info list — next info
     ⏎ [Enter] Info list — add info
-    ⏎ [Enter] Info form (title/section) — save
+    ✏️ [Shift+E] Info list — edit highlighted info
+    ⏎ [Ctrl+Enter] Info form — save
     🗑️ [Delete] Info list — delete highlighted info
     ⬅️ [Backspace] Step back (inline field, image preview, modal, search, filter, bento, then selection)
     
