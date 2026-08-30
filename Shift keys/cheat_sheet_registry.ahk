@@ -1073,7 +1073,8 @@ cheatSheets["Tasks"] := "
     === Ctrl ===
     💾 [Enter] Save open form (info, task, project, section) or inline create field
     📋 [C] Copy selected or hovered task
-    📋 [V] Paste copied task into selected project / section
+    ✂️ [X] Cut selected or hovered task (paste moves it)
+    📋 [V] Paste copied/cut task into selected project / section
     
     === Shift ===
     💼 [1] Work column only (toggle)

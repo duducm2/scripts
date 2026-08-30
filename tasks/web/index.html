@@ -181,6 +181,13 @@
       .task .em {
         flex: 0 0 auto;
       }
+      .task.is-cut {
+        opacity: 0.45;
+      }
+      .task.is-cut .title {
+        text-decoration: line-through;
+        text-decoration-color: rgba(200, 200, 200, 0.5);
+      }
       .task .info-tag {
         flex: 0 0 auto;
         cursor: pointer;
@@ -860,7 +867,7 @@
           infoCtx: null, // { parentType, parentId }
           infoUi: "", // "" | list | form
           infoSelId: "",
-          taskClipboard: null, // copied task fields for Ctrl+V
+          taskClipboard: null, // { ...fields, cutFromId? } for Ctrl+C / Ctrl+X / Ctrl+V
         };
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
@@ -1190,19 +1197,23 @@
             : "";
           const actions = isHabit
             ? `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
+        <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
         <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`
             : `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
+        <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`;
-          return `<li class="task${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
+          const cutClass =
+            state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
+          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
       <span class="em">${esc(t.emoji || "🔲")}</span>
       ${infoTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
@@ -1961,22 +1972,32 @@
           };
         }
 
-        function copyTaskById(id) {
+        function copyTaskById(id, opts = {}) {
           const t = taskRowById(id);
           const payload = taskToCopyPayload(t);
           if (!payload) {
             toast("Select or hover a task first");
             return false;
           }
-          state.taskClipboard = payload;
-          toast("Copied task");
+          const cut = !!opts.cut;
+          state.taskClipboard = {
+            ...payload,
+            cutFromId: cut ? t.id : "",
+          };
+          toast(cut ? "Cut task — paste to move" : "Copied task");
+          render();
+          applySelection(false);
           return true;
+        }
+
+        function cutTaskById(id) {
+          return copyTaskById(id, { cut: true });
         }
 
         async function pasteCopiedTask() {
           const clip = state.taskClipboard;
           if (!clip?.title) {
-            toast("Nothing to paste — copy a task first (Ctrl+C)");
+            toast("Nothing to paste — copy or cut a task first");
             return;
           }
           let ctx = resolveTaskCreateContext({});
@@ -2015,11 +2036,31 @@
                   new Date().toISOString().slice(0, 10)
                 : "",
           };
+
+          const cutId = (clip.cutFromId || "").trim();
+          const moving = !!(cutId && taskRowById(cutId));
+          if (moving) {
+            const src = taskRowById(cutId);
+            if (
+              src.project_id === ctx.project_id &&
+              (src.section_id || "") === (ctx.section_id || "")
+            ) {
+              state.taskClipboard = { ...clip, cutFromId: "" };
+              toast("Already here");
+              render();
+              applySelection(false);
+              return;
+            }
+            payload.id = cutId;
+            payload.active = src.active || "1";
+          }
+
           const r = await api("/api/tasks", {
             method: "POST",
             body: JSON.stringify(payload),
           });
-          toast("Pasted task");
+          if (moving) state.taskClipboard = { ...clip, cutFromId: "" };
+          toast(moving ? "Moved task" : "Pasted task");
           await refresh();
           if (r.task?.id) {
             const sk = r.task.kind === "habitual" ? "habit" : "task";
@@ -2636,8 +2677,31 @@
         function modal(html) {
           const host = $("#modalHost");
           host.innerHTML = `<div class="modal-bg">${html}</div>`;
+          focusModalPrimaryField();
           return host;
         }
+
+        function focusModalPrimaryField(selector) {
+          const run = () => {
+            const host = $("#modalHost");
+            if (!host?.innerHTML) return;
+            const field = selector
+              ? host.querySelector(selector)
+              : host.querySelector(
+                  'textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"])',
+                );
+            if (!field || field.disabled) return;
+            field.focus({ preventScroll: true });
+            if (typeof field.select === "function") {
+              try {
+                field.select();
+              } catch (_) {}
+            }
+          };
+          // Defer: focus during keydown (e.g. Enter → edit) is often ignored
+          setTimeout(run, 0);
+        }
+
         function closeModal() {
           $("#modalHost").innerHTML = "";
           if (state.infoUi === "list" || state.infoUi === "form") {
@@ -2689,7 +2753,6 @@
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-project">Save</button>
       </div></div>`);
-          $("#mTitle")?.focus();
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -2730,8 +2793,6 @@
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-section">Save</button>
       </div></div>`);
-          $("#mTitle")?.focus();
-          $("#mTitle")?.select();
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -3244,7 +3305,6 @@
       <textarea id="mText" placeholder="Text">${esc(infoText(existing))}</textarea>
       <p class="sub">Paste an image with Shift+V. Ctrl+Enter saves.</p>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-info">Save</button></div></div>`);
-          $("#mText")?.focus();
           const save = async () => {
             try {
               await saveInfoFromForm(existing);
@@ -3499,6 +3559,10 @@
               copyTaskById(id);
               return;
             }
+            if (act === "cut-task") {
+              cutTaskById(id);
+              return;
+            }
             if (act === "del-task") {
               if (!confirm("Delete task and its info/attachments?")) return;
               await api("/api/tasks/" + encodeURIComponent(id), {
@@ -3637,6 +3701,12 @@
               e.preventDefault();
               e.stopPropagation();
               copyTaskById(selectedTaskId() || hoveredTaskId());
+              return;
+            }
+            if (k === "x" || e.code === "KeyX") {
+              e.preventDefault();
+              e.stopPropagation();
+              cutTaskById(selectedTaskId() || hoveredTaskId());
               return;
             }
             if (k === "v" || e.code === "KeyV") {
