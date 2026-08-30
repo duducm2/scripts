@@ -70,3 +70,5 @@ TX072,2026-08-27,Transfer back to Mercado Pago checking account,"1040,00",transf
 TX073,2026-08-27,Transfer from 99Pay to Mercado Pago checking account,"99,00",transfer,,,ACC_99PAY,,ACC_MERCADOP
 TX074,2026-08-29,Income,"90,00",income,CAT_TRANSFER,,ACC_MERCADOP,,
 TX075,2026-08-29,Sushi,"135,50",card_expense,CAT_LAZER,,,CARD_MP,
+TX076,2026-08-29,Sweet candy,"25,19",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+TX077,2026-08-29,Groceries,"323,61",expense,CAT_MERCADO,Food items,ACC_MERCADOP,,

@@ -186,8 +186,8 @@ Rules:
 - `single`: leave `zone` and `zone_label` empty.
 - `zoned`: `zone` = `Z1`–`Z4`; short hook in `zone_label`.
 - Field mapping from technique prose (`README §Knowledge Atom Structure`):
-  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall.
-  - **quote** ← verbatim transcript excerpt; when nuance was deliberately stripped from `concept` for extreme brevity, append in the same field: ` — Note: <stripped nuance>`. Otherwise pure verbatim (no Note).
+  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>`. Otherwise omit the Note.
+  - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`.
   - **story** ← Narrative (bizarre action encoding)
   - **sensory** ← modality emphasized
   - **ipa** ← German IPA when needed; else empty
@@ -222,9 +222,9 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 
 - Map each concept to one beast — one Knowledge Atom per beast by default.
 - Peg letters only; independent beast beats; Bizarreness Gate on every story.
-- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning). NEVER drop essential conceptual logic. If nuance/complexity must leave `concept` to keep it ultra-short, put that supplementary context on `quote` as ` — Note: …` after the verbatim excerpt (`README §Knowledge Atom Structure`).
-- Story–video alignment: Quote starts verbatim; optional Note only for compression overflow; Story encodes meaning via action linked to a concrete video cue.
-- Dual-access recall: peg → compressed concept → quote (+ optional Note); palace image → encoding action → quote.
+- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning). NEVER drop essential conceptual logic. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (`README §Knowledge Atom Structure`). NEVER put the Note on `quote`.
+- Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via action linked to a concrete video cue.
+- Dual-access recall: peg → compressed concept (+ optional Note) → quote; palace image → encoding action → quote.
 
 ### 4. Image prompts
 
@@ -260,7 +260,7 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
-| ` — Note:` on `quote` only when nuance was stripped from `concept`; verbatim excerpt untouched | Yes |
+| ` — Note:` on `concept` only when nuance was stripped from the compressed core; `quote` verbatim only | Yes |
 | image_prompt filled per new palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 

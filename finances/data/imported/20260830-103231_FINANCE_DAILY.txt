@@ -1,0 +1,9 @@
+﻿===PREVIEW===
+2 row(s) · candy (Food), groceries (Groceries)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Sweet candy,"25,19",expense,CAT_ALIMENTA,,ACC_MERCADOP,,
+Groceries,"323,61",expense,CAT_MERCADO,Food items,ACC_MERCADOP,,
+===END_FILE===
