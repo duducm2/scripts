@@ -70,6 +70,19 @@
         border-color: var(--danger);
         color: var(--danger);
       }
+      .btn.tertiary,
+      a.btn.tertiary {
+        background: transparent;
+        border-color: transparent;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 6px 10px;
+      }
+      .btn.tertiary:hover,
+      a.btn.tertiary:hover {
+        border-color: var(--line);
+        color: var(--gold);
+      }
       kbd {
         font: inherit;
         font-size: 11px;
@@ -806,14 +819,24 @@
         <div class="sub" id="hdrSub">Loading…</div>
       </div>
       <div class="toolbar">
-        <input
-          type="search"
-          id="globalSearch"
-          placeholder="Search…"
-          title="Search (Alt+S)"
-          autocomplete="off"
-          spellcheck="false"
-        />
+        <div class="search-wrap">
+          <input
+            type="search"
+            id="globalSearch"
+            placeholder="Search…"
+            title="Search (Alt+S)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <a
+            class="btn tertiary"
+            href="https://github.com/duducm2/my-notes/blob/main/main/punctual.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Personal tasks Markdown on GitHub (main/punctual.md)"
+            >GitHub MD</a
+          >
+        </div>
       </div>
     </header>
     <div id="view"></div>
