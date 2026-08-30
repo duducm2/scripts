@@ -15,7 +15,6 @@ from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from task_pack_import import commit_pack, preview_pack  # noqa: E402
 from task_store import TaskStore  # noqa: E402
 
 DEFAULT_PORT = 8766
@@ -211,24 +210,6 @@ class TaskHandler(BaseHTTPRequestHandler):
                         payload.get("ref") or "",
                         payload.get("description") or "",
                     ),
-                )
-                return
-            if path == "/api/import/preview":
-                self._json(200, preview_pack(store))
-                return
-            if path == "/api/import/commit":
-                # client may send preview payload; else re-read desktop
-                pack = (
-                    payload
-                    if payload.get("projects") is not None
-                    or payload.get("tasks") is not None
-                    else None
-                )
-                if pack and pack.get("ok") is False:
-                    self._json(400, pack)
-                    return
-                self._json(
-                    200, commit_pack(store, pack if pack and pack.get("ok") else None)
                 )
                 return
             if path == "/api/migrate":

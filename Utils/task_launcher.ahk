@@ -9,7 +9,7 @@ Task_ServerPort() {
     return 8766
 }
 
-Task_LaunchApp(openImport := false) {
+Task_LaunchApp() {
     Task_EnsureData()
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
@@ -20,10 +20,7 @@ Task_LaunchApp(openImport := false) {
         }
         return
     }
-    url := "http://127.0.0.1:" . Task_ServerPort() . "/"
-    if (openImport)
-        url .= "?import=1"
-    url .= (InStr(url, "?") ? "&" : "?") . "t=" . A_TickCount
+    url := "http://127.0.0.1:" . Task_ServerPort() . "/?t=" . A_TickCount
     try StandardLoadingBar_Update("⏳ Opening Chrome…", BANNER_ACCENT_INTERMEDIATE)
     catch {
     }
@@ -33,11 +30,6 @@ Task_LaunchApp(openImport := false) {
     }
     if (!ok)
         Task_Notify("Chrome failed to open Tasks", 2500, BANNER_ACCENT_ERROR)
-}
-
-; Import Management [T] / legacy entry
-Task_ImportPackFromDesktop(*) {
-    Task_LaunchApp(true)
 }
 
 Task_CloseWebApp() {

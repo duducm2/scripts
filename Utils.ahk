@@ -333,7 +333,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Tasks (Utility Shortcuts [T] → web app on :8766)
 #include %A_ScriptDir%\Utils\task_helpers.ahk
 #include %A_ScriptDir%\Utils\task_launcher.ahk
-; Legacy AHK GUI modules removed — CRUD lives in tasks/web + task_server.py
+#include %A_ScriptDir%\Utils\task_import.ahk
+; CRUD lives in tasks/web + task_server.py; pack import is Import Management [T]
 
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk

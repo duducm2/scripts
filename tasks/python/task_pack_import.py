@@ -343,3 +343,117 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         },
         "errors": errors,
     }
+
+
+def preview_labels(pack: dict[str, Any]) -> list[str]:
+    """Palace-style one-line labels for AHK confirm ListView."""
+    labels: list[str] = []
+    counts = pack.get("counts") or {}
+    labels.append(
+        f"--- Counts: {counts.get('projects', 0)} project(s) · "
+        f"{counts.get('tasks', 0)} task(s) · {counts.get('info', 0)} info ---"
+    )
+    projects = pack.get("projects") or []
+    if projects:
+        labels.append(f"--- Projects ({len(projects)}) ---")
+        for r in projects:
+            filt = (r.get("filter") or "?").strip()
+            title = (r.get("title") or "").strip()
+            sec = (r.get("section_path") or "").strip()
+            line = f"[PROJ] {filt} · {title}"
+            if sec:
+                line += f" · {sec}"
+            labels.append(line)
+    tasks = pack.get("tasks") or []
+    if tasks:
+        labels.append(f"--- Tasks ({len(tasks)}) ---")
+        for r in tasks:
+            filt = (r.get("filter") or "?").strip()
+            title = (r.get("title") or "").strip()
+            kind = (r.get("kind") or "punctual").strip()
+            proj = (r.get("project_title") or "").strip()
+            line = f"[TASK] {filt} · {title} ({kind})"
+            if proj:
+                line += f" @ {proj}"
+            labels.append(line)
+    infos = pack.get("info") or []
+    if infos:
+        labels.append(f"--- Info ({len(infos)}) ---")
+        for r in infos:
+            title = (r.get("title") or "").strip()
+            parent = (r.get("parent_title") or "").strip()
+            attach = (r.get("attach_to") or "task").strip()
+            line = f"[INFO] → {parent or '?'} ({attach}) · {title}"
+            labels.append(line)
+    return labels
+
+
+def _cli_main(argv: list[str] | None = None) -> int:
+    import argparse
+    import json
+    import sys
+
+    parser = argparse.ArgumentParser(description="TASK_PACK preview / commit for Import Management")
+    parser.add_argument("--data-dir", required=True, help="Path to tasks/data")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    p_prev = sub.add_parser("preview", help="Discover Desktop TASK_PACK and write preview files")
+    p_prev.add_argument("--json-out", required=True, help="Write full preview JSON here")
+    p_prev.add_argument("--labels-out", required=True, help="Write one label per line for AHK ListView")
+
+    p_commit = sub.add_parser("commit", help="Commit a preview JSON pack into tasks/data")
+    p_commit.add_argument("--pack-json", required=True, help="Preview JSON from preview --json-out")
+
+    args = parser.parse_args(argv)
+    store = TaskStore(Path(args.data_dir))
+
+    if args.cmd == "preview":
+        result = preview_pack(store)
+        json_path = Path(args.json_out)
+        labels_path = Path(args.labels_out)
+        json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        if result.get("ok"):
+            labels = preview_labels(result)
+            labels_path.write_text("\n".join(labels) + ("\n" if labels else ""), encoding="utf-8")
+            counts = result.get("counts") or {}
+            print(
+                f"OK {counts.get('projects', 0)} projects "
+                f"{counts.get('tasks', 0)} tasks {counts.get('info', 0)} info"
+            )
+            return 0
+        labels_path.write_text("", encoding="utf-8")
+        err = result.get("error") or "preview failed"
+        print(err, file=sys.stderr)
+        return 1
+
+    if args.cmd == "commit":
+        pack_path = Path(args.pack_json)
+        if not pack_path.is_file():
+            print(f"pack-json missing: {pack_path}", file=sys.stderr)
+            return 1
+        pack = json.loads(pack_path.read_text(encoding="utf-8"))
+        if not pack.get("ok"):
+            print(pack.get("error") or "invalid pack json", file=sys.stderr)
+            return 1
+        result = commit_pack(store, pack)
+        Path(args.pack_json).with_suffix(".commit.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        if not result.get("ok"):
+            print(result.get("error") or "commit failed", file=sys.stderr)
+            return 1
+        added = result.get("added") or {}
+        print(
+            f"OK added {added.get('projects', 0)} projects "
+            f"{added.get('tasks', 0)} tasks {added.get('info', 0)} info"
+        )
+        # Partial row errors still ok=True but fix file may exist
+        if result.get("errors"):
+            return 2
+        return 0
+
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(_cli_main())

@@ -144,7 +144,7 @@ ImportMgmt_Catalog() {
             "run", ImportMgmt_RunPalacePack),
         Map("char", "L", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
             "run", ImportMgmt_RunPlanPack),
-        Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → web import (?import=1)",
+        Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
             "run", ImportMgmt_RunTaskPack),
         Map("char", "N", "name", "Desktop names", "detail", "clipangel_desktop_names.csv — CRUD + copy",
             "run", ImportMgmt_RunDesktopNames),
@@ -240,7 +240,6 @@ ImportMgmt_RunPlanPack(*) {
 }
 
 ImportMgmt_RunTaskPack(*) {
-    ImportMgmt_OnImportSuccess()
     Task_ImportPackFromDesktop()
 }
 
@@ -336,17 +335,17 @@ ImportMgmt_HelpText() {
     . "Re-run: #!+X → [L]`r`n`r`n"
     . "========== [T] TASK PACK ==========`r`n"
     . "Pack: TASK_PACK.txt`r`n"
-    . "Opens: Tasks web app at ?import=1 (preview + commit in browser)`r`n"
-    . "Writes: tasks/data via Python task_pack_import.py`r`n"
-    . "Success archive: tasks/data/imported/`r`n"
-    . "AI fix: Desktop TASK_AI_FIX.txt (written by web/Python; hub already closed on launch)`r`n"
+    . "Writes: tasks/data projects / tasks / info via Python task_pack_import.py`r`n"
+    . "Confirm: Palace-style preview ListView before save`r`n"
+    . "Success: archive → tasks/data/imported/; hub closes`r`n"
+    . "AI fix: Desktop TASK_AI_FIX.txt (copied to clipboard, ≥5s banner, hub closes)`r`n"
     . "Re-run: #!+X → [T]`r`n`r`n"
     . "========== [N] DESKTOP NAMES ==========`r`n"
     . "Registry: assets/data/clipangel_desktop_names.csv`r`n"
     . "Enter/C copies bare name (e.g. FINANCE_DAILY); A add, E edit, Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
-    . "OUTCOMES (Finance / Palace)`r`n"
+    . "OUTCOMES (Finance / Palace / Tasks)`r`n"
     . "• Full success: local CSV saved; Desktop pack archived; Import Manager closes`r`n"
     . "  (Finance daily still opens the transactions page)`r`n"
     . "• Failure with AI fix: fix text copied to clipboard; ≥5s banner; Import Manager closes`r`n"

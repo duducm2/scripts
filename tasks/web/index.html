@@ -608,52 +608,6 @@
         color: var(--text);
         font-size: 13px;
       }
-      .import-sources {
-        list-style: none;
-        margin: 0 0 16px;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .import-source {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px 14px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #252528;
-        cursor: pointer;
-        text-align: left;
-        font: inherit;
-        color: var(--text);
-        width: 100%;
-      }
-      .import-source:hover,
-      .import-source.selected {
-        border-color: var(--gold);
-      }
-      .import-source.selected {
-        background: rgba(241, 196, 15, 0.08);
-      }
-      .import-source .key {
-        flex: 0 0 auto;
-      }
-      .import-source .meta {
-        flex: 1;
-        min-width: 0;
-      }
-      .import-source .meta strong {
-        display: block;
-        font-size: 15px;
-      }
-      .import-source .meta .sub {
-        margin-top: 4px;
-      }
-      .import-actions .btn kbd {
-        margin-left: 6px;
-      }
       .inline-create {
         display: none;
         align-items: center;
@@ -775,29 +729,18 @@
         const state = {
           data: null,
           filter: "work",
-          view: "dashboard", // dashboard | import
+          view: "dashboard",
           projectId: "",
           taskId: "",
           emojiFilter: "",
           sectionFocus: "", // "" | work | personal | habits
           search: "",
-          importPreview: null,
-          importSource: "task_pack", // selected import kind
           pwSide: "personal", // last side for Personal/Work first-item toggle
           inlineCreate: null, // { project_id, section_id, filter, kind }
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
         };
-
-        const IMPORT_SOURCES = [
-          {
-            id: "task_pack",
-            key: "1",
-            title: "TASK_PACK",
-            blurb: "Desktop TASK_PACK.txt (Finance/Palace style markers).",
-          },
-        ];
 
         const $ = (sel) => document.querySelector(sel);
         const esc = (s) =>
@@ -1307,83 +1250,8 @@
           applySelection(false);
         }
 
-        function renderImport() {
-          $("#strip").innerHTML = "";
-          const prev = state.importPreview;
-          const src =
-            IMPORT_SOURCES.find((s) => s.id === state.importSource) ||
-            IMPORT_SOURCES[0];
-          const sources = IMPORT_SOURCES.map((s) => {
-            const selected = s.id === (src?.id || "") ? " selected" : "";
-            return `<button type="button" class="import-source${selected}" data-act="import-select" data-source="${esc(s.id)}">
-        <kbd class="key">${esc(s.key)}</kbd>
-        <span class="meta"><strong>${esc(s.title)}</strong><span class="sub">${esc(s.blurb)}</span></span>
-      </button>`;
-          }).join("");
-          $("#view").innerHTML = `<div class="panel">
-      <h2 class="section-title">Import</h2>
-      <p class="sub">Choose a source (<kbd>1</kbd>…), then preview / confirm.</p>
-      <div class="import-sources">${sources}</div>
-      <div class="toolbar import-actions" style="padding:4px 0 12px">
-        <button class="btn" data-act="import-preview" title="Preview (P)">Preview <kbd>P</kbd></button>
-        <button class="btn" data-act="import-commit" ${prev?.ok ? "" : "disabled"} title="Confirm (C)">Confirm <kbd>C</kbd></button>
-        <button class="btn" data-act="goto-dash" title="Home (Esc)">Home <kbd>Esc</kbd></button>
-      </div>
-      <pre class="sub" style="white-space:pre-wrap">${prev ? esc(JSON.stringify(prev.counts || prev, null, 2)) : "No preview yet"}</pre>
-      ${prev?.errors?.length ? `<p class="empty">${esc(prev.errors.join(" · "))}</p>` : ""}
-    </div>`;
-        }
-
-        async function runImportPreview() {
-          if (state.importSource !== "task_pack") {
-            toast("Select an import source");
-            return;
-          }
-          state.importPreview = await api("/api/import/preview", {
-            method: "POST",
-            body: "{}",
-          });
-          toast("Preview ready");
-          render();
-        }
-
-        async function runImportCommit() {
-          if (!state.importPreview?.ok) {
-            toast("Preview first");
-            return;
-          }
-          const r = await api("/api/import/commit", {
-            method: "POST",
-            body: JSON.stringify(state.importPreview || {}),
-          });
-          toast(`Imported +${r.added?.tasks || 0} tasks`);
-          state.importPreview = null;
-          state.view = "dashboard";
-          await refresh();
-        }
-
-        async function handleImportKey(ch) {
-          const src = IMPORT_SOURCES.find((s) => s.key === ch);
-          if (src) {
-            state.importSource = src.id;
-            state.importPreview = null;
-            toast(src.title + " selected");
-            render();
-            return;
-          }
-          if (ch === "p") {
-            await runImportPreview();
-            return;
-          }
-          if (ch === "c") {
-            await runImportCommit();
-            return;
-          }
-        }
-
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
-      <button class="btn${state.view === "import" ? " active" : ""}" data-act="goto-import" title="Import pack (Shift+K)">Import</button>
       <button class="btn" data-act="goto-github-md" title="Open exported tasks Markdown on GitHub">GitHub MD</button>
       <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H or F1)">Help</button>`;
         }
@@ -1486,17 +1354,10 @@
           ${row("⇧U", "❓ Doubt — tag selection, or filter if none")}
           ${row("⇧I", "⚡ Important on selection (same as ⇧T)")}
         </div></div>
-        <div class="help-group"><h4>Import view</h4><div class="help-rows">
-          ${row("1", "Select TASK_PACK")}
-          ${row("P", "Preview")}
-          ${row("C", "Confirm import")}
-          ${row("Esc", "Home (dashboard)")}
-          ${row("Backspace", "Go back one step")}
-        </div></div>
         <div class="help-group"><h4>App</h4><div class="help-rows">
-          ${row("⇧K", "Open Import")}
           ${row("GitHub MD", "Exported Work / Personal / Habits Markdown on GitHub")}
           ${row("⇧H / F1", "This help")}
+          ${row("Pack import", "Import Management (#!+X / Utility [J] → [T])")}
         </div></div>
       </div>
       <div class="modal-actions"><button class="btn" data-m="cancel">Close</button></div></div>`);
@@ -1551,8 +1412,7 @@
           $("#hdrSub").textContent =
             `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
           renderToolbar();
-          if (state.view === "import") renderImport();
-          else renderDashboard();
+          renderDashboard();
         }
 
         function scrollToPageHeader() {
@@ -2076,12 +1936,6 @@
             projectForm(null);
             return;
           }
-          if (k === "k") {
-            state.view = "import";
-            state.importPreview = null;
-            render();
-            return;
-          }
           if (k === "h") {
             helpModal();
             return;
@@ -2136,7 +1990,6 @@
           }
           if (modalOpen()) closeModal();
           state.view = "dashboard";
-          state.importPreview = null;
           if (searchNeedle()) clearSearch();
           if (state.emojiFilter) applyEmojiFilter("");
           if (state.sectionFocus) applySectionFocus("");
@@ -2158,10 +2011,6 @@
           }
           if (modalOpen()) {
             closeModal();
-            return true;
-          }
-          if (state.view === "import") {
-            goHome();
             return true;
           }
           if (searchNeedle()) {
@@ -2866,12 +2715,6 @@
               goHome();
               return;
             }
-            if (act === "goto-import") {
-              state.view = "import";
-              state.importPreview = null;
-              render();
-              return;
-            }
             if (act === "goto-github-md") {
               if (
                 state.sectionFocus === "work" ||
@@ -2991,21 +2834,6 @@
               inp.click();
               return;
             }
-            if (act === "import-select") {
-              const sid = actEl.getAttribute("data-source") || "task_pack";
-              state.importSource = sid;
-              state.importPreview = null;
-              render();
-              return;
-            }
-            if (act === "import-preview") {
-              await runImportPreview();
-              return;
-            }
-            if (act === "import-commit") {
-              await runImportCommit();
-              return;
-            }
           } catch (err) {
             toast(err.message || String(err));
           }
@@ -3104,25 +2932,11 @@
               helpModal();
               return;
             }
-            if (state.view === "import") return;
             if (cmd) {
               e.preventDefault();
               e.stopPropagation();
               try {
                 await runShiftCommand(cmd);
-              } catch (err) {
-                toast(err.message || String(err));
-              }
-            }
-            return;
-          }
-
-          if (state.view === "import") {
-            const ch = (e.key || "").toLowerCase();
-            if (/^[1pc]$/.test(ch)) {
-              e.preventDefault();
-              try {
-                await handleImportKey(ch);
               } catch (err) {
                 toast(err.message || String(err));
               }
@@ -3216,8 +3030,6 @@
             applySearch(searchInp.value);
           });
         }
-        if (new URLSearchParams(location.search).get("import") === "1")
-          state.view = "import";
         refresh().catch((err) => {
           $("#hdrSub").textContent = err.message;
           toast(err.message);
