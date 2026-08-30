@@ -49,7 +49,6 @@ Finance_ShowMainMenu() {
         ["G", "Goals", "Funds and targets"],
         ["L", "Recurring bills", "Tracking only, no auto-charge"],
         ["K", "Categories", "CRUD, search, filter"],
-        ["I", "AI import", "Desktop daily / monthly"],
         ["S", "Settings", "Dashboard widgets"]
     ]
 
@@ -77,12 +76,13 @@ Finance_ShowMainMenu() {
 
     g_FinanceGui.SetFont("s9 c808080", "Segoe UI")
     g_FinanceGui.Add("Text", "x20 y586 w880",
-        "Backspace utility shortcuts   Esc close   letters open a module   S settings")
+        "Backspace utility shortcuts   Esc close   letters open a module   S settings   Pack import via #!+X / Utility [J]"
+    )
 
     Finance_BindHotkeys([
         ["d", Finance_OnDash], ["t", Finance_OnTx], ["a", Finance_OnAcc], ["c", Finance_OnCard],
         ["b", Finance_OnBud], ["g", Finance_OnGoals], ["l", Finance_OnRec], ["k", Finance_OnCat],
-        ["i", Finance_OnImp], ["s", Finance_OnSet],
+        ["s", Finance_OnSet],
         ["Backspace", (*) => Finance_ReturnToUtilityShortcuts()],
         ["Escape", (*) => Finance_CloseGui()]
     ])
@@ -119,9 +119,6 @@ Finance_OnRec(*) {
 }
 Finance_OnCat(*) {
     Finance_ShowCategories()
-}
-Finance_OnImp(*) {
-    Finance_ShowImportMenu()
 }
 Finance_OnSet(*) {
     Finance_ShowSettings()
@@ -255,30 +252,4 @@ Finance_OnRebuildBalances(*) {
     n := Finance_RebuildBalancesFromTransactions()
     Finance_Notify("Rebuilt balances from " . n . " transaction(s)", 2200, BANNER_ACCENT_SUCCESS)
     Finance_ShowMainMenu()
-}
-
-Finance_ShowImportMenu() {
-    global g_FinanceGui
-    Finance_CloseGui()
-    g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "AI import")
-    g_FinanceGui.SetFont("s11", "Segoe UI")
-    g_FinanceGui.Add("Text", "w520",
-        "Import FINANCE_*.txt packs from the Desktop (newest match). Converts the pack to CSV locally. Also accepts legacy .csv and gemini-code*.txt dumps."
-    )
-    g_FinanceGui.SetFont("s12 Bold", "Segoe UI")
-    g_FinanceGui.Add("Text", "y+16", "[1]  Daily transactions   FINANCE_DAILY*.txt")
-    g_FinanceGui.Add("Text", "y+8", "[2]  Monthly investments & goals   FINANCE_MONTHLY*.txt")
-    g_FinanceGui.SetFont("s10 Norm", "Segoe UI")
-    g_FinanceGui.Add("Text", "y+16 c555555 w520",
-        "Prompts: Utility Shortcuts (#!+U) → Prompts → [d] daily / [m] monthly")
-    g_FinanceGui.Add("Text", "y+8 c555555", "Esc / Backspace = back")
-    g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
-    g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
-    Finance_BindHotkeys([
-        ["1", (*) => Finance_ImportDaily()],
-        ["2", (*) => Finance_ImportMonthly()],
-        ["Backspace", (*) => Finance_ShowMainMenu()],
-        ["Escape", (*) => Finance_ShowMainMenu()]
-    ])
-    Finance_CenterGui(g_FinanceGui, 560, 220)
 }

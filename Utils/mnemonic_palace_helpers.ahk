@@ -19,7 +19,7 @@ Palace_Terms() {
         ["Memory Palace",
             "A location with exactly one generated image. Numbered within its Study (auto-assigned on add/import when omitted)."],
         ["Study Plan",
-            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Main menu [J] imports Desktop PLAN_PACK; [I] imports mnemonic PALACE_PACK .txt|.csv (auto palace numbers); [L] browses plans."],
+            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Import Management [L] imports Desktop PLAN_PACK; [P] imports mnemonic PALACE_PACK .txt|.csv (auto palace numbers); Memory Palace [L] browses plans."],
         ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
         ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],
         ["Knowledge Atom",

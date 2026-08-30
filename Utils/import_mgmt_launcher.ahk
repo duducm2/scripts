@@ -1,18 +1,21 @@
 ; =============================================================================
 ; Utils module: import_mgmt_launcher.ahk
-; Import Management main menu (Utility Shortcuts [J]) — finance & palace imports
+; Import Management hub — sole AHK UI for pack imports
+; Entry: #!+X, Utility Shortcuts [J], Win+Alt+Shift+F double-tap
 ; Agent docs: docs/prompt-data-output-and-finance-packs.md
 ; =============================================================================
 
 global g_ImportMgmtGui := false
 global g_ImportMgmtHotkeys := []
+global g_ImportMgmtLv := false
+global g_ImportMgmtCatalog := []
 
 ImportMgmt_LaunchApp() {
     ImportMgmt_ShowMainMenu()
 }
 
 ImportMgmt_CloseGui() {
-    global g_ImportMgmtGui
+    global g_ImportMgmtGui, g_ImportMgmtLv
     ImportMgmt_UnbindHotkeys()
     try {
         if (IsObject(g_ImportMgmtGui))
@@ -20,6 +23,7 @@ ImportMgmt_CloseGui() {
     } catch {
     }
     g_ImportMgmtGui := false
+    g_ImportMgmtLv := false
 }
 
 ImportMgmt_IsOpen() {
@@ -129,76 +133,120 @@ ImportMgmt_CenterGui(guiObj, w := 560, h := 220) {
     guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
 }
 
+; Single source for ListView rows, letter accelerators, and help sections.
+ImportMgmt_Catalog() {
+    return [
+        Map("char", "D", "name", "Finance daily", "detail", "FINANCE_DAILY.txt → transactions",
+            "run", ImportMgmt_RunFinanceDaily),
+        Map("char", "M", "name", "Finance monthly", "detail", "FINANCE_MONTHLY.txt → accounts / goals",
+            "run", ImportMgmt_RunFinanceMonthly),
+        Map("char", "P", "name", "Palace mnemonic pack", "detail", "PALACE_PACK.txt → palaces / beasts / atoms",
+            "run", ImportMgmt_RunPalacePack),
+        Map("char", "L", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
+            "run", ImportMgmt_RunPlanPack),
+        Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → web import (?import=1)",
+            "run", ImportMgmt_RunTaskPack),
+        Map("char", "N", "name", "Desktop names", "detail", "clipangel_desktop_names.csv — CRUD + copy",
+            "run", ImportMgmt_RunDesktopNames),
+        Map("char", "H", "name", "Help", "detail", "Per-workflow rules and outcomes",
+            "run", ImportMgmt_OnHelp)
+    ]
+}
+
 ImportMgmt_ShowMainMenu() {
-    global g_ImportMgmtGui
+    global g_ImportMgmtGui, g_ImportMgmtLv, g_ImportMgmtCatalog
     ImportMgmt_CloseGui()
+
+    g_ImportMgmtCatalog := ImportMgmt_Catalog()
+    contentW := 700
+    lvH := 220
+    guiW := 740
+    guiH := 320
 
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
-    g_ImportMgmtGui.BackColor := "1E1E1E"
+    g_ImportMgmtGui.Add("Text", "w" . contentW,
+        "Char = import   Enter/double-click = import   H = help   Backspace = utility shortcuts   Esc = close")
+    g_ImportMgmtLv := g_ImportMgmtGui.Add("ListView", "w" . contentW . " h" . lvH . " -Multi",
+        ["Char", "Workflow", "Pack / detail"])
+    g_ImportMgmtLv.OnEvent("DoubleClick", ImportMgmt_OnListActivate)
     g_ImportMgmtGui.OnEvent("Close", (*) => ImportMgmt_CloseGui())
     g_ImportMgmtGui.OnEvent("Escape", (*) => ImportMgmt_CloseGui())
 
-    g_ImportMgmtGui.SetFont("s16 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y16 w520", "Import Management")
-    g_ImportMgmtGui.SetFont("s10 cC0C0C0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y48 w520",
-        "Import AI-exported packs from Desktop into local CSV data")
+    for item in g_ImportMgmtCatalog
+        g_ImportMgmtLv.Add("", item["char"], item["name"], item["detail"])
+    try g_ImportMgmtLv.ModifyCol(1, 50)
+    try g_ImportMgmtLv.ModifyCol(2, 200)
+    try g_ImportMgmtLv.ModifyCol(3, 430)
+    if (g_ImportMgmtCatalog.Length) {
+        try g_ImportMgmtLv.Modify(1, "Select Focus Vis")
+        catch {
+        }
+    }
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y84 w520", "[D]  Finance daily")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y110 w520",
-        "FINANCE_DAILY*.txt → transactions")
+    pairs := []
+    for item in g_ImportMgmtCatalog {
+        ch := StrLower(item["char"])
+        runFn := item["run"]
+        pairs.Push([ch, runFn])
+    }
+    pairs.Push(["Enter", ImportMgmt_OnListActivate])
+    pairs.Push(["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()])
+    pairs.Push(["Escape", (*) => ImportMgmt_CloseGui()])
+    ImportMgmt_BindHotkeys(pairs)
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y140 w520", "[M]  Finance monthly")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y166 w520",
-        "FINANCE_MONTHLY*.txt → accounts / goals adjustments")
+    ImportMgmt_CenterGui(g_ImportMgmtGui, guiW, guiH)
+    try g_ImportMgmtLv.Focus()
+    catch {
+    }
+}
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y196 w520", "[P]  Palace mnemonic pack")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y222 w520",
-        "PALACE_PACK*.txt → palaces / beasts / atoms")
+ImportMgmt_SelectedIndex() {
+    global g_ImportMgmtLv
+    if (!IsObject(g_ImportMgmtLv))
+        return 0
+    try {
+        return g_ImportMgmtLv.GetNext(0)
+    } catch {
+        return 0
+    }
+}
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y252 w520", "[L]  Study plan pack")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y278 w520",
-        "PLAN_PACK*.txt → study plans")
+ImportMgmt_OnListActivate(*) {
+    global g_ImportMgmtCatalog
+    idx := ImportMgmt_SelectedIndex()
+    if (idx < 1 || idx > g_ImportMgmtCatalog.Length)
+        return
+    runFn := g_ImportMgmtCatalog[idx]["run"]
+    runFn()
+}
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y308 w520", "[T]  Task pack")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y334 w520",
-        "TASK_PACK*.txt → projects / tasks / info")
+; --- Thin public runners (hub API; domain parsers stay in *_import modules) ---
 
-    g_ImportMgmtGui.SetFont("s12 cWhite Bold", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y364 w520", "[N]  Desktop names")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y390 w520",
-        "Manage pack filenames — copy, add, edit, delete")
+ImportMgmt_RunFinanceDaily(*) {
+    Finance_ImportDaily()
+}
 
-    g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
-    g_ImportMgmtGui.Add("Text", "x20 y430 w520",
-        "Also available: Finance [F], Memory Palace, and Tasks launchers")
-    g_ImportMgmtGui.Add("Text", "x20 y450 w520",
-        "[H] help   Backspace utility shortcuts   Esc close")
+ImportMgmt_RunFinanceMonthly(*) {
+    Finance_ImportMonthly()
+}
 
-    ImportMgmt_BindHotkeys([
-        ["d", ImportMgmt_OnImportFinanceDaily],
-        ["m", ImportMgmt_OnImportFinanceMonthly],
-        ["p", ImportMgmt_OnImportPalacePack],
-        ["l", ImportMgmt_OnImportPlanPack],
-        ["t", ImportMgmt_OnImportTaskPack],
-        ["n", ImportMgmt_OnDesktopNames],
-        ["h", ImportMgmt_OnHelp],
-        ["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()],
-        ["Escape", (*) => ImportMgmt_CloseGui()]
-    ])
-    ImportMgmt_CenterGui(g_ImportMgmtGui, 560, 490)
+ImportMgmt_RunPalacePack(*) {
+    Palace_ImportMnemonicsFromDesktop()
+}
+
+ImportMgmt_RunPlanPack(*) {
+    Palace_ImportPlanPackFromDesktop()
+}
+
+ImportMgmt_RunTaskPack(*) {
+    ImportMgmt_OnImportSuccess()
+    Task_ImportPackFromDesktop()
+}
+
+ImportMgmt_RunDesktopNames(*) {
+    ImportMgmt_CloseGui()
+    ClipAngelExport_ShowNamesManager(ImportMgmt_ShowMainMenu)
 }
 
 ImportMgmt_OnHelp(*) {
@@ -206,26 +254,24 @@ ImportMgmt_OnHelp(*) {
 }
 
 ImportMgmt_ShowHelp() {
-    global g_ImportMgmtGui
+    global g_ImportMgmtGui, g_ImportMgmtLv
     ImportMgmt_CloseGui()
 
     body := ImportMgmt_HelpText()
-    winW := 620
-    winH := 480
+    winW := 680
+    winH := 560
     bodyW := winW - 32
     bodyH := winH - 100
 
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management — Help")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
-    g_ImportMgmtGui.BackColor := "1E1E1E"
-    g_ImportMgmtGui.SetFont("s14 cWhite Bold", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y12 w" . bodyW, "Import rules")
-    g_ImportMgmtGui.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
+    g_ImportMgmtGui.SetFont("s9", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y38 w" . bodyW,
-        "Canonical pack names, overwrite policy, fix-file recovery")
+        "Canonical pack names, overwrite policy, fix-file recovery — Esc / Backspace return to list")
     edit := g_ImportMgmtGui.Add("Edit",
         "x16 y64 w" . bodyW . " h" . bodyH
-        . " ReadOnly -WantReturn +VScroll Multi Background252526 cD4D4D4",
+        . " ReadOnly -WantReturn +VScroll Multi",
         body)
     try edit.SetFont("s10", "Consolas")
     catch {
@@ -233,7 +279,7 @@ ImportMgmt_ShowHelp() {
         catch {
         }
     }
-    g_ImportMgmtGui.SetFont("s9 c808080", "Segoe UI")
+    g_ImportMgmtGui.SetFont("s9", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
     "Esc / Backspace — main menu")
     g_ImportMgmtGui.OnEvent("Close", (*) => ImportMgmt_ShowMainMenu())
@@ -246,42 +292,67 @@ ImportMgmt_ShowHelp() {
 }
 
 ImportMgmt_HelpText() {
-    return "IMPORT KEYS (Utility Shortcuts [J])`r`n"
-    . "[D] Finance daily    FINANCE_DAILY.txt      →  transactions`r`n"
-    . "[M] Finance monthly  FINANCE_MONTHLY.txt    →  accounts / goals`r`n"
-    . "[P] Palace pack      PALACE_PACK.txt        →  palaces / beasts / atoms`r`n"
-    . "[L] Study plan       PLAN_PACK.txt          →  study plans`r`n"
-    . "[T] Task pack        TASK_PACK.txt          →  projects / tasks / info`r`n"
-    . "[N] Desktop names    clipangel_desktop_names.csv  →  CRUD + copy`r`n`r`n"
-    . "Same imports also live under Finance [F] and Memory Palace. Tasks opens the web app.`r`n`r`n"
+    return "ENTRY POINTS`r`n"
+    . "#!+X  ·  Utility Shortcuts [J]  ·  Win+Alt+Shift+F double-tap`r`n"
+    . "This hub is the only AHK import UI. Domain apps no longer expose import menus.`r`n`r`n"
+    . "LIST KEYS`r`n"
+    . "Char = run workflow   Enter / double-click = run selected   Esc = close`r`n"
+    . "Backspace = Utility Shortcuts`r`n`r`n"
     . "CANONICAL DESKTOP NAMES (always overwrite)`r`n"
-    . "Save AI packs with the exact filename above on Desktop.`r`n"
+    . "Save AI packs with the exact filename below on Desktop.`r`n"
     . "Never add updated, corrected, v2, or similar suffixes.`r`n"
-    . "Importer consolidates variants (*_updated*, gemini-code-….txt) to the canonical name before parsing.`r`n`r`n"
-    . "WORKFLOW`r`n"
+    . "Importer consolidates variants (*_updated*, gemini-code-….txt) to the canonical name.`r`n`r`n"
+    . "GENERAL WORKFLOW`r`n"
     . "1. Run the pack prompt (#!+U → Prompts, or dictation flow).`r`n"
     . "2. Save the pack to Desktop (Quick Download or copy fence).`r`n"
-    . "3. Press the import key here — newest matching pack is imported.`r`n`r`n"
-    . "PER-IMPORT RULES`r`n"
-    . "[D] Finance daily / [M] Finance monthly`r`n"
-    . "  • Confirm dialog before save; appends transactions or monthly adjustments.`r`n`r`n"
-    . "[P] Palace mnemonic pack / [L] Study plan pack`r`n"
-    . "  • Pack upsert with cross-link validation; confirm before save.`r`n`r`n"
-    . "[T] Task pack`r`n"
-    . "  • Opens Tasks web app (?import=1); preview + confirm in browser.`r`n`r`n"
-    . "DESKTOP PACK NAMES ([N])`r`n"
-    . "  • Registry: assets/data/clipangel_desktop_names.csv`r`n"
-    . "  • [Enter] or [C] copies the bare name (e.g. FINANCE_DAILY) to clipboard`r`n"
-    . "  • [A] add, [E] edit, Delete remove; Esc / Backspace returns to this menu`r`n"
-    . "  • ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
-    . "OUTCOMES`r`n"
+    . "3. Open Import Management → Char / Enter on the workflow.`r`n`r`n"
+    . "========== [D] FINANCE DAILY ==========`r`n"
+    . "Pack: FINANCE_DAILY.txt`r`n"
+    . "Writes: finances/data transactions (append)`r`n"
+    . "Confirm: editable preview before save`r`n"
+    . "Success: archive pack → finances/data/imported/; opens transactions; hub closes`r`n"
+    . "AI fix: Desktop FINANCE_AI_FIX.txt (copied to clipboard, ≥5s banner, hub closes)`r`n"
+    . "Re-run: paste fix → AI re-delivers pack → save FINANCE_DAILY.txt → #!+X → [D]`r`n`r`n"
+    . "========== [M] FINANCE MONTHLY ==========`r`n"
+    . "Pack: FINANCE_MONTHLY.txt`r`n"
+    . "Writes: accounts / goals adjustments + related transactions`r`n"
+    . "Confirm: preview before save`r`n"
+    . "Success: archive → finances/data/imported/; hub closes (no Finance menu)`r`n"
+    . "AI fix: FINANCE_AI_FIX.txt (same clipboard / banner / close behavior)`r`n"
+    . "Re-run: #!+X → [M]`r`n`r`n"
+    . "========== [P] PALACE MNEMONIC PACK ==========`r`n"
+    . "Pack: PALACE_PACK.txt (or PALACE_*.txt|.csv sections)`r`n"
+    . "Writes: mnemonics/data palaces / beasts / atoms (upsert + cross-link validation)`r`n"
+    . "Confirm: preview before save`r`n"
+    . "Success: archive → mnemonics/data/imported/; optional practice MD sync; hub closes`r`n"
+    . "AI fix: Desktop PALACE_AI_FIX.txt (clipboard + ≥5s banner + hub closes)`r`n"
+    . "Re-run: #!+X → [P]`r`n`r`n"
+    . "========== [L] STUDY PLAN PACK ==========`r`n"
+    . "Pack: PLAN_PACK.txt`r`n"
+    . "Writes: study plans / plan items / resources; syncs plans Markdown`r`n"
+    . "Confirm: preview before save`r`n"
+    . "Success: archive → mnemonics/data/imported/; hub closes`r`n"
+    . "Failure without fix file: toast; hub stays open if launched from here`r`n"
+    . "Re-run: #!+X → [L]`r`n`r`n"
+    . "========== [T] TASK PACK ==========`r`n"
+    . "Pack: TASK_PACK.txt`r`n"
+    . "Opens: Tasks web app at ?import=1 (preview + commit in browser)`r`n"
+    . "Writes: tasks/data via Python task_pack_import.py`r`n"
+    . "Success archive: tasks/data/imported/`r`n"
+    . "AI fix: Desktop TASK_AI_FIX.txt (written by web/Python; hub already closed on launch)`r`n"
+    . "Re-run: #!+X → [T]`r`n`r`n"
+    . "========== [N] DESKTOP NAMES ==========`r`n"
+    . "Registry: assets/data/clipangel_desktop_names.csv`r`n"
+    . "Enter/C copies bare name (e.g. FINANCE_DAILY); A add, E edit, Delete remove`r`n"
+    . "Esc / Backspace returns to this Import Management list`r`n"
+    . "ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
+    . "OUTCOMES (Finance / Palace)`r`n"
     . "• Full success: local CSV saved; Desktop pack archived; Import Manager closes`r`n"
     . "  (Finance daily still opens the transactions page)`r`n"
     . "• Failure with AI fix: fix text copied to clipboard; ≥5s banner; Import Manager closes`r`n"
     . "  → paste into AI companion → re-deliver pack → reopen Import Manager`r`n`r`n"
-    . "AI FIX FILES (written on failure — always overwrite)`r`n"
-    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | TASK_AI_FIX.txt`r`n"
-    . "Contents are auto-copied when written from Finance/Palace import.`r`n`r`n"
+    . "AI FIX FILES (always overwrite on Desktop)`r`n"
+    . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | TASK_AI_FIX.txt`r`n`r`n"
     . "PACK FORMAT`r`n"
     . "===PREVIEW=== … ===END_PREVIEW===`r`n"
     . "===FILE: PACK.csv=== … ===END_FILE===`r`n"
@@ -295,28 +366,22 @@ ImportMgmt_ReturnToUtilityShortcuts() {
     }
 }
 
+; Backward-compatible aliases (prefer ImportMgmt_Run* )
 ImportMgmt_OnImportFinanceDaily(*) {
-    Finance_ImportDaily()
+    ImportMgmt_RunFinanceDaily()
 }
-
 ImportMgmt_OnImportFinanceMonthly(*) {
-    Finance_ImportMonthly()
+    ImportMgmt_RunFinanceMonthly()
 }
-
 ImportMgmt_OnImportPalacePack(*) {
-    Palace_ImportMnemonicsFromDesktop()
+    ImportMgmt_RunPalacePack()
 }
-
 ImportMgmt_OnImportPlanPack(*) {
-    Palace_ImportPlanPackFromDesktop()
+    ImportMgmt_RunPlanPack()
 }
-
 ImportMgmt_OnImportTaskPack(*) {
-    ImportMgmt_OnImportSuccess()
-    Task_ImportPackFromDesktop()
+    ImportMgmt_RunTaskPack()
 }
-
 ImportMgmt_OnDesktopNames(*) {
-    ImportMgmt_CloseGui()
-    ClipAngelExport_ShowNamesManager(ImportMgmt_ShowMainMenu)
+    ImportMgmt_RunDesktopNames()
 }

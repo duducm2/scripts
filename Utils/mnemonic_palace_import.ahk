@@ -398,7 +398,7 @@ Palace_WriteAiCompanionImportError(errorMsg, extraNotes := "") {
         "- Put PREVIEW only inside the pack — do not duplicate PREVIEW/CSV in chat outside the pack artifact.`r`n"
         . "- Re-deliver using the exact canonical filename (PALACE_PACK.txt). Overwrite any prior Desktop copy.`r`n"
         . "- Never add updated, corrected, v2, or similar suffixes to the filename.`r`n`r`n"
-        . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Memory Palace [I] again.`r`n"
+        . "After you fix it, I will save PALACE_PACK.txt to Desktop and run Import Management [P] again.`r`n"
     path := A_Desktop . "\PALACE_AI_FIX.txt"
     try {
         Palace_WriteUtf8(path, body)
@@ -871,7 +871,7 @@ Palace_ResolveDesktopPlanPackPath() {
     return PackImport_NormalizeDesktopSource(newest, "PLAN_PACK.txt")
 }
 
-; Main menu [J]: PLAN_PACK only.
+; Import Management [L]: PLAN_PACK only.
 Palace_ImportPlanPackFromDesktop(*) {
     Palace_EnsureData()
     pathPlanPack := Palace_ResolveDesktopPlanPackPath()
@@ -883,7 +883,7 @@ Palace_ImportPlanPackFromDesktop(*) {
     return Palace_ImportPlansFromDesktop(pathPlanPack)
 }
 
-; Main menu [I]: mnemonic PALACE packs only (never PLAN_PACK).
+; Import Management [P]: mnemonic PALACE packs only (never PLAN_PACK).
 Palace_ImportMnemonicsFromDesktop(*) {
     Palace_EnsureData()
     pathPalaces := Palace_ResolveDesktopPalacesPath()

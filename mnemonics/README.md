@@ -67,15 +67,16 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 | 3         | Favorite (open / set favorite link via API)        |
 | D         | Dashboard (Python → Chrome)                        |
 | B         | Browse (studies → palaces → beasts → atoms)        |
-| I         | AI import (Desktop `PALACE_*` pack, one preview)   |
+| L         | Plans (browse / edit study plan checklists)        |
 | Q         | Quick image (newest Desktop PNG/JPG → last palace) |
 | G         | Practice on GitHub (synced mobile notes)           |
 | O         | Plans on GitHub (synced study plan checklists)     |
 | R         | Regen Markdown (force all practice + plan `.md`)   |
 | H         | Glossary                                           |
-| P         | Push scripts repo to cloud                         |
 | Backspace | Return to Utility Shortcuts                        |
 | Esc       | Close without reopening Utility Shortcuts          |
+
+Pack imports (PALACE_PACK / PLAN_PACK): Import Management (`#!+X` or Utility Shortcuts `[J]`).
 
 ## Migrate legacy Markdown
 
@@ -133,7 +134,7 @@ Prompt context files resolve from `mnemonics/technique/` first.
 
 ## Practice Markdown (mobile / GitHub)
 
-Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, AI import **[I]**, and quick image attach **[Q]** (loading bar shown during generation).
+Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images copied to `mnemonics/output/practice/images/`. Files sync automatically after browse CRUD, Import Management palace pack import **[P]**, and quick image attach **[Q]** (loading bar shown during generation).
 
 **Layout (GitHub mobile):** Export mirrors the dashboard hierarchy — collapsible Memory Palaces only (`<details>`; newest open by default). Beasts are flat headings (`### 🟧 …`, always expanded) with stacked **Concept / Quote / Story / Sensory** field blocks. Emoji markers match the dashboard/technique canon: `🟧` beast, `🟦` zone (when set), `💡` concept only, sensory channel map (`👁️👂✋👃👅🌡️`, emoji then word). Image prompts are omitted (recall-only). GitHub’s Markdown renderer does not apply dashboard CSS (no dark/gold theme); structural and label parity is intentional for phone recall.
 
@@ -161,7 +162,7 @@ py -3 mnemonics\python\study_practice_md.py `
 1. Technique prompts (Utility Shortcuts → Prompts): `5` transcript, `4` create mnemonic stories, `a` story reduction, `g` preserve background.
 2. Stories / reduction deliver one downloadable **`PALACE_PACK.txt`**: human-readable `===PREVIEW===` plus three labeled CSV sections (`===FILE: PALACE_PALACES.csv===`, `BEASTS`, `ATOMS`). A `gemini-code-….txt` dump with the same markers also works. Edit the pack on Desktop if needed.
 3. Separate Desktop files `PALACE_PALACES*` / `PALACE_BEASTS*` / `PALACE_ATOMS*` still import when present (preferred over pack if any exist).
-4. Memory Palace **[I]** — one-shot import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
+4. Import Management (`#!+X` / Utility `[J]` → **[P]**) — one-shot import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
 5. After generating a palace image: save PNG/JPG to Desktop → Memory Palace **[Q]** attaches the newest image to the last palace under `LastStudyId` (stored under `mnemonics/output/practice/images/`).
 
 ### Prompt context pack

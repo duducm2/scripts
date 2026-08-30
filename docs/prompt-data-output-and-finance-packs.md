@@ -59,7 +59,7 @@ Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors wh
 | Finance           | [`Utils/finance_helpers.ahk`](../Utils/finance_helpers.ahk)                                                           | [`Utils/finance_import.ahk`](../Utils/finance_import.ahk)                                                                                                         | [`Utils/finance_launcher.ahk`](../Utils/finance_launcher.ahk)                 | `finances/data/*.csv`  |
 | Memory Palace     | [`Utils/mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk)                                           | [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                                                                         | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) | `mnemonics/data/*.csv` |
 | Tasks             | [`Utils/task_helpers.ahk`](../Utils/task_helpers.ahk) + [`tasks/python/task_store.py`](../tasks/python/task_store.py) | [`tasks/python/task_pack_import.py`](../tasks/python/task_pack_import.py) (+ MD migrate: [`tasks/python/migrate_from_md.py`](../tasks/python/migrate_from_md.py)) | [`Utils/task_launcher.ahk`](../Utils/task_launcher.ahk) → web `:8766`         | `tasks/data/*.csv`     |
-| Import Management | —                                                                                                                     | — (delegates to finance/palace/task importers)                                                                                                                    | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
+| Import Management | —                                                                                                                     | Hub UI + `ImportMgmt_Run*` → domain importers                                                                                                                     | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)         | —                      |
 
 Shared Desktop normalization: [`Utils/pack_import_desktop.ahk`](../Utils/pack_import_desktop.ahk).
 
@@ -73,9 +73,9 @@ Utility Shortcuts category wiring: [`Utils/hotstring_selector_core.ahk`](../Util
 2. Create pack prompt in `assets/prompt/` with `===PREVIEW===` / `===FILE: PACK_NAME.csv===` markers and strict CSV header.
 3. Register in `prompts.ini` (`ExpectsDataOutput=1`, `DataOutputFormat`, context files).
 4. Create `*_import.ahk`: discover → materialize → parse → upsert → outcome; add `*_FailAiImport` + `*_WriteAiCompanionImportError` + `*_AiCompanionFixGuidance`.
-5. Create `*_launcher.ahk` with `[I] AI import` menu item.
-6. Wire Utility Shortcuts category in `hotstring_selector_core.ahk` / `handlers_02.ahk`; `#include` from `Utils.ahk`.
-7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable (Import Management `[J]` → `[N]`).
+5. Register the workflow in Import Management catalog (`ImportMgmt_Catalog` in [`import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)) — do **not** add an in-app import menu on the domain launcher.
+6. Wire Utility Shortcuts category in `hotstring_selector_core.ahk` / `handlers_02.ahk` if needed; `#include` from `Utils.ahk`.
+7. Add ClipAngel name to `clipangel_desktop_names.csv` if applicable (Import Management `[N]`).
 8. **Update this doc** (domain table, columns, fix file name, flow steps).
 9. Pack-only columns must appear in the pack prompt header but **not** in `*_Headers()` / stored CSV unless intentionally persisted.
 
@@ -106,15 +106,15 @@ flowchart LR
     Pack["Desktop pack .txt"]
   end
   subgraph importSide [Import side]
-    Launcher["Sub-app launcher"]
-    Importer["import_*.ahk"]
+    Hub["Import Management hub"]
+    Importer["import_*.ahk / task_pack_import.py"]
     LocalCsv["Local data CSV"]
   end
   PromptMgr --> PromptBody
   ContextCsv --> PromptBody
   PromptBody --> Pack
   Pack --> Importer
-  Launcher --> Importer
+  Hub --> Importer
   Importer --> LocalCsv
   ContextCsv -.->|"next run reads updated rows"| LocalCsv
 ```
@@ -129,28 +129,28 @@ flowchart LR
 | **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                        |
 | **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)                 |
 | **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files; CRUD + copy via Import Management `[N]` |
-| **Import launcher**                                                                                                   | Sub-app menu item that runs the importer on the newest Desktop match                |
+| **Import Management hub**                                                                                             | Sole AHK import UI (`#!+X` / Utility `[J]` / `#!+F` double-tap) — Char ListView     |
 | **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context   |
 
 ### Pack-import domains
 
-| Domain          | Shortcuts     | Import Management `[J]` | Prompt (char) | Pack file             | Context                     | Importer                                                             | Confirm UI |
-| --------------- | ------------- | ----------------------- | ------------- | --------------------- | --------------------------- | -------------------------------------------------------------------- | ---------- |
-| Finance daily   | `[F]` → `[I]` | `[D]`                   | `[d]`         | `FINANCE_DAILY.txt`   | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
-| Finance monthly | `[F]` → `[I]` | `[M]`                   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
-| Memory Palace   | `[N]` → `[I]` | `[P]`                   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
-| Study plans     | `[N]` → `[J]` | `[L]`                   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
-| Tasks           | `[T]` web app | `[T]`                   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) via web | Yes (web)  |
+| Domain          | Import entry                | Hub key | Prompt (char) | Pack file             | Context                     | Importer                                                             | Confirm UI |
+| --------------- | --------------------------- | ------- | ------------- | --------------------- | --------------------------- | -------------------------------------------------------------------- | ---------- |
+| Finance daily   | `#!+X` / Utility `[J]`      | `[D]`   | `[d]`         | `FINANCE_DAILY.txt`   | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
+| Finance monthly | `#!+X` / Utility `[J]`      | `[M]`   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                  | Yes        |
+| Memory Palace   | `#!+X` / Utility `[J]`      | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
+| Study plans     | `#!+X` / Utility `[J]`      | `[L]`   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)  | Yes        |
+| Tasks           | Hub `[T]` → web `?import=1` | `[T]`   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) via web | Yes (web)  |
 
-Import Management help: `[J]` → `[H]` (canonical names, overwrite policy, per-import rules, desktop name registry).
+Import Management help: `[H]` in the hub ListView (canonical names, overwrite policy, per-import rules, desktop name registry).
 
-**Desktop pack names:** `[J]` → `[N]` opens the name registry ([`clip_angel_export_desktop.ahk`](../Utils/clip_angel_export_desktop.ahk)). `[Enter]` or `[C]` copies the bare CSV `name` (e.g. `FINANCE_DAILY`) to the clipboard; `[A]` / `[E]` / Delete maintain the list. ClipAngel export uses the same registry when renaming files.
+**Desktop pack names:** hub `[N]` opens the name registry ([`clip_angel_export_desktop.ahk`](../Utils/clip_angel_export_desktop.ahk)). `[Enter]` or `[C]` copies the bare CSV `name` (e.g. `FINANCE_DAILY`) to the clipboard; `[A]` / `[E]` / Delete maintain the list. ClipAngel export uses the same registry when renaming files.
 
 Typical human workflow:
 
 1. Open prompt (Utility Shortcuts or dictation) with dictation/context attached.
 2. AI returns a pack → save to Desktop (Quick Download `#!+Shift+9`, or copy fence).
-3. Open sub-app launcher → **AI import** (or Import Management `[J]` for any domain) → importer normalizes Desktop name, parses pack, upserts local CSV, archives source file on full success.
+3. Open Import Management (`#!+X` or Utility `[J]`) → Char / Enter on the workflow → importer normalizes Desktop name, parses pack, upserts local CSV, archives source file on full success.
 
 ### AI fix recovery
 
@@ -166,9 +166,9 @@ Each fix file contains: **IMPORT ERROR**, **EXTRA NOTES** (per-row failures when
 
 Recovery workflow:
 
-1. Importer writes fix file + error toast (mentions Desktop path).
+1. Importer writes fix file + error toast; Finance/Palace also copy fix text to clipboard and close Import Management (≥5s banner).
 2. Paste fix file into the AI companion.
-3. AI re-delivers a corrected pack → save/overwrite the **canonical** filename on Desktop → run **AI import** again (Finance `[F]`, Memory Palace `[N]`, or Import Management `[J]`).
+3. AI re-delivers a corrected pack → save/overwrite the **canonical** filename on Desktop → run import again via Import Management (`#!+X` / Utility `[J]`).
 
 ---
 
@@ -252,7 +252,9 @@ Post-import daily opens Transactions; card expenses show **card name**; transfer
 
 **Launcher:** [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)
 
-Utility Shortcuts **`[J]`** opens a menu that delegates to finance and palace importers:
+**Entries:** `#!+X`, Utility Shortcuts **`[J]`**, Win+Alt+Shift+F **double-tap**.
+
+Sole AHK import UI: Char-first ListView (Project Selector chrome). Domain Finance/Palace apps no longer expose import menus. Domain parsers remain in `*_import.ahk` / Tasks Python; the hub calls `ImportMgmt_Run*`.
 
 | Key   | Import                                        |
 | ----- | --------------------------------------------- |
@@ -260,12 +262,11 @@ Utility Shortcuts **`[J]`** opens a menu that delegates to finance and palace im
 | `[M]` | Finance monthly                               |
 | `[P]` | Palace mnemonic pack                          |
 | `[L]` | Study plan pack                               |
+| `[T]` | Task pack (opens web `?import=1`)             |
 | `[N]` | Desktop pack names (CRUD + copy to clipboard) |
 | `[H]` | Help (per-import rules)                       |
 
-Same imports are also available from Finance `[F]` and Memory Palace `[N]` launchers.
-
-After a hub import: success closes Import Management (Finance daily still opens transactions); AI-fix failure copies the Desktop fix file to the clipboard, shows a ≥5s banner, and closes the hub so you can paste into the AI companion and reopen manually.
+Char / Enter / double-click run the selected workflow. After a hub import: success closes Import Management (Finance daily still opens transactions); AI-fix failure copies the Desktop fix file to the clipboard, shows a ≥5s banner, and closes the hub so you can paste into the AI companion and reopen manually.
 
 ---
 

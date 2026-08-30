@@ -340,8 +340,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 
 ; [Utils module] ClipAngel last clip → Desktop (.txt) -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk
-; [Utils module] Import Management hub (finance & palace imports) -> Utils\import_mgmt_launcher.ahk
-; Also: #!+F double-tap in AppLaunchers\launch_hotkeys.ahk (single-tap remains Chrome)
+; [Utils module] Import Management hub (#!+X / Utility [J] / #!+F×2) -> Utils\import_mgmt_launcher.ahk
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
 ; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk

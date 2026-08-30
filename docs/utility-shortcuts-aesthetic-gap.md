@@ -24,6 +24,7 @@
 | ------------------------------ | --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Utility Shortcuts              | `#!+U` / `#!+W`                   | [`Utils/hotstring_selector_gui.ahk`](../Utils/hotstring_selector_gui.ahk)                                           |
 | Project Selector               | `^!#0`                            | [`WindowManagement/cursor_window_select.ahk`](../WindowManagement/cursor_window_select.ahk) (`ShowProjectSelector`) |
+| Import Management              | `#!+X` / Utility `[J]` / `#!+F`×2 | [`Utils/import_mgmt_launcher.ahk`](../Utils/import_mgmt_launcher.ahk)                                               |
 | Handy AI models                | `#!+C`                            | [`Utils/handy_ai_model_gui.ahk`](../Utils/handy_ai_model_gui.ahk)                                                   |
 | AI companion model list        | Shift+L                           | [`Utils/ai_companion_model_selector.ahk`](../Utils/ai_companion_model_selector.ahk)                                 |
 | Study material / topic         | Study-topic / Peek–QuickLook path | [`Utils/peek_pdf_study_02.ahk`](../Utils/peek_pdf_study_02.ahk)                                                     |
