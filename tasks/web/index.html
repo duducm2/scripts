@@ -256,30 +256,51 @@
       }
       .plain-row {
         position: relative;
+        z-index: 0;
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+      }
+      .plain-row:hover,
+      .plain-row.kb-selected {
+        z-index: 2;
+      }
+      .plain-row-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+      }
+      .plain-row-head .title {
+        flex: 1;
+        min-width: 0;
+      }
+      .plain-row .thumbs {
+        flex: 0 0 auto;
+        width: 100%;
+        padding-left: 0;
       }
       .plain-row .row-actions {
-        display: flex;
-        position: absolute;
-        right: 0;
-        top: 8px;
+        display: none;
+        position: static;
+        transform: none;
+        flex: 0 0 auto;
+        align-self: flex-start;
         width: auto;
         margin: 0;
         padding: 3px 6px;
-        flex: 0 0 auto;
         gap: 4px;
-        background: var(--panel);
+        background: #1a1a1c;
         border: 1px solid var(--line);
         border-radius: 6px;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-        z-index: 2;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-      .plain-row:hover .row-actions {
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
+      }
+      .plain-row:hover .row-actions,
+      .plain-row.kb-selected .row-actions {
+        display: flex;
       }
       .proj-actions {
         display: flex;
@@ -1144,8 +1165,7 @@
             ? `<span class="info-tag" data-act="info-task" title="Has info points">ℹ️</span>`
             : "";
           const actions = isHabit
-            ? `<button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
-        <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
+            ? `<button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
@@ -2006,6 +2026,13 @@
             return;
           }
           if (k === "c") {
+            const t = (state.data.tasks || []).find(
+              (x) => x.id === selectedTaskId(),
+            );
+            if (t?.kind === "habitual") {
+              toast("Habits cannot be completed");
+              return;
+            }
             await setSelectedTaskEmoji("done");
             return;
           }
@@ -2284,12 +2311,14 @@
               : "";
             const sel = i.id === state.infoSelId ? " kb-selected" : "";
             return `<li class="plain-row${sel}" data-id="${esc(i.id)}">
-        <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
+        <div class="plain-row-head">
+          <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(infoText(i))}</span>
+          <span class="row-actions">
+            <button class="btn" data-act="edit-info">Edit</button>
+            <button class="btn danger" data-act="del-info">Del</button>
+          </span>
+        </div>
         ${thumbsHtml("info", i.id)}
-        <span class="row-actions">
-          <button class="btn" data-act="edit-info">Edit</button>
-          <button class="btn danger" data-act="del-info">Del</button>
-        </span>
       </li>`;
           })
           .join("") || '<p class="empty">No info points</p>'
@@ -3009,7 +3038,12 @@
             }
           };
           $("#mText")?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            if (
+              (e.key === "Enter" ||
+                e.code === "Enter" ||
+                e.code === "NumpadEnter") &&
+              (e.ctrlKey || e.metaKey)
+            ) {
               e.preventDefault();
               e.stopPropagation();
               save();
@@ -3255,6 +3289,11 @@
             }
             if (act === "emoji") {
               const key = actEl.getAttribute("data-key");
+              const t = (state.data.tasks || []).find((x) => x.id === id);
+              if (t?.kind === "habitual" && (key === "done" || key === "✅")) {
+                toast("Habits cannot be completed");
+                return;
+              }
               await api("/api/tasks/" + encodeURIComponent(id) + "/emoji", {
                 method: "POST",
                 body: JSON.stringify({ key }),
@@ -3329,6 +3368,18 @@
         });
 
         document.addEventListener("keydown", async (e) => {
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            (e.key === "Enter" ||
+              e.code === "Enter" ||
+              e.code === "NumpadEnter") &&
+            state.infoUi === "form"
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#modalHost [data-m='save-info']")?.click();
+            return;
+          }
           if (e.ctrlKey || e.metaKey) return;
           if (e.altKey) {
             const isS =

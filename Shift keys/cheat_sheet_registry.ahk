@@ -1067,9 +1067,11 @@ cheatSheets["Tasks"] := "
     ⬇️ [Down] Info list — next info
     ⏎ [Enter] Info list — add info
     ✏️ [Shift+E] Info list — edit highlighted info
-    ⏎ [Ctrl+Enter] Info form — save
     🗑️ [Delete] Info list — delete highlighted info
     ⬅️ [Backspace] Step back (inline field, image preview, modal, search, filter, bento, then selection)
+    
+    === Ctrl ===
+    💾 [Enter] Add info text — save
     
     === Shift ===
     💼 [1] Work column only (toggle)
@@ -1079,7 +1081,7 @@ cheatSheets["Tasks"] := "
     ➕ [A] Inline new task if a column or project is in context; otherwise inline new project
     📁 [P] Inline new project
     📑 [B] Inline new section (select a project, section, or task first)
-    ✅ [C] Mark selected task done
+    ✅ [C] Mark selected task done (not habits)
     ➡️ [D] Copy selected habit into Personal · General
     📝 [N] Open Info for the selected project or task
     🖼️ [V] Paste clipboard image as an info point (selection or Info window)
