@@ -87,7 +87,7 @@ All prompts cite these sections by exact heading name (`README §<Heading>`). Ru
 
 - **Knowledge Atom:** The complete entry/record for a single concept.
 - **Peg:** Letters from the Bestiary as singles **and** pairs (e.g. A, AB). NEVER use numbers.
-- **Knowledge / Definition (`concept` / Context):** The rehearsal summary the user reads on active recall. Always written as `💡 **Context:** …` (CSV field `concept`). **Maximum compression:** use the fewest words that still preserve **100%** of the semantic meaning and critical conceptual logic—zero information loss; NEVER truncate or omit essential logic for brevity. Purpose: minimize cognitive and mnemonic load during recall. **Conditional Note:** when nuance, complexity, or verbosity was deliberately stripped from the compressed core to keep extreme brevity, append that supplementary context in the same Context/`concept` field as ` — Note: <nuance>`. If no compression trade-off was needed, omit the Note. NEVER confuse this with Quote.
+- **Knowledge / Definition (`concept` / Context):** The rehearsal summary the user reads on active recall. Always written as `💡 **Context:** …` (CSV field `concept`). **Maximum compression:** use the fewest words that still preserve **100%** of the semantic meaning and critical conceptual logic—zero information loss; NEVER truncate or omit essential logic for brevity. Purpose: minimize cognitive and mnemonic load during recall. **First-person core:** write the compressed core (the text before any ` — Note:`) in **first person singular** (`I` / `me` / `my`) when the knowledge is something the learner does, uses, or holds—so recall attaches to the self. Skip first person when it would distort meaning (a fact about a third party; a pure formula or name that is not an action you perform). **Conditional Note:** when nuance, complexity, or verbosity was deliberately stripped from the compressed core to keep extreme brevity, append that supplementary context in the same Context/`concept` field as ` — Note: <nuance>`. The Note stays **impersonal / third person**—not first person. If no compression trade-off was needed, omit the Note. NEVER confuse this with Quote.
 - **Story/Action:** The narrative event performed by the Beast.
 - **Quote:** Direct transcript excerpt from the video source, verbatim. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote.
 
@@ -109,7 +109,7 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 **Structure per Knowledge Atom** (separated by clear line breaks):
 
 1. **Header:** `🟧` `[Peg Letters]` `[Beast Name]` `· sensory: [channel] [emoji]` — required sensory channel for the main topic, with its mapped emoji from **Sensory channel emojis** above.
-2. **Definition (Context):** `💡 **Context:** [maximally compressed knowledge]` — fewest words, full semantic fidelity. MUST start with `💡`. This is the main rehearsal element; it is NOT the Quote. When nuance was stripped from the compressed core, append ` — Note: <stripped nuance>` in the same Context/`concept` field.
+2. **Definition (Context):** `💡 **Context:** [maximally compressed knowledge]` — fewest words, full semantic fidelity. MUST start with `💡`. First-person singular on the compressed core when it fits; skip when it would distort. This is the main rehearsal element; it is NOT the Quote. When nuance was stripped from the compressed core, append ` — Note: <stripped nuance>` in the same Context/`concept` field (Note stays impersonal).
 3. **Quote (Target Payload):** Direct video quote, verbatim from the transcript. Place **before** Narrative so the target payload is reachable without traversing the story. NEVER use `💡` on Quote. NEVER append a `Note:` to Quote.
 4. **Narrative (Story/Action):** Short beat (**2–4 sentences**). MUST pass the **Bizarreness Gate**. Encode the atom's meaning through bizarre beast action, props, and (if smashed) zone accessories—the action is the mnemonic cue that triggers recall of the Quote. Narrative SHOULD enact the header's sensory channel. Use the street's **single assigned character** where it strengthens recall—NEVER add a second named character on the same street. Beast-to-beast interaction is **optional (default none)**—use it only when it strengthens the story or memory link; otherwise do not reference other beasts. NEVER require reading another beast's narrative to decode this one.
 
@@ -118,7 +118,7 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 **Smashed beast structure (after Story Reduction SMASH mode):**
 
 1. **Header:** `🟧` `[Peg Letters]` `[Beast Name]` `· sensory: [channel] [emoji]` — peg identity and a **baseline** sensory channel for the beast body only (required; distinct from every `🟦` channel on this beast; emoji from **Sensory channel emojis**). The beast body is a **neutral canvas**: it MUST NOT encode any knowledge atom and MUST NOT carry a definition (`💡 **Context:**`) on the `🟧` level.
-2. **Sub-atoms (Anatomical Micro-Loci):** Up to **4** `🟦` lines in **Z1→Z4 order**—**every** merged knowledge atom MUST be assigned to exactly one `🟦` zone. Each `🟦` line names its zone, active anatomical interaction, brief knowledge hook, and sensory channel with emoji (e.g. `· sensory: visual 👁️`). Immediately under each `🟦` line, emit that atom's maximally compressed definition as `💡 **Context:** …` (optional ` — Note:` in that same Context when nuance was stripped). Do **not** use a combined group-level Context under the `🟧` header.
+2. **Sub-atoms (Anatomical Micro-Loci):** Up to **4** `🟦` lines in **Z1→Z4 order**—**every** merged knowledge atom MUST be assigned to exactly one `🟦` zone. Each `🟦` line names its zone, active anatomical interaction, brief knowledge hook, and sensory channel with emoji (e.g. `· sensory: visual 👁️`). Immediately under each `🟦` line, emit that atom's maximally compressed definition as `💡 **Context:** …` (first-person core when it fits; optional impersonal ` — Note:` in that same Context when nuance was stripped). Do **not** use a combined group-level Context under the `🟧` header.
 3. **Quote(s):** One verbatim video quote per merged atom, in source order—**before** Narrative. NEVER prefix Quote with `💡`. NEVER append a `Note:` to Quote.
 4. **Narrative:** One **active beat per assigned zone**, matching the `🟦` lines—each zone encodes that sub-atom's meaning through mechanical engagement with its accessory. The beast body's overall posture or presence MUST NOT encode knowledge; only the zone beats do. Self-contained beat; optional cross-beast links only when they serve the concept, transcript logic, or a stronger mnemonic—otherwise do not reference other beasts.
 
@@ -127,7 +127,7 @@ Format: `· sensory: [channel] [emoji]` (e.g. `· sensory: visual 👁️`). NEV
 ```md
 🟧 **[B] [bird of paradise]** · sensory: visual 👁️
 
-💡 **Context:** Past perfect = had + past participle. — Note: Marks an action finished before another past action.
+💡 **Context:** I form past perfect with had + past participle. — Note: Marks an action finished before another past action.
 
 **Quote:** "The past perfect uses had plus the past participle."
 
@@ -209,7 +209,7 @@ When the palace has too many beasts or streets, run **Story Reduction** in **SMA
 - **One beast, up to four sub-atoms:** Each merged atom becomes one `🟦` subtopic line (maximum **4** per beast; merge groups with more than 4 pegs MUST split into multiple smashed beasts). All knowledge atoms live on `🟦` lines plus their paired `💡 **Context:**` definitions—never on the beast body itself.
 - **Neutral beast body:** The `🟧` header names the peg and a baseline sensory channel for the beast's body presence only. The beast body MUST NOT encode any knowledge atom and MUST NOT carry `💡 **Context:**`; it is a neutral canvas that holds zone accessories.
 - **Encode nuances on zone anatomy:** Alter features, expression, posture, and zone-specific anatomy via `🟦` accessories—not by encoding facts on the whole body, and not by adding extra beasts.
-- **Definition per sub-atom:** Immediately under every `🟦` line, emit `💡 **Context:** [maximally compressed definition for that sub-atom]` for rehearsal. The `🟦` line is the zone/accessory mnemonic cue; the `💡 **Context:**` line is the definition. NEVER put `💡` on Quote or Narrative. Append ` — Note: <stripped nuance>` on that same Context/`concept` when compression requires it.
+- **Definition per sub-atom:** Immediately under every `🟦` line, emit `💡 **Context:** [maximally compressed definition for that sub-atom]` for rehearsal (first-person core when it fits). The `🟦` line is the zone/accessory mnemonic cue; the `💡 **Context:**` line is the definition. NEVER put `💡` on Quote or Narrative. Append ` — Note: <stripped nuance>` on that same Context/`concept` when compression requires it (Note stays impersonal).
 - **Image prompts:** Story Reduction outputs long, detailed foreground prompts so each accessory renders in its **assigned anatomical zone** with **active engagement** on the beast. Do not invent a separate "main topic" action on the beast body.
 
 | Sub-atom order | Zone                | Body area                             |
@@ -231,10 +231,10 @@ When the palace has too many beasts or streets, run **Story Reduction** in **SMA
 🟧 **[B] [bird of paradise]** · sensory: olfactory 👃
 
 🟦 **Z1 Head | Past participle rule:** neon grammar crown fused into its beak, splitting the keratin · sensory: visual 👁️
-💡 **Context:** Past perfect = had + past participle.
+💡 **Context:** I form past perfect with had + past participle.
 
 🟦 **Z2 Forelimbs | Irregular forms:** frozen chalkboard crushed between its claws, splintering the wood · sensory: tactile ✋
-💡 **Context:** Irregular past participles = memorize as exceptions.
+💡 **Context:** I memorize irregular past participles as exceptions.
 ```
 
 ### Characters
@@ -264,7 +264,7 @@ Famous figures (history, pop culture, fictional, etc.) that interact with Beasts
 
 ### Language & IPA
 
-**Default to simple English everywhere you write** (Context, Narrative, image prompts, quality summary): short everyday words, concrete images, zero fluff. For **Context/`concept`**, prefer maximal compression (fewest words, full meaning) over full sentences—plain language and compression work together. For Narrative and image prompts, write as if explaining to a curious teenager—not an academic paper.
+**Default to simple English everywhere you write** (Context, Narrative, image prompts, quality summary): short everyday words, concrete images, zero fluff. For **Context/`concept`**, prefer maximal compression (fewest words, full meaning) over full sentences—plain language and compression work together. Write the compressed **core** in first person singular when it fits (`README §Knowledge Atom Structure`); leave any ` — Note:` impersonal. Narrative and image prompts stay third-person beast scenes—write those as if explaining to a curious teenager, not an academic paper.
 
 **Banned in your own prose (unless inside a preserved quote or a Context `Note:`):** Rare or show-off vocabulary; Latin/French roots where a common Anglo-Saxon word works; idioms that need a dictionary; discipline jargon, acronyms, and technical terms **unless** the transcript quote requires them—and even then, keep the exact term in the Quote when needed and compress the idea in Context (append nuance as ` — Note:` on Context/`concept` if the compressed core cannot hold it briefly).
 
@@ -308,9 +308,9 @@ After Story Reduction (SMASH or REMOVE), the peg sequence MUST be an **unbroken 
 - Apply this shift to the **entire** story: every Header, and every in-narrative reference to a Beast or peg, MUST use the new peg and Beast name.
 - Sequence continues A, B, C, … (or A, B, …, Z, Aa, …) with no gaps.
 
-**SMASH constraints:** Do not add new factual content; combine only the atoms the user grouped. NEVER drop sub-atom knowledge or verbatim quote excerpts. Keep each sub-atom's `concept` maximally compressed; optional ` — Note:` on that same `concept` when nuance was stripped from the compressed core.
+**SMASH constraints:** Do not add new factual content; combine only the atoms the user grouped. NEVER drop sub-atom knowledge or verbatim quote excerpts. Keep each sub-atom's `concept` maximally compressed with a first-person core when it fits; optional impersonal ` — Note:` on that same `concept` when nuance was stripped from the compressed core.
 
-**REMOVE constraints:** Do not add new knowledge atoms; only remove requested pegs and re-peg the rest. Preserve every remaining atom's **knowledge content** (compressed concept + optional Concept Note) and **video quote excerpt(s)** verbatim.
+**REMOVE constraints:** Do not add new knowledge atoms; only remove requested pegs and re-peg the rest. Preserve every remaining atom's **knowledge content** (compressed first-person core when it fits + optional impersonal Concept Note) and **video quote excerpt(s)** verbatim.
 
 ### Image composition rules
 

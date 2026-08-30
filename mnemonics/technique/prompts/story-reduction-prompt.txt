@@ -140,9 +140,9 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 ```
 
-- Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression: keep or tighten `concept` to maximal brevity with full semantic fidelity; never expand concepts during re-peg. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it. Do not invent new factual content in Notes.
+- Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression: keep or tighten `concept` to maximal brevity with full semantic fidelity; never expand concepts during re-peg. Rewrite the compressed **core** into **first person singular** when it fits; skip when it would distort. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it (Note stays impersonal). Do not invent new factual content in Notes.
 - **Quote:** keep the verbatim transcript excerpt intact. NEVER append a `Note:` to `quote`.
-- SMASH: merged atoms become `kind=zoned` with `Z1`–`Z4` (max 4); never encode knowledge on a smashed beast body alone. Each zoned atom keeps its own compressed `concept` (optional Note on that same `concept`).
+- SMASH: merged atoms become `kind=zoned` with `Z1`–`Z4` (max 4); never encode knowledge on a smashed beast body alone. Each zoned atom keeps its own compressed `concept` (first-person core when it fits; optional impersonal Note on that same `concept`).
 - REMOVE: drop atoms for requested pegs only; reattach survivors to re-pegged beasts with the same compression + Note rules.
 
 ---
@@ -179,7 +179,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 1. Restrict work to the locked reduction scope. Ignore out-of-scope palaces/pegs.
 2. Each merge group → one smashed beast after re-sequencing **in scope**. Pegs not listed stay single-atom.
 3. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
-4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own maximally compressed concept (optional ` — Note:` on that `concept`) + verbatim quote; story encodes zone beats.
+4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own maximally compressed concept (first-person core when it fits; optional impersonal ` — Note:` on that `concept`) + verbatim quote; story encodes zone beats.
 5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); collapse empty in-scope palaces; one character per palace.
 
 ## Procedure — REMOVE mode
@@ -187,7 +187,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 1. Restrict work to the locked reduction scope.
 2. Remove atoms whose **current** peg is listed (must be in scope).
 3. Bestiary shifting for remaining **in-scope** beasts only; update beast names/pegs without touching earlier study pegs.
-4. Rewrite **in-scope** palace/beast/atom rows; preserve verbatim quote excerpts; keep or tighten compressed concepts (optional ` — Note:` on `concept` only); keep smashed structure when survivors stay zoned.
+4. Rewrite **in-scope** palace/beast/atom rows; preserve verbatim quote excerpts; keep or tighten compressed concepts (first-person core when it fits; optional impersonal ` — Note:` on `concept` only); keep smashed structure when survivors stay zoned.
 5. Re-pack **in-scope** survivors **5 beasts per palace** (remainder < 5 only on the last in-scope palace); collapse empty in-scope palaces; one character per palace.
 
 ## Image prompts (both modes)
@@ -208,7 +208,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A) | Yes |
 | Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; no sparse-then-full; ≤4 zones/beast | Yes |
 | No knowledge drops for in-scope survivors; verbatim quote excerpts intact | Yes |
-| Each surviving `concept` maximal compression; ` — Note:` on `concept` only when nuance stripped from the compressed core; `quote` verbatim only | Yes |
+| Each surviving `concept` maximal compression with first-person core when it fits; ` — Note:` on `concept` only when nuance stripped (Note impersonal); `quote` verbatim only | Yes |
 | image_prompt refreshed per surviving **in-scope** palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 | study_id unchanged / from pack | Yes |

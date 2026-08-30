@@ -186,7 +186,7 @@ Rules:
 - `single`: leave `zone` and `zone_label` empty.
 - `zoned`: `zone` = `Z1`–`Z4`; short hook in `zone_label`.
 - Field mapping from technique prose (`README §Knowledge Atom Structure`):
-  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>`. Otherwise omit the Note.
+  - **concept** ← maximally compressed rehearsal definition (`💡 Context`): fewest words that preserve **100%** of semantic meaning and critical logic (zero information loss). Purpose: minimize mnemonic load on active recall. Write the compressed **core** (before any Note) in **first person singular** (`I` / `me` / `my`) when the knowledge is something the learner does, uses, or holds; skip first person when it would distort meaning. When nuance was deliberately stripped from the compressed core, append in the same field: ` — Note: <stripped nuance>` (Note stays **impersonal**—not first person). Otherwise omit the Note.
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`.
   - **story** ← Narrative (bizarre action encoding)
   - **sensory** ← modality emphasized
@@ -222,7 +222,7 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 
 - Map each concept to one beast — one Knowledge Atom per beast by default.
 - Peg letters only; independent beast beats; Bizarreness Gate on every story.
-- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning). NEVER drop essential conceptual logic. If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (`README §Knowledge Atom Structure`). NEVER put the Note on `quote`.
+- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning). NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed core when it fits; skip when it would distort (`README §Knowledge Atom Structure`). If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal). NEVER put the Note on `quote`.
 - Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via action linked to a concrete video cue.
 - Dual-access recall: peg → compressed concept (+ optional Note) → quote; palace image → encoding action → quote.
 
@@ -260,7 +260,8 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
-| ` — Note:` on `concept` only when nuance was stripped from the compressed core; `quote` verbatim only | Yes |
+| Compressed `concept` core is first person singular when it fits; skip when it would distort | Yes |
+| ` — Note:` on `concept` only when nuance was stripped from the compressed core; Note impersonal; `quote` verbatim only | Yes |
 | image_prompt filled per new palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 
