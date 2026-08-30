@@ -4,6 +4,7 @@
 ; =============================================================================
 
 global g_TaskDashboardHwnd := 0
+global g_TaskServerPid := 0
 
 Task_ServerPort() {
     return 8766
@@ -23,7 +24,7 @@ Task_LaunchApp() {
     try StandardLoadingBar_Show("⏳ Opening Tasks…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
-    if (!Task_EnsureServer(true)) {
+    if (!Task_EnsureServer(false)) {
         try StandardLoadingBar_Hide(0)
         catch {
         }
@@ -65,20 +66,110 @@ Task_CloseWebApp() {
     Task_StopServer()
 }
 
-Task_StopServer(port := 0) {
-    if (port = 0)
-        port := Task_ServerPort()
+Task_PidPath() {
+    return Task_DataDir() . "\task_server.pid"
+}
+
+Task_PidRead() {
+    global g_TaskServerPid
+    pid := 0
+    try pid := Integer(g_TaskServerPid)
+    catch {
+        pid := 0
+    }
+    if (pid > 0) {
+        try {
+            if ProcessExist(pid)
+                return pid
+        } catch {
+        }
+    }
+    path := Task_PidPath()
+    if (!FileExist(path))
+        return 0
+    raw := ""
+    try raw := Trim(FileRead(path))
+    catch {
+        return 0
+    }
+    try pid := Integer(raw)
+    catch {
+        return 0
+    }
+    if (pid <= 0)
+        return 0
+    try {
+        if ProcessExist(pid)
+            return pid
+    } catch {
+    }
+    return 0
+}
+
+Task_PidWrite(pid) {
+    global g_TaskServerPid
+    try pid := Integer(pid)
+    catch {
+        pid := 0
+    }
+    g_TaskServerPid := pid
+    path := Task_PidPath()
+    if (pid > 0) {
+        try FileDelete(path)
+        catch {
+        }
+        try FileAppend(String(pid), path, "UTF-8")
+        catch {
+        }
+        return
+    }
+    try FileDelete(path)
+    catch {
+    }
+}
+
+Task_KillPidTree(pid) {
+    try pid := Integer(pid)
+    catch {
+        return
+    }
+    if (pid <= 0)
+        return
+    try RunWait(A_ComSpec . " /c taskkill /F /T /PID " . pid . " >nul 2>&1", , "Hide")
+    catch {
+    }
+}
+
+Task_StopServerNetstat(port) {
     q := Chr(39)
     cmd := "for /f `"tokens=5`" %a in (" . q . "netstat -ano ^| findstr :" . port
         . " ^| findstr LISTENING" . q . ") do taskkill /F /PID %a >nul 2>&1"
-    loop 3 {
-        try RunWait(A_ComSpec . " /c " . cmd, , "Hide")
-        catch {
-        }
-        Sleep 150
+    try RunWait(A_ComSpec . " /c " . cmd, , "Hide")
+    catch {
+    }
+}
+
+Task_StopServer(port := 0) {
+    if (port = 0)
+        port := Task_ServerPort()
+    pid := Task_PidRead()
+    if (pid > 0)
+        Task_KillPidTree(pid)
+    deadline := A_TickCount + 1500
+    while (A_TickCount < deadline) {
         if (!Task_IsServerRunning(port))
             break
+        Sleep 50
     }
+    if (Task_IsServerRunning(port))
+        Task_StopServerNetstat(port)
+    deadline := A_TickCount + 1500
+    while (A_TickCount < deadline) {
+        if (!Task_IsServerRunning(port))
+            break
+        Sleep 50
+    }
+    Task_PidWrite(0)
 }
 
 Task_EnsureServer(forceRestart := false) {
@@ -100,7 +191,6 @@ Task_EnsureServer(forceRestart := false) {
     dataDir := Task_DataDir()
     scriptsRoot := A_ScriptDir
     notesRoot := ""
-    ; sibling notes repo
     cand := A_ScriptDir . "\..\notes"
     try {
         if (DirExist(cand))
@@ -111,11 +201,14 @@ Task_EnsureServer(forceRestart := false) {
         . '" --port ' . port
     if (notesRoot != "")
         cmd .= ' --notes-root "' . notesRoot . '"'
-    try Run(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    pid := 0
+    try pid := Run(cmd, A_ScriptDir, "Hide")
     catch as e {
         Task_Notify("Tasks server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
     }
+    if (pid > 0)
+        Task_PidWrite(pid)
     loop 25 {
         if (Task_IsServerRunning(port))
             return true
@@ -236,9 +329,6 @@ Task_ActivateDashboard(hwnd) {
 }
 
 Task_OpenInChrome(url) {
-    baseline := Map()
-    for h in WinGetList("ahk_exe chrome.exe")
-        baseline[h] := true
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
@@ -246,34 +336,25 @@ Task_OpenInChrome(url) {
             return false
         }
     }
-    deadline := A_TickCount + 8000
     newHwnd := 0
-    while (A_TickCount < deadline) {
-        for h in WinGetList("ahk_exe chrome.exe") {
-            if (baseline.Has(h))
-                continue
-            try title := WinGetTitle("ahk_id " h)
+    prev := A_TitleMatchMode
+    try {
+        SetTitleMatchMode(1)
+        if WinWait("Tasks ahk_exe chrome.exe", , 8) {
+            try newHwnd := WinExist("Tasks ahk_exe chrome.exe")
             catch {
-                title := ""
-            }
-            if (Task_IsChromeWindowTitle(title) || title = "") {
-                newHwnd := h
-                if (Task_IsChromeWindowTitle(title))
-                    break 2
+                newHwnd := 0
             }
         }
-        Sleep 100
+    } finally {
+        SetTitleMatchMode(prev)
     }
+    newHwnd := Task_HwndLooksLikeDashboard(newHwnd)
     if (!newHwnd) {
         for h in WinGetList("ahk_exe chrome.exe") {
-            try title := WinGetTitle("ahk_id " h)
-            catch {
-                continue
-            }
-            if (Task_IsChromeWindowTitle(title)) {
-                newHwnd := h
+            newHwnd := Task_HwndLooksLikeDashboard(h)
+            if (newHwnd)
                 break
-            }
         }
     }
     if (newHwnd) {
@@ -283,5 +364,5 @@ Task_OpenInChrome(url) {
         }
         return true
     }
-    return true ; URL was launched even if HWND not found
+    return true
 }

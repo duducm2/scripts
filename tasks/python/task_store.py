@@ -10,7 +10,15 @@ from pathlib import Path
 from typing import Any
 
 HEADERS = {
-    "projects": ["id", "title", "filter", "section_path", "sort_order", "active", "created_at"],
+    "projects": [
+        "id",
+        "title",
+        "filter",
+        "section_path",
+        "sort_order",
+        "active",
+        "created_at",
+    ],
     "sections": ["id", "project_id", "title", "sort_order"],
     "tasks": [
         "id",
@@ -40,7 +48,15 @@ HEADERS = {
         "sort_order",
         "created_at",
     ],
-    "attachments": ["id", "parent_type", "parent_id", "kind", "ref", "description", "sort_order"],
+    "attachments": [
+        "id",
+        "parent_type",
+        "parent_id",
+        "kind",
+        "ref",
+        "description",
+        "sort_order",
+    ],
 }
 
 GENERAL_SECTION = "General"
@@ -68,6 +84,9 @@ VALID_RECURRENCE = {
     "every_5y",
     "every_10y",
 }
+
+# Rollback: set False if Drive mtime is flaky (always read CSV from disk).
+TASK_STORE_CACHE = True
 
 INBOX_TITLES = {
     "work": "Work inbox",
@@ -127,6 +146,8 @@ class TaskStore:
         self.imported_dir = data_dir / "imported"
         self.attach_dir.mkdir(parents=True, exist_ok=True)
         self.imported_dir.mkdir(parents=True, exist_ok=True)
+        self._row_cache: dict[str, list[dict[str, str]]] = {}
+        self._mtime: dict[str, float] = {}
         self.ensure_files()
 
     def path(self, kind: str) -> Path:
@@ -266,10 +287,15 @@ class TaskStore:
         if changed:
             self.save("attachments", atts)
 
-    def ensure_general_section(self, project_id: str, sections: list[dict] | None = None) -> dict:
+    def ensure_general_section(
+        self, project_id: str, sections: list[dict] | None = None
+    ) -> dict:
         rows = sections if sections is not None else self.load("sections")
         for s in rows:
-            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+            if (
+                s.get("project_id") == project_id
+                and (s.get("title") or "").strip().lower() == GENERAL_SECTION.lower()
+            ):
                 return s
         row = {
             "id": next_id("SEC_", rows),
@@ -286,7 +312,10 @@ class TaskStore:
         title = (title or "").strip() or GENERAL_SECTION
         rows = self.load("sections")
         for s in rows:
-            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == title.lower():
+            if (
+                s.get("project_id") == project_id
+                and (s.get("title") or "").strip().lower() == title.lower()
+            ):
                 return s
         if title.lower() == GENERAL_SECTION.lower():
             row = {
@@ -300,7 +329,9 @@ class TaskStore:
                 "id": next_id("SEC_", rows),
                 "project_id": project_id,
                 "title": title,
-                "sort_order": next_sort([s for s in rows if s.get("project_id") == project_id]),
+                "sort_order": next_sort(
+                    [s for s in rows if s.get("project_id") == project_id]
+                ),
             }
         rows.append(row)
         self.save("sections", rows)
@@ -327,10 +358,32 @@ class TaskStore:
         return gen["id"], ""
 
     def load(self, kind: str) -> list[dict[str, str]]:
-        return read_csv(self.path(kind))
+        path = self.path(kind)
+        if not TASK_STORE_CACHE:
+            return read_csv(path)
+        try:
+            mt = path.stat().st_mtime if path.exists() else -1.0
+        except OSError:
+            mt = -1.0
+        cached = self._row_cache.get(kind)
+        if cached is not None and self._mtime.get(kind) == mt:
+            return [dict(r) for r in cached]
+        rows = read_csv(path)
+        self._row_cache[kind] = rows
+        self._mtime[kind] = mt
+        return [dict(r) for r in rows]
 
     def save(self, kind: str, rows: list[dict]) -> None:
-        write_csv(self.path(kind), HEADERS[kind], rows)
+        headers = HEADERS[kind]
+        write_csv(self.path(kind), headers, rows)
+        if not TASK_STORE_CACHE:
+            return
+        copied = [{h: str(r.get(h, "") or "") for h in headers} for r in rows]
+        self._row_cache[kind] = copied
+        try:
+            self._mtime[kind] = self.path(kind).stat().st_mtime
+        except OSError:
+            self._mtime[kind] = 0.0
 
     def state(self) -> dict[str, Any]:
         self.migrate_sections()
@@ -420,22 +473,29 @@ class TaskStore:
         info_ids = set()
         info_out = []
         for i in infos:
-            drop = (i.get("parent_type") == "project" and i.get("parent_id") == project_id) or (
-                i.get("parent_type") == "task" and i.get("parent_id") in task_ids
-            )
+            drop = (
+                i.get("parent_type") == "project" and i.get("parent_id") == project_id
+            ) or (i.get("parent_type") == "task" and i.get("parent_id") in task_ids)
             if drop:
                 info_ids.add(i["id"])
             else:
                 info_out.append(i)
         self.save("info_points", info_out)
         self._purge_attachments(
-            lambda a: (a.get("parent_type") == "project" and a.get("parent_id") == project_id)
+            lambda a: (
+                a.get("parent_type") == "project" and a.get("parent_id") == project_id
+            )
             or (a.get("parent_type") == "task" and a.get("parent_id") in task_ids)
             or (a.get("parent_type") == "info" and a.get("parent_id") in info_ids)
         )
         self.save("tasks", [t for t in tasks if t.get("project_id") != project_id])
-        self.save("sections", [s for s in self.load("sections") if s.get("project_id") != project_id])
-        self.save("projects", [p for p in self.load("projects") if p.get("id") != project_id])
+        self.save(
+            "sections",
+            [s for s in self.load("sections") if s.get("project_id") != project_id],
+        )
+        self.save(
+            "projects", [p for p in self.load("projects") if p.get("id") != project_id]
+        )
         return {"ok": True}
 
     # --- sections ---
@@ -451,7 +511,9 @@ class TaskStore:
             found = None
             for r in rows:
                 if r["id"] == rid:
-                    if (r.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+                    if (
+                        r.get("title") or ""
+                    ).strip().lower() == GENERAL_SECTION.lower():
                         return {"ok": False, "error": "cannot rename General"}
                     if title.lower() == GENERAL_SECTION.lower():
                         return {"ok": False, "error": "cannot rename to General"}
@@ -479,13 +541,18 @@ class TaskStore:
         if title.lower() == GENERAL_SECTION.lower():
             return {"ok": True, "section": self.ensure_general_section(project_id)}
         for s in rows:
-            if s.get("project_id") == project_id and (s.get("title") or "").strip().lower() == title.lower():
+            if (
+                s.get("project_id") == project_id
+                and (s.get("title") or "").strip().lower() == title.lower()
+            ):
                 return {"ok": True, "section": s}
         row = {
             "id": next_id("SEC_", rows),
             "project_id": project_id,
             "title": title,
-            "sort_order": next_sort([s for s in rows if s.get("project_id") == project_id]),
+            "sort_order": next_sort(
+                [s for s in rows if s.get("project_id") == project_id]
+            ),
         }
         rows.append(row)
         self.save("sections", rows)
@@ -587,8 +654,12 @@ class TaskStore:
             if r["id"] == task_id:
                 if r.get("kind") == "habitual" and emoji == "✅":
                     # complete habit: advance next_due, reset to general
-                    from_due = (r.get("next_due") or r.get("due_date") or today()).strip()
-                    r["next_due"] = self.advance_next_due(r.get("recurrence") or "", from_due)
+                    from_due = (
+                        r.get("next_due") or r.get("due_date") or today()
+                    ).strip()
+                    r["next_due"] = self.advance_next_due(
+                        r.get("recurrence") or "", from_due
+                    )
                     r["emoji"] = STATUS_EMOJIS["general"]
                     r["completed_at"] = ""
                 else:
@@ -662,7 +733,10 @@ class TaskStore:
         return {"ok": True, "info": row}
 
     def delete_info(self, info_id: str) -> dict:
-        self.save("info_points", [i for i in self.load("info_points") if i.get("id") != info_id])
+        self.save(
+            "info_points",
+            [i for i in self.load("info_points") if i.get("id") != info_id],
+        )
         self._purge_attachments(
             lambda a: a.get("parent_type") == "info" and a.get("parent_id") == info_id
         )
@@ -692,7 +766,12 @@ class TaskStore:
         return {"ok": True, "attachment": row}
 
     def save_image_bytes(
-        self, parent_type: str, parent_id: str, data: bytes, filename: str, description: str = ""
+        self,
+        parent_type: str,
+        parent_id: str,
+        data: bytes,
+        filename: str,
+        description: str = "",
     ) -> dict:
         safe = re.sub(r"[^\w.\-]+", "_", filename) or "image.png"
         desc = (description or "").strip() or safe
@@ -789,7 +868,10 @@ class TaskStore:
     def ensure_inbox_project(self, filt: str) -> dict:
         title = INBOX_TITLES.get(filt, "Inbox")
         for p in self.load("projects"):
-            if p.get("filter") == filt and (p.get("title") or "").strip().lower() == title.lower():
+            if (
+                p.get("filter") == filt
+                and (p.get("title") or "").strip().lower() == title.lower()
+            ):
                 self.ensure_general_section(p["id"])
                 return p
         return self.upsert_project({"title": title, "filter": filt})["project"]
@@ -821,5 +903,21 @@ class TaskStore:
 def _add_months(dt: datetime, months: int) -> datetime:
     y = dt.year + (dt.month - 1 + months) // 12
     m = (dt.month - 1 + months) % 12 + 1
-    d = min(dt.day, [31, 29 if y % 4 == 0 and (y % 100 != 0 or y % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
+    d = min(
+        dt.day,
+        [
+            31,
+            29 if y % 4 == 0 and (y % 100 != 0 or y % 400 == 0) else 28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31,
+        ][m - 1],
+    )
     return dt.replace(year=y, month=m, day=d)

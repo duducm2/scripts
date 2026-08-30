@@ -14,3 +14,4 @@ Maono*.rar
 # Windows reserved device name — cannot be tracked by git; use infra/ipc/ instead
 aux/
 infra/aux/
+tasks/data/task_server.pid
