@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
 ; Commit and push scripts + notes repos from Utility Shortcuts top-level [G]
-; Pre-exports Tasks MD + Palace practice/plans MD when CSV data is dirty.
+; Writes empty main/punctual.md stub in notes; syncs Palace MD when mnemonics/data is dirty.
 ; Runs in the background so the UI stays usable.
 ; =============================================================================
 
@@ -73,10 +73,36 @@ Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
     return false
 }
 
+Utility_GitWritePunctualMdStub(notesRoot) {
+    if (notesRoot = "" || !DirExist(notesRoot))
+        return "error:Notes repo folder not found"
+    mainDir := RTrim(notesRoot, "\") . "\main"
+    path := mainDir . "\punctual.md"
+    try {
+        if (!DirExist(mainDir))
+            DirCreate(mainDir)
+    } catch as e {
+        return "error:Could not create main folder: " . e.Message
+    }
+    try FileDelete(path)
+    catch {
+    }
+    try FileAppend("", path, "UTF-8")
+    catch as e {
+        return "error:Could not write punctual.md stub: " . e.Message
+    }
+    return "ok"
+}
+
 Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     status := GitCli_Run(scriptsRoot, "status --porcelain", 30000)
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
+
+    Utility_GitPassiveBar("⏳ Ensuring punctual.md stub…")
+    stub := Utility_GitWritePunctualMdStub(notesRoot)
+    if (SubStr(stub, 1, 6) = "error:")
+        return stub
 
     porcelain := status.stdout
     needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
