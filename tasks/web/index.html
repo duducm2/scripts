@@ -219,10 +219,34 @@
       .row-actions {
         display: none;
         flex-wrap: wrap;
-        gap: 4px;
+        gap: 3px;
         width: 100%;
         margin-top: 2px;
         padding-left: 28px;
+      }
+      /* Compact translucent hover menus — keep title readable underneath */
+      .task > .row-actions,
+      .plain-row .row-actions,
+      .proj-actions,
+      .task-section-label .sec-actions {
+        background: rgba(26, 26, 28, 0.72);
+        border: 1px solid rgba(74, 74, 80, 0.55);
+        border-radius: 5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        padding: 2px 4px;
+        gap: 2px;
+      }
+      .task > .row-actions .btn,
+      .plain-row .row-actions .btn,
+      .proj-actions .btn,
+      .task-section-label .sec-actions .btn {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        line-height: 1.25;
+        background: rgba(37, 37, 40, 0.55);
       }
       /* Overlay on the row — never expand the task height */
       .task > .row-actions {
@@ -232,16 +256,11 @@
         top: 50%;
         transform: translateY(-50%);
         width: auto;
-        max-width: min(100%, 420px);
+        max-width: min(100%, 360px);
         margin: 0;
-        padding: 3px 6px;
-        padding-left: 6px;
+        padding-left: 4px;
         flex-wrap: wrap;
         justify-content: flex-end;
-        background: #1a1a1c;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
         z-index: 3;
         opacity: 0;
         visibility: hidden;
@@ -288,12 +307,6 @@
         align-self: flex-start;
         width: auto;
         margin: 0;
-        padding: 3px 6px;
-        gap: 4px;
-        background: #1a1a1c;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
@@ -309,16 +322,10 @@
         top: 8px;
         z-index: 4;
         width: auto;
-        max-width: min(100%, 420px);
+        max-width: min(100%, 360px);
         margin: 0;
-        padding: 3px 6px;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 4px;
-        background: #1a1a1c;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -348,6 +355,22 @@
         display: flex;
         align-items: center;
         gap: 6px;
+      }
+      .task-section-label .sec-title {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .task-section-label .sec-actions {
+        display: none;
+        flex: 0 0 auto;
+        margin-left: auto;
+        align-items: center;
+      }
+      .task-section:not(.is-general):hover > .task-section-label .sec-actions,
+      .task-section:not(.is-general).kb-selected
+        > .task-section-label
+        .sec-actions {
+        display: inline-flex;
       }
       .task-section-label::before {
         content: "▾";
@@ -837,6 +860,7 @@
           infoCtx: null, // { parentType, parentId }
           infoUi: "", // "" | list | form
           infoSelId: "",
+          taskClipboard: null, // copied task fields for Ctrl+V
         };
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
@@ -1165,12 +1189,14 @@
             ? `<span class="info-tag" data-act="info-task" title="Has info points">ℹ️</span>`
             : "";
           const actions = isHabit
-            ? `<button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
+            ? `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
+        <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`
-            : `<button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
+            : `<button class="btn" data-act="copy-task" title="Copy (Ctrl+C)">Copy</button>
+        <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
@@ -1248,8 +1274,14 @@
             const genClass = isGeneral ? " is-general" : "";
             const create = inlineCreateRowHtml(p.id, s.id);
             const items = create + list.map(taskLi).join("");
+            const secActs = isGeneral
+              ? ""
+              : `<span class="sec-actions">
+          <button type="button" class="btn" data-act="edit-section">Edit</button>
+          <button type="button" class="btn danger" data-act="del-section">Del</button>
+        </span>`;
             return `<div class="task-section${collapsed}${genClass}" data-id="${esc(s.id)}" data-sid="${esc(s.id)}">
-        <div class="task-section-label">${highlightTitle(s.title)}</div>
+        <div class="task-section-label"><span class="sec-title">${highlightTitle(s.title)}</span>${secActs}</div>
         ${items ? `<ul class="task-list">${items}</ul>` : ""}
       </div>`;
           });
@@ -1907,6 +1939,94 @@
           return "";
         }
 
+        function taskRowById(id) {
+          if (!id) return null;
+          return (state.data.tasks || []).find((t) => t.id === id) || null;
+        }
+
+        function hoveredTaskId() {
+          const el = document.querySelector(".task:hover[data-id]");
+          return el?.getAttribute("data-id") || "";
+        }
+
+        function taskToCopyPayload(t) {
+          if (!t) return null;
+          return {
+            title: t.title || "",
+            emoji: t.emoji || "🔲",
+            kind: t.kind || "punctual",
+            recurrence: t.recurrence || "",
+            due_date: t.due_date || "",
+            next_due: t.next_due || "",
+          };
+        }
+
+        function copyTaskById(id) {
+          const t = taskRowById(id);
+          const payload = taskToCopyPayload(t);
+          if (!payload) {
+            toast("Select or hover a task first");
+            return false;
+          }
+          state.taskClipboard = payload;
+          toast("Copied task");
+          return true;
+        }
+
+        async function pasteCopiedTask() {
+          const clip = state.taskClipboard;
+          if (!clip?.title) {
+            toast("Nothing to paste — copy a task first (Ctrl+C)");
+            return;
+          }
+          let ctx = resolveTaskCreateContext({});
+          if (!ctx.project_id) {
+            toast("Select a project or section to paste into");
+            return;
+          }
+          if (!ctx.section_id) {
+            await refresh();
+            ctx = resolveTaskCreateContext({
+              project_id: ctx.project_id,
+              filter: ctx.filter,
+            });
+          }
+          let kind = clip.kind || "punctual";
+          let recurrence = clip.recurrence || "";
+          if (ctx.filter !== "habits" && kind === "habitual") {
+            kind = "punctual";
+            recurrence = "";
+          }
+          if (ctx.filter === "habits") kind = "habitual";
+          if (kind === "punctual") recurrence = "";
+          const payload = {
+            title: clip.title,
+            project_id: ctx.project_id,
+            section_id: ctx.section_id || "",
+            filter: ctx.filter,
+            kind,
+            recurrence,
+            emoji: clip.emoji || "🔲",
+            due_date: kind === "habitual" ? "" : clip.due_date || "",
+            next_due:
+              kind === "habitual"
+                ? clip.next_due ||
+                  clip.due_date ||
+                  new Date().toISOString().slice(0, 10)
+                : "",
+          };
+          const r = await api("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+          toast("Pasted task");
+          await refresh();
+          if (r.task?.id) {
+            const sk = r.task.kind === "habitual" ? "habit" : "task";
+            flashAdded(sk, r.task.id);
+          }
+        }
+
         function selectedHabitId() {
           if (state.sel?.kind === "habit") return state.sel.id;
           if (state.sel?.kind === "task") {
@@ -2108,6 +2228,37 @@
           }
         }
 
+        function findSection(id) {
+          if (!id || String(id).startsWith("other:")) return null;
+          return (state.data.sections || []).find((s) => s.id === id) || null;
+        }
+
+        function isGeneralSection(sec) {
+          return (sec?.title || "").trim().toLowerCase() === "general";
+        }
+
+        async function deleteSectionById(id) {
+          const sec = findSection(id);
+          if (!sec) {
+            toast("Cannot delete this section");
+            return false;
+          }
+          if (isGeneralSection(sec)) {
+            toast("General cannot be deleted");
+            return false;
+          }
+          if (!confirm("Delete section? Its tasks move to General."))
+            return false;
+          await api("/api/sections/" + encodeURIComponent(sec.id), {
+            method: "DELETE",
+          });
+          if (state.sel?.kind === "section" && state.sel.id === sec.id)
+            state.sel = null;
+          toast("Deleted");
+          await refresh();
+          return true;
+        }
+
         async function deleteSelection() {
           if (!state.sel) {
             toast("Nothing selected");
@@ -2122,6 +2273,10 @@
             state.sel = null;
             toast("Deleted");
             await refresh();
+            return;
+          }
+          if (state.sel.kind === "section") {
+            await deleteSectionById(state.sel.id);
             return;
           }
           if (state.sel.kind === "task" || state.sel.kind === "habit") {
@@ -2143,7 +2298,16 @@
             );
             return;
           }
-          if (state.sel.kind === "section") return;
+          if (state.sel.kind === "section") {
+            const sec = findSection(state.sel.id);
+            if (!sec) return;
+            if (isGeneralSection(sec)) {
+              toast("General cannot be edited");
+              return;
+            }
+            sectionForm(sec);
+            return;
+          }
           taskForm((state.data.tasks || []).find((t) => t.id === state.sel.id));
         }
 
@@ -2547,6 +2711,57 @@
                 toast("Saved");
                 await refresh();
                 if (r.project?.id) flashAdded("project", r.project.id);
+              } catch (err) {
+                toast(err.message);
+              }
+            }
+          };
+        }
+
+        function sectionForm(existing) {
+          if (!existing) return;
+          if (isGeneralSection(existing)) {
+            toast("General cannot be edited");
+            return;
+          }
+          modal(`<div class="modal"><h3>Edit section</h3>
+      <label>Title</label><input id="mTitle" value="${esc(existing.title || "")}"/>
+      <div class="modal-actions">
+        <button class="btn" data-m="cancel">Cancel</button>
+        <button class="btn" data-m="save-section">Save</button>
+      </div></div>`);
+          $("#mTitle")?.focus();
+          $("#mTitle")?.select();
+          $("#modalHost").onclick = async (e) => {
+            if (
+              e.target.dataset.m === "cancel" ||
+              e.target.classList.contains("modal-bg")
+            )
+              closeModal();
+            if (e.target.dataset.m === "save-section") {
+              try {
+                const title = ($("#mTitle")?.value || "").trim();
+                if (!title) {
+                  toast("Title required");
+                  $("#mTitle")?.focus();
+                  return;
+                }
+                if (title.toLowerCase() === "general") {
+                  toast("Cannot rename to General");
+                  return;
+                }
+                const r = await api("/api/sections", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    id: existing.id,
+                    title,
+                    project_id: existing.project_id,
+                  }),
+                });
+                closeModal();
+                toast("Saved");
+                await refresh();
+                if (r.section?.id) flashAdded("section", r.section.id);
               } catch (err) {
                 toast(err.message);
               }
@@ -3037,18 +3252,6 @@
               toast(err.message);
             }
           };
-          $("#mText")?.addEventListener("keydown", (e) => {
-            if (
-              (e.key === "Enter" ||
-                e.code === "Enter" ||
-                e.code === "NumpadEnter") &&
-              (e.ctrlKey || e.metaKey)
-            ) {
-              e.preventDefault();
-              e.stopPropagation();
-              save();
-            }
-          });
           $("#modalHost").onclick = async (e) => {
             if (
               e.target.dataset.m === "cancel" ||
@@ -3274,8 +3477,26 @@
               beginInlineSectionCreate(pid);
               return;
             }
+            if (act === "edit-section") {
+              const sec = findSection(id);
+              if (!sec) return;
+              if (isGeneralSection(sec)) {
+                toast("General cannot be edited");
+                return;
+              }
+              sectionForm(sec);
+              return;
+            }
+            if (act === "del-section") {
+              await deleteSectionById(id);
+              return;
+            }
             if (act === "edit-task") {
               taskForm((state.data.tasks || []).find((t) => t.id === id));
+              return;
+            }
+            if (act === "copy-task") {
+              copyTaskById(id);
               return;
             }
             if (act === "del-task") {
@@ -3367,20 +3588,69 @@
           await uploadImage(target.ptype, target.pid, file);
         });
 
+        function clickModalSave() {
+          const host = $("#modalHost");
+          if (!host?.innerHTML) return false;
+          const btn =
+            host.querySelector("[data-m='save-info']") ||
+            host.querySelector("[data-m='save-task']") ||
+            host.querySelector("[data-m='save-project']") ||
+            host.querySelector("[data-m='save-section']");
+          if (!btn) return false;
+          btn.click();
+          return true;
+        }
+
         document.addEventListener("keydown", async (e) => {
           if (
             (e.ctrlKey || e.metaKey) &&
             (e.key === "Enter" ||
               e.code === "Enter" ||
-              e.code === "NumpadEnter") &&
-            state.infoUi === "form"
+              e.code === "NumpadEnter")
           ) {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#modalHost [data-m='save-info']")?.click();
+            if (clickModalSave()) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            if (e.target?.id === "inlineTitle" && state.inlineCreate) {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await commitInlineCreate();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
+          }
+          if (e.ctrlKey || e.metaKey) {
+            const tag = (e.target?.tagName || "").toLowerCase();
+            const inField =
+              tag === "input" ||
+              tag === "textarea" ||
+              tag === "select" ||
+              e.target?.isContentEditable;
+            if (inField || modalOpen()) return;
+            const k = (e.key || "").toLowerCase();
+            if (k === "c" || e.code === "KeyC") {
+              e.preventDefault();
+              e.stopPropagation();
+              copyTaskById(selectedTaskId() || hoveredTaskId());
+              return;
+            }
+            if (k === "v" || e.code === "KeyV") {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await pasteCopiedTask();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
             return;
           }
-          if (e.ctrlKey || e.metaKey) return;
           if (e.altKey) {
             const isS =
               e.code === "KeyS" || (e.key || "").toLowerCase() === "s";
@@ -3535,7 +3805,8 @@
             e.preventDefault();
             const targets = collectTargets();
             if (targets.length)
-              setSelection(targets[0].kind, targets[0].id, true);
+              setSelection(targets[0].kind, targets[0].id, false);
+            scrollToPageHeader();
             return;
           }
           if (e.key === "End") {

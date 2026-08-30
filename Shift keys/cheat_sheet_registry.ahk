@@ -1056,8 +1056,8 @@ cheatSheets["Tasks"] := "
     🏠 [Home] First visible item
     🔚 [End] Last visible item
     🔤 [a-z 0-9] Jump to next title starting with that character
-    ⏎ [Enter] Edit selected project or task
-    🗑️ [Delete] Delete selected project or task
+    ⏎ [Enter] Edit selected project, section, or task (not General)
+    🗑️ [Delete] Delete selected project, section, or task (not General)
     🏠 [Esc] Close overlay first (inline field, image, Info, modal) — keep Work/Personal/Habits
     🏠 [Esc] Then Home — clear bento, emoji filter, selection (search stays)
     🏠 [Esc][Esc] Home and clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
@@ -1071,7 +1071,9 @@ cheatSheets["Tasks"] := "
     ⬅️ [Backspace] Step back (inline field, image preview, modal, search, filter, bento, then selection)
     
     === Ctrl ===
-    💾 [Enter] Add info text — save
+    💾 [Enter] Save open form (info, task, project, section) or inline create field
+    📋 [C] Copy selected or hovered task
+    📋 [V] Paste copied task into selected project / section
     
     === Shift ===
     💼 [1] Work column only (toggle)
