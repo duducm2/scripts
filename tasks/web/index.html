@@ -254,12 +254,32 @@
         visibility: visible;
         pointer-events: auto;
       }
+      .plain-row {
+        position: relative;
+      }
       .plain-row .row-actions {
         display: flex;
+        position: absolute;
+        right: 0;
+        top: 8px;
         width: auto;
         margin: 0;
-        padding: 0;
+        padding: 3px 6px;
         flex: 0 0 auto;
+        gap: 4px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+        z-index: 2;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .plain-row:hover .row-actions {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
       .proj-actions {
         display: flex;
@@ -609,6 +629,10 @@
         width: min(520px, 100%);
         max-height: 90vh;
         overflow: auto;
+      }
+      .modal.modal-info {
+        width: 60vw;
+        max-width: 60vw;
       }
       .modal h3 {
         margin: 0 0 12px;
@@ -2246,7 +2270,7 @@
             !rows.some((r) => r.id === state.infoSelId)
           )
             state.infoSelId = rows[0]?.id || "";
-          modal(`<div class="modal"><h3>Info</h3>
+          modal(`<div class="modal modal-info"><h3>Info</h3>
       <div class="toolbar" style="padding:0 0 10px">
         <button class="btn" data-m="add-info-here">+ Info</button>
         <button class="btn" data-m="cancel">Close</button>
