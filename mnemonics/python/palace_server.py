@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
 import shutil
@@ -113,9 +114,7 @@ def open_url_in_chrome(raw: str, *, new_window: bool = True) -> dict[str, Any]:
         cmd.append("--new-window")
     cmd.append(target)
     try:
-        subprocess.Popen(
-            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return {"ok": True, "opened": target, "via": "chrome"}
     except OSError as e:
         return {"ok": False, "error": str(e)}
@@ -204,9 +203,20 @@ class PalaceHandler(BaseHTTPRequestHandler):
     output_dir: Path
     studies_root: Path
     scripts_root: Path
+    # Drop stalled clients so worker threads cannot pile up forever.
+    timeout = 60
 
     def log_message(self, format: str, *args: Any) -> None:
         sys.stderr.write("[palace_server] " + (format % args) + "\n")
+
+    def handle_one_request(self) -> None:
+        try:
+            super().handle_one_request()
+        except (ConnectionResetError, BrokenPipeError, TimeoutError, OSError) as e:
+            sys.stderr.write(f"[palace_server] client connection dropped: {e}\n")
+        except Exception:
+            sys.stderr.write("[palace_server] request handler crashed:\n")
+            traceback.print_exc(file=sys.stderr)
 
     def _cors(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -526,9 +536,7 @@ class PalaceHandler(BaseHTTPRequestHandler):
                         got = study_link_get(key)
                         url = str(got.get("url") or "")
                     if not url:
-                        self._json(
-                            400, {"ok": False, "error": "no url stored", **got}
-                        )
+                        self._json(400, {"ok": False, "error": "no url stored", **got})
                         return
                     opened = open_url_in_chrome(url, new_window=True)
                     self._json(
@@ -596,14 +604,46 @@ def main(argv: list[str] | None = None) -> int:
     Handler.studies_root = studies_root
     Handler.scripts_root = scripts_root
 
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    class PalaceHTTPServer(ThreadingHTTPServer):
+        allow_reuse_address = True
+        daemon_threads = True
+
+        def handle_error(self, request: Any, client_address: Any) -> None:
+            sys.stderr.write(f"[palace_server] handle_error {client_address}:\n")
+            traceback.print_exc(file=sys.stderr)
+
+    server = PalaceHTTPServer((args.host, args.port), Handler)
+    pid_path = data_dir / "palace_server.pid"
+    try:
+        pid_path.write_text(str(os.getpid()), encoding="utf-8")
+    except OSError as e:
+        sys.stderr.write(f"[palace_server] could not write pid file: {e}\n")
+
+    def _clear_pid() -> None:
+        try:
+            if pid_path.is_file() and pid_path.read_text(
+                encoding="utf-8"
+            ).strip() == str(os.getpid()):
+                pid_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    atexit.register(_clear_pid)
+
     sys.stderr.write(
-        f"[palace_server] listening on http://{args.host}:{args.port} data={data_dir}\n"
+        f"[palace_server] listening on http://{args.host}:{args.port} "
+        f"pid={os.getpid()} data={data_dir}\n"
     )
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        try:
+            server.server_close()
+        except OSError:
+            pass
+        _clear_pid()
     return 0
 
 

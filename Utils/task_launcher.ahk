@@ -155,15 +155,9 @@ Task_StopServer(port := 0) {
     pid := Task_PidRead()
     if (pid > 0)
         Task_KillPidTree(pid)
-    deadline := A_TickCount + 1500
-    while (A_TickCount < deadline) {
-        if (!Task_IsServerRunning(port))
-            break
-        Sleep 50
-    }
-    if (Task_IsServerRunning(port))
-        Task_StopServerNetstat(port)
-    deadline := A_TickCount + 1500
+    ; Always free LISTENING holders (hung sockets may fail /health).
+    Task_StopServerNetstat(port)
+    deadline := A_TickCount + 2500
     while (A_TickCount < deadline) {
         if (!Task_IsServerRunning(port))
             break
@@ -178,6 +172,10 @@ Task_EnsureServer(forceRestart := false) {
         Task_StopServer(port)
     else if (Task_IsServerRunning(port))
         return true
+    else {
+        Task_StopServer(port)
+        Sleep 150
+    }
     py := Task_PythonDir() . "\task_server.py"
     if (!FileExist(py)) {
         Task_Notify("task_server.py not found", 2200, BANNER_ACCENT_ERROR)
@@ -190,7 +188,7 @@ Task_EnsureServer(forceRestart := false) {
     }
     dataDir := Task_DataDir()
     scriptsRoot := A_ScriptDir
-    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . scriptsRoot
+    cmd := pyCmd . ' -u "' . py . '" --data-dir "' . dataDir . '" --scripts-root "' . scriptsRoot
         . '" --port ' . port
     pid := 0
     try Run(cmd, A_ScriptDir, "Hide", &pid)
@@ -204,7 +202,7 @@ Task_EnsureServer(forceRestart := false) {
     }
     if (pid > 0)
         Task_PidWrite(pid)
-    loop 25 {
+    loop 30 {
         if (Task_IsServerRunning(port))
             return true
         Sleep 150
@@ -219,12 +217,21 @@ Task_IsServerRunning(port := 0) {
     try {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.SetTimeouts(400, 400, 1200, 1200)
         whr.Send()
         return (whr.Status = 200)
     } catch {
         return false
     }
 }
+
+; Kill orphaned :8766 when Utils.ahk exits / reloads.
+Task_OnExitStopServer(*) {
+    try Task_StopServer()
+    catch {
+    }
+}
+OnExit(Task_OnExitStopServer, -1)
 
 Task_IsChromeWindowTitle(title) {
     t := Trim(title)
