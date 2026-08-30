@@ -1058,7 +1058,8 @@ cheatSheets["Tasks"] := "
     🔤 [a-z 0-9] Jump to next title starting with letter
     ⏎ [Enter] Edit selection
     🗑️ [Delete] Delete selection
-    🏠 [Esc] Home — clear Work/Personal/Habits bento, emoji filter, search, modals, selection
+    🏠 [Esc] Home — clear Work/Personal/Habits bento, emoji filter, modals, selection (search stays)
+    🏠 [Esc][Esc] Home and clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
     ⬅️ [Backspace] Go back one step
     1️⃣ [1] Import view: select TASK_PACK
     👁️ [P] Import view: Preview
@@ -1075,6 +1076,7 @@ cheatSheets["Tasks"] := "
     ✅ [C] Mark done
     ➡️ [D] Habit to Personal inbox (General)
     📝 [N] Info points
+    ℹ️ Tag on any task that has info points
     🖼️ [V] Paste clipboard image
     📂 [E] Expand / collapse all projects
     🧹 [F] Clear emoji filter

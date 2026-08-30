@@ -121,6 +121,12 @@
         border-radius: 8px;
         margin-bottom: 8px;
         background: #252528;
+        position: relative;
+        z-index: 0;
+      }
+      .project:hover,
+      .project.kb-selected {
+        z-index: 3;
       }
       .project summary {
         cursor: pointer;
@@ -174,6 +180,12 @@
       }
       .task .em {
         flex: 0 0 auto;
+      }
+      .task .info-tag {
+        flex: 0 0 auto;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
       }
       .task .title,
       .plain-row .title {
@@ -240,15 +252,31 @@
         font-size: 11px;
       }
       .proj-actions {
-        display: none;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 0 12px 8px;
-      }
-      /* Only when open — forcing display on closed <details> expands cards and causes layout blink */
-      details.project[open].kb-selected > .proj-actions,
-      details.project[open]:hover > .proj-actions {
         display: flex;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        z-index: 4;
+        width: auto;
+        max-width: min(100%, 420px);
+        margin: 0;
+        padding: 3px 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 4px;
+        background: #1a1a1c;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      details.project.kb-selected > .proj-actions,
+      details.project:hover > .proj-actions {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
       .task-section {
         padding: 0 0 6px;
@@ -732,7 +760,20 @@
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
           collapsedSections: new Set(),
+          lastEscAt: 0,
         };
+        // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
+        const ESC_DOUBLE_TAP_MS = 400;
+        let taskIdsWithInfo = new Set();
+
+        function rebuildTaskIdsWithInfo() {
+          const ids = new Set();
+          for (const i of state.data?.info_points || []) {
+            if ((i.parent_type || "") === "task" && i.parent_id)
+              ids.add(i.parent_id);
+          }
+          taskIdsWithInfo = ids;
+        }
 
         const $ = (sel) => document.querySelector(sel);
         const esc = (s) =>
@@ -937,6 +978,10 @@
           ).trim();
           const today = new Date().toISOString().slice(0, 10);
           const dueNow = isHabit && (!due || due <= today);
+          const hasInfo = taskIdsWithInfo.has(t.id);
+          const infoTag = hasInfo
+            ? `<span class="info-tag" data-act="info-task" title="Has info points">ℹ️</span>`
+            : "";
           const actions = isHabit
             ? `<button class="btn" data-act="emoji" data-key="done" title="Advance">✅</button>
         <button class="btn" data-act="habit-to-personal" title="Send to Personal inbox (Shift+D)">→ Personal</button>
@@ -950,8 +995,9 @@
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`;
-          return `<li class="task${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}">
+          return `<li class="task${dueNow ? " due-now" : ""}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
       <span class="em">${esc(t.emoji || "🔲")}</span>
+      ${infoTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
       ${due ? `<span class="due">${esc(due)}</span>` : ""}
       <span class="row-actions">${actions}</span>
@@ -1217,6 +1263,7 @@
         }
 
         function renderDashboard() {
+          rebuildTaskIdsWithInfo();
           $("#view").innerHTML = `
       <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${renderHabitsColumn()}`;
@@ -1866,7 +1913,8 @@
           taskForm((state.data.tasks || []).find((t) => t.id === state.sel.id));
         }
 
-        function goHome() {
+        function goHome(opts = {}) {
+          const keepSearch = !!opts.keepSearch;
           cancelInlineCreate();
           if (!$("#lightbox")?.hidden) {
             $("#lightbox").hidden = true;
@@ -1875,12 +1923,29 @@
           }
           if (modalOpen()) closeModal();
           state.view = "dashboard";
-          if (searchNeedle()) clearSearch();
+          if (!keepSearch && searchNeedle()) clearSearch();
           if (state.emojiFilter) applyEmojiFilter("");
           if (state.sectionFocus) applySectionFocus("");
           if (state.sel) setSelection(null, null, false);
+          const inp = $("#globalSearch");
+          if (inp && document.activeElement === inp) inp.blur();
           if (state.data) render();
           scrollToPageHeader();
+        }
+
+        function handleEscape() {
+          const now = Date.now();
+          const isDouble =
+            state.lastEscAt > 0 &&
+            now - state.lastEscAt >= 0 &&
+            now - state.lastEscAt < ESC_DOUBLE_TAP_MS;
+          if (isDouble) {
+            state.lastEscAt = 0;
+            goHome({ keepSearch: false });
+            return;
+          }
+          state.lastEscAt = now;
+          goHome({ keepSearch: true });
         }
 
         function goBack() {
@@ -2757,7 +2822,7 @@
           ) {
             if (e.key === "Escape") {
               e.preventDefault();
-              goHome();
+              handleEscape();
               return;
             }
             if (
@@ -2786,7 +2851,7 @@
 
           if (e.key === "Escape") {
             e.preventDefault();
-            goHome();
+            handleEscape();
             return;
           }
           if (e.key === "Backspace") {
