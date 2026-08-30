@@ -273,7 +273,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Peek PDF / QuickLook study helpers (part 3) -> Utils\peek_pdf_study_03.ahk
 #include %A_ScriptDir%\Utils\peek_pdf_study_03.ahk
 
-; [Utils module] Win+Alt+Shift+X → Memory Palace -> Utils\study_hotkey_x.ahk
+; [Utils module] Win+Alt+Shift+X → Import Management (also Utility Shortcuts [J]) -> Utils\study_hotkey_x.ahk
 #include %A_ScriptDir%\Utils\study_hotkey_x.ahk
 
 ; [Utils module] Modal ListView letter jump helpers -> Utils\modal_list_letter_jump.ahk
@@ -341,6 +341,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] ClipAngel last clip → Desktop (.txt) -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk
 ; [Utils module] Import Management hub (finance & palace imports) -> Utils\import_mgmt_launcher.ahk
+; Also: #!+F double-tap in AppLaunchers\launch_hotkeys.ahk (single-tap remains Chrome)
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
 ; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk

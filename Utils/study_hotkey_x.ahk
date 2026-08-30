@@ -1,9 +1,10 @@
 ; =============================================================================
 ; Utils module: study_hotkey_x.ahk
-; Win+Alt+Shift+X — open Memory Palace (same as Utility Shortcuts [N]).
+; Win+Alt+Shift+X — open Import Management (same as Utility Shortcuts [J]).
+; Memory Palace remains on Utility Shortcuts [N] and #!+D hold.
 ; =============================================================================
 
 #!+x::
 {
-    Palace_LaunchApp()
+    ImportMgmt_LaunchApp()
 }

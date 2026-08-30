@@ -1,17 +1,45 @@
 ; =============================================================================
 ; AppLaunchers module: launch_hotkeys.ahk
-; Chrome, WhatsApp, Cursor launch hotkeys; Win+Alt+Shift+H → Utility Shortcuts Prompts
+; Chrome (#!+F tap) / Import Management (#!+F double-tap), WhatsApp, Cursor;
+; Win+Alt+Shift+H → Utility Shortcuts Prompts
 ; Extracted verbatim from AppLaunchers.ahk; loaded via #include into the
 ; AppLaunchers.ahk process, which remains the entry point / source of truth.
 ; =============================================================================
 
 ; =============================================================================
-; Open/Activate Google Chrome
+; Open/Activate Google Chrome  /  Import Management
 ; Hotkey: Win+Alt+Shift+F
+;   1× tap  = Chrome (address bar focus)
+;   2× tap  = Import Management (same as Utility Shortcuts [J]; both entry points kept)
 ; Original File: Open Google.ahk
+; Double-tap window: AI_QD_DOUBLE_TAP_MS (400) — matches #!+D / ZMK tap-dance.
 ; =============================================================================
-#!+f::
-{
+global g_LaunchF_DoubleTapArmed := false
+global g_LaunchF_LastPressTick := 0
+global g_LaunchF_DoubleTapTimer := 0
+
+class LaunchF_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global g_LaunchF_DoubleTapArmed, g_LaunchF_DoubleTapTimer
+        if (!g_LaunchF_DoubleTapArmed)
+            return
+        g_LaunchF_DoubleTapArmed := false
+        g_LaunchF_DoubleTapTimer := 0
+        LaunchF_OpenChrome()
+    }
+}
+
+LaunchF_DisarmDoubleTap() {
+    global g_LaunchF_DoubleTapArmed, g_LaunchF_DoubleTapTimer, g_LaunchF_LastPressTick
+    g_LaunchF_DoubleTapArmed := false
+    g_LaunchF_LastPressTick := 0
+    if (g_LaunchF_DoubleTapTimer) {
+        SetTimer(g_LaunchF_DoubleTapTimer, 0)
+        g_LaunchF_DoubleTapTimer := 0
+    }
+}
+
+LaunchF_OpenChrome() {
     Run "chrome.exe"
     WinWait("ahk_exe chrome.exe", , 10)  ; Wait for window to exist (up to 10 seconds)
     Sleep(300)
@@ -41,6 +69,43 @@
     ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
     SetTimer(ClipAngelBanner_Hide, -500)
     CenterMouse()
+}
+
+#!+f:: {
+    global g_LaunchF_DoubleTapArmed, g_LaunchF_LastPressTick, g_LaunchF_DoubleTapTimer
+
+    if !GetKeyState("f", "P")
+        return
+
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch {
+        thresholdMs := 400
+    }
+
+    pressTime := A_TickCount
+    elapsed := (g_LaunchF_LastPressTick > 0) ? (pressTime - g_LaunchF_LastPressTick) : 9999
+    isSecondTap := g_LaunchF_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
+
+    KeyWait "f"
+
+    if (isSecondTap) {
+        LaunchF_DisarmDoubleTap()
+        try ImportMgmt_LaunchApp()
+        catch {
+            ShowCenteredOverlay_Utils("⚠ Import Management unavailable", 2000, BANNER_ACCENT_ERROR)
+        }
+        return
+    }
+
+    if (g_LaunchF_DoubleTapTimer) {
+        SetTimer(g_LaunchF_DoubleTapTimer, 0)
+        g_LaunchF_DoubleTapTimer := 0
+    }
+    g_LaunchF_LastPressTick := A_TickCount
+    g_LaunchF_DoubleTapArmed := true
+    g_LaunchF_DoubleTapTimer := ObjBindMethod(LaunchF_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_LaunchF_DoubleTapTimer, -thresholdMs)
 }
 
 ; =============================================================================
