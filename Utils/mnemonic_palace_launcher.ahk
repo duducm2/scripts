@@ -7,30 +7,78 @@
 global g_PalaceDashboardHwnd := 0
 global g_PalaceServerPid := 0
 
+; #region agent log
+Palace_DebugLog(hypothesisId, location, message, data := "") {
+    path := A_ScriptDir . "\debug-125703.log"
+    ts := A_TickCount
+    dataJson := "{}"
+    if (data != "")
+        dataJson := data
+    line := '{"sessionId":"125703","runId":"post-fix","hypothesisId":"' . hypothesisId
+        . '","location":"' . location . '","message":"' . message
+        . '","data":' . dataJson . ',"timestamp":' . ts . "}`n"
+    try FileAppend(line, path, "UTF-8")
+    catch {
+    }
+}
+; #endregion
+
 Palace_ServerPort() {
     return 8767
 }
 
 Palace_LaunchApp() {
-    Palace_EnsureData()
+    ; #region agent log
+    Palace_DebugLog("D", "mnemonic_palace_launcher.ahk:LaunchApp", "enter", "{}")
+    ; #endregion
+    try {
+        Palace_EnsureData()
+    } catch as e {
+        ; #region agent log
+        Palace_DebugLog("D", "mnemonic_palace_launcher.ahk:LaunchApp", "EnsureData_throw",
+            '{"err":"' . StrReplace(e.Message, '"', "'") . '"}')
+        ; #endregion
+        throw
+    }
     existing := Palace_FindExistingWebHwnd()
+    ; #region agent log
+    Palace_DebugLog("B", "mnemonic_palace_launcher.ahk:LaunchApp", "existing_hwnd",
+        '{"hwnd":' . Integer(existing ? existing : 0) . '}')
+    ; #endregion
     if (existing) {
         if (!Palace_IsServerRunning()) {
-            if (!Palace_EnsureServer(false))
+            if (!Palace_EnsureServer(false)) {
+                ; #region agent log
+                Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_ensure_fail_existing", "{}")
+                ; #endregion
                 return
+            }
         }
-        if (Palace_ActivateWeb(existing))
+        if (Palace_ActivateWeb(existing)) {
+            ; #region agent log
+            Palace_DebugLog("B", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_activate_existing",
+                '{"hwnd":' . Integer(existing) . '}')
+            ; #endregion
             return
+        }
         ; Cached HWND went stale — clear and fall through to open/re-find.
         Palace_WebHwndCacheClear()
         existing := Palace_FindExistingWebHwnd()
-        if (existing && Palace_ActivateWeb(existing))
+        if (existing && Palace_ActivateWeb(existing)) {
+            ; #region agent log
+            Palace_DebugLog("B", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_activate_refind",
+                '{"hwnd":' . Integer(existing) . '}')
+            ; #endregion
             return
+        }
     }
     try StandardLoadingBar_Show("⏳ Opening Memory Palace…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
     if (!Palace_EnsureServer(false)) {
+        ; #region agent log
+        Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_ensure_fail", "{}")
+        ; #endregion
         try StandardLoadingBar_Hide(0)
         catch {
         }
@@ -43,6 +91,10 @@ Palace_LaunchApp() {
         catch {
         }
         Palace_ActivateWeb(existing)
+        ; #region agent log
+        Palace_DebugLog("B", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_activate_after_server",
+            '{"hwnd":' . Integer(existing) . '}')
+        ; #endregion
         return
     }
     url := "http://127.0.0.1:" . Palace_ServerPort() . "/?t=" . A_TickCount
@@ -53,6 +105,10 @@ Palace_LaunchApp() {
     try StandardLoadingBar_Hide(300)
     catch {
     }
+    ; #region agent log
+    Palace_DebugLog("E", "mnemonic_palace_launcher.ahk:LaunchApp", "exit_open_chrome",
+        '{"ok":' . (ok ? "true" : "false") . '}')
+    ; #endregion
     if (!ok)
         Palace_Notify("Chrome failed to open Memory Palace", 2500, BANNER_ACCENT_ERROR)
 }
@@ -146,14 +202,15 @@ Palace_StopServer(port := 0) {
     pid := Palace_PidRead()
     if (pid > 0)
         Palace_KillPidTree(pid)
+    ; Always free the listen port. Health-only checks miss hung listeners that
+    ; accept TCP then close without HTTP (IsServerRunning stays false).
+    Palace_StopServerNetstat(port)
     deadline := A_TickCount + 1500
     while (A_TickCount < deadline) {
         if (!Palace_IsServerRunning(port))
             break
         Sleep 50
     }
-    if (Palace_IsServerRunning(port))
-        Palace_StopServerNetstat(port)
     Palace_PidWrite(0)
 }
 
@@ -163,6 +220,7 @@ Palace_IsServerRunning(port := 0) {
     try {
         whr := ComObject("WinHttp.WinHttpRequest.5.1")
         whr.Open("GET", "http://127.0.0.1:" . port . "/health", false)
+        whr.SetTimeouts(500, 500, 1500, 1500)
         whr.Send()
         return (whr.Status = 200)
     } catch {
@@ -172,17 +230,45 @@ Palace_IsServerRunning(port := 0) {
 
 Palace_EnsureServer(forceRestart := false) {
     port := Palace_ServerPort()
-    if (forceRestart)
+    already := Palace_IsServerRunning(port)
+    ; #region agent log
+    Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:EnsureServer", "enter",
+        '{"forceRestart":' . (forceRestart ? "true" : "false") . ',"alreadyRunning":' . (already ? "true" : "false") .
+        ',"port":' . port . '}')
+    ; #endregion
+    if (forceRestart) {
+        ; #region agent log
+        Palace_DebugLog("C", "mnemonic_palace_launcher.ahk:EnsureServer", "force_stop", "{}")
+        ; #endregion
         Palace_StopServer(port)
-    else if (Palace_IsServerRunning(port))
+    } else if (already) {
+        ; #region agent log
+        Palace_DebugLog("C", "mnemonic_palace_launcher.ahk:EnsureServer", "reuse_running", "{}")
+        ; #endregion
         return true
+    } else {
+        ; Unhealthy / no response: clear PID + LISTENING holders before bind.
+        ; #region agent log
+        Palace_DebugLog("C", "mnemonic_palace_launcher.ahk:EnsureServer", "clear_hung_port",
+            '{"port":' . port . '}')
+        ; #endregion
+        Palace_StopServer(port)
+        Sleep 150
+    }
     py := Palace_PythonDir() . "\palace_server.py"
     if (!FileExist(py)) {
+        ; #region agent log
+        Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:EnsureServer", "missing_py",
+            '{"py":"' . StrReplace(py, "\", "\\") . '"}')
+        ; #endregion
         Palace_Notify("palace_server.py not found", 2200, BANNER_ACCENT_ERROR)
         return false
     }
     pyCmd := Palace_FindPythonCmd()
     if (pyCmd = "") {
+        ; #region agent log
+        Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:EnsureServer", "missing_python_cmd", "{}")
+        ; #endregion
         Palace_Notify("Python not found for Memory Palace server", 2500, BANNER_ACCENT_ERROR)
         return false
     }
@@ -196,6 +282,10 @@ Palace_EnsureServer(forceRestart := false) {
     pid := 0
     try Run(cmd, A_ScriptDir, "Hide", &pid)
     catch as e {
+        ; #region agent log
+        Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:EnsureServer", "run_fail",
+            '{"err":"' . StrReplace(e.Message, '"', "'") . '"}')
+        ; #endregion
         Palace_Notify("Palace server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
         return false
     }
@@ -203,13 +293,26 @@ Palace_EnsureServer(forceRestart := false) {
     catch {
         pid := 0
     }
+    ; #region agent log
+    Palace_DebugLog("A", "mnemonic_palace_launcher.ahk:EnsureServer", "run_ok",
+        '{"pid":' . pid . '}')
+    ; #endregion
     if (pid > 0)
         Palace_PidWrite(pid)
-    loop 30 {
-        if (Palace_IsServerRunning(port))
+    loop 40 {
+        if (Palace_IsServerRunning(port)) {
+            ; #region agent log
+            Palace_DebugLog("C", "mnemonic_palace_launcher.ahk:EnsureServer", "health_ok",
+                '{"attempt":' . A_Index . ',"pid":' . pid . '}')
+            ; #endregion
             return true
+        }
         Sleep 150
     }
+    ; #region agent log
+    Palace_DebugLog("C", "mnemonic_palace_launcher.ahk:EnsureServer", "health_timeout",
+        '{"pid":' . pid . '}')
+    ; #endregion
     Palace_Notify("Palace server did not start", 2800, BANNER_ACCENT_ERROR)
     return false
 }
@@ -352,12 +455,21 @@ Palace_OpenWebInChrome(url) {
     existing := Palace_FindExistingWebHwnd()
     if (existing) {
         Palace_ActivateWeb(existing)
+        ; #region agent log
+        Palace_DebugLog("E", "mnemonic_palace_launcher.ahk:OpenWebInChrome", "reuse_existing",
+            '{"hwnd":' . Integer(existing) . '}')
+        ; #endregion
         return true
     }
+    runOk := true
     try Run('chrome.exe --new-window "' . url . '"')
     catch {
         try Run(url)
         catch {
+            runOk := false
+            ; #region agent log
+            Palace_DebugLog("E", "mnemonic_palace_launcher.ahk:OpenWebInChrome", "chrome_run_fail", "{}")
+            ; #endregion
             return false
         }
     }
@@ -396,8 +508,16 @@ Palace_OpenWebInChrome(url) {
         try WinActivate("ahk_id " newHwnd)
         catch {
         }
+        ; #region agent log
+        Palace_DebugLog("E", "mnemonic_palace_launcher.ahk:OpenWebInChrome", "opened",
+            '{"hwnd":' . Integer(newHwnd) . ',"runOk":true}')
+        ; #endregion
         return true
     }
+    ; #region agent log
+    Palace_DebugLog("E", "mnemonic_palace_launcher.ahk:OpenWebInChrome", "no_hwnd_but_true",
+        '{"runOk":' . (runOk ? "true" : "false") . '}')
+    ; #endregion
     return true
 }
 
