@@ -24,14 +24,7 @@ Proposta de solução bem definida (QMAI ou nova), com conceito, proposta de val
 Protótipos das telas desenvolvidos, representando a solução proposta
 Sempre que possível, implementação inicial (piloto/MVP) realizada para validação da solução",ℹ️,"Tasks/Checar esta meta, se precisamos revisar",420,2026-08-29 15:48:39
 INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29 15:48:39
-INFO_0023,task,TASK_0013,"Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, t","Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, também tem outra. O quanto a gente vai deixar ela específica para a visão de mundo de cada uma delas ou generalizar?",ℹ️,,570,2026-08-29 15:48:39
-INFO_0024,task,TASK_0013,Sprint finish at end of August.,Sprint finish at end of August.,ℹ️,,580,2026-08-29 15:48:39
-INFO_0025,task,TASK_0013,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.,ℹ️,Projects/API,590,2026-08-29 15:48:39
-INFO_0026,task,TASK_0013,Provavelmente terão duas APIs com o Genesys o Apolo.,Provavelmente terão duas APIs com o Genesys o Apolo.,ℹ️,Projects/API,600,2026-08-29 15:48:39
-INFO_0027,task,TASK_0013,"As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.","As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",ℹ️,Projects/API,610,2026-08-29 15:48:39
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39
-INFO_0029,task,TASK_0014,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,ℹ️,Projects/Prototype,650,2026-08-29 15:48:39
-INFO_0030,task,TASK_0014,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.","Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",ℹ️,Projects/Prototype/Prototype updates,660,2026-08-29 15:48:39
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39
 INFO_0032,task,TASK_0020,O forms precisa ter o nome da indicação do key user.,O forms precisa ter o nome da indicação do key user.,ℹ️,Projects/Communication Plan/Forms,760,2026-08-29 15:48:39
 INFO_0033,task,TASK_0020,https://forms.office.com/e/uGVi4LaXff,https://forms.office.com/e/uGVi4LaXff,ℹ️,Projects/Communication Plan/Forms,770,2026-08-29 15:48:39
@@ -158,3 +151,9 @@ INFO_0118,task,TASK_0213,"RISE
 Data insights
 BPM
 AI Roleplay",,ℹ️,,4000,2026-08-30 15:11:07
+INFO_0119,task,TASK_0214,"ℹ️ Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, t
+Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, também tem outra. O quanto a gente vai deixar ela específica para a visão de mundo de cada uma delas ou generalizar?
+ℹ️ Sprint finish at end of August.
+ℹ️ Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.
+ℹ️ Provavelmente terão duas APIs com o Genesys o Apolo.
+ℹ️ As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",,ℹ️,,4010,2026-08-30 15:25:13

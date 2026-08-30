@@ -1230,7 +1230,6 @@
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="emoji" data-key="waiting" title="Waiting (Shift+Q)">⏳</button>
-        <button class="btn" data-act="emoji" data-key="none" title="Clear emoji (Shift+O)">&nbsp;</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
@@ -1258,17 +1257,17 @@
           const entries = Object.entries(byEmoji).sort(
             (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
           );
-          if (!entries.length)
-            return `<span class="emoji-legend"><span class="empty">none</span></span>`;
+          if (!entries.length) return `<span class="emoji-legend"></span>`;
           return `<div class="emoji-legend">${entries
             .map(([e, n]) => {
               const k = EMOJI_KEY_BY[e] || "";
               const label = EMOJI_LABELS[e] || "other";
               const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
+              const tipLabel = e ? label : "no emoji";
               const emHtml = e
                 ? `<span class="em">${esc(e)}</span>`
-                : `<span class="em em-none"></span>`;
-              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + label : "Filter " + label}">
+                : `<span class="em em-none" aria-hidden="true"></span>`;
+              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + tipLabel : "Filter " + tipLabel}">
         ${emHtml}
         ${e ? `<span class="lbl">${esc(label)}</span>` : ""}
         <span class="n">${n}</span>${keyHint}
