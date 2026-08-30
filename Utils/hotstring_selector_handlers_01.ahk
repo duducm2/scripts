@@ -384,6 +384,7 @@ PromptContext_ResolveAttachPaths(entries, asTxt := false) {
 ; Scoped to companion main pane (Gemini_GetSearchRoot) — avoid Shift-keys helpers for Utils #Warn.
 ; Prompt Manager [Y] auto-send: stable Send-enabled + upload-idle (efficiency canon §13 / stable polls).
 PROMPT_PASTE_USE_STABLE_SEND_READY := true
+PROMPT_PASTE_USE_CHIP_READY := true
 PROMPT_PASTE_SEND_READY_STABLE_POLLS := 2
 PROMPT_PASTE_SEND_READY_POLL_MS := 200
 PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS := 600
@@ -474,6 +475,73 @@ PromptContext_ProbeSendReady(hwnd, uia, companionId) {
     }
 }
 
+; Secondary signal (orthogonal to Send-enabled + upload text): composer chips and no ProgressBar.
+; Scoped FindAll under search root; stop once chipNeed is met. Trade-off: other "remove" buttons in pane can inflate count.
+PromptContext_CountFileChips(uia, companionId := "", chipNeed := 0) {
+    n := 0
+    root := PromptContext_UploadSearchRoot(uia, companionId)
+    if (!IsObject(root))
+        return 0
+    try {
+        buttons := root.FindAll({ Type: 50000 }) ; Button
+        for btn in buttons {
+            name := ""
+            try name := btn.Name
+            catch {
+                continue
+            }
+            if (!name)
+                continue
+            low := StrLower(name)
+            if (InStr(low, "open upload file menu"))
+                continue
+            if (InStr(low, "remove") || InStr(low, "remover") || InStr(low, "excluir")
+            || InStr(low, "delete file") || InStr(low, "close file") || InStr(low, "fechar arquivo")) {
+                n += 1
+                if (chipNeed > 0 && n >= chipNeed)
+                    return n
+            }
+        }
+    } catch {
+    }
+    return n
+}
+
+PromptContext_HasProgressBar(uia, companionId := "") {
+    root := PromptContext_UploadSearchRoot(uia, companionId)
+    if (!IsObject(root))
+        return false
+    try {
+        el := root.FindFirst({ Type: 50012 }) ; ProgressBar
+        return !!el
+    } catch {
+    }
+    return false
+}
+
+; Gate B: chips (when attaching) + no ProgressBar + composer text. Does not use Send.IsEnabled or upload labels.
+PromptContext_ProbeChipReady(hwnd, uia, companionId, attachCount := 0) {
+    companionId := StrLower(Trim(companionId))
+    hasText := false
+    try {
+        if (companionId = "enterprise")
+            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+        else if (companionId = "copilot")
+            hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
+        else
+            hasText := (GeminiPromptFieldGetTextFromUia(uia) != "")
+    } catch {
+        hasText := false
+    }
+    if (!hasText)
+        return false
+    if (PromptContext_HasProgressBar(uia, companionId))
+        return false
+    if (attachCount > 0)
+        return PromptContext_CountFileChips(uia, companionId, attachCount) >= attachCount
+    return true
+}
+
 PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     if !InsertFiles_IsAiChatForeground()
         return
@@ -511,12 +579,14 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
 
 ; After multi-file attach + body paste: wait until companion Send/Submit is enabled.
 ; Returns true if ready, false on timeout (caller may still attempt submit).
-; Stable path (PROMPT_PASTE_USE_STABLE_SEND_READY): upload idle + Send enabled + text for N polls.
+; Two independent streaks in one poll loop (AHK has no worker threads); first to N wins:
+;   A — upload-idle + Send enabled + text (PROMPT_PASTE_USE_STABLE_SEND_READY)
+;   B — chips + no ProgressBar + text (PROMPT_PASTE_USE_CHIP_READY)
 PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, attachCount := 0, updateBanner := false) {
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companionId := StrLower(Trim(companionId))
-    if (!PROMPT_PASTE_USE_STABLE_SEND_READY)
+    if (!PROMPT_PASTE_USE_STABLE_SEND_READY && !PROMPT_PASTE_USE_CHIP_READY)
         return PromptContext_WaitForSendReadyLegacy(hwnd, companionId, timeoutMs)
 
     pollMs := Max(50, PROMPT_PASTE_SEND_READY_POLL_MS)
@@ -524,7 +594,8 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
     minNoInd := (attachCount > 0) ? Max(0, PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS) : 0
     tStart := A_TickCount
     sawUploading := false
-    stable := 0
+    stableA := 0
+    stableB := 0
     bannerPhase := ""
     uia := 0
     pollIndex := 0
@@ -541,7 +612,8 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             }
         }
         if (!IsObject(uia)) {
-            stable := 0
+            stableA := 0
+            stableB := 0
             Sleep pollMs
             continue
         }
@@ -564,14 +636,32 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             }
         }
 
-        idleOk := probe.uploadIdle && (sawUploading || (A_TickCount - tStart) >= minNoInd)
-        if (idleOk && probe.sendEnabled && probe.hasText) {
-            stable += 1
-            if (stable >= needStable)
-                return true
-        } else {
-            stable := 0
+        if (PROMPT_PASTE_USE_STABLE_SEND_READY) {
+            idleOk := probe.uploadIdle && (sawUploading || (A_TickCount - tStart) >= minNoInd)
+            if (idleOk && probe.sendEnabled && probe.hasText) {
+                stableA += 1
+                if (stableA >= needStable)
+                    return true
+            } else {
+                stableA := 0
+            }
         }
+
+        if (PROMPT_PASTE_USE_CHIP_READY) {
+            chipOk := false
+            try chipOk := PromptContext_ProbeChipReady(hwnd, uia, companionId, attachCount)
+            catch {
+                chipOk := false
+            }
+            if (chipOk) {
+                stableB += 1
+                if (stableB >= needStable)
+                    return true
+            } else {
+                stableB := 0
+            }
+        }
+
         Sleep pollMs
     }
     return false
