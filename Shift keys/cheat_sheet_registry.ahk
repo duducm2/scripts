@@ -1095,10 +1095,48 @@ cheatSheets["Tasks"] := "
     ⏳ [Q] Waiting — tag selected task, or filter if none selected
     🔲 [G] General — tag selected task, or filter if none selected
     ❓ [U] Doubt — tag selected task, or filter if none selected
+    ∅ [O] None — clear emoji on selected task, or filter tasks with no emoji
     ⚡ [I] Important on the selected task only (does not filter)
     
     === Alt ===
     🔍 [S] Focus search
+)"
+
+; --- Memory Palace (localhost :8767, Chrome title Memory Palace) ----------
+cheatSheets["Memory Palace"] := "
+(
+    Memory Palace
+    Overlay Win+Alt+Shift+A. Open: Utility [N] or Win+Alt+Shift+D hold. Packs / quick image: Import Management (#!+X / Utility [J] → [P]/[L]/[Q]).
+    
+    === Navigation ===
+    🏠 [Esc] Close study picker / palace overlay / leave Browse / return to Practice
+    🔁 [P] Toggle Practice ↔ Plans
+    🆕 [L] Open latest palace for the selected study
+    📖 [M] Method
+    🗂 [B] Browse
+    🔗 [1] Links (study video / article / favorite)
+    ❓ [H] Help (glossary · Practice / Plans GitHub)
+    
+    === Study picker (first open) ===
+    🔤 [a-z 1-9] Pick study by letter
+    ⬆️⬇️⬅️➡️ Arrows move highlight
+    ⏎ [Enter] / [Space] Confirm study → Practice + latest palace
+    
+    === Search ===
+    🔍 [Alt+S] Focus Knowledge Atom search
+    
+    === Study links (anywhere in the app) ===
+    🎬 [Shift+V] Open stored video in Chrome (new window)
+    📄 [Shift+A] Open stored article in Chrome (new window)
+    ⭐ [Shift+F] Open stored favorite in Chrome (new window)
+    
+    === Palace overlay ===
+    🖼 [F] Toggle snapshot full-screen
+    📝 [D] Toggle Quote & Story (default = Concept only)
+    📋 [C] Copy image prompt
+    ⬅️ [←] Older palace
+    ➡️ [→] Newer palace
+    🏠 [Esc] Exit full-screen first, then close overlay
 )"
 
 ; --- Wikipedia ---------------------------------------------------------------
@@ -1382,19 +1420,24 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+X] > Import Management (same as Utility Shortcuts [J]; [Q]=Palace quick image)
     [Win+Alt+Shift+D] > tap=Tasks :8766 · 2×=Finance · hold=Memory Palace :8767 ([T]/[F]/[N])
 
-    === MEMORY PALACE WEB (:8767) ===
-    Open: Utility [N] or Win+Alt+Shift+D hold. Packs / quick image: Import Management (#!+X / Utility [J]).
+    === MEMORY PALACE (:8767) ===
+    Launch: Utility Shortcuts [N] · Win+Alt+Shift+D hold (≥700 ms) · Chrome titled Memory Palace
+    Import Management (#!+X / Utility [J] / #!+F×2): [P] PALACE_PACK · [L] PLAN_PACK · [Q] quick image (Desktop PNG/JPG → palace missing image)
+    Markdown (practice+plans): Utility Shortcuts Push [G] when mnemonics/data is dirty (then commit+push)
+    App sheet: Win+Alt+Shift+A while Memory Palace is focused (same keys below).
     [Alt+S] > Focus Knowledge Atom search
-    [Shift+V] > Open study video in Chrome
-    [Shift+A] > Open study article in Chrome
-    [Shift+F] > Open favorite link in Chrome
-    [P] > Toggle Practice / Plans
-    [L] > Latest palace
+    [Shift+V] > Open study video in Chrome (new window)
+    [Shift+A] > Open study article in Chrome (new window)
+    [Shift+F] > Open favorite link in Chrome (new window)
+    [P] > Toggle Practice ↔ Plans
+    [L] > Latest palace (selected study)
     [M] > Method
     [B] > Browse
     [1] > Links
-    [T] > Tools
-    Overlay: [F]=full-screen snapshot · [D]=toggle Quote/Story · [C]=copy prompt · ←/→ older/newer · Esc close
+    [H] > Help (glossary · Practice / Plans GitHub)
+    Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
+    Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [C] copy prompt · ← older · → newer
+    Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)
     [Win+Alt+Shift+↓] > Show square selector (down direction)

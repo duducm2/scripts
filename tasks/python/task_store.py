@@ -67,6 +67,7 @@ STATUS_EMOJIS = {
     "important": "⚡",
     "done": "✅",
     "doubt": "❓",
+    "none": "",
 }
 
 VALID_FILTERS = {"work", "personal", "habits"}
@@ -644,8 +645,14 @@ class TaskStore:
 
     def set_task_emoji(self, task_id: str, key_or_emoji: str) -> dict:
         key = (key_or_emoji or "").strip()
-        emoji = STATUS_EMOJIS.get(key, key)
-        if not emoji:
+        if key in STATUS_EMOJIS:
+            emoji = STATUS_EMOJIS[key]
+        elif key in ("none",):
+            emoji = ""
+        else:
+            emoji = key
+        # "none" is an empty emoji; other empty keys are invalid
+        if not emoji and key not in STATUS_EMOJIS and key != "none":
             return {"ok": False, "error": "emoji required"}
         rows = self.load("tasks")
         out = []

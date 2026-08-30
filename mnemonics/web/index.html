@@ -415,7 +415,6 @@
     <div class="app-more" id="appMore">
       <button type="button" data-view="browse">Browse</button>
       <button type="button" data-view="links">Links</button>
-      <button type="button" data-view="tools">Tools</button>
       <button type="button" data-view="help">Help</button>
     </div>
 
@@ -909,8 +908,7 @@
             (name === "practice" && k === "practice") ||
             (name === "plans" && k === "plans") ||
             (name === "method" && k === "method") ||
-            (["browse", "links", "tools", "help"].includes(name) &&
-              k === "extra");
+            (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
           el.setAttribute("aria-hidden", on ? "false" : "true");
         });
@@ -950,8 +948,6 @@
           renderBrowse(document.getElementById("appExtra"));
         else if (state.view === "links")
           renderLinks(document.getElementById("appExtra"));
-        else if (state.view === "tools")
-          renderTools(document.getElementById("appExtra"));
         else if (state.view === "help")
           renderHelp(document.getElementById("appExtra"));
       }
@@ -1867,7 +1863,7 @@
           });
       }
 
-      /* ---------- Browse / Links / Tools / Help (secondary) ---------- */
+      /* ---------- Browse / Links / Help (secondary) ---------- */
       function renderBrowse(root) {
         const b = state.browse;
         let crumb = `<div class="crumb"><b>Browse</b>`;
@@ -2250,28 +2246,17 @@
         });
       }
 
-      function renderTools(root) {
-        root.innerHTML = `<div class="spa-panel">
-          <h2 style="margin-top:0;color:var(--gold)">Tools</h2>
-          <div class="spa-row">
-            <button class="spa-btn" id="regen">Regen Markdown</button>
-            <a class="spa-btn" target="_blank" href="${escAttr(state.data.meta.practice_github)}">Practice GitHub</a>
-            <a class="spa-btn" target="_blank" href="${escAttr(state.data.meta.plans_github)}">Plans GitHub</a>
-          </div>
-        </div>`;
-        root.querySelector("#regen").onclick = async () => {
-          toast("Regenerating…", 5000);
-          try {
-            const r = await api("/api/regen", { method: "POST", body: "{}" });
-            toast(r.ok ? "Regen done" : "Regen had errors");
-          } catch (e) {
-            toast(String(e.message || e));
-          }
-        };
-      }
-
       function renderHelp(root) {
-        root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2><div id="g"></div></div>`;
+        const practiceGh = state.data.meta?.practice_github || "#";
+        const plansGh = state.data.meta?.plans_github || "#";
+        root.innerHTML = `<div class="spa-panel">
+          <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
+          <div class="spa-row" style="margin-bottom:1rem">
+            <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
+            <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
+          </div>
+          <div id="g"></div>
+        </div>`;
         api("/api/glossary")
           .then((r) => {
             document.getElementById("g").innerHTML = (r.items || [])
@@ -2525,7 +2510,7 @@
           return;
         }
         if (e.key === "m" || e.key === "M") setView("method");
-        if (e.key === "t" || e.key === "T") setView("tools");
+        if (e.key === "h" || e.key === "H") setView("help");
         if (e.key === "1") setView("links");
       });
 

@@ -18,13 +18,13 @@ py -3 -m pip install -r mnemonics\python\requirements.txt
 
 ## Host shape (primary)
 
-| Piece | Path / port |
-| --- | --- |
+| Piece    | Path / port                                                                                                                               |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Launcher | [`Utils/mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk) — ensure server, open/focus Chrome titled **Memory Palace** |
-| Server | [`mnemonics/python/palace_server.py`](python/palace_server.py) on **`:8767`** (Tasks owns `:8766`) |
-| Store | [`mnemonics/python/palace_store.py`](python/palace_store.py) |
-| SPA | [`mnemonics/web/index.html`](web/index.html) |
-| PID | `mnemonics/data/palace_server.pid` |
+| Server   | [`mnemonics/python/palace_server.py`](python/palace_server.py) on **`:8767`** (Tasks owns `:8766`)                                        |
+| Store    | [`mnemonics/python/palace_store.py`](python/palace_store.py)                                                                              |
+| SPA      | [`mnemonics/web/index.html`](web/index.html)                                                                                              |
+| PID      | `mnemonics/data/palace_server.pid`                                                                                                        |
 
 Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` from `chart_generator.py`, and the write-only **`:8765`** `plan_save_server`. Those writes now live on `:8767` (`/api/plans/save`, `/api/palace/notes`, `/api/palace/images`).
 
@@ -45,17 +45,16 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 
 ## Web app views
 
-| View | Role |
-| --- | --- |
-| **Browse** | Studies → palaces → beasts → atoms CRUD |
+| View         | Role                                                     |
+| ------------ | -------------------------------------------------------- |
+| **Browse**   | Studies → palaces → beasts → atoms CRUD                  |
 | **Practice** | Study picker, palace cards, overlay (notes, prompt copy) |
-| **Plans** | Checklist progress save, add items |
-| **Links** | Study video / article / favorite (Google Docs API) |
-| **Tools** | Regen Markdown, GitHub practice/plans (quick image is Import Management **`[Q]`**) |
-| **Help** | Glossary + shortcuts / import pointers |
-| **Method** | Technique README excerpt |
+| **Plans**    | Checklist progress save, add items                       |
+| **Links**    | Study video / article / favorite (Google Docs API)       |
+| **Help**     | Glossary + Practice / Plans GitHub links                 |
+| **Method**   | Technique README excerpt                                 |
 
-Keyboard: **Esc** back, letter hints in the nav bar (`B`/`P`/`L`/`T`/`1`). Study links: **Shift+V** / **Shift+A** / **Shift+F**.
+Keyboard: **Esc** back (`B`/`P`/`L`/`H`/`1`). Study links: **Shift+V** / **Shift+A** / **Shift+F**.
 
 Pack imports (PALACE_PACK / PLAN_PACK) and **Quick image**: Import Management (`#!+X` or Utility Shortcuts `[J]` → **`[P]`** / **`[L]`** / **`[Q]`**).
 
@@ -103,7 +102,7 @@ py -3 mnemonics\python\sync_technique.py `
 
 ## Practice Markdown (mobile / GitHub)
 
-Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images under `mnemonics/output/practice/images/`. Files sync after browse CRUD, Import Management palace pack import **[P]**, Import Management quick image **[Q]**, and regen.
+Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images under `mnemonics/output/practice/images/`. Files sync after browse CRUD, Import Management palace pack import **[P]**, Import Management quick image **[Q]**, and Utility Shortcuts **Push `[G]`** (when `mnemonics/data` is dirty).
 
 **Layout (GitHub mobile):** Collapsible Memory Palaces (`<details>`; newest open by default). Beasts as flat headings with **Concept / Quote / Story / Sensory**. Emoji markers match technique canon. Image prompts are omitted (recall-only).
 
@@ -113,7 +112,7 @@ Batch browse on GitHub:
 
 `https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice`
 
-Regenerate all practice files:
+Regenerate all practice files via Utility Shortcuts **Push `[G]`** (canonical; syncs when `mnemonics/data` is dirty), or CLI:
 
 ```powershell
 py -3 mnemonics\python\study_practice_md.py `
@@ -121,8 +120,6 @@ py -3 mnemonics\python\study_practice_md.py `
   --output-dir mnemonics\output `
   --sync-all
 ```
-
-Or use **Tools → Regen Markdown** in the web app (`POST /api/regen`).
 
 ## AI import
 

@@ -180,6 +180,13 @@
       }
       .task .em {
         flex: 0 0 auto;
+        min-width: 1.15em;
+        text-align: center;
+      }
+      .task .em:empty::before {
+        content: "";
+        display: inline-block;
+        width: 0.4em;
       }
       .task.is-cut {
         opacity: 0.45;
@@ -834,12 +841,13 @@
           every_10y: "Every 10 years",
           "": "Other",
         };
-        const EMOJI_KEYS = { t: "⚡", q: "⏳", g: "🔲", u: "❓" };
+        const EMOJI_KEYS = { t: "⚡", q: "⏳", g: "🔲", u: "❓", o: "" };
         const EMOJI_API_KEYS = {
           t: "important",
           q: "waiting",
           g: "general",
           u: "doubt",
+          o: "none",
         };
         const EMOJI_LABELS = {
           "⚡": "important",
@@ -847,15 +855,22 @@
           "🔲": "general",
           "❓": "doubt",
           "✅": "done",
+          "": "none",
         };
-        const EMOJI_KEY_BY = { "⚡": "t", "⏳": "q", "🔲": "g", "❓": "u" };
+        const EMOJI_KEY_BY = {
+          "⚡": "t",
+          "⏳": "q",
+          "🔲": "g",
+          "❓": "u",
+          "": "o",
+        };
         const state = {
           data: null,
           filter: "work",
           view: "dashboard",
           projectId: "",
           taskId: "",
-          emojiFilter: "",
+          emojiFilter: null, // null = off; "" = none; else emoji char
           sectionFocus: "", // "" | work | personal | habits
           search: "",
           pwSide: "personal", // last side for Personal/Work first-item toggle
@@ -1207,14 +1222,17 @@
         <button class="btn" data-act="cut-task" title="Cut (Ctrl+X)">Cut</button>
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
+        <button class="btn" data-act="emoji" data-key="waiting" title="Waiting (Shift+Q)">⏳</button>
+        <button class="btn" data-act="emoji" data-key="none" title="None (Shift+O)">None</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
         <button class="btn danger" data-act="del-task">Del</button>`;
           const cutClass =
             state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
-          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(t.emoji || "🔲")}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
-      <span class="em">${esc(t.emoji || "🔲")}</span>
+          const em = t.emoji === undefined || t.emoji === null ? "🔲" : t.emoji;
+          return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
+      <span class="em">${esc(em)}</span>
       ${infoTag}
       <span class="title" data-act="edit-task">${highlightTitle(t.title)}</span>
       ${due ? `<span class="due">${esc(due)}</span>` : ""}
@@ -1226,7 +1244,8 @@
         function emojiLegendHtml(tasks) {
           const byEmoji = {};
           (tasks || []).forEach((t) => {
-            const e = t.emoji || "🔲";
+            const e =
+              t.emoji === undefined || t.emoji === null ? "🔲" : t.emoji;
             byEmoji[e] = (byEmoji[e] || 0) + 1;
           });
           const entries = Object.entries(byEmoji).sort(
@@ -1239,8 +1258,11 @@
               const k = EMOJI_KEY_BY[e] || "";
               const label = EMOJI_LABELS[e] || "other";
               const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
+              const emHtml = e
+                ? `<span class="em">${esc(e)}</span>`
+                : `<span class="em em-none">–</span>`;
               return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + label : "Filter " + label}">
-        <span class="em">${esc(e)}</span>
+        ${emHtml}
         <span class="lbl">${esc(label)}</span>
         <span class="n">${n}</span>${keyHint}
       </button>`;
@@ -2170,19 +2192,19 @@
             toggleFirstPersonalWork();
             return;
           }
-          if (EMOJI_KEYS[k]) {
+          if (Object.prototype.hasOwnProperty.call(EMOJI_KEYS, k)) {
             const tid = selectedTaskId();
             if (tid) {
               await setSelectedTaskEmoji(EMOJI_API_KEYS[k] || EMOJI_KEYS[k]);
               return;
             }
             const em = EMOJI_KEYS[k];
-            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            applyEmojiFilter(state.emojiFilter === em ? null : em);
             applySelection(true);
             return;
           }
           if (k === "f") {
-            applyEmojiFilter("");
+            applyEmojiFilter(null);
             applySelection(false);
             return;
           }
@@ -2362,7 +2384,7 @@
           state.infoSelId = "";
           state.view = "dashboard";
           if (!keepSearch && searchNeedle()) clearSearch();
-          if (state.emojiFilter) applyEmojiFilter("");
+          if (state.emojiFilter !== null) applyEmojiFilter(null);
           if (state.sectionFocus) applySectionFocus("");
           if (state.sel) setSelection(null, null, false);
           const inp = $("#globalSearch");
@@ -2426,8 +2448,8 @@
             if (state.view === "dashboard" && state.data) renderDashboard();
             return true;
           }
-          if (state.emojiFilter) {
-            applyEmojiFilter("");
+          if (state.emojiFilter !== null) {
+            applyEmojiFilter(null);
             applySelection(false);
             return true;
           }
@@ -2636,15 +2658,16 @@
         }
 
         function applyEmojiFilter(emoji) {
-          state.emojiFilter = emoji || "";
+          // null = clear filter; "" = tasks with no emoji; otherwise match that emoji
+          state.emojiFilter = emoji === undefined ? null : emoji;
+          const filtering = state.emojiFilter !== null;
           document.querySelectorAll(".task").forEach((el) => {
             const match =
-              !state.emojiFilter ||
-              el.getAttribute("data-emoji") === state.emojiFilter;
+              !filtering || el.getAttribute("data-emoji") === state.emojiFilter;
             el.classList.toggle("emoji-hidden", !match);
           });
           document.querySelectorAll("details.project").forEach((proj) => {
-            if (!state.emojiFilter) {
+            if (!filtering) {
               proj.classList.remove("emoji-hidden");
               return;
             }
@@ -2655,7 +2678,7 @@
             if (visible > 0) proj.open = true;
           });
           document.querySelectorAll(".task-section").forEach((sec) => {
-            if (!state.emojiFilter) {
+            if (!filtering) {
               sec.classList.remove("emoji-hidden");
               return;
             }
@@ -2667,7 +2690,7 @@
           document.querySelectorAll(".emoji-chip").forEach((chip) => {
             chip.classList.toggle(
               "active",
-              !!state.emojiFilter &&
+              filtering &&
                 chip.getAttribute("data-emoji") === state.emojiFilter,
             );
           });
@@ -3452,8 +3475,8 @@
           if (e.target.closest("#modalHost")) return;
           const chip = e.target.closest(".emoji-chip");
           if (chip) {
-            const em = chip.getAttribute("data-emoji") || "";
-            applyEmojiFilter(state.emojiFilter === em ? "" : em);
+            const em = chip.getAttribute("data-emoji");
+            applyEmojiFilter(state.emojiFilter === em ? null : em);
             applySelection(true);
             return;
           }
