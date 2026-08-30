@@ -46,6 +46,7 @@
 **🔗 Resources:**
 
 - 🔗 [Create a PivotTable to analyze worksheet data (Microsoft Support)](https://support.microsoft.com/en-us/office/create-a-pivottable-to-analyze-worksheet-data-a9a84538-bfe9-40a9-a8e9-f99134456576)
+- ▶ [Excel Number Formatting for Data Analysts | Beginner Tutorial](https://www.youtube.com/watch?v=WqZ90oyB0hc)
 
 ### 4. Automated ETL Pipelines
 
