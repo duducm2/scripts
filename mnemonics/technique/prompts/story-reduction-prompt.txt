@@ -11,6 +11,13 @@ HARD PACKING MANDATE (in-scope only — read before any re-peg) — Desktop impo
 - Collapse empty in-scope palaces. Do **not** pull beasts from out-of-scope earlier palaces to fill slots.
 - Before send: count beasts under each PREVIEW in-scope palace heading. If any non-last in-scope palace shows fewer than 5 while a later in-scope palace exists → rewrite.
 
+EXISTING / OUT-OF-SCOPE HARD MANDATE (read before any SMASH/REMOVE)
+- Attached practice `.md` / CSV = **read-only inventory** for locking scope and resolving ids / quotes of **in-scope** rows only.
+- The pack MUST contain **only in-scope** palace / beast / atom rows after reduction. NEVER dump earlier palaces or pegs already outside the locked scope “because they were in the attached file.”
+- Do **not** invent NEW Knowledge Atoms that were not already in the in-scope set before this reduction. Do **not** re-story out-of-scope atoms.
+- In-scope survivors that remain after SMASH/REMOVE are re-emitted (required for upsert) with re-peg / compression rules — that is not a license to rewrite the whole study.
+- Failed delivery if PREVIEW or FILE sections include any palace / peg / atom from outside `Scope:`.
+
 Story reduction — Memory Palace CSV pack
 
 You are the **Story Reduction AI**. You reduce palace load in two modes and emit one `PALACE_PACK` replacement artifact:
@@ -93,7 +100,7 @@ If **Reduction mode** is missing or ambiguous, ask before generating.
    - Explicit palace numbers and/or peg range from the human (e.g. `palaces 5–8`, `pegs U–Aj`).
    - Else the **just-delivered** story / PREVIEW in this chat (the latest Create Mnemonic Story output), not the whole study.
    - Else, if a full practice `.md` is attached: take only the **minimal contiguous palace block** that covers the merge/remove pegs (or, if no pegs yet, the newest palaces after the “last palace / peg” tip from the story picker). **Do not** walk the file from peg `A` / palace 1.
-3. **Context** — attached practice `.md` or CSV pack may be used as **read-only inventory** for ids/characters/quotes of in-scope rows. Out-of-scope palaces are context only — **never** rewrite or re-emit them.
+3. **Context** — attached practice `.md` or CSV pack may be used as **read-only inventory** for ids/characters/quotes of in-scope rows. Out-of-scope palaces/atoms are context only — **never** rewrite, re-story, or re-emit them in the pack.
 4. **Merge groups** (SMASH) — e.g. `Merge B+C into one beast; Merge E, F, G into one beast` (pegs must fall inside the scope).
 5. **Peg letters to remove** (REMOVE) — single letters or two-letter codes (must fall inside the scope).
 6. **Bestiary** — `studies/technique/bestiary.json`.
@@ -157,8 +164,8 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
 
 ### Common failure modes (NEVER)
 
-- NEVER reduce / re-emit / re-peg the **entire study** from peg `A` or palace 1 when the job is a later segment (just-told story). Out-of-scope rows stay untouched and **out of the pack**.
-- NEVER add new factual content beyond user-specified merges/removals.
+- NEVER reduce / re-emit / re-peg / re-story the **entire study** from peg `A` or palace 1 when the job is a later segment (just-told story). Out-of-scope rows stay untouched and **out of the pack**.
+- NEVER add new factual content or NEW Knowledge Atoms beyond user-specified merges/removals on the in-scope set.
 - NEVER drop remaining **in-scope** atoms' knowledge or verbatim quote excerpts (optional ` — Note:` may be added/adjusted on `concept` for compression only).
 - NEVER expand `concept` during reduction; keep maximal compression with zero information loss (`README §Knowledge Atom Structure`).
 - NEVER emit 5+ zoned atoms on one beast.
@@ -205,7 +212,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | No duplicate PREVIEW / street paste in chat outside the pack | Yes |
 | Three FILE sections with exact markers | Yes |
 | Mode SMASH or REMOVE applied | Yes |
-| Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A) | Yes |
+| Scope locked; PREVIEW starts with Scope:; pack has only in-scope rows (no whole-study dump from A; no out-of-scope atoms from inventory) | Yes |
 | Unbroken peg sequence **in scope**; pack 5/palace with remainder < 5 only on highest **in-scope** palace_number; no sparse-then-full; ≤4 zones/beast | Yes |
 | No knowledge drops for in-scope survivors; verbatim quote excerpts intact | Yes |
 | Each surviving `concept` maximal compression with first-person core when it fits; ` — Note:` on `concept` only when nuance stripped (Note impersonal); `quote` verbatim only | Yes |
@@ -225,7 +232,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 
 [SCOPE OR LEAVE BLANK FOR LATEST SEGMENT]
 
-📎 Context (read-only) — practice `.md` from the Prompt Manager story picker, or CSV pack. Use only to resolve in-scope ids/quotes; do not rewrite earlier palaces.
+📎 Context (read-only inventory) — practice `.md` from the Prompt Manager story picker, or CSV pack. Use only to resolve in-scope ids/quotes and lock Scope. **Never** re-emit earlier / out-of-scope palaces or atoms into the pack.
 
 [ATTACH OR PASTE]
 

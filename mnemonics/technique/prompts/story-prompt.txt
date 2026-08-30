@@ -11,6 +11,14 @@ HARD PACKING MANDATE (read before any beasts) — Desktop importer REJECTS viola
 - Continuous / append sessions: if the study’s current last palace already has 1–4 beasts, **fill that same palace to 5 first** with new beasts. Do **not** open a new higher-numbered palace until the under-filled one is full (or you have no more beasts).
 - Before send: count beasts under each PREVIEW palace heading **inside the pack**. If any non-last palace shows fewer than 5 peg lines while a later palace exists → rewrite.
 
+EXISTING INVENTORY HARD MANDATE (read before extracting any concept)
+- Attached practice `.md` / study CSVs = **read-only inventory** of Knowledge Atoms **already in the database**. They are not source material to re-encode.
+- This pack MUST contain **only NEW** Knowledge Atoms (concepts not already memorized). Do **not** invent Concept / Quote / Story lines for atoms that already exist.
+- Treat as already known when the inventory has a **near-duplicate concept** (same rehearsal meaning) **or** a **same / near-identical quote**. Skip those; list each under PREVIEW `Discard candidates:` (one line: already palace N / peg X).
+- NEVER re-emit complete earlier palaces (already at 5 beasts) into this pack “for context” or “to keep the study whole.”
+- Continuous-fill exception (only): when filling the study’s current under-filled last palace, you MAY re-include **that palace’s existing** beasts/atoms **verbatim from inventory** (same Concept / Quote / Story — do **not** rewrite or “improve” them) **plus** only the NEW beasts/atoms that fill open slots. The importer replaces all beasts on any palace present in the pack — omitting those existing pegs would delete them.
+- Failed delivery if PREVIEW or any FILE section re-stories already-known atoms outside that continuous-fill exception.
+
 Creating mnemonic stories — Memory Palace CSV pack
 
 You are the **Architect**. You turn a transcript (+ framework attachments) into one `PALACE_PACK` text artifact containing a pack-internal PREVIEW plus three labeled CSV sections.
@@ -46,7 +54,7 @@ PALACE 2 — <title> (<character>) [<palace_id>]   ← last palace may have 1–
   [G] <beast> Z1 — Concept: … | Quote: "…" | Story: … | Sensory: …
   [G] <beast> Z2 — …
 
-Discard candidates: none | list pegs / palace ids with one-line why
+Discard candidates: none | list pegs / palace ids with one-line why (incl. already-known skipped from inventory)
 ===END_PREVIEW===
 
 ===FILE: PALACE_PALACES.csv===
@@ -117,7 +125,7 @@ Technique README may still say "street"; map **Street → Memory Palace** when f
 Confirm every required item. If any is missing, ask before generating.
 
 1. **Video transcription** — Markdown from prompt **5** (Transcript Youtube Video), **or** curated concept Markdown from prompt **6** (Curate knowledge atoms). Cursor cannot access YouTube; use Gemini for raw transcripts when needed.
-2. **Context pack / existing CSVs** (preferred) — attached `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` slices for the target study. If a Markdown study list is attached instead, treat it only as prior-knowledge inventory (do not emit Markdown as output).
+2. **Existing inventory** (preferred) — attached practice `.md` and/or `studies.csv` / `palaces.csv` / `beasts.csv` / `atoms.csv` for the target study. **Read-only:** skip already-known concepts; use ids / last palace / peg / characters only. Never re-emit the whole study as the pack. Do not emit Markdown as output.
 3. **Characters** — `studies/technique/characters.json`.
 4. **Bestiary** — `studies/technique/bestiary.json`.
 5. **README** — `studies/technique/README.md` (framework rules). Cite as `README §<Section Name>`.
@@ -201,7 +209,7 @@ Rules:
 
 - Ingest the transcript. Do not expect a YouTube link.
 - Apply README rules: Knowledge Atom Structure, Streets/Depth Slots (as Memory Palaces), Independent Beast Beats, Bizarreness Gate, Actions palette, Characters, Language & IPA, Peg conventions, Image composition.
-- Extract only **new** knowledge; never duplicate concepts already in attached atoms/list.
+- First build an **already-known set** from attached practice `.md` / atoms CSV (concepts + quotes). Extract only **new** knowledge from the transcript / curated pack; skip every already-known unit (EXISTING INVENTORY HARD MANDATE). If every transcript concept is already known, deliver an empty-new note in chat and **no** pack that re-dumps inventory.
 - Build reserved character set from attached palaces before assignment.
 - Load bestiary `code` for pegs.
 
@@ -234,6 +242,8 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 
 ### 5. Common failure modes (NEVER)
 
+- NEVER re-story or re-emit Knowledge Atoms already present in the attached inventory (except verbatim copy of pegs on the under-filled last palace during continuous fill).
+- NEVER dump the whole practice `.md` / study into PREVIEW or FILE sections.
 - NEVER assign two+ characters to one palace or reuse a character already used.
 - NEVER invent `study_id` / `palace_id` / `beast_id` outside attached + this pack.
 - NEVER use numeric pegs or cross-beast narrative dependency.
@@ -257,6 +267,7 @@ Do this **before** writing stories or PREVIEW. Bad packing = failed delivery (im
 | Exact headers for palaces / beasts / atoms | Yes |
 | study_id from pack or `STUDY_VIOLIN` for violin test | Yes |
 | Every non-final palace has exactly 5 beasts; any remainder < 5 is only on the highest palace_number; depth_slots_used coherent; no sparse-then-full sequence | Yes |
+| Pack has only NEW atoms (+ optional verbatim continuous-fill of under-filled last palace); already-known skipped in Discard candidates | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
@@ -273,7 +284,7 @@ Do **not** attach a separate mnemonic theory paste — the README below is canon
 
 📎 Video transcription
 
-📎 Existing study story (practice `.md`) — chosen at paste via the Prompt Manager story picker; read it to find the last Memory Palace / peg / character before continuing. CSV context packs are also accepted if attached manually.
+📎 Existing inventory (practice `.md`) — Prompt Manager story picker. **Read-only:** skip already-known concepts; use only for last palace / peg / character and continuous-fill verbatim copy. Do **not** re-encode inventory atoms into the pack. CSV context packs are also accepted if attached manually.
 
 📎 Characters (`@studies/technique/characters.json` or paste)
 
