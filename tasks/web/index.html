@@ -989,6 +989,31 @@
           return t || b;
         }
 
+        async function copyInfoById(id) {
+          const row = (state.data.info_points || []).find((i) => i.id === id);
+          const text = infoText(row);
+          if (!text) {
+            toast("Nothing to copy");
+            return false;
+          }
+          try {
+            await navigator.clipboard.writeText(text);
+            toast("Copied");
+            return true;
+          } catch (err) {
+            toast(err.message || "Could not copy");
+            return false;
+          }
+        }
+
+        async function copySelectedInfo() {
+          if (!state.infoSelId) {
+            toast("Select an info point first");
+            return false;
+          }
+          return copyInfoById(state.infoSelId);
+        }
+
         function infoHyperlink(info) {
           if (!info) return null;
           const fromText = firstHyperlinkInText(infoText(info));
@@ -3679,8 +3704,21 @@
               tag === "textarea" ||
               tag === "select" ||
               e.target?.isContentEditable;
-            if (inField || modalOpen()) return;
+            if (inField) return;
             const k = (e.key || "").toLowerCase();
+            if (state.infoUi === "list") {
+              if (k === "c" || e.code === "KeyC") {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  await copySelectedInfo();
+                } catch (err) {
+                  toast(err.message || String(err));
+                }
+              }
+              return;
+            }
+            if (modalOpen()) return;
             if (k === "c" || e.code === "KeyC") {
               e.preventDefault();
               e.stopPropagation();
