@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import os
 import subprocess
 import sys
 import traceback
@@ -19,6 +20,54 @@ from task_store import TaskStore  # noqa: E402
 
 DEFAULT_PORT = 8766
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+
+
+def open_user_target(raw: str) -> dict[str, Any]:
+    """Open an http(s) URL or a local file/folder with the OS handler."""
+    target = (raw or "").strip().strip('"').strip("'")
+    if not target or "\n" in target or "\r" in target:
+        return {"ok": False, "error": "invalid target"}
+    lower = target.lower()
+    if lower.startswith(("javascript:", "vbscript:", "data:")):
+        return {"ok": False, "error": "unsupported target"}
+    if lower.startswith(("http://", "https://")):
+        parsed = urlparse(target)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            return {"ok": False, "error": "invalid url"}
+        _os_open(target)
+        return {"ok": True, "opened": target}
+    path = target
+    if lower.startswith("file:"):
+        parsed = urlparse(target)
+        path = unquote(parsed.path or "")
+        if parsed.netloc and parsed.netloc.lower() not in (
+            "",
+            "localhost",
+            "127.0.0.1",
+        ):
+            path = "\\\\" + parsed.netloc + path.replace("/", "\\")
+        elif os.name == "nt" and len(path) >= 3 and path[0] == "/" and path[2] == ":":
+            path = path[1:]
+        path = path.replace("/", "\\") if os.name == "nt" else path
+    p = Path(path)
+    try:
+        resolved = p.expanduser()
+        if not resolved.exists():
+            return {"ok": False, "error": "file not found"}
+        _os_open(str(resolved))
+        return {"ok": True, "opened": str(resolved)}
+    except OSError as e:
+        return {"ok": False, "error": str(e)}
+
+
+def _os_open(target: str) -> None:
+    if os.name == "nt":
+        os.startfile(target)  # type: ignore[attr-defined]
+        return
+    opener = "open" if sys.platform == "darwin" else "xdg-open"
+    subprocess.Popen(
+        [opener, target], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
 
 
 class TaskHandler(BaseHTTPRequestHandler):
@@ -80,6 +129,7 @@ class TaskHandler(BaseHTTPRequestHandler):
                         "attachments",
                         "import",
                         "migrate",
+                        "open",
                     ],
                 },
             )
@@ -183,6 +233,9 @@ class TaskHandler(BaseHTTPRequestHandler):
                 return
             if path == "/api/info":
                 self._json(200, store.upsert_info(payload))
+                return
+            if path == "/api/open":
+                self._json(200, open_user_target(str(payload.get("target") or "")))
                 return
             if path == "/api/attachments":
                 parent_type = payload.get("parent_type") or ""

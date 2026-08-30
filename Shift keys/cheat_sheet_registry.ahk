@@ -1076,6 +1076,7 @@ cheatSheets["Tasks"] := "
     ✅ [C] Mark done
     ➡️ [D] Habit to Personal inbox (General)
     📝 [N] Info points
+    🔗 Click a URL or file-path info point to open it
     ℹ️ Tag on any task that has info points
     🖼️ [V] Paste clipboard image
     📂 [E] Expand / collapse all projects

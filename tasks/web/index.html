@@ -187,6 +187,11 @@
         font-size: 13px;
         line-height: 1;
       }
+      .plain-row .title.is-link {
+        color: var(--gold);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
       .task .title,
       .plain-row .title {
         flex: 1;
@@ -247,9 +252,12 @@
         visibility: visible;
         pointer-events: auto;
       }
-      .row-actions .btn {
-        padding: 2px 8px;
-        font-size: 11px;
+      .plain-row .row-actions {
+        display: flex;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        flex: 0 0 auto;
       }
       .proj-actions {
         display: flex;
@@ -788,6 +796,79 @@
                 "'": "&#39;",
               })[c],
           );
+
+        function trimLinkJunk(s) {
+          return String(s || "")
+            .trim()
+            .replace(/[),.;]+$/g, "");
+        }
+
+        function classifyHyperlink(raw) {
+          const s = trimLinkJunk(raw);
+          if (!s) return null;
+          const lower = s.toLowerCase();
+          if (
+            lower.startsWith("javascript:") ||
+            lower.startsWith("vbscript:") ||
+            lower.startsWith("data:")
+          )
+            return null;
+          if (/^https?:\/\//i.test(s)) return { kind: "url", href: s };
+          if (/^file:/i.test(s)) return { kind: "file", href: s };
+          if (/^[A-Za-z]:[\\/]/.test(s) || s.startsWith("\\\\"))
+            return { kind: "file", href: s };
+          return null;
+        }
+
+        function firstHyperlinkInText(text) {
+          const s = String(text || "").trim();
+          if (!s) return null;
+          const md = s.match(/\[([^\]]*)\]\(([^)\s]+)\)/);
+          if (md) {
+            const hit = classifyHyperlink(md[2]);
+            if (hit) return hit;
+          }
+          const whole = classifyHyperlink(s);
+          if (whole) return whole;
+          const url = s.match(/https?:\/\/[^\s<>"']+/i);
+          if (url) return classifyHyperlink(url[0]);
+          const fileUri = s.match(/file:\/\/\/[^\s<>"']+/i);
+          if (fileUri) return classifyHyperlink(fileUri[0]);
+          const win = s.match(/(?:[A-Za-z]:\\|\\\\)[^\s<>"']+/);
+          if (win) return classifyHyperlink(win[0]);
+          return null;
+        }
+
+        function infoHyperlink(info) {
+          if (!info) return null;
+          const fromText =
+            firstHyperlinkInText(info.title) || firstHyperlinkInText(info.body);
+          if (fromText) return fromText;
+          const att = (state.data.attachments || []).find(
+            (a) =>
+              a.parent_type === "info" &&
+              a.parent_id === info.id &&
+              (a.kind || "") === "url" &&
+              (a.ref || "").trim(),
+          );
+          return att ? firstHyperlinkInText(att.ref) : null;
+        }
+
+        async function openHyperlink(hit) {
+          if (!hit?.href) return;
+          try {
+            await api("/api/open", {
+              method: "POST",
+              body: JSON.stringify({ target: hit.href }),
+            });
+          } catch (err) {
+            if (hit.kind === "url") {
+              window.open(hit.href, "_blank", "noopener,noreferrer");
+              return;
+            }
+            toast(err.message || String(err));
+          }
+        }
 
         function toast(msg) {
           const el = $("#toast");
@@ -2002,15 +2083,19 @@
       </div>
       <ul class="plain-list">${
         rows
-          .map(
-            (i) => `<li class="plain-row" data-id="${esc(i.id)}">
-        <span class="title">${esc(i.title)}</span>
+          .map((i) => {
+            const hit = infoHyperlink(i);
+            const openAttrs = hit
+              ? ` data-act="open-info-link" data-href="${esc(hit.href)}" data-kind="${esc(hit.kind)}" title="Open"`
+              : "";
+            return `<li class="plain-row" data-id="${esc(i.id)}">
+        <span class="title${hit ? " is-link" : ""}"${openAttrs}>${esc(i.title)}</span>
         <span class="row-actions">
           <button class="btn" data-act="edit-info">Edit</button>
           <button class="btn danger" data-act="del-info">Del</button>
         </span>
-      </li>`,
-          )
+      </li>`;
+          })
           .join("") || '<p class="empty">No info points</p>'
       }</ul></div>`);
           $("#modalHost").onclick = async (e) => {
@@ -2031,6 +2116,14 @@
             const act = actEl.getAttribute("data-act");
             const id =
               e.target.closest("[data-id]")?.getAttribute("data-id") || "";
+            if (act === "open-info-link") {
+              e.preventDefault();
+              await openHyperlink({
+                href: actEl.getAttribute("data-href") || "",
+                kind: actEl.getAttribute("data-kind") || "url",
+              });
+              return;
+            }
             if (act === "edit-info") {
               closeModal();
               infoForm((state.data.info_points || []).find((i) => i.id === id));
