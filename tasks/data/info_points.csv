@@ -4,15 +4,6 @@ INFO_0004,task,TASK_0001,- Conseguiríamos um trabalho online para eu trabalhar 
 - Posso ter dois contratos de trabalho?",ℹ️,,80,2026-08-29 15:48:39
 INFO_0005,project,PROJ_0004,Next steps,Next steps,ℹ️,,170,2026-08-29 15:48:39
 INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,,190,2026-08-29 15:48:39
-INFO_0007,task,TASK_0007,Portal,Portal,ℹ️,,240,2026-08-29 15:48:39
-INFO_0008,task,TASK_0007,Transparency,Transparency,ℹ️,Tasks/My Values,260,2026-08-29 15:48:39
-INFO_0009,task,TASK_0007,Collaboration,Collaboration,ℹ️,Tasks/My Values,270,2026-08-29 15:48:39
-INFO_0010,task,TASK_0007,Respect,Respect,ℹ️,Tasks/My Values,280,2026-08-29 15:48:39
-INFO_0011,task,TASK_0007,Patiance,Patiance,ℹ️,Tasks/My Values,290,2026-08-29 15:48:39
-INFO_0012,task,TASK_0007,Understand of greater forces,Understand of greater forces,ℹ️,Tasks/My Values,300,2026-08-29 15:48:39
-INFO_0013,task,TASK_0007,Compassion,Compassion,ℹ️,Tasks/My Values,310,2026-08-29 15:48:39
-INFO_0014,task,TASK_0007,"Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to a","Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to as BUD. This concept also exists in PT, alongside other areas apart from UX. She also believes it would be advantageous for me to focus on the Product Owner role.",ℹ️,Tasks/Reunião com a Débora 8.24th,320,2026-08-29 15:48:39
-INFO_0015,task,TASK_0007,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,ℹ️,Tasks/Meeting with Barbara,330,2026-08-29 15:48:39
 INFO_0016,task,TASK_0011,Contribution Goals,"Contribution Goals
 0 - Não atingido
 1 - Parcialmente atingido
@@ -32,14 +23,6 @@ Insights priorizados com base em impacto e recorrência, conectados ao negócio
 Proposta de solução bem definida (QMAI ou nova), com conceito, proposta de valor e próximos passos claros
 Protótipos das telas desenvolvidos, representando a solução proposta
 Sempre que possível, implementação inicial (piloto/MVP) realizada para validação da solução",ℹ️,"Tasks/Checar esta meta, se precisamos revisar",420,2026-08-29 15:48:39
-INFO_0017,project,PROJ_0009,Check your PowerPoint confidenciality level,Check your PowerPoint confidenciality level,ℹ️,Projects/Always,480,2026-08-29 15:48:39
-INFO_0018,project,PROJ_0009,Send Customer Feedback,Send Customer Feedback,ℹ️,Projects/Always,490,2026-08-29 15:48:39
-INFO_0019,project,PROJ_0009,Create a project case,Create a project case,ℹ️,Projects/Always,500,2026-08-29 15:48:39
-INFO_0020,project,PROJ_0009,Create Project KPIs,Create Project KPIs,ℹ️,Projects/Always,510,2026-08-29 15:48:39
-INFO_0021,project,PROJ_0010,RISE,"RISE
-Data insights
-BPM
-AI Roleplay",ℹ️,Projects/Allocation,530,2026-08-29 15:48:39
 INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29 15:48:39
 INFO_0023,task,TASK_0013,"Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, t","Eu orientei a Letícia a entender quais são as expectativas da liderança em termos de generalizar ou especificar a plataforma. Ela tem uma visão de plataforma e a Fran, sua colega, que é CTG Partner, também tem outra. O quanto a gente vai deixar ela específica para a visão de mundo de cada uma delas ou generalizar?",ℹ️,,570,2026-08-29 15:48:39
 INFO_0024,task,TASK_0013,Sprint finish at end of August.,Sprint finish at end of August.,ℹ️,,580,2026-08-29 15:48:39
@@ -162,3 +145,16 @@ INFO_0111,task,TASK_0041,20260413-222711.png,,ℹ️,,3930,2026-08-30 12:03:36
 INFO_0112,task,TASK_0042,20260301-203740.png,,ℹ️,,3940,2026-08-30 12:03:36
 INFO_0113,task,TASK_0049,20260717-204839.png,,ℹ️,,3950,2026-08-30 12:03:36
 INFO_0114,task,TASK_0050,20260717-204123.png,,ℹ️,,3960,2026-08-30 12:03:36
+INFO_0115,task,TASK_0006,"Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to a Deborah, I believe it would be more beneficial for me to position myself as a data scientist who understands how to conduct market research. She noted that within Bosch, this function is referred to as BUD. This concept also exists in PT, alongside other areas apart from UX. She also believes it would be advantageous for me to focus on the Product Owner role.",,ℹ️,,3970,2026-08-30 15:08:00
+INFO_0116,task,TASK_0006,A Andréia pode ser um caminho para fazer um doutorado. external.Andreia.Andrade@br.bosch.com,,ℹ️,,3980,2026-08-30 15:08:18
+INFO_0117,task,TASK_0212,"ℹ️ Check your PowerPoint confidenciality level
+
+ℹ️ Send Customer Feedback
+
+ℹ️ Create a project case
+
+ℹ️ Create Project KPIs",,ℹ️,,3990,2026-08-30 15:10:36
+INFO_0118,task,TASK_0213,"RISE
+Data insights
+BPM
+AI Roleplay",,ℹ️,,4000,2026-08-30 15:11:07

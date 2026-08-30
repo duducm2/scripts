@@ -2,10 +2,8 @@ id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_p
 TASK_0001,PROJ_0002,SEC_0002,Falar com ele,🔲,punctual,,,,,work,50,,2026-08-29 15:48:39,1
 TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,100,,2026-08-29 15:48:39,1
-TASK_0004,PROJ_0002,SEC_0002,Checa estas vagas em aberto:,⚡,punctual,,,,,work,110,,2026-08-29 15:48:39,1
-TASK_0005,PROJ_0003,SEC_0003,Subscribe to this job opening,⏳,punctual,,,,,work,140,,2026-08-29 15:48:39,1
 TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
-TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⚡,punctual,,,,,work,220,,2026-08-29 15:48:39,1
+TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1
 TASK_0008,PROJ_0005,SEC_0005,Decide between Cursor and other approaches,⏳,punctual,,,,,work,350,,2026-08-29 15:48:39,1
 TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⏳,punctual,,,,,work,370,,2026-08-29 15:48:39,1
 TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,400,,2026-08-29 15:48:39,1
@@ -114,3 +112,7 @@ TASK_0204,PROJ_0015,SEC_0015,test,✅,punctual,,,,,personal,3770,2026-08-30 11:4
 TASK_0207,PROJ_0015,SEC_0015,Clean your keyboard.,🔲,punctual,,,,,personal,3800,,2026-08-30 13:00:27,1
 TASK_0208,PROJ_0015,SEC_0015,How to store big vocabularies,⏳,punctual,,,,,personal,3810,,2026-08-30 13:20:37,1
 TASK_0209,PROJ_0024,SEC_0127,Candidate to open PhD positions,⏳,punctual,,,,,personal,3820,,2026-08-30 14:53:57,1
+TASK_0210,PROJ_0025,SEC_0128,Portal as a UX delivery,⏳,punctual,,,,,work,3830,,2026-08-30 15:09:40,1
+TASK_0211,PROJ_0025,SEC_0128,Solução de construção de propostaise,⏳,punctual,,,,,work,3840,,2026-08-30 15:09:44,1
+TASK_0212,PROJ_0005,SEC_0005,Project Management stuff to do,⏳,punctual,,,,,work,3850,,2026-08-30 15:10:29,1
+TASK_0213,PROJ_0005,SEC_0005,My Allocation,⏳,punctual,,,,,work,3860,,2026-08-30 15:10:56,1

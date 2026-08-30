@@ -2,16 +2,14 @@ from pathlib import Path
 
 path = Path(r"C:\Users\eduev\Meu Drive\17 - Projects\scripts\mnemonics\web\index.html")
 text = path.read_text(encoding="utf-8")
-start = text.find(
-    "      /* Palace overlay cockpit: ~20% snapshot + full atom text (no crop) */"
-)
+start = text.find("      /* Palace overlay:")
 if start < 0:
-    raise SystemExit("start marker not found")
+    raise SystemExit("start not found")
 end = text.find("    </style>", start)
 if end < 0:
-    raise SystemExit("end marker not found")
+    raise SystemExit("end not found")
 
-new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use space under image) */
+new_css = r"""      /* Palace overlay: large snapshot on top + beast row below */
       #overlay.open {
         display: flex;
         flex-direction: column;
@@ -27,134 +25,92 @@ new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use s
         overflow: auto;
       }
       #overlay .overlay-stage {
-        display: grid;
-        grid-template-columns: minmax(120px, 20%) repeat(3, minmax(0, 1fr));
-        grid-template-rows: auto auto;
-        align-content: start;
-        gap: 0.5rem 0.55rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
         box-sizing: border-box;
         height: calc(100vh - 3.6rem);
         min-height: calc(100vh - 3.6rem);
         max-height: calc(100vh - 3.6rem);
-        padding: 0.55rem 0.65rem 0.65rem;
-        overflow: auto;
+        padding: 0.55rem 0.75rem 0.65rem;
+        overflow: hidden;
         flex: 0 0 auto;
       }
       #overlay .overlay-image {
-        grid-column: 1;
-        grid-row: 1;
-        align-self: start;
-        justify-self: stretch;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
+        flex: 0 0 auto;
         width: 100%;
-        height: auto;
-        max-height: 26vh;
+        max-width: none;
+        height: 38vh;
+        max-height: 38vh;
+        min-height: 180px;
         margin: 0;
         padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 10px;
         background: #07080b;
         cursor: zoom-in;
         overflow: hidden;
       }
       #overlay .overlay-image img {
         width: 100%;
-        height: auto;
-        max-height: 26vh;
+        height: 100%;
+        max-height: none;
         object-fit: contain;
-        object-position: top center;
+        object-position: center center;
         display: block;
       }
       #overlay .overlay-image .missing-lg {
-        padding: 0.75rem;
-        font-size: 0.8rem;
+        padding: 1.25rem;
+        font-size: 0.9rem;
       }
-      /* Let beast cards participate in the stage magazine grid */
       #overlay .overlay-atoms {
-        display: contents;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        padding: 0;
       }
       #overlay .overlay-atoms > h3 {
         display: none;
       }
       #overlay:not(.image-expanded) #ovAtoms {
-        display: contents;
+        flex: 0 0 auto;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+        grid-auto-rows: auto !important;
+        gap: 0.5rem !important;
+        width: 100%;
+        align-content: start;
+        overflow: visible;
       }
-      /* Default (3 beasts): sit beside the image */
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="1"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="2"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="3"] {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      }
+      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      }
       #overlay:not(.image-expanded) #ovAtoms > .beast-cluster {
+        grid-column: auto !important;
+        grid-row: auto !important;
         height: auto !important;
         min-height: 0;
         overflow: visible !important;
         gap: 0.35rem;
         padding: 0.45rem 0.55rem 0.5rem;
         border-radius: 8px;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="1"] > .beast-cluster:nth-child(1) {
-        grid-column: 2 / -1;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="2"] > .beast-cluster:nth-child(1) {
-        grid-column: 2 / 3;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="2"] > .beast-cluster:nth-child(2) {
-        grid-column: 3 / -1;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="3"] > .beast-cluster:nth-child(1) {
-        grid-column: 2;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="3"] > .beast-cluster:nth-child(2) {
-        grid-column: 3;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="3"] > .beast-cluster:nth-child(3) {
-        grid-column: 4;
-        grid-row: 1;
-      }
-      /* Four: 3 beside image + 1 full-width under */
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] > .beast-cluster:nth-child(1) {
-        grid-column: 2;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] > .beast-cluster:nth-child(2) {
-        grid-column: 3;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] > .beast-cluster:nth-child(3) {
-        grid-column: 4;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"] > .beast-cluster:nth-child(4) {
-        grid-column: 1 / -1;
-        grid-row: 2;
-      }
-      /* Five: 3 beside image + 2 under image (uses former black void) */
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] > .beast-cluster:nth-child(1) {
-        grid-column: 2;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] > .beast-cluster:nth-child(2) {
-        grid-column: 3;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] > .beast-cluster:nth-child(3) {
-        grid-column: 4;
-        grid-row: 1;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] > .beast-cluster:nth-child(4) {
-        grid-column: 1 / 3;
-        grid-row: 2;
-      }
-      #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] > .beast-cluster:nth-child(5) {
-        grid-column: 3 / -1;
-        grid-row: 2;
-      }
-      #overlay:not(.image-expanded) .beast-cluster--lead {
-        border-left-color: #e8c56a;
-        box-shadow: inset 0 0 0 1px rgba(232, 197, 106, 0.18);
       }
       #overlay:not(.image-expanded) .beast-cluster-head {
         padding-bottom: 0.25rem;
@@ -201,6 +157,11 @@ new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use s
         font-size: 0.62rem;
         margin-bottom: 0.05rem;
       }
+      /* Concept-first: hide Quote/Story until Details (D) */
+      #overlay:not(.show-atom-details) .atom-card .field-quote,
+      #overlay:not(.show-atom-details) .atom-card .field-story {
+        display: none !important;
+      }
       #overlay:not(.image-expanded) .atom-card .field-concept {
         margin-top: 0.3rem;
         padding: 0.35rem 0.45rem;
@@ -226,8 +187,7 @@ new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use s
       }
       #overlay.image-expanded .overlay-stage {
         display: flex;
-        grid-template-columns: none;
-        grid-template-rows: none;
+        flex-direction: column;
         height: calc(100vh - 3.6rem);
         min-height: calc(100vh - 3.6rem);
         max-height: calc(100vh - 3.6rem);
@@ -239,15 +199,12 @@ new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use s
       #overlay.image-expanded .overlay-image {
         flex: 1 1 auto;
         width: 100%;
-        max-width: none;
-        max-height: none;
         height: 100%;
+        max-height: none;
+        min-height: 0;
         border: none;
         border-radius: 0;
         cursor: zoom-out;
-        align-items: center;
-        grid-column: auto;
-        grid-row: auto;
       }
       #overlay.image-expanded .overlay-image img {
         width: 100%;
@@ -257,43 +214,28 @@ new_css = r"""      /* Palace overlay: 20% snapshot + magazine grid (atoms use s
       }
       @media (max-width: 900px) {
         #overlay .overlay-stage {
-          display: flex;
-          flex-direction: column;
           height: auto;
           min-height: auto;
           max-height: none;
+          overflow: auto;
         }
         #overlay .overlay-image {
-          flex: 0 0 auto;
-          width: 100%;
-          max-width: none;
+          height: 32vh;
           max-height: 32vh;
-          grid-column: auto;
-          grid-row: auto;
+          min-height: 140px;
         }
-        #overlay .overlay-image img {
-          max-height: 32vh;
-        }
-        #overlay .overlay-atoms {
-          display: flex;
-          flex-direction: column;
+        #overlay:not(.image-expanded) #ovAtoms,
+        #overlay:not(.image-expanded) #ovAtoms[data-beast-count="4"],
+        #overlay:not(.image-expanded) #ovAtoms[data-beast-count="5"] {
+          grid-template-columns: 1fr !important;
         }
         #overlay .overlay-atoms > h3 {
           display: block;
           margin: 0 0 0.4rem;
           font-size: 0.95rem;
         }
-        #overlay:not(.image-expanded) #ovAtoms {
-          display: grid !important;
-          grid-template-columns: 1fr !important;
-          gap: 0.5rem !important;
-        }
-        #overlay:not(.image-expanded) #ovAtoms > .beast-cluster {
-          grid-column: auto !important;
-          grid-row: auto !important;
-        }
       }
 """
 
 path.write_text(text[:start] + new_css + text[end:], encoding="utf-8")
-print("ok")
+print("ok", end - start, "->", len(new_css))

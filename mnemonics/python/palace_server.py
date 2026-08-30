@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import traceback
@@ -61,6 +62,65 @@ def _os_open(target: str) -> None:
     )
 
 
+def _chrome_exe() -> str | None:
+    """Resolve Google Chrome like AHK ``chrome.exe`` / common install paths."""
+    which = shutil.which("chrome") or shutil.which("chrome.exe")
+    if which:
+        return which
+    if os.name != "nt":
+        return shutil.which("google-chrome") or shutil.which("chromium")
+    candidates = [
+        Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"))
+        / "Google"
+        / "Chrome"
+        / "Application"
+        / "chrome.exe",
+        Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"))
+        / "Google"
+        / "Chrome"
+        / "Application"
+        / "chrome.exe",
+        Path(os.environ.get("LOCALAPPDATA", ""))
+        / "Google"
+        / "Chrome"
+        / "Application"
+        / "chrome.exe",
+    ]
+    for p in candidates:
+        if p.is_file():
+            return str(p)
+    return None
+
+
+def open_url_in_chrome(raw: str, *, new_window: bool = True) -> dict[str, Any]:
+    """Open http(s) in Chrome (avoids Windows handing YouTube URLs to the app)."""
+    target = (raw or "").strip().strip('"').strip("'")
+    if not target or "\n" in target or "\r" in target:
+        return {"ok": False, "error": "invalid target"}
+    lower = target.lower()
+    if lower.startswith(("javascript:", "vbscript:", "data:")):
+        return {"ok": False, "error": "unsupported target"}
+    if not lower.startswith(("http://", "https://")):
+        return {"ok": False, "error": "expected http(s) url"}
+    parsed = urlparse(target)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return {"ok": False, "error": "invalid url"}
+    chrome = _chrome_exe()
+    if not chrome:
+        return {"ok": False, "error": "chrome not found"}
+    cmd = [chrome]
+    if new_window:
+        cmd.append("--new-window")
+    cmd.append(target)
+    try:
+        subprocess.Popen(
+            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        return {"ok": True, "opened": target, "via": "chrome"}
+    except OSError as e:
+        return {"ok": False, "error": str(e)}
+
+
 def open_user_target(raw: str) -> dict[str, Any]:
     target = (raw or "").strip().strip('"').strip("'")
     if not target or "\n" in target or "\r" in target:
@@ -72,8 +132,12 @@ def open_user_target(raw: str) -> dict[str, Any]:
         parsed = urlparse(target)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             return {"ok": False, "error": "invalid url"}
+        # Prefer Chrome for http(s) so protocol handlers (e.g. YouTube app) do not steal.
+        chrome_result = open_url_in_chrome(target, new_window=True)
+        if chrome_result.get("ok"):
+            return chrome_result
         _os_open(target)
-        return {"ok": True, "opened": target}
+        return {"ok": True, "opened": target, "via": "os"}
     p = Path(target)
     try:
         resolved = p.expanduser()
@@ -455,12 +519,22 @@ class PalaceHandler(BaseHTTPRequestHandler):
                     return
                 action = str(payload.get("action") or "set").lower()
                 if action == "open":
-                    got = study_link_get(key)
-                    url = got.get("url") or ""
+                    # Prefer URL already fetched by the SPA (avoids a second Apps Script round-trip).
+                    url = str(payload.get("url") or "").strip()
+                    got: dict[str, Any] = {"ok": True, "key": key}
                     if not url:
-                        self._json(400, {"ok": False, "error": "no url stored", **got})
+                        got = study_link_get(key)
+                        url = str(got.get("url") or "")
+                    if not url:
+                        self._json(
+                            400, {"ok": False, "error": "no url stored", **got}
+                        )
                         return
-                    self._json(200, {**got, **open_user_target(url)})
+                    opened = open_url_in_chrome(url, new_window=True)
+                    self._json(
+                        200 if opened.get("ok") else 400,
+                        {**got, "url": url, **opened},
+                    )
                     return
                 link_url = str(payload.get("url") or "").strip()
                 if not link_url:

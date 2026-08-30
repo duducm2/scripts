@@ -8,7 +8,7 @@ This doc is the **canonical reference** for how prompts and importers are linked
 
 **Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). CSV under `tasks/data/`. Pack import **`TASK_PACK.txt`** is Import Management `[T]` ([`task_import.ahk`](../Utils/task_import.ahk) → Python CLI). MD migrate remains in the web app if present. Fix file: `TASK_AI_FIX.txt`.
 
-**Memory Palace domain:** Utility Shortcuts `[N]` / `#!+D` **hold** opens the **web app** at `http://127.0.0.1:8767/` (`mnemonics/python/palace_server.py` + `mnemonics/web/index.html`). CSV under `mnemonics/data/`. Thin AHK launcher ensures the server and focuses Chrome titled **Memory Palace**. Pack import (**`PALACE_PACK`** / **`PLAN_PACK`**) stays Import Management (`#!+X` / Utility `[J]` → `[P]`/`[L]`). The old `file://` dashboard + write-only `:8765` `plan_save_server` path is **deprecated** (writes live on `:8767`). Fix files: `PALACE_AI_FIX.txt` / plan fix naming via Import Management.
+**Memory Palace domain:** Utility Shortcuts `[N]` / `#!+D` **hold** opens the **web app** at `http://127.0.0.1:8767/` (`mnemonics/python/palace_server.py` + `mnemonics/web/index.html`). CSV under `mnemonics/data/`. Thin AHK launcher ensures the server and focuses Chrome titled **Memory Palace**. Pack import (**`PALACE_PACK`** / **`PLAN_PACK`**) and **Quick image** (newest Desktop PNG/JPG → palace missing image) stay Import Management (`#!+X` / Utility `[J]` → `[P]`/`[L]`/`[Q]`). The old `file://` dashboard + write-only `:8765` `plan_save_server` path is **deprecated** (writes live on `:8767`). Fix files: `PALACE_AI_FIX.txt` / plan fix naming via Import Management.
 
 **Push (all domains):** Utility Shortcuts top-level `[G]` / category **Push** is the only commit+push entrypoint ([`utility_git_push.ahk`](../Utils/utility_git_push.ahk)). It runs in the background, exports Tasks Markdown to the notes repo when `tasks/data` is dirty (`export_to_md.py` → `work.md` / `punctual.md` / `habits.md`), syncs Memory Palace practice+plans MD when `mnemonics/data` is dirty, then commits and pushes **scripts** and **notes**. Finance/Palace/Tasks in-app push keys were removed.
 
@@ -131,7 +131,7 @@ flowchart LR
 | **Context files** (`PersonalContextFiles` / `WorkContextFiles`)                                                       | Attach local CSVs/INIs so the AI knows existing ids and rows                        |
 | **Pack naming convention**                                                                                            | Links prompt output to importer Desktop discovery (see table below)                 |
 | **ClipAngel name registry** ([`assets/data/clipangel_desktop_names.csv`](../assets/data/clipangel_desktop_names.csv)) | Quick Desktop export naming for pack files; CRUD + copy via Import Management `[N]` |
-| **Import Management hub**                                                                                             | Sole AHK import UI (`#!+X` / Utility `[J]` / `#!+F` double-tap) — Char ListView     |
+| **Import Management hub**                                                                                             | Sole AHK import UI (`#!+X` / Utility `[J]` / `#!+F` double-tap) — Char ListView; includes pack imports **and** Palace quick image `[Q]` |
 | **Feedback loop**                                                                                                     | Importer upserts local CSV → next prompt run attaches the updated file as context   |
 
 ### Pack-import domains
@@ -142,6 +142,7 @@ flowchart LR
 | Finance monthly | `#!+X` / Utility `[J]` | `[M]`   | `[m]`         | `FINANCE_MONTHLY.txt` | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes        |
 | Memory Palace   | `#!+X` / Utility `[J]` | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`     | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes        |
 | Study plans     | `#!+X` / Utility `[J]` | `[L]`   | `[n]`         | `PLAN_PACK.txt`       | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes        |
+| Palace quick image | `#!+X` / Utility `[J]` | `[Q]` | —          | Newest Desktop PNG/JPG | —                        | [`Palace_QuickAttachDesktopImage`](../Utils/mnemonic_palace_import.ahk)                                      | Palace picker |
 | Tasks           | `#!+X` / Utility `[J]` | `[T]`   | `[t]`         | `TASK_PACK.txt`       | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)  |
 
 Import Management help: `[H]` in the hub ListView (canonical names, overwrite policy, per-import rules, desktop name registry).
@@ -265,6 +266,7 @@ Sole AHK import UI: Char-first ListView (Project Selector chrome). Domain Financ
 | `[P]` | Palace mnemonic pack                          |
 | `[L]` | Study plan pack                               |
 | `[T]` | Task pack (AHK confirm → Python CLI)          |
+| `[Q]` | Palace quick image (newest Desktop PNG/JPG → palace missing `image_rel_path`) |
 | `[N]` | Desktop pack names (CRUD + copy to clipboard) |
 | `[H]` | Help (per-import rules)                       |
 

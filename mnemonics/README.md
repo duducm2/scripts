@@ -51,13 +51,13 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 | **Practice** | Study picker, palace cards, overlay (notes, prompt copy) |
 | **Plans** | Checklist progress save, add items |
 | **Links** | Study video / article / favorite (Google Docs API) |
-| **Tools** | Quick image, regen Markdown, GitHub practice/plans |
-| **Help** | Glossary |
+| **Tools** | Regen Markdown, GitHub practice/plans (quick image is Import Management **`[Q]`**) |
+| **Help** | Glossary + shortcuts / import pointers |
 | **Method** | Technique README excerpt |
 
-Keyboard: **Esc** back, letter hints in the nav bar (`B`/`P`/`L`/`T`/`1`).
+Keyboard: **Esc** back, letter hints in the nav bar (`B`/`P`/`L`/`T`/`1`). Study links: **Shift+V** / **Shift+A** / **Shift+F**.
 
-Pack imports (PALACE_PACK / PLAN_PACK): Import Management (`#!+X` or Utility Shortcuts `[J]`).
+Pack imports (PALACE_PACK / PLAN_PACK) and **Quick image**: Import Management (`#!+X` or Utility Shortcuts `[J]` → **`[P]`** / **`[L]`** / **`[Q]`**).
 
 ## Migrate legacy Markdown
 
@@ -103,11 +103,11 @@ py -3 mnemonics\python\sync_technique.py `
 
 ## Practice Markdown (mobile / GitHub)
 
-Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images under `mnemonics/output/practice/images/`. Files sync after browse CRUD, Import Management palace pack import **[P]**, quick image, and regen.
+Each active study gets a Markdown file under `mnemonics/output/practice/{notes_rel_path}.md`, with palace images under `mnemonics/output/practice/images/`. Files sync after browse CRUD, Import Management palace pack import **[P]**, Import Management quick image **[Q]**, and regen.
 
 **Layout (GitHub mobile):** Collapsible Memory Palaces (`<details>`; newest open by default). Beasts as flat headings with **Concept / Quote / Story / Sensory**. Emoji markers match technique canon. Image prompts are omitted (recall-only).
 
-Each palace block ends with **Notes** and **Gallery**. Hero scene images (`image_rel_path`, Tools → Quick image) are unchanged.
+Each palace block ends with **Notes** and **Gallery**. Hero scene images (`image_rel_path`, Import Management → **[Q]** Quick image) are unchanged.
 
 Batch browse on GitHub:
 
@@ -130,7 +130,7 @@ Or use **Tools → Regen Markdown** in the web app (`POST /api/regen`).
 2. Stories / reduction deliver one downloadable **`PALACE_PACK.txt`**: human-readable `===PREVIEW===` plus three labeled CSV sections (`===FILE: PALACE_PALACES.csv===`, `BEASTS`, `ATOMS`). A `gemini-code-….txt` dump with the same markers also works. Edit the pack on Desktop if needed.
 3. Separate Desktop files `PALACE_PALACES*` / `PALACE_BEASTS*` / `PALACE_ATOMS*` still import when present (preferred over pack if any exist).
 4. Import Management (`#!+X` / Utility `[J]` → **[P]**) — one-shot import (palaces → beasts → atoms), combined preview, then archive under `data/imported/`. Beasts for palace ids in the pack replace existing beasts (and their atoms) for those palaces.
-5. After generating a palace image: save PNG/JPG to Desktop → web app **Tools → Quick image** (or API `POST /api/quick-image`) attaches the newest Desktop image to a palace missing `image_rel_path`.
+5. After generating a palace image: save PNG/JPG to Desktop → Import Management (`#!+X` / Utility `[J]` → **[Q]**) pick the palace missing `image_rel_path` (API `POST /api/quick-image` remains for scripts).
 
 ### Prompt context pack
 

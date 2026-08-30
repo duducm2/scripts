@@ -1379,8 +1379,22 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Win+Alt+Shift+L] > Paste OS clipboard (^v) to window (visible picker; after pick: Y=paste+Enter, N=paste only, Esc=abort, timeout=paste; focus learned main field if saved; Y/N to save when unknown; same as D2C [W])
     [Ctrl+Alt+Win+7] > Toggle {AI_PROVIDER} Chrome tab 1 <-> 2
     [Win+Alt+Shift+Q] > Jump mouse on the middle
-    [Win+Alt+Shift+X] > Import Management (same as Utility Shortcuts [J])
+    [Win+Alt+Shift+X] > Import Management (same as Utility Shortcuts [J]; [Q]=Palace quick image)
     [Win+Alt+Shift+D] > tap=Tasks :8766 · 2×=Finance · hold=Memory Palace :8767 ([T]/[F]/[N])
+
+    === MEMORY PALACE WEB (:8767) ===
+    Open: Utility [N] or Win+Alt+Shift+D hold. Packs / quick image: Import Management (#!+X / Utility [J]).
+    [Alt+S] > Focus Knowledge Atom search
+    [Shift+V] > Open study video in Chrome
+    [Shift+A] > Open study article in Chrome
+    [Shift+F] > Open favorite link in Chrome
+    [P] > Toggle Practice / Plans
+    [L] > Latest palace
+    [M] > Method
+    [B] > Browse
+    [1] > Links
+    [T] > Tools
+    Overlay: [F]=full-screen snapshot · [D]=toggle Quote/Story · [C]=copy prompt · ←/→ older/newer · Esc close
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)
     [Win+Alt+Shift+↓] > Show square selector (down direction)
