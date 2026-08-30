@@ -438,14 +438,30 @@ Palace_AiCompanionFixGuidance(errorMsg) {
     . "- Do not paste Markdown streets as the primary deliverable."
 }
 
-; Notify + Desktop AI fix note. Returns true if the .txt was written.
+; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
+; Returns true if the hub was closed (caller should skip Palace_ShowMainMenu).
 Palace_FailAiImport(errorMsg, notifyMs := 3200, extraNotes := "") {
     path := Palace_WriteAiCompanionImportError(errorMsg, extraNotes)
-    notify := errorMsg
     if (path != "")
-        notify .= " — AI fix → Desktop PALACE_AI_FIX.txt"
-    Palace_Notify(notify, notifyMs, BANNER_ACCENT_ERROR)
-    return path != ""
+        return ImportMgmt_OnAiFixReady(path, "PALACE_AI_FIX.txt")
+    ms := notifyMs < 5000 ? 5000 : notifyMs
+    Palace_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
+    return false
+}
+
+; After import from hub: keep Import Manager; from Palace app: return to main menu.
+Palace_ReturnAfterImport(hubClosed := false) {
+    if (hubClosed || ImportMgmt_IsOpen())
+        return
+    Palace_ShowMainMenu()
+}
+
+; Success: close Import Manager when open; otherwise Palace main menu.
+Palace_FinishImportSuccess() {
+    if (ImportMgmt_IsOpen())
+        ImportMgmt_OnImportSuccess()
+    else
+        Palace_ShowMainMenu()
 }
 
 ; Build beasts+atoms from PREVIEW outline when FILE CSV sections are truncated.
@@ -861,7 +877,7 @@ Palace_ImportPlanPackFromDesktop(*) {
     pathPlanPack := Palace_ResolveDesktopPlanPackPath()
     if (pathPlanPack = "") {
         Palace_Notify("No PLAN_PACK / gemini-code (PLANS.csv) on Desktop", 2800, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
     return Palace_ImportPlansFromDesktop(pathPlanPack)
@@ -884,7 +900,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         pathPack := Palace_DesktopNewestPackPath()
         if (pathPack = "") {
             Palace_Notify("No PALACE_PACK / PALACE_*.txt|.csv on Desktop", 2800, BANNER_ACCENT_ERROR)
-            Palace_ShowMainMenu()
+            Palace_ReturnAfterImport()
             return false
         }
         split := Palace_SplitPalacePack(pathPack)
@@ -894,8 +910,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 for note in split["csvNotes"]
                     notes .= (notes = "" ? "" : "`r`n") . note
             }
-            Palace_FailAiImport(split["error"], 3200, notes)
-            Palace_ShowMainMenu()
+            Palace_ReturnAfterImport(Palace_FailAiImport(split["error"], 3200, notes))
             return false
         }
         palaceRows := split["palaces"]
@@ -935,15 +950,13 @@ Palace_ImportMnemonicsFromDesktop(*) {
         notes := ""
         for note in csvNotes
             notes .= (notes = "" ? "" : "`r`n") . note
-        Palace_FailAiImport(msg, 3200, notes)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 3200, notes))
         return false
     }
 
     packCheck := Palace_ValidatePackBeastPacking(palaceRows, beastRows)
     if (!packCheck["ok"]) {
-        Palace_FailAiImport(packCheck["error"], 4500)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport(Palace_FailAiImport(packCheck["error"], 4500))
         return false
     }
 
@@ -998,7 +1011,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         . beastRows.Length . " beast(s)  ·  "
         . atomRows.Length . " atom(s)"
     if (!Palace_ImportConfirmPreview(title, labels)) {
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
 
@@ -1285,8 +1298,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         notes := ""
         for note in csvNotes
             notes .= (notes = "" ? "" : "`r`n") . note
-        Palace_FailAiImport(msg, 3500, notes)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 3500, notes))
         return false
     }
 
@@ -1296,8 +1308,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         msg := "Beasts imported with 0 atoms — Desktop pack kept"
         if (summary != "")
             msg .= " — " . summary
-        Palace_FailAiImport(msg, 4000, summary)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 4000, summary))
         return false
     }
 
@@ -1319,7 +1330,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
         Palace_SyncPracticeMd(syncIds)
     Palace_Notify("Imported " . nPalaces . " palace(s), " . nBeasts . " beast(s), " . nAtoms . " atom(s)",
         2800, BANNER_ACCENT_SUCCESS)
-    Palace_ShowMainMenu()
+    Palace_FinishImportSuccess()
     return true
 }
 
@@ -1518,7 +1529,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     text := Palace_NormalizePackText(Palace_ReadUtf8(pathPack))
     if (text = "") {
         Palace_Notify("Empty PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
     plansBody := Palace_ExtractPackFileSection(text, "PLANS.csv")
@@ -1526,7 +1537,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     resBody := Palace_ExtractPackFileSection(text, "PLAN_RESOURCES.csv")
     if (plansBody = "" || itemsBody = "") {
         Palace_Notify("PLAN_PACK needs PLANS.csv + PLAN_ITEMS.csv sections", 3000, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
     tmpP := Palace_WriteTempCsvFromSection(plansBody)
@@ -1550,7 +1561,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
 
     if (!planRows.Length) {
         Palace_Notify("No plan rows in PLAN_PACK", 2200, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
 
@@ -1580,7 +1591,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     if (resRows.Length)
         labels.Push("--- Resources (" . resRows.Length . ") ---")
     if (!Palace_ImportConfirmPreview("Import PLAN_PACK", labels)) {
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
 
@@ -1690,7 +1701,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
 
     if (!nPlans) {
         Palace_Notify("Import produced no plans", 2500, BANNER_ACCENT_ERROR)
-        Palace_ShowMainMenu()
+        Palace_ReturnAfterImport()
         return false
     }
 
@@ -1700,6 +1711,6 @@ Palace_ImportPlansFromDesktop(pathPack) {
     Palace_ArchiveImported(pathPack)
     Palace_SyncPlansMd(syncIds)
     Palace_Notify("Imported " . nPlans . " plan(s), " . nItems . " item(s)", 2800, BANNER_ACCENT_SUCCESS)
-    Palace_ShowMainMenu()
+    Palace_FinishImportSuccess()
     return true
 }

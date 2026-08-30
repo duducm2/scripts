@@ -86,14 +86,15 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
     . "- Prefer download chip; else one marked fence. Never claim a disk save."
 }
 
-; Notify + Desktop AI fix note. Returns true if the .txt was written.
+; Write Desktop AI fix note, copy to clipboard, ≥5s toast, close Import Manager if open.
+; Returns true if the hub was closed (caller should skip domain menus).
 Finance_FailAiImport(errorMsg, kind := "daily", notifyMs := 2200, extraNotes := "") {
     path := Finance_WriteAiCompanionImportError(errorMsg, kind, extraNotes)
-    notify := errorMsg
     if (path != "")
-        notify .= " — AI fix → Desktop FINANCE_AI_FIX.txt"
-    Finance_Notify(notify, notifyMs, BANNER_ACCENT_ERROR)
-    return path != ""
+        return ImportMgmt_OnAiFixReady(path, "FINANCE_AI_FIX.txt")
+    ms := notifyMs < 5000 ? 5000 : notifyMs
+    Finance_Notify(errorMsg, ms, BANNER_ACCENT_ERROR)
+    return false
 }
 
 ; Skip Gemini preambles (e.g. "FILE: FINANCE_DAILY.csv") so the header row is first.
@@ -715,6 +716,7 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     Finance_AfterDailyImport(parsed, autoConfirm)
     Finance_ArchiveImported(sourcePath)
     Finance_Notify("Imported " . parsed.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
+    ImportMgmt_OnImportSuccess()
     return true
 }
 
@@ -861,5 +863,8 @@ Finance_ImportMonthly(*) {
     }
     Finance_ArchiveImported(sourcePath)
     Finance_Notify("Applied " . n . " monthly adjustments", 1800, BANNER_ACCENT_SUCCESS)
-    Finance_ShowMainMenu()
+    if (ImportMgmt_IsOpen())
+        ImportMgmt_OnImportSuccess()
+    else
+        Finance_ShowMainMenu()
 }

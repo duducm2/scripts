@@ -22,6 +22,58 @@ ImportMgmt_CloseGui() {
     g_ImportMgmtGui := false
 }
 
+ImportMgmt_IsOpen() {
+    global g_ImportMgmtGui
+    try {
+        return IsObject(g_ImportMgmtGui)
+    } catch {
+        return false
+    }
+}
+
+; Close hub if open. Returns true when it was open (caller should skip domain menus).
+ImportMgmt_CloseIfOpen() {
+    if (!ImportMgmt_IsOpen())
+        return false
+    ImportMgmt_CloseGui()
+    return true
+}
+
+; Copy AI fix file to clipboard, show ≥5s orientation toast, close Import Manager if open.
+; Returns true when the hub was closed.
+ImportMgmt_OnAiFixReady(path, label) {
+    if (path = "" || !FileExist(path))
+        return ImportMgmt_CloseIfOpen()
+    body := ""
+    try {
+        f := FileOpen(path, "r", "UTF-8")
+        if (f) {
+            body := f.Read()
+            f.Close()
+            if (SubStr(body, 1, 1) = Chr(0xFEFF))
+                body := SubStr(body, 2)
+        }
+    } catch {
+        body := ""
+    }
+    if (body != "") {
+        try A_Clipboard := body
+        catch {
+        }
+    }
+    msg := "AI fix copied — paste into your AI companion · Desktop " . label
+    try ShowCenteredOverlay_Utils(msg, 5000, BANNER_ACCENT_ERROR)
+    catch {
+        TrayTip("Import", msg)
+    }
+    return ImportMgmt_CloseIfOpen()
+}
+
+; Close Import Manager after a successful import from the hub. Returns true when it closed.
+ImportMgmt_OnImportSuccess() {
+    return ImportMgmt_CloseIfOpen()
+}
+
 ImportMgmt_UnbindHotkeys() {
     global g_ImportMgmtHotkeys
     try HotIf(ImportMgmt_HotIfKeys)
@@ -223,11 +275,13 @@ ImportMgmt_HelpText() {
     . "  • [A] add, [E] edit, Delete remove; Esc / Backspace returns to this menu`r`n"
     . "  • ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
     . "OUTCOMES`r`n"
-    . "• Full success: local CSV saved; Desktop pack archived to */data/imported/`r`n"
-    . "• Failure: Desktop fix file written (FINANCE_AI_FIX / PALACE_AI_FIX / TASK_AI_FIX)`r`n`r`n"
+    . "• Full success: local CSV saved; Desktop pack archived; Import Manager closes`r`n"
+    . "  (Finance daily still opens the transactions page)`r`n"
+    . "• Failure with AI fix: fix text copied to clipboard; ≥5s banner; Import Manager closes`r`n"
+    . "  → paste into AI companion → re-deliver pack → reopen Import Manager`r`n`r`n"
     . "AI FIX FILES (written on failure — always overwrite)`r`n"
     . "FINANCE_AI_FIX.txt | PALACE_AI_FIX.txt | TASK_AI_FIX.txt`r`n"
-    . "Paste fix file into AI → re-deliver corrected pack → save canonical name → import again.`r`n`r`n"
+    . "Contents are auto-copied when written from Finance/Palace import.`r`n`r`n"
     . "PACK FORMAT`r`n"
     . "===PREVIEW=== … ===END_PREVIEW===`r`n"
     . "===FILE: PACK.csv=== … ===END_FILE===`r`n"
@@ -258,6 +312,7 @@ ImportMgmt_OnImportPlanPack(*) {
 }
 
 ImportMgmt_OnImportTaskPack(*) {
+    ImportMgmt_OnImportSuccess()
     Task_ImportPackFromDesktop()
 }
 

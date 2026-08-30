@@ -39,12 +39,14 @@ Finance and Memory Palace add a **confirm UI** before save. Memory Palace upsert
 
 ### Import outcome matrix
 
-| Outcome         | Local CSV | Archive Desktop pack     | Fix file on Desktop | Toast   |
-| --------------- | --------- | ------------------------ | ------------------- | ------- |
-| Full success    | Saved     | Yes → `*/data/imported/` | No                  | Success |
-| Import rejected | Not saved | No                       | **Yes**             | Error   |
+| Outcome         | Local CSV | Archive Desktop pack     | Fix file on Desktop | Toast   | Import Manager (hub `[J]`)                                      |
+| --------------- | --------- | ------------------------ | ------------------- | ------- | --------------------------------------------------------------- |
+| Full success    | Saved     | Yes → `*/data/imported/` | No                  | Success | Closes (Finance daily still opens transactions)                 |
+| Import rejected | Not saved | No                       | **Yes**             | Error   | Fix copied to clipboard + ≥5s banner; hub closes (reopen after) |
 
 Fix files: `FINANCE_AI_FIX.txt`, `PALACE_AI_FIX.txt`, `TASK_AI_FIX.txt`.
+
+Finance/Palace AI-fix path: clipboard copy + ≥5s “paste into your AI companion” overlay via `ImportMgmt_OnAiFixReady`. Tasks fix file is written in the web import flow (AHK closes the hub when `[T]` launches the browser).
 
 Each fix file structure: **IMPORT ERROR** → **EXTRA NOTES** (per-row errors when applicable) → **WHAT YOU MUST DO** (tailored via `*_AiCompanionFixGuidance`) → **DELIVERY RULES**.
 
@@ -262,6 +264,8 @@ Utility Shortcuts **`[J]`** opens a menu that delegates to finance and palace im
 | `[H]` | Help (per-import rules)                       |
 
 Same imports are also available from Finance `[F]` and Memory Palace `[N]` launchers.
+
+After a hub import: success closes Import Management (Finance daily still opens transactions); AI-fix failure copies the Desktop fix file to the clipboard, shows a ≥5s banner, and closes the hub so you can paste into the AI companion and reopen manually.
 
 ---
 
