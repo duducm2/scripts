@@ -218,10 +218,6 @@
         position: relative;
         z-index: 0;
       }
-      .task:hover,
-      .task.kb-selected {
-        z-index: 2;
-      }
       .due {
         color: var(--muted);
         font-size: 11px;
@@ -261,14 +257,21 @@
         border-radius: 4px;
         line-height: 1.25;
         background: rgba(37, 37, 40, 0.55);
+        min-width: 1.4em;
+        min-height: 1.4em;
       }
-      /* Overlay on the row — never expand the task height */
+      .emoji-chip .em-none {
+        display: inline-block;
+        min-width: 0.9em;
+        min-height: 0.9em;
+      }
+      /* Overlay above the row so the title stays readable */
       .task > .row-actions {
         display: flex;
         position: absolute;
         right: 0;
-        top: 50%;
-        transform: translateY(-50%);
+        top: 0;
+        transform: translateY(calc(-100% - 4px));
         width: auto;
         max-width: min(100%, 360px);
         margin: 0;
@@ -286,6 +289,10 @@
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
+      }
+      .task:hover,
+      .task.kb-selected {
+        z-index: 5;
       }
       .plain-row {
         position: relative;
@@ -1223,7 +1230,7 @@
         <button class="btn" data-act="emoji" data-key="done" title="Complete">✅</button>
         <button class="btn" data-act="emoji" data-key="important">⚡</button>
         <button class="btn" data-act="emoji" data-key="waiting" title="Waiting (Shift+Q)">⏳</button>
-        <button class="btn" data-act="emoji" data-key="none" title="None (Shift+O)">None</button>
+        <button class="btn" data-act="emoji" data-key="none" title="Clear emoji (Shift+O)">&nbsp;</button>
         <button class="btn" data-act="edit-task">Edit</button>
         <button class="btn" data-act="info-task">Info</button>
         <button class="btn" data-act="paste-att" data-ptype="task" data-pid="${esc(t.id)}">Img</button>
@@ -1260,10 +1267,10 @@
               const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
               const emHtml = e
                 ? `<span class="em">${esc(e)}</span>`
-                : `<span class="em em-none">–</span>`;
+                : `<span class="em em-none"></span>`;
               return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + label : "Filter " + label}">
         ${emHtml}
-        <span class="lbl">${esc(label)}</span>
+        ${e ? `<span class="lbl">${esc(label)}</span>` : ""}
         <span class="n">${n}</span>${keyHint}
       </button>`;
             })

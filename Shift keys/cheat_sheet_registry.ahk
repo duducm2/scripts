@@ -1095,7 +1095,7 @@ cheatSheets["Tasks"] := "
     ⏳ [Q] Waiting — tag selected task, or filter if none selected
     🔲 [G] General — tag selected task, or filter if none selected
     ❓ [U] Doubt — tag selected task, or filter if none selected
-    ∅ [O] None — clear emoji on selected task, or filter tasks with no emoji
+    [O] Clear emoji on selected task (empty), or filter tasks with no emoji
     ⚡ [I] Important on the selected task only (does not filter)
     
     === Alt ===
