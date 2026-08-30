@@ -34,10 +34,16 @@ def desktop_dir() -> Path:
 
 
 def newest_match(patterns: list[str]) -> Path | None:
+    """Prefer the newest file among patterns, scanning patterns in order of priority.
+
+    Within each pattern group, pick by mtime. Prefer a hit from an earlier pattern
+    group over a later one (e.g. TASK_PACK* before gemini-code*), even if the later
+    file is newer — named packs must not be shadowed by unrelated companion dumps.
+    """
     desk = desktop_dir()
-    best: Path | None = None
-    best_mtime = 0.0
     for pat in patterns:
+        best: Path | None = None
+        best_mtime = 0.0
         for p in desk.glob(pat):
             if not p.is_file():
                 continue
@@ -45,7 +51,9 @@ def newest_match(patterns: list[str]) -> Path | None:
             if m > best_mtime:
                 best_mtime = m
                 best = p
-    return best
+        if best is not None:
+            return best
+    return None
 
 
 def normalize_pack(src: Path) -> Path:

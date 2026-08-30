@@ -1340,9 +1340,13 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Ctrl+Alt+Win+B] > Handy: Parakeet Unified English (picker slot 1; same as Win+Alt+Shift+C then 1)
     [Win+Alt+Shift+C] > AI model picker (Handy): 1 Parakeet Unified EN, 2 Nemotron Streaming, 3 Cohere Transcribe
     [Send dictation? B] > Toggle Parakeet Unified EN ↔ Cohere Transcribe, re-transcribe newest History entry, copy to clipboard, re-open menu
+    [Send dictation? T] > Convert to Task pack (prompt char k → TASK_PACK.txt); not legacy mtask
     
     === PROMPTS ===
     [Win+Alt+Shift+H] > Utility Shortcuts → Prompts (prompt manager; same as #!+U then R)
+    [k] > Convert to Task pack (TASK_PACK.txt; filters work|personal|habits); dictation Send [T] uses same
+    [2] > Quick task lines (legacy mtask emoji lines; not TASK_PACK)
+    [t] > Fill CSV (unrelated to Tasks pack)
     
     === GOOGLE ===
     [Win+Alt+Shift+F] > Opens Google
@@ -1423,7 +1427,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
 
     === MEMORY PALACE (:8767) ===
     Launch: Utility Shortcuts [N] · Win+Alt+Shift+D hold (≥700 ms) · Chrome titled Memory Palace
-    Import Management (#!+X / Utility [J] / #!+F×2): [P] PALACE_PACK · [L] PLAN_PACK · [Q] quick image (Desktop PNG/JPG → palace missing image)
+    Import Management (#!+X / Utility [J] / #!+F×2): [P] PALACE_PACK · [L] PLAN_PACK · [Q] quick image (Desktop PNG/JPG → palace missing image) · [T] TASK_PACK (filters work|personal|habits)
     Markdown (practice+plans): Utility Shortcuts Push [G] when mnemonics/data is dirty (then commit+push)
     App sheet: Win+Alt+Shift+A while Memory Palace is focused (same keys below).
     [Alt+S] > Focus Knowledge Atom search

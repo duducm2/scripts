@@ -742,7 +742,7 @@ PromptData_FileMtime() {
 
 PromptData_DefaultEntries() {
     list := [{ name: "✏️ Grammar & Spelling Corrector", char: "1", category: "General", author: "",
-        filePath: "assets\prompt\grammar.txt", source: "file" }, { name: "🔲 Convert to Task", char: "2", category: "General",
+        filePath: "assets\prompt\grammar.txt", source: "file" }, { name: "🔲 Quick task lines", char: "2", category: "General",
             author: "",
             filePath: "assets\prompt\mtask.txt", source: "file" }, { name: "🤖 AI Text Optimizer", char: "3", category: "General",
                 author: "",
@@ -775,7 +775,10 @@ PromptData_DefaultEntries() {
                                                                 filePath: "assets\prompt\bosch-brand-image.txt", source: "file" }, { name: "📋 Fill CSV from unstructured text",
                                                                     char: "t", category: "General", author: "",
                                                                     filePath: "assets\prompt\unstructured-to-csv.txt",
-                                                                    source: "file" }, { name: "📎 ClipAngel .cac export",
+                                                                    source: "file" }, { name: "Convert to Task",
+                                                                        char: "k", category: "Tasks", author: "",
+                                                                        filePath: "assets\prompt\convert-to-task.txt",
+                                                                        source: "file" }, { name: "📎 ClipAngel .cac export",
                                                                         char: "c", category: "General", author: "",
                                                                         filePath: "assets\prompt\clipangel-cac.txt",
                                                                         source: "file" }, { name: "📝 How-to steps CSV",
@@ -794,6 +797,19 @@ PromptData_DefaultEntries() {
         item.variables := ""
         item.filePathDraft := ""
         item.selectContextCatalog := ""
+        if (InStr(StrLower(item.filePath), "convert-to-task.txt")) {
+            item.attachAsTxt := 1
+            item.expectsDataOutput := 1
+            item.dataOutputFormat := "file"
+            item.personal_context_files := [
+                PromptData_NewContextEntry("tasks\data\projects.csv"),
+                PromptData_NewContextEntry("tasks\data\tasks.csv")
+            ]
+            item.work_context_files := [
+                PromptData_NewContextEntry("tasks\data\projects.csv"),
+                PromptData_NewContextEntry("tasks\data\tasks.csv")
+            ]
+        }
     }
     return list
 }

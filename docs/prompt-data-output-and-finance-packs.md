@@ -6,7 +6,7 @@ This doc is the **canonical reference** for how prompts and importers are linked
 
 > **Start here** if you are an AI agent working on pack prompts, importers, CSV schemas, partial-import recovery, or a new import domain.
 
-**Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). CSV under `tasks/data/`. Pack import **`TASK_PACK.txt`** is Import Management `[T]` ([`task_import.ahk`](../Utils/task_import.ahk) → Python CLI). Fix file: `TASK_AI_FIX.txt`.
+**Tasks domain:** Utility Shortcuts `[T]` / `#!+D` tap opens the **web app** at `http://127.0.0.1:8766/` (`tasks/python/task_server.py` + `tasks/web/index.html`). CSV under `tasks/data/`. Pack import **`TASK_PACK.txt`** is Import Management `[T]` ([`task_import.ahk`](../Utils/task_import.ahk) → Python CLI). Fix file: `TASK_AI_FIX.txt`. AI pack prompt: Utility Prompts **`[k]`** / [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) (dictation submit menu **`[T]`** uses the same pack prompt). Filters are fixed: **`work` | `personal` | `habits`** (not freeform categories). Tasks rows are **append-only** on re-import (projects match by title+filter).
 
 **Memory Palace domain:** Utility Shortcuts `[N]` / `#!+D` **hold** opens the **web app** at `http://127.0.0.1:8767/` (`mnemonics/python/palace_server.py` + `mnemonics/web/index.html`). CSV under `mnemonics/data/`. Thin AHK launcher ensures the server and focuses Chrome titled **Memory Palace**. Pack import (**`PALACE_PACK`** / **`PLAN_PACK`**) and **Quick image** (newest Desktop PNG/JPG → palace missing image) stay Import Management (`#!+X` / Utility `[J]` → `[P]`/`[L]`/`[Q]`). The old `file://` dashboard + write-only `:8765` `plan_save_server` path is **deprecated** (writes live on `:8767`). Fix files: `PALACE_AI_FIX.txt` / plan fix naming via Import Management.
 
@@ -143,7 +143,7 @@ flowchart LR
 | Memory Palace      | `#!+X` / Utility `[J]` | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`      | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
 | Study plans        | `#!+X` / Utility `[J]` | `[L]`   | `[n]`         | `PLAN_PACK.txt`        | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
 | Palace quick image | `#!+X` / Utility `[J]` | `[Q]`   | —             | Newest Desktop PNG/JPG | —                           | [`Palace_QuickAttachDesktopImage`](../Utils/mnemonic_palace_import.ahk)                                      | Palace picker |
-| Tasks              | `#!+X` / Utility `[J]` | `[T]`   | `[t]`         | `TASK_PACK.txt`        | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)     |
+| Tasks              | `#!+X` / Utility `[J]` | `[T]`   | `[k]`         | `TASK_PACK.txt`        | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)     |
 
 Import Management help: `[H]` in the hub ListView (canonical names, overwrite policy, per-import rules, desktop name registry).
 
@@ -205,7 +205,7 @@ Change **Data output** in Prompt Manager (`#!+h` or `#!+U` → Prompts → Edit)
 Call sites:
 
 - [`Utils/prompt_render.ahk`](../Utils/prompt_render.ahk) — Utility Shortcuts paste / L-arm companion
-- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / `2`), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation
+- [`Utils/d2c_flow_manager.ahk`](../Utils/d2c_flow_manager.ahk) — Send dictation **[D]** / **[G]** / **[A]** / **[T]** load the prompt by char (`d` / `1` / `3` / **`k`** Convert to Task pack), apply Prompt Manager metadata (data-output contract, context attach via `UtilitySelector_AttachPromptContextFiles`), then combine with clipboard dictation. Legacy emoji-line **`mtask`** remains Char **`2`** (Prompts only, not on this menu).
 
 The long FILE DELIVERY PROTOCOL inside each `.txt` body is documentation/fallback; the injected block is the runtime authority for **file vs code**.
 
@@ -280,13 +280,14 @@ Files (prefer download; if attach fails, one marked fence; never fake disk save)
 
 - [`assets/prompt/finance-daily-transactions.txt`](../assets/prompt/finance-daily-transactions.txt)
 - [`assets/prompt/finance-monthly-investments.txt`](../assets/prompt/finance-monthly-investments.txt)
+- [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) — Utility Prompts **`[k]`**; dictation **`[T]`** (TASK_PACK). Legacy emoji-line helper remains Char **`[2]`** (`mtask.txt`, “Quick task lines”).
 - [`mnemonics/technique/prompts/story-prompt.txt`](../mnemonics/technique/prompts/story-prompt.txt)
 - [`mnemonics/technique/prompts/story-reduction-prompt.txt`](../mnemonics/technique/prompts/story-reduction-prompt.txt)
 - [`mnemonics/technique/prompts/plan-prompt.txt`](../mnemonics/technique/prompts/plan-prompt.txt)
 
 Human footers: Quick Download on chip, or copy fence → save as pack name on Desktop → import.
 
-Mnemonic import uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) (same marker style).
+Mnemonic import uses [`Utils/mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk) (same marker style). Tasks import prefers Desktop `TASK_PACK*.txt|.csv` over unrelated `gemini-code*.txt` dumps.
 
 ---
 

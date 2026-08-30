@@ -165,7 +165,7 @@ class D2C_FlowManager {
             0,
             this.OnSubmitTimeout.Bind(this),
             BANNER_ACCENT_INTERMEDIATE, 1000, 17, "", true,
-            "[G] Grammar  [A] AI opt  [T] Tasks  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
+            "[G] Grammar  [A] AI opt  [T] Tasks pack  [D] Finance daily  [Y] Send  [S] Paste only  [V] Paste dictated  [W] Paste to window  [E] Paste & send  [F] Favorite  [O] Clip Angel  [M] Teams to  [K] Teams paste  [Z] WhatsApp  [P] Spotify  [R] Replay  [B] Model+retranscribe  [L] Email note  [C] Chrome  [N]/Esc Cancel",
             true,
             true,
             true
@@ -196,7 +196,7 @@ class D2C_FlowManager {
     OnSubmitT(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        this.ExecuteGeminiSubmit(true, "mtask")
+        this.ExecuteGeminiSubmit(true, "task_pack")
     }
 
     OnSubmitD(*) {
@@ -676,7 +676,7 @@ class D2C_FlowManager {
 
     ; --- Phase 2: Submit Execute ---
 
-    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "mtask" | "finance_daily"
+    ; presetMode: "" = Clip Angel first snippet; "grammar" | "aiopt" | "task_pack" | "mtask" | "finance_daily"
     ; load Utility Shortcuts prompt by char (Prompt Manager metadata applied via PreparedBodyForSend).
     ; Finance daily / registry presets: attach context files then paste prompt + dictation.
     ; Finance daily sends only (no wait / download / import); user finishes manually.
@@ -698,7 +698,8 @@ class D2C_FlowManager {
         dictation := ""
         try dictation := A_Clipboard
 
-        if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt" || presetMode = "mtask") {
+        if (presetMode = "finance_daily" || presetMode = "grammar" || presetMode = "aiopt"
+            || presetMode = "mtask" || presetMode = "task_pack") {
             PromptData_Load(true)
             charKey := ""
             if (presetMode = "finance_daily")
@@ -707,11 +708,18 @@ class D2C_FlowManager {
                 charKey := "1"
             else if (presetMode = "aiopt")
                 charKey := "3"
+            else if (presetMode = "task_pack")
+                charKey := "k"
             else if (presetMode = "mtask")
                 charKey := "2"
             registryPrompt := PromptData_FindByChar(charKey)
             if (presetMode = "finance_daily" && !IsObject(registryPrompt)) {
                 ShowCenteredOverlay_Utils("⚠ Finance daily prompt not found (char d)", 2200, BANNER_ACCENT_ERROR)
+                this.Reset()
+                return
+            }
+            if (presetMode = "task_pack" && !IsObject(registryPrompt)) {
+                ShowCenteredOverlay_Utils("⚠ Convert to Task pack prompt not found (char k)", 2200, BANNER_ACCENT_ERROR)
                 this.Reset()
                 return
             }
