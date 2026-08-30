@@ -1204,6 +1204,14 @@
           };
         }
 
+        function taskEmoji(t) {
+          const em = t?.emoji;
+          if (em === undefined || em === null) return "🔲";
+          // legacy: Shift+O before server restart saved the word "none"
+          if (em === "none" || em === "None") return "";
+          return em;
+        }
+
         function taskLi(t) {
           const isHabit = t.kind === "habitual";
           const due = (
@@ -1236,7 +1244,7 @@
         <button class="btn danger" data-act="del-task">Del</button>`;
           const cutClass =
             state.taskClipboard?.cutFromId === t.id ? " is-cut" : "";
-          const em = t.emoji === undefined || t.emoji === null ? "🔲" : t.emoji;
+          const em = taskEmoji(t);
           return `<li class="task${dueNow ? " due-now" : ""}${cutClass}" data-emoji="${esc(em)}" data-id="${esc(t.id)}" data-kind="${esc(t.kind || "punctual")}"${hasInfo ? ' data-has-info="1"' : ""}>
       <span class="em">${esc(em)}</span>
       ${infoTag}
@@ -1250,8 +1258,7 @@
         function emojiLegendHtml(tasks) {
           const byEmoji = {};
           (tasks || []).forEach((t) => {
-            const e =
-              t.emoji === undefined || t.emoji === null ? "🔲" : t.emoji;
+            const e = taskEmoji(t);
             byEmoji[e] = (byEmoji[e] || 0) + 1;
           });
           const entries = Object.entries(byEmoji).sort(

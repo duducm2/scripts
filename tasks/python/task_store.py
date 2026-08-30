@@ -598,6 +598,8 @@ class TaskStore:
         if kind == "punctual":
             recurrence = ""
         emoji = (payload.get("emoji") or "").strip() or STATUS_EMOJIS["general"]
+        if emoji.lower() == "none":
+            emoji = ""
         project_id = (payload.get("project_id") or "").strip()
         if not project_id:
             return {"ok": False, "error": "project_id required"}
@@ -647,12 +649,15 @@ class TaskStore:
         key = (key_or_emoji or "").strip()
         if key in STATUS_EMOJIS:
             emoji = STATUS_EMOJIS[key]
-        elif key in ("none",):
+        elif key.lower() == "none":
             emoji = ""
         else:
             emoji = key
+        # Reject accidental literal "none" from older clients
+        if (emoji or "").strip().lower() == "none":
+            emoji = ""
         # "none" is an empty emoji; other empty keys are invalid
-        if not emoji and key not in STATUS_EMOJIS and key != "none":
+        if not emoji and key not in STATUS_EMOJIS and key.lower() != "none":
             return {"ok": False, "error": "emoji required"}
         rows = self.load("tasks")
         out = []

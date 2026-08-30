@@ -26,8 +26,6 @@ Sempre que possível, implementação inicial (piloto/MVP) realizada para valida
 INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29 15:48:39
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39
-INFO_0032,task,TASK_0020,O forms precisa ter o nome da indicação do key user.,O forms precisa ter o nome da indicação do key user.,ℹ️,Projects/Communication Plan/Forms,760,2026-08-29 15:48:39
-INFO_0033,task,TASK_0020,https://forms.office.com/e/uGVi4LaXff,https://forms.office.com/e/uGVi4LaXff,ℹ️,Projects/Communication Plan/Forms,770,2026-08-29 15:48:39
 INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 15:48:39
 INFO_0035,task,TASK_0025,Abertura e contextualização do treinamento,"Abertura e contextualização do treinamento
 Explicar os objetivos do treinamento.
@@ -157,3 +155,4 @@ Eu orientei a Letícia a entender quais são as expectativas da liderança em te
 ℹ️ Paulo Luz irá criar uma API para tirar dados do Gênesis e passar para o nosso sistema do BPM.
 ℹ️ Provavelmente terão duas APIs com o Genesys o Apolo.
 ℹ️ As reuniões entre o Paulo e o time de desenvolvedores acontecerão no seu período de férias, então quando você retornar, entenda o que rolou.",,ℹ️,,4010,2026-08-30 15:25:13
+INFO_0120,task,TASK_0217,https://forms.office.com/e/uGVi4LaXff,,ℹ️,,4020,2026-08-30 15:28:57
