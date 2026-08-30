@@ -1042,6 +1042,53 @@ cheatSheets["Miro"] := "
     [Ctrl + Shift + L] > Copy board link
 )"
 
+; --- Tasks (localhost dashboard, Chrome title Tasks) ----------------------
+cheatSheets["Tasks"] := "
+(
+    Tasks
+    Overlay Win+Alt+Shift+A. GitHub MD toolbar opens exported Markdown on GitHub.
+    
+    === Function keys & misc ===
+    ⬆️ [Up] Move selection up
+    ⬇️ [Down] Move selection down
+    ⬅️ [Left] Collapse project or section
+    ➡️ [Right] Expand project or section
+    🏠 [Home] First item
+    🔚 [End] Last item
+    🔤 [a-z 0-9] Jump to next title starting with letter
+    ⏎ [Enter] Edit selection
+    🗑️ [Delete] Delete selection
+    🏠 [Esc] Home — clear Work/Personal/Habits bento, emoji filter, search, modals, selection
+    ⬅️ [Backspace] Go back one step
+    1️⃣ [1] Import view: select TASK_PACK
+    👁️ [P] Import view: Preview
+    ✅ [C] Import view: Confirm import
+    
+    === Shift ===
+    💼 [1] Work only (bento; Esc clears)
+    👤 [2] Personal only (bento; Esc clears)
+    🔁 [3] Habits only (bento; Esc clears)
+    🎯 [J] First filtered hit (or toggle first Personal/Work)
+    ➕ [A] Inline add task (or project if none selected)
+    📁 [P] Add project
+    📑 [B] Add section (project selected)
+    ✅ [C] Mark done
+    ➡️ [D] Habit to Personal inbox (General)
+    📝 [N] Info points
+    🖼️ [V] Paste clipboard image
+    📂 [E] Expand / collapse all projects
+    🧹 [F] Clear emoji filter
+    ⚡ [T] Important — tag selection, or filter if none
+    ⏳ [Q] Waiting — tag selection, or filter if none
+    🔲 [G] General — tag selection, or filter if none
+    ❓ [U] Doubt — tag selection, or filter if none
+    ⚡ [I] Important on selection (same as T)
+    📦 [K] Open Import (also Utility [J] then [T])
+    
+    === Alt ===
+    🔍 [S] Focus search
+)"
+
 ; --- Wikipedia ---------------------------------------------------------------
 cheatSheets["Wikipedia"] := "
 (

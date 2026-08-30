@@ -157,6 +157,8 @@ PickChromeAppSheetKey(chromeTitle) {
         key := "Settle Up"
     if InStr(chromeTitle, "Miro")
         key := "Miro"
+    if (chromeTitle = "Tasks" || InStr(chromeTitle, "Tasks") = 1)
+        key := "Tasks"
     if InStr(chromeTitle, "Wikipedia", false) || InStr(chromeTitle, "wikipedia.org", false)
         key := "Wikipedia"
     if IsMercadoLivreActive()

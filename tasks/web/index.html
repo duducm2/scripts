@@ -181,6 +181,14 @@
         min-width: 120px;
         cursor: pointer;
       }
+      .task {
+        position: relative;
+        z-index: 0;
+      }
+      .task:hover,
+      .task.kb-selected {
+        z-index: 2;
+      }
       .due {
         color: var(--muted);
         font-size: 11px;
@@ -197,9 +205,35 @@
         margin-top: 2px;
         padding-left: 28px;
       }
+      /* Overlay on the row — never expand the task height */
+      .task > .row-actions {
+        display: flex;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        max-width: min(100%, 420px);
+        margin: 0;
+        padding: 3px 6px;
+        padding-left: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        background: #1a1a1c;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+        z-index: 3;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
       .task.kb-selected > .row-actions,
       .task:hover > .row-actions {
         display: flex;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
       }
       .row-actions .btn {
         padding: 2px 8px;
@@ -245,17 +279,13 @@
       .task-section.collapsed > .task-section-label::before {
         content: "▸";
       }
-      /* Default bucket — quieter than named sections */
+      /* Default bucket — quieter label at the start; full frame around all General tasks */
       .task-section.is-general {
-        margin: 2px 8px 8px;
-        padding-bottom: 4px;
-        border-left: 2px solid #3a3a3e;
-        background: linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0.03),
-          transparent 48%
-        );
-        border-radius: 0 6px 6px 0;
+        margin: 4px 8px 10px;
+        padding: 0 0 4px;
+        border: 1px solid #4a4a50;
+        border-radius: 6px;
+        background: transparent;
       }
       .task-section.is-general > .task-section-label {
         text-transform: none;
@@ -264,6 +294,12 @@
         font-size: 11px;
         opacity: 0.55;
         color: var(--muted);
+        border-bottom: 1px solid #4a4a50;
+        margin-bottom: 0;
+      }
+      .task-section.is-general > .task-list {
+        padding-left: 12px;
+        padding-right: 12px;
       }
       .task-section.is-general > .task-section-label::before {
         content: "–";
@@ -271,6 +307,9 @@
       }
       .task-section.is-general.collapsed > .task-section-label::before {
         content: "+";
+      }
+      .task-section.is-general.collapsed > .task-section-label {
+        border-bottom: none;
       }
       .task-section:not(.is-general) > .task-section-label {
         color: #c8c8c8;
@@ -282,7 +321,10 @@
         opacity: 1;
       }
       .task-section.is-general.kb-selected {
-        border-left-color: var(--gold);
+        border-color: var(--gold);
+      }
+      .task-section.is-general.kb-selected > .task-section-label {
+        border-bottom-color: var(--gold);
       }
       .task-section.emoji-hidden {
         display: none !important;
@@ -401,23 +443,32 @@
       .top-row.section-solo {
         grid-template-columns: 1fr;
       }
-      /* Solo category: CSS grid stays stable when cards grow (multi-column reflows/blinks) */
+      /* Solo category: CSS grid stays stable when cards grow (multi-column reflows/blinks).
+         Stretch items so every card in a row matches the tallest card in that row. */
       .column.bento {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: 14px;
-        align-items: start;
+        align-items: stretch;
       }
       .column.bento > .section-head,
       .column.bento > .empty {
         grid-column: 1 / -1;
         margin-bottom: 0;
+        align-self: start;
       }
       .column.bento > .project {
         margin: 0;
         width: auto;
         max-width: 100%;
         min-width: 0;
+        align-self: stretch;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .column.bento > .project > summary {
+        flex: 0 0 auto;
       }
       @media (min-width: 1400px) {
         .column.bento {
@@ -452,34 +503,6 @@
       }
       .habits-column {
         margin-top: 20px;
-      }
-      .strip {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px 16px;
-        padding: 0 24px 12px;
-        align-items: center;
-      }
-      .kpi {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 8px 12px;
-        min-width: 88px;
-      }
-      .kpi .lbl {
-        color: var(--muted);
-        font-size: 10px;
-        text-transform: uppercase;
-      }
-      .kpi .val {
-        font-size: 18px;
-        margin-top: 2px;
-        color: var(--gold);
-      }
-      #emojiFilterLbl {
-        color: var(--gold);
-        font-size: 12px;
       }
       .search-wrap {
         display: flex;
@@ -578,36 +601,6 @@
         justify-content: flex-end;
         margin-top: 14px;
       }
-      .help-modal {
-        width: min(560px, 100%);
-      }
-      .help-groups {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      .help-group h4 {
-        margin: 0 0 8px;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
-      .help-rows {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 6px 14px;
-        align-items: baseline;
-      }
-      .help-rows kbd {
-        justify-self: start;
-        white-space: nowrap;
-      }
-      .help-rows span {
-        color: var(--text);
-        font-size: 13px;
-      }
       .inline-create {
         display: none;
         align-items: center;
@@ -678,7 +671,6 @@
         <div id="mainToolbar"></div>
       </div>
     </header>
-    <div class="strip" id="strip"></div>
     <div id="inlineCreate" class="inline-create" aria-hidden="true"></div>
     <div id="view"></div>
     <div id="toast"></div>
@@ -1225,35 +1217,16 @@
         }
 
         function renderDashboard() {
-          const open = openTasks();
-          const personal = open.filter((t) => t.filter === "personal").length;
-          const work = open.filter((t) => t.filter === "work").length;
-          const today = new Date().toISOString().slice(0, 10);
-          const habitsDue = (state.data.tasks || []).filter(
-            (t) =>
-              t.active !== "0" &&
-              t.kind === "habitual" &&
-              (!(t.next_due || t.due_date) ||
-                (t.next_due || t.due_date) <= today),
-          ).length;
-
-          $("#strip").innerHTML = `
-      <div class="kpi"><div class="lbl">Personal</div><div class="val">${personal}</div></div>
-      <div class="kpi"><div class="lbl">Work</div><div class="val">${work}</div></div>
-      <div class="kpi"><div class="lbl">Habits due</div><div class="val">${habitsDue}</div></div>
-      <span class="sub" id="emojiFilterLbl"></span>`;
           $("#view").innerHTML = `
       <div class="${focusTopRowClass()}">${renderColumn("Personal", "personal")}${renderColumn("Work", "work")}</div>
       ${renderHabitsColumn()}`;
           applyEmojiFilter(state.emojiFilter);
-          updateFocusLbl();
           applySelection(false);
         }
 
         function renderToolbar() {
           $("#mainToolbar").innerHTML = `
-      <button class="btn" data-act="goto-github-md" title="Open exported tasks Markdown on GitHub">GitHub MD</button>
-      <button class="btn" data-act="help" title="Keyboard shortcuts (Shift+H or F1)">Help</button>`;
+      <button class="btn" data-act="goto-github-md" title="Open exported tasks Markdown on GitHub">GitHub MD</button>`;
         }
 
         const TASKS_GITHUB_MD = {
@@ -1314,62 +1287,6 @@
           };
         }
 
-        function helpModal() {
-          const row = (keys, label) =>
-            `<kbd>${keys}</kbd><span>${label}</span>`;
-          modal(`<div class="modal help-modal"><h3>Keyboard shortcuts</h3>
-      <div class="help-groups">
-        <div class="help-group"><h4>Navigate</h4><div class="help-rows">
-          ${row("↑ ↓", "Move selection")}
-          ${row("← →", "Collapse / expand project or section")}
-          ${row("⇧J", "First filtered hit (or toggle first Personal ↔ Work)")}
-          ${row("Home / End", "First / last item")}
-          ${row("a–z 0–9", "Jump to next title starting with letter (from selection down)")}
-          ${row("Alt+S", "Focus search")}
-          ${row("Esc", "Home — dashboard, clear filters/modals/selection")}
-          ${row("Backspace", "Go back one step")}
-        </div></div>
-        <div class="help-group"><h4>Focus category</h4><div class="help-rows">
-          ${row("1 or ⇧1", "Work only (bento)")}
-          ${row("2 or ⇧2", "Personal only (bento)")}
-          ${row("3 or ⇧3", "Habits only (bento)")}
-        </div></div>
-        <div class="help-group"><h4>Actions</h4><div class="help-rows">
-          ${row("Enter", "Edit selection")}
-          ${row("Del", "Delete selection")}
-          ${row("⇧A", "Inline add task (or project if none selected)")}
-          ${row("⇧P", "Add project (filter from focus / selection)")}
-          ${row("⇧B", "Add section (project selected)")}
-          ${row("⇧C", "Mark done (✅)")}
-          ${row("⇧D", "Habit → Personal inbox (General)")}
-          ${row("⇧N", "Info points")}
-          ${row("⇧V", "Paste clipboard image (project / section→project / task)")}
-          ${row("⇧E", "Expand / collapse all projects")}
-          ${row("⇧F", "Clear emoji filter")}
-        </div></div>
-        <div class="help-group"><h4>Emoji tags</h4><div class="help-rows">
-          ${row("⇧T", "⚡ Important — tag selection, or filter if none")}
-          ${row("⇧Q", "⏳ Waiting — tag selection, or filter if none")}
-          ${row("⇧G", "🔲 General — tag selection, or filter if none")}
-          ${row("⇧U", "❓ Doubt — tag selection, or filter if none")}
-          ${row("⇧I", "⚡ Important on selection (same as ⇧T)")}
-        </div></div>
-        <div class="help-group"><h4>App</h4><div class="help-rows">
-          ${row("GitHub MD", "Exported Work / Personal / Habits Markdown on GitHub")}
-          ${row("⇧H / F1", "This help")}
-          ${row("Pack import", "Import Management (#!+X / Utility [J] → [T])")}
-        </div></div>
-      </div>
-      <div class="modal-actions"><button class="btn" data-m="cancel">Close</button></div></div>`);
-          $("#modalHost").onclick = (e) => {
-            if (
-              e.target.dataset.m === "cancel" ||
-              e.target.classList.contains("modal-bg")
-            )
-              closeModal();
-          };
-        }
-
         function focusSearch() {
           const inp = $("#globalSearch");
           if (!inp) return;
@@ -1403,7 +1320,6 @@
         function applySearch(query) {
           state.search = query ?? "";
           if (state.view === "dashboard" && state.data) renderDashboard();
-          else updateFocusLbl();
         }
 
         function render() {
@@ -1417,32 +1333,6 @@
 
         function scrollToPageHeader() {
           window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-        }
-
-        function updateFocusLbl() {
-          const lbl = $("#emojiFilterLbl");
-          if (!lbl) return;
-          const parts = [];
-          if (state.sectionFocus) {
-            const name =
-              state.sectionFocus === "work"
-                ? "Work"
-                : state.sectionFocus === "personal"
-                  ? "Personal"
-                  : "Habits";
-            parts.push(name + " only");
-          }
-          if (state.emojiFilter) {
-            parts.push(
-              (EMOJI_LABELS[state.emojiFilter] || state.emojiFilter) + " emoji",
-            );
-          }
-          if (searchNeedle()) {
-            parts.push('search "' + state.search.trim() + '"');
-          }
-          lbl.textContent = parts.length
-            ? "Showing " + parts.join(" · ") + " — Esc clears"
-            : "";
         }
 
         function applySectionFocus(filt, opts = {}) {
@@ -1459,7 +1349,6 @@
           if (work) work.className = focusColumnClass("work");
           if (habits) habits.className = focusColumnClass("habits");
           if (top) top.className = focusTopRowClass();
-          updateFocusLbl();
           // Only scroll when the focus mode actually changes (not on every re-apply)
           if (opts.scrollHeader !== false && f && f !== prev)
             scrollToPageHeader();
@@ -1936,10 +1825,6 @@
             projectForm(null);
             return;
           }
-          if (k === "h") {
-            helpModal();
-            return;
-          }
         }
 
         async function deleteSelection() {
@@ -2130,8 +2015,6 @@
             ).length;
             sec.classList.toggle("emoji-hidden", visible === 0);
           });
-          const lbl = $("#emojiFilterLbl");
-          if (lbl) updateFocusLbl();
           document.querySelectorAll(".emoji-chip").forEach((chip) => {
             chip.classList.toggle(
               "active",
@@ -2725,10 +2608,6 @@
               else githubMdPicker();
               return;
             }
-            if (act === "help") {
-              helpModal();
-              return;
-            }
             if (act === "add-project") {
               const f = actEl.getAttribute("data-f") || "work";
               state.filter = f;
@@ -2918,20 +2797,8 @@
 
           if (modalOpen()) return;
 
-          if (e.key === "F1") {
-            e.preventDefault();
-            helpModal();
-            return;
-          }
-
           if (e.shiftKey) {
             const cmd = shiftCmdFromEvent(e);
-            if (cmd === "h") {
-              e.preventDefault();
-              e.stopPropagation();
-              helpModal();
-              return;
-            }
             if (cmd) {
               e.preventDefault();
               e.stopPropagation();
@@ -2997,19 +2864,10 @@
             return;
           }
 
-          // Plain letter jump (1/2/3 reserved for category focus)
-          if (/^[a-z0-9]$/i.test(e.key) && !/^[123]$/.test(e.key)) {
+          if (/^[a-z0-9]$/i.test(e.key)) {
             e.preventDefault();
             letterJump(e.key.toLowerCase());
             return;
-          }
-          // Plain 1/2/3 also focus a single category (same as Shift+1/2/3)
-          if (e.key === "1" || e.key === "2" || e.key === "3") {
-            e.preventDefault();
-            applySectionFocus(
-              e.key === "1" ? "work" : e.key === "2" ? "personal" : "habits",
-              { toggle: true },
-            );
           }
         });
 

@@ -117,6 +117,7 @@ Each row is a key in `cheatSheets` in [`Shift keys/cheat_sheet_registry.ahk`](..
 | `UIATreeInspector`   | Chrome title or `AutoHotkey64.exe` + UIATreeInspector title.                                                                                       |
 | `Settle Up`          | Chrome title contains `Settle Up`.                                                                                                                 |
 | `Miro`               | Chrome title contains `Miro`.                                                                                                                      |
+| `Tasks`              | Chrome title is `Tasks` or starts with `Tasks` (localhost Tasks dashboard). Canonical shortcut list — not an in-app Help modal.                    |
 | `Wikipedia`          | Chrome title contains `Wikipedia` or `wikipedia.org`.                                                                                              |
 | `YouTube`            | Chrome title contains `YouTube`.                                                                                                                   |
 | `Google`             | Chrome, no other site sheet, and title is `Google` or ` - Google Search`.                                                                          |
