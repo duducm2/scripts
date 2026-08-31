@@ -711,19 +711,16 @@
         padding: 16px 18px;
         width: min(520px, 100%);
         max-height: 90vh;
-        overflow: auto;
-      }
-      .modal.modal-info {
-        width: 60vw;
-        max-width: 60vw;
         display: flex;
         flex-direction: column;
-        max-height: 90vh;
         overflow: hidden;
       }
-      .modal.modal-info h3,
-      .modal.modal-info > .toolbar {
-        flex: 0 0 auto;
+      .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
       }
       .modal.modal-info .plain-list {
         flex: 1 1 auto;
@@ -731,8 +728,13 @@
         overflow-y: auto;
         overscroll-behavior: contain;
       }
+      .modal.modal-info h3,
+      .modal.modal-info > .toolbar {
+        flex: 0 0 auto;
+      }
       .modal h3 {
         margin: 0 0 12px;
+        flex: 0 0 auto;
         color: var(--gold);
       }
       .modal label {
@@ -755,11 +757,35 @@
       .modal textarea {
         min-height: 120px;
       }
+      .modal-body textarea.modal-field-grow {
+        flex: 1;
+        min-height: 12rem;
+        resize: vertical;
+      }
       .modal-actions {
         display: flex;
         gap: 8px;
         justify-content: flex-end;
         margin-top: 14px;
+        flex: 0 0 auto;
+      }
+      @media (min-width: 901px) {
+        .modal {
+          width: 60vw;
+          height: 60vh;
+          max-width: 60vw;
+          max-height: 60vh;
+        }
+      }
+      @media (max-width: 900px) {
+        .modal-bg {
+          padding: 12px;
+        }
+        .modal {
+          width: 100%;
+          height: auto;
+          max-height: min(90vh, 100%);
+        }
       }
       .inline-create-row {
         align-items: center;
@@ -2819,11 +2845,13 @@
         function projectForm(existing) {
           const filt = existing?.filter || defaultProjectFilter();
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} project</h3>
+      <div class="modal-body">
       <label>Title</label><input id="mTitle" value="${esc(existing?.title || "")}"/>
       <label>Filter</label><select id="mFilt">
         ${["work", "personal", "habits"].map((f) => `<option value="${f}" ${filt === f ? "selected" : ""}>${f}</option>`).join("")}
       </select>
       <label>Section path</label><input id="mSec" value="${esc(existing?.section_path || "")}"/>
+      </div>
       <div class="modal-actions">
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-project">Save</button>
@@ -2863,7 +2891,9 @@
             return;
           }
           modal(`<div class="modal"><h3>Edit section</h3>
+      <div class="modal-body">
       <label>Title</label><input id="mTitle" value="${esc(existing.title || "")}"/>
+      </div>
       <div class="modal-actions">
         <button class="btn" data-m="cancel">Cancel</button>
         <button class="btn" data-m="save-section">Save</button>
@@ -3302,6 +3332,7 @@
               : existing.due_date || "";
           const isHabit = existing.kind === "habitual";
           modal(`<div class="modal"><h3>Edit task</h3>
+      <div class="modal-body">
       <label>Title</label><input id="mTitle" value="${esc(existing.title || "")}"/>
       <label>Project</label><select id="mProj">${projs.map((p) => `<option value="${esc(p.id)}" ${pid === p.id ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select>
       <label>Section</label><select id="mSection">${sectionOptionsHtml(pid, defaultSec)}</select>
@@ -3312,6 +3343,7 @@
       </div>
       <label>Emoji <span class="sub">(optional)</span></label><input id="mEmoji" value="${esc(existing.emoji === "🔲" ? "" : existing.emoji || "")}" placeholder="Leave blank for default"/>
       <label>Due date</label><input id="mDue" value="${esc(dueVal)}" placeholder="YYYY-MM-DD"/>
+      </div>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-task">Save</button></div></div>`);
           const syncSections = () => {
             const sel = $("#mSection");
@@ -3377,8 +3409,10 @@
           if (parentType && parentId) state.infoCtx = { parentType, parentId };
           state.infoUi = "form";
           modal(`<div class="modal"><h3>${existing ? "Edit" : "Add"} info</h3>
-      <textarea id="mText" placeholder="Text">${esc(infoText(existing))}</textarea>
+      <div class="modal-body">
+      <textarea id="mText" class="modal-field-grow" placeholder="Text">${esc(infoText(existing))}</textarea>
       <p class="sub">Paste an image with Shift+V. Ctrl+Enter saves.</p>
+      </div>
       <div class="modal-actions"><button class="btn" data-m="cancel">Cancel</button><button class="btn" data-m="save-info">Save</button></div></div>`);
           const save = async () => {
             try {
