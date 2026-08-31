@@ -82,6 +82,7 @@ ToggleGeminiDrawer() {
 ; Shift + N : New chat in Gemini (sends Ctrl-Shift-O)
 +n:: {
     Send "^+o"
+    AiCompanion_ShowNewChatBanner(AI_COMPANION_GEMINI)
 }
 
 ; Shift + S : Click the Search button - Search

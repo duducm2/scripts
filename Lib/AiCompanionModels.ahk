@@ -420,3 +420,23 @@ AiCompanionModels_SelectRole(companion, role) {
     }
     return ok
 }
+
+; Brief Information Only feedback after Shift+N new chat (Gemini / Enterprise / Copilot).
+AiCompanion_ShowNewChatBanner(companion) {
+    if !AiCompanionModels_IsValidCompanion(companion)
+        companion := AI_COMPANION_GEMINI
+    label := AiCompanionModels_DisplayName(companion)
+    try ShowCenteredOverlay_Utils("💬 New chat — " . label, 1200, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
+
+; Brief Information Only feedback after Shift+N new chat (Gemini / Enterprise / Copilot).
+AiCompanion_ShowNewChatBanner(companion) {
+    if !AiCompanionModels_IsValidCompanion(companion)
+        companion := AI_COMPANION_GEMINI
+    label := AiCompanionModels_DisplayName(companion)
+    try ShowCenteredOverlay_Utils("💬 New chat — " . label, 1200, BANNER_ACCENT_SUCCESS)
+    catch {
+    }
+}
