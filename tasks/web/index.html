@@ -716,6 +716,20 @@
       .modal.modal-info {
         width: 60vw;
         max-width: 60vw;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        overflow: hidden;
+      }
+      .modal.modal-info h3,
+      .modal.modal-info > .toolbar {
+        flex: 0 0 auto;
+      }
+      .modal.modal-info .plain-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
       .modal h3 {
         margin: 0 0 12px;
@@ -1865,6 +1879,8 @@
 
         function flashInfoRow(id) {
           if (!id) return;
+          state.infoSelId = id;
+          paintInfoSel();
           const el = document.querySelector(
             `#modalHost .plain-row[data-id="${CSS.escape(id)}"]`,
           );
@@ -2484,6 +2500,41 @@
               el.getAttribute("data-id") === state.infoSelId,
             );
           });
+          scrollInfoSelIntoView();
+        }
+
+        function scrollInfoSelIntoView() {
+          const id = state.infoSelId;
+          if (!id || state.infoUi !== "list") return;
+          const list = document.querySelector(
+            "#modalHost .modal-info .plain-list",
+          );
+          const el = list?.querySelector(
+            `.plain-row[data-id="${CSS.escape(id)}"]`,
+          );
+          if (!el || !list) return;
+          const pad = 6;
+          const listRect = list.getBoundingClientRect();
+          const elRect = el.getBoundingClientRect();
+          const fits = elRect.height <= listRect.height - pad * 2;
+          if (!fits) {
+            list.scrollBy({
+              top: elRect.top - listRect.top - pad,
+              behavior: "smooth",
+            });
+            return;
+          }
+          if (elRect.top < listRect.top + pad) {
+            list.scrollBy({
+              top: elRect.top - listRect.top - pad,
+              behavior: "smooth",
+            });
+          } else if (elRect.bottom > listRect.bottom - pad) {
+            list.scrollBy({
+              top: elRect.bottom - listRect.bottom + pad,
+              behavior: "smooth",
+            });
+          }
         }
 
         function dismissInfoModal() {
@@ -2589,6 +2640,7 @@
               await deleteInfoPoint(id);
             }
           };
+          paintInfoSel();
         }
 
         async function deleteInfoPoint(id) {
