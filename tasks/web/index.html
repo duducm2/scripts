@@ -28,16 +28,18 @@
         color: var(--text);
       }
       header {
-        padding: 16px 24px 8px;
+        padding: 6px 16px;
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 8px 12px;
         align-items: center;
         justify-content: space-between;
       }
-      h1 {
-        margin: 0;
-        font-size: 24px;
+      .hdr-stats {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
       }
       .sub {
         color: var(--muted);
@@ -47,7 +49,6 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        padding: 0 24px 12px;
         align-items: center;
       }
       .btn,
@@ -105,7 +106,7 @@
         max-width: 360px;
       }
       #view {
-        padding: 8px 24px 40px;
+        padding: 4px 16px 32px;
       }
       .panel {
         background: var(--panel);
@@ -646,15 +647,19 @@
         align-items: center;
         gap: 6px;
       }
+      header .btn.tertiary {
+        padding: 4px 8px;
+        font-size: 12px;
+      }
       #globalSearch {
-        width: min(280px, 42vw);
+        width: min(260px, 42vw);
         background: #252528;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 6px;
         color: var(--text);
-        padding: 6px 10px;
+        padding: 4px 8px;
         font: inherit;
-        font-size: 13px;
+        font-size: 12px;
       }
       #globalSearch:focus {
         outline: none;
@@ -814,29 +819,24 @@
   </head>
   <body>
     <header>
-      <div>
-        <h1>Tasks</h1>
-        <div class="sub" id="hdrSub">Loading…</div>
-      </div>
-      <div class="toolbar">
-        <div class="search-wrap">
-          <input
-            type="search"
-            id="globalSearch"
-            placeholder="Search…"
-            title="Search (Alt+S)"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <a
-            class="btn tertiary"
-            href="https://github.com/duducm2/my-notes/blob/main/main/punctual.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Personal tasks Markdown on GitHub (main/punctual.md)"
-            >GitHub MD</a
-          >
-        </div>
+      <div class="hdr-stats" id="hdrSub">Loading…</div>
+      <div class="search-wrap">
+        <input
+          type="search"
+          id="globalSearch"
+          placeholder="Search…"
+          title="Search (Alt+S)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <a
+          class="btn tertiary"
+          href="https://github.com/duducm2/my-notes/blob/main/main/punctual.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Personal tasks Markdown on GitHub (main/punctual.md)"
+          >GitHub MD</a
+        >
       </div>
     </header>
     <div id="view"></div>
