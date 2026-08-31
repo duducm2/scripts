@@ -827,12 +827,19 @@ Editor_GitInvokeUiaElement(el) {
 Editor_GitIsPullButtonName(name) {
     if (name = "")
         return false
-    ; Exact Pull / Pull from… — avoid "Pull Request".
+    ; Avoid "Pull Request" / PR actions.
+    if InStr(name, "Pull Request")
+        return false
+    ; Exact Pull / Pull from… / Git: Pull.
     if RegExMatch(name, "i)^Pull$")
         return true
     if RegExMatch(name, "i)^Pull from\b")
         return true
     if RegExMatch(name, "i)^Git:\s*Pull$")
+        return true
+    ; Cursor/VS Code SCM + status bar: "Pull 1 commits from origin/main"
+    ; or "scripts (Git) - Pull 1 commits from origin/main".
+    if RegExMatch(name, "i)\bPull \d+ commits?\b")
         return true
     return false
 }
@@ -893,6 +900,25 @@ Editor_GitFindSyncControl(root) {
             try n := btn.Name
             if Editor_GitIsSyncButtonName(n)
                 return btn
+        }
+        ; SCM row is often a TreeItem named "$(sync) Sync Changes …" whose
+        ; actionable child is a monaco Button (Pull/Push/Sync). Click that, not the row.
+        try {
+            for ti in root.FindAll({ Type: UIA.Type.TreeItem }) {
+                n := ""
+                try n := ti.Name
+                if !Editor_GitIsSyncButtonName(n)
+                    continue
+                try {
+                    for btn in ti.FindAll({ Type: UIA.Type.Button }) {
+                        if btn
+                            return btn
+                    }
+                } catch {
+                }
+                return ti
+            }
+        } catch {
         }
         ; Status bar often uses "Synchronize Changes".
         for needle in ["Synchronize Changes", "Sync Changes"] {
