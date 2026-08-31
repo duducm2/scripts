@@ -2338,6 +2338,24 @@
           return (sec?.title || "").trim().toLowerCase() === "general";
         }
 
+        function selectProjectAfterTaskDelete(projectId) {
+          if (!projectId) {
+            state.sel = null;
+            applySelection(false);
+            return;
+          }
+          const proj = (state.data.projects || []).find(
+            (p) => p.id === projectId,
+          );
+          if (!proj || proj.active === "0") {
+            state.sel = null;
+            applySelection(false);
+            return;
+          }
+          state.collapsedProjects.delete(projectId);
+          setSelection("project", projectId, true);
+        }
+
         async function deleteSectionById(id) {
           const sec = findSection(id);
           if (!sec) {
@@ -2382,12 +2400,16 @@
           }
           if (state.sel.kind === "task" || state.sel.kind === "habit") {
             if (!confirm("Delete task and its info/attachments?")) return;
+            const task = (state.data.tasks || []).find(
+              (t) => t.id === state.sel.id,
+            );
+            const projectId = task?.project_id || "";
             await api("/api/tasks/" + encodeURIComponent(state.sel.id), {
               method: "DELETE",
             });
-            state.sel = null;
             toast("Deleted");
             await refresh();
+            selectProjectAfterTaskDelete(projectId);
           }
         }
 
@@ -3664,11 +3686,14 @@
             }
             if (act === "del-task") {
               if (!confirm("Delete task and its info/attachments?")) return;
+              const task = (state.data.tasks || []).find((x) => x.id === id);
+              const projectId = task?.project_id || "";
               await api("/api/tasks/" + encodeURIComponent(id), {
                 method: "DELETE",
               });
               toast("Deleted");
               await refresh();
+              selectProjectAfterTaskDelete(projectId);
               return;
             }
             if (act === "emoji") {
