@@ -461,14 +461,22 @@ StudyLink_RunFunctionalTest() {
 }
 
 StudyLink_Open(studyKey) {
+    label := StudyLink_LoadingLabel(studyKey)
     r := StudyLink_GetResult(studyKey)
-    if (r["ok"] && r["url"] != "") {
-        StudyLink_OpenUrlInChrome(r["url"], true)
-    } else if !r["ok"] {
-        MsgBox "Could not load link: " . r["err"]
-    } else {
-        MsgBox "No link stored for this study."
+    if (!r["ok"]) {
+        ShowCenteredOverlay_Utils("❌ Could not load link from API: " . r["err"], 3500, BANNER_ACCENT_ERROR)
+        return false
     }
+    StudyLink_PlayApiSuccessSound()
+    url := r["url"]
+    if (url = "") {
+        ShowCenteredOverlay_Utils("⚠ No " . label . " link stored. Set from clipboard first.", 2500,
+            BANNER_ACCENT_INTERMEDIATE)
+        return false
+    }
+    StudyLink_OpenUrlInChrome(url, true)
+    ShowCenteredOverlay_Utils("✅ Opening " . label . " link in a new Chrome window...", 2000, BANNER_ACCENT_SUCCESS)
+    return true
 }
 
 ; Memory Palace–matched manage menu (dark #1E1E1E, gold keys, card rows).

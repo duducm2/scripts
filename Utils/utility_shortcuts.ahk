@@ -71,6 +71,33 @@ OpenClipboardLinkInChrome() {
 
 RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open clipboard text/link in Chrome / Google search", "l")
 
+; Study links — one-shot set (clipboard URL) / open (new Chrome). Keys: 1/2/3 set, v/a/f open.
+MacroStudyLink_SetVideo(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_YOUTUBE, "video link")
+}
+MacroStudyLink_SetArticle(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_ARTICLE, "article link")
+}
+MacroStudyLink_SetFavorite(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_FAVORITE, "favorite link")
+}
+MacroStudyLink_OpenVideo(*) {
+    StudyLink_Open(STUDYLINK_KEY_YOUTUBE)
+}
+MacroStudyLink_OpenArticle(*) {
+    StudyLink_Open(STUDYLINK_KEY_ARTICLE)
+}
+MacroStudyLink_OpenFavorite(*) {
+    StudyLink_Open(STUDYLINK_KEY_FAVORITE)
+}
+
+RegisterMacro(MacroStudyLink_SetVideo, "📹 Set video from clipboard", "1")
+RegisterMacro(MacroStudyLink_SetArticle, "📖 Set article from clipboard", "2")
+RegisterMacro(MacroStudyLink_SetFavorite, "❤️ Set favorite from clipboard", "3")
+RegisterMacro(MacroStudyLink_OpenVideo, "📹 Open video", "v")
+RegisterMacro(MacroStudyLink_OpenArticle, "📖 Open article", "a")
+RegisterMacro(MacroStudyLink_OpenFavorite, "❤️ Open favorite", "f")
+
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; After pick: [Y] paste+Enter, [N] paste only, [Esc] abort, 3s timeout = paste only.
 ; If a main text field is saved for that exe+title/url (assets/data/paste_field_mappings.ini),
