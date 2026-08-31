@@ -308,6 +308,21 @@
       .task.kb-selected {
         z-index: 5;
       }
+      /* Inline create sits above the next task; hide overlay menus so they cannot cover the field */
+      body:has([data-inline-create])
+        .task:not([data-inline-create])
+        > .row-actions,
+      body:has([data-inline-create]) .proj-actions,
+      body:has([data-inline-create]) .task-section-label .sec-actions {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      body:has([data-inline-create]) .task:hover,
+      body:has([data-inline-create]) .task.kb-selected {
+        z-index: 0;
+      }
       .plain-row {
         position: relative;
         z-index: 0;
