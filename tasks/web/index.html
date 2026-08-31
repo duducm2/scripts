@@ -2434,7 +2434,11 @@
             return;
           }
           state.lastEscAt = now;
-          goHome({ keepSearch: true });
+          if (state.sel) {
+            setSelection(null, null, false);
+            return;
+          }
+          // Stay on Work/Personal/Habits focus; second Esc within window goes home
         }
 
         function goBack() {

@@ -1058,9 +1058,9 @@ cheatSheets["Tasks"] := "
     🔤 [a-z 0-9] Jump to next title starting with that character
     ⏎ [Enter] Edit selected project, section, or task (not General)
     🗑️ [Delete] Delete selected project, section, or task (not General)
-    🏠 [Esc] Close overlay first (inline field, image, Info, modal) — keep Work/Personal/Habits
-    🏠 [Esc] Then Home — clear bento, emoji filter, selection (search stays)
-    🏠 [Esc][Esc] Home and clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
+    🏠 [Esc] Close overlay first (inline field, image, Info, modal)
+    🏠 [Esc] Clear selection — stay on Work/Personal/Habits focus (search + emoji filter stay)
+    🏠 [Esc][Esc] Home — all three categories; clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
     🏠 [Esc] Info form — back to list
     🏠 [Esc] Info list — close and keep dashboard selection and category filter
     ⬆️ [Up] Info list — previous info
