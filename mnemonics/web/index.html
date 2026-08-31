@@ -2151,6 +2151,13 @@
           .catch((e) => toast(String(e.message || e)));
       }
 
+      async function fetchStudyLink(kind) {
+        const r = await api(`/api/links/${kind}`);
+        const url = (r.url || "").trim();
+        state.studyLinks[kind] = url;
+        return { ok: r.ok, url, error: r.error };
+      }
+
       async function refreshLinkStatus() {
         const out = document.getElementById("linkOut");
         const labels = {
@@ -2161,11 +2168,9 @@
         const lines = [];
         for (const kind of Object.keys(labels)) {
           try {
-            const r = await api(`/api/links/${kind}`);
-            const url = r.url || "";
-            state.studyLinks[kind] = url;
+            const { ok, url, error } = await fetchStudyLink(kind);
             lines.push(
-              `${labels[kind]}: ${url || (r.ok ? "(none)" : r.error || "error")}`,
+              `${labels[kind]}: ${url || (ok ? "(none)" : error || "error")}`,
             );
           } catch (e) {
             state.studyLinks[kind] = "";
@@ -2174,6 +2179,19 @@
         }
         if (out) out.textContent = lines.join("\n");
       }
+
+      let studyLinkRefreshTimer = 0;
+      function scheduleStudyLinkRefresh() {
+        clearTimeout(studyLinkRefreshTimer);
+        studyLinkRefreshTimer = setTimeout(() => {
+          refreshLinkStatus().catch(() => {});
+        }, 250);
+      }
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) scheduleStudyLinkRefresh();
+      });
+      window.addEventListener("focus", scheduleStudyLinkRefresh);
 
       async function openStudyLinkChrome(kind) {
         const labels = {
@@ -2184,17 +2202,14 @@
         if (!labels[kind]) return;
         toast(`Opening ${labels[kind]} in Chrome…`);
         try {
-          let cached = (state.studyLinks[kind] || "").trim();
-          if (!cached) {
-            await refreshLinkStatus();
-            cached = (state.studyLinks[kind] || "").trim();
+          const { url } = await fetchStudyLink(kind);
+          if (!url) {
+            toast(`No ${labels[kind]} URL stored`);
+            return;
           }
           const r = await api(`/api/links/${kind}`, {
             method: "POST",
-            body: JSON.stringify({
-              action: "open",
-              ...(cached ? { url: cached } : {}),
-            }),
+            body: JSON.stringify({ action: "open", url }),
           });
           if (r.ok && (r.opened || r.url)) {
             if (r.url) state.studyLinks[kind] = r.url;
@@ -2223,7 +2238,7 @@
           if (r.ok && r.url) {
             state.studyLinks[kind] = r.url;
             toast(`Saved ${labels[kind]} link`);
-            if (state.view === "links") await refreshLinkStatus();
+            await refreshLinkStatus();
           } else {
             toast(r.error || "Clipboard has no valid http(s) URL");
           }
