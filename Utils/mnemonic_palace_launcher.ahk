@@ -983,3 +983,32 @@ Palace_OpenDashboardInChrome(fileUrl) {
     }
     return true
 }
+
+; Memory Palace web (:8767) — Alt+V/A/F save study links from clipboard only.
+Palace_IsMemoryPalaceChromeActive() {
+    try {
+        if (WinGetProcessName("A") != "chrome.exe")
+            return false
+        return Palace_IsDashboardChromeWindowTitle(WinGetTitle("A"))
+    } catch {
+        return false
+    }
+}
+
+Palace_OnStudyLinkSetVideo(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_YOUTUBE, "video link")
+}
+
+Palace_OnStudyLinkSetArticle(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_ARTICLE, "article link")
+}
+
+Palace_OnStudyLinkSetFavorite(*) {
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_FAVORITE, "favorite link")
+}
+
+#HotIf Palace_IsMemoryPalaceChromeActive()
+!v:: Palace_OnStudyLinkSetVideo()
+!a:: Palace_OnStudyLinkSetArticle()
+!f:: Palace_OnStudyLinkSetFavorite()
+#HotIf

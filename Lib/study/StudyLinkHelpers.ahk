@@ -288,17 +288,39 @@ StudyLink_IsValidHttpUrl(url) {
     return (SubStr(u, 1, 7) = "http://" || SubStr(u, 1, 8) = "https://")
 }
 
+; First http(s) URL from clipboard text (plain, markdown link, or per-line scan).
+StudyLink_ExtractUrlFromClipboardText(raw := "") {
+    text := Trim(raw)
+    if (text = "") {
+        try text := Trim(A_Clipboard)
+        catch {
+            text := ""
+        }
+    }
+    if StudyLink_IsValidHttpUrl(text)
+        return text
+    if RegExMatch(text, "\((https?://[^)\s]+)\)", &m)
+        if StudyLink_IsValidHttpUrl(m[1])
+            return Trim(m[1])
+    for line in StrSplit(text, "`n", "`r") {
+        t := Trim(line)
+        if StudyLink_IsValidHttpUrl(t)
+            return t
+        if RegExMatch(t, "\((https?://[^)\s]+)\)", &m2)
+            if StudyLink_IsValidHttpUrl(m2[1])
+                return Trim(m2[1])
+    }
+    return ""
+}
+
 ; Save the http(s) URL currently on the clipboard (no Chrome / address-bar capture).
 StudyLink_SetFromClipboard(studyKey, successLabel := "link") {
-    clip := ""
-    try clip := Trim(A_Clipboard)
-    catch {
-    }
-    if !StudyLink_IsValidHttpUrl(clip) {
+    url := StudyLink_ExtractUrlFromClipboardText()
+    if (url = "") {
         try ShowCenteredOverlay_Utils("❌ Clipboard has no valid http(s) URL.", 3000, BANNER_ACCENT_ERROR)
         return false
     }
-    setOk := StudyLink_Set(studyKey, clip)
+    setOk := StudyLink_Set(studyKey, url)
     if setOk
         ShowCenteredOverlay_Utils("✅ " . successLabel . " saved from clipboard.", 3000, BANNER_ACCENT_SUCCESS)
     else
@@ -308,14 +330,7 @@ StudyLink_SetFromClipboard(studyKey, successLabel := "link") {
 
 ; Prompt for a URL (clipboard prefill when valid) and POST via StudyLink_Set.
 StudyLink_SetFromManualInput(studyKey, successLabel := "link") {
-    defaultUrl := ""
-    try {
-        clip := Trim(A_Clipboard)
-        if StudyLink_IsValidHttpUrl(clip)
-            defaultUrl := clip
-    } catch {
-    }
-
+    defaultUrl := StudyLink_ExtractUrlFromClipboardText()
     ib := InputBox("Paste or type the URL:", "Set " . successLabel . " manually", "w500 h120", defaultUrl)
     if (ib.Result != "OK") {
         try ShowCenteredOverlay_Utils("⚠ Manual set cancelled.", 2000, BANNER_ACCENT_INTERMEDIATE)

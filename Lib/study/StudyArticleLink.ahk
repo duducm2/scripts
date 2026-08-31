@@ -3,50 +3,6 @@
 
 global g_StudyArticleLinksGui := false
 
-StudyArticleLink_IsValidHttpUrl(url) {
-    return StudyLink_IsValidHttpUrl(url)
-}
-
-; Chrome address bar: F6 focus, copy URL to clipboard (keyboard only).
-StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg := "") {
-    errMsg := ""
-    chromeHwnd := WinExist("ahk_class Chrome_WidgetWin_1")
-    if !chromeHwnd {
-        errMsg := "Chrome window not found. Switch to Chrome and try again."
-        return ""
-    }
-    savedClipAll := ClipboardAll()
-    savedClipText := A_Clipboard
-    try {
-        WinActivate("ahk_id " chromeHwnd)
-        if !WinWaitActive("ahk_id " chromeHwnd, , 2) {
-            errMsg := "Chrome window did not become active."
-            return ""
-        }
-        Sleep 280
-        Send "{F6}"
-        Sleep 120
-        Send "^c"
-        clipDeadline := A_TickCount + 2000
-        url := ""
-        while (A_TickCount < clipDeadline) {
-            url := Trim(A_Clipboard)
-            if (url != "" && url != Trim(savedClipText) && StudyArticleLink_IsValidHttpUrl(url))
-                break
-            Sleep 80
-        }
-        if !StudyArticleLink_IsValidHttpUrl(url) {
-            errMsg := "Could not copy a valid URL from the address bar."
-            return ""
-        }
-        return url
-    } finally {
-        try A_Clipboard := savedClipAll
-        catch {
-        }
-    }
-}
-
 StudyTopicSelector_ManageArticleLinksEsc(*) {
     global g_StudyArticleLinksGui
     StudyLink_ClosePalaceManageGui(&g_StudyArticleLinksGui)

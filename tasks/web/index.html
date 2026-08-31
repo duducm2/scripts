@@ -3823,6 +3823,23 @@
             }
             if (
               e.key === "Backspace" &&
+              e.shiftKey &&
+              !e.ctrlKey &&
+              !e.metaKey &&
+              !e.altKey
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.target.blur();
+              if (state.infoUi === "list") {
+                dismissInfoModal();
+                return;
+              }
+              goBack();
+              return;
+            }
+            if (
+              e.key === "Backspace" &&
               e.target?.id === "inlineTitle" &&
               !(e.target.value || "")
             ) {

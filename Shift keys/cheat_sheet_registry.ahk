@@ -1070,7 +1070,8 @@ cheatSheets["Tasks"] := "
     ✏️ [Shift+E] Info list — edit highlighted info
     📋 [C] Info list — copy highlighted info
     🗑️ [Delete] Info list — delete highlighted info
-    ⬅️ [Backspace] Step back (inline field, image preview, modal, search, filter, bento, then selection)
+    ⬅️ [Backspace] Step back when focus is not in a text field
+    ⬅️ [Shift+Backspace] Step back while typing (search, modal, inline create)
     
     === Ctrl ===
     💾 [Enter] Save open form (info, task, project, section) or inline create field
