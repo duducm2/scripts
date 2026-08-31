@@ -1,0 +1,20 @@
+﻿```text
+===PREVIEW===
+10 row(s) · Processed groceries and dismantled the 1431 big purchase. Updated all types to card_expense. Added a 0,81 adjustment to match exactly 1431,00 as requested.
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Groceries,"74,47",card_expense,CAT_MERCADO,,ACC_MERCADOP,CARD_MP,
+Sesame,"27,50",card_expense,CAT_MERCADO,,ACC_MERCADOP,CARD_MP,
+Cornflakes,"29,50",card_expense,CAT_MERCADO,,ACC_MERCADOP,CARD_MP,
+Toothpaste,"223,20",card_expense,CAT_MERCADO,Personal care,ACC_MERCADOP,CARD_MP,
+Sunglasses,"230,56",card_expense,CAT_VESTUARI,,ACC_MERCADOP,CARD_MP,
+Gooseneck kettle,"375,96",card_expense,CAT_CASA,,ACC_MERCADOP,CARD_MP,
+Packs,"80,32",card_expense,CAT_MATERIAI,,ACC_MERCADOP,CARD_MP,
+French press,"268,37",card_expense,CAT_CASA,,ACC_MERCADOP,CARD_MP,
+Water sprays,"194,78",card_expense,CAT_CASA,,ACC_MERCADOP,CARD_MP,
+Adjustment to match 1431,"0,81",card_expense,CAT_OUTROS2,,ACC_MERCADOP,CARD_MP,
+===END_FILE===
+```
+
+Please copy the code block above and save it as `FINANCE_DAILY.txt` on your Desktop to re-import it.

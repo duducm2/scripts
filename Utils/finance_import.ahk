@@ -683,11 +683,23 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
     for r in rows {
         desc := r.Has("description") ? r["description"] : ""
         amt := r.Has("amount") ? r["amount"] : "0"
-        t := r.Has("type") ? r["type"] : "expense"
+        t := r.Has("type") ? StrLower(Trim(r["type"])) : "expense"
         date := Finance_Yesterday()
         resolved := Finance_ResolveImportCategory(cats, t,
             r.Has("category_id") ? r["category_id"] : "",
             r.Has("subcategory") ? r["subcategory"] : "")
+        accId := r.Has("account_id") ? Trim(r["account_id"]) : ""
+        cardId := r.Has("card_id") ? Trim(r["card_id"]) : ""
+        if (t = "card_expense") {
+            cardId := Finance_ResolveImportCardId(cardId, accId)
+            ; Keep linked account for display when pack omitted it.
+            if (accId = "" && cardId != "") {
+                cards := Finance_Load("credit_cards")
+                card := Finance_FindById(cards, cardId)
+                if (card)
+                    accId := card.Has("linked_account_id") ? card["linked_account_id"] : ""
+            }
+        }
         parsed.Push(Map(
             "date", date,
             "description", desc,
@@ -695,8 +707,8 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             "type", t,
             "category_id", resolved["category_id"],
             "subcategory", resolved["subcategory"],
-            "account_id", r.Has("account_id") ? r["account_id"] : "",
-            "card_id", r.Has("card_id") ? r["card_id"] : "",
+            "account_id", accId,
+            "card_id", cardId,
             "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : ""
         ))
     }

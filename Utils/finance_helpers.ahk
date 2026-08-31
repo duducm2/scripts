@@ -82,6 +82,7 @@ Finance_EnsureData() {
         Finance_SeedRecurringBills()
     Finance_MigrateCardInitialSpent()
     Finance_FixDefaultIds()
+    Finance_FixOrphanCardExpenses()
     Finance_EnsureMonthBudgets(Finance_CurrentYearMonth())
 }
 
@@ -594,6 +595,49 @@ Finance_ResolveImportCategory(cats, type, categoryId, subcategory) {
     if (t != "income" && t != "expense" && t != "card_expense")
         lastResort := ""
     return Map("category_id", lastResort, "subcategory", subcategory)
+}
+
+; Resolve card_id for card_expense imports when the pack left it blank.
+; Prefer explicit card_id → card linked to account_id → PrimaryCardId → first card.
+Finance_ResolveImportCardId(cardId := "", accountId := "") {
+    cards := Finance_Load("credit_cards")
+    cardId := Trim(cardId)
+    accountId := Trim(accountId)
+    if (cardId != "" && Finance_FindById(cards, cardId))
+        return cardId
+    if (accountId != "") {
+        for c in cards {
+            linked := c.Has("linked_account_id") ? Trim(c["linked_account_id"]) : ""
+            if (linked = accountId)
+                return c["id"]
+        }
+    }
+    primary := Trim(Finance_Setting("General", "PrimaryCardId", ""))
+    if (primary != "" && Finance_FindById(cards, primary))
+        return primary
+    if (cards.Length)
+        return cards[1]["id"]
+    return ""
+}
+
+; Backfill card_expense rows that were saved without card_id (spent never updated).
+Finance_FixOrphanCardExpenses() {
+    txs := Finance_Load("transactions")
+    changed := false
+    for tx in txs {
+        if (tx["type"] != "card_expense")
+            continue
+        if (Trim(tx.Has("card_id") ? tx["card_id"] : "") != "")
+            continue
+        tx["card_id"] := Finance_ResolveImportCardId("", tx.Has("account_id") ? tx["account_id"] : "")
+        if (tx["card_id"] != "")
+            changed := true
+    }
+    if (!changed)
+        return false
+    Finance_Save("transactions", txs)
+    Finance_RebuildBalancesFromTransactions()
+    return true
 }
 
 Finance_SubcatLabel(cats, parentId, subName) {

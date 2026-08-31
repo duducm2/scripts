@@ -20,7 +20,7 @@ Finance_ShowTransactions() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceTxHeader := g_FinanceGui.Add("Text", "x12 y10 w880 h36")
     g_FinanceTxHint := g_FinanceGui.Add("Text", "x12 y48 w880",
-        "[G] all  [X] expenses  [N] incomes  [F] transfers  [,] prev month  [.] next  [A]/Insert add  [E] edit  Delete  Backspace menu"
+        "[G] all  [X] expenses  [C] card  [N] incomes  [F] transfers  [,] prev month  [.] next  [A]/Insert add  [E] edit  Delete  Backspace menu"
     )
     g_FinanceTxLv := g_FinanceGui.Add("ListView", "x12 y74 w896 h500 Grid",
         ["Amount", "Account", "Category", "Description", "Date", "Type"])
@@ -31,6 +31,7 @@ Finance_ShowTransactions() {
     Finance_BindHotkeys([
         ["g", (*) => Finance_TxSetFilter("all")],
         ["x", (*) => Finance_TxSetFilter("expense")],
+        ["c", (*) => Finance_TxSetFilter("card")],
         ["n", (*) => Finance_TxSetFilter("income")],
         ["f", (*) => Finance_TxSetFilter("transfer")],
         ["vkBC", (*) => Finance_TxShiftMonth(-1)],
@@ -63,6 +64,8 @@ Finance_TxMatchesFilter(tx, filt) {
         return true
     if (filt = "expense")
         return (t = "expense" || t = "card_expense")
+    if (filt = "card")
+        return (t = "card_expense")
     if (filt = "income")
         return (t = "income")
     if (filt = "transfer")
@@ -78,7 +81,8 @@ Finance_TxRefresh() {
     cards := Finance_Load("credit_cards")
     cats := Finance_Load("categories")
     tot := Finance_MonthTotals(g_FinanceMonth)
-    filtLabel := Map("all", "General", "expense", "Expenses", "income", "Incomes", "transfer", "Transfers")
+    filtLabel := Map("all", "General", "expense", "Expenses", "card", "Credit card", "income", "Incomes", "transfer",
+        "Transfers")
     fl := filtLabel.Has(g_FinanceTxFilter) ? filtLabel[g_FinanceTxFilter] : g_FinanceTxFilter
     g_FinanceTxHeader.Value := Finance_MonthLabel(g_FinanceMonth) . "  ·  " . fl
     . "  ·  In " . Finance_FormatBrl(tot.income)
