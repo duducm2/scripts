@@ -830,6 +830,9 @@ Editor_GitIsPullButtonName(name) {
     ; Avoid "Pull Request" / PR actions.
     if InStr(name, "Pull Request")
         return false
+    ; Bidirectional sync button is handled as Sync, not Pull-only.
+    if RegExMatch(name, "i)\bPull \d+ and push \d+ commits?\b")
+        return false
     ; Exact Pull / Pull from… / Git: Pull.
     if RegExMatch(name, "i)^Pull$")
         return true
@@ -853,6 +856,13 @@ Editor_GitIsSyncButtonName(name) {
     if InStr(name, "Commit & Sync") || InStr(name, "Commit and Sync")
         return false
     if InStr(name, "Sync Changes") || InStr(name, "Synchronize Changes")
+        return true
+    ; SCM / status bar when both ahead and behind:
+    ; "Pull 1 and push 1 commits between origin/main"
+    if RegExMatch(name, "i)\bPull \d+ and push \d+ commits?\b")
+        return true
+    ; Ahead-only primary action on the Sync row.
+    if RegExMatch(name, "i)\bPush \d+ commits?\b")
         return true
     return false
 }
