@@ -308,20 +308,29 @@
       .task.kb-selected {
         z-index: 5;
       }
-      /* Inline create sits above the next task; hide overlay menus so they cannot cover the field */
-      body:has([data-inline-create])
-        .task:not([data-inline-create])
-        > .row-actions,
-      body:has([data-inline-create]) .proj-actions,
-      body:has([data-inline-create]) .task-section-label .sec-actions {
+      /* Inline create: hide overlay menus and reset stacking so fields stay readable */
+      body.is-inline-create .task:not([data-inline-create]) > .row-actions,
+      body.is-inline-create .proj-actions,
+      body.is-inline-create .task-section-label .sec-actions {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
       }
-      body:has([data-inline-create]) .task:hover,
-      body:has([data-inline-create]) .task.kb-selected {
+      body.is-inline-create .task:hover,
+      body.is-inline-create .task.kb-selected,
+      body.is-inline-create .project:hover,
+      body.is-inline-create .project.kb-selected,
+      body.is-inline-create .task-section.kb-selected {
         z-index: 0;
+      }
+      body.is-inline-create [data-inline-create] {
+        position: relative;
+        z-index: 6;
+      }
+      body.is-inline-create .project:has([data-inline-create]),
+      body.is-inline-create .project[data-inline-create="project"] {
+        z-index: 10;
       }
       .plain-row {
         position: relative;
@@ -1639,6 +1648,7 @@
       ${renderHabitsColumn()}`;
           applyEmojiFilter(state.emojiFilter);
           applySelection(false);
+          syncInlineCreateUi();
           bindInlineCreateInput();
         }
 
@@ -3095,9 +3105,17 @@
     </details>`;
         }
 
+        function syncInlineCreateUi() {
+          document.body.classList.toggle(
+            "is-inline-create",
+            !!state.inlineCreate,
+          );
+        }
+
         function cancelInlineCreate() {
           state.inlineCreate = null;
           document.querySelector("[data-inline-create]")?.remove();
+          syncInlineCreateUi();
         }
 
         function bindInlineCreateInput() {
@@ -3195,6 +3213,7 @@
           if (ctx.entity === "section") mountInlineSection();
           else if (ctx.entity === "project") mountInlineProject();
           else mountInlineCreateRow();
+          syncInlineCreateUi();
         }
 
         async function beginInlineTaskCreate(hint = {}) {
@@ -3231,6 +3250,7 @@
             });
           }
           cancelInlineCreate();
+          setSelection(null, null, false);
           state.inlineCreate = { ...ctx, entity: "task" };
           state.collapsedProjects.delete(ctx.project_id);
           if (ctx.section_id) state.collapsedSections.delete(ctx.section_id);
@@ -3249,6 +3269,7 @@
           const p = (state.data.projects || []).find((x) => x.id === projectId);
           const filter = p?.filter || defaultProjectFilter();
           cancelInlineCreate();
+          setSelection(null, null, false);
           state.collapsedProjects.delete(projectId);
           state.inlineCreate = {
             entity: "section",
@@ -3271,6 +3292,7 @@
             ? filter
             : defaultProjectFilter();
           cancelInlineCreate();
+          setSelection(null, null, false);
           state.inlineCreate = { entity: "project", filter: filt };
           if (state.sectionFocus && state.sectionFocus !== filt)
             applySectionFocus(filt);
