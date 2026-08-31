@@ -243,6 +243,17 @@ class TaskHandler(BaseHTTPRequestHandler):
             if path == "/api/info":
                 self._json(200, store.upsert_info(payload))
                 return
+            if path.startswith("/api/info/") and path.endswith("/move"):
+                iid = path[len("/api/info/") : -len("/move")]
+                direction = payload.get("dir")
+                if direction is None:
+                    d = str(payload.get("direction") or "").strip().lower()
+                    if d in ("up", "-1"):
+                        direction = -1
+                    elif d in ("down", "1"):
+                        direction = 1
+                self._json(200, store.move_info(iid, direction))
+                return
             if path == "/api/open":
                 self._json(200, open_user_target(str(payload.get("target") or "")))
                 return

@@ -734,15 +734,82 @@ class TaskStore:
                 return {"ok": False, "error": "info not found"}
             self.save("info_points", out)
             return {"ok": True, "info": next(x for x in out if x["id"] == rid)}
+        siblings = [
+            i
+            for i in rows
+            if i.get("parent_type") == parent_type and i.get("parent_id") == parent_id
+        ]
         row = {
             "id": next_id("INFO_", rows),
             **fields,
-            "sort_order": next_sort(rows),
+            "sort_order": next_sort(siblings),
             "created_at": now_stamp(),
         }
         rows.append(row)
         self.save("info_points", rows)
         return {"ok": True, "info": row}
+
+    def move_info(self, info_id: str, direction: int) -> dict:
+        """Swap sort_order with adjacent sibling (same parent). direction: -1 up, +1 down."""
+        rid = (info_id or "").strip()
+        try:
+            direction = int(direction)
+        except (TypeError, ValueError):
+            return {"ok": False, "error": "dir must be -1 or 1"}
+        if direction not in (-1, 1):
+            return {"ok": False, "error": "dir must be -1 or 1"}
+        rows = self.load("info_points")
+        target = next((r for r in rows if r.get("id") == rid), None)
+        if not target:
+            return {"ok": False, "error": "info not found"}
+        parent_type = target.get("parent_type") or ""
+        parent_id = target.get("parent_id") or ""
+
+        def sort_key(r: dict) -> tuple:
+            try:
+                so = int(r.get("sort_order") or 0)
+            except ValueError:
+                so = 0
+            return (so, r.get("id") or "")
+
+        siblings = sorted(
+            [
+                r
+                for r in rows
+                if r.get("parent_type") == parent_type
+                and r.get("parent_id") == parent_id
+            ],
+            key=sort_key,
+        )
+        idx = next((i for i, r in enumerate(siblings) if r.get("id") == rid), -1)
+        if idx < 0:
+            return {"ok": False, "error": "info not found"}
+        j = idx + direction
+        if j < 0 or j >= len(siblings):
+            return {"ok": True, "info": target, "moved": False, "infos": siblings}
+        a, b = siblings[idx], siblings[j]
+        a_so, b_so = a.get("sort_order") or "0", b.get("sort_order") or "0"
+        a["sort_order"], b["sort_order"] = b_so, a_so
+        by_id = {r["id"]: r for r in rows}
+        by_id[a["id"]] = a
+        by_id[b["id"]] = b
+        out = [by_id.get(r["id"], r) for r in rows]
+        self.save("info_points", out)
+        siblings = sorted(
+            [
+                r
+                for r in out
+                if r.get("parent_type") == parent_type
+                and r.get("parent_id") == parent_id
+            ],
+            key=sort_key,
+        )
+        return {
+            "ok": True,
+            "info": by_id[rid],
+            "moved": True,
+            "infos": siblings,
+        }
 
     def delete_info(self, info_id: str) -> dict:
         self.save(

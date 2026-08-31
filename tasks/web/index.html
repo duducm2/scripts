@@ -2599,13 +2599,30 @@
           return !!$("#modalHost")?.innerHTML;
         }
 
+        function infoSortKey(i) {
+          let so = 0;
+          try {
+            so = Number(i.sort_order || 0);
+          } catch (_) {
+            so = 0;
+          }
+          return [so, String(i.id || "")];
+        }
+
         function infoRowsForCtx() {
           const ctx = state.infoCtx;
           if (!ctx) return [];
-          return (state.data.info_points || []).filter(
-            (i) =>
-              i.parent_type === ctx.parentType && i.parent_id === ctx.parentId,
-          );
+          return (state.data.info_points || [])
+            .filter(
+              (i) =>
+                i.parent_type === ctx.parentType &&
+                i.parent_id === ctx.parentId,
+            )
+            .sort((a, b) => {
+              const [as, ai] = infoSortKey(a);
+              const [bs, bi] = infoSortKey(b);
+              return as - bs || ai.localeCompare(bi);
+            });
         }
 
         function paintInfoSel() {
@@ -2680,9 +2697,15 @@
           state.taskId = parentType === "task" ? parentId : "";
           state.infoCtx = { parentType, parentId };
           state.infoUi = "list";
-          const rows = (state.data.info_points || []).filter(
-            (i) => i.parent_type === parentType && i.parent_id === parentId,
-          );
+          const rows = (state.data.info_points || [])
+            .filter(
+              (i) => i.parent_type === parentType && i.parent_id === parentId,
+            )
+            .sort((a, b) => {
+              const [as, ai] = infoSortKey(a);
+              const [bs, bi] = infoSortKey(b);
+              return as - bs || ai.localeCompare(bi);
+            });
           if (preferId && rows.some((r) => r.id === preferId))
             state.infoSelId = preferId;
           else if (
@@ -2822,6 +2845,26 @@
           idx = Math.max(0, Math.min(rows.length - 1, idx + dir));
           state.infoSelId = rows[idx].id;
           paintInfoSel();
+        }
+
+        async function moveInfoRow(dir) {
+          if (state.infoUi !== "list" || !state.infoSelId) {
+            toast("Select an info point first");
+            return;
+          }
+          const ctx = state.infoCtx;
+          if (!ctx) return;
+          const id = state.infoSelId;
+          try {
+            await api("/api/info/" + encodeURIComponent(id) + "/move", {
+              method: "POST",
+              body: JSON.stringify({ dir }),
+            });
+            await refresh();
+            infoListModal(ctx.parentType, ctx.parentId, id);
+          } catch (err) {
+            toast(err.message || String(err));
+          }
         }
 
         function applyEmojiFilter(emoji) {
@@ -4074,12 +4117,14 @@
             }
             if (e.key === "ArrowDown") {
               e.preventDefault();
-              moveInfoSel(1);
+              if (e.shiftKey) await moveInfoRow(1);
+              else moveInfoSel(1);
               return;
             }
             if (e.key === "ArrowUp") {
               e.preventDefault();
-              moveInfoSel(-1);
+              if (e.shiftKey) await moveInfoRow(-1);
+              else moveInfoSel(-1);
               return;
             }
             if (e.key === "Backspace") {

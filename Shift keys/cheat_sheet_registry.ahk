@@ -1065,6 +1065,8 @@ cheatSheets["Tasks"] := "
     🏠 [Esc] Info list — close and keep dashboard selection and category filter
     ⬆️ [Up] Info list — previous info
     ⬇️ [Down] Info list — next info
+    ⬆️ [Shift+Up] Info list — move highlighted info up
+    ⬇️ [Shift+Down] Info list — move highlighted info down
     ⏎ [Enter] Info list — add info
     🔗 [Shift+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
