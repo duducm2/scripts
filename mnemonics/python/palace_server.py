@@ -6,6 +6,7 @@ import argparse
 import atexit
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -210,28 +211,49 @@ def _is_valid_http_url(raw: str) -> bool:
 def _clipboard_get() -> str:
     if os.name != "nt":
         return ""
-    try:
-        r = subprocess.run(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-Command",
-                "Get-Clipboard -Raw",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False,
-        )
-        return (r.stdout or "").strip()
-    except OSError:
+    import ctypes
+
+    CF_UNICODETEXT = 13
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    if not user32.OpenClipboard(0):
         return ""
+    try:
+        handle = user32.GetClipboardData(CF_UNICODETEXT)
+        if not handle:
+            return ""
+        data = kernel32.GlobalLock(handle)
+        if not data:
+            return ""
+        try:
+            return ctypes.wstring_at(data).strip()
+        finally:
+            kernel32.GlobalUnlock(handle)
+    finally:
+        user32.CloseClipboard()
+
+
+def _normalize_clipboard_url(raw: str) -> str:
+    text = (raw or "").strip()
+    if _is_valid_http_url(text):
+        return text
+    m = re.search(r"\((https?://[^)\s]+)\)", text)
+    if m and _is_valid_http_url(m.group(1)):
+        return m.group(1).strip()
+    for line in text.splitlines():
+        line = line.strip()
+        if _is_valid_http_url(line):
+            return line
+        m2 = re.search(r"\((https?://[^)\s]+)\)", line)
+        if m2 and _is_valid_http_url(m2.group(1)):
+            return m2.group(1).strip()
+    return ""
 
 
 def read_clipboard_url() -> dict[str, Any]:
-    """Return http(s) URL from the OS clipboard."""
-    url = _clipboard_get()
-    if not _is_valid_http_url(url):
+    """Return http(s) URL from the OS clipboard (no Chrome / address-bar capture)."""
+    url = _normalize_clipboard_url(_clipboard_get())
+    if not url:
         return {
             "ok": False,
             "error": "Clipboard has no valid http(s) URL",
@@ -239,7 +261,7 @@ def read_clipboard_url() -> dict[str, Any]:
     return {"ok": True, "url": url}
 
 
-def study_link_capture_and_set(key: str) -> dict[str, Any]:
+def study_link_clipboard_and_set(key: str) -> dict[str, Any]:
     captured = read_clipboard_url()
     if not captured.get("ok"):
         return captured
@@ -596,8 +618,8 @@ class PalaceHandler(BaseHTTPRequestHandler):
                         {**got, "url": url, **opened},
                     )
                     return
-                if action == "capture":
-                    result = study_link_capture_and_set(key)
+                if action in ("capture", "clipboard"):
+                    result = study_link_clipboard_and_set(key)
                     self._json(200 if result.get("ok") else 400, result)
                     return
                 link_url = str(payload.get("url") or "").strip()
