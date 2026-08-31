@@ -1,5 +1,5 @@
 id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
-TASK_0001,PROJ_0002,SEC_0002,Falar com ele,🔲,punctual,,,,,work,50,,2026-08-29 15:48:39,1
+TASK_0001,PROJ_0002,SEC_0002,Falar com ele,⚡,punctual,,,,,work,50,,2026-08-29 15:48:39,1
 TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,100,,2026-08-29 15:48:39,1
 TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
@@ -121,3 +121,4 @@ TASK_0217,PROJ_0013,SEC_0070,Como indicar um key-user?,none,punctual,,,,Projects
 TASK_0218,PROJ_0015,SEC_0015,You need to add Excel as a tool that you know a lot in your data analyst resume,⚡,punctual,,,,,personal,3910,,2026-08-30 15:56:09,1
 TASK_0219,PROJ_0026,SEC_0129,Read your whole dissertation,⏳,punctual,,,,,personal,3920,,2026-08-30 21:08:28,1
 TASK_0220,PROJ_0026,SEC_0129,Practice your presentation,⏳,punctual,,,,,personal,3930,,2026-08-30 21:08:46,1
+TASK_0221,PROJ_0013,SEC_0013,Check if you invited key users to the N8N training. Do the same for managers and colleagues,⚡,punctual,,,,,work,3940,,2026-08-31 09:17:11,1
