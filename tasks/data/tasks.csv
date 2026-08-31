@@ -14,14 +14,13 @@ TASK_0014,PROJ_0012,SEC_0012,KPIs,⏳,punctual,,,,,work,640,,2026-08-29 15:48:39
 TASK_0015,PROJ_0012,SEC_0067,Checar essa funcionalidade de interação com o chat? O Flarian usaria?,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,670,,2026-08-29 15:48:39,1
 TASK_0016,PROJ_0012,SEC_0067,A PT está usando o NextAPP. Eles tão usando isso? Eles querem conectar com a nossa base? Apenas somente venda.,⏳,punctual,,,,Projects/Inputs coming from Nadia.,work,680,,2026-08-29 15:48:39,1
 TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 15:48:39,1
-TASK_0018,PROJ_0013,SEC_0013,Enviar convite para os colaboradores através da newsletter,🔲,punctual,,,,,work,730,,2026-08-29 15:48:39,1
 TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 15:48:39,1
 TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 15:48:39,1
-TASK_0021,PROJ_0013,SEC_0071,Communication 1,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,790,,2026-08-29 15:48:39,1
-TASK_0022,PROJ_0013,SEC_0071,Communication 2,⏳,punctual,,,,Projects/Communication Plan/E-mail,work,800,,2026-08-29 15:48:39,1
-TASK_0023,PROJ_0013,SEC_0072,Communication 1,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,810,,2026-08-29 15:48:39,1
-TASK_0024,PROJ_0013,SEC_0072,Communication 2,⏳,punctual,,,,Projects/Communication Plan/VIVA Engage Newsletter,work,820,,2026-08-29 15:48:39,1
-TASK_0025,PROJ_0013,SEC_0073,Communication 3,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1
+TASK_0021,PROJ_0013,SEC_0013,Communication 1,⏳,punctual,,,,,work,790,,2026-08-29 15:48:39,1
+TASK_0022,PROJ_0013,SEC_0013,Communication 2,⏳,punctual,,,,,work,800,,2026-08-29 15:48:39,1
+TASK_0023,PROJ_0013,SEC_0013,Communication 1,⏳,punctual,,,,,work,810,,2026-08-29 15:48:39,1
+TASK_0024,PROJ_0013,SEC_0013,Communication 2,⏳,punctual,,,,,work,820,,2026-08-29 15:48:39,1
+TASK_0025,PROJ_0013,SEC_0073,Make more communications,⚡,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1
 TASK_0026,PROJ_0013,SEC_0074,Maybe we should have two sessions the first with 20 people and the second one we wait to reach out to 15 people too go,⏳,punctual,,,,Projects/Parte 1 - Gemini Enterprise/key users section,work,920,,2026-08-29 15:48:39,1
 TASK_0027,PROJ_0013,SEC_0075,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 15:48:39,1
 TASK_0028,PROJ_0013,SEC_0075,Update the schedule,⏳,punctual,,,,Projects/Parte 2 – N8N,work,950,,2026-08-29 15:48:39,1
@@ -122,3 +121,4 @@ TASK_0218,PROJ_0015,SEC_0015,You need to add Excel as a tool that you know a lot
 TASK_0219,PROJ_0026,SEC_0129,Read your whole dissertation,⏳,punctual,,,,,personal,3920,,2026-08-30 21:08:28,1
 TASK_0220,PROJ_0026,SEC_0129,Practice your presentation,⏳,punctual,,,,,personal,3930,,2026-08-30 21:08:46,1
 TASK_0221,PROJ_0013,SEC_0013,Check if you invited key users to the N8N training. Do the same for managers and colleagues,⚡,punctual,,,,,work,3940,,2026-08-31 09:17:11,1
+TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1

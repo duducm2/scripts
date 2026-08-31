@@ -27,44 +27,6 @@ INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39
 INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 15:48:39
-INFO_0035,task,TASK_0025,Abertura e contextualização do treinamento,"Abertura e contextualização do treinamento
-Explicar os objetivos do treinamento.
-Apresentar a visão geral do programa RISE.
-Transição para o treinador técnico
-Ajudar na preparação da dinâmica hands-on, se necessário.
-Verificar se a estrutura para breakout rooms, grupos ou teams está pronta.
-Apoiar o treinador técnico na criação dos breakout rooms.
-Garantir que cada grupo tenha acesso ao case challenge correspondente.
-Durante a atividade hands-on, das 10h50 às 12h00
-Circular entre os breakout rooms. Perguntar se os participantes precisam de ajuda.
-Apoiar dúvidas operacionais ou direcionar dúvidas técnicas ao treinador técnico, quando necessário.
-Garantir que todos os grupos estejam trabalhando no case challenge proposto.
-Resultados e fechamento
-Apoiar a transição da apresentação dos resultados para o fechamento.
-Receber a palavra do apresentador técnico no momento final.
-Explicar os próximos passos do programa RISE.
-Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme instruído pelo Rafael.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,850,2026-08-29 15:48:39
-INFO_0036,task,TASK_0025,Tirar foto,Tirar foto,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,860,2026-08-29 15:48:39
-INFO_0037,task,TASK_0025,Margem de 1 minuto por cada grupo.,Margem de 1 minuto por cada grupo.,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,870,2026-08-29 15:48:39
-INFO_0038,task,TASK_0025,Para os treinamentos de colaboradores: 4 grupos de 5,Para os treinamentos de colaboradores: 4 grupos de 5,ℹ️,Projects/Parte 1 - Gemini Enterprise/Suporte no treinamento,880,2026-08-29 15:48:39
-INFO_0039,task,TASK_0025,Slide 9,"Slide 9
-Pensando na evolução do papel do gestor, qual será sua principal função na Era da IA?
-Vigiar e controlar as tarefas diárias da equipe
-    Centralizar as decisões e repassar informações
-    Conectar pessoas, remover barreiras e orquestrar a IA
-    Substituir os colaboradores por ferramentas digitais
-Slide 12
-Você precisa preparar um material para orçar prestação de serviços e montar uma apresentação com os valores e preços finais para um cliente. Como essa é uma atividade crítica, em qual quadrante ela deve ser enquadrada?
-    Automatizar Agora (Alto ROI & Adoção).
-    R&D Área de Oportunidade.
-    Baixa Prioridade.
-    Automatizar com precaução.
-Slide 17
-    Você já possui a licença ""Advanced"" do Google Gemini Enterprise, que permite a criação de agentes de IA?
-        Sim.
-        Não.",ℹ️,Projects/Parte 1 - Gemini Enterprise/Quiz,890,2026-08-29 15:48:39
-INFO_0040,task,TASK_0025,Sessão Key users: gemini enterprise para key users,Sessão Key users: gemini enterprise para key users,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,900,2026-08-29 15:48:39
-INFO_0041,task,TASK_0025,O treinamento de key-users é mandatório? sim,O treinamento de key-users é mandatório? sim,ℹ️,Projects/Parte 1 - Gemini Enterprise/key users section,910,2026-08-29 15:48:39
 INFO_0042,task,TASK_0027,Júlia e Débora,Júlia e Débora,ℹ️,Projects/Parte 2 – N8N,940,2026-08-29 15:48:39
 INFO_0043,task,TASK_0028,"Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia","Quantas sessões de treinamento serão definidas? 1hora pra gestão. Para colaboradores iremos confirmar, talvez uma sessão mais longa. Para os key-users 3 sessões de 2 horas. Talvez mais no final do dia, mais perto do almoço.",ℹ️,Projects/Parte 2 – N8N,960,2026-08-29 15:48:39
 INFO_0044,task,TASK_0028,Trazer um overview para o Rafael.,Trazer um overview para o Rafael.,ℹ️,Projects/Parte 2 – N8N,970,2026-08-29 15:48:39
@@ -394,3 +356,24 @@ After the main deliverable, answer:
 ---
 
 _End of prompt._",,ℹ️,,4030,2026-08-30 21:20:48
+INFO_0122,task,TASK_0222,"Abertura e contextualização do treinamento
+Abertura e contextualização do treinamento
+Explicar os objetivos do treinamento.
+Apresentar a visão geral do programa RISE.
+Transição para o treinador técnico
+Ajudar na preparação da dinâmica hands-on, se necessário.
+Verificar se a estrutura para breakout rooms, grupos ou teams está pronta.
+Apoiar o treinador técnico na criação dos breakout rooms.
+Garantir que cada grupo tenha acesso ao case challenge correspondente.
+Durante a atividade hands-on, das 10h50 às 12h00
+Circular entre os breakout rooms. Perguntar se os participantes precisam de ajuda.
+Apoiar dúvidas operacionais ou direcionar dúvidas técnicas ao treinador técnico, quando necessário.
+Garantir que todos os grupos estejam trabalhando no case challenge proposto.
+Resultados e fechamento
+Apoiar a transição da apresentação dos resultados para o fechamento.
+Receber a palavra do apresentador técnico no momento final.
+Explicar os próximos passos do programa RISE.
+Orientar os participantes sobre a aquisição dos agentes para Gemini, conforme instruído pelo Rafael.",,ℹ️,,4040,2026-08-31 09:35:40
+INFO_0123,task,TASK_0222,Tirar foto,,ℹ️,,4050,2026-08-31 09:36:21
+INFO_0124,task,TASK_0217,O treinamento de key-users é mandatório? sim,,ℹ️,,4060,2026-08-31 09:36:51
+INFO_0125,task,TASK_0222,Para os treinamentos de colaboradores: 4 grupos de 5,,ℹ️,,4070,2026-08-31 09:37:09

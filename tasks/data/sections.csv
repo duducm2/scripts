@@ -18,8 +18,6 @@ SEC_0063,PROJ_0005,"Tasks/Checar esta meta, se precisamos revisar",20
 SEC_0067,PROJ_0012,Projects/Inputs coming from Nadia.,20
 SEC_0068,PROJ_0012,Projects/Business Model,30
 SEC_0070,PROJ_0013,Projects/Governance,20
-SEC_0071,PROJ_0013,Projects/Communication Plan/E-mail,30
-SEC_0072,PROJ_0013,Projects/Communication Plan/VIVA Engage Newsletter,40
 SEC_0073,PROJ_0013,Projects/Communication Plan/TEAMS group,50
 SEC_0074,PROJ_0013,Projects/Parte 1 - Gemini Enterprise/key users section,60
 SEC_0075,PROJ_0013,Projects/Parte 2 – N8N,70
@@ -42,3 +40,4 @@ SEC_0126,PROJ_0059,General,0
 SEC_0127,PROJ_0024,General,0
 SEC_0128,PROJ_0025,General,0
 SEC_0129,PROJ_0026,General,0
+SEC_0130,PROJ_0013,Training,90
