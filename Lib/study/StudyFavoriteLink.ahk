@@ -22,7 +22,7 @@ StudyTopicSelector_ManageFavoriteLinks(*) {
         "Current: " . StudyLink_FormatLinkLabel(favResult),
         [
             ["1", "Open", "Open the stored favorite link in Chrome"],
-            ["2", "Set from Chrome", "Copy URL from the address bar (F6)"],
+            ["2", "Set from clipboard", "Save the http(s) URL on your clipboard"],
             ["3", "Set manually", "Paste or type a URL"]
         ],
         [
@@ -54,23 +54,7 @@ StudyTopicSelector_ManageFavoriteLinks_Open(*) {
 
 StudyTopicSelector_ManageFavoriteLinks_Set(*) {
     StudyTopicSelector_Close()
-    try {
-        errMsg := ""
-        url := StudyArticleLink_CaptureChromeUrlFromAddressBar(&errMsg)
-        if (url != "") {
-            setOk := StudyLink_Set(STUDYLINK_KEY_FAVORITE, url)
-            if setOk
-                ShowCenteredOverlay_Utils("✅ Favorite link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
-            else
-                ShowCenteredOverlay_Utils("❌ Could not save the favorite link (API failed).", 3500, BANNER_ACCENT_ERROR
-                )
-        } else {
-            ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the URL.", 2500,
-                BANNER_ACCENT_ERROR)
-        }
-    } catch as e {
-        ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
-    }
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_FAVORITE, "favorite link")
 }
 
 ; [3] Set favorite link manually (InputBox → StudyLink_Set API)

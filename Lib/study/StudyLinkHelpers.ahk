@@ -288,6 +288,24 @@ StudyLink_IsValidHttpUrl(url) {
     return (SubStr(u, 1, 7) = "http://" || SubStr(u, 1, 8) = "https://")
 }
 
+; Save the http(s) URL currently on the clipboard (no Chrome / address-bar capture).
+StudyLink_SetFromClipboard(studyKey, successLabel := "link") {
+    clip := ""
+    try clip := Trim(A_Clipboard)
+    catch {
+    }
+    if !StudyLink_IsValidHttpUrl(clip) {
+        try ShowCenteredOverlay_Utils("❌ Clipboard has no valid http(s) URL.", 3000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    setOk := StudyLink_Set(studyKey, clip)
+    if setOk
+        ShowCenteredOverlay_Utils("✅ " . successLabel . " saved from clipboard.", 3000, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("❌ Could not save the " . successLabel . " (API failed).", 3500, BANNER_ACCENT_ERROR)
+    return setOk
+}
+
 ; Prompt for a URL (clipboard prefill when valid) and POST via StudyLink_Set.
 StudyLink_SetFromManualInput(studyKey, successLabel := "link") {
     defaultUrl := ""

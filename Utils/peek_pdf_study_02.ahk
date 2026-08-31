@@ -173,7 +173,7 @@ StudyTopicSelector_ManageLinks(*) {
         "Current: " . StudyLink_FormatLinkLabel(ytResult),
         [
             ["1", "Open", "Open the stored video link in Chrome"],
-            ["2", "Set from YouTube", "Share + timestamp from the active Chrome tab"],
+            ["2", "Set from clipboard", "Save the http(s) URL on your clipboard"],
             ["3", "Set manually", "Paste or type a URL"]
         ],
         [
@@ -446,45 +446,10 @@ StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd := 0) {
     Sleep 250
 }
 
-; [2] Set the link: YouTube Share + Start at + Copy, save via API
+; [2] Set the link from clipboard
 StudyTopicSelector_ManageLinks_Set(*) {
     StudyTopicSelector_Close()
-    try {
-        chromeHwnd := WinExist("ahk_class Chrome_WidgetWin_1")
-        if chromeHwnd {
-            WinActivate("ahk_id " chromeHwnd)
-            if !WinWaitActive("ahk_id " chromeHwnd, , 2) {
-                ShowCenteredOverlay_Utils("❌ Chrome window did not become active.", 2500, BANNER_ACCENT_ERROR)
-                return
-            }
-        } else {
-            ShowCenteredOverlay_Utils("❌ Chrome window not found. Switch to Chrome and try again.", 3000,
-                BANNER_ACCENT_ERROR)
-            return
-        }
-        Sleep 280
-        try UIA.ActivateChromiumAccessibility("ahk_id " chromeHwnd, 300)
-        catch {
-        }
-        uia := UIA_Browser("ahk_id " chromeHwnd)
-        errMsg := ""
-        url := StudyLink_CaptureYoutubeTimestampUrl(uia, &errMsg)
-        if (url != "") {
-            ; Close share panel while Chrome still has focus (before loading overlay steals it).
-            StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
-            setOk := StudyLink_Set(STUDYLINK_KEY_YOUTUBE, url)
-            if setOk
-                ShowCenteredOverlay_Utils("✅ Link saved to study notes.", 3000, BANNER_ACCENT_SUCCESS)
-            else
-                ShowCenteredOverlay_Utils("❌ Could not save the link (API failed).", 3500, BANNER_ACCENT_ERROR)
-        } else {
-            StudyLink_CleanupYoutubeSharePanel(uia, chromeHwnd)
-            ShowCenteredOverlay_Utils(errMsg != "" ? "❌ " errMsg : "❌ Could not capture the link.", 2500,
-                BANNER_ACCENT_ERROR)
-        }
-    } catch as e {
-        ShowCenteredOverlay_Utils("❌ Error: " . e.Message, 3000, BANNER_ACCENT_ERROR)
-    }
+    StudyLink_SetFromClipboard(STUDYLINK_KEY_YOUTUBE, "video link")
 }
 
 ; [3] Set YouTube link manually (InputBox → StudyLink_Set API)

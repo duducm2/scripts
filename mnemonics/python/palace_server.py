@@ -9,7 +9,6 @@ import os
 import shutil
 import subprocess
 import sys
-import time
 import traceback
 import urllib.error
 import urllib.parse
@@ -229,107 +228,19 @@ def _clipboard_get() -> str:
         return ""
 
 
-def _clipboard_set(text: str) -> None:
-    if os.name != "nt":
-        return
-    try:
-        escaped = (text or "").replace("'", "''")
-        subprocess.run(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-Command",
-                f"Set-Clipboard -Value '{escaped}'",
-            ],
-            timeout=5,
-            check=False,
-        )
-    except OSError:
-        pass
-
-
-def _find_chrome_hwnd() -> int | None:
-    if os.name != "nt":
-        return None
-    import ctypes
-    from ctypes import wintypes
-
-    user32 = ctypes.windll.user32
-    matches: list[int] = []
-
-    @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
-    def _enum_cb(hwnd: int, _lparam: int) -> bool:
-        if not user32.IsWindowVisible(hwnd):
-            return True
-        buf = ctypes.create_unicode_buffer(256)
-        if user32.GetClassNameW(hwnd, buf, 256) and buf.value == "Chrome_WidgetWin_1":
-            matches.append(int(hwnd))
-        return True
-
-    user32.EnumWindows(_enum_cb, 0)
-    if not matches:
-        return None
-    fg = int(user32.GetForegroundWindow())
-    if fg in matches:
-        return fg
-    return matches[0]
-
-
-def _send_vk(vk: int, *, key_up: bool = False) -> None:
-    import ctypes
-
-    KEYEVENTF_KEYUP = 0x0002
-    flags = KEYEVENTF_KEYUP if key_up else 0
-    ctypes.windll.user32.keybd_event(vk, 0, flags, 0)
-
-
-def _send_chord(mod_vk: int, key_vk: int) -> None:
-    _send_vk(mod_vk)
-    _send_vk(key_vk)
-    _send_vk(key_vk, key_up=True)
-    _send_vk(mod_vk, key_up=True)
-
-
-def capture_chrome_address_url() -> dict[str, Any]:
-    """Copy URL from Chrome address bar (F6, Ctrl+C) — mirrors AHK Set from Chrome."""
-    if os.name != "nt":
-        return {"ok": False, "error": "capture requires Windows"}
-    hwnd = _find_chrome_hwnd()
-    if not hwnd:
-        return {"ok": False, "error": "Chrome window not found"}
-    import ctypes
-
-    user32 = ctypes.windll.user32
-    saved_clip = _clipboard_get()
-    try:
-        user32.SetForegroundWindow(hwnd)
-        time.sleep(0.28)
-        VK_F6 = 0x75
-        VK_CONTROL = 0x11
-        VK_C = 0x43
-        _send_vk(VK_F6)
-        time.sleep(0.12)
-        _send_chord(VK_CONTROL, VK_C)
-        deadline = time.time() + 2.0
-        url = ""
-        while time.time() < deadline:
-            url = _clipboard_get()
-            if url and url != saved_clip and _is_valid_http_url(url):
-                break
-            time.sleep(0.08)
-        if not _is_valid_http_url(url):
-            return {
-                "ok": False,
-                "error": "Could not copy a valid URL from the address bar",
-            }
-        return {"ok": True, "url": url}
-    finally:
-        if saved_clip:
-            _clipboard_set(saved_clip)
+def read_clipboard_url() -> dict[str, Any]:
+    """Return http(s) URL from the OS clipboard."""
+    url = _clipboard_get()
+    if not _is_valid_http_url(url):
+        return {
+            "ok": False,
+            "error": "Clipboard has no valid http(s) URL",
+        }
+    return {"ok": True, "url": url}
 
 
 def study_link_capture_and_set(key: str) -> dict[str, Any]:
-    captured = capture_chrome_address_url()
+    captured = read_clipboard_url()
     if not captured.get("ok"):
         return captured
     url = str(captured.get("url") or "")

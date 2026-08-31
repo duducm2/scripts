@@ -2214,7 +2214,7 @@
           favorite: "favorite",
         };
         if (!labels[kind]) return;
-        toast(`Setting ${labels[kind]} from Chrome…`);
+        toast(`Saving ${labels[kind]} from clipboard…`);
         try {
           const r = await api(`/api/links/${kind}`, {
             method: "POST",
@@ -2223,25 +2223,9 @@
           if (r.ok && r.url) {
             state.studyLinks[kind] = r.url;
             toast(`Saved ${labels[kind]} link`);
-            const out = document.getElementById("linkOut");
-            if (out && state.view === "links") await refreshLinkStatus();
-            return;
-          }
-          const url = prompt(
-            `${labels[kind]} URL` +
-              (r.error ? ` (capture failed: ${r.error})` : ""),
-          );
-          if (!url) return;
-          const r2 = await api(`/api/links/${kind}`, {
-            method: "POST",
-            body: JSON.stringify({ action: "set", url }),
-          });
-          if (r2.ok) {
-            state.studyLinks[kind] = url.trim();
-            toast(`Saved ${labels[kind]} link`);
             if (state.view === "links") await refreshLinkStatus();
           } else {
-            toast(r2.error || "Save failed");
+            toast(r.error || "Clipboard has no valid http(s) URL");
           }
         } catch (e) {
           toast(String(e.message || e));
@@ -2250,14 +2234,14 @@
 
       function renderLinks(root) {
         root.innerHTML = `<div class="spa-panel"><h2 style="margin-top:0;color:var(--gold)">Study links</h2>
-          <p class="sub" style="color:var(--muted);margin:0 0 12px;font-size:13px">Shift+V/A/F open · Alt+V/A/F set from active Chrome tab (address bar). Links panel [1].</p>
+          <p class="sub" style="color:var(--muted);margin:0 0 12px;font-size:13px">Shift+V/A/F open · Alt+V/A/F save from clipboard. Links panel [1].</p>
           <div class="spa-row">
             <button class="spa-btn" data-k="video" data-a="open">Open video</button>
-            <button class="spa-btn" data-k="video" data-a="set">Set video URL</button>
+            <button class="spa-btn" data-k="video" data-a="set">Set video (clipboard)</button>
             <button class="spa-btn" data-k="article" data-a="open">Open article</button>
-            <button class="spa-btn" data-k="article" data-a="set">Set article URL</button>
+            <button class="spa-btn" data-k="article" data-a="set">Set article (clipboard)</button>
             <button class="spa-btn" data-k="favorite" data-a="open">Open favorite</button>
-            <button class="spa-btn" data-k="favorite" data-a="set">Set favorite URL</button>
+            <button class="spa-btn" data-k="favorite" data-a="set">Set favorite (clipboard)</button>
           </div>
           <pre id="linkOut" style="color:var(--muted);white-space:pre-wrap">Loading…</pre>
         </div>`;
@@ -2268,14 +2252,7 @@
               action = btn.dataset.a;
             try {
               if (action === "set") {
-                const url = prompt("URL");
-                if (!url) return;
-                const r = await api(`/api/links/${kind}`, {
-                  method: "POST",
-                  body: JSON.stringify({ action: "set", url }),
-                });
-                toast(r.ok ? "Saved" : r.error || "fail");
-                await refreshLinkStatus();
+                await setStudyLinkFromShortcut(kind);
               } else {
                 await openStudyLinkChrome(kind);
                 await refreshLinkStatus();
