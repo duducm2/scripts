@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Utils module: utility_git_push.ahk
 ; Commit and push scripts + notes repos from Utility Shortcuts top-level [G]
-; Writes empty main/punctual.md stub in notes; syncs Palace MD when mnemonics/data is dirty.
+; Exports personal tasks to main/punctual.md; syncs Palace MD when mnemonics/data is dirty.
 ; Runs in the background so the UI stays usable.
 ; =============================================================================
 
@@ -73,24 +73,28 @@ Utility_GitStatusHasPathPrefix(porcelain, prefixFwd) {
     return false
 }
 
-Utility_GitWritePunctualMdStub(notesRoot) {
-    if (notesRoot = "" || !DirExist(notesRoot))
-        return "error:Notes repo folder not found"
-    mainDir := RTrim(notesRoot, "\") . "\main"
-    path := mainDir . "\punctual.md"
-    try {
-        if (!DirExist(mainDir))
-            DirCreate(mainDir)
-    } catch as e {
-        return "error:Could not create main folder: " . e.Message
-    }
-    try FileDelete(path)
+Utility_GitExportPunctualMd(scriptsRoot, notesRoot) {
+    py := scriptsRoot . "\tasks\python\export_to_md.py"
+    if (!FileExist(py))
+        return "error:export_to_md.py not found"
+    pyCmd := ""
+    try pyCmd := Task_FindPythonCmd()
     catch {
+        pyCmd := ""
     }
-    try FileAppend("", path, "UTF-8")
-    catch as e {
-        return "error:Could not write punctual.md stub: " . e.Message
+    if (pyCmd = "")
+        return "error:Python not found for Tasks MD export"
+    dataDir := scriptsRoot . "\tasks\data"
+    punctual := notesRoot . "\main\punctual.md"
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . dataDir . '" --punctual "' . punctual . '"'
+    exitCode := 0
+    try {
+        exitCode := RunWait(A_ComSpec . " /c " . cmd, scriptsRoot, "Hide")
+    } catch as e {
+        return "error:Tasks MD export failed: " . e.Message
     }
+    if (exitCode != 0)
+        return "error:Tasks MD export failed (exit " . exitCode . ")"
     return "ok"
 }
 
@@ -99,10 +103,10 @@ Utility_GitPrepareExports(scriptsRoot, notesRoot) {
     if (status.exitCode != 0)
         return "error:Scripts status failed: " . Utility_GitFirstErrorLine(status)
 
-    Utility_GitPassiveBar("⏳ Ensuring punctual.md stub…")
-    stub := Utility_GitWritePunctualMdStub(notesRoot)
-    if (SubStr(stub, 1, 6) = "error:")
-        return stub
+    Utility_GitPassiveBar("⏳ Exporting personal tasks to punctual.md…")
+    export := Utility_GitExportPunctualMd(scriptsRoot, notesRoot)
+    if (SubStr(export, 1, 6) = "error:")
+        return export
 
     porcelain := status.stdout
     needPalace := Utility_GitStatusHasPathPrefix(porcelain, "mnemonics/data/")
