@@ -170,7 +170,18 @@ class TaskHandler(BaseHTTPRequestHandler):
 
         if path == "/api/state":
             store = TaskStore(self.data_dir)
-            self._json(200, store.state())
+            payload = store.state()
+            env_path = self.data_dir / "environment.txt"
+            env = "work"
+            try:
+                raw = env_path.read_text(encoding="utf-8").strip().lower()
+                if raw in {"work", "personal", "habits"}:
+                    env = raw
+            except OSError:
+                pass
+            payload["environment"] = env
+            payload["default_focus"] = env
+            self._json(200, payload)
             return
 
         self._json(404, {"ok": False, "error": "not found"})

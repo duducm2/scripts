@@ -1060,7 +1060,7 @@ cheatSheets["Tasks"] := "
     🗑️ [Delete] Delete selected project, section, or task (not General)
     🏠 [Esc] Close overlay first (inline field, image, Info, modal)
     🏠 [Esc] Clear selection — stay on Work/Personal/Habits focus (search + emoji filter stay)
-    🏠 [Esc][Esc] Home — Work column only; clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
+    🏠 [Esc][Esc] Home — env default column (Work or Personal); clear search (400 ms = AI_QD_DOUBLE_TAP_MS / ZMK)
     🏠 [Esc] Info form — back to list
     🏠 [Esc] Info list — close and keep dashboard selection and category filter
     ⬆️ [Up] Info list — previous info
@@ -1084,6 +1084,7 @@ cheatSheets["Tasks"] := "
     👤 [2] Personal column only (toggle)
     🔁 [3] Habits column only (toggle)
     🗂️ [4] All three columns (Personal, Work, Habits)
+    Default column follows environment (work PC → Work, personal → Personal); Esc Esc returns there
     🎯 [J] First search hit, or first item in the other of Personal/Work
     ➕ [A] Inline new task if a column or project is in context; otherwise inline new project
     📁 [P] Inline new project

@@ -957,6 +957,38 @@
           "❓": "u",
           "": "o",
         };
+        function envDefaultFocus() {
+          try {
+            const f = new URLSearchParams(location.search).get("focus");
+            if (f === "work" || f === "personal" || f === "habits") return f;
+          } catch (_) {}
+          return "work";
+        }
+
+        let envDefaultApplied = false;
+        function applyEnvDefaultFromState(data) {
+          const env = (data?.default_focus || data?.environment || "").trim();
+          if (env !== "work" && env !== "personal" && env !== "habits") return;
+          let fromUrl = "";
+          try {
+            fromUrl = new URLSearchParams(location.search).get("focus") || "";
+          } catch (_) {}
+          if (
+            fromUrl === "work" ||
+            fromUrl === "personal" ||
+            fromUrl === "habits"
+          ) {
+            state.envDefaultFocus = fromUrl;
+            envDefaultApplied = true;
+            return;
+          }
+          state.envDefaultFocus = env;
+          if (envDefaultApplied) return;
+          envDefaultApplied = true;
+          state.sectionFocus = env;
+          state.pwSide = env === "work" ? "work" : "personal";
+        }
+
         const state = {
           data: null,
           filter: "work",
@@ -964,9 +996,10 @@
           projectId: "",
           taskId: "",
           emojiFilter: null, // null = off; "" = none; else emoji char
-          sectionFocus: "work", // "" | work | personal | habits — default Work only
+          envDefaultFocus: envDefaultFocus(), // work | personal from launcher (?focus= / environment.txt)
+          sectionFocus: envDefaultFocus(), // "" | work | personal | habits
           search: "",
-          pwSide: "personal", // last side for Personal/Work first-item toggle
+          pwSide: envDefaultFocus() === "work" ? "work" : "personal",
           inlineCreate: null, // { project_id, section_id, filter, kind }
           sel: null, // { kind: "project"|"section"|"task"|"habit", id }
           collapsedProjects: new Set(),
@@ -1136,6 +1169,7 @@
 
         async function refresh() {
           state.data = await api("/api/state");
+          applyEnvDefaultFromState(state.data);
           render();
         }
 
@@ -2476,8 +2510,9 @@
           state.view = "dashboard";
           if (!keepSearch && searchNeedle()) clearSearch();
           if (state.emojiFilter !== null) applyEmojiFilter(null);
-          if (state.sectionFocus !== "work")
-            applySectionFocus("work", { scrollHeader: false });
+          const homeFocus = state.envDefaultFocus || "work";
+          if (state.sectionFocus !== homeFocus)
+            applySectionFocus(homeFocus, { scrollHeader: false });
           if (state.sel) setSelection(null, null, false);
           const inp = $("#globalSearch");
           if (inp && document.activeElement === inp) inp.blur();
