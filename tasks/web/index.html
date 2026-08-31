@@ -964,7 +964,7 @@
           projectId: "",
           taskId: "",
           emojiFilter: null, // null = off; "" = none; else emoji char
-          sectionFocus: "", // "" | work | personal | habits
+          sectionFocus: "work", // "" | work | personal | habits — default Work only
           search: "",
           pwSide: "personal", // last side for Personal/Work first-item toggle
           inlineCreate: null, // { project_id, section_id, filter, kind }
@@ -1664,14 +1664,16 @@
           if (code === "Digit1" || code === "Numpad1") return "1";
           if (code === "Digit2" || code === "Numpad2") return "2";
           if (code === "Digit3" || code === "Numpad3") return "3";
+          if (code === "Digit4" || code === "Numpad4") return "4";
           if (code.startsWith("Key") && code.length === 4)
             return code.slice(3).toLowerCase();
           const k = (e.key || "").toLowerCase();
           if (k.length === 1 && /[a-z0-9]/.test(k)) return k;
-          if (k === "!" || k === "@" || k === "#") {
+          if (k === "!" || k === "@" || k === "#" || k === "$") {
             if (k === "!") return "1";
             if (k === "@") return "2";
             if (k === "#") return "3";
+            if (k === "$") return "4";
           }
           return "";
         }
@@ -2229,6 +2231,10 @@
             applySectionFocus("habits", { toggle: true });
             return;
           }
+          if (k === "4") {
+            applySectionFocus("");
+            return;
+          }
           if (k === "e") {
             const nodes = document.querySelectorAll("details.project");
             const openAll = Array.from(nodes).some((n) => !n.open);
@@ -2470,7 +2476,8 @@
           state.view = "dashboard";
           if (!keepSearch && searchNeedle()) clearSearch();
           if (state.emojiFilter !== null) applyEmojiFilter(null);
-          if (state.sectionFocus) applySectionFocus("");
+          if (state.sectionFocus !== "work")
+            applySectionFocus("work", { scrollHeader: false });
           if (state.sel) setSelection(null, null, false);
           const inp = $("#globalSearch");
           if (inp && document.activeElement === inp) inp.blur();
