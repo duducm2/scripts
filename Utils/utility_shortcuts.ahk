@@ -48,101 +48,14 @@ OpenClipboardLinkInChrome_ExtractHttpUrl(text) {
     return ""
 }
 
-OpenClipboardLinkInChrome_UiaElementUrl(el) {
-    if !IsObject(el)
-        return ""
-    fields := []
-    for prop in ["Value", "LegacyIAccessibleValue", "HelpText", "Name"] {
-        try fields.Push(el.%prop%)
-        catch {
-        }
-    }
-    for field in fields {
-        url := OpenClipboardLinkInChrome_ExtractHttpUrl(field)
-        if (url != "")
-            return url
-    }
-    return ""
-}
-
-; Prefer UIA at the mouse point — copy/double-click often returns anchor text, not href.
-OpenClipboardLinkInChrome_UiaUrlFromPoint(mx := "", my := "") {
-    if (mx = "" || my = "")
-        MouseGetPos(&mx, &my)
-    el := 0
-    try el := UIA.SmallestElementFromPoint(mx, my)
-    catch {
-        try el := UIA.ElementFromPoint(mx, my)
-        catch
-            return ""
-    }
-    loop 12 {
-        if !IsObject(el)
-            break
-        url := OpenClipboardLinkInChrome_UiaElementUrl(el)
-        if (url != "")
-            return url
-        try el := el.Parent
-        catch
-            break
-    }
-    return ""
-}
-
-; Resolve URL and/or plain text from hover, selection, or clipboard fallback.
-OpenClipboardLinkInChrome_ResolveTarget(&url := "", &text := "") {
-    url := ""
-    text := ""
-    savedClipAll := ClipboardAll()
-    savedClipText := Trim(A_Clipboard)
-    try {
-        url := OpenClipboardLinkInChrome_UiaUrlFromPoint()
-        if (url != "")
-            return
-
-        MouseGetPos(, , &hwndUnder)
-        if (hwndUnder) {
-            try WinActivate("ahk_id " hwndUnder)
-            Sleep 50
-        }
-
-        A_Clipboard := ""
-        if (TryCopySelectionToClipboard_QuickLookAware()) {
-            text := Trim(A_Clipboard)
-            url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
-            if (url != "" || text != "")
-                return
-        }
-
-        A_Clipboard := ""
-        Send "{LWin Up}{RWin Up}{LAlt Up}{RAlt Up}{LShift Up}{RShift Up}"
-        Sleep 40
-        Click 2
-        Sleep 80
-        Send "^c"
-        if ClipWait(0.7) {
-            text := Trim(A_Clipboard)
-            url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
-            if (url != "" || text != "")
-                return
-        }
-
-        text := savedClipText
-        url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
-    } finally {
-        try A_Clipboard := savedClipAll
-    }
-}
-
-; Macros [L] — hovered hyperlink, selected text, or clipboard; open in Chrome or Google search.
+; Macros [L] — clipboard text or link; open in Chrome or Google search.
 OpenClipboardLinkInChrome() {
-    url := ""
-    text := ""
-    OpenClipboardLinkInChrome_ResolveTarget(&url, &text)
-    if (url = "" && text = "") {
-        ShowCenteredOverlay_Utils("❌ No text to open or search.", 2000, BANNER_ACCENT_ERROR)
+    text := Trim(A_Clipboard)
+    if (text = "") {
+        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
         return
     }
+    url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
     if (url != "") {
         banner := "✅ Opening link in Chrome…"
     } else {
@@ -156,7 +69,7 @@ OpenClipboardLinkInChrome() {
     ShowCenteredOverlay_Utils(banner, 1200, BANNER_ACCENT_SUCCESS)
 }
 
-RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open hovered text in Chrome / Google search", "l")
+RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open clipboard text/link in Chrome / Google search", "l")
 
 ; Win+Alt+Shift+L — paste OS clipboard (^v) to a picked visible window (same as D2C menu [W]).
 ; After pick: [Y] paste+Enter, [N] paste only, [Esc] abort, 3s timeout = paste only.
