@@ -86,6 +86,30 @@ Maps_FindMapPane(root) {
     return 0
 }
 
+Maps_MaximizeBrowserWindow(uia) {
+    if !uia
+        return false
+    hwnd := 0
+    try hwnd := uia.BrowserId
+    if !hwnd
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) = 1)
+            return true
+    } catch {
+    }
+    try {
+        WinMaximize("ahk_id " hwnd)
+    } catch {
+        try PostMessage(0x0112, 0xF030, 0, 0, "ahk_id " hwnd)  ; WM_SYSCOMMAND, SC_MAXIMIZE
+        catch {
+            return false
+        }
+    }
+    Sleep 500  ; maximize animation + map layout settle
+    return true
+}
+
 Maps_CaptureCanvasViaDownload(uia, outPath, &errMsg := "") {
     ; Work env: composite map canvases in-page and download PNG (avoids CopyFromScreen black frames).
     if !uia || outPath = ""
@@ -278,37 +302,51 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
 +p:: {
     uia := 0
     chromeHidden := false
+    loadingShown := false
+    browserHwnd := 0
     try {
         uia := UIA_Browser()
         if !uia {
-            ToolTip("Maps: could not attach to browser")
-            SetTimer(() => ToolTip(), -2000)
+            ShowCenteredOverlay_Utils("❌ Maps: could not attach to browser", 2000, BANNER_ACCENT_ERROR)
             return
         }
+        try browserHwnd := uia.BrowserId
+        StandardLoadingBar_Show("⏳ Preparing Maps capture...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: browserHwnd })
+        loadingShown := true
+
         Sleep 150
+        StandardLoadingBar_Update("🔄 Maximizing window...", BANNER_ACCENT_INTERMEDIATE)
+        Maps_MaximizeBrowserWindow(uia)
         root := Maps_GetDocumentRoot(uia)
         if !root {
-            ToolTip("Maps: document not found")
-            SetTimer(() => ToolTip(), -2000)
+            StandardLoadingBar_Update("❌ Maps: document not found", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1500)
+            loadingShown := false
             return
         }
 
+        StandardLoadingBar_Update("🔄 Collapsing side panel...", BANNER_ACCENT_INTERMEDIATE)
         Maps_CollapseSidePanel(root)
         Sleep 600  ; side-panel collapse animation
 
+        StandardLoadingBar_Update("🔄 Hiding map chrome...", BANNER_ACCENT_INTERMEDIATE)
         if !Maps_HideChrome(uia) {
-            ToolTip("Maps: canvas not found")
-            SetTimer(() => ToolTip(), -2000)
+            StandardLoadingBar_Update("❌ Maps: canvas not found", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1500)
+            loadingShown := false
             return
         }
         chromeHidden := true
+        StandardLoadingBar_Update("⏳ Loading map tiles...", BANNER_ACCENT_INTERMEDIATE)
         Sleep 1500  ; let canvas resize and tiles finish loading before capture
 
         root := Maps_GetDocumentRoot(uia)
         pane := Maps_FindMapPane(root)
         if !pane {
-            ToolTip("Maps: map pane not found")
-            SetTimer(() => ToolTip(), -2000)
+            StandardLoadingBar_Update("❌ Maps: map pane not found", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1500)
+            loadingShown := false
             return
         }
 
@@ -316,40 +354,53 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
         w := br.r - br.l
         h := br.b - br.t
         if (w <= 0 || h <= 0) {
-            ToolTip("Maps: invalid capture region")
-            SetTimer(() => ToolTip(), -2000)
+            StandardLoadingBar_Update("❌ Maps: invalid capture region", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(1500)
+            loadingShown := false
             return
         }
 
         outPath := A_Desktop "\maps-" FormatTime(, "yyyyMMdd-HHmmss") ".png"
         global IS_WORK_ENVIRONMENT
+        StandardLoadingBar_Update("📸 Capturing PNG...", BANNER_ACCENT_INTERMEDIATE)
         if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
             capErr := ""
             if !Maps_CaptureCanvasViaDownload(uia, outPath, &capErr) {
-                ToolTip("Maps: " . (capErr != "" ? capErr : "capture failed"))
-                SetTimer(() => ToolTip(), -2000)
+                StandardLoadingBar_Update("❌ Maps: " . (capErr != "" ? capErr : "capture failed"),
+                BANNER_ACCENT_ERROR)
+                StandardLoadingBar_Hide(2000)
+                loadingShown := false
                 return
             }
         } else {
             outPath := Maps_CaptureRectToDesktop(br.l, br.t, w, h)
             if (outPath = "") {
-                ToolTip("Maps: capture failed")
-                SetTimer(() => ToolTip(), -2000)
+                StandardLoadingBar_Update("❌ Maps: capture failed", BANNER_ACCENT_ERROR)
+                StandardLoadingBar_Hide(2000)
+                loadingShown := false
                 return
             }
         }
 
-        ToolTip("Saved: " . outPath)
-        SetTimer(() => ToolTip(), -2500)
+        StandardLoadingBar_Update("✅ Saved: " . outPath, BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(2500)
+        loadingShown := false
     } catch Error as e {
-        ToolTip("Maps: " . e.Message)
-        SetTimer(() => ToolTip(), -2000)
+        if (loadingShown) {
+            StandardLoadingBar_Update("❌ Maps: " . e.Message, BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(2000)
+            loadingShown := false
+        } else {
+            ShowCenteredOverlay_Utils("❌ Maps: " . e.Message, 2000, BANNER_ACCENT_ERROR)
+        }
     } finally {
         if (chromeHidden && uia) {
             try Maps_RestoreChrome(uia)
             catch {
             }
         }
+        if (loadingShown)
+            StandardLoadingBar_Hide(0)
     }
 }
 
