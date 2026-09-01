@@ -837,7 +837,8 @@ class TaskStore:
         pid = target.get("project_id") or ""
 
         def pred(r: dict, _t: dict) -> bool:
-            return r.get("project_id") == pid
+            title = (r.get("title") or "").strip().lower()
+            return r.get("project_id") == pid and title != GENERAL_SECTION.lower()
 
         out, row, moved = swap_sort_order(rows, section_id, direction, pred)
         if moved:
@@ -857,13 +858,19 @@ class TaskStore:
             return {"ok": False, "error": "task not active"}
         pid = target.get("project_id") or ""
         sid = target.get("section_id") or ""
+        kind = (target.get("kind") or "punctual").strip().lower()
 
         def pred(r: dict, _t: dict) -> bool:
-            return (
-                r.get("project_id") == pid
-                and (r.get("section_id") or "") == sid
-                and r.get("active", "1") != "0"
-            )
+            if r.get("project_id") != pid:
+                return False
+            if (r.get("section_id") or "") != sid:
+                return False
+            if r.get("active", "1") == "0":
+                return False
+            rk = (r.get("kind") or "punctual").strip().lower()
+            if kind == "habitual":
+                return rk == "habitual"
+            return rk == "punctual" and (r.get("emoji") or "").strip() != "✅"
 
         out, row, moved = swap_sort_order(rows, task_id, direction, pred)
         if moved:

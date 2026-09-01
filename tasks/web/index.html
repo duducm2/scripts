@@ -2942,6 +2942,7 @@
           }
           const kind = state.sel.kind;
           const id = state.sel.id;
+          let moved = false;
           if (kind === "section") {
             const sec = findSection(id);
             if (!sec) return;
@@ -2950,35 +2951,51 @@
               return;
             }
             try {
-              await api("/api/sections/" + encodeURIComponent(id) + "/move", {
-                method: "POST",
-                body: JSON.stringify({ dir }),
-              });
+              const r = await api(
+                "/api/sections/" + encodeURIComponent(id) + "/move",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ dir }),
+                },
+              );
+              moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
               return;
             }
           } else if (kind === "project") {
             try {
-              await api("/api/projects/" + encodeURIComponent(id) + "/move", {
-                method: "POST",
-                body: JSON.stringify({ dir }),
-              });
+              const r = await api(
+                "/api/projects/" + encodeURIComponent(id) + "/move",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ dir }),
+                },
+              );
+              moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
               return;
             }
           } else if (kind === "task" || kind === "habit") {
             try {
-              await api("/api/tasks/" + encodeURIComponent(id) + "/move", {
-                method: "POST",
-                body: JSON.stringify({ dir }),
-              });
+              const r = await api(
+                "/api/tasks/" + encodeURIComponent(id) + "/move",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ dir }),
+                },
+              );
+              moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
               return;
             }
           } else {
+            return;
+          }
+          if (!moved) {
+            toast("Already at edge");
             return;
           }
           await refresh();
@@ -4270,6 +4287,16 @@
 
           if (modalOpen()) return;
 
+          if (
+            e.shiftKey &&
+            !state.infoUi &&
+            (e.key === "ArrowDown" || e.key === "ArrowUp")
+          ) {
+            e.preventDefault();
+            await moveDashboardSelection(e.key === "ArrowDown" ? 1 : -1);
+            return;
+          }
+
           if (e.shiftKey) {
             const cmd = shiftCmdFromEvent(e);
             if (cmd) {
@@ -4280,20 +4307,18 @@
               } catch (err) {
                 toast(err.message || String(err));
               }
+              return;
             }
-            return;
           }
 
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            if (e.shiftKey) await moveDashboardSelection(1);
-            else moveSelection(1);
+            moveSelection(1);
             return;
           }
           if (e.key === "ArrowUp") {
             e.preventDefault();
-            if (e.shiftKey) await moveDashboardSelection(-1);
-            else moveSelection(-1);
+            moveSelection(-1);
             return;
           }
           if (e.key === "ArrowRight") {
