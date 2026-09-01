@@ -461,11 +461,13 @@ Palace_AiCompanionFixGuidance(errorMsg) {
         . "- Do not re-emit or top up existing study palaces outside this pack.`r`n"
         . "- Then re-emit the full pack (PREVIEW + all three FILE sections)."
     }
-    if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")) {
+    if (InStr(e, "truncated") || InStr(e, "missing section") || InStr(e, "incomplete")
+    || InStr(e, "incomplete atoms")) {
         return "- The pack file was truncated or a FILE section was incomplete.`r`n"
         .
         "- Re-emit a complete pack in one artifact (or continue remaining ===FILE=== blocks in the next message).`r`n"
         . "- Ensure each CSV header is complete and every row is present before ===END_FILE===.`r`n"
+        . "- PALACE_ATOMS.csv must include one atom row per beast (same count as PALACE_BEASTS.csv).`r`n"
         . "- Prefer the download chip over a long fence if the UI truncates."
     }
     if (InStr(e, "empty pack") || InStr(e, "no rows")) {
@@ -632,6 +634,23 @@ Palace_AlignSalvageAtomsToBeasts(atomRows, beastRows) {
     return out
 }
 
+; When beasts FILE is complete but ATOMS FILE is truncated/partial, salvage atoms from PREVIEW.
+Palace_SplitPackTryPreviewAtomSalvage(&result, &csvNotes, beastRows) {
+    preview := result.Has("preview") ? result["preview"] : ""
+    palaces := result.Has("palaces") ? result["palaces"] : []
+    if (!IsObject(beastRows) || !beastRows.Length || Trim(preview) = "")
+        return false
+    synth := Palace_SynthesizeBeastsAtomsFromPreview(preview, palaces)
+    if (!synth["ok"] || !synth["atoms"].Length)
+        return false
+    aligned := Palace_AlignSalvageAtomsToBeasts(synth["atoms"], beastRows)
+    if (aligned.Length < beastRows.Length)
+        return false
+    result["atoms"] := aligned
+    csvNotes.Push("Salvaged " . aligned.Length . " atom(s) from PREVIEW (ATOMS FILE truncated)")
+    return true
+}
+
 ; When beasts/atoms FILE sections fail, try PREVIEW salvage. Returns true if result filled.
 Palace_SplitPackTryPreviewSalvage(&result, &csvNotes, failKey := "") {
     preview := result.Has("preview") ? result["preview"] : ""
@@ -787,8 +806,29 @@ Palace_SplitPalacePack(path) {
                 return result
             }
         }
-        result[key] := rows
+        if (key = "atoms") {
+            beastRows := result.Has("beasts") ? result["beasts"] : []
+            atomsIncomplete := sectionSalvaged
+                || (beastRows.Length && rows.Length < beastRows.Length)
+            if (atomsIncomplete && beastRows.Length) {
+                if (!Palace_SplitPackTryPreviewAtomSalvage(&result, &csvNotes, beastRows)) {
+                    result["csvNotes"] := csvNotes
+                    result["error"] := "Pack truncated mid-PALACE_ATOMS.csv — got " . rows.Length
+                        . " atom row(s), need " . beastRows.Length
+                        . " (one per beast); re-download/save the full pack"
+                    return result
+                }
+            } else
+                result[key] := rows
+        } else
+            result[key] := rows
         prevSalvaged := sectionSalvaged
+    }
+    if (result["beasts"].Length && result["atoms"].Length < result["beasts"].Length) {
+        result["csvNotes"] := csvNotes
+        result["error"] := "Incomplete atoms: " . result["atoms"].Length . " atom(s) for "
+            . result["beasts"].Length . " beast(s) — pack likely truncated"
+        return result
     }
     packCheck := Palace_ValidatePackBeastPacking(result["palaces"], result["beasts"])
     if (!packCheck["ok"]) {
@@ -1346,10 +1386,12 @@ Palace_ImportMnemonicsFromDesktop(*) {
         return false
     }
 
-    ; If pack had atom rows but none linked after beast replace, keep Desktop pack for retry.
-    if (atomRows.Length && nBeasts > 0 && nAtoms = 0 && replacePalaceIds.Count) {
+    ; If pack had atom rows but too few linked after beast replace, keep Desktop pack for retry.
+    if (atomRows.Length && nBeasts > 0 && nAtoms < nBeasts && replacePalaceIds.Count) {
         summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
-        msg := "Beasts imported with 0 atoms — Desktop pack kept"
+        msg := (nAtoms = 0)
+            ? "Beasts imported with 0 atoms — Desktop pack kept"
+            : "Partial atoms: " . nAtoms . " of " . nBeasts . " beasts — Desktop pack kept"
         if (summary != "")
             msg .= " — " . summary
         Palace_ReturnAfterImport(Palace_FailAiImport(msg, 4000, summary))
