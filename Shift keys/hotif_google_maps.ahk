@@ -115,8 +115,13 @@ Maps_CaptureCanvasViaDownload(uia, outPath, &errMsg := "") {
     if !uia || outPath = ""
         return false
     errMsg := ""
+    SplitPath(outPath, &dlName)
+    safeFn := StrReplace(dlName, "\", "\\")
+    safeFn := StrReplace(safeFn, "'", "\'")
     js :=
-        "(function(){window.__ahkMapsCap={ok:0};requestAnimationFrame(function(){try{var canvases=Array.from(document.querySelectorAll('canvas')).filter(function(c){return c.offsetWidth>0&&c.offsetHeight>0;});if(!canvases.length){window.__ahkMapsCap={ok:0};return;}var best=canvases.reduce(function(a,b){return(a.width*a.height)>(b.width*b.height)?a:b;});var w=best.width,h=best.height;if(w<=0||h<=0){window.__ahkMapsCap={ok:0};return;}var off=document.createElement('canvas');off.width=w;off.height=h;var ctx=off.getContext('2d');canvases.forEach(function(c){try{if(c.width===w&&c.height===h)ctx.drawImage(c,0,0);}catch(e){}});var url=off.toDataURL('image/png');if(!url||url.length<500){window.__ahkMapsCap={ok:0};return;}var fn='ahk-maps-'+Date.now()+'.png';var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();a.remove();window.__ahkMapsCap={ok:1,file:fn};}catch(e){window.__ahkMapsCap={ok:0};}});})()"
+        "(function(){window.__ahkMapsCap={ok:0};requestAnimationFrame(function(){try{var canvases=Array.from(document.querySelectorAll('canvas')).filter(function(c){return c.offsetWidth>0&&c.offsetHeight>0;});if(!canvases.length){window.__ahkMapsCap={ok:0};return;}var best=canvases.reduce(function(a,b){return(a.width*a.height)>(b.width*b.height)?a:b;});var w=best.width,h=best.height;if(w<=0||h<=0){window.__ahkMapsCap={ok:0};return;}var off=document.createElement('canvas');off.width=w;off.height=h;var ctx=off.getContext('2d');canvases.forEach(function(c){try{if(c.width===w&&c.height===h)ctx.drawImage(c,0,0);}catch(e){}});var url=off.toDataURL('image/png');if(!url||url.length<500){window.__ahkMapsCap={ok:0};return;}var fn='" .
+        safeFn .
+        "';var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();a.remove();window.__ahkMapsCap={ok:1,file:fn};}catch(e){window.__ahkMapsCap={ok:0};}});})()"
     try {
         uia.JSExecute(js)
     } catch {
@@ -140,23 +145,33 @@ Maps_CaptureCanvasViaDownload(uia, outPath, &errMsg := "") {
         return false
     }
     dlName := m[1]
-    dlPath := EnvGet("USERPROFILE") "\Downloads\" dlName
+    searchDirs := [EnvGet("USERPROFILE") "\Downloads", Palace_ResolveDesktopDir()]
+    if (searchDirs[2] != RTrim(A_Desktop, "\"))
+        searchDirs.Push(RTrim(A_Desktop, "\"))
+    foundPath := ""
     deadline := A_TickCount + 5000
     while (A_TickCount < deadline) {
-        if FileExist(dlPath)
-            break
+        for dir in searchDirs {
+            candidate := dir "\" dlName
+            if FileExist(candidate) {
+                foundPath := candidate
+                break 2
+            }
+        }
         Sleep 100
     }
-    if !FileExist(dlPath) {
+    if (foundPath = "") {
         errMsg := "download timed out"
         return false
     }
+    if (StrLower(foundPath) = StrLower(outPath))
+        return true
     try {
         if FileExist(outPath)
             FileDelete(outPath)
-        FileMove(dlPath, outPath, 1)
+        FileMove(foundPath, outPath, 1)
     } catch {
-        try FileDelete(dlPath)
+        try FileDelete(foundPath)
         catch {
         }
         errMsg := "canvas export failed"
@@ -306,17 +321,22 @@ Maps_CaptureRectToDesktop(x, y, w, h, outPath := "") {
     loadingShown := false
     browserHwnd := 0
     try {
+        StandardLoadingBar_Show("⏳ Preparing Maps capture...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+            centerOnHwnd: 0 })
+        loadingShown := true
+
         uia := UIA_Browser()
         if !uia {
-            ShowCenteredOverlay_Utils("❌ Maps: could not attach to browser", 2000, BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Update("❌ Maps: could not attach to browser", BANNER_ACCENT_ERROR)
+            StandardLoadingBar_Hide(2000)
+            loadingShown := false
             return
         }
         try browserHwnd := uia.BrowserId
-        StandardLoadingBar_Show("⏳ Preparing Maps capture...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-            centerOnHwnd: browserHwnd })
-        loadingShown := true
+        if (browserHwnd)
+            StandardLoadingBar_Show("⏳ Preparing Maps capture...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
+                centerOnHwnd: browserHwnd })
 
-        Sleep 150
         StandardLoadingBar_Update("🔄 Maximizing window...", BANNER_ACCENT_INTERMEDIATE)
         Maps_MaximizeBrowserWindow(uia)
         root := Maps_GetDocumentRoot(uia)
@@ -363,7 +383,7 @@ Maps_CaptureRectToDesktop(x, y, w, h, outPath := "") {
 
         outPath := Palace_DesktopNextQuickImagePath()
         global IS_WORK_ENVIRONMENT
-        StandardLoadingBar_Update("📸 Capturing PNG...", BANNER_ACCENT_INTERMEDIATE)
+        StandardLoadingBar_Update("📸 Capturing " . outPath, BANNER_ACCENT_INTERMEDIATE)
         if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
             capErr := ""
             if !Maps_CaptureCanvasViaDownload(uia, outPath, &capErr) {

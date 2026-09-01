@@ -32,12 +32,23 @@ Palace_DesktopNewestCsvOrTxt(baseName) {
     return newest
 }
 
+Palace_ResolveDesktopDir() {
+    desktop := ""
+    try desktop := GetDesktopToRecyclePath()
+    catch
+        desktop := A_Desktop
+    if (!desktop || !DirExist(desktop))
+        desktop := A_Desktop
+    return RTrim(desktop, "\")
+}
+
 Palace_DesktopNewestImage() {
     newest := ""
     newestTime := 0
+    desktop := Palace_ResolveDesktopDir()
     ; Prefer palace Maps captures (Shift+P) over other Desktop images.
     for pat in ["PALACE_QUICK_IMAGE*.png", "PALACE_QUICK_IMAGE*.jpg", "PALACE_QUICK_IMAGE*.jpeg"] {
-        loop files A_Desktop . "\" . pat, "F" {
+        loop files desktop . "\" . pat, "F" {
             ts := Number(A_LoopFileTimeModified)
             if (ts > newestTime) {
                 newestTime := ts
@@ -48,7 +59,7 @@ Palace_DesktopNewestImage() {
     if (newest != "")
         return newest
     for pat in ["*.png", "*.jpg", "*.jpeg"] {
-        loop files A_Desktop . "\" . pat, "F" {
+        loop files desktop . "\" . pat, "F" {
             ts := Number(A_LoopFileTimeModified)
             if (ts > newestTime) {
                 newestTime := ts
@@ -62,7 +73,7 @@ Palace_DesktopNewestImage() {
 ; Canonical Desktop name for Import Management [Q] (Palace quick image).
 ; First capture: PALACE_QUICK_IMAGE.png; further captures while earlier files remain: _02, _03, …
 Palace_DesktopNextQuickImagePath() {
-    desktop := RTrim(A_Desktop, "\")
+    desktop := Palace_ResolveDesktopDir()
     base := "PALACE_QUICK_IMAGE"
     maxSlot := 0
     if FileExist(desktop "\" base ".png")
