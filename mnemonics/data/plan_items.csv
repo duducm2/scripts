@@ -1,8 +1,6 @@
 id,plan_id,section_path,text,checked,sort_order
 PITEM_0001,PLAN_0001,Backlog,dumb zone,0,1
 PITEM_0002,PLAN_0001,Backlog,Meta prompt,0,2
-PITEM_0003,PLAN_0001,Backlog,"ETL (Extract, Transform, Load)",0,3
-PITEM_0004,PLAN_0001,Backlog,Data lake,0,4
 PITEM_0005,PLAN_0001,Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3) > Month 1: Python Programming and Applied Statistics > Python Fundamentals and IDE Mastery,"Master variable types, loops, and functional programming in Python",0,5
 PITEM_0006,PLAN_0001,Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3) > Month 1: Python Programming and Applied Statistics > Python Fundamentals and IDE Mastery,Configure Cursor IDE for efficient code completion and debugging,0,6
 PITEM_0007,PLAN_0001,Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3) > Month 1: Python Programming and Applied Statistics > Python Fundamentals and IDE Mastery,Establish virtual environment discipline (venv/conda),0,7
@@ -824,3 +822,5 @@ PITEM_0825,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Developmen
 PITEM_0826,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium) > 5. Public Deployment",Establish a public GitHub repository with clean README and documented queries,0,88
 PITEM_0827,PLAN_0007,"Phase 5: Synthesis, Storytelling, and Portfolio Development (Narrative Auditorium) > 5. Public Deployment","Write portfolio READMEs that show commercial utility, not only academic theory",0,89
 PITEM_0739,PLAN_0001,Backlog,Harness/ Tack (anatomia cavalo),0,5
+PITEM_0740,PLAN_0007,Backlog,Data lake,0,1
+PITEM_0741,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",0,2

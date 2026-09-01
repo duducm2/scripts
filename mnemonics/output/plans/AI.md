@@ -8,10 +8,6 @@
 
 - [ ] Meta prompt
 
-- [ ] ETL (Extract, Transform, Load)
-
-- [ ] Data lake
-
 - [ ] Harness/ Tack (anatomia cavalo)
 
 ## Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3)
