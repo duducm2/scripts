@@ -339,7 +339,7 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Dynamic prompt context picker -> Utils\prompt_context_picker.ahk
 #include %A_ScriptDir%\Utils\prompt_context_picker.ahk
 
-; [Utils module] ClipAngel last clip → Desktop (text or image) -> Utils\clip_angel_export_desktop.ahk
+; [Utils module] ClipAngel clipboard-first → Desktop export + rename -> Utils\clip_angel_export_desktop.ahk
 #include %A_ScriptDir%\Utils\clip_angel_export_desktop.ahk
 ; [Utils module] Import Management hub (#!+X / Utility [J] / #!+F×2) -> Utils\import_mgmt_launcher.ahk
 ; Pack-import agent docs -> docs\prompt-data-output-and-finance-packs.md

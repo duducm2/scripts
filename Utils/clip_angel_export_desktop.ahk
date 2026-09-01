@@ -1,9 +1,11 @@
 ; =============================================================================
 ; Utils module: clip_angel_export_desktop.ahk
-; Copy Clip Angel Row 0 to Desktop via native Paste file, then prompt to rename from a persisted name list.
+; Copy clipboard or Clip Angel Row 0 to Desktop, then prompt to rename from a persisted name list.
 ; Also hosts HotkeyCopy_ShowPostCopyBanner (#!+p 1×/2× post-copy destination menu).
 ; Utility Shortcuts: #!+U → Macros → [c]
 ; =============================================================================
+
+global CLIPANGEL_EXPORT_CLIPBOARD_FIRST := true
 
 global g_ClipAngelNameGui := false
 global g_ClipAngelNameLv := false
@@ -246,6 +248,97 @@ ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext) {
         if !FileExist(path)
             return path
         i += 1
+    }
+}
+
+ClipAngelExport_UniqueStagingPath(desktopDir, ext) {
+    ext := ClipAngelExport_SanitizeExt(ext)
+    if (ext = "")
+        ext := "txt"
+    stamp := FormatTime(, "yyyyMMdd-HHmmss")
+    base := "clipangel-last-" stamp
+    path := desktopDir "\" base "." ext
+    if !FileExist(path)
+        return path
+    i := 2
+    loop {
+        path := desktopDir "\" base "-" i "." ext
+        if !FileExist(path)
+            return path
+        i += 1
+    }
+}
+
+; Write clipboard to Desktop (image / file drop / text). No ClipAngel UI. Returns path or "".
+ClipAngelExport_SaveClipboardToDesktop(&errMsg := "") {
+    errMsg := ""
+    desktopPath := AiQuickDownload_ResolveDesktopPath()
+    if (desktopPath = "" || !DirExist(desktopPath)) {
+        errMsg := "Desktop folder not found"
+        return ""
+    }
+    savedClip := ClipboardAll()
+    try {
+        isImage := false
+        try isImage := Task_ClipboardHasImage()
+        catch {
+            isImage := false
+        }
+        if (isImage) {
+            outPath := ClipAngelExport_UniqueStagingPath(desktopPath, "png")
+            if (!Task_SaveClipboardImage(outPath)) {
+                errMsg := "Could not save image to Desktop"
+                return ""
+            }
+            return outPath
+        }
+        if Clipboard_HasFileDrop() {
+            paths := Clipboard_GetFilePaths()
+            if (!paths || paths.Length < 1) {
+                errMsg := "No file in clipboard"
+                return ""
+            }
+            src := paths[1]
+            if (src = "" || !FileExist(src)) {
+                errMsg := "Clipboard file not found"
+                return ""
+            }
+            dest := DesktopCutNewest_UniqueDestPath(desktopPath, src)
+            if (dest = "") {
+                errMsg := "Could not build Desktop path"
+                return ""
+            }
+            try {
+                if DirExist(src)
+                    DirCopy(src, dest)
+                else
+                    FileCopy(src, dest)
+            } catch {
+                errMsg := "Failed to copy file to Desktop"
+                return ""
+            }
+            if !FileExist(dest) {
+                errMsg := "Copy verify failed"
+                return ""
+            }
+            return dest
+        }
+        content := Trim(A_Clipboard)
+        if (content != "") {
+            outPath := ClipAngelExport_UniqueStagingPath(desktopPath, "txt")
+            WriteUtf8File(outPath, content)
+            if !FileExist(outPath) {
+                errMsg := "Could not write text to Desktop"
+                return ""
+            }
+            return outPath
+        }
+        errMsg := "Clipboard empty"
+        return ""
+    } finally {
+        try A_Clipboard := savedClip
+        catch {
+        }
     }
 }
 
@@ -993,9 +1086,20 @@ ClipAngel_ExportLastClipToDesktop() {
     savedClip := ClipboardAll()
     try {
         StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
-        outPath := ClipAngelExport_PasteFirstClipToDesktop()
+        outPath := ""
+        errMsg := ""
+        clipboardFirst := true
+        try clipboardFirst := CLIPANGEL_EXPORT_CLIPBOARD_FIRST
+        catch {
+            clipboardFirst := true
+        }
+        if (clipboardFirst)
+            outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
+        if (outPath = "")
+            outPath := ClipAngelExport_PasteFirstClipToDesktop()
         if (outPath = "") {
-            ShowCenteredOverlay_Utils("❌ Clip Angel Paste file to Desktop failed.", 2500, BANNER_ACCENT_ERROR)
+            msg := errMsg != "" ? errMsg : "Paste file to Desktop failed"
+            ShowCenteredOverlay_Utils("❌ " . msg, 2500, BANNER_ACCENT_ERROR)
             return
         }
         try StandardLoadingBar_Hide(0)

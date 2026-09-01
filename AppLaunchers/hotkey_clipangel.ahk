@@ -26,7 +26,7 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 }
 
 ; =============================================================================
-; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Paste file to Desktop then hide
+; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: save clipboard to Desktop (or ClipAngel Paste file fallback)
 ; =============================================================================
 #!+7::
 {
@@ -86,7 +86,25 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         return
     }
 
-    ; Hold: ClipAngel Paste file onto Desktop (native type — png, txt, etc.).
+    ; Hold: clipboard-first to Desktop; ClipAngel Paste file only when clipboard is empty.
+    clipboardFirst := true
+    try clipboardFirst := CLIPANGEL_EXPORT_CLIPBOARD_FIRST
+    catch {
+        clipboardFirst := true
+    }
+    if (clipboardFirst) {
+        errMsg := ""
+        outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
+        if (outPath != "") {
+            SplitPath(outPath, &name)
+            if (StrLen(name) > 48)
+                name := SubStr(name, 1, 45) "..."
+            try ShowCenteredOverlay_Utils("✅ Pasted: " name, 1800, BANNER_ACCENT_SUCCESS)
+            catch {
+            }
+            return
+        }
+    }
     desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
     if !desktopHwnd {
         ShowCenteredOverlay_Utils("❌ Could not activate Desktop.", 2000, BANNER_ACCENT_ERROR)
