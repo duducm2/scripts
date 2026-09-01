@@ -16,11 +16,8 @@ $+d:: {
 }
 
 $+n:: {
-    try {
-        if CopilotWeb_ClickNewChat()
-            AiCompanion_ShowNewChatBanner(AI_COMPANION_COPILOT)
-        CopilotWeb_ReturnToComposer()
-    } catch {
+    try AiCompanion_StartNewChat(AI_COMPANION_COPILOT)
+    catch {
     }
 }
 

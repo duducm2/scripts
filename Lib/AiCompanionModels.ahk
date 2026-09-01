@@ -421,6 +421,34 @@ AiCompanionModels_SelectRole(companion, role) {
     return ok
 }
 
+; Shift+N new chat — loading bar from keypress through UIA/keyboard action.
+AiCompanion_StartNewChat(companion) {
+    if !AiCompanionModels_IsValidCompanion(companion)
+        return false
+    hwnd := WinExist("A")
+    StandardLoadingBar_Show("⏳ New chat…", BANNER_ACCENT_INTERMEDIATE, { centerOnHwnd: hwnd, fontSize: 17 })
+    ok := false
+    try {
+        if (companion = AI_COMPANION_GEMINI) {
+            Send "^+o"
+            ok := true
+        } else if (companion = AI_COMPANION_ENTERPRISE) {
+            ok := GeminiEnterprise_ClickNewChat()
+            GeminiEnterprise_ReturnToComposer()
+        } else if (companion = AI_COMPANION_COPILOT) {
+            ok := CopilotWeb_ClickNewChat()
+            CopilotWeb_ReturnToComposer()
+        }
+    } catch {
+        ok := false
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
+    if (ok)
+        AiCompanion_ShowNewChatBanner(companion)
+    return ok
+}
+
 ; Brief Information Only feedback after Shift+N new chat (Gemini / Enterprise / Copilot).
 AiCompanion_ShowNewChatBanner(companion) {
     if !AiCompanionModels_IsValidCompanion(companion)

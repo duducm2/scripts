@@ -133,23 +133,23 @@ ImportMgmt_CenterGui(guiObj, w := 560, h := 220) {
     guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
 }
 
-; Single source for ListView rows, letter accelerators, and help sections.
+; Single source for ListView rows, letter accelerators, help sections, and copy-name targets.
 ImportMgmt_Catalog() {
     return [
         Map("char", "D", "name", "Finance daily", "detail", "FINANCE_DAILY.txt → transactions",
-            "run", ImportMgmt_RunFinanceDaily),
+            "fileName", "FINANCE_DAILY.txt", "run", ImportMgmt_RunFinanceDaily),
         Map("char", "M", "name", "Finance monthly", "detail", "FINANCE_MONTHLY.txt → accounts / goals",
-            "run", ImportMgmt_RunFinanceMonthly),
+            "fileName", "FINANCE_MONTHLY.txt", "run", ImportMgmt_RunFinanceMonthly),
         Map("char", "P", "name", "Palace mnemonic pack", "detail", "PALACE_PACK.txt → palaces / beasts / atoms",
-            "run", ImportMgmt_RunPalacePack),
+            "fileName", "PALACE_PACK.txt", "run", ImportMgmt_RunPalacePack),
         Map("char", "L", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
-            "run", ImportMgmt_RunPlanPack),
+            "fileName", "PLAN_PACK.txt", "run", ImportMgmt_RunPlanPack),
         Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
-            "run", ImportMgmt_RunTaskPack),
+            "fileName", "TASK_PACK.txt", "run", ImportMgmt_RunTaskPack),
         Map("char", "Q", "name", "Palace quick image", "detail", "Newest Desktop PNG/JPG → palace missing image",
             "run", ImportMgmt_RunQuickImage),
         Map("char", "N", "name", "Desktop names", "detail", "clipangel_desktop_names.csv — CRUD + copy",
-            "run", ImportMgmt_RunDesktopNames),
+            "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
         Map("char", "H", "name", "Help", "detail", "Per-workflow rules and outcomes",
             "run", ImportMgmt_OnHelp)
     ]
@@ -168,7 +168,8 @@ ImportMgmt_ShowMainMenu() {
     g_ImportMgmtGui := Gui("+AlwaysOnTop +ToolWindow", "Import Management")
     g_ImportMgmtGui.SetFont("s10", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "w" . contentW,
-        "Char = import   Enter/double-click = import   H = help   Backspace = utility shortcuts   Esc = close")
+        "Char = import   Shift+Enter / double-click = import   Shift+C = copy pack name   Shift+Backspace = utility shortcuts   Esc = close"
+    )
     g_ImportMgmtLv := g_ImportMgmtGui.Add("ListView", "w" . contentW . " h" . lvH . " -Multi",
         ["Char", "Workflow", "Pack / detail"])
     g_ImportMgmtLv.OnEvent("DoubleClick", ImportMgmt_OnListActivate)
@@ -192,8 +193,9 @@ ImportMgmt_ShowMainMenu() {
         runFn := item["run"]
         pairs.Push([ch, runFn])
     }
-    pairs.Push(["Enter", ImportMgmt_OnListActivate])
-    pairs.Push(["Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()])
+    pairs.Push(["+Enter", ImportMgmt_OnListActivate])
+    pairs.Push(["+c", ImportMgmt_CopySelectedFileName])
+    pairs.Push(["+Backspace", (*) => ImportMgmt_ReturnToUtilityShortcuts()])
     pairs.Push(["Escape", (*) => ImportMgmt_CloseGui()])
     ImportMgmt_BindHotkeys(pairs)
 
@@ -221,6 +223,29 @@ ImportMgmt_OnListActivate(*) {
         return
     runFn := g_ImportMgmtCatalog[idx]["run"]
     runFn()
+}
+
+ImportMgmt_CopySelectedFileName(*) {
+    global g_ImportMgmtCatalog
+    idx := ImportMgmt_SelectedIndex()
+    if (idx < 1 || idx > g_ImportMgmtCatalog.Length)
+        return
+    item := g_ImportMgmtCatalog[idx]
+    if (!item.Has("fileName") || item["fileName"] = "") {
+        try ShowCenteredOverlay_Utils("No pack file for this workflow", 1200, BANNER_ACCENT_ERROR)
+        catch {
+            TrayTip("Import", "No pack file for this workflow")
+        }
+        return
+    }
+    name := item["fileName"]
+    try A_Clipboard := name
+    catch {
+    }
+    try ShowCenteredOverlay_Utils("Copied: " . name, 1200, BANNER_ACCENT_SUCCESS)
+    catch {
+        TrayTip("Import", "Copied: " . name)
+    }
 }
 
 ; --- Thin public runners (hub API; domain parsers stay in *_import modules) ---
@@ -280,7 +305,7 @@ ImportMgmt_ShowHelp() {
     g_ImportMgmtGui.Add("Text", "x16 y12 w" . bodyW, "Import rules")
     g_ImportMgmtGui.SetFont("s9", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y38 w" . bodyW,
-        "Canonical pack names, overwrite policy, fix-file recovery — Esc / Backspace return to list")
+        "Canonical pack names, overwrite policy, fix-file recovery — Esc / Shift+Backspace return to list")
     edit := g_ImportMgmtGui.Add("Edit",
         "x16 y64 w" . bodyW . " h" . bodyH
         . " ReadOnly -WantReturn +VScroll Multi",
@@ -293,11 +318,11 @@ ImportMgmt_ShowHelp() {
     }
     g_ImportMgmtGui.SetFont("s9", "Segoe UI")
     g_ImportMgmtGui.Add("Text", "x16 y" . (64 + bodyH + 10) . " w" . bodyW,
-    "Esc / Backspace — main menu")
+    "Esc / Shift+Backspace — main menu")
     g_ImportMgmtGui.OnEvent("Close", (*) => ImportMgmt_ShowMainMenu())
     g_ImportMgmtGui.OnEvent("Escape", (*) => ImportMgmt_ShowMainMenu())
     ImportMgmt_BindHotkeys([
-        ["Backspace", (*) => ImportMgmt_ShowMainMenu()],
+        ["+Backspace", (*) => ImportMgmt_ShowMainMenu()],
         ["Escape", (*) => ImportMgmt_ShowMainMenu()]
     ])
     ImportMgmt_CenterGui(g_ImportMgmtGui, winW, winH)
@@ -308,8 +333,8 @@ ImportMgmt_HelpText() {
     . "#!+X  ·  Utility Shortcuts [J]  ·  Win+Alt+Shift+F double-tap`r`n"
     . "This hub is the only AHK import UI. Domain apps no longer expose import menus.`r`n`r`n"
     . "LIST KEYS`r`n"
-    . "Char = run workflow   Enter / double-click = run selected   Esc = close`r`n"
-    . "Backspace = Utility Shortcuts`r`n`r`n"
+    . "Char = run workflow   Shift+Enter / double-click = run selected   Shift+C = copy pack name`r`n"
+    . "Shift+Backspace = Utility Shortcuts   Esc = close`r`n`r`n"
     . "CANONICAL DESKTOP NAMES (always overwrite)`r`n"
     . "Save AI packs with the exact filename below on Desktop.`r`n"
     . "Never add updated, corrected, v2, or similar suffixes.`r`n"
@@ -317,7 +342,7 @@ ImportMgmt_HelpText() {
     . "GENERAL WORKFLOW`r`n"
     . "1. Run the pack prompt (#!+U → Prompts, or dictation flow).`r`n"
     . "2. Save the pack to Desktop (Quick Download or copy fence).`r`n"
-    . "3. Open Import Management → Char / Enter on the workflow.`r`n`r`n"
+    . "3. Open Import Management → Char / Shift+Enter on the workflow.`r`n`r`n"
     . "========== [D] FINANCE DAILY ==========`r`n"
     . "Pack: FINANCE_DAILY.txt`r`n"
     . "Writes: finances/data transactions (append)`r`n"

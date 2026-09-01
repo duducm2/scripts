@@ -15,11 +15,8 @@ $+d:: {
 }
 
 $+n:: {
-    try {
-        if GeminiEnterprise_ClickNewChat()
-            AiCompanion_ShowNewChatBanner(AI_COMPANION_ENTERPRISE)
-        GeminiEnterprise_ReturnToComposer()
-    } catch {
+    try AiCompanion_StartNewChat(AI_COMPANION_ENTERPRISE)
+    catch {
     }
 }
 
