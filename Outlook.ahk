@@ -461,7 +461,7 @@ EnsureOutlookMainModule(targetModule) {
     return false
 }
 
-NavigateOutlookToModule(targetModule, failureMsg) {
+NavigateOutlookToModule(targetModule, autoLaunchAttempted := false) {
     targetLabel := (targetModule = "mail") ? "Mailbox" : "Calendar"
     StandardLoadingBar_Show("⏳ Outlook: opening " targetLabel "...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
         centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
@@ -489,8 +489,23 @@ NavigateOutlookToModule(targetModule, failureMsg) {
     if !mailboxActivated
         calendarActivated := ActivateOutlookCalendar()
     if !(mailboxActivated || calendarActivated) {
+        if !autoLaunchAttempted {
+            StandardLoadingBar_Update("⏳ Outlook: launching...", BANNER_ACCENT_INTERMEDIATE)
+            ActivateOrLaunchOutlook()
+            if !WaitForOutlookMainWindow() {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("❌ Outlook: Did not become ready in time.", OUTLOOK_BANNER_FAIL_MS,
+                    BANNER_ACCENT_ERROR)
+                return
+            }
+            OutlookHwndCache.InvalidateMailbox()
+            OutlookHwndCache.InvalidateCalendar()
+            NavigateOutlookToModule(targetModule, true)
+            return
+        }
         StandardLoadingBar_Hide(0)
-        PromptActivateOutlookBanner(failureMsg, targetModule)
+        ShowCenteredOverlay_Utils("❌ Outlook: Could not open " targetLabel ".", OUTLOOK_BANNER_FAIL_MS,
+            BANNER_ACCENT_ERROR)
         return
     }
 
@@ -593,28 +608,10 @@ OutlookActivatePrompt_OnYes(*) {
     targetModule := g_OutlookActivatePromptTargetModule
     g_OutlookActivatePromptTargetModule := ""
 
-    ActivateOrLaunchOutlook()
-
-    if (targetModule != "mail" && targetModule != "calendar")
-        return
-
-    StandardLoadingBar_Show("⏳ Outlook: waiting for window...", BANNER_ACCENT_INTERMEDIATE, { passive: false,
-        centerOnHwnd: 0, textWidth: 460, fontSize: 17 })
-    if !WaitForOutlookMainWindow() {
-        StandardLoadingBar_Hide(0)
-        ShowCenteredOverlay_Utils("❌ Outlook: Did not become ready in time.", OUTLOOK_BANNER_FAIL_MS,
-            BANNER_ACCENT_ERROR)
-        return
-    }
-    StandardLoadingBar_Hide(0)
-
-    OutlookHwndCache.InvalidateMailbox()
-    OutlookHwndCache.InvalidateCalendar()
-
-    failureMsg := (targetModule = "mail")
-        ? "⚠ Outlook: Mailbox and Calendar are not open (activation failed)"
-        : "⚠ Outlook: Calendar and Mailbox are not open (activation failed)"
-    NavigateOutlookToModule(targetModule, failureMsg)
+    if (targetModule = "mail" || targetModule = "calendar")
+        NavigateOutlookToModule(targetModule)
+    else
+        ActivateOrLaunchOutlook()
 }
 
 OutlookActivatePrompt_OnNo(*) {
@@ -638,8 +635,7 @@ OutlookActivatePrompt_OnTimeout(*) {
 ; =============================================================================
 #!+b::
 {
-    NavigateOutlookToModule("mail",
-        "⚠ Outlook: Mailbox and Calendar are not open (activation failed)")
+    NavigateOutlookToModule("mail")
 }
 
 ; =============================================================================
@@ -649,8 +645,7 @@ OutlookActivatePrompt_OnTimeout(*) {
 ; =============================================================================
 #!+g::
 {
-    NavigateOutlookToModule("calendar",
-        "⚠ Outlook: Calendar and Mailbox are not open (activation failed)")
+    NavigateOutlookToModule("calendar")
 }
 
 ; =============================================================================
