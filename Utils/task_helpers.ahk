@@ -5,6 +5,7 @@
 
 global g_TaskGui := false
 global g_TaskHotkeys := []
+global g_TaskPythonCmd := ""
 global g_TaskFilter := "all"
 global g_TaskBrowseProjectId := ""
 global g_TaskBrowseTaskId := ""
@@ -118,13 +119,23 @@ Task_SetSetting(section, key, value) {
     IniWrite(value, Task_SettingsPath(), section, key)
 }
 
-Task_FindPythonCmd() {
+Task_ClearPythonCmdCache() {
+    global g_TaskPythonCmd
+    g_TaskPythonCmd := ""
+}
+
+Task_FindPythonCmd(forceRefresh := false) {
+    global g_TaskPythonCmd
+    if (!forceRefresh && g_TaskPythonCmd != "")
+        return g_TaskPythonCmd
     candidates := ["py -3", "py", "python3", "python"]
     for c in candidates {
         try {
             ec := RunWait(A_ComSpec . ' /c ' . c . ' -c "print(1)" >nul 2>&1', , "Hide")
-            if (ec = 0)
+            if (ec = 0) {
+                g_TaskPythonCmd := c
                 return c
+            }
         } catch {
         }
     }
@@ -138,12 +149,15 @@ Task_FindPythonCmd() {
         loop files g, "F" {
             try {
                 ec := RunWait('"' . A_LoopFileFullPath . '" -c "print(1)"', , "Hide")
-                if (ec = 0)
-                    return '"' . A_LoopFileFullPath . '"'
+                if (ec = 0) {
+                    g_TaskPythonCmd := '"' . A_LoopFileFullPath . '"'
+                    return g_TaskPythonCmd
+                }
             } catch {
             }
         }
     }
+    g_TaskPythonCmd := ""
     return ""
 }
 

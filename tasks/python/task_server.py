@@ -20,6 +20,15 @@ from task_store import TaskStore  # noqa: E402
 
 DEFAULT_PORT = 8766
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+_STORE: TaskStore | None = None
+
+
+def get_store(data_dir: Path) -> TaskStore:
+    global _STORE
+    resolved = data_dir.resolve()
+    if _STORE is None or _STORE.data_dir.resolve() != resolved:
+        _STORE = TaskStore(resolved)
+    return _STORE
 
 
 def open_user_target(raw: str) -> dict[str, Any]:
@@ -169,7 +178,7 @@ class TaskHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/state":
-            store = TaskStore(self.data_dir)
+            store = get_store(self.data_dir)
             payload = store.state()
             env_path = self.data_dir / "environment.txt"
             env = "work"
@@ -189,7 +198,7 @@ class TaskHandler(BaseHTTPRequestHandler):
     def do_DELETE(self) -> None:
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
-        store = TaskStore(self.data_dir)
+        store = get_store(self.data_dir)
         try:
             if path.startswith("/api/projects/"):
                 self._json(200, store.delete_project(path.split("/")[-1]))
@@ -215,7 +224,7 @@ class TaskHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
-        store = TaskStore(self.data_dir)
+        store = get_store(self.data_dir)
         try:
             payload = self._read_json()
         except json.JSONDecodeError:
@@ -335,6 +344,7 @@ def main(argv: list[str] | None = None) -> int:
     (data_dir / "attachments").mkdir(exist_ok=True)
 
     handler = make_handler(data_dir, args.scripts_root.resolve())
+    get_store(data_dir).migrate_sections()
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Tasks server listening on http://{args.host}:{args.port}", file=sys.stderr)
     try:

@@ -28,6 +28,9 @@ FILE_MARKERS = [
     ("TASK_INFO.csv", "TASK_INFO"),
 ]
 
+# Rollback: set False to restore per-row find_or_create_section disk writes.
+TASK_IMPORT_BATCH_SECTIONS = True
+
 
 def desktop_dir() -> Path:
     return Path.home() / "Desktop"
@@ -170,16 +173,66 @@ def preview_pack(store: TaskStore) -> dict[str, Any]:
     }
 
 
+def validate_pack(pack: dict) -> list[str]:
+    """Collect row validation errors before any disk write."""
+    errors: list[str] = []
+    task_titles: dict[str, set[str]] = {}
+    for r in pack.get("projects") or []:
+        title = (r.get("title") or "").strip()
+        filt = (r.get("filter") or "work").strip().lower()
+        if not title:
+            errors.append("PROJECT: missing title")
+            continue
+        if filt not in VALID_FILTERS:
+            errors.append(f"PROJECT invalid filter: {title}")
+    for r in pack.get("tasks") or []:
+        title = (r.get("title") or "").strip()
+        filt = (r.get("filter") or "work").strip().lower()
+        kind = (r.get("kind") or "punctual").strip().lower()
+        recurrence = (r.get("recurrence") or "").strip().lower()
+        if not title:
+            errors.append("TASK: missing title")
+            continue
+        if filt not in VALID_FILTERS:
+            errors.append(f"TASK invalid filter: {title}")
+            continue
+        if kind not in VALID_KINDS:
+            errors.append(f"TASK invalid kind: {title}")
+            continue
+        if recurrence not in VALID_RECURRENCE:
+            errors.append(f"TASK invalid recurrence ({recurrence}): {title}")
+        task_titles.setdefault(filt, set()).add(title.lower())
+    for r in pack.get("info") or []:
+        title = (r.get("title") or "").strip()
+        filt = (r.get("filter") or "work").strip().lower()
+        attach_to = (r.get("attach_to") or "task").strip().lower()
+        parent_title = (r.get("parent_title") or "").strip()
+        if not title:
+            errors.append("INFO: missing title")
+            continue
+        if filt not in VALID_FILTERS:
+            errors.append(f"INFO invalid filter: {title}")
+            continue
+        if attach_to != "project" and parent_title:
+            key = f"{filt}|{parent_title.lower()}"
+            in_pack = parent_title.lower() in task_titles.get(filt, set())
+            if not in_pack:
+                errors.append(f"INFO parent task not in pack: {parent_title}")
+    return errors
+
+
 def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
     if pack is None:
         prev = preview_pack(store)
         if not prev.get("ok"):
             return prev
         pack = prev
-    errors: list[str] = []
+    errors: list[str] = list(validate_pack(pack))
     projects = store.load("projects")
     tasks = store.load("tasks")
     infos = store.load("info_points")
+    sections = store.load("sections")
+    sections_dirty = False
     staged: dict[str, str] = {}
     new_projects: list[dict] = []
     new_tasks: list[dict] = []
@@ -193,7 +246,11 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         for p in projects:
             if p.get("filter") == filt and (p.get("title") or "").strip().lower() == title.lower():
                 staged[key] = p["id"]
-                store.ensure_general_section(p["id"])
+                if TASK_IMPORT_BATCH_SECTIONS:
+                    store.ensure_general_section(p["id"], sections)
+                    sections_dirty = True
+                else:
+                    store.ensure_general_section(p["id"])
                 return p["id"]
         row = {
             "id": next_id("PROJ_", projects + new_projects),
@@ -207,13 +264,40 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         new_projects.append(row)
         projects.append(row)
         staged[key] = row["id"]
-        store.ensure_general_section(row["id"])
+        if TASK_IMPORT_BATCH_SECTIONS:
+            store.ensure_general_section(row["id"], sections)
+            sections_dirty = True
+        else:
+            store.ensure_general_section(row["id"])
         return row["id"]
 
     def ensure_section(project_id: str, name: str) -> tuple[str, str]:
         """section_path column = section display name; return (section_id, mirrored path)."""
+        nonlocal sections_dirty
         name = (name or "").strip()
-        sec = store.find_or_create_section(project_id, name or "General")
+        title = name or "General"
+        if TASK_IMPORT_BATCH_SECTIONS:
+            for s in sections:
+                if (
+                    s.get("project_id") == project_id
+                    and (s.get("title") or "").strip().lower() == title.lower()
+                ):
+                    return s["id"], store._section_path_for(s)
+            if title.lower() == "general":
+                row = store.ensure_general_section(project_id, sections)
+            else:
+                row = {
+                    "id": next_id("SEC_", sections),
+                    "project_id": project_id,
+                    "title": title,
+                    "sort_order": next_sort(
+                        [s for s in sections if s.get("project_id") == project_id]
+                    ),
+                }
+                sections.append(row)
+            sections_dirty = True
+            return row["id"], store._section_path_for(row)
+        sec = store.find_or_create_section(project_id, title or "General")
         path = store._section_path_for(sec)
         return sec["id"], path
 
@@ -321,6 +405,8 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         write_fix_file("Import produced no rows", "\n".join(errors))
         return {"ok": False, "error": "Import produced no rows", "errors": errors}
 
+    if TASK_IMPORT_BATCH_SECTIONS and sections_dirty:
+        store.save("sections", sections)
     store.save("projects", projects)
     store.save("tasks", tasks)
     store.save("info_points", infos)

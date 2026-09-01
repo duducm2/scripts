@@ -309,3 +309,15 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **SPA:** patch `state.data` after browse CRUD / notes save (`mergeApiRow`); `refreshLinkStatus` on Links view only — not every `refresh()`. Practice grid uses indexed beasts/atoms maps. Rollback: `PALACE_SPA_FULL_REFRESH := true` in [`mnemonics/web/index.html`](../mnemonics/web/index.html).
 - **Import `[P]`:** single `Palace_Load` of studies/palaces/beasts/atoms per session; in-memory CSV normalize (`Palace_ReadCsvFromText`); `Palace_ValidateImportAtoms` before commit; batch skip notes (no per-row toast). Rollback: `PALACE_IMPORT_BATCH_LOAD := false` in helpers.
 - **Atoms prompt:** Utility Prompts **`[u]`** (`mnemonic-atoms-import.txt`); study-scoped beasts/atoms slice via `Palace_BuildPromptStudyPack` at paste time; import via Import Management **`[P]`**.
+
+---
+
+## 22. Tasks — launcher, store, SPA, import (2026)
+
+- **Cache `Task_FindPythonCmd`** module-global after first probe ([`task_helpers.ahk`](../Utils/task_helpers.ahk)); call `Task_ClearPythonCmdCache()` only when Python install changes.
+- **Port PID probe:** `Task_PortListeningPid` uses ~500 ms in-process cache + `RunWait` stdout capture — no per-call temp-file netstat IPC ([`task_launcher.ahk`](../Utils/task_launcher.ahk)).
+- **`Task_EnsureServer`:** bounded 6 s health poll; reconcile listen PID when `/health` OK; `Sleep 150` only when port still listening after stop.
+- **Chrome HWND:** `Task_IsChromeWindowTitle` matches `127.0.0.1:8766` / `localhost:8766` URL titles (tab not fully titled yet).
+- **Python store:** module-singleton `TaskStore` via `get_store()` in [`task_server.py`](../tasks/python/task_server.py); `migrate_sections()` at server startup and after import — not on every `/api/state`. Rollback: `TASK_STORE_CACHE := false` in [`task_store.py`](../tasks/python/task_store.py).
+- **SPA:** patch `state.data` after emoji toggle, move, CRUD (`mergeApiRow` / `afterEntitySave`); client indexes (`sectionsByProject`, `tasksById`, etc.). Deletes and cascade paths keep full `refresh()`. Rollback: `TASK_SPA_FULL_REFRESH := true` in [`tasks/web/index.html`](../tasks/web/index.html).
+- **Import `[T]`:** stage sections in memory during `commit_pack`; single `save("sections")` before projects/tasks/info; upfront `validate_pack`. Rollback: `TASK_IMPORT_BATCH_SECTIONS := false` in [`task_pack_import.py`](../tasks/python/task_pack_import.py).

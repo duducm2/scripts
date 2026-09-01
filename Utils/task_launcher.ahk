@@ -5,6 +5,7 @@
 
 global g_TaskDashboardHwnd := 0
 global g_TaskServerPid := 0
+global g_TaskPortListenCache := Map()
 
 Task_ServerPort() {
     return 8766
@@ -165,6 +166,61 @@ Task_KillPidTree(pid) {
     }
 }
 
+; PID currently LISTENING on port (0 if none). Prefer this over Run()'s py launcher PID.
+Task_PortListeningPidProbe(port) {
+    try port := Integer(port)
+    catch {
+        return 0
+    }
+    if (port <= 0)
+        return 0
+    output := ""
+    try RunWait(A_ComSpec . ' /c netstat -ano | findstr /C:"' . port
+        . '" | findstr LISTENING', &output, "Hide")
+    catch {
+        return 0
+    }
+    for line in StrSplit(output, "`n", "`r") {
+        line := Trim(line)
+        if (line = "")
+            continue
+        parts := RegExReplace(line, "\s+", " ")
+        cols := StrSplit(parts, " ")
+        if (cols.Length < 5)
+            continue
+        if (StrUpper(cols[4]) != "LISTENING")
+            continue
+        try return Integer(cols[5])
+        catch {
+        }
+    }
+    return 0
+}
+
+Task_PortListeningPid(port) {
+    global g_TaskPortListenCache
+    try port := Integer(port)
+    catch {
+        return 0
+    }
+    if (port <= 0)
+        return 0
+    key := String(port)
+    now := A_TickCount
+    if (g_TaskPortListenCache.Has(key)) {
+        ent := g_TaskPortListenCache[key]
+        if (now - ent["tick"] < 500)
+            return ent["pid"]
+    }
+    pid := Task_PortListeningPidProbe(port)
+    g_TaskPortListenCache[key] := Map("pid", pid, "tick", now)
+    return pid
+}
+
+Task_PortIsListening(port) {
+    return Task_PortListeningPid(port) > 0
+}
+
 Task_StopServerNetstat(port) {
     q := Chr(39)
     cmd := "for /f `"tokens=5`" %a in (" . q . "netstat -ano ^| findstr :" . port
@@ -174,42 +230,41 @@ Task_StopServerNetstat(port) {
     }
 }
 
+Task_WaitPortFree(port, timeoutMs := 2500) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if (!Task_PortIsListening(port) && !Task_IsServerRunning(port))
+            return true
+        Sleep 50
+    }
+    return !Task_PortIsListening(port)
+}
+
 Task_StopServer(port := 0) {
     if (port = 0)
         port := Task_ServerPort()
     pid := Task_PidRead()
     if (pid > 0)
         Task_KillPidTree(pid)
+    listenPid := Task_PortListeningPid(port)
+    if (listenPid > 0 && listenPid != pid)
+        Task_KillPidTree(listenPid)
     ; Always free LISTENING holders (hung sockets may fail /health).
     Task_StopServerNetstat(port)
-    deadline := A_TickCount + 2500
-    while (A_TickCount < deadline) {
-        if (!Task_IsServerRunning(port))
-            break
-        Sleep 50
-    }
+    Task_WaitPortFree(port, 2500)
     Task_PidWrite(0)
 }
 
-Task_EnsureServer(forceRestart := false) {
-    port := Task_ServerPort()
-    if (forceRestart)
-        Task_StopServer(port)
-    else if (Task_IsServerRunning(port))
-        return true
-    else {
-        Task_StopServer(port)
-        Sleep 150
-    }
+Task_StartServerProcess(port) {
     py := Task_PythonDir() . "\task_server.py"
     if (!FileExist(py)) {
         Task_Notify("task_server.py not found", 2200, BANNER_ACCENT_ERROR)
-        return false
+        return 0
     }
     pyCmd := Task_FindPythonCmd()
     if (pyCmd = "") {
         Task_Notify("Python not found for Tasks server", 2500, BANNER_ACCENT_ERROR)
-        return false
+        return 0
     }
     dataDir := Task_DataDir()
     scriptsRoot := A_ScriptDir
@@ -219,18 +274,51 @@ Task_EnsureServer(forceRestart := false) {
     try Run(cmd, A_ScriptDir, "Hide", &pid)
     catch as e {
         Task_Notify("Tasks server failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
-        return false
+        return 0
     }
-    try pid := Integer(pid)
+    try return Integer(pid)
     catch {
-        pid := 0
+        return 0
     }
-    if (pid > 0)
-        Task_PidWrite(pid)
-    loop 30 {
-        if (Task_IsServerRunning(port))
-            return true
-        Sleep 150
+}
+
+Task_EnsureServer(forceRestart := false) {
+    port := Task_ServerPort()
+    if (!forceRestart && Task_IsServerRunning(port)) {
+        listenPid := Task_PortListeningPid(port)
+        if (listenPid > 0)
+            Task_PidWrite(listenPid)
+        return true
+    }
+
+    loop 2 {
+        Task_StopServer(port)
+        if (Task_PortIsListening(port) || Task_IsServerRunning(port))
+            Sleep 150
+        if (!FileExist(Task_PythonDir() . "\task_server.py")) {
+            Task_Notify("task_server.py not found", 2200, BANNER_ACCENT_ERROR)
+            return false
+        }
+        if (Task_FindPythonCmd() = "") {
+            Task_Notify("Python not found for Tasks server", 2500, BANNER_ACCENT_ERROR)
+            return false
+        }
+        runPid := Task_StartServerProcess(port)
+        if (runPid > 0)
+            Task_PidWrite(runPid)
+
+        deadline := A_TickCount + 6000
+        while (A_TickCount < deadline) {
+            if (Task_IsServerRunning(port)) {
+                listenPid := Task_PortListeningPid(port)
+                if (listenPid > 0)
+                    Task_PidWrite(listenPid)
+                else if (runPid > 0)
+                    Task_PidWrite(runPid)
+                return true
+            }
+            Sleep 150
+        }
     }
     Task_Notify("Tasks server did not start", 2800, BANNER_ACCENT_ERROR)
     return false
@@ -260,9 +348,17 @@ OnExit(Task_OnExitStopServer, -1)
 
 Task_IsChromeWindowTitle(title) {
     t := Trim(title)
+    if (t = "")
+        return false
+    ; Chrome notification badge: "(1) Tasks - Google Chrome"
+    t := RegExReplace(t, "^\(\d+\)\s+", "")
     if (t = "Tasks" || t = "Tasks - Google Chrome")
         return true
     if (InStr(t, "Tasks") = 1)
+        return true
+    ; Title still on the localhost URL (tab not fully titled yet, or URL bar mode).
+    port := String(Task_ServerPort())
+    if (InStr(t, "127.0.0.1:" . port) || InStr(t, "localhost:" . port))
         return true
     return false
 }

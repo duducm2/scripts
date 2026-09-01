@@ -440,7 +440,6 @@ class TaskStore:
             self._mtime[kind] = 0.0
 
     def state(self) -> dict[str, Any]:
-        self.migrate_sections()
         projects = self.load("projects")
         sections = self.load("sections")
         tasks = self.load("tasks")
@@ -517,8 +516,8 @@ class TaskStore:
         }
         rows.append(row)
         self.save("projects", rows)
-        self.ensure_general_section(row["id"])
-        return {"ok": True, "project": row}
+        gen = self.ensure_general_section(row["id"])
+        return {"ok": True, "project": row, "section": gen}
 
     def delete_project(self, project_id: str) -> dict:
         tasks = self.load("tasks")
@@ -981,6 +980,9 @@ class TaskStore:
         result = self.add_attachment(pt, pid, "image", ref, desc)
         if pt == "info":
             result["info_id"] = pid
+            info_row = self.find("info_points", pid)
+            if info_row:
+                result["info"] = info_row
         return result
 
     def delete_attachment(self, att_id: str) -> dict:

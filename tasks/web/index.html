@@ -1028,6 +1028,162 @@
         const GITHUB_PUNCTUAL_MD =
           "https://github.com/duducm2/my-notes/blob/main/main/punctual.md";
         let taskIdsWithInfo = new Set();
+        const TASK_SPA_FULL_REFRESH = false;
+        const TASK_API_ENTITY_MAP = {
+          project: "projects",
+          section: "sections",
+          task: "tasks",
+          info: "info_points",
+          attachment: "attachments",
+        };
+
+        function invalidateDataIndex() {
+          state._dataIndex = null;
+        }
+
+        function buildDataIndex() {
+          const sectionsByProject = new Map();
+          const tasksBySection = new Map();
+          const tasksById = new Map();
+          const infoByParent = new Map();
+          const attachmentsByParent = new Map();
+          for (const s of state.data?.sections || []) {
+            const pid = s.project_id || "";
+            if (!sectionsByProject.has(pid)) sectionsByProject.set(pid, []);
+            sectionsByProject.get(pid).push(s);
+          }
+          for (const arr of sectionsByProject.values()) {
+            arr.sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+          }
+          for (const t of state.data?.tasks || []) {
+            if (t.id) tasksById.set(t.id, t);
+            const sid = t.section_id || "";
+            if (!tasksBySection.has(sid)) tasksBySection.set(sid, []);
+            tasksBySection.get(sid).push(t);
+          }
+          for (const arr of tasksBySection.values()) {
+            arr.sort(
+              (a, b) =>
+                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+                a.title.localeCompare(b.title),
+            );
+          }
+          for (const i of state.data?.info_points || []) {
+            const key = `${i.parent_type || ""}:${i.parent_id || ""}`;
+            if (!infoByParent.has(key)) infoByParent.set(key, []);
+            infoByParent.get(key).push(i);
+          }
+          for (const a of state.data?.attachments || []) {
+            const key = `${a.parent_type || ""}:${a.parent_id || ""}`;
+            if (!attachmentsByParent.has(key)) attachmentsByParent.set(key, []);
+            attachmentsByParent.get(key).push(a);
+          }
+          state._dataIndex = {
+            sectionsByProject,
+            tasksBySection,
+            tasksById,
+            infoByParent,
+            attachmentsByParent,
+          };
+        }
+
+        function dataIndex() {
+          if (!state._dataIndex) buildDataIndex();
+          return state._dataIndex;
+        }
+
+        function recomputeCounts() {
+          if (!state.data) return;
+          const tasks = state.data.tasks || [];
+          const open_n = tasks.filter(
+            (t) =>
+              t.active !== "0" && t.kind !== "habitual" && t.emoji !== "✅",
+          ).length;
+          state.data.counts = {
+            ...(state.data.counts || {}),
+            projects: (state.data.projects || []).length,
+            sections: (state.data.sections || []).length,
+            tasks: tasks.length,
+            info: (state.data.info_points || []).length,
+            attachments: (state.data.attachments || []).length,
+            open: open_n,
+          };
+        }
+
+        function mergeApiRow(entityKey, row, { removeId } = {}) {
+          if (!state.data || !entityKey) return;
+          invalidateDataIndex();
+          const list = state.data[entityKey];
+          if (!Array.isArray(list)) return;
+          if (removeId) {
+            state.data[entityKey] = list.filter((r) => r.id !== removeId);
+            recomputeCounts();
+            return;
+          }
+          if (!row?.id) return;
+          const i = list.findIndex((r) => r.id === row.id);
+          const copy = { ...row };
+          if (i >= 0) list[i] = copy;
+          else list.push(copy);
+          recomputeCounts();
+        }
+
+        function applyLocalMove(entityKey, movedRow) {
+          if (!state.data || !movedRow?.id) return;
+          const list = state.data[entityKey];
+          if (!Array.isArray(list)) return;
+          const idx = list.findIndex((r) => r.id === movedRow.id);
+          if (idx < 0) {
+            mergeApiRow(entityKey, movedRow);
+            return;
+          }
+          const oldOrder = Number(list[idx].sort_order || 0);
+          const newOrder = Number(movedRow.sort_order || 0);
+          const swapIdx = list.findIndex(
+            (r, i) => i !== idx && Number(r.sort_order || 0) === newOrder,
+          );
+          if (swapIdx >= 0) {
+            list[swapIdx] = {
+              ...list[swapIdx],
+              sort_order: String(oldOrder),
+            };
+          }
+          list[idx] = { ...movedRow };
+          invalidateDataIndex();
+          recomputeCounts();
+        }
+
+        async function afterEntitySave(apiKey, r, onDone) {
+          if (TASK_SPA_FULL_REFRESH) {
+            await refresh();
+            if (onDone) onDone();
+            return;
+          }
+          const entityKey = TASK_API_ENTITY_MAP[apiKey];
+          if (entityKey && r?.[apiKey]) mergeApiRow(entityKey, r[apiKey]);
+          if (r?.section) mergeApiRow("sections", r.section);
+          else if (!entityKey || !r?.[apiKey]) recomputeCounts();
+          render();
+          if (onDone) onDone();
+        }
+
+        async function afterMoveSave(apiKey, r, onDone) {
+          if (TASK_SPA_FULL_REFRESH || !r?.moved) {
+            await refresh();
+            if (onDone) onDone();
+            return;
+          }
+          const entityKey = TASK_API_ENTITY_MAP[apiKey];
+          const row = r?.[apiKey];
+          if (entityKey && row) applyLocalMove(entityKey, row);
+          else recomputeCounts();
+          render();
+          if (onDone) onDone();
+        }
 
         function rebuildTaskIdsWithInfo() {
           const ids = new Set();
@@ -1184,6 +1340,7 @@
 
         async function refresh() {
           state.data = await api("/api/state");
+          invalidateDataIndex();
           applyEnvDefaultFromState(state.data);
           render();
         }
@@ -1224,27 +1381,23 @@
         }
 
         function imageAttachmentsFor(parentType, parentId) {
-          const atts = state.data.attachments || [];
-          const direct = atts.filter(
-            (a) =>
-              a.kind === "image" &&
-              a.parent_type === parentType &&
-              a.parent_id === parentId,
+          const idx = dataIndex();
+          const key = `${parentType}:${parentId}`;
+          const direct = (idx.attachmentsByParent.get(key) || []).filter(
+            (a) => a.kind === "image",
           );
           if (parentType === "info") return direct;
           const infoIds = new Set(
-            (state.data.info_points || [])
-              .filter(
-                (i) => i.parent_type === parentType && i.parent_id === parentId,
-              )
-              .map((i) => i.id),
+            (idx.infoByParent.get(key) || []).map((i) => i.id),
           );
-          const nested = atts.filter(
-            (a) =>
-              a.kind === "image" &&
-              a.parent_type === "info" &&
-              infoIds.has(a.parent_id),
-          );
+          const nested = [];
+          for (const iid of infoIds) {
+            nested.push(
+              ...(idx.attachmentsByParent.get(`info:${iid}`) || []).filter(
+                (a) => a.kind === "image",
+              ),
+            );
+          }
           const seen = new Set();
           const out = [];
           for (const a of direct.concat(nested)) {
@@ -1451,13 +1604,8 @@
         }
 
         function sectionsFor(projectId) {
-          return (state.data.sections || [])
-            .filter((s) => s.project_id === projectId)
-            .sort(
-              (a, b) =>
-                Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
-                a.title.localeCompare(b.title),
-            );
+          const list = dataIndex().sectionsByProject.get(projectId) || [];
+          return list.slice();
         }
 
         function projectTasksHtml(p, pts, plan) {
@@ -2144,7 +2292,7 @@
 
         function taskRowById(id) {
           if (!id) return null;
-          return (state.data.tasks || []).find((t) => t.id === id) || null;
+          return dataIndex().tasksById.get(id) || null;
         }
 
         function hoveredTaskId() {
@@ -2253,11 +2401,12 @@
           });
           if (moving) state.taskClipboard = { ...clip, cutFromId: "" };
           toast(moving ? "Moved task" : "Pasted task");
-          await refresh();
-          if (r.task?.id) {
-            const sk = r.task.kind === "habitual" ? "habit" : "task";
-            flashAdded(sk, r.task.id);
-          }
+          await afterEntitySave("task", r, () => {
+            if (r.task?.id) {
+              const sk = r.task.kind === "habitual" ? "habit" : "task";
+              flashAdded(sk, r.task.id);
+            }
+          });
         }
 
         function selectedHabitId() {
@@ -2278,19 +2427,23 @@
             return;
           }
           const prev = state.sel;
-          await api("/api/tasks/" + encodeURIComponent(tid) + "/emoji", {
-            method: "POST",
-            body: JSON.stringify({ key: keyOrEmoji }),
+          const r = await api(
+            "/api/tasks/" + encodeURIComponent(tid) + "/emoji",
+            {
+              method: "POST",
+              body: JSON.stringify({ key: keyOrEmoji }),
+            },
+          );
+          await afterEntitySave("task", r, () => {
+            if (prev?.id) {
+              const t = taskRowById(prev.id);
+              const kind =
+                t?.kind === "habitual" || prev.kind === "habit"
+                  ? "habit"
+                  : "task";
+              setSelection(kind, prev.id, false);
+            }
           });
-          await refresh();
-          if (prev?.id) {
-            const t = (state.data.tasks || []).find((x) => x.id === prev.id);
-            const kind =
-              t?.kind === "habitual" || prev.kind === "habit"
-                ? "habit"
-                : "task";
-            setSelection(kind, prev.id, false);
-          }
         }
 
         async function sendHabitToPersonal(habitId) {
@@ -2299,9 +2452,10 @@
             { method: "POST", body: "{}" },
           );
           toast("Sent to Personal · General");
-          await refresh();
-          applySectionFocus("personal");
-          if (r.task?.id) flashAdded("task", r.task.id);
+          await afterEntitySave("task", r, () => {
+            applySectionFocus("personal");
+            if (r.task?.id) flashAdded("task", r.task.id);
+          });
         }
 
         function selectedProjectId() {
@@ -2457,7 +2611,8 @@
           if (k === "p") {
             if (state.view !== "dashboard") {
               state.view = "dashboard";
-              await refresh();
+              if (!state.data) await refresh();
+              else render();
             }
             state.filter = defaultProjectFilter();
             beginInlineProjectCreate(state.filter);
@@ -2867,7 +3022,12 @@
               method: "DELETE",
             });
             toast("Deleted");
-            await refresh();
+            if (TASK_SPA_FULL_REFRESH) {
+              await refresh();
+            } else {
+              mergeApiRow("info_points", null, { removeId: id });
+              render();
+            }
             if (!ctx) return;
             const remaining = (state.data.info_points || []).filter(
               (i) =>
@@ -2906,10 +3066,11 @@
             }),
           });
           toast("Saved");
-          await refresh();
           const iid = r.info?.id || existing?.id || "";
-          infoListModal(parentType, parentId, iid);
-          flashInfoRow(iid);
+          await afterEntitySave("info", r, () => {
+            infoListModal(parentType, parentId, iid);
+            flashInfoRow(iid);
+          });
         }
 
         function moveInfoSel(dir) {
@@ -2931,12 +3092,16 @@
           if (!ctx) return;
           const id = state.infoSelId;
           try {
-            await api("/api/info/" + encodeURIComponent(id) + "/move", {
-              method: "POST",
-              body: JSON.stringify({ dir }),
+            const r = await api(
+              "/api/info/" + encodeURIComponent(id) + "/move",
+              {
+                method: "POST",
+                body: JSON.stringify({ dir }),
+              },
+            );
+            await afterMoveSave("info", r, () => {
+              infoListModal(ctx.parentType, ctx.parentId, id);
             });
-            await refresh();
-            infoListModal(ctx.parentType, ctx.parentId, id);
           } catch (err) {
             toast(err.message || String(err));
           }
@@ -2959,6 +3124,8 @@
           const kind = state.sel.kind;
           const id = state.sel.id;
           let moved = false;
+          let moveResponse = null;
+          let apiKey = "";
           if (kind === "section") {
             const sec = findSection(id);
             if (!sec) return;
@@ -2974,6 +3141,8 @@
                   body: JSON.stringify({ dir }),
                 },
               );
+              moveResponse = r;
+              apiKey = "section";
               moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
@@ -2988,6 +3157,8 @@
                   body: JSON.stringify({ dir }),
                 },
               );
+              moveResponse = r;
+              apiKey = "project";
               moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
@@ -3002,6 +3173,8 @@
                   body: JSON.stringify({ dir }),
                 },
               );
+              moveResponse = r;
+              apiKey = "task";
               moved = !!r.moved;
             } catch (err) {
               toast(err.message || String(err));
@@ -3014,8 +3187,9 @@
             toast("Already at edge");
             return;
           }
-          await refresh();
-          setSelection(kind, id, true);
+          await afterMoveSave(apiKey, moveResponse, () => {
+            setSelection(kind, id, true);
+          });
         }
 
         function applyEmojiFilter(emoji) {
@@ -3158,8 +3332,9 @@
                 });
                 closeModal();
                 toast("Saved");
-                await refresh();
-                if (r.project?.id) flashAdded("project", r.project.id);
+                await afterEntitySave("project", r, () => {
+                  if (r.project?.id) flashAdded("project", r.project.id);
+                });
               } catch (err) {
                 toast(err.message);
               }
@@ -3209,8 +3384,9 @@
                 });
                 closeModal();
                 toast("Saved");
-                await refresh();
-                if (r.section?.id) flashAdded("section", r.section.id);
+                await afterEntitySave("section", r, () => {
+                  if (r.section?.id) flashAdded("section", r.section.id);
+                });
               } catch (err) {
                 toast(err.message);
               }
@@ -3455,7 +3631,8 @@
         async function beginInlineTaskCreate(hint = {}) {
           if (state.view !== "dashboard") {
             state.view = "dashboard";
-            await refresh();
+            if (!state.data) await refresh();
+            else render();
           }
           let ctx = resolveTaskCreateContext(hint);
           if (!ctx.project_id) {
@@ -3466,7 +3643,8 @@
                 filter: ctx.filter,
               }),
             });
-            await refresh();
+            if (TASK_SPA_FULL_REFRESH) await refresh();
+            else await afterEntitySave("project", r);
             ctx = resolveTaskCreateContext({
               ...hint,
               project_id: r.project.id,
@@ -3478,12 +3656,19 @@
             return;
           }
           if (!ctx.section_id) {
-            await refresh();
             ctx = resolveTaskCreateContext({
               ...hint,
               project_id: ctx.project_id,
               filter: ctx.filter,
             });
+            if (!ctx.section_id) {
+              await refresh();
+              ctx = resolveTaskCreateContext({
+                ...hint,
+                project_id: ctx.project_id,
+                filter: ctx.filter,
+              });
+            }
           }
           cancelInlineCreate();
           setSelection(null, null, false);
@@ -3555,8 +3740,9 @@
             });
             cancelInlineCreate();
             toast("Section added");
-            await refresh();
-            if (r.section?.id) flashAdded("section", r.section.id);
+            await afterEntitySave("section", r, () => {
+              if (r.section?.id) flashAdded("section", r.section.id);
+            });
             return;
           }
           if (entity === "project") {
@@ -3570,12 +3756,13 @@
             });
             cancelInlineCreate();
             toast("Project added");
-            await refresh();
-            if (r.project?.filter)
-              applySectionFocus(r.project.filter, {
-                scrollHeader: false,
-              });
-            if (r.project?.id) flashAdded("project", r.project.id);
+            await afterEntitySave("project", r, () => {
+              if (r.project?.filter)
+                applySectionFocus(r.project.filter, {
+                  scrollHeader: false,
+                });
+              if (r.project?.id) flashAdded("project", r.project.id);
+            });
             return;
           }
           const kind = ctx.kind || "punctual";
@@ -3600,11 +3787,12 @@
               ? "Habit added — Enter to set recurrence"
               : "Task added — Enter to edit details",
           );
-          await refresh();
-          if (r.task?.id) {
-            const sk = r.task.kind === "habitual" ? "habit" : "task";
-            flashAdded(sk, r.task.id);
-          }
+          await afterEntitySave("task", r, () => {
+            if (r.task?.id) {
+              const sk = r.task.kind === "habitual" ? "habit" : "task";
+              flashAdded(sk, r.task.id);
+            }
+          });
         }
 
         function taskForm(existing) {
@@ -3680,11 +3868,12 @@
                 });
                 closeModal();
                 toast("Saved");
-                await refresh();
-                if (r.task?.id) {
-                  const sk = r.task.kind === "habitual" ? "habit" : "task";
-                  flashAdded(sk, r.task.id);
-                }
+                await afterEntitySave("task", r, () => {
+                  if (r.task?.id) {
+                    const sk = r.task.kind === "habitual" ? "habit" : "task";
+                    flashAdded(sk, r.task.id);
+                  }
+                });
               } catch (err) {
                 toast(err.message);
               }
@@ -3754,7 +3943,13 @@
             }),
           });
           toast("Image attached");
-          await refresh();
+          if (TASK_SPA_FULL_REFRESH) {
+            await refresh();
+          } else {
+            if (r.attachment) mergeApiRow("attachments", r.attachment);
+            if (r.info) mergeApiRow("info_points", r.info);
+            render();
+          }
           if (state.infoCtx) {
             const iid = r.info_id || "";
             infoListModal(
@@ -3976,11 +4171,14 @@
                 toast("Habits cannot be completed");
                 return;
               }
-              await api("/api/tasks/" + encodeURIComponent(id) + "/emoji", {
-                method: "POST",
-                body: JSON.stringify({ key }),
-              });
-              await refresh();
+              const r = await api(
+                "/api/tasks/" + encodeURIComponent(id) + "/emoji",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ key }),
+                },
+              );
+              await afterEntitySave("task", r);
               return;
             }
             if (act === "habit-to-personal") {
@@ -4011,7 +4209,11 @@
                 method: "DELETE",
               });
               toast("Deleted");
-              await refresh();
+              if (TASK_SPA_FULL_REFRESH) await refresh();
+              else {
+                mergeApiRow("info_points", null, { removeId: id });
+                render();
+              }
               return;
             }
             if (act === "paste-att") {
