@@ -86,6 +86,64 @@ Maps_FindMapPane(root) {
     return 0
 }
 
+Maps_CaptureCanvasViaDownload(uia, outPath, &errMsg := "") {
+    ; Work env: composite map canvases in-page and download PNG (avoids CopyFromScreen black frames).
+    if !uia || outPath = ""
+        return false
+    errMsg := ""
+    js :=
+        "(function(){window.__ahkMapsCap={ok:0};requestAnimationFrame(function(){try{var canvases=Array.from(document.querySelectorAll('canvas')).filter(function(c){return c.offsetWidth>0&&c.offsetHeight>0;});if(!canvases.length){window.__ahkMapsCap={ok:0};return;}var best=canvases.reduce(function(a,b){return(a.width*a.height)>(b.width*b.height)?a:b;});var w=best.width,h=best.height;if(w<=0||h<=0){window.__ahkMapsCap={ok:0};return;}var off=document.createElement('canvas');off.width=w;off.height=h;var ctx=off.getContext('2d');canvases.forEach(function(c){try{if(c.width===w&&c.height===h)ctx.drawImage(c,0,0);}catch(e){}});var url=off.toDataURL('image/png');if(!url||url.length<500){window.__ahkMapsCap={ok:0};return;}var fn='ahk-maps-'+Date.now()+'.png';var a=document.createElement('a');a.href=url;a.download=fn;document.body.appendChild(a);a.click();a.remove();window.__ahkMapsCap={ok:1,file:fn};}catch(e){window.__ahkMapsCap={ok:0};}});})()"
+    try {
+        uia.JSExecute(js)
+    } catch {
+        errMsg := "canvas export failed"
+        return false
+    }
+    Sleep 200
+    capJson := ""
+    try {
+        capJson := uia.JSReturnThroughClipboard("JSON.stringify(window.__ahkMapsCap||{ok:0})")
+    } catch {
+        errMsg := "canvas export failed"
+        return false
+    }
+    if (capJson = "" || !InStr(capJson, '"ok":1')) {
+        errMsg := "canvas export failed"
+        return false
+    }
+    if !RegExMatch(capJson, '"file"\s*:\s*"([^"]+)"', &m) {
+        errMsg := "canvas export failed"
+        return false
+    }
+    dlName := m[1]
+    dlPath := EnvGet("USERPROFILE") "\Downloads\" dlName
+    deadline := A_TickCount + 5000
+    while (A_TickCount < deadline) {
+        if FileExist(dlPath)
+            break
+        Sleep 100
+    }
+    if !FileExist(dlPath) {
+        errMsg := "download timed out"
+        return false
+    }
+    try {
+        if FileExist(outPath)
+            FileDelete(outPath)
+        FileMove(dlPath, outPath, 1)
+    } catch {
+        try FileDelete(dlPath)
+        catch {
+        }
+        errMsg := "canvas export failed"
+        return false
+    }
+    try uia.JSExecute("delete window.__ahkMapsCap;")
+    catch {
+    }
+    return FileExist(outPath)
+}
+
 Maps_CaptureRectToDesktop(x, y, w, h) {
     if (w <= 0 || h <= 0)
         return ""
@@ -263,11 +321,22 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
             return
         }
 
-        outPath := Maps_CaptureRectToDesktop(br.l, br.t, w, h)
-        if (outPath = "") {
-            ToolTip("Maps: capture failed")
-            SetTimer(() => ToolTip(), -2000)
-            return
+        outPath := A_Desktop "\maps-" FormatTime(, "yyyyMMdd-HHmmss") ".png"
+        global IS_WORK_ENVIRONMENT
+        if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
+            capErr := ""
+            if !Maps_CaptureCanvasViaDownload(uia, outPath, &capErr) {
+                ToolTip("Maps: " . (capErr != "" ? capErr : "capture failed"))
+                SetTimer(() => ToolTip(), -2000)
+                return
+            }
+        } else {
+            outPath := Maps_CaptureRectToDesktop(br.l, br.t, w, h)
+            if (outPath = "") {
+                ToolTip("Maps: capture failed")
+                SetTimer(() => ToolTip(), -2000)
+                return
+            }
         }
 
         ToolTip("Saved: " . outPath)
