@@ -35,6 +35,18 @@ Palace_DesktopNewestCsvOrTxt(baseName) {
 Palace_DesktopNewestImage() {
     newest := ""
     newestTime := 0
+    ; Prefer palace Maps captures (Shift+P) over other Desktop images.
+    for pat in ["PALACE_QUICK_IMAGE*.png", "PALACE_QUICK_IMAGE*.jpg", "PALACE_QUICK_IMAGE*.jpeg"] {
+        loop files A_Desktop . "\" . pat, "F" {
+            ts := Number(A_LoopFileTimeModified)
+            if (ts > newestTime) {
+                newestTime := ts
+                newest := A_LoopFileFullPath
+            }
+        }
+    }
+    if (newest != "")
+        return newest
     for pat in ["*.png", "*.jpg", "*.jpeg"] {
         loop files A_Desktop . "\" . pat, "F" {
             ts := Number(A_LoopFileTimeModified)
@@ -45,6 +57,25 @@ Palace_DesktopNewestImage() {
         }
     }
     return newest
+}
+
+; Canonical Desktop name for Import Management [Q] (Palace quick image).
+; First capture: PALACE_QUICK_IMAGE.png; further captures while earlier files remain: _02, _03, …
+Palace_DesktopNextQuickImagePath() {
+    desktop := RTrim(A_Desktop, "\")
+    base := "PALACE_QUICK_IMAGE"
+    maxSlot := 0
+    if FileExist(desktop "\" base ".png")
+        maxSlot := 1
+    loop files desktop "\" base "_*.png", "F" {
+        if RegExMatch(A_LoopFileName, "^PALACE_QUICK_IMAGE_(\d+)\.png$", &m)
+            maxSlot := Max(maxSlot, Integer(m[1]))
+    }
+    next := maxSlot + 1
+    if (next = 1)
+        return desktop "\" base ".png"
+    suffix := (next < 10) ? "_0" . next : "_" . next
+    return desktop "\" base suffix ".png"
 }
 
 Palace_ArchiveImported(path) {

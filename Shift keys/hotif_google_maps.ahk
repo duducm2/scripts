@@ -168,10 +168,11 @@ Maps_CaptureCanvasViaDownload(uia, outPath, &errMsg := "") {
     return FileExist(outPath)
 }
 
-Maps_CaptureRectToDesktop(x, y, w, h) {
+Maps_CaptureRectToDesktop(x, y, w, h, outPath := "") {
     if (w <= 0 || h <= 0)
         return ""
-    outPath := A_Desktop "\maps-" FormatTime(, "yyyyMMdd-HHmmss") ".png"
+    if (outPath = "")
+        outPath := Palace_DesktopNextQuickImagePath()
     ps1 := A_Temp "\ahk_maps_capture.ps1"
     safePath := StrReplace(outPath, "'", "''")
     script := (
@@ -360,7 +361,7 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
             return
         }
 
-        outPath := A_Desktop "\maps-" FormatTime(, "yyyyMMdd-HHmmss") ".png"
+        outPath := Palace_DesktopNextQuickImagePath()
         global IS_WORK_ENVIRONMENT
         StandardLoadingBar_Update("📸 Capturing PNG...", BANNER_ACCENT_INTERMEDIATE)
         if (IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT) {
@@ -373,7 +374,7 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
                 return
             }
         } else {
-            outPath := Maps_CaptureRectToDesktop(br.l, br.t, w, h)
+            outPath := Maps_CaptureRectToDesktop(br.l, br.t, w, h, outPath)
             if (outPath = "") {
                 StandardLoadingBar_Update("❌ Maps: capture failed", BANNER_ACCENT_ERROR)
                 StandardLoadingBar_Hide(2000)

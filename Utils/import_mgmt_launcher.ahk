@@ -147,7 +147,7 @@ ImportMgmt_Catalog() {
         Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
             "fileName", "TASK_PACK.txt", "run", ImportMgmt_RunTaskPack),
         Map("char", "Q", "name", "Palace quick image", "detail", "Newest Desktop PNG/JPG → palace missing image",
-            "run", ImportMgmt_RunQuickImage),
+            "fileName", "PALACE_QUICK_IMAGE.png", "run", ImportMgmt_RunQuickImage),
         Map("char", "N", "name", "Desktop names", "detail", "clipangel_desktop_names.csv — CRUD + copy",
             "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
         Map("char", "H", "name", "Help", "detail", "Per-workflow rules and outcomes",
@@ -381,7 +381,9 @@ ImportMgmt_HelpText() {
     . "AI fix: Desktop TASK_AI_FIX.txt (copied to clipboard, ≥5s banner, hub closes)`r`n"
     . "Re-run: #!+X → [T]`r`n`r`n"
     . "========== [Q] PALACE QUICK IMAGE ==========`r`n"
-    . "Source: newest PNG/JPG/JPEG on Desktop (no pack file)`r`n"
+    . "Canonical: PALACE_QUICK_IMAGE.png (Shift+P Maps capture uses this name)`r`n"
+    . "Batch captures: PALACE_QUICK_IMAGE_02.png, _03.png, … while earlier files remain on Desktop`r`n"
+    . "Source: newest PALACE_QUICK_IMAGE*.png/JPG on Desktop, else any newest image`r`n"
     . "Purpose: attach that image to a Memory Palace that has no image_rel_path`r`n"
     . "Flow: pick palace from missing-image list → copy into practice/images/{study}/{n}.{ext}`r`n"
     . "Writes: mnemonics/data palaces.csv image_rel_path; syncs practice Markdown`r`n"
