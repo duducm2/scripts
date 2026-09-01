@@ -1724,6 +1724,17 @@
           if (inp && document.activeElement === inp) inp.blur();
         }
 
+        function isSearchBarOpen() {
+          const bar = $("#searchBar");
+          return !!bar?.classList.contains("is-open");
+        }
+
+        function dismissSearchBar() {
+          const inp = $("#globalSearch");
+          if (inp) state.search = inp.value ?? "";
+          hideSearchBar();
+        }
+
         function toggleSearchBar() {
           const bar = $("#searchBar");
           if (!bar) return;
@@ -2614,6 +2625,10 @@
 
         function handleEscape() {
           if (dismissTransientUi()) return;
+          if (isSearchBarOpen()) {
+            dismissSearchBar();
+            return;
+          }
           const now = Date.now();
           const isDouble =
             state.lastEscAt > 0 &&
@@ -4392,10 +4407,9 @@
           });
           searchInp.addEventListener("keydown", (e) => {
             if (e.key !== "Escape") return;
-            if ((searchInp.value || "").trim()) return;
             e.preventDefault();
             e.stopPropagation();
-            hideSearchBar();
+            dismissSearchBar();
           });
           searchInp.addEventListener("blur", () => {
             if (!(searchInp.value || "").trim() && !searchNeedle())
