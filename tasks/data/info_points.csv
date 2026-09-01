@@ -1,7 +1,4 @@
 id,parent_type,parent_id,title,body,emoji,section_path,sort_order,created_at
-INFO_0003,task,TASK_0001,Perguntas que eu tenho:,Perguntas que eu tenho:,ℹ️,,70,2026-08-29 15:48:39
-INFO_0004,task,TASK_0001,- Conseguiríamos um trabalho online para eu trabalhar de noite?,"- Conseguiríamos um trabalho online para eu trabalhar de noite?
-- Posso ter dois contratos de trabalho?",ℹ️,,80,2026-08-29 15:48:39
 INFO_0005,project,PROJ_0004,Next steps,Next steps,ℹ️,,170,2026-08-29 15:48:39
 INFO_0006,project,PROJ_0004,Plan,Plan,ℹ️,,190,2026-08-29 15:48:39
 INFO_0016,task,TASK_0011,Contribution Goals,"Contribution Goals
@@ -81,7 +78,6 @@ Confirm if committee members may ask about courses near defense
 Add DOI to your research and PPT presentation base (if applicable)
 Check if your student subscription is generating any cost
 Monitor storage usage (keep under 5 GB)",ℹ️,Weekly,1990,2026-08-29 15:48:39
-INFO_0098,task,TASK_0001,20260828-092144.png,,ℹ️,,3800,2026-08-30 12:03:36
 INFO_0099,project,PROJ_0004,20260828-142108.png,,ℹ️,,3810,2026-08-30 12:03:36
 INFO_0100,project,PROJ_0004,20260828-101254.png,,ℹ️,,3820,2026-08-30 12:03:36
 INFO_0101,project,PROJ_0004,20260828-101317.png,,ℹ️,,3830,2026-08-30 12:03:36

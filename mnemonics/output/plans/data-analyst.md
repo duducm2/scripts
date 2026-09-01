@@ -4,6 +4,10 @@
 
 ## 📃 Backlog
 
+- [ ] Data lake
+
+- [ ] ETL (Extract, Transform, Load)
+
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation
