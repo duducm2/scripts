@@ -28,6 +28,7 @@ Palace_ShowPalaces() {
         ["a", (*) => Palace_PalaceAdd()],
         ["Insert", (*) => Palace_PalaceAdd()],
         ["e", (*) => Palace_PalaceEdit()],
+        ["i", (*) => Palace_PalaceChangeImage()],
         ["c", (*) => Palace_PalaceCopyImagePrompt()],
         ["l", (*) => Palace_OpenPlansForCurrentStudy()],
         ["Delete", (*) => Palace_PalaceDelete()],
@@ -88,6 +89,31 @@ Palace_PalaceEdit(*) {
         return
     }
     Palace_PalaceForm(st)
+}
+
+Palace_PalaceChangeImage(*) {
+    st := Palace_PalaceSelected()
+    if (!st) {
+        Palace_Notify("Select a Memory Palace", 1200, BANNER_ACCENT_ERROR)
+        return
+    }
+    src := Palace_DesktopNewestImage()
+    if (src = "") {
+        try src := FileSelect(1, Palace_ResolveDesktopDir(), "Select palace image",
+        "Images (*.png; *.jpg; *.jpeg)")
+        catch {
+            return
+        }
+        if (src = "")
+            return
+    }
+    result := Palace_AttachImageFileToPalace(st, src)
+    if (!result.ok) {
+        Palace_Notify(result.err, 2800, BANNER_ACCENT_ERROR)
+        return
+    }
+    Palace_PalaceRefresh()
+    Palace_Notify("Image updated → " . st["title"] . " (" . result.rel . ")", 2800, BANNER_ACCENT_SUCCESS)
 }
 
 Palace_PalaceCopyImagePrompt(*) {

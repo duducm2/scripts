@@ -1544,6 +1544,46 @@ Palace_PickHighestPalace(palaces, studyId) {
     return best
 }
 
+; Copy src image onto palace's canonical practice path and update palaces.csv.
+; Returns {ok: true, rel: "..."} or {ok: false, err: "..."}.
+Palace_AttachImageFileToPalace(palace, src) {
+    if (!IsObject(palace) || Trim(src) = "" || !FileExist(src))
+        return { ok: false, err: "Invalid palace or image file" }
+    studies := Palace_Load("studies")
+    study := Palace_FindById(studies, palace["study_id"])
+    if (!IsObject(study))
+        return { ok: false, err: "Study missing for palace" }
+    slug := Trim(study["notes_rel_path"])
+    if (slug = "")
+        return { ok: false, err: "Study has no notes path" }
+    SplitPath(src, , , &ext)
+    ext := StrLower(Trim(ext))
+    if (ext = "")
+        ext := "png"
+    slugNorm := StrReplace(slug, "\", "/")
+    rel := "practice/images/" . slugNorm . "/" . palace["palace_number"] . "." . ext
+    practiceDestDir := Palace_PracticeDir() . "\images\" . StrReplace(slugNorm, "/", "\")
+    if (!DirExist(practiceDestDir)) {
+        try DirCreate(practiceDestDir)
+        catch {
+            return { ok: false, err: "Could not create practice images folder" }
+        }
+    }
+    absDest := practiceDestDir . "\" . palace["palace_number"] . "." . ext
+    try FileCopy(src, absDest, 1)
+    catch as e {
+        return { ok: false, err: "Copy failed: " . e.Message }
+    }
+    palaces := Palace_Load("palaces")
+    existing := Palace_FindById(palaces, palace["id"])
+    if (!IsObject(existing))
+        return { ok: false, err: "Palace row vanished" }
+    existing["image_rel_path"] := rel
+    Palace_Save("palaces", palaces)
+    Palace_SyncPracticeMd([palace["study_id"]])
+    return { ok: true, rel: rel }
+}
+
 ; [Q] Pick a palace without image, then copy newest Desktop PNG/JPG onto it.
 Palace_QuickAttachDesktopImage(*) {
     Palace_EnsureData()
@@ -1559,47 +1599,12 @@ Palace_QuickAttachDesktopImage(*) {
         Palace_Notify("No PNG/JPG on Desktop", 2200, BANNER_ACCENT_ERROR)
         return false
     }
-    studies := Palace_Load("studies")
-    study := Palace_FindById(studies, palace["study_id"])
-    if (!IsObject(study)) {
-        Palace_Notify("Study missing for palace", 2200, BANNER_ACCENT_ERROR)
+    result := Palace_AttachImageFileToPalace(palace, src)
+    if (!result.ok) {
+        Palace_Notify(result.err, 2800, BANNER_ACCENT_ERROR)
         return false
     }
-    slug := Trim(study["notes_rel_path"])
-    if (slug = "") {
-        Palace_Notify("Study has no notes path", 2200, BANNER_ACCENT_ERROR)
-        return false
-    }
-    SplitPath(src, , , &ext)
-    ext := StrLower(Trim(ext))
-    if (ext = "")
-        ext := "png"
-    slugNorm := StrReplace(slug, "\", "/")
-    rel := "practice/images/" . slugNorm . "/" . palace["palace_number"] . "." . ext
-    practiceDestDir := Palace_PracticeDir() . "\images\" . StrReplace(slugNorm, "/", "\")
-    if (!DirExist(practiceDestDir)) {
-        try DirCreate(practiceDestDir)
-        catch {
-            Palace_Notify("Could not create practice images folder", 2500, BANNER_ACCENT_ERROR)
-            return false
-        }
-    }
-    absDest := practiceDestDir . "\" . palace["palace_number"] . "." . ext
-    try FileCopy(src, absDest, 1)
-    catch as e {
-        Palace_Notify("Copy failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
-        return false
-    }
-    palaces := Palace_Load("palaces")
-    existing := Palace_FindById(palaces, palace["id"])
-    if (!IsObject(existing)) {
-        Palace_Notify("Palace row vanished", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
-    existing["image_rel_path"] := rel
-    Palace_Save("palaces", palaces)
-    Palace_SyncPracticeMd([palace["study_id"]])
-    Palace_Notify("Attached image → " . palace["title"] . " (" . rel . ")", 2800, BANNER_ACCENT_SUCCESS)
+    Palace_Notify("Attached image → " . palace["title"] . " (" . result.rel . ")", 2800, BANNER_ACCENT_SUCCESS)
     return true
 }
 

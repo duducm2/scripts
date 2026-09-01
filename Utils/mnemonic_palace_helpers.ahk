@@ -1047,7 +1047,7 @@ Palace_BrowseKeysHint() {
     if (depth = 0)
         return base . "    [L] plans"
     if (depth = 1)
-        return base . "    [C] copy prompt    [L] plans"
+        return base . "    [I] change image    [C] copy prompt    [L] plans"
     return base
 }
 
