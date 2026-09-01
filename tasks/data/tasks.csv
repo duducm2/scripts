@@ -15,10 +15,6 @@ TASK_0016,PROJ_0012,SEC_0067,A PT está usando o NextAPP. Eles tão usando isso?
 TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and API construction. Check if there is any left value that you couldn't fulfill inside the business model that she could help,⏳,punctual,,,,Projects/Business Model,work,690,,2026-08-29 15:48:39,1
 TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 15:48:39,1
 TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 15:48:39,1
-TASK_0021,PROJ_0013,SEC_0013,Communication 1,⏳,punctual,,,,,work,790,,2026-08-29 15:48:39,1
-TASK_0022,PROJ_0013,SEC_0013,Communication 2,⏳,punctual,,,,,work,800,,2026-08-29 15:48:39,1
-TASK_0023,PROJ_0013,SEC_0013,Communication 1,⏳,punctual,,,,,work,810,,2026-08-29 15:48:39,1
-TASK_0024,PROJ_0013,SEC_0013,Communication 2,⏳,punctual,,,,,work,820,,2026-08-29 15:48:39,1
 TASK_0025,PROJ_0013,SEC_0073,Make more communications,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1
 TASK_0026,PROJ_0013,SEC_0074,Maybe we should have two sessions the first with 20 people and the second one we wait to reach out to 15 people too go,⏳,punctual,,,,Projects/Parte 1 - Gemini Enterprise/key users section,work,920,,2026-08-29 15:48:39,1
 TASK_0027,PROJ_0013,SEC_0075,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 15:48:39,1
@@ -115,10 +111,10 @@ TASK_0213,PROJ_0005,SEC_0005,My Allocation,,punctual,,,,,work,3860,,2026-08-30 1
 TASK_0214,PROJ_0011,SEC_0011,Info,,punctual,,,,,work,3870,,2026-08-30 15:24:30,1
 TASK_0215,PROJ_0012,SEC_0012,"Retirar: Oportunidades, Prioridade, recomendações e sentimentos.",⏳,punctual,,,,,work,3880,,2026-08-30 15:25:59,1
 TASK_0216,PROJ_0012,SEC_0012,Checar opções de plataforma (benchmark da Alana). O que pode ser similar?,⏳,punctual,,,,,work,3890,,2026-08-30 15:26:02,1
-TASK_0217,PROJ_0013,SEC_0070,Como indicar um key-user?,none,punctual,,,,Projects/Governance,work,3900,,2026-08-30 15:28:48,1
+TASK_0217,PROJ_0013,SEC_0013,Como indicar um key-user?,,punctual,,,,,work,3900,,2026-08-30 15:28:48,1
 TASK_0219,PROJ_0026,SEC_0129,Read your whole dissertation,⏳,punctual,,,,,personal,3920,,2026-08-30 21:08:28,1
 TASK_0220,PROJ_0026,SEC_0129,Practice your presentation,⏳,punctual,,,,,personal,3930,,2026-08-30 21:08:46,1
-TASK_0221,PROJ_0013,SEC_0013,[After Nov. 3] Check if you invited key users to the N8N training. Do the same for managers and colleagues,⏳,punctual,,,,,work,3940,,2026-08-31 09:17:11,1
+TASK_0221,PROJ_0013,SEC_0013,[After Nov. 3] Send the invitation of the training for the key users,⏳,punctual,,,,,work,3940,,2026-08-31 09:17:11,1
 TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1
 TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1
 TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1
