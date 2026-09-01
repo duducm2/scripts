@@ -174,9 +174,8 @@ def preview_pack(store: TaskStore) -> dict[str, Any]:
 
 
 def validate_pack(pack: dict) -> list[str]:
-    """Collect row validation errors before any disk write."""
+    """Collect row validation errors before any disk write (structural only)."""
     errors: list[str] = []
-    task_titles: dict[str, set[str]] = {}
     for r in pack.get("projects") or []:
         title = (r.get("title") or "").strip()
         filt = (r.get("filter") or "work").strip().lower()
@@ -201,23 +200,14 @@ def validate_pack(pack: dict) -> list[str]:
             continue
         if recurrence not in VALID_RECURRENCE:
             errors.append(f"TASK invalid recurrence ({recurrence}): {title}")
-        task_titles.setdefault(filt, set()).add(title.lower())
     for r in pack.get("info") or []:
         title = (r.get("title") or "").strip()
         filt = (r.get("filter") or "work").strip().lower()
-        attach_to = (r.get("attach_to") or "task").strip().lower()
-        parent_title = (r.get("parent_title") or "").strip()
         if not title:
             errors.append("INFO: missing title")
             continue
         if filt not in VALID_FILTERS:
             errors.append(f"INFO invalid filter: {title}")
-            continue
-        if attach_to != "project" and parent_title:
-            key = f"{filt}|{parent_title.lower()}"
-            in_pack = parent_title.lower() in task_titles.get(filt, set())
-            if not in_pack:
-                errors.append(f"INFO parent task not in pack: {parent_title}")
     return errors
 
 
@@ -244,7 +234,10 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         if key in staged:
             return staged[key]
         for p in projects:
-            if p.get("filter") == filt and (p.get("title") or "").strip().lower() == title.lower():
+            if (
+                p.get("filter") == filt
+                and (p.get("title") or "").strip().lower() == title.lower()
+            ):
                 staged[key] = p["id"]
                 if TASK_IMPORT_BATCH_SECTIONS:
                     store.ensure_general_section(p["id"], sections)
@@ -402,6 +395,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
         infos.append(row)
 
     if not new_projects and not new_tasks and not new_infos and errors:
+        errors = list(dict.fromkeys(errors))
         write_fix_file("Import produced no rows", "\n".join(errors))
         return {"ok": False, "error": "Import produced no rows", "errors": errors}
 
@@ -426,6 +420,7 @@ def commit_pack(store: TaskStore, pack: dict | None = None) -> dict[str, Any]:
             except OSError:
                 pass
 
+    errors = list(dict.fromkeys(errors))
     if errors:
         write_fix_file("Partial import — some rows failed", "\n".join(errors))
     return {
@@ -487,16 +482,28 @@ def _cli_main(argv: list[str] | None = None) -> int:
     import json
     import sys
 
-    parser = argparse.ArgumentParser(description="TASK_PACK preview / commit for Import Management")
+    parser = argparse.ArgumentParser(
+        description="TASK_PACK preview / commit for Import Management"
+    )
     parser.add_argument("--data-dir", required=True, help="Path to tasks/data")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    p_prev = sub.add_parser("preview", help="Discover Desktop TASK_PACK and write preview files")
-    p_prev.add_argument("--json-out", required=True, help="Write full preview JSON here")
-    p_prev.add_argument("--labels-out", required=True, help="Write one label per line for AHK ListView")
+    p_prev = sub.add_parser(
+        "preview", help="Discover Desktop TASK_PACK and write preview files"
+    )
+    p_prev.add_argument(
+        "--json-out", required=True, help="Write full preview JSON here"
+    )
+    p_prev.add_argument(
+        "--labels-out", required=True, help="Write one label per line for AHK ListView"
+    )
 
-    p_commit = sub.add_parser("commit", help="Commit a preview JSON pack into tasks/data")
-    p_commit.add_argument("--pack-json", required=True, help="Preview JSON from preview --json-out")
+    p_commit = sub.add_parser(
+        "commit", help="Commit a preview JSON pack into tasks/data"
+    )
+    p_commit.add_argument(
+        "--pack-json", required=True, help="Preview JSON from preview --json-out"
+    )
 
     args = parser.parse_args(argv)
     store = TaskStore(Path(args.data_dir))
@@ -505,10 +512,14 @@ def _cli_main(argv: list[str] | None = None) -> int:
         result = preview_pack(store)
         json_path = Path(args.json_out)
         labels_path = Path(args.labels_out)
-        json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        json_path.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         if result.get("ok"):
             labels = preview_labels(result)
-            labels_path.write_text("\n".join(labels) + ("\n" if labels else ""), encoding="utf-8")
+            labels_path.write_text(
+                "\n".join(labels) + ("\n" if labels else ""), encoding="utf-8"
+            )
             counts = result.get("counts") or {}
             print(
                 f"OK {counts.get('projects', 0)} projects "

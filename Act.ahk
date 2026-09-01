@@ -93,7 +93,7 @@ GitInRepoOrFail(notesFolder, "fetch --prune", 900000)
 GitInRepoOrFail(notesFolder, "pull", 900000)
 ; MyNotes technique prompts are read from disk when you use them in Utility Shortcuts (Utils.ahk), not by Act.
 StandardLoadingBar_Update("🚀 Launching apps...")
-; Pre-start Tasks (:8766) and Memory Palace (:8767) so first open is not cold.
+; Pre-start Tasks (:8766) and Memory Palace (:8767) via self-contained Utils\web_servers_warmup.ahk.
 Run GetScriptPath("Utils\web_servers_warmup.ahk")
 Sleep 10000
 
