@@ -1,6 +1,184 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 4: Data Architectures 2</strong> · Character: Neo (The Matrix) · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [O] owl
+
+**Concept**
+💡 Data Lake: I store structured, semi-structured, and unstructured raw data in a centralized, low-cost object storage system[cite: 1].
+
+**Quote**
+“Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
+
+**Sensory**
+gustatory 👅
+
+**Story**
+Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data from a massive low-cost storage lake, tasting the metallic flavor of semi-structured fish[cite: 1].
+
+### 🟧 [P] panther
+
+**Concept**
+💡 Data Warehouse: A highly structured, schema-on-write repository optimized for SQL analytics and business intelligence[cite: 1].
+
+**Quote**
+“Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
+
+**Sensory**
+visual 👁️
+
+**Story**
+Beside the dumpster, a panther constructs a highly structured schema-on-write pyramid out of SQL blocks, arranging glowing business intelligence analytics in perfect symmetry[cite: 1].
+
+### 🟧 [Q] Quetzalcoatl
+
+**Concept**
+💡 Data Lakehouse: A hybrid architecture combining the scale and flexibility of a data lake with the reliability of a warehouse[cite: 1]. — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+
+**Quote**
+“Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
+
+**Sensory**
+tactile ✋
+
+**Story**
+At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of water with solid, reliable warehouse bricks, forging an unbreakable ACID-resistant hybrid architecture[cite: 1].
+
+### 🟧 [R] rat
+
+**Concept**
+💡 Data Swamp: A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve[cite: 1].
+
+**Quote**
+“A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
+
+**Sensory**
+olfactory 👃
+
+**Story**
+Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of uncataloged data, gagging on the rancid stench of undocumented files rotting in the mud below[cite: 1].
+
+### 🟧 [S] skull
+
+**Concept**
+💡 Data Mart: A specialized subset of a data warehouse focused on a specific business line or department[cite: 1]. — Note: Examples include Finance or Marketing[cite: 1].
+
+**Quote**
+“A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”
+
+**Sensory**
+auditory 👂
+
+**Story**
+Hovering over the fire hydrant, a giant floating skull bites off a specialized subset of a warehouse, chewing loudly as it focuses exclusively on spitting out finance department coins[cite: 1].
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 3: Data Architectures 1</strong> · Character: GitHub Copilot · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [J] jester
+
+**Concept**
+💡 ETL Pipeline: I move raw data from multiple disparate sources into a centralized target system using an automated integration pipeline[cite: 1]. — Note: The target is typically a Data Warehouse or Data Mart[cite: 1].
+
+**Quote**
+“ETL is an automated data integration process that moves data from multiple disparate sources into a centralized target system, typically a Data Warehouse or Data Mart."[cite: 1]”
+
+**Sensory**
+auditory 👂
+
+**Story**
+A jester juggles multiple disparate screaming data hard drives at the iron gate, funneling them into a single massive golden target vault[cite: 1].
+
+### 🟧 [K] kitten
+
+**Concept**
+💡 Extract Phase: I retrieve raw data from various origin systems during the first pipeline phase[cite: 1]. — Note: Sources include operational databases, SaaS applications, APIs, or flat files[cite: 1].
+
+**Quote**
+“Retrieving raw data from various source systems, such as operational databases, SaaS applications, APIs, or flat files."[cite: 1]”
+
+**Sensory**
+tactile ✋
+
+**Story**
+A giant kitten digs its sharp claws into a flat file server rack on top of the parked van, ripping out dripping raw data cables with extreme force[cite: 1].
+
+### 🟧 [L] lion
+
+**Concept**
+💡 Transform Phase: I clean, structure, and enrich the data in a temporary staging area to meet business requirements[cite: 1]. — Note: Includes standardizing formats, filtering anomalies, joining tables, and mapping to a predefined schema[cite: 1].
+
+**Quote**
+“Cleaning, structuring, and enriching the data in a temporary staging area to meet business and analytical requirements. This includes standardizing date formats, filtering anomalies, joining tables, applying business logic, and mapping the data to a predefined schema."[cite: 1]”
+
+**Sensory**
+visual 👁️
+
+**Story**
+At the central stone fountain, a lion scrubs muddy data tables in a glowing temporary staging pool, filtering out glowing red anomalies until the water runs crystal clear[cite: 1].
+
+### 🟧 [M] marmoset
+
+**Concept**
+💡 Load Phase: I write the fully processed data into the target repository[cite: 1]. — Note: This makes it immediately available for business intelligence tools and analytics[cite: 1].
+
+**Quote**
+“Writing the fully processed data into the target repository, making it immediately available for business intelligence tools and analytics."[cite: 1]”
+
+**Sensory**
+thermal 🌡️
+
+**Story**
+Up on the rooftop, a marmoset violently hammers white-hot glowing processed data blocks into a target repository vault, sending sparks flying everywhere[cite: 1].
+
+### 🟧 [N] Neanderthal
+
+**Concept**
+💡 Data Store: Any repository that persists and manages a collection of data[cite: 1]. — Note: Ranges from traditional relational databases to cloud object storage[cite: 1].
+
+**Quote**
+“An umbrella term for any repository that persists and manages a collection of data, ranging from traditional relational databases and NoSQL key-value stores to file systems, caches, and cloud object storage."[cite: 1]”
+
+**Sensory**
+olfactory 👃
+
+**Story**
+By the front brick pillar, a Neanderthal manages a massive collection of data by burying stinking, rotting caches of relational databases under a giant leather umbrella[cite: 1].
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 2: Data Analytics Fundamentals</strong> · Character: Alan Turing · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 2](images/data-analyst/2.jpg)
