@@ -22,7 +22,7 @@
 }
 
 ^!g:: {  ; Switch to Calendar
-    if !Outlook_SwitchToCalendar()
+    if !Outlook_EnsureSwitchToCalendar()
         ShowCenteredOverlay_Utils("❌ Outlook: Calendar not found", 1200, BANNER_ACCENT_ERROR)
 }
 

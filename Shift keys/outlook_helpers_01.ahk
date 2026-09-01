@@ -142,6 +142,118 @@ Outlook_SwitchToCalendar() {
     ])
 }
 
+Outlook_IsCalendarViewActive() {
+    if IsNewOutlookActive() {
+        try {
+            root := OutlookMail_RootElement()
+            if root {
+                searchRoot := root
+                try {
+                    r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring", ControlType: "Group" })
+                    if !r
+                        r := root.FindFirst({ Name: "left-rail-appbar", matchmode: "Substring" })
+                    if r
+                        searchRoot := r
+                } catch {
+                }
+                mailBtn := ""
+                calBtn := ""
+                try mailBtn := searchRoot.FindFirst({ AutomationId: "ddea774c-382b-47d7-aab5-adc2139a802b",
+                    ControlType: "Button" })
+                if !mailBtn
+                    try mailBtn := searchRoot.FindFirst({ Name: "Mail", ControlType: "Button" })
+                try calBtn := searchRoot.FindFirst({ AutomationId: "8cbeb86f-83e1-43b5-aaba-cd3514322f0b",
+                    ControlType: "Button" })
+                if !calBtn
+                    try calBtn := searchRoot.FindFirst({ Name: "Calendar", ControlType: "Button" })
+                if mailBtn && calBtn {
+                    mailOn := Outlook_RailToggleIsPressed(mailBtn)
+                    calOn := Outlook_RailToggleIsPressed(calBtn)
+                    if (calOn && !mailOn)
+                        return true
+                }
+            }
+        } catch {
+        }
+    }
+    t := ""
+    try t := WinGetTitle("A")
+    return RegExMatch(t, "i)^Calendar\b") && InStr(t, " - Outlook")
+}
+
+Outlook_WaitForCalendarView(timeoutMs := 700) {
+    deadline := A_TickCount + timeoutMs
+    loop {
+        if Outlook_IsCalendarViewActive()
+            return true
+        if (A_TickCount >= deadline)
+            break
+        Sleep 50
+    }
+    return false
+}
+
+Outlook_SwitchToCalendarViaNavItem() {
+    try {
+        Outlook_ActivateMainWindow()
+        root := UIA.ElementFromHandle(WinExist("A"))
+        if !root
+            return false
+        calendarItem := root.FindFirst({ Name: "Calendar", Type: "50007" })
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", ClassName: "NetUIListViewItem" })
+        if !calendarItem
+            calendarItem := root.FindFirst({ Name: "Calendar", Type: "50000" })
+        if !calendarItem
+            return false
+        calendarItem.SetFocus()
+        Sleep 50
+        try calendarItem.Click()
+        catch {
+            try calendarItem.Invoke()
+            catch {
+                return false
+            }
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+; Gate 1: Chromium left-rail button. Gate 2: rail toggle (when title is not Calendar). Gate 3: classic nav list item.
+Outlook_EnsureSwitchToCalendar() {
+    Outlook_ActivateMainWindow()
+    if Outlook_IsCalendarViewActive()
+        return true
+
+    Outlook_SwitchToCalendar()
+    if Outlook_WaitForCalendarView()
+        return true
+    Sleep 120
+    if Outlook_IsCalendarViewActive()
+        return true
+
+    if IsNewOutlookActive() {
+        t := ""
+        try t := WinGetTitle("A")
+        if !RegExMatch(t, "i)^Calendar\b") {
+            Outlook_ToggleMailCalendarRail()
+            if Outlook_WaitForCalendarView()
+                return true
+            Sleep 120
+            if Outlook_IsCalendarViewActive()
+                return true
+        }
+    }
+
+    Outlook_SwitchToCalendarViaNavItem()
+    if Outlook_WaitForCalendarView()
+        return true
+
+    return Outlook_IsCalendarViewActive()
+}
+
 ; Calendar toolbar: "Go to today April 6, 2026" (dynamic date; caledar.md). WebView2 â€” use Chromium root.
 ; Loading bar during UIA work: docs/standard_information_display.md (Show â†’ Update â†’ Hide).
 OutlookCalendar_ClickGoToToday() {
