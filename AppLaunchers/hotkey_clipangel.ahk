@@ -26,7 +26,7 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 }
 
 ; =============================================================================
-; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Alt+P (non-favorites) then Paste file then hide
+; Win+Alt+Shift+7 — tap: open Clip Angel + Edit (F4); hold 200ms+: Paste file to Desktop then hide
 ; =============================================================================
 #!+7::
 {
@@ -86,9 +86,14 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         return
     }
 
-    ; Hold: Alt+P opens non-favorite list (ActivateClipAngelWithFocusCorrection keeps last view, often Alt+B favorites).
+    ; Hold: ClipAngel Paste file onto Desktop (native type — png, txt, etc.).
+    desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
+    if !desktopHwnd {
+        ShowCenteredOverlay_Utils("❌ Could not activate Desktop.", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
     try {
-        ClipAngel_ActivateNativeFirstClip(priorHwnd)
+        ClipAngel_ActivateNativeFirstClip(desktopHwnd)
         hwnd := ClipAngel_MainHwnd()
         if !hwnd {
             ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)

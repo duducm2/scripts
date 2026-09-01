@@ -1,7 +1,6 @@
 ; =============================================================================
 ; Utils module: clip_angel_export_desktop.ahk
-; Copy Clip Angel Row 0 (newest clip) preview text or image to Desktop,
-; then prompt to rename from a persisted name list (inline CRUD).
+; Copy Clip Angel Row 0 to Desktop via native Paste file, then prompt to rename from a persisted name list.
 ; Also hosts HotkeyCopy_ShowPostCopyBanner (#!+p 1×/2× post-copy destination menu).
 ; Utility Shortcuts: #!+U → Macros → [c]
 ; =============================================================================
@@ -250,22 +249,81 @@ ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext) {
     }
 }
 
-ClipAngelExport_UniqueDesktopPath(desktopDir, ext := "txt") {
-    ext := ClipAngelExport_SanitizeExt(ext)
-    if (ext = "")
-        ext := "txt"
-    stamp := FormatTime(, "yyyyMMdd-HHmmss")
-    base := "clipangel-last-" stamp
-    path := desktopDir "\" base "." ext
-    if !FileExist(path)
-        return path
-    i := 2
-    loop {
-        path := desktopDir "\" base "-" i "." ext
-        if !FileExist(path)
-            return path
-        i += 1
+ClipAngelExport_FindDesktopExplorerHwnd() {
+    hwnd := WinExist("Área de Trabalho ahk_class CabinetWClass")
+    if (hwnd)
+        return hwnd
+    return WinExist("Desktop ahk_class CabinetWClass")
+}
+
+; Activate Explorer showing Desktop (same target as #!+7 hold with Desktop focused).
+ClipAngelExport_ActivateDesktopForPaste() {
+    hwnd := ClipAngelExport_FindDesktopExplorerHwnd()
+    if (hwnd) {
+        try {
+            if (WinGetMinMax("ahk_id " hwnd) = -1)
+                WinRestore("ahk_id " hwnd)
+            WinActivate("ahk_id " hwnd)
+            if WinWaitActive("ahk_id " hwnd, , 1)
+                return hwnd
+        } catch {
+        }
     }
+    desktopPath := AiQuickDownload_ResolveDesktopPath()
+    if (desktopPath = "" || !DirExist(desktopPath))
+        return 0
+    try Run('explorer.exe "' desktopPath '"')
+    catch {
+        return 0
+    }
+    deadline := A_TickCount + 3000
+    while (A_TickCount < deadline) {
+        hwnd := ClipAngelExport_FindDesktopExplorerHwnd()
+        if (hwnd) {
+            try {
+                WinActivate("ahk_id " hwnd)
+                if WinWaitActive("ahk_id " hwnd, , 1)
+                    return hwnd
+            } catch {
+            }
+        }
+        Sleep 50
+    }
+    return 0
+}
+
+; ClipAngel Clip > Paste > Paste file onto Desktop; returns path or "".
+ClipAngelExport_PasteFirstClipToDesktop() {
+    desktopPath := AiQuickDownload_ResolveDesktopPath()
+    if (desktopPath = "" || !DirExist(desktopPath))
+        return ""
+    beforePath := ""
+    beforeStamp := ""
+    try {
+        beforePath := DesktopCutNewest_ResolveNewestPath(desktopPath)
+        if (beforePath != "")
+            beforeStamp := AiQuickDownload_ItemStamp(beforePath)
+    } catch {
+    }
+    desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
+    if (!desktopHwnd)
+        return ""
+    ClipAngel_ActivateNativeFirstClip(desktopHwnd)
+    hwnd := ClipAngel_MainHwnd()
+    if (!hwnd)
+        return ""
+    ClipAngel_EnsureWindowActive(hwnd)
+    if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
+        return ""
+    if !ClipAngel_InvokePasteEnter(hwnd)
+        return ""
+    ClipAngel_CloseAndRestoreFocus(desktopHwnd)
+    outPath := ""
+    try outPath := AiQuickDownload_WaitForNewDesktopFile(desktopPath, beforePath, beforeStamp)
+    catch {
+        outPath := ""
+    }
+    return (outPath != "" && FileExist(outPath)) ? outPath : ""
 }
 
 ClipAngelExport_CenterGui(guiObj, w := 420, h := 420) {
@@ -935,39 +993,10 @@ ClipAngel_ExportLastClipToDesktop() {
     savedClip := ClipboardAll()
     try {
         StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
-        ClipAngel_ActivateNativeFirstClip()
-        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+        outPath := ClipAngelExport_PasteFirstClipToDesktop()
+        if (outPath = "") {
+            ShowCenteredOverlay_Utils("❌ Clip Angel Paste file to Desktop failed.", 2500, BANNER_ACCENT_ERROR)
             return
-        }
-        clipHwnd := ClipAngel_MainHwnd()
-        if (clipHwnd)
-            ClipAngel_LeaveFavoritesFilter(clipHwnd)
-        ClipAngel_SelectClipCopyThenMinimize(0)
-        desktopPath := AiQuickDownload_ResolveDesktopPath()
-        if (!desktopPath || !DirExist(desktopPath)) {
-            ShowCenteredOverlay_Utils("❌ Desktop folder not found.", 2500, BANNER_ACCENT_ERROR)
-            return
-        }
-        isImage := false
-        try isImage := Task_ClipboardHasImage()
-        catch {
-            isImage := false
-        }
-        if (isImage) {
-            outPath := ClipAngelExport_UniqueDesktopPath(desktopPath, "png")
-            if (!Task_SaveClipboardImage(outPath)) {
-                ShowCenteredOverlay_Utils("❌ Could not save image clip to Desktop.", 2500, BANNER_ACCENT_ERROR)
-                return
-            }
-        } else {
-            content := A_Clipboard
-            if (Trim(content) = "") {
-                ShowCenteredOverlay_Utils("❌ Clip empty or not text.", 2000, BANNER_ACCENT_ERROR)
-                return
-            }
-            outPath := ClipAngelExport_UniqueDesktopPath(desktopPath, "txt")
-            WriteUtf8File(outPath, content)
         }
         try StandardLoadingBar_Hide(0)
         catch {
