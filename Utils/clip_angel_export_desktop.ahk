@@ -591,7 +591,7 @@ ClipAngelExport_UpdateManagerHint() {
     g_ClipAngelNameHint.Value := "[Enter] / [C] copy name   [A] add   [E] edit   Delete   Esc back"
 }
 
-; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]).
+; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]; same list as #!+9 rename picker).
 ClipAngelExport_ShowNamesManager(onClose := unset) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameOnClose
     if (IsObject(g_ClipAngelNameGui)) {
@@ -602,7 +602,7 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     }
     ClipAngelExport_CloseGui()
     g_ClipAngelNameOnClose := onClose
-    g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Desktop pack names")
+    g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Quick Download — file names")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
     g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h36")
     ClipAngelExport_UpdateManagerHint()

@@ -148,7 +148,8 @@ ImportMgmt_Catalog() {
             "fileName", "TASK_PACK.txt", "run", ImportMgmt_RunTaskPack),
         Map("char", "Q", "name", "Palace quick image", "detail", "Newest Desktop PNG/JPG → palace missing image",
             "fileName", "PALACE_QUICK_IMAGE.png", "run", ImportMgmt_RunQuickImage),
-        Map("char", "N", "name", "Desktop names", "detail", "clipangel_desktop_names.csv — CRUD + copy",
+        Map("char", "N", "name", "Quick Download names", "detail",
+            "#!+9 rename list — clipangel_desktop_names.csv — CRUD + copy",
             "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
         Map("char", "H", "name", "Help", "detail", "Per-workflow rules and outcomes",
             "run", ImportMgmt_OnHelp)
@@ -390,11 +391,12 @@ ImportMgmt_HelpText() {
     . "Success: toast with path; hub already closed when picker opened`r`n"
     . "If all palaces have images, or Desktop has no image: error toast`r`n"
     . "Re-run: save palace PNG to Desktop → #!+X → [Q]`r`n`r`n"
-    . "========== [N] DESKTOP NAMES ==========`r`n"
+    . "========== [N] QUICK DOWNLOAD NAMES ==========`r`n"
     . "Registry: assets/data/clipangel_desktop_names.csv`r`n"
+    . "Same list as the #!+9 Quick Download rename picker (Name Desktop file).`r`n"
     . "Enter/C copies bare name (e.g. FINANCE_DAILY); A add, E edit, Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
-    . "ClipAngel export uses the same list when renaming Desktop files`r`n`r`n"
+    . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"
     . "• Full success: local CSV saved; Desktop pack archived; Import Manager closes`r`n"
     . "  (Finance daily still opens the transactions page)`r`n"
