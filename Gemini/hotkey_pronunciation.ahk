@@ -279,6 +279,12 @@ PronunciationHotkey_DisarmDoubleTap() {
         StandardLoadingBar_Hide(0)
         return
     }
+
+    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
+    ; released (those start with 8 already up and would otherwise arm single-tap en).
+    if !GetKeyState("8", "P")
+        return
+
     if (g_PronunciationLangActive && IsObject(g_PronunciationLangGui)) {
         PronunciationHotkey_CleanupLanguagePicker()
         return
@@ -296,6 +302,8 @@ PronunciationHotkey_DisarmDoubleTap() {
         PronunciationHotkey_DisarmDoubleTap()
         ; Run after hotkey returns — GUI/hotkey bind from inside #!+8 can deadlock.
         SetTimer((*) => PronunciationHotkey_CopyAndShowPicker(), -1)
+        ; Stay in this thread until physical release so repeat cannot toggle picker off.
+        KeyWait "8"
         return
     }
 
