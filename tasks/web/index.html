@@ -1713,7 +1713,6 @@
           if (!bar) return;
           bar.classList.add("is-open");
           bar.setAttribute("aria-hidden", "false");
-          focusSearch();
         }
 
         function hideSearchBar() {
@@ -1737,7 +1736,7 @@
             focusSearch();
             return;
           }
-          showSearchBar();
+          focusSearch();
         }
 
         function openGithubPunctualMd() {
@@ -1748,8 +1747,10 @@
           const inp = $("#globalSearch");
           if (!inp) return;
           showSearchBar();
-          inp.focus();
-          inp.select();
+          requestAnimationFrame(() => {
+            inp.focus({ preventScroll: true });
+            inp.select();
+          });
         }
 
         function shiftCmdFromEvent(e) {
