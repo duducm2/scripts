@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 4: Data Architectures 2</strong> · Character: Neo (The Matrix) · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 4](images/data-analyst/4.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
