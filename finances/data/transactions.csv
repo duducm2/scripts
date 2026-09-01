@@ -88,3 +88,4 @@ TX090,2026-08-30,French press,"268,37",card_expense,CAT_MATERIAI,Home,ACC_MERCAD
 TX091,2026-08-30,Water sprays,"194,78",card_expense,CAT_MATERIAI,Home,ACC_MERCADOP,CARD_MP,
 TX092,2026-08-30,Adjustment to match 1431,"0,81",card_expense,CAT_OUTROS2,,ACC_MERCADOP,CARD_MP,
 TX093,2026-08-31,Adjustment,"61,00",card_expense,CAT_AJUSTE,,,CARD_MP,
+TX094,2026-09-01,Haircut,"30,00",expense,CAT_BELEZA,,ACC_MERCADOP,,
