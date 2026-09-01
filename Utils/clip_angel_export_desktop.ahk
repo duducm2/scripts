@@ -206,78 +206,20 @@ ClipAngelExport_SplitNameExt(raw, &baseOut, &extOut) {
     return true
 }
 
-; Extension from path, else sniff file content (png/jpg/gif/webp/pdf/csv/txt).
-ClipAngelExport_ResolveOrigExt(path) {
-    if (path = "" || !FileExist(path))
-        return "txt"
+; Extension from source path only (no content guessing).
+ClipAngelExport_ExtFromPath(path) {
+    if (path = "")
+        return ""
     srcExt := ""
     try SplitPath(path, , , &srcExt)
     catch {
         srcExt := ""
     }
-    ext := ClipAngelExport_SanitizeExt(srcExt)
-    if (ext != "")
-        return ext
-    sniffed := ClipAngelExport_SniffExt(path)
-    if (sniffed != "")
-        return sniffed
-    return "txt"
+    return ClipAngelExport_SanitizeExt(srcExt)
 }
 
-ClipAngelExport_SniffExt(path) {
-    if (!path || !FileExist(path))
-        return ""
-    buf := Buffer(16)
-    n := 0
-    try {
-        f := FileOpen(path, "r")
-        if (!f)
-            return ""
-        n := f.RawRead(buf, 16)
-        f.Close()
-    } catch {
-        return ""
-    }
-    if (n >= 4) {
-        b0 := NumGet(buf, 0, "UChar")
-        b1 := NumGet(buf, 1, "UChar")
-        b2 := NumGet(buf, 2, "UChar")
-        b3 := NumGet(buf, 3, "UChar")
-        if (b0 = 0x89 && b1 = 0x50 && b2 = 0x4E && b3 = 0x47)
-            return "png"
-        if (b0 = 0xFF && b1 = 0xD8 && b2 = 0xFF)
-            return "jpg"
-        if (b0 = 0x47 && b1 = 0x49 && b2 = 0x46 && b3 = 0x38)
-            return "gif"
-        if (b0 = 0x25 && b1 = 0x50 && b2 = 0x44 && b3 = 0x46)
-            return "pdf"
-    }
-    if (n >= 12) {
-        riff := Chr(NumGet(buf, 0, "UChar")) . Chr(NumGet(buf, 1, "UChar"))
-        . Chr(NumGet(buf, 2, "UChar")) . Chr(NumGet(buf, 3, "UChar"))
-        webp := Chr(NumGet(buf, 8, "UChar")) . Chr(NumGet(buf, 9, "UChar"))
-        . Chr(NumGet(buf, 10, "UChar")) . Chr(NumGet(buf, 11, "UChar"))
-        if (riff = "RIFF" && webp = "WEBP")
-            return "webp"
-    }
-    head := ""
-    try {
-        f := FileOpen(path, "r", "UTF-8")
-        if (f) {
-            head := f.Read(4096)
-            f.Close()
-        }
-    } catch {
-        head := ""
-    }
-    if (head = "")
-        return ""
-    if (InStr(head, "===PREVIEW===") || InStr(head, "===FILE:"))
-        return "txt"
-    firstLine := StrSplit(StrReplace(head, "`r", ""), "`n")[1]
-    if (firstLine != "" && InStr(firstLine, ",") && !InStr(firstLine, "==="))
-        return "csv"
-    return "txt"
+ClipAngelExport_FormatExtLabel(ext) {
+    return ext != "" ? "." . ext : "(no ext)"
 }
 
 ; Base name for list picks: strip a trailing .ext from registry entries (e.g. PALACE_QUICK_IMAGE.png).
@@ -289,18 +231,19 @@ ClipAngelExport_ListBaseName(name) {
     return name
 }
 
-ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext := "") {
-    global g_ClipAngelNameExt
+ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext) {
     if (ext = "")
-        ext := g_ClipAngelNameExt
-    if (ext = "")
-        ext := "txt"
-    path := desktopDir "\" baseName "." ext
+        path := desktopDir "\" baseName
+    else
+        path := desktopDir "\" baseName "." ext
     if !FileExist(path)
         return path
     i := 2
     loop {
-        path := desktopDir "\" baseName "-" i "." ext
+        if (ext = "")
+            path := desktopDir "\" baseName "-" i
+        else
+            path := desktopDir "\" baseName "-" i "." ext
         if !FileExist(path)
             return path
         i += 1
@@ -542,17 +485,17 @@ ClipAngelExport_Delete(*) {
     ClipAngelExport_Refresh()
 }
 
-ClipAngelExport_ApplyName(name, extOverride := "") {
+ClipAngelExport_ApplyName(name, extOverride := unset) {
     global g_ClipAngelNameSourcePath, g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
     clean := ClipAngelExport_SanitizeFileName(name)
     if (clean = "") {
         ClipAngelExport_Alert("Name is not a valid filename.")
         return false
     }
-    ext := extOverride != "" ? ClipAngelExport_SanitizeExt(extOverride) : g_ClipAngelNameExt
-    if (ext = "") {
-        ClipAngelExport_Alert("Extension is required.")
-        return false
+    if (IsSet(extOverride)) {
+        ext := extOverride != "" ? ClipAngelExport_SanitizeExt(extOverride) : ""
+    } else {
+        ext := g_ClipAngelNameExt
     }
     SplitPath(g_ClipAngelNameSourcePath, , &desktopDir)
     dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean, ext)
@@ -582,18 +525,18 @@ ClipAngelExport_UseSelected(*) {
         }
         return
     }
-    ClipAngelExport_ApplyName(sel["name"])
+    ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), ClipAngelExport_OrigExt())
 }
 
-; Apply selected name with the source file's original extension (download/clip type, not [X] session ext).
-; With no selection, resets session ext back to original (companion to [X]).
-ClipAngelExport_UseSelectedOrigExt(*) {
+ClipAngelExport_UseSelectedTxt(*) {
     sel := ClipAngelExport_Selected()
     if (!sel) {
-        ClipAngelExport_ResetOrigExt()
+        try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
+        catch {
+        }
         return
     }
-    ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), ClipAngelExport_OrigExt())
+    ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), "txt")
 }
 
 ClipAngelExport_OrigExt() {
@@ -601,28 +544,17 @@ ClipAngelExport_OrigExt() {
     if (g_ClipAngelNameOrigExt != "")
         return g_ClipAngelNameOrigExt
     if (g_ClipAngelNameSourcePath != "")
-        return ClipAngelExport_ResolveOrigExt(g_ClipAngelNameSourcePath)
-    return "txt"
-}
-
-; Reset session extension to the downloaded file's original (companion to [X]).
-ClipAngelExport_ResetOrigExt(*) {
-    global g_ClipAngelNameExt, g_ClipAngelNameOrigExt
-    g_ClipAngelNameExt := ClipAngelExport_OrigExt()
-    if (g_ClipAngelNameOrigExt = "")
-        g_ClipAngelNameOrigExt := g_ClipAngelNameExt
-    ClipAngelExport_UpdateHint()
-    try ShowCenteredOverlay_Utils("ℹ Extension: ." . g_ClipAngelNameExt . " (original)", 1200, BANNER_ACCENT_INFO)
-    catch {
-    }
+        return ClipAngelExport_ExtFromPath(g_ClipAngelNameSourcePath)
+    return ""
 }
 
 ; One-shot typed name for this file only (not saved to the CSV list).
 ; Accepts "name" (uses current ext) or "name.ext" (overrides ext for this file).
 ClipAngelExport_UseTyped(*) {
     global g_ClipAngelNameExt
+    extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
     ClipAngelExport_DialogsBegin()
-    ib := InputBox("Filename (optional .ext). Not saved to list.`nCurrent ext: ." . g_ClipAngelNameExt,
+    ib := InputBox("Filename (optional .ext). Not saved to list.`nCurrent ext: " . extLbl,
         "Type file name", "w360", "")
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
@@ -644,10 +576,10 @@ ClipAngelExport_UpdateHint() {
     global g_ClipAngelNameHint, g_ClipAngelNameExt
     if (!IsObject(g_ClipAngelNameHint))
         return
-    ext := g_ClipAngelNameExt != "" ? g_ClipAngelNameExt : "txt"
-    orig := ClipAngelExport_OrigExt()
-    g_ClipAngelNameHint.Value := "[Enter] use   [O] orig (." . orig . ")   [T] type once   [X] ext (." . ext
-        . ")   [A] add   [E] edit   Delete   Esc keep temp"
+    origLbl := ClipAngelExport_FormatExtLabel(ClipAngelExport_OrigExt())
+    extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
+    g_ClipAngelNameHint.Value := "[Enter] keep ext " . origLbl . "   [1] .txt   [T] type once   [X] ext "
+        . extLbl . "   [A] add   [E] edit   Delete   Esc keep temp"
 }
 
 ; Change extension for this rename session (list picks + bare typed names).
@@ -742,14 +674,14 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
-; Original extension: from source path, else sniffed content type (png/csv/…).
+; Original extension: from source path only (Enter keeps it; 1 forces .txt).
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
     g_ClipAngelNameSourcePath := sourcePath
     g_ClipAngelNameFinalPath := sourcePath
     g_ClipAngelNamePicked := false
-    g_ClipAngelNameOrigExt := ClipAngelExport_ResolveOrigExt(sourcePath)
+    g_ClipAngelNameOrigExt := ClipAngelExport_ExtFromPath(sourcePath)
     g_ClipAngelNameExt := g_ClipAngelNameOrigExt
 
     ClipAngelExport_CloseGui()
@@ -764,7 +696,7 @@ ClipAngelExport_PromptRename(sourcePath) {
     ClipAngelExport_Refresh()
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_UseSelected()],
-        ["o", (*) => ClipAngelExport_UseSelectedOrigExt()],
+        ["1", (*) => ClipAngelExport_UseSelectedTxt()],
         ["t", (*) => ClipAngelExport_UseTyped()],
         ["x", (*) => ClipAngelExport_SetExt()],
         ["a", (*) => ClipAngelExport_Add()],
