@@ -12,6 +12,8 @@
 
 - [ ] Data lake
 
+- [ ] Harness/ Tack (anatomia cavalo)
+
 ## Phase 1: Mathematical Foundation and Data Manipulation (Months 1-3)
 
 ### Month 1: Python Programming and Applied Statistics
