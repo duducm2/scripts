@@ -732,8 +732,9 @@ ClipAngelExport_UpdateHint() {
         return
     origLbl := ClipAngelExport_FormatExtLabel(ClipAngelExport_OrigExt())
     extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
-    g_ClipAngelNameHint.Value := "[Enter] keep ext " . origLbl . "   [1] .txt   [T] type once   [X] ext "
-        . extLbl . "   [A] add   [E] edit   Delete   Esc keep temp"
+    g_ClipAngelNameHint.Value := "Char = walk list   [Enter] keep ext " . origLbl .
+        "   [1] .txt   [Shift+T] type once   [Shift+X] ext "
+        . extLbl . "   [Shift+A] add   [Shift+E] edit   Delete   Esc keep temp"
 }
 
 ; Change extension for this rename session (list picks + bare typed names).
@@ -791,7 +792,8 @@ ClipAngelExport_UpdateManagerHint() {
     global g_ClipAngelNameHint
     if (!IsObject(g_ClipAngelNameHint))
         return
-    g_ClipAngelNameHint.Value := "[Enter] / [C] copy name   [A] add   [E] edit   Delete   Esc back"
+    g_ClipAngelNameHint.Value :=
+        "Char = walk list   [Enter] / [Shift+C] copy name   [Shift+A] add   [Shift+E] edit   Delete   Esc back"
 }
 
 ; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]; same list as #!+9 rename picker).
@@ -816,15 +818,18 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     ClipAngelExport_Refresh()
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_CopySelected()],
-        ["c", (*) => ClipAngelExport_CopySelected()],
-        ["a", (*) => ClipAngelExport_Add()],
+        ["+c", (*) => ClipAngelExport_CopySelected()],
+        ["+a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
-        ["e", (*) => ClipAngelExport_Edit()],
+        ["+e", (*) => ClipAngelExport_Edit()],
         ["Delete", (*) => ClipAngelExport_Delete()],
         ["Backspace", (*) => ClipAngelExport_ManagerClose()],
         ["Escape", (*) => ClipAngelExport_ManagerClose()]
     ])
     ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    try g_ClipAngelNameLv.Focus()
+    catch {
+    }
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
@@ -851,15 +856,18 @@ ClipAngelExport_PromptRename(sourcePath) {
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_UseSelected()],
         ["1", (*) => ClipAngelExport_UseSelectedTxt()],
-        ["t", (*) => ClipAngelExport_UseTyped()],
-        ["x", (*) => ClipAngelExport_SetExt()],
-        ["a", (*) => ClipAngelExport_Add()],
+        ["+t", (*) => ClipAngelExport_UseTyped()],
+        ["+x", (*) => ClipAngelExport_SetExt()],
+        ["+a", (*) => ClipAngelExport_Add()],
         ["Insert", (*) => ClipAngelExport_Add()],
-        ["e", (*) => ClipAngelExport_Edit()],
+        ["+e", (*) => ClipAngelExport_Edit()],
         ["Delete", (*) => ClipAngelExport_Delete()],
         ["Escape", (*) => ClipAngelExport_Cancel()]
     ])
     ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    try g_ClipAngelNameLv.Focus()
+    catch {
+    }
     try WinWaitClose("ahk_id " g_ClipAngelNameGui.Hwnd)
     catch {
     }
