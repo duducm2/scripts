@@ -338,13 +338,14 @@ Task_IsServerRunning(port := 0) {
     }
 }
 
-; Kill orphaned :8766 when Utils.ahk exits / reloads.
+; Kill orphaned :8766 when Utils.ahk exits / reloads (not Act warmup — see web_servers_warmup.ahk).
 Task_OnExitStopServer(*) {
     try Task_StopServer()
     catch {
     }
 }
-OnExit(Task_OnExitStopServer, -1)
+if (!IsSet(g_TaskLauncherSkipOnExit) || !g_TaskLauncherSkipOnExit)
+    OnExit(Task_OnExitStopServer, -1)
 
 Task_IsChromeWindowTitle(title) {
     t := Trim(title)

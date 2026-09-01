@@ -306,13 +306,14 @@ Palace_EnsureServer(forceRestart := false) {
     return false
 }
 
-; Kill orphaned :8767 when Utils.ahk exits / reloads (#SingleInstance Force).
+; Kill orphaned :8767 when Utils.ahk exits / reloads (#SingleInstance Force; not Act warmup).
 Palace_OnExitStopServer(*) {
     try Palace_StopServer()
     catch {
     }
 }
-OnExit(Palace_OnExitStopServer, -1)
+if (!IsSet(g_PalaceLauncherSkipOnExit) || !g_PalaceLauncherSkipOnExit)
+    OnExit(Palace_OnExitStopServer, -1)
 
 Palace_IsChromeWindowTitle(title) {
     t := Trim(title)
