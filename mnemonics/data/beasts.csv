@@ -307,3 +307,6 @@ BEAST_DATAANALYST_02_F,PALACE_DATAANALYST_02,F,frog,Lynne Kelly,auditory,0,2
 BEAST_DATAANALYST_02_G,PALACE_DATAANALYST_02,G,goat,Lynne Kelly,tactile,0,3
 BEAST_DATAANALYST_02_H,PALACE_DATAANALYST_02,H,Hydra,Lynne Kelly,thermal,0,4
 BEAST_DATAANALYST_02_I,PALACE_DATAANALYST_02,I,imp,Lynne Kelly,olfactory,0,5
+BEAST_AI_05_M,PALACE_AI_05,M,marmoset,Lynne Kelly,visual,0,1
+BEAST_AI_05_N,PALACE_AI_05,N,Neanderthal,Lynne Kelly,auditory,0,2
+BEAST_AI_05_O,PALACE_AI_05,O,owl,Lynne Kelly,olfactory,1,3

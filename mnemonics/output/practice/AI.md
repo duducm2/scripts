@@ -1,6 +1,101 @@
 # Ai
 
 <details open>
+<summary><strong>Memory Palace 5: AI System Architecture</strong> · Character: Neo (The Matrix) · 3 beasts · 5 atoms</summary>
+
+![Memory Palace 5](images/AI/5.png)
+
+<p><em>3 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [M] marmoset
+
+**Concept**
+💡 💡 **Context:** I experience the dumb zone as degraded attention and performance when processing a massive context window over an extended session.
+
+**Quote**
+“In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A microscopic marmoset juggles thousands of glowing text windows; as the session drags on, it becomes visibly sloppy and violently drops the massive text blocks, shattering them into useless binary dust across the pavement. Neo watches as the marmoset's brain audibly fizzles out.
+
+### 🟧 [N] Neanderthal
+
+**Concept**
+💡 💡 **Context:** I use a meta prompt as a behind-the-scenes instruction that establishes an AI's baseline parameters like tone, rules, and boundaries.
+
+**Quote**
+“A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
+
+**Sensory**
+👂 auditory
+
+**Story**
+A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggressively whispering secret rule-codes into a glowing megaphone. The overarching whispers completely mind-control the stage actors before they speak, setting their tone perfectly as Neo nods at the unseen directions.
+
+### 🟧 [O] owl
+
+🟦 **Z1 · The Horse**
+
+**Concept**
+💡 💡 **Context:** I use the Horse to represent the foundational AI model itself, which possesses raw power but no inherent direction.
+
+**Quote**
+“The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
+
+**Sensory**
+✋ tactile
+
+**Story**
+A wild, directionless mane of raw electrical power erupts from the owl's beak, violently shocking anyone who touches the untamed energy.
+
+---
+
+🟦 **Z2 · Harness Layer**
+
+**Concept**
+💡 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.
+
+**Quote**
+“The Harness/Tack acts as the engineering layer that interacts with the model.”
+
+**Sensory**
+🌡️ thermal
+
+**Story**
+A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely to physically contain and steer its thrashing electricity.
+
+---
+
+🟦 **Z3 · The Cart Task**
+
+**Concept**
+💡 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.
+
+**Quote**
+“The Cart represents the ultimate Task that needs to be accomplished.”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A massive wooden cart is bolted straight through the owl's spine, glowing with bright neon destination coordinates as the restrained bird perfectly pulls the heavy load.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 3: AI Pricing & Elo Mechanics</strong> · Character: Michael Jackson · 1 beast · 2 atoms</summary>
 
 ![Memory Palace 3](images/AI/3.jpg)

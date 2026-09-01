@@ -1,0 +1,34 @@
+===PREVIEW===
+STUDY_AI · 1 palaces · 3 beasts · 5 atoms
+Packing: 3 (remainder only on last **new** palace in this pack)
+
+PALACE 5 — AI System Architecture (Neo (The Matrix)) [PALACE_AI_05]
+  [M] marmoset — Concept: 💡 **Context:** I experience the dumb zone as degraded attention and performance when processing a massive context window over an extended session. | Quote: "In Artificial Intelligence, the "dumb zone" is a phenomenon..." | Story: A microscopic marmoset juggles thousands of glowing text windows; as the session drags on, it becomes visibly sloppy... | Sensory: visual 👁️
+  [N] Neanderthal — Concept: 💡 **Context:** I use a meta prompt as a behind-the-scenes instruction that establishes an AI's baseline parameters like tone, rules, and boundaries. | Quote: "A meta prompt (often referred to as a system prompt) is a..." | Story: A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggressively whispering secret rule-codes... | Sensory: auditory 👂
+  [O] owl Z1 — Concept: 💡 **Context:** I use the Horse to represent the foundational AI model itself, which possesses raw power but no inherent direction. | Quote: "The Horse represents the foundational AI Model itself..." | Story: A wild, directionless mane of raw electrical power erupts from the owl's beak, violently shocking anyone who touches... | Sensory: tactile ✋
+  [O] owl Z2 — Concept: 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power. | Quote: "The Harness/Tack acts as the engineering layer that interacts with the model." | Story: A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely... | Sensory: thermal 🌡️
+  [O] owl Z3 — Concept: 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed. | Quote: "The Cart represents the ultimate Task that needs to be accomplished." | Story: A massive wooden cart is bolted straight through the owl's spine, glowing with bright neon destination coordinates... | Sensory: visual 👁️
+
+Discard candidates: none | Overriding inventory check due to explicit user constraint to generate exactly 5 atoms including a 3-atom horse model on 1 smashed beast.
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+"PALACE_AI_05","STUDY_AI",5,"AI System Architecture","Neo (The Matrix)","AI/images/5.png",3,"an original fictional hacker-like man (pale, dark sunglasses, long black trench coat, dodging in slow motion) — not any real, living, historical, or named public figure and not any copyrighted character, standing on the street. Depth slot: near camera, left third, bolted to a lamppost, a microscopic marmoset drops glowing text blocks. Depth slot: mid depth, right third, behind a parked car, a colossal Neanderthal whispers into a megaphone. Depth slot: far depth, center line on a brick facade, an owl with a wild electrical mane, freezing iron harness on its wings, and a wooden cart bolted to its spine."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+"BEAST_AI_05_M","PALACE_AI_05","M","marmoset","Lynne Kelly","visual",0,1
+"BEAST_AI_05_N","PALACE_AI_05","N","Neanderthal","Lynne Kelly","auditory",0,2
+"BEAST_AI_05_O","PALACE_AI_05","O","owl","Lynne Kelly","olfactory",1,3
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+,"BEAST_AI_05_M","single",,,"💡 **Context:** I experience the dumb zone as degraded attention and performance when processing a massive context window over an extended session.","In Artificial Intelligence, the ""dumb zone"" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.","A microscopic marmoset juggles thousands of glowing text windows; as the session drags on, it becomes visibly sloppy and violently drops the massive text blocks, shattering them into useless binary dust across the pavement. Neo watches as the marmoset's brain audibly fizzles out.","visual",,1
+,"BEAST_AI_05_N","single",,,"💡 **Context:** I use a meta prompt as a behind-the-scenes instruction that establishes an AI's baseline parameters like tone, rules, and boundaries.","A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.","A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggressively whispering secret rule-codes into a glowing megaphone. The overarching whispers completely mind-control the stage actors before they speak, setting their tone perfectly as Neo nods at the unseen directions.","auditory",,1
+,"BEAST_AI_05_O","zoned","Z1","The Horse","💡 **Context:** I use the Horse to represent the foundational AI model itself, which possesses raw power but no inherent direction.","The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.","A wild, directionless mane of raw electrical power erupts from the owl's beak, violently shocking anyone who touches the untamed energy.","tactile",,1
+,"BEAST_AI_05_O","zoned","Z2","Harness Layer","💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.","The Harness/Tack acts as the engineering layer that interacts with the model.","A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snapping thick leather tack securely to physically contain and steer its thrashing electricity.","thermal",,2
+,"BEAST_AI_05_O","zoned","Z3","The Cart Task","💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.","The Cart represents the ultimate Task that needs to be accomplished.","A massive wooden cart is bolted straight through the owl's spine, glowing with bright neon destination coordinates as the restrained bird perfectly pulls the heavy load.","visual",,3
+===END_FILE===
