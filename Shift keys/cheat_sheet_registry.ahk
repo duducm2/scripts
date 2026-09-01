@@ -1051,6 +1051,8 @@ cheatSheets["Tasks"] := "
     === Function keys & misc ===
     ⬆️ [Up] Previous item
     ⬇️ [Down] Next item
+    ⬆️ [Shift+Up] Move selected project, section, or task up (clear search/filter first)
+    ⬇️ [Shift+Down] Move selected project, section, or task down
     ⬅️ [Left] Collapse, or move to parent
     ➡️ [Right] Expand, or move into first child
     🏠 [Home] First visible item

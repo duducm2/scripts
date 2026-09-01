@@ -140,6 +140,59 @@ def next_sort(rows: list[dict]) -> str:
     return str(mx + 10)
 
 
+def sort_key_row(r: dict) -> tuple:
+    try:
+        so = int(r.get("sort_order") or 0)
+    except ValueError:
+        so = 0
+    return (so, r.get("id") or "")
+
+
+def parse_move_dir(direction) -> int:
+    try:
+        d = int(direction)
+    except (TypeError, ValueError):
+        d = 0
+    if d in (-1, 1):
+        return d
+    text = str(direction or "").strip().lower()
+    if text in ("up", "-1"):
+        return -1
+    if text in ("down", "1"):
+        return 1
+    raise ValueError("dir must be -1 or 1")
+
+
+def swap_sort_order(
+    rows: list[dict],
+    row_id: str,
+    direction: int,
+    sibling_predicate,
+) -> tuple[list[dict], dict | None, bool]:
+    """Swap sort_order with adjacent sibling. Returns (rows, target, moved)."""
+    target = next((r for r in rows if r.get("id") == row_id), None)
+    if not target:
+        return rows, None, False
+    siblings = sorted(
+        [r for r in rows if sibling_predicate(r, target)],
+        key=sort_key_row,
+    )
+    idx = next((i for i, r in enumerate(siblings) if r.get("id") == row_id), -1)
+    if idx < 0:
+        return rows, target, False
+    j = idx + direction
+    if j < 0 or j >= len(siblings):
+        return rows, target, False
+    a, b = siblings[idx], siblings[j]
+    a_so, b_so = a.get("sort_order") or "0", b.get("sort_order") or "0"
+    a["sort_order"], b["sort_order"] = b_so, a_so
+    by_id = {r["id"]: r for r in rows}
+    by_id[a["id"]] = a
+    by_id[b["id"]] = b
+    out = [by_id.get(r["id"], r) for r in rows]
+    return out, by_id[row_id], True
+
+
 class TaskStore:
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir
@@ -749,15 +802,81 @@ class TaskStore:
         self.save("info_points", rows)
         return {"ok": True, "info": row}
 
+    def move_project(self, project_id: str, direction: int) -> dict:
+        try:
+            direction = parse_move_dir(direction)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        rows = self.load("projects")
+        target = next((r for r in rows if r.get("id") == project_id), None)
+        if not target:
+            return {"ok": False, "error": "project not found"}
+        if target.get("active", "1") == "0":
+            return {"ok": False, "error": "project not active"}
+        filt = target.get("filter") or ""
+
+        def pred(r: dict, _t: dict) -> bool:
+            return r.get("filter") == filt and r.get("active", "1") != "0"
+
+        out, row, moved = swap_sort_order(rows, project_id, direction, pred)
+        if moved:
+            self.save("projects", out)
+        return {"ok": True, "project": row or target, "moved": moved}
+
+    def move_section(self, section_id: str, direction: int) -> dict:
+        try:
+            direction = parse_move_dir(direction)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        rows = self.load("sections")
+        target = next((r for r in rows if r.get("id") == section_id), None)
+        if not target:
+            return {"ok": False, "error": "section not found"}
+        if (target.get("title") or "").strip().lower() == GENERAL_SECTION.lower():
+            return {"ok": False, "error": "General cannot be moved"}
+        pid = target.get("project_id") or ""
+
+        def pred(r: dict, _t: dict) -> bool:
+            return r.get("project_id") == pid
+
+        out, row, moved = swap_sort_order(rows, section_id, direction, pred)
+        if moved:
+            self.save("sections", out)
+        return {"ok": True, "section": row or target, "moved": moved}
+
+    def move_task(self, task_id: str, direction: int) -> dict:
+        try:
+            direction = parse_move_dir(direction)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        rows = self.load("tasks")
+        target = next((r for r in rows if r.get("id") == task_id), None)
+        if not target:
+            return {"ok": False, "error": "task not found"}
+        if target.get("active", "1") == "0":
+            return {"ok": False, "error": "task not active"}
+        pid = target.get("project_id") or ""
+        sid = target.get("section_id") or ""
+
+        def pred(r: dict, _t: dict) -> bool:
+            return (
+                r.get("project_id") == pid
+                and (r.get("section_id") or "") == sid
+                and r.get("active", "1") != "0"
+            )
+
+        out, row, moved = swap_sort_order(rows, task_id, direction, pred)
+        if moved:
+            self.save("tasks", out)
+        return {"ok": True, "task": row or target, "moved": moved}
+
     def move_info(self, info_id: str, direction: int) -> dict:
         """Swap sort_order with adjacent sibling (same parent). direction: -1 up, +1 down."""
         rid = (info_id or "").strip()
         try:
-            direction = int(direction)
-        except (TypeError, ValueError):
-            return {"ok": False, "error": "dir must be -1 or 1"}
-        if direction not in (-1, 1):
-            return {"ok": False, "error": "dir must be -1 or 1"}
+            direction = parse_move_dir(direction)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
         rows = self.load("info_points")
         target = next((r for r in rows if r.get("id") == rid), None)
         if not target:
@@ -765,36 +884,14 @@ class TaskStore:
         parent_type = target.get("parent_type") or ""
         parent_id = target.get("parent_id") or ""
 
-        def sort_key(r: dict) -> tuple:
-            try:
-                so = int(r.get("sort_order") or 0)
-            except ValueError:
-                so = 0
-            return (so, r.get("id") or "")
+        def pred(r: dict, _t: dict) -> bool:
+            return (
+                r.get("parent_type") == parent_type and r.get("parent_id") == parent_id
+            )
 
-        siblings = sorted(
-            [
-                r
-                for r in rows
-                if r.get("parent_type") == parent_type
-                and r.get("parent_id") == parent_id
-            ],
-            key=sort_key,
-        )
-        idx = next((i for i, r in enumerate(siblings) if r.get("id") == rid), -1)
-        if idx < 0:
-            return {"ok": False, "error": "info not found"}
-        j = idx + direction
-        if j < 0 or j >= len(siblings):
-            return {"ok": True, "info": target, "moved": False, "infos": siblings}
-        a, b = siblings[idx], siblings[j]
-        a_so, b_so = a.get("sort_order") or "0", b.get("sort_order") or "0"
-        a["sort_order"], b["sort_order"] = b_so, a_so
-        by_id = {r["id"]: r for r in rows}
-        by_id[a["id"]] = a
-        by_id[b["id"]] = b
-        out = [by_id.get(r["id"], r) for r in rows]
-        self.save("info_points", out)
+        out, row, moved = swap_sort_order(rows, rid, direction, pred)
+        if moved:
+            self.save("info_points", out)
         siblings = sorted(
             [
                 r
@@ -802,12 +899,12 @@ class TaskStore:
                 if r.get("parent_type") == parent_type
                 and r.get("parent_id") == parent_id
             ],
-            key=sort_key,
+            key=sort_key_row,
         )
         return {
             "ok": True,
-            "info": by_id[rid],
-            "moved": True,
+            "info": row or target,
+            "moved": moved,
             "infos": siblings,
         }
 

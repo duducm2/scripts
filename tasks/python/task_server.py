@@ -225,11 +225,32 @@ class TaskHandler(BaseHTTPRequestHandler):
             if path == "/api/projects":
                 self._json(200, store.upsert_project(payload))
                 return
+            if path.startswith("/api/projects/") and path.endswith("/move"):
+                pid = path[len("/api/projects/") : -len("/move")]
+                direction = payload.get("dir")
+                if direction is None:
+                    direction = payload.get("direction")
+                self._json(200, store.move_project(pid, direction))
+                return
             if path == "/api/sections":
                 self._json(200, store.upsert_section(payload))
                 return
+            if path.startswith("/api/sections/") and path.endswith("/move"):
+                sid = path[len("/api/sections/") : -len("/move")]
+                direction = payload.get("dir")
+                if direction is None:
+                    direction = payload.get("direction")
+                self._json(200, store.move_section(sid, direction))
+                return
             if path == "/api/tasks":
                 self._json(200, store.upsert_task(payload))
+                return
+            if path.startswith("/api/tasks/") and path.endswith("/move"):
+                tid = path[len("/api/tasks/") : -len("/move")]
+                direction = payload.get("dir")
+                if direction is None:
+                    direction = payload.get("direction")
+                self._json(200, store.move_task(tid, direction))
                 return
             if path.startswith("/api/tasks/") and path.endswith("/emoji"):
                 tid = path[len("/api/tasks/") : -len("/emoji")]

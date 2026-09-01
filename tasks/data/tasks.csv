@@ -1,6 +1,6 @@
 id,project_id,section_id,title,emoji,kind,recurrence,due_date,next_due,section_path,filter,sort_order,completed_at,created_at,active
-TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
-TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,100,,2026-08-29 15:48:39,1
+TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para mapear oportunidades de doutorado profissional em parceria com a Bosch,🔲,punctual,,,,,work,100,,2026-08-29 15:48:39,1
+TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
 TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1
 TASK_0008,PROJ_0005,SEC_0005,Decide between Cursor and other approaches,⏳,punctual,,,,,work,350,,2026-08-29 15:48:39,1

@@ -2926,6 +2926,65 @@
           }
         }
 
+        async function moveDashboardSelection(dir) {
+          if (modalOpen() || state.infoUi) return;
+          if (!state.sel) {
+            toast("Select a project, section, or task first");
+            return;
+          }
+          if (searchNeedle()) {
+            toast("Clear search to reorder");
+            return;
+          }
+          if (state.emojiFilter !== null) {
+            toast("Clear emoji filter to reorder");
+            return;
+          }
+          const kind = state.sel.kind;
+          const id = state.sel.id;
+          if (kind === "section") {
+            const sec = findSection(id);
+            if (!sec) return;
+            if (isGeneralSection(sec)) {
+              toast("General cannot be moved");
+              return;
+            }
+            try {
+              await api("/api/sections/" + encodeURIComponent(id) + "/move", {
+                method: "POST",
+                body: JSON.stringify({ dir }),
+              });
+            } catch (err) {
+              toast(err.message || String(err));
+              return;
+            }
+          } else if (kind === "project") {
+            try {
+              await api("/api/projects/" + encodeURIComponent(id) + "/move", {
+                method: "POST",
+                body: JSON.stringify({ dir }),
+              });
+            } catch (err) {
+              toast(err.message || String(err));
+              return;
+            }
+          } else if (kind === "task" || kind === "habit") {
+            try {
+              await api("/api/tasks/" + encodeURIComponent(id) + "/move", {
+                method: "POST",
+                body: JSON.stringify({ dir }),
+              });
+            } catch (err) {
+              toast(err.message || String(err));
+              return;
+            }
+          } else {
+            return;
+          }
+          await refresh();
+          setSelection(kind, id, true);
+        }
+
         function applyEmojiFilter(emoji) {
           // null = clear filter; "" = tasks with no emoji; otherwise match that emoji
           state.emojiFilter = emoji === undefined ? null : emoji;
@@ -4227,12 +4286,14 @@
 
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            moveSelection(1);
+            if (e.shiftKey) await moveDashboardSelection(1);
+            else moveSelection(1);
             return;
           }
           if (e.key === "ArrowUp") {
             e.preventDefault();
-            moveSelection(-1);
+            if (e.shiftKey) await moveDashboardSelection(-1);
+            else moveSelection(-1);
             return;
           }
           if (e.key === "ArrowRight") {
