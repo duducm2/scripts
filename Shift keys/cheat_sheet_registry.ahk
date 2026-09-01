@@ -1105,7 +1105,8 @@ cheatSheets["Tasks"] := "
     ⚡ [I] Important on the selected task only (does not filter)
     
     === Alt ===
-    🔍 [S] Focus search
+    🔍 [S] Show search field (toggle; Esc closes when empty)
+    📄 [G] Open personal tasks on GitHub (main/punctual.md)
 )"
 
 ; --- Memory Palace (localhost :8767, Chrome title Memory Palace) ----------

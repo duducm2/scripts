@@ -28,18 +28,45 @@
         color: var(--text);
       }
       header {
-        padding: 6px 16px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px 12px;
-        align-items: center;
-        justify-content: space-between;
+        display: none;
       }
-      .hdr-stats {
+      .hdr-stats,
+      .ftr-stats {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         line-height: 1.2;
         white-space: nowrap;
+      }
+      footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        padding: 4px 16px;
+        background: rgba(18, 18, 18, 0.92);
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .search-bar {
+        position: fixed;
+        top: 8px;
+        right: 16px;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: rgba(30, 30, 30, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      }
+      .search-bar.is-open {
+        display: flex;
       }
       .sub {
         color: var(--muted);
@@ -106,7 +133,7 @@
         max-width: 360px;
       }
       #view {
-        padding: 4px 16px 32px;
+        padding: 8px 16px 36px;
       }
       .panel {
         background: var(--panel);
@@ -671,10 +698,6 @@
         align-items: center;
         gap: 6px;
       }
-      header .btn.tertiary {
-        padding: 4px 8px;
-        font-size: 12px;
-      }
       #globalSearch {
         width: min(260px, 42vw);
         background: #252528;
@@ -882,28 +905,18 @@
     </style>
   </head>
   <body>
-    <header>
-      <div class="hdr-stats" id="hdrSub">Loading…</div>
-      <div class="search-wrap">
-        <input
-          type="search"
-          id="globalSearch"
-          placeholder="Search…"
-          title="Search (Alt+S)"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <a
-          class="btn tertiary"
-          href="https://github.com/duducm2/my-notes/blob/main/main/punctual.md"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Personal tasks Markdown on GitHub (main/punctual.md)"
-          >GitHub MD</a
-        >
-      </div>
-    </header>
+    <div id="searchBar" class="search-bar" aria-hidden="true">
+      <input
+        type="search"
+        id="globalSearch"
+        placeholder="Search…"
+        title="Search (Alt+S)"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
     <div id="view"></div>
+    <footer><div class="ftr-stats" id="ftrSub">Loading…</div></footer>
     <div id="toast"></div>
     <div id="lightbox" hidden><img src="" alt="" /></div>
     <div id="modalHost"></div>
@@ -1012,6 +1025,8 @@
         };
         // Same window as AI_QD_DOUBLE_TAP_MS / ZMK tap-dance (Utils/ai_quick_download.ahk).
         const ESC_DOUBLE_TAP_MS = 400;
+        const GITHUB_PUNCTUAL_MD =
+          "https://github.com/duducm2/my-notes/blob/main/main/punctual.md";
         let taskIdsWithInfo = new Set();
 
         function rebuildTaskIdsWithInfo() {
@@ -1686,9 +1701,53 @@
           bindInlineCreateInput();
         }
 
+        function updateStatsLine() {
+          const c = state.data?.counts || {};
+          const text = `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
+          const ftr = $("#ftrSub");
+          if (ftr) ftr.textContent = text;
+        }
+
+        function showSearchBar() {
+          const bar = $("#searchBar");
+          if (!bar) return;
+          bar.classList.add("is-open");
+          bar.setAttribute("aria-hidden", "false");
+          focusSearch();
+        }
+
+        function hideSearchBar() {
+          const bar = $("#searchBar");
+          if (!bar) return;
+          bar.classList.remove("is-open");
+          bar.setAttribute("aria-hidden", "true");
+          const inp = $("#globalSearch");
+          if (inp && document.activeElement === inp) inp.blur();
+        }
+
+        function toggleSearchBar() {
+          const bar = $("#searchBar");
+          if (!bar) return;
+          if (bar.classList.contains("is-open")) {
+            const inp = $("#globalSearch");
+            if (inp && document.activeElement === inp && !(inp.value || "")) {
+              hideSearchBar();
+              return;
+            }
+            focusSearch();
+            return;
+          }
+          showSearchBar();
+        }
+
+        function openGithubPunctualMd() {
+          window.open(GITHUB_PUNCTUAL_MD, "_blank", "noopener,noreferrer");
+        }
+
         function focusSearch() {
           const inp = $("#globalSearch");
           if (!inp) return;
+          showSearchBar();
           inp.focus();
           inp.select();
         }
@@ -1716,18 +1775,18 @@
           state.search = "";
           const inp = $("#globalSearch");
           if (inp) inp.value = "";
+          hideSearchBar();
         }
 
         function applySearch(query) {
           state.search = query ?? "";
+          if (searchNeedle()) showSearchBar();
           if (state.view === "dashboard" && state.data) renderDashboard();
         }
 
         function render() {
           if (!state.data) return;
-          const c = state.data.counts || {};
-          $("#hdrSub").textContent =
-            `${c.projects || 0} projects · ${c.tasks || 0} tasks · ${c.info || 0} info · ${c.open || 0} open`;
+          updateStatsLine();
           renderDashboard();
         }
 
@@ -3983,10 +4042,19 @@
           if (e.altKey) {
             const isS =
               e.code === "KeyS" || (e.key || "").toLowerCase() === "s";
+            const isG =
+              e.code === "KeyG" || (e.key || "").toLowerCase() === "g";
             if (isS) {
               e.preventDefault();
               e.stopPropagation();
-              focusSearch();
+              toggleSearchBar();
+              return;
+            }
+            if (isG) {
+              e.preventDefault();
+              e.stopPropagation();
+              openGithubPunctualMd();
+              return;
             }
             return;
           }
@@ -4231,12 +4299,25 @@
         const searchInp = $("#globalSearch");
         if (searchInp) {
           searchInp.value = state.search || "";
+          if ((state.search || "").trim()) showSearchBar();
           searchInp.addEventListener("input", () => {
             applySearch(searchInp.value);
           });
+          searchInp.addEventListener("keydown", (e) => {
+            if (e.key !== "Escape") return;
+            if ((searchInp.value || "").trim()) return;
+            e.preventDefault();
+            e.stopPropagation();
+            hideSearchBar();
+          });
+          searchInp.addEventListener("blur", () => {
+            if (!(searchInp.value || "").trim() && !searchNeedle())
+              hideSearchBar();
+          });
         }
         refresh().catch((err) => {
-          $("#hdrSub").textContent = err.message;
+          const ftr = $("#ftrSub");
+          if (ftr) ftr.textContent = err.message;
           toast(err.message);
         });
       })();
