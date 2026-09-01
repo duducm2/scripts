@@ -236,7 +236,7 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
         }
 
         Maps_CollapseSidePanel(root)
-        Sleep 250
+        Sleep 600  ; side-panel collapse animation
 
         if !Maps_HideChrome(uia) {
             ToolTip("Maps: canvas not found")
@@ -244,7 +244,7 @@ Maps_CaptureRectToDesktop(x, y, w, h) {
             return
         }
         chromeHidden := true
-        Sleep 300
+        Sleep 1500  ; let canvas resize and tiles finish loading before capture
 
         root := Maps_GetDocumentRoot(uia)
         pane := Maps_FindMapPane(root)
