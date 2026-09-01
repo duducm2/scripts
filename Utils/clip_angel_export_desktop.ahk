@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: clip_angel_export_desktop.ahk
-; Copy Clip Angel Row 0 (newest clip) preview text to a UTF-8 .txt on Desktop,
+; Copy Clip Angel Row 0 (newest clip) preview text or image to Desktop,
 ; then prompt to rename from a persisted name list (inline CRUD).
 ; Also hosts HotkeyCopy_ShowPostCopyBanner (#!+p 1×/2× post-copy destination menu).
 ; Utility Shortcuts: #!+U → Macros → [c]
@@ -250,15 +250,18 @@ ClipAngelExport_UniqueNamedPath(desktopDir, baseName, ext) {
     }
 }
 
-ClipAngelExport_UniqueDesktopPath(desktopDir) {
+ClipAngelExport_UniqueDesktopPath(desktopDir, ext := "txt") {
+    ext := ClipAngelExport_SanitizeExt(ext)
+    if (ext = "")
+        ext := "txt"
     stamp := FormatTime(, "yyyyMMdd-HHmmss")
     base := "clipangel-last-" stamp
-    path := desktopDir "\" base ".txt"
+    path := desktopDir "\" base "." ext
     if !FileExist(path)
         return path
     i := 2
     loop {
-        path := desktopDir "\" base "-" i ".txt"
+        path := desktopDir "\" base "-" i "." ext
         if !FileExist(path)
             return path
         i += 1
@@ -941,18 +944,31 @@ ClipAngel_ExportLastClipToDesktop() {
         if (clipHwnd)
             ClipAngel_LeaveFavoritesFilter(clipHwnd)
         ClipAngel_SelectClipCopyThenMinimize(0)
-        content := A_Clipboard
-        if (Trim(content) = "") {
-            ShowCenteredOverlay_Utils("❌ Clip empty or not text.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
         desktopPath := AiQuickDownload_ResolveDesktopPath()
         if (!desktopPath || !DirExist(desktopPath)) {
             ShowCenteredOverlay_Utils("❌ Desktop folder not found.", 2500, BANNER_ACCENT_ERROR)
             return
         }
-        outPath := ClipAngelExport_UniqueDesktopPath(desktopPath)
-        WriteUtf8File(outPath, content)
+        isImage := false
+        try isImage := Task_ClipboardHasImage()
+        catch {
+            isImage := false
+        }
+        if (isImage) {
+            outPath := ClipAngelExport_UniqueDesktopPath(desktopPath, "png")
+            if (!Task_SaveClipboardImage(outPath)) {
+                ShowCenteredOverlay_Utils("❌ Could not save image clip to Desktop.", 2500, BANNER_ACCENT_ERROR)
+                return
+            }
+        } else {
+            content := A_Clipboard
+            if (Trim(content) = "") {
+                ShowCenteredOverlay_Utils("❌ Clip empty or not text.", 2000, BANNER_ACCENT_ERROR)
+                return
+            }
+            outPath := ClipAngelExport_UniqueDesktopPath(desktopPath, "txt")
+            WriteUtf8File(outPath, content)
+        }
         try StandardLoadingBar_Hide(0)
         catch {
         }
