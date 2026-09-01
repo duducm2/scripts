@@ -529,6 +529,13 @@
           >
             Copy prompt
           </button>
+          <button
+            type="button"
+            id="btnChangeImage"
+            title="Replace palace scene image (Desktop PNG/JPG or file picker)"
+          >
+            Change image
+          </button>
           <button type="button" id="btnClose">Close</button>
         </div>
       </div>
@@ -568,6 +575,7 @@
               <span class="gallery-status" id="ovGalleryStatus"></span>
             </div>
             <input type="file" id="galleryFileInput" accept="image/*" />
+            <input type="file" id="palaceHeroFileInput" accept="image/*" hidden />
             <div class="gallery-grid" id="ovGalleryGrid"></div>
           </div>
         </div>
@@ -599,6 +607,7 @@
         studyId: "",
         browse: { studyId: "", palaceId: "", beastId: "" },
         overlayPalaceId: "",
+        pendingHeroPalaceId: "",
         notesTimer: null,
         planCheckSnapshot: null,
         studyPickerPending: true,
@@ -1250,6 +1259,26 @@
         } catch (e) {
           setNotesStatus(String(e.message || e), "err");
         }
+      }
+
+      async function changePalaceImage(palaceId) {
+        if (!palaceId) return;
+        try {
+          const r = await api("/api/quick-image", {
+            method: "POST",
+            body: JSON.stringify({ palace_id: palaceId }),
+          });
+          if (r.ok) {
+            toast(`Image updated (${r.image_rel_path || "saved"})`);
+            await refresh();
+            if (state.overlayPalaceId === palaceId) openPalace(palaceId);
+            return;
+          }
+        } catch (e) {
+          /* fall through to file picker */
+        }
+        state.pendingHeroPalaceId = palaceId;
+        document.getElementById("palaceHeroFileInput").click();
       }
 
       function renderGalleryGrid(palaceId) {
@@ -1931,15 +1960,22 @@
             <div class="spa-row"><button class="spa-btn" id="up">Up</button>
               <button class="spa-btn" id="addP">Add palace</button>
               <button class="spa-btn" id="toPlans">Plans</button></div>
-            <div class="spa-panel"><table class="spa-table"><thead><tr><th>#</th><th>Title</th><th>Character</th><th></th></tr></thead>
+            <div class="spa-panel"><table class="spa-table"><thead><tr><th>#</th><th>Title</th><th>Character</th><th>Image</th><th></th></tr></thead>
             <tbody>${list
               .map(
                 (
                   p,
-                ) => `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
+                ) => {
+                  const img = (p.image_rel_path || "").trim();
+                  const ok = img && mediaUrl(img);
+                  const mark = ok ? "✓" : "—";
+                  return `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
+              <td>${mark}</td>
               <td><button class="spa-btn" data-open="${escAttr(p.id)}">Open</button>
+              <button class="spa-btn" data-img="${escAttr(p.id)}">Change image</button>
               <button class="spa-btn" data-edit="${escAttr(p.id)}">Edit</button>
-              <button class="spa-btn danger" data-del="${escAttr(p.id)}">Del</button></td></tr>`,
+              <button class="spa-btn danger" data-del="${escAttr(p.id)}">Del</button></td></tr>`;
+                },
               )
               .join("")}</tbody></table></div>`;
           root.querySelector("#up").onclick = () => {
@@ -1958,6 +1994,10 @@
                 state.browse.palaceId = btn.dataset.open;
                 render();
               }),
+          );
+          root.querySelectorAll("[data-img]").forEach(
+            (btn) =>
+              (btn.onclick = () => changePalaceImage(btn.dataset.img)),
           );
           root
             .querySelectorAll("[data-edit]")
@@ -1984,6 +2024,7 @@
             crumb +
             `
             <div class="spa-row"><button class="spa-btn" id="up">Up</button>
+              <button class="spa-btn" id="changeImg">Change image</button>
               <button class="spa-btn" id="addB">Add beast</button>
               <button class="spa-btn" id="practice">Practice overlay</button></div>
             <div class="spa-panel"><table class="spa-table"><thead><tr><th>Peg</th><th>Name</th><th>Sensory</th><th></th></tr></thead>
@@ -2001,6 +2042,8 @@
             state.browse.palaceId = "";
             render();
           };
+          root.querySelector("#changeImg").onclick = () =>
+            changePalaceImage(b.palaceId);
           root.querySelector("#practice").onclick = () =>
             openPalace(b.palaceId);
           root.querySelector("#addB").onclick = () =>
@@ -2338,8 +2381,38 @@
           .getElementById("btnPlansTocToggle")
           .setAttribute("aria-expanded", collapsed ? "false" : "true");
       };
+      document.getElementById("btnChangeImage").onclick = () =>
+        changePalaceImage(state.overlayPalaceId);
       document.getElementById("btnGalleryAdd").onclick = () =>
         document.getElementById("galleryFileInput").click();
+      document.getElementById("palaceHeroFileInput").onchange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        const palaceId = state.pendingHeroPalaceId;
+        state.pendingHeroPalaceId = "";
+        if (!file || !palaceId) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const r = await api("/api/palace/images", {
+              method: "POST",
+              body: JSON.stringify({
+                palace_id: palaceId,
+                action: "set_hero",
+                data_b64: reader.result,
+                mime: file.type,
+              }),
+            });
+            if (!r.ok) throw new Error(r.error || "fail");
+            toast(`Image updated (${r.image_rel_path || "saved"})`);
+            await refresh();
+            if (state.overlayPalaceId === palaceId) openPalace(palaceId);
+          } catch (err) {
+            toast(String(err.message || err), 3200);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
       document.getElementById("galleryFileInput").onchange = async (e) => {
         const file = e.target.files?.[0];
         e.target.value = "";

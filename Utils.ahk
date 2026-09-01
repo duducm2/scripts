@@ -318,16 +318,10 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 ; [Utils module] Win+Alt+Shift+D tap-dance → Tasks / Finance / Memory Palace -> Utils\finance_hotkey_d.ahk
 #include %A_ScriptDir%\Utils\finance_hotkey_d.ahk
 
-; [Utils module] Memory Palace (Utility Shortcuts [N])
+; [Utils module] Memory Palace — web launcher (:8767), CSV helpers, import
 #include %A_ScriptDir%\Utils\mnemonic_palace_helpers.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_practice_md.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_launcher.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_studies.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_palaces.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_beasts.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_atoms.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_plans.ahk
-#include %A_ScriptDir%\Utils\mnemonic_palace_help.ahk
 #include %A_ScriptDir%\Utils\mnemonic_palace_import.ahk
 
 ; [Utils module] Tasks (Utility Shortcuts [T] → web app on :8766)

@@ -1,7 +1,6 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_launcher.ahk
 ; Memory Palace — thin AHK launcher: start localhost :8767 + open Chrome web app
-; (CRUD GUIs remain included for import/helpers; primary UX is mnemonics/web)
 ; =============================================================================
 
 global g_PalaceDashboardHwnd := 0
@@ -493,101 +492,8 @@ Palace_OpenWebInChrome(url) {
     return true
 }
 
-; Legacy menu kept for reference / emergency; primary entry is Palace_LaunchApp → web.
 Palace_ShowMainMenu() {
     Palace_LaunchApp()
-}
-
-Palace_ReturnToUtilityShortcuts() {
-    Palace_CloseGui()
-    try ShowHotstringSelector()
-    catch {
-    }
-}
-
-Palace_OnDash(*) {
-    Palace_LaunchApp()
-}
-Palace_OnStudyVideo(*) {
-    Palace_CloseGui()
-    StudyTopicSelector_ManageLinks()
-}
-Palace_OnStudyArticle(*) {
-    Palace_CloseGui()
-    StudyTopicSelector_ManageArticleLinks()
-}
-Palace_OnStudyFavorite(*) {
-    Palace_CloseGui()
-    StudyTopicSelector_ManageFavoriteLinks()
-}
-Palace_OnBrowse(*) {
-    Palace_ShowBrowse()
-}
-Palace_OnPlans(*) {
-    global g_PalaceFilterStudyId, g_PalaceFilterPlanId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
-    Palace_EnsureData()
-    pick := Palace_PickStudy()
-    if (pick = "") {
-        Palace_ShowMainMenu()
-        return
-    }
-    g_PalaceFilterStudyId := pick
-    g_PalaceFilterPalaceId := ""
-    g_PalaceFilterBeastId := ""
-    g_PalaceFilterPlanId := ""
-    Palace_ShowPlans()
-}
-Palace_OnQuickImage(*) {
-    Palace_QuickAttachDesktopImage()
-}
-Palace_OnPracticeGithub(*) {
-    Palace_CloseGui()
-    Palace_OpenPracticeGithub()
-}
-Palace_OnRegenMarkdown(*) {
-    Palace_ForceRegenAllMarkdown()
-}
-Palace_OnHelp(*) {
-    Palace_ShowHelp()
-}
-
-Palace_PracticeGithubUrl() {
-    return "https://github.com/duducm2/scripts/tree/main/mnemonics/output/practice"
-}
-
-Palace_OpenPracticeGithub() {
-    url := Palace_PracticeGithubUrl()
-    try Run('chrome.exe --new-window "' . url . '"')
-    catch as e {
-        try Run('"' . url . '"')
-        catch {
-            Palace_Notify("Could not open GitHub: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-            return
-        }
-    }
-    Palace_Notify("Practice folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
-}
-
-Palace_PlansGithubUrl() {
-    return "https://github.com/duducm2/scripts/tree/main/mnemonics/output/plans"
-}
-
-Palace_OnPlansGithub(*) {
-    Palace_CloseGui()
-    Palace_OpenPlansGithub()
-}
-
-Palace_OpenPlansGithub() {
-    url := Palace_PlansGithubUrl()
-    try Run('chrome.exe --new-window "' . url . '"')
-    catch as e {
-        try Run('"' . url . '"')
-        catch {
-            Palace_Notify("Could not open GitHub: " . e.Message, 2500, BANNER_ACCENT_ERROR)
-            return
-        }
-    }
-    Palace_Notify("Plans folder on GitHub", 1800, BANNER_ACCENT_SUCCESS)
 }
 
 Palace_PlanSaveServerPort() {

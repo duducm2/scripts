@@ -1,38 +1,9 @@
 ; =============================================================================
 ; Utils module: mnemonic_palace_helpers.ahk
-; Memory Palace — CSV I/O, paths, GUI shared helpers, vocabulary
+; Memory Palace — CSV I/O, paths, import dialogs, notifications
 ; =============================================================================
 
 global g_PalaceGui := false
-global g_PalaceHotkeys := []
-global g_PalaceFilterStudyId := ""
-global g_PalaceFilterPalaceId := ""
-global g_PalaceFilterBeastId := ""
-global g_PalaceFilterPlanId := ""
-
-Palace_Terms() {
-    return [
-        ["Browse",
-            "Single hierarchy menu: Studies → Memory Palaces → Beasts → Knowledge Atoms. Main menu [L] or Browse [L] opens Plans. Enter opens the next level; Backspace goes up."],
-        ["Study",
-            "A broad subject domain (e.g. English, German, science, piano). Contains Memory Palaces and one Study Plan."],
-        ["Memory Palace",
-            "A location with exactly one generated image. Numbered within its Study (auto-assigned on add/import when omitted)."],
-        ["Study Plan",
-            "Checklist of learning tasks for a Study (CSV). Synced to Markdown under output/plans/ for mobile/GitHub. Import Management [L] imports Desktop PLAN_PACK; [P] imports mnemonic PALACE_PACK .txt|.csv (auto palace numbers); Memory Palace [L] browses plans."],
-        ["Character", "Sourced from the canon characters.json. Exactly one character anchors each Memory Palace."],
-        ["Beast", "Sourced from the canon bestiary.json. Peg animal/creature that carries a Knowledge Atom."],
-        ["Knowledge Atom",
-            "A discrete piece of information on a Beast, made of Concept, Quote, Story, and Sensory."],
-        ["Concept", "Rehearsal definition of the fact — what you recall to know what the atom means."],
-        ["Quote", "Verbatim source payload (e.g. from a transcript). Not the Concept."],
-        ["Story", "Bizarre mnemonic narrative / action that encodes the Concept."],
-        ["Sensory",
-            "Which sensory modality the Story emphasizes (visual, auditory, tactile, olfactory, gustatory, thermal)."],
-        ["Mapping",
-            "A Knowledge Atom attaches to a Beast. A Beast carries one Knowledge Atom, or up to four zoned Knowledge Atoms (Z1–Z4)."]
-    ]
-}
 
 Palace_DataDir() {
     dir := A_ScriptDir . "\mnemonics\data"
@@ -769,83 +740,13 @@ Palace_ValidateBeastAtoms(beastId, proposedRows := false) {
 }
 
 Palace_CloseGui() {
-    global g_PalaceGui, g_PalaceHotkeys
-    Palace_UnbindHotkeys()
+    global g_PalaceGui
     if (IsObject(g_PalaceGui)) {
         try g_PalaceGui.Destroy()
         catch {
         }
     }
     g_PalaceGui := false
-}
-
-Palace_UnbindHotkeys() {
-    global g_PalaceHotkeys
-    try HotIf(Palace_HotIfPalaceKeys)
-    catch {
-    }
-    for item in g_PalaceHotkeys {
-        try Hotkey(item, "Off")
-        catch {
-        }
-    }
-    g_PalaceHotkeys := []
-    try HotIf()
-    catch {
-    }
-}
-
-Palace_GuiFocusIsEdit() {
-    global g_PalaceGui
-    if (!IsObject(g_PalaceGui))
-        return false
-    try {
-        focused := ControlGetFocus("ahk_id " g_PalaceGui.Hwnd)
-        return (focused != "" && InStr(focused, "Edit") = 1)
-    } catch {
-        return false
-    }
-}
-
-Palace_HotIfPalaceKeys(*) {
-    global g_PalaceGui
-    if (!IsObject(g_PalaceGui))
-        return false
-    try {
-        if (!WinActive("ahk_id " g_PalaceGui.Hwnd))
-            return false
-        return !Palace_GuiFocusIsEdit()
-    } catch {
-        return false
-    }
-}
-
-Palace_BindHotkeys(pairs) {
-    global g_PalaceGui, g_PalaceHotkeys
-    Palace_UnbindHotkeys()
-    if (!IsObject(g_PalaceGui))
-        return
-    try HotIf(Palace_HotIfPalaceKeys)
-    catch {
-        return
-    }
-    for p in pairs {
-        try {
-            Hotkey(p[1], p[2], "On")
-            g_PalaceHotkeys.Push(p[1])
-        } catch {
-        }
-    }
-    try HotIf()
-    catch {
-    }
-}
-
-Palace_CenterGui(guiObj, w := 920, h := 620) {
-    MonitorGetWorkArea(MonitorGetPrimary(), &L, &T, &R, &B)
-    x := L + ((R - L) - w) // 2
-    y := T + ((B - T) - h) // 2
-    guiObj.Show("x" . x . " y" . y . " w" . w . " h" . h)
 }
 
 Palace_Notify(msg, ms := 1800, accent := "") {
@@ -905,171 +806,6 @@ Palace_OwnerOpt() {
     return hwnd ? " Owner" . hwnd : ""
 }
 
-Palace_Confirm(msg, title := "Memory Palace") {
-    Palace_DialogsBegin()
-    result := MsgBox(msg, title, "YesNo Icon?" . Palace_OwnerOpt())
-    Palace_DialogsEnd()
-    return result = "Yes"
-}
-
-Palace_Alert(msg, title := "Memory Palace") {
-    Palace_DialogsBegin()
-    MsgBox(msg, title, "Icon!" . Palace_OwnerOpt())
-    Palace_DialogsEnd()
-}
-
-Palace_PickList(title, labels, values) {
-    if (!labels.Length)
-        return ""
-    global g_PalaceGui
-    owner := ""
-    try {
-        if (IsObject(g_PalaceGui))
-            owner := " +Owner" . g_PalaceGui.Hwnd
-    } catch {
-        owner := ""
-    }
-    Palace_DialogsBegin()
-    g := Gui("+AlwaysOnTop +ToolWindow" . owner, title)
-    g.SetFont("s10", "Segoe UI")
-    lv := g.Add("ListView", "w420 h280 Grid", ["Choice"])
-    loop labels.Length
-        lv.Add("", labels[A_Index])
-    lv.ModifyCol(1, "AutoHdr")
-    chosen := ""
-    g.Add("Button", "y+8 w100 Default", "OK").OnEvent("Click", PickOk)
-    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
-    g.OnEvent("Escape", (*) => g.Destroy())
-    lv.OnEvent("DoubleClick", PickOk)
-    g.Show()
-    try WinWaitClose("ahk_id " g.Hwnd)
-    catch {
-    }
-    Palace_DialogsEnd()
-    return chosen
-
-    PickOk(*) {
-        row := lv.GetNext()
-        if (!row || row > values.Length)
-            return
-        chosen := values[row]
-        g.Destroy()
-    }
-}
-
-Palace_PickStudy() {
-    studies := Palace_Load("studies")
-    labels := []
-    values := []
-    for s in studies {
-        if (s.Has("active") && s["active"] = "0")
-            continue
-        labels.Push(s["title"] . " (" . s["notes_rel_path"] . ")")
-        values.Push(s["id"])
-    }
-    return Palace_PickList("Pick study", labels, values)
-}
-
-Palace_PickPalace(studyId := "") {
-    palaces := Palace_Load("palaces")
-    labels := []
-    values := []
-    for st in palaces {
-        if (studyId != "" && st["study_id"] != studyId)
-            continue
-        labels.Push(Palace_StudyTitle(st["study_id"]) . " · Memory Palace " . st["palace_number"] . ": " . st["title"])
-        values.Push(st["id"])
-    }
-    return Palace_PickList("Pick Memory Palace", labels, values)
-}
-
-Palace_PickBeast(palaceId := "") {
-    beasts := Palace_Load("beasts")
-    labels := []
-    values := []
-    for b in beasts {
-        if (palaceId != "" && b["palace_id"] != palaceId)
-            continue
-        labels.Push("[" . b["peg_code"] . "] " . b["beast_name"])
-        values.Push(b["id"])
-    }
-    return Palace_PickList("Pick beast", labels, values)
-}
-
-; --- Browse hierarchy (Study › Palace › Beast › Atoms) ---
-
-Palace_BrowseDepth() {
-    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
-    if (g_PalaceFilterBeastId != "")
-        return 3
-    if (g_PalaceFilterPalaceId != "")
-        return 2
-    if (g_PalaceFilterStudyId != "")
-        return 1
-    return 0
-}
-
-Palace_ClearFiltersToDepth(depth) {
-    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId, g_PalaceFilterPlanId
-    if (depth < 1)
-        g_PalaceFilterStudyId := ""
-    if (depth < 2) {
-        g_PalaceFilterPalaceId := ""
-        g_PalaceFilterPlanId := ""
-    }
-    if (depth < 3)
-        g_PalaceFilterBeastId := ""
-}
-
-Palace_BreadcrumbText() {
-    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
-    parts := []
-    if (g_PalaceFilterStudyId != "")
-        parts.Push(Palace_StudyTitle(g_PalaceFilterStudyId))
-    if (g_PalaceFilterPalaceId != "")
-        parts.Push(Palace_PalaceLabel(g_PalaceFilterPalaceId))
-    if (g_PalaceFilterBeastId != "")
-        parts.Push(Palace_BeastLabel(g_PalaceFilterBeastId))
-    if (!parts.Length)
-        return ""
-    out := parts[1]
-    i := 2
-    while (i <= parts.Length) {
-        out .= " › " . parts[i]
-        i += 1
-    }
-    return out
-}
-
-Palace_BrowseKeysHint() {
-    depth := Palace_BrowseDepth()
-    base := "Keys:  [A]/Insert add    [E] edit    Delete    Enter open    Backspace up"
-    if (depth = 0)
-        return base . "    [L] plans"
-    if (depth = 1)
-        return base . "    [I] change image    [C] copy prompt    [L] plans"
-    return base
-}
-
-; Two-line chrome: gold breadcrumb, muted keys. Returns ListView Y.
-Palace_AddBrowseChrome(guiObj, levelNoun) {
-    crumb := Palace_BreadcrumbText()
-    if (crumb = "")
-        crumb := levelNoun
-    try guiObj.BackColor := "1E1E1E"
-    catch {
-    }
-    try DllCall("dwmapi\DwmSetWindowAttribute", "ptr", guiObj.Hwnd, "uint", 20, "int*", 1, "int", 4)
-    catch {
-    }
-    guiObj.SetFont("s11 cF1C40F Bold", "Segoe UI")
-    guiObj.Add("Text", "x12 y8 w860 cF1C40F BackgroundTrans", crumb)
-    guiObj.SetFont("s9 cA0A0A0 Norm", "Segoe UI")
-    guiObj.Add("Text", "x12 y32 w860 cA0A0A0 BackgroundTrans", Palace_BrowseKeysHint())
-    guiObj.SetFont("s10 cWhite Norm", "Segoe UI")
-    return 56
-}
-
 Palace_StyleDarkListView(lv) {
     hwnd := 0
     try hwnd := lv.Hwnd
@@ -1078,24 +814,22 @@ Palace_StyleDarkListView(lv) {
     }
     if (!hwnd)
         return
-    ; Clear visual styles so LVM_* color messages apply (Explorer theme stays light)
     try DllCall("uxtheme\SetWindowTheme", "ptr", hwnd, "wstr", "", "wstr", "")
     catch {
     }
-    ; COLORREF BGR: panel #2D2D30, text #F2F2F2
     bg := 0x302D2D
     fg := 0xF2F2F2
-    try SendMessage(0x1001, 0, bg, hwnd) ; LVM_SETBKCOLOR
+    try SendMessage(0x1001, 0, bg, hwnd)
     catch {
     }
-    try SendMessage(0x1024, 0, fg, hwnd) ; LVM_SETTEXTCOLOR
+    try SendMessage(0x1024, 0, fg, hwnd)
     catch {
     }
-    try SendMessage(0x1026, 0, bg, hwnd) ; LVM_SETTEXTBKCOLOR
+    try SendMessage(0x1026, 0, bg, hwnd)
     catch {
     }
     hdr := 0
-    try hdr := SendMessage(0x101F, 0, 0, hwnd) ; LVM_GETHEADER
+    try hdr := SendMessage(0x101F, 0, 0, hwnd)
     catch {
         hdr := 0
     }
@@ -1110,73 +844,4 @@ Palace_StyleDarkListView(lv) {
     try DllCall("InvalidateRect", "ptr", hwnd, "ptr", 0, "int", 1)
     catch {
     }
-}
-
-Palace_BrowseWindowTitle(levelNoun) {
-    crumb := Palace_BreadcrumbText()
-    if (crumb != "")
-        return "Memory Palace — " . crumb
-    return "Memory Palace — " . levelNoun
-}
-
-Palace_ShowBrowse() {
-    depth := Palace_BrowseDepth()
-    if (depth = 0)
-        Palace_ShowStudies()
-    else if (depth = 1)
-        Palace_ShowPalaces()
-    else if (depth = 2)
-        Palace_ShowBeasts()
-    else
-        Palace_ShowAtoms()
-}
-
-Palace_BrowseUp(*) {
-    depth := Palace_BrowseDepth()
-    if (depth <= 0) {
-        Palace_ShowMainMenu()
-        return
-    }
-    Palace_ClearFiltersToDepth(depth - 1)
-    Palace_ShowBrowse()
-}
-
-Palace_BrowseInto(*) {
-    global g_PalaceFilterStudyId, g_PalaceFilterPalaceId, g_PalaceFilterBeastId
-    depth := Palace_BrowseDepth()
-    if (depth = 0) {
-        s := Palace_StudySelected()
-        if (!s) {
-            Palace_Notify("Select a study", 1200, BANNER_ACCENT_ERROR)
-            return
-        }
-        g_PalaceFilterStudyId := s["id"]
-        g_PalaceFilterPalaceId := ""
-        g_PalaceFilterBeastId := ""
-        Palace_SetSetting("General", "LastStudyId", s["id"])
-        Palace_ShowPalaces()
-        return
-    }
-    if (depth = 1) {
-        st := Palace_PalaceSelected()
-        if (!st) {
-            Palace_Notify("Select a Memory Palace", 1200, BANNER_ACCENT_ERROR)
-            return
-        }
-        g_PalaceFilterPalaceId := st["id"]
-        g_PalaceFilterBeastId := ""
-        Palace_ShowBeasts()
-        return
-    }
-    if (depth = 2) {
-        b := Palace_BeastSelected()
-        if (!b) {
-            Palace_Notify("Select a beast", 1200, BANNER_ACCENT_ERROR)
-            return
-        }
-        g_PalaceFilterBeastId := b["id"]
-        Palace_ShowAtoms()
-        return
-    }
-    Palace_AtomEdit()
 }

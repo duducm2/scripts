@@ -136,8 +136,8 @@ def save_images(
 ) -> dict[str, Any]:
     action = (payload.get("action") or "").strip().lower()
     palace_id = (payload.get("palace_id") or "").strip()
-    if action not in ("add", "update", "delete"):
-        return {"ok": False, "error": "action must be add, update, or delete"}
+    if action not in ("add", "update", "delete", "set_hero"):
+        return {"ok": False, "error": "action must be add, update, delete, or set_hero"}
     if not palace_id:
         return {"ok": False, "error": "palace_id required"}
 
@@ -149,6 +149,48 @@ def save_images(
     slug = _study_slug(data, study_id)
     palace_number = str(palace.get("palace_number") or "").strip()
     images = list(data.get("palace_images") or [])
+
+    if action == "set_hero":
+        data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
+        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        if not data_b64:
+            return {"ok": False, "error": "data_b64 required for set_hero"}
+        try:
+            raw_bytes, ext = _decode_image_bytes(str(data_b64), mime)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        slug_part = slug_filename(slug)
+        dest_dir = output_dir / "practice" / "images" / slug_part.replace("/", "\\")
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"{palace_number}.{ext}"
+        rel = f"{PRACTICE_PREFIX}{slug_part}/{palace_number}.{ext}"
+        dest.write_bytes(raw_bytes)
+        old_hero = (palace.get("image_rel_path") or "").strip()
+        new_palaces: list[dict[str, str]] = []
+        for row in data["palaces"]:
+            if row.get("id") == palace_id:
+                updated = dict(row)
+                updated["image_rel_path"] = rel
+                new_palaces.append(updated)
+            else:
+                new_palaces.append(row)
+        data["palaces"] = new_palaces
+        save_all(data_dir, data)
+        all_rels = {
+            (r.get("image_rel_path") or "").strip()
+            for r in images
+            if (r.get("image_rel_path") or "").strip()
+        }
+        all_rels.add(rel)
+        _delete_image_file(output_dir, old_hero, all_rels)
+        _sync_study(study_id, data_dir, output_dir, notes_root)
+        return {
+            "ok": True,
+            "action": "set_hero",
+            "palace_id": palace_id,
+            "study_id": study_id,
+            "image_rel_path": rel,
+        }
 
     if action == "add":
         data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
