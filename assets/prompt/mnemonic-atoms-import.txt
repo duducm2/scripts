@@ -47,4 +47,4 @@ Expect attached: study `beasts.csv` / `atoms.csv` slices (and optionally `palace
 ---
 Reminders for humans (stripped before paste to some companions):
 - After download, rename to PALACE_ATOMS.csv on Desktop.
-- Open Utility Shortcuts → [N] Memory Palace → [I] → [1] to import.
+- Import Management: `#!+X` or Utility Shortcuts `[J]` → `[P]` (or place `PALACE_ATOMS.csv` on Desktop with existing beasts).

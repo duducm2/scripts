@@ -146,16 +146,9 @@ Palace_ReadAiImportCsv(path, headerHint := "beast_id", skipNotes := 0) {
             cleaned .= "`n"
         cleaned .= lines[A_Index]
     }
-    tmp := A_Temp . "\palace_ai_import_norm.csv"
-    Palace_WriteUtf8(tmp, cleaned)
     if (IsObject(skipNotes))
-        rows := Palace_ReadCsv(tmp, true, skipNotes)
-    else
-        rows := Palace_ReadCsv(tmp)
-    try FileDelete(tmp)
-    catch {
-    }
-    return rows
+        return Palace_ReadCsvFromText(cleaned, true, skipNotes)
+    return Palace_ReadCsvFromText(cleaned)
 }
 
 Palace_ImportNoteSkip(skipCounts, reason) {
@@ -836,6 +829,12 @@ Palace_SplitPalacePack(path) {
         result["error"] := packCheck["error"]
         return result
     }
+    atomCheck := Palace_ValidateImportAtoms(result["atoms"], result["beasts"])
+    if (!atomCheck["ok"]) {
+        result["csvNotes"] := csvNotes
+        result["error"] := atomCheck["error"]
+        return result
+    }
     result["csvNotes"] := csvNotes
     result["ok"] := true
     return result
@@ -928,6 +927,77 @@ Palace_ValidatePackBeastPacking(palaceRows, beastRows) {
                 . " palace may have <5 (got " . patStr . "; need 5+5+…+remainder on last)"
                 return out
             }
+        }
+    }
+    return out
+}
+
+; Validate incoming atom rows: unique beast_id, single vs zoned mapping rules.
+Palace_ValidateImportAtoms(atomRows, beastRows := "") {
+    out := Map("ok", true, "error", "")
+    if (!IsObject(atomRows) || !atomRows.Length)
+        return out
+    beastIds := Map()
+    if (IsObject(beastRows) && beastRows.Length) {
+        for b in beastRows {
+            bid := Trim(b.Has("id") ? b["id"] : "")
+            if (bid != "")
+                beastIds[bid] := true
+        }
+    }
+    seen := Map()
+    byBeast := Map()
+    for r in atomRows {
+        bid := Trim(r.Has("beast_id") ? r["beast_id"] : "")
+        if (bid = "") {
+            out["ok"] := false
+            out["error"] := "Atom row missing beast_id"
+            return out
+        }
+        if (IsObject(beastRows) && beastRows.Length && !beastIds.Has(bid)) {
+            out["ok"] := false
+            out["error"] := "Atom references unknown beast_id " . bid
+            return out
+        }
+        zone := Trim(r.Has("zone") ? r["zone"] : "")
+        key := bid . "|" . zone
+        if (seen.Has(key)) {
+            out["ok"] := false
+            out["error"] := "Duplicate atom for beast " . bid
+                . (zone != "" ? " zone " . zone : "")
+            return out
+        }
+        seen[key] := true
+        if (!byBeast.Has(bid))
+            byBeast[bid] := []
+        byBeast[bid].Push(r)
+    }
+    for bid, rows in byBeast {
+        hasSingle := false
+        hasZoned := false
+        for a in rows {
+            k := StrLower(Trim(a.Has("kind") ? a["kind"] : "single"))
+            if (k = "subtopic")
+                k := "zoned"
+            if (k = "zoned")
+                hasZoned := true
+            else
+                hasSingle := true
+        }
+        if (hasSingle && hasZoned) {
+            out["ok"] := false
+            out["error"] := "Beast " . bid . ": cannot mix single and zoned atoms"
+            return out
+        }
+        if (hasSingle && rows.Length > 1) {
+            out["ok"] := false
+            out["error"] := "Beast " . bid . ": single mapping allows only one atom"
+            return out
+        }
+        if (hasZoned && rows.Length > 4) {
+            out["ok"] := false
+            out["error"] := "Beast " . bid . ": zoned mapping allows at most four atoms"
+            return out
         }
     }
     return out
@@ -1043,6 +1113,16 @@ Palace_ImportMnemonicsFromDesktop(*) {
         Palace_ReturnAfterImport(Palace_FailAiImport(packCheck["error"], 4500))
         return false
     }
+    atomCheck := Palace_ValidateImportAtoms(atomRows, beastRows)
+    if (!atomCheck["ok"]) {
+        Palace_ReturnAfterImport(Palace_FailAiImport(atomCheck["error"], 4500))
+        return false
+    }
+
+    studies := Palace_Load("studies")
+    palaces := Palace_Load("palaces")
+    beasts := Palace_Load("beasts")
+    atoms := Palace_Load("atoms")
 
     labels := []
     if (packPreview != "") {
@@ -1056,8 +1136,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
         for note in csvNotes
             labels.Push(note)
     }
-    studiesPreview := Palace_Load("studies")
-    palacesPreview := Palace_Load("palaces")
+    studiesPreview := studies
+    palacesPreview := palaces
     if (palaceRows.Length) {
         labels.Push("--- Palaces (" . palaceRows.Length . ") ---")
         for r in palaceRows {
@@ -1099,10 +1179,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
         return false
     }
 
-    studies := Palace_Load("studies")
-    palaces := Palace_Load("palaces")
-    beasts := Palace_Load("beasts")
-    atoms := Palace_Load("atoms")
     nPalaces := 0
     nBeasts := 0
     nAtoms := 0
@@ -1116,7 +1192,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
         resolved := Palace_ResolvePalaceImportRow(r, studies, &palaces)
         if (!resolved["ok"]) {
             Palace_ImportNoteSkip(skipCounts, resolved["skip"])
-            Palace_Notify("Skip palace: " . resolved["skip"], 2200, BANNER_ACCENT_ERROR)
             continue
         }
         studyId := resolved["studyId"]
@@ -1201,7 +1276,6 @@ Palace_ImportMnemonicsFromDesktop(*) {
             palaceId := Palace_ResolvePalaceIdRef(rawPalaceId, palaces, palaceIdRemap)
             if (palaceId = "") {
                 Palace_ImportNoteSkip(skipCounts, "unknown palace_id " . rawPalaceId)
-                Palace_Notify("Skip beast: unknown palace_id " . rawPalaceId, 2200, BANNER_ACCENT_ERROR)
                 continue
             }
             r["palace_id"] := palaceId

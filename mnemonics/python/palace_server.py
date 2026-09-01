@@ -426,13 +426,14 @@ class PalaceHandler(BaseHTTPRequestHandler):
                     None,
                 )
             if not plan:
+                meta = store.state().get("meta", {})
                 self._json(
                     200,
                     {
                         "ok": True,
                         "study_id": study_id,
                         "plan": None,
-                        "github_url": store.state()["meta"]["plans_github"],
+                        "github_url": meta.get("plans_github", ""),
                     },
                 )
                 return

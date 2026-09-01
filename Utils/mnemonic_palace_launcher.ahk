@@ -5,6 +5,7 @@
 
 global g_PalaceDashboardHwnd := 0
 global g_PalaceServerPid := 0
+global PALACE_LEGACY_DASHBOARD := false
 
 Palace_ServerPort() {
     return 8767
@@ -131,33 +132,20 @@ Palace_KillPidTree(pid) {
 }
 
 ; PID currently LISTENING on port (0 if none). Prefer this over Run()'s py launcher PID.
-Palace_PortListeningPid(port) {
+Palace_PortListeningPidProbe(port) {
     try port := Integer(port)
     catch {
         return 0
     }
     if (port <= 0)
         return 0
-    outFile := A_Temp . "\palace_listen_pid_" . port . ".txt"
-    try FileDelete(outFile)
-    catch {
-    }
-    try RunWait(A_ComSpec . ' /c netstat -ano | findstr :' . port
-        . ' | findstr LISTENING > "' . outFile . '"', , "Hide")
+    output := ""
+    try RunWait(A_ComSpec . ' /c netstat -ano | findstr /C:"' . port
+        . '" | findstr LISTENING', &output, "Hide")
     catch {
         return 0
     }
-    if (!FileExist(outFile))
-        return 0
-    out := ""
-    try out := FileRead(outFile)
-    catch {
-        return 0
-    }
-    try FileDelete(outFile)
-    catch {
-    }
-    for line in StrSplit(out, "`n", "`r") {
+    for line in StrSplit(output, "`n", "`r") {
         line := Trim(line)
         if (line = "")
             continue
@@ -172,6 +160,26 @@ Palace_PortListeningPid(port) {
         }
     }
     return 0
+}
+
+Palace_PortListeningPid(port) {
+    global g_PalacePortListenCache
+    try port := Integer(port)
+    catch {
+        return 0
+    }
+    if (port <= 0)
+        return 0
+    key := String(port)
+    now := A_TickCount
+    if (g_PalacePortListenCache.Has(key)) {
+        ent := g_PalacePortListenCache[key]
+        if (now - ent["tick"] < 500)
+            return ent["pid"]
+    }
+    pid := Palace_PortListeningPidProbe(port)
+    g_PalacePortListenCache[key] := Map("pid", pid, "tick", now)
+    return pid
 }
 
 Palace_PortIsListening(port) {
@@ -259,7 +267,6 @@ Palace_StartServerProcess(port) {
 Palace_EnsureServer(forceRestart := false) {
     port := Palace_ServerPort()
     if (!forceRestart && Palace_IsServerRunning(port)) {
-        ; Refresh PID from the real listener (py launcher PID may have exited).
         listenPid := Palace_PortListeningPid(port)
         if (listenPid > 0)
             Palace_PidWrite(listenPid)
@@ -268,7 +275,8 @@ Palace_EnsureServer(forceRestart := false) {
 
     loop 2 {
         Palace_StopServer(port)
-        Sleep 200
+        if (Palace_PortIsListening(port) || Palace_IsServerRunning(port))
+            Sleep 200
         if (!FileExist(Palace_PythonDir() . "\palace_server.py")) {
             Palace_Notify("palace_server.py not found", 2200, BANNER_ACCENT_ERROR)
             return false
@@ -281,7 +289,8 @@ Palace_EnsureServer(forceRestart := false) {
         if (runPid > 0)
             Palace_PidWrite(runPid)
 
-        loop 40 {
+        deadline := A_TickCount + 6000
+        while (A_TickCount < deadline) {
             if (Palace_IsServerRunning(port)) {
                 listenPid := Palace_PortListeningPid(port)
                 if (listenPid > 0)
@@ -524,6 +533,8 @@ Palace_StopPlanSaveServer(port := 0) {
 }
 
 Palace_EnsurePlanSaveServer(forceRestart := false) {
+    if (!PALACE_LEGACY_DASHBOARD)
+        return false
     port := Palace_PlanSaveServerPort()
     if (forceRestart)
         Palace_StopPlanSaveServer(port)
@@ -789,6 +800,8 @@ Palace_DashboardNavigate(hwnd, fileUrl) {
 
 ; Cache-first open/refresh. Avoids full UIA tab scans. Returns true/false.
 Palace_OpenDashboardInChrome(fileUrl) {
+    if (!PALACE_LEGACY_DASHBOARD)
+        return false
     ; Fast path: cached HWND.
     hwnd := Palace_DashboardHwndCacheGet()
     if (hwnd) {

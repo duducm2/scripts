@@ -4,6 +4,14 @@
 ; =============================================================================
 
 global g_PalaceGui := false
+global g_PalacePythonCmd := ""
+global g_PalacePortListenCache := Map()
+global PALACE_IMPORT_BATCH_LOAD := true
+
+Palace_ClearPythonCmdCache() {
+    global g_PalacePythonCmd
+    g_PalacePythonCmd := ""
+}
 
 Palace_DataDir() {
     dir := A_ScriptDir . "\mnemonics\data"
@@ -45,13 +53,18 @@ Palace_TechniqueRoot() {
     return ""
 }
 
-Palace_FindPythonCmd() {
+Palace_FindPythonCmd(forceRefresh := false) {
+    global g_PalacePythonCmd
+    if (!forceRefresh && g_PalacePythonCmd != "")
+        return g_PalacePythonCmd
     candidates := ["py -3", "py", "python3", "python"]
     for c in candidates {
         try {
             ec := RunWait(A_ComSpec . ' /c ' . c . ' -c "print(1)" >nul 2>&1', , "Hide")
-            if (ec = 0)
+            if (ec = 0) {
+                g_PalacePythonCmd := c
                 return c
+            }
         } catch {
         }
     }
@@ -65,12 +78,15 @@ Palace_FindPythonCmd() {
         loop files g, "F" {
             try {
                 ec := RunWait('"' . A_LoopFileFullPath . '" -c "print(1)"', , "Hide")
-                if (ec = 0)
-                    return '"' . A_LoopFileFullPath . '"'
+                if (ec = 0) {
+                    g_PalacePythonCmd := '"' . A_LoopFileFullPath . '"'
+                    return g_PalacePythonCmd
+                }
             } catch {
             }
         }
     }
+    g_PalacePythonCmd := ""
     return ""
 }
 
@@ -252,10 +268,8 @@ Palace_CsvEscape(val) {
     return s
 }
 
-Palace_ReadCsv(fileName, strict := false, skipNotes := 0) {
-    path := InStr(fileName, "\") || InStr(fileName, "/") ? fileName : Palace_DataDir() . "\" . fileName
+Palace_ReadCsvFromText(text, strict := false, skipNotes := 0) {
     rows := []
-    text := Palace_ReadUtf8(path)
     if (text = "")
         return rows
     text := StrReplace(text, "`r`n", "`n")
@@ -287,6 +301,60 @@ Palace_ReadCsv(fileName, strict := false, skipNotes := 0) {
         rows.Push(row)
     }
     return rows
+}
+
+Palace_ReadCsv(fileName, strict := false, skipNotes := 0) {
+    path := InStr(fileName, "\") || InStr(fileName, "/") ? fileName : Palace_DataDir() . "\" . fileName
+    text := Palace_ReadUtf8(path)
+    if (text = "")
+        return []
+    return Palace_ReadCsvFromText(text, strict, skipNotes)
+}
+
+Palace_BuildIdMap(rows) {
+    m := Map()
+    if (!IsObject(rows))
+        return m
+    for row in rows {
+        if (row.Has("id") && row["id"] != "")
+            m[row["id"]] := row
+    }
+    return m
+}
+
+Palace_LoadImportData() {
+    return Map(
+        "studies", Palace_Load("studies"),
+        "palaces", Palace_Load("palaces"),
+        "beasts", Palace_Load("beasts"),
+        "atoms", Palace_Load("atoms")
+    )
+}
+
+Palace_BuildPromptStudyPack(studyId) {
+    studyId := Trim(studyId)
+    if (studyId = "")
+        return []
+    py := Palace_PythonDir() . "\prompt_context_pack.py"
+    if (!FileExist(py))
+        return []
+    pyCmd := Palace_FindPythonCmd()
+    if (pyCmd = "")
+        return []
+    outDir := A_Temp . "\palace_prompt_" . studyId
+    cmd := pyCmd . ' "' . py . '" --data-dir "' . Palace_DataDir() . '" --study-id "' . studyId
+        . '" --out-dir "' . outDir . '"'
+    try RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
+    catch {
+        return []
+    }
+    entries := []
+    for name in ["beasts.csv", "atoms.csv", "palaces.csv"] {
+        p := outDir . "\" . name
+        if FileExist(p)
+            entries.Push(PromptData_NewContextEntry(p))
+    }
+    return entries
 }
 
 Palace_WriteCsv(fileName, rows, headers) {

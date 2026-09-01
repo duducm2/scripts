@@ -575,7 +575,12 @@
               <span class="gallery-status" id="ovGalleryStatus"></span>
             </div>
             <input type="file" id="galleryFileInput" accept="image/*" />
-            <input type="file" id="palaceHeroFileInput" accept="image/*" hidden />
+            <input
+              type="file"
+              id="palaceHeroFileInput"
+              accept="image/*"
+              hidden
+            />
             <div class="gallery-grid" id="ovGalleryGrid"></div>
           </div>
         </div>
@@ -601,8 +606,10 @@
 
     <script>
       const LAST_STUDY_KEY = "palace_last_study_id";
+      const PALACE_SPA_FULL_REFRESH = false;
       const state = {
         data: null,
+        _practiceIndex: null,
         view: "practice",
         studyId: "",
         browse: { studyId: "", palaceId: "", beastId: "" },
@@ -616,6 +623,76 @@
         mermaidLoading: false,
         studyLinks: { video: "", article: "", favorite: "" },
       };
+
+      function invalidateDataIndex() {
+        state._practiceIndex = null;
+      }
+
+      function buildPracticeIndex() {
+        const beastsByPalace = new Map();
+        const atomsByBeast = new Map();
+        for (const b of state.data?.beasts || []) {
+          const pid = b.palace_id;
+          if (!beastsByPalace.has(pid)) beastsByPalace.set(pid, []);
+          beastsByPalace.get(pid).push(b);
+        }
+        for (const a of state.data?.atoms || []) {
+          const bid = a.beast_id;
+          if (!atomsByBeast.has(bid)) atomsByBeast.set(bid, []);
+          atomsByBeast.get(bid).push(a);
+        }
+        for (const arr of beastsByPalace.values()) {
+          arr.sort(
+            (x, y) => Number(x.sort_order || 0) - Number(y.sort_order || 0),
+          );
+        }
+        for (const arr of atomsByBeast.values()) {
+          arr.sort(
+            (x, y) => Number(x.sort_order || 0) - Number(y.sort_order || 0),
+          );
+        }
+        state._practiceIndex = { beastsByPalace, atomsByBeast };
+      }
+
+      function practiceIndex() {
+        if (!state._practiceIndex) buildPracticeIndex();
+        return state._practiceIndex;
+      }
+
+      function updateStatsHeader() {
+        if (!state.data) return;
+        document.getElementById("stats").textContent =
+          `${state.data.studies.length} studies · ${state.data.palaces.length} Memory Palaces · ` +
+          `${state.data.beasts.length} beasts · ${state.data.atoms.length} Knowledge Atoms`;
+      }
+
+      function mergeApiRow(entityKey, row, { removeId } = {}) {
+        if (!state.data || !entityKey) return;
+        invalidateDataIndex();
+        const list = state.data[entityKey];
+        if (!Array.isArray(list)) return;
+        if (removeId) {
+          state.data[entityKey] = list.filter((r) => r.id !== removeId);
+          updateStatsHeader();
+          return;
+        }
+        if (!row?.id) return;
+        const i = list.findIndex((r) => r.id === row.id);
+        const copy = { ...row };
+        if (i >= 0) list[i] = copy;
+        else list.push(copy);
+        updateStatsHeader();
+      }
+
+      function afterEntitySave(entityKey, r) {
+        if (PALACE_SPA_FULL_REFRESH) {
+          refresh().catch((e) => toast(String(e.message || e)));
+          return;
+        }
+        if (r?.row) mergeApiRow(entityKey, r.row);
+        else updateStatsHeader();
+        render();
+      }
 
       async function api(path, opts = {}) {
         const res = await fetch(path, {
@@ -693,18 +770,12 @@
           );
       }
       function beasts(pid) {
-        return (state.data?.beasts || [])
-          .filter((b) => b.palace_id === pid)
-          .sort(
-            (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
-          );
+        const idx = practiceIndex().beastsByPalace.get(pid);
+        return idx ? idx.slice() : [];
       }
       function atoms(bid) {
-        return (state.data?.atoms || [])
-          .filter((a) => a.beast_id === bid)
-          .sort(
-            (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
-          );
+        const idx = practiceIndex().atomsByBeast.get(bid);
+        return idx ? idx.slice() : [];
       }
       function gallery(pid) {
         return (state.data?.palace_images || [])
@@ -928,18 +999,18 @@
         setChromeActive();
         showPanel(v);
         render();
+        if (v === "links") refreshLinkStatus().catch(() => {});
       }
 
-      async function refresh() {
+      async function refresh(opts = {}) {
         state.data = await api("/api/state");
-        document.getElementById("stats").textContent =
-          `${state.data.studies.length} studies · ${state.data.palaces.length} Memory Palaces · ` +
-          `${state.data.beasts.length} beasts · ${state.data.atoms.length} Knowledge Atoms`;
-        fillStudySelect();
+        invalidateDataIndex();
+        updateStatsHeader();
         const gh = state.data.meta?.plans_github || "#";
         document.getElementById("plansGithub").href = gh;
+        fillStudySelect();
         render();
-        refreshLinkStatus().catch(() => {});
+        if (opts.links) refreshLinkStatus().catch(() => {});
         if (state.studyPickerPending) {
           state.studyPickerPending = false;
           openStudyModal();
@@ -1252,10 +1323,8 @@
           });
           if (!r.ok) throw new Error(r.error || "fail");
           setNotesStatus("Saved", "ok");
-          await refresh();
-          if (state.overlayPalaceId === pid) {
-            /* keep overlay open; re-bind notes value already current */
-          }
+          const p = palaceById(pid);
+          if (p) p.palace_notes = notes;
         } catch (e) {
           setNotesStatus(String(e.message || e), "err");
         }
@@ -1270,7 +1339,11 @@
           });
           if (r.ok) {
             toast(`Image updated (${r.image_rel_path || "saved"})`);
-            await refresh();
+            const p = palaceById(palaceId);
+            if (p && r.image_rel_path) p.image_rel_path = r.image_rel_path;
+            invalidateDataIndex();
+            if (PALACE_SPA_FULL_REFRESH) await refresh();
+            else render();
             if (state.overlayPalaceId === palaceId) openPalace(palaceId);
             return;
           }
@@ -1962,21 +2035,17 @@
               <button class="spa-btn" id="toPlans">Plans</button></div>
             <div class="spa-panel"><table class="spa-table"><thead><tr><th>#</th><th>Title</th><th>Character</th><th>Image</th><th></th></tr></thead>
             <tbody>${list
-              .map(
-                (
-                  p,
-                ) => {
-                  const img = (p.image_rel_path || "").trim();
-                  const ok = img && mediaUrl(img);
-                  const mark = ok ? "✓" : "—";
-                  return `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
+              .map((p) => {
+                const img = (p.image_rel_path || "").trim();
+                const ok = img && mediaUrl(img);
+                const mark = ok ? "✓" : "—";
+                return `<tr><td>${esc(p.palace_number)}</td><td>${esc(p.title)}</td><td>${esc(p.character_name)}</td>
               <td>${mark}</td>
               <td><button class="spa-btn" data-open="${escAttr(p.id)}">Open</button>
               <button class="spa-btn" data-img="${escAttr(p.id)}">Change image</button>
               <button class="spa-btn" data-edit="${escAttr(p.id)}">Edit</button>
               <button class="spa-btn danger" data-del="${escAttr(p.id)}">Del</button></td></tr>`;
-                },
-              )
+              })
               .join("")}</tbody></table></div>`;
           root.querySelector("#up").onclick = () => {
             state.browse.studyId = "";
@@ -1995,10 +2064,11 @@
                 render();
               }),
           );
-          root.querySelectorAll("[data-img]").forEach(
-            (btn) =>
-              (btn.onclick = () => changePalaceImage(btn.dataset.img)),
-          );
+          root
+            .querySelectorAll("[data-img]")
+            .forEach(
+              (btn) => (btn.onclick = () => changePalaceImage(btn.dataset.img)),
+            );
           root
             .querySelectorAll("[data-edit]")
             .forEach(
@@ -2130,7 +2200,7 @@
         };
         if (s?.id) body.id = s.id;
         api("/api/studies", { method: "POST", body: JSON.stringify(body) })
-          .then(() => refresh())
+          .then((r) => afterEntitySave("studies", r))
           .catch((e) => toast(String(e.message || e)));
       }
       function editPalace(p, studyId) {
@@ -2150,7 +2220,7 @@
         };
         if (p?.id) body.id = p.id;
         api("/api/palaces", { method: "POST", body: JSON.stringify(body) })
-          .then(() => refresh())
+          .then((r) => afterEntitySave("palaces", r))
           .catch((e) => toast(String(e.message || e)));
       }
       function editBeast(b, palaceId) {
@@ -2167,7 +2237,7 @@
         };
         if (b?.id) body.id = b.id;
         api("/api/beasts", { method: "POST", body: JSON.stringify(body) })
-          .then(() => refresh())
+          .then((r) => afterEntitySave("beasts", r))
           .catch((e) => toast(String(e.message || e)));
       }
       function editAtom(a, beastId) {
@@ -2190,7 +2260,7 @@
         };
         if (a?.id) body.id = a.id;
         api("/api/atoms", { method: "POST", body: JSON.stringify(body) })
-          .then(() => refresh())
+          .then((r) => afterEntitySave("atoms", r))
           .catch((e) => toast(String(e.message || e)));
       }
 
@@ -2232,9 +2302,12 @@
       }
 
       document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) scheduleStudyLinkRefresh();
+        if (!document.hidden && state.view === "links")
+          scheduleStudyLinkRefresh();
       });
-      window.addEventListener("focus", scheduleStudyLinkRefresh);
+      window.addEventListener("focus", () => {
+        if (state.view === "links") scheduleStudyLinkRefresh();
+      });
 
       async function openStudyLinkChrome(kind) {
         const labels = {

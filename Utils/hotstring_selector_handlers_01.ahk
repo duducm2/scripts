@@ -158,6 +158,13 @@ UtilitySelector_ResolveContextEntries(prompt) {
     if (!IsObject(prompt))
         return { entries: [], pickedCount: 0 }
     staticEntries := PromptData_ContextEntriesForCurrentEnv(prompt)
+    fp := StrLower(Trim(prompt.HasProp("filePath") ? prompt.filePath : ""))
+    if (InStr(fp, "mnemonic-atoms-import")) {
+        studyId := Trim(Palace_Setting("General", "LastStudyId", ""))
+        pack := Palace_BuildPromptStudyPack(studyId)
+        if (pack.Length)
+            staticEntries := PromptContext_MergeEntries(staticEntries, pack)
+    }
     pool := PromptContextPicker_BuildPool(prompt)
     if (pool.Length = 0)
         return { entries: staticEntries, pickedCount: 0 }

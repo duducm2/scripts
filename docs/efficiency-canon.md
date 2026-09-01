@@ -296,3 +296,16 @@ Use §8 matrix after enabling `OUTLOOK_USE_WINEVENT_INVALIDATE` or toggling `BRI
 - **Do** print `=== ROBOT stash/fetch/pull/done ===` in the terminal so progress is visible. Watch the terminal for errors; do not celebrate a hidden exit code. Pull must not start on stash exit 0 alone.
 - **Do** after a successful Alt+S on the project-selector **[s] Scripts** window (`CursorTransfer_GetMatchingProjectIndex` / `projects.ini` Char=s), call `QuickUpdateScripts()` so AHK relaunches from the pulled files. The `/Updated` overlay is the success signal. Do not send `Ctrl+Alt+Win+2` into the editor terminal. Other repos keep the Pull complete banner only.
 - **Rollback:** restore [`infra/tools/Editor-GitStashFetchPull.ps1`](../infra/tools/Editor-GitStashFetchPull.ps1) CLI path in [`cursor_predicates.ahk`](../Shift%20keys/cursor_predicates.ahk) only if terminal typing is unreliable on a specific machine.
+
+---
+
+## 21. Memory Palace — launcher, store, SPA, import (2026)
+
+- **Cache `Palace_FindPythonCmd`** module-global after first probe ([`mnemonic_palace_helpers.ahk`](../Utils/mnemonic_palace_helpers.ahk)); call `Palace_ClearPythonCmdCache()` only when Python install changes.
+- **Port PID probe:** `Palace_PortListeningPid` uses ~500 ms in-process cache + `RunWait` stdout capture — no per-call temp-file netstat IPC ([`mnemonic_palace_launcher.ahk`](../Utils/mnemonic_palace_launcher.ahk)).
+- **`Palace_EnsureServer`:** bounded 6 s health poll; outer `Sleep 200` only when port still listening after stop.
+- **Legacy dashboard:** `PALACE_LEGACY_DASHBOARD := false` gates `:8765` / `Palace_OpenDashboardInChrome` (primary UX stays `:8767` web app).
+- **Python store:** `PalaceStore` mtime cache + selective `_save_tree(..., kinds=[...])`; sync failures log to stderr (not silent `pass`). Optional deferred MD: env `PALACE_DEFER_MD_SYNC=1` coalesces practice/plan regen (~500 ms).
+- **SPA:** patch `state.data` after browse CRUD / notes save (`mergeApiRow`); `refreshLinkStatus` on Links view only — not every `refresh()`. Practice grid uses indexed beasts/atoms maps. Rollback: `PALACE_SPA_FULL_REFRESH := true` in [`mnemonics/web/index.html`](../mnemonics/web/index.html).
+- **Import `[P]`:** single `Palace_Load` of studies/palaces/beasts/atoms per session; in-memory CSV normalize (`Palace_ReadCsvFromText`); `Palace_ValidateImportAtoms` before commit; batch skip notes (no per-row toast). Rollback: `PALACE_IMPORT_BATCH_LOAD := false` in helpers.
+- **Atoms prompt:** Utility Prompts **`[u]`** (`mnemonic-atoms-import.txt`); study-scoped beasts/atoms slice via `Palace_BuildPromptStudyPack` at paste time; import via Import Management **`[P]`**.

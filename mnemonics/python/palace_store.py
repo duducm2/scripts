@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
+import sys
+import threading
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +29,24 @@ import csv as _csv
 from study_plan_parser import slug_filename
 from study_practice_md import write_study
 from study_plans_md import sync_one_plan
+
+PALACE_DEFER_MD_SYNC = os.environ.get("PALACE_DEFER_MD_SYNC", "").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+)
+
+CACHE_KINDS = (
+    "studies",
+    "palaces",
+    "palace_images",
+    "beasts",
+    "atoms",
+    "plans",
+    "plan_items",
+    "plan_resources",
+)
+PLAN_KINDS = ("plans", "plan_items", "plan_resources")
 
 ENTITY_PREFIX = {
     "studies": "STUDY_",
@@ -82,13 +104,36 @@ class PalaceStore:
         self.output_dir = output_dir or (data_dir.parent / "output")
         self.studies_root = studies_root
         ensure_data_dir(data_dir)
+        self._cache_tree: dict[str, list[dict[str, str]]] | None = None
+        self._cache_stamp: float = -1.0
+        self._pending_practice: set[str] = set()
+        self._pending_plans: set[str] = set()
+        self._sync_lock = threading.Lock()
+        self._sync_timer: threading.Timer | None = None
+
+    def _csv_stamp(self) -> float:
+        mx = 0.0
+        for kind in CACHE_KINDS:
+            path = self.data_dir / f"{kind}.csv"
+            if path.is_file():
+                mx = max(mx, path.stat().st_mtime)
+        return mx
+
+    def _invalidate_cache(self) -> None:
+        self._cache_tree = None
+        self._cache_stamp = -1.0
 
     def _load_tree(self) -> dict[str, list[dict[str, str]]]:
+        stamp = self._csv_stamp()
+        if self._cache_tree is not None and stamp == self._cache_stamp:
+            return deepcopy(self._cache_tree)
         data = load_all(self.data_dir)
         plans = load_plan_tables(self.data_dir)
         data["plans"] = plans["plans"]
         data["plan_items"] = plans["plan_items"]
         data["plan_resources"] = plans["plan_resources"]
+        self._cache_tree = deepcopy(data)
+        self._cache_stamp = stamp
         return data
 
     def _write_kind(
@@ -104,41 +149,98 @@ class PalaceStore:
             for row in rows:
                 w.writerow({h: row.get(h, "") for h in headers})
 
-    def _save_tree(self, data: dict[str, list[dict[str, str]]]) -> None:
-        # Write palace tree + plans separately so empty plan keys never wipe CSVs.
-        self._write_kind("studies", STUDIES_HEADERS, data.get("studies", []))
-        self._write_kind("palaces", PALACES_HEADERS, data.get("palaces", []))
-        self._write_kind(
-            "palace_images", PALACE_IMAGES_HEADERS, data.get("palace_images", [])
-        )
-        self._write_kind("beasts", BEASTS_HEADERS, data.get("beasts", []))
-        self._write_kind("atoms", ATOMS_HEADERS, data.get("atoms", []))
-        save_plan_tables(
-            self.data_dir,
-            data.get("plans", []),
-            data.get("plan_items", []),
-            data.get("plan_resources", []),
-        )
+    def _save_tree(
+        self,
+        data: dict[str, list[dict[str, str]]],
+        kinds: list[str] | None = None,
+    ) -> None:
+        write_all = kinds is None
+        kinds_set = set(kinds or [])
+        if write_all or "studies" in kinds_set:
+            self._write_kind("studies", STUDIES_HEADERS, data.get("studies", []))
+        if write_all or "palaces" in kinds_set:
+            self._write_kind("palaces", PALACES_HEADERS, data.get("palaces", []))
+        if write_all or "palace_images" in kinds_set:
+            self._write_kind(
+                "palace_images", PALACE_IMAGES_HEADERS, data.get("palace_images", [])
+            )
+        if write_all or "beasts" in kinds_set:
+            self._write_kind("beasts", BEASTS_HEADERS, data.get("beasts", []))
+        if write_all or "atoms" in kinds_set:
+            self._write_kind("atoms", ATOMS_HEADERS, data.get("atoms", []))
+        if write_all or kinds_set.intersection(PLAN_KINDS):
+            save_plan_tables(
+                self.data_dir,
+                data.get("plans", []),
+                data.get("plan_items", []),
+                data.get("plan_resources", []),
+            )
+        self._cache_tree = deepcopy(data)
+        self._cache_stamp = self._csv_stamp()
 
-    def _sync_practice(self, study_id: str) -> None:
+    def _arm_sync_timer(self) -> None:
+        if self._sync_timer is not None:
+            self._sync_timer.cancel()
+        self._sync_timer = threading.Timer(0.5, self._flush_deferred_sync)
+        self._sync_timer.daemon = True
+        self._sync_timer.start()
+
+    def _flush_deferred_sync(self) -> None:
+        with self._sync_lock:
+            practice_ids = list(self._pending_practice)
+            plan_ids = list(self._pending_plans)
+            self._pending_practice.clear()
+            self._pending_plans.clear()
+            self._sync_timer = None
+        for study_id in practice_ids:
+            self._sync_practice_now(study_id)
+        for study_id in plan_ids:
+            self._sync_plans_now(study_id)
+
+    def _schedule_sync_practice(self, study_id: str) -> None:
+        if not study_id:
+            return
+        if not PALACE_DEFER_MD_SYNC:
+            self._sync_practice_now(study_id)
+            return
+        with self._sync_lock:
+            self._pending_practice.add(study_id)
+            self._arm_sync_timer()
+
+    def _schedule_sync_plans(self, study_id: str) -> None:
+        if not study_id:
+            return
+        if not PALACE_DEFER_MD_SYNC:
+            self._sync_plans_now(study_id)
+            return
+        with self._sync_lock:
+            self._pending_plans.add(study_id)
+            self._arm_sync_timer()
+
+    def _sync_practice_now(self, study_id: str) -> None:
         if not study_id:
             return
         try:
             write_study(study_id, self.data_dir, self.output_dir, self.studies_root)
-        except Exception:
-            pass
+        except Exception as e:
+            print(
+                f"palace_store: practice sync failed for {study_id}: {e}",
+                file=sys.stderr,
+            )
 
-    def _sync_plans(self, study_id: str) -> None:
+    def _sync_plans_now(
+        self,
+        study_id: str,
+        studies: list[dict[str, str]] | None = None,
+    ) -> None:
         """Export plan MD via study_plans_md (CSV → output/plans/{slug}.md)."""
         if not study_id:
             return
         try:
+            if studies is None:
+                studies = self._load_tree().get("studies", [])
             study = next(
-                (
-                    s
-                    for s in self._load_tree().get("studies", [])
-                    if s.get("id") == study_id
-                ),
+                (s for s in studies if s.get("id") == study_id),
                 None,
             )
             slug = ((study or {}).get("notes_rel_path") or "").strip()
@@ -151,8 +253,17 @@ class PalaceStore:
                 data_dir=self.data_dir,
                 study_id=study_id,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            print(
+                f"palace_store: plan sync failed for {study_id}: {e}",
+                file=sys.stderr,
+            )
+
+    def _sync_practice(self, study_id: str) -> None:
+        self._schedule_sync_practice(study_id)
+
+    def _sync_plans(self, study_id: str) -> None:
+        self._schedule_sync_plans(study_id)
 
     def state(self) -> dict[str, Any]:
         data = self._load_tree()
@@ -212,7 +323,7 @@ class PalaceStore:
             if not existing:
                 rows.append(row)
         data[entity] = rows
-        self._save_tree(data)
+        self._save_tree(data, [entity])
         return {"ok": True, "id": rid, "row": row}
 
     def _upsert_study(
@@ -258,7 +369,7 @@ class PalaceStore:
         else:
             rows.append(row)
             data["studies"] = rows
-        self._save_tree(data)
+        self._save_tree(data, ["studies"])
         return {"ok": True, "id": rid, "row": row}
 
     def _upsert_palace(
@@ -331,7 +442,7 @@ class PalaceStore:
                 row["palace_number"] = _next_palace_number(rows, study_id)
             rows.append(row)
             data["palaces"] = rows
-        self._save_tree(data)
+        self._save_tree(data, ["palaces"])
         self._sync_practice(study_id)
         return {"ok": True, "id": rid, "row": row}
 
@@ -396,7 +507,7 @@ class PalaceStore:
             rows.append(row)
             data["beasts"] = rows
         palace = next((p for p in data["palaces"] if p.get("id") == palace_id), None)
-        self._save_tree(data)
+        self._save_tree(data, ["beasts"])
         if palace:
             self._sync_practice(palace.get("study_id") or "")
         return {"ok": True, "id": rid, "row": row}
@@ -484,7 +595,7 @@ class PalaceStore:
                 (p for p in data["palaces"] if p.get("id") == beast.get("palace_id")),
                 None,
             )
-        self._save_tree(data)
+        self._save_tree(data, ["beasts", "atoms"])
         if palace:
             self._sync_practice(palace.get("study_id") or "")
         return {"ok": True, "id": rid, "row": row}
@@ -529,7 +640,7 @@ class PalaceStore:
         else:
             rows.append(row)
             data["plans"] = rows
-        self._save_tree(data)
+        self._save_tree(data, ["plans"])
         self._sync_plans(study_id)
         return {"ok": True, "id": rid, "row": row}
 
@@ -573,7 +684,7 @@ class PalaceStore:
             rows.append(row)
             data["plan_items"] = rows
         plan = next((p for p in data["plans"] if p.get("id") == plan_id), None)
-        self._save_tree(data)
+        self._save_tree(data, ["plan_items"])
         if plan:
             self._sync_plans(plan.get("study_id") or "")
         return {"ok": True, "id": rid, "row": row}
@@ -751,7 +862,7 @@ class PalaceStore:
             else:
                 new_palaces.append(p)
         data["palaces"] = new_palaces
-        self._save_tree(data)
+        self._save_tree(data, ["palaces"])
         self._sync_practice(palace.get("study_id") or "")
         return {
             "ok": True,

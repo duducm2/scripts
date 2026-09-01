@@ -141,6 +141,7 @@ flowchart LR
 | Finance daily      | `#!+X` / Utility `[J]` | `[D]`   | `[d]`         | `FINANCE_DAILY.txt`    | categories, accounts, cards | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes           |
 | Finance monthly    | `#!+X` / Utility `[J]` | `[M]`   | `[m]`         | `FINANCE_MONTHLY.txt`  | accounts, goals             | [`finance_import.ahk`](../Utils/finance_import.ahk)                                                          | Yes           |
 | Memory Palace      | `#!+X` / Utility `[J]` | `[P]`   | `[4]` / `[a]` | `PALACE_PACK.txt`      | technique files             | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
+| Palace atoms only  | `#!+X` / Utility `[J]` | `[P]`   | `[u]`         | `PALACE_ATOMS.csv`     | study beasts/atoms slice    | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
 | Study plans        | `#!+X` / Utility `[J]` | `[L]`   | `[n]`         | `PLAN_PACK.txt`        | —                           | [`mnemonic_palace_import.ahk`](../Utils/mnemonic_palace_import.ahk)                                          | Yes           |
 | Palace quick image | `#!+X` / Utility `[J]` | `[Q]`   | —             | Newest Desktop PNG/JPG | —                           | [`Palace_QuickAttachDesktopImage`](../Utils/mnemonic_palace_import.ahk)                                      | Palace picker |
 | Tasks              | `#!+X` / Utility `[J]` | `[T]`   | `[k]`         | `TASK_PACK.txt`        | projects, tasks             | [`task_pack_import.py`](../tasks/python/task_pack_import.py) + [`task_import.ahk`](../Utils/task_import.ahk) | Yes (AHK)     |
@@ -280,6 +281,7 @@ Files (prefer download; if attach fails, one marked fence; never fake disk save)
 
 - [`assets/prompt/finance-daily-transactions.txt`](../assets/prompt/finance-daily-transactions.txt)
 - [`assets/prompt/finance-monthly-investments.txt`](../assets/prompt/finance-monthly-investments.txt)
+- [`assets/prompt/mnemonic-atoms-import.txt`](../assets/prompt/mnemonic-atoms-import.txt) — Utility Prompts **`[u]`**; Desktop `PALACE_ATOMS.csv` → Import Management **`[P]`**
 - [`assets/prompt/convert-to-task.txt`](../assets/prompt/convert-to-task.txt) — Utility Prompts **`[k]`**; dictation **`[T]`** (TASK_PACK). Legacy emoji-line helper remains Char **`[2]`** (`mtask.txt`, “Quick task lines”).
 - [`mnemonics/technique/prompts/story-prompt.txt`](../mnemonics/technique/prompts/story-prompt.txt)
 - [`mnemonics/technique/prompts/story-reduction-prompt.txt`](../mnemonics/technique/prompts/story-reduction-prompt.txt)
