@@ -394,6 +394,7 @@ ImportMgmt_HelpText() {
     . "========== [N] QUICK DOWNLOAD NAMES ==========`r`n"
     . "Registry: assets/data/clipangel_desktop_names.csv`r`n"
     . "Same list as the #!+9 Quick Download rename picker (Name Desktop file).`r`n"
+    . "Rename picker: Enter = current ext; O = original download ext; X = set ext; T = type once`r`n"
     . "Enter/C copies bare name (e.g. FINANCE_DAILY); A add, E edit, Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"

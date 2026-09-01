@@ -15,6 +15,7 @@ global g_ClipAngelNameSourcePath := ""
 global g_ClipAngelNameFinalPath := ""
 global g_ClipAngelNamePicked := false
 global g_ClipAngelNameExt := "txt"
+global g_ClipAngelNameOrigExt := ""
 global g_ClipAngelNameOnClose := unset
 
 ClipAngelExport_NamesCsvPath() {
@@ -501,6 +502,44 @@ ClipAngelExport_UseSelected(*) {
     ClipAngelExport_ApplyName(sel["name"])
 }
 
+; Apply selected name with the downloaded file's original extension (not the session ext from [X]).
+; With no selection, resets session ext back to original (companion to [X]).
+ClipAngelExport_UseSelectedOrigExt(*) {
+    sel := ClipAngelExport_Selected()
+    if (!sel) {
+        ClipAngelExport_ResetOrigExt()
+        return
+    }
+    ClipAngelExport_ApplyName(sel["name"], ClipAngelExport_OrigExt())
+}
+
+ClipAngelExport_OrigExt() {
+    global g_ClipAngelNameOrigExt, g_ClipAngelNameSourcePath
+    ext := g_ClipAngelNameOrigExt
+    if (ext = "" && g_ClipAngelNameSourcePath != "") {
+        try SplitPath(g_ClipAngelNameSourcePath, , , &srcExt)
+        catch {
+            srcExt := ""
+        }
+        ext := ClipAngelExport_SanitizeExt(srcExt)
+    }
+    if (ext = "")
+        ext := "txt"
+    return ext
+}
+
+; Reset session extension to the downloaded file's original (companion to [X]).
+ClipAngelExport_ResetOrigExt(*) {
+    global g_ClipAngelNameExt, g_ClipAngelNameOrigExt
+    g_ClipAngelNameExt := ClipAngelExport_OrigExt()
+    if (g_ClipAngelNameOrigExt = "")
+        g_ClipAngelNameOrigExt := g_ClipAngelNameExt
+    ClipAngelExport_UpdateHint()
+    try ShowCenteredOverlay_Utils("ℹ Extension: ." . g_ClipAngelNameExt . " (original)", 1200, BANNER_ACCENT_INFO)
+    catch {
+    }
+}
+
 ; One-shot typed name for this file only (not saved to the CSV list).
 ; Accepts "name" (uses current ext) or "name.ext" (overrides ext for this file).
 ClipAngelExport_UseTyped(*) {
@@ -529,7 +568,8 @@ ClipAngelExport_UpdateHint() {
     if (!IsObject(g_ClipAngelNameHint))
         return
     ext := g_ClipAngelNameExt != "" ? g_ClipAngelNameExt : "txt"
-    g_ClipAngelNameHint.Value := "[Enter] use   [T] type once   [X] ext (." . ext
+    orig := ClipAngelExport_OrigExt()
+    g_ClipAngelNameHint.Value := "[Enter] use   [O] orig (." . orig . ")   [T] type once   [X] ext (." . ext
         . ")   [A] add   [E] edit   Delete   Esc keep temp"
 }
 
@@ -628,7 +668,7 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
 ; Default extension is taken from sourcePath (fallback "txt").
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
-    global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
+    global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
     g_ClipAngelNameSourcePath := sourcePath
     g_ClipAngelNameFinalPath := sourcePath
     g_ClipAngelNamePicked := false
@@ -637,22 +677,24 @@ ClipAngelExport_PromptRename(sourcePath) {
     catch {
         srcExt := ""
     }
-    g_ClipAngelNameExt := (srcExt != "") ? ClipAngelExport_SanitizeExt(srcExt) : "txt"
-    if (g_ClipAngelNameExt = "")
-        g_ClipAngelNameExt := "txt"
+    g_ClipAngelNameOrigExt := (srcExt != "") ? ClipAngelExport_SanitizeExt(srcExt) : "txt"
+    if (g_ClipAngelNameOrigExt = "")
+        g_ClipAngelNameOrigExt := "txt"
+    g_ClipAngelNameExt := g_ClipAngelNameOrigExt
 
     ClipAngelExport_CloseGui()
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h36")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h48")
     ClipAngelExport_UpdateHint()
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y50 w390 h310 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y62 w390 h298 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_Cancel())
     ClipAngelExport_Refresh()
     ClipAngelExport_BindHotkeys([
         ["Enter", (*) => ClipAngelExport_UseSelected()],
+        ["o", (*) => ClipAngelExport_UseSelectedOrigExt()],
         ["t", (*) => ClipAngelExport_UseTyped()],
         ["x", (*) => ClipAngelExport_SetExt()],
         ["a", (*) => ClipAngelExport_Add()],
