@@ -719,7 +719,8 @@ class D2C_FlowManager {
                 return
             }
             if (presetMode = "task_pack" && !IsObject(registryPrompt)) {
-                ShowCenteredOverlay_Utils("⚠ Convert to Task pack prompt not found (char k)", 2200, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("⚠ Convert to Task pack prompt not found (char k)", 2200, BANNER_ACCENT_ERROR
+                )
                 this.Reset()
                 return
             }
@@ -998,8 +999,9 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same key strip / order as #!+p HotkeyCopy_ShowPostCopyBanner (copy-first on each destination).
+        ; Same key strip as #!+p HotkeyCopy_ShowPostCopyBanner, plus [P] Copy-only (#!+p 1× without a destination).
         keyCallbacks := Map(
+            "P", this.OnActionP.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
             "C", this.OnActionC.Bind(this),
@@ -1011,9 +1013,10 @@ class D2C_FlowManager {
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
-            pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+            pk := "[P] Copy  [Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
         else
-            pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+            pk :=
+                "[P] Copy  [Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1059,6 +1062,13 @@ class D2C_FlowManager {
         if (this.CurrentPhase != "PromptingAction")
             return
         this.ExecuteAction(true, false)
+    }
+
+    ; [P] Copy reply to clipboard only (same as #!+p 1× without a destination action).
+    OnActionP(*) {
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.ExecuteAction(false, false)
     }
 
     ; [F] Copy reply, then mark newest Clip Angel clip as favorite (same as #!+p [F]).
