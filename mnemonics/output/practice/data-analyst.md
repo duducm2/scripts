@@ -92,7 +92,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 3: Data Architectures 1</strong> · Character: GitHub Copilot · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 3](images/data-analyst/3.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
