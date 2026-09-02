@@ -460,7 +460,7 @@ AudioBt_DeviceDisplayName(row) {
 AudioBt_FormatRootStatus() {
     inName := AudioBt_DeviceDisplayName(AudioBt_FindDefaultRow("In"))
     outName := AudioBt_DeviceDisplayName(AudioBt_FindDefaultRow("Out"))
-    return "🎤 Input:`n" . inName . "`n`n🔊 Output:`n" . outName
+    return "🎤 Input: " . inName . "`n🔊 Output: " . outName
 }
 
 AudioBt_UpdateRootStatus(showError := false) {
@@ -735,9 +735,9 @@ AudioBt_CreateGui(lvHeight := 360) {
     statusExtra := 0
     if (g_AudioBtMode = "root") {
         g_AudioBtGui.SetFont("s15 Bold", "Segoe UI")
-        g_AudioBtStatus := g_AudioBtGui.Add("Text", "w720 r4 Section", "⏳ Loading active devices…")
+        g_AudioBtStatus := g_AudioBtGui.Add("Text", "w720 r2 Section", "⏳ Loading active devices…")
         g_AudioBtGui.SetFont("s10", "Segoe UI")
-        statusExtra := 88
+        statusExtra := 56
     } else {
         g_AudioBtStatus := false
     }

@@ -1,0 +1,4 @@
+TONE: Collegial
+Work-appropriate: clear and professional but not stiff or overly formal.
+Suitable for Slack, Teams, or internal email. Contractions are fine when they sound natural.
+No slang, text-speak, or emojis.

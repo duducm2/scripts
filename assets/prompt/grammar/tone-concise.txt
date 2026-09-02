@@ -1,0 +1,3 @@
+TONE: Concise
+Prioritize brevity and directness. Use short sentences and cut filler or redundancy.
+Still fix every error—clarity and accuracy come first, but do not pad the text.
