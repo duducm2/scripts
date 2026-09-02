@@ -744,6 +744,12 @@ class D2C_FlowManager {
 
         this.CompanionId := ResolveGlobalAICompanion()
         if (useRegistryPastePath) {
+            resolved := UtilitySelector_ResolveContextEntries(registryPrompt)
+            if (resolved = false) {
+                this.Reset()
+                return
+            }
+            contextEntries := resolved.entries
             ; Focus only (no ClipAngel paste). Attach Prompt Manager context, then paste once.
             if (this.CompanionId = "enterprise") {
                 GeminiEnterprise_OpenOrFocus()
@@ -791,7 +797,7 @@ class D2C_FlowManager {
                 catch {
                 }
             }
-            UtilitySelector_AttachPromptContextFiles(registryPrompt)
+            UtilitySelector_AttachPromptContextFiles(registryPrompt, contextEntries)
             if (optionalSnippet != "")
                 InsertText(optionalSnippet)
         } else if (this.CompanionId = "enterprise") {
