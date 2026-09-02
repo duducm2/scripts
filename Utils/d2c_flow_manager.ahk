@@ -1113,7 +1113,11 @@ class D2C_FlowManager {
             return
         this.CleanupActionPrompt()
         try {
-            this.DoCopyCore(false, false)
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
@@ -1145,7 +1149,17 @@ class D2C_FlowManager {
     OnActionP(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
-        this.ExecuteAction(false, false)
+        this.CleanupActionPrompt()
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            ShowCenteredOverlay_Utils("✅ Copied", 800, BANNER_ACCENT_SUCCESS)
+        } finally {
+            this.Reset()
+        }
     }
 
     ; [F] Copy reply, then mark newest Clip Angel clip as favorite (same as #!+p [F]).
@@ -1154,7 +1168,11 @@ class D2C_FlowManager {
             return
         this.CleanupActionPrompt()
         try {
-            this.DoCopyCore(false, false)
+            if (!this.DoCopyCore(false, false)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
@@ -1176,7 +1194,12 @@ class D2C_FlowManager {
         this.CleanupActionPrompt()
         this.CurrentPhase := "PickingVisiblePaste"
         try {
-            this.DoCopyCore(false, true)
+            if (!this.DoCopyCore(false, true)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                this.Reset()
+                return
+            }
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
@@ -1208,7 +1231,11 @@ class D2C_FlowManager {
             return
         this.CleanupActionPrompt()
         try {
-            this.DoCopyCore(false, true)
+            if (!this.DoCopyCore(false, true)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
@@ -1252,11 +1279,12 @@ class D2C_FlowManager {
         }
     }
 
+    ; Returns true only when copy passed all quality gates (clipboard change + min length +
+    ; gemini_copy_result.txt = "1" for Gemini/Copilot IPC — same guarantee as #!+p / Bridge_CopyGemini).
     DoCopyCore(readAloud := false, skipRestoreFocus := false) {
         if (this.HasCopiedForThisResponse) {
-            return
+            return true
         }
-        this.HasCopiedForThisResponse := true
 
         aiLabel := GetGlobalAIProviderLabel()
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
@@ -1265,7 +1293,7 @@ class D2C_FlowManager {
         if (!WinExist("ahk_id " this.GeminiHwnd)) {
             if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                 WinActivate("ahk_id " this.OriginHwnd)
-            return
+            return false
         }
 
         ; By the time DoCopyCore runs, Gemini should already be active. If it is not,
@@ -1275,22 +1303,40 @@ class D2C_FlowManager {
             catch {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
-                return
+                return false
             }
             if (!WinWaitActive("ahk_exe chrome.exe", , 0.5)) {
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
-                return
+                return false
             }
         }
 
-        ; Enterprise: copy/read-aloud not transposed yet — focus prompt only.
+        ; Enterprise: same in-process copy as #!+p (no Gemini.ahk IPC / result file).
         if (companion = "enterprise") {
+            clipOk := false
             try {
-                root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
-                if (IsObject(root))
-                    GeminiEnterprise_FocusComposer(root, true)
+                clipOk := GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: false,
+                    alreadyActive: true }, this.GeminiHwnd)
             } catch {
+                clipOk := false
+            }
+            if (clipOk) {
+                clip := Trim(A_Clipboard)
+                clipOk := (clip != "" && StrLen(clip) >= 10)
+            }
+            if (!clipOk) {
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 3000, BANNER_ACCENT_ERROR)
+            } else {
+                this.HasCopiedForThisResponse := true
+                try {
+                    root := GeminiEnterprise_ReadRootFromHwnd(this.GeminiHwnd)
+                    if (IsObject(root))
+                        GeminiEnterprise_FocusComposer(root, true)
+                } catch {
+                }
+                if (!readAloud)
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
             }
             if (!skipRestoreFocus && this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd) && !WinActive("ahk_id " this
                 .OriginHwnd
@@ -1299,10 +1345,10 @@ class D2C_FlowManager {
                 if (!WinActive("ahk_id " this.OriginHwnd))
                     WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
             }
-            return
+            return clipOk
         }
 
-        ; Y/F/C/R/W/O: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
+        ; Y/F/C/R/W/O/P: same synchronous copy first. R then blocks on read-aloud IPC (wParam=1 skips duplicate Copy in Gemini).
         clipBefore := A_Clipboard
         seqBefore := Clipboard_GetSequenceNumber()
         WM_COPY_LAST_GEMINI := 0x8001
@@ -1315,8 +1361,16 @@ class D2C_FlowManager {
         targetHwnd := GetGeminiScriptMsgTargetHwnd()
         sendOk := false
         clipOk := false
+        copyResultPath := A_ScriptDir "\.cursor\gemini_copy_result.txt"
 
         if (targetHwnd) {
+            ; Guarantee layer: only accept a copy Gemini.ahk confirms via result file (same as #!+p bridge).
+            try {
+                if (FileExist(copyResultPath))
+                    FileDelete(copyResultPath)
+                FileAppend("0", copyResultPath)
+            } catch {
+            }
             prevDH := A_DetectHiddenWindows
             DetectHiddenWindows true
             try {
@@ -1327,22 +1381,35 @@ class D2C_FlowManager {
                 DetectHiddenWindows prevDH
             }
             changed := Clipboard_WaitForSequenceChange(seqBefore, 2000, 850)
-            clipOk := sendOk && changed && A_Clipboard != clipBefore && Trim(A_Clipboard) != ""
+            clipNow := A_Clipboard
+            clipTrim := Trim(clipNow)
+            resultOk := false
+            try {
+                resultOk := FileExist(copyResultPath) && Trim(FileRead(copyResultPath)) = "1"
+            } catch {
+                resultOk := false
+            }
+            ; Quality gates: IPC ok + clipboard changed + non-empty min length + Gemini.ahk result file.
+            clipOk := sendOk && changed && clipNow != clipBefore && clipTrim != "" && StrLen(clipTrim) >= 10 &&
+            resultOk
             if (!sendOk)
                 ShowCenteredOverlay_Utils("❌ " . aiLabel . " copy timed out or IPC failed", 3500, BANNER_ACCENT_ERROR)
             else if (!clipOk)
                 ShowCenteredOverlay_Utils("❌ Copy failed or clipboard empty - try again", 3000, BANNER_ACCENT_ERROR)
-            else if (readAloud) {
-                DetectHiddenWindows true
-                try {
-                    SendMessage(wmRead, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
-                } catch {
-                    ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
-                } finally {
-                    DetectHiddenWindows prevDH
-                }
-            } else
-                try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            else {
+                this.HasCopiedForThisResponse := true
+                if (readAloud) {
+                    DetectHiddenWindows true
+                    try {
+                        SendMessage(wmRead, 1, this.OriginHwnd, , "ahk_id " targetHwnd, , , , 120000)
+                    } catch {
+                        ShowCenteredOverlay_Utils("❌ Read aloud failed or timed out", 4000, BANNER_ACCENT_ERROR)
+                    } finally {
+                        DetectHiddenWindows prevDH
+                    }
+                } else
+                    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+            }
         } else {
             ShowCenteredOverlay_Utils("❌ Gemini.ahk not running", 2000, BANNER_ACCENT_ERROR)
         }
@@ -1355,6 +1422,7 @@ class D2C_FlowManager {
             if (!WinActive("ahk_id " this.OriginHwnd))
                 WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
         }
+        return clipOk
     }
 
     ; --- Phase 5: Cursor Transfer ---
@@ -1364,7 +1432,11 @@ class D2C_FlowManager {
         this.CleanupActionPrompt()
         try {
             ; Skip restoring focus so clipboard is not overwritten
-            this.DoCopyCore(false, true)
+            if (!this.DoCopyCore(false, true)) {
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
 
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
