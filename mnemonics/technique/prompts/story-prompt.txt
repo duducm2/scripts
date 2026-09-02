@@ -120,6 +120,14 @@ Software vocabulary (use in CSV fields and chat notes):
 
 Technique README may still say "street"; map **Street → Memory Palace** when filling CSVs.
 
+PLAIN ENGLISH HARD MANDATE (read before any story / concept / image_prompt — `README §Language & IPA`)
+- All AI-authored prose uses **easy plain English**: short everyday words, concrete images, zero fluff. Applies to `story`, `concept` (including optional Note), `sensory`, `image_prompt`, and PREVIEW Concept/Story lines.
+- Write Narrative/`story` and image prompts as if explaining to a **curious teenager**, not an academic paper or period novel.
+- **Banned in authored prose:** archaic, old-fashioned, literary, rare, or show-off vocabulary; stiff textbook diction; Latin/French roots where a common Anglo-Saxon word works; idioms that need a dictionary. Discipline jargon only when the transcript requires it — keep the exact term in `quote`; compress the idea in `concept` (optional impersonal ` — Note:`).
+- **Replacement rule:** swap hard words for simple ones (e.g. _use_ not _utilize_, _end_ not _terminate_, _try_ not _endeavor_, _show_ not _demonstrate_ unless that word is in the quote; _eat_ not _devour_ when eating is not the bizarre lever).
+- **Read-aloud test:** if a story or image-prompt sentence sounds stiff, archaic, or textbook-like when spoken aloud → rewrite simpler. Bizarreness stays; only diction gets simpler.
+- **Preserve quotes:** `quote` stays verbatim — never simplify quoted characters.
+
 ---
 
 ## Inputs
@@ -208,9 +216,9 @@ Rules:
     - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare ` | ` inside `Concept: …` is chunking only.
     - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `I retrieve raw data | from various origin systems | during the first pipeline phase`
     - **Example (with Note):** `I move raw data | from multiple sources | into a centralized target — Note: The target is typically a Data Warehouse or Data Mart.`
-  - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`.
-  - **story** ← Narrative (bizarre action encoding)
-  - **sensory** ← modality emphasized
+  - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
+  - **story** ← Narrative (bizarre action encoding). MUST pass the Bizarreness Gate **and** PLAIN ENGLISH HARD MANDATE (`README §Language & IPA`): everyday words; no archaic / old-fashioned / literary diction.
+  - **sensory** ← modality emphasized (plain English label)
   - **ipa** ← German IPA when needed; else empty
 - Leave `id` empty if unknown (`ATOM_####` assigned on import).
 
@@ -243,9 +251,9 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 ### 3. Story construction (encode into CSV rows)
 
 - Map each concept to one beast — one Knowledge Atom per beast by default.
-- Peg letters only; independent beast beats; Bizarreness Gate on every story.
-- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning). NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed core when it fits; skip when it would distort (`README §Knowledge Atom Structure`). If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal). NEVER put the Note on `quote`. After the compressed core is final, apply **Concept chunking (pipe delimiters)** before any optional Note suffix.
-- Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via action linked to a concrete video cue.
+- Peg letters only; independent beast beats; Bizarreness Gate on every story; **PLAIN ENGLISH HARD MANDATE** / `README §Language & IPA` on every authored field.
+- **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed core when it fits; skip when it would distort (`README §Knowledge Atom Structure`). If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, apply **Concept chunking (pipe delimiters)** before any optional Note suffix.
+- Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via bizarre action linked to a concrete video cue — in easy plain English (curious-teenager test).
 - Dual-access recall: peg → compressed concept (+ optional Note) → quote; palace image → encoding action → quote.
 
 ### 4. Image prompts
@@ -265,6 +273,8 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 - NEVER under-fill a **pack** palace (1–4 beasts) when ≥5 new beasts remain to place in this pack.
 - NEVER leave a sparse **pack** palace (1–4 beasts) unless it is the **last new** palace in this pack (no higher-numbered pack palace may exist while an earlier pack palace is under-filled).
 - NEVER put a real person, celebrity, historical figure, or IP/franchise character **name** inside `image_prompt` (lookalike traits + disclaimer only).
+- NEVER use archaic, old-fashioned, literary, rare/show-off, or stiff textbook diction in authored prose (`story`, `concept`/Note, `sensory`, `image_prompt`, PREVIEW Concept/Story). Keep bizarreness; simplify the words.
+- NEVER simplify or rewrite a verbatim `quote` to make it “plainer.”
 - NEVER make Markdown streets the primary deliverable.
 - NEVER emit three isolated CSV snippets without `===FILE: PALACE_…===` pack markers.
 - NEVER omit the single `PALACE_PACK.txt` pack (download chip or one marked fence / gemini-code body).
@@ -285,6 +295,7 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 | Pack has only NEW palaces / beasts / atoms; inventory left untouched; already-known skipped in Discard candidates | Yes |
 | One unused character per new palace | Yes |
 | Peg letters only; Bizarreness Gate on stories | Yes |
+| Plain everyday English on story / concept (+ Note) / sensory / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; quotes untouched | Yes |
 | Each `concept` is maximal compression with zero information loss | Yes |
 | Compressed `concept` core is first person singular when it fits; skip when it would distort | Yes |
 | ` — Note:` on `concept` only when nuance was stripped from the compressed core; Note impersonal; `quote` verbatim only | Yes |
