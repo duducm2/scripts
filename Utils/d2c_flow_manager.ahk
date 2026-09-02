@@ -66,6 +66,40 @@ PasteWindow_ShowAutoSendOptionsAndWait() {
     return g_PasteWindowAutoSendChoice
 }
 
+; Hold completion on screen: stop progress animation, fill bar, update message, block until hideMs elapses.
+PasteWindow_FinishLoadingHold(state, holdMs := 1000, accentColor := "") {
+    if (accentColor = "")
+        accentColor := BANNER_ACCENT_SUCCESS
+    try SetTimer(StandardLoadingBar_Tick, 0)
+    catch {
+    }
+    try StandardLoadingBar_SetProgressValue(100)
+    catch {
+    }
+    try StandardLoadingBar_Update(state, accentColor)
+    catch {
+    }
+    if (holdMs > 0) {
+        try StandardLoadingBar_Hide(holdMs)
+        catch {
+        }
+        Sleep holdMs
+    } else {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+}
+
+; Terminal completion copy + hold duration after visible-window paste automation.
+PasteWindow_CompletionForPasteOutcome(autoSend, needsLearnPrompt) {
+    if (needsLearnPrompt)
+        return { state: "✅ Pasted — save main field?", holdMs: 500 }
+    if (autoSend)
+        return { state: "✅ Sent — you can continue", holdMs: 1400 }
+    return { state: "✅ Pasted — you can continue", holdMs: 900 }
+}
+
 ; =============================================================================
 ; D2C_FlowManager: Unified state machine for Dictation → Gemini → Cursor flow.
 ; Replaces legacy fragmented functions with a central authority to prevent race conditions.
@@ -246,8 +280,16 @@ class D2C_FlowManager {
 
     _FinishDeferredPaste(targetHwnd, onDone, autoSend := false) {
         mappingResult := { hasMapping: false, focused: false }
+        pasteCompleted := false
         try {
-            if (WinExist("ahk_id " targetHwnd)) {
+            if (!WinExist("ahk_id " targetHwnd)) {
+                StandardLoadingBar_Show("❌ Window not found", BANNER_ACCENT_ERROR, {
+                    passive: true,
+                    centerOnHwnd: 0,
+                    passiveBgColor: BANNER_ACCENT_ERROR
+                })
+                PasteWindow_FinishLoadingHold("❌ Window not found", 2000, BANNER_ACCENT_ERROR)
+            } else {
                 StandardLoadingBar_Show("⏳ Activating window...", BANNER_ACCENT_INTERMEDIATE, {
                     passive: false,
                     centerOnHwnd: targetHwnd
@@ -276,21 +318,28 @@ class D2C_FlowManager {
                 try WinActivate("ahk_id " targetHwnd)
                 Sleep 40
                 Send "^v"
-                Sleep 80
+                Sleep 120
                 if (autoSend) {
                     StandardLoadingBar_Update("⏳ Sending...", BANNER_ACCENT_INTERMEDIATE)
                     Send "{Enter}"
-                    Sleep 80
+                    Sleep 180
                 }
+                pasteCompleted := true
             }
-        } finally {
-            try StandardLoadingBar_Hide(0)
+        } catch {
+            try StandardLoadingBar_Update("❌ Paste failed", BANNER_ACCENT_ERROR)
             catch {
             }
+            PasteWindow_FinishLoadingHold("❌ Paste failed", 2000, BANNER_ACCENT_ERROR)
         }
 
-        if (!mappingResult.hasMapping)
-            PasteField_PromptSaveMainField(targetHwnd)
+        if (pasteCompleted) {
+            needsLearn := !mappingResult.hasMapping
+            completion := PasteWindow_CompletionForPasteOutcome(autoSend, needsLearn)
+            PasteWindow_FinishLoadingHold(completion.state, completion.holdMs)
+            if (needsLearn)
+                PasteField_PromptSaveMainField(targetHwnd)
+        }
 
         if (onDone)
             onDone.Call()
