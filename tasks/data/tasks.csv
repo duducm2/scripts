@@ -3,7 +3,6 @@ TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para ma
 TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,🔲,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
 TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1
-TASK_0008,PROJ_0005,SEC_0005,Decide between Cursor and other approaches,⏳,punctual,,,,,work,350,,2026-08-29 15:48:39,1
 TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⏳,punctual,,,,,work,370,,2026-08-29 15:48:39,1
 TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,400,,2026-08-29 15:48:39,1
 TASK_0011,PROJ_0005,SEC_0063,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 15:48:39,1
@@ -16,9 +15,6 @@ TASK_0017,PROJ_0012,SEC_0068,Contact Larissa for assistance with Power BI and AP
 TASK_0019,PROJ_0013,SEC_0070,Como estão monitorando os KPIs para reporte?,⏳,punctual,,,,Projects/Governance,work,740,,2026-08-29 15:48:39,1
 TASK_0020,PROJ_0013,SEC_0070,Como priorizam as automações e digitalizações dentro das áreas?,⏳,punctual,,,,Projects/Governance,work,750,,2026-08-29 15:48:39,1
 TASK_0025,PROJ_0013,SEC_0073,Make more communications,⏳,punctual,,,,Projects/Communication Plan/TEAMS group,work,830,,2026-08-29 15:48:39,1
-TASK_0026,PROJ_0013,SEC_0074,Maybe we should have two sessions the first with 20 people and the second one we wait to reach out to 15 people too go,⏳,punctual,,,,Projects/Parte 1 - Gemini Enterprise/key users section,work,920,,2026-08-29 15:48:39,1
-TASK_0027,PROJ_0013,SEC_0075,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 15:48:39,1
-TASK_0028,PROJ_0013,SEC_0075,Update the schedule,⏳,punctual,,,,Projects/Parte 2 – N8N,work,950,,2026-08-29 15:48:39,1
 TASK_0029,PROJ_0013,SEC_0075,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 15:48:39,2026-08-29 15:48:39,1
 TASK_0032,PROJ_0013,SEC_0075,[After Sep. 3] Send the invitation for the N8N training for key-users. We need to ask the key-users to install N8N too.,⚡,punctual,,,,Projects/Parte 2 – N8N,work,1020,,2026-08-29 15:48:39,1
 TASK_0033,PROJ_0013,SEC_0075,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 15:48:39,1
@@ -108,7 +104,6 @@ TASK_0216,PROJ_0012,SEC_0012,Checar opções de plataforma (benchmark da Alana).
 TASK_0217,PROJ_0013,SEC_0013,Como indicar um key-user?,,punctual,,,,,work,3900,,2026-08-30 15:28:48,1
 TASK_0219,PROJ_0026,SEC_0129,Read your whole dissertation,⏳,punctual,,,,,personal,3920,,2026-08-30 21:08:28,1
 TASK_0220,PROJ_0026,SEC_0129,Practice your presentation,⏳,punctual,,,,,personal,3930,,2026-08-30 21:08:46,1
-TASK_0221,PROJ_0013,SEC_0013,[After Nov. 3] Send the invitation of the training for the key users,⏳,punctual,,,,,work,3940,,2026-08-31 09:17:11,1
 TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1
 TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1
 TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1
