@@ -9,6 +9,7 @@ global g_PromptEditorName := false
 global g_PromptEditorEmoji := false
 global g_PromptEditorCategory := false
 global g_PromptEditorChar := false
+global g_PromptEditorPrevOnEscape := ""
 global g_PromptEditorFile := false
 global g_PromptEditorFilePath := ""
 global g_PromptEditorSource := "file"
@@ -114,12 +115,14 @@ PromptEditor_Show(existingPrompt := false, listIndex := 0) {
     try g_PromptEditorName.Focus()
     catch {
     }
+    PromptEditor_BindEscape(true)
     PromptEditor_BindEditorHotkeys(true)
     try WinWaitClose("ahk_id " g_PromptEditorGui.Hwnd)
     catch {
     }
     PromptEditor_ContextScrollTeardown()
     PromptEditor_BindEditorHotkeys(false)
+    PromptEditor_BindEscape(false)
     UtilitySelector_DialogsEnd()
     g_PromptEditorGui := false
     return g_PromptEditorResult
@@ -706,6 +709,9 @@ PromptEditor_BindEditorHotkeys(enable) {
     catch {
         return
     }
+    try Hotkey("Escape", PromptEditor_OnCancel, enable ? "On" : "Off")
+    catch {
+    }
     try Hotkey("Delete", PromptEditor_OnDeleteKey, enable ? "On" : "Off")
     catch {
     }
@@ -718,6 +724,42 @@ PromptEditor_BindEditorHotkeys(enable) {
     try HotIf()
     catch {
     }
+}
+
+; I10 global Escape (g_OnEscapePressed) would otherwise close the Prompts selector.
+PromptEditor_BindEscape(enable) {
+    global g_OnEscapePressed, g_PromptEditorPrevOnEscape, g_HotstringSelectorActive
+    if (enable) {
+        g_PromptEditorPrevOnEscape := g_OnEscapePressed
+        g_OnEscapePressed := PromptEditor_GlobalEscapeCallback
+        try Utils_EnsureGlobalEscapeHotkey()
+        catch {
+        }
+        return
+    }
+    if (g_PromptEditorPrevOnEscape != "")
+        g_OnEscapePressed := g_PromptEditorPrevOnEscape
+    else if (g_HotstringSelectorActive)
+        g_OnEscapePressed := HandleHotstringEscape
+    else if (g_OnEscapePressed = PromptEditor_GlobalEscapeCallback)
+        g_OnEscapePressed := ""
+    g_PromptEditorPrevOnEscape := ""
+    try Utils_EnsureGlobalEscapeHotkey()
+    catch {
+    }
+}
+
+PromptEditor_GlobalEscapeCallback(*) {
+    global g_PromptEditorGui, g_PromptEditorHelpGui
+    if (IsObject(g_PromptEditorHelpGui)) {
+        PromptEditor_CloseHelp()
+        return true
+    }
+    if (IsObject(g_PromptEditorGui)) {
+        PromptEditor_OnCancel()
+        return true
+    }
+    return false
 }
 
 PromptEditor_FocusedSide() {
@@ -1497,6 +1539,7 @@ PromptEditor_Destroy() {
     PromptEditor_CloseHelp()
     PromptEditor_ContextScrollTeardown()
     PromptEditor_BindEditorHotkeys(false)
+    PromptEditor_BindEscape(false)
     if (IsObject(g_PromptEditorGui)) {
         try g_PromptEditorGui.Destroy()
         catch {
