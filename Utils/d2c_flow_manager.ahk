@@ -452,7 +452,16 @@ class D2C_FlowManager {
     OnSubmitN(*) {
         if (this.CurrentPhase != "PromptingSubmit")
             return
-        this.CancelFlow(GetGlobalAIProviderLabel() . " submission cancelled")
+        this.DismissSubmitPromptInstantly()
+    }
+
+    ; N / Esc: close the Send dictation? menu immediately (no follow-up banner).
+    DismissSubmitPromptInstantly() {
+        StandardLoadingBar_CloseKeysOverlay()
+        StandardLoadingBar_Hide(0)
+        global g_D2C_DictationSubmitMenuCycleFinished
+        g_D2C_DictationSubmitMenuCycleFinished := true
+        this.Reset()
     }
 
     ; [M] Prompt for Teams contact, jump to chat, paste dictated text (no Enter).
@@ -1340,7 +1349,8 @@ class D2C_FlowManager {
     CancelFlow(message) {
         StandardLoadingBar_CloseKeysOverlay()
         StandardLoadingBar_Hide(0)
-        ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
+        if (message != "")
+            ShowCenteredOverlay_Utils("⚠ " . message, 1500, BANNER_ACCENT_INTERMEDIATE)
         global g_D2C_DictationSubmitMenuCycleFinished
         g_D2C_DictationSubmitMenuCycleFinished := true
         this.Reset()
