@@ -13,6 +13,7 @@
 global g_AudioBtGui := false
 global g_AudioBtLv := false
 global g_AudioBtHint := false
+global g_AudioBtStatus := false
 global g_AudioBtActive := false
 global g_AudioBtHotkeysBound := false
 global g_AudioBtHotkeyHandlers := []
@@ -441,6 +442,49 @@ AudioBt_EmojiPrefix(row) {
     return emoji . " "
 }
 
+AudioBt_FindDefaultRow(kind) {
+    global g_AudioBtAllRows
+    for row in g_AudioBtAllRows {
+        if (row.kind = kind && row.isDefault)
+            return row
+    }
+    return ""
+}
+
+AudioBt_DeviceDisplayName(row) {
+    if !IsObject(row)
+        return "(none)"
+    return AudioBt_EmojiPrefix(row) . row.name
+}
+
+AudioBt_FormatRootStatus() {
+    inName := AudioBt_DeviceDisplayName(AudioBt_FindDefaultRow("In"))
+    outName := AudioBt_DeviceDisplayName(AudioBt_FindDefaultRow("Out"))
+    return "🎤 Input:`n" . inName . "`n`n🔊 Output:`n" . outName
+}
+
+AudioBt_UpdateRootStatus(showError := false) {
+    global g_AudioBtStatus, g_AudioBtMode, g_AudioBtAllRows
+    if (g_AudioBtMode != "root" || !IsObject(g_AudioBtStatus))
+        return
+    if (g_AudioBtAllRows.Length = 0 && !AudioBt_FetchAll(showError)) {
+        try g_AudioBtStatus.Value := "❌ Could not load active devices"
+        catch {
+        }
+        return
+    }
+    try g_AudioBtStatus.Value := AudioBt_FormatRootStatus()
+    catch {
+    }
+}
+
+AudioBt_LoadRootStatus(*) {
+    global g_AudioBtActive, g_AudioBtMode
+    if (!g_AudioBtActive || g_AudioBtMode != "root")
+        return
+    AudioBt_UpdateRootStatus(false)
+}
+
 AudioBt_OnEscape(*) {
     global g_AudioBtActive, g_AudioBtMode
     if (!g_AudioBtActive)
@@ -594,7 +638,7 @@ AudioBt_BindModalHotkeys() {
 }
 
 AudioBt_DestroyGui() {
-    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint
+    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint, g_AudioBtStatus
     AudioBt_UnbindModalHotkeys()
     if (IsObject(g_AudioBtGui)) {
         try g_AudioBtGui.Destroy()
@@ -604,6 +648,7 @@ AudioBt_DestroyGui() {
     }
     g_AudioBtLv := false
     g_AudioBtHint := false
+    g_AudioBtStatus := false
 }
 
 AudioBt_Cleanup() {
@@ -666,7 +711,7 @@ AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom) {
 }
 
 AudioBt_CreateGui(lvHeight := 360) {
-    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint
+    global g_AudioBtGui, g_AudioBtLv, g_AudioBtHint, g_AudioBtStatus, g_AudioBtMode
 
     AudioBt_DestroyGui()
     AudioBt_WorkArea(&monitorLeft, &monitorTop, &monitorRight, &monitorBottom)
@@ -687,13 +732,22 @@ AudioBt_CreateGui(lvHeight := 360) {
     g_AudioBtLv.OnEvent("DoubleClick", AudioBt_OnListActivate)
     if (g_AudioBtMode = "BT" || g_AudioBtMode = "In" || g_AudioBtMode = "Out")
         AudioBt_LvEnableRowColors(g_AudioBtLv)
+    statusExtra := 0
+    if (g_AudioBtMode = "root") {
+        g_AudioBtGui.SetFont("s15 Bold", "Segoe UI")
+        g_AudioBtStatus := g_AudioBtGui.Add("Text", "w720 r4 Section", "⏳ Loading active devices…")
+        g_AudioBtGui.SetFont("s10", "Segoe UI")
+        statusExtra := 88
+    } else {
+        g_AudioBtStatus := false
+    }
     g_AudioBtGui.Add("Button", "w100 Section", (g_AudioBtMode = "root") ? "Close" : "Back").OnEvent("Click",
         AudioBt_OnEscape)
     g_AudioBtGui.OnEvent("Close", (*) => AudioBt_Cleanup())
     g_AudioBtGui.OnEvent("Escape", AudioBt_OnEscape)
 
     guiW := 750
-    guiH := lvHeight + 100
+    guiH := lvHeight + 100 + statusExtra
     guiX := monitorLeft + (monitorWidth - guiW) // 2
     guiY := monitorTop + (monitorHeight - guiH) // 2
     if (guiX < monitorLeft + 20)
@@ -1423,13 +1477,17 @@ AudioBt_OnListActivate(*) {
 }
 
 AudioBt_ShowRoot() {
-    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtRows
+    global g_AudioBtMode, g_AudioBtBusy, g_AudioBtRows, g_AudioBtAllRows
     g_AudioBtMode := "root"
     g_AudioBtBusy := false
     g_AudioBtRows := []
     AudioBt_CreateGui(220)
     AudioBt_PopulateRootLv()
     AudioBt_SetHint(AudioBt_HintText())
+    if (g_AudioBtAllRows.Length = 0)
+        SetTimer(AudioBt_LoadRootStatus, -50)
+    else
+        AudioBt_UpdateRootStatus(false)
     try g_AudioBtLv.Focus()
     catch {
     }
