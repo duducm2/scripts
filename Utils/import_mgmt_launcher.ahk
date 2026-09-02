@@ -136,24 +136,36 @@ ImportMgmt_CenterGui(guiObj, w := 560, h := 220) {
 ; Single source for ListView rows, letter accelerators, help sections, and copy-name targets.
 ImportMgmt_Catalog() {
     return [
-        Map("char", "D", "name", "Finance daily", "detail", "FINANCE_DAILY.txt → transactions",
+        Map("char", "D", "emoji", "💳", "name", "Finance daily", "detail", "FINANCE_DAILY.txt → transactions",
             "fileName", "FINANCE_DAILY.txt", "run", ImportMgmt_RunFinanceDaily),
-        Map("char", "M", "name", "Finance monthly", "detail", "FINANCE_MONTHLY.txt → accounts / goals",
+        Map("char", "M", "emoji", "📈", "name", "Finance monthly", "detail", "FINANCE_MONTHLY.txt → accounts / goals",
             "fileName", "FINANCE_MONTHLY.txt", "run", ImportMgmt_RunFinanceMonthly),
-        Map("char", "P", "name", "Palace mnemonic pack", "detail", "PALACE_PACK.txt → palaces / beasts / atoms",
+        Map("char", "P", "emoji", "🏰", "name", "Palace mnemonic pack", "detail",
+            "PALACE_PACK.txt → palaces / beasts / atoms",
             "fileName", "PALACE_PACK.txt", "run", ImportMgmt_RunPalacePack),
-        Map("char", "L", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
+        Map("char", "L", "emoji", "📋", "name", "Study plan pack", "detail", "PLAN_PACK.txt → study plans",
             "fileName", "PLAN_PACK.txt", "run", ImportMgmt_RunPlanPack),
-        Map("char", "T", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
+        Map("char", "T", "emoji", "✅", "name", "Task pack", "detail", "TASK_PACK.txt → projects / tasks / info",
             "fileName", "TASK_PACK.txt", "run", ImportMgmt_RunTaskPack),
-        Map("char", "Q", "name", "Palace quick image", "detail", "Newest Desktop PNG/JPG → palace missing image",
+        Map("char", "Q", "emoji", "🖼️", "name", "Palace quick image", "detail",
+            "Newest Desktop PNG/JPG → palace missing image",
             "fileName", "PALACE_QUICK_IMAGE.png", "run", ImportMgmt_RunQuickImage),
-        Map("char", "N", "name", "Quick Download names", "detail",
+        Map("char", "N", "emoji", "🏷️", "name", "Quick Download names", "detail",
             "#!+9 rename list — clipangel_desktop_names.csv — CRUD + copy",
             "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
-        Map("char", "H", "name", "Help", "detail", "Per-workflow rules and outcomes",
+        Map("char", "H", "emoji", "❓", "name", "Help", "detail", "Per-workflow rules and outcomes",
             "run", ImportMgmt_OnHelp)
     ]
+}
+
+ImportMgmt_DisplayName(item) {
+    if (!IsObject(item))
+        return ""
+    name := item.Has("name") ? item["name"] : ""
+    emoji := item.Has("emoji") ? Trim(item["emoji"]) : ""
+    if (emoji != "")
+        return emoji . " " . name
+    return name
 }
 
 ImportMgmt_ShowMainMenu() {
@@ -178,10 +190,10 @@ ImportMgmt_ShowMainMenu() {
     g_ImportMgmtGui.OnEvent("Escape", (*) => ImportMgmt_CloseGui())
 
     for item in g_ImportMgmtCatalog
-        g_ImportMgmtLv.Add("", item["char"], item["name"], item["detail"])
+        g_ImportMgmtLv.Add("", item["char"], ImportMgmt_DisplayName(item), item["detail"])
     try g_ImportMgmtLv.ModifyCol(1, 50)
-    try g_ImportMgmtLv.ModifyCol(2, 200)
-    try g_ImportMgmtLv.ModifyCol(3, 430)
+    try g_ImportMgmtLv.ModifyCol(2, 220)
+    try g_ImportMgmtLv.ModifyCol(3, 410)
     if (g_ImportMgmtCatalog.Length) {
         try g_ImportMgmtLv.Modify(1, "Select Focus Vis")
         catch {
