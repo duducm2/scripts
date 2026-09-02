@@ -170,7 +170,8 @@ By the front brick pillar, a Neanderthal manages a massive collection of data by
 
 #### Notes
 
-_No notes._
+XLOOKUP function
+Use the XLOOKUP function to find things in a table or range by row. For example, look up the price of an automotive part by the part number, or find an employee name based on their employee ID. With XLOOKUP, you can look in one column for a search term and return a result from the same row in another column, regardless of which side the return column is on.
 
 #### Gallery
 
