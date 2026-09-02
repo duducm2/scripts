@@ -111,6 +111,8 @@ Delete the relevant `[Mapping_N]` block via picker **[M]** (or edit the INI), th
 
 ## UI standard
 
+- Picker scan (before grid modal): **Loading Indication** — `StandardLoadingBar_Show` `⏳ Scanning visible windows...` during `Dictation_BuildMonitorGrid`, then `Hide(0)` before the picker or the no-windows overlay (`Dictation_ShowVisiblePasteSelector` in `dictation_visible_paste.ahk`).
+- Post-pick automation (after auto-send choice): **Loading Indication** — `Show` → `Update` → `Hide` in `_FinishDeferredPaste` (`d2c_flow_manager.ahk`): `⏳ Activating window...`, `⏳ Focusing main field...` (when mapped), `⏳ Pasting...`, `⏳ Sending...` (when **Y**); bar hides before the learn prompt.
 - Auto-send (post-pick): **Interactive Input** — `StandardLoadingBar_ShowWithKeys` with `promptKeys` `[Y] Send after paste  [N] Paste only  [Esc] Cancel`, `BANNER_ACCENT_INTERMEDIATE` (see `PasteWindow_ShowAutoSendOptionsAndWait` in `d2c_flow_manager.ahk`).
 - Learn prompt: **Interactive Input** — `StandardLoadingBar_ShowWithKeys` with `promptKeys` `[Y] Yes  [N] No`, `BANNER_ACCENT_INTERMEDIATE`.
 - Save success: **Information Only** — `ShowCenteredOverlay_Utils` + `BANNER_ACCENT_SUCCESS`.

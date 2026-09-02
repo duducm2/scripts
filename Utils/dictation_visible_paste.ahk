@@ -996,8 +996,19 @@ Dictation_ShowVisiblePasteSelector(centerOnHwnd := 0) {
     global g_DictationVisiblePasteResult, g_DictationVisiblePasteLastForegroundMonitorIdx
     clipBackup := ClipboardAll()
     Dictation_VisiblePasteClose()
-    gridData := Dictation_BuildMonitorGrid()
-    if (gridData.slots.Length = 0) {
+    gridData := ""
+    try {
+        StandardLoadingBar_Show("⏳ Scanning visible windows...", BANNER_ACCENT_INTERMEDIATE, {
+            passive: false,
+            centerOnHwnd: centerOnHwnd
+        })
+        gridData := Dictation_BuildMonitorGrid()
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+    }
+    if (!IsObject(gridData) || gridData.slots.Length = 0) {
         ShowCenteredOverlay_Utils("ℹ️ No visible windows found", 2500, BANNER_ACCENT_INFO)
         try A_Clipboard := clipBackup
         return 0

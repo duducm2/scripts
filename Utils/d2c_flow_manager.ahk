@@ -245,35 +245,48 @@ class D2C_FlowManager {
     }
 
     _FinishDeferredPaste(targetHwnd, onDone, autoSend := false) {
-        if (!WinExist("ahk_id " targetHwnd)) {
-            if (onDone)
-                onDone.Call()
-            return
-        }
+        mappingResult := { hasMapping: false, focused: false }
+        try {
+            if (WinExist("ahk_id " targetHwnd)) {
+                StandardLoadingBar_Show("⏳ Activating window...", BANNER_ACCENT_INTERMEDIATE, {
+                    passive: false,
+                    centerOnHwnd: targetHwnd
+                })
 
-        try WinActivate("ahk_id " targetHwnd)
-        if (!WinActive("ahk_id " targetHwnd))
-            WinWaitActive("ahk_id " targetHwnd, , 0.3)
-        Sleep 60
+                try WinActivate("ahk_id " targetHwnd)
+                if (!WinActive("ahk_id " targetHwnd))
+                    WinWaitActive("ahk_id " targetHwnd, , 0.3)
+                Sleep 60
 
-        mappingResult := PasteField_FocusMappedField(targetHwnd)
-        if (mappingResult.hasMapping && !mappingResult.focused) {
-            loop 2 {
+                mappingResult := PasteField_FocusMappedField(targetHwnd)
+                if (mappingResult.hasMapping) {
+                    StandardLoadingBar_Update("⏳ Focusing main field...", BANNER_ACCENT_INTERMEDIATE)
+                    if (!mappingResult.focused) {
+                        loop 2 {
+                            try WinActivate("ahk_id " targetHwnd)
+                            Sleep 40
+                            mappingResult := PasteField_FocusMappedField(targetHwnd)
+                            if (mappingResult.focused)
+                                break
+                        }
+                    }
+                }
+
+                StandardLoadingBar_Update("⏳ Pasting...", BANNER_ACCENT_INTERMEDIATE)
                 try WinActivate("ahk_id " targetHwnd)
                 Sleep 40
-                mappingResult := PasteField_FocusMappedField(targetHwnd)
-                if (mappingResult.focused)
-                    break
+                Send "^v"
+                Sleep 80
+                if (autoSend) {
+                    StandardLoadingBar_Update("⏳ Sending...", BANNER_ACCENT_INTERMEDIATE)
+                    Send "{Enter}"
+                    Sleep 80
+                }
             }
-        }
-
-        try WinActivate("ahk_id " targetHwnd)
-        Sleep 40
-        Send "^v"
-        Sleep 80
-        if (autoSend) {
-            Send "{Enter}"
-            Sleep 80
+        } finally {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
         }
 
         if (!mappingResult.hasMapping)
