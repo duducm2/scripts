@@ -6,6 +6,7 @@
 global g_PromptEditorGui := false
 global g_PromptEditorResult := { saved: false }
 global g_PromptEditorName := false
+global g_PromptEditorEmoji := false
 global g_PromptEditorCategory := false
 global g_PromptEditorChar := false
 global g_PromptEditorFile := false
@@ -192,7 +193,7 @@ PromptEditor_CtxTrack(ctrl) {
 
 PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L) {
     global g_PromptEditorGui, g_PromptEditorTabs
-    global g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
+    global g_PromptEditorName, g_PromptEditorEmoji, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFile, g_PromptEditorFilePath
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode
     global g_PromptEditorDraftFile, g_PromptEditorDraftPath
@@ -201,6 +202,8 @@ PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L) {
     innerX := L["innerX"]
     innerY := L["innerY"]
     labelW := L["labelW"]
+    emojiEditW := 56
+    nameEditW := Max(120, innerW - labelW - 16 - 40 - emojiEditW)
     fileEditW := Max(160, innerW - labelW - 184)
     tagsEditW := Floor((innerW - labelW - 16 - 70) * 0.45)
     varsEditW := innerW - labelW - 16 - 70 - tagsEditW
@@ -209,9 +212,23 @@ PromptEditor_BuildTabGeneral(existingPrompt, avail, currentChar, L) {
     g_PromptEditorTabs.UseTab(1)
     g_PromptEditorGui.MarginX := innerX
     g_PromptEditorGui.MarginY := innerY
-    g_PromptEditorGui.Add("Text", "w" . labelW . " Section", "Name")
-    nameVal := (IsObject(existingPrompt) && existingPrompt.HasProp("name")) ? existingPrompt.name : ""
-    g_PromptEditorName := g_PromptEditorGui.Add("Edit", "yp w" . (innerW - labelW), nameVal)
+    g_PromptEditorGui.Add("Text", "w" . labelW . " Section", "Emoji")
+    emojiVal := ""
+    nameVal := ""
+    if (IsObject(existingPrompt)) {
+        emojiVal := existingPrompt.HasProp("emoji") ? existingPrompt.emoji : ""
+        nameVal := existingPrompt.HasProp("name") ? existingPrompt.name : ""
+        if (emojiVal = "" && nameVal != "") {
+            split := PromptData_SplitLeadingEmoji(nameVal)
+            if (split.emoji != "") {
+                emojiVal := split.emoji
+                nameVal := split.name
+            }
+        }
+    }
+    g_PromptEditorEmoji := g_PromptEditorGui.Add("Edit", "yp w" . emojiEditW, emojiVal)
+    g_PromptEditorGui.Add("Text", "x+16 yp w40", "Name")
+    g_PromptEditorName := g_PromptEditorGui.Add("Edit", "yp w" . nameEditW, nameVal)
 
     g_PromptEditorGui.Add("Text", "xs y+12 w" . labelW . " Section", "Category")
     catChoices := PromptEditor_CategoryChoices(IsObject(existingPrompt) ? existingPrompt.category : "General")
@@ -1339,7 +1356,7 @@ PromptEditor_OnExpectsDataOutputClick(*) {
 }
 
 PromptEditor_OnSave(*) {
-    global g_PromptEditorResult, g_PromptEditorName, g_PromptEditorCategory, g_PromptEditorChar
+    global g_PromptEditorResult, g_PromptEditorName, g_PromptEditorEmoji, g_PromptEditorCategory, g_PromptEditorChar
     global g_PromptEditorFilePath, g_PromptEditorSource, g_PromptEditorAuthor, g_PromptEditorIsEdit
     global g_PromptEditorPersonalPaths, g_PromptEditorWorkPaths
     global g_PromptEditorTags, g_PromptEditorVariables, g_PromptEditorPasteMode, g_PromptEditorDraftPath
@@ -1353,6 +1370,18 @@ PromptEditor_OnSave(*) {
         catch {
         }
         return
+    }
+    emoji := ""
+    try emoji := PromptData_NormalizeEmoji(g_PromptEditorEmoji.Value)
+    catch {
+    }
+    ; If the user left emoji blank but pasted one into Name, peel it off.
+    if (emoji = "") {
+        split := PromptData_SplitLeadingEmoji(name)
+        if (split.emoji != "") {
+            emoji := split.emoji
+            name := split.name
+        }
     }
     category := Trim(g_PromptEditorCategory.Text)
     if (category = "")
@@ -1403,6 +1432,7 @@ PromptEditor_OnSave(*) {
     workSelectable := PromptData_ParseContextEntries(g_PromptEditorWorkSelectablePaths)
     draft := {
         name: name,
+        emoji: emoji,
         char: ch,
         category: category,
         author: g_PromptEditorAuthor,
@@ -1438,6 +1468,7 @@ PromptEditor_OnSave(*) {
     g_PromptEditorResult := {
         saved: true,
         name: name,
+        emoji: emoji,
         category: category,
         char: ch,
         filePath: g_PromptEditorFilePath,
@@ -1526,7 +1557,7 @@ Author notes
 • Content after a --- line is human reminders; default paste (Esc) strips them. The banner appears immediately when you select a prompt; use [H] to include human notes, or [Y] to strip and submit.
 
 Context tab (Edit prompt)
-• General — name, category, char, prompt file, tags, variables, paste mode, draft.
+• General — emoji, name, category, char, prompt file, tags, variables, paste mode, draft.
 • Context — static context (always attached), selectable pool (picker at paste), presets.
 • Advanced — git commit, attach as .txt, data output flags.
 

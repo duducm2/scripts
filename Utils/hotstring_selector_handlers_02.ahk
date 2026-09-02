@@ -293,6 +293,7 @@ UtilitySelector_OnFilterKillFocus(*) {
 UtilitySelector_PromptFromEditorResult(result) {
     return {
         name: result.name,
+        emoji: result.HasProp("emoji") ? result.emoji : "",
         char: result.char,
         category: result.category,
         author: result.author,
@@ -389,7 +390,7 @@ UtilitySelector_PopulateLv() {
             if (!PromptData_PromptRowMatches(prompt, q))
                 continue
             g_UtilitySelectorRows.Push(prompt)
-            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt.name),
+            g_HotstringSelectorLv.Add("", prompt.char, prompt.category, PromptData_DisplayName(prompt),
             PromptData_DataOutputOutLabel(prompt), prompt.filePath)
         }
         try g_HotstringSelectorLv.ModifyCol(1, 50)
@@ -708,7 +709,9 @@ UtilitySelector_PromptsDelete() {
     if (listIndex < 1 || listIndex > g_PromptEntries.Length)
         return
     prompt := g_PromptEntries[listIndex]
-    label := prompt.name != "" ? prompt.name : "(unnamed)"
+    label := PromptData_DisplayName(prompt)
+    if (label = "")
+        label := "(unnamed)"
     hwnd := UtilitySelector_SelectorHwnd()
     msgOpts := "YesNo Icon! Default2"
     if (hwnd)

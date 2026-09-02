@@ -77,4 +77,4 @@ Prompt **file contents** are read when you paste, so editing a `.txt` does not r
 
 ## Utility Shortcuts (#!+U)
 
-Under **Prompts**, entries are sorted by the INI `Category` attribute then `Name`. Migrated technique prompts use `Category=Mnemonic`; the other built-in prompts use `Category=General`.
+Under **Prompts**, entries are sorted by the INI `Category` attribute then `Name`. Each prompt has a separate editable `Emoji` field (shown before the name in the list). Migrated technique prompts use `Category=Mnemonic`; the other built-in prompts use `Category=General`.

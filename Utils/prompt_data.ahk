@@ -495,13 +495,39 @@ PromptData_EscapeIniValue(val) {
     return val
 }
 
-PromptData_DisplayName(name) {
-    ; Keep valid emoji. Only strip a broken prefix when decode clearly failed.
+PromptData_NormalizeEmoji(val) {
+    return Trim(val)
+}
+
+; Split a legacy "emoji + name" string into { emoji, name }.
+PromptData_SplitLeadingEmoji(name) {
     n := Trim(name)
     if (n = "")
-        return n
+        return { emoji: "", name: "" }
+    if (!RegExMatch(n, "i)^(.*?)([A-Za-z0-9].*)$", &m))
+        return { emoji: "", name: n }
+    prefix := Trim(m[1])
+    rest := Trim(m[2])
+    if (prefix = "" || RegExMatch(prefix, "[A-Za-z0-9]") || StrLen(prefix) > 12)
+        return { emoji: "", name: n }
+    return { emoji: prefix, name: rest }
+}
+
+; ListView / UI label: emoji + name. Accepts a prompt object or a plain name string.
+PromptData_DisplayName(promptOrName) {
+    emoji := ""
+    n := ""
+    if (IsObject(promptOrName)) {
+        n := Trim(promptOrName.HasProp("name") ? promptOrName.name : "")
+        emoji := PromptData_NormalizeEmoji(promptOrName.HasProp("emoji") ? promptOrName.emoji : "")
+    } else {
+        n := Trim(promptOrName)
+    }
+    ; Keep valid emoji. Only strip a broken prefix when decode clearly failed.
     if (InStr(n, Chr(0xFFFD)) || RegExMatch(n, "^[=<>']"))
-        return Trim(RegExReplace(n, "^[^A-Za-z0-9]+", ""))
+        n := Trim(RegExReplace(n, "^[^A-Za-z0-9]+", ""))
+    if (emoji != "")
+        return emoji . " " . n
     return n
 }
 
@@ -698,6 +724,7 @@ PromptData_PromptRowMatches(prompt, query) {
 PromptData_NormalizeEntry(prompt) {
     if (!IsObject(prompt))
         return prompt
+    prompt.emoji := PromptData_NormalizeEmoji(prompt.HasProp("emoji") ? prompt.emoji : "")
     prompt.tags := PromptData_JoinTags(prompt.HasProp("tags") ? prompt.tags : [])
     prompt.pasteMode := PromptData_NormalizePasteMode(prompt.HasProp("pasteMode") ? prompt.pasteMode : "")
     prompt.attachAsTxt := PromptData_NormalizeAttachAsTxt(prompt.HasProp("attachAsTxt") ? prompt.attachAsTxt : 0)
@@ -741,50 +768,55 @@ PromptData_FileMtime() {
 }
 
 PromptData_DefaultEntries() {
-    list := [{ name: "✏️ Grammar & Spelling Corrector", char: "1", category: "General", author: "",
-        filePath: "assets\prompt\grammar.txt", source: "file" }, { name: "🔲 Quick task lines", char: "2", category: "General",
-            author: "",
-            filePath: "assets\prompt\mtask.txt", source: "file" }, { name: "🤖 AI Text Optimizer", char: "3", category: "General",
-                author: "",
-                filePath: "assets\prompt\aiopt.txt", source: "file" }, { name: "📝 Summarize for Handoff", char: "r",
-                    category: "General", author: "",
-                    filePath: "assets\prompt\handoff-summary.txt", source: "file" }, { name: "📖 Creating mnemonic stories",
+    list := [{ emoji: "✏️", name: "Grammar & Spelling Corrector", char: "1", category: "General", author: "",
+        filePath: "assets\prompt\grammar.txt", source: "file" }, { emoji: "🔲", name: "Quick task lines", char: "2",
+            category: "General", author: "",
+            filePath: "assets\prompt\mtask.txt", source: "file" }, { emoji: "🤖", name: "AI Text Optimizer", char: "3",
+                category: "General", author: "",
+                filePath: "assets\prompt\aiopt.txt", source: "file" }, { emoji: "📝", name: "Summarize for Handoff",
+                    char: "r", category: "General", author: "",
+                    filePath: "assets\prompt\handoff-summary.txt", source: "file" }, { emoji: "📖", name: "Creating mnemonic stories",
                         char: "4", category: "Mnemonic", author: "",
-                        filePath: "story-prompt.txt", source: "technique" }, { name: "📋 Create study plan",
+                        filePath: "story-prompt.txt", source: "technique" }, { emoji: "📋", name: "Create study plan",
                             char: "n", category: "Mnemonic", author: "",
-                            filePath: "plan-prompt.txt", source: "technique" }, { name: "🎬 Transcript Youtube Video",
+                            filePath: "plan-prompt.txt", source: "technique" }, { emoji: "🎬", name: "Transcript Youtube Video",
                                 char: "5", category: "Mnemonic", author: "",
-                                filePath: "video-transcription-prompt.txt", source: "technique" }, { name: "🧠 Curate knowledge atoms",
+                                filePath: "video-transcription-prompt.txt", source: "technique" }, { emoji: "🧠", name: "Curate knowledge atoms",
                                     char: "6", category: "Mnemonic", author: "",
-                                    filePath: "concept-curation-prompt.txt", source: "technique" }, { name: "📝 Story reduction",
+                                    filePath: "concept-curation-prompt.txt", source: "technique" }, { emoji: "✂️", name: "Story reduction",
                                         char: "a", category: "Mnemonic", author: "",
-                                        filePath: "story-reduction-prompt.txt", source: "technique" }, { name: "🛡️ Preserve background for image generation",
-                                            char: "g", category: "Mnemonic", author: "",
-                                            filePath: "image-background-preservation-prompt.txt", source: "technique" }, { name: "📊 PPT stage 1: content to slides CSV",
-                                                char: "s", category: "General", author: "",
-                                                filePath: "assets\prompt\ppt-content-to-slides-csv.txt", source: "file" }, { name: "🧩 PPT stage 2: slides to elements CSV",
-                                                    char: "i", category: "General", author: "",
-                                                    filePath: "assets\prompt\ppt-slides-to-elements-csv.txt", source: "file" }, { name: "📱 Prototype stage 1: content to screens CSV",
-                                                        char: "w", category: "General", author: "",
+                                        filePath: "story-reduction-prompt.txt", source: "technique" }, { emoji: "🛡️",
+                                            name: "Preserve background for image generation", char: "g", category: "Mnemonic",
+                                            author: "",
+                                            filePath: "image-background-preservation-prompt.txt", source: "technique" }, { emoji: "📊",
+                                                name: "PPT stage 1: content to slides CSV", char: "s", category: "General",
+                                                author: "",
+                                                filePath: "assets\prompt\ppt-content-to-slides-csv.txt", source: "file" }, { emoji: "🧩",
+                                                    name: "PPT stage 2: slides to elements CSV", char: "i", category: "General",
+                                                    author: "",
+                                                    filePath: "assets\prompt\ppt-slides-to-elements-csv.txt", source: "file" }, { emoji: "📱",
+                                                        name: "Prototype stage 1: content to screens CSV", char: "w",
+                                                        category: "General", author: "",
                                                         filePath: "assets\prompt\proto-content-to-screens-csv.txt",
-                                                        source: "file" }, { name: "🧩 Prototype stage 2: screens to elements CSV",
+                                                        source: "file" }, { emoji: "🧱", name: "Prototype stage 2: screens to elements CSV",
                                                             char: "f", category: "General", author: "",
                                                             filePath: "assets\prompt\proto-screens-to-elements-csv.txt",
-                                                            source: "file" }, { name: "🎨 Bosch brand-compliant image",
+                                                            source: "file" }, { emoji: "🎨", name: "Bosch brand-compliant image",
                                                                 char: "q", category: "General", author: "",
-                                                                filePath: "assets\prompt\bosch-brand-image.txt", source: "file" }, { name: "📋 Fill CSV from unstructured text",
-                                                                    char: "t", category: "General", author: "",
+                                                                filePath: "assets\prompt\bosch-brand-image.txt", source: "file" }, { emoji: "📥",
+                                                                    name: "Fill CSV from unstructured text", char: "t",
+                                                                    category: "General", author: "",
                                                                     filePath: "assets\prompt\unstructured-to-csv.txt",
-                                                                    source: "file" }, { name: "Convert to Task",
+                                                                    source: "file" }, { emoji: "✅", name: "Convert to Task",
                                                                         char: "k", category: "Tasks", author: "",
                                                                         filePath: "assets\prompt\convert-to-task.txt",
-                                                                        source: "file" }, { name: "📎 ClipAngel .cac export",
+                                                                        source: "file" }, { emoji: "📎", name: "ClipAngel .cac export",
                                                                             char: "c", category: "General", author: "",
                                                                             filePath: "assets\prompt\clipangel-cac.txt",
-                                                                            source: "file" }, { name: "📝 How-to steps CSV",
+                                                                            source: "file" }, { emoji: "🧭", name: "How-to steps CSV",
                                                                                 char: "h", category: "General", author: "",
                                                                                 filePath: "assets\prompt\howto-steps-csv.txt",
-                                                                                source: "file" }, { name: "Memory Palace atoms CSV import",
+                                                                                source: "file" }, { emoji: "🏰", name: "Memory Palace atoms CSV import",
                                                                                     char: "u", category: "Mnemonic",
                                                                                     author: "",
                                                                                     filePath: "assets\prompt\mnemonic-atoms-import.txt",
@@ -859,6 +891,7 @@ PromptData_Load(force := false, skipMtime := false) {
             if (!g_PromptIniSections.Has(section))
                 break
             name := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Name", ""))
+            emoji := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Emoji", ""))
             charVal := StrLower(PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Char", ""
             )))
             category := PromptData_NormalizeIniValue(PromptData_IniGet(g_PromptIniSections, section, "Category", ""))
@@ -895,7 +928,8 @@ PromptData_Load(force := false, skipMtime := false) {
                 charVal := ""
             if (charVal != "")
                 taken[charVal] := true
-            list.Push(PromptData_NormalizeEntry({ name: name, char: charVal, category: category, author: author,
+            list.Push(PromptData_NormalizeEntry({ name: name, emoji: emoji, char: charVal, category: category,
+                author: author,
                 filePath: filePath, source: source, tags: tags, pasteMode: pasteMode, attachAsTxt: attachAsTxt,
                 expectsDataOutput: expectsDataOutput, dataOutputFormat: dataOutputFormat,
                 variables: variables,
@@ -911,9 +945,57 @@ PromptData_Load(force := false, skipMtime := false) {
     g_PromptEntries := list
     g_PromptDataCacheReady := true
     g_PromptDataCacheMtime := mtime
+    PromptData_MigrateNameEmojis()
     PromptData_EnsurePlanPromptEntry()
     PromptData_MigrateCatalogIntoSelectable()
     return g_PromptEntries
+}
+
+; One-time / repair: move leading emoji out of Name into Emoji; fill blanks from defaults.
+PromptData_MigrateNameEmojis() {
+    global g_PromptEntries
+    list := g_PromptEntries
+    if (!IsObject(list))
+        return
+    defaultsByBase := Map()
+    for d in PromptData_DefaultEntries() {
+        fp := StrReplace(d.filePath, "/", "\")
+        SplitPath(fp, &base)
+        base := StrLower(base)
+        if (base != "")
+            defaultsByBase[base] := PromptData_NormalizeEmoji(d.HasProp("emoji") ? d.emoji : "")
+    }
+    ; Known prompts not in DefaultEntries (added later in live INI).
+    defaultsByBase["finance-daily-transactions.txt"] := "💳"
+    defaultsByBase["finance-monthly-investments.txt"] := "📈"
+    defaultsByBase["finance-evaluate-advice.txt"] := "💹"
+    dirty := false
+    for i, prompt in list {
+        emoji := PromptData_NormalizeEmoji(prompt.HasProp("emoji") ? prompt.emoji : "")
+        name := Trim(prompt.HasProp("name") ? prompt.name : "")
+        if (emoji = "" && name != "") {
+            split := PromptData_SplitLeadingEmoji(name)
+            if (split.emoji != "") {
+                emoji := split.emoji
+                name := split.name
+            }
+        }
+        if (emoji = "") {
+            fp := StrReplace(prompt.HasProp("filePath") ? prompt.filePath : "", "/", "\")
+            SplitPath(fp, &base)
+            base := StrLower(base)
+            if (base != "" && defaultsByBase.Has(base) && defaultsByBase[base] != "")
+                emoji := defaultsByBase[base]
+        }
+        if (emoji != PromptData_NormalizeEmoji(prompt.HasProp("emoji") ? prompt.emoji : "")
+        || name != Trim(prompt.HasProp("name") ? prompt.name : "")) {
+            list[i].emoji := emoji
+            list[i].name := name
+            dirty := true
+        }
+    }
+    if (dirty)
+        PromptData_Save(list)
 }
 
 ; Upsert Create study plan into live prompts.ini (existing installs never get DefaultEntries again).
@@ -938,7 +1020,8 @@ PromptData_EnsurePlanPromptEntry() {
     if (taken.Has(charVal))
         charVal := ""
     list.Push(PromptData_NormalizeEntry({
-        name: "📋 Create study plan",
+        emoji: "📋",
+        name: "Create study plan",
         char: charVal,
         category: "Mnemonic",
         author: "",
@@ -1035,6 +1118,7 @@ PromptData_Save(list) {
                 lines.Push("")
             lines.Push("[Prompt_" . idx . "]")
             lines.Push("Name=" . PromptData_EscapeIniValue(prompt.HasProp("name") ? prompt.name : ""))
+            lines.Push("Emoji=" . PromptData_EscapeIniValue(prompt.HasProp("emoji") ? prompt.emoji : ""))
             lines.Push("Char=" . PromptData_EscapeIniValue(prompt.HasProp("char") ? prompt.char : ""))
             lines.Push("Category=" . PromptData_EscapeIniValue(prompt.HasProp("category") ? prompt.category : "General"
             ))
@@ -1147,7 +1231,8 @@ PromptData_Sorted() {
     loop g_PromptEntries.Length {
         p := g_PromptEntries[A_Index]
         list.Push(PromptData_NormalizeEntry({
-            name: p.name, char: p.char, category: p.category, author: p.author,
+            name: p.name, emoji: p.HasProp("emoji") ? p.emoji : "", char: p.char, category: p.category,
+            author: p.author,
             filePath: p.filePath, source: p.source, listIndex: A_Index,
             tags: p.HasProp("tags") ? p.tags : "",
             pasteMode: p.HasProp("pasteMode") ? p.pasteMode : "default",
