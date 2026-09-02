@@ -766,6 +766,8 @@ class D2C_FlowManager {
         optionalSnippet := ""
         registryPrompt := false
         useRegistryPastePath := false
+        contextEntries := []
+        attachCount := 0
         dictation := ""
         try dictation := A_Clipboard
 
@@ -821,6 +823,7 @@ class D2C_FlowManager {
                 return
             }
             contextEntries := resolved.entries
+            attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
             ; Focus only (no ClipAngel paste). Attach Prompt Manager context, then paste once.
             if (this.CompanionId = "enterprise") {
                 GeminiEnterprise_OpenOrFocus()
@@ -888,30 +891,10 @@ class D2C_FlowManager {
         }
 
         if (autoSubmit) {
-            if (presetMode = "finance_daily") {
-                try StandardLoadingBar_Update("⏳ Waiting for context files…", BANNER_ACCENT_INTERMEDIATE)
-                catch {
-                    try StandardLoadingBar_Show("⏳ Waiting for context files…", BANNER_ACCENT_INTERMEDIATE, {
-                        passive: false,
-                        centerOnHwnd: this.GeminiHwnd
-                    })
-                    catch {
-                    }
-                }
-                ready := false
-                try ready := PromptContext_WaitForSendReady(this.GeminiHwnd, this.CompanionId, 45000)
-                catch {
-                }
-                try StandardLoadingBar_Hide(0)
-                catch {
-                }
-                if (!ready) {
-                    try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
-                    catch {
-                    }
-                }
-            }
-            if (this.CompanionId = "enterprise") {
+            ; With attachments: same wait+submit path as Prompt Manager [Y] (upload idle / chips / Send).
+            if (useRegistryPastePath && attachCount > 0) {
+                PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
+            } else if (this.CompanionId = "enterprise") {
                 Sleep 1000
                 endTick := A_TickCount + 5000
                 while (A_TickCount < endTick) {
