@@ -20,11 +20,8 @@ TASK_0026,PROJ_0013,SEC_0074,Maybe we should have two sessions the first with 20
 TASK_0027,PROJ_0013,SEC_0075,"If the next batch of sections for N8N is approved by the DT lead, we need to check who's going to support Felipe in the moderation",⏳,punctual,,,,Projects/Parte 2 – N8N,work,930,,2026-08-29 15:48:39,1
 TASK_0028,PROJ_0013,SEC_0075,Update the schedule,⏳,punctual,,,,Projects/Parte 2 – N8N,work,950,,2026-08-29 15:48:39,1
 TASK_0029,PROJ_0013,SEC_0075,Maybe we need to send a news to the key users for them to prepare a license for the Gemini Enterprise Plus,✅,punctual,,,,Projects/Parte 2 – N8N,work,980,2026-08-29 15:48:39,2026-08-29 15:48:39,1
-TASK_0030,PROJ_0013,SEC_0075,Send the invitation for the N8N training for managers.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1000,,2026-08-29 15:48:39,1
-TASK_0031,PROJ_0013,SEC_0075,Send the invitation for the N8N training for colleagues.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1010,,2026-08-29 15:48:39,1
-TASK_0032,PROJ_0013,SEC_0075,Send the invitation for the N8N training for key-users. We need to ask the key-users to install N8N too.,🔲,punctual,,,,Projects/Parte 2 – N8N,work,1020,,2026-08-29 15:48:39,1
+TASK_0032,PROJ_0013,SEC_0075,[After Sep. 3] Send the invitation for the N8N training for key-users. We need to ask the key-users to install N8N too.,⚡,punctual,,,,Projects/Parte 2 – N8N,work,1020,,2026-08-29 15:48:39,1
 TASK_0033,PROJ_0013,SEC_0075,to understand where this key user this list of key users is on the network and if necessary place to our folder,⏳,punctual,,,,Projects/Parte 2 – N8N,work,1100,,2026-08-29 15:48:39,1
-TASK_0034,PROJ_0013,SEC_0076,Enviar o convite para os key-users depois do dia 3 de set para não se confundirem,🔲,punctual,,,,Projects/N8N,work,1220,,2026-08-29 15:48:39,1
 TASK_0036,PROJ_0015,SEC_0015,Start look at investing in other countries instead of only brazil,🔲,punctual,,,,,personal,1370,,2026-08-29 15:48:39,1
 TASK_0037,PROJ_0015,SEC_0015,Procurar um emprego,⏳,punctual,,,,,personal,1380,,2026-08-29 15:48:39,1
 TASK_0039,PROJ_0015,SEC_0015,Follow your process with CPFL,🔲,punctual,,,,,personal,1480,,2026-08-29 15:48:39,1
@@ -115,3 +112,4 @@ TASK_0221,PROJ_0013,SEC_0013,[After Nov. 3] Send the invitation of the training 
 TASK_0222,PROJ_0013,SEC_0130,What to do,,punctual,,,,Training,work,3950,,2026-08-31 09:35:34,1
 TASK_0223,PROJ_0003,SEC_0003,Doubts,,punctual,,,,,work,3960,,2026-08-31 12:04:55,1
 TASK_0226,PROJ_0005,SEC_0005,Check the Mercado Livre House insurance,⏳,punctual,,,,,work,3990,,2026-09-01 10:02:29,1
+TASK_0227,PROJ_0014,SEC_0014,Create screens,⚡,punctual,,,,,work,4000,,2026-09-02 09:51:11,1
