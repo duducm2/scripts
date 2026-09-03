@@ -12,10 +12,11 @@
 ### 🟧 [O] owl
 
 **Concept**
-💡 Data Lake: I store structured, semi-structured, and unstructured raw data in a centralized, low-cost object storage system[cite: 1].
+💡 Data Lake: I store structured, semi-structured, and unstructured raw data | in a centralized, low-cost object storage system[cite: 1].
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+**bucket** → store
+**swimming pool** → centralized
 
 **Quote**
 “Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
@@ -29,10 +30,12 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 ### 🟧 [P] panther
 
 **Concept**
-💡 Data Warehouse: A highly structured, schema-on-write repository optimized for SQL analytics and business intelligence[cite: 1].
+💡 Data Warehouse: A highly structured, schema-on-write repository | optimized for SQL analytics | and business intelligence[cite: 1].
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+**filing cabinet** → structured
+**magnifying glass** → analytics
+**briefcase** → intelligence
 
 **Quote**
 “Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
@@ -46,10 +49,12 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 ### 🟧 [Q] Quetzalcoatl
 
 **Concept**
-💡 Data Lakehouse: A hybrid architecture combining the scale and flexibility of a data lake with the reliability of a warehouse[cite: 1]. — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+💡 Data Lakehouse: A hybrid architecture | combining the scale and flexibility of a data lake | with the reliability of a warehouse[cite: 1]. — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+**centaur** → hybrid
+**rubber band** → flexibility
+**vault** → reliability
 
 **Quote**
 “Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
@@ -63,10 +68,12 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 ### 🟧 [R] rat
 
 **Concept**
-💡 Data Swamp: A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve[cite: 1].
+💡 Data Swamp: A poorly governed data lake | where data is uncataloged, undocumented, | and difficult to retrieve[cite: 1].
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+**broken crown** → governed
+**shredder** → uncataloged
+**fishing rod** → retrieve
 
 **Quote**
 “A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
@@ -80,10 +87,11 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 ### 🟧 [S] skull
 
 **Concept**
-💡 Data Mart: A specialized subset of a data warehouse focused on a specific business line or department[cite: 1]. — Note: Examples include Finance or Marketing[cite: 1].
+💡 Data Mart: A specialized subset of a data warehouse | focused on a specific business line or department[cite: 1]. — Note: Examples include Finance or Marketing[cite: 1].
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+**scalpel** → specialized
+**spotlight** → focused
 
 **Quote**
 “A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”
@@ -201,7 +209,6 @@ By the front brick pillar, a Neanderthal manages a massive collection of data by
 #### Notes
 
 XLOOKUP function
-Use the XLOOKUP function to find things in a table or range by row. For example, look up the price of an automotive part by the part number, or find an employee name based on their employee ID. With XLOOKUP, you can look in one column for a search term and return a result from the same row in another column, regardless of which side the return column is on.
 
 #### Gallery
 
