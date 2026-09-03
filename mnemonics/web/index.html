@@ -1187,7 +1187,7 @@
             const left = (m[0] || "").trim();
             const right = (m[1] || "").trim();
             if (!left || !right) return "";
-            return `<span class="kw-pair">[${esc(right)} \u2192 ${esc(left)}]</span>`;
+            return `<span class="kw-pair">[${esc(right)}] \u2192 [${esc(left)}]</span>`;
           })
           .filter(Boolean)
           .join("");

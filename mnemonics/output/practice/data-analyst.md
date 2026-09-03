@@ -15,8 +15,9 @@
 💡 Data Lake: I store structured, semi-structured, and unstructured raw data | in a centralized, low-cost object storage system[cite: 1].
 
 🔑 **Keywords**
-**bucket** → store
-**swimming pool** → centralized
+
+- [store] → [bucket]
+- [centralized] → [swimming pool]
 
 **Quote**
 “Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
@@ -33,9 +34,10 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 💡 Data Warehouse: A highly structured, schema-on-write repository | optimized for SQL analytics | and business intelligence[cite: 1].
 
 🔑 **Keywords**
-**filing cabinet** → structured
-**magnifying glass** → analytics
-**briefcase** → intelligence
+
+- [structured] → [filing cabinet]
+- [analytics] → [magnifying glass]
+- [intelligence] → [briefcase]
 
 **Quote**
 “Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
@@ -52,9 +54,10 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 💡 Data Lakehouse: A hybrid architecture | combining the scale and flexibility of a data lake | with the reliability of a warehouse[cite: 1]. — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
 🔑 **Keywords**
-**centaur** → hybrid
-**rubber band** → flexibility
-**vault** → reliability
+
+- [hybrid] → [centaur]
+- [flexibility] → [rubber band]
+- [reliability] → [vault]
 
 **Quote**
 “Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
@@ -71,9 +74,10 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 💡 Data Swamp: A poorly governed data lake | where data is uncataloged, undocumented, | and difficult to retrieve[cite: 1].
 
 🔑 **Keywords**
-**broken crown** → governed
-**shredder** → uncataloged
-**fishing rod** → retrieve
+
+- [governed] → [broken crown]
+- [uncataloged] → [shredder]
+- [retrieve] → [fishing rod]
 
 **Quote**
 “A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
@@ -90,8 +94,9 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 💡 Data Mart: A specialized subset of a data warehouse | focused on a specific business line or department[cite: 1]. — Note: Examples include Finance or Marketing[cite: 1].
 
 🔑 **Keywords**
-**scalpel** → specialized
-**spotlight** → focused
+
+- [specialized] → [scalpel]
+- [focused] → [spotlight]
 
 **Quote**
 “A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”

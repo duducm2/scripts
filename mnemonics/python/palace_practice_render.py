@@ -70,7 +70,7 @@ def format_sensory(value: str | None) -> str:
 
 
 def format_keywords_lines(value: str | None) -> list[str]:
-    """One **Keyword** -> Word pair per line; empty list if none."""
+    """One [concept word] -> [tangible keyword] pair per line; empty if none."""
     normalized = normalize_atom_keywords(value)
     if not normalized:
         return []
@@ -87,7 +87,7 @@ def format_keywords_lines(value: str | None) -> list[str]:
             continue
         left, right = left.strip(), right.strip()
         if left and right:
-            out.append(f"[{right} \u2192 {left}]")
+            out.append(f"[{right}] \u2192 [{left}]")
     return out
 
 
@@ -112,7 +112,8 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
     kw_lines = format_keywords_lines(atom.get("keywords"))
     if kw_lines:
         lines.append("🔑 **Keywords**")
-        lines.extend(kw_lines)
+        lines.append("")
+        lines.extend(f"- {row}" for row in kw_lines)
         lines.append("")
     else:
         lines.append("**Keywords**")
