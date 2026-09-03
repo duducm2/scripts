@@ -1187,14 +1187,14 @@
             const left = (m[0] || "").trim();
             const right = (m[1] || "").trim();
             if (!left || !right) return "";
-            return `<span class="kw-pair">${esc(left)} | ${esc(right)}</span>`;
+            return `<span class="kw-pair"><b>${esc(left)}</b> \u2192 ${esc(right)}</span>`;
           })
           .filter(Boolean)
           .join("");
         const body = rows
           ? `<div class="kw-list">${rows}</div>`
           : `<span class="kw-empty">No keywords yet</span>`;
-        const label = rows ? "🔑 Keywords" : "Keywords";
+        const label = rows ? "\uD83D\uDD11 Keywords" : "Keywords";
         return `<div class="field field-keywords"><span class="lbl">${label}</span>${body}</div>`;
       }
 

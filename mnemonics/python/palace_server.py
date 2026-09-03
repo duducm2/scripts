@@ -560,6 +560,11 @@ class PalaceHandler(BaseHTTPRequestHandler):
                 self._json(200, store.regen_all())
                 return
 
+            if path == "/api/reload":
+                store.invalidate_cache()
+                self._json(200, {"ok": True, "message": "cache invalidated"})
+                return
+
             if path == "/api/quick-image":
                 desk = payload.get("desktop")
                 desktop = Path(desk) if desk else None

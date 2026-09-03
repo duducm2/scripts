@@ -120,6 +120,10 @@ class PalaceStore:
                 mx = max(mx, path.stat().st_mtime)
         return mx
 
+    def invalidate_cache(self) -> None:
+        """Force a full reload from disk on the next access."""
+        self._invalidate_cache()
+
     def _invalidate_cache(self) -> None:
         self._cache_tree = None
         self._cache_stamp = -1.0
@@ -155,6 +159,17 @@ class PalaceStore:
         data: dict[str, list[dict[str, str]]],
         kinds: list[str] | None = None,
     ) -> None:
+        # Defense: if the CSV files were modified by another process (AHK import,
+        # another process, or a manual edit) after we cached them, refuse to write
+        # so we do not overwrite fresher data with our stale cache. Callers always
+        # load before saving, so _cache_stamp is set; if it differs from the current
+        # disk stamp, something touched the files in between.
+        if self._csv_stamp() != self._cache_stamp:
+            self._invalidate_cache()
+            raise RuntimeError(
+                "CSV files changed on disk since loaded; cache invalidated, retry"
+            )
+
         write_all = kinds is None
         kinds_set = set(kinds or [])
         if write_all or "studies" in kinds_set:
@@ -544,11 +559,7 @@ class PalaceStore:
             ),
             "concept": str(payload.get("concept", (existing or {}).get("concept", ""))),
             "keywords": normalize_atom_keywords(
-                str(
-                    payload.get(
-                        "keywords", (existing or {}).get("keywords", "")
-                    )
-                )
+                str(payload.get("keywords", (existing or {}).get("keywords", "")))
             ),
             "quote": str(payload.get("quote", (existing or {}).get("quote", ""))),
             "story": str(payload.get("story", (existing or {}).get("story", ""))),
