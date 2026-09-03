@@ -255,9 +255,12 @@ ClipAngel_EscapeMinimize() {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Resolve ClipAngel.exe for hard restart (running process path, then portable folders).
-; Note: A_MyDocuments may be OneDrive\Documentos while the portable build lives under %USERPROFILE%\Documents.
+; Resolve ClipAngel.exe for hard restart.
+; Personal portable: C:\Users\eduev\Documents\ClipAngel\ClipAngel 2.13\…
+; Work portable (Handy-style under fie7ca\Documents): ClipAngel 2.23 (docs/reference/clip-angel.txt).
+; A_MyDocuments may be OneDrive\Documentos — do not rely on it alone.
 ClipAngel_ResolveExePath() {
+    global IS_WORK_ENVIRONMENT
     try {
         hwnd := ClipAngel_MainHwnd()
         if (hwnd) {
@@ -275,15 +278,39 @@ ClipAngel_ResolveExePath() {
         } catch {
         }
     }
-    userDocs := EnvGet("USERPROFILE") "\Documents"
-    myDocs := A_MyDocuments
+
+    ; Optional env.ahk helper when present.
+    try {
+        envPath := GetClipAngelExePath()
+        if (envPath != "" && FileExist(envPath))
+            return envPath
+    } catch {
+    }
+
+    personalExact := "C:\Users\eduev\Documents\ClipAngel\ClipAngel 2.13\ClipAngel.exe"
+    workExact := "C:\Users\fie7ca\Documents\ClipAngel\ClipAngel 2.23\ClipAngel.exe"
+    isWork := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
+    preferred := isWork ? workExact : personalExact
+    other := isWork ? personalExact : workExact
+    if FileExist(preferred)
+        return preferred
+    if FileExist(other)
+        return other
+
     roots := []
-    if (userDocs != "")
-        roots.Push(userDocs)
-    if (myDocs != "" && myDocs != userDocs)
-        roots.Push(myDocs)
+    if (isWork) {
+        roots.Push("C:\Users\fie7ca\Documents")
+    } else {
+        roots.Push("C:\Users\eduev\Documents")
+        userDocs := EnvGet("USERPROFILE") "\Documents"
+        if (userDocs != "" && userDocs != "C:\Users\eduev\Documents")
+            roots.Push(userDocs)
+        if (A_MyDocuments != "" && A_MyDocuments != "C:\Users\eduev\Documents")
+            roots.Push(A_MyDocuments)
+    }
     for root in roots {
         for cand in [
+            root "\ClipAngel\ClipAngel 2.23\ClipAngel.exe",
             root "\ClipAngel\ClipAngel 2.13\ClipAngel.exe",
             root "\ClipAngel\ClipAngel.exe"
         ] {
