@@ -255,7 +255,8 @@ ClipAngel_EscapeMinimize() {
     ClipAngel_CloseAndRestoreFocus(0)
 }
 
-; Resolve ClipAngel.exe for hard restart (running process path, then common install folders).
+; Resolve ClipAngel.exe for hard restart (running process path, then portable folders).
+; Note: A_MyDocuments may be OneDrive\Documentos while the portable build lives under %USERPROFILE%\Documents.
 ClipAngel_ResolveExePath() {
     try {
         hwnd := ClipAngel_MainHwnd()
@@ -274,15 +275,24 @@ ClipAngel_ResolveExePath() {
         } catch {
         }
     }
-    for cand in [
-        A_MyDocuments "\ClipAngel\ClipAngel 2.13\ClipAngel.exe",
-        A_MyDocuments "\ClipAngel\ClipAngel.exe"
-    ] {
-        if FileExist(cand)
-            return cand
-    }
-    loop files A_MyDocuments "\ClipAngel\*\ClipAngel.exe", "F" {
-        return A_LoopFileFullPath
+    userDocs := EnvGet("USERPROFILE") "\Documents"
+    myDocs := A_MyDocuments
+    roots := []
+    if (userDocs != "")
+        roots.Push(userDocs)
+    if (myDocs != "" && myDocs != userDocs)
+        roots.Push(myDocs)
+    for root in roots {
+        for cand in [
+            root "\ClipAngel\ClipAngel 2.13\ClipAngel.exe",
+            root "\ClipAngel\ClipAngel.exe"
+        ] {
+            if FileExist(cand)
+                return cand
+        }
+        loop files root "\ClipAngel\*\ClipAngel.exe", "F" {
+            return A_LoopFileFullPath
+        }
     }
     return ""
 }
