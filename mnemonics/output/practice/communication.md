@@ -14,6 +14,9 @@
 **Concept**
 💡 Package ideas with a Symbol, Slogan, Surprise, Idea, and Story.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"your ideas are like your children and you don't want them to go into the world in rags"”
 
@@ -27,6 +30,9 @@ A glowing Abyssinian cat climbs the ForegroundLeft brick wall, loudly meowing a 
 
 **Concept**
 💡 End with a definitive salute or summary, never a weak thank you.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"when you say thank you even worse thank you for listening it suggests that everybody has stayed that long out of politeness and that they had a profound desire to be somewhere else"”
@@ -61,6 +67,9 @@ _No gallery images._
 **Concept**
 💡 Success relies on acquired knowledge and practice over talent.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Your success in life will be determined largely by your ability to speak your ability to write and the quality of your ideas in that order"”
 
@@ -74,6 +83,9 @@ A skyscraper-sized wombat sits on the ForegroundLeft gate, furiously carving mic
 
 **Concept**
 💡 Talks must open with an empowerment promise for the audience.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"You want to tell people what they're going to know at the end of the hour that they didn't know at the beginning of the hour it's an empowerment promise"”
@@ -89,6 +101,9 @@ Xena stands on the MidgroundRight parked car, unleashing a deafening, sonic batt
 **Concept**
 💡 Cycle through main points three times to bypass natural fog.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"at any given moment about 20% of you will be fogged out no matter what the lecture is so if you want to ensure that the probability that everybody gets it is high you need to say it three times"”
 
@@ -103,6 +118,9 @@ A glowing yak floats in the BackgroundCenter, vomiting a blinding neon fence tha
 **Concept**
 💡 Provide structural landmarks and ask questions to re-engage.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"you need to provide some Landmark places where you're announcing that it's a good time to get back on"”
 
@@ -116,6 +134,9 @@ Zeus hovers in the Aerial depth slot on a roof, throwing thunderbolts that smell
 
 **Concept**
 💡 Eliminate heavy text on slides because reading annoys listeners.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"people in your audience know how to read and reading will just annoy them"”
@@ -150,6 +171,9 @@ _No gallery images._
 **Concept**
 💡 Achieving bedrock clarity requires stripping away unnecessary details.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Achieving bedrock clarity requires stripping away unnecessary details (like Picasso's bull sketches) by continuously generating "bad output" until it becomes sharp.”
 
@@ -163,6 +187,9 @@ A microscopic rat sits on the iron gate in the ForegroundLeft, furiously erasing
 
 **Concept**
 💡 Consciously move evocative words from your deep passive lexicon to your surface automatic retrieval.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “You must consciously move evocative words from your passive understanding (deep lexicon) to your automatic retrieval (surface lexicon) through repetition, replacing generic phrases with vivid ones.”
@@ -178,6 +205,9 @@ A colossal, floating bone skull hovers by the MidgroundRight lamp post, vomiting
 **Concept**
 💡 Anchor abstract ideas in lived sensory memory by populating speech with Time, Audio, Kinesthetic, Eyes, and Smell.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “To give your words "blood and bone," populate your speech using: Time, Audio, Kinesthetic (feeling/touch), Eyes (sight), Smell.”
 
@@ -192,6 +222,9 @@ A giant toucan crashes into the BackgroundCenter facade, regurgitating a ticking
 **Concept**
 💡 True comfort is built before speaking by aligning your body, mind, and spirit.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “You must align three pillars: Body: Regulate your nervous system (e.g., diaphragmatic/box breathing). Mind: Shift your focus to serving the audience with a mental primer. Spirit: Speak honestly and strictly in alignment with your core values.”
 
@@ -205,6 +238,9 @@ An ethereal unicorn balances on the Aerial roof, exhaling a perfect, glowing box
 
 **Concept**
 💡 Cognitive sharpness is governed by biological inputs; tracking diet and sleep dictates mental clarity.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “You cannot think or speak clearly if your hardware is compromised. Tracking and optimizing diet and sleep are essential rhetoric tools, as they directly dictate mental clarity.”
@@ -239,6 +275,9 @@ Test
 **Concept**
 💡 Clear speaking requires clear thinking.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “clear speaking is the result of clear thinking”
 
@@ -252,6 +291,9 @@ A colossal marmoset balances on a street lamp, scrubbing its glowing transparent
 
 **Concept**
 💡 Clarity equals bad output multiplied by frequency.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “the formula for clarity on any idea is clarity equals bad output times frequency”
@@ -267,6 +309,9 @@ A brutish Neanderthal stands near the front left gate, relentlessly smashing a b
 **Concept**
 💡 Texture is creatively bending words into striking phrases.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “texture is the ability to bend twist and and gum words together in creative ways to be able to say phrases that just strike like a lightning bolt”
 
@@ -281,6 +326,9 @@ A skyscraper-sized owl perches on a midground brick wall, aggressively chewing t
 **Concept**
 💡 Use personal experiences to color in your speech outlines.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “populate or color your speech with your life use your life and your experiences to color in the outline”
 
@@ -294,6 +342,9 @@ A sleek panther paces at the far end of the street, bleeding vibrant, dripping n
 
 **Concept**
 💡 The vocal ego represents your elite, top 2% self.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “the vocal ego is a representation of the elite version of you that 2% version of you”
@@ -328,6 +379,9 @@ _No gallery images._
 **Concept**
 💡 Define the business agenda for your own area.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Define a agenda de negócios para a própria área.”
 
@@ -341,6 +395,9 @@ A colossal dragon lands heavily on the gate post, and Goku desperately grabs its
 
 **Concept**
 💡 Create value according to the general interest of Bosch.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Cria valor para a empresa de acordo com o interesse geral da Bosch.”
@@ -356,6 +413,9 @@ An impossibly heavy eagle crashes onto a parked car, crushing its steel roof lik
 **Concept**
 💡 Foster a collaborative and learning organization while driving digital business.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Fomenta uma organização colaborativa e de aprendizagem. Impulsiona um negócio sustentável e digital.”
 
@@ -370,6 +430,9 @@ A skyscraper-sized frog squats at the far end of the street, croaking with a dea
 **Concept**
 💡 Create an environment where people feel comfortable expressing their opinions.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Cria um ambiente onde as pessoas se sentem à vontade para expressar as suas opiniões e participar em debates saudáveis.”
 
@@ -383,6 +446,9 @@ A floating goat balances perfectly on top of a street lamp, emitting a highly co
 
 **Concept**
 💡 Encourage others to take responsibility and achieve exceptional results.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Incentiva os outros a assumir responsabilidade e alcançar resultados excepcionais. Cria autonomia e estimula a motivação intrínseca.”
@@ -417,6 +483,9 @@ _No gallery images._
 **Concept**
 💡 Ethos is the credibility and authority of the speaker.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Ethos: A credibilidade e a autoridade do orador.”
 
@@ -431,6 +500,9 @@ Arachne (a woman with the lower body of a spider) crawls down onto the street. S
 **Concept**
 💡 Pathos is the emotional appeal used to engage the audience.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Pathos: O apelo emocional utilizado para envolver o público.”
 
@@ -444,6 +516,9 @@ A bright bird of paradise flutters down to perch on Arachne's badge and starts c
 
 **Concept**
 💡 Logos is the logical structure and the evidence supporting the argument.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Logos: A estrutura lógica e as evidências que sustentam o argumento.”

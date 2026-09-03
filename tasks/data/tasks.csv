@@ -3,7 +3,7 @@ TASK_0002,PROJ_0002,SEC_0002,Entrar em contato com universidades alemãs para ma
 TASK_0003,PROJ_0002,SEC_0002,Entrar em contato com donos de vagas na Bosch para mapear oportunidades de doutorado profissional em parceria.,⏳,punctual,,,,,work,90,,2026-08-29 15:48:39,1
 TASK_0006,PROJ_0003,SEC_0003,Check the opportunities files,⏳,punctual,,,,,work,150,,2026-08-29 15:48:39,1
 TASK_0007,PROJ_0004,SEC_0004,What are we gonna do because this meeting will be during your vacation,⏳,punctual,,,,,work,220,,2026-08-29 15:48:39,1
-TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⏳,punctual,,,,,work,370,,2026-08-29 15:48:39,1
+TASK_0009,PROJ_0005,SEC_0005,Check you can have the Gemini extension and CLI on VS Code,⚡,punctual,,,,,work,370,,2026-08-29 15:48:39,1
 TASK_0010,PROJ_0005,SEC_0005,Check if you would like access to Gemini Agents,⏳,punctual,,,,,work,400,,2026-08-29 15:48:39,1
 TASK_0011,PROJ_0005,SEC_0063,Separar a reunião de segunda que vem para analisarmos se essa pessoa técnica,⏳,punctual,,,,"Tasks/Checar esta meta, se precisamos revisar",work,410,,2026-08-29 15:48:39,1
 TASK_0012,PROJ_0006,SEC_0006,"[Ca-IE-SSM-SEGMAADM-WBT] Health, Safety at Work and Environment-B (due to 29/Jul/2027)",⏳,punctual,,,,,work,440,,2026-08-29 15:48:39,1
@@ -115,3 +115,5 @@ TASK_0232,PROJ_0005,SEC_0005,Add the links to the MIRO to your projects on DevOp
 TASK_0234,PROJ_0005,SEC_0005,"Enviar uma lista de status, atividades e links o que precisar passar para a Débora do Handover",⚡,punctual,,,,,work,4070,,2026-09-02 10:53:07,1
 TASK_0235,PROJ_0011,SEC_0011,I need to check what is going to be the backlog when I am in vacation.,⚡,punctual,,,,,work,4080,,2026-09-02 14:40:16,1
 TASK_0236,PROJ_0015,SEC_0015,Continue with your idea of the book,🔲,punctual,,,,,personal,4090,,2026-09-02 16:20:09,1
+TASK_0237,PROJ_0013,SEC_0070,Como vamos ter as horas mapeadas?,⏳,punctual,,,,Projects/Governance,work,4100,,2026-09-03 11:06:36,1
+TASK_0238,PROJ_0013,SEC_0070,Como vai ser a fase de acompanhamento com os key-users?,⏳,punctual,,,,Projects/Governance,work,4110,,2026-09-03 11:07:07,1
