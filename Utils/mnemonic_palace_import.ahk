@@ -103,6 +103,20 @@ Palace_ArchiveImported(path) {
     }
 }
 
+; Tell the Python web server to drop its CSV cache. Call after AHK writes CSVs so the
+; SPA cannot overwrite fresh data with a stale cached tree.
+Palace_InvalidateServerCache(port := 8767) {
+    try {
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("POST", "http://127.0.0.1:" . port . "/api/reload", false)
+        whr.SetTimeouts(300, 300, 800, 800)
+        whr.Send("{}")
+        return (whr.Status = 200)
+    } catch {
+        return false
+    }
+}
+
 ; Strip Gemini preambles; find a header that looks like palace CSV.
 ; When skipNotes is an Array, malformed rows (field count ≠ header) are skipped and noted.
 Palace_ReadAiImportCsv(path, headerHint := "beast_id", skipNotes := 0) {
@@ -1154,8 +1168,10 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 labels.Push("Skip: " . resolved["skip"])
                 continue
             }
+            studyName := resolved.Has("studyId") && resolved["studyId"] != ""
+                ? Palace_StudyTitle(resolved["studyId"]) : "?"
             labels.Push("Memory Palace " . resolved["num"] . ": " . resolved["title"]
-                . " [" . resolved["id"] . "]")
+                . " [" . resolved["id"] . "] @ " . studyName)
         }
     }
     if (beastRows.Length) {
@@ -1458,6 +1474,27 @@ Palace_ImportMnemonicsFromDesktop(*) {
         Palace_Save("atoms", atoms)
     }
 
+    ; Force the Python web server to drop its CSV cache so the next SPA read cannot
+    ; overwrite our freshly written rows with a stale in-memory tree.
+    Palace_InvalidateServerCache()
+
+    ; Verify the CSV rows we just wrote are actually on disk (catches silent
+    ; Google-Drive / permission failures without waiting for the SPA).
+    savedPalaces := Palace_Load("palaces")
+    savedBeasts := Palace_Load("beasts")
+    savedAtoms := Palace_Load("atoms")
+    if (savedPalaces.Length != palaces.Length
+        || savedBeasts.Length != beasts.Length
+        || savedAtoms.Length != atoms.Length) {
+        msg := "Import verification failed: CSV row count mismatch after save."
+            . " P: " . palaces.Length . "→" . savedPalaces.Length
+            . " B: " . beasts.Length . "→" . savedBeasts.Length
+            . " A: " . atoms.Length . "→" . savedAtoms.Length
+            . " — Desktop files kept"
+        Palace_ReturnAfterImport(Palace_FailAiImport(msg, 5000, ""))
+        return false
+    }
+
     if (nPalaces + nBeasts + nAtoms = 0) {
         summary := Palace_ImportSkipSummary(skipCounts, csvNotes)
         msg := "0 imported — Desktop files kept"
@@ -1664,6 +1701,7 @@ Palace_AttachImageFileToPalace(palace, src) {
         return { ok: false, err: "Palace row vanished" }
     existing["image_rel_path"] := rel
     Palace_Save("palaces", palaces)
+    Palace_InvalidateServerCache()
     Palace_SyncPracticeMd([palace["study_id"]])
     return { ok: true, rel: rel }
 }
@@ -1883,6 +1921,7 @@ Palace_ImportPlansFromDesktop(pathPack) {
     Palace_Save("plans", plans)
     Palace_Save("plan_items", items)
     Palace_Save("plan_resources", resources)
+    Palace_InvalidateServerCache()
     Palace_ArchiveImported(pathPack)
     Palace_SyncPlansMd(syncIds)
     Palace_Notify("Imported " . nPlans . " plan(s), " . nItems . " item(s)", 2800, BANNER_ACCENT_SUCCESS)

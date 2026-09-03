@@ -108,7 +108,7 @@ If **Reduction mode** is missing or ambiguous, ask before generating.
 6. **Bestiary** — `studies/technique/bestiary.json`.
 7. **README** — `studies/technique/README.md`. Cite `README §<Section Name>`.
 
-**study_id:** keep the **exact** study id from the attached pack / `studies.csv` (violin test: `STUDY_VIOLIN`; long names may be truncated, e.g. `STUDY_COMMUNICATIO`). Do not invent study IDs. The importer also accepts full-word aliases. Quote CSV fields that contain commas (especially `concept` / `quote` / `story` / `image_prompt`).
+**study_id:** keep the **exact** study id from the attached pack / `studies.csv` (violin test: `STUDY_VIOLIN`; long names are truncated to a 12-char slug, e.g. `STUDY_COMMUNICATIO` for Communication, `STUDY_DATASCIENTIS` for Data Scientist). Do not use the full unsliced name such as `STUDY_DATA_SCIENTIST`; the importer may resolve it, but exact matches are safer and avoid routing ambiguity. Do not invent study IDs. The importer also accepts full-word aliases. Quote CSV fields that contain commas (especially `concept` / `quote` / `story` / `image_prompt`).
 
 Output MUST be a `PALACE_PACK` containing **only in-scope palace / beast / atom rows** (upsert patch for that segment). NEVER emit a whole-study dump from the first letter `A` / first Memory Palace unless the human explicitly says reduce the **entire study**.
 
