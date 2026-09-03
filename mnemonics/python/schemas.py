@@ -108,6 +108,53 @@ def normalize_atom_keywords(raw: str | None) -> str:
     return " || ".join(pairs)
 
 
+def iter_keyword_pairs(raw: str | None) -> list[tuple[str, str]]:
+    """Return (tangible Keyword, concept RecognizableWord) pairs."""
+    normalized = normalize_atom_keywords(raw)
+    if not normalized:
+        return []
+    out: list[tuple[str, str]] = []
+    for chunk in normalized.split(" || "):
+        chunk = chunk.strip()
+        if " | " in chunk:
+            left, right = chunk.split(" | ", 1)
+        elif "|" in chunk:
+            left, right = chunk.split("|", 1)
+        else:
+            continue
+        left, right = left.strip(), right.strip()
+        if left and right:
+            out.append((left, right))
+    return out
+
+
+def keyword_display_terms(raw: str | None) -> list[str]:
+    """Concept-side pair terms (RecognizableWord), longest first."""
+    terms: list[str] = []
+    seen: set[str] = set()
+    for _left, right in iter_keyword_pairs(raw):
+        key = right.casefold()
+        if key not in seen and len(right) >= 2:
+            seen.add(key)
+            terms.append(right)
+    terms.sort(key=len, reverse=True)
+    return terms
+
+
+def bold_keyword_terms(text: str, terms: list[str]) -> str:
+    """Wrap keyword terms that appear in text with Markdown bold."""
+    if not text or not terms:
+        return text
+    pattern = "|".join(re.escape(t) for t in terms)
+    if not pattern:
+        return text
+    return re.sub(
+        rf"(?i)(?<![A-Za-z0-9])(?:{pattern})(?![A-Za-z0-9])",
+        lambda m: f"**{m.group(0)}**",
+        text,
+    )
+
+
 PLANS_HEADERS = ["id", "study_id", "title", "sort_order", "active"]
 PLAN_ITEMS_HEADERS = [
     "id",

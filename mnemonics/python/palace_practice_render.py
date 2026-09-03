@@ -8,7 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from schemas import format_concept_thought_groups, normalize_atom_keywords
+from schemas import (
+    bold_keyword_terms,
+    format_concept_thought_groups,
+    iter_keyword_pairs,
+    keyword_display_terms,
+)
 
 SENSORY_EMOJI = {
     "visual": "👁️",
@@ -45,10 +50,11 @@ def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, A
     return groups
 
 
-def format_concept(value: str | None) -> str:
+def format_concept(value: str | None, keywords: str | None = None) -> str:
     t = md_escape(format_concept_thought_groups(value or ""))
     if not t:
         return "—"
+    t = bold_keyword_terms(t, keyword_display_terms(keywords))
     return f"💡 {t}"
 
 
@@ -71,23 +77,9 @@ def format_sensory(value: str | None) -> str:
 
 def format_keywords_lines(value: str | None) -> list[str]:
     """One [concept word] -> [tangible keyword] pair per line; empty if none."""
-    normalized = normalize_atom_keywords(value)
-    if not normalized:
-        return []
     out: list[str] = []
-    for pair in normalized.split(" || "):
-        pair = pair.strip()
-        if not pair:
-            continue
-        if " | " in pair:
-            left, right = pair.split(" | ", 1)
-        elif "|" in pair:
-            left, right = pair.split("|", 1)
-        else:
-            continue
-        left, right = left.strip(), right.strip()
-        if left and right:
-            out.append(f"[{right}] \u2192 [{left}]")
+    for left, right in iter_keyword_pairs(value):
+        out.append(f"[**{right}**] \u2192 [{left}]")
     return out
 
 
@@ -108,7 +100,11 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
         lines.append(f"🟦 **{tag}**")
         lines.append("")
 
-    lines.extend(format_field_block("Concept", format_concept(atom.get("concept"))))
+    lines.extend(
+        format_field_block(
+            "Concept", format_concept(atom.get("concept"), atom.get("keywords"))
+        )
+    )
     kw_lines = format_keywords_lines(atom.get("keywords"))
     if kw_lines:
         lines.append("🔑 **Keywords**")

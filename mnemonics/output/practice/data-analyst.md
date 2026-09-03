@@ -12,12 +12,12 @@
 ### 🟧 [O] owl
 
 **Concept**
-💡 [Data Lake: I store structured, semi-structured, and unstructured raw data] [in a centralized, low-cost object storage system[cite: 1].]
+💡 [Data Lake: I **store** structured, semi-structured, and unstructured raw data] [in a **centralized**, low-cost object storage system[cite: 1].]
 
 🔑 **Keywords**
 
-- [store] → [bucket]
-- [centralized] → [swimming pool]
+- [**store**] → [bucket]
+- [**centralized**] → [swimming pool]
 
 **Quote**
 “Centralized storage for structured, semi-structured, and unstructured raw data in low-cost object storage."[cite: 1]”
@@ -31,13 +31,13 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 ### 🟧 [P] panther
 
 **Concept**
-💡 [Data Warehouse: A highly structured, schema-on-write repository] [optimized for SQL analytics] [and business intelligence[cite: 1].]
+💡 [Data Warehouse: A highly **structured**, schema-on-write repository] [optimized for SQL **analytics**] [and business **intelligence**[cite: 1].]
 
 🔑 **Keywords**
 
-- [structured] → [filing cabinet]
-- [analytics] → [magnifying glass]
-- [intelligence] → [briefcase]
+- [**structured**] → [filing cabinet]
+- [**analytics**] → [magnifying glass]
+- [**intelligence**] → [briefcase]
 
 **Quote**
 “Highly structured, schema-on-write repository optimized for SQL analytics and business intelligence."[cite: 1]”
@@ -51,13 +51,13 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 ### 🟧 [Q] Quetzalcoatl
 
 **Concept**
-💡 [Data Lakehouse: A hybrid architecture] [combining the scale and flexibility of a data lake] [with the reliability of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+💡 [Data Lakehouse: A **hybrid** architecture] [combining the scale and **flexibility** of a data lake] [with the **reliability** of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
 🔑 **Keywords**
 
-- [hybrid] → [centaur]
-- [flexibility] → [rubber band]
-- [reliability] → [vault]
+- [**hybrid**] → [centaur]
+- [**flexibility**] → [rubber band]
+- [**reliability**] → [vault]
 
 **Quote**
 “Hybrid architecture combining the scale and flexibility of a data lake with the reliability and ACID features of a warehouse (e.g., Delta Lake on top of cloud storage)."[cite: 1]”
@@ -71,13 +71,13 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 ### 🟧 [R] rat
 
 **Concept**
-💡 [Data Swamp: A poorly governed data lake] [where data is uncataloged, undocumented,] [and difficult to retrieve[cite: 1].]
+💡 [Data Swamp: A poorly **governed** data lake] [where data is **uncataloged**, undocumented,] [and difficult to **retrieve**[cite: 1].]
 
 🔑 **Keywords**
 
-- [governed] → [broken crown]
-- [uncataloged] → [shredder]
-- [retrieve] → [fishing rod]
+- [**governed**] → [broken crown]
+- [**uncataloged**] → [shredder]
+- [**retrieve**] → [fishing rod]
 
 **Quote**
 “A poorly governed data lake where data is uncataloged, undocumented, and difficult to retrieve."[cite: 1]”
@@ -91,12 +91,12 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 ### 🟧 [S] skull
 
 **Concept**
-💡 [Data Mart: A specialized subset of a data warehouse] [focused on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
+💡 [Data Mart: A **specialized** subset of a data warehouse] [**focused** on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
 
 🔑 **Keywords**
 
-- [specialized] → [scalpel]
-- [focused] → [spotlight]
+- [**specialized**] → [scalpel]
+- [**focused**] → [spotlight]
 
 **Quote**
 “A subset of a data warehouse focused on a specific business line or department (e.g., Finance, Marketing)."[cite: 1]”

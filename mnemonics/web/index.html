@@ -1131,6 +1131,58 @@
         const t = String(s || "").trim();
         return t ? esc(t) : "—";
       }
+      function parseKeywordPairs(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return [];
+        return text
+          .split(/\s*\|\|\s*/)
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .slice(0, 10)
+          .map((p) => {
+            const m = p.includes(" | ")
+              ? p.split(/\s*\|\s*/, 2)
+              : p.split("|", 2);
+            const left = (m[0] || "").trim();
+            const right = (m[1] || "").trim();
+            return left && right ? [left, right] : null;
+          })
+          .filter(Boolean);
+      }
+      function keywordDisplayTerms(raw) {
+        const seen = new Set();
+        const terms = [];
+        for (const [_left, right] of parseKeywordPairs(raw)) {
+          const key = right.toLowerCase();
+          if (!seen.has(key) && right.length >= 2) {
+            seen.add(key);
+            terms.push(right);
+          }
+        }
+        terms.sort((a, b) => b.length - a.length);
+        return terms;
+      }
+      function boldKeywordTermsHtml(text, terms) {
+        if (!text) return "";
+        if (!terms.length) return esc(text);
+        const pattern = terms
+          .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+          .join("|");
+        const re = new RegExp(
+          `(?<![A-Za-z0-9])(?:${pattern})(?![A-Za-z0-9])`,
+          "gi",
+        );
+        let out = "";
+        let last = 0;
+        let m;
+        while ((m = re.exec(text))) {
+          out += esc(text.slice(last, m.index));
+          out += `<b>${esc(m[0])}</b>`;
+          last = m.index + m[0].length;
+        }
+        out += esc(text.slice(last));
+        return out;
+      }
       function formatConceptThoughtGroups(raw) {
         const text = String(raw || "").trim();
         if (!text) return "";
@@ -1156,11 +1208,10 @@
         }
         return core + note;
       }
-      function formatConcept(c) {
+      function formatConcept(c, keywords) {
         const t = formatConceptThoughtGroups(c);
-        return t
-          ? `<span class="emoji" aria-hidden="true">💡</span> ${esc(t)}`
-          : "—";
+        if (!t) return "—";
+        return `<span class="emoji" aria-hidden="true">💡</span> ${boldKeywordTermsHtml(t, keywordDisplayTerms(keywords))}`;
       }
       function formatQuote(q) {
         const t = String(q || "").trim();
@@ -1188,7 +1239,7 @@
             ? `<div class="atom-card-head">${zone}${sensory}</div>`
             : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
-          <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept)}</p>
+          <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept, a.keywords)}</p>
           ${formatKeywords(a.keywords)}
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
           <p class="field field-story"><span class="lbl">Story</span>${dash(a.story)}</p>
@@ -1196,25 +1247,10 @@
       }
 
       function formatKeywords(raw) {
-        const text = String(raw || "").trim();
-        const pairs = text
-          ? text
-              .split(/\s*\|\|\s*/)
-              .map((p) => p.trim())
-              .filter(Boolean)
-              .slice(0, 10)
-          : [];
-        const rows = pairs
-          .map((p) => {
-            const m = p.includes(" | ")
-              ? p.split(/\s*\|\s*/, 2)
-              : p.split("|", 2);
-            const left = (m[0] || "").trim();
-            const right = (m[1] || "").trim();
-            if (!left || !right) return "";
-            return `<span class="kw-pair">[${esc(right)}] \u2192 [${esc(left)}]</span>`;
+        const rows = parseKeywordPairs(raw)
+          .map(([left, right]) => {
+            return `<span class="kw-pair">[<b>${esc(right)}</b>] \u2192 [${esc(left)}]</span>`;
           })
-          .filter(Boolean)
           .join("");
         const body = rows
           ? `<div class="kw-list">${rows}</div>`
