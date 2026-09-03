@@ -14,6 +14,9 @@
 **Concept**
 —
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -27,6 +30,9 @@
 
 **Concept**
 —
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -42,6 +48,9 @@
 **Concept**
 —
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -55,6 +64,9 @@
 
 **Concept**
 💡 https://uxdesign.cc/information-architecture-is-the-foundation-artificial-intelligence-is-starving-for-1d91fb5bf59f
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -89,6 +101,9 @@ _No gallery images._
 **Concept**
 💡 A research question is the core target your study attempts to answer, and it must have a singular focus without cramming multiple variables together.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “a strong research question typically has a clear singular Focus so don't try to cram multiple questions into one”
 
@@ -102,6 +117,9 @@ The Bone Quetzalcoatl phases directly through the solid brick wall, defying phys
 
 **Concept**
 💡 A research aim outlines a broad goal, while a research question takes that aim and narrows it down to a tighter focus.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “your research question should take the statement that is your research aim it should then narrow that down to a tighter Focus area and present it as a question”
@@ -117,6 +135,9 @@ A skyscraper-sized brontosaurus completely dwarfs the street and parked cars. It
 **Concept**
 💡 A question must be practical and possible to answer with available methods.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “even a super super tantalizing and thought-provoking research question isn't going to be of much value if you can't feasibly answer it”
 
@@ -130,6 +151,9 @@ A floating Bone skull hovers over the distant crosswalk, trying to bite a tantal
 
 **Concept**
 💡 Your question must stem from a clear gap in existing literature so you do not repeat old work.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “without a welldefined research Gap you're going to risk wasting your effort running after a question that's already been adequately answered”
@@ -164,6 +188,9 @@ _No gallery images._
 **Concept**
 💡 Participatory Action Research shifts power from traditional extraction by empowering marginalized groups to co-create research that translates into tangible tools for social change.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “The 'action' part means that the data doesn't just sit on a shelf; it is directly translated into tools for healing, organizing, and fighting back against institutional violence.”
 
@@ -178,6 +205,9 @@ A colossal Bone Neanderthal stomps onto the street next to a brick gate, towerin
 **Concept**
 💡 Participatory Action Research is an iterative loop of planning, acting, observing, and reflecting.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “It is a continuous spiral of plan, act, observe, and reflect, where each cycle informs the next.”
 
@@ -191,6 +221,9 @@ A giant bower-bird weaves a nest out of four colored arrows that glow like neon 
 
 **Concept**
 💡 People experiencing a problem are uniquely qualified to investigate it, guiding the inquiry themselves.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Participatory Action Research is a model where the people most impacted by a social issue are the ones actually designing and conducting the research.”
@@ -225,6 +258,9 @@ _No gallery images._
 **Concept**
 💡 Open coding breaks raw qualitative data into small meaningful pieces and gives them concept labels.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Open coding is the first stage, where you break the qualitative data into smaller meaningful pieces and label them as concepts.”
 
@@ -239,6 +275,9 @@ A tiny Bone kitten scratches a giant transcript projected on a wall until the pa
 **Concept**
 💡 Axial coding reconnects open codes into broader categories and shows how they relate.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Axial coding reconnects the concepts created during open coding by organizing them around broader categories and identifying relationships between them.”
 
@@ -252,6 +291,9 @@ A colossal bloodhound bites loose concept tags and pulls them into a spinning wh
 
 **Concept**
 💡 Selective coding chooses one core category and connects the main categories around it to build a theory.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Selective coding is the final integration stage, where you identify one core category that explains the main pattern in the data.”
@@ -286,6 +328,9 @@ _No gallery images._
 **Concept**
 💡 The theory side can fit into one beast: people make meaning through lived experience, shared labels, and context.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “�Indexicality is critical to this process, meaning people make sense of things based strictly on the context or circumstances in which they are encountered.�”
 
@@ -299,6 +344,9 @@ The Bone frog carries the theory pack through the same Bosch UX street. Ada Love
 
 **Concept**
 💡 IPA means understanding how one person makes sense of a personal experience. IPA pronunciation: Interpretative Phenomenological Analysis /?n't??rpr?t?t?v f??n??m?'n??l?d??k?l ?'n�l?s?s/.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “�IPA is built on a double hermeneutic. This means the researcher is trying to make sense of the participant trying to make sense of their own world. Participants are treated as active sense-makers, not passive subjects.�”
@@ -314,6 +362,9 @@ The Bone goat stands beside a Bosch UX interview table. The goat is not counting
 **Concept**
 💡 For Bosch UX research, IPA starts with open questions about human experience.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “�Define the research question: Ask open-ended questions about human experience.�”
 
@@ -328,6 +379,9 @@ The Bone Hydra looms above a Bosch e-commerce prototype on the street. It does n
 **Concept**
 💡 IPA analysis is slow and close: read the transcript again and again, mark what is said, notice how it is said, and ask what it may mean.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “�Conceptual comments explore what this might mean on a deeper level.�”
 
@@ -341,6 +395,9 @@ The bison stands heavy and slow beside a Bosch research board. A thick transcrip
 
 **Concept**
 💡 IPA turns each case into themes first, compares cases later, and keeps the researcher�s own role visible.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “�Successfully applying IPA requires the researcher to embrace reflexivity. The researcher is part of the meaning-making process, not a robot. Acknowledging personal biases, assumptions, and the interpretative role ensures the analysis remains close to the data and allows participant voices to guide the findings.�”
@@ -375,6 +432,9 @@ _No gallery images._
 **Concept**
 💡 Reasoning uses what you already know to build explanations and guess what happens next.[cite: 1]
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Reasoning is the process of using existing knowledge to draw conclusions, make predictions, or construct explanations."[cite: 1]”
 
@@ -388,6 +448,9 @@ A Bone Bear[cite: 8] builds a small staircase out of puzzle pieces.[cite: 1] She
 
 **Concept**
 💡 Deductive thinking works from the top down, where true starting facts guarantee a true final answer.[cite: 1]
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Deductive reasoning is basically called a top-down approach, which means from generalizations to particulars, or from hypothesis to evidence."[cite: 1]”
@@ -403,6 +466,9 @@ A Bone Cat[cite: 8] sits at the very top of the staircase.[cite: 1] It pushes a 
 **Concept**
 💡 Inductive thinking works from specific details up to a big rule to prove an idea with real-world clues.[cite: 1]
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Inductive reasoning moves from specific to general."[cite: 1]”
 
@@ -416,6 +482,9 @@ A Bone Dog[cite: 8] ignores the stairs and leaps upward into the air.[cite: 1] I
 
 **Concept**
 💡 Abductive thinking makes the best possible guess based on obvious but incomplete clues.[cite: 1]
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Abductive reasoning or abduction is making a probable conclusion from what you know."[cite: 1]”
@@ -450,6 +519,9 @@ _No gallery images._
 **Concept**
 💡 The 1990 update shifted away from natural discovery to strict rules, using an axial coding paradigm to map causes and effects between broken categories.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Strauss and Corbin explicitly shifted away from Glaser�s philosophy of natural emergence. Instead, they engineered a highly prescriptive, analytical coding framework designed to generate theories systematically and verify them simultaneously within the data.”
 
@@ -463,6 +535,9 @@ An awassi sheep steps into the library wearing rigid metal frames to enforce str
 
 **Concept**
 💡 Constructivist theory says the researcher is not a neutral robot; their own background directly shapes the final theory.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Charmaz argued that researchers are not neutral observers; their past experiences, cultural backgrounds, academic training, and personal biases are inextricably woven into the very fabric of the data collection and theory generation processes."”
@@ -478,6 +553,9 @@ A pink axolotl swims in a floating water bubble, actively wrapping its slippery 
 **Concept**
 💡 Constructivists use action words ending in "ing" so the analysis focuses on dynamic processes over time.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"By forcing the researcher to code exclusively with gerunds... the analysis remains dynamically focused on actions, processes, and changes over time."”
 
@@ -492,6 +570,9 @@ A wide-eyed aye-aye wearing safety goggles sits at a typewriter. It angrily rips
 **Concept**
 💡 Memos are continuous, informal notes written throughout the project that tie raw data to high-level ideas.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Memo-writing operates as the vital connective tissue of the analysis. Memos are continuous, informal, analytical notes written by the researcher throughout the entire lifecycle of the project."”
 
@@ -505,6 +586,9 @@ An Aztec warrior decorated with bright feathers ignores the crumpled paper and w
 
 **Concept**
 💡 Abduction is a complex reasoning loop where you guess a temporary explanation, then collect data to test it.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Abduction is a highly sophisticated form of reasoning where the researcher examines complex data, forms a number of provisional hypotheses to explain that data, and then explicitly returns to the field to collect more data to prove or disprove those hypotheses during the ongoing analysis."”
@@ -539,6 +623,9 @@ _No gallery images._
 **Concept**
 💡 Data collection and analysis happen at the same time to build theory until new inputs stop changing the final ideas.[cite: 1]
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"We are going to link data analysis with theory."[cite: 1] "Data analysis takes place during data collection."[cite: 1] "Theoretical saturation you reach when your theory is so sophisticated that every new data point, every new interview does not lead to more refinement of your concepts or your categories."[cite: 1]”
 
@@ -552,6 +639,9 @@ A slippery asp[cite: 3] slithers between a classic detective in a deerstalker ha
 
 **Concept**
 💡 You build theory step by step through the constant comparison of facts and concepts, creating early ideas that serve only as flexible guides.[cite: 1]
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"The most important concept in Grounded Theory is constant comparison."[cite: 1] "What you do is compare data with data, data with concepts, concepts with data, and then you start to compare concepts with concepts."[cite: 1] "Every concept is temporary and they're provisional, they give some guidance but that's it, you shouldn't pin them down, they're not written in stone."[cite: 1]”
@@ -567,6 +657,9 @@ A giant stone atlas[cite: 3] drops his globe and watches the asp[cite: 3]. A spi
 **Concept**
 💡 You stop collecting information when your concept is saturated and full, not when you reach a specific headcount.[cite: 1]
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"What you try to do is not representation, but saturation."[cite: 1]”
 
@@ -580,6 +673,9 @@ A massive, horned auroch[cite: 3] ignores the diamond and instead tries to squee
 
 **Concept**
 💡 Absolutely any material or observation you find counts as valid data for your study.[cite: 1]
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"All is data."[cite: 1]”
@@ -614,6 +710,9 @@ _No gallery images._
 **Concept**
 💡 Taxonomies are hierarchical structures of boxes used for classifying items and individuals.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Taxonomies are a hierarchical structure that allow us to classify things... think of a bunch of different boxes and individuals can fit in one or many of those boxes."”
 
@@ -627,6 +726,9 @@ Neo from the Matrix watches an aoudad jump wildly across a huge wall of wooden b
 
 **Concept**
 💡 An ontology is a conceptual web that helps computers interpret data.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"[An ontology is] either a set of n-tuples or a web of concepts that helps computers or AI understand your data."”
@@ -642,6 +744,9 @@ A large ape hangs upside down from the aoudad's boxes and reaches for Neo's comp
 **Concept**
 💡 While a taxonomy is just a skeleton, an ontology adds all the detailed connections between members.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"A taxonomy gives us just a skeleton maybe, and an ontology gives us the skeleton and fleshes out the various connections between all the different members."”
 
@@ -655,6 +760,9 @@ An aquatic leech slithers along a bare bone skeleton sitting on the desk. It lea
 
 **Concept**
 💡 Semantics focuses on the actual meaning of data rather than just its syntax or physical shape.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Semantics means we care about meaning, we care about understanding, rather than just the syntax, shape, or structure of the data."”
@@ -689,6 +797,9 @@ _No gallery images._
 **Concept**
 💡 The philosophical difference is that frequentists see probability as a fixed long-run physical frequency, while Bayesians see it as a degree of belief that updates.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -702,6 +813,9 @@ _No gallery images._
 
 **Concept**
 💡 A p-value is the chance of getting data this extreme assuming the null hypothesis is true, not the probability that the coin is fair.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -717,6 +831,9 @@ _No gallery images._
 **Concept**
 💡 In a frequentist confidence interval, the true parameter is a fixed constant; if you repeat the experiment, 95% of the generated intervals will catch that fixed truth.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -731,6 +848,9 @@ _No gallery images._
 **Concept**
 💡 Bayes' theorem updates your prior beliefs by multiplying them by the likelihood of the new data.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -744,6 +864,9 @@ _No gallery images._
 
 **Concept**
 💡 A Bayesian credible interval allows you to state the actual probability that the true parameter lies within a specific range.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -778,6 +901,9 @@ _No gallery images._
 **Concept**
 💡 Bayesian updating is the process of revising your beliefs when you receive new information.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"We have an initial belief, we receive some new information, and we revise our beliefs in this case in a probabilistic sense in light of this new information."”
 
@@ -791,6 +917,9 @@ An Aerialist hangs upside down in a grand courtroom. She acts as the judge, decl
 
 **Concept**
 💡 Before receiving new information, you start with an unconditional probability, like rolling a fair die.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"In the unconditional setting, we had the probability of A equal to 1 over 6."”
@@ -806,6 +935,9 @@ The tall Afghan hound steps forward with a six-sided die in its mouth. He explai
 **Concept**
 💡 Conditional probability involves updating your chances based on new, restrictive information.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"This sort of vertical line, this bar, represents a conditioning situation."”
 
@@ -820,6 +952,9 @@ A cluster of giant red-and-white Agaric fungi grows right through the courtroom 
 **Concept**
 💡 In the Monty Hall problem, revealing a goat provides crucial new information that changes the odds for the remaining unopened door.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Many people don't see this new information attached to door C because they don't see any physical change to door C; it was originally closed and remained closed."”
 
@@ -833,6 +968,9 @@ A giant, floating word bubble that says "Ah!" lets out a loud, dramatic sigh ove
 
 **Concept**
 💡 Bayesian updating is still effective even when the new information is imperfect, like a weather forecast.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"A rational actor takes this data on board, updates their internal probabilities about the likelihood of rain, and alters their behavior."”
@@ -867,6 +1005,9 @@ _No gallery images._
 **Concept**
 💡 The null hypothesis is the default expectation of 'no difference' based on current knowledge, which we must assume is true until proven wrong.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"The null hypothesis is what we expect to see based on the knowledge that we currently have. The null hypothesis is commonly the 'no difference' hypothesis... We have to assume that the null hypothesis is true unless it can be proven to be wrong."”
 
@@ -880,6 +1021,9 @@ Albert Einstein walks into a large courtroom and places a giant acorn on the jud
 
 **Concept**
 💡 The alternative hypothesis is a new idea that replaces the old belief when its weight of evidence tips the balance scale.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"The alternative hypothesis presents a new idea, which could overturn or nullify the null hypothesis. If we accept the alternative hypothesis, we have to reject the null hypothesis, and the same would be true in reverse. It may be that the weight of evidence starts to fall in favor of the alternative hypothesis, and increasingly so, until we accept this new knowledge as truth."”
@@ -914,6 +1058,9 @@ _No gallery images._
 **Concept**
 💡 A paradigm is a necessary map that provides the rules for mature research.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"The paradigm provides a map whose details are elucidated by mature scientific research. And since nature is too complex and varied to be explored at random, that map is as essential as observation and experiment to science's continuing development. Through the theories they embody, paradigms prove to be constitutive of the research activity."”
 
@@ -927,6 +1074,9 @@ Xena, warrior woman, holds a giant, detailed map of a complex science lab. She s
 
 **Concept**
 💡 An anomaly is a puzzle piece that refuses to fit the established rules.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"An anomaly occurs when a piece of the puzzle just won't fit."”
@@ -942,6 +1092,9 @@ The heavy yak tries to use Xena's glowing rules to build a puzzle on the floor. 
 **Concept**
 💡 When an anomaly becomes too big to ignore, a crisis begins.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"When, for these reasons or others like them, an anomaly comes to seem more than just another puzzle of normal science, the transition to crisis and to extraordinary science has begun."”
 
@@ -956,6 +1109,9 @@ Zeus sees the yak struggling with the broken piece. He realizes this is not just
 **Concept**
 💡 Extraordinary science is marked by competing ideas, random trials, and philosophical debate.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"The proliferation of competing articulations, the willingness to try anything, the expression of explicit discontent, the recourse to philosophy and to debate over fundamentals, all these are symptoms of a transition from normal to extraordinary research."”
 
@@ -969,6 +1125,9 @@ The aardvark ignores Xena's map entirely. Showing explicit discontent with the c
 
 **Concept**
 💡 A paradigm shift changes your psychological perspective without changing the raw data.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"A shift in paradigm is like the shift in perception from the rabbit to the duck in the gestalt image... nothing has changed apart from your psychological perspective. Two people with the same sensory impressions can see two different things."”
@@ -1003,6 +1162,9 @@ _No gallery images._
 **Concept**
 💡 Fake science looks at the past and twists any random fact to fit the idea.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Freud was able to make just about any data point work in service of his theory."”
 
@@ -1016,6 +1178,9 @@ A tall marks the start of this street. A floating skull holds a notebook of past
 
 **Concept**
 💡 Real science makes risky predictions about the future; ideas that cannot be tested or proven wrong have no scientific value.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Einstein's theory was truly risky... because if the future didn't match his predictions, then his theory would be conclusively disproven."”
@@ -1031,6 +1196,9 @@ A colorful toucan flies forward, completely ignoring the skull. Albert Einstein 
 **Concept**
 💡 If you only look for facts that prove you are right, you will easily find them everywhere.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"It's easy to find confirmation of a theory if you're looking for it."”
 
@@ -1045,6 +1213,9 @@ A glowing unicorn wears a red Santa Claus hat and circles above the toucan. The 
 **Concept**
 💡 Real science tries to prove ideas wrong, because a strong scientific idea must clearly forbid certain things from happening.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Science disconfirms while pseudoscience confirms."”
 
@@ -1058,6 +1229,9 @@ A vulture lands heavily in the middle of the road and builds a thick brick wall 
 
 **Concept**
 💡 We cannot be absolutely certain; we just believe what is most likely based on the facts we have.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Knowledge was about probability and contingency."”
@@ -1092,6 +1266,9 @@ _No gallery images._
 **Concept**
 💡 Selection bias leaves out an important group, which hurts the quality of the results.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1105,6 +1282,9 @@ _No gallery images._
 
 **Concept**
 💡 Analysis bias happens when you focus on certain facts just to get the answer you wanted from the start.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1120,6 +1300,9 @@ _No gallery images._
 **Concept**
 💡 Confirmation bias is our natural habit of only looking for facts that support what we already believe.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1133,6 +1316,9 @@ _No gallery images._
 
 **Concept**
 💡 Procedural bias happens when the way you collect data changes who answers or how they answer.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1167,6 +1353,9 @@ _No gallery images._
 **Concept**
 💡 Total utility is calculated by summing the appeal of all the product's parts.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1181,6 +1370,9 @@ _No gallery images._
 **Concept**
 💡 Preference share is a statistical estimate of how likely a product is to be chosen over its competitors.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1194,6 +1386,9 @@ _No gallery images._
 
 **Concept**
 💡 Preference share allows you to estimate potential demand for a new product launch.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1228,6 +1423,9 @@ _No gallery images._
 **Concept**
 💡 Conjoint analysis is a powerful way to make product features better.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1241,6 +1439,9 @@ _No gallery images._
 
 **Concept**
 💡 The method forces choices, so it is often called trade-off analysis.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1256,6 +1457,9 @@ _No gallery images._
 **Concept**
 💡 Data is gathered by having people do an exercise called the choice task.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1270,6 +1474,9 @@ _No gallery images._
 **Concept**
 💡 The process uses a probabilistic methodology to find patterns in the choices.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1283,6 +1490,9 @@ _No gallery images._
 
 **Concept**
 💡 A part-worth utility score shows how a specific feature level affects the chance of selection.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1317,6 +1527,9 @@ _No gallery images._
 **Concept**
 💡 Old pricing methods fail because they ask customers to value a product completely by itself.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"Most approaches to measuring WTP present customers with a product or service in isolation, as though their option is to either purchase it or go home empty-handed."”
 
@@ -1330,6 +1543,9 @@ Steve Jobs tries to sell a chocolate bar to a cat trapped inside an empty glass 
 
 **Concept**
 💡 The comparative method fixes this by first asking what competing item you would buy instead.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"What�s fundamentally different about our procedure is that rather than simply asking whether you would buy or not buy something, we first want an understanding of who the competition is."”
@@ -1345,6 +1561,9 @@ A giant dragon dives from the sky and shatters the cat's glass box with its claw
 **Concept**
 💡 To find the right price, this method asks what cost makes the customer perfectly equal in their choice between the two items.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “"What price for the KitKat would make you equally happy to buy the KitKat for this price or buy the M&Ms for $1.10?"”
 
@@ -1358,6 +1577,9 @@ A large eagle sits comfortably on the dragon's tail holding a small balancing sc
 
 **Concept**
 💡 This strategy separates people who actually want the product from people who want nothing, revealing the true value.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “"Thanks to CMV�s ability to identify these different segments (that is, �buy� and �no-buy� groups), the researchers gained important insight into why some consumers had much lower WTP than others."”
@@ -1392,6 +1614,9 @@ _No gallery images._
 **Concept**
 💡 Descriptive evidence only tells what you saw in the sample. It does not say what the whole world does.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “It answers "What happened in this specific test?"”
 
@@ -1405,6 +1630,9 @@ A spider-woman, Arachne, finishes a small web in front of a wooden sign. A woman
 
 **Concept**
 💡 Inferential evidence uses sample patterns to test ideas about a wider group, not only the people you tested.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “It answers "Can we confidently expect all users to behave this way?"”

@@ -14,6 +14,9 @@
 **Concept**
 💡 Syllabic L [l̩] takes over the entire syllable when the vowel is reduced.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “The consonant essentially takes over the role of the vowel, like in bottle or apple.”
 
@@ -28,6 +31,9 @@
 **Concept**
 💡 Syllabic N [n̩] frequently occurs after alveolar consonants like /t/ or /s/, often utilizing a glottal stop.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “In American English, when a /t/ precedes a syllabic /n/, the /t/ is typically pronounced as a glottal stop, like in button.”
 
@@ -41,6 +47,9 @@
 
 **Concept**
 💡 Syllabic M [m̩] acts as its own syllable, often found in words ending in "thm" or "sm".
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Syllabic M regularly occurs in words ending in 'thm' or 'sm', such as rhythm and chasm.”
@@ -75,6 +84,9 @@ _No gallery images._
 **Concept**
 💡 Intrusion is the addition of a new sound.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Sounds are added, there's intrusion from a new sound.”
 
@@ -88,6 +100,9 @@ _No gallery images._
 
 **Concept**
 💡 Only 'w', 'y', or 'r' sounds are usually added in intrusion.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “There are usually only three sounds that can be added. We either have a 'w', a 'y', or an 'r' sound added.”
@@ -122,6 +137,9 @@ _No gallery images._
 **Concept**
 💡 Connected speech involves changing, losing, or adding sounds.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “What happens in connected speech is that sounds change, sounds are lost, and sounds are added.”
 
@@ -135,6 +153,9 @@ _No gallery images._
 
 **Concept**
 💡 Assimilation is when a sound changes to be more like its neighbor.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “A sound changes to become more similar, so more similar, assimilation.”
@@ -150,6 +171,9 @@ _No gallery images._
 **Concept**
 💡 Preparing for /b/ by closing lips early changes /n/ to /m/.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Because we get ready to say 'Barcelona' we close our lips already, and instead of an 'n' sound we say 'm'.”
 
@@ -164,6 +188,9 @@ _No gallery images._
 **Concept**
 💡 Elision is the deletion or loss of sounds.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “When sounds are lost they're deleted, so we call this elision.”
 
@@ -177,6 +204,9 @@ _No gallery images._
 
 **Concept**
 💡 Final 't' or 'd' sounds are the most commonly lost in English.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Most of the time in English, that means that a final 't' or 'd' sound is lost.”
@@ -211,6 +241,9 @@ _No gallery images._
 **Concept**
 💡 Thought groups involve using short pauses to break down sentences.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -224,6 +257,9 @@ _No gallery images._
 
 **Concept**
 💡 English is a stress-timed language with regular intervals.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -239,6 +275,9 @@ _No gallery images._
 **Concept**
 💡 Linking occurs when the end of one word blends directly into the start of the next word.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -252,6 +291,9 @@ _No gallery images._
 
 **Concept**
 💡 Shadowing is actively repeating a text simultaneously to absorb natural rhythm.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -286,6 +328,9 @@ _No gallery images._
 **Concept**
 💡 Linguistically, only the relative values of pitch matter, not the absolute values.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “It is their relative values, not their absolute values, that matter linguistically.”
 
@@ -299,6 +344,9 @@ _No gallery images._
 
 **Concept**
 💡 The IPA chart has a dedicated section for suprasegmental symbols.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “The instructor points out that the International Phonetic Alphabet (IPA) chart provides a completely separate set of symbols specifically for suprasegmentals.”
@@ -333,6 +381,9 @@ _No gallery images._
 **Concept**
 💡 Spoken language is built from segments: consonants (bricks) and vowels (mortar).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “You can look at language as a building and think of consonants as the bricks and the vowels as a mortar that connects the bricks together.”
 
@@ -346,6 +397,9 @@ _No gallery images._
 
 **Concept**
 💡 Suprasegmentals are features "beyond the segment" that emerge only through comparison.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Suprasegmental is a word made of supra, the prefix beyond, and segment: beyond the segment level. You will get to super segmental features when you compare segments to each other, you put them in a contrast.”
@@ -361,6 +415,9 @@ _No gallery images._
 **Concept**
 💡 Length is the relative duration of a sound.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “In English, stress can affect length.”
 
@@ -375,6 +432,9 @@ _No gallery images._
 **Concept**
 💡 Stress can alter a word's meaning, pitch, and sound properties.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Stress in English can also result in exaggerated pitch; it can make a low pitch lower and it can make a high pitch higher.”
 
@@ -388,6 +448,9 @@ _No gallery images._
 
 **Concept**
 💡 Intonation is the pitch pattern at the sentence level, which can change meaning.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Pitch pattern at sentence level is called intonation. Voice pitch can change with the rate of vibration of the vocal folds independently of stress.”
@@ -422,6 +485,9 @@ _No gallery images._
 **Concept**
 💡 Prefix dis- indicates the opposite or active negation.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Dis talks about the negation, the opposite of something.”
 
@@ -435,6 +501,9 @@ _No gallery images._
 
 **Concept**
 💡 Prefix mis- refers to a mistake.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Miss, think of it like a mistake.”
@@ -450,6 +519,9 @@ _No gallery images._
 **Concept**
 💡 Prefixes im-, in-, ir- spelling rules.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Use im with words that begin with P, M, or B.”
 
@@ -464,6 +536,9 @@ _No gallery images._
 **Concept**
 💡 Insecure (feeling) vs. Unsecure (safety).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Insecure says that you are not confident about yourself.”
 
@@ -477,6 +552,9 @@ _No gallery images._
 
 **Concept**
 💡 Prefix re- means to repeat.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “When you want to say repeat something, do it again, add re before the verb.”
@@ -511,6 +589,9 @@ _No gallery images._
 **Concept**
 💡 Core definitions: Prefix (before) and Suffix (after).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “A prefix is something that goes before a word." and "Suffixes are things that go afterwards.”
 
@@ -524,6 +605,9 @@ _No gallery images._
 
 **Concept**
 💡 Suffix -able indicates ability.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Any verb plus able, it's possible to do this thing.”
@@ -539,6 +623,9 @@ _No gallery images._
 **Concept**
 💡 Suffix -ish softens time or adjectives.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Ish with a time means not exactly this time.”
 
@@ -553,6 +640,9 @@ _No gallery images._
 **Concept**
 💡 Prefix un- means not complete or absent.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Un means not, but more like not complete.”
 
@@ -566,6 +656,9 @@ _No gallery images._
 
 **Concept**
 💡 Prefix un- can also mean to reverse an action.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Un can also mean to reverse an action.”
@@ -600,6 +693,9 @@ _No gallery images._
 **Concept**
 💡 Definition of Nominalization (turning words into nouns).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Nominalization means turning words into nouns.”
 
@@ -613,6 +709,9 @@ _No gallery images._
 
 **Concept**
 💡 Transforming Verbs into Nouns (Enjoy -> Enjoyment).
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Jane shares the enjoyment of Indian food with her husband.”
@@ -628,6 +727,9 @@ _No gallery images._
 **Concept**
 💡 Transforming Adjectives into Nouns (Beautiful -> Beauty).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “The beauty of London is why I am going there.”
 
@@ -642,6 +744,9 @@ _No gallery images._
 **Concept**
 💡 The "Noun of Noun" Structure (Develop -> Development).
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “The engineers are discussing the development of the building.”
 
@@ -655,6 +760,9 @@ _No gallery images._
 
 **Concept**
 💡 Advanced Nominalization with Relational Verbs (Leads to).
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “The writing of books for pleasure leads to the provision of a passive income.”
@@ -689,6 +797,9 @@ _No gallery images._
 **Concept**
 💡 Perfect Passive (Sequence/Reason) - Passive action completed before main clause.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Having been fined for speeding before, she is now a careful driver.”
 
@@ -702,6 +813,9 @@ _No gallery images._
 
 **Concept**
 💡 The Dangling Participle - Subject mismatch.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Reading the newspaper, the cat jumped onto the table.”
@@ -736,6 +850,9 @@ _No gallery images._
 **Concept**
 💡 Present Active (Consequence) - Action first, then the result.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “He slammed the door waking the baby.”
 
@@ -749,6 +866,9 @@ _No gallery images._
 
 **Concept**
 💡 Present Active (Ambiguity) - Flip the sentence if the subject is unclear.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Singing loudly, I met a girl.”
@@ -764,6 +884,9 @@ _No gallery images._
 **Concept**
 💡 Perfect Active (Sequence) - Action fully completed before the main clause.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Having thanked the hosts, the guests left the party.”
 
@@ -778,6 +901,9 @@ _No gallery images._
 **Concept**
 💡 Past Participle (Subject Info) - Adding information about the subject.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Surrounded by water, Venice is built on over a 100 islands.”
 
@@ -791,6 +917,9 @@ _No gallery images._
 
 **Concept**
 💡 Past Participle (Condition) - Reduced conditional stating a fact.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Used correctly, participle clauses make your writing more concise.”
@@ -825,6 +954,9 @@ _No gallery images._
 **Concept**
 💡 A participle clause is a subordinate clause used to give extra information.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “A participle clause is a type of subordinate or dependent adverbial clause. It uses a participle to give extra information about time, reason, result, manner, or condition.”
 
@@ -838,6 +970,9 @@ _No gallery images._
 
 **Concept**
 💡 The subject of the participle clause and the main clause must be the same.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “The subject of the participle clause and the main clause must be the same.”
@@ -853,6 +988,9 @@ _No gallery images._
 **Concept**
 💡 Present Active (Simultaneous Actions) - Two things happening at the same time.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Leaving in a hurry, John forgot to collect his coat.”
 
@@ -867,6 +1005,9 @@ _No gallery images._
 **Concept**
 💡 Present Active (Reason) - Stating a reason before the result.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Hoping to improve my French, I joined a class.”
 
@@ -880,6 +1021,9 @@ _No gallery images._
 
 **Concept**
 💡 Present Active (Negative Form) - Place "not" before the participle.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “Not wanting to wake him, I left quietly.”
@@ -914,6 +1058,9 @@ _No gallery images._
 **Concept**
 💡 A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decides to remove its heavy feathers like a coat. It explains the result of the heat.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “It was hot, so I took off my jacket.”
 
@@ -927,6 +1074,9 @@ A colorful Toucan sits on a bench. It is sweating profusely in the sun. It decid
 
 **Concept**
 💡 A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a student. It explains formally that because of this result, there is no job offer.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “I regret to inform you that you have failed your C1 English exam; therefore, we are unable to offer you the job.”
@@ -942,6 +1092,9 @@ A Unicorn wearing a suit acts as an examiner. It hands a failed exam paper to a 
 **Concept**
 💡 A Vulture perches on a desk like a boss. It places the word "therefore" right before the main verb "decided." It makes a final decision about a candidate.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “We have therefore decided not to offer you the job.”
 
@@ -955,6 +1108,9 @@ A Vulture perches on a desk like a boss. It places the word "therefore" right be
 
 **Concept**
 💡 A Wombat writes a letter with a quill. It gets no response, so it puts the pen down. It uses "As" at the start of her sentence to give the reason.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “As she never replies, I'd stop writing to her.”
@@ -989,6 +1145,9 @@ _No gallery images._
 **Concept**
 💡 A Rat looks at a calendar on the wall. Someone says "He will come today." The Rat shakes its head and gnaws on the sentence. It removes the prediction and leaves only the word "it" behind.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “He might come today, but I doubt it.”
 
@@ -1002,6 +1161,9 @@ A Rat looks at a calendar on the wall. Someone says "He will come today." The Ra
 
 **Concept**
 💡 A floating Skull hovers at the end of the street. It stares at a paragraph full of dead weight. It disintegrates the extra words, leaving only the bare bones of the sentence to make it sleek.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “It just makes your writing much more concise and it makes it flow better as well.”
@@ -1036,6 +1198,9 @@ _No gallery images._
 **Concept**
 💡 It holds a red pen and reads a long sentence on a screen. It aggressively crosses out words that are not needed. It explains the definition of this technique.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Ellipsis just means you're deleting words from sentences—unnecessary words or redundant words.”
 
@@ -1049,6 +1214,9 @@ It holds a red pen and reads a long sentence on a screen. It aggressively crosse
 
 **Concept**
 💡 A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest. He does not say "Do you want a tea or do you want a coffee?" He just holds them up to save words. He knows that too much talking is bad.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “The more words you use in a sentence, the more confusing the sentence gets.”
@@ -1064,6 +1232,9 @@ A Neanderthal stands next to the Marmoset holding two mugs. He grunts at a guest
 **Concept**
 💡 An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl does not pick up a guitar, but simply nods to show he can do it too. He avoids repeating the action.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “She can play the guitar and he can too.”
 
@@ -1078,6 +1249,9 @@ An Owl plays a guitar on the sidewalk. A second Owl watches him. The second Owl 
 **Concept**
 💡 A black Panther stalks a sentence written on the ground. It pounces on a repeated phrase and swaps it for a decoy word. It explains that this is a specific technique for replacing words.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 “Substitution is exactly what it says it is: you're substituting words, you're replacing words in a phrase or even part of a phrase as well to avoid repeating the same words.”
 
@@ -1091,6 +1265,9 @@ A black Panther stalks a sentence written on the ground. It pounces on a repeate
 
 **Concept**
 💡 The feathered serpent Quetzalcoatl wears a mechanic's belt. He coils around a broken sentence engine. He holds a wrench labeled "Auxiliary" in his mouth. He adjusts the "Tense" gear to make sure it corresponds perfectly.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 “The auxiliary verb needs to correspond with the types of verbs that you're using... it also needs to correspond in tense as well.”
@@ -1125,6 +1302,9 @@ _No gallery images._
 **Concept**
 💡 A small Kitten sleeps at the bottom of a black stone. It does not want toys or food. It shows that the only thing it wants is rest. It says: "All I want is more sleep." This is the "All" Cleft. Here, "All" means "the only thing."
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1138,6 +1318,9 @@ A small Kitten sleeps at the bottom of a black stone. It does not want toys or f
 
 **Concept**
 💡 A Lion wears a detective hat. He looks at the ground with a glass. He ignores the police. He tries to do the action himself. "What he did was try to solve the crime himself." The Lion shows the action using "What... do."
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1172,6 +1355,9 @@ _No gallery images._
 **Concept**
 💡 A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the word "that." The word "that" acts as an object. The Frog uses its tongue to catch and eat the word. The rule is: If you have a subject and a verb after your rel
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1185,6 +1371,9 @@ A Frog watches words fly by. It sees a "Subject" and a "Verb." Then it sees the 
 
 **Concept**
 💡 A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the thing "What we need"—must be money. It cries: "What we need is more money." This shows the Wh-Cleft Structure.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1200,6 +1389,9 @@ A Goat chews on an empty wallet. It shouts loudly. It says the "Wh-clause"—the
 **Concept**
 💡 The Hydra holds a heavy car battery in its main head. It moves the battery all the way to its tail. It changes the order, but the meaning is the same. The sentence flips: "A new battery is what you need." This shows you can reverse Wh-Cleft
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1214,6 +1406,9 @@ The Hydra holds a heavy car battery in its main head. It moves the battery all t
 **Concept**
 💡 An Imp paints a big word "IS" on the wall. A big pile of plural nouns falls on him. Even with the heavy weight, he says the verb must be singular. The rule is: The Wh-clause is singular. Even if your noun is plural, use is or was.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1227,6 +1422,9 @@ Example: "What they need is more time." (Not "are"—use is even though "they" i
 
 **Concept**
 💡 The Jester points at the Imp and laughs. He uses the word "That" to talk about the whole thing. He says: "That's what I'm talking about." This shows you can use "That" to talk about what just happened.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1261,6 +1459,9 @@ _No gallery images._
 **Concept**
 💡 Arachne hangs from the stone. She is making a big web. She does not finish it. Instead, she cuts the web right in the middle. She makes two parts to show you the structure is divided. This is the definition: The word "cleft" means divided.
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1274,6 +1475,9 @@ Arachne hangs from the stone. She is making a big web. She does not finish it. I
 
 **Concept**
 💡 Next to her, a Bird of Paradise opens its colorful feathers. It wants you to look at a passport on the ground. It hits a fake passport to fix the mistake. It makes a loud noise at a traveler. The bird says: "Her passport? No. It was my pass
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
@@ -1289,6 +1493,9 @@ Next to her, a Bird of Paradise opens its colorful feathers. It wants you to loo
 **Concept**
 💡 Down the street, a Cat sits on a government paper. You try to move the cat, but it stays there. It shows that this is the paper you need. The cat says: "It's form B6115 that you need." This shows the It-Cleft Structure: It plus "to be" plus
 
+**Keywords**
+_No keywords yet_
+
 **Quote**
 —
 
@@ -1302,6 +1509,9 @@ A Dragon goes to a party. Mickey and Minnie Mouse are the hosts. The hosts are p
 
 **Concept**
 💡 High up, an Eagle holds a famous book in its claws. It shouts the name of the author to everyone below. "I believe it was Shel Silverstein who wrote The Giving Tree." The Eagle shows you the Relative Pronouns: Who or That.
+
+**Keywords**
+_No keywords yet_
 
 **Quote**
 —
