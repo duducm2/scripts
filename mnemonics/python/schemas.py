@@ -142,15 +142,15 @@ def keyword_display_terms(raw: str | None) -> list[str]:
     return terms
 
 
-KW_HIT_MD_STYLE = (
-    "background:#d4a017;color:#1a1408;font-weight:700;"
-    "padding:0 0.2em;border-radius:3px"
-)
-
-
 def highlight_keyword_term_md(term: str) -> str:
-    """Bold + gold highlight for practice Markdown (HTML <mark>, same as SPA)."""
-    return f'<mark style="{KW_HIT_MD_STYLE}">{html.escape(term, quote=True)}</mark>'
+    """Emphasize a concept keyword in practice Markdown without relying on hue.
+
+    GitHub dark mode strips most inline CSS and default <mark> is low-contrast
+    for many color-vision types. <kbd> draws a bordered chip; underline + bold
+    add shape cues that survive sanitization.
+    """
+    safe = html.escape(term, quote=True)
+    return f"<kbd><strong><u>{safe}</u></strong></kbd>"
 
 
 def bold_keyword_terms(text: str, terms: list[str]) -> str:

@@ -12,7 +12,7 @@
 ### 🟧 [O] owl
 
 **Concept**
-💡 [Data Lake: I <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">store</mark> structured, semi-structured, and unstructured raw data] [in a <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">centralized</mark>, low-cost object storage system[cite: 1].]
+💡 [Data Lake: I <kbd><strong><u>store</u></strong></kbd> structured, semi-structured, and unstructured raw data] [in a <kbd><strong><u>centralized</u></strong></kbd>, low-cost object storage system[cite: 1].]
 
 🔑 **Keywords**
 
@@ -31,7 +31,7 @@ Perched atop the bus stop, a skyscraper-sized owl drinks raw unstructured data f
 ### 🟧 [P] panther
 
 **Concept**
-💡 [Data Warehouse: A highly <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">structured</mark>, schema-on-write repository] [optimized for SQL <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">analytics</mark>] [and business <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">intelligence</mark>[cite: 1].]
+💡 [Data Warehouse: A highly <kbd><strong><u>structured</u></strong></kbd>, schema-on-write repository] [optimized for SQL <kbd><strong><u>analytics</u></strong></kbd>] [and business <kbd><strong><u>intelligence</u></strong></kbd>[cite: 1].]
 
 🔑 **Keywords**
 
@@ -51,7 +51,7 @@ Beside the dumpster, a panther constructs a highly structured schema-on-write py
 ### 🟧 [Q] Quetzalcoatl
 
 **Concept**
-💡 [Data Lakehouse: A <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">hybrid</mark> architecture] [combining the scale and <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">flexibility</mark> of a data lake] [with the <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">reliability</mark> of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
+💡 [Data Lakehouse: A <kbd><strong><u>hybrid</u></strong></kbd> architecture] [combining the scale and <kbd><strong><u>flexibility</u></strong></kbd> of a data lake] [with the <kbd><strong><u>reliability</u></strong></kbd> of a warehouse[cite: 1].] — Note: Includes ACID features like Delta Lake on top of cloud storage[cite: 1].
 
 🔑 **Keywords**
 
@@ -71,7 +71,7 @@ At the alley dead-end, a colossal Quetzalcoatl merges a fluid, flexible lake of 
 ### 🟧 [R] rat
 
 **Concept**
-💡 [Data Swamp: A poorly <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">governed</mark> data lake] [where data is <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">uncataloged</mark>, undocumented,] [and difficult to <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">retrieve</mark>[cite: 1].]
+💡 [Data Swamp: A poorly <kbd><strong><u>governed</u></strong></kbd> data lake] [where data is <kbd><strong><u>uncataloged</u></strong></kbd>, undocumented,] [and difficult to <kbd><strong><u>retrieve</u></strong></kbd>[cite: 1].]
 
 🔑 **Keywords**
 
@@ -91,7 +91,7 @@ Hanging precariously from a lamppost, a rat drowns in a poorly governed swamp of
 ### 🟧 [S] skull
 
 **Concept**
-💡 [Data Mart: A <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">specialized</mark> subset of a data warehouse] [<mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">focused</mark> on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
+💡 [Data Mart: A <kbd><strong><u>specialized</u></strong></kbd> subset of a data warehouse] [<kbd><strong><u>focused</u></strong></kbd> on a specific business line or department[cite: 1].] — Note: Examples include Finance or Marketing[cite: 1].
 
 🔑 **Keywords**
 
