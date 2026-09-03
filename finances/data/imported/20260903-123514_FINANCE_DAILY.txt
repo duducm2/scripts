@@ -1,0 +1,10 @@
+===PREVIEW===
+4 row(s) · 3 card expenses (McDonald's coffee, cinema popcorn, dinner) and 1 salary income
+===END_PREVIEW===
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+McDonald's coffee for fiancé and family,"17,00",card_expense,CAT_LAZER,Drinks,ACC_MERCADOP,CARD_MP,
+Cinema popcorn for fiancé and family,"85,00",card_expense,CAT_LAZER,Events,ACC_MERCADOP,CARD_MP,
+Dinner,"35,00",card_expense,CAT_ALIMENTA,,ACC_MERCADOP,CARD_MP,
+Salary,"5508,96",income,CAT_SALARIO,,ACC_MERCADOP,,
+===END_FILE===
