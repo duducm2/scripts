@@ -12,7 +12,7 @@ _No image_
 ### 🟧 [F] frog
 
 **Concept**
-💡 [I forecast what will happen using <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">predictive</mark> analysis] [while business intelligence looks <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">backward</mark>] [to explain what already <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">happened</mark>]
+💡 [I forecast what will happen using <kbd><strong><u>predictive</u></strong></kbd> analysis] [while business intelligence looks <kbd><strong><u>backward</u></strong></kbd>] [to explain what already <kbd><strong><u>happened</u></strong></kbd>]
 
 🔑 **Keywords**
 
@@ -32,7 +32,7 @@ A neon green frog the size of an armchair sits on an iron fire hydrant at the co
 ### 🟧 [G] goat
 
 **Concept**
-💡 [I confront <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">claims</mark>] [that data science is an empty <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">buzzword</mark>] [that merely relabeled business <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">analyst</mark> degree programs] — Note: Argument published in Forbes by Gil Press.
+💡 [I confront <kbd><strong><u>claims</u></strong></kbd>] [that data science is an empty <kbd><strong><u>buzzword</u></strong></kbd>] [that merely relabeled business <kbd><strong><u>analyst</u></strong></kbd> degree programs] — Note: Argument published in Forbes by Gil Press.
 
 🔑 **Keywords**
 
@@ -52,7 +52,7 @@ A two-headed mountain goat balances on the wooden park bench on the right sidewa
 ### 🟧 [H] Hydra
 
 **Concept**
-💡 [I defend <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">statistics</mark> as a foundational science] [against redundant <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">rebranding</mark>] — Note: Nate Silver argued that the term data scientist is redundant and sexed-up.
+💡 [I defend <kbd><strong><u>statistics</u></strong></kbd> as a foundational science] [against redundant <kbd><strong><u>rebranding</u></strong></kbd>] — Note: Nate Silver argued that the term data scientist is redundant and sexed-up.
 
 🔑 **Keywords**
 
@@ -88,7 +88,7 @@ and data engineers.
 ### 🟧 [J] jester
 
 **Concept**
-💡 [I <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">unite</mark> statistics and data science] [as complementary <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">partners</mark>] [for mutual <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">growth</mark>] — Note: The American Statistical Association affirmed complementarity in a 2015 press release.
+💡 [I <kbd><strong><u>unite</u></strong></kbd> statistics and data science] [as complementary <kbd><strong><u>partners</u></strong></kbd>] [for mutual <kbd><strong><u>growth</u></strong></kbd>] — Note: The American Statistical Association affirmed complementarity in a 2015 press release.
 
 🔑 **Keywords**
 
@@ -144,7 +144,7 @@ and unstructured types.
 ### 🟧 [B] bird of paradise
 
 **Concept**
-💡 [I extract hidden <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">patterns</mark> and fresh insights] [from organized <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">information</mark>] [to guide smart business <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">decisions</mark>]
+💡 [I extract hidden <kbd><strong><u>patterns</u></strong></kbd> and fresh insights] [from organized <kbd><strong><u>information</u></strong></kbd>] [to guide smart business <kbd><strong><u>decisions</u></strong></kbd>]
 
 🔑 **Keywords**
 
@@ -164,7 +164,7 @@ A tiny bird of paradise the size of a marble lands on the hood of a parked truck
 ### 🟧 [C] cat
 
 **Concept**
-💡 [I work across private <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">companies</mark>] [to turn raw numbers into <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">profit</mark>] [or within <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">universities</mark>] [as a quantitative <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">researcher</mark>] — Note: Third-sector non-<mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">profit</mark> research is also an established career path.
+💡 [I work across private <kbd><strong><u>companies</u></strong></kbd>] [to turn raw numbers into <kbd><strong><u>profit</u></strong></kbd>] [or within <kbd><strong><u>universities</u></strong></kbd>] [as a quantitative <kbd><strong><u>researcher</u></strong></kbd>] — Note: Third-sector non-<kbd><strong><u>profit</u></strong></kbd> research is also an established career path.
 
 🔑 **Keywords**
 
@@ -202,7 +202,7 @@ robot | intelligence || clay | models
 ### 🟧 [E] eagle
 
 **Concept**
-💡 [I manage massive Big <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">Data</mark>] [created by exploding <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">online</mark> activity] [as computer power <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">doubles</mark> every two years] — Note: Processing capacity has doubled roughly every two years since the 1970s.
+💡 [I manage massive Big <kbd><strong><u>Data</u></strong></kbd>] [created by exploding <kbd><strong><u>online</u></strong></kbd> activity] [as computer power <kbd><strong><u>doubles</u></strong></kbd> every two years] — Note: Processing capacity has doubled roughly every two years since the 1970s.
 
 🔑 **Keywords**
 
