@@ -317,6 +317,11 @@
       #overlay .atom-card .kw-pair {
         display: block;
       }
+      #overlay .atom-card .kw-empty {
+        font-size: 0.78em;
+        opacity: 0.65;
+        font-style: italic;
+      }
       #overlay .overlay-details {
         display: grid;
         grid-template-columns: 1fr;
@@ -1167,13 +1172,13 @@
 
       function formatKeywords(raw) {
         const text = String(raw || "").trim();
-        if (!text) return "";
         const pairs = text
-          .split(/\s*\|\|\s*/)
-          .map((p) => p.trim())
-          .filter(Boolean)
-          .slice(0, 10);
-        if (!pairs.length) return "";
+          ? text
+              .split(/\s*\|\|\s*/)
+              .map((p) => p.trim())
+              .filter(Boolean)
+              .slice(0, 10)
+          : [];
         const rows = pairs
           .map((p) => {
             const m = p.includes(" | ")
@@ -1186,8 +1191,11 @@
           })
           .filter(Boolean)
           .join("");
-        if (!rows) return "";
-        return `<div class="field field-keywords"><span class="lbl">Keywords</span><div class="kw-list">${rows}</div></div>`;
+        const body = rows
+          ? `<div class="kw-list">${rows}</div>`
+          : `<span class="kw-empty">No keywords yet</span>`;
+        const label = rows ? "🔑 Keywords" : "Keywords";
+        return `<div class="field field-keywords"><span class="lbl">${label}</span>${body}</div>`;
       }
 
       function orderBeastsForCockpit(blist) {
@@ -2286,7 +2294,7 @@
         if (concept == null) return;
         const keywordsRaw = prompt(
           "Keywords (Keyword | Word || …; max 10; optional)",
-          a?.keywords || ""
+          a?.keywords || "",
         );
         if (keywordsRaw == null) return;
         const quote = prompt("Quote", a?.quote || "") || "";
@@ -2579,7 +2587,8 @@
         }
         const hits = [];
         for (const a of state.data?.atoms || []) {
-          const blob = `${a.concept} ${a.keywords || ""} ${a.quote} ${a.story}`.toLowerCase();
+          const blob =
+            `${a.concept} ${a.keywords || ""} ${a.quote} ${a.story}`.toLowerCase();
           if (!blob.includes(q)) continue;
           const beast = (state.data.beasts || []).find(
             (b) => b.id === a.beast_id,
