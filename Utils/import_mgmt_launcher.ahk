@@ -151,7 +151,7 @@ ImportMgmt_Catalog() {
             "Newest Desktop PNG/JPG → palace missing image",
             "fileName", "PALACE_QUICK_IMAGE.png", "run", ImportMgmt_RunQuickImage),
         Map("char", "N", "emoji", "🏷️", "name", "Quick Download names", "detail",
-            "#!+9 rename list — clipangel_desktop_names.csv — CRUD + copy",
+            "#!+9 rename list — emoji + name — clipangel_desktop_names.csv",
             "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
         Map("char", "H", "emoji", "❓", "name", "Help", "detail", "Per-workflow rules and outcomes",
             "run", ImportMgmt_OnHelp)
@@ -404,11 +404,13 @@ ImportMgmt_HelpText() {
     . "If all palaces have images, or Desktop has no image: error toast`r`n"
     . "Re-run: save palace PNG to Desktop → #!+X → [Q]`r`n`r`n"
     . "========== [N] QUICK DOWNLOAD NAMES ==========`r`n"
-    . "Registry: assets/data/clipangel_desktop_names.csv`r`n"
+    . "Registry: assets/data/clipangel_desktop_names.csv (id, emoji, name)`r`n"
     . "Same list as the #!+9 Quick Download rename picker (Name Desktop file).`r`n"
     .
+    "Each row shows emoji + name (same pattern as this hub). Pack defaults: 💳 daily · 📈 monthly · 🏰 palace · ✅ task · 🖼️ quick image.`r`n"
+    .
     "Rename picker: Char = walk list; Enter = keep Desktop ext; 1 = force .txt; clipboard-first when image/text on clipboard`r`n"
-    . "Enter / Shift+C copy bare name; Shift+A add, Shift+E edit, Delete remove`r`n"
+    . "Enter / Shift+C copy bare name; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"

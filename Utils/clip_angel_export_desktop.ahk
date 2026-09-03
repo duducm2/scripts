@@ -100,6 +100,8 @@ ClipAngelExport_LoadNames() {
             key := headers[A_Index]
             row[key] := (A_Index <= fields.Length) ? fields[A_Index] : ""
         }
+        if (!row.Has("emoji"))
+            row["emoji"] := ""
         if (row.Has("name") && Trim(row["name"]) != "")
             rows.Push(row)
     }
@@ -112,13 +114,34 @@ ClipAngelExport_SaveNames(rows) {
     SplitPath(path, , &dir)
     if (dir != "" && !DirExist(dir))
         DirCreate(dir)
-    out := "id,name`n"
+    out := "id,emoji,name`n"
     for row in rows {
         id := row.Has("id") ? row["id"] : ""
+        emoji := row.Has("emoji") ? Trim(row["emoji"]) : ""
         name := row.Has("name") ? row["name"] : ""
-        out .= ClipAngelExport_CsvEscape(id) "," ClipAngelExport_CsvEscape(name) "`n"
+        out .= ClipAngelExport_CsvEscape(id) "," ClipAngelExport_CsvEscape(emoji) "," ClipAngelExport_CsvEscape(name) "`n"
     }
     WriteUtf8File(path, out)
+}
+
+; ListView / toast label: emoji + bare filename (same pattern as ImportMgmt_DisplayName).
+ClipAngelExport_DisplayName(row) {
+    if (!IsObject(row))
+        return ""
+    name := row.Has("name") ? row["name"] : ""
+    emoji := row.Has("emoji") ? Trim(row["emoji"]) : ""
+    if (emoji = "" && name != "") {
+        split := PromptData_SplitLeadingEmoji(name)
+        if (split.emoji != "")
+            return split.emoji . " " . split.name
+    }
+    if (emoji != "")
+        return emoji . " " . name
+    return name
+}
+
+ClipAngelExport_NormalizeEmoji(val) {
+    return Trim(val)
 }
 
 ClipAngelExport_Unaccent(s) {
@@ -511,7 +534,7 @@ ClipAngelExport_Refresh() {
     g_ClipAngelNameRows := []
     for r in rows {
         g_ClipAngelNameRows.Push(r)
-        g_ClipAngelNameLv.Add("", r["name"])
+        g_ClipAngelNameLv.Add("", ClipAngelExport_DisplayName(r))
     }
     g_ClipAngelNameLv.ModifyCol(1, "AutoHdr")
     if (g_ClipAngelNameRows.Length > 0)
@@ -572,27 +595,53 @@ ClipAngelExport_Alert(msg) {
 }
 
 ClipAngelExport_NameForm(existing) {
+    global g_ClipAngelNameGui
     isEdit := IsObject(existing)
     ClipAngelExport_DialogsBegin()
-    ; InputBox does not support Owner=hwnd (MsgBox does).
-    ib := InputBox("Name for Desktop .txt file", isEdit ? "Edit name" : "Add name",
-        "w320", isEdit ? existing["name"] : "")
+    owner := ""
+    try {
+        if (IsObject(g_ClipAngelNameGui))
+            owner := " +Owner" . g_ClipAngelNameGui.Hwnd
+    } catch {
+        owner := ""
+    }
+    g := Gui("+AlwaysOnTop +ToolWindow" . owner, isEdit ? "Edit name" : "Add name")
+    g.SetFont("s10", "Segoe UI")
+    emojiVal := ""
+    nameVal := ""
+    if (isEdit) {
+        emojiVal := existing.Has("emoji") ? Trim(existing["emoji"]) : ""
+        nameVal := existing.Has("name") ? existing["name"] : ""
+        if (emojiVal = "" && nameVal != "") {
+            split := PromptData_SplitLeadingEmoji(nameVal)
+            if (split.emoji != "") {
+                emojiVal := split.emoji
+                nameVal := split.name
+            }
+        }
+    }
+    g.Add("Text", "w48 Section", "Emoji")
+    eEmoji := g.Add("Edit", "yp w56", emojiVal)
+    g.Add("Text", "x+16 yp w40", "Name")
+    eName := g.Add("Edit", "yp w220", nameVal)
+    saved := false
+    resultEmoji := ""
+    resultName := ""
+    g.Add("Button", "xs y+16 w100 Default", "Save").OnEvent("Click", SaveName)
+    g.Add("Button", "x+8 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
+    g.OnEvent("Escape", (*) => g.Destroy())
+    g.Show()
+    try WinWaitClose("ahk_id " g.Hwnd)
+    catch {
+    }
     ClipAngelExport_DialogsEnd()
-    if (ib.Result != "OK")
+    if (!saved)
         return
-    name := Trim(ib.Value)
-    if (name = "") {
-        ClipAngelExport_Alert("Name is required.")
-        return
-    }
-    if (ClipAngelExport_SanitizeFileName(name) = "") {
-        ClipAngelExport_Alert("Name has no valid filename characters.")
-        return
-    }
     rows := ClipAngelExport_LoadNames()
     row := Map(
-        "id", isEdit ? existing["id"] : ClipAngelExport_SlugId(name, rows),
-    "name", name)
+        "id", isEdit ? existing["id"] : ClipAngelExport_SlugId(resultName, rows),
+    "emoji", resultEmoji,
+    "name", resultName)
     if (isEdit) {
         out := []
         for r in rows {
@@ -607,6 +656,30 @@ ClipAngelExport_NameForm(existing) {
     }
     ClipAngelExport_SaveNames(rows)
     ClipAngelExport_Refresh()
+
+    SaveName(*) {
+        emoji := ClipAngelExport_NormalizeEmoji(eEmoji.Value)
+        name := Trim(eName.Value)
+        if (emoji = "" && name != "") {
+            split := PromptData_SplitLeadingEmoji(name)
+            if (split.emoji != "") {
+                emoji := split.emoji
+                name := split.name
+            }
+        }
+        if (name = "") {
+            ClipAngelExport_Alert("Name is required.")
+            return
+        }
+        if (ClipAngelExport_SanitizeFileName(name) = "") {
+            ClipAngelExport_Alert("Name has no valid filename characters.")
+            return
+        }
+        resultEmoji := emoji
+        resultName := name
+        saved := true
+        g.Destroy()
+    }
 }
 
 ClipAngelExport_Add(*) {
@@ -628,7 +701,7 @@ ClipAngelExport_Delete(*) {
     sel := ClipAngelExport_Selected()
     if (!sel)
         return
-    if (!ClipAngelExport_Confirm("Delete " . sel["name"] . "?"))
+    if (!ClipAngelExport_Confirm("Delete " . ClipAngelExport_DisplayName(sel) . "?"))
         return
     out := []
     for r in ClipAngelExport_LoadNames() {
