@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from schemas import normalize_atom_keywords
+from schemas import format_concept_thought_groups, normalize_atom_keywords
 
 SENSORY_EMOJI = {
     "visual": "👁️",
@@ -46,7 +46,7 @@ def group_atoms_by_beast(atoms: list[dict[str, Any]] | None) -> list[dict[str, A
 
 
 def format_concept(value: str | None) -> str:
-    t = md_escape(value or "")
+    t = md_escape(format_concept_thought_groups(value or ""))
     if not t:
         return "—"
     return f"💡 {t}"

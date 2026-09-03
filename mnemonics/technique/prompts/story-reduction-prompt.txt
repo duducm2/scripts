@@ -158,19 +158,19 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
 ```
 
-- Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression **and** PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`: keep or tighten `concept` to maximal brevity with full semantic fidelity in everyday words; never expand concepts during re-peg. Rewrite the compressed **core** into **first person singular** when it fits; skip when it would distort. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it (Note stays impersonal and plain). Do not invent new factual content in Notes. When tightening concepts, **preserve or re-apply** pipe chunking on the compressed core (never strip pipes unless fixing a bad split).
-- **Concept chunking (pipe delimiters)** — applies to the compressed **core** of `concept` only:
+- Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression **and** PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`: keep or tighten `concept` to maximal brevity with full semantic fidelity in everyday words; never expand concepts during re-peg. Rewrite the compressed **core** into **first person singular** when it fits; skip when it would distort. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it (Note stays impersonal and plain). Do not invent new factual content in Notes. When tightening concepts, **preserve or re-apply** square-bracket thought groups on the compressed core (never strip `[…]` chunks unless fixing a bad split).
+- **Concept chunking (square brackets)** — applies to the compressed **core** of `concept` only:
   - Segment the sentence into cognitive units by grammatical function so each chunk is a complete, self-contained idea.
   - **Core clause:** Subject + Verb + Object as one foundation chunk.
   - **Prepositional phrases:** separate adverbial modifiers (origin, destination, time, etc.) that begin with a preposition.
   - **Participial phrases:** separate instrument/method/condition phrases beginning with participles or conjunctions that introduce them.
-  - **Output:** insert a single pipe with spaces (` | `) between each functional boundary within the compressed core.
-  - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** pipe-chunk the Note text.
-  - **Scope (strict):** pipe chunking applies **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
-  - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare ` | ` inside `Concept: …` is chunking only.
-  - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `I retrieve raw data | from various origin systems | during the first pipeline phase`
-  - **Example (with Note):** `I move raw data | from multiple sources | into a centralized target — Note: The target is typically a Data Warehouse or Data Mart.`
-- **Keyword pairs:** Preserve `keywords` when the concept core (pipe-chunks) is unchanged. When you re-chunk or rewrite the concept core, **re-derive** `keywords`: one pair per thought group (`Keyword | RecognizableWord` joined by ` || `), tangible Keyword + prominent word from that chunk, **at most 10** pairs; never invent pairs for Note text. Do not silently wipe `keywords` if the concept is unchanged. CSV `keywords` is SSOT (not required in PREVIEW).
+  - **Output:** wrap each thought group in square brackets, separated by a single space: `[chunk] [chunk]`. NEVER use `|` inside `concept` to mark thought groups.
+  - **Note suffix:** when present, append ` — Note: …` **after** the fully chunked core; do **not** wrap the Note in thought-group brackets.
+  - **Scope (strict):** thought-group brackets apply **only** to the `concept` field compressed core. Never apply to `quote`, `story`, `sensory`, `zone_label`, PREVIEW structural labels, mnemonic narratives, or image prompts.
+  - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare `[…]` inside `Concept: …` is thought-group chunking only.
+  - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `[I retrieve raw data] [from various origin systems] [during the first pipeline phase]`
+  - **Example (with Note):** `[I move raw data] [from multiple sources] [into a centralized target] — Note: The target is typically a Data Warehouse or Data Mart.`
+- **Keyword pairs:** Preserve `keywords` when the concept core (thought groups) is unchanged. When you re-chunk or rewrite the concept core, **re-derive** `keywords`: one pair per thought group (`Keyword | RecognizableWord` joined by ` || `), tangible Keyword + prominent word from that chunk, **at most 10** pairs; never invent pairs for Note text. Do not silently wipe `keywords` if the concept is unchanged. CSV `keywords` is SSOT (not required in PREVIEW).
 - **Quote:** keep the verbatim transcript excerpt intact. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
 - **Story:** when rewriting zone or single-atom narratives, keep Bizarreness Gate **and** plain everyday English — never upgrade to archaic/literary diction.
 - SMASH: merged atoms become `kind=zoned` with `Z1`–`Z4` (max 4); never encode knowledge on a smashed beast body alone. Each zoned atom keeps its own compressed `concept` (first-person core when it fits; optional impersonal Note on that same `concept`) + plain-English story encoding zone beats.
@@ -192,7 +192,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 - NEVER add new factual content or NEW Knowledge Atoms beyond user-specified merges/removals on the in-scope set.
 - NEVER drop remaining **in-scope** atoms' knowledge or verbatim quote excerpts (optional ` — Note:` may be added/adjusted on `concept` for compression only).
 - NEVER expand `concept` during reduction; keep maximal compression with zero information loss (`README §Knowledge Atom Structure`).
-- NEVER pipe-chunk `quote`, `story`, `sensory`, or Note text; NEVER use labeled PREVIEW delimiters (` | Quote:`, etc.) inside concept.
+- NEVER wrap `quote`, `story`, `sensory`, or Note text as concept thought groups; NEVER use labeled PREVIEW delimiters (` | Quote:`, etc.) inside concept.
 - NEVER emit 5+ zoned atoms on one beast.
 - NEVER leave peg gaps **inside the scope**, or >5 beasts per palace.
 - NEVER under-fill an in-scope palace (1–4 beasts) when ≥5 **in-scope** beasts remain after reduction.
@@ -213,7 +213,7 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 1. Restrict work to the locked reduction scope. Ignore out-of-scope palaces/pegs.
 2. Each merge group → one smashed beast after re-sequencing **in scope**. Pegs not listed stay single-atom.
 3. Max 4 pegs per merge group; split larger groups and note splits in the chat note.
-4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own maximally compressed concept (first-person core when it fits; pipe-chunked compressed core per Concept chunking rule; optional impersonal ` — Note:` on that `concept`) + verbatim quote; story encodes zone beats in **plain everyday English** (PLAIN ENGLISH HARD MANDATE — never upgrade diction).
+4. Schema blending / Anatomical Micro-Loci: zones Z1→Z4; distinct sensory channels; neutral beast body (`is_smashed=1`); each sub-atom has its own maximally compressed concept (first-person core when it fits; square-bracket thought groups on the compressed core per Concept chunking rule; optional impersonal ` — Note:` on that `concept`) + verbatim quote; story encodes zone beats in **plain everyday English** (PLAIN ENGLISH HARD MANDATE — never upgrade diction).
 5. Re-peg **in scope only** (continue after last out-of-scope peg; never restart at `A` unless scope truly starts at `A`); pack beasts **5 per in-scope palace** (remainder < 5 on the last in-scope palace only); collapse empty in-scope palaces; one character per palace.
 
 ## Procedure — REMOVE mode
@@ -244,7 +244,7 @@ After the reduced **in-scope** model is final, write a long concrete foreground 
 | No knowledge drops for in-scope survivors; verbatim quote excerpts intact | Yes |
 | Plain everyday English on rewritten story / concept (+ Note) / sensory / image_prompt / PREVIEW Concept+Story; no archaic/old-fashioned/literary diction; no diction upgrades; quotes untouched | Yes |
 | Each surviving `concept` maximal compression with first-person core when it fits; ` — Note:` on `concept` only when nuance stripped (Note impersonal); `quote` verbatim only | Yes |
-| Each surviving `concept` compressed core uses pipe chunking per Concept chunking rule; Note unchunked; quote/story/sensory never piped | Yes |
+| Each surviving `concept` compressed core uses square-bracket thought groups per Concept chunking rule; Note unchunked; quote/story/sensory never wrapped as concept thought groups | Yes |
 | image_prompt refreshed per surviving **in-scope** palace | Yes |
 | image_prompt has zero real/celebrity/historical/IP names (lookalike formula only) | Yes |
 | study_id unchanged / from pack | Yes |

@@ -1131,8 +1131,33 @@
         const t = String(s || "").trim();
         return t ? esc(t) : "—";
       }
+      function formatConceptThoughtGroups(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return "";
+        const seps = [" — Note:", " – Note:", " - Note:"];
+        let core = text;
+        let note = "";
+        for (const sep of seps) {
+          const i = text.indexOf(sep);
+          if (i >= 0) {
+            core = text.slice(0, i).trimEnd();
+            note = text.slice(i);
+            break;
+          }
+        }
+        if (core.includes(" | ")) {
+          const parts = core
+            .split(/\s*\|\s*/)
+            .map((p) => p.trim())
+            .filter(Boolean);
+          if (parts.length >= 2) {
+            core = parts.map((p) => `[${p}]`).join(" ");
+          }
+        }
+        return core + note;
+      }
       function formatConcept(c) {
-        const t = String(c || "").trim();
+        const t = formatConceptThoughtGroups(c);
         return t
           ? `<span class="emoji" aria-hidden="true">💡</span> ${esc(t)}`
           : "—";

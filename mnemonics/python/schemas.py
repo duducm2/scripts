@@ -54,6 +54,37 @@ ATOMS_HEADERS = [
 ATOM_KEYWORDS_MAX_PAIRS = 10
 
 
+_CONCEPT_NOTE_SEPS = (" — Note:", " – Note:", " - Note:")
+
+
+def split_concept_note(raw: str) -> tuple[str, str]:
+    """Split compressed core from optional ` — Note:` suffix."""
+    text = (raw or "").strip()
+    for sep in _CONCEPT_NOTE_SEPS:
+        idx = text.find(sep)
+        if idx >= 0:
+            return text[:idx].rstrip(), text[idx:]
+    return text, ""
+
+
+def format_concept_thought_groups(raw: str | None) -> str:
+    """Show concept thought groups as `[chunk] [chunk]`; keep Note unbracketed.
+
+    Legacy cores delimited with ` | ` are converted. Already-bracketed cores
+    and unchunked cores are left unchanged. Quote/story cites like `[cite: 1]`
+    stay inside their chunk.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    core, note = split_concept_note(text)
+    if " | " in core:
+        parts = [p.strip() for p in core.split(" | ") if p.strip()]
+        if len(parts) >= 2:
+            core = " ".join(f"[{p}]" for p in parts)
+    return f"{core}{note}"
+
+
 def normalize_atom_keywords(raw: str | None) -> str:
     """Normalize `keywords` to `Keyword | Word || …` with at most ATOM_KEYWORDS_MAX_PAIRS pairs."""
     text = (raw or "").strip()

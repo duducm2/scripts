@@ -148,7 +148,7 @@ flowchart LR
 
 Import Management help: `[H]` in the hub ListView (canonical names, overwrite policy, per-import rules, desktop name registry).
 
-**Palace atoms CSV columns** (`ATOMS_HEADERS` / `atoms.csv`): `id`, `beast_id`, `kind`, `zone`, `zone_label`, `concept`, `keywords`, `quote`, `story`, `sensory`, `ipa`, `sort_order`. Optional `keywords` stores up to **10** association pairs as `Keyword | RecognizableWord` joined with `||` (e.g. `pencil | retrieve || sword | pipeline`); empty when none. Shown under Concept in the SPA and practice Markdown.
+**Palace atoms CSV columns** (`ATOMS_HEADERS` / `atoms.csv`): `id`, `beast_id`, `kind`, `zone`, `zone_label`, `concept`, `keywords`, `quote`, `story`, `sensory`, `ipa`, `sort_order`. `concept` thought groups are square-bracketed (`[chunk] [chunk]`); optional ` — Note:` stays outside the brackets. Optional `keywords` stores up to **10** association pairs as `Keyword | RecognizableWord` joined with `||` (e.g. `pencil | retrieve || sword | pipeline`); empty when none. Shown under Concept in the SPA and practice Markdown as `[word] → [keyword]`.
 
 **Desktop pack names:** hub `[N]` opens the name registry ([`clip_angel_export_desktop.ahk`](../Utils/clip_angel_export_desktop.ahk)). `[Enter]` or `[C]` copies the bare CSV `name` (e.g. `FINANCE_DAILY`) to the clipboard; `[A]` / `[E]` / Delete maintain the list. ClipAngel export uses the same registry when renaming files.
 

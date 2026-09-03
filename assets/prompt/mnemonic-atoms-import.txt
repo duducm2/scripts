@@ -23,11 +23,11 @@ id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_o
 10. Leave `id` empty if unknown (the importer will assign `ATOM_####`).
 11. Pegs stay on beasts (not in this file). Never invent numeric pegs.
 12. Do **not** invent `beast_id` values — only use IDs from the attached context.
-13. `keywords` — optional. Format: `Keyword | RecognizableWord` pairs joined by ` || ` (max 10). Keyword = tangible memory anchor; RecognizableWord = prominent word from a concept pipe-chunk. Leave empty if unknown.
+13. `keywords` — optional. Format: `Keyword | RecognizableWord` pairs joined by ` || ` (max 10). Keyword = tangible memory anchor; RecognizableWord = prominent word from a concept thought group (`[chunk]`). Leave empty if unknown.
 
 ## Knowledge Atom fields
 
-- **Concept** — rehearsal definition (pipe-chunked compressed core + optional Note)
+- **Concept** — rehearsal definition (`[thought group]` chunks on the compressed core + optional unbracketed Note)
 - **Keywords** — tangible Keyword paired with prominent word from each concept thought group (`Keyword | Word || …`, max 10)
 - **Quote** — verbatim source quote
 - **Story** — mnemonic narrative / action
