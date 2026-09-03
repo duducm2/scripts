@@ -1159,7 +1159,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             labels.Push(note)
     }
     studiesPreview := studies
-    palacesPreview := palaces
+    palacesPreview := Palace_ShallowCopyRows(palaces)
     if (palaceRows.Length) {
         labels.Push("--- Palaces (" . palaceRows.Length . ") ---")
         for r in palaceRows {
@@ -1247,6 +1247,8 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 existing["image_prompt"] := promptIn
             if (img != "")
                 existing["image_rel_path"] := img
+            if (existing.Has("_import_stub"))
+                existing.Delete("_import_stub")
             syncStudyIds[studyId] := true
             nPalaces += 1
         } else {

@@ -13,6 +13,22 @@ Palace_ClearPythonCmdCache() {
     g_PalacePythonCmd := ""
 }
 
+; Shallow copy of an array of Maps (rows). Each map gets a new Map object with the same keys/values.
+Palace_ShallowCopyRows(rows) {
+    out := []
+    if (!IsObject(rows))
+        return out
+    for r in rows {
+        if (!IsObject(r))
+            continue
+        copy := Map()
+        for k, v in r
+            copy[k] := v
+        out.Push(copy)
+    }
+    return out
+}
+
 Palace_DataDir() {
     dir := A_ScriptDir . "\mnemonics\data"
     if (!DirExist(dir))
