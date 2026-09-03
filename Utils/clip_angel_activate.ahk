@@ -254,3 +254,94 @@ ClipAngel_EscapeMinimize() {
     }
     ClipAngel_CloseAndRestoreFocus(0)
 }
+
+; Resolve ClipAngel.exe for hard restart (running process path, then common install folders).
+ClipAngel_ResolveExePath() {
+    try {
+        hwnd := ClipAngel_MainHwnd()
+        if (hwnd) {
+            path := WinGetProcessPath("ahk_id " hwnd)
+            if (path != "" && FileExist(path))
+                return path
+        }
+    } catch {
+    }
+    if ProcessExist("ClipAngel.exe") {
+        try {
+            path := ProcessGetPath("ClipAngel.exe")
+            if (path != "" && FileExist(path))
+                return path
+        } catch {
+        }
+    }
+    for cand in [
+        A_MyDocuments "\ClipAngel\ClipAngel 2.13\ClipAngel.exe",
+        A_MyDocuments "\ClipAngel\ClipAngel.exe"
+    ] {
+        if FileExist(cand)
+            return cand
+    }
+    loop files A_MyDocuments "\ClipAngel\*\ClipAngel.exe", "F" {
+        return A_LoopFileFullPath
+    }
+    return ""
+}
+
+; Force-kill ClipAngel.exe (not minimize). Returns true when no process remains.
+ClipAngel_KillProcess(timeoutMs := 4000) {
+    deadline := A_TickCount + timeoutMs
+    while (ProcessExist("ClipAngel.exe") && A_TickCount < deadline) {
+        try ProcessClose("ClipAngel.exe")
+        catch {
+        }
+        Sleep 80
+    }
+    return !ProcessExist("ClipAngel.exe")
+}
+
+; Macros [R] — hard restart when Clip Angel is stuck (kill process → relaunch → activate).
+ClipAngel_RestartHard(*) {
+    global g_ClipAngelAutomationBusy
+    StandardLoadingBar_Show("⏳ Restarting Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    try {
+        exePath := ClipAngel_ResolveExePath()
+        g_ClipAngelAutomationBusy := false
+        if ProcessExist("ClipAngel.exe") {
+            StandardLoadingBar_Update("⏳ Killing Clip Angel process…")
+            if !ClipAngel_KillProcess(5000) {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("❌ Could not kill ClipAngel.exe", 2500, BANNER_ACCENT_ERROR)
+                return
+            }
+            Sleep 250
+        }
+        if (exePath = "" || !FileExist(exePath)) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ ClipAngel.exe not found", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        StandardLoadingBar_Update("⏳ Opening Clip Angel…")
+        try Run('"' exePath '"')
+        catch as e {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Failed to start Clip Angel: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+            return
+        }
+        hwnd := ClipAngel_WaitForMainHwnd(10000)
+        if (!hwnd) {
+            StandardLoadingBar_Hide(0)
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not start", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        StandardLoadingBar_Hide(0)
+        ActivateClipAngelWithFocusCorrection(false, 0, false, true)
+        ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
+    } catch as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ShowCenteredOverlay_Utils("❌ Clip Angel restart failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+    }
+}
+
+RegisterMacro(ClipAngel_RestartHard, "🔄 Restart Clip Angel (kill process)", "r")
