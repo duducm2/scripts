@@ -87,7 +87,7 @@ def format_keywords_lines(value: str | None) -> list[str]:
             continue
         left, right = left.strip(), right.strip()
         if left and right:
-            out.append(f"**{left}** \u2192 {right}")
+            out.append(f"[{right} \u2192 {left}]")
     return out
 
 
