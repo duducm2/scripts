@@ -112,9 +112,7 @@ def snapshot(
     atoms = data["atoms"]
     palace_images = data.get("palace_images") or []
 
-    issues = validate_dataset(
-        data["studies"], palaces, beasts, atoms, palace_images
-    )
+    issues = validate_dataset(data["studies"], palaces, beasts, atoms, palace_images)
 
     study_cards: list[dict[str, Any]] = []
     for study in studies:
@@ -138,6 +136,7 @@ def snapshot(
                             "zone": a.get("zone", ""),
                             "zone_label": a.get("zone_label", ""),
                             "concept": a.get("concept", a.get("context", "")),
+                            "keywords": a.get("keywords", ""),
                             "quote": a.get("quote", ""),
                             "story": a.get("story", a.get("narrative", "")),
                             "sensory": a.get("sensory", a.get("sensory_channel", "")),
@@ -149,11 +148,7 @@ def snapshot(
             img_path = resolve_image(
                 notes_root, st.get("image_rel_path", ""), output_dir
             )
-            gallery_rows = [
-                gi
-                for gi in palace_images
-                if gi.get("palace_id") == st_id
-            ]
+            gallery_rows = [gi for gi in palace_images if gi.get("palace_id") == st_id]
             gallery_rows.sort(
                 key=lambda x: (
                     int(x.get("sort_order") or 0),

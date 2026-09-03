@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -41,12 +42,41 @@ ATOMS_HEADERS = [
     "zone",
     "zone_label",
     "concept",
+    "keywords",
     "quote",
     "story",
     "sensory",
     "ipa",
     "sort_order",
 ]
+
+# Max Keyword | Recognizable Word pairs per Knowledge Atom (CSV `keywords` column).
+ATOM_KEYWORDS_MAX_PAIRS = 10
+
+
+def normalize_atom_keywords(raw: str | None) -> str:
+    """Normalize `keywords` to `Keyword | Word || …` with at most ATOM_KEYWORDS_MAX_PAIRS pairs."""
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    chunks = [c.strip() for c in re.split(r"\s*\|\|\s*", text) if c.strip()]
+    pairs: list[str] = []
+    for chunk in chunks:
+        if " | " in chunk:
+            left, right = chunk.split(" | ", 1)
+        elif "|" in chunk:
+            left, right = chunk.split("|", 1)
+        else:
+            continue
+        left, right = left.strip(), right.strip()
+        if not left or not right:
+            continue
+        pairs.append(f"{left} | {right}")
+        if len(pairs) >= ATOM_KEYWORDS_MAX_PAIRS:
+            break
+    return " || ".join(pairs)
+
+
 PLANS_HEADERS = ["id", "study_id", "title", "sort_order", "active"]
 PLAN_ITEMS_HEADERS = [
     "id",

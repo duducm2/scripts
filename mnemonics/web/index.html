@@ -304,6 +304,19 @@
         max-height: none !important;
         overflow: visible !important;
       }
+      #overlay .atom-card .field-keywords {
+        margin-top: 0.25rem;
+      }
+      #overlay .atom-card .kw-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        font-size: 0.85em;
+        line-height: 1.35;
+      }
+      #overlay .atom-card .kw-pair {
+        display: block;
+      }
       #overlay .overlay-details {
         display: grid;
         grid-template-columns: 1fr;
@@ -405,7 +418,7 @@
           <input
             type="search"
             id="atomSearch"
-            placeholder="Beast, concept, quote, story…"
+            placeholder="Beast, concept, keywords, quote, story…"
             autocomplete="off"
           />
         </div>
@@ -1146,9 +1159,35 @@
             : "";
         return `<article class="atom-card" data-atom-id="${escAttr(a.id)}">${head}
           <p class="field field-concept"><span class="lbl">Concept</span>${formatConcept(a.concept)}</p>
+          ${formatKeywords(a.keywords)}
           <p class="field field-quote"><span class="lbl">Quote</span>${formatQuote(a.quote)}</p>
           <p class="field field-story"><span class="lbl">Story</span>${dash(a.story)}</p>
         </article>`;
+      }
+
+      function formatKeywords(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return "";
+        const pairs = text
+          .split(/\s*\|\|\s*/)
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .slice(0, 10);
+        if (!pairs.length) return "";
+        const rows = pairs
+          .map((p) => {
+            const m = p.includes(" | ")
+              ? p.split(/\s*\|\s*/, 2)
+              : p.split("|", 2);
+            const left = (m[0] || "").trim();
+            const right = (m[1] || "").trim();
+            if (!left || !right) return "";
+            return `<span class="kw-pair">${esc(left)} | ${esc(right)}</span>`;
+          })
+          .filter(Boolean)
+          .join("");
+        if (!rows) return "";
+        return `<div class="field field-keywords"><span class="lbl">Keywords</span><div class="kw-list">${rows}</div></div>`;
       }
 
       function orderBeastsForCockpit(blist) {
@@ -2245,6 +2284,11 @@
           prompt("Kind (single/zoned)", a?.kind || "single") || "single";
         const concept = prompt("Concept", a?.concept || "");
         if (concept == null) return;
+        const keywordsRaw = prompt(
+          "Keywords (Keyword | Word || …; max 10; optional)",
+          a?.keywords || ""
+        );
+        if (keywordsRaw == null) return;
         const quote = prompt("Quote", a?.quote || "") || "";
         const story = prompt("Story", a?.story || "") || "";
         const zone = prompt("Zone (optional)", a?.zone || "") || "";
@@ -2253,6 +2297,7 @@
           beast_id: beastId,
           kind,
           concept,
+          keywords: keywordsRaw,
           quote,
           story,
           zone,
@@ -2534,7 +2579,7 @@
         }
         const hits = [];
         for (const a of state.data?.atoms || []) {
-          const blob = `${a.concept} ${a.quote} ${a.story}`.toLowerCase();
+          const blob = `${a.concept} ${a.keywords || ""} ${a.quote} ${a.story}`.toLowerCase();
           if (!blob.includes(q)) continue;
           const beast = (state.data.beasts || []).find(
             (b) => b.id === a.beast_id,

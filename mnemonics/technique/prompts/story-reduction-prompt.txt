@@ -155,7 +155,7 @@ id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_or
 ### `PALACE_ATOMS.csv`
 
 ```
-id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
 ```
 
 - Preserve every remaining atom’s knowledge payload (no knowledge drops). Re-apply `README §Knowledge Atom Structure` compression **and** PLAIN ENGLISH HARD MANDATE / `README §Language & IPA`: keep or tighten `concept` to maximal brevity with full semantic fidelity in everyday words; never expand concepts during re-peg. Rewrite the compressed **core** into **first person singular** when it fits; skip when it would distort. Add or adjust the optional ` — Note: <stripped nuance>` suffix on `concept` only when compression requires it (Note stays impersonal and plain). Do not invent new factual content in Notes. When tightening concepts, **preserve or re-apply** pipe chunking on the compressed core (never strip pipes unless fixing a bad split).
@@ -170,6 +170,7 @@ id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
   - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare ` | ` inside `Concept: …` is chunking only.
   - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `I retrieve raw data | from various origin systems | during the first pipeline phase`
   - **Example (with Note):** `I move raw data | from multiple sources | into a centralized target — Note: The target is typically a Data Warehouse or Data Mart.`
+- **Keyword pairs:** Preserve `keywords` when the concept core (pipe-chunks) is unchanged. When you re-chunk or rewrite the concept core, **re-derive** `keywords`: one pair per thought group (`Keyword | RecognizableWord` joined by ` || `), tangible Keyword + prominent word from that chunk, **at most 10** pairs; never invent pairs for Note text. Do not silently wipe `keywords` if the concept is unchanged. CSV `keywords` is SSOT (not required in PREVIEW).
 - **Quote:** keep the verbatim transcript excerpt intact. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
 - **Story:** when rewriting zone or single-atom narratives, keep Bizarreness Gate **and** plain everyday English — never upgrade to archaic/literary diction.
 - SMASH: merged atoms become `kind=zoned` with `Z1`–`Z4` (max 4); never encode knowledge on a smashed beast body alone. Each zoned atom keeps its own compressed `concept` (first-person core when it fits; optional impersonal Note on that same `concept`) + plain-English story encoding zone beats.

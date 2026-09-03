@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from schemas import normalize_atom_keywords
+
 SENSORY_EMOJI = {
     "visual": "👁️",
     "auditory": "👂",
@@ -67,6 +69,14 @@ def format_sensory(value: str | None) -> str:
     return f"{emoji} {body}".strip() if emoji else body
 
 
+def format_keywords_lines(value: str | None) -> list[str]:
+    """One Keyword | Word pair per line; empty list if none."""
+    normalized = normalize_atom_keywords(value)
+    if not normalized:
+        return []
+    return [p.strip() for p in normalized.split(" || ") if p.strip()]
+
+
 def format_field_block(label: str, body: str) -> list[str]:
     """Stacked label + body (mobile-friendly; matches dashboard .lbl / .field)."""
     return [f"**{label}**", body, ""]
@@ -85,6 +95,11 @@ def render_atom_block_md(atom: dict[str, Any]) -> list[str]:
         lines.append("")
 
     lines.extend(format_field_block("Concept", format_concept(atom.get("concept"))))
+    kw_lines = format_keywords_lines(atom.get("keywords"))
+    if kw_lines:
+        lines.append("**Keywords**")
+        lines.extend(kw_lines)
+        lines.append("")
     lines.extend(format_field_block("Quote", format_quote(atom.get("quote"))))
     lines.extend(format_field_block("Sensory", format_sensory(atom.get("sensory"))))
     lines.extend(format_field_block("Story", dash(atom.get("story"))))

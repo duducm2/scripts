@@ -573,6 +573,7 @@ Palace_SynthesizeBeastsAtomsFromPreview(preview, palaceRows := 0) {
             "zone", "",
             "zone_label", "",
             "concept", concept,
+            "keywords", "",
             "quote", quote,
             "story", story,
             "sensory", sensory,
@@ -1000,6 +1001,13 @@ Palace_ValidateImportAtoms(atomRows, beastRows := "") {
             return out
         }
     }
+    ; Normalize/truncate keywords (missing OK; >10 pairs truncated; never fail import).
+    for r in atomRows {
+        if (!IsObject(r))
+            continue
+        kw := r.Has("keywords") ? r["keywords"] : ""
+        r["keywords"] := Palace_NormalizeAtomKeywords(kw)
+    }
     return out
 }
 
@@ -1363,6 +1371,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
             concept := r.Has("concept") ? r["concept"] : (r.Has("context") ? r["context"] : "")
             story := r.Has("story") ? r["story"] : (r.Has("narrative") ? r["narrative"] : "")
             sensory := r.Has("sensory") ? r["sensory"] : (r.Has("sensory_channel") ? r["sensory_channel"] : "")
+            keywords := Palace_NormalizeAtomKeywords(r.Has("keywords") ? r["keywords"] : "")
             row := Map(
                 "id", id,
                 "beast_id", beastId,
@@ -1370,6 +1379,7 @@ Palace_ImportMnemonicsFromDesktop(*) {
                 "zone", r.Has("zone") ? r["zone"] : "",
                 "zone_label", r.Has("zone_label") ? r["zone_label"] : "",
                 "concept", concept,
+                "keywords", keywords,
                 "quote", r.Has("quote") ? r["quote"] : "",
                 "story", story,
                 "ipa", r.Has("ipa") ? r["ipa"] : "",

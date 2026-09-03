@@ -268,6 +268,48 @@ Palace_CsvEscape(val) {
     return s
 }
 
+; Normalize atom keywords to `Keyword | Word || …` (max 10 pairs). Empty if none valid.
+Palace_NormalizeAtomKeywords(raw) {
+    text := Trim(String(raw))
+    if (text = "")
+        return ""
+    text := RegExReplace(text, "\s*\|\|\s*", " || ")
+    parts := StrSplit(text, " || ")
+    pairs := []
+    for p in parts {
+        chunk := Trim(p)
+        if (chunk = "")
+            continue
+        left := ""
+        right := ""
+        sep := InStr(chunk, " | ")
+        if (sep) {
+            left := Trim(SubStr(chunk, 1, sep - 1))
+            right := Trim(SubStr(chunk, sep + 3))
+        } else {
+            sep := InStr(chunk, "|")
+            if (!sep)
+                continue
+            left := Trim(SubStr(chunk, 1, sep - 1))
+            right := Trim(SubStr(chunk, sep + 1))
+        }
+        if (left = "" || right = "")
+            continue
+        pairs.Push(left . " | " . right)
+        if (pairs.Length >= 10)
+            break
+    }
+    if (!pairs.Length)
+        return ""
+    out := ""
+    for i, pr in pairs {
+        if (i > 1)
+            out .= " || "
+        out .= pr
+    }
+    return out
+}
+
 Palace_ReadCsvFromText(text, strict := false, skipNotes := 0) {
     rows := []
     if (text = "")
@@ -392,7 +434,7 @@ Palace_Headers(kind) {
             return ["id", "palace_id", "peg_code", "beast_name", "beast_source", "sensory_channel", "is_smashed",
                 "sort_order"]
         case "atoms":
-            return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "quote", "story", "sensory", "ipa",
+            return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "keywords", "quote", "story", "sensory", "ipa",
                 "sort_order"]
         case "plans":
             return ["id", "study_id", "title", "sort_order", "active"]

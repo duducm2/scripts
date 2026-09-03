@@ -15,6 +15,7 @@ from data_aggregator import load_all
 from plan_csv import load_plan_tables, next_id, save_plan_tables
 from schemas import (
     ATOMS_HEADERS,
+    normalize_atom_keywords,
     BEASTS_HEADERS,
     PALACE_IMAGES_HEADERS,
     PALACES_HEADERS,
@@ -542,6 +543,13 @@ class PalaceStore:
                 payload.get("zone_label", (existing or {}).get("zone_label", ""))
             ),
             "concept": str(payload.get("concept", (existing or {}).get("concept", ""))),
+            "keywords": normalize_atom_keywords(
+                str(
+                    payload.get(
+                        "keywords", (existing or {}).get("keywords", "")
+                    )
+                )
+            ),
             "quote": str(payload.get("quote", (existing or {}).get("quote", ""))),
             "story": str(payload.get("story", (existing or {}).get("story", ""))),
             "sensory": str(payload.get("sensory", (existing or {}).get("sensory", ""))),

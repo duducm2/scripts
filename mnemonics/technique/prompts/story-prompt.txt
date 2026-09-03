@@ -194,7 +194,7 @@ Rules:
 Header (exact):
 
 ```
-id,beast_id,kind,zone,zone_label,concept,quote,story,sensory,ipa,sort_order
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
 ```
 
 Rules:
@@ -216,6 +216,13 @@ Rules:
     - **PREVIEW disambiguation:** atom-field separators stay labeled — ` | Quote:`, ` | Story:`, ` | Sensory:` — and must never appear inside concept text. Bare ` | ` inside `Concept: …` is chunking only.
     - **Example (core):** `I retrieve raw data from various origin systems during the first pipeline phase` → `I retrieve raw data | from various origin systems | during the first pipeline phase`
     - **Example (with Note):** `I move raw data | from multiple sources | into a centralized target — Note: The target is typically a Data Warehouse or Data Mart.`
+  - **Keyword pairs HARD MANDATE** — fill `keywords` from concept pipe-chunks (thought groups):
+    - Each ` | `-chunk of the compressed **core** (never the Note) is one thought group.
+    - For each thought group, extract one **prominent recognizable word** (everyday, highly recognizable; prefer a short punchy form when several candidates exist).
+    - Pair it with a tangible **Keyword** memory anchor: a physical object, action, actor, or cartoon character (highly recognizable and concrete).
+    - Encode as `Keyword | RecognizableWord` pairs joined by ` || ` (spaces around pipes). Example: `pencil | retrieve || sword | pipeline`.
+    - Cap **at most 10** pairs per atom (fewer chunks → fewer pairs). Never invent pairs for Note text. Leave `keywords` empty only if the core has no usable chunks.
+    - Do **not** put Keywords into PREVIEW lines (CSV `keywords` column is SSOT for import).
   - **quote** ← verbatim transcript excerpt only. NEVER append a `Note:` to `quote`. NEVER simplify quoted characters.
   - **story** ← Narrative (bizarre action encoding). MUST pass the Bizarreness Gate **and** PLAIN ENGLISH HARD MANDATE (`README §Language & IPA`): everyday words; no archaic / old-fashioned / literary diction.
   - **sensory** ← modality emphasized (plain English label)
@@ -254,7 +261,7 @@ Do this **before** writing stories or PREVIEW. Bad packing **inside this pack** 
 - Peg letters only; independent beast beats; Bizarreness Gate on every story; **PLAIN ENGLISH HARD MANDATE** / `README §Language & IPA` on every authored field.
 - **Concept compression:** write `concept` at maximum compression (minimal word count, full meaning) in plain everyday words. NEVER drop essential conceptual logic. Prefer **first person singular** on the compressed core when it fits; skip when it would distort (`README §Knowledge Atom Structure`). If nuance/complexity must leave the compressed core to keep it ultra-short, append that supplementary context on `concept` as ` — Note: …` (Note stays impersonal and plain). NEVER put the Note on `quote`. After the compressed core is final, apply **Concept chunking (pipe delimiters)** before any optional Note suffix.
 - Story–video alignment: Quote is verbatim only; optional Note lives on `concept`; Story encodes meaning via bizarre action linked to a concrete video cue — in easy plain English (curious-teenager test).
-- Dual-access recall: peg → compressed concept (+ optional Note) → quote; palace image → encoding action → quote.
+- Dual-access recall: peg → compressed concept (+ optional Note) → keywords → quote; palace image → encoding action → quote.
 
 ### 4. Image prompts
 
