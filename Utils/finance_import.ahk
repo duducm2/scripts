@@ -342,7 +342,7 @@ Finance_ImportConfirmEditable(title, parsed) {
     g_FinanceGui := g
     g.SetFont("s10", "Segoe UI")
     hdr := g.Add("Text", "x12 y8 w880", "Import preview — " . parsed.Length .
-        " row(s).  [E] edit  [A] add  [Delete] remove")
+        " row(s).  [Shift+E] edit  [Shift+A] add  [Delete] remove")
     lv := g.Add("ListView", "x12 y32 w896 r14 Grid", ["Date", "Type", "Description", "Amount", "Category",
         "Account"])
     ok := false
@@ -363,7 +363,7 @@ Finance_ImportConfirmEditable(title, parsed) {
         lv.ModifyCol(4, 100)
         lv.ModifyCol(5, 180)
         lv.ModifyCol(6, 200)
-        hdr.Value := "Import preview — " . parsed.Length . " row(s).  [E] edit  [A] add  [Delete] remove"
+        hdr.Value := "Import preview — " . parsed.Length . " row(s).  [Shift+E] edit  [Shift+A] add  [Delete] remove"
     }
 
     EditSelected() {
@@ -417,8 +417,8 @@ Finance_ImportConfirmEditable(title, parsed) {
     }
 
     Finance_BindHotkeys([
-        ["e", (*) => EditSelected()],
-        ["a", (*) => AddRow()],
+        ["+e", (*) => EditSelected()],
+        ["+a", (*) => AddRow()],
         ["Insert", (*) => AddRow()],
         ["Delete", (*) => DeleteSelected()],
         ["Escape", (*) => CleanupImportDialog()]

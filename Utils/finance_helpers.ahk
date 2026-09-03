@@ -1119,7 +1119,7 @@ Finance_Alert(msg, title := "Finance") {
 
 Finance_InputBox(prompt, title := "Finance", default := "") {
     Finance_DialogsBegin()
-    result := InputBox(prompt, title, "w280" . Finance_OwnerOpt(), default)
+    result := InputBox(prompt, title, "w280", default)
     Finance_DialogsEnd()
     return result
 }

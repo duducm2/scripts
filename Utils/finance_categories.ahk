@@ -15,7 +15,7 @@ Finance_ShowCategories() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Categories")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceGui.Add("Text", "x12 y12 w860",
-        "[A] all  [X] expense  [N] income  [I]/Insert add  [E] edit  Delete  Backspace")
+        "[Shift+A] all  [Shift+X] expense  [Shift+N] income  [Shift+I]/Insert add  [Shift+E] edit  Delete  Backspace")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Name", "Type", "Parent", "Color"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
@@ -23,12 +23,12 @@ Finance_ShowCategories() {
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_CatRefresh()
     Finance_BindHotkeys([
-        ["a", Finance_CatFilterAll],
-        ["x", Finance_CatFilterExpense],
-        ["n", Finance_CatFilterIncome],
-        ["i", (*) => Finance_CatAdd()],
+        ["+a", Finance_CatFilterAll],
+        ["+x", Finance_CatFilterExpense],
+        ["+n", Finance_CatFilterIncome],
+        ["+i", (*) => Finance_CatAdd()],
         ["Insert", (*) => Finance_CatAdd()],
-        ["e", (*) => Finance_CatEdit()],
+        ["+e", (*) => Finance_CatEdit()],
         ["Delete", (*) => Finance_CatDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]

@@ -219,7 +219,7 @@ Finance_ShowSettings() {
     y += 32
     g_FinanceGui.Add("Button", "x12 y" . y . " w100 Default", "Save").OnEvent("Click", SaveSettings)
     g_FinanceGui.Add("Button", "x120 y" . y . " w100", "Back").OnEvent("Click", (*) => Finance_ShowMainMenu())
-    g_FinanceGui.Add("Button", "x230 y" . y . " w200", "Rebuild balances [R]").OnEvent("Click", (*) =>
+    g_FinanceGui.Add("Button", "x230 y" . y . " w200", "Rebuild balances [Shift+R]").OnEvent("Click", (*) =>
         Finance_OnRebuildBalances())
     y += 36
     g_FinanceGui.SetFont("s9 c555555", "Segoe UI")
@@ -228,7 +228,7 @@ Finance_ShowSettings() {
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     Finance_BindHotkeys([
-        ["r", (*) => Finance_OnRebuildBalances()],
+        ["+r", (*) => Finance_OnRebuildBalances()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])

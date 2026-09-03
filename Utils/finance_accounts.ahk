@@ -15,7 +15,7 @@ Finance_ShowAccounts() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceAccHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
     g_FinanceGui.Add("Text", "x12 y36 w860",
-        "[A]/Insert add   [E] edit   Delete   J adjust balance   [R] primary   Backspace menu")
+        "[Shift+A]/Insert add   [Shift+E] edit   Delete   Shift+J adjust balance   [Shift+R] primary   Backspace menu")
     g_FinanceAccLv := g_FinanceGui.Add("ListView", "x12 y64 w860 h460 Grid",
         ["Primary", "Icon", "Name", "Current"])
     g_FinanceAccLv.OnEvent("DoubleClick", (*) => Finance_AccEdit())
@@ -23,12 +23,12 @@ Finance_ShowAccounts() {
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_AccRefresh()
     Finance_BindHotkeys([
-        ["a", (*) => Finance_AccAdd()],
+        ["+a", (*) => Finance_AccAdd()],
         ["Insert", (*) => Finance_AccAdd()],
-        ["e", (*) => Finance_AccEdit()],
+        ["+e", (*) => Finance_AccEdit()],
         ["Delete", (*) => Finance_AccDelete()],
-        ["j", (*) => Finance_AccAdjust()],
-        ["r", (*) => Finance_AccSetPrimary()],
+        ["+j", (*) => Finance_AccAdjust()],
+        ["+r", (*) => Finance_AccSetPrimary()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])

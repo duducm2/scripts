@@ -13,7 +13,7 @@ Finance_ShowRecurring() {
     g_FinanceGui := Gui("+AlwaysOnTop +ToolWindow", "Recurring bills")
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceGui.Add("Text", "x12 y10 w860",
-        "[A]/Insert add   [E] edit   Delete   Backspace menu   Tracking only (no auto-charge)")
+        "[Shift+A]/Insert add   [Shift+E] edit   Delete   Backspace menu   Tracking only (no auto-charge)")
     g_FinanceRecLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
         ["Icon", "Name", "Monthly"])
     g_FinanceRecLv.OnEvent("DoubleClick", (*) => Finance_RecEdit())
@@ -21,9 +21,9 @@ Finance_ShowRecurring() {
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_RecRefresh()
     Finance_BindHotkeys([
-        ["a", (*) => Finance_RecAdd()],
+        ["+a", (*) => Finance_RecAdd()],
         ["Insert", (*) => Finance_RecAdd()],
-        ["e", (*) => Finance_RecEdit()],
+        ["+e", (*) => Finance_RecEdit()],
         ["Delete", (*) => Finance_RecDelete()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]

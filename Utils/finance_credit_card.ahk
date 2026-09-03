@@ -17,7 +17,7 @@ Finance_ShowCreditCard() {
     g_FinanceGui.SetFont("s10", "Segoe UI")
     g_FinanceCardHeader := g_FinanceGui.Add("Text", "x12 y10 w860 h24")
     g_FinanceGui.Add("Text", "x12 y36 w860",
-        "[A]/Insert add   [E] edit   Delete   [P] pay   [R] primary   Backspace menu")
+        "[Shift+A]/Insert add   [Shift+E] edit   Delete   [Shift+P] pay   [Shift+R] primary   Backspace menu")
     g_FinanceCardChartLabel := g_FinanceGui.Add("Text", "x12 y64 w860 h36")
     g_FinanceCardChartBar := g_FinanceGui.Add("Progress", "x12 y104 w860 h18 c2ECC71 Background333333 Range0-100", 0)
     g_FinanceCardLv := g_FinanceGui.Add("ListView", "x12 y132 w860 h390 Grid",
@@ -28,12 +28,12 @@ Finance_ShowCreditCard() {
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
     Finance_CardRefresh()
     Finance_BindHotkeys([
-        ["a", (*) => Finance_CardAdd()],
+        ["+a", (*) => Finance_CardAdd()],
         ["Insert", (*) => Finance_CardAdd()],
-        ["e", (*) => Finance_CardEdit()],
+        ["+e", (*) => Finance_CardEdit()],
         ["Delete", (*) => Finance_CardDelete()],
-        ["p", (*) => Finance_CardPaySelected()],
-        ["r", (*) => Finance_CardSetPrimary()],
+        ["+p", (*) => Finance_CardPaySelected()],
+        ["+r", (*) => Finance_CardSetPrimary()],
         ["Backspace", (*) => Finance_ShowMainMenu()],
         ["Escape", (*) => Finance_ShowMainMenu()]
     ])
