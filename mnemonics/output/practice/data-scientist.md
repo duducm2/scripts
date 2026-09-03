@@ -12,7 +12,7 @@ _No image_
 ### 🟧 [F] frog
 
 **Concept**
-💡 [I forecast what will happen using **predictive** analysis] [while business intelligence looks **backward**] [to explain what already **happened**]
+💡 [I forecast what will happen using <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">predictive</mark> analysis] [while business intelligence looks <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">backward</mark>] [to explain what already <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">happened</mark>]
 
 🔑 **Keywords**
 
@@ -32,7 +32,7 @@ A neon green frog the size of an armchair sits on an iron fire hydrant at the co
 ### 🟧 [G] goat
 
 **Concept**
-💡 [I confront **claims**] [that data science is an empty **buzzword**] [that merely relabeled business **analyst** degree programs] — Note: Argument published in Forbes by Gil Press.
+💡 [I confront <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">claims</mark>] [that data science is an empty <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">buzzword</mark>] [that merely relabeled business <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">analyst</mark> degree programs] — Note: Argument published in Forbes by Gil Press.
 
 🔑 **Keywords**
 
@@ -52,7 +52,7 @@ A two-headed mountain goat balances on the wooden park bench on the right sidewa
 ### 🟧 [H] Hydra
 
 **Concept**
-💡 [I defend **statistics** as a foundational science] [against redundant **rebranding**] — Note: Nate Silver argued that the term data scientist is redundant and sexed-up.
+💡 [I defend <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">statistics</mark> as a foundational science] [against redundant <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">rebranding</mark>] — Note: Nate Silver argued that the term data scientist is redundant and sexed-up.
 
 🔑 **Keywords**
 
@@ -88,7 +88,7 @@ and data engineers.
 ### 🟧 [J] jester
 
 **Concept**
-💡 [I **unite** statistics and data science] [as complementary **partners**] [for mutual **growth**] — Note: The American Statistical Association affirmed complementarity in a 2015 press release.
+💡 [I <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">unite</mark> statistics and data science] [as complementary <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">partners</mark>] [for mutual <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">growth</mark>] — Note: The American Statistical Association affirmed complementarity in a 2015 press release.
 
 🔑 **Keywords**
 
@@ -144,7 +144,7 @@ and unstructured types.
 ### 🟧 [B] bird of paradise
 
 **Concept**
-💡 [I extract hidden **patterns** and fresh insights] [from organized **information**] [to guide smart business **decisions**]
+💡 [I extract hidden <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">patterns</mark> and fresh insights] [from organized <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">information</mark>] [to guide smart business <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">decisions</mark>]
 
 🔑 **Keywords**
 
@@ -164,7 +164,7 @@ A tiny bird of paradise the size of a marble lands on the hood of a parked truck
 ### 🟧 [C] cat
 
 **Concept**
-💡 [I work across private **companies**] [to turn raw numbers into **profit**] [or within **universities**] [as a quantitative **researcher**] — Note: Third-sector non-**profit** research is also an established career path.
+💡 [I work across private <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">companies</mark>] [to turn raw numbers into <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">profit</mark>] [or within <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">universities</mark>] [as a quantitative <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">researcher</mark>] — Note: Third-sector non-<mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">profit</mark> research is also an established career path.
 
 🔑 **Keywords**
 
@@ -202,7 +202,7 @@ robot | intelligence || clay | models
 ### 🟧 [E] eagle
 
 **Concept**
-💡 [I manage massive Big **Data**] [created by exploding **online** activity] [as computer power **doubles** every two years] — Note: Processing capacity has doubled roughly every two years since the 1970s.
+💡 [I manage massive Big <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">Data</mark>] [created by exploding <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">online</mark> activity] [as computer power <mark style="background:#d4a017;color:#1a1408;font-weight:700;padding:0 0.2em;border-radius:3px">doubles</mark> every two years] — Note: Processing capacity has doubled roughly every two years since the 1970s.
 
 🔑 **Keywords**
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from pathlib import Path
 from typing import Any
@@ -141,8 +142,19 @@ def keyword_display_terms(raw: str | None) -> list[str]:
     return terms
 
 
+KW_HIT_MD_STYLE = (
+    "background:#d4a017;color:#1a1408;font-weight:700;"
+    "padding:0 0.2em;border-radius:3px"
+)
+
+
+def highlight_keyword_term_md(term: str) -> str:
+    """Bold + gold highlight for practice Markdown (HTML <mark>, same as SPA)."""
+    return f'<mark style="{KW_HIT_MD_STYLE}">{html.escape(term, quote=True)}</mark>'
+
+
 def bold_keyword_terms(text: str, terms: list[str]) -> str:
-    """Wrap keyword terms that appear in text with Markdown bold."""
+    """Wrap concept-side keyword terms with gold highlight + bold."""
     if not text or not terms:
         return text
     pattern = "|".join(re.escape(t) for t in terms)
@@ -150,7 +162,7 @@ def bold_keyword_terms(text: str, terms: list[str]) -> str:
         return text
     return re.sub(
         rf"(?i)(?<![A-Za-z0-9])(?:{pattern})(?![A-Za-z0-9])",
-        lambda m: f"**{m.group(0)}**",
+        lambda m: highlight_keyword_term_md(m.group(0)),
         text,
     )
 
