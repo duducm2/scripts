@@ -70,11 +70,25 @@ def format_sensory(value: str | None) -> str:
 
 
 def format_keywords_lines(value: str | None) -> list[str]:
-    """One Keyword | Word pair per line; empty list if none."""
+    """One **Keyword** -> Word pair per line; empty list if none."""
     normalized = normalize_atom_keywords(value)
     if not normalized:
         return []
-    return [p.strip() for p in normalized.split(" || ") if p.strip()]
+    out: list[str] = []
+    for pair in normalized.split(" || "):
+        pair = pair.strip()
+        if not pair:
+            continue
+        if " | " in pair:
+            left, right = pair.split(" | ", 1)
+        elif "|" in pair:
+            left, right = pair.split("|", 1)
+        else:
+            continue
+        left, right = left.strip(), right.strip()
+        if left and right:
+            out.append(f"**{left}** \u2192 {right}")
+    return out
 
 
 def format_field_block(label: str, body: str) -> list[str]:
