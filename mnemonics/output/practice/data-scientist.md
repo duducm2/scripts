@@ -15,9 +15,10 @@ _No image_
 💡 I forecast what will happen using predictive analysis | while business intelligence looks backward | to explain what already happened
 
 🔑 **Keywords**
-**crystal ball** → predictive
-**rearview mirror** → backward
-**history book** → happened
+
+- [predictive] → [crystal ball]
+- [backward] → [rearview mirror]
+- [happened] → [history book]
 
 **Quote**
 “Enquanto Business Intelligence utiliza uma análise de dados "descritiva" ou "retrospectiva" para tentar responder a pergunta "o que aconteceu?", a ciência de dados faz uso da análise preditiva e tenta descobrir "o que vai, ou pode acontecer?".[4]”
@@ -34,9 +35,10 @@ A neon green frog the size of an armchair sits on an iron fire hydrant at the co
 💡 I confront claims | that data science is an empty buzzword | that merely relabeled business analyst degree programs — Note: Argument published in Forbes by Gil Press.
 
 🔑 **Keywords**
-**gavel** → claims
-**wasp** → buzzword
-**name tag** → analyst
+
+- [claims] → [gavel]
+- [buzzword] → [wasp]
+- [analyst] → [name tag]
 
 **Quote**
 “Em artigo na Forbes, por Gil Press, argumenta que a ciência de dados é uma buzzword sem uma definição clara e simplesmente substituiu "analista de negócios" no contexto dos programas de graduação.[6]”
@@ -53,8 +55,9 @@ A two-headed mountain goat balances on the wooden park bench on the right sidewa
 💡 I defend statistics as a foundational science | against redundant rebranding — Note: Nate Silver argued that the term data scientist is redundant and sexed-up.
 
 🔑 **Keywords**
-**abacus** → statistics
-**lipstick** → rebranding
+
+- [statistics] → [abacus]
+- [rebranding] → [lipstick]
 
 **Quote**
 “Na seção de perguntas e respostas de seu principal discurso na Reuniões Estatísticas da American Statistical Association, o notório estatístico aplicado Nate Silver disse: “Eu acho que cientista de dados é um termo sexualizado para um estatístico .... A estatística é um ramo da ciência. O cientista de dados é um pouco redundante de alguma forma e as pessoas não devem repreender o termo estatístico."[7]”
@@ -88,9 +91,10 @@ and data engineers.
 💡 I unite statistics and data science | as complementary partners | for mutual growth — Note: The American Statistical Association affirmed complementarity in a 2015 press release.
 
 🔑 **Keywords**
-**handcuffs** → unite
-**handshake** → partners
-**sprout** → growth
+
+- [unite] → [handcuffs]
+- [partners] → [handshake]
+- [growth] → [sprout]
 
 **Quote**
 “Em 2015, a American Statistical Association fez uma declaração através de um comunicado de imprensa que procura apaziguar essa questão. Basicamente ela afirma que as ciências são complementares, e a estatística procura fomentar um relacionamento mais próximo à ciência de dados para benefício mútuo.[10]”
@@ -143,9 +147,10 @@ and unstructured types.
 💡 I extract hidden patterns and fresh insights | from organized information | to guide smart business decisions
 
 🔑 **Keywords**
-**kaleidoscope** → patterns
-**filing cabinet** → information
-**steering wheel** → decisions
+
+- [patterns] → [kaleidoscope]
+- [information] → [filing cabinet]
+- [decisions] → [steering wheel]
 
 **Quote**
 “Visa, desse modo, a extração de conhecimento, detecção de padrões e/ou obtenção de insights para possíveis tomadas de decisão.”
@@ -162,10 +167,11 @@ A tiny bird of paradise the size of a marble lands on the hood of a parked truck
 💡 I work across private companies | to turn raw numbers into profit | or within universities | as a quantitative researcher — Note: Third-sector non-profit research is also an established career path.
 
 🔑 **Keywords**
-**briefcase** → companies
-**gold coin** → profit
-**diploma** → universities
-**telescope** → researcher
+
+- [companies] → [briefcase]
+- [profit] → [gold coin]
+- [universities] → [diploma]
+- [researcher] → [telescope]
 
 **Quote**
 “Cientistas de Dados podem trabalhar no setor privado, por exemplo, transformando grandes quantidades de dados brutos em insights de negócios, auxiliando empresas em tomadas de decisões para atingir melhores resultados[1] ou na academia e terceiro setor como pesquisadores quantitativos interdisciplinares.[2]”
@@ -199,9 +205,10 @@ robot | intelligence || clay | models
 💡 I manage massive Big Data | created by exploding online activity | as computer power doubles every two years — Note: Processing capacity has doubled roughly every two years since the 1970s.
 
 🔑 **Keywords**
-**mountain** → Data
-**smartphone** → online
-**clock** → doubles
+
+- [Data] → [mountain]
+- [online] → [smartphone]
+- [doubles] → [clock]
 
 **Quote**
 “Desde os anos 1970 a cada dois anos a nossa capacidade de processamento praticamente dobrou, e com esse grande aumento na quantidade de dados e na capacidade de processamento, um novo conceito surgiu, o Big Data.”
