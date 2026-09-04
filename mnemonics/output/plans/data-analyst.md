@@ -23,7 +23,7 @@
 
 ### 2. Advanced Functions
 
-- [ ] Master XLOOKUP with correct lookup-array vs return-array order
+- [✅] Master XLOOKUP with correct lookup-array vs return-array order
 - [ ] Build INDEX/MATCH lookups for flexible retrieval
 - [ ] Write nested IF / logical operators for conditional modeling
 - [ ] Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array

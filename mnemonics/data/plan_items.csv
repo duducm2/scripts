@@ -120,7 +120,7 @@ PITEM_0118,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Cor
 PITEM_0119,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,4
 PITEM_0120,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,5
 PITEM_0121,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,1,6
-PITEM_0122,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,0,7
+PITEM_0122,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,1,7
 PITEM_0123,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,0,8
 PITEM_0124,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,0,9
 PITEM_0125,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array,0,10
