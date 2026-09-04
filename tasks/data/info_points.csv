@@ -24,17 +24,6 @@ INFO_0022,project,PROJ_0011,BPM Backlog.md,BPM Backlog.md,ℹ️,,550,2026-08-29
 INFO_0028,project,PROJ_0012,Nadja vai involver o Rafael para entender quando seria um momento interessante,Nadja vai involver o Rafael para entender quando seria um momento interessante,ℹ️,,630,2026-08-29 15:48:39
 INFO_0031,task,TASK_0017,Wait to get in touch with Rafael.,Wait to get in touch with Rafael.,ℹ️,Projects/Business Model,710,2026-08-29 15:48:39
 INFO_0034,task,TASK_0025,Canal para troca se experiências,Canal para troca se experiências,ℹ️,Projects/Communication Plan/TEAMS group,840,2026-08-29 15:48:39
-INFO_0045,task,TASK_0032,Do this after 09.03,Do this after 09.03,ℹ️,Projects/Parte 2 – N8N,1030,2026-08-29 15:48:39
-INFO_0046,task,TASK_0032,We need to inform that there are no costs on the sandbox.,We need to inform that there are no costs on the sandbox.,ℹ️,Projects/Parte 2 – N8N,1040,2026-08-29 15:48:39
-INFO_0047,task,TASK_0032,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,Docupedia - https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html,ℹ️,Projects/Parte 2 – N8N,1050,2026-08-29 15:48:39
-INFO_0048,task,TASK_0032,Solicitação de Acesso - https://go.n8n.bosch.com/,Solicitação de Acesso - https://go.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1060,2026-08-29 15:48:39
-INFO_0049,task,TASK_0032,Plataforma - https://i1-s.n8n.bosch.com/,Plataforma - https://i1-s.n8n.bosch.com/,ℹ️,Projects/Parte 2 – N8N,1070,2026-08-29 15:48:39
-INFO_0050,task,TASK_0032,E-mail:,E-mail:,ℹ️,Projects/Parte 2 – N8N,1080,2026-08-29 15:48:39
-INFO_0051,task,TASK_0032,"Bom dia, key-users! Espero que estejam bem.","Bom dia, key-users! Espero que estejam bem.
-Vocês agora foram treinados no Gemini Enterprise, mas o caminho continua! Nosso próximo desafio é a plataforma N8N. De qualquer forma, o aprendizado vai valer muito a pena. O N8N ajudará você, e aos seus colegas de time, a construir automações com Agentes de IA.
-Para deixarmos tudo pronto para o treinamento, pedimos que vocês façam a solicitação de acesso à plataforma aqui (https://go.n8n.bosch.com/).
-Depois de liberados, vocês podem acessar a plataforma neste link (https://i1-s.n8n.bosch.com/) e acessar sua documentação aqui (https://inside-docupedia.bosch.com/confluence2/n8n/n8n-enterprise-for-bosch-549180801.html).
-Contem conosco nesta jornada de aprendizado.",ℹ️,Projects/Parte 2 – N8N,1090,2026-08-29 15:48:39
 INFO_0052,task,TASK_0033,Apresentação explicativa do N8N,Apresentação explicativa do N8N,ℹ️,Projects/N8N,1120,2026-08-29 15:48:39
 INFO_0053,task,TASK_0033,N8N precisa da solicitação de acesso.,N8N precisa da solicitação de acesso.,ℹ️,Projects/N8N,1130,2026-08-29 15:48:39
 INFO_0054,task,TASK_0033,"Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.","Não tem custos com a sandbox, mas apenas quando lançado em produção. Essa parte faz parte do treinamento.",ℹ️,Projects/N8N,1140,2026-08-29 15:48:39
