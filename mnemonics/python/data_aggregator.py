@@ -63,7 +63,12 @@ def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
 
 
 def save_all(data_dir: Path, data: dict[str, list[dict[str, str]]]) -> None:
+    # Only write kinds present in `data`. load_all() returns palace entities only
+    # (studies/palaces/beasts/atoms) and omits plans*; writing missing keys as []
+    # would wipe plans.csv / plan_items.csv / plan_resources.csv.
     for kind, headers in HEADERS.items():
+        if kind not in data:
+            continue
         _write_csv(data_dir / f"{kind}.csv", headers, data.get(kind, []))
 
 
