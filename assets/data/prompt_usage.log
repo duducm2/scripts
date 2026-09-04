@@ -195,3 +195,4 @@
 2026-09-01 15:50:57|g|🛡️ Preserve background for image generation|enterprise|default|ctx=1|direct
 2026-09-01 16:42:45|g|🛡️ Preserve background for image generation|copilot|default|ctx=1|direct
 2026-09-03 09:46:03|3|AI Text Optimizer|gemini|default|ctx=0|direct
+2026-09-04 10:45:48|1|Grammar & Spelling Corrector|enterprise|default|ctx=0+1|direct
