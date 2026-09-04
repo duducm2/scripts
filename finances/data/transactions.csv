@@ -94,3 +94,4 @@ TX096,2026-09-02,Cinema popcorn for fiancé and family,"85,00",card_expense,CAT_
 TX097,2026-09-02,Dinner,"35,00",card_expense,CAT_ALIMENTA,,ACC_MERCADOP,CARD_MP,
 TX098,2026-09-02,Salary,"5508,96",income,CAT_SALARIO,,ACC_MERCADOP,,
 TX099,2026-09-04,Shorts,"251,87",expense,CAT_SAUDE,,ACC_MERCADOP,,
+TX100,2026-09-04,Phone handler,"120,20",card_expense,CAT_ELETRONI,,,CARD_MP,
