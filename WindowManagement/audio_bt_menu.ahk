@@ -1416,7 +1416,7 @@ AudioBt_DoAction(action, requireBt := false) {
     msg := AudioBt_StripResult(IsObject(result) ? result.text : "")
     if (IsObject(result) && result.ok) {
         ShowCenteredOverlay_Utils("✅ " . (msg = "" ? "Done" : msg), 1400, BANNER_ACCENT_SUCCESS)
-        if (action = "isolate")
+        if (action = "isolate" || action = "disconnect")
             AudioBt_Cleanup()
     } else {
         ShowNotification_WM("❌ " . (msg = "" ? "Action failed" : msg))

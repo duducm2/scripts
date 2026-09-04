@@ -348,48 +348,358 @@ ClipAngel_KillProcess(timeoutMs := 4000) {
     return !ProcessExist("ClipAngel.exe")
 }
 
-; Macros [R] — hard restart when Clip Angel is stuck (kill process → relaunch → activate).
+; SendMessageTimeout WM_NULL + IsHungAppWindow; false when unresponsive within timeout.
+CLIPANGEL_RESPONSIVE_PROBE_MS := 300
+CLIPANGEL_RESTART_HWND_WAIT_MS := 15000
+CLIPANGEL_RESTART_RESPONSIVE_WAIT_MS := 20000
+CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS := 10000
+CLIPANGEL_RESTART_PROCESS_WAIT_MS := 12000
+CLIPANGEL_RESTART_LIST_WAIT_MS := 8000
+CLIPANGEL_RESTART_QUALITY_POLL_MS := 100
+CLIPANGEL_RESTART_MAX_ATTEMPTS := 2
+
+ClipAngel_IsWindowResponsive(hwnd, timeoutMs := 0) {
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    if (!timeoutMs)
+        timeoutMs := CLIPANGEL_RESPONSIVE_PROBE_MS
+    try {
+        if DllCall("IsHungAppWindow", "Ptr", hwnd)
+            return false
+    } catch {
+    }
+    result := 0
+    ; SMTO_ABORTIFHUNG = 0x0002
+    ok := DllCall("SendMessageTimeout", "Ptr", hwnd, "UInt", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0002, "UInt",
+        timeoutMs, "Ptr*", &result)
+    return ok != 0
+}
+
+; Poll until Clip Angel's main window answers WM_NULL (or timeout).
+ClipAngel_WaitUntilResponsive(hwnd, timeoutMs := 0) {
+    if (!timeoutMs)
+        timeoutMs := CLIPANGEL_RESTART_RESPONSIVE_WAIT_MS
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        cur := ClipAngel_MainHwnd()
+        if (cur)
+            hwnd := cur
+        if ClipAngel_IsWindowResponsive(hwnd)
+            return true
+        Sleep CLIPANGEL_RESTART_QUALITY_POLL_MS
+    }
+    cur := ClipAngel_MainHwnd()
+    if (cur)
+        hwnd := cur
+    return ClipAngel_IsWindowResponsive(hwnd)
+}
+
+; True when hwnd is the ClipAngel WinForms main shell (not a random dialog).
+ClipAngel_IsMainWindowIdentity(hwnd) {
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd)
+        return false
+    try {
+        if (StrLower(WinGetProcessName("ahk_id " hwnd)) != "clipangel.exe")
+            return false
+    } catch {
+        return false
+    }
+    try {
+        title := WinGetTitle("ahk_id " hwnd)
+        if !InStr(title, "ClipAngel")
+            return false
+    } catch {
+        return false
+    }
+    try {
+        cls := WinGetClass("ahk_id " hwnd)
+        if !InStr(cls, "WindowsForms10")
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+; New process after kill: ClipAngel.exe exists, PID != oldPid, optional path match.
+ClipAngel_WaitForNewProcess(oldPid, expectedExe := "", timeoutMs := 0) {
+    if (!timeoutMs)
+        timeoutMs := CLIPANGEL_RESTART_PROCESS_WAIT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        pid := ProcessExist("ClipAngel.exe")
+        if (pid && pid != oldPid) {
+            if (expectedExe = "")
+                return pid
+            try path := ProcessGetPath("ClipAngel.exe")
+            catch
+                path := ""
+            if (path = "" || StrLower(path) = StrLower(expectedExe))
+                return pid
+        }
+        Sleep CLIPANGEL_RESTART_QUALITY_POLL_MS
+    }
+    return 0
+}
+
+; Wait for a main hwnd owned by newPid (when known) that passes identity checks.
+ClipAngel_WaitForRestartHwnd(newPid := 0, timeoutMs := 0) {
+    if (!timeoutMs)
+        timeoutMs := CLIPANGEL_RESTART_HWND_WAIT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        hwnd := ClipAngel_MainHwnd()
+        if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd)) {
+            if (!newPid)
+                return hwnd
+            try {
+                if (WinGetPID("ahk_id " hwnd) = newPid)
+                    return hwnd
+            } catch {
+            }
+        }
+        Sleep CLIPANGEL_RESTART_QUALITY_POLL_MS
+    }
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd)) {
+        if (!newPid)
+            return hwnd
+        try {
+            if (WinGetPID("ahk_id " hwnd) = newPid)
+                return hwnd
+        } catch {
+        }
+    }
+    return 0
+}
+
+; Layout usable after restart: shown, not tiny bar, preferably maximized + foreground.
+ClipAngel_IsRestartLayoutOk(hwnd) {
+    if !hwnd || !ClipAngel_IsWindowShown(hwnd)
+        return false
+    if ClipAngel_NeedsLayoutCorrection(hwnd)
+        return false
+    if !WinActive("ahk_id " hwnd)
+        return false
+    try {
+        if (WinGetMinMax("ahk_id " hwnd) != 1)
+            return false
+    } catch {
+        return false
+    }
+    return true
+}
+
+; UIA gates: dataGridView present, then Row 0 / list ready. Never call if hung.
+ClipAngel_WaitForRestartUiReady(hwnd, timeoutMs := 0) {
+    if (!timeoutMs)
+        timeoutMs := CLIPANGEL_RESTART_LIST_WAIT_MS
+    if !(hwnd is Integer) || hwnd <= 0
+        return false
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        cur := ClipAngel_MainHwnd()
+        if (cur)
+            hwnd := cur
+        if !ClipAngel_IsWindowResponsive(hwnd)
+            return false
+        try {
+            if ClipAngel_UiaGetDataGrid(hwnd) {
+                if ClipAngel_IsListReady(&hwnd) {
+                    try ClipAngel_UiaEnsureRow0Selected(hwnd, false)
+                    catch {
+                    }
+                    return true
+                }
+            }
+        } catch {
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if !ClipAngel_IsWindowResponsive(hwnd)
+        return false
+    try return ClipAngel_IsListReady()
+    catch
+        return false
+}
+
+; Full post-restart quality gate. Sets failReason on false.
+ClipAngel_RestartQualityOk(hwnd, expectedExe, oldPid, &failReason) {
+    failReason := ""
+    if !(hwnd is Integer) || hwnd <= 0 || !WinExist("ahk_id " hwnd) {
+        failReason := "no window"
+        return false
+    }
+    if !ClipAngel_IsMainWindowIdentity(hwnd) {
+        failReason := "window identity mismatch"
+        return false
+    }
+    try pid := WinGetPID("ahk_id " hwnd)
+    catch
+        pid := 0
+    if (oldPid && pid && pid = oldPid) {
+        failReason := "same PID as before kill"
+        return false
+    }
+    if (expectedExe != "") {
+        try path := WinGetProcessPath("ahk_id " hwnd)
+        catch
+            path := ""
+        if (path != "" && StrLower(path) != StrLower(expectedExe)) {
+            failReason := "exe path mismatch"
+            return false
+        }
+    }
+    if !ClipAngel_IsWindowResponsive(hwnd) {
+        failReason := "not responding"
+        return false
+    }
+    if !ClipAngel_IsRestartLayoutOk(hwnd) {
+        failReason := "layout/foreground not ready"
+        return false
+    }
+    try {
+        if !ClipAngel_UiaGetDataGrid(hwnd) {
+            failReason := "clip list (dataGridView) missing"
+            return false
+        }
+        if !ClipAngel_IsListReady(&hwnd) {
+            failReason := "clip list Row 0 not ready"
+            return false
+        }
+    } catch {
+        failReason := "UIA list check failed"
+        return false
+    }
+    return true
+}
+
+; One kill→launch→verify cycle. Returns true on success; failReason on false.
+ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason) {
+    failReason := ""
+    baselinePid := oldPid
+    label := (CLIPANGEL_RESTART_MAX_ATTEMPTS > 1)
+        ? " (attempt " attempt "/" CLIPANGEL_RESTART_MAX_ATTEMPTS ")"
+        : ""
+
+    if ProcessExist("ClipAngel.exe") {
+        StandardLoadingBar_Update("⏳ Killing Clip Angel process…" label)
+        if !ClipAngel_KillProcess(5000) {
+            failReason := "could not kill ClipAngel.exe"
+            return false
+        }
+        Sleep 250
+    }
+
+    StandardLoadingBar_Update("⏳ Opening Clip Angel…" label)
+    try Run('"' exePath '"')
+    catch as e {
+        failReason := "failed to start: " e.Message
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Waiting for new Clip Angel process…" label)
+    newPid := ClipAngel_WaitForNewProcess(baselinePid, exePath, CLIPANGEL_RESTART_PROCESS_WAIT_MS)
+    if (!newPid) {
+        failReason := "process did not start (or wrong exe path)"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Waiting for Clip Angel window…" label)
+    hwnd := ClipAngel_WaitForRestartHwnd(newPid, CLIPANGEL_RESTART_HWND_WAIT_MS)
+    if (!hwnd) {
+        failReason := "main window did not appear"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Waiting for Clip Angel to respond…" label)
+    if !ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_RESPONSIVE_WAIT_MS) {
+        failReason := "started but is not responding"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Activating Clip Angel…" label)
+    ; silent + skipRow0: keep StandardLoadingBar as the only indicator; UIA list gate comes next.
+    if !ActivateClipAngelWithFocusCorrection(true, 0, true, true) {
+        failReason := "window not found after start"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Verifying Clip Angel is responsive…" label)
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd || !ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS) {
+        failReason := "not responding after activate"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Waiting for Clip Angel list…" label)
+    if !ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS) {
+        failReason := "clip list not ready"
+        return false
+    }
+
+    StandardLoadingBar_Update("⏳ Confirming restart quality…" label)
+    hwnd := ClipAngel_MainHwnd()
+    if !ClipAngel_RestartQualityOk(hwnd, exePath, baselinePid, &failReason) {
+        if (failReason = "")
+            failReason := "quality gate failed"
+        return false
+    }
+    return true
+}
+
+; Macros [R] — hard restart when Clip Angel is stuck.
+; Loading Indication stays up for the whole path; up to 2 attempts with multi-gate verify.
 ClipAngel_RestartHard(*) {
     global g_ClipAngelAutomationBusy
     StandardLoadingBar_Show("⏳ Restarting Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+    g_ClipAngelAutomationBusy := true
+    failReason := ""
     try {
+        oldPid := ProcessExist("ClipAngel.exe")
         exePath := ClipAngel_ResolveExePath()
-        g_ClipAngelAutomationBusy := false
-        if ProcessExist("ClipAngel.exe") {
-            StandardLoadingBar_Update("⏳ Killing Clip Angel process…")
-            if !ClipAngel_KillProcess(5000) {
-                StandardLoadingBar_Hide(0)
-                ShowCenteredOverlay_Utils("❌ Could not kill ClipAngel.exe", 2500, BANNER_ACCENT_ERROR)
-                return
+        ; Prefer path from still-running process before kill when resolver is empty.
+        if ((exePath = "" || !FileExist(exePath)) && oldPid) {
+            try {
+                hwndLive := ClipAngel_MainHwnd()
+                if (hwndLive)
+                    exePath := WinGetProcessPath("ahk_id " hwndLive)
+            } catch {
             }
-            Sleep 250
         }
         if (exePath = "" || !FileExist(exePath)) {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ ClipAngel.exe not found", 2500, BANNER_ACCENT_ERROR)
             return
         }
-        StandardLoadingBar_Update("⏳ Opening Clip Angel…")
-        try Run('"' exePath '"')
-        catch as e {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Failed to start Clip Angel: " . e.Message, 2800, BANNER_ACCENT_ERROR)
-            return
+
+        loop CLIPANGEL_RESTART_MAX_ATTEMPTS {
+            if ClipAngel_RestartAttempt(exePath, oldPid, A_Index, &failReason) {
+                StandardLoadingBar_Hide(0)
+                ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
+                return
+            }
+            if (A_Index < CLIPANGEL_RESTART_MAX_ATTEMPTS) {
+                StandardLoadingBar_Update("⏳ Restart incomplete — retrying…")
+                Sleep 400
+                oldPid := ProcessExist("ClipAngel.exe")
+            }
         }
-        hwnd := ClipAngel_WaitForMainHwnd(10000)
-        if (!hwnd) {
-            StandardLoadingBar_Hide(0)
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not start", 2500, BANNER_ACCENT_ERROR)
-            return
-        }
+
         StandardLoadingBar_Hide(0)
-        ActivateClipAngelWithFocusCorrection(false, 0, false, true)
-        ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
+        msg := "❌ Clip Angel restart failed"
+        if (failReason != "")
+            msg .= ": " failReason
+        ShowCenteredOverlay_Utils(msg, 3200, BANNER_ACCENT_ERROR)
     } catch as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
         ShowCenteredOverlay_Utils("❌ Clip Angel restart failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+    } finally {
+        g_ClipAngelAutomationBusy := false
     }
 }
 
