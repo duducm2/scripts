@@ -257,8 +257,9 @@ ClipAngel_EscapeMinimize() {
 
 ; Resolve ClipAngel.exe for hard restart.
 ; Personal portable: C:\Users\eduev\Documents\ClipAngel\ClipAngel 2.13\…
-; Work portable (Handy-style under fie7ca\Documents): ClipAngel 2.23 (docs/reference/clip-angel.txt).
-; A_MyDocuments may be OneDrive\Documentos — do not rely on it alone.
+; Work portable: OneDrive Bosch Documents\ClipAngel\ClipAngel.exe (also legacy
+; Handy-style under fie7ca\Documents\ClipAngel 2.23 — docs/reference/clip-angel.txt).
+; A_MyDocuments may be OneDrive — prefer known exact paths, then scan roots.
 ClipAngel_ResolveExePath() {
     global IS_WORK_ENVIRONMENT
     try {
@@ -279,27 +280,38 @@ ClipAngel_ResolveExePath() {
         }
     }
 
-    ; Optional env.ahk helper when present.
+    ; Optional env.ahk helper when present — call by name so hosts without it do not #Warn.
     try {
-        envPath := GetClipAngelExePath()
+        fnName := "GetClipAngelExePath"
+        envPath := %fnName%()
         if (envPath != "" && FileExist(envPath))
             return envPath
     } catch {
     }
 
     personalExact := "C:\Users\eduev\Documents\ClipAngel\ClipAngel 2.13\ClipAngel.exe"
-    workExact := "C:\Users\fie7ca\Documents\ClipAngel\ClipAngel 2.23\ClipAngel.exe"
+    workExact :=
+        "C:\Users\fie7ca\OneDrive - Bosch Group\01 - Geral\16 - Others backups\Documents\ClipAngel\ClipAngel.exe"
+    workLegacyExact := "C:\Users\fie7ca\Documents\ClipAngel\ClipAngel 2.23\ClipAngel.exe"
     isWork := IsSet(IS_WORK_ENVIRONMENT) && IS_WORK_ENVIRONMENT
     preferred := isWork ? workExact : personalExact
     other := isWork ? personalExact : workExact
     if FileExist(preferred)
         return preferred
+    if FileExist(workLegacyExact)
+        return workLegacyExact
     if FileExist(other)
         return other
 
     roots := []
     if (isWork) {
+        roots.Push("C:\Users\fie7ca\OneDrive - Bosch Group\01 - Geral\16 - Others backups\Documents")
         roots.Push("C:\Users\fie7ca\Documents")
+        userDocs := EnvGet("USERPROFILE") "\Documents"
+        if (userDocs != "" && userDocs != "C:\Users\fie7ca\Documents")
+            roots.Push(userDocs)
+        if (A_MyDocuments != "" && A_MyDocuments != "C:\Users\fie7ca\Documents")
+            roots.Push(A_MyDocuments)
     } else {
         roots.Push("C:\Users\eduev\Documents")
         userDocs := EnvGet("USERPROFILE") "\Documents"
@@ -310,9 +322,9 @@ ClipAngel_ResolveExePath() {
     }
     for root in roots {
         for cand in [
+            root "\ClipAngel\ClipAngel.exe",
             root "\ClipAngel\ClipAngel 2.23\ClipAngel.exe",
-            root "\ClipAngel\ClipAngel 2.13\ClipAngel.exe",
-            root "\ClipAngel\ClipAngel.exe"
+            root "\ClipAngel\ClipAngel 2.13\ClipAngel.exe"
         ] {
             if FileExist(cand)
                 return cand
