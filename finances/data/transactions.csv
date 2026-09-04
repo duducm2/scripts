@@ -93,3 +93,4 @@ TX095,2026-09-02,McDonald's coffee for fiancé and family,"17,00",card_expense,C
 TX096,2026-09-02,Cinema popcorn for fiancé and family,"85,00",card_expense,CAT_LAZER,Events,ACC_MERCADOP,CARD_MP,
 TX097,2026-09-02,Dinner,"35,00",card_expense,CAT_ALIMENTA,,ACC_MERCADOP,CARD_MP,
 TX098,2026-09-02,Salary,"5508,96",income,CAT_SALARIO,,ACC_MERCADOP,,
+TX099,2026-09-04,Shorts,"251,87",expense,CAT_SAUDE,,ACC_MERCADOP,,
