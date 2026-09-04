@@ -9,4 +9,4 @@ Formatting: Output plain text with no styling. Remove dashes from the text. Use 
 Output rules: Return only the corrected text. Do not add commentary, explanations, labels, apologies, or any introductory or concluding remarks. Do not describe what you changed.
 
 ---
-Tone picker (attach one at paste): Formal, Casual, Warm, Concise, Collegial. Default is Formal when none is attached.
+Tone picker (attach one at paste): Formal, Casual, Warm, Concise, Collegial, Preserve. Default is Formal when none is attached.

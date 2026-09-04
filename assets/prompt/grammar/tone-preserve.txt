@@ -1,0 +1,5 @@
+TONE: Preserve
+Correct only grammar, spelling, and punctuation.
+Keep my wording, meaning, voice, and sentence structure as close as possible to the original.
+Do not rewrite, rephrase, polish, shorten, expand, or change tone. Do not swap synonyms or rearrange ideas unless required to fix a clear error.
+If a sentence is already correct, leave it unchanged.
