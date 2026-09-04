@@ -110,19 +110,36 @@ Palace_SettingsPath() {
     return Palace_DataDir() . "\settings.ini"
 }
 
+; Machine-local UI / visualization state — not shared across environments via git.
+Palace_SettingsLocalPath() {
+    return Palace_DataDir() . "\settings.local.ini"
+}
+
+Palace_IsLocalSettingKey(section, key) {
+    if (section != "General")
+        return false
+    return (key = "WebChromeHwnd" || key = "DashboardChromeHwnd" || key = "LastStudyId")
+}
+
 Palace_EnsureSettings() {
     path := Palace_SettingsPath()
-    if (FileExist(path))
-        return
-    content := "[Dashboard]`n"
-        . "ShowPalaceGrid=1`n"
-        . "ShowMissingImages=1`n"
-        . "ShowBeastCounts=1`n"
-        . "`n[General]`n"
-        . "LastStudyId=`n"
-        . "DashboardChromeHwnd=`n"
-        . "NotesStudiesRoot=`n"
-    Palace_WriteUtf8(path, content)
+    if (!FileExist(path)) {
+        content := "[Dashboard]`n"
+            . "ShowPalaceGrid=1`n"
+            . "ShowMissingImages=1`n"
+            . "ShowBeastCounts=1`n"
+            . "`n[General]`n"
+            . "NotesStudiesRoot=`n"
+        Palace_WriteUtf8(path, content)
+    }
+    localPath := Palace_SettingsLocalPath()
+    if (!FileExist(localPath)) {
+        localContent := "[General]`n"
+            . "LastStudyId=`n"
+            . "DashboardChromeHwnd=`n"
+            . "WebChromeHwnd=`n"
+        Palace_WriteUtf8(localPath, localContent)
+    }
 }
 
 Palace_EnsureData() {
@@ -136,6 +153,21 @@ Palace_EnsureData() {
 }
 
 Palace_Setting(section, key, default := "") {
+    Palace_EnsureSettings()
+    if (Palace_IsLocalSettingKey(section, key)) {
+        val := IniRead(Palace_SettingsLocalPath(), section, key, "ERROR")
+        if (val != "ERROR")
+            return val
+        ; One-time migration from legacy shared settings.ini
+        legacy := IniRead(Palace_SettingsPath(), section, key, "ERROR")
+        if (legacy != "ERROR" && Trim(legacy) != "") {
+            try IniWrite(legacy, Palace_SettingsLocalPath(), section, key)
+            catch {
+            }
+            return legacy
+        }
+        return default
+    }
     val := IniRead(Palace_SettingsPath(), section, key, default)
     if (val = "ERROR")
         return default
@@ -143,6 +175,11 @@ Palace_Setting(section, key, default := "") {
 }
 
 Palace_SetSetting(section, key, value) {
+    Palace_EnsureSettings()
+    if (Palace_IsLocalSettingKey(section, key)) {
+        IniWrite(value, Palace_SettingsLocalPath(), section, key)
+        return
+    }
     IniWrite(value, Palace_SettingsPath(), section, key)
 }
 
@@ -401,7 +438,7 @@ Palace_BuildPromptStudyPack(studyId) {
         return []
     outDir := A_Temp . "\palace_prompt_" . studyId
     cmd := pyCmd . ' "' . py . '" --data-dir "' . Palace_DataDir() . '" --study-id "' . studyId
-        . '" --out-dir "' . outDir . '"'
+    . '" --out-dir "' . outDir . '"'
     try RunWait(A_ComSpec . ' /c ' . cmd, A_ScriptDir, "Hide")
     catch {
         return []
@@ -450,7 +487,8 @@ Palace_Headers(kind) {
             return ["id", "palace_id", "peg_code", "beast_name", "beast_source", "sensory_channel", "is_smashed",
                 "sort_order"]
         case "atoms":
-            return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "keywords", "quote", "story", "sensory", "ipa",
+            return ["id", "beast_id", "kind", "zone", "zone_label", "concept", "keywords", "quote", "story", "sensory",
+                "ipa",
                 "sort_order"]
         case "plans":
             return ["id", "study_id", "title", "sort_order", "active"]

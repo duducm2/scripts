@@ -353,9 +353,9 @@ Palace_WebHwndCacheGet() {
     hwnd := Palace_WebHwndValid(g_PalaceDashboardHwnd)
     if (hwnd)
         return hwnd
-    raw := Trim(IniRead(Palace_SettingsPath(), "General", "WebChromeHwnd", ""))
+    raw := Trim(Palace_Setting("General", "WebChromeHwnd", ""))
     if (raw = "")
-        raw := Trim(IniRead(Palace_SettingsPath(), "General", "DashboardChromeHwnd", ""))
+        raw := Trim(Palace_Setting("General", "DashboardChromeHwnd", ""))
     hwnd := Palace_WebHwndValid(raw)
     g_PalaceDashboardHwnd := hwnd
     return hwnd
@@ -365,7 +365,7 @@ Palace_WebHwndCacheSet(hwnd) {
     global g_PalaceDashboardHwnd
     hwnd := Palace_WebHwndValid(hwnd)
     g_PalaceDashboardHwnd := hwnd
-    try IniWrite(hwnd ? String(hwnd) : "", Palace_SettingsPath(), "General", "WebChromeHwnd")
+    try Palace_SetSetting("General", "WebChromeHwnd", hwnd ? String(hwnd) : "")
     catch {
     }
 }

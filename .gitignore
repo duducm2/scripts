@@ -15,3 +15,6 @@ Maono*.rar
 aux/
 infra/aux/
 tasks/data/task_server.pid
+mnemonics/data/palace_server.pid
+# Machine-local Memory Palace UI state (Chrome HWNDs, last study) — do not commit
+mnemonics/data/settings.local.ini
