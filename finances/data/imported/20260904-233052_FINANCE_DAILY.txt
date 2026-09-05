@@ -1,0 +1,11 @@
+﻿===PREVIEW===
+4 row(s) · 3 card expenses, 1 regular expense
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Pea bags for father,"58,82",card_expense,CAT_HUMANITA,,ACC_MERCADOP,CARD_MP,
+Dinner with fiancé,"138,38",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
+Parking attendant,"5,00",expense,CAT_CARRO,,ACC_MERCADOP,,
+Google services,"96,99",card_expense,CAT_SUBSCRIP,,ACC_MERCADOP,CARD_MP,
+===END_FILE===
