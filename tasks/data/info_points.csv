@@ -362,3 +362,15 @@ INFO_0128,task,TASK_0009,UR000114777,,ℹ️,,3870,2026-09-03 11:43:50
 INFO_0129,task,TASK_0241,"https://opencode.ai/docs/
 you were reading it",,ℹ️,,10,2026-09-03 20:08:43
 INFO_0130,task,TASK_0242,C:\Users\fie7ca\OneDrive - Bosch Group\SO UX - LA (Internal) - BPM\05-Others\backlog-september\backlog-september.csv,,ℹ️,,10,2026-09-04 11:47:35
+INFO_0131,task,TASK_0244,"Corrections I need to do in my dissertation
+In the English abstract we have the word trustworthiness instead of trust
+You should check if all images Legends are finishing with a DOT
+On page 22, some attributes of the MQCI have a strange
+A última sentença da página 24 fala no entanto embora essa similaridade não seja estagicamente exata seria equivalente em nível de percepção parece meio estranha o que significa nível de percepção
+Página 28 deveria ser ""para eles"" em vez de para ele
+Na página 30 aqui falamos sobre a engenharia de prompt ajuda a melhorar a eficiência do resultado na verdade deveria ser eficácia
+Na página 37 mahmud é citado duas vezes
+Na página 38 o trabalho de Lima é citado e tem algo estranho entre parênteses
+Na página 39 também é utilizado esse SD entre parênteses
+Foi necessário analisar a documentação da OpenAI, para entender quais modelos,
+quais sistemas operacionais e qual navegador embutido eram utilizados pelos agentes",,ℹ️,,10,2026-09-07 19:29:44
