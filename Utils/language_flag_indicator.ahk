@@ -195,9 +195,11 @@ ShowSingleCharTabBanner_Utils(tabNumber) {
 ; =============================================================================
 ; ExecuteHandyAiModelSelection() - Main automation logic for Handy
 ; keepOpen: when true, leave Handy open after success (for History re-transcribe).
+; restoreHwnd: window to re-activate after closing Handy (paste/dictation target).
+;   0 = capture foreground at start (before Handy steals focus).
 ; Returns true on success, false on failure.
 ; =============================================================================
-ExecuteHandyAiModelSelection(selection, keepOpen := false) {
+ExecuteHandyAiModelSelection(selection, keepOpen := false, restoreHwnd := 0) {
     if (!HandyAi_IsOwnerProcess() && A_ScriptName != "WindowManagement.ahk")
         return false
     global g_HandyAiModels, HANDY_AI_MODEL_MAX_ATTEMPTS, HANDY_AI_MODEL_RETRY_DELAY_MS
@@ -205,12 +207,19 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
     if !g_HandyAiModels.Has(selection)
         return false
 
+    if (!restoreHwnd) {
+        try restoreHwnd := WinGetID("A")
+        catch {
+            restoreHwnd := 0
+        }
+    }
+
     modelInfo := g_HandyAiModels[selection]
     modelDisplayName := modelInfo.name
     modelClickName := modelInfo.HasProp("modelClickName") ? modelInfo.modelClickName : modelInfo.name
 
+    handyHwnd := 0
     try {
-        handyHwnd := 0
         verified := false
 
         loop HANDY_AI_MODEL_MAX_ATTEMPTS {
@@ -228,6 +237,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
                 AiModelBanner_Show("❌ Failed to launch Handy", "E74C3C")
                 Sleep 2000
                 AiModelBanner_Hide()
+                if (!keepOpen)
+                    Handy_RestorePrevWindow(restoreHwnd)
                 return false
             }
 
@@ -257,6 +268,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
             AiModelBanner_Show("❌ Could not switch model after " . HANDY_AI_MODEL_MAX_ATTEMPTS . " attempts", "E74C3C")
             Sleep 2000
             AiModelBanner_Hide()
+            if (!keepOpen)
+                Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
             return false
         }
 
@@ -264,6 +277,8 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
             AiModelBanner_Show("❌ Could not save model preference", BANNER_ACCENT_ERROR)
             Sleep 2000
             AiModelBanner_Hide()
+            if (!keepOpen)
+                Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
             return false
         }
 
@@ -289,12 +304,15 @@ ExecuteHandyAiModelSelection(selection, keepOpen := false) {
         Sleep 150
 
         AiModelBanner_Hide()
+        Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
         return true
 
     } catch Error as e {
         AiModelBanner_Show("❌ Error: " . e.Message, "E74C3C")
         Sleep 2000
         AiModelBanner_Hide()
+        if (!keepOpen)
+            Handy_RestorePrevWindow(restoreHwnd, handyHwnd)
         return false
     }
 }

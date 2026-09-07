@@ -99,3 +99,4 @@ TX101,2026-09-03,Pea bags for father,"58,82",card_expense,CAT_HUMANITA,,ACC_MERC
 TX102,2026-09-03,Dinner with fiancé,"138,38",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
 TX103,2026-09-03,Parking attendant,"5,00",expense,CAT_CARRO,,ACC_MERCADOP,,
 TX104,2026-09-03,Google services,"96,99",card_expense,CAT_SUBSCRIP,,ACC_MERCADOP,CARD_MP,
+TX105,2026-09-07,Shampoo,"269,97",card_expense,CAT_MERCADO,,,CARD_MP,

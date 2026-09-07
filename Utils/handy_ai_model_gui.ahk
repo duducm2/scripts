@@ -193,12 +193,14 @@ AiModelSelector_BindModalHotkeys() {
 }
 
 AiModelSelector_Select(selection, *) {
-    global g_AiModelSelectorActive, g_HandyAiModels
+    global g_AiModelSelectorActive, g_HandyAiModels, g_AiModelSelectorPrevHwnd
     if (!g_AiModelSelectorActive)
         return
+    ; Keep the pre-selector window (dictation paste target) across Close + Handy focus steal.
+    restoreHwnd := g_AiModelSelectorPrevHwnd
     AiModelSelector_Close()
     if (g_HandyAiModels.Has(selection))
-        ExecuteHandyAiModelSelection(selection)
+        ExecuteHandyAiModelSelection(selection, false, restoreHwnd)
 }
 
 AiModelSelector_SelectedSlot() {

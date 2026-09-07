@@ -9,6 +9,22 @@
 ; Handy UIA Helper Functions
 ; =============================================================================
 
+; Restore the window that was focused before Handy automation (paste/dictation target).
+; excludeHwnd: skip if it is Handy itself (already closed or still the only option).
+Handy_RestorePrevWindow(restoreHwnd, excludeHwnd := 0) {
+    if (!restoreHwnd || (excludeHwnd && restoreHwnd = excludeHwnd))
+        return false
+    if !WinExist("ahk_id " restoreHwnd)
+        return false
+    try {
+        WinActivate("ahk_id " restoreHwnd)
+        WinWaitActive("ahk_id " restoreHwnd, , 1)
+        return !!WinActive("ahk_id " restoreHwnd)
+    } catch {
+        return false
+    }
+}
+
 ; Activate existing Handy window or launch it; returns hwnd or 0
 Handy_ActivateOrLaunch() {
     targetPath := GetHandyShortcutPath()
