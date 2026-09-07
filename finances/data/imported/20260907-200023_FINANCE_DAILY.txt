@@ -1,0 +1,22 @@
+﻿===PREVIEW===
+15 row(s) · skipped windshield wiper item (no amount specified)
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+toll booth,"50,00",expense,CAT_CARRO,,ACC_MERCADOP,,
+lunch with fiancee,"102,96",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
+toy claw machine,"6,00",card_expense,CAT_JOGOS,,ACC_MERCADOP,CARD_MP,
+groceries,"131,25",card_expense,CAT_MERCADO,Food items,ACC_MERCADOP,CARD_MP,
+kitchen utensils,"48,80",card_expense,CAT_MATERIAI,Home,ACC_MERCADOP,CARD_MP,
+hotel for wedding,"451,34",card_expense,CAT_LAZER,Travel,ACC_MERCADOP,CARD_MP,
+toll booth,"50,00",expense,CAT_CARRO,,ACC_MERCADOP,,
+dinner,"103,50",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
+ice cream,"18,90",card_expense,CAT_MERCADO,Frozen and deli,ACC_MERCADOP,CARD_MP,
+clothes from Chinese store,"102,00",card_expense,CAT_ROUPA,,ACC_MERCADOP,CARD_MP,
+magnets for collection,"20,00",card_expense,CAT_MATERIAI,Collectibles,ACC_MERCADOP,CARD_MP,
+lunch,"44,50",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
+toll booth,"50,00",expense,CAT_CARRO,,ACC_MERCADOP,,
+gas,"80,00",card_expense,CAT_CARRO,,ACC_MERCADOP,CARD_MP,
+coffee shop,"39,00",expense,CAT_MERCADO,Bakery,ACC_MERCADOP,,
+===END_FILE===
