@@ -19,7 +19,7 @@ global g_DesktopToRecycleTrackTimer := ""
 global g_DesktopToRecycleTrackLastMonIdx := 0
 global g_DesktopToRecycleReinforceGen := 0
 global DESKTOP_TO_RECYCLE_AUTOSLOT_PROP := "DesktopToRecycleTempExclude"
-global DESKTOP_TO_RECYCLE_TRACK_INTERVAL := 115
+global DESKTOP_TO_RECYCLE_TRACK_INTERVAL := 400
 global DESKTOP_TO_RECYCLE_PREVIEW_SCALE := 0.5
 global DESKTOP_TO_RECYCLE_PREVIEW_OPACITY := 220  ; 40% of 255
 global g_DesktopToRecycleSessionId := 0
@@ -62,8 +62,7 @@ DesktopToRecycle_OnCancelFromN(*) {
 DesktopToRecycle_OnTimeout(*) {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecycleSessionId, g_DesktopToRecycleSessionStartTick
     global DESKTOP_TO_RECYCLE_DECISION_MS
-    ; Defend against a stale ShowWithKeys timer from a prior confirm (fixed in CloseKeysOverlay,
-    ; but keep this guard if an old BoundFunc still fires).
+    ; Stale ShowWithKeys timeout guard (CloseKeysOverlay cancels the BoundFunc; keep age check).
     age := g_DesktopToRecycleSessionStartTick > 0 ? (A_TickCount - g_DesktopToRecycleSessionStartTick) : -1
     if (!g_DesktopToRecycleSessionId || !g_DesktopToRecycleCloseHwnd || age >= 0 && age <
         DESKTOP_TO_RECYCLE_DECISION_MS -
@@ -238,41 +237,6 @@ DesktopToRecycle_ExplorerPathMatches(hwnd, targetPath) {
     } catch {
     }
     return false
-}
-
-; New Shell window not in beforeShell — park immediately. Path may still be empty.
-DesktopToRecycle_ClaimNewShellEarly(beforeShell, targetPath, workLeft, workTop, workRight, workBottom) {
-    try {
-        shell := ComObject("Shell.Application")
-        for window in shell.Windows {
-            try {
-                if (!window || !window.hwnd)
-                    continue
-                h := Integer(window.hwnd)
-                if (beforeShell.Has(h))
-                    continue
-                path := ""
-                try path := window.Document.Folder.Self.Path
-                catch {
-                }
-                title := ""
-                try title := WinGetTitle("ahk_id " h)
-                catch {
-                }
-                pathOk := (path != "" && DesktopToRecycle_NormalizePath(path) = DesktopToRecycle_NormalizePath(
-                    targetPath))
-                titleOk := DesktopToRecycle_IsDesktopExplorerTitle(title)
-                if (!(pathOk || titleOk || path = ""))
-                    continue
-                DesktopToRecycle_MarkAutoSlotExclude(h)
-                DesktopToRecycle_ParkPreviewOnWorkArea(h, workLeft, workTop, workRight, workBottom)
-                return h
-            } catch
-                continue
-        }
-    } catch {
-    }
-    return 0
 }
 
 ; Center hwnd at 50% of the given work area; apply 40% opacity.
@@ -469,35 +433,21 @@ DesktopToRecycle_StartTrack(hwnd, initialMonIdx) {
     g_DesktopToRecycleTrackTimer := DesktopToRecycle_TrackTick
     g_DesktopToRecycleReinforceGen += 1
     gen := g_DesktopToRecycleReinforceGen
-    SetTimer(DesktopToRecycle_ReinforcePlaceIfGen.Bind(gen), -350)
-    SetTimer(DesktopToRecycle_ReinforcePlaceIfGen.Bind(gen), -700)
-    SetTimer(DesktopToRecycle_ReinforcePlaceIfGen.Bind(gen), -1200)
+    ; Single reinforce — three staggered timers were redundant place/z-order churn.
+    SetTimer(DesktopToRecycle_ReinforcePlaceIfGen.Bind(gen), -400)
 }
 
-DesktopToRecycle_BeginDecisionSession() {
-    global g_DesktopToRecycleSessionId, g_DesktopToRecycleSessionStartTick, DESKTOP_TO_RECYCLE_DECISION_MS
+; Stamp banner session for OnTimeout stale-guard (ShowWithKeys owns the 6s timer).
+DesktopToRecycle_MarkBannerSession() {
+    global g_DesktopToRecycleSessionId, g_DesktopToRecycleSessionStartTick
     g_DesktopToRecycleSessionStartTick := A_TickCount
     g_DesktopToRecycleSessionId := A_TickCount
-    sid := g_DesktopToRecycleSessionId
-    SetTimer(DesktopToRecycle_SessionExpired.Bind(sid), -DESKTOP_TO_RECYCLE_DECISION_MS)
 }
 
 DesktopToRecycle_EndDecisionSession() {
     global g_DesktopToRecycleSessionId, g_DesktopToRecycleSessionStartTick
-    ; Invalidate any pending SessionExpired bind.
     g_DesktopToRecycleSessionId := 0
     g_DesktopToRecycleSessionStartTick := 0
-}
-
-DesktopToRecycle_SessionExpired(sid, *) {
-    global g_DesktopToRecycleSessionId, g_DesktopToRecycleCloseHwnd
-    if (sid != g_DesktopToRecycleSessionId)
-        return
-    if (!g_DesktopToRecycleCloseHwnd) {
-        DesktopToRecycle_EndDecisionSession()
-        return
-    }
-    DesktopToRecycle_OnTimeout()
 }
 
 ; Force-close one Explorer frame (WinClose alone often leaves Desktop Explorer open).
@@ -524,13 +474,13 @@ DesktopToRecycle_ForceCloseExplorerHwnd(hwnd) {
         catch {
         }
     }
-    Sleep 40
-    if (DllCall("IsWindow", "ptr", hwnd)) {
+    deadline := A_TickCount + 200
+    while (DllCall("IsWindow", "ptr", hwnd) && A_TickCount < deadline) {
         try WinClose("ahk_id " hwnd)
         catch {
         }
+        Sleep 15
     }
-    Sleep 40
     if (DllCall("IsWindow", "ptr", hwnd)) {
         try WinKill("ahk_id " hwnd)
         catch {
@@ -601,18 +551,14 @@ DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workB
 }
 
 ; Claim a newly opened Desktop Explorer within timeoutMs. Returns hwnd or 0; sets claimVia.
+; One Shell.Application walk per poll (efficiency-canon: avoid repeated COM enumeration).
 DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, workTop, workRight, workBottom,
     timeoutMs, &claimVia) {
     claimVia := ""
     hwnd := 0
+    normTarget := DesktopToRecycle_NormalizePath(targetPath)
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        early := DesktopToRecycle_ClaimNewShellEarly(beforeShell, targetPath, workLeft, workTop, workRight, workBottom)
-        if (early && !before.Has(early)) {
-            hwnd := early
-            claimVia := "early_shell"
-            break
-        }
         try {
             shell := ComObject("Shell.Application")
             for window in shell.Windows {
@@ -620,16 +566,26 @@ DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, 
                     if (!window || !window.hwnd)
                         continue
                     h := Integer(window.hwnd)
-                    path := window.Document.Folder.Self.Path
-                    if (DesktopToRecycle_NormalizePath(path) != DesktopToRecycle_NormalizePath(targetPath))
+                    if (beforeShell.Has(h) || before.Has(h))
                         continue
-                    if (!before.Has(h)) {
-                        hwnd := h
-                        claimVia := "shell_path"
-                        DesktopToRecycle_MarkAutoSlotExclude(hwnd)
-                        DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
-                        break
+                    path := ""
+                    try path := window.Document.Folder.Self.Path
+                    catch {
                     }
+                    title := ""
+                    try title := WinGetTitle("ahk_id " h)
+                    catch {
+                    }
+                    pathOk := (path != "" && DesktopToRecycle_NormalizePath(path) = normTarget)
+                    titleOk := DesktopToRecycle_IsDesktopExplorerTitle(title)
+                    ; New shell hwnd: park if Desktop path/title, or path not ready yet.
+                    if (!(pathOk || titleOk || path = ""))
+                        continue
+                    hwnd := h
+                    claimVia := pathOk ? "shell_path" : (titleOk ? "title" : "early_shell")
+                    DesktopToRecycle_MarkAutoSlotExclude(hwnd)
+                    DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
+                    break
                 } catch
                     continue
             }
@@ -637,16 +593,9 @@ DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, 
         }
         if (hwnd)
             break
-        cand := DesktopToRecycle_FindDesktopExplorer(targetPath)
-        if (cand && !before.Has(cand)) {
-            hwnd := cand
-            claimVia := "FindDesktop"
-            DesktopToRecycle_MarkAutoSlotExclude(hwnd)
-            DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
-            break
-        }
         Sleep 10
     }
+    ; FindDesktop only as post-loop fallback (not every poll tick).
     if (!hwnd) {
         hwnd := DesktopToRecycle_FindDesktopExplorer(targetPath)
         claimVia := "fallback"
@@ -656,7 +605,7 @@ DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, 
         } else if (hwnd && before.Has(hwnd))
             hwnd := 0
     }
-    if (hwnd && claimVia = "early_shell" && !before.Has(hwnd)) {
+    if (hwnd && (claimVia = "early_shell" || claimVia = "title") && !before.Has(hwnd)) {
         confirmed := false
         vDeadline := A_TickCount + 1200
         while (A_TickCount < vDeadline) {
@@ -705,7 +654,6 @@ DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRigh
         return 0
 
     DesktopToRecycle_MarkAutoSlotExclude(hwnd)
-    Sleep 40
     placed := DesktopToRecycle_PlacePreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
     if (!placed) {
         DesktopToRecycle_ClearAutoSlotExclude(hwnd)
@@ -748,7 +696,20 @@ DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, w
             DesktopToRecycle_ForceCloseExplorerHwnd(h)
         }
         DesktopToRecycle_CloseMarkedTempExplorers()
-        Sleep 120
+        waitUntil := A_TickCount + 150
+        while (A_TickCount < waitUntil) {
+            still := false
+            check := DesktopToRecycle_CollectDesktopExplorerHwnds(targetPath)
+            for h, _ in check {
+                if (!initialDesktop.Has(Integer(h)) && DllCall("IsWindow", "ptr", Integer(h))) {
+                    still := true
+                    break
+                }
+            }
+            if (!still)
+                break
+            Sleep 15
+        }
         hwnd := DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRight, workBottom)
     }
     if (!hwnd) {
@@ -761,11 +722,30 @@ DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, w
     return hwnd
 }
 
-DesktopToRecycle_Run() {
-    global g_DesktopToRecyclePath
-    path := g_DesktopToRecyclePath
-    if (!path || path = "" || !DirExist(path))
-        path := A_Desktop
+; Native FileRecycle primary; PowerShell only as fallback (efficiency-canon §9 — no per-action PS spawn).
+DesktopToRecycle_RecycleDesktopContents(path) {
+    if (!path || !DirExist(path))
+        return false
+    try {
+        loop files, path "\*", "F" {
+            try FileRecycle(A_LoopFileFullPath)
+            catch {
+                return false
+            }
+        }
+        loop files, path "\*", "D" {
+            try FileRecycle(A_LoopFileFullPath)
+            catch {
+                return false
+            }
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+DesktopToRecycle_RecycleDesktopContentsViaPowerShell(path) {
     ui := "[Microsoft.VisualBasic.FileIO.UIOption]::OnlyErrorDialogs"
     rec := "[Microsoft.VisualBasic.FileIO.RecycleOption]::SendToRecycleBin"
     ps := "Add-Type -AssemblyName Microsoft.VisualBasic;$d='" . path .
@@ -775,13 +755,28 @@ DesktopToRecycle_Run() {
         ui . "," . rec . ")}catch{}};exit 0"
     try {
         exitCode := RunWait('powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "' . ps . '"', "", "Hide")
-        if (exitCode = 0)
-            ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, BANNER_ACCENT_SUCCESS)
-        else
-            ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, BANNER_ACCENT_ERROR)
-    } catch as err {
-        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, BANNER_ACCENT_ERROR)
+        return exitCode = 0
+    } catch {
+        return false
     }
+}
+
+DesktopToRecycle_Run() {
+    global g_DesktopToRecyclePath
+    path := g_DesktopToRecyclePath
+    if (!path || path = "" || !DirExist(path))
+        path := A_Desktop
+    if (!path || !DirExist(path)) {
+        ShowCenteredOverlay_Utils("❌ Desktop path not found or error: " path, 3500, BANNER_ACCENT_ERROR)
+        return
+    }
+    ok := DesktopToRecycle_RecycleDesktopContents(path)
+    if (!ok)
+        ok := DesktopToRecycle_RecycleDesktopContentsViaPowerShell(path)
+    if (ok)
+        ShowCenteredOverlay_Utils("✅ Desktop items moved to Recycle Bin", 2000, BANNER_ACCENT_SUCCESS)
+    else
+        ShowCenteredOverlay_Utils("❌ Error moving to Recycle Bin", 2500, BANNER_ACCENT_ERROR)
 }
 
 ; Close prop-marked temps, then leftover Desktop-path Explorers from prior runs.
@@ -846,7 +841,6 @@ DesktopToRecycle_Trigger() {
 
     StandardLoadingBar_CloseKeysOverlay()
     StandardLoadingBar_Hide(0)
-    Sleep 50
 
     ; Loading Indication until Explorer is placed and foregrounded (standard_information_display.md).
     StandardLoadingBar_Show("⏳ Opening Desktop preview...", BANNER_ACCENT_INTERMEDIATE, {
@@ -871,7 +865,7 @@ DesktopToRecycle_Trigger() {
     catch {
     }
 
-    DesktopToRecycle_BeginDecisionSession()
+    DesktopToRecycle_MarkBannerSession()
 
     global DESKTOP_TO_RECYCLE_DECISION_MS
     state := "🗑️ Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (6s)"
@@ -881,6 +875,7 @@ DesktopToRecycle_Trigger() {
         "Escape", DesktopToRecycle_OnCancelFromN)
     ; centerOnHwnd = same OriginHwnd used for preview (standard_information_display.md).
     ; skipEscapeDismiss false so Escape matches N (closes modal + Explorer + ends session).
+    ; ShowWithKeys timeout is the sole 6s authority (no duplicate SessionExpired timer).
     StandardLoadingBar_ShowWithKeys(
         state,
         keyCallbacks,
