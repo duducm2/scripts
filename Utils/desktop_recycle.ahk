@@ -96,13 +96,16 @@ DesktopToRecycle_OnCancel(*) {
     DesktopToRecycle_StopKeysArmTimer()
     DesktopToRecycle_EndDecisionSession()
     DesktopToRecycle_StopTrack()
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
     DesktopToRecycle_ClosePreviewExplorer()
+    DesktopToRecycle_CloseMarkedTempExplorers()
     ShowCenteredOverlay_Utils("⚠ Desktop cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
+; N and Escape are identical: always cancel (grace only protects Y / recycle).
 DesktopToRecycle_OnCancelFromN(*) {
-    if (!DesktopToRecycle_KeysArmed())
-        return
     DesktopToRecycle_OnCancel()
 }
 
@@ -400,12 +403,60 @@ DesktopToRecycle_ReinforcePlace(*) {
     if (g_DesktopToRecyclePlaceW > 0 && g_DesktopToRecyclePlaceH > 0) {
         DesktopToRecycle_ForceMoveHwnd(hwnd, g_DesktopToRecyclePlaceX, g_DesktopToRecyclePlaceY,
             g_DesktopToRecyclePlaceW, g_DesktopToRecyclePlaceH)
-        return
+    } else {
+        monIdx := g_DesktopToRecycleTrackLastMonIdx
+        if (monIdx < 1)
+            monIdx := GetMonitorIndexForForeground_StandardBar()
+        DesktopToRecycle_PlacePreviewOnMonitor(hwnd, monIdx)
     }
-    monIdx := g_DesktopToRecycleTrackLastMonIdx
-    if (monIdx < 1)
-        monIdx := GetMonitorIndexForForeground_StandardBar()
-    DesktopToRecycle_PlacePreviewOnMonitor(hwnd, monIdx)
+    ; Z-order only (no Activate) so the Y/N banner keeps focus.
+    DesktopToRecycle_BringPreviewToFront(hwnd, false)
+}
+
+; Force Explorer above other apps. activate:=true on first show; false during confirm reinforce.
+DesktopToRecycle_BringPreviewToFront(hwnd, activate := true) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return false
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = 1 || mm = -1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    try WinSetAlwaysOnTop(true, "ahk_id " hwnd)
+    catch {
+    }
+    ; HWND_TOPMOST = -1; SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW = 0x0043
+    DllCall("SetWindowPos", "ptr", hwnd, "ptr", -1, "int", 0, "int", 0, "int", 0, "int", 0, "uint", 0x0043)
+    if (activate) {
+        try WinActivate("ahk_id " hwnd)
+        catch {
+        }
+        ; AttachThreadInput fallback when WinActivate is blocked by foreground lock.
+        try {
+            fg := DllCall("GetForegroundWindow", "ptr")
+            if (fg != hwnd) {
+                curTid := DllCall("GetCurrentThreadId", "UInt")
+                fgTid := DllCall("GetWindowThreadProcessId", "ptr", fg, "ptr", 0, "UInt")
+                tgtTid := DllCall("GetWindowThreadProcessId", "ptr", hwnd, "ptr", 0, "UInt")
+                if (fgTid && tgtTid && fgTid != curTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 1)
+                if (tgtTid && tgtTid != curTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 1)
+                DllCall("SetForegroundWindow", "ptr", hwnd)
+                DllCall("BringWindowToTop", "ptr", hwnd)
+                if (fgTid && tgtTid && fgTid != curTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", fgTid, "Int", 0)
+                if (tgtTid && tgtTid != curTid)
+                    DllCall("AttachThreadInput", "UInt", curTid, "UInt", tgtTid, "Int", 0)
+            }
+        } catch {
+        }
+    }
+    return DllCall("IsWindowVisible", "ptr", hwnd) ? true : false
 }
 
 DesktopToRecycle_ReinforcePlaceIfGen(gen, *) {
@@ -490,6 +541,44 @@ DesktopToRecycle_SessionExpired(sid, *) {
     DesktopToRecycle_OnTimeout()
 }
 
+; Force-close one Explorer frame (WinClose alone often leaves Desktop Explorer open).
+DesktopToRecycle_ForceCloseExplorerHwnd(hwnd) {
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
+        return
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (!window || !window.hwnd)
+                    continue
+                if (Integer(window.hwnd) = Integer(hwnd)) {
+                    window.Quit()
+                    break
+                }
+            } catch
+                continue
+        }
+    } catch {
+    }
+    if (DllCall("IsWindow", "ptr", hwnd)) {
+        try PostMessage(0x0010, 0, 0, , "ahk_id " hwnd)  ; WM_CLOSE
+        catch {
+        }
+    }
+    Sleep 40
+    if (DllCall("IsWindow", "ptr", hwnd)) {
+        try WinClose("ahk_id " hwnd)
+        catch {
+        }
+    }
+    Sleep 40
+    if (DllCall("IsWindow", "ptr", hwnd)) {
+        try WinKill("ahk_id " hwnd)
+        catch {
+        }
+    }
+}
+
 ; Close only the temporary preview Explorer hwnd (not every Desktop Explorer).
 DesktopToRecycle_ClosePreviewExplorer() {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecycleWeOpenedExplorer
@@ -508,13 +597,27 @@ DesktopToRecycle_ClosePreviewExplorer() {
     if (!hwnd)
         return
     DesktopToRecycle_ClearAutoSlotExclude(hwnd)
-    if (WinExist("ahk_id " hwnd)) {
-        try WinClose("ahk_id " hwnd)
-        catch {
-            try WinKill("ahk_id " hwnd)
-            catch {
-            }
+    DesktopToRecycle_ForceCloseExplorerHwnd(hwnd)
+}
+
+; Close Explorers still marked with our AutoSlot exclude prop (cancel / leak cleanup).
+DesktopToRecycle_CloseMarkedTempExplorers() {
+    global DESKTOP_TO_RECYCLE_AUTOSLOT_PROP
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (!window || !window.hwnd)
+                    continue
+                h := Integer(window.hwnd)
+                if (!DllCall("GetPropW", "ptr", h, "wstr", DESKTOP_TO_RECYCLE_AUTOSLOT_PROP))
+                    continue
+                DesktopToRecycle_ClearAutoSlotExclude(h)
+                DesktopToRecycle_ForceCloseExplorerHwnd(h)
+            } catch
+                continue
         }
+    } catch {
     }
 }
 
@@ -539,31 +642,13 @@ DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workB
     return DesktopToRecycle_ForceMoveHwnd(hwnd, x, y, w, h)
 }
 
-; Open a new Desktop Explorer, exclude from AutoSlot, place at 50% size (opaque). Returns hwnd or 0.
-DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, workBottom) {
-    global g_DesktopToRecycleWeOpenedExplorer, g_DesktopToRecycleCloseHwnd
-    g_DesktopToRecycleWeOpenedExplorer := false
-    if (!targetPath || !DirExist(targetPath))
-        return 0
-
-    before := DesktopToRecycle_CollectDesktopExplorerHwnds(targetPath)
-    beforeShell := DesktopToRecycle_CollectAllShellHwnds()
-    ; Suppress AutoSlot BEFORE Run — SHOW/Schedule races SetProp by hundreds of ms.
-    DesktopToRecycle_BeginAutoSlotSuppress(12000)
-    try Run('explorer.exe /n,"' targetPath '"')
-    catch {
-        try Run('explorer.exe "' targetPath '"')
-        catch {
-            DesktopToRecycle_EndAutoSlotSuppress()
-            return 0
-        }
-    }
-
-    hwnd := 0
+; Claim a newly opened Desktop Explorer within timeoutMs. Returns hwnd or 0; sets claimVia.
+DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, workTop, workRight, workBottom,
+    timeoutMs, &claimVia) {
     claimVia := ""
-    deadline := A_TickCount + 2500
+    hwnd := 0
+    deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
-        ; Fast path: park new Shell hwnd before Document.Folder path is ready.
         early := DesktopToRecycle_ClaimNewShellEarly(beforeShell, targetPath, workLeft, workTop, workRight, workBottom)
         if (early && !before.Has(early)) {
             hwnd := early
@@ -610,9 +695,9 @@ DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, w
         if (hwnd && !before.Has(hwnd)) {
             DesktopToRecycle_MarkAutoSlotExclude(hwnd)
             DesktopToRecycle_ParkPreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
-        }
+        } else if (hwnd && before.Has(hwnd))
+            hwnd := 0
     }
-    ; Early shell claim may precede COM path — confirm Desktop before we keep it.
     if (hwnd && claimVia = "early_shell" && !before.Has(hwnd)) {
         confirmed := false
         vDeadline := A_TickCount + 1200
@@ -628,41 +713,92 @@ DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, w
             Sleep 20
         }
         if (!confirmed) {
+            DesktopToRecycle_ForceCloseExplorerHwnd(hwnd)
             hwnd := 0
             claimVia := "early_rejected"
         }
     }
-    rejectedReuse := (!hwnd || !DllCall("IsWindow", "ptr", hwnd) || before.Has(hwnd)) ? 1 : 0
-    ; Never adopt a pre-existing Desktop Explorer (would resize/close the user's window).
-    if (rejectedReuse) {
-        DesktopToRecycle_EndAutoSlotSuppress()
-        if (hwnd && !before.Has(hwnd)) {
-            try WinClose("ahk_id " hwnd)
-            catch {
-            }
-        }
+    if (!hwnd || !DllCall("IsWindow", "ptr", hwnd) || before.Has(hwnd))
         return 0
+    return hwnd
+}
+
+DesktopToRecycle_RunExplorerForPath(targetPath) {
+    try Run('explorer.exe /n,"' targetPath '"')
+    catch {
+        try Run('explorer.exe "' targetPath '"')
+        catch {
+            return false
+        }
     }
+    return true
+}
+
+; One open attempt: snapshot → Run → claim → place → bring to front.
+DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRight, workBottom) {
+    before := DesktopToRecycle_CollectDesktopExplorerHwnds(targetPath)
+    beforeShell := DesktopToRecycle_CollectAllShellHwnds()
+    if (!DesktopToRecycle_RunExplorerForPath(targetPath))
+        return 0
+    claimVia := ""
+    hwnd := DesktopToRecycle_ClaimNewPreviewHwnd(before, beforeShell, targetPath, workLeft, workTop, workRight,
+        workBottom, 4000, &claimVia)
+    if (!hwnd)
+        return 0
 
     DesktopToRecycle_MarkAutoSlotExclude(hwnd)
-    g_DesktopToRecycleWeOpenedExplorer := true
-    g_DesktopToRecycleCloseHwnd := hwnd
     Sleep 40
-
     placed := DesktopToRecycle_PlacePreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
     if (!placed) {
         DesktopToRecycle_ClearAutoSlotExclude(hwnd)
-        DesktopToRecycle_EndAutoSlotSuppress()
-        try WinClose("ahk_id " hwnd)
-        catch {
-        }
-        g_DesktopToRecycleWeOpenedExplorer := false
-        g_DesktopToRecycleCloseHwnd := 0
+        DesktopToRecycle_ForceCloseExplorerHwnd(hwnd)
         return 0
     }
-    try WinSetAlwaysOnTop(true, "ahk_id " hwnd)
-    catch {
+    visible := DesktopToRecycle_BringPreviewToFront(hwnd, true)
+    if (!visible) {
+        DesktopToRecycle_PlacePreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom)
+        visible := DesktopToRecycle_BringPreviewToFront(hwnd, true)
     }
+    if (!visible || !DllCall("IsWindow", "ptr", hwnd)) {
+        DesktopToRecycle_ClearAutoSlotExclude(hwnd)
+        DesktopToRecycle_ForceCloseExplorerHwnd(hwnd)
+        return 0
+    }
+    return hwnd
+}
+
+; Open a new Desktop Explorer, exclude from AutoSlot, place at 50% size (opaque). Returns hwnd or 0.
+DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, workBottom) {
+    global g_DesktopToRecycleWeOpenedExplorer, g_DesktopToRecycleCloseHwnd
+    g_DesktopToRecycleWeOpenedExplorer := false
+    g_DesktopToRecycleCloseHwnd := 0
+    if (!targetPath || !DirExist(targetPath))
+        return 0
+
+    initialDesktop := DesktopToRecycle_CollectDesktopExplorerHwnds(targetPath)
+    ; Suppress AutoSlot BEFORE Run — SHOW/Schedule races SetProp by hundreds of ms.
+    DesktopToRecycle_BeginAutoSlotSuppress(16000)
+    hwnd := DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRight, workBottom)
+    if (!hwnd) {
+        ; Close stragglers from the failed first launch before retrying.
+        leftovers := DesktopToRecycle_CollectDesktopExplorerHwnds(targetPath)
+        for h, _ in leftovers {
+            h := Integer(h)
+            if (initialDesktop.Has(h))
+                continue
+            DesktopToRecycle_ClearAutoSlotExclude(h)
+            DesktopToRecycle_ForceCloseExplorerHwnd(h)
+        }
+        DesktopToRecycle_CloseMarkedTempExplorers()
+        Sleep 120
+        hwnd := DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRight, workBottom)
+    }
+    if (!hwnd) {
+        DesktopToRecycle_EndAutoSlotSuppress()
+        return 0
+    }
+    g_DesktopToRecycleWeOpenedExplorer := true
+    g_DesktopToRecycleCloseHwnd := hwnd
     ; Keep suppress active for the whole preview; End on ClosePreviewExplorer.
     return hwnd
 }
@@ -693,27 +829,7 @@ DesktopToRecycle_Run() {
 ; Close prop-marked temps, then leftover Desktop-path Explorers from prior runs.
 DesktopToRecycle_CloseAllTempPreviewExplorers() {
     global DESKTOP_TO_RECYCLE_AUTOSLOT_PROP, g_DesktopToRecycleCloseHwnd, g_DesktopToRecyclePath
-    try {
-        shell := ComObject("Shell.Application")
-        for window in shell.Windows {
-            try {
-                if (!window || !window.hwnd)
-                    continue
-                h := Integer(window.hwnd)
-                if (!DllCall("GetPropW", "ptr", h, "wstr", DESKTOP_TO_RECYCLE_AUTOSLOT_PROP))
-                    continue
-                DesktopToRecycle_ClearAutoSlotExclude(h)
-                try WinClose("ahk_id " h)
-                catch {
-                    try WinKill("ahk_id " h)
-                    catch {
-                    }
-                }
-            } catch
-                continue
-        }
-    } catch {
-    }
+    DesktopToRecycle_CloseMarkedTempExplorers()
     path := g_DesktopToRecyclePath
     if (!path || path = "") {
         try path := GetDesktopToRecyclePath()
@@ -726,12 +842,7 @@ DesktopToRecycle_CloseAllTempPreviewExplorers() {
         for h, _ in leftovers {
             h := Integer(h)
             DesktopToRecycle_ClearAutoSlotExclude(h)
-            try WinClose("ahk_id " h)
-            catch {
-                try WinKill("ahk_id " h)
-                catch {
-                }
-            }
+            DesktopToRecycle_ForceCloseExplorerHwnd(h)
         }
     }
     g_DesktopToRecycleCloseHwnd := 0
@@ -779,10 +890,23 @@ DesktopToRecycle_Trigger() {
     StandardLoadingBar_Hide(0)
     Sleep 50
 
-    hwnd := DesktopToRecycle_OpenPreviewExplorer(path, workLeft, workTop, workRight, workBottom)
+    ; Loading Indication until Explorer is placed and foregrounded (standard_information_display.md).
+    StandardLoadingBar_Show("⏳ Opening Desktop preview...", BANNER_ACCENT_INTERMEDIATE, {
+        centerOnHwnd: originHwnd,
+        fontSize: 17
+    })
+    hwnd := 0
+    try {
+        hwnd := DesktopToRecycle_OpenPreviewExplorer(path, workLeft, workTop, workRight, workBottom)
+    } finally {
+        StandardLoadingBar_Hide(0)
+    }
     g_DesktopToRecycleCloseHwnd := hwnd ? hwnd : 0
-    if (hwnd)
-        DesktopToRecycle_StartTrack(hwnd, initialMonIdx)
+    if (!hwnd) {
+        ShowCenteredOverlay_Utils("❌ Desktop preview failed to open", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    DesktopToRecycle_StartTrack(hwnd, initialMonIdx)
 
     try KeyWait("N")
     try KeyWait("Y")
@@ -796,8 +920,10 @@ DesktopToRecycle_Trigger() {
     state := "🗑️ Move all items from:`n" . g_DesktopToRecyclePath . "`nto Recycle Bin? (6s)"
     keyCallbacks := Map(
         "Y", DesktopToRecycle_OnConfirm,
-        "N", DesktopToRecycle_OnCancelFromN)
+        "N", DesktopToRecycle_OnCancelFromN,
+        "Escape", DesktopToRecycle_OnCancelFromN)
     ; centerOnHwnd = same OriginHwnd used for preview (standard_information_display.md).
+    ; skipEscapeDismiss false so Escape matches N (closes modal + Explorer + ends session).
     StandardLoadingBar_ShowWithKeys(
         state,
         keyCallbacks,
@@ -809,10 +935,10 @@ DesktopToRecycle_Trigger() {
         17,
         "",
         false,
-        "[Y] Yes  [N] Cancel",
+        "[Y] Yes  [N]/Esc] Cancel",
         false,
         true,
         true,
         "",
-        true)
+        false)
 }
