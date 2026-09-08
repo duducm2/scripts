@@ -236,6 +236,8 @@ Utility_GitStatusRefresh(*) {
 }
 
 Utility_GitStatusPush(*) {
+    ; Close first so the push loading bar is usable and the user can keep working.
+    Utility_GitStatusCleanup()
     ; Same path as #!+9 hold / Utility Shortcuts [G]
     Utility_GitSyncPush()
 }
