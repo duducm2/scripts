@@ -35,7 +35,7 @@ SetTitleMatchMode 2
 #include vendor\UIA-v2\Lib\UIA.ahk
 #include vendor\UIA-v2\Lib\UIA_Browser.ahk
 #include %A_ScriptDir%\Utils.ahk
-; #!+Y (Utils) must share this process so ToggleFocusMode sees the same globals as EnableFocusMode.
+; #!+Y (Utils): 1× Focus Mode, 2× Main Repos status — must share this process so ToggleFocusMode globals match.
 ; Volume: AppLaunchers also schedules retries; this catches Shift keys process when sessions register slightly later.
 SetTimer(() => ApplyScriptMasterVolumeTarget(), -3500)
 #include %A_ScriptDir%\infra\ipc\ShiftKeysIPC.ahk

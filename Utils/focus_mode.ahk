@@ -1,13 +1,15 @@
 ; =============================================================================
 ; Utils module: focus_mode.ahk
-; Focus mode multi-monitor blackout (#!+Y)
-; Extracted verbatim from Utils.ahk; loaded via #include into the
-; Utils.ahk orchestrator / shared library entry point.
+; Focus mode multi-monitor blackout + Main Repos status (#!+Y tap-dance)
+; Extracted from Utils.ahk; loaded via #include into the Utils.ahk orchestrator.
 ; =============================================================================
 
 ; =============================================================================
 ; Focus Mode (multi-monitor blackout)
 ; Hotkey: Win+Alt+Shift+Y
+;   1× = Focus Mode toggle
+;   2× = Main Repos window (scripts + notes dirty files; push via [G]/[P])
+; Pattern mirrors WindowManagement\audio_bt_menu.ahk #!+9 / Utils\finance_hotkey_d.ahk.
 ; =============================================================================
 
 global g_FocusModeOn := false
@@ -325,7 +327,75 @@ StopFocusModeWindowMonitor() {
     }
 }
 
-#!+Y::
-{
-    ToggleFocusMode()
+FOCUS_Y_HOLD_MS := 700
+global g_FocusY_DoubleTapArmed := false
+global g_FocusY_LastPressTick := 0
+global g_FocusY_DoubleTapTimer := 0
+
+class FocusY_DoubleTapTimerObj {
+    static OnSingleTapTimeout() {
+        global g_FocusY_DoubleTapArmed, g_FocusY_DoubleTapTimer
+        if (!g_FocusY_DoubleTapArmed)
+            return
+        g_FocusY_DoubleTapArmed := false
+        g_FocusY_DoubleTapTimer := 0
+        ToggleFocusMode()
+    }
+}
+
+FocusY_DisarmDoubleTap() {
+    global g_FocusY_DoubleTapArmed, g_FocusY_DoubleTapTimer
+    global g_FocusY_LastPressTick
+    g_FocusY_DoubleTapArmed := false
+    g_FocusY_LastPressTick := 0
+    if (g_FocusY_DoubleTapTimer) {
+        SetTimer(g_FocusY_DoubleTapTimer, 0)
+        g_FocusY_DoubleTapTimer := 0
+    }
+}
+
+#!+Y:: {
+    global g_FocusY_DoubleTapArmed, g_FocusY_LastPressTick, g_FocusY_DoubleTapTimer
+
+    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
+    ; released (those start with Y already up and would otherwise arm single-tap Focus).
+    if !GetKeyState("y", "P")
+        return
+
+    thresholdMs := 400
+    try thresholdMs := AI_QD_DOUBLE_TAP_MS
+    catch {
+        thresholdMs := 400
+    }
+
+    ; Detect double-tap on key-down (before KeyWait) so a slow release cannot miss the window.
+    pressTime := A_TickCount
+    elapsed := (g_FocusY_LastPressTick > 0) ? (pressTime - g_FocusY_LastPressTick) : 9999
+    isSecondTap := g_FocusY_DoubleTapArmed && elapsed >= 0 && elapsed < thresholdMs
+
+    KeyWait "y", "T" . (FOCUS_Y_HOLD_MS / 1000)
+    isHold := (A_TickCount - pressTime) >= FOCUS_Y_HOLD_MS
+
+    if (isHold) {
+        ; No hold action today — stay until release so repeats cannot arm single-tap Focus.
+        FocusY_DisarmDoubleTap()
+        KeyWait "y"
+        return
+    }
+
+    if (isSecondTap) {
+        FocusY_DisarmDoubleTap()
+        Utility_GitStatusShow()
+        return
+    }
+
+    ; Arm after quick release: window starts now (matches #!+9 / #!+D).
+    if (g_FocusY_DoubleTapTimer) {
+        SetTimer(g_FocusY_DoubleTapTimer, 0)
+        g_FocusY_DoubleTapTimer := 0
+    }
+    g_FocusY_LastPressTick := A_TickCount
+    g_FocusY_DoubleTapArmed := true
+    g_FocusY_DoubleTapTimer := ObjBindMethod(FocusY_DoubleTapTimerObj, "OnSingleTapTimeout")
+    SetTimer(g_FocusY_DoubleTapTimer, -thresholdMs)
 }

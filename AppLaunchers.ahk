@@ -24,7 +24,7 @@ AL_AppLaunchersExit(*) {
 AL_DESKTOP_CACHE := UIA.CreateCacheRequest(["Name", "AutomationId", "BoundingRectangle"], ["Selection", "SelectionItem"])
 #include %A_ScriptDir%\Utils.ahk
 
-; Focus mode (#!+Y) and Study Topic (#!+X) need the same process as EnableFocusMode; unregister duplicate Utils hotkeys here.
+; Focus mode / Main Repos (#!+Y) and Study Topic (#!+X) need the same process as EnableFocusMode; unregister duplicate Utils hotkeys here.
 try Hotkey("#!+Y", "Off")
 try Hotkey("#!+X", "Off")
 

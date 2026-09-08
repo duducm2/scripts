@@ -340,10 +340,12 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\import_mgmt_launcher.ahk
 ; [Utils module] Utility Shortcuts [G] background push scripts+notes (+ Tasks/Palace MD export) -> Utils\utility_git_push.ahk
 #include %A_ScriptDir%\Utils\utility_git_push.ahk
+; [Utils module] Main Repos status window (#!+Y 2×) -> Utils\utility_git_status.ahk
+#include %A_ScriptDir%\Utils\utility_git_status.ahk
 ; [Utils module] Utility shortcuts #!+U / #!+W Macros and ^!# secondary triggers -> Utils\utility_shortcuts.ahk
 #include %A_ScriptDir%\Utils\utility_shortcuts.ahk
 
-; [Utils module] Focus mode multi-monitor blackout (#!+Y) -> Utils\focus_mode.ahk
+; [Utils module] Focus mode (#!+Y 1×) + Main Repos (#!+Y 2×) -> Utils\focus_mode.ahk
 #include %A_ScriptDir%\Utils\focus_mode.ahk
 
 ; [Utils module] Print Screen chime, global Escape hotkey -> Utils\print_screen_escape.ahk
