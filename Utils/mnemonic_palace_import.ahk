@@ -1547,6 +1547,9 @@ Palace_PalacesMissingImage() {
     palaces := Palace_Load("palaces")
     missing := []
     for p in palaces {
+        pid := Trim(p.Has("id") ? p["id"] : "")
+        if (pid = "" || InStr(pid, "PALACE_") != 1)
+            continue
         img := Trim(p.Has("image_rel_path") ? p["image_rel_path"] : "")
         abs := (img = "") ? "" : Palace_ResolveImagePath(img)
         if (abs = "" || !FileExist(abs))

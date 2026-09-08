@@ -213,7 +213,7 @@ By the front brick pillar, a Neanderthal manages a massive collection of data by
 
 #### Notes
 
-Excel:
+_No notes._
 
 #### Gallery
 
