@@ -158,7 +158,7 @@ def build_html(data: dict) -> str:
 
     year_lbl = data.get("period_year") or cur[:4]
     reports_html = f"""
-          <div class="panel chart-cell"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell chart-span"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-span"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
           <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
 
