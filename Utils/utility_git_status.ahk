@@ -176,6 +176,8 @@ Utility_GitStatusBindHotkeys() {
         ["G", Utility_GitStatusPush],
         ["p", Utility_GitStatusPush],
         ["P", Utility_GitStatusPush],
+        ["d", Utility_GitStatusDiscard],
+        ["D", Utility_GitStatusDiscard],
         ["r", Utility_GitStatusRefresh],
         ["R", Utility_GitStatusRefresh],
         ["Escape", (*) => Utility_GitStatusCleanup()]
@@ -242,6 +244,108 @@ Utility_GitStatusPush(*) {
     Utility_GitSyncPush()
 }
 
+; reset --hard + clean -fd for one repo. Returns "ok" or "error:…".
+Utility_GitStatusDiscardOne(repoDir, label) {
+    repo := GitCli_RevParseTopLevel(repoDir)
+    if (repo = "")
+        return "error:" . label . " not a git repository"
+    Utility_GitPassiveBar("⏳ " . label . ": reset --hard…")
+    reset := GitCli_Run(repo, "reset --hard HEAD", 60000)
+    if (reset.exitCode != 0)
+        return "error:" . label . " reset failed: " . Utility_GitFirstErrorLine(reset)
+    Utility_GitPassiveBar("⏳ " . label . ": clean -fd…")
+    clean := GitCli_Run(repo, "clean -fd", 60000)
+    if (clean.exitCode != 0)
+        return "error:" . label . " clean failed: " . Utility_GitFirstErrorLine(clean)
+    return "ok"
+}
+
+; [D] Discard all local changes in scripts + notes (after MsgBox confirm).
+Utility_GitStatusDiscard(*) {
+    global g_UtilityGitStatusGui
+
+    ownerOpt := ""
+    try {
+        if (IsObject(g_UtilityGitStatusGui)) {
+            g_UtilityGitStatusGui.Opt("-AlwaysOnTop")
+            ownerOpt := " Owner" . g_UtilityGitStatusGui.Hwnd
+        }
+    } catch {
+    }
+
+    answer := MsgBox(
+        "Discard ALL local changes in Scripts and Notes?`n`n"
+        . "Runs git reset --hard and git clean -fd on both main repos.`n"
+        . "Tracked modifications and untracked files are permanently removed.`n"
+        . "Nothing will be pushed.`n`n"
+        . "This cannot be undone.",
+        "Main Repos — Discard",
+        "YesNo Icon! Default2" . ownerOpt)
+
+    if (answer != "Yes") {
+        try {
+            if (IsObject(g_UtilityGitStatusGui))
+                g_UtilityGitStatusGui.Opt("+AlwaysOnTop")
+        } catch {
+        }
+        return
+    }
+
+    Utility_GitStatusCleanup()
+
+    resultMsg := ""
+    resultAccent := BANNER_ACCENT_INFO
+    try {
+        try StandardLoadingBar_Show("⏳ Discarding local changes…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        catch {
+        }
+
+        scriptsRoot := GitCli_RevParseTopLevel(A_ScriptDir)
+        if (scriptsRoot = "") {
+            resultMsg := "❌ Scripts not a git repository"
+            resultAccent := BANNER_ACCENT_ERROR
+            return
+        }
+
+        notesRoot := ""
+        try notesRoot := GetNotesRepoPath()
+        catch {
+            notesRoot := ""
+        }
+        if (notesRoot = "" || !DirExist(notesRoot)) {
+            resultMsg := "❌ Notes repo folder not found"
+            resultAccent := BANNER_ACCENT_ERROR
+            return
+        }
+
+        scriptsResult := Utility_GitStatusDiscardOne(scriptsRoot, "Scripts")
+        notesResult := Utility_GitStatusDiscardOne(notesRoot, "Notes")
+
+        errors := []
+        if (SubStr(scriptsResult, 1, 6) = "error:")
+            errors.Push(SubStr(scriptsResult, 7))
+        if (SubStr(notesResult, 1, 6) = "error:")
+            errors.Push(SubStr(notesResult, 7))
+        if (errors.Length > 0) {
+            resultMsg := "❌ " . errors[1]
+            resultAccent := BANNER_ACCENT_ERROR
+            return
+        }
+
+        resultMsg := "✅ Scripts + Notes discarded"
+        resultAccent := BANNER_ACCENT_SUCCESS
+    } catch as e {
+        resultMsg := "❌ Discard failed: " . e.Message
+        resultAccent := BANNER_ACCENT_ERROR
+    } finally {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        if (resultMsg != "")
+            Utility_GitNotify(resultMsg, 2800, resultAccent)
+    }
+}
+
 ; Toggle: open Main Repos window, or close if already open.
 ; Loading Indication while git status runs (see docs/standard_information_display.md).
 Utility_GitStatusShow() {
@@ -264,7 +368,7 @@ Utility_GitStatusShow() {
         g_UtilityGitStatusGui.SetFont("s10", "Segoe UI")
         g_UtilityGitStatusSummary := g_UtilityGitStatusGui.Add("Text", "x12 y12 w790", "Loading…")
         g_UtilityGitStatusGui.Add("Text", "x12 y36 w790 c666666",
-            "[G]/[P] Push (scripts+notes)   [R] Refresh   Esc close")
+            "[G]/[P] Push   [D] Discard (reset+clean)   [R] Refresh   Esc close")
         g_UtilityGitStatusLv := g_UtilityGitStatusGui.Add("ListView", "x12 y60 w790 h400 Grid", ["Repo", "Status",
             "Path"])
         g_UtilityGitStatusLv.ModifyCol(1, 80)
@@ -272,8 +376,9 @@ Utility_GitStatusShow() {
         g_UtilityGitStatusLv.ModifyCol(3, 600)
 
         g_UtilityGitStatusGui.Add("Button", "x12 y472 w100", "Push [G]").OnEvent("Click", Utility_GitStatusPush)
-        g_UtilityGitStatusGui.Add("Button", "x122 y472 w100", "Refresh [R]").OnEvent("Click", Utility_GitStatusRefresh)
-        g_UtilityGitStatusGui.Add("Button", "x232 y472 w100", "Close").OnEvent("Click", (*) => Utility_GitStatusCleanup())
+        g_UtilityGitStatusGui.Add("Button", "x122 y472 w100", "Discard [D]").OnEvent("Click", Utility_GitStatusDiscard)
+        g_UtilityGitStatusGui.Add("Button", "x232 y472 w100", "Refresh [R]").OnEvent("Click", Utility_GitStatusRefresh)
+        g_UtilityGitStatusGui.Add("Button", "x342 y472 w100", "Close").OnEvent("Click", (*) => Utility_GitStatusCleanup())
 
         g_UtilityGitStatusGui.OnEvent("Close", (*) => Utility_GitStatusCleanup())
         g_UtilityGitStatusGui.OnEvent("Escape", (*) => Utility_GitStatusCleanup())

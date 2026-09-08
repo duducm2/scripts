@@ -1,6 +1,46 @@
 # Science
 
 <details open>
+<summary><strong>Memory Palace 20: Visual Analysis Definition</strong> · Character: SpongeBob SquarePants · 1 beast · 1 atom</summary>
+
+![Memory Palace 20](images/science/20.jpg)
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [By] Byron
+
+**Concept**
+💡 [I translate <kbd><strong><u>multidimensional</u></strong></kbd> data] [into visual and <kbd><strong><u>geometric</u></strong></kbd> forms] [to leverage human <kbd><strong><u>cognitive</u></strong></kbd> processing] [for pattern recognition and <kbd><strong><u>anomaly</u></strong></kbd> detection]
+
+🔑 **Keywords**
+
+- [**multidimensional**] → [cube]
+- [**geometric**] → [triangle]
+- [**cognitive**] → [brain]
+- [**anomaly**] → [glitch]
+
+**Quote**
+“Visual analysis is the translation of multidimensional data into visual, geometric, and topological representations to leverage human cognitive processing for pattern recognition, anomaly detection, and hypothesis generation.”
+
+**Sensory**
+visual 👁️
+
+**Story**
+Byron grabs a swirling cloud of invisible data numbers and forcefully crushes them into glowing, heavy geometric triangles. He throws these sharp shapes directly into SpongeBob's massive eyes, forcing the sponge's brain to instantly spot a giant, glitching anomaly hidden in the concrete street.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 19: How and Why Questions</strong> · Character: Nikola Tesla · 4 beasts · 4 atoms</summary>
 
 ![Memory Palace 19](images/science/19.png)

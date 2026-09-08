@@ -1,0 +1,24 @@
+﻿===PREVIEW===
+STUDY_SCIENCE · 1 palaces · 1 beasts · 1 atoms
+Packing: 1 (remainder only on last **new** palace in this pack)
+
+PALACE 20 — Visual Analysis Definition (SpongeBob SquarePants) [PALACE_SCIENCE_20]
+  [By] Byron — Concept: [I translate multidimensional data] [into visual and geometric forms] [to leverage human cognitive processing] [for pattern recognition and anomaly detection] | Quote: "Visual analysis is the translation of multidimensional data into visual, geometric, and topological representations to leverage human cognitive processing for pattern recognition, anomaly detection, and hypothesis generation." | Story: Byron grabs a swirling cloud of invisible data numbers and forcefully crushes them into glowing, heavy geometric triangles. He throws these sharp shapes directly into SpongeBob's massive eyes, forcing the sponge's brain to instantly spot a giant, glitching anomaly hidden in the concrete street. | Sensory: visual 👁️
+
+Discard candidates: none
+===END_PREVIEW===
+
+===FILE: PALACE_PALACES.csv===
+id,study_id,palace_number,title,character_name,image_rel_path,depth_slots_used,image_prompt
+PALACE_SCIENCE_20,STUDY_SCIENCE,20,Visual Analysis Definition,SpongeBob SquarePants,images/science/20.png,1,"Depth slot: ForegroundLeft on a concrete street wall. An original fictional cheerful yellow sea sponge-like character (square-shaped, wearing a white shirt, red tie, and brown shorts) — not any copyrighted character — stands frozen in shock as glowing geometric triangles rain down around him."
+===END_FILE===
+
+===FILE: PALACE_BEASTS.csv===
+id,palace_id,peg_code,beast_name,beast_source,sensory_channel,is_smashed,sort_order
+BEAST_SCIENCE_20_BY,PALACE_SCIENCE_20,By,Byron,Lynne Kelly,visual,0,1
+===END_FILE===
+
+===FILE: PALACE_ATOMS.csv===
+id,beast_id,kind,zone,zone_label,concept,keywords,quote,story,sensory,ipa,sort_order
+ATOM_SCIENCE_20_BY,BEAST_SCIENCE_20_BY,single,,,"[I translate multidimensional data] [into visual and geometric forms] [to leverage human cognitive processing] [for pattern recognition and anomaly detection]","cube | multidimensional || triangle | geometric || brain | cognitive || glitch | anomaly","Visual analysis is the translation of multidimensional data into visual, geometric, and topological representations to leverage human cognitive processing for pattern recognition, anomaly detection, and hypothesis generation.","Byron grabs a swirling cloud of invisible data numbers and forcefully crushes them into glowing, heavy geometric triangles. He throws these sharp shapes directly into SpongeBob's massive eyes, forcing the sponge's brain to instantly spot a giant, glitching anomaly hidden in the concrete street.","visual 👁️",,1
+===END_FILE===

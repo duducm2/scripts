@@ -215,9 +215,6 @@ By the front brick pillar, a Neanderthal manages a massive collection of data by
 
 Excel:
 
-XLOOKUP function
-Index function
-
 #### Gallery
 
 _No gallery images._
