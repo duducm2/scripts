@@ -1059,7 +1059,7 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same key strip as #!+p HotkeyCopy_ShowPostCopyBanner, plus [P] Copy-only (#!+p 1× without a destination).
+        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner, plus [P] Copy-only (#!+p 1× without a destination).
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
             "Y", this.OnActionY.Bind(this),

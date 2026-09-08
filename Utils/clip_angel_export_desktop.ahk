@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Utils module: clip_angel_export_desktop.ahk
 ; Copy clipboard or Clip Angel Row 0 to Desktop, then prompt to rename from a persisted name list.
-; Also hosts HotkeyCopy_ShowPostCopyBanner (#!+p 1×/2× post-copy destination menu).
+; Also hosts HotkeyCopy_ShowIntentBanner (#!+p 1×/2× destination menu before copy).
 ; Utility Shortcuts: #!+U → Macros → [c]
 ; =============================================================================
 
@@ -1046,8 +1046,41 @@ ClipAngelExport_PromptRename(sourcePath) {
     return g_ClipAngelNameFinalPath
 }
 
-; Post-#!+p banner context: origin window + companion for Transfer / Read / Paste / Clip Angel.
-global g_HotkeyCopy_PostCopyContext := { originHwnd: 0, isCode: false, companion: "" }
+; #!+p intent-flow context: destination keys at gesture time; copy starts only after choice.
+; choice: "" until Y/F/C/R/W/O; "cancel" on N/Esc/timeout. copyDone/copyOk set by Gemini worker.
+; gen: increments each flow so a stale copy worker cannot touch a newer session.
+global g_HotkeyCopy_FlowGen := 0
+global g_HotkeyCopy_Flow := {
+    active: false,
+    gen: 0,
+    isCode: false,
+    originHwnd: 0,
+    companion: "",
+    choice: "",
+    copyDone: false,
+    copyOk: false,
+    copyErr: ""
+}
+; Back-compat alias used by destination handlers (origin / companion / isCode).
+global g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+
+HotkeyCopy_FlowReset(isCode := false, originHwnd := 0, companion := "") {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext, g_HotkeyCopy_FlowGen
+    g_HotkeyCopy_FlowGen += 1
+    g_HotkeyCopy_Flow := {
+        active: true,
+        gen: g_HotkeyCopy_FlowGen,
+        isCode: isCode,
+        originHwnd: originHwnd,
+        companion: companion,
+        choice: "",
+        copyDone: false,
+        copyOk: false,
+        copyErr: ""
+    }
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+    return g_HotkeyCopy_Flow.gen
+}
 
 HotkeyCopy_ClosePostCopyBanner() {
     try StandardLoadingBar_CloseKeysOverlay()
@@ -1058,18 +1091,126 @@ HotkeyCopy_ClosePostCopyBanner() {
     }
 }
 
-ClipAngelExport_OnCancelDesktop(*) {
+HotkeyCopy_OnIntentCancel(*) {
+    global g_HotkeyCopy_Flow
+    if (g_HotkeyCopy_Flow.active && g_HotkeyCopy_Flow.choice = "")
+        g_HotkeyCopy_Flow.choice := "cancel"
+    g_HotkeyCopy_Flow.active := false
     HotkeyCopy_ClosePostCopyBanner()
 }
 
-ClipAngelExport_OnConfirmDesktop(*) {
+; Record destination choice, then start copy (async). Dispatch runs from OnCopyWorkerDone.
+; Must return quickly — a Sleep-wait on the F/Y/… hotkey thread would interrupt the copy worker.
+HotkeyCopy_FinalizeIntent(choice) {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    if (!g_HotkeyCopy_Flow.active)
+        return
+    if (g_HotkeyCopy_Flow.choice != "" && g_HotkeyCopy_Flow.choice != choice)
+        return
+    g_HotkeyCopy_Flow.choice := choice
     HotkeyCopy_ClosePostCopyBanner()
+
+    if (g_HotkeyCopy_Flow.copyDone) {
+        HotkeyCopy_DispatchChoice()
+        return
+    }
+
+    StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
+    HotkeyCopy_StartCopyForCurrentFlow()
+}
+
+; Schedule companion copy workers (defined in Gemini\hotkey_read_copy.ahk when Gemini.ahk is the host).
+HotkeyCopy_StartCopyForCurrentFlow() {
+    global g_HotkeyCopy_Flow
+    gen := g_HotkeyCopy_Flow.gen
+    fnName := g_HotkeyCopy_Flow.isCode ? "HotkeyCopy_RunCopyLastCode" : "HotkeyCopy_RunCopyLastMessage"
+    try {
+        fn := Func(fnName)
+        SetTimer((*) => fn.Call(gen), -1)
+    } catch {
+        g_HotkeyCopy_Flow.copyDone := true
+        g_HotkeyCopy_Flow.copyOk := false
+        g_HotkeyCopy_Flow.copyErr := "Copy failed – Gemini.ahk not loaded"
+        HotkeyCopy_DispatchChoice()
+    }
+}
+
+; Run destination (or error) after choice + copy outcome are both known.
+HotkeyCopy_DispatchChoice() {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    choice := g_HotkeyCopy_Flow.choice
+    if (choice = "" || choice = "cancel") {
+        g_HotkeyCopy_Flow.active := false
+        return
+    }
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if (!g_HotkeyCopy_Flow.copyOk) {
+        err := g_HotkeyCopy_Flow.copyErr != "" ? g_HotkeyCopy_Flow.copyErr : "Copy failed"
+        ShowCenteredOverlay_Utils("❌ " err, 2500, BANNER_ACCENT_ERROR)
+        g_HotkeyCopy_Flow.active := false
+        return
+    }
+
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+    try {
+        switch choice {
+            case "Y":
+                HotkeyCopy_DoConfirmDesktop()
+            case "F":
+                HotkeyCopy_DoFavoriteClip()
+            case "C":
+                HotkeyCopy_DoTransfer()
+            case "R":
+                HotkeyCopy_DoRead()
+            case "W":
+                HotkeyCopy_DoPasteWindow()
+            case "O":
+                HotkeyCopy_DoClipAngelEdit()
+        }
+    } finally {
+        g_HotkeyCopy_Flow.active := false
+    }
+}
+
+; Called from Gemini copy worker when companion copy finishes (success or fail).
+; gen: flow generation captured when the worker started; ignore if a newer flow replaced it.
+HotkeyCopy_OnCopyWorkerDone(ok, err := "", gen := 0) {
+    global g_HotkeyCopy_Flow
+    if (gen && g_HotkeyCopy_Flow.gen != gen)
+        return
+    g_HotkeyCopy_Flow.copyDone := true
+    g_HotkeyCopy_Flow.copyOk := ok
+    g_HotkeyCopy_Flow.copyErr := err
+
+    if (g_HotkeyCopy_Flow.choice != "" && g_HotkeyCopy_Flow.choice != "cancel") {
+        HotkeyCopy_DispatchChoice()
+        return
+    }
+
+    ; No destination (cancelled / timed out before choice) — drop result quietly.
+    g_HotkeyCopy_Flow.active := false
+}
+
+ClipAngelExport_OnCancelDesktop(*) {
+    HotkeyCopy_OnIntentCancel()
+}
+
+ClipAngelExport_OnConfirmDesktop(*) {
+    HotkeyCopy_FinalizeIntent("Y")
+}
+
+ClipAngelExport_OnFavoriteClip(*) {
+    HotkeyCopy_FinalizeIntent("F")
+}
+
+HotkeyCopy_DoConfirmDesktop() {
     Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
     ClipAngel_ExportLastClipToDesktop()
 }
 
-ClipAngelExport_OnFavoriteClip(*) {
-    HotkeyCopy_ClosePostCopyBanner()
+HotkeyCopy_DoFavoriteClip() {
     clip := Trim(A_Clipboard)
     if (clip = "" || StrLen(clip) < 10) {
         ShowCenteredOverlay_Utils("❌ Nothing to favorite - clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
@@ -1080,8 +1221,11 @@ ClipAngelExport_OnFavoriteClip(*) {
 
 ; [C] Transfer clipboard to a Cursor/VS Code window (same as D2C Copy response? C).
 HotkeyCopy_OnTransfer(*) {
+    HotkeyCopy_FinalizeIntent("C")
+}
+
+HotkeyCopy_DoTransfer() {
     global g_HotkeyCopy_PostCopyContext
-    HotkeyCopy_ClosePostCopyBanner()
     originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
     clipRaw := A_Clipboard
     clip := Trim(clipRaw)
@@ -1103,8 +1247,11 @@ HotkeyCopy_OnTransfer(*) {
 ; [R] Read aloud already-copied message (1× only; skip for code / Enterprise).
 ; Uses Gemini.ahk IPC (same as D2C DoCopyCore) so Utils need not call Gemini-only functions.
 HotkeyCopy_OnRead(*) {
+    HotkeyCopy_FinalizeIntent("R")
+}
+
+HotkeyCopy_DoRead() {
     global g_HotkeyCopy_PostCopyContext
-    HotkeyCopy_ClosePostCopyBanner()
     companion := g_HotkeyCopy_PostCopyContext.companion
     if (companion = "enterprise") {
         ShowCenteredOverlay_Utils("❌ Read aloud not supported for Gemini Enterprise", 2500, BANNER_ACCENT_ERROR)
@@ -1133,16 +1280,22 @@ HotkeyCopy_OnRead(*) {
 
 ; [W] Paste clipboard to a picked visible window (same as D2C Send dictation? W / #!+L).
 HotkeyCopy_OnPasteWindow(*) {
+    HotkeyCopy_FinalizeIntent("W")
+}
+
+HotkeyCopy_DoPasteWindow() {
     global g_HotkeyCopy_PostCopyContext
-    HotkeyCopy_ClosePostCopyBanner()
     originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
     D2C_FlowManager.GetInstance().PasteClipboardToVisibleWindow(originHwnd)
 }
 
 ; [O] Open Clip Angel on newest clip and Edit text (F4) — same path as D2C Send dictation? O.
 HotkeyCopy_OnClipAngelEdit(*) {
+    HotkeyCopy_FinalizeIntent("O")
+}
+
+HotkeyCopy_DoClipAngelEdit() {
     global g_HotkeyCopy_PostCopyContext
-    HotkeyCopy_ClosePostCopyBanner()
     if !ClipAngel_TryAcquireAutomationLock()
         return
 
@@ -1193,16 +1346,18 @@ HotkeyCopy_OnClipAngelEdit(*) {
     }
 }
 
-; After #!+p 1×/2× successful copy: 5s destination banner (Desktop / Favorite / Transfer / …).
-; isCode: true after double-tap code copy (omits Read aloud).
-HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
-    global g_HotkeyCopy_PostCopyContext
-    companion := ""
-    try companion := ResolveGlobalAICompanion()
-    catch {
-        companion := ""
+; At #!+p 1×/2× gesture confirm: 5s destination banner; copy starts only after Y/F/C/R/W/O.
+; isCode: true for double-tap code copy (omits Read aloud). Returns flow gen for the copy worker.
+HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    if (companion = "") {
+        try companion := ResolveGlobalAICompanion()
+        catch {
+            companion := ""
+        }
     }
-    g_HotkeyCopy_PostCopyContext := { originHwnd: originHwnd, isCode: isCode, companion: companion }
+    gen := HotkeyCopy_FlowReset(isCode, originHwnd, companion)
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
 
     keyCallbacks := Map(
         "Y", ClipAngelExport_OnConfirmDesktop,
@@ -1210,21 +1365,21 @@ HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
         "C", HotkeyCopy_OnTransfer,
         "W", HotkeyCopy_OnPasteWindow,
         "O", HotkeyCopy_OnClipAngelEdit,
-        "N", ClipAngelExport_OnCancelDesktop,
-        "Escape", ClipAngelExport_OnCancelDesktop)
+        "N", HotkeyCopy_OnIntentCancel,
+        "Escape", HotkeyCopy_OnIntentCancel)
 
     ; Read aloud only for full message (1×); Enterprise has no read-aloud path yet.
     if (!isCode && companion != "enterprise")
         keyCallbacks["R"] := HotkeyCopy_OnRead
 
     if (isCode) {
-        title := "❓ Copied code — what next? (5s)"
+        title := "❓ Copy code — what next? (5s)"
         pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
     } else if (companion = "enterprise") {
-        title := "❓ Copied message — what next? (5s)"
+        title := "❓ Copy message — what next? (5s)"
         pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
     } else {
-        title := "❓ Copied message — what next? (5s)"
+        title := "❓ Copy message — what next? (5s)"
         pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
     }
 
@@ -1239,7 +1394,7 @@ HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
         keyCallbacks,
         timeoutMs,
         0,
-        ClipAngelExport_OnCancelDesktop,
+        HotkeyCopy_OnIntentCancel,
         BANNER_ACCENT_INTERMEDIATE,
         900,
         17,
@@ -1248,15 +1403,21 @@ HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
         pk,
         true,
         true)
+    return gen
+}
+
+; Back-compat name → intent banner (copy still starts only after a destination key).
+HotkeyCopy_ShowPostCopyBanner(isCode := false, originHwnd := 0) {
+    return HotkeyCopy_ShowIntentBanner(isCode, originHwnd)
 }
 
 ; Back-compat aliases.
 ClipAngelExport_PromptAfterHotkeyCopy() {
-    HotkeyCopy_ShowPostCopyBanner(false)
+    HotkeyCopy_ShowIntentBanner(false)
 }
 
 ClipAngelExport_PromptAfterCodeCopy() {
-    HotkeyCopy_ShowPostCopyBanner(true)
+    HotkeyCopy_ShowIntentBanner(true)
 }
 
 ClipAngel_ExportLastClipToDesktop() {

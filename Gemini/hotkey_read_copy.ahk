@@ -1,7 +1,7 @@
 ; =============================================================================
 ; Gemini module: hotkey_read_copy.ahk
-; #!+P (1× copy last message / 2× copy last code), CopyLastGeminiMessageToClipboard,
-; CopyLastGeminiCodeSnippetToClipboard, and read-aloud IPC
+; #!+P (1× message / 2× code): destination banner first, then companion copy + action after choice.
+; Also: CopyLastGeminiMessageToClipboard / CopyLastGeminiCodeSnippetToClipboard, read-aloud IPC.
 ; (Win+Alt+Shift+O lives in Utils: DesktopCutNewest_OnHotkey — cut / open / paste clipboard / copy path)
 ; Extracted verbatim from Gemini.ahk; loaded via #include into the
 ; Gemini.ahk process, which remains the entry point / source of truth.
@@ -141,100 +141,102 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; Companion-aware copy last message (#!+p single-tap).
-HotkeyCopy_RunCopyLastMessage() {
-    try {
-        t0 := A_TickCount
-        originHwnd := 0
-        try originHwnd := WinGetID("A")
-        companion := ResolveGlobalAICompanion()
-        if (companion = "enterprise") {
-            if (!GeminiEnterprise_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-                ShowNotification("Copy failed – ensure Gemini Enterprise is open and has a response", 2500, "FF6666",
-                    "FFFFFF", 22)
-            else {
-                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
-                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
-                    if (IsObject(root))
-                        GeminiEnterprise_FocusComposer(root, true)
-                }
-                SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(false, originHwnd), -1)
-            }
-            return
-        }
-        if (companion = "copilot") {
-            if (!CopilotWeb_CopyLastMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-                ShowNotification("Copy failed – ensure Copilot is open and has a response", 2500, "FF6666", "FFFFFF",
-                    22)
-            else {
-                if (hwnd := GetCopilotWebWindowHwnd())
-                    CopilotWeb_FocusComposerForHwnd(hwnd, true)
-                SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(false, originHwnd), -1)
-            }
-            return
-        }
-        if (!CopyLastGeminiMessageToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-            ShowNotification("Copy failed – ensure Gemini is open and has a response", 2500, "FF6666", "FFFFFF", 22)
-        else {
-            if (hwnd := GetGeminiWindowHwnd())
-                FocusGeminiAskFieldForHwnd(hwnd, true)
-            SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(false, originHwnd), -1)
-        }
-        GeminiPerfLog("hotkey_copy", t0)
-    } catch as err {
-        ShowNotification("Copy error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
+; #!+p orchestrator: show destination banner first; copy starts only after user picks Y/F/C/R/W/O.
+HotkeyCopy_RunIntentFlow(isCode := false) {
+    originHwnd := 0
+    try originHwnd := WinGetID("A")
+    companion := ""
+    try companion := ResolveGlobalAICompanion()
+    catch {
+        companion := ""
     }
+    HotkeyCopy_ShowIntentBanner(isCode, originHwnd, companion)
 }
 
-; Companion-aware copy last code snippet (#!+p double-tap).
-HotkeyCopy_RunCopyLastCode() {
+; Companion-aware copy last message (#!+p single-tap worker). No banner; reports via OnCopyWorkerDone.
+HotkeyCopy_RunCopyLastMessage(gen := 0) {
+    ok := false
+    err := "Copy failed – ensure Gemini is open and has a response"
     try {
         t0 := A_TickCount
-        originHwnd := 0
-        try originHwnd := WinGetID("A")
         companion := ResolveGlobalAICompanion()
+        opts := { restoreWindow: false, playChimeAndNotify: false }
         if (companion = "enterprise") {
-            if (!GeminiEnterprise_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-                ShowNotification("No code snippet found – ensure Gemini Enterprise has a code block", 2500, "FF6666",
-                    "FFFFFF", 22)
-            else {
+            err := "Copy failed – ensure Gemini Enterprise is open and has a response"
+            ok := GeminiEnterprise_CopyLastMessageToClipboard(opts)
+            if (ok) {
                 if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
                     root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
                     if (IsObject(root))
                         GeminiEnterprise_FocusComposer(root, true)
                 }
-                SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(true, originHwnd), -1)
             }
-            return
-        }
-        if (companion = "copilot") {
-            if (!CopilotWeb_CopyLastCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-                ShowNotification("No code snippet found – ensure Copilot has a code block", 2500, "FF6666", "FFFFFF",
-                    22)
-            else {
+        } else if (companion = "copilot") {
+            err := "Copy failed – ensure Copilot is open and has a response"
+            ok := CopilotWeb_CopyLastMessageToClipboard(opts)
+            if (ok) {
                 if (hwnd := GetCopilotWebWindowHwnd())
                     CopilotWeb_FocusComposerForHwnd(hwnd, true)
-                SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(true, originHwnd), -1)
             }
-            return
+        } else {
+            ok := CopyLastGeminiMessageToClipboard(opts)
+            if (ok) {
+                if (hwnd := GetGeminiWindowHwnd())
+                    FocusGeminiAskFieldForHwnd(hwnd, true)
+            }
         }
-        if (!CopyLastGeminiCodeSnippetToClipboard({ restoreWindow: false, playChimeAndNotify: true }))
-            ShowNotification("No code snippet found – ensure Gemini has a code block", 2500, "FF6666", "FFFFFF", 22)
-        else {
-            if (hwnd := GetGeminiWindowHwnd())
-                FocusGeminiAskFieldForHwnd(hwnd, true)
-            SetTimer((*) => HotkeyCopy_ShowPostCopyBanner(true, originHwnd), -1)
+        GeminiPerfLog("hotkey_copy", t0)
+    } catch as e {
+        ok := false
+        err := "Copy error: " (e.Message ? e.Message : "unknown")
+    }
+    HotkeyCopy_OnCopyWorkerDone(ok, ok ? "" : err, gen)
+}
+
+; Companion-aware copy last code snippet (#!+p double-tap worker). No banner; reports via OnCopyWorkerDone.
+HotkeyCopy_RunCopyLastCode(gen := 0) {
+    ok := false
+    err := "No code snippet found – ensure Gemini has a code block"
+    try {
+        t0 := A_TickCount
+        companion := ResolveGlobalAICompanion()
+        opts := { restoreWindow: false, playChimeAndNotify: false }
+        if (companion = "enterprise") {
+            err := "No code snippet found – ensure Gemini Enterprise has a code block"
+            ok := GeminiEnterprise_CopyLastCodeSnippetToClipboard(opts)
+            if (ok) {
+                if (hwnd := GetGeminiEnterpriseWindowHwnd()) {
+                    root := GeminiEnterprise_ReadRootFromHwnd(hwnd)
+                    if (IsObject(root))
+                        GeminiEnterprise_FocusComposer(root, true)
+                }
+            }
+        } else if (companion = "copilot") {
+            err := "No code snippet found – ensure Copilot has a code block"
+            ok := CopilotWeb_CopyLastCodeSnippetToClipboard(opts)
+            if (ok) {
+                if (hwnd := GetCopilotWebWindowHwnd())
+                    CopilotWeb_FocusComposerForHwnd(hwnd, true)
+            }
+        } else {
+            ok := CopyLastGeminiCodeSnippetToClipboard(opts)
+            if (ok) {
+                if (hwnd := GetGeminiWindowHwnd())
+                    FocusGeminiAskFieldForHwnd(hwnd, true)
+            }
         }
         GeminiPerfLog("hotkey_copy_code", t0)
-    } catch as err {
-        ShowNotification("Copy code error: " (err.Message ? err.Message : "unknown"), 2500, "FF6666", "FFFFFF", 22)
+    } catch as e {
+        ok := false
+        err := "Copy code error: " (e.Message ? e.Message : "unknown")
     }
+    HotkeyCopy_OnCopyWorkerDone(ok, ok ? "" : err, gen)
 }
 
 ; Win+Alt+Shift+P tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS):
-;   1× = copy last message/response
-;   2× = copy most recent code snippet ("Copy code", not "Copy" / "Copy prompt")
-; Stays on companion (no Alt+Tab); leaves caret in Ask/composer + ready chime after copy.
+;   1× = destination banner, then copy last message/response after choice
+;   2× = destination banner, then copy most recent code snippet after choice
+; Copy starts only after Y/F/C/R/W/O; N/Esc/timeout dismisses without copying.
 global g_HotkeyCopy_DoubleTapArmed := false
 global g_HotkeyCopy_LastPressTick := 0
 global g_HotkeyCopy_DoubleTapTimer := 0
@@ -246,7 +248,7 @@ class HotkeyCopy_DoubleTapTimerObj {
             return
         g_HotkeyCopy_DoubleTapArmed := false
         g_HotkeyCopy_DoubleTapTimer := 0
-        SetTimer((*) => HotkeyCopy_RunCopyLastMessage(), -1)
+        SetTimer((*) => HotkeyCopy_RunIntentFlow(false), -1)
     }
 }
 
@@ -269,7 +271,7 @@ class HotkeyCopy_DoubleTapTimerObj {
             SetTimer(g_HotkeyCopy_DoubleTapTimer, 0)
             g_HotkeyCopy_DoubleTapTimer := 0
         }
-        SetTimer((*) => HotkeyCopy_RunCopyLastCode(), -1)
+        SetTimer((*) => HotkeyCopy_RunIntentFlow(true), -1)
         return
     }
 
