@@ -12,6 +12,7 @@ global g_ClipAngelNameLv := false
 global g_ClipAngelNameHint := false
 global g_ClipAngelNameRows := []
 global g_ClipAngelNameHotkeys := []
+global g_ClipAngelNameLetterJump := ""
 global g_ClipAngelNameSourcePath := ""
 global g_ClipAngelNameFinalPath := ""
 global g_ClipAngelNamePicked := false
@@ -469,8 +470,104 @@ ClipAngelExport_HotIfActive(*) {
     }
 }
 
+; First word of the name (emoji stripped), unaccented — letter jump uses its first character.
+ClipAngelExport_NameForLetterJump(row) {
+    if (!IsObject(row))
+        return ""
+    name := row.Has("name") ? Trim(row["name"]) : ""
+    if (name = "")
+        return ""
+    split := PromptData_SplitLeadingEmoji(name)
+    if (split.name != "")
+        name := Trim(split.name)
+    name := Trim(RegExReplace(name, "[ \t]+", " "))
+    if (name = "")
+        return ""
+    word := StrSplit(name, " ")[1]
+    return ClipAngelExport_Unaccent(word)
+}
+
+ClipAngelExport_LetterJumpStop() {
+    global g_ClipAngelNameLetterJump
+    if (!IsObject(g_ClipAngelNameLetterJump) || !g_ClipAngelNameLetterJump.HasProp("chars")) {
+        g_ClipAngelNameLetterJump := ""
+        return
+    }
+    try HotIf(ClipAngelExport_HotIfActive)
+    catch {
+        g_ClipAngelNameLetterJump := ""
+        return
+    }
+    for ch in g_ClipAngelNameLetterJump.chars {
+        try Hotkey(ch, "Off")
+        catch {
+        }
+        try Hotkey(StrUpper(ch), "Off")
+        catch {
+        }
+    }
+    try HotIf()
+    catch {
+    }
+    g_ClipAngelNameLetterJump := ""
+}
+
+ClipAngelExport_LetterJumpMakeHandler(char) {
+    return (*) => ClipAngelExport_LetterJumpHandle(char)
+}
+
+ClipAngelExport_LetterJumpHandle(char) {
+    global g_ClipAngelNameLv, g_ClipAngelNameRows
+    if (!IsObject(g_ClipAngelNameLv) || !IsObject(g_ClipAngelNameRows))
+        return
+    after := 0
+    try after := g_ClipAngelNameLv.GetNext()
+    catch {
+        after := 0
+    }
+    rowNum := ModalList_FindNextByStartingLetter(g_ClipAngelNameRows, char, after, ClipAngelExport_NameForLetterJump)
+    if (rowNum > 0)
+        ListView_SelectRowFocused(g_ClipAngelNameLv, rowNum)
+}
+
+ClipAngelExport_LetterJumpStart() {
+    global g_ClipAngelNameLetterJump, g_ClipAngelNameGui, g_ClipAngelNameHotkeys
+    ClipAngelExport_LetterJumpStop()
+    if (!IsObject(g_ClipAngelNameGui))
+        return
+    chars := []
+    try HotIf(ClipAngelExport_HotIfActive)
+    catch {
+        return
+    }
+    loop 26 {
+        ch := Chr(96 + A_Index)
+        skip := false
+        for hk in g_ClipAngelNameHotkeys {
+            if (StrLower(hk) = ch) {
+                skip := true
+                break
+            }
+        }
+        if (skip)
+            continue
+        handler := ClipAngelExport_LetterJumpMakeHandler(ch)
+        try {
+            Hotkey(ch, handler, "On")
+            Hotkey(StrUpper(ch), handler, "On")
+            chars.Push(ch)
+        } catch {
+        }
+    }
+    try HotIf()
+    catch {
+    }
+    g_ClipAngelNameLetterJump := { chars: chars }
+}
+
 ClipAngelExport_UnbindHotkeys() {
     global g_ClipAngelNameHotkeys
+    ClipAngelExport_LetterJumpStop()
     try HotIf(ClipAngelExport_HotIfActive)
     catch {
         try HotIf()
@@ -509,6 +606,7 @@ ClipAngelExport_BindHotkeys(pairs) {
     try HotIf()
     catch {
     }
+    ClipAngelExport_LetterJumpStart()
 }
 
 ClipAngelExport_CloseGui() {

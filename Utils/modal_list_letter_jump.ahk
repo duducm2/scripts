@@ -3,11 +3,20 @@
 ; Modal ListView first-letter row jump (used by context file browser).
 ; =============================================================================
 
-ModalList_FindFirstByStartingLetter(entries, letter, getNameFn := "") {
+; afterIndex: 0 = search from start; N = walk from row N+1 (wrap). Used for "Char = walk list".
+ModalList_FindNextByStartingLetter(entries, letter, afterIndex := 0, getNameFn := "") {
     ch := StrLower(SubStr(letter, 1, 1))
     if !RegExMatch(ch, "^[a-z]$")
         return 0
-    for i, entry in entries {
+    if (!IsObject(entries))
+        return 0
+    n := entries.Length
+    if (n < 1)
+        return 0
+    start := afterIndex >= 1 ? afterIndex : 0
+    loop n {
+        i := Mod(start + A_Index - 1, n) + 1
+        entry := entries[i]
         name := getNameFn ? getNameFn(entry) : entry.name
         if (name = "")
             continue
@@ -15,6 +24,10 @@ ModalList_FindFirstByStartingLetter(entries, letter, getNameFn := "") {
             return i
     }
     return 0
+}
+
+ModalList_FindFirstByStartingLetter(entries, letter, getNameFn := "") {
+    return ModalList_FindNextByStartingLetter(entries, letter, 0, getNameFn)
 }
 
 ListView_SelectRowFocused(lv, rowNum) {
