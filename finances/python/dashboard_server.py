@@ -61,7 +61,10 @@ def patch_budget(year_month: str, category_id: str, planned_raw) -> dict:
     found = False
     planned_fmt = format_csv_decimal(planned)
     for row in rows:
-        if row.get("year_month") == year_month and row.get("category_id") == category_id:
+        if (
+            row.get("year_month") == year_month
+            and row.get("category_id") == category_id
+        ):
             row["planned_amount"] = planned_fmt
             found = True
             break
@@ -157,8 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(
-        f"serving {out_dir} on http://127.0.0.1:{args.port}/ "
-        f"(data={_agg.DATA})",
+        f"serving {out_dir} on http://127.0.0.1:{args.port}/ " f"(data={_agg.DATA})",
         flush=True,
     )
     try:

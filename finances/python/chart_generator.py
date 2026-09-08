@@ -937,13 +937,64 @@ function scheduleBudgetSave(ym, cid, inputEl) {{
   if (budgetSaveTimer) clearTimeout(budgetSaveTimer);
   budgetSaveTimer = setTimeout(() => saveBudgetPlanned(ym, cid, inputEl), 400);
 }}
+function budgetRowStats(planned, spent) {{
+  const rem = planned - spent;
+  const pct = planned > 0 ? (spent / planned * 100) : (spent > 0 ? 100 : 0);
+  const width = Math.min(pct, 100);
+  const over = spent > planned && planned > 0;
+  const fill = over ? '#e74c3c' : '#2ecc71';
+  const cap = over ? ('Exceeded ' + formatBrl(-rem)) : ('Remain ' + formatBrl(rem));
+  return {{ rem, pct, width, over, fill, cap }};
+}}
+function refreshBudgetVisuals(ym) {{
+  const rows = budgetsForMonth(ym);
+  const sumEl = document.getElementById('budgetsSummary');
+  let totalPlanned = 0, totalSpent = 0;
+  for (const b of rows) {{
+    totalPlanned += b.planned;
+    totalSpent += b.spent;
+  }}
+  const totRem = totalPlanned - totalSpent;
+  const totPct = totalPlanned > 0 ? (totalSpent / totalPlanned * 100) : (totalSpent > 0 ? 100 : 0);
+  const totWidth = Math.min(totPct, 100);
+  const totOver = totalSpent > totalPlanned && totalPlanned > 0;
+  const totFill = totOver ? '#e74c3c' : '#f1c40f';
+  const budHint = totOver ? ('Exceeded ' + formatBrl(-totRem)) : ('Remain ' + formatBrl(totRem));
+  if (sumEl) {{
+    sumEl.style.display = rows.length ? '' : 'none';
+    if (rows.length) {{
+      sumEl.innerHTML = '<div class="bar-head"><span>Total</span><span>'
+        + formatBrl(totalSpent) + ' / ' + formatBrl(totalPlanned) + ' · ' + totPct.toFixed(0) + '%</span></div>'
+        + '<div class="bar-track"><div class="bar-fill" style="width:' + totWidth.toFixed(1)
+        + '%;background:' + totFill + '"></div></div>'
+        + '<div class="bar-meta">' + budHint + '</div>';
+    }} else {{
+      sumEl.innerHTML = '';
+    }}
+  }}
+  for (const b of rows) {{
+    const row = document.querySelector('.bar-row[data-category-id="' + b.category_id + '"]');
+    if (!row) continue;
+    const st = budgetRowStats(b.planned, b.spent);
+    const pctEl = row.querySelector('.budget-pct');
+    if (pctEl) pctEl.textContent = '· ' + st.pct.toFixed(0) + '%';
+    const fillEl = row.querySelector('.bar-fill');
+    if (fillEl) {{
+      fillEl.style.width = st.width.toFixed(1) + '%';
+      fillEl.style.background = st.fill;
+    }}
+    const meta = row.querySelector('.bar-meta');
+    if (meta) meta.textContent = st.cap;
+  }}
+}}
 async function saveBudgetPlanned(ym, cid, inputEl) {{
-  if (!ym || !cid || !inputEl) return;
+  if (!ym || !cid || !inputEl || !inputEl.isConnected) return;
   if (budgetApiOk === false) {{
     setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');
     return;
   }}
   const raw = String(inputEl.value || '').trim();
+  if (raw === '') return;
   const planned = parseDecimal(raw);
   if (!(planned >= 0) || Number.isNaN(planned)) {{
     setBudgetSaveStatus('Invalid amount', 'error');
@@ -952,6 +1003,10 @@ async function saveBudgetPlanned(ym, cid, inputEl) {{
   const exists = (RAW.budgets || []).some(b => b.year_month === ym && b.category_id === cid);
   if (!exists) {{
     setBudgetSaveStatus('No budget row for this category', 'error');
+    return;
+  }}
+  const current = (RAW.budgets || []).find(b => b.year_month === ym && b.category_id === cid);
+  if (current && Math.abs(parseDecimal(current.planned_amount) - planned) < 0.001) {{
     return;
   }}
   setBudgetSaveStatus('Saving…', 'saving');
@@ -968,30 +1023,23 @@ async function saveBudgetPlanned(ym, cid, inputEl) {{
     }}
     const fmt = data.planned_amount || formatCsvDecimal(planned);
     updateRawBudgetPlanned(ym, cid, fmt);
-    inputEl.value = parseDecimal(fmt).toFixed(2);
-    setBudgetSaveStatus('Saved', 'saved');
-    const focusCid = (document.activeElement
-      && document.activeElement.classList
-      && document.activeElement.classList.contains('budget-planned-input'))
-      ? document.activeElement.dataset.categoryId : null;
-    const caret = (focusCid && document.activeElement.selectionStart != null)
-      ? document.activeElement.selectionStart : null;
-    renderBudgets(budgetsForMonth(ym));
-    if (focusCid) {{
-      const again = document.querySelector(
-        '.budget-planned-input[data-category-id="' + focusCid + '"]'
-      );
-      if (again) {{
-        again.focus();
-        if (caret != null && again.setSelectionRange) {{
-          try {{ again.setSelectionRange(caret, caret); }} catch (e) {{}}
-        }}
-      }}
+    // Never rewrite the focused input — that resets the caret.
+    if (document.activeElement !== inputEl) {{
+      inputEl.value = parseDecimal(fmt).toFixed(2);
     }}
+    setBudgetSaveStatus('Saved', 'saved');
+    refreshBudgetVisuals(ym);
   }} catch (e) {{
     budgetApiOk = false;
     setBudgetSaveStatus('Save failed (server offline)', 'error');
   }}
+}}
+function onBudgetPlannedBlur(ym, inputEl) {{
+  if (!inputEl) return;
+  const planned = parseDecimal(inputEl.value);
+  if (!(planned >= 0) || Number.isNaN(planned)) return;
+  inputEl.value = planned.toFixed(2);
+  scheduleBudgetSave(ym, inputEl.dataset.categoryId, inputEl);
 }}
 function renderBudgets(rows) {{
   const el = document.getElementById('budgetsBody');
@@ -1030,26 +1078,21 @@ function renderBudgets(rows) {{
   const byId = catById();
   el.innerHTML = rows.map(b => {{
     const name = catLabel(byId[b.category_id], b.category_id);
-    const rem = b.planned - b.spent;
-    const pct = b.planned > 0 ? (b.spent / b.planned * 100) : (b.spent > 0 ? 100 : 0);
-    const width = Math.min(pct, 100);
-    const over = b.spent > b.planned && b.planned > 0;
-    const fill = over ? '#e74c3c' : '#2ecc71';
-    const cap = over ? ('Exceeded ' + formatBrl(-rem)) : ('Remain ' + formatBrl(rem));
+    const st = budgetRowStats(b.planned, b.spent);
     const plannedVal = b.planned.toFixed(2);
     return '<div class="bar-row" data-category-id="' + b.category_id + '">'
       + '<div class="bar-head"><span>' + name + '</span></div>'
       + '<div class="budget-edit-row"><span class="spent-label">' + formatBrl(b.spent)
-      + ' /</span><input type="number" class="budget-planned-input" min="0" step="0.01" '
+      + ' /</span><input type="text" inputmode="decimal" class="budget-planned-input" '
       + 'data-category-id="' + b.category_id + '" value="' + plannedVal + '"'
       + (canEdit ? '' : ' disabled') + '/>'
-      + '<span>· ' + pct.toFixed(0) + '%</span></div>'
-      + '<div class="bar-track"><div class="bar-fill" style="width:' + width.toFixed(1) + '%;background:' + fill + '"></div></div>'
-      + '<div class="bar-meta">' + cap + '</div></div>';
+      + '<span class="budget-pct">· ' + st.pct.toFixed(0) + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + st.width.toFixed(1) + '%;background:' + st.fill + '"></div></div>'
+      + '<div class="bar-meta">' + st.cap + '</div></div>';
   }}).join('');
   el.querySelectorAll('.budget-planned-input').forEach(inp => {{
-    inp.addEventListener('change', () => scheduleBudgetSave(ym, inp.dataset.categoryId, inp));
     inp.addEventListener('input', () => scheduleBudgetSave(ym, inp.dataset.categoryId, inp));
+    inp.addEventListener('change', () => onBudgetPlannedBlur(ym, inp));
   }});
 }}
 function recurringMonthlyTotal() {{
