@@ -167,13 +167,21 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard.html was not generated", 2200, BANNER_ACCENT_ERROR)
         return
     }
-    tmpHtml := A_Temp . "\finance_dashboard_" . A_TickCount . ".html"
-    try FileCopy(html, tmpHtml, 1)
-    catch {
-        tmpHtml := html
+    serverPy := Finance_PythonDir() . "\dashboard_server.py"
+    if (!FileExist(serverPy)) {
+        Finance_Notify("dashboard_server.py not found", 2000, BANNER_ACCENT_ERROR)
+        return
     }
-    fileUrl := "file:///" . StrReplace(StrReplace(tmpHtml, "\", "/"), " ", "%20") . "?t=" . A_TickCount
-    try Run('chrome.exe --new-window "' . fileUrl . '"')
+    ; Start (or reuse) localhost server so the cockpit can PATCH budgets.csv
+    srvCmd := pyCmd . ' "' . serverPy . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
+    try Run(A_ComSpec . ' /c ' . srvCmd, A_ScriptDir, "Hide")
+    catch as e {
+        Finance_Notify("Dashboard server failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    Sleep(500)
+    dashUrl := "http://127.0.0.1:8765/dashboard.html?t=" . A_TickCount
+    try Run('chrome.exe --new-window "' . dashUrl . '"')
     catch as e {
         Finance_Notify("Chrome failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return

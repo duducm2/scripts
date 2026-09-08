@@ -215,9 +215,18 @@ def build_html(data: dict) -> str:
             bud_summary = ""
         sum_style = "" if items else ' style="display:none"'
         bud_html = f"""
-        <div class="panel chart-cell budget-panel"><h2>Budgets</h2>
+        <div class="panel chart-cell budget-panel">
+          <div class="budget-head">
+            <h2>Budgets</h2>
+            <div class="budget-controls">
+              <label class="budget-month-label">Month
+                <select id="budgetMonth"></select>
+              </label>
+              <span id="budgetSaveStatus" class="budget-save-status" aria-live="polite"></span>
+            </div>
+          </div>
           <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
-          <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this period</p>'}</div></div>"""
+          <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this month</p>'}</div></div>"""
 
     card_bars_html = ""
     card_items = []
@@ -418,6 +427,38 @@ def build_html(data: dict) -> str:
       display:flex; flex-direction:column;
     }}
     .budget-panel .budget-body {{ flex:1; overflow:visible; }}
+    .budget-head {{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      flex-wrap:wrap; margin-bottom:6px;
+    }}
+    .budget-head h2 {{ margin:0; }}
+    .budget-controls {{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }}
+    .budget-month-label {{
+      display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted);
+    }}
+    .budget-month-label select {{
+      background:var(--toggle-bg); color:var(--text); border:1px solid var(--border);
+      border-radius:4px; padding:2px 6px; font-size:12px;
+    }}
+    .budget-save-status {{
+      font-size:11px; color:var(--muted); min-height:1.2em;
+    }}
+    .budget-save-status.saving {{ color:var(--heading); }}
+    .budget-save-status.saved {{ color:#2ecc71; }}
+    .budget-save-status.error {{ color:#e74c3c; }}
+    .budget-planned-input {{
+      width:5.5rem; background:var(--toggle-bg); color:var(--text);
+      border:1px solid var(--border); border-radius:4px; padding:2px 6px;
+      font-size:12px; text-align:right; font-variant-numeric:tabular-nums;
+    }}
+    .budget-planned-input:disabled {{ opacity:.55; }}
+    .budget-edit-row {{
+      display:flex; align-items:center; justify-content:flex-end; gap:6px;
+      font-size:12px; margin-bottom:3px;
+    }}
+    .budget-edit-row .spent-label {{ color:var(--muted); }}
     .pie-exp-cell {{ grid-column:2; grid-row:1; }}
     .pie-inc-cell {{ grid-column:2; grid-row:2; }}
     .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
@@ -821,28 +862,150 @@ function annualFor(year) {{
   }}
   return out;
 }}
-function aggregateBudgets(months) {{
-  const set = new Set(months);
-  const planned = {{}}, spent = {{}};
-  for (const b of RAW.budgets) {{
-    if (!set.has(b.year_month)) continue;
-    const cid = b.category_id || '';
-    planned[cid] = (planned[cid] || 0) + parseDecimal(b.planned_amount);
-    spent[cid] = (spent[cid] || 0) + parseDecimal(b.spent_amount);
+function formatCsvDecimal(num) {{
+  return (Math.round(Number(num) * 100) / 100).toFixed(2).replace('.', ',');
+}}
+function budgetsForMonth(ym) {{
+  if (!ym) return [];
+  return RAW.budgets
+    .filter(b => b.year_month === ym)
+    .map(b => ({{
+      category_id: b.category_id || '',
+      planned: parseDecimal(b.planned_amount),
+      spent: parseDecimal(b.spent_amount)
+    }}))
+    .sort((a, b) => a.category_id.localeCompare(b.category_id));
+}}
+function monthsWithBudgets(months) {{
+  const have = new Set((RAW.budgets || []).map(b => b.year_month));
+  const inPeriod = (months || []).filter(m => have.has(m));
+  if (inPeriod.length) return inPeriod;
+  if (RAW.currentMonth && have.has(RAW.currentMonth)) return [RAW.currentMonth];
+  return [...have].sort();
+}}
+let budgetSaveTimer = null;
+let budgetSaveClearTimer = null;
+let budgetApiOk = null;
+function setBudgetSaveStatus(text, cls) {{
+  const el = document.getElementById('budgetSaveStatus');
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'budget-save-status' + (cls ? ' ' + cls : '');
+  if (budgetSaveClearTimer) clearTimeout(budgetSaveClearTimer);
+  if (cls === 'saved') {{
+    budgetSaveClearTimer = setTimeout(() => {{
+      if (el.textContent === text) {{
+        el.textContent = '';
+        el.className = 'budget-save-status';
+      }}
+    }}, 2000);
   }}
-  const ids = [...new Set([...Object.keys(planned), ...Object.keys(spent)])].sort();
-  return ids.map(cid => ({{category_id: cid, planned: planned[cid] || 0, spent: spent[cid] || 0}}));
+}}
+async function checkBudgetApi() {{
+  try {{
+    const r = await fetch('/api/health', {{ cache: 'no-store' }});
+    budgetApiOk = r.ok;
+  }} catch (e) {{
+    budgetApiOk = false;
+  }}
+  return budgetApiOk;
+}}
+function syncBudgetMonthSelect(months) {{
+  const sel = document.getElementById('budgetMonth');
+  if (!sel) return '';
+  const opts = monthsWithBudgets(months);
+  const prev = sel.value;
+  sel.innerHTML = opts.map(m => '<option value="' + m + '">' + m + '</option>').join('');
+  let pick = prev;
+  if (!opts.includes(pick)) {{
+    pick = opts.length ? opts[opts.length - 1] : '';
+  }}
+  sel.value = pick;
+  sel.disabled = !opts.length || budgetApiOk === false;
+  return pick;
+}}
+function updateRawBudgetPlanned(ym, cid, plannedFmt) {{
+  for (const b of RAW.budgets) {{
+    if (b.year_month === ym && b.category_id === cid) {{
+      b.planned_amount = plannedFmt;
+      return true;
+    }}
+  }}
+  return false;
+}}
+function scheduleBudgetSave(ym, cid, inputEl) {{
+  if (budgetSaveTimer) clearTimeout(budgetSaveTimer);
+  budgetSaveTimer = setTimeout(() => saveBudgetPlanned(ym, cid, inputEl), 400);
+}}
+async function saveBudgetPlanned(ym, cid, inputEl) {{
+  if (!ym || !cid || !inputEl) return;
+  if (budgetApiOk === false) {{
+    setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');
+    return;
+  }}
+  const raw = String(inputEl.value || '').trim();
+  const planned = parseDecimal(raw);
+  if (!(planned >= 0) || Number.isNaN(planned)) {{
+    setBudgetSaveStatus('Invalid amount', 'error');
+    return;
+  }}
+  const exists = (RAW.budgets || []).some(b => b.year_month === ym && b.category_id === cid);
+  if (!exists) {{
+    setBudgetSaveStatus('No budget row for this category', 'error');
+    return;
+  }}
+  setBudgetSaveStatus('Saving…', 'saving');
+  try {{
+    const r = await fetch('/api/budgets', {{
+      method: 'PATCH',
+      headers: {{ 'Content-Type': 'application/json' }},
+      body: JSON.stringify({{ year_month: ym, category_id: cid, planned_amount: planned }})
+    }});
+    const data = await r.json().catch(() => ({{}}));
+    if (!r.ok || !data.ok) {{
+      setBudgetSaveStatus(data.error || ('Save failed (' + r.status + ')'), 'error');
+      return;
+    }}
+    const fmt = data.planned_amount || formatCsvDecimal(planned);
+    updateRawBudgetPlanned(ym, cid, fmt);
+    inputEl.value = parseDecimal(fmt).toFixed(2);
+    setBudgetSaveStatus('Saved', 'saved');
+    const focusCid = (document.activeElement
+      && document.activeElement.classList
+      && document.activeElement.classList.contains('budget-planned-input'))
+      ? document.activeElement.dataset.categoryId : null;
+    const caret = (focusCid && document.activeElement.selectionStart != null)
+      ? document.activeElement.selectionStart : null;
+    renderBudgets(budgetsForMonth(ym));
+    if (focusCid) {{
+      const again = document.querySelector(
+        '.budget-planned-input[data-category-id="' + focusCid + '"]'
+      );
+      if (again) {{
+        again.focus();
+        if (caret != null && again.setSelectionRange) {{
+          try {{ again.setSelectionRange(caret, caret); }} catch (e) {{}}
+        }}
+      }}
+    }}
+  }} catch (e) {{
+    budgetApiOk = false;
+    setBudgetSaveStatus('Save failed (server offline)', 'error');
+  }}
 }}
 function renderBudgets(rows) {{
   const el = document.getElementById('budgetsBody');
   const sumEl = document.getElementById('budgetsSummary');
+  const sel = document.getElementById('budgetMonth');
+  const ym = sel ? sel.value : '';
+  const canEdit = !!ym && budgetApiOk !== false;
   if (!el) return;
   if (!rows.length) {{
     if (sumEl) {{
       sumEl.innerHTML = '';
       sumEl.style.display = 'none';
     }}
-    el.innerHTML = '<p class="empty">No budgets this period</p>';
+    el.innerHTML = '<p class="empty">No budgets this month</p>';
     return;
   }}
   let totalPlanned = 0, totalSpent = 0;
@@ -873,12 +1036,21 @@ function renderBudgets(rows) {{
     const over = b.spent > b.planned && b.planned > 0;
     const fill = over ? '#e74c3c' : '#2ecc71';
     const cap = over ? ('Exceeded ' + formatBrl(-rem)) : ('Remain ' + formatBrl(rem));
-    return '<div class="bar-row">'
-      + '<div class="bar-head"><span>' + name + '</span><span>'
-      + formatBrl(b.spent) + ' / ' + formatBrl(b.planned) + ' · ' + pct.toFixed(0) + '%</span></div>'
+    const plannedVal = b.planned.toFixed(2);
+    return '<div class="bar-row" data-category-id="' + b.category_id + '">'
+      + '<div class="bar-head"><span>' + name + '</span></div>'
+      + '<div class="budget-edit-row"><span class="spent-label">' + formatBrl(b.spent)
+      + ' /</span><input type="number" class="budget-planned-input" min="0" step="0.01" '
+      + 'data-category-id="' + b.category_id + '" value="' + plannedVal + '"'
+      + (canEdit ? '' : ' disabled') + '/>'
+      + '<span>· ' + pct.toFixed(0) + '%</span></div>'
       + '<div class="bar-track"><div class="bar-fill" style="width:' + width.toFixed(1) + '%;background:' + fill + '"></div></div>'
       + '<div class="bar-meta">' + cap + '</div></div>';
   }}).join('');
+  el.querySelectorAll('.budget-planned-input').forEach(inp => {{
+    inp.addEventListener('change', () => scheduleBudgetSave(ym, inp.dataset.categoryId, inp));
+    inp.addEventListener('input', () => scheduleBudgetSave(ym, inp.dataset.categoryId, inp));
+  }});
 }}
 function recurringMonthlyTotal() {{
   let s = 0;
@@ -1052,7 +1224,7 @@ function applyPeriod() {{
     perf.textContent = prevLbl + ' ' + formatBrl(prev.balance) + ' · ' + curLbl + ' ' + formatBrl(tot.balance)
       + ' (' + (vs >= 0 ? '+' : '') + vs.toFixed(0) + '%) · Kept ' + saved.toFixed(0) + '% · Top: ' + top;
   }}
-  renderBudgets(aggregateBudgets(months));
+  renderBudgets(budgetsForMonth(syncBudgetMonthSelect(months)));
   renderRecurring(months, tot.income);
   if (activeCategory) renderCategoryView();
   else drawAll();
@@ -1168,7 +1340,18 @@ function applyTheme(theme) {{
   const toEl = document.getElementById('periodTo');
   if (fromEl) fromEl.value = RAW.monthStart || RAW.dateFrom;
   if (toEl) toEl.value = RAW.today || RAW.dateTo;
-  applyPeriod();
+  const budgetMonthSel = document.getElementById('budgetMonth');
+  if (budgetMonthSel) {{
+    budgetMonthSel.addEventListener('change', () => {{
+      renderBudgets(budgetsForMonth(budgetMonthSel.value));
+    }});
+  }}
+  checkBudgetApi().then(() => {{
+    applyPeriod();
+    if (budgetApiOk === false) {{
+      setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');
+    }}
+  }});
 }})();
 </script>
 </body></html>"""
