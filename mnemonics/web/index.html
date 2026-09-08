@@ -945,6 +945,18 @@
         if (!palaces(state.studyId).length) toast("No palaces");
       }
 
+      function studyModalColumnCount(buttons) {
+        if (!buttons || buttons.length < 2) return 1;
+        const top0 = buttons[0].getBoundingClientRect().top;
+        let cols = 1;
+        for (let i = 1; i < buttons.length; i++) {
+          if (Math.abs(buttons[i].getBoundingClientRect().top - top0) > 2)
+            break;
+          cols++;
+        }
+        return Math.max(1, cols);
+      }
+
       function handleStudyModalKey(e) {
         if (!studyModalIsOpen()) return false;
         if (e.key === "Escape") {
@@ -958,16 +970,30 @@
         if (!buttons.length) return true;
         const focused = document.activeElement;
         const focusIdx = buttons.indexOf(focused);
-        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        const cols = studyModalColumnCount(buttons);
+        if (e.key === "ArrowRight") {
           e.preventDefault();
           const next =
             focusIdx < 0 ? 0 : Math.min(buttons.length - 1, focusIdx + 1);
           buttons[next].focus();
           return true;
         }
-        if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+        if (e.key === "ArrowLeft") {
           e.preventDefault();
           const prev = focusIdx < 0 ? 0 : Math.max(0, focusIdx - 1);
+          buttons[prev].focus();
+          return true;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const next =
+            focusIdx < 0 ? 0 : Math.min(buttons.length - 1, focusIdx + cols);
+          buttons[next].focus();
+          return true;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          const prev = focusIdx < 0 ? 0 : Math.max(0, focusIdx - cols);
           buttons[prev].focus();
           return true;
         }
