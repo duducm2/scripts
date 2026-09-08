@@ -388,4 +388,4 @@ INFO_0134,task,TASK_0245,image.png,,ℹ️,,10,2026-09-08 14:48:22
 INFO_0135,task,TASK_0244,"Figura 7.28: Proporção de atributos com diferença estatisticamente significativa no teste U de
 Mann-Whitney, por par de websites
 Here, we don't know if this is AI versus AI, human versus human, or human versus AI",,ℹ️,,40,2026-09-08 16:06:28
-INFO_0137,task,TASK_0244,On figure seven point three two Why are so why are so many attributes that have medians differences as zero it sounds quite strange to me,,ℹ️,,60,2026-09-08 16:36:55
+INFO_0137,task,TASK_0244,On figure seven point three two Why are so why are so many attributes that have medians differences as zero it sounds quite strange to me You can also see this happening on figure 7.33 where for a specific website the AI doesn't have any distribution only a single value and sometimes the single value is the same for it and the humans,,ℹ️,,60,2026-09-08 16:36:55
