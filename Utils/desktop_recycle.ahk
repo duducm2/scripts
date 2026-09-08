@@ -8,7 +8,7 @@
 ; =============================================================================
 ; Move all Desktop items to Recycle Bin (recoverable)
 ; Trigger: Ctrl+Alt+Win+8
-; Opens a temporary Desktop Explorer at 50% size (fully opaque), centered on the
+; Opens a temporary Desktop Explorer at 50% size / 40% opacity, centered on the
 ; active window's monitor. Y / timeout = recycle; N / Escape = cancel. Preview hwnd
 ; is marked with window prop DesktopToRecycleTempExclude so AutoSlot skips it.
 ; =============================================================================
@@ -21,6 +21,7 @@ global g_DesktopToRecycleReinforceGen := 0
 global DESKTOP_TO_RECYCLE_AUTOSLOT_PROP := "DesktopToRecycleTempExclude"
 global DESKTOP_TO_RECYCLE_TRACK_INTERVAL := 115
 global DESKTOP_TO_RECYCLE_PREVIEW_SCALE := 0.5
+global DESKTOP_TO_RECYCLE_PREVIEW_OPACITY := 220  ; 40% of 255
 global g_DesktopToRecycleKeysArmTick := 0
 global g_DesktopToRecycleGraceUntilTick := 0
 global g_DesktopToRecycleSawSelectKeyUp := false
@@ -326,7 +327,7 @@ DesktopToRecycle_ClaimNewShellEarly(beforeShell, targetPath, workLeft, workTop, 
     return 0
 }
 
-; Center hwnd at 50% of the given work area (fully opaque).
+; Center hwnd at 50% of the given work area; apply 40% opacity.
 ; Uses split SetWindowPos (move then size) — combined WinMove/SetWindowPos balloons ~1.5x
 ; on mixed-DPI.
 DesktopToRecycle_ForceMoveHwnd(hwnd, x, y, w, h) {
@@ -348,7 +349,7 @@ DesktopToRecycle_ForceMoveHwnd(hwnd, x, y, w, h) {
 }
 
 DesktopToRecycle_PlacePreviewOnWorkArea(hwnd, workLeft, workTop, workRight, workBottom) {
-    global DESKTOP_TO_RECYCLE_PREVIEW_SCALE
+    global DESKTOP_TO_RECYCLE_PREVIEW_SCALE, DESKTOP_TO_RECYCLE_PREVIEW_OPACITY
     global g_DesktopToRecyclePlaceX, g_DesktopToRecyclePlaceY, g_DesktopToRecyclePlaceW, g_DesktopToRecyclePlaceH
     ; IsWindow — WinExist misses hidden windows (hide-before-place regression).
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
@@ -379,6 +380,9 @@ DesktopToRecycle_PlacePreviewOnWorkArea(hwnd, workLeft, workTop, workRight, work
     g_DesktopToRecyclePlaceY := y
     g_DesktopToRecyclePlaceW := w
     g_DesktopToRecyclePlaceH := h
+    try WinSetTransparent(DESKTOP_TO_RECYCLE_PREVIEW_OPACITY, "ahk_id " hwnd)
+    catch {
+    }
     return true
 }
 
@@ -415,6 +419,7 @@ DesktopToRecycle_ReinforcePlace(*) {
 
 ; Force Explorer above other apps. activate:=true on first show; false during confirm reinforce.
 DesktopToRecycle_BringPreviewToFront(hwnd, activate := true) {
+    global DESKTOP_TO_RECYCLE_PREVIEW_OPACITY
     if (!hwnd || !DllCall("IsWindow", "ptr", hwnd))
         return false
     try {
@@ -427,6 +432,9 @@ DesktopToRecycle_BringPreviewToFront(hwnd, activate := true) {
     catch {
     }
     try WinSetAlwaysOnTop(true, "ahk_id " hwnd)
+    catch {
+    }
+    try WinSetTransparent(DESKTOP_TO_RECYCLE_PREVIEW_OPACITY, "ahk_id " hwnd)
     catch {
     }
     ; HWND_TOPMOST = -1; SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW = 0x0043
@@ -479,7 +487,7 @@ DesktopToRecycle_StopTrack() {
 
 ; Keep preview pinned (no focus-follow).
 DesktopToRecycle_TrackTick(*) {
-    global g_DesktopToRecycleCloseHwnd, g_DesktopToRecycleTrackLastMonIdx
+    global g_DesktopToRecycleCloseHwnd, g_DesktopToRecycleTrackLastMonIdx, DESKTOP_TO_RECYCLE_PREVIEW_OPACITY
     hwnd := g_DesktopToRecycleCloseHwnd
     if (!hwnd || !WinExist("ahk_id " hwnd)) {
         DesktopToRecycle_StopTrack()
@@ -487,6 +495,9 @@ DesktopToRecycle_TrackTick(*) {
     }
     DesktopToRecycle_MarkAutoSlotExclude(hwnd)
     try WinSetAlwaysOnTop(true, "ahk_id " hwnd)
+    catch {
+    }
+    try WinSetTransparent(DESKTOP_TO_RECYCLE_PREVIEW_OPACITY, "ahk_id " hwnd)
     catch {
     }
     try {
@@ -767,7 +778,7 @@ DesktopToRecycle_OpenPreviewExplorerOnce(targetPath, workLeft, workTop, workRigh
     return hwnd
 }
 
-; Open a new Desktop Explorer, exclude from AutoSlot, place at 50% size (opaque). Returns hwnd or 0.
+; Open a new Desktop Explorer, exclude from AutoSlot, place at 50% size / 40% opacity. Returns hwnd or 0.
 DesktopToRecycle_OpenPreviewExplorer(targetPath, workLeft, workTop, workRight, workBottom) {
     global g_DesktopToRecycleWeOpenedExplorer, g_DesktopToRecycleCloseHwnd
     g_DesktopToRecycleWeOpenedExplorer := false
