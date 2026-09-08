@@ -1909,15 +1909,9 @@ AutoSlot_IsSameScriptPid(hwnd) {
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
-    ; Temporary Desktop-to-Recycle preview Explorer (Utils sets this window prop).
+    ; Temporary Desktop-to-Recycle preview Explorer (Utils sets window prop + suppress ini).
     try {
         if (DllCall("GetPropW", "ptr", hwnd, "wstr", "DesktopToRecycleTempExclude"))
-            return true
-    } catch {
-    }
-    ; User ignore list from #!+L R (persisted autoslot_user_excludes.ini).
-    try {
-        if (AutoSlot_UserExcludeMatch(hwnd))
             return true
     } catch {
     }
@@ -1925,6 +1919,43 @@ AutoSlot_IsExcludedExeOrTitle(hwnd) {
         exe := StrLower(WinGetProcessName("ahk_id " hwnd))
     } catch {
         exe := ""
+    }
+    ; Pre-hwnd suppress: Utils writes Until tick before Run explorer (beats SHOW debounce race).
+    if (exe = "explorer.exe") {
+        try {
+            if (DesktopToRecycle_AutoSlotSuppressActive()) {
+                title := ""
+                try title := WinGetTitle(hwnd)
+                catch {
+                    title := ""
+                }
+                if (DesktopToRecycle_IsDesktopExplorerTitle(title) || title = "")
+                    return true
+            }
+        } catch {
+            ; Utils helpers missing in odd hosts — fall through.
+            path := A_ScriptDir "\assets\data\desktop_recycle_autoslot_suppress.ini"
+            try {
+                active := Integer(IniRead(path, "Suppress", "Active", 0))
+                suppressUntilTick := Integer(IniRead(path, "Suppress", "Until", 0))
+                if (active && suppressUntilTick > 0 && DllCall("GetTickCount", "UInt") < suppressUntilTick) {
+                    title := ""
+                    try title := WinGetTitle(hwnd)
+                    catch {
+                        title := ""
+                    }
+                    if (InStr(title, "Desktop", false) || InStr(title, "Área de Trabalho", false) || title = "")
+                        return true
+                }
+            } catch {
+            }
+        }
+    }
+    ; User ignore list from #!+L R (persisted autoslot_user_excludes.ini).
+    try {
+        if (AutoSlot_UserExcludeMatch(hwnd))
+            return true
+    } catch {
     }
     if (exe = "handy.exe" || exe = "clipangel.exe")
         return true
