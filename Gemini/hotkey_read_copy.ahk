@@ -143,6 +143,9 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
 
 ; #!+p orchestrator: show destination banner first; copy starts only after user picks Y/F/C/R/W/O.
 HotkeyCopy_RunIntentFlow(isCode := false) {
+    global g_HotkeyCopy_StartCopyCb
+    ; Register copy starter so Utils FinalizeIntent can schedule workers without Func("name").
+    g_HotkeyCopy_StartCopyCb := HotkeyCopy_StartCopyImpl
     originHwnd := 0
     try originHwnd := WinGetID("A")
     companion := ""
@@ -151,6 +154,14 @@ HotkeyCopy_RunIntentFlow(isCode := false) {
         companion := ""
     }
     HotkeyCopy_ShowIntentBanner(isCode, originHwnd, companion)
+}
+
+; Gemini-side copy starter (isCode, gen) — invoked from Utils via g_HotkeyCopy_StartCopyCb.
+HotkeyCopy_StartCopyImpl(isCode, gen := 0) {
+    if (isCode)
+        HotkeyCopy_RunCopyLastCode(gen)
+    else
+        HotkeyCopy_RunCopyLastMessage(gen)
 }
 
 ; Companion-aware copy last message (#!+p single-tap worker). No banner; reports via OnCopyWorkerDone.

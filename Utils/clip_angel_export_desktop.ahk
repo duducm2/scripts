@@ -19,6 +19,10 @@ global g_ClipAngelNamePicked := false
 global g_ClipAngelNameExt := "txt"
 global g_ClipAngelNameOrigExt := ""
 global g_ClipAngelNameOnClose := unset
+; Pre-copy name pick (#!+p [Y]): no staging file yet — ApplyName only stores name/ext.
+global g_ClipAngelNamePickOnly := false
+global g_ClipAngelNamePickedName := ""
+global g_ClipAngelNamePickedExt := ""
 
 ClipAngelExport_NamesCsvPath() {
     return A_ScriptDir "\assets\data\clipangel_desktop_names.csv"
@@ -812,6 +816,7 @@ ClipAngelExport_Delete(*) {
 
 ClipAngelExport_ApplyName(name, extOverride := unset) {
     global g_ClipAngelNameSourcePath, g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt
+    global g_ClipAngelNamePickOnly, g_ClipAngelNamePickedName, g_ClipAngelNamePickedExt
     clean := ClipAngelExport_SanitizeFileName(name)
     if (clean = "") {
         ClipAngelExport_Alert("Name is not a valid filename.")
@@ -821,6 +826,13 @@ ClipAngelExport_ApplyName(name, extOverride := unset) {
         ext := extOverride != "" ? ClipAngelExport_SanitizeExt(extOverride) : ""
     } else {
         ext := g_ClipAngelNameExt
+    }
+    if (g_ClipAngelNamePickOnly) {
+        g_ClipAngelNamePickedName := clean
+        g_ClipAngelNamePickedExt := ext
+        g_ClipAngelNamePicked := true
+        ClipAngelExport_CloseGui()
+        return true
     }
     SplitPath(g_ClipAngelNameSourcePath, , &desktopDir)
     dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean, ext)
@@ -898,14 +910,15 @@ ClipAngelExport_UseTyped(*) {
 }
 
 ClipAngelExport_UpdateHint() {
-    global g_ClipAngelNameHint, g_ClipAngelNameExt
+    global g_ClipAngelNameHint, g_ClipAngelNameExt, g_ClipAngelNamePickOnly
     if (!IsObject(g_ClipAngelNameHint))
         return
     origLbl := ClipAngelExport_FormatExtLabel(ClipAngelExport_OrigExt())
     extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
+    escHint := g_ClipAngelNamePickOnly ? "Esc cancel" : "Esc keep temp"
     g_ClipAngelNameHint.Value := "Char = walk list   [Enter] keep ext " . origLbl .
         "   [1] .txt   [Shift+T] type once   [Shift+X] ext "
-        . extLbl . "   [Shift+A] add   [Shift+E] edit   Delete   Esc keep temp"
+        . extLbl . "   [Shift+A] add   [Shift+E] edit   Delete   " . escHint
 }
 
 ; Change extension for this rename session (list picks + bare typed names).
@@ -1008,6 +1021,8 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
+    global g_ClipAngelNamePickOnly
+    g_ClipAngelNamePickOnly := false
     g_ClipAngelNameSourcePath := sourcePath
     g_ClipAngelNameFinalPath := sourcePath
     g_ClipAngelNamePicked := false
@@ -1046,6 +1061,73 @@ ClipAngelExport_PromptRename(sourcePath) {
     return g_ClipAngelNameFinalPath
 }
 
+; Pre-copy name pick for #!+p [Y]. Returns { name, ext } or false if cancelled.
+ClipAngelExport_PromptPickName(defaultExt := "txt") {
+    global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
+    global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
+    global g_ClipAngelNamePickOnly, g_ClipAngelNamePickedName, g_ClipAngelNamePickedExt
+    g_ClipAngelNamePickOnly := true
+    g_ClipAngelNameSourcePath := ""
+    g_ClipAngelNameFinalPath := ""
+    g_ClipAngelNamePicked := false
+    g_ClipAngelNamePickedName := ""
+    g_ClipAngelNamePickedExt := ""
+    g_ClipAngelNameOrigExt := ClipAngelExport_SanitizeExt(defaultExt)
+    g_ClipAngelNameExt := g_ClipAngelNameOrigExt
+
+    ClipAngelExport_CloseGui()
+    g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
+    g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h48")
+    ClipAngelExport_UpdateHint()
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y62 w390 h298 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
+    g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
+    g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_Cancel())
+    ClipAngelExport_Refresh()
+    ClipAngelExport_BindHotkeys([
+        ["Enter", (*) => ClipAngelExport_UseSelected()],
+        ["1", (*) => ClipAngelExport_UseSelectedTxt()],
+        ["+t", (*) => ClipAngelExport_UseTyped()],
+        ["+x", (*) => ClipAngelExport_SetExt()],
+        ["+a", (*) => ClipAngelExport_Add()],
+        ["Insert", (*) => ClipAngelExport_Add()],
+        ["+e", (*) => ClipAngelExport_Edit()],
+        ["Delete", (*) => ClipAngelExport_Delete()],
+        ["Escape", (*) => ClipAngelExport_Cancel()]
+    ])
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    try g_ClipAngelNameLv.Focus()
+    catch {
+    }
+    try WinWaitClose("ahk_id " g_ClipAngelNameGui.Hwnd)
+    catch {
+    }
+    ClipAngelExport_UnbindHotkeys()
+    g_ClipAngelNamePickOnly := false
+    if (!g_ClipAngelNamePicked || g_ClipAngelNamePickedName = "")
+        return false
+    return { name: g_ClipAngelNamePickedName, ext: g_ClipAngelNamePickedExt }
+}
+
+; Rename a staging Desktop file to baseName+ext (no GUI). Returns final path or "".
+ClipAngelExport_RenameStaging(sourcePath, baseName, ext := "") {
+    clean := ClipAngelExport_SanitizeFileName(baseName)
+    if (clean = "" || sourcePath = "" || !FileExist(sourcePath))
+        return ""
+    ext := ClipAngelExport_SanitizeExt(ext)
+    SplitPath(sourcePath, , &desktopDir)
+    dest := ClipAngelExport_UniqueNamedPath(desktopDir, clean, ext)
+    if (dest = sourcePath)
+        return sourcePath
+    try {
+        FileMove(sourcePath, dest)
+        return dest
+    } catch {
+        return ""
+    }
+}
+
 ; #!+p intent-flow context: destination keys at gesture time; copy starts only after choice.
 ; choice: "" until Y/F/C/R/W/O; "cancel" on N/Esc/timeout. copyDone/copyOk set by Gemini worker.
 ; gen: increments each flow so a stale copy worker cannot touch a newer session.
@@ -1059,10 +1141,19 @@ global g_HotkeyCopy_Flow := {
     choice: "",
     copyDone: false,
     copyOk: false,
-    copyErr: ""
+    copyErr: "",
+    wPickDone: false,
+    yPickDone: false,
+    cPickDone: false,
+    targetHwnd: 0,
+    autoSend: false,
+    desktopName: "",
+    desktopExt: ""
 }
 ; Back-compat alias used by destination handlers (origin / companion / isCode).
 global g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+; Set by Gemini\hotkey_read_copy.ahk to (isCode, gen) => run copy worker. Empty when Utils hosts alone.
+global g_HotkeyCopy_StartCopyCb := ""
 
 HotkeyCopy_FlowReset(isCode := false, originHwnd := 0, companion := "") {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext, g_HotkeyCopy_FlowGen
@@ -1076,7 +1167,14 @@ HotkeyCopy_FlowReset(isCode := false, originHwnd := 0, companion := "") {
         choice: "",
         copyDone: false,
         copyOk: false,
-        copyErr: ""
+        copyErr: "",
+        wPickDone: false,
+        yPickDone: false,
+        cPickDone: false,
+        targetHwnd: 0,
+        autoSend: false,
+        desktopName: "",
+        desktopExt: ""
     }
     g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
     return g_HotkeyCopy_Flow.gen
@@ -1101,6 +1199,7 @@ HotkeyCopy_OnIntentCancel(*) {
 
 ; Record destination choice, then start copy (async). Dispatch runs from OnCopyWorkerDone.
 ; Must return quickly — a Sleep-wait on the F/Y/… hotkey thread would interrupt the copy worker.
+; [Y]/[C]/[W]: interactive UI first (name / Cursor window / paste window), then copy, then act.
 HotkeyCopy_FinalizeIntent(choice) {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
     if (!g_HotkeyCopy_Flow.active)
@@ -1109,6 +1208,19 @@ HotkeyCopy_FinalizeIntent(choice) {
         return
     g_HotkeyCopy_Flow.choice := choice
     HotkeyCopy_ClosePostCopyBanner()
+
+    if (choice = "Y") {
+        SetTimer((*) => HotkeyCopy_YRunNameThenCopy(), -1)
+        return
+    }
+    if (choice = "C") {
+        SetTimer((*) => HotkeyCopy_CRunPickerThenCopy(), -1)
+        return
+    }
+    if (choice = "W") {
+        SetTimer((*) => HotkeyCopy_WRunPickerThenCopy(), -1)
+        return
+    }
 
     if (g_HotkeyCopy_Flow.copyDone) {
         HotkeyCopy_DispatchChoice()
@@ -1119,14 +1231,21 @@ HotkeyCopy_FinalizeIntent(choice) {
     HotkeyCopy_StartCopyForCurrentFlow()
 }
 
-; Schedule companion copy workers (defined in Gemini\hotkey_read_copy.ahk when Gemini.ahk is the host).
+; Schedule companion copy via callback registered by Gemini (Func("name") throws "Invalid base" in v2).
 HotkeyCopy_StartCopyForCurrentFlow() {
-    global g_HotkeyCopy_Flow
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_StartCopyCb
     gen := g_HotkeyCopy_Flow.gen
-    fnName := g_HotkeyCopy_Flow.isCode ? "HotkeyCopy_RunCopyLastCode" : "HotkeyCopy_RunCopyLastMessage"
+    isCode := g_HotkeyCopy_Flow.isCode
+    if (g_HotkeyCopy_StartCopyCb = "") {
+        g_HotkeyCopy_Flow.copyDone := true
+        g_HotkeyCopy_Flow.copyOk := false
+        g_HotkeyCopy_Flow.copyErr := "Copy failed – Gemini.ahk not loaded"
+        HotkeyCopy_DispatchChoice()
+        return
+    }
     try {
-        fn := Func(fnName)
-        SetTimer((*) => fn.Call(gen), -1)
+        cb := g_HotkeyCopy_StartCopyCb
+        SetTimer((*) => cb(isCode, gen), -1)
     } catch {
         g_HotkeyCopy_Flow.copyDone := true
         g_HotkeyCopy_Flow.copyOk := false
@@ -1184,6 +1303,22 @@ HotkeyCopy_OnCopyWorkerDone(ok, err := "", gen := 0) {
     g_HotkeyCopy_Flow.copyOk := ok
     g_HotkeyCopy_Flow.copyErr := err
 
+    if (g_HotkeyCopy_Flow.choice = "W") {
+        if (g_HotkeyCopy_Flow.wPickDone)
+            HotkeyCopy_WTryFinishPaste()
+        return
+    }
+    if (g_HotkeyCopy_Flow.choice = "Y") {
+        if (g_HotkeyCopy_Flow.yPickDone)
+            HotkeyCopy_YTryFinishExport()
+        return
+    }
+    if (g_HotkeyCopy_Flow.choice = "C") {
+        if (g_HotkeyCopy_Flow.cPickDone)
+            HotkeyCopy_CTryFinishTransfer()
+        return
+    }
+
     if (g_HotkeyCopy_Flow.choice != "" && g_HotkeyCopy_Flow.choice != "cancel") {
         HotkeyCopy_DispatchChoice()
         return
@@ -1210,6 +1345,91 @@ HotkeyCopy_DoConfirmDesktop() {
     ClipAngel_ExportLastClipToDesktop()
 }
 
+; [Y] Name Desktop file first, then copy, then save+rename (no companion focus during name UI).
+HotkeyCopy_YRunNameThenCopy() {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "Y")
+        return
+    defaultExt := "txt"
+    picked := ClipAngelExport_PromptPickName(defaultExt)
+    if (!IsObject(picked)) {
+        g_HotkeyCopy_Flow.active := false
+        g_HotkeyCopy_Flow.choice := "cancel"
+        return
+    }
+    g_HotkeyCopy_Flow.desktopName := picked.name
+    g_HotkeyCopy_Flow.desktopExt := picked.ext
+    g_HotkeyCopy_Flow.yPickDone := true
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+    if (g_HotkeyCopy_Flow.copyDone) {
+        HotkeyCopy_YTryFinishExport()
+        return
+    }
+    StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
+    HotkeyCopy_StartCopyForCurrentFlow()
+}
+
+HotkeyCopy_YTryFinishExport() {
+    global g_HotkeyCopy_Flow
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "Y")
+        return
+    if (!g_HotkeyCopy_Flow.yPickDone || !g_HotkeyCopy_Flow.copyDone)
+        return
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if (!g_HotkeyCopy_Flow.copyOk) {
+        err := g_HotkeyCopy_Flow.copyErr != "" ? g_HotkeyCopy_Flow.copyErr : "Copy failed"
+        ShowCenteredOverlay_Utils("❌ " err, 2500, BANNER_ACCENT_ERROR)
+        g_HotkeyCopy_Flow.active := false
+        return
+    }
+    g_HotkeyCopy_Flow.active := false
+    desktopName := g_HotkeyCopy_Flow.desktopName
+    desktopExt := g_HotkeyCopy_Flow.desktopExt
+    if !ClipAngel_TryAcquireAutomationLock()
+        return
+    savedClip := ClipboardAll()
+    try {
+        StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
+        Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+        errMsg := ""
+        outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
+        if (outPath = "")
+            outPath := ClipAngelExport_PasteFirstClipToDesktop()
+        if (outPath = "") {
+            msg := errMsg != "" ? errMsg : "Paste file to Desktop failed"
+            ShowCenteredOverlay_Utils("❌ " . msg, 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        ; If user picked .txt but clipboard saved as image, keep staging ext unless they forced txt.
+        finalExt := desktopExt
+        if (finalExt = "")
+            finalExt := ClipAngelExport_ExtFromPath(outPath)
+        finalPath := ClipAngelExport_RenameStaging(outPath, desktopName, finalExt)
+        if (finalPath = "")
+            finalPath := outPath
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        SplitPath(finalPath, &name)
+        if (StrLen(name) > 48)
+            name := SubStr(name, 1, 45) "..."
+        ShowCenteredOverlay_Utils("✅ Saved: " name, 2200, BANNER_ACCENT_SUCCESS)
+        try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+    } catch Error as e {
+        ShowCenteredOverlay_Utils("❌ Clip Angel export failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    } finally {
+        try A_Clipboard := savedClip
+        catch {
+        }
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ClipAngel_ReleaseAutomationLock()
+    }
+}
+
 HotkeyCopy_DoFavoriteClip() {
     clip := Trim(A_Clipboard)
     if (clip = "" || StrLen(clip) < 10) {
@@ -1222,6 +1442,63 @@ HotkeyCopy_DoFavoriteClip() {
 ; [C] Transfer clipboard to a Cursor/VS Code window (same as D2C Copy response? C).
 HotkeyCopy_OnTransfer(*) {
     HotkeyCopy_FinalizeIntent("C")
+}
+
+; [C] Pick Cursor/VS Code window first, then copy, then paste.
+HotkeyCopy_CRunPickerThenCopy() {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "C")
+        return
+    targetHwnd := CursorTransfer_ShowWindowSelector(0)
+    if (!targetHwnd) {
+        originHwnd := g_HotkeyCopy_Flow.originHwnd
+        if (originHwnd && WinExist("ahk_id " originHwnd))
+            WinActivate("ahk_id " originHwnd)
+        g_HotkeyCopy_Flow.active := false
+        g_HotkeyCopy_Flow.choice := "cancel"
+        return
+    }
+    g_HotkeyCopy_Flow.targetHwnd := targetHwnd
+    g_HotkeyCopy_Flow.cPickDone := true
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+    if (g_HotkeyCopy_Flow.copyDone) {
+        HotkeyCopy_CTryFinishTransfer()
+        return
+    }
+    StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
+    HotkeyCopy_StartCopyForCurrentFlow()
+}
+
+HotkeyCopy_CTryFinishTransfer() {
+    global g_HotkeyCopy_Flow
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "C")
+        return
+    if (!g_HotkeyCopy_Flow.cPickDone || !g_HotkeyCopy_Flow.copyDone)
+        return
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if (!g_HotkeyCopy_Flow.copyOk) {
+        err := g_HotkeyCopy_Flow.copyErr != "" ? g_HotkeyCopy_Flow.copyErr : "Copy failed"
+        ShowCenteredOverlay_Utils("❌ " err, 2500, BANNER_ACCENT_ERROR)
+        g_HotkeyCopy_Flow.active := false
+        return
+    }
+    originHwnd := g_HotkeyCopy_Flow.originHwnd
+    targetHwnd := g_HotkeyCopy_Flow.targetHwnd
+    clipRaw := A_Clipboard
+    clip := Trim(clipRaw)
+    g_HotkeyCopy_Flow.active := false
+    if (clip = "" || StrLen(clip) < 10) {
+        ShowCenteredOverlay_Utils("❌ Clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
+        ShowCenteredOverlay_Utils("❌ Target window not found", 2000, BANNER_ACCENT_ERROR)
+        return
+    }
+    try A_Clipboard := clipRaw
+    CursorTransfer_ActivateFocusPaste(targetHwnd, originHwnd)
 }
 
 HotkeyCopy_DoTransfer() {
@@ -1281,6 +1558,63 @@ HotkeyCopy_DoRead() {
 ; [W] Paste clipboard to a picked visible window (same as D2C Send dictation? W / #!+L).
 HotkeyCopy_OnPasteWindow(*) {
     HotkeyCopy_FinalizeIntent("W")
+}
+
+; [W] Pick window first (no companion focus steal), then copy, then paste.
+HotkeyCopy_WRunPickerThenCopy() {
+    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "W")
+        return
+    originHwnd := g_HotkeyCopy_Flow.originHwnd
+    if (!originHwnd)
+        try originHwnd := WinGetID("A")
+    targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
+    if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
+        g_HotkeyCopy_Flow.active := false
+        g_HotkeyCopy_Flow.choice := "cancel"
+        return
+    }
+    sendChoice := PasteWindow_ShowAutoSendOptionsAndWait()
+    if (sendChoice = "cancel" || sendChoice = "") {
+        g_HotkeyCopy_Flow.active := false
+        g_HotkeyCopy_Flow.choice := "cancel"
+        return
+    }
+    g_HotkeyCopy_Flow.targetHwnd := targetHwnd
+    g_HotkeyCopy_Flow.autoSend := (sendChoice = "send")
+    g_HotkeyCopy_Flow.wPickDone := true
+    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
+    if (g_HotkeyCopy_Flow.copyDone) {
+        HotkeyCopy_WTryFinishPaste()
+        return
+    }
+    StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
+    HotkeyCopy_StartCopyForCurrentFlow()
+}
+
+HotkeyCopy_WTryFinishPaste() {
+    global g_HotkeyCopy_Flow
+    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "W")
+        return
+    if (!g_HotkeyCopy_Flow.wPickDone || !g_HotkeyCopy_Flow.copyDone)
+        return
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    if (!g_HotkeyCopy_Flow.copyOk) {
+        err := g_HotkeyCopy_Flow.copyErr != "" ? g_HotkeyCopy_Flow.copyErr : "Copy failed"
+        ShowCenteredOverlay_Utils("❌ " err, 2500, BANNER_ACCENT_ERROR)
+        g_HotkeyCopy_Flow.active := false
+        return
+    }
+    targetHwnd := g_HotkeyCopy_Flow.targetHwnd
+    autoSend := g_HotkeyCopy_Flow.autoSend
+    g_HotkeyCopy_Flow.active := false
+    try {
+        D2C_FlowManager.GetInstance()._FinishDeferredPaste(targetHwnd, "", autoSend)
+    } catch as e {
+        ShowCenteredOverlay_Utils("❌ Paste failed: " (e.Message ? e.Message : "unknown"), 2500, BANNER_ACCENT_ERROR)
+    }
 }
 
 HotkeyCopy_DoPasteWindow() {
