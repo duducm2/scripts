@@ -558,8 +558,10 @@ StandardLoadingBar_CloseKeysOverlay() {
     try SetTimer(StandardLoadingBar_KeysEscapePoll, 0)
     catch {
     }
-    try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
-    catch {
+    if (IsObject(g_StandardLoadingBarKeysTimeoutTimer)) {
+        try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
+        catch {
+        }
     }
     g_StandardLoadingBarKeysTimeoutTimer := ""
     StandardLoadingBar_StopActiveMonitorTracking()
@@ -890,8 +892,15 @@ StandardLoadingBar_ShowWithKeys(state, keyCallbacks, timeoutMs := 0, centerOnHwn
     }
 
     if (timeoutMs > 0) {
-        g_StandardLoadingBarKeysTimeoutTimer := SetTimer(StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback), -
-        timeoutMs)
+        ; Store the BoundFunc itself — SetTimer's return value is empty in v2, so
+        ; CloseKeysOverlay must cancel this same object (logs: stale 6s timeout killed the next preview).
+        if (IsObject(g_StandardLoadingBarKeysTimeoutTimer)) {
+            try SetTimer(g_StandardLoadingBarKeysTimeoutTimer, 0)
+            catch {
+            }
+        }
+        g_StandardLoadingBarKeysTimeoutTimer := StandardLoadingBar_KeysTimeoutFired.Bind(timeoutCallback)
+        SetTimer(g_StandardLoadingBarKeysTimeoutTimer, -timeoutMs)
     }
 
     StandardLoadingBar_StartKeysSelectionPoll(keyCallbacks)
