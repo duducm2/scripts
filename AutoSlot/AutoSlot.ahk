@@ -1909,6 +1909,12 @@ AutoSlot_IsSameScriptPid(hwnd) {
 AutoSlot_IsExcludedExeOrTitle(hwnd) {
     if (!hwnd)
         return false
+    ; Temporary Desktop-to-Recycle preview Explorer (Utils sets this window prop).
+    try {
+        if (DllCall("GetPropW", "ptr", hwnd, "wstr", "DesktopToRecycleTempExclude"))
+            return true
+    } catch {
+    }
     ; User ignore list from #!+L R (persisted autoslot_user_excludes.ini).
     try {
         if (AutoSlot_UserExcludeMatch(hwnd))
