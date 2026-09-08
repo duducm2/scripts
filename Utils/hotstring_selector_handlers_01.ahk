@@ -87,6 +87,9 @@ HandleHotstringChar(char) {
         if (fn = "")
             return
         CleanupHotstringSelector()
+        ; Same as Hotstrings: return focus to the window that had selection before the selector.
+        UtilitySelector_RestorePreviousHwnd()
+        Sleep 150
         try fn()
         catch {
         }

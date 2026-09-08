@@ -48,11 +48,28 @@ OpenClipboardLinkInChrome_ExtractHttpUrl(text) {
     return ""
 }
 
-; Macros [L] — clipboard text or link; open in Chrome or Google search.
+; Macros [L] — selected text (Ctrl+C like #!+8) or fallback clipboard; open in Chrome / Google search.
 OpenClipboardLinkInChrome() {
-    text := Trim(A_Clipboard)
+    savedClip := ""
+    try savedClip := A_Clipboard
+    catch {
+        savedClip := ""
+    }
+    ; Prefer selection in the window that opened Utility Shortcuts (#!+8 pattern).
+    UtilitySelector_RestorePreviousHwnd()
+    Sleep 150
+    A_Clipboard := ""
+    copied := TryCopySelectionToClipboard_QuickLookAware()
+    if (copied) {
+        text := Trim(A_Clipboard)
+    } else {
+        try A_Clipboard := savedClip
+        catch {
+        }
+        text := Trim(savedClip)
+    }
     if (text = "") {
-        ShowCenteredOverlay_Utils("❌ Clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
+        ShowCenteredOverlay_Utils("❌ No selection and clipboard is empty.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     url := OpenClipboardLinkInChrome_ExtractHttpUrl(text)
@@ -69,7 +86,7 @@ OpenClipboardLinkInChrome() {
     ShowCenteredOverlay_Utils(banner, 1200, BANNER_ACCENT_SUCCESS)
 }
 
-RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open clipboard text/link in Chrome / Google search", "l")
+RegisterMacro(OpenClipboardLinkInChrome, "🔗 Open selected/clipboard text/link in Chrome / Google search", "l")
 
 ; Study links — one-shot set (clipboard URL) / open (new Chrome). Keys: 1/2/3 set, v/a/f open.
 MacroStudyLink_SetVideo(*) {
