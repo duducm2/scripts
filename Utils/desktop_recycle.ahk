@@ -22,12 +22,8 @@ global DESKTOP_TO_RECYCLE_AUTOSLOT_PROP := "DesktopToRecycleTempExclude"
 global DESKTOP_TO_RECYCLE_TRACK_INTERVAL := 115
 global DESKTOP_TO_RECYCLE_PREVIEW_SCALE := 0.5
 global DESKTOP_TO_RECYCLE_PREVIEW_OPACITY := 220  ; 40% of 255
-global g_DesktopToRecycleKeysArmTick := 0
-global g_DesktopToRecycleGraceUntilTick := 0
-global g_DesktopToRecycleSawSelectKeyUp := false
 global g_DesktopToRecycleSessionId := 0
 global g_DesktopToRecycleSessionStartTick := 0
-global DESKTOP_TO_RECYCLE_KEYS_GRACE_MS := 1500  ; ignore Y/N until grace ends AND keys have been up
 global DESKTOP_TO_RECYCLE_DECISION_MS := 6000
 global g_DesktopToRecyclePlaceX := 0
 global g_DesktopToRecyclePlaceY := 0
@@ -35,66 +31,19 @@ global g_DesktopToRecyclePlaceW := 0
 global g_DesktopToRecyclePlaceH := 0
 global g_DesktopToRecycleAnchorHwnd := 0
 
-DesktopToRecycle_KeysArmed() {
-    global g_DesktopToRecycleKeysArmTick, g_DesktopToRecycleSawSelectKeyUp
-    return g_DesktopToRecycleKeysArmTick > 0 && A_TickCount >= g_DesktopToRecycleKeysArmTick &&
-        g_DesktopToRecycleSawSelectKeyUp
-}
-
-DesktopToRecycle_StopKeysArmTimer() {
-    try SetTimer(DesktopToRecycle_TryArmKeys, 0)
-    catch {
-    }
-}
-
-; After grace: wait until Y/N are up (defeats key-repeat), reseed poll, then arm.
-DesktopToRecycle_TryArmKeys(*) {
-    global g_DesktopToRecycleGraceUntilTick, g_DesktopToRecycleKeysArmTick, g_DesktopToRecycleSawSelectKeyUp
-    global g_StandardLoadingBarKeysPollPrev
-    if (A_TickCount < g_DesktopToRecycleGraceUntilTick)
-        return
-    nDown := GetKeyState("N", "P") || GetKeyState("n", "P")
-    yDown := GetKeyState("Y", "P") || GetKeyState("y", "P")
-    if (nDown || yDown)
-        return
-    g_DesktopToRecycleSawSelectKeyUp := true
-    g_DesktopToRecycleKeysArmTick := A_TickCount
-    ; Reseed poll so a held-then-released key cannot look like a fresh edge.
-    try {
-        if (IsObject(g_StandardLoadingBarKeysPollPrev)) {
-            g_StandardLoadingBarKeysPollPrev["N"] := false
-            g_StandardLoadingBarKeysPollPrev["n"] := false
-            g_StandardLoadingBarKeysPollPrev["Y"] := false
-            g_StandardLoadingBarKeysPollPrev["y"] := false
-        }
-    } catch {
-    }
-    DesktopToRecycle_StopKeysArmTimer()
-}
-
-DesktopToRecycle_StartKeysArm() {
-    global g_DesktopToRecycleKeysArmTick, g_DesktopToRecycleGraceUntilTick, g_DesktopToRecycleSawSelectKeyUp
-    global DESKTOP_TO_RECYCLE_KEYS_GRACE_MS
-    DesktopToRecycle_StopKeysArmTimer()
-    g_DesktopToRecycleSawSelectKeyUp := false
-    g_DesktopToRecycleKeysArmTick := 0  ; not armed until TryArmKeys succeeds
-    g_DesktopToRecycleGraceUntilTick := A_TickCount + DESKTOP_TO_RECYCLE_KEYS_GRACE_MS
-    SetTimer(DesktopToRecycle_TryArmKeys, 50)
-}
-
 DesktopToRecycle_OnConfirm(*) {
-    if (!DesktopToRecycle_KeysArmed())
-        return
-    DesktopToRecycle_StopKeysArmTimer()
+    ; Immediate confirm — no grace gate (grace previously swallowed Y until the 6s timeout ran).
     DesktopToRecycle_EndDecisionSession()
     DesktopToRecycle_StopTrack()
+    try StandardLoadingBar_CloseKeysOverlay()
+    catch {
+    }
     DesktopToRecycle_ClosePreviewExplorer()
     PlayCleaningDesktopSound()
     DesktopToRecycle_Run()
 }
 
 DesktopToRecycle_OnCancel(*) {
-    DesktopToRecycle_StopKeysArmTimer()
     DesktopToRecycle_EndDecisionSession()
     DesktopToRecycle_StopTrack()
     try StandardLoadingBar_CloseKeysOverlay()
@@ -105,7 +54,7 @@ DesktopToRecycle_OnCancel(*) {
     ShowCenteredOverlay_Utils("⚠ Desktop cleanup cancelled", 1500, BANNER_ACCENT_INTERMEDIATE)
 }
 
-; N and Escape are identical: always cancel (grace only protects Y / recycle).
+; N and Escape are identical cancel triggers.
 DesktopToRecycle_OnCancelFromN(*) {
     DesktopToRecycle_OnCancel()
 }
@@ -120,7 +69,6 @@ DesktopToRecycle_OnTimeout(*) {
         DESKTOP_TO_RECYCLE_DECISION_MS -
         400)
         return
-    DesktopToRecycle_StopKeysArmTimer()
     DesktopToRecycle_EndDecisionSession()
     DesktopToRecycle_StopTrack()
     DesktopToRecycle_ClosePreviewExplorer()
@@ -593,7 +541,6 @@ DesktopToRecycle_ForceCloseExplorerHwnd(hwnd) {
 ; Close only the temporary preview Explorer hwnd (not every Desktop Explorer).
 DesktopToRecycle_ClosePreviewExplorer() {
     global g_DesktopToRecycleCloseHwnd, g_DesktopToRecycleWeOpenedExplorer
-    DesktopToRecycle_StopKeysArmTimer()
     DesktopToRecycle_EndDecisionSession()
     DesktopToRecycle_StopTrack()
     hwnd := g_DesktopToRecycleCloseHwnd
@@ -924,7 +871,6 @@ DesktopToRecycle_Trigger() {
     catch {
     }
 
-    DesktopToRecycle_StartKeysArm()
     DesktopToRecycle_BeginDecisionSession()
 
     global DESKTOP_TO_RECYCLE_DECISION_MS
