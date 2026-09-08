@@ -1677,7 +1677,7 @@ def build_html(
     {method_body}
   </div>
   {plans_body}
-  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>C</strong> or Copy prompt · Esc close. Notes auto-save at bottom; gallery add/edit/delete. <strong>P</strong> plans · <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
+  <footer>Click a Memory Palace for fullscreen practice. Overlay: ← Older / Newer → · <strong>Shift+C</strong> or Copy prompt · Esc close. Notes auto-save at bottom; gallery add/edit/delete. <strong>P</strong> plans · <strong>M</strong> method · Latest palace (or L) opens the highest palace number.</footer>
 
   <div id="studyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="studyModalTitle">
     <div class="modal-panel">
@@ -1698,7 +1698,7 @@ def build_html(
         <button type="button" id="btnPrevPalace" title="Older palace (←)">← Older</button>
         <span class="nav-pos" id="ovNavPos"></span>
         <button type="button" id="btnNextPalace" title="Newer palace (→)">Newer →</button>
-        <button type="button" id="btnCopyPrompt" title="Copy image prompt (C)" disabled>Copy prompt</button>
+        <button type="button" id="btnCopyPrompt" title="Copy image prompt (Shift+C)" disabled>Copy prompt</button>
         <button type="button" id="btnClose">Close</button>
       </div>
     </div>
@@ -3314,7 +3314,7 @@ def build_html(
           stepPalace(-1);
           return;
         }}
-        if ((e.key === 'c' || e.key === 'C') && currentOverlayPalaceId
+        if ((e.key === 'c' || e.key === 'C') && e.shiftKey && currentOverlayPalaceId
             && !e.ctrlKey && !e.metaKey && !e.altKey) {{
           const st = PALACE_DATA[currentOverlayPalaceId];
           const prompt = st ? (st.image_prompt || '').toString().trim() : '';

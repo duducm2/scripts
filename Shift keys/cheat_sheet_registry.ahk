@@ -1146,7 +1146,7 @@ cheatSheets["Memory Palace"] := "
     === Palace overlay ===
     🖼 [F] Toggle snapshot full-screen
     📝 [D] Toggle Quote & Story (default = Concept only)
-    📋 [C] Copy image prompt
+    📋 [Shift+C] Copy image prompt
     ⬅️ [←] Older palace
     ➡️ [→] Newer palace
     🏠 [Esc] Exit full-screen first, then close overlay
@@ -1456,7 +1456,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [1] > Links
     [H] > Help (glossary · Practice / Plans GitHub)
     Study picker: [a-z]/[1-9] pick · arrows move · Enter/Space confirm · Esc dismiss
-    Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [C] copy prompt · ← older · → newer
+    Overlay: [F] full-screen snapshot · [D] toggle Quote/Story (default Concept-only) · [Shift+C] copy prompt · ← older · → newer
     Overlay Esc: exit full-screen first, then close overlay; Esc elsewhere returns toward Practice
     [Win+Alt+Shift+→] > Show square selector (right direction)
     [Win+Alt+Shift+←] > Show square selector (left direction)
