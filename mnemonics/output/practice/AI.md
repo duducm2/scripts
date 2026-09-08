@@ -12,10 +12,14 @@
 ### 🟧 [M] marmoset
 
 **Concept**
-💡 💡 **Context:** I experience the dumb zone as degraded attention and performance when processing a massive context window over an extended session.
+💡 💡 **<kbd><strong><u>Context</u></strong></kbd>:** I experience the <kbd><strong><u>dumb</u></strong></kbd> zone as degraded <kbd><strong><u>attention</u></strong></kbd> and performance when processing a massive <kbd><strong><u>context</u></strong></kbd> window over an extended <kbd><strong><u>session</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**dumb**] → [foggy helmet]
+- [**attention**] → [droopy eyes]
+- [**context**] → [giant window]
+- [**session**] → [hourglass]
 
 **Quote**
 “In Artificial Intelligence, the "dumb zone" is a phenomenon where an AI agent begins to perform poorly after a long session with a very large context window.”
@@ -29,10 +33,14 @@ A microscopic marmoset juggles thousands of glowing text windows; as the session
 ### 🟧 [N] Neanderthal
 
 **Concept**
-💡 💡 **Context:** I use a meta prompt as a behind-the-scenes instruction that establishes an AI's baseline parameters like tone, rules, and boundaries.
+💡 💡 **Context:** I use a <kbd><strong><u>meta</u></strong></kbd> prompt as a behind-the-scenes <kbd><strong><u>instruction</u></strong></kbd> that establishes an AI's baseline parameters like tone, <kbd><strong><u>rules</u></strong></kbd>, and <kbd><strong><u>boundaries</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**meta**] → [iron curtain]
+- [**instruction**] → [whisper]
+- [**rules**] → [rule book]
+- [**boundaries**] → [fence]
 
 **Quote**
 “A meta prompt (often referred to as a system prompt) is a behind-the-scenes instruction that sets an AI model's overarching behavior, tone, rules, and scope before any user input is processed.”
@@ -48,10 +56,13 @@ A skyscraper-sized Neanderthal hides behind a massive iron theater curtain, aggr
 🟦 **Z1 · The Horse**
 
 **Concept**
-💡 💡 **Context:** I use the Horse to represent the foundational AI model itself, which possesses raw power but no inherent direction.
+💡 💡 **Context:** I use the <kbd><strong><u>Horse</u></strong></kbd> to represent the foundational AI model itself, which possesses raw <kbd><strong><u>power</u></strong></kbd> but no inherent <kbd><strong><u>direction</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**Horse**] → [wild horse]
+- [**power**] → [lightning bolt]
+- [**direction**] → [broken compass]
 
 **Quote**
 “The Horse represents the foundational AI Model itself—possessing raw power, but having no inherent direction.”
@@ -67,10 +78,14 @@ A wild, directionless mane of raw electrical power erupts from the owl's beak, v
 🟦 **Z2 · Harness Layer**
 
 **Concept**
-💡 💡 **Context:** I build a Harness or Tack as the engineering layer to steer and connect the model's raw power.
+💡 💡 **Context:** I build a <kbd><strong><u>Harness</u></strong></kbd> or <kbd><strong><u>Tack</u></strong></kbd> as the engineering layer to <kbd><strong><u>steer</u></strong></kbd> and <kbd><strong><u>connect</u></strong></kbd> the model's raw power.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**Harness**] → [iron harness]
+- [**Tack**] → [leather tack]
+- [**steer**] → [steering wheel]
+- [**connect**] → [plug]
 
 **Quote**
 “The Harness/Tack acts as the engineering layer that interacts with the model.”
@@ -86,10 +101,13 @@ A heavy, freezing-cold iron harness clamps brutally over the owl's wings, snappi
 🟦 **Z3 · The Cart Task**
 
 **Concept**
-💡 💡 **Context:** I view the Cart as the ultimate task or destination that needs to be accomplished once the model is harnessed.
+💡 💡 **Context:** I view the <kbd><strong><u>Cart</u></strong></kbd> as the ultimate <kbd><strong><u>task</u></strong></kbd> or <kbd><strong><u>destination</u></strong></kbd> that needs to be accomplished once the model is harnessed.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**Cart**] → [wooden cart]
+- [**destination**] → [neon sign]
+- [**task**] → [trophy]
 
 **Quote**
 “The Cart represents the ultimate Task that needs to be accomplished.”
