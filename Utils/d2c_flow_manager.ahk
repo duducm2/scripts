@@ -1064,7 +1064,6 @@ class D2C_FlowManager {
             "P", this.OnActionP.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
-            "C", this.OnActionC.Bind(this),
             "W", this.OnActionW.Bind(this),
             "O", this.OnActionO.Bind(this),
             "N", this.OnActionN.Bind(this),
@@ -1073,10 +1072,10 @@ class D2C_FlowManager {
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
-            pk := "[P] Copy  [Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+            pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
         else
             pk :=
-                "[P] Copy  [Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1114,12 +1113,6 @@ class D2C_FlowManager {
         } finally {
             this.Reset()
         }
-    }
-
-    OnActionC(*) {
-        if (this.CurrentPhase != "PromptingAction")
-            return
-        this.PromptForCursorTransfer()
     }
 
     OnActionR(*) {
@@ -1406,59 +1399,6 @@ class D2C_FlowManager {
                 WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
         }
         return clipOk
-    }
-
-    ; --- Phase 5: Cursor Transfer ---
-
-    PromptForCursorTransfer() {
-        this.CurrentPhase := "Transferring"
-        this.CleanupActionPrompt()
-        try {
-            ; Skip restoring focus so clipboard is not overwritten
-            if (!this.DoCopyCore(false, true)) {
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
-                return
-            }
-
-            clipRaw := A_Clipboard
-            clip := Trim(clipRaw)
-            if (clip = "" || StrLen(clip) < 10) {
-                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
-                return
-            }
-
-            ; Restore the pre-handoff anchored window so the user sees the selector/paste
-            ; happening in the exact app they were monitoring before the Gemini handoff.
-            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd)) {
-                try {
-                    WinActivate("ahk_id " this.OriginHwnd)
-                    ; Fast-path: avoid WinWaitActive if we are already active.
-                    if (!WinActive("ahk_id " this.OriginHwnd))
-                        WinWaitActive("ahk_id " this.OriginHwnd, , 0.5)
-                } catch {
-                }
-            }
-            try A_Clipboard := clipRaw
-
-            tSelectorStart := A_TickCount
-            this.CursorHwnd := CursorTransfer_ShowWindowSelector(0)
-            tSelectorMs := A_TickCount - tSelectorStart
-            if (!this.CursorHwnd) {
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
-                try A_Clipboard := clipRaw
-                return
-            }
-
-            ; Gemini → Cursor: no pre-movement warning (source is not Original).
-            try A_Clipboard := clipRaw
-            CursorTransfer_ActivateFocusPaste(this.CursorHwnd, this.OriginHwnd)
-        } finally {
-            this.Reset()
-        }
     }
 
     ; --- Helpers ---

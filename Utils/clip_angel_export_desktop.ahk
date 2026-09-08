@@ -1144,7 +1144,6 @@ global g_HotkeyCopy_Flow := {
     copyErr: "",
     wPickDone: false,
     yPickDone: false,
-    cPickDone: false,
     targetHwnd: 0,
     autoSend: false,
     desktopName: "",
@@ -1170,7 +1169,6 @@ HotkeyCopy_FlowReset(isCode := false, originHwnd := 0, companion := "") {
         copyErr: "",
         wPickDone: false,
         yPickDone: false,
-        cPickDone: false,
         targetHwnd: 0,
         autoSend: false,
         desktopName: "",
@@ -1199,7 +1197,7 @@ HotkeyCopy_OnIntentCancel(*) {
 
 ; Record destination choice, then start copy (async). Dispatch runs from OnCopyWorkerDone.
 ; Must return quickly — a Sleep-wait on the F/Y/… hotkey thread would interrupt the copy worker.
-; [Y]/[C]/[W]: interactive UI first (name / Cursor window / paste window), then copy, then act.
+; [Y]/[W]: interactive UI first (Desktop name / paste window), then copy, then act.
 HotkeyCopy_FinalizeIntent(choice) {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
     if (!g_HotkeyCopy_Flow.active)
@@ -1211,10 +1209,6 @@ HotkeyCopy_FinalizeIntent(choice) {
 
     if (choice = "Y") {
         SetTimer((*) => HotkeyCopy_YRunNameThenCopy(), -1)
-        return
-    }
-    if (choice = "C") {
-        SetTimer((*) => HotkeyCopy_CRunPickerThenCopy(), -1)
         return
     }
     if (choice = "W") {
@@ -1279,8 +1273,6 @@ HotkeyCopy_DispatchChoice() {
                 HotkeyCopy_DoConfirmDesktop()
             case "F":
                 HotkeyCopy_DoFavoriteClip()
-            case "C":
-                HotkeyCopy_DoTransfer()
             case "R":
                 HotkeyCopy_DoRead()
             case "W":
@@ -1311,11 +1303,6 @@ HotkeyCopy_OnCopyWorkerDone(ok, err := "", gen := 0) {
     if (g_HotkeyCopy_Flow.choice = "Y") {
         if (g_HotkeyCopy_Flow.yPickDone)
             HotkeyCopy_YTryFinishExport()
-        return
-    }
-    if (g_HotkeyCopy_Flow.choice = "C") {
-        if (g_HotkeyCopy_Flow.cPickDone)
-            HotkeyCopy_CTryFinishTransfer()
         return
     }
 
@@ -1437,88 +1424,6 @@ HotkeyCopy_DoFavoriteClip() {
         return
     }
     MarkLastClipAsFavorite("first", true)
-}
-
-; [C] Transfer clipboard to a Cursor/VS Code window (same as D2C Copy response? C).
-HotkeyCopy_OnTransfer(*) {
-    HotkeyCopy_FinalizeIntent("C")
-}
-
-; [C] Pick Cursor/VS Code window first, then copy, then paste.
-HotkeyCopy_CRunPickerThenCopy() {
-    global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
-    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "C")
-        return
-    targetHwnd := CursorTransfer_ShowWindowSelector(0)
-    if (!targetHwnd) {
-        originHwnd := g_HotkeyCopy_Flow.originHwnd
-        if (originHwnd && WinExist("ahk_id " originHwnd))
-            WinActivate("ahk_id " originHwnd)
-        g_HotkeyCopy_Flow.active := false
-        g_HotkeyCopy_Flow.choice := "cancel"
-        return
-    }
-    g_HotkeyCopy_Flow.targetHwnd := targetHwnd
-    g_HotkeyCopy_Flow.cPickDone := true
-    g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
-    if (g_HotkeyCopy_Flow.copyDone) {
-        HotkeyCopy_CTryFinishTransfer()
-        return
-    }
-    StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
-    HotkeyCopy_StartCopyForCurrentFlow()
-}
-
-HotkeyCopy_CTryFinishTransfer() {
-    global g_HotkeyCopy_Flow
-    if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "C")
-        return
-    if (!g_HotkeyCopy_Flow.cPickDone || !g_HotkeyCopy_Flow.copyDone)
-        return
-    try StandardLoadingBar_Hide(0)
-    catch {
-    }
-    if (!g_HotkeyCopy_Flow.copyOk) {
-        err := g_HotkeyCopy_Flow.copyErr != "" ? g_HotkeyCopy_Flow.copyErr : "Copy failed"
-        ShowCenteredOverlay_Utils("❌ " err, 2500, BANNER_ACCENT_ERROR)
-        g_HotkeyCopy_Flow.active := false
-        return
-    }
-    originHwnd := g_HotkeyCopy_Flow.originHwnd
-    targetHwnd := g_HotkeyCopy_Flow.targetHwnd
-    clipRaw := A_Clipboard
-    clip := Trim(clipRaw)
-    g_HotkeyCopy_Flow.active := false
-    if (clip = "" || StrLen(clip) < 10) {
-        ShowCenteredOverlay_Utils("❌ Clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
-        ShowCenteredOverlay_Utils("❌ Target window not found", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    try A_Clipboard := clipRaw
-    CursorTransfer_ActivateFocusPaste(targetHwnd, originHwnd)
-}
-
-HotkeyCopy_DoTransfer() {
-    global g_HotkeyCopy_PostCopyContext
-    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
-    clipRaw := A_Clipboard
-    clip := Trim(clipRaw)
-    if (clip = "" || StrLen(clip) < 10) {
-        ShowCenteredOverlay_Utils("❌ Clipboard empty or too short", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    targetHwnd := CursorTransfer_ShowWindowSelector(0)
-    if (!targetHwnd) {
-        if (originHwnd && WinExist("ahk_id " originHwnd))
-            WinActivate("ahk_id " originHwnd)
-        try A_Clipboard := clipRaw
-        return
-    }
-    try A_Clipboard := clipRaw
-    CursorTransfer_ActivateFocusPaste(targetHwnd, originHwnd)
 }
 
 ; [R] Read aloud already-copied message (1× only; skip for code / Enterprise).
@@ -1696,7 +1601,6 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
     keyCallbacks := Map(
         "Y", ClipAngelExport_OnConfirmDesktop,
         "F", ClipAngelExport_OnFavoriteClip,
-        "C", HotkeyCopy_OnTransfer,
         "W", HotkeyCopy_OnPasteWindow,
         "O", HotkeyCopy_OnClipAngelEdit,
         "N", HotkeyCopy_OnIntentCancel,
@@ -1708,13 +1612,13 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
 
     if (isCode) {
         title := "❓ Copy code — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else if (companion = "enterprise") {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [C] Transfer  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
     }
 
     timeoutMs := 5000

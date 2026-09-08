@@ -6,8 +6,8 @@
 ; =============================================================================
 
 ; =============================================================================
-; Gemini-to-Cursor transfer: numeric Cursor window selector (1-9) and activate/focus/paste
-; Used when user presses [C] Transfer in Gemini copy-decision banner.
+; Gemini-to-Cursor transfer helpers: numeric Cursor/VS Code window selector (1-9)
+; and activate/focus/paste. Shared by Shift-keys project matching and paste paths.
 ; =============================================================================
 global g_CursorTransferSelectorGui := false
 global g_CursorTransferSelectorLv := false

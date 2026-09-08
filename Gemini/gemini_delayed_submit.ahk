@@ -62,10 +62,10 @@ class GeminiDelayedSubmitMonitor {
         this.CopyBannerGui := ""
         this.CopyTimeoutTimer := ""
         copyKeyCallbacks := Map("N", this.CancelCopy.Bind(this), "Y", this.DoCopyOnly.Bind(this), "R", this.CopyAndReadAloud
-        .Bind(this), "C", this.CopyAndTransferToCursor.Bind(this), "F", this.CopyAndFavorite.Bind(this))
+        .Bind(this), "F", this.CopyAndFavorite.Bind(this))
         StandardLoadingBar_ShowWithKeys("❓ Copy response?", copyKeyCallbacks, 5000, 0, this.DoCopyOnTimeout
             .Bind(this), BANNER_ACCENT_INTERMEDIATE, 520, 17, "", false,
-            "[Y] Copy  [N] No  [R] Copy+Read  [C] Transfer  [F] Copy+Favorite",
+            "[Y] Copy  [N] No  [R] Copy+Read  [F] Copy+Favorite",
             true)
     }
 
@@ -80,7 +80,7 @@ class GeminiDelayedSubmitMonitor {
         this.CopyTimeoutTimer := ""
     }
 
-    ; N key: close overlay and stop (no copy/read/transfer). Explicitly close Utils overlay so cancel always takes effect.
+    ; N key: close overlay and stop (no copy/read). Explicitly close Utils overlay so cancel always takes effect.
     CancelCopy(*) {
         try StandardLoadingBar_CloseKeysOverlay()
         catch {
@@ -101,7 +101,7 @@ class GeminiDelayedSubmitMonitor {
                 WinActivate("ahk_id " this.OriginalHwnd)
             return
         }
-        ; Hands off cue before activating Gemini to copy the last response (manual Y/R/C and timeout).
+        ; Hands off cue before activating Gemini to copy the last response (manual Y/R/F and timeout).
         PlayPreMovementWarning("Gemini")
         ; If Gemini is not active when the monitor fires, activate it now.
         if !WinActive("ahk_id " this.GeminiHwnd) {
@@ -163,47 +163,9 @@ class GeminiDelayedSubmitMonitor {
         }
         MarkLastClipAsFavorite("first", true)
     }
-
-    ; C key: copy response, then show Cursor window selector (1–9), activate selected window, focus AI field, paste and send.
-    CopyAndTransferToCursor(*) {
-        this.CleanupCopyBanner()
-        ; Skip restoring focus so clipboard is not overwritten by the previously focused window before we read it.
-        this.DoCopyCore(false, true)
-        clipRaw := A_Clipboard
-        clip := Trim(clipRaw)
-        if (clip = "" || StrLen(clip) < GEMINI_TRANSFER_MIN_CLIPBOARD_LENGTH) {
-            ShowCenteredOverlay_Utils("❌ Copy failed or empty – try again", 2000, BANNER_ACCENT_ERROR)
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            return
-        }
-
-        ; Restore the pre-handoff anchored window so the user sees the selector/paste in the exact context.
-        if (this.OriginalHwnd && WinExist("ahk_id " this.OriginalHwnd)) {
-            try {
-                WinActivate("ahk_id " this.OriginalHwnd)
-                ; Fast-path: avoid WinWaitActive if we are already active.
-                if (!WinActive("ahk_id " this.OriginalHwnd))
-                    WinWaitActive("ahk_id " this.OriginalHwnd, , 0.5)
-            } catch {
-            }
-        }
-        try A_Clipboard := clipRaw
-
-        hwnd := CursorTransfer_ShowWindowSelector(0)
-        if (!hwnd) {
-            if (WinExist("ahk_id " this.OriginalHwnd))
-                WinActivate("ahk_id " this.OriginalHwnd)
-            try A_Clipboard := clipRaw
-            return
-        }
-        ; Gemini → Cursor: no pre-movement warning (source is not Original).
-        try A_Clipboard := clipRaw
-        CursorTransfer_ActivateFocusPaste(hwnd, this.OriginalHwnd)
-    }
 }
 
-; Current monitor instance so we can stop it when user chooses S or N at 6s (no copy/transfer follow-up).
+; Current monitor instance so we can stop it when user chooses S or N at 6s (no copy follow-up).
 global g_GeminiDelayedSubmitMonitor := ""
 
 ; Callable from Utils.ahk after successful auto-send (Ctrl+Alt+Win+L).
