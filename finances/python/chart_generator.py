@@ -158,8 +158,7 @@ def build_html(data: dict) -> str:
 
     year_lbl = data.get("period_year") or cur[:4]
     reports_html = f"""
-          <div class="panel chart-cell"><h2>Spent per main category</h2><div id="barCat" class="chart"></div></div>
-          <div class="panel chart-cell"><h2>Monthly balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-span"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
           <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
 
@@ -332,7 +331,6 @@ def build_html(data: dict) -> str:
         "incomePie": pie_spec(data["income_pie"]),
         "series": data["series"],
         "annual": data["annual"],
-        "spentMain": [{"name": n, "value": v} for n, v, _ in data["expense_pie"]],
     }
     payload_json = json.dumps(payload, ensure_ascii=False)
     raw_json = json.dumps(raw, ensure_ascii=False)
@@ -846,9 +844,7 @@ function bindChartClick(elId, kind) {{
     else if (pt.customdata && typeof pt.customdata === 'object') cid = pt.customdata.categoryId || '';
     if (!cid && typeof pt.pointNumber === 'number') {{
       const spec = kind === 'income' ? DATA.incomePie : DATA.expensePie;
-      if (elId === 'barCat' && DATA.spentMain && DATA.spentMain[pt.pointNumber])
-        cid = DATA.spentMain[pt.pointNumber].id || '';
-      else if (spec && spec.categoryIds)
+      if (spec && spec.categoryIds)
         cid = spec.categoryIds[pt.pointNumber] || '';
     }}
     if (cid) openCategoryView(cid, kind);
@@ -871,6 +867,38 @@ function seriesFor(months) {{
     const tot = monthTotals([ym]);
     return {{month: ym, income: tot.income, expense: tot.expense, balance: tot.balance}};
   }});
+}}
+function daysSpanning(from, to) {{
+  let a = from, b = to;
+  if (a > b) {{ const t = a; a = b; b = t; }}
+  const out = [];
+  let cur = a;
+  while (cur <= b) {{
+    out.push(cur);
+    cur = shiftDate(cur, 1);
+  }}
+  return out;
+}}
+function dayTotals(ymd) {{
+  let income = 0, expense = 0;
+  for (const t of RAW.transactions) {{
+    const d = String(t.date || '').slice(0,10);
+    if (d !== ymd) continue;
+    const amt = parseDecimal(t.amount);
+    if (t.type === 'income') income += amt;
+    else if (t.type === 'expense' || t.type === 'card_expense') expense += amt;
+  }}
+  return {{income, expense, balance: income - expense}};
+}}
+function dailySeries(from, to) {{
+  return daysSpanning(from, to).map(day => {{
+    const tot = dayTotals(day);
+    return {{day: day, income: tot.income, expense: tot.expense, balance: tot.balance}};
+  }});
+}}
+function dayTickLabel(ymd) {{
+  if (!ymd || ymd.length < 10) return ymd || '';
+  return ymd.slice(8, 10) + '/' + ymd.slice(5, 7);
 }}
 function annualFor(year) {{
   const out = [];
@@ -1262,8 +1290,7 @@ function applyPeriod() {{
   const multi = from !== to;
   DATA.expensePie = pieFromRows(expRows);
   DATA.incomePie = pieFromRows(incRows);
-  DATA.spentMain = expRows.map(r => ({{name: r.name, value: r.value, id: r.id}}));
-  DATA.series = seriesFor(months);
+  DATA.series = dailySeries(from, to);
   DATA.annual = annualFor(year);
   DATA.incomeVsInvest = incomeVsInvest(from, to);
 
@@ -1325,30 +1352,29 @@ function drawAll() {{
   const L = baseLayout();
   pie('pieExp', DATA.expensePie, 'expense');
   pie('pieInc', DATA.incomePie, 'income');
-  const barCat = document.getElementById('barCat');
-  if (barCat) {{
-    const names = DATA.spentMain.map(x => x.name);
-    const vals = DATA.spentMain.map(x => x.value);
-    const custom = DATA.spentMain.map(x => [formatBrl(x.value), x.id || '']);
-    barCat.classList.add('chart-clickable');
-    Plotly.newPlot('barCat', [{{type:'bar', x:names, y:vals, marker:{{color:'#e67e22'}},
-      customdata: custom,
-      hovertemplate:'%{{x}}<br>%{{customdata[0]}}<extra></extra>'}}],
-      Object.assign({{}}, L, {{
-        showlegend:false,
-        height:320,
-        margin:{{t:28, b:110, l:48, r:16}},
-        xaxis:{{tickangle:-45, automargin:true, tickfont:{{size:10}}}}
-      }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick('barCat', 'expense'));
-  }}
   const barBal = document.getElementById('barBal');
   if (barBal) {{
-    const months = DATA.series.map(x => x.month);
+    const days = DATA.series.map(x => x.day);
+    const labels = days.map(dayTickLabel);
     const bals = DATA.series.map(x => x.balance);
     const colors = bals.map(v => v >= 0 ? '#27ae60' : '#c0392b');
-    Plotly.newPlot('barBal', [{{type:'bar', x:months, y:bals, marker:{{color:colors}},
-      hovertemplate:'%{{x}}<br>R$ %{{y:.2f}}<extra></extra>'}}],
-      Object.assign({{}}, L, {{showlegend:false}}), {{responsive:true, displayModeBar:false}});
+    const tickangle = days.length > 14 ? -45 : 0;
+    Plotly.newPlot('barBal', [{{
+      type:'bar',
+      x: labels,
+      y: bals,
+      marker: {{color: colors}},
+      customdata: DATA.series.map(x => [
+        x.day, formatBrl(x.income), formatBrl(x.expense), formatBrl(x.balance)
+      ]),
+      hovertemplate:
+        '%{{customdata[0]}}<br>Balance %{{customdata[3]}}'
+        + '<br>In %{{customdata[1]}} · Out %{{customdata[2]}}<extra></extra>'
+    }}], Object.assign({{}}, L, {{
+      showlegend:false,
+      margin: Object.assign({{}}, L.margin, {{b: days.length > 14 ? 64 : 48}}),
+      xaxis: {{tickangle: tickangle, automargin:true, tickfont:{{size:10}}}}
+    }}), {{responsive:true, displayModeBar:false}});
   }}
   const lineYear = document.getElementById('lineYear');
   if (lineYear) {{
