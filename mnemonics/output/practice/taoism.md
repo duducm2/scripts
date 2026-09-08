@@ -12,10 +12,14 @@
 ### 🟧 [P] panther
 
 **Concept**
-💡 Taoism splits into Daojia (a school of teachings and texts) and Daojiao (an organized religion).
+💡 Taoism <kbd><strong><u>splits</u></strong></kbd> into Daojia (a <kbd><strong><u>school</u></strong></kbd> of <kbd><strong><u>teachings</u></strong></kbd> and texts) and Daojiao (an organized <kbd><strong><u>religion</u></strong></kbd>).
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**splits**] → [fork]
+- [**school**] → [chalkboard]
+- [**teachings**] → [scroll pile]
+- [**religion**] → [temple]
 
 **Quote**
 “The English word Taoism is often used to translate two distinct terms in Chinese: Daojia (道家; dàojiā; “School/Tradition of the Dao”) is a Han-dynasty label used to classify teachings and texts... Daojiao (道教; dàojiào; “Teachings of the Dao,” often rendered “Taoism” or 'Daoism' in the sense of an organized religion).”
@@ -29,10 +33,13 @@ A two-headed panther stands at a left-side gate. One head whispers riddles that 
 ### 🟧 [Q] Quetzalcoatl
 
 **Concept**
-💡 The Way of the Celestial Masters was the first organized Taoist group, started by Zhang Daoling after a vision of Laozi.
+💡 The Way of the Celestial Masters was the <kbd><strong><u>first</u></strong></kbd> <kbd><strong><u>organized</u></strong></kbd> Taoist group, started by Zhang Daoling after a <kbd><strong><u>vision</u></strong></kbd> of Laozi.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**first**] → [rice pecks]
+- [**organized**] → [ranked tower]
+- [**vision**] → [sage-vision]
 
 **Quote**
 “The first organized form of Taoism was the Way of the Celestial Masters, which developed from the Five Pecks of Rice movement at the end of the 2nd century CE. The latter had been founded by Zhang Daoling, who was said to have had a vision of Laozi in 142 CE”
@@ -46,10 +53,13 @@ A huge feathered serpent coils around a right-side parked car and stacks five gl
 ### 🟧 [R] rat
 
 **Concept**
-💡 The Three Pure Ones are the highest Taoist gods, three faces of the Tao as it takes form.
+💡 The Three Pure Ones are the <kbd><strong><u>highest</u></strong></kbd> Taoist gods, three <kbd><strong><u>faces</u></strong></kbd> of the Tao as it takes <kbd><strong><u>form</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**highest**] → [three cheeses]
+- [**faces**] → [three faces]
+- [**form**] → [sky blueprint]
 
 **Quote**
 “Three Purities were the supreme Taoist deities: the Celestial Worthy of Primordial Beginning, the Celestial Worthy of Numinous Treasure, and the Celestial Worthy of the Tao and its Virtue.”
@@ -63,10 +73,13 @@ A three-headed rat at the far end of the street bites three cheeses at once. The
 ### 🟧 [S] skull
 
 **Concept**
-💡 The Jade Emperor rules the sky in Taoist belief and runs it like an old Chinese court.
+💡 The Jade Emperor <kbd><strong><u>rules</u></strong></kbd> the <kbd><strong><u>sky</u></strong></kbd> in Taoist belief and runs it like an old Chinese <kbd><strong><u>court</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**rules**] → [jade crown]
+- [**sky**] → [cloud throne]
+- [**court**] → [frozen seal]
 
 **Quote**
 “Underneath the Three Pure Ones, the next ruling power is the Jade Emperor (Yuhuang Dadi, 玉皇大帝). He functions as the sovereign ruler of heaven who administers the cosmos through a vast celestial bureaucracy modeled on the imperial court of ancient China.”
@@ -80,10 +93,13 @@ A giant skull in a jade crown sits on a cloud-throne above a roof, bone so smoot
 ### 🟧 [T] toucan
 
 **Concept**
-💡 Quanzhen is a monastic Taoist school that trains inner alchemy and blends three teachings.
+💡 Quanzhen is a <kbd><strong><u>monastic</u></strong></kbd> Taoist school that trains inner <kbd><strong><u>alchemy</u></strong></kbd> and <kbd><strong><u>blends</u></strong></kbd> three teachings.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**monastic**] → [tiny monastery]
+- [**blends**] → [three beaks]
+- [**alchemy**] → [herb incense]
 
 **Quote**
 “In the 12th century, the Quanzhen (Complete Perfection) School was founded in Shandong by the sage Wang Chongyang (1113–1170)... The Quanzhen school was syncretic, combining elements from Buddhism and Confucianism with Taoist tradition.”
@@ -116,10 +132,13 @@ _No gallery images._
 ### 🟧 [K] kitten
 
 **Concept**
-💡 Yin and yang are the paired forces (dark/light, soft/hard, and so on) whose play shapes the world.
+💡 Yin and yang are the <kbd><strong><u>paired</u></strong></kbd> forces (dark/light, soft/hard, and so on) whose <kbd><strong><u>play</u></strong></kbd> shapes the <kbd><strong><u>world</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**paired**] → [yarn ball]
+- [**play**] → [spinning circle]
+- [**world**] → [globe]
 
 **Quote**
 “The main distinction in Taoist cosmology is that between yin and yang, which applies to various sets of complementary ideas: bright – dark, light – heavy, soft – hard, strong – weak, above – below, ruler – minister, male – female, and so on.”
@@ -133,10 +152,13 @@ A kitten on a left-side parked car bats a ball of yarn that is half pitch-black 
 ### 🟧 [L] lion
 
 **Concept**
-💡 Qi is the living stuff of the universe, the body of the Tao you can feel in all things.
+💡 Qi is the <kbd><strong><u>living</u></strong></kbd> stuff of the universe, the <kbd><strong><u>body</u></strong></kbd> of the Tao you can <kbd><strong><u>feel</u></strong></kbd> in all things.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**living**] → [crackling mane]
+- [**body**] → [brick-gas]
+- [**feel**] → [skin hum]
 
 **Quote**
 “According to Livia Kohn, qi is 'the cosmic energy that pervades all. The concrete aspect of Tao, qi is the material force of the universe, the basic stuff of nature.'”
@@ -150,10 +172,13 @@ A lion made of crackling energy walks along a right-side wall, paws that never q
 ### 🟧 [M] marmoset
 
 **Concept**
-💡 Wuxing is the five phases — wood, fire, earth, metal, water — used to explain how things change.
+💡 Wuxing is the <kbd><strong><u>five</u></strong></kbd> <kbd><strong><u>phases</u></strong></kbd> — wood, fire, earth, metal, water — used to explain how things <kbd><strong><u>change</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**five**] → [five orbs]
+- [**phases**] → [juggle]
+- [**change**] → [clash]
 
 **Quote**
 “Another important set of notions associated with the same school of yinyang are the “Five Phases” (wuxing) or “powers” (wude): water, fire, wood, metal, and earth.”
@@ -167,10 +192,15 @@ A marmoset on a far facade juggles five orbs that scream five ways: fire crackle
 ### 🟧 [N] Neanderthal
 
 **Concept**
-💡 Neidan is inner alchemy: you change jing, qi, and shen inside the body to live longer and change the spirit.
+💡 Neidan is inner <kbd><strong><u>alchemy</u></strong></kbd>: you change <kbd><strong><u>jing</u></strong></kbd>, <kbd><strong><u>qi</u></strong></kbd>, and <kbd><strong><u>shen</u></strong></kbd> inside the body to live <kbd><strong><u>longer</u></strong></kbd> and change the spirit.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**alchemy**] → [chest cauldron]
+- [**jing**] → [earthy root]
+- [**qi**] → [spark]
+- [**shen**] → [sweet mist]
+- [**longer**] → [hourglass]
 
 **Quote**
 “Internal alchemy (neidan, literally: 'internal elixir'), which focuses on the transformation and increase of qi in the body, developed during the late imperial period (especially during the Tang) and is found in almost all Taoist schools today”
@@ -184,10 +214,13 @@ A Neanderthal sits on a balcony in a still pose, with a cauldron boiling inside 
 ### 🟧 [O] owl
 
 **Concept**
-💡 Xian are immortals who gain strange powers by mastering the Tao, body and spirit both.
+💡 Xian are <kbd><strong><u>immortals</u></strong></kbd> who gain strange <kbd><strong><u>powers</u></strong></kbd> by <kbd><strong><u>mastering</u></strong></kbd> the Tao, body and spirit both.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**immortals**] → [glass feather]
+- [**powers**] → [heat ghost]
+- [**mastering**] → [master key]
 
 **Quote**
 “Taoists who sought to become one of the many different types of immortals, such as xian or zhenren, wanted to 'ensure complete physical and spiritual immortality'.”
@@ -220,10 +253,13 @@ _No gallery images._
 ### 🟧 [F] frog
 
 **Concept**
-💡 Laozi is the traditional founder of Taoism, but scholars debate whether he was a real person.
+💡 Laozi is the traditional <kbd><strong><u>founder</u></strong></kbd> of Taoism, but scholars <kbd><strong><u>debate</u></strong></kbd> whether he was a <kbd><strong><u>real</u></strong></kbd> person.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**founder**] → [flickering sage]
+- [**debate**] → [debate glasses]
+- [**real**] → [ghost]
 
 **Quote**
 “A common tradition holds that Laozi founded Taoism. Laozi's historicity is disputed, with many scholars seeing him as a legendary founding figure.”
@@ -237,10 +273,13 @@ One frog sits on a lily pad in a curb puddle by a left-side wall. Its throat-sac
 ### 🟧 [G] goat
 
 **Concept**
-💡 The Tao Te Ching is the core Taoist book, a short poetic text tied to Laozi.
+💡 The Tao Te Ching is the core Taoist <kbd><strong><u>book</u></strong></kbd>, a short <kbd><strong><u>poetic</u></strong></kbd> text <kbd><strong><u>tied</u></strong></kbd> to Laozi.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**book**] → [talking scroll]
+- [**poetic**] → [poem]
+- [**tied**] → [chain]
 
 **Quote**
 “The Tao Te Ching, attributed to Laozi, was composed between the 4th and 6th century BCE.”
@@ -254,10 +293,13 @@ A goat chained to a right-side fence chews a scroll that talks while it is eaten
 ### 🟧 [H] Hydra
 
 **Concept**
-💡 Zhuangzi was a major Taoist hermit, and some think southern shaman practice shaped him.
+💡 Zhuangzi was a major Taoist <kbd><strong><u>hermit</u></strong></kbd>, and some think <kbd><strong><u>southern</u></strong></kbd> <kbd><strong><u>shaman</u></strong></kbd> practice shaped him.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**hermit**] → [cave]
+- [**shaman**] → [rattles]
+- [**southern**] → [south wind]
 
 **Quote**
 “Zhuang Zhou (c. 370–290 BCE) was the most influential of the Taoist hermits. Some scholars hold that since he lived in the south, he may have been influenced by Chinese shamanism.”
@@ -271,10 +313,13 @@ A Hydra fills a cave mouth that opened in a far brick wall. Shaman rattles grow 
 ### 🟧 [I] imp
 
 **Concept**
-💡 The Zhuangzi uses stories and talks to push a free life in line with nature, not stiff social rules.
+💡 The Zhuangzi uses <kbd><strong><u>stories</u></strong></kbd> and talks to push a <kbd><strong><u>free</u></strong></kbd> life in line with nature, not stiff social <kbd><strong><u>rules</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**stories**] → [story balls]
+- [**free**] → [wild grass]
+- [**rules**] → [stone suit]
 
 **Quote**
 “The Zhuangzi uses anecdotes, parables, and dialogues to express one of its main themes—avoiding cultural constructs and instead living in a spontaneous way aligned with the natural world.”
@@ -288,10 +333,13 @@ An imp juggles dirt-smelling story balls from a balcony. One ball hits a stone o
 ### 🟧 [J] jester
 
 **Concept**
-💡 The Yellow Emperor is a mythic ruler said to have set many Taoist rules while seeking a long life.
+💡 The Yellow Emperor is a mythic <kbd><strong><u>ruler</u></strong></kbd> said to have set many Taoist <kbd><strong><u>rules</u></strong></kbd> while seeking a <kbd><strong><u>long</u></strong></kbd> life.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**ruler**] → [yellow robes]
+- [**long**] → [peach]
+- [**rules**] → [law tablet]
 
 **Quote**
 “many Chinese Taoists claim that the Yellow Emperor formulated many of their precepts, including the quest for 'long life'.”
@@ -324,10 +372,13 @@ _No gallery images._
 ### 🟧 [A] Arachne
 
 **Concept**
-💡 The Tao is the nameless changing process under all of reality.
+💡 The Tao is the <kbd><strong><u>nameless</u></strong></kbd> <kbd><strong><u>changing</u></strong></kbd> process under all of <kbd><strong><u>reality</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**nameless**] → [spiderweb]
+- [**changing**] → [river]
+- [**reality**] → [road]
 
 **Quote**
 “With a range of meanings and interpretations in Chinese philosophy, translations of Tao include 'way', 'road', 'path', or 'technique', generally understood in the Taoist sense as an enigmatic process of transformation ultimately underlying reality.”
@@ -341,10 +392,12 @@ A street-wide Arachne spins a web you can taste, honey and lightning in one bite
 ### 🟧 [B] bird of paradise
 
 **Concept**
-💡 De is the power that shows up when a person lives in line with the Tao.
+💡 De is the <kbd><strong><u>power</u></strong></kbd> that shows up when a person lives in <kbd><strong><u>line</u></strong></kbd> with the Tao.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**power**] → [glowing brick]
+- [**line**] → [compass]
 
 **Quote**
 “The active expression of Tao is called De (德; dé; also spelled Te or Teh; often translated with virtue or power), in a sense that De results from an individual living and cultivating the Tao.”
@@ -358,10 +411,13 @@ A bird of paradise sits on a right-side gate post, feathers so hot they feel lik
 ### 🟧 [C] cat
 
 **Concept**
-💡 Wu wei is effortless action: you reach a goal by flowing with the world, not by forcing it.
+💡 Wu wei is <kbd><strong><u>effortless</u></strong></kbd> action: you reach a goal by <kbd><strong><u>flowing</u></strong></kbd> with the world, not by <kbd><strong><u>forcing</u></strong></kbd> it.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**effortless**] → [sleeping cat]
+- [**flowing**] → [flood]
+- [**forcing**] → [crowbar]
 
 **Quote**
 “Wu wei is a primary ethical concept in Taoism. Standard translations are non-action, effortless action, action without intent, non-interference, and non-intervention.”
@@ -375,10 +431,13 @@ A sleeping cat rides a flood down the far street, still asleep on a fence-board.
 ### 🟧 [D] dragon
 
 **Concept**
-💡 Ziran is the self-so state of things: natural, unforced, as they already are.
+💡 Ziran is the <kbd><strong><u>self-so</u></strong></kbd> state of things: <kbd><strong><u>natural</u></strong></kbd>, <kbd><strong><u>unforced</u></strong></kbd>, as they already are.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**self-so**] → [uncut log]
+- [**natural**] → [wild branch]
+- [**unforced**] → [garden shears]
 
 **Quote**
 “Ziran (自然; zìrán; tzu-jan; lit. 'self-so', 'self-organization') is regarded as a central concept and value in Taoism and as a way of flowing with the Tao. It describes the 'primordial state' of all things.”
@@ -392,10 +451,13 @@ A dragon the size of a thumbnail sits on an uncut log on a roof edge. Branches e
 ### 🟧 [E] eagle
 
 **Concept**
-💡 The Three Treasures are compassion (ci), moderation (jian), and humility.
+💡 The Three Treasures are <kbd><strong><u>compassion</u></strong></kbd> (ci), <kbd><strong><u>moderation</u></strong></kbd> (jian), and <kbd><strong><u>humility</u></strong></kbd>.
 
-**Keywords**
-_No keywords yet_
+🔑 **Keywords**
+
+- [**compassion**] → [hug]
+- [**moderation**] → [rice bowl]
+- [**humility**] → [empty chest]
 
 **Quote**
 “Some of the most important virtues in Taoism are the Three Treasures or Three Jewels (三寶; sānbǎo). These are: ci (慈; cí, usually translated as compassion), jian (儉; jiǎn, usually translated as moderation), and bugan wei tianxia xian (不敢爲天下先; 'not daring to act as first under the heavens', but usually translated as humility).”
