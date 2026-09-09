@@ -135,7 +135,13 @@
     }
     .budget-edit-row .spent-label { color:var(--muted); }
     .funds-compare {
-      margin:0 0 10px; padding:8px 0 10px; border-bottom:1px solid var(--border);
+      margin:0 0 12px; padding:8px 10px 10px;
+      border:1px solid var(--border); border-radius:6px;
+      background:var(--bg);
+    }
+    .funds-compare-title {
+      font-size:11px; font-weight:600; color:var(--heading);
+      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
     }
     .funds-compare-head {
       display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -193,6 +199,19 @@
     .funds-compare-detail {
       color:var(--muted2); font-size:10px; margin-top:3px; line-height:1.35;
     }
+    .budget-categories {
+      flex:1; display:flex; flex-direction:column;
+      border:1px solid var(--border); border-radius:6px;
+      padding:8px 10px 6px; background:var(--panel);
+    }
+    .budget-categories-title {
+      font-size:11px; font-weight:600; color:var(--heading);
+      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
+    }
+    .budget-categories .bar-row-total {
+      margin:0 0 8px; padding:0 0 8px; border-bottom:1px solid var(--border);
+    }
+    .budget-categories .budget-body { flex:1; overflow:visible; }
     .pie-exp-cell { grid-column:2; grid-row:1; }
     .pie-inc-cell { grid-column:2; grid-row:2; }
     .charts-no-budget .pie-exp-cell { grid-column:1; grid-row:1; }
@@ -290,6 +309,7 @@
             </div>
           </div>
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
+            <div class="funds-compare-title">Available vs planned</div>
             <div class="funds-compare-head">
               <div class="funds-compare-legend">
                 <span class="funds-legend-item">
@@ -311,8 +331,12 @@
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
             <div class="funds-compare-detail" id="fundsCompareDetail"></div>
           </div>
-          <div class="bar-row bar-row-total" id="budgetsSummary"><div class="bar-head"><span>Total</span><span>R$ 2.449,16 / R$ 6.504,00 · 38%</span></div><div class="bar-track"><div class="bar-fill" style="width:37.7%;background:#f1c40f"></div></div><div class="bar-meta">Remain R$ 4.054,84</div></div>
-          <div id="budgetsBody" class="budget-body"><div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 40,00 / R$ 304,00 · 13%</span></div><div class="bar-track"><div class="bar-fill" style="width:13.2%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 264,00</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 60,00 / R$ 150,00 · 40%</span></div><div class="bar-track"><div class="bar-fill" style="width:40.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 90,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 268,00 / R$ 400,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:67.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 132,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 0,00 / R$ 1.500,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.500,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 0,00 / R$ 100,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 100,00</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 120,20 / R$ 50,00 · 240%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 70,20</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 58,82 / R$ 300,00 · 20%</span></div><div class="bar-track"><div class="bar-fill" style="width:19.6%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 241,18</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 1.052,48 / R$ 1.200,00 · 88%</span></div><div class="bar-track"><div class="bar-fill" style="width:87.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 147,52</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 597,79 / R$ 2.000,00 · 30%</span></div><div class="bar-track"><div class="bar-fill" style="width:29.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.402,21</div></div><div class="bar-row"><div class="bar-head"><span>❤️ Health</span><span>R$ 251,87 / R$ 500,00 · 50%</span></div><div class="bar-track"><div class="bar-fill" style="width:50.4%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 248,13</div></div></div></div>
+          <div class="budget-categories">
+            <div class="budget-categories-title">Categories · spent / planned</div>
+            <div class="bar-row bar-row-total" id="budgetsSummary"><div class="bar-head"><span>Total</span><span>R$ 2.449,16 / R$ 6.504,00 · 38%</span></div><div class="bar-track"><div class="bar-fill" style="width:37.7%;background:#f1c40f"></div></div><div class="bar-meta">Remain R$ 4.054,84</div></div>
+            <div id="budgetsBody" class="budget-body"><div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 40,00 / R$ 304,00 · 13%</span></div><div class="bar-track"><div class="bar-fill" style="width:13.2%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 264,00</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 60,00 / R$ 150,00 · 40%</span></div><div class="bar-track"><div class="bar-fill" style="width:40.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 90,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 268,00 / R$ 400,00 · 67%</span></div><div class="bar-track"><div class="bar-fill" style="width:67.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 132,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 0,00 / R$ 1.500,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.500,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 0,00 / R$ 100,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 100,00</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 120,20 / R$ 50,00 · 240%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 70,20</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 58,82 / R$ 300,00 · 20%</span></div><div class="bar-track"><div class="bar-fill" style="width:19.6%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 241,18</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 1.052,48 / R$ 1.200,00 · 88%</span></div><div class="bar-track"><div class="bar-fill" style="width:87.7%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 147,52</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 597,79 / R$ 2.000,00 · 30%</span></div><div class="bar-track"><div class="bar-fill" style="width:29.9%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1.402,21</div></div><div class="bar-row"><div class="bar-head"><span>❤️ Health</span><span>R$ 251,87 / R$ 500,00 · 50%</span></div><div class="bar-track"><div class="bar-fill" style="width:50.4%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 248,13</div></div></div>
+          </div>
+        </div>
     
           <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
     

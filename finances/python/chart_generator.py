@@ -232,6 +232,7 @@ def build_html(data: dict) -> str:
             </div>
           </div>
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
+            <div class="funds-compare-title">Available vs planned</div>
             <div class="funds-compare-head">
               <div class="funds-compare-legend">
                 <span class="funds-legend-item">
@@ -253,8 +254,12 @@ def build_html(data: dict) -> str:
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
             <div class="funds-compare-detail" id="fundsCompareDetail"></div>
           </div>
-          <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
-          <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this month</p>'}</div></div>"""
+          <div class="budget-categories">
+            <div class="budget-categories-title">Categories · spent / planned</div>
+            <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
+            <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this month</p>'}</div>
+          </div>
+        </div>"""
 
     acc_html = ""
     if widget_on(s, "ShowAccounts"):
@@ -465,7 +470,13 @@ def build_html(data: dict) -> str:
     }}
     .budget-edit-row .spent-label {{ color:var(--muted); }}
     .funds-compare {{
-      margin:0 0 10px; padding:8px 0 10px; border-bottom:1px solid var(--border);
+      margin:0 0 12px; padding:8px 10px 10px;
+      border:1px solid var(--border); border-radius:6px;
+      background:var(--bg);
+    }}
+    .funds-compare-title {{
+      font-size:11px; font-weight:600; color:var(--heading);
+      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
     }}
     .funds-compare-head {{
       display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -523,6 +534,19 @@ def build_html(data: dict) -> str:
     .funds-compare-detail {{
       color:var(--muted2); font-size:10px; margin-top:3px; line-height:1.35;
     }}
+    .budget-categories {{
+      flex:1; display:flex; flex-direction:column;
+      border:1px solid var(--border); border-radius:6px;
+      padding:8px 10px 6px; background:var(--panel);
+    }}
+    .budget-categories-title {{
+      font-size:11px; font-weight:600; color:var(--heading);
+      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
+    }}
+    .budget-categories .bar-row-total {{
+      margin:0 0 8px; padding:0 0 8px; border-bottom:1px solid var(--border);
+    }}
+    .budget-categories .budget-body {{ flex:1; overflow:visible; }}
     .pie-exp-cell {{ grid-column:2; grid-row:1; }}
     .pie-inc-cell {{ grid-column:2; grid-row:2; }}
     .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
