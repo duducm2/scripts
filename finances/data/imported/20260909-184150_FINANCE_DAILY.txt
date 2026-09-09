@@ -1,0 +1,18 @@
+﻿```text
+===PREVIEW===
+6 row(s) · Lunch with fiancé, parking (x2), groceries, coffee, toilet paper container and zippers
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+Lunch with fiancé,"109,80",card_expense,CAT_LAZER,Restaurants,ACC_MERCADOP,CARD_MP,
+Parking lot,"20,00",card_expense,CAT_CARRO,,ACC_MERCADOP,CARD_MP,
+Groceries,"36,00",card_expense,CAT_MERCADO,,ACC_MERCADOP,CARD_MP,
+Coffee,"5,00",card_expense,CAT_ALIMENTA,,ACC_MERCADOP,CARD_MP,
+Parking lot,"13,00",card_expense,CAT_CARRO,,ACC_MERCADOP,CARD_MP,
+Toilet paper container and zippers,"55,79",card_expense,CAT_MATERIAI,Home,ACC_MERCADOP,CARD_MP,
+===END_FILE===
+
+```
+
+Copy the code block above and save as `FINANCE_DAILY.txt` on Desktop.
