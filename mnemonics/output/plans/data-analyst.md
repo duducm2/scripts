@@ -4,9 +4,9 @@
 
 ## 📃 Backlog
 
-- [ ] Data lake
+- [✅] Data lake
 
-- [ ] ETL (Extract, Transform, Load)
+- [✅] ETL (Extract, Transform, Load)
 
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
@@ -24,9 +24,9 @@
 ### 2. Advanced Functions
 
 - [✅] Master XLOOKUP with correct lookup-array vs return-array order
-- [ ] Build INDEX/MATCH lookups for flexible retrieval
-- [ ] Write nested IF / logical operators for conditional modeling
-- [ ] Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array
+- [✅] Build INDEX/MATCH lookups for flexible retrieval
+- [✅] Write nested IF / logical operators for conditional modeling
+- [✅] Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array
 
 **🔗 Resources:**
 
@@ -36,10 +36,10 @@
 
 ### 3. Dimensional Aggregation
 
-- [ ] Build Pivot Tables from transactional rows into high-level metrics
-- [ ] Compute percentage distributions and relative shares in pivots
-- [ ] Apply dynamic number formatting for stakeholder-ready summaries
-- [ ] Practice dragging fields into Rows, Columns, and Values as physical pivot rotation
+- [✅] Build Pivot Tables from transactional rows into high-level metrics
+- [✅] Compute percentage distributions and relative shares in pivots
+- [✅] Apply dynamic number formatting for stakeholder-ready summaries
+- [✅] Practice dragging fields into Rows, Columns, and Values as physical pivot rotation
 
 **🔗 Resources:**
 

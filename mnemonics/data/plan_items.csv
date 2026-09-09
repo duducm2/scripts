@@ -114,20 +114,20 @@ PITEM_0112,PLAN_0001,Goals (End of Year 1),Comfortable interpreting complex feat
 PITEM_0113,PLAN_0001,Goals (End of Year 1),Deployed portfolio documentation (monthly snapshots),0,113
 PITEM_0114,PLAN_0001,Goals (End of Year 1),Consistent 5-6 session/week analytical discipline,0,114
 PITEM_0115,PLAN_0001,Goals (End of Year 1),Zero unmanaged technical debt in primary repositories,0,115
-PITEM_0116,PLAN_0007,Backlog,Data lake,0,1
-PITEM_0117,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",0,2
+PITEM_0116,PLAN_0007,Backlog,Data lake,1,1
+PITEM_0117,PLAN_0007,Backlog,"ETL (Extract, Transform, Load)",1,2
 PITEM_0118,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Master Excel keyboard shortcuts for navigation without relying on the mouse,1,3
 PITEM_0119,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Apply tabular best practices for large dataset management,1,4
 PITEM_0120,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Set up a clean workbook structure suitable for analyst workflows,1,5
 PITEM_0121,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 1. Interface and Navigation,Practice navigating large sheets with Ctrl/Shift selection patterns used by analysts,1,6
 PITEM_0122,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Master XLOOKUP with correct lookup-array vs return-array order,1,7
-PITEM_0123,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,0,8
-PITEM_0124,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,0,9
-PITEM_0125,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array,0,10
-PITEM_0126,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Build Pivot Tables from transactional rows into high-level metrics,0,11
-PITEM_0127,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Compute percentage distributions and relative shares in pivots,0,12
-PITEM_0128,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Apply dynamic number formatting for stakeholder-ready summaries,0,13
-PITEM_0129,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,"Practice dragging fields into Rows, Columns, and Values as physical pivot rotation",0,14
+PITEM_0123,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Build INDEX/MATCH lookups for flexible retrieval,1,8
+PITEM_0124,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Write nested IF / logical operators for conditional modeling,1,9
+PITEM_0125,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 2. Advanced Functions,Encode XLOOKUP mentally as receptionist: search key -> lookup array -> return array,1,10
+PITEM_0126,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Build Pivot Tables from transactional rows into high-level metrics,1,11
+PITEM_0127,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Compute percentage distributions and relative shares in pivots,1,12
+PITEM_0128,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Apply dynamic number formatting for stakeholder-ready summaries,1,13
+PITEM_0129,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,"Practice dragging fields into Rows, Columns, and Values as physical pivot rotation",1,14
 PITEM_0130,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,"Use Power Query to extract, transform, and load dirty data",0,15
 PITEM_0131,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Learn M language basics for repeatable transformations,0,16
 PITEM_0132,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Unpivot data and handle null/missing values in the query editor,0,17
