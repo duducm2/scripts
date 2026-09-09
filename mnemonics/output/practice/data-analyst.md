@@ -1,6 +1,183 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 6: Power Query Automation</strong> · Character: Bill Gates · 2 beasts · 2 atoms</summary>
+
+_No image_
+
+<p><em>2 beasts · 2 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Y] yak
+
+**Concept**
+💡 [I <kbd><strong><u>track</u></strong></kbd> every adjustment] [in the Applied Steps <kbd><strong><u>list</u></strong></kbd>] [to easily <kbd><strong><u>delete</u></strong></kbd> or reorder modifications] — Note: This prevents mistakes from breaking the entire data pipeline.
+
+🔑 **Keywords**
+
+- [**track**] → [footprints]
+- [**list**] → [stairs]
+- [**delete**] → [eraser]
+
+**Quote**
+“Power Query remembers every single transformation that we make on our data.”
+
+**Sensory**
+visual 👁️
+
+**Story**
+A yak furiously stomps on the "Applied Steps" list next to the fire hydrant, tracking each hoofprint as a sequential adjustment before using a giant eraser to casually wipe a mistaken step away.
+
+### 🟧 [Z] Zeus
+
+**Concept**
+💡 [I automatically <kbd><strong><u>apply</u></strong></kbd> all saved transformations] [to new folder <kbd><strong><u>files</u></strong></kbd>] [by <kbd><strong><u>clicking</u></strong></kbd> Refresh All] — Note: This completely automates future monthly data cleanups.
+
+🔑 **Keywords**
+
+- [**apply**] → [robot]
+- [**files**] → [folder]
+- [**clicking**] → [lightning]
+
+**Quote**
+“If I bring additional files into this folder, it'll bring that data in automatically and it'll apply all of the transformations to that data.”
+
+**Sensory**
+olfactory 👃
+
+**Story**
+Zeus hurls lightning bolts at a giant "Refresh All" button next to the park bench, automatically pulling in a waterfall of new folder files and robotically spitting out perfectly stacked spreadsheets.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 5: Power Query Basics</strong> · Character: Steve Jobs · 5 beasts · 5 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 5 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [T] toucan
+
+**Concept**
+💡 [I <kbd><strong><u>click</u></strong></kbd> Get Data and select From Folder] [to <kbd><strong><u>append</u></strong></kbd> multiple recurring reports] [simultaneously] — Note: This prevents manually importing single spreadsheets one by one.
+
+🔑 **Keywords**
+
+- [**click**] → [folder]
+- [**append**] → [stack]
+
+**Quote**
+“Within the From File list, I'm going to click on the option that says From Folder.”
+
+**Sensory**
+tactile ✋
+
+**Story**
+A colossal toucan uses its beak to click a giant "Get Data" button, then rips open a "From Folder" drawer on the rusty gate to simultaneously suck in a tornado of flying monthly reports.
+
+### 🟧 [U] unicorn
+
+**Concept**
+💡 [I <kbd><strong><u>click</u></strong></kbd> Transform Data] [to <kbd><strong><u>modify</u></strong></kbd> merged file contents] [<kbd><strong><u>inside</u></strong></kbd> the Power Query Editor] [before <kbd><strong><u>loading</u></strong></kbd> it] — Note: This editor acts as a secure staging environment before data reaches Excel.
+
+🔑 **Keywords**
+
+- [**click**] → [portal]
+- [**modify**] → [wrench]
+- [**inside**] → [shield]
+- [**loading**] → [forklift]
+
+**Quote**
+“Transform allows me to modify the data before pulling it into Microsoft Excel or into Power BI.”
+
+**Sensory**
+auditory 👂
+
+**Story**
+A glowing unicorn impales a massive "Transform Data" block against the brick wall, opening a secure Power Query Editor portal where it slices chunky files into smooth liquid data before loading them into a cart.
+
+### 🟧 [V] vulture
+
+**Concept**
+💡 [I <kbd><strong><u>manage</u></strong></kbd> active queries in the left pane] [and <kbd><strong><u>preview</u></strong></kbd> data samples in the center] [of the Power Query Interface] — Note: The right pane controls query properties and the Applied Steps history.
+
+🔑 **Keywords**
+
+- [**manage**] → [ship wheel]
+- [**preview**] → [magnifying glass]
+
+**Quote**
+“Over on the left hand side where we see all of our different queries... in the center of the screen I can see a sample of my data.”
+
+**Sensory**
+visual 👁️
+
+**Story**
+A vulture operates a giant Power Query Interface at the end of the street, steering active query ship wheels on the left pane while peering through a magnifying glass at data samples floating in the center.
+
+### 🟧 [W] wombat
+
+**Concept**
+💡 [I <kbd><strong><u>click</u></strong></kbd> Split Column By Delimiter] [to <kbd><strong><u>separate</u></strong></kbd> combined text strings] [into <kbd><strong><u>distinct columns</u></strong></kbd>] — Note: A delimiter can be a space, dash, or any custom sequence.
+
+🔑 **Keywords**
+
+- [**click**] → [axe]
+- [**separate**] → [rope]
+- [**distinct columns**] → [pillar]
+
+**Quote**
+“I can go down to the option that says Split Column, and I want to split it by delimiter.”
+
+**Sensory**
+auditory 👂
+
+**Story**
+Balanced on the lamp post, a wombat violently clicks a massive "Split Column" axe, using a specific delimiter dash to chop a concrete block of text into two perfectly distinct columns.
+
+### 🟧 [X] Xena, warrior woman
+
+**Concept**
+💡 [I <kbd><strong><u>use</u></strong></kbd> the Add Column tab] [to <kbd><strong><u>apply</u></strong></kbd> mathematical operations] [<kbd><strong><u>across</u></strong></kbd> existing data] — Note: An example is subtracting cost from revenue to calculate profit.
+
+🔑 **Keywords**
+
+- [**use**] → [tab]
+- [**apply**] → [calculator]
+- [**across**] → [bridge]
+
+**Quote**
+“I want to take the revenue and subtract the cost, so I'll click on the option that says Subtract.”
+
+**Sensory**
+visual 👁️
+
+**Story**
+Xena, warrior woman swings her sword at the "Add Column" tab on the hood of the parked car, applying standard mathematical operations that generate a geyser of golden profit coins.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 4: Data Architectures 2</strong> · Character: Neo (The Matrix) · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 4](images/data-analyst/4.png)
