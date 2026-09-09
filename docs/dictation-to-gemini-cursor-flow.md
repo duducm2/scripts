@@ -11,7 +11,7 @@
 
 5. **If the flow sent your text to Gemini** (you chose **Y**, **G**, **A**, **T**, or let the first banner time out), after Gemini responds you see **Response ready — what next?** (same destination keys as `#\!+P` intent banner).  
    (**D** does not show this banner: send-only; finish manually.)  
-   Each destination key **copies the reply first**, then runs the same action as `#\!+P`: **P** = Copy only (same as `#\!+P` 1× without a destination), **Y** = Desktop export, **F** = Favorite, **R** = Read aloud (omitted for Gemini Enterprise), **W** = Paste to a visible window, **O** = Clip Angel Edit, **N** / **Esc** / timeout = dismiss with **no** copy.  
+   Each destination key **copies the reply first**, then runs the same action as `#\!+p`: **P** = Copy only, **Y** = Desktop export, **F** = Favorite, **R** = Read aloud (omitted for Gemini Enterprise), **W** = Paste to a visible window, **O** = Clip Angel Edit, **N** / **Esc** / timeout = dismiss with **no** copy.  
    Copy success requires the same quality gates as `#\!+P` / bridge: clipboard change, min length ≥ 10, and (for Gemini/Copilot IPC) `gemini_copy_result.txt` = `1`.  
    Pressing a destination key plays the 2-second **“✋ Hands off!”** cue before `DoCopyCore` (same as other copy paths).  
    If no action is taken within the menu timeout, the flow ends with **no** copy (aligned with `#\!+P`; not auto-copy).

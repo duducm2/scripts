@@ -1129,7 +1129,7 @@ ClipAngelExport_RenameStaging(sourcePath, baseName, ext := "") {
 }
 
 ; #!+p intent-flow context: destination keys at gesture time; copy starts only after choice.
-; choice: "" until Y/F/C/R/W/O; "cancel" on N/Esc/timeout. copyDone/copyOk set by Gemini worker.
+; choice: "" until P/Y/F/R/W/O; "cancel" on N/Esc/timeout. copyDone/copyOk set by Gemini worker.
 ; gen: increments each flow so a stale copy worker cannot touch a newer session.
 global g_HotkeyCopy_FlowGen := 0
 global g_HotkeyCopy_Flow := {
@@ -1269,6 +1269,8 @@ HotkeyCopy_DispatchChoice() {
     g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
     try {
         switch choice {
+            case "P":
+                HotkeyCopy_DoCopyOnly()
             case "Y":
                 HotkeyCopy_DoConfirmDesktop()
             case "F":
@@ -1317,6 +1319,23 @@ HotkeyCopy_OnCopyWorkerDone(ok, err := "", gen := 0) {
 
 ClipAngelExport_OnCancelDesktop(*) {
     HotkeyCopy_OnIntentCancel()
+}
+
+; [P] Copy to clipboard only (no Desktop / Favorite / Read / paste / Clip Angel).
+HotkeyCopy_OnCopyOnly(*) {
+    HotkeyCopy_FinalizeIntent("P")
+}
+
+HotkeyCopy_DoCopyOnly() {
+    global g_HotkeyCopy_PostCopyContext
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+    ShowCenteredOverlay_Utils("✅ Copied", 800, BANNER_ACCENT_SUCCESS)
+    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+    if (originHwnd && WinExist("ahk_id " originHwnd)) {
+        WinActivate("ahk_id " originHwnd)
+        if (!WinActive("ahk_id " originHwnd))
+            WinWaitActive("ahk_id " originHwnd, , 0.5)
+    }
 }
 
 ClipAngelExport_OnConfirmDesktop(*) {
@@ -1585,7 +1604,7 @@ HotkeyCopy_DoClipAngelEdit() {
     }
 }
 
-; At #!+p 1×/2× gesture confirm: 5s destination banner; copy starts only after Y/F/C/R/W/O.
+; At #!+p 1×/2× gesture confirm: 5s destination banner; copy starts only after P/Y/F/R/W/O.
 ; isCode: true for double-tap code copy (omits Read aloud). Returns flow gen for the copy worker.
 HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
@@ -1599,6 +1618,7 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
     g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
 
     keyCallbacks := Map(
+        "P", HotkeyCopy_OnCopyOnly,
         "Y", ClipAngelExport_OnConfirmDesktop,
         "F", ClipAngelExport_OnFavoriteClip,
         "W", HotkeyCopy_OnPasteWindow,
@@ -1612,13 +1632,13 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
 
     if (isCode) {
         title := "❓ Copy code — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else if (companion = "enterprise") {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
     }
 
     timeoutMs := 5000

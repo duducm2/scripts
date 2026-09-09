@@ -141,7 +141,7 @@ CopyLastGeminiCodeSnippetToClipboard(options := "", geminiHwnd := 0) {
     }
 }
 
-; #!+p orchestrator: show destination banner first; copy starts only after user picks Y/F/C/R/W/O.
+; #!+p orchestrator: show destination banner first; copy starts only after user picks P/Y/F/R/W/O.
 HotkeyCopy_RunIntentFlow(isCode := false) {
     global g_HotkeyCopy_StartCopyCb
     ; Register copy starter so Utils FinalizeIntent can schedule workers without Func("name").
@@ -247,7 +247,7 @@ HotkeyCopy_RunCopyLastCode(gen := 0) {
 ; Win+Alt+Shift+P tap-dance (400 ms = AI_QD_DOUBLE_TAP_MS):
 ;   1× = destination banner, then copy last message/response after choice
 ;   2× = destination banner, then copy most recent code snippet after choice
-; Copy starts only after Y/F/C/R/W/O; N/Esc/timeout dismisses without copying.
+; Copy starts only after P/Y/F/R/W/O; N/Esc/timeout dismisses without copying.
 global g_HotkeyCopy_DoubleTapArmed := false
 global g_HotkeyCopy_LastPressTick := 0
 global g_HotkeyCopy_DoubleTapTimer := 0

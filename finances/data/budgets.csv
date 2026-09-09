@@ -1,4 +1,4 @@
-year_month,category_id,planned_amount,spent_amount
+﻿year_month,category_id,planned_amount,spent_amount
 2026-01,CAT_MERCADO,"3000,00","0,00"
 2026-01,CAT_ALIMENTA,"300,00","0,00"
 2026-01,CAT_BELEZA,"150,00","0,00"

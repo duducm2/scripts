@@ -1059,7 +1059,7 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner, plus [P] Copy-only (#!+p 1× without a destination).
+        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner ([P] Copy = clipboard only).
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
             "Y", this.OnActionY.Bind(this),
@@ -1121,7 +1121,7 @@ class D2C_FlowManager {
         this.ExecuteAction(true, false)
     }
 
-    ; [P] Copy reply to clipboard only (same as #!+p 1× without a destination action).
+    ; [P] Copy reply to clipboard only (same as #!+p [P]).
     OnActionP(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
