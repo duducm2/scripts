@@ -1049,6 +1049,19 @@ function updateRawBudgetPlanned(ym, cid, plannedFmt) {{
   }}
   return false;
 }}
+const lastSavedBudgetPlanned = Object.create(null);
+function budgetSaveKey(ym, cid) {{
+  return ym + '|' + cid;
+}}
+function applyLiveBudgetPlanned(ym, cid, inputEl) {{
+  if (!ym || !cid || !inputEl) return;
+  const raw = String(inputEl.value || '').trim();
+  if (raw === '') return;
+  const planned = parseDecimal(raw);
+  if (!(planned >= 0) || Number.isNaN(planned)) return;
+  updateRawBudgetPlanned(ym, cid, formatCsvDecimal(planned));
+  refreshBudgetVisuals(ym);
+}}
 function scheduleBudgetSave(ym, cid, inputEl) {{
   if (budgetSaveTimer) clearTimeout(budgetSaveTimer);
   budgetSaveTimer = setTimeout(() => saveBudgetPlanned(ym, cid, inputEl), 400);
@@ -1064,22 +1077,10 @@ function budgetRowStats(planned, spent) {{
 }}
 function plannedTotalForCurrentMonth() {{
   const ym = RAW.currentMonth || '';
-  const sel = document.getElementById('budgetMonth');
-  const viewingCurrent = sel && sel.value === ym;
   let total = 0;
   for (const b of (RAW.budgets || [])) {{
     if (b.year_month !== ym) continue;
-    let planned = parseDecimal(b.planned_amount);
-    if (viewingCurrent) {{
-      const inp = document.querySelector(
-        '.budget-planned-input[data-category-id="' + b.category_id + '"]'
-      );
-      if (inp && String(inp.value || '').trim() !== '') {{
-        const live = parseDecimal(inp.value);
-        if (live >= 0 && !Number.isNaN(live)) planned = live;
-      }}
-    }}
-    total += planned;
+    total += parseDecimal(b.planned_amount);
   }}
   return total;
 }}
@@ -1156,7 +1157,7 @@ function refreshBudgetVisuals(ym) {{
     }}
   }}
   for (const b of rows) {{
-    const row = document.querySelector('.bar-row[data-category-id="' + b.category_id + '"]');
+    const row = document.querySelector('#budgetsBody .bar-row[data-category-id="' + b.category_id + '"]');
     if (!row) continue;
     const st = budgetRowStats(b.planned, b.spent);
     const pctEl = row.querySelector('.budget-pct');
@@ -1172,9 +1173,10 @@ function refreshBudgetVisuals(ym) {{
   refreshFundsCompare();
 }}
 async function saveBudgetPlanned(ym, cid, inputEl) {{
-  if (!ym || !cid || !inputEl || !inputEl.isConnected) return;
+  if (!ym || !cid || !inputEl) return;
   if (budgetApiOk === false) {{
     setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');
+    refreshFundsCompare();
     return;
   }}
   const raw = String(inputEl.value || '').trim();
@@ -1189,8 +1191,11 @@ async function saveBudgetPlanned(ym, cid, inputEl) {{
     setBudgetSaveStatus('No budget row for this category', 'error');
     return;
   }}
-  const current = (RAW.budgets || []).find(b => b.year_month === ym && b.category_id === cid);
-  if (current && Math.abs(parseDecimal(current.planned_amount) - planned) < 0.001) {{
+  updateRawBudgetPlanned(ym, cid, formatCsvDecimal(planned));
+  refreshFundsCompare();
+  const key = budgetSaveKey(ym, cid);
+  if (lastSavedBudgetPlanned[key] != null
+      && Math.abs(lastSavedBudgetPlanned[key] - planned) < 0.001) {{
     return;
   }}
   setBudgetSaveStatus('Saving…', 'saving');
@@ -1203,19 +1208,23 @@ async function saveBudgetPlanned(ym, cid, inputEl) {{
     const data = await r.json().catch(() => ({{}}));
     if (!r.ok || !data.ok) {{
       setBudgetSaveStatus(data.error || ('Save failed (' + r.status + ')'), 'error');
+      refreshFundsCompare();
       return;
     }}
     const fmt = data.planned_amount || formatCsvDecimal(planned);
     updateRawBudgetPlanned(ym, cid, fmt);
-    // Never rewrite the focused input — that resets the caret.
-    if (document.activeElement !== inputEl) {{
+    lastSavedBudgetPlanned[key] = parseDecimal(fmt);
+    if (inputEl.isConnected && document.activeElement !== inputEl) {{
       inputEl.value = parseDecimal(fmt).toFixed(2);
     }}
     setBudgetSaveStatus('Saved', 'saved');
-    refreshBudgetVisuals(ym);
+    const sel = document.getElementById('budgetMonth');
+    if (sel && sel.value === ym) refreshBudgetVisuals(ym);
+    else refreshFundsCompare();
   }} catch (e) {{
     budgetApiOk = false;
     setBudgetSaveStatus('Save failed (server offline)', 'error');
+    refreshFundsCompare();
   }}
 }}
 function onBudgetPlannedBlur(ym, inputEl) {{
@@ -1223,8 +1232,8 @@ function onBudgetPlannedBlur(ym, inputEl) {{
   const planned = parseDecimal(inputEl.value);
   if (!(planned >= 0) || Number.isNaN(planned)) return;
   inputEl.value = planned.toFixed(2);
+  applyLiveBudgetPlanned(ym, inputEl.dataset.categoryId, inputEl);
   scheduleBudgetSave(ym, inputEl.dataset.categoryId, inputEl);
-  refreshFundsCompare();
 }}
 function renderBudgets(rows) {{
   const el = document.getElementById('budgetsBody');
@@ -1278,8 +1287,8 @@ function renderBudgets(rows) {{
   }}).join('');
   el.querySelectorAll('.budget-planned-input').forEach(inp => {{
     inp.addEventListener('input', () => {{
+      applyLiveBudgetPlanned(ym, inp.dataset.categoryId, inp);
       scheduleBudgetSave(ym, inp.dataset.categoryId, inp);
-      refreshFundsCompare();
     }});
     inp.addEventListener('change', () => onBudgetPlannedBlur(ym, inp));
   }});
