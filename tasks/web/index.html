@@ -1282,6 +1282,33 @@
           return copyInfoById(state.infoSelId);
         }
 
+        async function copyAllInfoTexts() {
+          if (state.infoUi !== "list") {
+            toast("Open the info list first");
+            return false;
+          }
+          const parts = infoRowsForCtx()
+            .map((row) => infoText(row))
+            .filter(Boolean);
+          if (!parts.length) {
+            toast("Nothing to copy");
+            return false;
+          }
+          const text = parts.join("\n\n");
+          try {
+            await navigator.clipboard.writeText(text);
+            toast(
+              parts.length === 1
+                ? "Copied 1 info point"
+                : `Copied ${parts.length} info points`,
+            );
+            return true;
+          } catch (err) {
+            toast(err.message || "Could not copy");
+            return false;
+          }
+        }
+
         function infoHyperlink(info) {
           if (!info) return null;
           const fromText = firstHyperlinkInText(infoText(info));
@@ -2946,6 +2973,7 @@
           modal(`<div class="modal modal-info"><h3>Info</h3>
       <div class="toolbar" style="padding:0 0 10px">
         <button class="btn" data-m="add-info-here">+ Info</button>
+        <button class="btn" data-m="copy-all-info" title="Copy all text (Shift+A)">Copy all</button>
         <button class="btn" data-m="cancel">Close</button>
       </div>
       <ul class="plain-list">${
@@ -2979,6 +3007,14 @@
             }
             if (e.target.dataset.m === "add-info-here") {
               infoForm(null);
+              return;
+            }
+            if (e.target.dataset.m === "copy-all-info") {
+              try {
+                await copyAllInfoTexts();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
               return;
             }
             const row = e.target.closest(".plain-row[data-id]");
@@ -4426,6 +4462,16 @@
           }
 
           if (state.infoUi === "list") {
+            if (e.shiftKey && shiftCmdFromEvent(e) === "a") {
+              e.preventDefault();
+              e.stopPropagation();
+              try {
+                await copyAllInfoTexts();
+              } catch (err) {
+                toast(err.message || String(err));
+              }
+              return;
+            }
             if (e.shiftKey && shiftCmdFromEvent(e) === "e") {
               e.preventDefault();
               e.stopPropagation();
