@@ -1072,7 +1072,8 @@ cheatSheets["Tasks"] := "
     ⏎ [Enter] Info list — add info
     🔗 [Shift+Enter] Info list — open highlighted info link
     ✏️ [Shift+E] Info list — edit highlighted info
-    📋 [C] Info list — copy highlighted info
+    📋 [Ctrl+C] Info list — copy highlighted info text
+    📋 [Shift+A] Info list — copy text from every info point
     🗑️ [Delete] Info list — delete highlighted info
     ⬅️ [Backspace] Step back when focus is not in a text field
     ⬅️ [Shift+Backspace] Step back while typing (search, modal, inline create)
