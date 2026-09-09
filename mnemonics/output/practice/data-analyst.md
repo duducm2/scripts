@@ -62,7 +62,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 5: Power Query Basics</strong> · Character: Steve Jobs · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 5](images/data-analyst/5.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
