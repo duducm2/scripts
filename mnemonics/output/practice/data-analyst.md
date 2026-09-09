@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 6: Power Query Automation</strong> · Character: Bill Gates · 2 beasts · 2 atoms</summary>
 
-_No image_
+![Memory Palace 6](images/data-analyst/6.jpg)
 
 <p><em>2 beasts · 2 Knowledge Atoms</em></p>
 
@@ -62,7 +62,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 5: Power Query Basics</strong> · Character: Steve Jobs · 5 beasts · 5 atoms</summary>
 
-![Memory Palace 5](images/data-analyst/5.png)
+![Memory Palace 5](images/data-analyst/5.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
