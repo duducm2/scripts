@@ -1,9 +1,9 @@
 ; =============================================================================
 ; Utils module: ai_quick_download.ahk
-; Quick Download: focus AI companion → configured click sequences → Desktop wait → cut newest.
+; Quick Download: name pick first (same list as #!+p [Y]) → focus companion →
+; configured click sequences → Desktop wait → rename staging → cut newest.
 ; Trigger: single-tap Win+Alt+Shift+9 (see WindowManagement\audio_bt_menu.ahk).
-; Slot chain (scroll / sibling clicks / Desktop wait / rename via #!+P name list / cut)
-; lives in click_sequences.ini.
+; Slot chain lives in click_sequences.ini; name is chosen before any download.
 ; =============================================================================
 
 ; Tap-dance interval (ms) — matches Teams_R_DoubleTapThresholdMs / ZMK tap-dance.
@@ -55,6 +55,22 @@ AiQuickDownload_RunForFinanceImport() {
 ; doCut: true = cut newest after wait (#!+9). false = return Desktop path for finance import.
 AiQuickDownload_RunInner(doCut := true) {
     global g_ClickSeqRunCtx
+
+    ; Same name-first UX as #!+p [Y]: pick before download so Esc cancels with no companion focus.
+    desktopName := ""
+    desktopExt := ""
+    if (doCut) {
+        picked := ""
+        try picked := ClipAngelExport_PromptPickName("txt")
+        catch {
+            picked := ""
+        }
+        if (!IsObject(picked))
+            return ""
+        desktopName := picked.name
+        desktopExt := picked.ext
+    }
+
     try StandardLoadingBar_Show("⏳ Quick Download…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
     catch {
     }
@@ -80,7 +96,9 @@ AiQuickDownload_RunInner(doCut := true) {
         seqAttempts: doCut ? 1 : AI_QD_FINANCE_GATE_ATTEMPTS,
         desktopPath: desktopPath,
         beforePath: beforePath,
-        beforeStamp: beforeStamp
+        beforeStamp: beforeStamp,
+        desktopName: desktopName,
+        desktopExt: desktopExt
     }
     ok := false
     try ok := ClickSeq_RunMacro("ai-quick-download", focus.companion, focus.hwnd, extras)

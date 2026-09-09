@@ -151,7 +151,7 @@ ImportMgmt_Catalog() {
             "Newest Desktop PNG/JPG → palace missing image",
             "fileName", "PALACE_QUICK_IMAGE.png", "run", ImportMgmt_RunQuickImage),
         Map("char", "N", "emoji", "🏷️", "name", "Quick Download names", "detail",
-            "#!+9 rename list — emoji + name — clipangel_desktop_names.csv",
+            "#!+9 name-first list — emoji + name — clipangel_desktop_names.csv",
             "fileName", "clipangel_desktop_names.csv", "run", ImportMgmt_RunDesktopNames),
         Map("char", "H", "emoji", "❓", "name", "Help", "detail", "Per-workflow rules and outcomes",
             "run", ImportMgmt_OnHelp)
@@ -405,7 +405,7 @@ ImportMgmt_HelpText() {
     . "Re-run: save palace PNG to Desktop → #!+X → [Q]`r`n`r`n"
     . "========== [N] QUICK DOWNLOAD NAMES ==========`r`n"
     . "Registry: assets/data/clipangel_desktop_names.csv (id, emoji, name)`r`n"
-    . "Same list as the #!+9 Quick Download rename picker (Name Desktop file).`r`n"
+    . "Same list as the #!+9 Quick Download name picker (shown before download).`r`n"
     .
     "Each row shows emoji + name (same pattern as this hub). Pack defaults: 💳 daily · 📈 monthly · 🏰 palace · ✅ task · 🖼️ quick image.`r`n"
     .

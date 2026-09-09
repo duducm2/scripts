@@ -431,6 +431,8 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
     desktopPath := ""
     beforePath := ""
     beforeStamp := ""
+    desktopName := ""
+    desktopExt := ""
     if (IsSet(extras) && IsObject(extras)) {
         if (extras.HasProp("doCut"))
             doCut := !!extras.doCut
@@ -442,6 +444,10 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
             beforePath := extras.beforePath
         if (extras.HasProp("beforeStamp"))
             beforeStamp := extras.beforeStamp
+        if (extras.HasProp("desktopName"))
+            desktopName := extras.desktopName
+        if (extras.HasProp("desktopExt"))
+            desktopExt := extras.desktopExt
     }
     if (seqAttempts < 1)
         seqAttempts := 1
@@ -457,7 +463,9 @@ ClickSeq_RunMacro(macroId, companion, hwnd, extras := unset) {
         beforePath: beforePath,
         beforeStamp: beforeStamp,
         lastPath: "",
-        doCut: doCut
+        doCut: doCut,
+        desktopName: desktopName,
+        desktopExt: desktopExt
     }
 
     for slot in macro.slots {

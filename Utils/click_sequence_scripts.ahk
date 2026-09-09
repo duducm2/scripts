@@ -96,10 +96,19 @@ ClickSeqScript_DesktopCut() {
         path := ""
     }
 
-    ; Same Desktop name list / ext UI as #!+P (clipangel_desktop_names.csv).
+    ; Prefer name picked up-front (#!+9 / #!+p [Y] style); fall back to post-download rename UI.
     if (path != "" && FileExist(path)) {
         try {
-            path := ClipAngelExport_PromptRename(path)
+            if (ctx.HasProp("desktopName") && ctx.desktopName != "") {
+                finalExt := ctx.HasProp("desktopExt") ? ctx.desktopExt : ""
+                if (finalExt = "")
+                    finalExt := ClipAngelExport_ExtFromPath(path)
+                renamed := ClipAngelExport_RenameStaging(path, ctx.desktopName, finalExt)
+                if (renamed != "")
+                    path := renamed
+            } else {
+                path := ClipAngelExport_PromptRename(path)
+            }
             ctx.lastPath := path
         } catch {
         }
