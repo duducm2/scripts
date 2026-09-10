@@ -4,8 +4,8 @@
 ; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation + 3×):
 ;   1× = cut newest Desktop item, restore previous window
 ;   2× within 400 ms (AI_QD_DOUBLE_TAP_MS / ZMK tap-dance) = open with default app
-;   3× within 400 ms windows = paste clipboard CF_HDROP copy to Desktop, or (Cursor/Code)
-;       copy the active editor tab file to Desktop after sidebar/Explorer gates
+;   3× within 400 ms windows = paste clipboard CF_HDROP copy to Desktop, or without Ctrl+C:
+;       Cursor/Code active editor file, or Windows Explorer selection
 ;   hold 700 ms+ (PRONUNCIATION_HOLD_MS / Fast Copy / cheat sheet) = copy path as text
 ; =============================================================================
 
@@ -846,44 +846,63 @@ DesktopCutNewest_CopyActiveEditorFileToDesktop(desktopPath) {
 
     if (pathText = "")
         return
-
-    dest := DesktopCutNewest_UniqueDestPath(desktopPath, pathText)
-    if (dest = "") {
-        ShowCenteredOverlay_Utils("❌ Could not build Desktop path", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    try FileCopy(pathText, dest)
-    catch {
-        ShowCenteredOverlay_Utils("❌ Failed to paste to Desktop", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    if !FileExist(dest) {
-        ShowCenteredOverlay_Utils("❌ Paste verify failed", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
-    SplitPath(dest, &destName)
-    ShowCenteredOverlay_Utils("📎 Pasted: " destName, 1800, BANNER_ACCENT_SUCCESS)
+    DesktopCutNewest_CopyPathsToDesktop(desktopPath, [pathText])
 }
 
-; 3×: copy clipboard CF_HDROP file(s)/folder(s) onto Desktop (leave originals),
-; or when Cursor/Code is focused with no file drop, copy the active editor file.
-DesktopCutNewest_PasteClipboardToDesktop() {
-    desktopPath := DesktopCutNewest_ResolveDesktopPath()
-    if (desktopPath = "") {
-        ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
-        return
-    }
+DesktopCutNewest_IsExplorerActive() {
+    return !!(WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass"))
+}
 
-    if !Clipboard_HasFileDrop() {
-        if DesktopCutNewest_IsEditorActive() {
-            DesktopCutNewest_CopyActiveEditorFileToDesktop(desktopPath)
-            return
+; Selected file/folder paths in the active Explorer window (Shell.Application; no Ctrl+C).
+DesktopCutNewest_GetExplorerSelectedPaths(explorerHwnd) {
+    paths := []
+    if !(explorerHwnd is Integer) || explorerHwnd <= 0
+        return paths
+    try {
+        shell := ComObject("Shell.Application")
+        for window in shell.Windows {
+            try {
+                if (!window || Integer(window.hwnd) != explorerHwnd)
+                    continue
+                selected := window.Document.SelectedItems
+                if !selected
+                    break
+                count := Integer(selected.Count)
+                loop count {
+                    try {
+                        item := selected.Item(A_Index - 1)
+                        path := item.Path
+                        if (path != "")
+                            paths.Push(path)
+                    } catch {
+                    }
+                }
+                break
+            } catch {
+            }
         }
+    } catch {
+    }
+    return paths
+}
+
+; Explorer ×3: copy selected item(s) to Desktop without Ctrl+C (leave originals).
+DesktopCutNewest_CopyExplorerSelectionToDesktop(desktopPath) {
+    explorerHwnd := WinExist("A")
+    if !explorerHwnd || !DesktopCutNewest_IsExplorerActive() {
         ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
         return
     }
+    paths := DesktopCutNewest_GetExplorerSelectedPaths(explorerHwnd)
+    if (!paths || paths.Length < 1) {
+        ShowCenteredOverlay_Utils("❌ No Explorer selection", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    DesktopCutNewest_CopyPathsToDesktop(desktopPath, paths)
+}
 
-    paths := Clipboard_GetFilePaths()
+; Copy existing paths onto Desktop (unique names; files and folders).
+DesktopCutNewest_CopyPathsToDesktop(desktopPath, paths) {
     if (!paths || paths.Length < 1) {
         ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
         return
@@ -892,7 +911,7 @@ DesktopCutNewest_PasteClipboardToDesktop() {
     copiedNames := []
     for src in paths {
         if (src = "" || !FileExist(src)) {
-            ShowCenteredOverlay_Utils("❌ Clipboard file not found", 2500, BANNER_ACCENT_ERROR)
+            ShowCenteredOverlay_Utils("❌ Source file not found", 2500, BANNER_ACCENT_ERROR)
             return
         }
         dest := DesktopCutNewest_UniqueDestPath(desktopPath, src)
@@ -921,6 +940,32 @@ DesktopCutNewest_PasteClipboardToDesktop() {
         ShowCenteredOverlay_Utils("📎 Pasted: " copiedNames[1], 1800, BANNER_ACCENT_SUCCESS)
     else
         ShowCenteredOverlay_Utils("📎 Pasted " copiedNames.Length " items to Desktop", 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; 3×: copy clipboard CF_HDROP onto Desktop, or without Ctrl+C: Cursor/Code active file
+; or Windows Explorer selection.
+DesktopCutNewest_PasteClipboardToDesktop() {
+    desktopPath := DesktopCutNewest_ResolveDesktopPath()
+    if (desktopPath = "") {
+        ShowCenteredOverlay_Utils("❌ Desktop folder not found", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    if !Clipboard_HasFileDrop() {
+        if DesktopCutNewest_IsEditorActive() {
+            DesktopCutNewest_CopyActiveEditorFileToDesktop(desktopPath)
+            return
+        }
+        if DesktopCutNewest_IsExplorerActive() {
+            DesktopCutNewest_CopyExplorerSelectionToDesktop(desktopPath)
+            return
+        }
+        ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    paths := Clipboard_GetFilePaths()
+    DesktopCutNewest_CopyPathsToDesktop(desktopPath, paths)
 }
 
 ; --- Win+Alt+Shift+O tap / double / triple / hold ----------------------------
