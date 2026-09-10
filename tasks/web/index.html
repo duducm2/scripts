@@ -195,13 +195,6 @@
         font-weight: 600;
         flex: 1;
       }
-      .proj-count {
-        color: var(--muted);
-        font-size: 12px;
-        background: #1a1a1c;
-        border-radius: 999px;
-        padding: 2px 8px;
-      }
       .task-list,
       .habit-list,
       .plain-list {
@@ -1641,7 +1634,7 @@
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span><span class="proj-count">${pts.length}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="${esc(filt)}">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -1661,7 +1654,7 @@
           });
           if (orphans.length) {
             visibleOpen = visibleOpen.concat(orphans);
-            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
+            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
           }
           const emptyMsg = searchNeedle()
@@ -1732,7 +1725,7 @@
             const pThumbs = thumbsHtml("project", p.id);
             const openAttr = state.collapsedProjects.has(p.id) ? "" : " open";
             blocks.push(`<details class="project"${openAttr} data-id="${esc(p.id)}" data-pid="${esc(p.id)}">
-        <summary><span class="proj-title">${highlightTitle(p.title)}</span><span class="proj-count">${plan.pts.length}</span></summary>
+        <summary><span class="proj-title">${highlightTitle(p.title)}</span></summary>
         <div class="proj-actions row-actions">
           <button class="btn" data-act="add-task" data-pid="${esc(p.id)}" data-f="habits">+ Task</button>
           <button class="btn" data-act="add-section" data-pid="${esc(p.id)}">+ Section</button>
@@ -1753,7 +1746,7 @@
           );
           if (orphans.length) {
             visible = visible.concat(orphans);
-            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span><span class="proj-count">${orphans.length}</span></summary>
+            blocks.push(`<details class="project" open><summary><span class="proj-title">Other</span></summary>
         <ul class="task-list">${orphans.map(taskLi).join("")}</ul></details>`);
           }
           const emptyMsg = searchNeedle()
