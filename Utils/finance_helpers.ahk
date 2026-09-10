@@ -540,7 +540,9 @@ Finance_TxSign(type, amount) {
     return 0.0
 }
 
-Finance_TypeLabel(type) {
+Finance_TypeLabel(type, cardId := "") {
+    if (type = "transfer" && Trim(cardId) != "")
+        return "Card payment"
     switch type {
         case "expense":
             return "Expense"
@@ -725,7 +727,8 @@ Finance_CanAddSubcategory(cats, parentId) {
 ; Apply or reverse a transaction against account/card balances.
 ; reverse=true: undo a prior apply (delete expense credits the account; delete income debits).
 ; card_expense: only adjusts credit_cards.current_spent (not the linked bank account).
-; Paying the card bill is a separate expense via Finance_CardMarkPaid.
+; Paying the card bill is a one-sided transfer via Finance_CardMarkPaid (debits linked
+; account; card spent is reset separately via current_spent / initial_spent).
 ; Goals are not updated from transactions.
 ; Pass accs/cards objects and save:=false to batch-apply in memory (rebuild).
 Finance_ApplyTransactionToBalances(tx, reverse := false, accs := 0, cards := 0, save := true) {

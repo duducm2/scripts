@@ -805,7 +805,8 @@ function cardName(cardId) {{
   }}
   return cardId;
 }}
-function typeLabel(t) {{
+function typeLabel(t, cardId) {{
+  if (t === 'transfer' && cardId) return 'Card payment';
   if (t === 'card_expense') return 'Credit card';
   if (t === 'expense') return 'Expense';
   if (t === 'income') return 'Income';
@@ -890,7 +891,7 @@ function renderCategoryView() {{
       + '<td class="desc">' + escapeHtml(t.description || '') + '</td>'
       + '<td class="amt">' + formatBrl(parseDecimal(t.amount)) + '</td>'
       + '<td>' + escapeHtml(acc) + '</td>'
-      + '<td>' + escapeHtml(typeLabel(t.type)) + '</td>'
+      + '<td>' + escapeHtml(typeLabel(t.type, t.card_id)) + '</td>'
       + '<td>' + escapeHtml(t.subcategory || '—') + '</td>'
       + '</tr>';
   }}).join('');

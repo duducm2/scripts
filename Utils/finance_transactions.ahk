@@ -104,7 +104,7 @@ Finance_TxRefresh() {
             cat .= " / " . Finance_SubcatLabel(cats, tx["category_id"], tx["subcategory"])
         acc := Finance_ImportAccountLabel(tx, accs, cards)
         g_FinanceTxLv.Add("", Finance_FormatBrl(Finance_ParseDecimal(tx["amount"])), acc, cat,
-        tx["description"], tx["date"], Finance_TypeLabel(tx["type"]))
+        tx["description"], tx["date"], Finance_TypeLabel(tx["type"], tx.Has("card_id") ? tx["card_id"] : ""))
     }
     g_FinanceTxLv.ModifyCol(1, 110)
     g_FinanceTxLv.ModifyCol(2, 200)

@@ -354,7 +354,7 @@ Finance_ImportConfirmEditable(title, parsed) {
             if (p["subcategory"] != "")
                 cat .= " / " . p["subcategory"]
             acc := Finance_ImportAccountLabel(p, accs, cards)
-            lv.Add("", p["date"], Finance_TypeLabel(p["type"]), p["description"],
+            lv.Add("", p["date"], Finance_TypeLabel(p["type"], p.Has("card_id") ? p["card_id"] : ""), p["description"],
             Finance_FormatBrl(Finance_ParseDecimal(p["amount"])), cat, acc)
         }
         lv.ModifyCol(1, 90)
