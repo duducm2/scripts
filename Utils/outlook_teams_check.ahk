@@ -165,6 +165,8 @@ CleanClipboard_UnwindClipAngel() {
             WinMinimize("ahk_id " hwnd)
     } catch {
     }
+    ; Clear after minimize so layered Off does not flash an opaque maximized window.
+    ClipAngel_ClearFavoriteSessionOpacity(hwnd)
 }
 
 ; N/Esc while automation runs (overlay already closed; StandardLoadingBar keys are inactive)
@@ -182,7 +184,8 @@ CleanClipboard_SetAbortHotkeys(enable := true) {
     }
 }
 
-; Open/focus Clip Angel for cleanup (native Alt+P fallback, layout correction). Returns hwnd or 0.
+; Open/focus Clip Angel for cleanup (invisible via session opacity 0). Returns hwnd or 0.
+; Prefer AHK show+layout when hwnd exists — Alt+P clears WinSetTransparent (same as favorite suppress).
 CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0) {
     if (CleanClipboard_ShouldAbort(sessionId))
         return 0
@@ -192,6 +195,7 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0) {
 
     hwnd := ClipAngel_MainHwnd()
     if (!hwnd) {
+        ; Cold start only: wake via Alt+P, then re-apply opacity (native restore clears alpha).
         priorSendLevel := A_SendLevel
         SendLevel 0
         SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
@@ -210,8 +214,9 @@ CleanClipboard_ActivateClipAngelForCleanup(sessionId := 0) {
         return 0
     }
 
-    if !ClipAngel_ShowWindow(hwnd)
-        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true)
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    ClipAngel_EnsureVisibleAndLayout(hwnd, 0, true, true)
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
 
     if (!WinWaitActive("ahk_id " hwnd, , 0.8))
         ClipAngel_EnsureWindowActive(hwnd, 800)
