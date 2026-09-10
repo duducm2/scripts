@@ -219,3 +219,6 @@
 2026-09-10 12:18:34|5|Transcript Youtube Video|gemini|default|ctx=0|direct
 2026-09-10 12:22:22|6|Curate knowledge atoms|gemini|default|ctx=1|direct
 2026-09-10 12:25:07|4|Creating mnemonic stories|gemini|default|ctx=3+1|direct
+2026-09-10 12:41:13|a|Story reduction|gemini|default|ctx=3+1|direct
+2026-09-10 12:43:52|g|Preserve background for image generation|gemini|default|ctx=1|direct
+2026-09-10 12:59:34|a|Story reduction|gemini|default|ctx=3+1|direct

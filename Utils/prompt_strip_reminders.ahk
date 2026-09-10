@@ -6,6 +6,75 @@
 
 global g_PromptPasteWaitChoice := ""
 global g_PromptPasteWaitActive := false
+; Owns the Loading Indication for Prompt Manager paste / attach / auto-send (pause for modals).
+global g_PromptPasteBusyActive := false
+global g_PromptPasteBusyPaused := false
+
+; Persistent Loading Indication for Prompt Manager async work (attach, paste, auto-send).
+PromptPaste_BusyShow(state := "⏳ Preparing prompt…", centerOnHwnd := 0) {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused
+    g_PromptPasteBusyActive := true
+    g_PromptPasteBusyPaused := false
+    try StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        centerOnHwnd: centerOnHwnd,
+        trackActiveMonitor: true
+    })
+    catch {
+    }
+}
+
+PromptPaste_BusyUpdate(state) {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused
+    if (!g_PromptPasteBusyActive || g_PromptPasteBusyPaused || state = "")
+        return
+    try StandardLoadingBar_Update(state, BANNER_ACCENT_INTERMEDIATE)
+    catch {
+    }
+}
+
+; Show if we own busy but the bar was dismissed; otherwise Update.
+PromptPaste_BusyEnsure(state := "⏳ Preparing prompt…", centerOnHwnd := 0) {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused, g_StandardLoadingBarGui
+    if (!g_PromptPasteBusyActive || g_PromptPasteBusyPaused || !IsObject(g_StandardLoadingBarGui)) {
+        PromptPaste_BusyShow(state, centerOnHwnd)
+        return
+    }
+    PromptPaste_BusyUpdate(state)
+}
+
+PromptPaste_BusyPause() {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused
+    if (!g_PromptPasteBusyActive)
+        return
+    g_PromptPasteBusyPaused := true
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+}
+
+PromptPaste_BusyResume(state := "⏳ Preparing prompt…", centerOnHwnd := 0) {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused
+    if (!g_PromptPasteBusyActive)
+        return
+    g_PromptPasteBusyPaused := false
+    try StandardLoadingBar_Show(state, BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        centerOnHwnd: centerOnHwnd,
+        trackActiveMonitor: true
+    })
+    catch {
+    }
+}
+
+PromptPaste_BusyHide(delayMs := 0) {
+    global g_PromptPasteBusyActive, g_PromptPasteBusyPaused
+    g_PromptPasteBusyActive := false
+    g_PromptPasteBusyPaused := false
+    try StandardLoadingBar_Hide(delayMs)
+    catch {
+    }
+}
 
 ; Keep text through the last standalone "---" line, then two blank lines for comments.
 ; Returns "" if no --- divider is found (caller shows error).
@@ -151,35 +220,42 @@ PromptPaste_ShowOptionsAndWait() {
 }
 
 PromptPaste_ApplyChoice(choice, fullText, onAfterPaste := "", restoreFocus := "", submitOpts := "") {
+    global g_PromptPasteBusyActive
     if (fullText = "" || choice = "")
         return
     includeReminders := (choice = "reminders")
     doSend := (choice = "send")
+    hwnd := 0
+    companionId := ""
+    attachCount := 0
+    if (IsObject(submitOpts)) {
+        if (submitOpts.HasProp("hwnd"))
+            hwnd := submitOpts.hwnd
+        if (submitOpts.HasProp("companionId"))
+            companionId := submitOpts.companionId
+        if (submitOpts.HasProp("attachCount"))
+            attachCount := submitOpts.attachCount
+    }
     if (restoreFocus != "") {
+        PromptPaste_BusyEnsure(doSend ? "⏳ Focusing companion…" : "⏳ Preparing paste…", hwnd)
         try restoreFocus()
         catch {
         }
         Sleep 80
     }
+    PromptPaste_BusyEnsure(doSend ? "⏳ Pasting prompt to send…" : "⏳ Pasting prompt…", hwnd)
     textToPaste := PromptPaste_ResolveText(fullText, includeReminders)
     InsertText(textToPaste)
     if (onAfterPaste != "") {
+        PromptPaste_BusyUpdate("⏳ Assembling context…")
         try onAfterPaste()
         catch {
         }
     }
     if (doSend) {
-        hwnd := 0
-        companionId := ""
-        attachCount := 0
-        if (IsObject(submitOpts)) {
-            if (submitOpts.HasProp("hwnd"))
-                hwnd := submitOpts.hwnd
-            if (submitOpts.HasProp("companionId"))
-                companionId := submitOpts.companionId
-            if (submitOpts.HasProp("attachCount"))
-                attachCount := submitOpts.attachCount
-        }
         PromptPaste_SubmitWhenReady(hwnd, companionId, attachCount)
+        return
     }
+    if (g_PromptPasteBusyActive)
+        PromptPaste_BusyHide(0)
 }

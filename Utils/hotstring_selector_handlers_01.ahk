@@ -97,7 +97,7 @@ HandleHotstringChar(char) {
 }
 
 UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := false) {
-    global g_lastExpansion
+    global g_lastExpansion, g_PromptPasteBusyActive
     if (!IsObject(prompt))
         return
     body := PromptRender_Prepare(prompt)
@@ -113,67 +113,90 @@ UtilitySelector_InsertPrompt(prompt, useGemini := false, appendClipboard := fals
     if (doPasteBody) {
         CleanupHotstringSelector()
         pasteChoice := PromptPaste_ShowOptionsAndWait()
+        if (pasteChoice = "")
+            return
+        ; Immediate visual feedback after Y / H / N / Esc (before context resolve / attach / paste).
+        PromptPaste_BusyShow((pasteChoice = "send") ? "⏳ Preparing to send…" : "⏳ Preparing prompt…")
     }
     contextEntries := ""
     pickedCount := 0
-    if (doAttach) {
-        resolved := UtilitySelector_ResolveContextEntries(prompt)
-        if (resolved = false)
+    try {
+        if (doAttach) {
+            PromptPaste_BusyUpdate("⏳ Resolving context…")
+            resolved := UtilitySelector_ResolveContextEntries(prompt)
+            if (resolved = false) {
+                PromptPaste_BusyHide(0)
+                return
+            }
+            contextEntries := resolved.entries
+            pickedCount := resolved.pickedCount
+        }
+        PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
+        clip := ""
+        if (doAppendClipboard) {
+            try clip := A_Clipboard
+            catch {
+            }
+        }
+        if (!doPasteBody)
+            CleanupHotstringSelector()
+        if (useGemini) {
+            UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, clip, contextEntries, pasteChoice)
             return
-        contextEntries := resolved.entries
-        pickedCount := resolved.pickedCount
-    }
-    PromptUsage_Log(prompt, useGemini ? "gemini" : "direct", pickedCount)
-    clip := ""
-    if (doAppendClipboard) {
-        try clip := A_Clipboard
-        catch {
         }
-    }
-    if (!doPasteBody)
-        CleanupHotstringSelector()
-    if (useGemini) {
-        UtilitySelector_PastePromptToGemini(body, prompt, doAttach, doPasteBody, clip, contextEntries, pasteChoice)
-        return
-    }
-    UtilitySelector_RestorePreviousHwnd()
-    Sleep 150
-    if (doAttach)
-        UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
-    if (doPasteBody) {
-        onAfter := ""
-        if (doAppendClipboard && clip != "") {
-            clipCopy := clip
-            onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
+        UtilitySelector_RestorePreviousHwnd()
+        Sleep 150
+        if (doAttach) {
+            PromptPaste_BusyEnsure("⏳ Attaching context…")
+            UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
         }
-        global g_UtilitySelectorRestoreHwnd
-        attachCount := (doAttach && contextEntries.Length) ? contextEntries.Length : 0
-        companionId := (attachCount > 0 || InsertFiles_IsAiChatForeground()) ? ResolveGlobalAICompanion() : ""
-        submitOpts := { hwnd: g_UtilitySelectorRestoreHwnd, companionId: companionId, attachCount: attachCount }
-        PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd, submitOpts)
-    } else if (doAppendClipboard && clip != "") {
-        g_lastExpansion := 0
-        InsertText(clip)
+        if (doPasteBody) {
+            onAfter := ""
+            if (doAppendClipboard && clip != "") {
+                clipCopy := clip
+                onAfter := (*) => (g_lastExpansion := 0, InsertText(clipCopy))
+            }
+            global g_UtilitySelectorRestoreHwnd
+            attachCount := (doAttach && contextEntries.Length) ? contextEntries.Length : 0
+            companionId := (attachCount > 0 || InsertFiles_IsAiChatForeground()) ? ResolveGlobalAICompanion() : ""
+            submitOpts := { hwnd: g_UtilitySelectorRestoreHwnd, companionId: companionId, attachCount: attachCount }
+            PromptPaste_ApplyChoice(pasteChoice, body, onAfter, UtilitySelector_RestorePreviousHwnd, submitOpts)
+        } else if (doAppendClipboard && clip != "") {
+            PromptPaste_BusyEnsure("⏳ Pasting clipboard…")
+            g_lastExpansion := 0
+            InsertText(clip)
+            PromptPaste_BusyHide(0)
+        } else if (g_PromptPasteBusyActive) {
+            PromptPaste_BusyHide(0)
+        }
+    } catch as err {
+        PromptPaste_BusyHide(0)
+        throw err
     }
 }
 
 UtilitySelector_ResolveContextEntries(prompt) {
     if (!IsObject(prompt))
         return { entries: [], pickedCount: 0 }
+    PromptPaste_BusyUpdate("⏳ Resolving context…")
     staticEntries := PromptData_ContextEntriesForCurrentEnv(prompt)
     fp := StrLower(Trim(prompt.HasProp("filePath") ? prompt.filePath : ""))
     if (InStr(fp, "mnemonic-atoms-import")) {
+        PromptPaste_BusyUpdate("⏳ Building study pack…")
         studyId := Trim(Palace_Setting("General", "LastStudyId", ""))
         pack := Palace_BuildPromptStudyPack(studyId)
         if (pack.Length)
             staticEntries := PromptContext_MergeEntries(staticEntries, pack)
     }
+    PromptPaste_BusyUpdate("⏳ Loading context pool…")
     pool := PromptContextPicker_BuildPool(prompt)
     if (pool.Length = 0)
         return { entries: staticEntries, pickedCount: 0 }
+    PromptPaste_BusyPause()
     picked := PromptContextPicker_ShowPool(pool)
     if (picked = false)
         return false
+    PromptPaste_BusyResume("⏳ Preparing context…")
     return {
         entries: PromptContext_MergeEntries(staticEntries, picked),
         pickedCount: IsObject(picked) ? picked.Length : 0
@@ -181,6 +204,7 @@ UtilitySelector_ResolveContextEntries(prompt) {
 }
 
 UtilitySelector_AttachPromptContextFiles(prompt, entries := "") {
+    global g_PromptPasteBusyActive
     if (!IsObject(prompt))
         return
     if (entries = "")
@@ -202,14 +226,22 @@ UtilitySelector_AttachPromptContextFiles(prompt, entries := "") {
     }
     if (existing.Length = 0)
         return
+    ; Ensure a Loading Indication is visible for compact/stage/upload (Prompt Manager + D2C callers).
+    if (!g_PromptPasteBusyActive)
+        PromptPaste_BusyShow("⏳ Preparing context…")
+    else
+        PromptPaste_BusyEnsure("⏳ Preparing context…")
     asTxt := PromptData_AttachAsTxt(prompt)
+    PromptPaste_BusyUpdate("⏳ Preparing context files…")
     attachPaths := PromptContext_ResolveAttachPaths(existing, asTxt)
     if (attachPaths.Length = 0)
         return
+    PromptPaste_BusyUpdate("⏳ Attaching context…")
     if !InsertFiles(attachPaths) {
         ShowCenteredOverlay_Utils("⚠ Could not attach context files", 2200, BANNER_ACCENT_ERROR)
         return
     }
+    PromptPaste_BusyUpdate("⏳ Waiting for uploads…")
     PromptContext_WaitForAttachUploadIdle(attachPaths.Length)
 }
 
@@ -593,6 +625,7 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
 ;   A — upload-idle + Send enabled + text (PROMPT_PASTE_USE_STABLE_SEND_READY)
 ;   B — chips + no ProgressBar + text (PROMPT_PASTE_USE_CHIP_READY)
 PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, attachCount := 0, updateBanner := false) {
+    global g_PromptPasteBusyActive
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
     companionId := StrLower(Trim(companionId))
@@ -636,12 +669,13 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             phase := !probe.uploadIdle ? "uploads" : "send"
             if (phase != bannerPhase) {
                 bannerPhase := phase
-                try {
-                    if (phase = "uploads")
-                        StandardLoadingBar_Update("⏳ Waiting for uploads…", BANNER_ACCENT_INTERMEDIATE)
-                    else
-                        StandardLoadingBar_Update("⏳ Waiting for Send…", BANNER_ACCENT_INTERMEDIATE)
-                } catch {
+                msg := (phase = "uploads") ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…"
+                if (g_PromptPasteBusyActive)
+                    PromptPaste_BusyUpdate(msg)
+                else {
+                    try StandardLoadingBar_Update(msg, BANNER_ACCENT_INTERMEDIATE)
+                    catch {
+                    }
                 }
             }
         }
@@ -863,29 +897,19 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
     }
     if (!hwnd)
         hwnd := WinExist("A")
-    if (!hwnd)
+    if (!hwnd) {
+        PromptPaste_BusyHide(0)
         return false
+    }
 
-    showBar := (attachCount > 0 || companionId != "")
     ok := false
     tDeadline := A_TickCount + PROMPT_PASTE_AUTO_SEND_CAP_MS
     try {
-        if (showBar) {
-            try StandardLoadingBar_Show("⏳ Waiting to send…", BANNER_ACCENT_INTERMEDIATE, {
-                passive: false,
-                centerOnHwnd: hwnd,
-                trackActiveMonitor: true
-            })
-            catch {
-            }
-        }
+        ; Persistent Loading Indication for the whole [Y] auto-send wait/submit/confirm path.
+        PromptPaste_BusyEnsure("⏳ Waiting to send…", hwnd)
 
         if (attachCount > 0 || companionId != "") {
-            try StandardLoadingBar_Update(
-                (attachCount > 0) ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…",
-                BANNER_ACCENT_INTERMEDIATE)
-            catch {
-            }
+            PromptPaste_BusyUpdate((attachCount > 0) ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…")
             ready := false
             waitMs := PromptPaste_SendWaitBudget(tDeadline)
             if (waitMs > 0) {
@@ -905,18 +929,10 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
         } else if (companionId != "" && PromptPaste_CompanionIsGenerating(hwnd, companionId)) {
             ok := true
         } else {
-            if (showBar) {
-                try StandardLoadingBar_Update("⏳ Sending…", BANNER_ACCENT_INTERMEDIATE)
-                catch {
-                }
-            }
+            PromptPaste_BusyUpdate("⏳ Sending…")
             submitted := PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
             if (companionId != "") {
-                if (showBar) {
-                    try StandardLoadingBar_Update("⏳ Confirming…", BANNER_ACCENT_INTERMEDIATE)
-                    catch {
-                    }
-                }
+                PromptPaste_BusyUpdate("⏳ Confirming…")
                 confirmMs := PromptPaste_SendRemainingMs(tDeadline)
                 ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs))
                 if (!ok && submitted)
@@ -926,11 +942,7 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             }
         }
     } finally {
-        if (showBar) {
-            try StandardLoadingBar_Hide(0)
-            catch {
-            }
-        }
+        PromptPaste_BusyHide(0)
     }
 
     if (companionId != "" || attachCount > 0) {
@@ -979,10 +991,17 @@ UtilitySelector_RestoreConsumerGeminiFocus(*) {
 
 UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true, doPasteBody := true, appendClip := "",
     contextEntries := "", pasteChoice := "") {
-    global g_lastExpansion
+    global g_lastExpansion, g_PromptPasteBusyActive
     companion := ResolveGlobalAICompanion()
     aiLabel := GetGlobalAIProviderLabel()
-    HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
+    ; Keep Prompt Manager Loading Indication; do not wipe it with the passive Gemini banner.
+    usedBusyBar := false
+    if (g_PromptPasteBusyActive) {
+        PromptPaste_BusyEnsure("⏳ Opening " . aiLabel . "…")
+        usedBusyBar := true
+    } else {
+        HotstringGeminiBanner_Show("📤 " . aiLabel . ": inserting prompt...")
+    }
     restoreFocus := ""
     playGeminiChime := false
     companionHwnd := 0
@@ -1009,10 +1028,14 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
             if (!companionHwnd)
                 companionHwnd := WinExist("A")
         }
-        if (doAttach)
+        if (doAttach) {
+            if (usedBusyBar)
+                PromptPaste_BusyEnsure("⏳ Attaching context…")
             UtilitySelector_AttachPromptContextFiles(prompt, contextEntries)
+        }
     } finally {
-        HotstringGeminiBanner_Hide()
+        if (!usedBusyBar)
+            HotstringGeminiBanner_Hide()
     }
     attachCount := IsObject(contextEntries) ? contextEntries.Length : 0
     submitOpts := { hwnd: companionHwnd, companionId: companion, attachCount: attachCount }
@@ -1033,6 +1056,10 @@ UtilitySelector_PastePromptToGemini(expansion, prompt := false, doAttach := true
     } else if (appendClip != "") {
         g_lastExpansion := 0
         InsertText(appendClip)
+        if (usedBusyBar)
+            PromptPaste_BusyHide(0)
+    } else if (usedBusyBar) {
+        PromptPaste_BusyHide(0)
     }
 }
 

@@ -1,130 +1,9 @@
 # Data Analyst
 
 <details open>
-<summary><strong>Memory Palace 6: Advanced M Concepts</strong> · Character: Marie Curie · 5 beasts · 5 atoms</summary>
-
-_No image_
-
-<p><em>5 beasts · 5 Knowledge Atoms</em></p>
-
-#### Knowledge Atoms
-
-### 🟧 [Y] yak
-
-**Concept**
-💡 [I use the each <kbd><strong><u>keyword</u></strong></kbd>] [to define a <kbd><strong><u>unary</u></strong></kbd> function] [that passes the current <kbd><strong><u>row</u></strong></kbd>] [into a hidden <kbd><strong><u>underscore</u></strong></kbd> parameter.]
-
-🔑 **Keywords**
-
-- [**keyword**] → [magic wand]
-- [**unary**] → [single finger]
-- [**row**] → [rowboat]
-- [**underscore**] → [submarine]
-
-**Quote**
-“when you use the each keyword this is a function but you don't have to worry about the parameter the parameter has this name of underscore”
-
-**Sensory**
-✋ tactile
-
-**Story**
-A yak waving a magic wand balances on a rowboat with a single finger, shoving the boat deep underwater into a hidden yellow submarine.
-
-### 🟧 [Z] Zeus
-
-**Concept**
-💡 [I use query <kbd><strong><u>folding</u></strong></kbd>] [to <kbd><strong><u>push</u></strong></kbd> transformation work] [back to the data <kbd><strong><u>source</u></strong></kbd>] [to maximize processing <kbd><strong><u>efficiency</u></strong></kbd>.]
-
-🔑 **Keywords**
-
-- [**folding**] → [origami]
-- [**push**] → [bulldozer]
-- [**source**] → [well]
-- [**efficiency**] → [stopwatch]
-
-**Quote**
-“the idea of query folding is that you want the power query mashup engine you know to be as efficient as possible so the mashup engine will push work back to the data source”
-
-**Sensory**
-👁️ visual
-
-**Story**
-Zeus folds an enormous glowing origami swan, using a bulldozer to push the paper creation back down into a deep stone well to stop a ticking stopwatch.
-
-### 🟧 [Aa] aardvark
-
-**Concept**
-💡 [The OData connector uses a <kbd><strong><u>discovery</u></strong></kbd> mechanism] [to automatically determine the <kbd><strong><u>schema</u></strong></kbd>] [of the external <kbd><strong><u>table</u></strong></kbd>.]
-
-🔑 **Keywords**
-
-- [**discovery**] → [binoculars]
-- [**schema**] → [skeleton]
-- [**table**] → [picnic table]
-
-**Quote**
-“odata has a discovery mechanism you know where now power query is kind of looking at the table and figuring out what it is”
-
-**Sensory**
-👁️ visual
-
-**Story**
-A skyscraper-sized aardvark peers through glowing binoculars at a wooden picnic table, magically x-raying the wood to automatically determine the glowing neon skeleton hidden inside.
-
-### 🟧 [Ab] Abyssinian cat
-
-**Concept**
-💡 [The OData connector suffers from <kbd><strong><u>network</u></strong></kbd> latency] [because it makes redundant metadata <kbd><strong><u>calls</u></strong></kbd>] [at <kbd><strong><u>runtime</u></strong></kbd>.]
-
-🔑 **Keywords**
-
-- [**network**] → [spider web]
-- [**calls**] → [megaphone]
-- [**runtime**] → [running shoes]
-
-**Quote**
-“the problem uh with odata is that at runtime it has to make metadata calls to basically get the metadata and that makes a second call”
-
-**Sensory**
-👂 auditory
-
-**Story**
-An Abyssinian cat trapped in a giant sticky spider web screams repeatedly into a megaphone, waiting endlessly for an echo while wearing melted running shoes.
-
-### 🟧 [Ac] acorn
-
-**Concept**
-💡 [I create a <kbd><strong><u>function</u></strong></kbd> query] [by <kbd><strong><u>parameterizing</u></strong></kbd> an existing query] [to <kbd><strong><u>reuse</u></strong></kbd> its logic] [across multiple tables.]
-
-🔑 **Keywords**
-
-- [**function**] → [wrench]
-- [**parameterizing**] → [measuring tape]
-- [**reuse**] → [recycling bin]
-
-**Quote**
-“the idea of a function query is that you take a query and you parameterize it to make it reusable”
-
-**Sensory**
-✋ tactile
-
-**Story**
-A colossal acorn holding a steel wrench wraps a metal measuring tape around a stack of papers, tossing the whole bundle into a green recycling bin to forge a new tool.
-
-#### Notes
-
-_No notes._
-
-#### Gallery
-
-_No gallery images._
-
-</details>
-
-<details>
 <summary><strong>Memory Palace 5: M Engine & Syntax</strong> · Character: Stephen Hawking · 5 beasts · 5 atoms</summary>
 
-_No image_
+![Memory Palace 5](images/data-analyst/5.png)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 
@@ -153,46 +32,6 @@ A giant toucan violently drops a roaring car engine block into a massive blender
 ### 🟧 [U] unicorn
 
 **Concept**
-💡 [I must place a <kbd><strong><u>comma</u></strong></kbd>] [at the end of every <kbd><strong><u>line</u></strong></kbd>] [inside a let <kbd><strong><u>block</u></strong></kbd>] - Note: The final <kbd><strong><u>line</u></strong></kbd> before the in statement is the only exception.
-
-🔑 **Keywords**
-
-- [**comma**] → [sickle]
-- [**line**] → [queue]
-- [**block**] → [wooden block]
-
-**Quote**
-“every single line in a let block except for the last one has to have a comma behind it”
-
-**Sensory**
-👁️ visual
-
-**Story**
-A unicorn stabs a giant wooden block with its horn, carving glowing red sickles at the end of every written queue of words except the final one.
-
-### 🟧 [V] vulture
-
-**Concept**
-💡 [The engine evaluates my code <kbd><strong><u>backwards</u></strong></kbd>] [starting from the <kbd><strong><u>final</u></strong></kbd> output] [located after the in <kbd><strong><u>keyword</u></strong></kbd>.]
-
-🔑 **Keywords**
-
-- [**backwards**] → [rewind button]
-- [**final**] → [checkered flag]
-- [**keyword**] → [key]
-
-**Quote**
-“the first thing that happens is the mashup engine tries to evaluate what's at the very bottom after the in keyword”
-
-**Sensory**
-✋ tactile
-
-**Story**
-A vulture viciously pecks a massive rewind button, dragging a checkered flag backwards through the mud starting from a glowing brass key at the bottom of the street.
-
-### 🟧 [W] wombat
-
-**Concept**
 💡 [I avoid using <kbd><strong><u>spaces</u></strong></kbd>] [in my step <kbd><strong><u>names</u></strong></kbd>] [to keep the underlying M code <kbd><strong><u>clean</u></strong></kbd>.] - Note: <kbd><strong><u>Spaces</u></strong></kbd> force the variables to be wrapped in quotes and a hash sign.
 
 🔑 **Keywords**
@@ -208,26 +47,68 @@ A vulture viciously pecks a massive rewind button, dragging a checkered flag bac
 👁️ visual
 
 **Story**
-A colossal wombat uses a vacuum to suck all the empty air out of glowing name tags, squeezing the text together so it can scrub the underlying code clean with a giant dripping sponge.
+A unicorn uses a vacuum attached to its horn to suck all the empty air out of glowing name tags, squeezing the text together so it can scrub the underlying code clean with a giant dripping sponge.
+
+### 🟧 [V] vulture
+
+**Concept**
+💡 [I use query <kbd><strong><u>folding</u></strong></kbd>] [to <kbd><strong><u>push</u></strong></kbd> transformation work] [back to the data <kbd><strong><u>source</u></strong></kbd>] [to maximize processing <kbd><strong><u>efficiency</u></strong></kbd>.]
+
+🔑 **Keywords**
+
+- [**folding**] → [origami]
+- [**push**] → [bulldozer]
+- [**source**] → [well]
+- [**efficiency**] → [stopwatch]
+
+**Quote**
+“the idea of query folding is that you want the power query mashup engine you know to be as efficient as possible so the mashup engine will push work back to the data source”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A giant vulture folds an enormous glowing origami swan with its talons, using a bulldozer to push the paper creation back down into a deep stone well to stop a ticking stopwatch.
+
+### 🟧 [W] wombat
+
+**Concept**
+💡 [The OData connector uses a <kbd><strong><u>discovery</u></strong></kbd> mechanism] [to automatically determine the <kbd><strong><u>schema</u></strong></kbd>] [of the external <kbd><strong><u>table</u></strong></kbd>.]
+
+🔑 **Keywords**
+
+- [**discovery**] → [binoculars]
+- [**schema**] → [skeleton]
+- [**table**] → [picnic table]
+
+**Quote**
+“odata has a discovery mechanism you know where now power query is kind of looking at the table and figuring out what it is”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A skyscraper-sized wombat peers through glowing binoculars at a wooden picnic table, magically x-raying the wood to automatically determine the glowing neon skeleton hidden inside.
 
 ### 🟧 [X] Xena, warrior woman
 
 **Concept**
-💡 [I use the try and otherwise pattern] [to <kbd><strong><u>catch</u></strong></kbd> data errors] [and to supply a safe <kbd><strong><u>fallback</u></strong></kbd> value.]
+💡 [The OData connector suffers from <kbd><strong><u>network</u></strong></kbd> latency] [because it makes redundant metadata <kbd><strong><u>calls</u></strong></kbd>] [at <kbd><strong><u>runtime</u></strong></kbd>.]
 
 🔑 **Keywords**
 
-- [**catch**] → [baseball mitt]
-- [**fallback**] → [safety net]
+- [**network**] → [spider web]
+- [**calls**] → [megaphone]
+- [**runtime**] → [running shoes]
 
 **Quote**
-“the try otherwise you know is basically the main way that you're gonna deal with uh catching errors”
+“the problem uh with odata is that at runtime it has to make metadata calls to basically get the metadata and that makes a second call”
 
 **Sensory**
 👂 auditory
 
 **Story**
-Xena swings a massive baseball mitt to catch shattering glass data blocks, yelling a loud battle cry as a bouncy safety net catches the broken pieces safely below.
+A fierce warrior woman trapped in a giant sticky spider web screams repeatedly into a megaphone, waiting endlessly for an echo while wearing melted running shoes.
 
 #### Notes
 
