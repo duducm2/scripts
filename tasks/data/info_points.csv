@@ -407,3 +407,15 @@ com humanos.
 
 Este gráfico está em inglês",,ℹ️,,80,2026-09-09 18:38:19
 INFO_0139,task,TASK_0244,I have already updated some citations that didn't have the year,,ℹ️,,90,2026-09-09 22:27:07
+INFO_0140,task,TASK_0244,"Here are the images that we updated
+
+\begin{figure}[htbp]
+    \centering
+    \setlength{\fboxrule}{1pt}\setlength{\fboxsep}{0pt}%
+    \fbox{\includegraphics[width=0.8\textwidth,height=0.74\textheight,keepaspectratio]{figuras/manager-view.png}}
+    \caption[Tela do gerente completa.]{Tela do gerente.}
+    \label{fig:manager-view-painel}
+\end{figure}
+
+\centering
+    \includegraphics[width=0.8\textwidth, keepaspectratio]{figuras/modelo-qualidade.png}<",,ℹ️,,100,2026-09-09 22:53:51
