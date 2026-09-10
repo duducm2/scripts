@@ -129,3 +129,4 @@ TX131,2026-09-08,Toilet paper container and zippers,"55,79",card_expense,CAT_MAT
 TX132,2026-09-10,Invoice payment — Mercado Pago,"8405,65",transfer,,,ACC_MERCADOP,CARD_MP,
 TX133,2026-09-10,Balance adjustment,"266,98",adjustment,CAT_AJUSTE,,ACC_MERCADOP,,
 TX134,2026-09-10,Adjustment,"259,59",card_expense,CAT_AJUSTE,,,CARD_MP,
+TX135,2026-09-10,Bosch PowerTools,"1306,90",card_expense,CAT_MATERIAI,,,CARD_NUBANK,
