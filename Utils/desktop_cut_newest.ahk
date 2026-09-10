@@ -4,7 +4,8 @@
 ; Trigger: Win+Alt+Shift+O (same tiering as #!+8 pronunciation + 3×):
 ;   1× = cut newest Desktop item, restore previous window
 ;   2× within 400 ms (AI_QD_DOUBLE_TAP_MS / ZMK tap-dance) = open with default app
-;   3× within 400 ms windows = paste a copy of the clipboard file(s) onto Desktop
+;   3× within 400 ms windows = paste clipboard CF_HDROP copy to Desktop, or (Cursor/Code)
+;       copy the active editor tab file to Desktop after sidebar/Explorer gates
 ;   hold 700 ms+ (PRONUNCIATION_HOLD_MS / Fast Copy / cheat sheet) = copy path as text
 ; =============================================================================
 
@@ -529,7 +530,343 @@ DesktopCutNewest_UniqueDestPath(desktopPath, srcPath) {
     }
 }
 
-; 3×: copy clipboard CF_HDROP file(s)/folder(s) onto Desktop (leave originals).
+DesktopCutNewest_IsEditorActive() {
+    return !!(WinActive("ahk_exe Cursor.exe") || WinActive("ahk_exe Code.exe"))
+}
+
+DesktopCutNewest_NormalizeRevealBasename(raw) {
+    if (raw = "")
+        return ""
+    s := Trim(raw)
+    ; Dirty / preview markers in editor titles (Cursor/VS Code).
+    s := RegExReplace(s, "^[\x{25CF}\x{25A0}*•]+\s*", "")
+    s := Trim(s)
+    if InStr(s, ",")
+        s := Trim(SubStr(s, 1, InStr(s, ",") - 1))
+    if (InStr(s, "\") || InStr(s, "/")) {
+        SplitPath(s, &name)
+        if (name != "")
+            s := name
+    }
+    return s
+}
+
+DesktopCutNewest_GetBasenameFromEditorTitle(editorHwnd) {
+    if !(editorHwnd is Integer) || editorHwnd <= 0
+        return ""
+    try {
+        title := WinGetTitle("ahk_id " editorHwnd)
+        if (title = "")
+            return ""
+        parts := StrSplit(title, " - ", , 2)
+        if (parts.Length >= 1 && parts[1] != "") {
+            candidate := DesktopCutNewest_NormalizeRevealBasename(Trim(parts[1]))
+            if (candidate != "" && StrLen(candidate) <= 180 && !InStr(candidate, "`n"))
+                return candidate
+        }
+    } catch {
+    }
+    return ""
+}
+
+DesktopCutNewest_FindWorkbenchToggleButton(root, nameSubstring) {
+    if !root || !nameSubstring
+        return 0
+    toggleBtn := 0
+    try toggleBtn := root.FindFirst({ Name: nameSubstring, Type: UIA.Type.Button })
+    catch
+        toggleBtn := 0
+    if toggleBtn
+        return toggleBtn
+    try {
+        allButtons := root.FindAll({ Type: UIA.Type.Button })
+        if allButtons {
+            for btn in allButtons {
+                try {
+                    if InStr(btn.Name, nameSubstring) {
+                        toggleBtn := btn
+                        break
+                    }
+                } catch {
+                }
+            }
+        }
+    } catch {
+    }
+    return toggleBtn
+}
+
+DesktopCutNewest_IsWorkbenchToggleOn(root, nameSubstring) {
+    toggleBtn := DesktopCutNewest_FindWorkbenchToggleButton(root, nameSubstring)
+    if !toggleBtn
+        return false
+    try {
+        if InStr(toggleBtn.ClassName, "checked")
+            return true
+    } catch {
+    }
+    try {
+        if toggleBtn.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+            toggleState := toggleBtn.TogglePattern.ToggleState
+            return (toggleState = 1)
+        }
+    } catch {
+    }
+    return false
+}
+
+DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd := 0) {
+    try {
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return false
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return false
+        for el in root.FindAll({ Type: UIA.Type.Pane }) {
+            try {
+                cls := el.ClassName
+                if InStr(cls, "monaco-workbench") && InStr(cls, "sidebarvisible")
+                    return true
+            } catch {
+            }
+        }
+        if DesktopCutNewest_IsWorkbenchToggleOn(root, "Toggle Primary Side Bar")
+            return true
+    } catch {
+    }
+    return false
+}
+
+DesktopCutNewest_FindFilesExplorerTree(root) {
+    if !root
+        return 0
+    treeType := UIA.CreatePropertyCondition(UIA.Property.ControlType, UIA.Type.Tree)
+    feEn := UIA.CreatePropertyCondition(UIA.Property.Name, "Files Explorer")
+    fePt := UIA.CreatePropertyCondition(UIA.Property.Name, "Explorador de Arquivos")
+    feName := UIA.CreateOrCondition(feEn, fePt)
+    feCond := UIA.CreateAndCondition(treeType, feName)
+    fileTree := 0
+    try fileTree := root.FindElement(feCond, UIA.TreeScope.Descendants)
+    if fileTree
+        return fileTree
+    for autoId in ["FileExplorer3", "FileExplorer2", "FileExplorer"] {
+        try {
+            cond := UIA.CreatePropertyCondition(UIA.Property.AutomationId, autoId)
+            fileTree := root.FindElement(cond, UIA.TreeScope.Descendants)
+            if fileTree
+                return fileTree
+        }
+    }
+    return 0
+}
+
+DesktopCutNewest_UiaElementHasAncestor(el, ancestor) {
+    if !el || !ancestor
+        return false
+    current := el
+    loop 40 {
+        if !current
+            break
+        try {
+            if UIA.CompareElements(ancestor, current)
+                return true
+        } catch {
+        }
+        try current := UIA.TreeWalkerTrue.GetParentElement(current)
+        catch
+            break
+    }
+    return false
+}
+
+DesktopCutNewest_FocusIsInFilesExplorer(editorHwnd := 0) {
+    try {
+        if !DesktopCutNewest_IsEditorActive()
+            return false
+        if !editorHwnd
+            editorHwnd := WinExist("A")
+        if !editorHwnd
+            return false
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return false
+        fileTree := DesktopCutNewest_FindFilesExplorerTree(root)
+        if !fileTree
+            return false
+        fe := UIA.GetFocusedElement()
+        if !fe
+            return false
+        return DesktopCutNewest_UiaElementHasAncestor(fe, fileTree)
+    } catch {
+        return false
+    }
+}
+
+DesktopCutNewest_TryFocusFilesExplorerTree(editorHwnd) {
+    try {
+        if !editorHwnd
+            return false
+        root := UIA.ElementFromHandle(editorHwnd)
+        if !root
+            return false
+        fileTree := DesktopCutNewest_FindFilesExplorerTree(root)
+        if !fileTree
+            return false
+        fileTree.SetFocus()
+        return true
+    } catch {
+        return false
+    }
+}
+
+DesktopCutNewest_WaitForSidebarExplorerFocus(editorHwnd, timeoutMs := 800) {
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        if !DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd) {
+            Sleep 50
+            continue
+        }
+        if DesktopCutNewest_TryFocusFilesExplorerTree(editorHwnd)
+            return true
+        Sleep 50
+    }
+    return DesktopCutNewest_FocusIsInFilesExplorer(editorHwnd)
+}
+
+DesktopCutNewest_EnsureFilesExplorerSidebarFocused(editorHwnd) {
+    if DesktopCutNewest_FocusIsInFilesExplorer(editorHwnd)
+        return true
+    if !editorHwnd
+        return false
+    try WinActivate("ahk_id " editorHwnd)
+    catch {
+    }
+    Send "^+e"
+    if DesktopCutNewest_WaitForSidebarExplorerFocus(editorHwnd, 800)
+        return true
+    Send "^!+e"
+    return DesktopCutNewest_WaitForSidebarExplorerFocus(editorHwnd, 400)
+}
+
+DesktopCutNewest_HidePrimarySidebar(editorHwnd) {
+    if !editorHwnd || !DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd)
+        return true
+    try WinActivate("ahk_id " editorHwnd)
+    catch {
+    }
+    Send "^b"
+    deadline := A_TickCount + 600
+    while (A_TickCount < deadline) {
+        Sleep 50
+        if !DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd)
+            return true
+    }
+    return !DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd)
+}
+
+DesktopCutNewest_ReturnFocusToMainEditor(editorHwnd) {
+    if !editorHwnd
+        return false
+    try WinActivate("ahk_id " editorHwnd)
+    catch {
+    }
+    Send "^+e"
+    Sleep 80
+    Send "^+e"
+    return true
+}
+
+; Probe active-editor path via Files Explorer focus + Ctrl+2 (user copyFilePath bindings).
+; Caller restores clipboard after reading the path (success or failure).
+DesktopCutNewest_ResolveActiveEditorFilePath(editorHwnd) {
+    if !editorHwnd
+        return ""
+    expectedBasename := DesktopCutNewest_GetBasenameFromEditorTitle(editorHwnd)
+    A_Clipboard := ""
+    SendInput "^2"
+    clipOk := ClipWait(0.6)
+    if !clipOk {
+        Sleep 80
+        A_Clipboard := ""
+        SendInput "^2"
+        clipOk := ClipWait(0.6)
+    }
+    if !clipOk
+        return ""
+    pathText := Trim(Trim(A_Clipboard), Chr(34))
+    pathText := StrReplace(pathText, "/", "\")
+    if (pathText = "" || !Clipboard_PathIsExistingFile(pathText))
+        return ""
+    if (expectedBasename != "") {
+        SplitPath(pathText, &pathName)
+        if (StrLower(pathName) != StrLower(expectedBasename))
+            return ""
+    }
+    return pathText
+}
+
+; Cursor/Code ×3: copy active editor tab file to Desktop (leave original).
+DesktopCutNewest_CopyActiveEditorFileToDesktop(desktopPath) {
+    editorHwnd := WinExist("A")
+    if !editorHwnd || !DesktopCutNewest_IsEditorActive() {
+        ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+
+    savedClip := 0
+    try savedClip := ClipboardAll()
+    catch {
+        savedClip := 0
+    }
+
+    sidebarWasVisible := DesktopCutNewest_IsPrimarySidebarVisible(editorHwnd)
+    pathText := ""
+    try {
+        if !DesktopCutNewest_EnsureFilesExplorerSidebarFocused(editorHwnd) {
+            ShowCenteredOverlay_Utils("❌ Files Explorer not ready", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+        pathText := DesktopCutNewest_ResolveActiveEditorFilePath(editorHwnd)
+        if (pathText = "") {
+            ShowCenteredOverlay_Utils("❌ Could not resolve active file", 2500, BANNER_ACCENT_ERROR)
+            return
+        }
+    } finally {
+        if IsObject(savedClip) {
+            try A_Clipboard := savedClip
+            catch {
+            }
+        }
+        DesktopCutNewest_ReturnFocusToMainEditor(editorHwnd)
+        if !sidebarWasVisible
+            DesktopCutNewest_HidePrimarySidebar(editorHwnd)
+    }
+
+    if (pathText = "")
+        return
+
+    dest := DesktopCutNewest_UniqueDestPath(desktopPath, pathText)
+    if (dest = "") {
+        ShowCenteredOverlay_Utils("❌ Could not build Desktop path", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    try FileCopy(pathText, dest)
+    catch {
+        ShowCenteredOverlay_Utils("❌ Failed to paste to Desktop", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    if !FileExist(dest) {
+        ShowCenteredOverlay_Utils("❌ Paste verify failed", 2500, BANNER_ACCENT_ERROR)
+        return
+    }
+    SplitPath(dest, &destName)
+    ShowCenteredOverlay_Utils("📎 Pasted: " destName, 1800, BANNER_ACCENT_SUCCESS)
+}
+
+; 3×: copy clipboard CF_HDROP file(s)/folder(s) onto Desktop (leave originals),
+; or when Cursor/Code is focused with no file drop, copy the active editor file.
 DesktopCutNewest_PasteClipboardToDesktop() {
     desktopPath := DesktopCutNewest_ResolveDesktopPath()
     if (desktopPath = "") {
@@ -538,6 +875,10 @@ DesktopCutNewest_PasteClipboardToDesktop() {
     }
 
     if !Clipboard_HasFileDrop() {
+        if DesktopCutNewest_IsEditorActive() {
+            DesktopCutNewest_CopyActiveEditorFileToDesktop(desktopPath)
+            return
+        }
         ShowCenteredOverlay_Utils("❌ No file in clipboard", 2500, BANNER_ACCENT_ERROR)
         return
     }
