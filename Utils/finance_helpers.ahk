@@ -375,7 +375,7 @@ Finance_WriteCsv(fileName, rows, headers) {
 Finance_Headers(kind) {
     switch kind {
         case "transactions":
-            return ["id", "date", "description", "amount", "type", "category_id", "subcategory", "account_id",
+            return ["id", "date", "description", "amount", "type", "category_id", "account_id",
                 "card_id", "transfer_account_id"]
         case "accounts":
             return ["id", "name", "icon", "initial_balance", "current_balance"]
@@ -578,25 +578,25 @@ Finance_CatName(cats, id) {
     return row ? Finance_CatLabel(row) : "Unknown"
 }
 
-; Remap invented or subcategory ids from daily import onto canon main categories.
-Finance_ResolveImportCategory(cats, type, categoryId, subcategory) {
+; Remap invented or legacy child ids from daily import onto main categories.
+; Legacy subcategory strings (if present in old packs) are ignored.
+Finance_ResolveImportCategory(cats, type, categoryId, subcategory := "") {
     categoryId := Trim(categoryId)
-    subcategory := Trim(subcategory)
     t := StrLower(Trim(type))
     if (t = "transfer")
-        return Map("category_id", "", "subcategory", "")
+        return Map("category_id", "")
     row := Finance_FindById(cats, categoryId)
     if (row) {
         parentId := row.Has("parent_id") ? Trim(row["parent_id"]) : ""
         if (parentId = "")
-            return Map("category_id", categoryId, "subcategory", subcategory)
-        subName := subcategory != "" ? subcategory : (row.Has("name") ? row["name"] : "")
-        return Map("category_id", parentId, "subcategory", subName)
+            return Map("category_id", categoryId)
+        ; Legacy pack used a child category id — promote to parent main.
+        return Map("category_id", parentId)
     }
     lastResort := (t = "income") ? "CAT_OUTROS2" : "CAT_MATERIAI"
     if (t != "income" && t != "expense" && t != "card_expense")
         lastResort := ""
-    return Map("category_id", lastResort, "subcategory", subcategory)
+    return Map("category_id", lastResort)
 }
 
 ; Resolve card_id for card_expense imports when the pack left it blank.
@@ -640,21 +640,6 @@ Finance_FixOrphanCardExpenses() {
     Finance_Save("transactions", txs)
     Finance_RebuildBalancesFromTransactions()
     return true
-}
-
-Finance_SubcatLabel(cats, parentId, subName) {
-    subName := Trim(subName)
-    if (subName = "")
-        return ""
-    for c in cats {
-        if (c["name"] = subName && (parentId = "" || c["parent_id"] = parentId))
-            return Finance_CatLabel(c)
-    }
-    for c in cats {
-        if (c["name"] = subName)
-            return Finance_CatLabel(c)
-    }
-    return subName
 }
 
 Finance_AccName(accs, id) {
@@ -702,15 +687,6 @@ Finance_MainCategories(cats, type := "") {
     return out
 }
 
-Finance_Subcategories(cats, parentId) {
-    out := []
-    for c in cats {
-        if (c["parent_id"] = parentId)
-            out.Push(c)
-    }
-    return out
-}
-
 Finance_CanAddMainCategory(cats) {
     n := 0
     for c in cats {
@@ -720,8 +696,67 @@ Finance_CanAddMainCategory(cats) {
     return n < 50
 }
 
-Finance_CanAddSubcategory(cats, parentId) {
-    return Finance_Subcategories(cats, parentId).Length < 10
+; Category dropdown for tx/import forms: mains (+ optional empty) and "+ New category…".
+Finance_CatComboForType(cats, typeFilter := "", includeNew := true) {
+    combo := Finance_ComboFromRows(Finance_MainCategories(cats, typeFilter), "id", "name", true, "icon")
+    if (includeNew) {
+        combo.names.Push("+ New category…")
+        combo.ids.Push("__NEW_CAT__")
+    }
+    return combo
+}
+
+; Upsert [Name] geral= in categories-expenses.ini or categories-income.ini.
+Finance_SyncCategoryToIni(name, type) {
+    name := Trim(name)
+    if (name = "")
+        return
+    t := StrLower(Trim(type))
+    path := (t = "income")
+        ? (A_ScriptDir . "\categories-income.ini")
+        : (A_ScriptDir . "\categories-expenses.ini")
+    if (!FileExist(path))
+        return
+    cur := IniRead(path, name, "geral", "")
+    if (cur != "")
+        return
+    IniWrite("User-added category.", path, name, "geral")
+}
+
+; Create (or reuse) a main category by name+type. Returns row Map or false.
+Finance_CatQuickAdd(name, type) {
+    name := Trim(name)
+    if (name = "")
+        return false
+    t := StrLower(Trim(type))
+    if (t = "card_expense" || t = "adjustment")
+        t := "expense"
+    if (t != "income")
+        t := "expense"
+    cats := Finance_Load("categories")
+    for c in cats {
+        if (c["parent_id"] != "")
+            continue
+        if (c["type"] = t && StrLower(c["name"]) = StrLower(name))
+            return c
+    }
+    if (!Finance_CanAddMainCategory(cats)) {
+        Finance_Alert("Hard limit: 50 main categories.", "Categories")
+        return false
+    }
+    id := Finance_SlugId("CAT_", name, cats)
+    newRow := Map(
+        "id", id,
+        "name", name,
+        "type", t,
+        "parent_id", "",
+        "color", Finance_ColorForIndex(cats.Length + 1),
+        "icon", Finance_DefaultCatIcon(name)
+    )
+    cats.Push(newRow)
+    Finance_Save("categories", cats)
+    Finance_SyncCategoryToIni(name, t)
+    return newRow
 }
 
 ; Apply or reverse a transaction against account/card balances.
@@ -1286,19 +1321,6 @@ Finance_MigrateCategoriesFromIni() {
             rows.Push(Map("id", mainId, "name", section, "type", "expense", "parent_id", "",
                 "color", Finance_ColorForIndex(palI), "icon", Finance_DefaultCatIcon(section)))
             palI += 1
-            raw := IniRead(expensePath, section)
-            if (raw = "ERROR")
-                raw := ""
-            keys := StrSplit(raw, "`n")
-            for k in keys {
-                key := Trim(StrSplit(k, "=")[1])
-                if (key = "" || key = "geral")
-                    continue
-                subId := Finance_SlugId("CAT_", key, rows)
-                rows.Push(Map("id", subId, "name", key, "type", "expense", "parent_id", mainId,
-                    "color", Finance_ColorForIndex(palI), "icon", Finance_DefaultCatIcon(key)))
-                palI += 1
-            }
         }
     }
     if (FileExist(incomePath)) {
@@ -1443,22 +1465,22 @@ Finance_SeedTransactions() {
     catEle := Finance_CatIdByName("Electronics")
     rows := []
     rows.Push(Map("id", "TX001", "date", "2026-08-16", "description", "Banana", "amount", "3,00",
-        "type", "expense", "category_id", catMer, "subcategory", "Produce", "account_id", accBl, "card_id", "",
+        "type", "expense", "category_id", catMer, "account_id", accBl, "card_id", "",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX002", "date", "2026-08-16", "description", "Gift", "amount", "10,00",
-        "type", "income", "category_id", catBon, "subcategory", "", "account_id", accBl, "card_id", "",
+        "type", "income", "category_id", catBon, "account_id", accBl, "card_id", "",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX003", "date", "2026-08-15", "description", "Lunch", "amount", "31,24",
-        "type", "expense", "category_id", catAli, "subcategory", "", "account_id", accMp, "card_id", "",
+        "type", "expense", "category_id", catAli, "account_id", accMp, "card_id", "",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX004", "date", "2026-08-15", "description", "Groceries", "amount", "317,04",
-        "type", "expense", "category_id", catMer, "subcategory", "", "account_id", accMp, "card_id", "",
+        "type", "expense", "category_id", catMer, "account_id", accMp, "card_id", "",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX005", "date", "2026-08-15", "description", "Mic", "amount", "529,99",
-        "type", "card_expense", "category_id", catEle, "subcategory", "", "account_id", accMp, "card_id", "CARD_MP",
+        "type", "card_expense", "category_id", catEle, "account_id", accMp, "card_id", "CARD_MP",
         "transfer_account_id", ""))
     rows.Push(Map("id", "TX006", "date", "2026-08-03", "description", "Salary and PLR", "amount", "4876,76",
-        "type", "income", "category_id", catSal, "subcategory", "", "account_id", accMp, "card_id", "",
+        "type", "income", "category_id", catSal, "account_id", accMp, "card_id", "",
         "transfer_account_id", ""))
     Finance_Save("transactions", rows)
 }

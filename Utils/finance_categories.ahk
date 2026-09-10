@@ -1,6 +1,6 @@
 ; =============================================================================
 ; Utils module: finance_categories.ahk
-; Category CRUD, filter, 50/10 limits
+; Category CRUD, filter, 50-main limit
 ; =============================================================================
 
 global g_FinanceCatLv := false
@@ -17,7 +17,7 @@ Finance_ShowCategories() {
     g_FinanceGui.Add("Text", "x12 y12 w860",
         "[Shift+A] all  [Shift+X] expense  [Shift+N] income  [Shift+I]/Insert add  [Shift+E] edit  Delete  Backspace")
     g_FinanceCatLv := g_FinanceGui.Add("ListView", "x12 y40 w860 h480 Grid",
-        ["Name", "Type", "Parent", "Color"])
+        ["Name", "Type", "Color"])
     g_FinanceCatLv.OnEvent("DoubleClick", (*) => Finance_CatEdit())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
     g_FinanceGui.OnEvent("Escape", (*) => Finance_ShowMainMenu())
@@ -60,15 +60,14 @@ Finance_CatRefresh() {
     g_FinanceCatLv.Delete()
     g_FinanceCatRows := []
     for c in cats {
+        if (c["parent_id"] != "")
+            continue
         if (g_FinanceCatType != "all" && c["type"] != g_FinanceCatType)
             continue
-        parentName := ""
-        if (c["parent_id"] != "")
-            parentName := Finance_CatName(cats, c["parent_id"])
         g_FinanceCatRows.Push(c)
-        g_FinanceCatLv.Add("", Finance_CatLabel(c), c["type"], parentName, c["color"])
+        g_FinanceCatLv.Add("", Finance_CatLabel(c), c["type"], c["color"])
     }
-    loop 4
+    loop 3
         g_FinanceCatLv.ModifyCol(A_Index, "AutoHdr")
 }
 
@@ -97,15 +96,9 @@ Finance_CatDelete(*) {
     c := Finance_CatSelected()
     if (!c)
         return
-    cats := Finance_Load("categories")
-    if (c["parent_id"] = "") {
-        for s in Finance_Subcategories(cats, c["id"]) {
-            Finance_Notify("Delete subcategories first", 1800, BANNER_ACCENT_ERROR)
-            return
-        }
-    }
     if (!Finance_Confirm("Delete " . c["name"] . "?", "Categories"))
         return
+    cats := Finance_Load("categories")
     out := []
     for r in cats {
         if (r["id"] != c["id"])
@@ -131,15 +124,9 @@ Finance_CatForm(existing) {
     g.SetFont("s10", "Segoe UI")
     g.Add("Text", , "Name")
     eName := g.Add("Edit", "w280", isEdit ? existing["name"] : "")
-    types := ["expense", "income"]
     tIdx := (isEdit && existing["type"] = "income") ? 2 : 1
     g.Add("Text", "y+8", "Type")
     ddType := g.Add("DropDownList", "w180 Choose" . tIdx, ["expense", "income"])
-    mains := Finance_MainCategories(cats)
-    parentCombo := Finance_ComboFromRows(mains, "id", "name", true, "icon")
-    pIdx := Finance_ComboIndex(parentCombo.ids, isEdit ? existing["parent_id"] : "")
-    g.Add("Text", "y+8", "Parent (empty = main)")
-    ddParent := g.Add("DropDownList", "w280 Choose" . pIdx, parentCombo.names)
     g.Add("Text", "y+8", "Color (#RRGGBB)")
     eColor := g.Add("Edit", "w120", isEdit ? existing["color"] : Finance_ColorForIndex(cats.Length + 1))
     g.Add("Text", "y+8", "Icon (emoji)")
@@ -162,24 +149,16 @@ Finance_CatForm(existing) {
             Finance_Alert("Name is required.", "Categories")
             return
         }
-        parentId := parentCombo.ids[ddParent.Value]
         t := ddType.Text
-        if (!isEdit) {
-            if (parentId = "") {
-                if (!Finance_CanAddMainCategory(cats)) {
-                    Finance_Alert("Hard limit: 50 main categories.", "Categories")
-                    return
-                }
-            } else if (!Finance_CanAddSubcategory(cats, parentId)) {
-                Finance_Alert("Hard limit: 10 subcategories per main category.", "Categories")
-                return
-            }
+        if (!isEdit && !Finance_CanAddMainCategory(cats)) {
+            Finance_Alert("Hard limit: 50 main categories.", "Categories")
+            return
         }
         color := Trim(eColor.Value)
         if (!RegExMatch(color, "^#[0-9A-Fa-f]{6}$"))
             color := "#7F8C8D"
         id := isEdit ? existing["id"] : Finance_SlugId("CAT_", name, cats)
-        newRow := Map("id", id, "name", name, "type", t, "parent_id", parentId,
+        newRow := Map("id", id, "name", name, "type", t, "parent_id", "",
             "color", color, "icon", Trim(eIcon.Value))
         if (isEdit) {
             out := []
@@ -194,6 +173,7 @@ Finance_CatForm(existing) {
             cats.Push(newRow)
         }
         Finance_Save("categories", cats)
+        Finance_SyncCategoryToIni(name, t)
         saved := true
         g.Destroy()
     }

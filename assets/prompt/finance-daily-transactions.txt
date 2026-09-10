@@ -57,7 +57,7 @@ CSV body format (inside the FILE section):
 - Do not invent amounts. Skip items you cannot parse (omit those rows from the CSV; do not invent placeholders).
 
 COLUMNS (header required)
-description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id
+description,amount,type,category_id,account_id,card_id,transfer_account_id
 
 RULES
 - Do not include a date column. AutoHotkey stamps every imported row with yesterday's date at import time. Do not guess or output dates.
@@ -69,20 +69,20 @@ RULES
 - Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
 
 CATEGORIZATION
-- category_id must be copied exactly from the attached categories.csv. Never invent ids (do not output names like CAT_CUIDADOS_PESSOAIS).
-- category_id must be a main category (parent_id empty in categories.csv). If a subcategory fits, put its display name in subcategory (e.g. Hairdresser) and its parent's id in category_id. Never put a subcategory id in category_id.
+- category_id must be copied exactly from the attached categories.csv (live list, including user-added categories). Never invent ids (do not output names like CAT_CUIDADOS_PESSOAIS).
+- Use main categories only (parent_id empty). There is no subcategory column.
 - Map by meaning, not only exact word matches.
-- Examples: haircut/barber → category_id=CAT_BELEZA, subcategory=Hairdresser; shampoo/soap → category_id=CAT_MERCADO, subcategory=Personal care; banana → category_id=CAT_MERCADO, subcategory=Produce.
-- Prefer a specific subcategory when one fits. Do not leave category_id blank when a clear fit exists.
+- Examples: haircut/barber → category_id=CAT_BELEZA; supermarket/shampoo/banana → category_id=CAT_MERCADO; restaurant/cinema → category_id=CAT_LAZER.
+- Do not leave category_id blank when a clear fit exists.
 - Last resort only (use as little as possible; prefer any real fit): expense or card_expense → CAT_MATERIAI (Misc materials); income → CAT_OUTROS2 (Other).
 - After the pack, optional one-line coverage note listing only items that used last resort or still had no good fit and why. Do not replace the pack with that note.
 - Do not invent category ids. If something is a poor fit, say so in the chat note after the file.
 
 CONTEXT FILES (attached by Utility Shortcuts → Prompts, or Send dictation [D])
-- categories.csv — category and subcategory names with ids
+- categories.csv — live category names with ids (authoritative for category_id; includes user-added categories)
 - accounts.csv — account names with ids
 - credit_cards.csv — card names with ids and linked accounts
-- categories-expenses.ini — semantic expense category canon (what each category/subcategory means)
+- categories-expenses.ini — semantic expense category canon (meaning hints for mains)
 - categories-income.ini — semantic income category canon
 
 Use categories.csv / accounts.csv / credit_cards.csv for id mapping. Use the INI canons only to choose the right category by meaning. Do not invent ids.

@@ -229,7 +229,6 @@ Finance_AccAdjust(*) {
                 "amount", Finance_FormatCsvDecimal(Abs(delta)),
                 "type", "adjustment",
                 "category_id", Finance_CatIdByName("Adjustment"),
-                "subcategory", "",
                 "account_id", a["id"],
                 "card_id", "",
                 "transfer_account_id", ""

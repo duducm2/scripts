@@ -77,7 +77,7 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
         }
         return "- The pack had no usable transaction rows.`r`n"
         .
-        "- Re-emit with header: description,amount,type,category_id,subcategory,account_id,card_id,transfer_account_id`r`n"
+        "- Re-emit with header: description,amount,type,category_id,account_id,card_id,transfer_account_id`r`n"
         . "- type = expense | income | transfer | card_expense; amount always positive with comma decimals.`r`n"
         . "- category_id / account_id / card_id must match attached context CSVs (never invent ids)."
     }
@@ -351,8 +351,6 @@ Finance_ImportConfirmEditable(title, parsed) {
         lv.Delete()
         for p in parsed {
             cat := Finance_CatName(cats, p["category_id"])
-            if (p["subcategory"] != "")
-                cat .= " / " . p["subcategory"]
             acc := Finance_ImportAccountLabel(p, accs, cards)
             lv.Add("", p["date"], Finance_TypeLabel(p["type"], p.Has("card_id") ? p["card_id"] : ""), p["description"],
             Finance_FormatBrl(Finance_ParseDecimal(p["amount"])), cat, acc)
@@ -370,8 +368,10 @@ Finance_ImportConfirmEditable(title, parsed) {
         row := lv.GetNext()
         if (!row || row > parsed.Length)
             return
-        if (Finance_ImportRowForm(g, parsed[row], cats, accs))
+        if (Finance_ImportRowForm(g, parsed[row], Finance_Load("categories"), accs)) {
+            cats := Finance_Load("categories")
             RefreshLv()
+        }
     }
 
     DeleteSelected() {
@@ -389,12 +389,12 @@ Finance_ImportConfirmEditable(title, parsed) {
             "amount", "0,00",
             "type", "expense",
             "category_id", "",
-            "subcategory", "",
             "account_id", "",
             "card_id", "",
             "transfer_account_id", ""
         )
-        if (Finance_ImportRowForm(g, newRow, cats, accs)) {
+        if (Finance_ImportRowForm(g, newRow, Finance_Load("categories"), accs)) {
+            cats := Finance_Load("categories")
             parsed.Push(newRow)
             RefreshLv()
         }
@@ -508,12 +508,16 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
     y2 := 168
     y2c := 186
 
-    catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true, "icon")
+    initCatFilter := ""
+    if (curType = "expense" || curType = "card_expense" || curType = "adjustment")
+        initCatFilter := "expense"
+    else if (curType = "income")
+        initCatFilter := "income"
+    catCombo := Finance_CatComboForType(cats, initCatFilter, true)
     catIdx := Finance_ComboIndex(catCombo.ids, row["category_id"])
     lblCat := g.Add("Text", "x10 y" . y1, "Category")
-    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w220 Choose" . catIdx, catCombo.names)
-    lblSub := g.Add("Text", "x242 y" . y1, "Subcategory")
-    eSub := g.Add("Edit", "x242 y" . y1c . " w180", row["subcategory"])
+    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w400 Choose" . catIdx, catCombo.names)
+    lastCatId := row.Has("category_id") ? row["category_id"] : ""
 
     accCombo := Finance_ComboFromRows(accs)
     accIdx := Finance_ComboIndex(accCombo.ids, row["account_id"] != "" ? row["account_id"]
@@ -550,6 +554,7 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
     g.Add("Button", "x118 y230 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
     g.OnEvent("Escape", (*) => g.Destroy())
     ddType.OnEvent("Change", (*) => ApplyFields(types[ddType.Value]))
+    ddCat.OnEvent("Change", (*) => OnCatChange())
     ApplyFields(curType)
     g.Show("w460 h280")
     try WinWaitClose("ahk_id " g.Hwnd)
@@ -558,6 +563,40 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
     Finance_DialogsEnd()
     return saved
 
+    TxCatFilter(t) {
+        if (t = "expense" || t = "card_expense" || t = "adjustment")
+            return "expense"
+        if (t = "income")
+            return "income"
+        return ""
+    }
+
+    OnCatChange(*) {
+        sel := ""
+        try sel := catCombo.ids[ddCat.Value]
+        catch {
+            return
+        }
+        if (sel != "__NEW_CAT__") {
+            lastCatId := sel
+            return
+        }
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, lastCatId))
+        ib := Finance_InputBox("New category name", "Add category", "")
+        if (ib.Result != "OK" || Trim(ib.Value) = "")
+            return
+        catFilter := TxCatFilter(types[ddType.Value])
+        newRow := Finance_CatQuickAdd(Trim(ib.Value), catFilter != "" ? catFilter : "expense")
+        if (!IsObject(newRow))
+            return
+        cats := Finance_Load("categories")
+        catCombo := Finance_CatComboForType(cats, catFilter, true)
+        ddCat.Delete()
+        ddCat.Add(catCombo.names)
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, newRow["id"]))
+        lastCatId := newRow["id"]
+    }
+
     ApplyFields(t) {
         showCat := (t != "transfer")
         showAcc := (t != "card_expense")
@@ -565,8 +604,6 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
         showCard := (t = "card_expense")
         lblCat.Visible := showCat
         ddCat.Visible := showCat
-        lblSub.Visible := showCat
-        eSub.Visible := showCat
         lblAcc.Visible := showAcc
         ddAcc.Visible := showAcc
         lblDest.Visible := showDest
@@ -583,21 +620,20 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
             lblAcc.Move(10, y2)
             ddAcc.Move(10, y2c)
         }
-        catFilter := ""
-        if (t = "expense" || t = "card_expense")
-            catFilter := "expense"
-        else if (t = "income")
-            catFilter := "income"
-        keepId := ""
-        try keepId := catCombo.ids[ddCat.Value]
-        catch {
+        catFilter := TxCatFilter(t)
+        keepId := lastCatId
+        if (keepId = "__NEW_CAT__")
             keepId := ""
-        }
-        catCombo := Finance_ComboFromRows(Finance_MainCategories(cats, catFilter), "id", "name", true,
-        "icon")
+        catCombo := Finance_CatComboForType(cats, catFilter, true)
         ddCat.Delete()
         ddCat.Add(catCombo.names)
         ddCat.Choose(Finance_ComboIndex(catCombo.ids, keepId))
+        try lastCatId := catCombo.ids[ddCat.Value]
+        catch {
+            lastCatId := ""
+        }
+        if (lastCatId = "__NEW_CAT__")
+            lastCatId := ""
     }
 
     SaveRow(*) {
@@ -612,13 +648,13 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
             amt := -amt
         t := types[ddType.Value]
         catId := ""
-        subVal := ""
         accId := ""
         destId := ""
         cardId := ""
         if (t != "transfer") {
             catId := catCombo.ids[ddCat.Value]
-            subVal := Trim(eSub.Value)
+            if (catId = "__NEW_CAT__")
+                catId := ""
         }
         if (t != "card_expense")
             accId := accCombo.ids[ddAcc.Value]
@@ -633,10 +669,11 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
         row["amount"] := Finance_FormatCsvDecimal(amt)
         row["type"] := t
         row["category_id"] := catId
-        row["subcategory"] := subVal
         row["account_id"] := accId
         row["card_id"] := cardId
         row["transfer_account_id"] := destId
+        if (row.Has("subcategory"))
+            row.Delete("subcategory")
         saved := true
         g.Destroy()
     }
@@ -706,7 +743,6 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             "amount", Finance_FormatCsvDecimal(Abs(Finance_ParseDecimal(amt))),
             "type", t,
             "category_id", resolved["category_id"],
-            "subcategory", resolved["subcategory"],
             "account_id", accId,
             "card_id", cardId,
             "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : ""
@@ -849,7 +885,6 @@ Finance_ImportMonthly(*) {
             "type", isGain ? "income" : "expense",
             "category_id", isGain ? Finance_CatIdByName("Investments") : Finance_CatIdByName(
                 "Adjustment"),
-            "subcategory", isGain ? "" : "Investment loss",
             "account_id", eid,
             "card_id", "",
             "transfer_account_id", ""

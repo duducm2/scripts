@@ -73,7 +73,7 @@ Accounts (entity_type=account):
 - If the speaker gives an explicit change (gain, loss, contribution, withdrawal, yield): use that signed amount directly as adjustment_amount.
 - Include only accounts the speaker mentions or clearly reviews. Do not emit rows for untouched accounts.
 - Positive adjustment → gain or new contribution. Importer records income under Investments.
-- Negative adjustment → loss or withdrawal. Importer records expense under Adjustment with subcategory Investment loss.
+- Negative adjustment → loss or withdrawal. Importer records expense under Adjustment.
 - If computed adjustment is exactly zero, omit the row and note in PREVIEW.
 
 Goals (entity_type=goal):

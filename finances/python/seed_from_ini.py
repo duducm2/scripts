@@ -150,21 +150,6 @@ def seed():
                 }
             )
             pal += 1
-            for key in cfg.options(section):
-                if key == "geral":
-                    continue
-                sid = unique_id("CAT_", key, ids)
-                cats.append(
-                    {
-                        "id": sid,
-                        "name": key,
-                        "type": "expense",
-                        "parent_id": mid,
-                        "color": PALETTE[pal % len(PALETTE)],
-                        "icon": default_cat_icon(key),
-                    }
-                )
-                pal += 1
     if inc.exists():
         cfg = configparser.ConfigParser()
         cfg.optionxform = str
@@ -374,7 +359,6 @@ def seed():
             "3,00",
             "expense",
             cat_id("Groceries"),
-            "Produce",
             acc_bl,
             "",
             "",
@@ -386,7 +370,6 @@ def seed():
             "10,00",
             "income",
             cat_id("Bonus"),
-            "",
             acc_bl,
             "",
             "",
@@ -398,7 +381,6 @@ def seed():
             "31,24",
             "expense",
             cat_id("Food"),
-            "",
             acc_mp,
             "",
             "",
@@ -410,7 +392,6 @@ def seed():
             "317,04",
             "expense",
             cat_id("Groceries"),
-            "",
             acc_mp,
             "",
             "",
@@ -422,7 +403,6 @@ def seed():
             "529,99",
             "card_expense",
             cat_id("Electronics"),
-            "",
             acc_mp,
             "CARD_MP",
             "",
@@ -434,7 +414,6 @@ def seed():
             "4876,76",
             "income",
             cat_id("Salary"),
-            "",
             acc_mp,
             "",
             "",
@@ -447,7 +426,6 @@ def seed():
         "amount",
         "type",
         "category_id",
-        "subcategory",
         "account_id",
         "card_id",
         "transfer_account_id",

@@ -201,7 +201,6 @@ Finance_CardMarkPaid(cardId) {
         "amount", Finance_FormatCsvDecimal(spent),
         "type", "transfer",
         "category_id", "",
-        "subcategory", "",
         "account_id", acc["id"],
         "card_id", card["id"],
         "transfer_account_id", ""

@@ -100,8 +100,6 @@ Finance_TxRefresh() {
             continue
         g_FinanceTxRows.Push(tx)
         cat := Finance_CatName(cats, tx["category_id"])
-        if (tx["subcategory"] != "")
-            cat .= " / " . Finance_SubcatLabel(cats, tx["category_id"], tx["subcategory"])
         acc := Finance_ImportAccountLabel(tx, accs, cards)
         g_FinanceTxLv.Add("", Finance_FormatBrl(Finance_ParseDecimal(tx["amount"])), acc, cat,
         tx["description"], tx["date"], Finance_TypeLabel(tx["type"], tx.Has("card_id") ? tx["card_id"] : ""))
@@ -184,12 +182,16 @@ Finance_TxForm(existing) {
     y1c := 130
     y2 := 168
     y2c := 186
-    catCombo := Finance_ComboFromRows(Finance_MainCategories(cats), "id", "name", true, "icon")
+    initCatFilter := ""
+    if (curType = "expense" || curType = "card_expense" || curType = "adjustment")
+        initCatFilter := "expense"
+    else if (curType = "income")
+        initCatFilter := "income"
+    catCombo := Finance_CatComboForType(cats, initCatFilter, true)
     catIdx := Finance_ComboIndex(catCombo.ids, isEdit ? existing["category_id"] : "")
     lblCat := g.Add("Text", "x10 y" . y1, "Category")
-    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w220 Choose" . catIdx, catCombo.names)
-    lblSub := g.Add("Text", "x242 y" . y1, "Subcategory")
-    eSub := g.Add("Edit", "x242 y" . y1c . " w180", isEdit ? existing["subcategory"] : "")
+    ddCat := g.Add("DropDownList", "x10 y" . y1c . " w400 Choose" . catIdx, catCombo.names)
+    lastCatId := isEdit ? existing["category_id"] : ""
 
     accCombo := Finance_ComboFromRows(accs)
     accIdx := Finance_ComboIndex(accCombo.ids, isEdit ? existing["account_id"] : Finance_Setting("General",
@@ -227,6 +229,7 @@ Finance_TxForm(existing) {
     g.Add("Button", "x118 y256 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
     g.OnEvent("Escape", (*) => g.Destroy())
     ddType.OnEvent("Change", (*) => ApplyTxTypeFields(types[ddType.Value]))
+    ddCat.OnEvent("Change", (*) => OnCatChange())
     ApplyTxTypeFields(curType)
     g.Show("w460 h300")
     try WinWaitClose("ahk_id " g.Hwnd)
@@ -236,6 +239,40 @@ Finance_TxForm(existing) {
     if (saved)
         Finance_TxRefresh()
 
+    TxCatFilter(t) {
+        if (t = "expense" || t = "card_expense" || t = "adjustment")
+            return "expense"
+        if (t = "income")
+            return "income"
+        return ""
+    }
+
+    OnCatChange(*) {
+        sel := ""
+        try sel := catCombo.ids[ddCat.Value]
+        catch {
+            return
+        }
+        if (sel != "__NEW_CAT__") {
+            lastCatId := sel
+            return
+        }
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, lastCatId))
+        ib := Finance_InputBox("New category name", "Add category", "")
+        if (ib.Result != "OK" || Trim(ib.Value) = "")
+            return
+        catFilter := TxCatFilter(types[ddType.Value])
+        newRow := Finance_CatQuickAdd(Trim(ib.Value), catFilter != "" ? catFilter : "expense")
+        if (!IsObject(newRow))
+            return
+        cats := Finance_Load("categories")
+        catCombo := Finance_CatComboForType(cats, catFilter, true)
+        ddCat.Delete()
+        ddCat.Add(catCombo.names)
+        ddCat.Choose(Finance_ComboIndex(catCombo.ids, newRow["id"]))
+        lastCatId := newRow["id"]
+    }
+
     ApplyTxTypeFields(t) {
         showCat := (t != "transfer")
         showAcc := (t != "card_expense")
@@ -243,8 +280,6 @@ Finance_TxForm(existing) {
         showCard := (t = "card_expense")
         lblCat.Visible := showCat
         ddCat.Visible := showCat
-        lblSub.Visible := showCat
-        eSub.Visible := showCat
         lblAcc.Visible := showAcc
         ddAcc.Visible := showAcc
         lblDest.Visible := showDest
@@ -261,20 +296,20 @@ Finance_TxForm(existing) {
             lblAcc.Move(10, y2)
             ddAcc.Move(10, y2c)
         }
-        catFilter := ""
-        if (t = "expense" || t = "card_expense")
-            catFilter := "expense"
-        else if (t = "income")
-            catFilter := "income"
-        keepId := ""
-        try keepId := catCombo.ids[ddCat.Value]
-        catch {
+        catFilter := TxCatFilter(t)
+        keepId := lastCatId
+        if (keepId = "__NEW_CAT__")
             keepId := ""
-        }
-        catCombo := Finance_ComboFromRows(Finance_MainCategories(cats, catFilter), "id", "name", true, "icon")
+        catCombo := Finance_CatComboForType(cats, catFilter, true)
         ddCat.Delete()
         ddCat.Add(catCombo.names)
         ddCat.Choose(Finance_ComboIndex(catCombo.ids, keepId))
+        try lastCatId := catCombo.ids[ddCat.Value]
+        catch {
+            lastCatId := ""
+        }
+        if (lastCatId = "__NEW_CAT__")
+            lastCatId := ""
     }
 
     SaveTx(*) {
@@ -289,13 +324,13 @@ Finance_TxForm(existing) {
             amt := -amt
         t := types[ddType.Value]
         catId := ""
-        subVal := ""
         accId := ""
         destId := ""
         cardId := ""
         if (t != "transfer") {
             catId := catCombo.ids[ddCat.Value]
-            subVal := Trim(eSub.Value)
+            if (catId = "__NEW_CAT__")
+                catId := ""
         }
         if (t != "card_expense")
             accId := accCombo.ids[ddAcc.Value]
@@ -310,15 +345,14 @@ Finance_TxForm(existing) {
         txs := Finance_Load("transactions")
         newTx := Map(
             "id", isEdit ? existing["id"] : Finance_NextId("TX", txs),
-        "date", date,
-        "description", desc,
-        "amount", Finance_FormatCsvDecimal(amt),
-        "type", t,
-        "category_id", catId,
-        "subcategory", subVal,
-        "account_id", accId,
-        "card_id", cardId,
-        "transfer_account_id", destId)
+            "date", date,
+            "description", desc,
+            "amount", Finance_FormatCsvDecimal(amt),
+            "type", t,
+            "category_id", catId,
+            "account_id", accId,
+            "card_id", cardId,
+            "transfer_account_id", destId)
         if (isEdit) {
             out := []
             for r in txs {

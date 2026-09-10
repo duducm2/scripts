@@ -648,7 +648,6 @@ def build_html(data: dict) -> str:
               <th>Amount</th>
               <th>Account</th>
               <th>Type</th>
-              <th>Subcategory</th>
             </tr>
           </thead>
           <tbody id="catViewBody"></tbody>
@@ -892,7 +891,6 @@ function renderCategoryView() {{
       + '<td class="amt">' + formatBrl(parseDecimal(t.amount)) + '</td>'
       + '<td>' + escapeHtml(acc) + '</td>'
       + '<td>' + escapeHtml(typeLabel(t.type, t.card_id)) + '</td>'
-      + '<td>' + escapeHtml(t.subcategory || '—') + '</td>'
       + '</tr>';
   }}).join('');
 }}

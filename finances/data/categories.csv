@@ -1,9 +1,7 @@
-﻿id,name,type,parent_id,color,icon
+id,name,type,parent_id,color,icon
 CAT_AJUSTE,Adjustment,expense,,#2ECC71,⚖️
 CAT_ALIMENTA,Food,expense,,#3498DB,🍽️
 CAT_BELEZA,Beauty,expense,,#9B59B6,💄
-CAT_CABELEIR,Hairdresser,expense,CAT_BELEZA,#E67E22,💇
-CAT_TATUAGEM,"Tattoo, piercing and earrings",expense,CAT_BELEZA,#E74C3C,💉
 CAT_CARRO,Car,expense,,#F1C40F,🚗
 CAT_CELULAR,Phone,expense,,#34495E,📱
 CAT_COMPRAS,Shopping,expense,,#16A085,🛍️
@@ -13,38 +11,16 @@ CAT_ELETRONI,Electronics,expense,,#8E44AD,💻
 CAT_EMPRESTI,Loan,expense,,#D35400,💳
 CAT_HUMANITA,Humanitarian,expense,,#C0392B,🤝
 CAT_IMPOSTOS,Taxes,expense,,#7F8C8D,🧾
-CAT_IRSOBREI,Investment income tax,expense,CAT_IMPOSTOS,#2C3E50,📉
 CAT_JOGOS,Games,expense,,#2ECC71,🎮
 CAT_LAZER,Leisure,expense,,#3498DB,🎉
-CAT_BARESEBA,Bars and clubs,expense,CAT_LAZER,#E67E22,🍸
-CAT_BEBIDAS,Drinks,expense,CAT_LAZER,#E74C3C,🥤
-CAT_EVENTOS,Events,expense,CAT_LAZER,#1ABC9C,🎫
-CAT_RESTAURA,Restaurants,expense,CAT_LAZER,#F1C40F,🍴
-CAT_VIAGEM,Travel,expense,CAT_LAZER,#34495E,✈️
 CAT_MATERIAI,Misc materials,expense,,#16A085,🧰
-CAT_CASA,Home,expense,CAT_MATERIAI,#27AE60,🏡
-CAT_COLECION,Collectibles,expense,CAT_MATERIAI,#2980B9,🧸
-CAT_SEXUAIS,Adult,expense,CAT_MATERIAI,#8E44AD,🔒
 CAT_MERCADO,Groceries,expense,,#D35400,🛒
-CAT_ALIMENTO,Food items,expense,CAT_MERCADO,#C0392B,🥫
-CAT_BEBIDASM,Grocery drinks,expense,CAT_MERCADO,#7F8C8D,🧃
-CAT_CONGELAD,Frozen and deli,expense,CAT_MERCADO,#2C3E50,🧊
-CAT_HIGIENEP,Personal care,expense,CAT_MERCADO,#2ECC71,🧴
-CAT_HORTIFRU,Produce,expense,CAT_MERCADO,#3498DB,🥬
-CAT_OUTROS,Other,expense,CAT_MERCADO,#9B59B6,✳️
-CAT_PADARIA,Bakery,expense,CAT_MERCADO,#E67E22,🥖
-CAT_PAPELARI,Stationery,expense,CAT_MERCADO,#E74C3C,✏️
-CAT_PRODUTOS,Cleaning products,expense,CAT_MERCADO,#1ABC9C,🧹
 CAT_MOVEIS,Furniture,expense,,#F1C40F,🛋️
 CAT_MUDANCA,Moving,expense,,#34495E,📦
 CAT_OPERACAO,Banking,expense,,#16A085,🏦
 CAT_PETS,Pets,expense,,#27AE60,🐾
 CAT_ROUPA,Clothing,expense,,#8E44AD,👕
-CAT_FANTASIA,Costume,expense,CAT_ROUPA,#D35400,🎭
 CAT_SAUDE,Health,expense,,#C0392B,❤️
-CAT_CONSULTA,Appointments,expense,CAT_SAUDE,#7F8C8D,🩺
-CAT_PRODUTOS2,Medical supplies,expense,CAT_SAUDE,#2C3E50,🩹
-CAT_REMEDIOS,Medicine,expense,CAT_SAUDE,#2ECC71,💊
 CAT_SERVICO,Services,expense,,#3498DB,🔧
 CAT_BONIFICA,Bonus,income,,#9B59B6,🎁
 CAT_EMPRESTI2,Loan,income,,#E67E22,💵
