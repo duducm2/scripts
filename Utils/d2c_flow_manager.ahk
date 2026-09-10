@@ -257,24 +257,30 @@ class D2C_FlowManager {
         this.PasteDictationToActiveWindow()
     }
 
+    ; Shared pick step for #!+L / submit [W] / response paste-window keys / #!+p [W].
+    ; Returns { targetHwnd, autoSend } or false if picker or Y/N banner cancelled.
+    PickVisiblePasteTargetAndAutoSend(originHwnd := 0) {
+        if (!originHwnd)
+            try originHwnd := WinGetID("A")
+        targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
+        if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+            return false
+        choice := PasteWindow_ShowAutoSendOptionsAndWait()
+        if (choice = "cancel" || choice = "")
+            return false
+        return { targetHwnd: targetHwnd, autoSend: (choice = "send") }
+    }
+
     ; Shared by menu [W] and #!+L global hotkey.
     ; Pick a visible window and paste the OS clipboard (^v). Does not touch Clip Angel.
     ; After pick: banner Y = paste+Enter, N = paste only, Esc = abort, timeout = paste only.
     ; If exe+title/url has a saved main field (paste_field_mappings.ini), focus it first.
     ; If unmapped, after paste prompt Y/N to learn/persist the focused field.
     PasteClipboardToVisibleWindow(originHwnd := 0, onDone := "") {
-        if (!originHwnd)
-            try originHwnd := WinGetID("A")
-        targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
-        if (!targetHwnd || !WinExist("ahk_id " targetHwnd))
+        picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
+        if (!picked)
             return false
-
-        choice := PasteWindow_ShowAutoSendOptionsAndWait()
-        if (choice = "cancel" || choice = "")
-            return false
-
-        autoSend := (choice = "send")
-        SetTimer(this._FinishDeferredPaste.Bind(this, targetHwnd, onDone, autoSend), -50)
+        SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend), -50)
         return true
     }
 
@@ -1060,15 +1066,20 @@ class D2C_FlowManager {
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
         ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner ([P] Copy = clipboard only).
+        ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
+        ; To add another letter with this identical workflow, append it to pasteWindowKeys and
+        ; include it in the pk strip below.
+        pasteWindowKeys := ["W"]
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
-            "W", this.OnActionW.Bind(this),
             "O", this.OnActionO.Bind(this),
             "N", this.OnActionN.Bind(this),
             "Escape", this.OnActionN.Bind(this)
         )
+        for k in pasteWindowKeys
+            keyCallbacks[k] := this.OnActionPasteWindow.Bind(this)
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
@@ -1163,41 +1174,61 @@ class D2C_FlowManager {
         }
     }
 
-    ; [W] Copy reply, then paste to a picked visible window (same as #!+p [W]).
+    ; [W] (and any pasteWindowKeys entry): pick window first, then copy reply, then paste.
+    ; Matches #!+p [W] (HotkeyCopy_WRunPickerThenCopy) — continuous pick → copy → paste flow.
     OnActionW(*) {
+        this.OnActionPasteWindow()
+    }
+
+    OnActionPasteWindow(*) {
         if (this.CurrentPhase != "PromptingAction")
             return
         this.CleanupActionPrompt()
         this.CurrentPhase := "PickingVisiblePaste"
+        originHwnd := this.OriginHwnd
         try {
+            picked := this.PickVisiblePasteTargetAndAutoSend(originHwnd)
+            if (!picked) {
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
+                this.Reset()
+                return
+            }
+
+            StandardLoadingBar_Show("⏳ Copying...", BANNER_ACCENT_INTERMEDIATE)
             if (!this.DoCopyCore(false, true)) {
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
+                try StandardLoadingBar_Hide(0)
+                catch {
+                }
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
                 this.Reset()
                 return
             }
             clipRaw := A_Clipboard
             clip := Trim(clipRaw)
             if (clip = "" || StrLen(clip) < 10) {
+                try StandardLoadingBar_Hide(0)
+                catch {
+                }
                 ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
-                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                    WinActivate("ahk_id " this.OriginHwnd)
+                if (originHwnd && WinExist("ahk_id " originHwnd))
+                    WinActivate("ahk_id " originHwnd)
                 this.Reset()
                 return
             }
             try A_Clipboard := clipRaw
-            onDone := this._OnActionWDone.Bind(this)
-            if (this.PasteClipboardToVisibleWindow(this.OriginHwnd, onDone))
-                return
-            if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
-                WinActivate("ahk_id " this.OriginHwnd)
-            this.Reset()
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            onDone := this._OnActionPasteWindowDone.Bind(this)
+            SetTimer(this._FinishDeferredPaste.Bind(this, picked.targetHwnd, onDone, picked.autoSend), -50)
         } catch {
             this.Reset()
         }
     }
 
-    _OnActionWDone() {
+    _OnActionPasteWindowDone() {
         this.Reset()
     }
 

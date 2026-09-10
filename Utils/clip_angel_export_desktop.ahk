@@ -1492,20 +1492,14 @@ HotkeyCopy_WRunPickerThenCopy() {
     originHwnd := g_HotkeyCopy_Flow.originHwnd
     if (!originHwnd)
         try originHwnd := WinGetID("A")
-    targetHwnd := Dictation_ShowVisiblePasteSelector(originHwnd)
-    if (!targetHwnd || !WinExist("ahk_id " targetHwnd)) {
+    picked := D2C_FlowManager.GetInstance().PickVisiblePasteTargetAndAutoSend(originHwnd)
+    if (!picked) {
         g_HotkeyCopy_Flow.active := false
         g_HotkeyCopy_Flow.choice := "cancel"
         return
     }
-    sendChoice := PasteWindow_ShowAutoSendOptionsAndWait()
-    if (sendChoice = "cancel" || sendChoice = "") {
-        g_HotkeyCopy_Flow.active := false
-        g_HotkeyCopy_Flow.choice := "cancel"
-        return
-    }
-    g_HotkeyCopy_Flow.targetHwnd := targetHwnd
-    g_HotkeyCopy_Flow.autoSend := (sendChoice = "send")
+    g_HotkeyCopy_Flow.targetHwnd := picked.targetHwnd
+    g_HotkeyCopy_Flow.autoSend := picked.autoSend
     g_HotkeyCopy_Flow.wPickDone := true
     g_HotkeyCopy_PostCopyContext := g_HotkeyCopy_Flow
     if (g_HotkeyCopy_Flow.copyDone) {
