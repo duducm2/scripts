@@ -24,6 +24,8 @@ CLIPANGEL_MIN_LAYOUT_WIDTH := 300
 CLIPANGEL_MIN_LAYOUT_HEIGHT := 200
 CLIPANGEL_ALT_P_SETTLE_MS := 200
 CLIPANGEL_ALT_P_HWND_WAIT_MS := 800
+; Fully transparent during MarkLastClipAsFavorite (WinSetTransparent 0).
+CLIPANGEL_FAVORITE_SESSION_OPACITY := 0
 global g_ClipAngelAutomationBusy := false
 
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
@@ -861,6 +863,61 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
+; #region agent log
+ClipAngel_DebugFavLog(hypothesisId, location, message, dataStr := "") {
+    try {
+        SplitPath(A_LineFile, , &lineDir)
+        logPath := lineDir "\..\debug-23cc81.log"
+        line := "{`"sessionId`":`"23cc81`",`"runId`":`"pre-fix`",`"hypothesisId`":`"" . hypothesisId
+            . "`",`"location`":`"" . location . "`",`"message`":`"" . message
+            . "`",`"data`":{" . dataStr . "},`"timestamp`":" . A_TickCount . "}`n"
+        FileAppend(line, logPath)
+    } catch {
+    }
+}
+ClipAngel_DebugFavSnapStr(hwnd) {
+    trans := "na", vis := 0, mm := "na", act := 0
+    if !hwnd
+        return "`"hwnd`":0"
+    try trans := WinGetTransparent("ahk_id " hwnd)
+    catch {
+        trans := "err"
+    }
+    if (trans = "")
+        trans := "Off"
+    try vis := DllCall("IsWindowVisible", "ptr", hwnd)
+    catch {
+    }
+    try mm := WinGetMinMax("ahk_id " hwnd)
+    catch {
+    }
+    try act := WinActive("ahk_id " hwnd) ? 1 : 0
+    catch {
+    }
+    return "`"hwnd`":" . hwnd . ",`"trans`":`"" . trans . "`",`"visible`":" . vis
+        . ",`"minmax`":`"" . mm . "`",`"active`":" . act
+}
+; #endregion
+
+; Temporary translucency while marking a favorite (mirrors DesktopToRecycle WinSetTransparent).
+ClipAngel_ApplyFavoriteSessionOpacity(hwnd) {
+    if !hwnd
+        return
+    try WinSetTransparent(CLIPANGEL_FAVORITE_SESSION_OPACITY, "ahk_id " hwnd)
+    catch {
+    }
+}
+
+ClipAngel_ClearFavoriteSessionOpacity(hwnd := 0) {
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return
+    try WinSetTransparent("Off", "ahk_id " hwnd)
+    catch {
+    }
+}
+
 ; True when Enter on the clip list pastes into the prior app (not filter combo / preview edit).
 ClipAngel_IsListPasteEnterContext(hwnd := 0) {
     if !hwnd
@@ -991,7 +1048,8 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
 
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
-ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
+; suppressVisual: favorite-only — apply session opacity as soon as hwnd exists (before maximize paints).
+ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
@@ -1006,8 +1064,25 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0) {
         catch
             targetMon := 0
     }
-    if (hwnd := ClipAngel_WaitForMainHwnd())
+    if (hwnd := ClipAngel_WaitForMainHwnd()) {
+        ; #region agent log
+        ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterWaitHwnd", "hwnd before EnsureVisibleAndLayout",
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout`",`"suppressVisual`":"
+            . (suppressVisual ? 1 : 0))
+        ; #endregion
+        if (suppressVisual)
+            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+        ; #region agent log
+        if (suppressVisual)
+            ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterEarlyOpacity", "opacity before layout",
+                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout_opacity`"")
+        ; #endregion
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
+        ; #region agent log
+        ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterLayout", "hwnd after EnsureVisibleAndLayout",
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"post_layout`"")
+        ; #endregion
+    }
     SendInput "^{Home}"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1250,56 +1325,131 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     if !ClipAngel_TryAcquireAutomationLock()
         return
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
+    resultKind := ""
+    resultMsg := ""
     try {
-        if (target = "last") {
-            MarkLastClipAsFavorite_UiaLastRow()
-            return
+        ; Loading Indication for the open + Alt+Q interval (standard_information_display.md).
+        StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
+            centerOnHwnd: priorHwnd,
+            fontSize: 17,
+            passive: false
+        })
+        try {
+            if (target = "last") {
+                MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
+            } else {
+                ; #region agent log
+                ClipAngel_DebugFavLog("A", "MarkLastClipAsFavorite:beforeActivate", "about to ActivateNativeFirstClip",
+                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"before_activate`"")
+                ; #endregion
+                ClipAngel_ActivateNativeFirstClip(0, true)
+                ; #region agent log
+                ClipAngel_DebugFavLog("A", "MarkLastClipAsFavorite:afterActivate",
+                    "returned from ActivateNativeFirstClip",
+                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_activate`"")
+                ; #endregion
+                ; Suppress flash ASAP (before ready wait); clear in outer finally before minimize.
+                ClipAngel_ApplyFavoriteSessionOpacity(ClipAngel_MainHwnd())
+                ; #region agent log
+                ClipAngel_DebugFavLog("B", "MarkLastClipAsFavorite:afterApplyOpacity",
+                    "after WinSetTransparent session opacity",
+                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_opacity`",`"want`":"
+                    . CLIPANGEL_FAVORITE_SESSION_OPACITY)
+                ; #endregion
+                if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
+                    resultKind := "error"
+                    resultMsg := "❌ Clip Angel did not open."
+                } else {
+                    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+                    ClipAngel_WaitChordModifiersReleased()
+                    ClipAngel_ReleaseChordModifiersForSend()
+                    SendInput "!q"
+                    ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                    resultKind := "success"
+                    resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
+                }
+            }
+        } finally {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
         }
-        ClipAngel_ActivateNativeFirstClip()
-        if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-        ClipAngel_WaitChordModifiersReleased()
-        ClipAngel_ReleaseChordModifiersForSend()
-        SendInput "!q"
-        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-        ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
     } catch Error as e {
-        ShowCenteredOverlay_Utils("❌ Mark favorite failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        resultKind := "error"
+        resultMsg := "❌ Mark favorite failed: " . e.Message
     } finally {
+        ; #region agent log
+        ClipAngel_DebugFavLog("C", "MarkLastClipAsFavorite:beforeClear", "before minimize (still transparent)",
+            ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"before_minimize`",`"resultKind`":`""
+            . resultKind . "`"")
+        ; #endregion
+        ; Minimize while still transparent so Clear does not flash opaque maximized window.
         ClipAngel_CloseAndRestoreFocus(priorHwnd)
+        ClipAngel_ClearFavoriteSessionOpacity()
+        ; #region agent log
+        ClipAngel_DebugFavLog("C", "MarkLastClipAsFavorite:afterClear", "after minimize then Clear",
+            ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_clear`"")
+        ; #endregion
         ClipAngel_ReleaseAutomationLock()
     }
+    if (resultKind = "success")
+        ShowCenteredOverlay_Utils(resultMsg, 1500, BANNER_ACCENT_SUCCESS)
+    else if (resultKind = "error")
+        ShowCenteredOverlay_Utils(resultMsg, 2500, BANNER_ACCENT_ERROR)
 }
 
 ; Legacy UIA path for target="last" only (no callers today; API preserved).
-MarkLastClipAsFavorite_UiaLastRow() {
+; Optional &resultKind / &resultMsg: when provided, defer banners to caller (after Loading Indication Hide).
+MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
+    deferBanner := IsSet(resultKind) && IsSet(resultMsg)
     ActivateClipAngelWithFocusCorrection()
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
-        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Clip Angel did not open."
+        } else
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     try WinActivate("ahk_id " hwnd)
     catch {
-        ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Clip Angel window not found."
+        } else
+            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     if !WinWaitActive("ahk_id " hwnd, , 2) {
-        ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Clip Angel did not become active."
+        } else
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not become active.", 2000, BANNER_ACCENT_ERROR)
         return
     }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     el := UIA.ElementFromHandle(hwnd)
     if !el {
-        ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Clip Angel UI not available."
+        } else
+            ShowCenteredOverlay_Utils("❌ Clip Angel UI not available.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     dataGrid := ClipAngel_UiaFindFirst(el, { Type: 50036, AutomationId: "dataGridView" })
     if !dataGrid {
-        ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
-            BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Clip list not found (Window tab may still have focus)."
+        } else
+            ShowCenteredOverlay_Utils("❌ Clip list not found (Window tab may still have focus).", 2500,
+                BANNER_ACCENT_ERROR)
         return
     }
     rows := 0
@@ -1308,7 +1458,11 @@ MarkLastClipAsFavorite_UiaLastRow() {
         rows := 0
     }
     if !rows || rows.Length < 1 {
-        ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ No clips in list."
+        } else
+            ShowCenteredOverlay_Utils("❌ No clips in list.", 2000, BANNER_ACCENT_ERROR)
         return
     }
     rowTarget := rows[rows.Length]
@@ -1328,13 +1482,21 @@ MarkLastClipAsFavorite_UiaLastRow() {
     }
     favCell := ClipAngel_FindFavoriteCell(rowTarget)
     if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
-        ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
+        if deferBanner {
+            resultKind := "success"
+            resultMsg := "✅ Selected clip is already a favorite."
+        } else
+            ShowCenteredOverlay_Utils("✅ Selected clip is already a favorite.", 1500, BANNER_ACCENT_SUCCESS)
         return
     }
     if !WinActive("ahk_id " hwnd) {
         try WinActivate("ahk_id " hwnd)
         if !WinWaitActive("ahk_id " hwnd, , 2) {
-            ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
+            if deferBanner {
+                resultKind := "error"
+                resultMsg := "❌ Clip Angel lost focus before Alt+Q."
+            } else
+                ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
             return
         }
     }
@@ -1343,5 +1505,9 @@ MarkLastClipAsFavorite_UiaLastRow() {
     ClipAngel_ReleaseChordModifiersForSend()
     SendInput "!q"
     ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-    ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+    if deferBanner {
+        resultKind := "success"
+        resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
+    } else
+        ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
 }
