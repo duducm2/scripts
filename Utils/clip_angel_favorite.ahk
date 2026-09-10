@@ -154,20 +154,10 @@ ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true, keepTra
     }
     if (keepTransparent)
         ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    ; #region agent log
-    if (keepTransparent)
-        ClipAngel_DebugFavLog("I", "EnsureVisibleAndLayout:afterShow", "after WinRestore/WinShow",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"after_winshow`"")
-    ; #endregion
     if ClipAngel_NeedsLayoutCorrection(hwnd)
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
     if (keepTransparent)
         ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-    ; #region agent log
-    if (keepTransparent)
-        ClipAngel_DebugFavLog("I", "EnsureVisibleAndLayout:afterLayout", "after layout correction",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"after_layout_keep_trans`"")
-    ; #endregion
     return activate ? ClipAngel_EnsureWindowActive(hwnd) : true
 }
 
@@ -878,42 +868,6 @@ ClipAngel_CloseAndRestoreFocus(priorHwnd := 0) {
     ClipAngel_RestorePriorFocus(priorHwnd)
 }
 
-; #region agent log
-ClipAngel_DebugFavLog(hypothesisId, location, message, dataStr := "") {
-    try {
-        SplitPath(A_LineFile, , &lineDir)
-        logPath := lineDir "\..\debug-23cc81.log"
-        line := "{`"sessionId`":`"23cc81`",`"runId`":`"pre-fix`",`"hypothesisId`":`"" . hypothesisId
-            . "`",`"location`":`"" . location . "`",`"message`":`"" . message
-            . "`",`"data`":{" . dataStr . "},`"timestamp`":" . A_TickCount . "}`n"
-        FileAppend(line, logPath)
-    } catch {
-    }
-}
-ClipAngel_DebugFavSnapStr(hwnd) {
-    trans := "na", vis := 0, mm := "na", act := 0
-    if !hwnd
-        return "`"hwnd`":0"
-    try trans := WinGetTransparent("ahk_id " hwnd)
-    catch {
-        trans := "err"
-    }
-    if (trans = "")
-        trans := "Off"
-    try vis := DllCall("IsWindowVisible", "ptr", hwnd)
-    catch {
-    }
-    try mm := WinGetMinMax("ahk_id " hwnd)
-    catch {
-    }
-    try act := WinActive("ahk_id " hwnd) ? 1 : 0
-    catch {
-    }
-    return "`"hwnd`":" . hwnd . ",`"trans`":`"" . trans . "`",`"visible`":" . vis
-        . ",`"minmax`":`"" . mm . "`",`"active`":" . act
-}
-; #endregion
-
 ; Temporary translucency while marking a favorite (mirrors DesktopToRecycle WinSetTransparent).
 ClipAngel_ApplyFavoriteSessionOpacity(hwnd) {
     if !hwnd
@@ -1063,8 +1017,7 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
 
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
-; suppressVisual (favorite-only): skip Alt+P — Clip Angel clears WinSetTransparent on native restore
-; (debug H: before_altp_post_apply trans=0 then pre_layout trans=Off). Use AHK show+layout instead.
+; suppressVisual (favorite-only): skip Alt+P — native restore clears WinSetTransparent; use AHK show+layout.
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1082,23 +1035,10 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
         hwnd := ClipAngel_MainHwnd()
         if !hwnd
             hwnd := ClipAngel_WaitForMainHwnd()
-        ; #region agent log
-        ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressNoAltP", "AHK show path (no Alt+P)",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_before_show`"")
-        ; #endregion
         if (hwnd) {
             ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-            ; #region agent log
-            ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressPreShowOpacity",
-                "opacity before EnsureVisibleAndLayout",
-                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_pre_show_opacity`"")
-            ; #endregion
             ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true, true)
             ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-            ; #region agent log
-            ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressPostLayout", "after layout + re-apply",
-                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_post_layout`"")
-            ; #endregion
         }
         SendInput "^{Home}"
         Sleep CLIPANGEL_ALT_P_SETTLE_MS
@@ -1109,17 +1049,8 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
     }
     SendInput "!p"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
-    if (hwnd := ClipAngel_WaitForMainHwnd()) {
-        ; #region agent log
-        ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterWaitHwnd", "hwnd before EnsureVisibleAndLayout",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout`",`"suppressVisual`":0")
-        ; #endregion
+    if (hwnd := ClipAngel_WaitForMainHwnd())
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
-        ; #region agent log
-        ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterLayout", "hwnd after EnsureVisibleAndLayout",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"post_layout`"")
-        ; #endregion
-    }
     SendInput "^{Home}"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1375,24 +1306,9 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
             if (target = "last") {
                 MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
             } else {
-                ; #region agent log
-                ClipAngel_DebugFavLog("A", "MarkLastClipAsFavorite:beforeActivate", "about to ActivateNativeFirstClip",
-                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"before_activate`"")
-                ; #endregion
                 ClipAngel_ActivateNativeFirstClip(0, true)
-                ; #region agent log
-                ClipAngel_DebugFavLog("A", "MarkLastClipAsFavorite:afterActivate",
-                    "returned from ActivateNativeFirstClip",
-                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_activate`"")
-                ; #endregion
-                ; Suppress flash ASAP (before ready wait); clear in outer finally before minimize.
+                ; Safety net if early suppress missed hwnd; clear after minimize in finally.
                 ClipAngel_ApplyFavoriteSessionOpacity(ClipAngel_MainHwnd())
-                ; #region agent log
-                ClipAngel_DebugFavLog("B", "MarkLastClipAsFavorite:afterApplyOpacity",
-                    "after WinSetTransparent session opacity",
-                    ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_opacity`",`"want`":"
-                    . CLIPANGEL_FAVORITE_SESSION_OPACITY)
-                ; #endregion
                 if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
                     resultKind := "error"
                     resultMsg := "❌ Clip Angel did not open."
@@ -1418,18 +1334,9 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
         resultKind := "error"
         resultMsg := "❌ Mark favorite failed: " . e.Message
     } finally {
-        ; #region agent log
-        ClipAngel_DebugFavLog("C", "MarkLastClipAsFavorite:beforeClear", "before minimize (still transparent)",
-            ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"before_minimize`",`"resultKind`":`""
-            . resultKind . "`"")
-        ; #endregion
         ; Minimize while still transparent so Clear does not flash opaque maximized window.
         ClipAngel_CloseAndRestoreFocus(priorHwnd)
         ClipAngel_ClearFavoriteSessionOpacity()
-        ; #region agent log
-        ClipAngel_DebugFavLog("C", "MarkLastClipAsFavorite:afterClear", "after minimize then Clear",
-            ClipAngel_DebugFavSnapStr(ClipAngel_MainHwnd()) . ",`"phase`":`"after_clear`"")
-        ; #endregion
         ClipAngel_ReleaseAutomationLock()
     }
     if (resultKind = "success")
