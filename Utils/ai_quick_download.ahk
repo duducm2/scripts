@@ -61,7 +61,8 @@ AiQuickDownload_RunInner(doCut := true) {
     desktopExt := ""
     if (doCut) {
         picked := ""
-        try picked := ClipAngelExport_PromptPickName("txt")
+        ; Empty default ext: Enter keeps name only; rename uses the downloaded file's real extension.
+        try picked := ClipAngelExport_PromptPickName("")
         catch {
             picked := ""
         }

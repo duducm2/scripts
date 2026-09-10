@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 5: M Engine & Syntax</strong> · Character: Stephen Hawking · 5 beasts · 5 atoms</summary>
 
-![Memory Palace 5](images/data-analyst/5.png)
+![Memory Palace 5](images/data-analyst/5.jpg)
 
 <p><em>5 beasts · 5 Knowledge Atoms</em></p>
 

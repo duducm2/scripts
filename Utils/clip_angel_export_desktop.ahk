@@ -19,6 +19,8 @@ global g_ClipAngelNamePicked := false
 global g_ClipAngelNameExt := "txt"
 global g_ClipAngelNameOrigExt := ""
 global g_ClipAngelNameOnClose := unset
+; True while InputBox / child dialogs are up — disables rename picker hotkeys (Enter / Shift+X).
+global g_ClipAngelNameDialogOpen := false
 ; Pre-copy name pick (#!+p [Y]): no staging file yet — ApplyName only stores name/ext.
 global g_ClipAngelNamePickOnly := false
 global g_ClipAngelNamePickedName := ""
@@ -455,8 +457,10 @@ ClipAngelExport_CenterGui(guiObj, w := 420, h := 420) {
 }
 
 ClipAngelExport_HotIfActive(*) {
-    global g_ClipAngelNameGui
+    global g_ClipAngelNameGui, g_ClipAngelNameDialogOpen
     try {
+        if (g_ClipAngelNameDialogOpen)
+            return false
         if (!IsObject(g_ClipAngelNameGui))
             return false
         if !WinActive("ahk_id " g_ClipAngelNameGui.Hwnd)
@@ -472,6 +476,16 @@ ClipAngelExport_HotIfActive(*) {
     } catch {
         return false
     }
+}
+
+; Base letter of a hotkey like "+x" / "^!a" (for letter-jump exclusion). Non-letters → "".
+ClipAngelExport_HotkeyBaseLetter(hk) {
+    s := StrLower(Trim(hk))
+    while (s != "" && InStr("+^!#*~$", SubStr(s, 1, 1)))
+        s := SubStr(s, 2)
+    if (StrLen(s) = 1 && Ord(s) >= Ord("a") && Ord(s) <= Ord("z"))
+        return s
+    return ""
 }
 
 ; First word of the name (emoji stripped), unaccented — letter jump uses its first character.
@@ -548,7 +562,8 @@ ClipAngelExport_LetterJumpStart() {
         ch := Chr(96 + A_Index)
         skip := false
         for hk in g_ClipAngelNameHotkeys {
-            if (StrLower(hk) = ch) {
+            ; Skip plain "x" and modifier forms ("+x") so Shift+X is not also a letter-jump.
+            if (StrLower(hk) = ch || ClipAngelExport_HotkeyBaseLetter(hk) = ch) {
                 skip := true
                 break
             }
@@ -615,7 +630,9 @@ ClipAngelExport_BindHotkeys(pairs) {
 
 ClipAngelExport_CloseGui() {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameRows
+    global g_ClipAngelNameDialogOpen
     ClipAngelExport_UnbindHotkeys()
+    g_ClipAngelNameDialogOpen := false
     try {
         if (IsObject(g_ClipAngelNameGui))
             g_ClipAngelNameGui.Destroy()
@@ -654,7 +671,8 @@ ClipAngelExport_Selected() {
 }
 
 ClipAngelExport_DialogsBegin() {
-    global g_ClipAngelNameGui
+    global g_ClipAngelNameGui, g_ClipAngelNameDialogOpen
+    g_ClipAngelNameDialogOpen := true
     try {
         if (IsObject(g_ClipAngelNameGui))
             g_ClipAngelNameGui.Opt("-AlwaysOnTop")
@@ -663,7 +681,8 @@ ClipAngelExport_DialogsBegin() {
 }
 
 ClipAngelExport_DialogsEnd() {
-    global g_ClipAngelNameGui
+    global g_ClipAngelNameGui, g_ClipAngelNameDialogOpen
+    g_ClipAngelNameDialogOpen := false
     try {
         if (IsObject(g_ClipAngelNameGui))
             g_ClipAngelNameGui.Opt("+AlwaysOnTop")
@@ -855,6 +874,7 @@ ClipAngelExport_ApplyName(name, extOverride := unset) {
 }
 
 ClipAngelExport_UseSelected(*) {
+    global g_ClipAngelNameExt
     sel := ClipAngelExport_Selected()
     if (!sel) {
         try ShowCenteredOverlay_Utils("Select a name", 1200, BANNER_ACCENT_ERROR)
@@ -862,7 +882,8 @@ ClipAngelExport_UseSelected(*) {
         }
         return
     }
-    ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), ClipAngelExport_OrigExt())
+    ; Session ext (starts as original; Shift+X may change it). Empty = keep source ext at rename time.
+    ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), g_ClipAngelNameExt)
 }
 
 ClipAngelExport_UseSelectedTxt(*) {
@@ -913,31 +934,35 @@ ClipAngelExport_UpdateHint() {
     global g_ClipAngelNameHint, g_ClipAngelNameExt, g_ClipAngelNamePickOnly
     if (!IsObject(g_ClipAngelNameHint))
         return
-    origLbl := ClipAngelExport_FormatExtLabel(ClipAngelExport_OrigExt())
     extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
+    if (g_ClipAngelNameExt = "" && g_ClipAngelNamePickOnly)
+        extLbl := "(auto)"
     escHint := g_ClipAngelNamePickOnly ? "Esc cancel" : "Esc keep temp"
-    g_ClipAngelNameHint.Value := "Char = walk list   [Enter] keep ext " . origLbl .
-        "   [1] .txt   [Shift+T] type once   [Shift+X] ext "
-        . extLbl . "   [Shift+A] add   [Shift+E] edit   Delete   " . escHint
+    g_ClipAngelNameHint.Value := "Char = walk list   [Enter] name + " . extLbl .
+        "   [1] .txt   [Shift+T] type once   [Shift+X] set ext   [Shift+A] add   [Shift+E] edit   Delete   " .
+        escHint
 }
 
 ; Change extension for this rename session (list picks + bare typed names).
+; Pick-only blank = keep downloaded/source ext at rename time. Post-rename blank = restore original.
 ClipAngelExport_SetExt(*) {
-    global g_ClipAngelNameExt
+    global g_ClipAngelNameExt, g_ClipAngelNamePickOnly
     ClipAngelExport_DialogsBegin()
-    ib := InputBox("Extension without dot (e.g. md, csv, json)", "Set file extension",
-        "w320", g_ClipAngelNameExt)
+    ib := InputBox(
+        g_ClipAngelNamePickOnly
+            ? "Extension without dot (e.g. png, md). Leave blank = keep downloaded file ext."
+            : "Extension without dot (e.g. md, csv, json). Leave blank = restore original.",
+        "Set file extension", "w360", g_ClipAngelNameExt)
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
         return
     ext := ClipAngelExport_SanitizeExt(ib.Value)
-    if (ext = "") {
-        ClipAngelExport_Alert("Extension is required.")
-        return
-    }
+    if (ext = "" && !g_ClipAngelNamePickOnly)
+        ext := ClipAngelExport_OrigExt()
     g_ClipAngelNameExt := ext
     ClipAngelExport_UpdateHint()
-    try ShowCenteredOverlay_Utils("ℹ Extension: ." . ext, 1200, BANNER_ACCENT_INFO)
+    try ShowCenteredOverlay_Utils(ext != "" ? "ℹ Extension: ." . ext : "ℹ Extension: (auto from file)", 1200,
+        BANNER_ACCENT_INFO)
     catch {
     }
 }
@@ -1017,7 +1042,7 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
-; Original extension: from source path only (Enter keeps it; 1 forces .txt).
+; Session ext starts from source path (Enter keeps it; Shift+X changes it; 1 forces .txt).
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
@@ -1061,8 +1086,9 @@ ClipAngelExport_PromptRename(sourcePath) {
     return g_ClipAngelNameFinalPath
 }
 
-; Pre-copy name pick for #!+p [Y]. Returns { name, ext } or false if cancelled.
-ClipAngelExport_PromptPickName(defaultExt := "txt") {
+; Pre-copy name pick for #!+p [Y] / #!+9. Returns { name, ext } or false if cancelled.
+; defaultExt "" = Enter keeps name only; rename later uses the real downloaded/source extension.
+ClipAngelExport_PromptPickName(defaultExt := "") {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
     global g_ClipAngelNamePickOnly, g_ClipAngelNamePickedName, g_ClipAngelNamePickedExt
@@ -1356,7 +1382,7 @@ HotkeyCopy_YRunNameThenCopy() {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
     if (!g_HotkeyCopy_Flow.active || g_HotkeyCopy_Flow.choice != "Y")
         return
-    defaultExt := "txt"
+    defaultExt := ""
     picked := ClipAngelExport_PromptPickName(defaultExt)
     if (!IsObject(picked)) {
         g_HotkeyCopy_Flow.active := false
