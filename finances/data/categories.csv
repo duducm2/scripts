@@ -1,4 +1,4 @@
-id,name,type,parent_id,color,icon
+﻿id,name,type,parent_id,color,icon
 CAT_AJUSTE,Adjustment,expense,,#2ECC71,⚖️
 CAT_ALIMENTA,Food,expense,,#3498DB,🍽️
 CAT_BELEZA,Beauty,expense,,#9B59B6,💄
@@ -38,3 +38,4 @@ CAT_TRANSFER,Transfer,income,,#2C3E50,🔄
 CAT_VENDA,Sale,income,,#3498DB,🏷️
 CAT_TRANSPOR,Transport,expense,,#1ABC9C,🚌
 CAT_SUBSCRIP,Subscriptions,expense,,#9B59B6,📺
+CAT_NEWHOUSE,New House 🏠,expense,,#34495E,🏷️
