@@ -409,8 +409,10 @@ ImportMgmt_HelpText() {
     .
     "Each row shows emoji + name (same pattern as this hub). Pack defaults: 💳 daily · 📈 monthly · 🏰 palace · ✅ task · 🖼️ quick image.`r`n"
     .
-    "Rename picker: Char = walk list; Enter = keep Desktop ext; 1 = force .txt; clipboard-first when image/text on clipboard`r`n"
-    . "Enter / Shift+C copy bare name; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
+    "Rename picker: letter jumps list; Enter = apply with current/auto ext; Shift+T = save as .txt;`r`n"
+    .
+    "Shift+X = change extension (then Enter); Shift+N = type a one-off name; clipboard-first when image/text on clipboard`r`n"
+    . "Names manager: Enter / Shift+C copy bare name; Shift+A add, Shift+E edit (emoji + name), Delete remove`r`n"
     . "Esc / Backspace returns to this Import Management list`r`n"
     . "Also used when ClipAngel exports a clip to Desktop`r`n`r`n"
     . "OUTCOMES (Finance / Palace / Tasks)`r`n"

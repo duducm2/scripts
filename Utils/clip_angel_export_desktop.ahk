@@ -253,6 +253,31 @@ ClipAngelExport_FormatExtLabel(ext) {
     return ext != "" ? "." . ext : "(no ext)"
 }
 
+; Human-readable session extension for hints (pick-only empty = keep downloaded/source type).
+ClipAngelExport_SessionExtLabel() {
+    global g_ClipAngelNameExt, g_ClipAngelNamePickOnly
+    if (g_ClipAngelNameExt != "")
+        return "." . g_ClipAngelNameExt
+    if (g_ClipAngelNamePickOnly)
+        return "auto (keep file type)"
+    return "(no ext)"
+}
+
+; Shared hotkeys for PromptRename / PromptPickName (not the names manager).
+ClipAngelExport_BindRenamePickerHotkeys() {
+    ClipAngelExport_BindHotkeys([
+        ["Enter", (*) => ClipAngelExport_UseSelected()],
+        ["+t", (*) => ClipAngelExport_UseSelectedTxt()],
+        ["+x", (*) => ClipAngelExport_SetExt()],
+        ["+n", (*) => ClipAngelExport_UseTyped()],
+        ["+a", (*) => ClipAngelExport_Add()],
+        ["Insert", (*) => ClipAngelExport_Add()],
+        ["+e", (*) => ClipAngelExport_Edit()],
+        ["Delete", (*) => ClipAngelExport_Delete()],
+        ["Escape", (*) => ClipAngelExport_Cancel()]
+    ])
+}
+
 ; Base name for list picks: strip a trailing .ext from registry entries (e.g. PALACE_QUICK_IMAGE.png).
 ClipAngelExport_ListBaseName(name) {
     base := name
@@ -886,6 +911,7 @@ ClipAngelExport_UseSelected(*) {
     ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), g_ClipAngelNameExt)
 }
 
+; Shift+T — save/rename selected list name as a .txt file (Text).
 ClipAngelExport_UseSelectedTxt(*) {
     sel := ClipAngelExport_Selected()
     if (!sel) {
@@ -893,6 +919,9 @@ ClipAngelExport_UseSelectedTxt(*) {
         catch {
         }
         return
+    }
+    try ShowCenteredOverlay_Utils("ℹ As .txt", 900, BANNER_ACCENT_INFO)
+    catch {
     }
     ClipAngelExport_ApplyName(ClipAngelExport_ListBaseName(sel["name"]), "txt")
 }
@@ -906,14 +935,18 @@ ClipAngelExport_OrigExt() {
     return ""
 }
 
-; One-shot typed name for this file only (not saved to the CSV list).
-; Accepts "name" (uses current ext) or "name.ext" (overrides ext for this file).
+; Shift+N — one-shot typed name (not saved to the CSV list).
+; "name" uses current session ext; "name.ext" overrides ext for this file only.
 ClipAngelExport_UseTyped(*) {
     global g_ClipAngelNameExt
-    extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
+    extLbl := ClipAngelExport_SessionExtLabel()
     ClipAngelExport_DialogsBegin()
-    ib := InputBox("Filename (optional .ext). Not saved to list.`nCurrent ext: " . extLbl,
-        "Type file name", "w360", "")
+    ib := InputBox(
+        "Type a file name for this file only (not added to the list).`n`n"
+        . "• name        → uses current ext: " . extLbl . "`n"
+        . "• name.md     → overrides ext for this file`n`n"
+        . "Tip: Shift+T saves the list pick as .txt; Shift+X changes the session ext.",
+        "Type a name (Shift+N)", "w420", "")
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
         return
@@ -931,28 +964,32 @@ ClipAngelExport_UseTyped(*) {
 }
 
 ClipAngelExport_UpdateHint() {
-    global g_ClipAngelNameHint, g_ClipAngelNameExt, g_ClipAngelNamePickOnly
+    global g_ClipAngelNameHint, g_ClipAngelNamePickOnly
     if (!IsObject(g_ClipAngelNameHint))
         return
-    extLbl := ClipAngelExport_FormatExtLabel(g_ClipAngelNameExt)
-    if (g_ClipAngelNameExt = "" && g_ClipAngelNamePickOnly)
-        extLbl := "(auto)"
-    escHint := g_ClipAngelNamePickOnly ? "Esc cancel" : "Esc keep temp"
-    g_ClipAngelNameHint.Value := "Char = walk list   [Enter] name + " . extLbl .
-        "   [1] .txt   [Shift+T] type once   [Shift+X] set ext   [Shift+A] add   [Shift+E] edit   Delete   " .
-        escHint
+    extLbl := ClipAngelExport_SessionExtLabel()
+    escHint := g_ClipAngelNamePickOnly ? "Esc cancel" : "Esc keep temp name"
+    ; Multi-line: current state first, then commit keys, then list/edit keys.
+    g_ClipAngelNameHint.Value :=
+        "Ext: " . extLbl . "  ·  " . escHint . "`n"
+        . "Enter  apply with that ext     Shift+T  save as .txt     Shift+X  change ext…`n"
+        . "Shift+N  type a name (once)    letter  jump list    Shift+A add  Shift+E edit  Del"
 }
 
-; Change extension for this rename session (list picks + bare typed names).
-; Pick-only blank = keep downloaded/source ext at rename time. Post-rename blank = restore original.
+; Shift+X — change session extension (eXtension). Does not commit; Enter / Shift+T still needed.
+; Pick-only blank = keep downloaded/source type. Post-rename blank = restore original.
 ClipAngelExport_SetExt(*) {
     global g_ClipAngelNameExt, g_ClipAngelNamePickOnly
     ClipAngelExport_DialogsBegin()
     ib := InputBox(
-        g_ClipAngelNamePickOnly
-            ? "Extension without dot (e.g. png, md). Leave blank = keep downloaded file ext."
-            : "Extension without dot (e.g. md, csv, json). Leave blank = restore original.",
-        "Set file extension", "w360", g_ClipAngelNameExt)
+        "Change the extension used when you press Enter (session only).`n`n"
+        . "Examples: png  md  csv  json`n`n"
+        . (g_ClipAngelNamePickOnly
+            ? "Leave blank = keep the downloaded file’s type (auto).`n"
+                : "Leave blank = restore the original extension.`n")
+        . "`nDoes not save yet — press Enter afterward to apply.`n"
+        . "Shift+T still forces .txt in one step.",
+        "Change extension (Shift+X)", "w420", g_ClipAngelNameExt)
     ClipAngelExport_DialogsEnd()
     if (ib.Result != "OK")
         return
@@ -961,8 +998,8 @@ ClipAngelExport_SetExt(*) {
         ext := ClipAngelExport_OrigExt()
     g_ClipAngelNameExt := ext
     ClipAngelExport_UpdateHint()
-    try ShowCenteredOverlay_Utils(ext != "" ? "ℹ Extension: ." . ext : "ℹ Extension: (auto from file)", 1200,
-        BANNER_ACCENT_INFO)
+    try ShowCenteredOverlay_Utils(ext != "" ? "ℹ Ext set to ." . ext . " — Enter to apply" :
+        "ℹ Ext: auto (keep file type) — Enter to apply", 1400, BANNER_ACCENT_INFO)
     catch {
     }
 }
@@ -1002,7 +1039,9 @@ ClipAngelExport_UpdateManagerHint() {
     if (!IsObject(g_ClipAngelNameHint))
         return
     g_ClipAngelNameHint.Value :=
-        "Char = walk list   [Enter] / [Shift+C] copy name   [Shift+A] add   [Shift+E] edit   Delete   Esc back"
+        "Letter  jump in list`n"
+        . "Enter / Shift+C  copy name     Shift+A  add     Shift+E  edit     Delete  remove`n"
+        . "Esc / Backspace  back"
 }
 
 ; Standalone CRUD + copy for clipangel_desktop_names.csv (Import Management [N]; same list as #!+9 rename picker).
@@ -1018,9 +1057,9 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
     g_ClipAngelNameOnClose := onClose
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Quick Download — file names")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h36")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w420 h54")
     ClipAngelExport_UpdateManagerHint()
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y50 w390 h310 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y72 w420 h310 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_CopySelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_ManagerClose())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_ManagerClose())
@@ -1035,14 +1074,14 @@ ClipAngelExport_ShowNamesManager(onClose := unset) {
         ["Backspace", (*) => ClipAngelExport_ManagerClose()],
         ["Escape", (*) => ClipAngelExport_ManagerClose()]
     ])
-    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 450, 430)
     try g_ClipAngelNameLv.Focus()
     catch {
     }
 }
 
 ; Shows rename picker. Returns final path (renamed or original if Esc/close).
-; Session ext starts from source path (Enter keeps it; Shift+X changes it; 1 forces .txt).
+; Enter = apply session ext (starts as source); Shift+T = .txt; Shift+X = change ext; Shift+N = type name.
 ClipAngelExport_PromptRename(sourcePath) {
     global g_ClipAngelNameGui, g_ClipAngelNameLv, g_ClipAngelNameHint, g_ClipAngelNameSourcePath
     global g_ClipAngelNameFinalPath, g_ClipAngelNamePicked, g_ClipAngelNameExt, g_ClipAngelNameOrigExt
@@ -1057,25 +1096,15 @@ ClipAngelExport_PromptRename(sourcePath) {
     ClipAngelExport_CloseGui()
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h48")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w420 h72")
     ClipAngelExport_UpdateHint()
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y62 w390 h298 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y90 w420 h298 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_Cancel())
     ClipAngelExport_Refresh()
-    ClipAngelExport_BindHotkeys([
-        ["Enter", (*) => ClipAngelExport_UseSelected()],
-        ["1", (*) => ClipAngelExport_UseSelectedTxt()],
-        ["+t", (*) => ClipAngelExport_UseTyped()],
-        ["+x", (*) => ClipAngelExport_SetExt()],
-        ["+a", (*) => ClipAngelExport_Add()],
-        ["Insert", (*) => ClipAngelExport_Add()],
-        ["+e", (*) => ClipAngelExport_Edit()],
-        ["Delete", (*) => ClipAngelExport_Delete()],
-        ["Escape", (*) => ClipAngelExport_Cancel()]
-    ])
-    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    ClipAngelExport_BindRenamePickerHotkeys()
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 450, 440)
     try g_ClipAngelNameLv.Focus()
     catch {
     }
@@ -1104,25 +1133,15 @@ ClipAngelExport_PromptPickName(defaultExt := "") {
     ClipAngelExport_CloseGui()
     g_ClipAngelNameGui := Gui("+AlwaysOnTop +ToolWindow", "Name Desktop file")
     g_ClipAngelNameGui.SetFont("s10", "Segoe UI")
-    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w390 h48")
+    g_ClipAngelNameHint := g_ClipAngelNameGui.Add("Text", "x12 y10 w420 h72")
     ClipAngelExport_UpdateHint()
-    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y62 w390 h298 Grid -Multi", ["Name"])
+    g_ClipAngelNameLv := g_ClipAngelNameGui.Add("ListView", "x12 y90 w420 h298 Grid -Multi", ["Name"])
     g_ClipAngelNameLv.OnEvent("DoubleClick", (*) => ClipAngelExport_UseSelected())
     g_ClipAngelNameGui.OnEvent("Close", (*) => ClipAngelExport_Cancel())
     g_ClipAngelNameGui.OnEvent("Escape", (*) => ClipAngelExport_Cancel())
     ClipAngelExport_Refresh()
-    ClipAngelExport_BindHotkeys([
-        ["Enter", (*) => ClipAngelExport_UseSelected()],
-        ["1", (*) => ClipAngelExport_UseSelectedTxt()],
-        ["+t", (*) => ClipAngelExport_UseTyped()],
-        ["+x", (*) => ClipAngelExport_SetExt()],
-        ["+a", (*) => ClipAngelExport_Add()],
-        ["Insert", (*) => ClipAngelExport_Add()],
-        ["+e", (*) => ClipAngelExport_Edit()],
-        ["Delete", (*) => ClipAngelExport_Delete()],
-        ["Escape", (*) => ClipAngelExport_Cancel()]
-    ])
-    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 420, 410)
+    ClipAngelExport_BindRenamePickerHotkeys()
+    ClipAngelExport_CenterGui(g_ClipAngelNameGui, 450, 440)
     try g_ClipAngelNameLv.Focus()
     catch {
     }
@@ -1434,7 +1453,7 @@ HotkeyCopy_YTryFinishExport() {
             ShowCenteredOverlay_Utils("❌ " . msg, 2500, BANNER_ACCENT_ERROR)
             return
         }
-        ; If user picked .txt but clipboard saved as image, keep staging ext unless they forced txt.
+        ; desktopExt from picker: "" = keep staging type; "txt" (Shift+T) forces .txt; Shift+X sets other.
         finalExt := desktopExt
         if (finalExt = "")
             finalExt := ClipAngelExport_ExtFromPath(outPath)
