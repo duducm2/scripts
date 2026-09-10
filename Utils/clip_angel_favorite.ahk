@@ -139,7 +139,8 @@ ClipAngel_NeedsLayoutCorrection(hwnd) {
 }
 
 ; AHK fallback after native Alt+P: restore, show, move/maximize when needed, optionally activate.
-ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true) {
+; keepTransparent: favorite suppress — re-apply session opacity after WinShow/layout (may clear layered alpha).
+ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true, keepTransparent := false) {
     if !hwnd
         return false
     try {
@@ -151,8 +152,22 @@ ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true) {
     try WinShow("ahk_id " hwnd)
     catch {
     }
+    if (keepTransparent)
+        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    ; #region agent log
+    if (keepTransparent)
+        ClipAngel_DebugFavLog("I", "EnsureVisibleAndLayout:afterShow", "after WinRestore/WinShow",
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"after_winshow`"")
+    ; #endregion
     if ClipAngel_NeedsLayoutCorrection(hwnd)
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
+    if (keepTransparent)
+        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    ; #region agent log
+    if (keepTransparent)
+        ClipAngel_DebugFavLog("I", "EnsureVisibleAndLayout:afterLayout", "after layout correction",
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"after_layout_keep_trans`"")
+    ; #endregion
     return activate ? ClipAngel_EnsureWindowActive(hwnd) : true
 }
 
@@ -1048,7 +1063,8 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
 
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
-; suppressVisual: favorite-only — apply session opacity as soon as hwnd exists (before maximize paints).
+; suppressVisual (favorite-only): skip Alt+P — Clip Angel clears WinSetTransparent on native restore
+; (debug H: before_altp_post_apply trans=0 then pre_layout trans=Off). Use AHK show+layout instead.
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1056,40 +1072,47 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
         ClipAngel_EnsureWindowActive(priorHwnd)
     SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
-    ; Favorite: set transparent while still minimized so Alt+P cannot paint opaque frames.
-    if (suppressVisual) {
-        preHwnd := ClipAngel_MainHwnd()
-        ; #region agent log
-        ClipAngel_DebugFavLog("H", "ActivateNativeFirstClip:beforeAltP", "pre-apply opacity before Alt+P",
-            ClipAngel_DebugFavSnapStr(preHwnd) . ",`"phase`":`"before_altp_pre_apply`"")
-        ; #endregion
-        if (preHwnd)
-            ClipAngel_ApplyFavoriteSessionOpacity(preHwnd)
-        ; #region agent log
-        ClipAngel_DebugFavLog("H", "ActivateNativeFirstClip:beforeAltPAfterApply", "after pre-Alt+P opacity",
-            ClipAngel_DebugFavSnapStr(preHwnd) . ",`"phase`":`"before_altp_post_apply`"")
-        ; #endregion
-    }
-    SendInput "!p"
-    Sleep CLIPANGEL_ALT_P_SETTLE_MS
     targetMon := 0
     if (priorHwnd) {
         try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
         catch
             targetMon := 0
     }
+    if (suppressVisual) {
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd
+            hwnd := ClipAngel_WaitForMainHwnd()
+        ; #region agent log
+        ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressNoAltP", "AHK show path (no Alt+P)",
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_before_show`"")
+        ; #endregion
+        if (hwnd) {
+            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+            ; #region agent log
+            ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressPreShowOpacity",
+                "opacity before EnsureVisibleAndLayout",
+                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_pre_show_opacity`"")
+            ; #endregion
+            ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true, true)
+            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+            ; #region agent log
+            ClipAngel_DebugFavLog("I", "ActivateNativeFirstClip:suppressPostLayout", "after layout + re-apply",
+                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"suppress_post_layout`"")
+            ; #endregion
+        }
+        SendInput "^{Home}"
+        Sleep CLIPANGEL_ALT_P_SETTLE_MS
+        ClipAngel_ReleaseChordModifiersForSend()
+        if (priorHwnd)
+            ClipAngel_EnsureWindowActive(priorHwnd)
+        return
+    }
+    SendInput "!p"
+    Sleep CLIPANGEL_ALT_P_SETTLE_MS
     if (hwnd := ClipAngel_WaitForMainHwnd()) {
         ; #region agent log
         ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterWaitHwnd", "hwnd before EnsureVisibleAndLayout",
-            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout`",`"suppressVisual`":"
-            . (suppressVisual ? 1 : 0))
-        ; #endregion
-        if (suppressVisual)
-            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-        ; #region agent log
-        if (suppressVisual)
-            ClipAngel_DebugFavLog("A", "ActivateNativeFirstClip:afterEarlyOpacity", "opacity before layout",
-                ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout_opacity`"")
+            ClipAngel_DebugFavSnapStr(hwnd) . ",`"phase`":`"pre_layout`",`"suppressVisual`":0")
         ; #endregion
         ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true)
         ; #region agent log
