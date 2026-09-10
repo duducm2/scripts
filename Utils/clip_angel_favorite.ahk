@@ -1056,6 +1056,20 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
         ClipAngel_EnsureWindowActive(priorHwnd)
     SendInput "{Alt up}{Shift up}{Win up}{Ctrl up}"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
+    ; Favorite: set transparent while still minimized so Alt+P cannot paint opaque frames.
+    if (suppressVisual) {
+        preHwnd := ClipAngel_MainHwnd()
+        ; #region agent log
+        ClipAngel_DebugFavLog("H", "ActivateNativeFirstClip:beforeAltP", "pre-apply opacity before Alt+P",
+            ClipAngel_DebugFavSnapStr(preHwnd) . ",`"phase`":`"before_altp_pre_apply`"")
+        ; #endregion
+        if (preHwnd)
+            ClipAngel_ApplyFavoriteSessionOpacity(preHwnd)
+        ; #region agent log
+        ClipAngel_DebugFavLog("H", "ActivateNativeFirstClip:beforeAltPAfterApply", "after pre-Alt+P opacity",
+            ClipAngel_DebugFavSnapStr(preHwnd) . ",`"phase`":`"before_altp_post_apply`"")
+        ; #endregion
+    }
     SendInput "!p"
     Sleep CLIPANGEL_ALT_P_SETTLE_MS
     targetMon := 0
