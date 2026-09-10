@@ -96,7 +96,10 @@
     .chart { height:320px; }
     .chart-short { height:220px; }
     .chart-treemap { height:280px; }
+    .chart-pie { height:auto; min-height:300px; }
     .chart-cell { min-width:0; }
+    .pie-exp-cell, .pie-inc-cell { display:flex; flex-direction:column; min-height:0; }
+    .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie { flex:1 1 auto; }
     .budget-panel {
       grid-column:1; grid-row:1 / span 2;
       display:flex; flex-direction:column;
@@ -338,9 +341,9 @@
           </div>
         </div>
     
-          <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart"></div></div>
+          <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart chart-pie"></div></div>
     
-          <div class="panel chart-cell pie-inc-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart"></div></div>
+          <div class="panel chart-cell pie-inc-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart chart-pie"></div></div>
     
           <div class="panel chart-cell chart-span"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-span"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
@@ -1231,16 +1234,33 @@ function pie(id, spec, kind) {
   if (!spec.values.length) { el.innerHTML = '<p class="empty">No data</p>'; return; }
   const L = baseLayout();
   const custom = (spec.categoryIds || []).map((cid, i) => [spec.custom[i], cid]);
+  const n = spec.labels.length;
+  // Size height to legend rows so Plotly does not clip into a scrollbox when space exists.
+  const height = Math.max(300, Math.min(520, 36 + n * 22));
+  el.style.height = height + 'px';
   el.classList.add('chart-clickable');
   Plotly.newPlot(id, [{
     type:'pie', labels:spec.labels, values:spec.values, marker:{colors:spec.colors},
     customdata: custom, textfont:{size:10},
-    domain:{x:[0, 0.62], y:[0, 1]},
+    domain:{x:[0, 0.48], y:[0.02, 0.98]},
     hovertemplate: '%{label}<br>%{percent}<br>%{customdata[0]}<extra></extra>'
   }], Object.assign({}, L, {
     showlegend:true,
-    margin:{t:28, b:20, l:8, r:8},
-    legend:{orientation:'v', x:1.02, y:0.5, xanchor:'left', font:{size:10}}
+    height: height,
+    margin:{t:8, b:8, l:4, r:8},
+    legend:{
+      orientation:'v',
+      x:0.5,
+      y:1,
+      xanchor:'left',
+      yanchor:'top',
+      font:{size:11},
+      tracegroupgap:0,
+      itemsizing:'constant',
+      itemwidth:36,
+      bgcolor:'rgba(0,0,0,0)',
+      borderwidth:0
+    }
   }), {responsive:true, displayModeBar:false}).then(() => bindChartClick(id, kind));
 }
 function drawAll() {
