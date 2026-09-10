@@ -301,11 +301,6 @@
         min-width: 1.4em;
         min-height: 1.4em;
       }
-      .emoji-chip .em-none {
-        display: inline-block;
-        min-width: 0.9em;
-        min-height: 0.9em;
-      }
       /* Overlay above the row so the title stays readable */
       .task > .row-actions {
         display: flex;
@@ -544,74 +539,6 @@
         height: 100%;
         object-fit: cover;
       }
-      .emoji-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2px 8px;
-        align-items: center;
-        justify-content: flex-end;
-      }
-      .emoji-chip {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 3px;
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-        font-size: 11px;
-        color: var(--muted);
-        cursor: pointer;
-        font-family: inherit;
-        line-height: 1.3;
-        opacity: 0.75;
-      }
-      .emoji-chip .em {
-        color: var(--muted);
-        font-size: 12px;
-      }
-      .emoji-chip .lbl {
-        color: var(--muted);
-        font-size: 10px;
-        font-weight: 400;
-        letter-spacing: 0.02em;
-        text-transform: lowercase;
-      }
-      .emoji-chip .n {
-        color: var(--muted);
-        font-size: 10px;
-        font-variant-numeric: tabular-nums;
-        opacity: 0.85;
-      }
-      .emoji-chip kbd {
-        display: none;
-      }
-      .emoji-chip.active,
-      .emoji-chip:hover {
-        opacity: 1;
-        color: var(--text);
-      }
-      .emoji-chip.active .em,
-      .emoji-chip:hover .em,
-      .emoji-chip.active .lbl,
-      .emoji-chip:hover .lbl,
-      .emoji-chip.active .n,
-      .emoji-chip:hover .n {
-        color: var(--gold);
-      }
-      .section-head-right .btn {
-        background: transparent;
-        border: none;
-        color: var(--muted);
-        font-size: 11px;
-        padding: 0 4px;
-        opacity: 0.7;
-      }
-      .section-head-right .btn:hover {
-        color: var(--gold);
-        opacity: 1;
-        border-color: transparent;
-      }
       .section-head h2,
       .section-head .section-title {
         margin: 0;
@@ -683,15 +610,11 @@
         gap: 8px 12px;
         margin: 0 0 12px;
       }
-      .section-head-right {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px;
-        justify-content: flex-end;
-      }
       .habits-column {
         margin-top: 20px;
+      }
+      .column.bento.habits-column {
+        margin-top: 0;
       }
       .search-wrap {
         display: flex;
@@ -962,21 +885,6 @@
           g: "general",
           u: "doubt",
           o: "none",
-        };
-        const EMOJI_LABELS = {
-          "⚡": "important",
-          "⏳": "waiting",
-          "🔲": "general",
-          "❓": "doubt",
-          "✅": "done",
-          "": "none",
-        };
-        const EMOJI_KEY_BY = {
-          "⚡": "t",
-          "⏳": "q",
-          "🔲": "g",
-          "❓": "u",
-          "": "o",
         };
         function envDefaultFocus() {
           try {
@@ -1603,39 +1511,21 @@
     </li>`;
         }
 
-        function emojiLegendHtml(tasks) {
-          const byEmoji = {};
-          (tasks || []).forEach((t) => {
-            const e = taskEmoji(t);
-            byEmoji[e] = (byEmoji[e] || 0) + 1;
-          });
-          const entries = Object.entries(byEmoji).sort(
-            (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
-          );
-          if (!entries.length) return `<span class="emoji-legend"></span>`;
-          return `<div class="emoji-legend">${entries
-            .map(([e, n]) => {
-              const k = EMOJI_KEY_BY[e] || "";
-              const label = EMOJI_LABELS[e] || "other";
-              const keyHint = k ? ` <kbd>⇧${k.toUpperCase()}</kbd>` : "";
-              const tipLabel = e ? label : "no emoji";
-              const emHtml = e
-                ? `<span class="em">${esc(e)}</span>`
-                : `<span class="em em-none" aria-hidden="true"></span>`;
-              return `<button type="button" class="emoji-chip${state.emojiFilter === e ? " active" : ""}" data-emoji="${esc(e)}" data-key="${esc(k)}" title="${k ? "Shift+" + k.toUpperCase() + ": tag selected task, or filter by " + tipLabel : "Filter " + tipLabel}">
-        ${emHtml}
-        ${e ? `<span class="lbl">${esc(label)}</span>` : ""}
-        <span class="n">${n}</span>${keyHint}
-      </button>`;
-            })
-            .join("")}</div>`;
+        function focusViewLabel(filt) {
+          if (filt === "personal") return "Personal";
+          if (filt === "work") return "Work";
+          if (filt === "habits") return "Habits";
+          return "";
         }
 
-        function sectionHeadHtml(heading, tasks, filt) {
-          const addBtn = filt
-            ? `<button class="btn" data-act="add-project" data-f="${esc(filt)}">+ Project</button>`
-            : "";
-          return `<div class="section-head"><h2>${esc(heading)}</h2><div class="section-head-right">${emojiLegendHtml(tasks)}${addBtn}</div></div>`;
+        function syncDocumentTitle() {
+          document.title = focusViewLabel(state.sectionFocus) || "Tasks";
+        }
+
+        // Container titles only when all three views are visible; solo focus uses the tab title.
+        function sectionHeadHtml(heading) {
+          const hide = state.sectionFocus ? " hidden" : "";
+          return `<div class="section-head${hide}"><h2>${esc(heading)}</h2></div>`;
         }
 
         function sectionsFor(projectId) {
@@ -1778,7 +1668,7 @@
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No projects</p>';
           const extra = inlineProjectHtml(filt);
-          return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading, searchNeedle() ? visibleOpen : open, filt)}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
+          return `<section class="${focusColumnClass(filt)}" id="sec-${esc(filt)}">${sectionHeadHtml(heading)}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
         function habitTasksList() {
@@ -1870,7 +1760,7 @@
             ? '<p class="empty">No matches</p>'
             : '<p class="empty">No habits</p>';
           const extra = inlineProjectHtml("habits");
-          return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits", searchNeedle() ? visible : habitual, "habits")}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
+          return `<section class="${focusColumnClass("habits")}" id="sec-habits">${sectionHeadHtml("Habits")}${blocks.join("")}${extra || (!blocks.length ? emptyMsg : "")}</section>`;
         }
 
         function renderDashboard() {
@@ -1882,6 +1772,7 @@
           applySelection(false);
           syncInlineCreateUi();
           bindInlineCreateInput();
+          syncDocumentTitle();
         }
 
         function updateStatsLine() {
@@ -2003,6 +1894,11 @@
           if (work) work.className = focusColumnClass("work");
           if (habits) habits.className = focusColumnClass("habits");
           if (top) top.className = focusTopRowClass();
+          // Titles live in the section-head only for the all-views layout.
+          document.querySelectorAll(".section-head").forEach((el) => {
+            el.classList.toggle("hidden", !!f);
+          });
+          syncDocumentTitle();
           // Only scroll when the focus mode actually changes (not on every re-apply)
           if (opts.scrollHeader !== false && f && f !== prev)
             scrollToPageHeader();
@@ -3266,13 +3162,6 @@
             ).length;
             sec.classList.toggle("emoji-hidden", visible === 0);
           });
-          document.querySelectorAll(".emoji-chip").forEach((chip) => {
-            chip.classList.toggle(
-              "active",
-              filtering &&
-                chip.getAttribute("data-emoji") === state.emojiFilter,
-            );
-          });
           applySelection(false);
         }
 
@@ -4093,13 +3982,6 @@
             }
           }
           if (e.target.closest("#modalHost")) return;
-          const chip = e.target.closest(".emoji-chip");
-          if (chip) {
-            const em = chip.getAttribute("data-emoji");
-            applyEmojiFilter(state.emojiFilter === em ? null : em);
-            applySelection(true);
-            return;
-          }
           const habitRow = e.target.closest(
             ".task[data-kind='habitual'][data-id]",
           );

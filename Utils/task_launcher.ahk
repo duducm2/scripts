@@ -353,9 +353,11 @@ Task_IsChromeWindowTitle(title) {
         return false
     ; Chrome notification badge: "(1) Tasks - Google Chrome"
     t := RegExReplace(t, "^\(\d+\)\s+", "")
-    if (t = "Tasks" || t = "Tasks - Google Chrome")
+    bare := RegExReplace(t, " - Google Chrome$", "")
+    ; All-views tab stays "Tasks"; solo focus uses Personal / Work / Habits.
+    if (bare = "Tasks" || bare = "Personal" || bare = "Work" || bare = "Habits")
         return true
-    if (InStr(t, "Tasks") = 1)
+    if (InStr(bare, "Tasks") = 1)
         return true
     ; Title still on the localhost URL (tab not fully titled yet, or URL bar mode).
     port := String(Task_ServerPort())
@@ -462,18 +464,28 @@ Task_OpenInChrome(url) {
     }
     newHwnd := 0
     prev := A_TitleMatchMode
+    port := String(Task_ServerPort())
     try {
         SetTitleMatchMode(1)
-        if WinWait("Tasks ahk_exe chrome.exe", , 8) {
-            try newHwnd := WinExist("Tasks ahk_exe chrome.exe")
-            catch {
-                newHwnd := 0
+        ; Initial HTML title is Tasks; SPA may switch to Personal/Work/Habits quickly.
+        deadline := A_TickCount + 8000
+        while (A_TickCount < deadline) {
+            for needle in ["Tasks", "Personal", "Work", "Habits", "127.0.0.1:" . port, "localhost:" . port] {
+                try hit := WinExist(needle . " ahk_exe chrome.exe")
+                catch {
+                    hit := 0
+                }
+                if (hit) {
+                    newHwnd := Task_HwndLooksLikeDashboard(hit)
+                    if (newHwnd)
+                        break 2
+                }
             }
+            Sleep 100
         }
     } finally {
         SetTitleMatchMode(prev)
     }
-    newHwnd := Task_HwndLooksLikeDashboard(newHwnd)
     if (!newHwnd) {
         for h in WinGetList("ahk_exe chrome.exe") {
             newHwnd := Task_HwndLooksLikeDashboard(h)
