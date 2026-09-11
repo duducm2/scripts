@@ -1,6 +1,186 @@
 # Data Analyst
 
 <details open>
+<summary><strong>Memory Palace 7: M Code Pipeline & Database Architectures</strong> · Character: Marie Curie · 1 beast · 1 atom</summary>
+
+_No image_
+
+<p><em>1 beast · 1 Knowledge Atom</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Ad] adder
+
+**Concept**
+💡 [I store data without fixed <kbd><strong><u>tables</u></strong></kbd>] [using flexible <kbd><strong><u>formats</u></strong></kbd>] [for horizontal <kbd><strong><u>scaling</u></strong></kbd>] — Note: Uses documents, key-value pairs, wide columns, or graphs to adapt easily to changing schemas.
+
+🔑 **Keywords**
+
+- [**tables**] → [cloud]
+- [**formats**] → [origami]
+- [**scaling**] → [accordion]
+
+**Quote**
+“A NoSQL database stores data without fixed tables, using flexible formats like documents, key-value pairs, wide columns, or graphs.”
+
+**Sensory**
+👃 olfactory
+
+**Story**
+A gigantic adder slithers along the roadway, smelling strongly of damp moss as it sheds glowing origami paper sheets and key-value skins that stretch outward like a giant accordion.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
+<summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · Character: Tim Berners-Lee · 5 beasts · 6 atoms</summary>
+
+_No image_
+
+<p><em>5 beasts · 6 Knowledge Atoms</em></p>
+
+#### Knowledge Atoms
+
+### 🟧 [Y] yak
+
+**Concept**
+💡 [I unpivot multiple <kbd><strong><u>columns</u></strong></kbd> into rows] [to <kbd><strong><u>model</u></strong></kbd> my data more easily] — Note: Column headers become an attribute column paired with a single value column.
+
+🔑 **Keywords**
+
+- [**columns**] → [pillar]
+- [**model**] → [clay]
+
+**Quote**
+“so unpivoting means I have columns and I want to see those columns in the rows”
+
+**Sensory**
+✋ tactile
+
+**Story**
+A colossal yak uses its curved horns as crowbars to rip tall stone columns out of the ground, bending them into flat sidewalk slabs that feel warm and rubbery.
+
+### 🟧 [Z] Zeus
+
+**Concept**
+💡 [My unpivot step automatically <kbd><strong><u>deletes</u></strong></kbd> all rows] [with <kbd><strong><u>null</u></strong></kbd> values] — Note: Power Query has no built-in setting or parameter to turn off this automatic removal.
+
+🔑 **Keywords**
+
+- [**deletes**] → [trash can]
+- [**null**] → [ghost]
+
+**Quote**
+“now the characteristic of the unpivot function in power query is that by the default it actually removes the null values”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A gigantic Zeus hurls blinding neon lightning bolts at an enormous ledger, vaporizing every row marked with empty ghost icons until half the page vanishes into thin air.
+
+### 🟧 [Aa] aardvark
+
+**Concept**
+💡 [I replace nulls with a temporary <kbd><strong><u>placeholder</u></strong></kbd>] [before <kbd><strong><u>unpivoting</u></strong></kbd>] [to <kbd><strong><u>swap</u></strong></kbd> them back afterward] — Note: This prevents Power Query from dropping rows during the unpivot step.
+
+🔑 **Keywords**
+
+- [**placeholder**] → [scarecrow]
+- [**unpivoting**] → [jack]
+- [**swap**] → [boomerang]
+
+**Quote**
+“you can select the columns where you have the null values and you need to replace those with a placeholder”
+
+**Sensory**
+👂 auditory
+
+**Story**
+An aardvark with a vacuum snout loudly slurps empty holes out of a wooden table and plugs each gap with a screeching rubber scarecrow before folding the table in half.
+
+### 🟧 [Ab] Abyssinian cat
+
+🟦 **Z1 · Reusing query steps**
+
+**Concept**
+💡 [I <kbd><strong><u>reuse</u></strong></kbd> my query steps] [across different <kbd><strong><u>files</u></strong></kbd>] [sharing the exact same table <kbd><strong><u>structure</u></strong></kbd>] — Note: Identical column headers and data formats are required so the query steps run without error.
+
+🔑 **Keywords**
+
+- [**reuse**] → [stamp]
+- [**files**] → [binder]
+- [**structure**] → [twin]
+
+**Quote**
+“since the format of both files are the same I want to apply the exact same steps to my second file”
+
+**Sensory**
+✋ tactile
+
+**Story**
+A heavy twin-stamping iron helmet fused into its forehead slams down to press identical blue blueprints onto matching steel binders.
+
+---
+
+🟦 **Z2 · Copying transformation steps**
+
+**Concept**
+💡 [I <kbd><strong><u>copy</u></strong></kbd> all transformation steps] [below the initial <kbd><strong><u>source</u></strong></kbd> line] [from the Advanced <kbd><strong><u>Editor</u></strong></kbd>] — Note: The first line contains the specific file <kbd><strong><u>source</u></strong></kbd> path that must not overwrite the new table's connection.
+
+🔑 **Keywords**
+
+- [**copy**] → [scissors]
+- [**source**] → [anchor]
+- [**editor**] → [scroll]
+
+**Quote**
+“the First Line Imports the CSV files so we don't want this step we want to grab all the steps below it Ctrl C to copy”
+
+**Sensory**
+🌡️ thermal
+
+**Story**
+Its front paws sprout white-hot glowing claws that slice and copy rows of burning code from a dangling scroll while leaving the top iron anchor untouched.
+
+### 🟧 [Ac] acorn
+
+**Concept**
+💡 [I <kbd><strong><u>store</u></strong></kbd> data] [in rigid <kbd><strong><u>tables</u></strong></kbd> of rows and columns] [linked by predefined <kbd><strong><u>relationships</u></strong></kbd>] — Note: Enforces schemas and data integrity using SQL validation rules.
+
+🔑 **Keywords**
+
+- [**store**] → [chest]
+- [**tables**] → [grid]
+- [**relationships**] → [chain]
+
+**Quote**
+“A relational database stores data in fixed tables made of rows and columns, linked together by predefined relationships.”
+
+**Sensory**
+👁️ visual
+
+**Story**
+A colossal iron acorn split wide open reveals rigid grid drawers, locking floating data tables together with unyielding glowing steel chains.
+
+#### Notes
+
+_No notes._
+
+#### Gallery
+
+_No gallery images._
+
+</details>
+
+<details>
 <summary><strong>Memory Palace 5: M Engine & Syntax</strong> · Character: Stephen Hawking · 5 beasts · 5 atoms</summary>
 
 ![Memory Palace 5](images/data-analyst/5.jpg)

@@ -42,11 +42,17 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     if wasHidden || !isActive || wrongMonitor || forceLayout {
         needBanner := !silent
         if needBanner
-            ClipAngelBanner_Show("📂 Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE)
+            StandardLoadingBar_Show("⏳ Opening Clip Angel...", BANNER_ACCENT_INTERMEDIATE, {
+                passive: false,
+                fontSize: 17
+            })
     }
     if !ClipAngel_ShowWindow(hwnd) {
-        if needBanner
-            ClipAngelBanner_Hide()
+        if needBanner {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+        }
         if !silent
             ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
         return false
@@ -57,61 +63,108 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     if !skipRow0
         ClipAngel_UiaEnsureRow0Selected(hwnd, true)
     if needBanner {
-        ClipAngelBanner_Show("✅ Done", BANNER_ACCENT_SUCCESS)
-        SetTimer(ClipAngelBanner_Hide, -500)
+        StandardLoadingBar_Update("✅ Clip Angel ready", BANNER_ACCENT_SUCCESS)
+        StandardLoadingBar_Hide(350)
     }
     return true
 }
 
 ; AHK-owned Alt+P / Alt+B open: show Clip Angel, ControlSend Ctrl+1 (all marks) or Ctrl+2 (favorites), Row 0.
 ; Requires Clip Angel global Alt+P/B cleared; List menu Ctrl+1 / Ctrl+2 kept. No ribbon validation.
+; Loading Indication via StandardLoadingBar (standard_information_display.md); silent activate so one bar owns UX.
 CLIPANGEL_MARKFILTER_WAIT_MS := 300
+
+ClipAngel_MarkFilterMatchesMode(wantAll, val) {
+    val := StrLower(Trim(val))
+    if wantAll
+        return (val = "all marks")
+    return InStr(val, "favor")
+}
 
 ClipAngel_OpenWithMarkFilter(mode) {
     wantAll := (mode = "all")
+    loadMsg := wantAll ? "⏳ Opening Clip Angel (all marks)..." : "⏳ Opening Clip Angel (favorites)..."
+    doneMsg := wantAll ? "✅ Clip Angel — all marks" : "✅ Clip Angel — favorites"
+    priorHwnd := 0
+    try priorHwnd := WinGetID("A")
+    catch
+        priorHwnd := 0
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
         ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
-    targetMon := ClipAngel_GetMonitorIndexFromCursor()
-    if (!targetMon || targetMon < 1) {
-        try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
-        catch
-            targetMon := 0
-    }
-    ; skipRow0: filter first, then select Row 0 once.
-    if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false) {
-        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
-    hwnd := ClipAngel_MainHwnd()
-    if !hwnd
-        return false
-    ClipAngel_ReleaseChordModifiersForSend()
-    keys := wantAll ? "^1" : "^2"
-    try ControlSend(keys, , "ahk_id " hwnd)
-    catch {
-        ShowCenteredOverlay_Utils("❌ Could not set Clip Angel filter.", 2000, BANNER_ACCENT_ERROR)
-        return false
-    }
-    root := 0
-    try root := UIA.ElementFromHandle(hwnd)
-    catch
-        root := 0
-    deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
-    while (A_TickCount < deadline) {
-        val := StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root)))
-        if wantAll {
-            if (val = "all marks")
-                break
-        } else if InStr(val, "favor") {
-            break
+    StandardLoadingBar_Show(loadMsg, BANNER_ACCENT_INTERMEDIATE, {
+        passive: false,
+        centerOnHwnd: priorHwnd,
+        fontSize: 17
+    })
+    try {
+        targetMon := ClipAngel_GetMonitorIndexFromCursor()
+        if (!targetMon || targetMon < 1) {
+            try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+            catch
+                targetMon := 0
         }
-        Sleep CLIPANGEL_UIA_POLL_MS
+        ; skipRow0: filter first, then select Row 0 once. silent: this bar is the only indicator.
+        if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false) {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd {
+            try StandardLoadingBar_Hide(0)
+            catch {
+            }
+            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+            return false
+        }
+        root := 0
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+        filterOk := ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+        if !filterOk {
+            StandardLoadingBar_Update(wantAll ? "⏳ Show all marks..." : "⏳ Show favorites...",
+                BANNER_ACCENT_INTERMEDIATE)
+            ClipAngel_ReleaseChordModifiersForSend()
+            keys := wantAll ? "^1" : "^2"
+            try ControlSend(keys, , "ahk_id " hwnd)
+            catch {
+                try StandardLoadingBar_Hide(0)
+                catch {
+                }
+                ShowCenteredOverlay_Utils("❌ Could not set Clip Angel filter.", 2000, BANNER_ACCENT_ERROR)
+                return false
+            }
+            deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
+            while (A_TickCount < deadline) {
+                if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root)) {
+                    filterOk := true
+                    break
+                }
+                Sleep CLIPANGEL_UIA_POLL_MS
+            }
+        }
+        StandardLoadingBar_Update("⏳ Selecting first clip...", BANNER_ACCENT_INTERMEDIATE)
+        ; Reuse one UIA root for Row 0 (FastEnsureRow0); full EnsureRow0 only if fast path fails.
+        if !ClipAngel_FastEnsureRow0(hwnd, root)
+            ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ShowCenteredOverlay_Utils(doneMsg, 900, BANNER_ACCENT_SUCCESS)
+        return true
+    } catch Error as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ShowCenteredOverlay_Utils("❌ Clip Angel open failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+        return false
     }
-    ClipAngel_UiaEnsureRow0Selected(hwnd, true)
-    return true
 }
 
 ; After native Alt+P / Alt+B open: short settle, one maximize gate, one retry if needed.
