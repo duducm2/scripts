@@ -17,6 +17,7 @@ global g_AudioBtStatus := false
 global g_AudioBtActive := false
 global g_AudioBtHotkeysBound := false
 global g_AudioBtHotkeyHandlers := []
+global g_AudioBtLetterJump := ""
 global g_AudioBtRows := []
 global g_AudioBtAllRows := []
 global g_AudioBtBusy := false
@@ -47,17 +48,20 @@ AudioBt_HelpRows() {
                         meaning: "Open the highlighted root item." }, { key: "Esc",
                             command: "Close", meaning: "Close the menu." }, { key: "1-9 / 0", command: "Select",
                                 meaning: "Select that row in a device submenu." }, { key: "Enter",
-                                    command: "Default", meaning: "Set the selected device as the Windows default (playback or recording)." }, { key: "D",
-                                        command: "Disable", meaning: "Disable/block it (Sound Settings Disable)." }, { key: "E",
-                                            command: "Enable", meaning: "Enable/unblock it." }, { key: "C", command: "Connect",
-                                                meaning: "Connect a paired Bluetooth audio device (A2DP/HFP). Disconnects other connected Bluetooth audio first so this one can own the radio link." }, { key: "X",
-                                                    command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "I",
-                                                        command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "R",
-                                                            command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "N",
-                                                                command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "M",
-                                                                    command: "Mark", meaning: "Set or clear a custom emoji label for the selected device (saved across sessions). Empty input clears." }, { key: "Enter",
-                                                                        command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Esc",
-                                                                            command: "Back", meaning: "Back to the root menu." }
+                                    command: "Default", meaning: "Set the selected device as the Windows default (playback or recording)." }, { key: "Shift+D",
+                                        command: "Disable", meaning: "Disable/block it (Sound Settings Disable)." }, { key: "Shift+E",
+                                            command: "Enable", meaning: "Enable/unblock it." }, { key: "Shift+C",
+                                                command: "Connect",
+                                                meaning: "Connect a paired Bluetooth audio device (A2DP/HFP). Disconnects other connected Bluetooth audio first so this one can own the radio link." }, { key: "Shift+X",
+                                                    command: "Disconnect", meaning: "Disconnect that Bluetooth radio link (does not unpair)." }, { key: "Shift+I",
+                                                        command: "Isolate", meaning: "Make this the only device for that flow: connect if needed (dropping other Bluetooth audio), set it default, disable other active devices of the same flow (output, input, or both). On a Bluetooth row, isolate that headset's matching endpoints. Isolated rows show ★ plus 🔊 (output) and/or 🎤 (input)." }, { key: "Shift+R",
+                                                            command: "Refresh", meaning: "Reload the device list from Windows." }, { key: "a-z",
+                                                                command: "Jump", meaning: "Select the next row whose first word starts with that letter." }, { key: "Shift+N",
+                                                                    command: "Ignore", meaning: "Hide the selected device from the current list only (Input, Output, or Bluetooth)." }, { key: "Shift+M",
+                                                                        command: "Mark", meaning: "Set or clear a custom emoji label for the selected device (saved across sessions). Empty input clears." }, { key: "Enter",
+                                                                            command: "Restore", meaning: "In the Ignored list, put that row back on its original list only." }, { key: "Shift+U",
+                                                                                command: "Restore", meaning: "In the Ignored list, same as Enter — restore the selected row." }, { key: "Esc",
+                                                                                    command: "Back", meaning: "Back to the root menu." }
     ]
 }
 
@@ -68,8 +72,8 @@ AudioBt_HintText() {
     if (g_AudioBtMode = "help")
         return "Esc back"
     if (g_AudioBtMode = "ignore")
-        return "Enter restore   M mark emoji   Esc back"
-    return "1-9/0 select   C connect   X disconnect   Enter default   D disable   E enable   I isolate   N ignore   M mark   R refresh   Esc back"
+        return "Enter restore   letter jump   Shift+M mark   Shift+U restore   Esc back"
+    return "1-9/0 select   letter jump   Enter default   Shift+C/X connect/disconnect   Shift+D/E disable/enable   Shift+I isolate   Shift+N ignore   Shift+M mark   Shift+R refresh   Esc back"
 }
 
 AudioBt_ModeTitle() {
@@ -518,6 +522,7 @@ AudioBt_CheckCloseRequest() {
 
 AudioBt_UnbindModalHotkeys() {
     global g_AudioBtGui, g_AudioBtHotkeyHandlers, g_AudioBtHotkeysBound
+    AudioBt_LetterJumpStop()
     hwnd := 0
     try {
         if (IsObject(g_AudioBtGui))
@@ -606,8 +611,8 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("Enter", AudioBt_OnUnignore)
         AudioBt_BindOne("NumpadEnter", AudioBt_OnUnignore)
         AudioBt_BindOne("Delete", AudioBt_OnUnignore)
-        AudioBt_BindOne("$*u", AudioBt_OnUnignore)
-        AudioBt_BindOne("$*m", AudioBt_OnMarkEmoji)
+        AudioBt_BindOne("+u", AudioBt_OnUnignore)
+        AudioBt_BindOne("+m", AudioBt_OnMarkEmoji)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     } else {
         loop 9 {
@@ -619,14 +624,14 @@ AudioBt_BindModalHotkeys() {
         AudioBt_BindOne("Numpad0", AudioBt_SelectDigit.Bind(10))
         AudioBt_BindOne("Enter", AudioBt_OnDefault)
         AudioBt_BindOne("NumpadEnter", AudioBt_OnDefault)
-        AudioBt_BindOne("$*d", AudioBt_OnDisable)
-        AudioBt_BindOne("$*e", AudioBt_OnEnable)
-        AudioBt_BindOne("$*i", AudioBt_OnIsolate)
-        AudioBt_BindOne("$*r", AudioBt_OnRefresh)
-        AudioBt_BindOne("$*c", AudioBt_OnConnect)
-        AudioBt_BindOne("$*x", AudioBt_OnDisconnect)
-        AudioBt_BindOne("$*n", AudioBt_OnIgnore)
-        AudioBt_BindOne("$*m", AudioBt_OnMarkEmoji)
+        AudioBt_BindOne("+d", AudioBt_OnDisable)
+        AudioBt_BindOne("+e", AudioBt_OnEnable)
+        AudioBt_BindOne("+i", AudioBt_OnIsolate)
+        AudioBt_BindOne("+r", AudioBt_OnRefresh)
+        AudioBt_BindOne("+c", AudioBt_OnConnect)
+        AudioBt_BindOne("+x", AudioBt_OnDisconnect)
+        AudioBt_BindOne("+n", AudioBt_OnIgnore)
+        AudioBt_BindOne("+m", AudioBt_OnMarkEmoji)
         AudioBt_BindOne("Backspace", AudioBt_OnEscape)
     }
     AudioBt_BindOne("Escape", AudioBt_OnEscape)
@@ -635,6 +640,144 @@ AudioBt_BindModalHotkeys() {
     catch {
     }
     g_AudioBtHotkeysBound := true
+    if (g_AudioBtMode = "BT" || g_AudioBtMode = "In" || g_AudioBtMode = "Out" || g_AudioBtMode = "ignore")
+        AudioBt_LetterJumpStart()
+}
+
+; True when hk is a plain letter key (optional $*~ only). Shift/Ctrl/Alt/Win (+^!#) do not count —
+; those leave the bare letter free for typeahead.
+AudioBt_IsPlainLetterHotkey(hk, ch) {
+    s := StrLower(Trim(hk))
+    while (s != "" && InStr("$*~", SubStr(s, 1, 1)))
+        s := SubStr(s, 2)
+    return s = ch
+}
+
+AudioBt_Unaccent(s) {
+    pairs := [["á", "a"], ["à", "a"], ["â", "a"], ["ã", "a"], ["ä", "a"], ["é", "e"], ["ê", "e"], ["è", "e"],
+    ["í", "i"], ["ó", "o"], ["ô", "o"], ["õ", "o"], ["ö", "o"], ["ú", "u"], ["ü", "u"], ["ç", "c"],
+    ["Á", "A"], ["À", "A"], ["Â", "A"], ["Ã", "A"], ["É", "E"], ["Ê", "E"], ["Í", "I"], ["Ó", "O"],
+    ["Ô", "O"], ["Õ", "O"], ["Ú", "U"], ["Ü", "U"], ["Ç", "C"]]
+    for p in pairs
+        s := StrReplace(s, p[1], p[2])
+    return s
+}
+
+; First word of the name (emoji stripped), unaccented — letter jump uses its first character.
+AudioBt_NameForLetterJump(row) {
+    if (!IsObject(row))
+        return ""
+    name := row.HasProp("name") ? Trim(row.name) : ""
+    if (name = "")
+        return ""
+    try {
+        split := PromptData_SplitLeadingEmoji(name)
+        if (split.name != "")
+            name := Trim(split.name)
+    } catch {
+    }
+    name := Trim(RegExReplace(name, "[ \t]+", " "))
+    if (name = "")
+        return ""
+    word := StrSplit(name, " ")[1]
+    return AudioBt_Unaccent(word)
+}
+
+AudioBt_LetterJumpStop() {
+    global g_AudioBtLetterJump, g_AudioBtGui
+    if (!IsObject(g_AudioBtLetterJump) || !g_AudioBtLetterJump.HasProp("chars")) {
+        g_AudioBtLetterJump := ""
+        return
+    }
+    hwnd := 0
+    try {
+        if (IsObject(g_AudioBtGui))
+            hwnd := g_AudioBtGui.Hwnd
+    } catch {
+        hwnd := 0
+    }
+    if (hwnd) {
+        try HotIfWinActive("ahk_id " hwnd)
+        catch {
+            g_AudioBtLetterJump := ""
+            return
+        }
+    }
+    for ch in g_AudioBtLetterJump.chars {
+        try Hotkey(ch, "Off")
+        catch {
+        }
+        try Hotkey(StrUpper(ch), "Off")
+        catch {
+        }
+    }
+    if (hwnd) {
+        try HotIf()
+        catch {
+        }
+    }
+    g_AudioBtLetterJump := ""
+}
+
+AudioBt_LetterJumpMakeHandler(char) {
+    return (*) => AudioBt_LetterJumpHandle(char)
+}
+
+AudioBt_LetterJumpHandle(char) {
+    global g_AudioBtLv, g_AudioBtRows, g_AudioBtActive, g_AudioBtBusy
+    if (!g_AudioBtActive || g_AudioBtBusy || !IsObject(g_AudioBtLv) || !IsObject(g_AudioBtRows))
+        return
+    after := 0
+    try after := g_AudioBtLv.GetNext()
+    catch {
+        after := 0
+    }
+    rowNum := ModalList_FindNextByStartingLetter(g_AudioBtRows, char, after, AudioBt_NameForLetterJump)
+    if (rowNum > 0)
+        ListView_SelectRowFocused(g_AudioBtLv, rowNum)
+}
+
+AudioBt_LetterJumpStart() {
+    global g_AudioBtLetterJump, g_AudioBtGui, g_AudioBtHotkeyHandlers
+    AudioBt_LetterJumpStop()
+    if (!IsObject(g_AudioBtGui))
+        return
+    hwnd := 0
+    try hwnd := g_AudioBtGui.Hwnd
+    catch {
+        return
+    }
+    if (!hwnd)
+        return
+    chars := []
+    try HotIfWinActive("ahk_id " hwnd)
+    catch {
+        return
+    }
+    loop 26 {
+        ch := Chr(96 + A_Index)
+        skip := false
+        for handler in g_AudioBtHotkeyHandlers {
+            ; Only plain letter action keys block jump; Shift+C etc. leave "c" free.
+            if (AudioBt_IsPlainLetterHotkey(handler.key, ch)) {
+                skip := true
+                break
+            }
+        }
+        if (skip)
+            continue
+        handler := AudioBt_LetterJumpMakeHandler(ch)
+        try {
+            Hotkey(ch, handler, "On")
+            Hotkey(StrUpper(ch), handler, "On")
+            chars.Push(ch)
+        } catch {
+        }
+    }
+    try HotIf()
+    catch {
+    }
+    g_AudioBtLetterJump := { chars: chars }
 }
 
 AudioBt_DestroyGui() {

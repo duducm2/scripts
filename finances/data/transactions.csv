@@ -130,3 +130,7 @@ TX132,2026-09-10,Invoice payment — Mercado Pago,"8405,65",transfer,,ACC_MERCAD
 TX133,2026-09-10,Balance adjustment,"266,98",adjustment,CAT_AJUSTE,ACC_MERCADOP,,
 TX134,2026-09-10,Adjustment,"259,59",card_expense,CAT_AJUSTE,,CARD_MP,
 TX135,2026-09-10,Bosch PowerTools,"1306,90",card_expense,CAT_NEWHOUSE,,CARD_NUBANK,
+TX136,2026-09-09,Gas station,"150,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,
+TX137,2026-09-09,Dining with fiancé,"79,90",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,
+TX139,2026-09-09,Educational books,"280,33",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,
+TX140,2026-09-10,Toll Booth,"50,00",card_expense,CAT_CARRO,,CARD_MP,

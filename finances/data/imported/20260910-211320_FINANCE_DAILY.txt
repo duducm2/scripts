@@ -1,0 +1,11 @@
+﻿===PREVIEW===
+4 row(s) · Gas station, dining with fiancé, toll booth, educational books
+===END_PREVIEW===
+
+===FILE: FINANCE_DAILY.csv===
+description,amount,type,category_id,account_id,card_id,transfer_account_id
+Gas station,"150,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_MP,
+Dining with fiancé,"79,90",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,
+Toll booth,"50,00",expense,CAT_CARRO,ACC_MERCADOP,,
+Educational books,"280,33",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,
+===END_FILE===
