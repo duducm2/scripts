@@ -23,6 +23,7 @@ from schemas import (
     PLAN_RESOURCES_HEADERS,
     PLANS_HEADERS,
     STUDIES_HEADERS,
+    STUDY_IMAGES_HEADERS,
     ensure_data_dir,
     validate_beast_atoms,
 )
@@ -41,6 +42,7 @@ CACHE_KINDS = (
     "studies",
     "palaces",
     "palace_images",
+    "study_images",
     "beasts",
     "atoms",
     "plans",
@@ -53,6 +55,7 @@ ENTITY_PREFIX = {
     "studies": "STUDY_",
     "palaces": "PALACE_",
     "palace_images": "PALIMG_",
+    "study_images": "STIMG_",
     "beasts": "BEAST_",
     "atoms": "ATOM_",
     "plans": "PLAN_",
@@ -64,6 +67,7 @@ ENTITY_HEADERS = {
     "studies": STUDIES_HEADERS,
     "palaces": PALACES_HEADERS,
     "palace_images": PALACE_IMAGES_HEADERS,
+    "study_images": STUDY_IMAGES_HEADERS,
     "beasts": BEASTS_HEADERS,
     "atoms": ATOMS_HEADERS,
     "plans": PLANS_HEADERS,
@@ -180,6 +184,10 @@ class PalaceStore:
             self._write_kind(
                 "palace_images", PALACE_IMAGES_HEADERS, data.get("palace_images", [])
             )
+        if write_all or "study_images" in kinds_set:
+            self._write_kind(
+                "study_images", STUDY_IMAGES_HEADERS, data.get("study_images", [])
+            )
         if write_all or "beasts" in kinds_set:
             self._write_kind("beasts", BEASTS_HEADERS, data.get("beasts", []))
         if write_all or "atoms" in kinds_set:
@@ -288,6 +296,7 @@ class PalaceStore:
             "studies": data["studies"],
             "palaces": data["palaces"],
             "palace_images": data.get("palace_images", []),
+            "study_images": data.get("study_images", []),
             "beasts": data["beasts"],
             "atoms": data["atoms"],
             "plans": data["plans"],
@@ -740,6 +749,11 @@ class PalaceStore:
                 r
                 for r in data.get("palace_images", [])
                 if r.get("palace_id") not in palace_ids
+            ]
+            data["study_images"] = [
+                r
+                for r in data.get("study_images", [])
+                if r.get("study_id") != entity_id
             ]
             data["beasts"] = [r for r in data["beasts"] if r.get("id") not in beast_ids]
             data["atoms"] = [

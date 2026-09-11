@@ -52,6 +52,82 @@
       #appExtra.hidden {
         display: none !important;
       }
+      .images-layout {
+        margin: 1.25rem 1.5rem 2.5rem;
+      }
+      .images-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      .images-layout .gallery-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+      }
+      .images-layout .gallery-card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.45rem;
+      }
+      .images-layout .gallery-card img {
+        cursor: zoom-in;
+      }
+      .images-layout .gallery-card-body input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+        background: #12141a;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.35rem 0.5rem;
+        font: inherit;
+        font-size: 0.88rem;
+      }
+      .images-fs {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        background: rgba(6, 7, 10, 0.94);
+        flex-direction: column;
+      }
+      .images-fs.open {
+        display: flex;
+      }
+      .images-fs-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .images-fs-actions {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+      }
+      .images-fs-body {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        min-height: 0;
+      }
+      .images-fs-body img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
       .spa-panel {
         background: var(--panel);
         border: 1px solid var(--line);
@@ -429,6 +505,9 @@
         <button type="button" id="btnPlans" title="Toggle plans (P)">
           Plans
         </button>
+        <button type="button" id="btnImages" title="Images backlog (I)">
+          Images
+        </button>
         <button type="button" id="btnMethod" title="Method docs (M)">
           Method
         </button>
@@ -515,6 +594,50 @@
           <p class="plans-empty hidden" id="plansEmpty">
             No study plan for this topic.
           </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="imagesPanel" class="hidden" aria-hidden="true">
+      <div class="images-layout spa-panel">
+        <div class="images-header">
+          <div>
+            <h2 id="imagesTitle" style="margin: 0; color: var(--gold)">
+              Image backlog
+            </h2>
+            <p class="plans-sub" id="imagesSub">
+              Ordered snapshots for the current study.
+            </p>
+          </div>
+          <div class="gallery-toolbar">
+            <button type="button" class="btn-gallery" id="btnStudyImagesAdd">
+              Add image
+            </button>
+            <span class="gallery-status" id="imagesStatus"></span>
+          </div>
+        </div>
+        <input type="file" id="studyImagesFileInput" accept="image/*" hidden />
+        <div class="gallery-grid" id="imagesGrid"></div>
+      </div>
+      <div id="imagesFs" class="images-fs" aria-hidden="true">
+        <div class="images-fs-bar">
+          <span id="imagesFsCaption"></span>
+          <div class="images-fs-actions">
+            <a
+              id="imagesFsDownload"
+              class="spa-btn"
+              href="#"
+              download
+              title="Download image"
+              >Download</a
+            >
+            <button type="button" class="spa-btn" id="btnImagesFsClose">
+              Close (Esc)
+            </button>
+          </div>
+        </div>
+        <div class="images-fs-body">
+          <img id="imagesFsImg" alt="" />
         </div>
       </div>
     </div>
@@ -654,6 +777,7 @@
         methodCanon: null,
         mermaidLoading: false,
         studyLinks: { video: "", article: "", favorite: "" },
+        imagesFsId: "",
       };
 
       function invalidateDataIndex() {
@@ -812,6 +936,13 @@
       function gallery(pid) {
         return (state.data?.palace_images || [])
           .filter((g) => g.palace_id === pid)
+          .sort(
+            (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
+          );
+      }
+      function studyImages(sid) {
+        return (state.data?.study_images || [])
+          .filter((g) => g.study_id === sid)
           .sort(
             (a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0),
           );
@@ -1027,6 +1158,9 @@
           .getElementById("btnPlans")
           .classList.toggle("active", state.view === "plans");
         document
+          .getElementById("btnImages")
+          .classList.toggle("active", state.view === "images");
+        document
           .getElementById("btnMethod")
           .classList.toggle("active", state.view === "method");
         document.querySelectorAll("#appMore [data-view]").forEach((b) => {
@@ -1038,6 +1172,7 @@
         const panels = {
           practice: document.getElementById("practicePanel"),
           plans: document.getElementById("plansPanel"),
+          images: document.getElementById("imagesPanel"),
           method: document.getElementById("methodPanel"),
           extra: document.getElementById("appExtra"),
         };
@@ -1045,6 +1180,7 @@
           const on =
             (name === "practice" && k === "practice") ||
             (name === "plans" && k === "plans") ||
+            (name === "images" && k === "images") ||
             (name === "method" && k === "method") ||
             (["browse", "links", "help"].includes(name) && k === "extra");
           el.classList.toggle("hidden", !on);
@@ -1053,6 +1189,7 @@
       }
 
       function setView(v) {
+        if (v !== "images") closeImagesFs();
         state.view = v;
         setChromeActive();
         showPanel(v);
@@ -1081,6 +1218,7 @@
         showPanel(state.view);
         if (state.view === "practice") renderPractice();
         else if (state.view === "plans") renderPlans();
+        else if (state.view === "images") renderImages();
         else if (state.view === "method") renderMethod();
         else if (state.view === "browse")
           renderBrowse(document.getElementById("appExtra"));
@@ -1521,6 +1659,216 @@
           </div>`;
           })
           .join("");
+      }
+
+      /* ---------- Study image backlog ---------- */
+      function setImagesStatus(msg, kind) {
+        const el = document.getElementById("imagesStatus");
+        if (!el) return;
+        el.textContent = msg || "";
+        el.className = "gallery-status" + (kind ? " " + kind : "");
+      }
+
+      function downloadFileName(rel, caption, id) {
+        const base =
+          (caption || "").trim() ||
+          String(rel || "")
+            .replace(/\\/g, "/")
+            .split("/")
+            .pop() ||
+          id ||
+          "image";
+        return base.includes(".") ? base : base + ".png";
+      }
+
+      function closeImagesFs() {
+        const fs = document.getElementById("imagesFs");
+        fs.classList.remove("open");
+        fs.setAttribute("aria-hidden", "true");
+        state.imagesFsId = "";
+      }
+
+      function openImagesFs(imageId) {
+        const img = (state.data?.study_images || []).find(
+          (g) => g.id === imageId,
+        );
+        if (!img) return;
+        const src = mediaUrl(img.image_rel_path);
+        if (!src) {
+          toast("Image file missing");
+          return;
+        }
+        state.imagesFsId = imageId;
+        document.getElementById("imagesFsImg").src = src;
+        document.getElementById("imagesFsCaption").textContent =
+          img.caption || img.id || "";
+        const dl = document.getElementById("imagesFsDownload");
+        dl.href = src;
+        dl.download = downloadFileName(img.image_rel_path, img.caption, img.id);
+        const fs = document.getElementById("imagesFs");
+        fs.classList.add("open");
+        fs.setAttribute("aria-hidden", "false");
+      }
+
+      async function studyImagesApi(body) {
+        return api("/api/study/images", {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+      }
+
+      async function reorderStudyImages(orderedIds) {
+        const r = await studyImagesApi({
+          action: "reorder",
+          study_id: state.studyId,
+          ordered_ids: orderedIds,
+        });
+        if (!r.ok) throw new Error(r.error || "reorder failed");
+        if (Array.isArray(r.images) && state.data) {
+          const others = (state.data.study_images || []).filter(
+            (g) => g.study_id !== state.studyId,
+          );
+          state.data.study_images = others.concat(r.images);
+        } else {
+          await refresh();
+        }
+      }
+
+      function renderImages() {
+        const st = studyById(state.studyId);
+        const title = document.getElementById("imagesTitle");
+        const sub = document.getElementById("imagesSub");
+        title.textContent = st
+          ? `Image backlog — ${st.title || st.id}`
+          : "Image backlog";
+        sub.textContent = st
+          ? "Ordered snapshots for this study. Click an image for fullscreen (F). Esc closes."
+          : "Select a study first.";
+        const grid = document.getElementById("imagesGrid");
+        if (!state.studyId) {
+          grid.innerHTML =
+            '<p class="gallery-empty">Select a study to manage its image backlog.</p>';
+          return;
+        }
+        const imgs = studyImages(state.studyId);
+        if (!imgs.length) {
+          grid.innerHTML =
+            '<p class="gallery-empty">No backlog images yet. Use Add image for Maps snapshots or composites.</p>';
+          return;
+        }
+        grid.innerHTML = imgs
+          .map((g, idx) => {
+            const src = mediaUrl(g.image_rel_path);
+            const fname = downloadFileName(g.image_rel_path, g.caption, g.id);
+            return `<article class="gallery-card" data-stimg-id="${escAttr(g.id)}">
+            ${
+              src
+                ? `<img src="${escAttr(src)}" alt="" data-stimg-view="${escAttr(g.id)}" title="Fullscreen (F)"/>`
+                : `<div class="gallery-missing">Image missing</div>`
+            }
+            <div class="gallery-card-body">
+              <input type="text" class="stimg-caption" value="${escAttr(g.caption || "")}" data-stimg-id="${escAttr(g.id)}" placeholder="Caption (optional)"/>
+              <div class="gallery-card-actions">
+                <button type="button" class="btn-gallery" data-stimg-save="${escAttr(g.id)}">Save caption</button>
+                <button type="button" class="btn-gallery" data-stimg-up="${escAttr(g.id)}" ${idx === 0 ? "disabled" : ""}>↑</button>
+                <button type="button" class="btn-gallery" data-stimg-down="${escAttr(g.id)}" ${idx === imgs.length - 1 ? "disabled" : ""}>↓</button>
+                ${
+                  src
+                    ? `<a class="btn-gallery" href="${escAttr(src)}" download="${escAttr(fname)}" data-stimg-dl="${escAttr(g.id)}">Download</a>`
+                    : ""
+                }
+                <button type="button" class="btn-gallery danger" data-stimg-delete="${escAttr(g.id)}">Delete</button>
+              </div>
+            </div>
+          </article>`;
+          })
+          .join("");
+
+        grid.querySelectorAll("[data-stimg-view]").forEach((el) => {
+          el.onclick = () => openImagesFs(el.getAttribute("data-stimg-view"));
+        });
+        grid.querySelectorAll("[data-stimg-save]").forEach((btn) => {
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-stimg-save");
+            const input = grid.querySelector(
+              `input.stimg-caption[data-stimg-id="${CSS.escape(id)}"]`,
+            );
+            setImagesStatus("Saving caption…", "");
+            try {
+              const r = await studyImagesApi({
+                action: "update",
+                study_id: state.studyId,
+                image_id: id,
+                caption: input ? input.value : "",
+              });
+              if (!r.ok) throw new Error(r.error || "save failed");
+              const row = (state.data.study_images || []).find(
+                (g) => g.id === id,
+              );
+              if (row && r.image) Object.assign(row, r.image);
+              setImagesStatus("Caption saved", "ok");
+            } catch (err) {
+              setImagesStatus(String(err.message || err), "err");
+            }
+          };
+        });
+        grid.querySelectorAll("[data-stimg-up]").forEach((btn) => {
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-stimg-up");
+            const ids = studyImages(state.studyId).map((g) => g.id);
+            const i = ids.indexOf(id);
+            if (i <= 0) return;
+            [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
+            setImagesStatus("Reordering…", "");
+            try {
+              await reorderStudyImages(ids);
+              setImagesStatus("Reordered", "ok");
+              renderImages();
+            } catch (err) {
+              setImagesStatus(String(err.message || err), "err");
+            }
+          };
+        });
+        grid.querySelectorAll("[data-stimg-down]").forEach((btn) => {
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-stimg-down");
+            const ids = studyImages(state.studyId).map((g) => g.id);
+            const i = ids.indexOf(id);
+            if (i < 0 || i >= ids.length - 1) return;
+            [ids[i], ids[i + 1]] = [ids[i + 1], ids[i]];
+            setImagesStatus("Reordering…", "");
+            try {
+              await reorderStudyImages(ids);
+              setImagesStatus("Reordered", "ok");
+              renderImages();
+            } catch (err) {
+              setImagesStatus(String(err.message || err), "err");
+            }
+          };
+        });
+        grid.querySelectorAll("[data-stimg-delete]").forEach((btn) => {
+          btn.onclick = async () => {
+            const id = btn.getAttribute("data-stimg-delete");
+            if (!confirm("Delete this backlog image?")) return;
+            setImagesStatus("Deleting…", "");
+            try {
+              const r = await studyImagesApi({
+                action: "delete",
+                study_id: state.studyId,
+                image_id: id,
+              });
+              if (!r.ok) throw new Error(r.error || "delete failed");
+              state.data.study_images = (state.data.study_images || []).filter(
+                (g) => g.id !== id,
+              );
+              if (state.imagesFsId === id) closeImagesFs();
+              setImagesStatus("Deleted", "ok");
+              renderImages();
+            } catch (err) {
+              setImagesStatus(String(err.message || err), "err");
+            }
+          };
+        });
       }
 
       /* ---------- Plans (dashboard parity: hierarchy, backlog CRUD, sources) ---------- */
@@ -2555,6 +2903,7 @@
         const plansGh = state.data.meta?.plans_github || "#";
         root.innerHTML = `<div class="spa-panel">
           <h2 style="margin-top:0;color:var(--gold)">Help / glossary</h2>
+          <p class="muted" style="margin-top:0">Keyboard: <b>Esc</b> Practice · <b>P</b> Plans · <b>I</b> Images backlog · <b>B</b> Browse · <b>M</b> Method · <b>H</b> Help · <b>1</b> Links · <b>L</b> Latest palace. Overlay: <b>F</b> full image · <b>D</b> details.</p>
           <div class="spa-row" style="margin-bottom:1rem">
             <a class="spa-btn" target="_blank" href="${escAttr(practiceGh)}">Practice GitHub</a>
             <a class="spa-btn" target="_blank" href="${escAttr(plansGh)}">Plans GitHub</a>
@@ -2583,7 +2932,46 @@
       document.getElementById("btnPractice").onclick = () =>
         setView("practice");
       document.getElementById("btnPlans").onclick = () => togglePlansPractice();
+      document.getElementById("btnImages").onclick = () => setView("images");
       document.getElementById("btnMethod").onclick = () => setView("method");
+      document.getElementById("btnStudyImagesAdd").onclick = () =>
+        document.getElementById("studyImagesFileInput").click();
+      document.getElementById("btnImagesFsClose").onclick = () =>
+        closeImagesFs();
+      document.getElementById("studyImagesFileInput").onchange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (!file || !state.studyId) {
+          toast("Select a study first");
+          return;
+        }
+        setImagesStatus("Uploading…", "");
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const r = await studyImagesApi({
+              action: "add",
+              study_id: state.studyId,
+              data_b64: reader.result,
+              mime: file.type,
+              caption: "",
+            });
+            if (!r.ok) throw new Error(r.error || "add failed");
+            if (r.image) {
+              state.data.study_images = state.data.study_images || [];
+              state.data.study_images.push(r.image);
+            } else {
+              await refresh();
+            }
+            setImagesStatus("Added", "ok");
+            renderImages();
+          } catch (err) {
+            setImagesStatus(String(err.message || err), "err");
+            toast(String(err.message || err), 3200);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
       document.getElementById("btnClose").onclick = () => closeOverlay();
       document.getElementById("btnExpandImage").onclick = () =>
         toggleOverlayImageExpand();
@@ -2827,6 +3215,12 @@
           }
         }
         if (e.key === "Escape") {
+          const imagesFs = document.getElementById("imagesFs");
+          if (imagesFs && imagesFs.classList.contains("open")) {
+            e.preventDefault();
+            closeImagesFs();
+            return;
+          }
           if (state.view === "browse") {
             if (state.browse.beastId) state.browse.beastId = "";
             else if (state.browse.palaceId) state.browse.palaceId = "";
@@ -2841,6 +3235,24 @@
           setView("practice");
           return;
         }
+        if (
+          (e.key === "f" || e.key === "F") &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          !e.shiftKey &&
+          state.view === "images"
+        ) {
+          e.preventDefault();
+          const fs = document.getElementById("imagesFs");
+          if (fs.classList.contains("open")) closeImagesFs();
+          else {
+            const imgs = studyImages(state.studyId);
+            if (state.imagesFsId) openImagesFs(state.imagesFsId);
+            else if (imgs.length) openImagesFs(imgs[0].id);
+          }
+          return;
+        }
         if (e.key === "b" || e.key === "B") setView("browse");
         if (
           (e.key === "p" || e.key === "P") &&
@@ -2850,6 +3262,16 @@
         ) {
           e.preventDefault();
           togglePlansPractice();
+          return;
+        }
+        if (
+          (e.key === "i" || e.key === "I") &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey
+        ) {
+          e.preventDefault();
+          setView("images");
           return;
         }
         if (

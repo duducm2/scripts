@@ -1547,38 +1547,17 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
 }
 
-; Select Row 0 via SelectionItem / ^{Home}; no Window ribbon click.
-; One ElementFromHandle + one grid walk.
+; Select first list row: focus grid when cheap, then Ctrl+Home only (no UIA select/verify).
 ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     global g_ClipAngelFavoriteSuppressActive
+    if !hwnd
+        return false
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
         catch
             root := 0
     }
     dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    if !dataGrid
-        return ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
-    row0 := ClipAngel_UiaResolveRow0(dataGrid)
-    if !row0
-        return ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
-    gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
-    if ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
-        return true
-    try {
-        if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-            row0.SelectionItemPattern.Select()
-        else if !g_ClipAngelFavoriteSuppressActive
-            row0.Click()
-        else
-            row0.SetFocus()
-    } catch {
-        try row0.SetFocus()
-        catch {
-        }
-    }
-    if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
-        return true
     if dataGrid {
         try dataGrid.SetFocus()
         catch {
@@ -1591,21 +1570,8 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
         ClipAngel_SendToHwnd(hwnd, "^{Home}")
     else
         SendInput "^{Home}"
-    deadline := A_TickCount + 180
-    while (A_TickCount < deadline) {
-        if row0 && ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel) {
-            SendLevel priorSendLevel
-            return true
-        }
-        Sleep 15
-    }
     SendLevel priorSendLevel
-    ; One refresh after keyboard attempt (avoid per-poll ElementFromHandle).
-    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    row0 := dataGrid ? ClipAngel_UiaResolveRow0(dataGrid) : 0
-    if row0 && ClipAngel_UiaRow0IsSelected(row0, dataGrid, ClipAngel_UiaGridHasSelectionPattern(dataGrid))
-        return true
-    return ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
+    return true
 }
 
 ; Native Shift+P to leave favorites filter; fast UIA MarkFilter fallback when synthetic Send is ignored.

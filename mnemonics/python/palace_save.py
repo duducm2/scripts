@@ -303,3 +303,200 @@ def save_images(
         "study_id": study_id,
         "image": row,
     }
+
+
+def _find_study(data: dict[str, list[dict[str, str]]], study_id: str) -> dict[str, str] | None:
+    return next((s for s in data["studies"] if s.get("id") == study_id), None)
+
+
+def _next_study_image_sort(rows: list[dict[str, str]], study_id: str) -> int:
+    orders = [
+        int(r.get("sort_order") or 0)
+        for r in rows
+        if r.get("study_id") == study_id
+    ]
+    return (max(orders) + 1) if orders else 1
+
+
+def _backlog_dest_path(
+    output_dir: Path,
+    slug: str,
+    image_id: str,
+    ext: str,
+) -> tuple[Path, str]:
+    slug_part = slug_filename(slug)
+    seq = image_id.replace("STIMG_", "")
+    filename = f"backlog-{seq}.{ext}"
+    dest_dir = output_dir / "practice" / "images" / slug_part.replace("/", "\\")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / filename
+    rel = f"{PRACTICE_PREFIX}{slug_part}/{filename}"
+    return dest, rel
+
+
+def save_study_images(
+    payload: dict[str, Any],
+    data_dir: Path,
+    output_dir: Path,
+    notes_root: Path | None = None,
+) -> dict[str, Any]:
+    """CRUD for study-scoped image backlog (no practice MD sync)."""
+    del notes_root  # unused; kept for call-site parity with save_images
+    action = (payload.get("action") or "").strip().lower()
+    study_id = (payload.get("study_id") or "").strip()
+    if action not in ("add", "update", "delete", "reorder"):
+        return {"ok": False, "error": "action must be add, update, delete, or reorder"}
+    if not study_id:
+        return {"ok": False, "error": "study_id required"}
+
+    data = load_all(data_dir)
+    study = _find_study(data, study_id)
+    if not study:
+        return {"ok": False, "error": f"unknown study_id {study_id}"}
+    slug = _study_slug(data, study_id)
+    images = list(data.get("study_images") or [])
+
+    if action == "reorder":
+        ordered_ids = payload.get("ordered_ids") or payload.get("ids") or []
+        if not isinstance(ordered_ids, list) or not ordered_ids:
+            return {"ok": False, "error": "ordered_ids required for reorder"}
+        id_list = [str(x).strip() for x in ordered_ids if str(x).strip()]
+        by_id = {
+            r.get("id"): dict(r)
+            for r in images
+            if r.get("study_id") == study_id and r.get("id")
+        }
+        if set(id_list) != set(by_id.keys()):
+            return {
+                "ok": False,
+                "error": "ordered_ids must match all image ids for this study",
+            }
+        for i, iid in enumerate(id_list, start=1):
+            by_id[iid]["sort_order"] = str(i)
+        new_images: list[dict[str, str]] = []
+        for r in images:
+            if r.get("study_id") == study_id and r.get("id") in by_id:
+                new_images.append(by_id[r["id"]])
+            else:
+                new_images.append(r)
+        data["study_images"] = new_images
+        save_all(data_dir, data)
+        return {
+            "ok": True,
+            "action": "reorder",
+            "study_id": study_id,
+            "images": [by_id[i] for i in id_list],
+        }
+
+    if action == "add":
+        data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
+        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        if not data_b64:
+            return {"ok": False, "error": "data_b64 required for add"}
+        try:
+            raw_bytes, ext = _decode_image_bytes(str(data_b64), mime)
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        existing_ids = {r.get("id", "") for r in images}
+        image_id = next_id("STIMG_", existing_ids)
+        dest, rel = _backlog_dest_path(output_dir, slug, image_id, ext)
+        dest.write_bytes(raw_bytes)
+        caption = str(payload.get("caption") or "").strip()
+        sort_order = str(
+            payload.get("sort_order") or _next_study_image_sort(images, study_id)
+        )
+        row = {
+            "id": image_id,
+            "study_id": study_id,
+            "image_rel_path": rel,
+            "caption": caption,
+            "sort_order": sort_order,
+        }
+        images.append(row)
+        data["study_images"] = images
+        save_all(data_dir, data)
+        return {
+            "ok": True,
+            "action": "add",
+            "study_id": study_id,
+            "image": row,
+        }
+
+    image_id = (payload.get("image_id") or payload.get("id") or "").strip()
+    if not image_id:
+        return {"ok": False, "error": "image_id required for update/delete"}
+
+    idx = next(
+        (i for i, r in enumerate(images) if r.get("id") == image_id),
+        -1,
+    )
+    if idx < 0 or images[idx].get("study_id") != study_id:
+        return {"ok": False, "error": f"unknown image_id {image_id} for study"}
+
+    if action == "delete":
+        removed = images.pop(idx)
+        data["study_images"] = images
+        save_all(data_dir, data)
+        all_rels = {
+            (r.get("image_rel_path") or "").strip()
+            for r in images
+            if (r.get("image_rel_path") or "").strip()
+        }
+        for p in data.get("palaces") or []:
+            hero = (p.get("image_rel_path") or "").strip()
+            if hero:
+                all_rels.add(hero)
+        for gi in data.get("palace_images") or []:
+            grel = (gi.get("image_rel_path") or "").strip()
+            if grel:
+                all_rels.add(grel)
+        _delete_image_file(output_dir, removed.get("image_rel_path") or "", all_rels)
+        return {
+            "ok": True,
+            "action": "delete",
+            "study_id": study_id,
+            "image_id": image_id,
+        }
+
+    # update
+    row = dict(images[idx])
+    if "caption" in payload:
+        row["caption"] = str(payload.get("caption") or "").strip()
+    if "sort_order" in payload and str(payload.get("sort_order") or "").strip():
+        row["sort_order"] = str(payload.get("sort_order")).strip()
+    if payload.get("data_b64") or payload.get("image_data"):
+        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        try:
+            raw_bytes, ext = _decode_image_bytes(
+                str(payload.get("data_b64") or payload.get("image_data")), mime
+            )
+        except ValueError as e:
+            return {"ok": False, "error": str(e)}
+        old_rel = row.get("image_rel_path") or ""
+        dest, rel = _backlog_dest_path(output_dir, slug, image_id, ext)
+        dest.write_bytes(raw_bytes)
+        row["image_rel_path"] = rel
+        all_rels = {
+            (r.get("image_rel_path") or "").strip()
+            for r in images
+            if (r.get("image_rel_path") or "").strip()
+        }
+        all_rels.add(rel)
+        for p in data.get("palaces") or []:
+            hero = (p.get("image_rel_path") or "").strip()
+            if hero:
+                all_rels.add(hero)
+        for gi in data.get("palace_images") or []:
+            grel = (gi.get("image_rel_path") or "").strip()
+            if grel:
+                all_rels.add(grel)
+        _delete_image_file(output_dir, old_rel, all_rels)
+    images[idx] = row
+    data["study_images"] = images
+    save_all(data_dir, data)
+    return {
+        "ok": True,
+        "action": "update",
+        "study_id": study_id,
+        "image": row,
+    }

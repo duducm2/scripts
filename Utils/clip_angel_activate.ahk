@@ -151,8 +151,7 @@ ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := fal
         root := 0
     if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root)
         return false
-    if !ClipAngel_FastEnsureRow0(hwnd, root)
-        ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
+    ClipAngel_FastEnsureRow0(hwnd, root)
     outHwnd := hwnd
     outRoot := root
     return true

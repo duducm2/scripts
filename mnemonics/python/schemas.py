@@ -26,6 +26,13 @@ PALACE_IMAGES_HEADERS = [
     "caption",
     "sort_order",
 ]
+STUDY_IMAGES_HEADERS = [
+    "id",
+    "study_id",
+    "image_rel_path",
+    "caption",
+    "sort_order",
+]
 BEASTS_HEADERS = [
     "id",
     "palace_id",
@@ -182,6 +189,7 @@ HEADERS = {
     "studies": STUDIES_HEADERS,
     "palaces": PALACES_HEADERS,
     "palace_images": PALACE_IMAGES_HEADERS,
+    "study_images": STUDY_IMAGES_HEADERS,
     "beasts": BEASTS_HEADERS,
     "atoms": ATOMS_HEADERS,
     "plans": PLANS_HEADERS,

@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from palace_save import save_images, save_notes  # noqa: E402
+from palace_save import save_images, save_notes, save_study_images  # noqa: E402
 from palace_store import PalaceStore  # noqa: E402
 from study_plan_parser import default_studies_root  # noqa: E402
 from study_plans_save import save_payload  # noqa: E402
@@ -51,6 +51,10 @@ GLOSSARY = [
     {"term": "Knowledge Atom", "def": "Concept + Quote + Story + Sensory on a beast."},
     {"term": "Peg", "def": "Letter code from bestiary (never numeric)."},
     {"term": "Plan", "def": "Study checklist (plans / plan_items / plan_resources)."},
+    {
+        "term": "Image backlog",
+        "def": "Ordered study snapshots (study_images); open with I.",
+    },
 ]
 
 
@@ -596,6 +600,13 @@ class PalaceHandler(BaseHTTPRequestHandler):
 
             if path in ("/api/palace/images", "/palace/images"):
                 result = save_images(
+                    payload, self.data_dir, self.output_dir, self.studies_root
+                )
+                self._json(200 if result.get("ok") else 400, result)
+                return
+
+            if path in ("/api/study/images", "/study/images"):
+                result = save_study_images(
                     payload, self.data_dir, self.output_dir, self.studies_root
                 )
                 self._json(200 if result.get("ok") else 400, result)

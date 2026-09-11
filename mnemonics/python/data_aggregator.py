@@ -56,7 +56,14 @@ def _write_csv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> No
 def load_all(data_dir: Path) -> dict[str, list[dict[str, str]]]:
     data = {
         kind: _read_csv(data_dir / f"{kind}.csv")
-        for kind in ("studies", "palaces", "palace_images", "beasts", "atoms")
+        for kind in (
+            "studies",
+            "palaces",
+            "palace_images",
+            "study_images",
+            "beasts",
+            "atoms",
+        )
     }
     data["atoms"] = [normalize_atom_concept_sensory(a) for a in data["atoms"]]
     return data

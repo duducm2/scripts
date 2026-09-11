@@ -45,16 +45,17 @@ Deprecated as the primary open path: `file://` `%TEMP%\palace_dashboard.html` fr
 
 ## Web app views
 
-| View         | Role                                                     |
-| ------------ | -------------------------------------------------------- |
-| **Browse**   | Studies → palaces → beasts → atoms CRUD                  |
-| **Practice** | Study picker, palace cards, overlay (notes, prompt copy) |
-| **Plans**    | Checklist progress save, add items                       |
-| **Links**    | Study video / article / favorite (Google Docs API)       |
-| **Help**     | Glossary + Practice / Plans GitHub links                 |
-| **Method**   | Technique README excerpt                                 |
+| View         | Role                                                                   |
+| ------------ | ---------------------------------------------------------------------- |
+| **Browse**   | Studies → palaces → beasts → atoms CRUD                                |
+| **Practice** | Study picker, palace cards, overlay (notes, prompt copy)               |
+| **Plans**    | Checklist progress save, add items                                     |
+| **Images**   | Study snapshot backlog (ordered `study_images`; fullscreen / download) |
+| **Links**    | Study video / article / favorite (Google Docs API)                     |
+| **Help**     | Glossary + Practice / Plans GitHub links                               |
+| **Method**   | Technique README excerpt                                               |
 
-Keyboard: **Esc** back (`B`/`P`/`L`/`H`/`1`). Study links: **Shift+V** / **Shift+A** / **Shift+F**.
+Keyboard: **Esc** back (`B`/`P`/`I`/`L`/`H`/`1`). Study links: **Shift+V** / **Shift+A** / **Shift+F**.
 
 Pack imports (PALACE_PACK / PLAN_PACK) and **Quick image**: Import Management (`#!+X` or Utility Shortcuts `[J]` → **`[P]`** / **`[L]`** / **`[Q]`**).
 
