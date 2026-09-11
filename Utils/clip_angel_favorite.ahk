@@ -287,34 +287,13 @@ ClipAngel_EnsureListView(hwnd, root := 0) {
     }
 }
 
-; Click MainMenu "Window" via UIA (mouse path the user uses when not on the first clip — not keyboard).
-; Prefer Invoke over Click — Click moves the real cursor and can force a visible paint.
-ClipAngel_UiaClickWindowMenu(hwnd, root := 0) {
-    if !hwnd
-        return false
-    if !root {
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-    }
-    if !root
-        return false
-    winItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Window" })
-    if !winItem
-        return false
-    if ClipAngel_UiaInvokeElement(winItem)
-        return true
-    try {
-        winItem.Click()
-        return true
-    } catch {
-    }
-    return false
-}
+; Click MainMenu "Window" removed — Alt menu steal / ribbon recovery caused visible Window flash.
+; Row 0 selection uses SelectionItem / ^{Home} only (see UiaEnsureRow0Selected / FastEnsureRow0).
 
 ClipAngel_UiaInvokeElement(el) {
     if !el
         return false
+    global g_ClipAngelFavoriteSuppressActive
     try {
         if el.GetPropertyValue(UIA.Property.IsInvokePatternAvailable) {
             el.InvokePattern.Invoke()
@@ -322,10 +301,23 @@ ClipAngel_UiaInvokeElement(el) {
         }
     } catch {
     }
+    ; Prefer Expand for menu items over mouse Click (Click can paint the menu bar / Window item).
     try {
-        el.Click()
-        return true
+        if el.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable) {
+            pat := el.ExpandCollapsePattern
+            if pat.ExpandCollapseState = UIA.ExpandCollapseState.Collapsed {
+                pat.Expand()
+                return true
+            }
+        }
     } catch {
+    }
+    if !g_ClipAngelFavoriteSuppressActive {
+        try {
+            el.Click()
+            return true
+        } catch {
+        }
     }
     try {
         el.SetFocus()
@@ -371,16 +363,15 @@ ClipAngel_UiaFindMenuItem(roots, conditions) {
     return 0
 }
 
-ClipAngel_InvokePasteEnterViaKeyboard() {
-    Send "{Alt}"
+ClipAngel_InvokePasteEnterViaKeyboard(hwnd := 0) {
+    ClipAngel_ReleaseChordModifiersForSend()
+    ClipAngel_SendToHwnd(hwnd, "!c")
     Sleep 80
-    Send "c"
+    ClipAngel_SendToHwnd(hwnd, "{Right}")
     Sleep 80
-    Send "{Right}"
+    ClipAngel_SendToHwnd(hwnd, "{Down 3}")
     Sleep 80
-    Send "{Down 3}"
-    Sleep 80
-    Send "{Enter}"
+    ClipAngel_SendToHwnd(hwnd, "{Enter}")
     return true
 }
 
@@ -393,12 +384,12 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
     try {
         root := UIA.ElementFromHandle(hwnd)
         if !root
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if !clipMenu
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         Sleep 120
         desktop := 0
         try desktop := UIA.GetRootElement()
@@ -407,32 +398,31 @@ ClipAngel_InvokePasteEnter(hwnd := 0) {
             searchRoots.Push(desktop)
         pasteItem := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Paste" })
         if !pasteItem
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         if !ClipAngel_UiaOpenSubmenu(pasteItem)
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         Sleep 120
         pasteFile := ClipAngel_UiaFindFirst(pasteItem, { Type: 50011, Name: "Paste file" })
         if !pasteFile
             pasteFile := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Paste file" })
         if !pasteFile
-            return ClipAngel_InvokePasteEnterViaKeyboard()
+            return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
         return ClipAngel_UiaInvokeElement(pasteFile)
     } catch {
-        return ClipAngel_InvokePasteEnterViaKeyboard()
+        return ClipAngel_InvokePasteEnterViaKeyboard(hwnd)
     }
 }
 
 ; Clip menu — second-to-last item (Import clips). Opens the file picker; keep ClipAngel open.
-ClipAngel_InvokeImportClipsViaKeyboard() {
-    Send "{Alt}"
+ClipAngel_InvokeImportClipsViaKeyboard(hwnd := 0) {
+    ClipAngel_ReleaseChordModifiersForSend()
+    ClipAngel_SendToHwnd(hwnd, "!c")
     Sleep 80
-    Send "c"
+    ClipAngel_SendToHwnd(hwnd, "{End}")
     Sleep 80
-    Send "{End}"
+    ClipAngel_SendToHwnd(hwnd, "{Up}")
     Sleep 80
-    Send "{Up}"
-    Sleep 80
-    Send "{Enter}"
+    ClipAngel_SendToHwnd(hwnd, "{Enter}")
     return true
 }
 
@@ -445,12 +435,12 @@ ClipAngel_InvokeImportClips(hwnd := 0) {
     try {
         root := UIA.ElementFromHandle(hwnd)
         if !root
-            return ClipAngel_InvokeImportClipsViaKeyboard()
+            return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
         if !clipMenu
-            return ClipAngel_InvokeImportClipsViaKeyboard()
+            return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         if !ClipAngel_UiaInvokeElement(clipMenu)
-            return ClipAngel_InvokeImportClipsViaKeyboard()
+            return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         Sleep 120
         desktop := 0
         try desktop := UIA.GetRootElement()
@@ -459,10 +449,10 @@ ClipAngel_InvokeImportClips(hwnd := 0) {
             searchRoots.Push(desktop)
         importItem := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: "Import clips" })
         if !importItem
-            return ClipAngel_InvokeImportClipsViaKeyboard()
+            return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
         return ClipAngel_UiaInvokeElement(importItem)
     } catch {
-        return ClipAngel_InvokeImportClipsViaKeyboard()
+        return ClipAngel_InvokeImportClipsViaKeyboard(hwnd)
     }
 }
 
@@ -559,30 +549,6 @@ ClipAngel_UiaTryLegacySelectRow(row) {
     } catch {
         return false
     }
-}
-
-; Kept for diagnostics / optional callers; open Alt+P/B path does not use ribbon recovery.
-ClipAngel_UiaFocusLooksLikeRibbonMenu() {
-    try {
-        focused := UIA.GetFocusedElement()
-        if !focused
-            return false
-        type := 0
-        name := ""
-        try type := focused.Type
-        catch {
-        }
-        try name := focused.Name
-        catch {
-        }
-        if RegExMatch(name, "i)^(Window|List|Clip|Settings|Help)$")
-            return true
-        ; MenuBar / MenuItem
-        if (type = 50010 || type = 50011)
-            return true
-    } catch {
-    }
-    return false
 }
 
 ; During favorite suppress, keys must target Clip Angel hwnd (foreground stays on prior app).
@@ -735,7 +701,7 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
     }
 }
 
-; Macro hotkeys use Ctrl+Alt+Win - if those keys are still down, Send "!q" is not plain Alt+Q (Win+Alt+... hijacks it).
+; Macro hotkeys use Ctrl+Alt+Win — release before any Alt chord so Clip Angel sees plain Alt+C (not Win+Alt).
 ClipAngel_ReleaseChordModifiersForSend() {
     SendInput "{LWin up}{RWin up}{LControl up}{RControl up}{LAlt up}{RAlt up}{LShift up}{RShift up}"
 }
@@ -1778,13 +1744,10 @@ ClipAngel_UiaWaitMarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
     return 0
 }
 
-; Open Clip menu via Alt+C (same pattern as Import/Paste keyboard fallbacks).
-; Pass hwnd so favorite suppress can ControlSend without activating Clip Angel.
+; Clip menu keyboard open — single Alt+C chord (never bare {Alt}; that highlights Window first).
 ClipAngel_OpenClipMenuViaKeyboard(hwnd := 0) {
     ClipAngel_ReleaseChordModifiersForSend()
-    ClipAngel_SendToHwnd(hwnd, "{Alt}")
-    Sleep 80
-    ClipAngel_SendToHwnd(hwnd, "c")
+    ClipAngel_SendToHwnd(hwnd, "!c")
     Sleep 40
     return true
 }
@@ -1828,7 +1791,7 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
     }
 }
 
-; Menu invoke primary; ControlSend Alt+Q last. Skips Favorite-column FindAll (column absent in UIA tree).
+; Menu invoke only — never Alt+Q (focuses Window ribbon). Skips Favorite-column FindAll.
 ClipAngel_FavoriteAltQSendAndVerify(hwnd) {
     if !hwnd
         return false
@@ -1843,20 +1806,13 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd) {
     if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)
         return true
     Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-    ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
-    try ControlSend("!q", , "ahk_id " hwnd)
-    catch {
-        SendInput "!q"
-    }
-    deadline := A_TickCount + 150
-    while (A_TickCount < deadline) {
-        if ClipAngel_Row0TitleLooksFavorited(hwnd, root)
-            return true
-        Sleep CLIPANGEL_UIA_POLL_MS
-    }
-    ; One menu retry without re-Prepare (LeaveFavorites / WaitForListReady already selected Row 0).
-    return ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)
+    ClipAngel_SendToHwnd(hwnd, "{Escape}")
+    Sleep 40
+    ; One menu retry without Alt+Q (LeaveFavorites / WaitForListReady already selected Row 0).
+    if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root)
+        return true
+    return ClipAngel_Row0TitleLooksFavorited(hwnd, root)
 }
 
 MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
@@ -2021,9 +1977,9 @@ MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
         if !WinWaitActive("ahk_id " hwnd, , 2) {
             if deferBanner {
                 resultKind := "error"
-                resultMsg := "❌ Clip Angel lost focus before Alt+Q."
+                resultMsg := "❌ Clip Angel lost focus before mark favorite."
             } else
-                ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before Alt+Q.", 2000, BANNER_ACCENT_ERROR)
+                ShowCenteredOverlay_Utils("❌ Clip Angel lost focus before mark favorite.", 2000, BANNER_ACCENT_ERROR)
             return
         }
     }
@@ -2031,24 +1987,21 @@ MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
     Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "!q"
-    Sleep 100
-    favCell := ClipAngel_FindFavoriteCell(rowTarget)
-    if !(favCell && ClipAngel_FavoriteCellIsOn(favCell)) {
-        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
-        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-        ClipAngel_ReleaseChordModifiersForSend()
-        SendInput "!q"
-        Sleep 100
-        favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    marked := ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, el)
+    if !marked {
+        ClipAngel_SendToHwnd(hwnd, "{Escape}")
+        Sleep 40
+        marked := ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, el)
     }
-    if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
+    favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    titleOk := ClipAngel_Row0TitleLooksFavorited(hwnd, el)
+    if (favCell && ClipAngel_FavoriteCellIsOn(favCell)) || titleOk || marked {
         ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
         if deferBanner {
             resultKind := "success"
-            resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
+            resultMsg := "✅ Marked focused clip as favorite."
         } else
-            ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+            ShowCenteredOverlay_Utils("✅ Marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
     } else {
         if deferBanner {
             resultKind := "error"

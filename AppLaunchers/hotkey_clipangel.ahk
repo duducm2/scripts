@@ -20,7 +20,9 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     if hwnd := ClipAngel_MainHwnd()
         ClipAngel_ShowWindow(hwnd)
     Sleep(700)
-    Send("!q")
+    ; Clip > Mark favorite via UIA — never Alt+Q (highlights Window ribbon).
+    if hwnd := ClipAngel_MainHwnd()
+        ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
     Sleep(200)
     ClipAngel_CloseAndRestoreFocus(0)
 }
