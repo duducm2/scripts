@@ -1121,6 +1121,7 @@ cheatSheets["Memory Palace"] := "
     === Navigation ===
     🏠 [Esc] Close study picker / palace overlay / leave Browse / return to Practice
     🔁 [P] Toggle Practice ↔ Plans
+    🖼 [I] Image backlog (ordered study snapshots)
     🆕 [L] Open latest palace for the selected study
     📖 [M] Method
     🗂 [B] Browse
@@ -1454,6 +1455,7 @@ GLOBAL_CHEAT_SHEET_RAW := "
     [Alt+A] > Set study article from clipboard
     [Alt+F] > Set favorite link from clipboard
     [P] > Toggle Practice ↔ Plans
+    [I] > Image backlog (ordered study snapshots)
     [L] > Latest palace (selected study)
     [M] > Method
     [B] > Browse

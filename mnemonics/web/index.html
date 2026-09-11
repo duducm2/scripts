@@ -78,6 +78,17 @@
       .images-layout .gallery-card img {
         cursor: zoom-in;
       }
+      .images-layout .gallery-card[draggable="true"] {
+        cursor: grab;
+      }
+      .images-layout .gallery-card.dragging {
+        opacity: 0.45;
+        cursor: grabbing;
+      }
+      .images-layout .gallery-card.drag-over {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
       .images-layout .gallery-card-body input[type="text"] {
         width: 100%;
         box-sizing: border-box;
@@ -616,7 +627,12 @@
             <span class="gallery-status" id="imagesStatus"></span>
           </div>
         </div>
-        <input type="file" id="studyImagesFileInput" accept="image/*" hidden />
+        <input
+          type="file"
+          id="studyImagesFileInput"
+          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+          hidden
+        />
         <div class="gallery-grid" id="imagesGrid"></div>
       </div>
       <div id="imagesFs" class="images-fs" aria-hidden="true">
@@ -1711,10 +1727,43 @@
       }
 
       async function studyImagesApi(body) {
-        return api("/api/study/images", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
+        try {
+          return await api("/api/study/images", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+        } catch (err) {
+          const msg = String(err.message || err || "");
+          if (
+            /not found/i.test(msg) ||
+            msg === "Not Found" ||
+            msg.includes("404")
+          ) {
+            throw new Error(
+              "Upload failed — restart Memory Palace server if you just updated (/api/study/images missing).",
+            );
+          }
+          throw err;
+        }
+      }
+
+      function inferImageMime(file) {
+        const t = (file.type || "").toLowerCase();
+        if (t === "image/jpeg" || t === "image/jpg" || t === "image/png")
+          return t === "image/jpg" ? "image/jpeg" : t;
+        const name = String(file.name || "").toLowerCase();
+        if (name.endsWith(".jpg") || name.endsWith(".jpeg"))
+          return "image/jpeg";
+        if (name.endsWith(".png")) return "image/png";
+        return "";
+      }
+
+      function studyImagesUploadError(err) {
+        const msg = String(err.message || err || "upload failed");
+        if (/not found/i.test(msg)) {
+          return "Upload failed — restart Memory Palace server if you just updated.";
+        }
+        return msg;
       }
 
       async function reorderStudyImages(orderedIds) {
@@ -1734,6 +1783,83 @@
         }
       }
 
+      function bindStudyImagesDrag(grid) {
+        let dragId = "";
+        grid
+          .querySelectorAll(".gallery-card[data-stimg-id]")
+          .forEach((card) => {
+            card.draggable = true;
+            card.addEventListener("dragstart", (e) => {
+              const t = e.target;
+              if (
+                t &&
+                t.closest &&
+                t.closest("input, button, a, textarea, select")
+              ) {
+                e.preventDefault();
+                return;
+              }
+              dragId = card.getAttribute("data-stimg-id") || "";
+              card.classList.add("dragging");
+              try {
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", dragId);
+              } catch (_) {
+                /* ignore */
+              }
+            });
+            card.addEventListener("dragend", () => {
+              dragId = "";
+              grid
+                .querySelectorAll(
+                  ".gallery-card.dragging, .gallery-card.drag-over",
+                )
+                .forEach((el) => {
+                  el.classList.remove("dragging", "drag-over");
+                });
+            });
+            card.addEventListener("dragover", (e) => {
+              e.preventDefault();
+              try {
+                e.dataTransfer.dropEffect = "move";
+              } catch (_) {
+                /* ignore */
+              }
+              if (!card.classList.contains("dragging"))
+                card.classList.add("drag-over");
+            });
+            card.addEventListener("dragleave", () => {
+              card.classList.remove("drag-over");
+            });
+            card.addEventListener("drop", async (e) => {
+              e.preventDefault();
+              card.classList.remove("drag-over");
+              const fromId =
+                dragId ||
+                (e.dataTransfer && e.dataTransfer.getData("text/plain")) ||
+                "";
+              const toId = card.getAttribute("data-stimg-id") || "";
+              if (!fromId || !toId || fromId === toId) return;
+              const ids = [
+                ...grid.querySelectorAll(".gallery-card[data-stimg-id]"),
+              ].map((el) => el.getAttribute("data-stimg-id"));
+              const from = ids.indexOf(fromId);
+              const to = ids.indexOf(toId);
+              if (from < 0 || to < 0) return;
+              ids.splice(from, 1);
+              ids.splice(to, 0, fromId);
+              setImagesStatus("Reordering…", "");
+              try {
+                await reorderStudyImages(ids);
+                setImagesStatus("Reordered", "ok");
+                renderImages();
+              } catch (err) {
+                setImagesStatus(studyImagesUploadError(err), "err");
+              }
+            });
+          });
+      }
+
       function renderImages() {
         const st = studyById(state.studyId);
         const title = document.getElementById("imagesTitle");
@@ -1742,7 +1868,7 @@
           ? `Image backlog — ${st.title || st.id}`
           : "Image backlog";
         sub.textContent = st
-          ? "Ordered snapshots for this study. Click an image for fullscreen (F). Esc closes."
+          ? "Ordered snapshots for this study. Drag cards to reorder · click image for fullscreen (F). Esc closes."
           : "Select a study first.";
         const grid = document.getElementById("imagesGrid");
         if (!state.studyId) {
@@ -1753,18 +1879,18 @@
         const imgs = studyImages(state.studyId);
         if (!imgs.length) {
           grid.innerHTML =
-            '<p class="gallery-empty">No backlog images yet. Use Add image for Maps snapshots or composites.</p>';
+            '<p class="gallery-empty">No backlog images yet. Use Add image for Maps snapshots or composites (.jpg / .png).</p>';
           return;
         }
         grid.innerHTML = imgs
           .map((g, idx) => {
             const src = mediaUrl(g.image_rel_path);
             const fname = downloadFileName(g.image_rel_path, g.caption, g.id);
-            return `<article class="gallery-card" data-stimg-id="${escAttr(g.id)}">
+            return `<article class="gallery-card" data-stimg-id="${escAttr(g.id)}" draggable="true">
             ${
               src
-                ? `<img src="${escAttr(src)}" alt="" data-stimg-view="${escAttr(g.id)}" title="Fullscreen (F)"/>`
-                : `<div class="gallery-missing">Image missing</div>`
+                ? `<img src="${escAttr(src)}" alt="" data-stimg-view="${escAttr(g.id)}" title="Fullscreen (F) · drag card to reorder"/>`
+                : `<div class="gallery-missing">Image file missing on disk</div>`
             }
             <div class="gallery-card-body">
               <input type="text" class="stimg-caption" value="${escAttr(g.caption || "")}" data-stimg-id="${escAttr(g.id)}" placeholder="Caption (optional)"/>
@@ -1784,7 +1910,14 @@
           })
           .join("");
 
-        grid.querySelectorAll("[data-stimg-view]").forEach((el) => {
+        grid.querySelectorAll("img[data-stimg-view]").forEach((el) => {
+          el.onerror = () => {
+            const wrap = document.createElement("div");
+            wrap.className = "gallery-missing";
+            wrap.textContent = "Image file missing on disk";
+            el.replaceWith(wrap);
+            setImagesStatus("Image file missing on disk", "err");
+          };
           el.onclick = () => openImagesFs(el.getAttribute("data-stimg-view"));
         });
         grid.querySelectorAll("[data-stimg-save]").forEach((btn) => {
@@ -1808,7 +1941,7 @@
               if (row && r.image) Object.assign(row, r.image);
               setImagesStatus("Caption saved", "ok");
             } catch (err) {
-              setImagesStatus(String(err.message || err), "err");
+              setImagesStatus(studyImagesUploadError(err), "err");
             }
           };
         });
@@ -1825,7 +1958,7 @@
               setImagesStatus("Reordered", "ok");
               renderImages();
             } catch (err) {
-              setImagesStatus(String(err.message || err), "err");
+              setImagesStatus(studyImagesUploadError(err), "err");
             }
           };
         });
@@ -1842,7 +1975,7 @@
               setImagesStatus("Reordered", "ok");
               renderImages();
             } catch (err) {
-              setImagesStatus(String(err.message || err), "err");
+              setImagesStatus(studyImagesUploadError(err), "err");
             }
           };
         });
@@ -1865,10 +1998,11 @@
               setImagesStatus("Deleted", "ok");
               renderImages();
             } catch (err) {
-              setImagesStatus(String(err.message || err), "err");
+              setImagesStatus(studyImagesUploadError(err), "err");
             }
           };
         });
+        bindStudyImagesDrag(grid);
       }
 
       /* ---------- Plans (dashboard parity: hierarchy, backlog CRUD, sources) ---------- */
@@ -2941,19 +3075,32 @@
       document.getElementById("studyImagesFileInput").onchange = async (e) => {
         const file = e.target.files?.[0];
         e.target.value = "";
-        if (!file || !state.studyId) {
+        if (!file) return;
+        if (!state.studyId) {
           toast("Select a study first");
+          return;
+        }
+        const mime = inferImageMime(file);
+        if (!mime) {
+          const msg = "Only .jpg and .png images are supported.";
+          setImagesStatus(msg, "err");
+          toast(msg, 3200);
           return;
         }
         setImagesStatus("Uploading…", "");
         const reader = new FileReader();
+        reader.onerror = () => {
+          const msg = "Could not read the selected file.";
+          setImagesStatus(msg, "err");
+          toast(msg, 3200);
+        };
         reader.onload = async () => {
           try {
             const r = await studyImagesApi({
               action: "add",
               study_id: state.studyId,
               data_b64: reader.result,
-              mime: file.type,
+              mime,
               caption: "",
             });
             if (!r.ok) throw new Error(r.error || "add failed");
@@ -2966,8 +3113,9 @@
             setImagesStatus("Added", "ok");
             renderImages();
           } catch (err) {
-            setImagesStatus(String(err.message || err), "err");
-            toast(String(err.message || err), 3200);
+            const msg = studyImagesUploadError(err);
+            setImagesStatus(msg, "err");
+            toast(msg, 4200);
           }
         };
         reader.readAsDataURL(file);

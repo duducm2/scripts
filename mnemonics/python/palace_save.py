@@ -16,7 +16,9 @@ from study_practice_md import slug_filename, write_study  # noqa: E402
 PRACTICE_PREFIX = "practice/images/"
 
 
-def _find_palace(data: dict[str, list[dict[str, str]]], palace_id: str) -> dict[str, str] | None:
+def _find_palace(
+    data: dict[str, list[dict[str, str]]], palace_id: str
+) -> dict[str, str] | None:
     return next((p for p in data["palaces"] if p.get("id") == palace_id), None)
 
 
@@ -39,9 +41,7 @@ def _sync_study(
 
 def _next_sort_order(rows: list[dict[str, str]], palace_id: str) -> int:
     orders = [
-        int(r.get("sort_order") or 0)
-        for r in rows
-        if r.get("palace_id") == palace_id
+        int(r.get("sort_order") or 0) for r in rows if r.get("palace_id") == palace_id
     ]
     return (max(orders) + 1) if orders else 1
 
@@ -58,13 +58,28 @@ def _decode_image_bytes(data_b64: str, mime: str = "") -> tuple[bytes, str]:
         raise ValueError(f"invalid base64 image data: {e}") from e
     if not data:
         raise ValueError("empty image data")
-    ext = "png"
+    mime = (mime or "").strip().lower()
+    ext = ""
     if "jpeg" in mime or "jpg" in mime:
         ext = "jpg"
+    elif "png" in mime:
+        ext = "png"
     elif "webp" in mime:
         ext = "webp"
     elif "gif" in mime:
         ext = "gif"
+    if not ext:
+        # Sniff magic bytes when mime is empty or unknown (common on Windows picks).
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            ext = "png"
+        elif data[:3] == b"\xff\xd8\xff":
+            ext = "jpg"
+        elif data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            ext = "webp"
+        elif data[:6] in (b"GIF87a", b"GIF89a"):
+            ext = "gif"
+        else:
+            ext = "png"
     return data, ext
 
 
@@ -152,7 +167,9 @@ def save_images(
 
     if action == "set_hero":
         data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
-        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        mime = (
+            (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        )
         if not data_b64:
             return {"ok": False, "error": "data_b64 required for set_hero"}
         try:
@@ -194,7 +211,9 @@ def save_images(
 
     if action == "add":
         data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
-        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        mime = (
+            (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        )
         if not data_b64:
             return {"ok": False, "error": "data_b64 required for add"}
         try:
@@ -268,7 +287,9 @@ def save_images(
     if "sort_order" in payload and str(payload.get("sort_order") or "").strip():
         row["sort_order"] = str(payload.get("sort_order")).strip()
     if payload.get("data_b64") or payload.get("image_data"):
-        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        mime = (
+            (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        )
         try:
             raw_bytes, ext = _decode_image_bytes(
                 str(payload.get("data_b64") or payload.get("image_data")), mime
@@ -276,9 +297,7 @@ def save_images(
         except ValueError as e:
             return {"ok": False, "error": str(e)}
         old_rel = row.get("image_rel_path") or ""
-        dest, rel = _gallery_dest_path(
-            output_dir, slug, palace_number, image_id, ext
-        )
+        dest, rel = _gallery_dest_path(output_dir, slug, palace_number, image_id, ext)
         dest.write_bytes(raw_bytes)
         row["image_rel_path"] = rel
         all_rels = {
@@ -305,15 +324,15 @@ def save_images(
     }
 
 
-def _find_study(data: dict[str, list[dict[str, str]]], study_id: str) -> dict[str, str] | None:
+def _find_study(
+    data: dict[str, list[dict[str, str]]], study_id: str
+) -> dict[str, str] | None:
     return next((s for s in data["studies"] if s.get("id") == study_id), None)
 
 
 def _next_study_image_sort(rows: list[dict[str, str]], study_id: str) -> int:
     orders = [
-        int(r.get("sort_order") or 0)
-        for r in rows
-        if r.get("study_id") == study_id
+        int(r.get("sort_order") or 0) for r in rows if r.get("study_id") == study_id
     ]
     return (max(orders) + 1) if orders else 1
 
@@ -390,7 +409,9 @@ def save_study_images(
 
     if action == "add":
         data_b64 = payload.get("data_b64") or payload.get("image_data") or ""
-        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        mime = (
+            (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        )
         if not data_b64:
             return {"ok": False, "error": "data_b64 required for add"}
         try:
@@ -465,7 +486,9 @@ def save_study_images(
     if "sort_order" in payload and str(payload.get("sort_order") or "").strip():
         row["sort_order"] = str(payload.get("sort_order")).strip()
     if payload.get("data_b64") or payload.get("image_data"):
-        mime = (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        mime = (
+            (payload.get("mime") or payload.get("content_type") or "").strip().lower()
+        )
         try:
             raw_bytes, ext = _decode_image_bytes(
                 str(payload.get("data_b64") or payload.get("image_data")), mime
