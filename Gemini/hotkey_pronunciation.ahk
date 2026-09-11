@@ -280,7 +280,7 @@ PronunciationHotkey_DisarmDoubleTap() {
         return
     }
 
-    ; Hotkey fires on key-down. Drop queued auto-repeat ghosts that run after a hold
+    ; Hotkey fires on key-down.çpppp Drop queued auto-repeat ghosts that run after a hold
     ; released (those start with 8 already up and would otherwise arm single-tap en).
     if !GetKeyState("8", "P")
         return

@@ -134,3 +134,4 @@ TX136,2026-09-09,Gas station,"150,00",card_expense,CAT_CARRO,ACC_MERCADOP,CARD_M
 TX137,2026-09-09,Dining with fiancé,"79,90",card_expense,CAT_LAZER,ACC_MERCADOP,CARD_MP,
 TX139,2026-09-09,Educational books,"280,33",card_expense,CAT_EDUCACAO,ACC_MERCADOP,CARD_MP,
 TX140,2026-09-10,Toll Booth,"50,00",card_expense,CAT_CARRO,,CARD_MP,
+TX141,2026-09-11,Lunch,"47,15",card_expense,CAT_ALIMENTA,,CARD_MP,
