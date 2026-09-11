@@ -290,52 +290,6 @@ FocusViaOpenButton(tabs, pressSpace := false) {
     }
 }
 
-; Shift + I : Toggle "Ignore transaction"
-+i:: {
-    try {
-        uia := TryAttachBrowser()
-        if !uia {
-            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        ignoreToggle := ""
-        try {
-            label := uia.FindElement({ Name: "Ignore transaction", Type: 50020, matchmode: "Substring" })
-            if label {
-                parent := UIA.TreeWalkerTrue.GetParentElement(label)
-                if parent {
-                    for , cb in parent.FindAll({ Type: 50002 }) {
-                        ignoreToggle := cb
-                        break
-                    }
-                }
-            }
-        } catch {
-        }
-        if !ignoreToggle {
-            ; Fallback: pick the last checkbox in the dialog, which is the ignore toggle in current forms.
-            try {
-                checkboxes := uia.FindAll({ Type: 50002 })
-                if (checkboxes && checkboxes.Length > 0)
-                    ignoreToggle := checkboxes[checkboxes.Length]
-            } catch {
-            }
-        }
-        if !ignoreToggle {
-            MsgBox "Could not find the Ignore transaction toggle.", "Mobills Navigation", "IconX"
-            return
-        }
-
-        try ignoreToggle.SetFocus()
-        Sleep 80
-        Send "{Space}"
-
-    } catch Error as e {
-        MsgBox "Error toggling Ignore transaction: " e.Message, "Mobills Error", "IconX"
-    }
-}
-
 ; Click "New" and select the requested creation menu item.
 Mobills_SelectNewMenuItem(itemName) {
     try {
@@ -411,6 +365,52 @@ Mobills_TypeMainInOpenPicker() {
 }
 
 #HotIf Mobills_ShouldHandleAppKeys()
+
+; Shift + I : Toggle "Ignore transaction"
++i:: {
+    try {
+        uia := TryAttachBrowser()
+        if !uia {
+            MsgBox "Could not attach to the browser window.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        ignoreToggle := ""
+        try {
+            label := uia.FindElement({ Name: "Ignore transaction", Type: 50020, matchmode: "Substring" })
+            if label {
+                parent := UIA.TreeWalkerTrue.GetParentElement(label)
+                if parent {
+                    for , cb in parent.FindAll({ Type: 50002 }) {
+                        ignoreToggle := cb
+                        break
+                    }
+                }
+            }
+        } catch {
+        }
+        if !ignoreToggle {
+            ; Fallback: pick the last checkbox in the dialog, which is the ignore toggle in current forms.
+            try {
+                checkboxes := uia.FindAll({ Type: 50002 })
+                if (checkboxes && checkboxes.Length > 0)
+                    ignoreToggle := checkboxes[checkboxes.Length]
+            } catch {
+            }
+        }
+        if !ignoreToggle {
+            MsgBox "Could not find the Ignore transaction toggle.", "Mobills Navigation", "IconX"
+            return
+        }
+
+        try ignoreToggle.SetFocus()
+        Sleep 80
+        Send "{Space}"
+
+    } catch Error as e {
+        MsgBox "Error toggling Ignore transaction: " e.Message, "Mobills Error", "IconX"
+    }
+}
 
 ; Shift + N : Focus name/description field
 +n:: FocusDescriptionField()
