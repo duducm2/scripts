@@ -3,7 +3,7 @@
 <details open>
 <summary><strong>Memory Palace 7: M Code Pipeline & Database Architectures</strong> · Character: Marie Curie · 1 beast · 1 atom</summary>
 
-_No image_
+![Memory Palace 7](images/data-analyst/7.jpg)
 
 <p><em>1 beast · 1 Knowledge Atom</em></p>
 
@@ -42,7 +42,7 @@ _No gallery images._
 <details>
 <summary><strong>Memory Palace 6: Power Query Transformations & Step Reuse</strong> · Character: Tim Berners-Lee · 5 beasts · 6 atoms</summary>
 
-_No image_
+![Memory Palace 6](images/data-analyst/6.jpg)
 
 <p><em>5 beasts · 6 Knowledge Atoms</em></p>
 

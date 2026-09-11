@@ -9,14 +9,67 @@
 ; Clip Angel: Merge Non-Favorite Clips
 ; =============================================================================
 
-; Extract title from first favorite under favorites filter, then merge non-favorites above it in all-marks.
+; Prefer DB merge (no window). On helper failure, fall back to UI walk.
 MergeNonFavoriteClips() {
     try {
         StandardLoadingBar_Show("⏳ Merging non-favorite clips...", BANNER_ACCENT_INTERMEDIATE, {
             passive: false,
             fontSize: 17
         })
+        payload := ClipAngelDb_MergePayload()
+        if (payload) {
+            MergeNonFavoriteClips_ViaDb(payload)
+            return
+        }
+        StandardLoadingBar_Update("⏳ DB helper unavailable — using UI...", BANNER_ACCENT_INTERMEDIATE)
+        MergeNonFavoriteClips_ViaUI()
+    } catch Error as e {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ShowCenteredOverlay_Utils("❌ Merge failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
+    }
+}
 
+; DB path: join text/html clips above newest favorite, put on clipboard, wait for ingest.
+MergeNonFavoriteClips_ViaDb(payload) {
+    total := payload["total"]
+    skipped := payload["skipped"]
+    text := payload["text"]
+    mergedCount := total - skipped
+    if (mergedCount < 1 || Trim(text) = "") {
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        msg := "⚠ No non-favorite text clips to merge"
+        if (skipped > 0)
+            msg .= " (" skipped " non-text skipped)"
+        ShowCenteredOverlay_Utils(msg, 2000, BANNER_ACCENT_INTERMEDIATE)
+        return
+    }
+    prevId := ClipAngelDb_MaxId()
+    if (prevId = "")
+        prevId := -1
+    else
+        prevId := Integer(prevId)
+    A_Clipboard := text
+    try ClipWait(0.4)
+    catch {
+    }
+    StandardLoadingBar_Update("⏳ Waiting for Clip Angel ingest...", BANNER_ACCENT_INTERMEDIATE)
+    ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
+    try StandardLoadingBar_Hide(0)
+    catch {
+    }
+    msg := "✅ Merged " mergedCount " clip" (mergedCount = 1 ? "" : "s")
+    if (skipped > 0)
+        msg .= " (" skipped " non-text skipped)"
+    ShowCenteredOverlay_Utils(msg, 2000, BANNER_ACCENT_SUCCESS)
+}
+
+; Extract title from first favorite under favorites filter, then merge non-favorites above it in all-marks.
+MergeNonFavoriteClips_ViaUI() {
+    try {
         hwnd := 0
         root := 0
         ; Start on favorites to capture the first favorite title (Row 0).

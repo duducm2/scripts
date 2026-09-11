@@ -10,6 +10,8 @@
 
 - [ ] schema
 
+- [ ] Visual Information Class PDFs
+
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation
@@ -50,10 +52,10 @@
 
 ### 4. Automated ETL Pipelines
 
-- [ ] Use Power Query to extract, transform, and load dirty data
-- [ ] Learn M language basics for repeatable transformations
-- [ ] Unpivot data and handle null/missing values in the query editor
-- [ ] Build a reusable Power Query that strips bad formatting and merges sources
+- [✅] Use Power Query to extract, transform, and load dirty data
+- [✅] Learn M language basics for repeatable transformations
+- [✅] Unpivot data and handle null/missing values in the query editor
+- [✅] Build a reusable Power Query that strips bad formatting and merges sources
 
 **🔗 Resources:**
 
@@ -63,9 +65,9 @@
 
 ### 5. Capstone Synthesis
 
-- [ ] Complete an end-to-end tabular analysis on a real-world dataset in Excel
-- [ ] Produce a cleaned report ready for review (Atrium Display Board equivalent)
-- [ ] Pin final cleaned Excel output as a stakeholder-facing summary board
+- [✅] Complete an end-to-end tabular analysis on a real-world dataset in Excel
+- [✅] Produce a cleaned report ready for review (Atrium Display Board equivalent)
+- [✅] Pin final cleaned Excel output as a stakeholder-facing summary board
 
 **🔗 Resources:**
 
@@ -75,10 +77,10 @@
 
 ### 1. Database Architecture
 
-- [ ] Install and configure PostgreSQL (or practice MySQL) locally
-- [ ] Understand schemas, tables, and primary/foreign key relationships
-- [ ] Write SELECT, FROM, and WHERE queries to extract and filter rows
-- [ ] Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding
+- [✅] Install and configure PostgreSQL (or practice MySQL) locally
+- [✅] Understand schemas, tables, and primary/foreign key relationships
+- [✅] Write SELECT, FROM, and WHERE queries to extract and filter rows
+- [✅] Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding
 
 **🔗 Resources:**
 

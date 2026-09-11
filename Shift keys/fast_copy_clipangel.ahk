@@ -450,7 +450,8 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
                 ClipAngel_ReleaseChordModifiersForSend()
-                SendInput "^!b"
+                if !ClipAngel_PostHotkey("b", "ca")
+                    SendInput "^!b"
             }
             ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon).
             try ClipWait(0.35)
@@ -690,7 +691,8 @@ ExecuteSequentialPaste(actionCount) {
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
                 ClipAngel_ReleaseChordModifiersForSend()
-                SendInput "^!b"
+                if !ClipAngel_PostHotkey("b", "ca")
+                    SendInput "^!b"
             }
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }

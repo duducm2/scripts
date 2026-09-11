@@ -17,11 +17,15 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
+    prevId := -1
+    maxId := ClipAngelDb_MaxId()
+    if (maxId != "" && IsInteger(maxId))
+        prevId := Integer(maxId)
     Send("^c")
     try ClipWait(0.4)
     catch {
     }
-    MarkLastClipAsFavorite("first", true)
+    MarkLastClipAsFavorite("first", true, prevId)
 }
 
 ; =============================================================================

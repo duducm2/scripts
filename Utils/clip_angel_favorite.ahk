@@ -925,7 +925,9 @@ ClipAngel_EnsureOpenAndReady(silent := true) {
 ClipAngel_SendIncrementalPaste() {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "^!b"
+    ; Native DecrementalPaste = Ctrl+Alt+B (settings); post WM_HOTKEY when possible.
+    if !ClipAngel_PostHotkey("b", "ca")
+        SendInput "^!b"
     Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
 }
 
@@ -1203,7 +1205,8 @@ ClipAngel_SendNativeTopItemKeys(priorHwnd := 0) {
     ClipAngel_ReleaseChordModifiersForSend()
     if (priorHwnd)
         ClipAngel_EnsureWindowActive(priorHwnd)
-    SendInput "^!b"
+    if !ClipAngel_PostHotkey("b", "ca")
+        SendInput "^!b"
 }
 
 ; Send top list item via Clip Angel native keys. Minimizes Clip Angel and restores prior focus after paste.
@@ -1245,7 +1248,8 @@ ClipAngel_SendTopListItemSequential(count, priorHwnd := 0) {
             } else {
                 Sleep(CLIPANGEL_SEQUENTIAL_PASTE_GAP_MS)
                 ClipAngel_ReleaseChordModifiersForSend()
-                SendInput "^!b"
+                if !ClipAngel_PostHotkey("b", "ca")
+                    SendInput "^!b"
             }
             Sleep(CLIPANGEL_INCREMENTAL_PASTE_SETTLE_MS)
         }
@@ -1835,11 +1839,32 @@ ClipAngel_FavoriteAltQSendAndVerify(hwnd, root := 0) {
 }
 
 ; Bounded wait for Clip Angel to ingest newest clipboard (replaces fixed Sleep 400).
-ClipAngel_WaitForClipboardIngest(timeoutMs := CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS) {
+; prevId: MAX(Id) snapshot taken *before* the copy — preferred DB waitnew path.
+; When prevId unset, polls DB newest title vs clipboard, then falls back to UIA.
+ClipAngel_WaitForClipboardIngest(timeoutMs := CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId := -1) {
     clipPreview := ""
     try clipPreview := SubStr(A_Clipboard, 1, 80)
     catch {
         clipPreview := ""
+    }
+    ; Fast path: wait until MAX(Id) exceeds pre-copy snapshot.
+    if (prevId is Integer && prevId >= 0) {
+        if (ClipAngelDb_WaitNew(prevId, timeoutMs) != "")
+            return
+    } else if (ClipAngelDb_ExePath() != "") {
+        ; Post-copy without snapshot: poll newest until title overlaps clipboard.
+        deadlineDb := A_TickCount + timeoutMs
+        while (A_TickCount < deadlineDb) {
+            newest := ClipAngelDb_Newest()
+            if (newest) {
+                if (clipPreview = "")
+                    return
+                title := newest["title"]
+                if (title != "" && (InStr(title, clipPreview) || InStr(clipPreview, SubStr(title, 1, 40))))
+                    return
+            }
+            Sleep 50
+        }
     }
     hwnd := ClipAngel_MainHwnd()
     if !hwnd {
@@ -1872,60 +1897,103 @@ ClipAngel_WaitForClipboardIngest(timeoutMs := CLIPANGEL_PRE_FAVORITE_INGEST_DELA
     }
 }
 
-MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
+; Poll DB Favorite bit after UI toggle (fast confirm). Returns true/false/"" (unknown).
+ClipAngel_WaitDbFavoriteOn(id, timeoutMs := 400) {
+    if !(id is Integer) || id <= 0
+        return ""
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        v := ClipAngelDb_IsFav(id)
+        if (v = 1)
+            return true
+        if (v = 0) {
+            Sleep 40
+            continue
+        }
+        break
+    }
+    v := ClipAngelDb_IsFav(id)
+    if (v = 1)
+        return true
+    if (v = 0)
+        return false
+    return ""
+}
+
+MarkLastClipAsFavorite(target := "first", waitForIngest := false, prevId := -1) {
     if waitForIngest
-        ClipAngel_WaitForClipboardIngest()
+        ClipAngel_WaitForClipboardIngest(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS, prevId)
     if !ClipAngel_TryAcquireAutomationLock()
         return
     priorHwnd := ClipAngel_ResolvePriorHwnd(0)
     resultKind := ""
     resultMsg := ""
     try {
-        StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
-            centerOnHwnd: priorHwnd,
-            fontSize: 17,
-            passive: false
-        })
-        try {
-            if (target = "last") {
-                MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
-            } else {
-                targetMon := 0
-                if (priorHwnd) {
-                    try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
-                    catch
-                        targetMon := 0
-                }
-                hwnd := 0
-                root := 0
-                ; One suppress + open + all-marks + Row 0 (shared automation core).
-                if !ClipAngel_OpenForAutomation("all", targetMon, true, &hwnd, &root) {
-                    resultKind := "error"
-                    resultMsg := "❌ Clip Angel did not open."
-                } else if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true) {
-                    resultKind := "error"
-                    resultMsg := "❌ Clip Angel did not open."
-                } else {
-                    hwnd := ClipAngel_MainHwnd()
-                    if (hwnd && !root) {
-                        try root := UIA.ElementFromHandle(hwnd)
-                        catch
-                            root := 0
-                    }
-                    ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
-                    if ok {
-                        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-                        resultKind := "success"
-                        resultMsg := "✅ Marked focused clip as favorite."
-                    } else {
-                        resultKind := "error"
-                        resultMsg := "❌ Could not mark favorite (menu/list focus)."
-                    }
-                }
+        ; DB pre-check: skip entire window dance when newest is already favorite.
+        alreadyFav := false
+        if (target != "last") {
+            newest := ClipAngelDb_Newest()
+            if (newest && newest["favorite"]) {
+                alreadyFav := true
+                resultKind := "success"
+                resultMsg := "✅ Newest clip is already a favorite."
             }
-        } finally {
-            try StandardLoadingBar_Hide(0)
-            catch {
+        }
+        if !alreadyFav {
+            StandardLoadingBar_Show("⏳ Marking clip as favorite...", BANNER_ACCENT_INTERMEDIATE, {
+                centerOnHwnd: priorHwnd,
+                fontSize: 17,
+                passive: false
+            })
+            try {
+                if (target = "last") {
+                    MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
+                } else {
+                    targetMon := 0
+                    if (priorHwnd) {
+                        try targetMon := GetAhkMonitorIndexFromHwnd(priorHwnd)
+                        catch
+                            targetMon := 0
+                    }
+                    hwnd := 0
+                    root := 0
+                    newestId := 0
+                    newest := ClipAngelDb_Newest()
+                    if (newest)
+                        newestId := newest["id"]
+                    ; One suppress + open + all-marks + Row 0 (shared automation core).
+                    if !ClipAngel_OpenForAutomation("all", targetMon, true, &hwnd, &root) {
+                        resultKind := "error"
+                        resultMsg := "❌ Clip Angel did not open."
+                    } else if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true) {
+                        resultKind := "error"
+                        resultMsg := "❌ Clip Angel did not open."
+                    } else {
+                        hwnd := ClipAngel_MainHwnd()
+                        if (hwnd && !root) {
+                            try root := UIA.ElementFromHandle(hwnd)
+                            catch
+                                root := 0
+                        }
+                        ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd, root)
+                        if ok {
+                            ; Prefer DB Favorite bit confirm when id known.
+                            dbOk := newestId > 0 ? ClipAngel_WaitDbFavoriteOn(newestId, 400) : ""
+                            if (dbOk = false)
+                                ok := ClipAngel_Row0TitleLooksFavorited(hwnd, root)
+                            ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                            resultKind := "success"
+                            resultMsg := "✅ Marked focused clip as favorite."
+                        } else {
+                            resultKind := "error"
+                            resultMsg := "❌ Could not mark favorite (menu/list focus)."
+                        }
+                    }
+                }
+            } finally {
+                try StandardLoadingBar_Hide(0)
+                catch {
+                }
             }
         }
     } catch Error as e {

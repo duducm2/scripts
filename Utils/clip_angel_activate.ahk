@@ -12,6 +12,58 @@
 ; Row 0 (first clip) per clip-angel.txt. One ElementFromHandle per flow; bounded polls; layout only when not foreground/hidden.
 ; skipRow0: true when caller will select Row 0 after filter change (e.g. OnSubmitO leaving favorites).
 ; forceLayout: true always move/maximize onto targetMon (toggle-open path).
+
+; Post WM_HOTKEY (0x0312) to ClipAngel process windows — triggers native RegisterHotKey
+; dispatch without SendInput / focus steal. modFlags: subset of "casw" (Ctrl/Alt/Shift/Win).
+; Returns true if at least one PostMessage succeeded.
+ClipAngel_PostHotkey(vkOrChar, modFlags := "") {
+    static WM_HOTKEY := 0x0312
+    static MOD_ALT := 1, MOD_CONTROL := 2, MOD_SHIFT := 4, MOD_WIN := 8
+    if (vkOrChar = "")
+        return false
+    vk := 0
+    if (vkOrChar is Integer)
+        vk := Integer(vkOrChar)
+    else {
+        s := StrLower(Trim(vkOrChar))
+        if (StrLen(s) = 1) {
+            c := Ord(s)
+            if (c >= Ord("a") && c <= Ord("z"))
+                vk := c - Ord("a") + 0x41
+            else if (c >= Ord("0") && c <= Ord("9"))
+                vk := c
+        }
+    }
+    if (vk <= 0)
+        return false
+    mods := 0
+    mf := StrLower(modFlags)
+    if InStr(mf, "a")
+        mods |= MOD_ALT
+    if InStr(mf, "c")
+        mods |= MOD_CONTROL
+    if InStr(mf, "s")
+        mods |= MOD_SHIFT
+    if InStr(mf, "w")
+        mods |= MOD_WIN
+    lParam := (vk << 16) | mods
+    posted := false
+    prevDetect := A_DetectHiddenWindows
+    DetectHiddenWindows true
+    try {
+        for hwnd in WinGetList("ahk_exe ClipAngel.exe") {
+            try {
+                PostMessage(WM_HOTKEY, 0, lParam, , "ahk_id " hwnd)
+                posted := true
+            } catch {
+            }
+        }
+    } finally {
+        DetectHiddenWindows prevDetect
+    }
+    return posted
+}
+
 ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 := false, forceLayout := false) {
     needBanner := false
     if !targetMon {

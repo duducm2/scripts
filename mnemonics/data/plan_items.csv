@@ -128,17 +128,17 @@ PITEM_0126,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Cor
 PITEM_0127,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Compute percentage distributions and relative shares in pivots,1,12
 PITEM_0128,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,Apply dynamic number formatting for stakeholder-ready summaries,1,13
 PITEM_0129,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 3. Dimensional Aggregation,"Practice dragging fields into Rows, Columns, and Values as physical pivot rotation",1,14
-PITEM_0130,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,"Use Power Query to extract, transform, and load dirty data",0,15
-PITEM_0131,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Learn M language basics for repeatable transformations,0,16
-PITEM_0132,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Unpivot data and handle null/missing values in the query editor,0,17
-PITEM_0133,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Build a reusable Power Query that strips bad formatting and merges sources,0,18
-PITEM_0134,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Complete an end-to-end tabular analysis on a real-world dataset in Excel,0,19
-PITEM_0135,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Produce a cleaned report ready for review (Atrium Display Board equivalent),0,20
-PITEM_0136,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Pin final cleaned Excel output as a stakeholder-facing summary board,0,21
-PITEM_0137,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,Install and configure PostgreSQL (or practice MySQL) locally,0,22
-PITEM_0138,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Understand schemas, tables, and primary/foreign key relationships",0,23
-PITEM_0139,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Write SELECT, FROM, and WHERE queries to extract and filter rows",0,24
-PITEM_0140,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding",0,25
+PITEM_0130,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,"Use Power Query to extract, transform, and load dirty data",1,15
+PITEM_0131,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Learn M language basics for repeatable transformations,1,16
+PITEM_0132,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Unpivot data and handle null/missing values in the query editor,1,17
+PITEM_0133,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 4. Automated ETL Pipelines,Build a reusable Power Query that strips bad formatting and merges sources,1,18
+PITEM_0134,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Complete an end-to-end tabular analysis on a real-world dataset in Excel,1,19
+PITEM_0135,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Produce a cleaned report ready for review (Atrium Display Board equivalent),1,20
+PITEM_0136,PLAN_0007,Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium) > 5. Capstone Synthesis,Pin final cleaned Excel output as a stakeholder-facing summary board,1,21
+PITEM_0137,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,Install and configure PostgreSQL (or practice MySQL) locally,1,22
+PITEM_0138,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Understand schemas, tables, and primary/foreign key relationships",1,23
+PITEM_0139,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Write SELECT, FROM, and WHERE queries to extract and filter rows",1,24
+PITEM_0140,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 1. Database Architecture,"Map SELECT/FROM/WHERE to flashlight, aisle, and iron gate loci before coding",1,25
 PITEM_0141,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Aggregate with GROUP BY and filter groups with HAVING,0,26
 PITEM_0142,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,"Apply SUM, AVG, COUNT, MIN, and MAX correctly",0,27
 PITEM_0143,PLAN_0007,Phase 2: Relational Database Extraction and Querying (Subterranean Archive) > 2. Aggregation Logic,Visualize GROUP BY as a binding machine that stamps totals on bundled books,0,28
@@ -918,3 +918,4 @@ PITEM_0916,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),Jobs-t
 PITEM_0917,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),MaxDiff (maximum difference scaling),0,90
 PITEM_0918,PLAN_0005,Willingness to Pay > Secondary Topics (Ranks 6–10),"Value metrics, packaging, and monetization linked to WTP",0,91
 PITEM_0919,PLAN_0007,Backlog,schema,0,3
+PITEM_0920,PLAN_0007,Backlog,Visual Information Class PDFs,0,4

@@ -99,6 +99,8 @@ global GEMINI_OPEN_FAST_SETTLE_MS := 0
 #include %A_ScriptDir%\Utils\files_links.ahk
 ; [Utils module] Macros system RegisterMacro and assignments -> Utils\macros_system.ahk
 #include %A_ScriptDir%\Utils\macros_system.ahk
+; [Utils module] Clip Angel SQLite read helper (ClipAngelDb.exe) -> Utils\clip_angel_db.ahk
+#include %A_ScriptDir%\Utils\clip_angel_db.ahk
 ; [Utils module] Clip Angel merge non-favorite clips -> Utils\clip_angel_merge.ahk
 #include %A_ScriptDir%\Utils\clip_angel_merge.ahk
 ; [Utils module] Clip Angel activate with focus correction -> Utils\clip_angel_activate.ahk
