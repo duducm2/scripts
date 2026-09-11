@@ -1,2 +1,9 @@
 id,study_id,image_rel_path,caption,sort_order
 STIMG_0001,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0001.jpg,,1
+STIMG_0002,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0002.png,,2
+STIMG_0003,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0003.png,,3
+STIMG_0004,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0004.png,,4
+STIMG_0005,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0005.png,,5
+STIMG_0006,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0006.png,,6
+STIMG_0007,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0007.png,,7
+STIMG_0008,STUDY_DATAANALYST,practice/images/data-analyst/backlog-0008.png,,8
