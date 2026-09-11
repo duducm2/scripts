@@ -126,27 +126,15 @@ ClipAngel_OpenWithMarkFilter(mode) {
         try root := UIA.ElementFromHandle(hwnd)
         catch
             root := 0
-        filterOk := ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
-        if !filterOk {
+        if !ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root)) {
             StandardLoadingBar_Update(wantAll ? "⏳ Show all marks..." : "⏳ Show favorites...",
                 BANNER_ACCENT_INTERMEDIATE)
-            ClipAngel_ReleaseChordModifiersForSend()
-            keys := wantAll ? "^1" : "^2"
-            try ControlSend(keys, , "ahk_id " hwnd)
-            catch {
+            if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root) {
                 try StandardLoadingBar_Hide(0)
                 catch {
                 }
                 ShowCenteredOverlay_Utils("❌ Could not set Clip Angel filter.", 2000, BANNER_ACCENT_ERROR)
                 return false
-            }
-            deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
-            while (A_TickCount < deadline) {
-                if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root)) {
-                    filterOk := true
-                    break
-                }
-                Sleep CLIPANGEL_UIA_POLL_MS
             }
         }
         StandardLoadingBar_Update("⏳ Selecting first clip...", BANNER_ACCENT_INTERMEDIATE)

@@ -1337,6 +1337,188 @@ ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root := 0) {
     }
 }
 
+; MarkFilter combo → favorites (second item after "all marks" in Clip Angel dropdown).
+ClipAngel_UiaSetMarkFilterFavorites(hwnd, root := 0) {
+    if !hwnd
+        return false
+    try {
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return false
+        }
+        mf := ClipAngel_UiaFindFirst(root, { AutomationId: "MarkFilter", Type: 50003 })
+        if !mf
+            return false
+        if InStr(StrLower(Trim(mf.Value)), "favor")
+            return true
+        mf.SetFocus()
+        mf.Click()
+        Sleep 30
+        Send "{Home}{Down}"
+        Sleep 30
+        Send "{Enter}"
+        Sleep 30
+        if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+            return true
+        ; List-item pick after expand (dropdown labels vary by locale).
+        try {
+            if mf.GetPropertyValue(UIA.Property.IsExpandCollapsePatternAvailable)
+                mf.ExpandCollapsePattern.Expand()
+        } catch {
+        }
+        Sleep 40
+        for item in mf.FindAll({ Type: 50007 }) { ; ListItem
+            n := "", v := ""
+            try n := item.Name
+            catch {
+            }
+            try v := item.Value
+            catch {
+            }
+            if InStr(StrLower(n . " " . v), "favor") {
+                try {
+                    if item.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                        item.SelectionItemPattern.Select()
+                    else
+                        item.Click()
+                } catch {
+                    try item.Click()
+                    catch {
+                    }
+                }
+                deadline := A_TickCount + 200
+                while (A_TickCount < deadline) {
+                    if InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+                        return true
+                    Sleep CLIPANGEL_UIA_POLL_MS
+                }
+                break
+            }
+        }
+        return InStr(StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))), "favor")
+    } catch {
+        return false
+    }
+}
+
+; List menu: "Show all marks" / "Show only favorite" (same as Ctrl+1 / Ctrl+2).
+ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root := 0) {
+    if !hwnd
+        return false
+    try {
+        if !root {
+            root := UIA.ElementFromHandle(hwnd)
+            if !root
+                return false
+        }
+        listItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "List" })
+        if !listItem || !ClipAngel_UiaInvokeElement(listItem)
+            return false
+        names := wantAll
+            ? ["Show all marks", "all marks"]
+                : ["Show only favorite", "Show only favorites", "favorite"]
+        item := 0
+        deadline := A_TickCount + 180
+        while (A_TickCount < deadline) {
+            for name in names {
+                item := ClipAngel_UiaFindMenuItem([root], { Type: 50011, Name: name })
+                if !item {
+                    try desktop := UIA.GetRootElement()
+                    catch
+                        desktop := 0
+                    if desktop
+                        item := ClipAngel_UiaFindMenuItem([root, desktop], { Type: 50011, Name: name })
+                }
+                if item
+                    break
+            }
+            if item
+                break
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
+        if !item {
+            ClipAngel_ReleaseChordModifiersForSend()
+            ClipAngel_SendToHwnd(hwnd, "{Escape}")
+            return false
+        }
+        if !ClipAngel_UiaInvokeElement(item)
+            return false
+        deadline := A_TickCount + 220
+        while (A_TickCount < deadline) {
+            if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+                return true
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
+        return ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+    } catch {
+        return false
+    }
+}
+
+; Apply MarkFilter for Alt+P/B. ControlSend alone often fails when Clip Angel is already focused;
+; prefer grid-focused SendInput (does not trip Shift-keys HotIf at SendLevel 0), then UIA fallbacks.
+ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root := 0) {
+    if !hwnd
+        return false
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
+    if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+        return true
+    global g_ClipAngelFavoriteSuppressActive
+    if !g_ClipAngelFavoriteSuppressActive {
+        if !WinActive("ahk_id " hwnd)
+            ClipAngel_EnsureWindowActive(hwnd, 200)
+    }
+    try {
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid
+            try dataGrid.SetFocus()
+    } catch {
+    }
+    ClipAngel_ReleaseChordModifiersForSend()
+    keys := wantAll ? "^1" : "^2"
+    priorSendLevel := A_SendLevel
+    SendLevel 0
+    if g_ClipAngelFavoriteSuppressActive
+        ClipAngel_SendToHwnd(hwnd, keys)
+    else
+        SendInput keys
+    deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
+    while (A_TickCount < deadline) {
+        if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root)) {
+            SendLevel priorSendLevel
+            return true
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    SendLevel priorSendLevel
+    ; ControlSend retry (cold open / unfocused child).
+    try ControlSend(keys, , "ahk_id " hwnd)
+    catch {
+    }
+    deadline := A_TickCount + 150
+    while (A_TickCount < deadline) {
+        if ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+            return true
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    if wantAll {
+        if ClipAngel_NativeSendShiftP(hwnd, 220, root)
+            return true
+        if ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root)
+            return true
+    } else if ClipAngel_UiaSetMarkFilterFavorites(hwnd, root) {
+        return true
+    }
+    if ClipAngel_UiaInvokeListMarkFilter(hwnd, wantAll, root)
+        return true
+    return ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root))
+}
+
 ; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
 ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     global g_ClipAngelFavoriteSuppressActive
