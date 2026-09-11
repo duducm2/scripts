@@ -11,20 +11,17 @@ CLIPANGEL_WAS7_HOLD_MS := 200
 ; =============================================================================
 ; Send specific key combinations
 ; Hotkey: Win+Alt+Shift+.
+; Copy selection then mark newest clip as favorite (shared MarkLastClipAsFavorite path).
 ; =============================================================================
 #!+.::
 {
-    Sleep(100)
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
     Send("^c")
-    Sleep(200)
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_ShowWindow(hwnd)
-    Sleep(700)
-    ; Clip > Mark favorite via UIA — never Alt+Q (highlights Window ribbon).
-    if hwnd := ClipAngel_MainHwnd()
-        ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
-    Sleep(200)
-    ClipAngel_CloseAndRestoreFocus(0)
+    try ClipWait(0.4)
+    catch {
+    }
+    MarkLastClipAsFavorite("first", true)
 }
 
 ; =============================================================================
@@ -52,14 +49,10 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         hideMs := 350
         StandardLoadingBar_Show("⏳ Clip Angel: opening...", BANNER_ACCENT_INTERMEDIATE)
         try {
-            if !ActivateClipAngelWithFocusCorrection(true) {
+            hwnd := 0
+            root := 0
+            if !ClipAngel_OpenForAutomation("all", 0, false, &hwnd, &root) {
                 StandardLoadingBar_Update("❌ Clip Angel is not running.", BANNER_ACCENT_ERROR)
-                hideMs := 2000
-                return
-            }
-            hwnd := ClipAngel_MainHwnd()
-            if !hwnd {
-                StandardLoadingBar_Update("❌ Clip Angel window not found.", BANNER_ACCENT_ERROR)
                 hideMs := 2000
                 return
             }
@@ -80,7 +73,8 @@ CLIPANGEL_WAS7_HOLD_MS := 200
             }
             StandardLoadingBar_Update("⏳ Clip Angel: opening editor...", BANNER_ACCENT_INTERMEDIATE)
             SendInput "{F4}"
-            StandardLoadingBar_Update("✅ Clip Angel: Edit", BANNER_ACCENT_SUCCESS)
+            StandardLoadingBar_Update("✅ Clip Angel: edit", BANNER_ACCENT_SUCCESS)
+            hideMs := 350
         } finally {
             StandardLoadingBar_Hide(hideMs)
             ClipAngel_ReleaseAutomationLock()
@@ -88,47 +82,6 @@ CLIPANGEL_WAS7_HOLD_MS := 200
         return
     }
 
-    ; Hold: clipboard-first to Desktop; ClipAngel Paste file only when clipboard is empty.
-    clipboardFirst := true
-    try clipboardFirst := CLIPANGEL_EXPORT_CLIPBOARD_FIRST
-    catch {
-        clipboardFirst := true
-    }
-    if (clipboardFirst) {
-        errMsg := ""
-        outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
-        if (outPath != "") {
-            SplitPath(outPath, &name)
-            if (StrLen(name) > 48)
-                name := SubStr(name, 1, 45) "..."
-            try ShowCenteredOverlay_Utils("✅ Pasted: " name, 1800, BANNER_ACCENT_SUCCESS)
-            catch {
-            }
-            return
-        }
-    }
-    desktopHwnd := ClipAngelExport_ActivateDesktopForPaste()
-    if !desktopHwnd {
-        ShowCenteredOverlay_Utils("❌ Could not activate Desktop.", 2000, BANNER_ACCENT_ERROR)
-        return
-    }
-    try {
-        ClipAngel_ActivateNativeFirstClip(desktopHwnd)
-        hwnd := ClipAngel_MainHwnd()
-        if !hwnd {
-            ShowCenteredOverlay_Utils("❌ Clip Angel window not found.", 2000, BANNER_ACCENT_ERROR)
-            return
-        }
-        ClipAngel_EnsureWindowActive(hwnd)
-        ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true)
-        if !ClipAngel_InvokePasteEnter(hwnd)
-            ShowCenteredOverlay_Utils("❌ Clip Angel Paste file failed", 1500, BANNER_ACCENT_ERROR)
-    } finally {
-        ClipAngel_CloseAndRestoreFocus(priorHwnd)
-    }
+    ; Hold: paste top clip as file onto Desktop (shared export helper).
+    ClipAngelExport_PasteFirstClipToDesktop()
 }
-
-; =============================================================================
-; Initialize Wikipedia scroll position auto-save timer - REMOVED
-; =============================================================================
-; Auto-save timer removed - now using manual save via Shift keys.ahk shortcut

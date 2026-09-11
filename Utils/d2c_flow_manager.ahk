@@ -1094,7 +1094,7 @@ class D2C_FlowManager {
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
-            Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+            ClipAngel_WaitForClipboardIngest()
             ClipAngel_ExportLastClipToDesktop()
         } finally {
             this.Reset()
@@ -1258,7 +1258,7 @@ class D2C_FlowManager {
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
             }
-            Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+            ClipAngel_WaitForClipboardIngest()
             this._OpenClipAngelEditForOrigin(this.OriginHwnd)
         } finally {
             this.Reset()

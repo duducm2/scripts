@@ -1413,7 +1413,7 @@ ClipAngelExport_OnFavoriteClip(*) {
 }
 
 HotkeyCopy_DoConfirmDesktop() {
-    Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+    ClipAngel_WaitForClipboardIngest()
     ClipAngel_ExportLastClipToDesktop()
 }
 
@@ -1464,7 +1464,7 @@ HotkeyCopy_YTryFinishExport() {
     savedClip := ClipboardAll()
     try {
         StandardLoadingBar_Show("⏳ Clip Angel: exporting...", BANNER_ACCENT_INTERMEDIATE)
-        Sleep CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS
+        ClipAngel_WaitForClipboardIngest()
         errMsg := ""
         outPath := ClipAngelExport_SaveClipboardToDesktop(&errMsg)
         if (outPath = "")

@@ -57,15 +57,52 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
             ShowCenteredOverlay_Utils("❌ ClipAngel window not found.", 2000, BANNER_ACCENT_ERROR)
         return false
     }
+    ; ApplyLayoutOnMonitor already activates on its fast/full paths — only activate when layout skipped.
     if needsLayout
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
-    ClipAngel_EnsureWindowActive(hwnd)
+    else
+        ClipAngel_EnsureWindowActive(hwnd)
     if !skipRow0
         ClipAngel_UiaEnsureRow0Selected(hwnd, true)
     if needBanner {
         StandardLoadingBar_Update("✅ Clip Angel ready", BANNER_ACCENT_SUCCESS)
         StandardLoadingBar_Hide(350)
     }
+    return true
+}
+
+; Shared open for paste / export / merge / suppress paths: show+layout, MarkFilter, Row 0.
+; suppressVisual: park off-screen (favorite) — no foreground activate / loading bar.
+; Returns true and sets &outHwnd / &outRoot when provided.
+ClipAngel_OpenForAutomation(mode := "all", targetMon := 0, suppressVisual := false, &outHwnd := 0, &outRoot := 0) {
+    wantAll := (mode = "all" || mode = "")
+    outHwnd := 0
+    outRoot := 0
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        hwnd := ClipAngel_WaitForMainHwnd()
+    if !hwnd
+        return false
+    if suppressVisual {
+        ClipAngel_BeginFavoriteSuppress(hwnd)
+        ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, false, true)
+    } else {
+        if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false)
+            return false
+        hwnd := ClipAngel_MainHwnd()
+        if !hwnd
+            return false
+    }
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        root := 0
+    if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root)
+        return false
+    if !ClipAngel_FastEnsureRow0(hwnd, root)
+        ClipAngel_UiaEnsureRow0Selected(hwnd, true, root)
+    outHwnd := hwnd
+    outRoot := root
     return true
 }
 
@@ -106,41 +143,15 @@ ClipAngel_OpenWithMarkFilter(mode) {
             catch
                 targetMon := 0
         }
-        ; skipRow0: filter first, then select Row 0 once. silent: this bar is the only indicator.
-        if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false) {
-            try StandardLoadingBar_Hide(0)
-            catch {
-            }
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
-        hwnd := ClipAngel_MainHwnd()
-        if !hwnd {
-            try StandardLoadingBar_Hide(0)
-            catch {
-            }
-            ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
-            return false
-        }
+        hwnd := 0
         root := 0
-        try root := UIA.ElementFromHandle(hwnd)
-        catch
-            root := 0
-        if !ClipAngel_MarkFilterMatchesMode(wantAll, ClipAngel_UiaGetMarkFilterValue(hwnd, root)) {
-            StandardLoadingBar_Update(wantAll ? "⏳ Show all marks..." : "⏳ Show favorites...",
-                BANNER_ACCENT_INTERMEDIATE)
-            if !ClipAngel_ApplyMarkFilterMode(wantAll, hwnd, root) {
-                try StandardLoadingBar_Hide(0)
-                catch {
-                }
-                ShowCenteredOverlay_Utils("❌ Could not set Clip Angel filter.", 2000, BANNER_ACCENT_ERROR)
-                return false
+        if !ClipAngel_OpenForAutomation(wantAll ? "all" : "favorites", targetMon, false, &hwnd, &root) {
+            try StandardLoadingBar_Hide(0)
+            catch {
             }
+            ShowCenteredOverlay_Utils("❌ Could not open Clip Angel / set filter.", 2000, BANNER_ACCENT_ERROR)
+            return false
         }
-        StandardLoadingBar_Update("⏳ Selecting first clip...", BANNER_ACCENT_INTERMEDIATE)
-        ; Reuse one UIA root for Row 0 (FastEnsureRow0); full EnsureRow0 only if fast path fails.
-        if !ClipAngel_FastEnsureRow0(hwnd, root)
-            ClipAngel_UiaEnsureRow0Selected(hwnd, true)
         try StandardLoadingBar_Hide(0)
         catch {
         }

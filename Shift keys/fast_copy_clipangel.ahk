@@ -36,11 +36,9 @@ FastCopyMode_DebugLog(hypothesisId, location, message, data := "") {
     global FAST_COPY_DEBUG
     if (!FAST_COPY_DEBUG)
         return
-    ; Writes NDJSON to debug-1bed80.log (Debug session: 1bed80)
     try {
         runId := "pre-fix"
-        logPath := "C:\Users\fie7ca\Documents\scripts\debug-1bed80.log"
-        ; Keep data small and non-sensitive; accept either a string or a Map-like object.
+        logPath := A_ScriptDir "\debug-fast-copy.log"
         dataJson := "{}"
         if (IsObject(data)) {
             parts := []
@@ -454,9 +452,11 @@ Gemini_PasteFromClipAngelSequential(count, uia := "") {
                 ClipAngel_ReleaseChordModifiersForSend()
                 SendInput "^!b"
             }
-            ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon: bounded
-            ; wait vs fixed 2.6s). minNoIndicatorMs 2600 preserves ~legacy tail when no upload indicator.
-            Sleep 400
+            ; Brief settle after paste, then condition-based wait for upload UI (efficiency-canon).
+            try ClipWait(0.35)
+            catch {
+                Sleep 50
+            }
             try FastCopyMode_FocusGeminiPromptField(uia)
             try Gemini_WaitForUploadIdleWithRefocus(uia, 4000, 2600)
             try FastCopyMode_FocusGeminiPromptField(uia)
@@ -625,7 +625,10 @@ FastCopyMode_PasteScreenshotQueue(queue) {
 
                 ; Gemini: condition-based upload wait (early exit when UI idle) vs fixed 2.6s sleep.
                 if (isGeminiSession) {
-                    Sleep 400
+                    try ClipWait(0.35)
+                    catch {
+                        Sleep 50
+                    }
                     try FastCopyMode_FocusGeminiPromptField(cachedGeminiUia)
                     idleStatus := IsObject(cachedGeminiUia) ? Gemini_WaitForUploadIdleWithRefocus(cachedGeminiUia, 5000,
                         800) : "no_uia"
