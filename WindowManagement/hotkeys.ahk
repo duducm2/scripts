@@ -54,26 +54,26 @@
 ; Dev: log taskbar-minimized background scan (Ctrl+Alt+Win+Shift+B)
 ^!+#b:: WM_DebugBackgroundWindowScan()
 
-; Clip Angel Alt+P / Alt+B: pass-through to native open; one settle timer + one maximize gate.
+; Clip Angel Alt+P / Alt+B: AHK-owned open (clear native Alt+P/B in Clip Angel settings).
 ; AutoSlot freeze lives here (WindowManagement includes AutoSlot; Utils does not).
 #HotIf WinExist("ahk_exe ClipAngel.exe")
-~!p:: {
+!p:: {
     try AutoSlot_BeginPlaceFreeze()
     catch {
     }
     try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
     catch {
     }
-    ClipAngel_EnsureForegroundAfterNativeOpen()
+    ClipAngel_OpenWithMarkFilter("all")
 }
-~!b:: {
+!b:: {
     try AutoSlot_BeginPlaceFreeze()
     catch {
     }
     try AutoSlot_BeginSwapQuiet(AutoSlot_RECENT_MS)
     catch {
     }
-    ClipAngel_EnsureForegroundAfterNativeOpen()
+    ClipAngel_OpenWithMarkFilter("favorites")
 }
 #HotIf
 

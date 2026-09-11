@@ -63,8 +63,60 @@ ActivateClipAngelWithFocusCorrection(silent := false, targetMon := 0, skipRow0 :
     return true
 }
 
+; AHK-owned Alt+P / Alt+B open: show Clip Angel, ControlSend Ctrl+1 (all marks) or Ctrl+2 (favorites), Row 0.
+; Requires Clip Angel global Alt+P/B cleared; List menu Ctrl+1 / Ctrl+2 kept. No ribbon validation.
+CLIPANGEL_MARKFILTER_WAIT_MS := 300
+
+ClipAngel_OpenWithMarkFilter(mode) {
+    wantAll := (mode = "all")
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd {
+        ShowCenteredOverlay_Utils("❌ Clip Angel is not running.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    targetMon := ClipAngel_GetMonitorIndexFromCursor()
+    if (!targetMon || targetMon < 1) {
+        try targetMon := GetAhkMonitorIndexFromHwnd(WinGetID("A"))
+        catch
+            targetMon := 0
+    }
+    ; skipRow0: filter first, then select Row 0 once.
+    if !ActivateClipAngelWithFocusCorrection(true, targetMon, true, false) {
+        ShowCenteredOverlay_Utils("❌ Clip Angel did not open.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    hwnd := ClipAngel_MainHwnd()
+    if !hwnd
+        return false
+    ClipAngel_ReleaseChordModifiersForSend()
+    keys := wantAll ? "^1" : "^2"
+    try ControlSend(keys, , "ahk_id " hwnd)
+    catch {
+        ShowCenteredOverlay_Utils("❌ Could not set Clip Angel filter.", 2000, BANNER_ACCENT_ERROR)
+        return false
+    }
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch
+        root := 0
+    deadline := A_TickCount + CLIPANGEL_MARKFILTER_WAIT_MS
+    while (A_TickCount < deadline) {
+        val := StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root)))
+        if wantAll {
+            if (val = "all marks")
+                break
+        } else if InStr(val, "favor") {
+            break
+        }
+        Sleep CLIPANGEL_UIA_POLL_MS
+    }
+    ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+    return true
+}
+
 ; After native Alt+P / Alt+B open: short settle, one maximize gate, one retry if needed.
 ; Efficiency canon: hotkey returns immediately; same-monitor path skips MoveWindow+Sleep.
+; Legacy: unused by AHK-owned !p/!b (kept for any external callers).
 CLIPANGEL_NATIVE_OPEN_SETTLE_MS := 50
 CLIPANGEL_NATIVE_OPEN_RETRY_MS := 100
 global g_ClipAngelNativeOpenTargetMon := 0

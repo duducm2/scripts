@@ -561,8 +561,7 @@ ClipAngel_UiaTryLegacySelectRow(row) {
     }
 }
 
-; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
-; Also recovers when keyboard focus is stuck on the Window/List/Clip ribbon menu (selected row != focused).
+; Kept for diagnostics / optional callers; open Alt+P/B path does not use ribbon recovery.
 ClipAngel_UiaFocusLooksLikeRibbonMenu() {
     try {
         focused := UIA.GetFocusedElement()
@@ -599,6 +598,8 @@ ClipAngel_SendToHwnd(hwnd, keys) {
     Send keys
 }
 
+; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
+; No ribbon Window-menu recovery on this path (AHK Alt+P/B open must not touch MainMenu).
 ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     if !dataGrid
         return false
@@ -626,7 +627,6 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     try previewFocused := preview && preview.HasKeyboardFocus
     catch {
     }
-    ribbonNow := ClipAngel_UiaFocusLooksLikeRibbonMenu()
     if previewFocused {
         ClipAngel_ReleaseChordModifiersForSend()
         ClipAngel_SendToHwnd(hwnd, "{F10}")
@@ -639,45 +639,7 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
             }
             Sleep CLIPANGEL_UIA_POLL_MS
         }
-    } else if ribbonNow {
-        ; Window ribbon steals focus while Row 0 can still look selected — Escape then refocus grid.
-        ClipAngel_ReleaseChordModifiersForSend()
-        ClipAngel_SendToHwnd(hwnd, "{Escape}")
-        Sleep 40
-        global g_ClipAngelFavoriteSuppressActive
-        if !g_ClipAngelFavoriteSuppressActive {
-            try dataGrid.Click()
-            catch {
-            }
-        }
-        try dataGrid.SetFocus()
-        catch {
-        }
-        deadline := A_TickCount + 200
-        while (A_TickCount < deadline) {
-            try {
-                if dataGrid.HasKeyboardFocus
-                    return true
-            } catch {
-            }
-            Sleep CLIPANGEL_UIA_POLL_MS
-        }
     } else {
-        global g_ClipAngelFavoriteSuppressActive
-        if !g_ClipAngelFavoriteSuppressActive {
-            try dataGrid.Click()
-            catch {
-            }
-        }
-        try dataGrid.SetFocus()
-        catch {
-        }
-    }
-    ; Last chance: ribbon still focused after preview/click paths.
-    if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
-        ClipAngel_ReleaseChordModifiersForSend()
-        ClipAngel_SendToHwnd(hwnd, "{Escape}")
-        Sleep 40
         global g_ClipAngelFavoriteSuppressActive
         if !g_ClipAngelFavoriteSuppressActive {
             try dataGrid.Click()
@@ -735,39 +697,7 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
         }
         if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
-        ; Prefer UIA click on Window (user's normal mouse path) over ^{Home}/Home.
-        if ClipAngel_UiaClickWindowMenu(hwnd, root) {
-            deadline := A_TickCount + 120
-            while (A_TickCount < deadline) {
-                if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
-                    break
-                Sleep CLIPANGEL_UIA_POLL_MS
-            }
-            if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
-                ClipAngel_ReleaseChordModifiersForSend()
-                ClipAngel_SendToHwnd(hwnd, "{Escape}")
-                deadline := A_TickCount + 80
-                while (A_TickCount < deadline) {
-                    if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
-                        break
-                    Sleep CLIPANGEL_UIA_POLL_MS
-                }
-            }
-            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-            row0 := dataGrid ? ClipAngel_UiaResolveRow0(dataGrid) : 0
-            if row0 {
-                try {
-                    if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                        row0.SelectionItemPattern.Select()
-                } catch {
-                }
-                if ClipAngel_UiaTryLegacySelectRow(row0) && ClipAngel_UiaWaitRow0Selected(row0, dataGrid,
-                    CLIPANGEL_ROW0_SELECT_WAIT_MS)
-                    return true
-                if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
-                    return true
-            }
-        }
+        ; SelectionItem / ^{Home} only — no Window ribbon click (Alt menu steal recovery removed).
         ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
         ClipAngel_ReleaseChordModifiersForSend()
         ClipAngel_SendToHwnd(hwnd, "^{Home}")
@@ -1446,8 +1376,8 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
 }
 
-; UIA click Window when not on Row 0 (user's mouse path); ^Home only if still not selected.
-; One ElementFromHandle + one grid walk; condition wait after Window click (no fixed Sleep 60/40).
+; Select Row 0 via SelectionItem / ^{Home}; no Window ribbon click.
+; One ElementFromHandle + one grid walk.
 ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     global g_ClipAngelFavoriteSuppressActive
     if !root {
@@ -1464,43 +1394,20 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     gridHasSel := ClipAngel_UiaGridHasSelectionPattern(dataGrid)
     if ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel)
         return true
-    if ClipAngel_UiaClickWindowMenu(hwnd, root) {
-        deadline := A_TickCount + 120
-        while (A_TickCount < deadline) {
-            if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
-                break
-            Sleep CLIPANGEL_UIA_POLL_MS
-        }
-        if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
-            ClipAngel_ReleaseChordModifiersForSend()
-            ClipAngel_SendToHwnd(hwnd, "{Escape}")
-            deadline := A_TickCount + 80
-            while (A_TickCount < deadline) {
-                if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
-                    break
-                Sleep CLIPANGEL_UIA_POLL_MS
-            }
-        }
-        ; Re-resolve after menu interaction (elements can go stale).
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-        row0 := dataGrid ? ClipAngel_UiaResolveRow0(dataGrid) : 0
-        if row0 {
-            try {
-                if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
-                    row0.SelectionItemPattern.Select()
-                else if !g_ClipAngelFavoriteSuppressActive
-                    row0.Click()
-                else
-                    row0.SetFocus()
-            } catch {
-                try row0.SetFocus()
-                catch {
-                }
-            }
-            if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
-                return true
+    try {
+        if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+            row0.SelectionItemPattern.Select()
+        else if !g_ClipAngelFavoriteSuppressActive
+            row0.Click()
+        else
+            row0.SetFocus()
+    } catch {
+        try row0.SetFocus()
+        catch {
         }
     }
+    if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+        return true
     if dataGrid {
         try dataGrid.SetFocus()
         catch {
