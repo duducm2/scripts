@@ -1316,6 +1316,8 @@ HotkeyCopy_DispatchChoice() {
         switch choice {
             case "P":
                 HotkeyCopy_DoCopyOnly()
+            case "D":
+                HotkeyCopy_DoDisplay()
             case "Y":
                 HotkeyCopy_DoConfirmDesktop()
             case "F":
@@ -1381,6 +1383,32 @@ HotkeyCopy_DoCopyOnly() {
         if (!WinActive("ahk_id " originHwnd))
             WinWaitActive("ahk_id " originHwnd, , 0.5)
     }
+}
+
+; [D] Copy, restore origin window, show full reply banner (same UX as #!+8 / D2C [D]).
+HotkeyCopy_OnDisplay(*) {
+    HotkeyCopy_FinalizeIntent("D")
+}
+
+HotkeyCopy_DoDisplay() {
+    global g_HotkeyCopy_PostCopyContext
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"46d1cc","hypothesisId":"B","location":"clip_angel_export_desktop.ahk:HotkeyCopy_DoDisplay","message":"enter","data":{"clipLen":'
+        . StrLen(A_Clipboard) . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
+    catch {
+    }
+    ; #endregion
+    try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
+    originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
+    if (originHwnd && WinExist("ahk_id " originHwnd)) {
+        WinActivate("ahk_id " originHwnd)
+        if (!WinActive("ahk_id " originHwnd))
+            WinWaitActive("ahk_id " originHwnd, , 0.5)
+    }
+    ; Defer so any pending KeyWrapper CloseKeysOverlay cannot tear down the result banner.
+    bt := A_Clipboard
+    SetTimer((*) => ShowCopiedResponseBanner(bt), -1)
 }
 
 ClipAngelExport_OnConfirmDesktop(*) {
@@ -1643,7 +1671,7 @@ HotkeyCopy_DoClipAngelEdit() {
     }
 }
 
-; At #!+p 1×/2× gesture confirm: 5s destination banner; copy starts only after P/Y/F/R/W/O.
+; At #!+p 1×/2× gesture confirm: 5s destination banner; copy starts only after P/D/Y/F/R/W/O.
 ; isCode: true for double-tap code copy (omits Read aloud). Returns flow gen for the copy worker.
 HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
     global g_HotkeyCopy_Flow, g_HotkeyCopy_PostCopyContext
@@ -1658,6 +1686,7 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
 
     keyCallbacks := Map(
         "P", HotkeyCopy_OnCopyOnly,
+        "D", HotkeyCopy_OnDisplay,
         "Y", ClipAngelExport_OnConfirmDesktop,
         "F", ClipAngelExport_OnFavoriteClip,
         "W", HotkeyCopy_OnPasteWindow,
@@ -1671,13 +1700,13 @@ HotkeyCopy_ShowIntentBanner(isCode := false, originHwnd := 0, companion := "") {
 
     if (isCode) {
         title := "❓ Copy code — what next? (5s)"
-        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else if (companion = "enterprise") {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
     } else {
         title := "❓ Copy message — what next? (5s)"
-        pk := "[P] Copy  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+        pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
     }
 
     timeoutMs := 5000

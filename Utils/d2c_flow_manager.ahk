@@ -1039,13 +1039,14 @@ class D2C_FlowManager {
         }
         this.CurrentPhase := "PromptingAction"
         companion := this.CompanionId != "" ? this.CompanionId : ResolveGlobalAICompanion()
-        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner ([P] Copy = clipboard only).
+        ; Same key strip as #!+p HotkeyCopy_ShowIntentBanner ([P] Copy; [D] Display on origin).
         ; Paste-window keys: pick target immediately → copy reply → paste (same as #!+p [W]).
         ; To add another letter with this identical workflow, append it to pasteWindowKeys and
         ; include it in the pk strip below.
         pasteWindowKeys := ["W"]
         keyCallbacks := Map(
             "P", this.OnActionP.Bind(this),
+            "D", this.OnActionD.Bind(this),
             "Y", this.OnActionY.Bind(this),
             "F", this.OnActionF.Bind(this),
             "O", this.OnActionO.Bind(this),
@@ -1057,10 +1058,10 @@ class D2C_FlowManager {
         if (companion != "enterprise")
             keyCallbacks["R"] := this.OnActionR.Bind(this)
         if (companion = "enterprise")
-            pk := "[P] Copy  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
+            pk := "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [W] Paste window  [O] Clip Angel  [N] No"
         else
             pk :=
-                "[P] Copy  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
+                "[P] Copy  [D] Display  [Y] Desktop  [F] Favorite  [R] Read  [W] Paste window  [O] Clip Angel  [N] No"
         StandardLoadingBar_ShowWithKeys(
             "❓ Response ready — what next? (5s)",
             keyCallbacks,
@@ -1120,6 +1121,67 @@ class D2C_FlowManager {
             ShowCenteredOverlay_Utils("✅ Copied", 800, BANNER_ACCENT_SUCCESS)
         } finally {
             this.Reset()
+        }
+    }
+
+    ; [D] Copy reply, restore OriginHwnd, show full text banner (same UX as #!+8 / #!+p [D]).
+    OnActionD(*) {
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"46d1cc","hypothesisId":"B","location":"d2c_flow_manager.ahk:OnActionD","message":"enter","data":{"phase":"'
+            . this.CurrentPhase . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
+        catch {
+        }
+        ; #endregion
+        if (this.CurrentPhase != "PromptingAction")
+            return
+        this.CleanupActionPrompt()
+        bannerText := ""
+        showBanner := false
+        try {
+            if (!this.DoCopyCore(false, false)) {
+                ; #region agent log
+                try FileAppend(
+                    '{"sessionId":"46d1cc","hypothesisId":"C","location":"d2c_flow_manager.ahk:OnActionD","message":"DoCopyCore failed","data":{},"timestamp":'
+                    . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
+                catch {
+                }
+                ; #endregion
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            bannerText := A_Clipboard
+            clip := Trim(bannerText)
+            if (clip = "" || StrLen(clip) < 10) {
+                ; #region agent log
+                try FileAppend(
+                    '{"sessionId":"46d1cc","hypothesisId":"C","location":"d2c_flow_manager.ahk:OnActionD","message":"clip too short","data":{"len":'
+                    . StrLen(clip) . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
+                catch {
+                }
+                ; #endregion
+                ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
+                if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
+                    WinActivate("ahk_id " this.OriginHwnd)
+                return
+            }
+            showBanner := true
+        } finally {
+            this.Reset()
+        }
+        ; #region agent log
+        try FileAppend(
+            '{"sessionId":"46d1cc","hypothesisId":"A","location":"d2c_flow_manager.ahk:OnActionD","message":"before ShowCopiedResponseBanner","data":{"showBanner":'
+            . (showBanner ? "true" : "false") . ',"len":' . StrLen(bannerText) . '},"timestamp":' . A_TickCount .
+            ',"runId":"post-fix"}`n', A_ScriptDir "\debug-46d1cc.log")
+        catch {
+        }
+        ; #endregion
+        ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
+        if (showBanner) {
+            bt := bannerText
+            SetTimer((*) => ShowCopiedResponseBanner(bt), -1)
         }
     }
 

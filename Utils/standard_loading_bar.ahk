@@ -936,6 +936,15 @@ StandardLoadingBar_KeyWrapper(key, cb, *) {
         catch {
         }
     }
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"46d1cc","hypothesisId":"A","location":"standard_loading_bar.ahk:KeyWrapper","message":"after cb","data":{"key":"'
+        . key . '","isKeysOverlay":' . (g_StandardLoadingBarIsKeysOverlay ? "true" : "false")
+        . ',"willClose":' . (g_StandardLoadingBarIsKeysOverlay ? "true" : "false")
+        . '},"timestamp":' . A_TickCount . ',"runId":"post-fix"}`n', A_ScriptDir "\debug-46d1cc.log")
+    catch {
+    }
+    ; #endregion
     ; Callback may have closed the keys overlay and started a loading bar — do not destroy the replacement GUI.
     if (g_StandardLoadingBarIsKeysOverlay)
         StandardLoadingBar_CloseKeysOverlay()
@@ -1124,4 +1133,37 @@ StandardLoadingBar_BusyAllMonitors_Tick() {
         catch {
         }
     }
+}
+
+; Full AI reply on the active monitor (same UX as #!+8 pronunciation ShowResultBanner).
+; No auto-dismiss — user closes with Enter, E, or Escape.
+ShowCopiedResponseBanner(text) {
+    global g_StandardLoadingBarIsKeysOverlay
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"46d1cc","hypothesisId":"D","location":"standard_loading_bar.ahk:ShowCopiedResponseBanner","message":"enter","data":{"len":'
+        . StrLen(text ? text : "") . ',"isKeysOverlayBefore":' . (g_StandardLoadingBarIsKeysOverlay ? "true" : "false")
+        . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
+    catch {
+    }
+    ; #endregion
+    if (!text || StrLen(Trim(text)) = 0)
+        return
+    state := "ℹ " . text
+    closeNoOp(*) {
+    }
+    closeKeys := Map("Enter", closeNoOp, "Escape", closeNoOp, "E", closeNoOp)
+    StandardLoadingBar_ShowWithKeys(state, closeKeys, 0, 0, "",
+        BANNER_ACCENT_INTERMEDIATE, 600,
+        17, "", false,
+        "[Enter] [E] [Esc] Close",
+        true)
+    ; #region agent log
+    try FileAppend(
+        '{"sessionId":"46d1cc","hypothesisId":"A","location":"standard_loading_bar.ahk:ShowCopiedResponseBanner","message":"after ShowWithKeys","data":{"isKeysOverlayAfter":'
+        . (g_StandardLoadingBarIsKeysOverlay ? "true" : "false") . '},"timestamp":' . A_TickCount .
+        ',"runId":"post-fix"}`n', A_ScriptDir "\debug-46d1cc.log")
+    catch {
+    }
+    ; #endregion
 }
