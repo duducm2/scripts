@@ -276,6 +276,28 @@ ClipAngel_EnsureListView(hwnd, root := 0) {
     }
 }
 
+; Click MainMenu "Window" via UIA (mouse path the user uses when not on the first clip — not keyboard).
+ClipAngel_UiaClickWindowMenu(hwnd, root := 0) {
+    if !hwnd
+        return false
+    if !root {
+        try root := UIA.ElementFromHandle(hwnd)
+        catch
+            root := 0
+    }
+    if !root
+        return false
+    winItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Window" })
+    if !winItem
+        return false
+    try {
+        winItem.Click()
+        return true
+    } catch {
+    }
+    return ClipAngel_UiaInvokeElement(winItem)
+}
+
 ClipAngel_UiaInvokeElement(el) {
     if !el
         return false
@@ -526,6 +548,30 @@ ClipAngel_UiaTryLegacySelectRow(row) {
 }
 
 ; F10 toggles list vs preview — only send when preview pane has focus, not when grid already focused.
+; Also recovers when keyboard focus is stuck on the Window/List/Clip ribbon menu (selected row != focused).
+ClipAngel_UiaFocusLooksLikeRibbonMenu() {
+    try {
+        focused := UIA.GetFocusedElement()
+        if !focused
+            return false
+        type := 0
+        name := ""
+        try type := focused.Type
+        catch {
+        }
+        try name := focused.Name
+        catch {
+        }
+        if RegExMatch(name, "i)^(Window|List|Clip|Settings|Help)$")
+            return true
+        ; MenuBar / MenuItem
+        if (type = 50010 || type = 50011)
+            return true
+    } catch {
+    }
+    return false
+}
+
 ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     if !dataGrid
         return false
@@ -553,6 +599,7 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     try previewFocused := preview && preview.HasKeyboardFocus
     catch {
     }
+    ribbonNow := ClipAngel_UiaFocusLooksLikeRibbonMenu()
     if previewFocused {
         ClipAngel_ReleaseChordModifiersForSend()
         Send "{F10}"
@@ -565,7 +612,39 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
             }
             Sleep CLIPANGEL_UIA_POLL_MS
         }
+    } else if ribbonNow {
+        ; Window ribbon steals focus while Row 0 can still look selected — Escape then refocus grid.
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Escape}"
+        Sleep 40
+        try dataGrid.Click()
+        catch {
+        }
+        try dataGrid.SetFocus()
+        catch {
+        }
+        deadline := A_TickCount + 200
+        while (A_TickCount < deadline) {
+            try {
+                if dataGrid.HasKeyboardFocus
+                    return true
+            } catch {
+            }
+            Sleep CLIPANGEL_UIA_POLL_MS
+        }
     } else {
+        try dataGrid.Click()
+        catch {
+        }
+        try dataGrid.SetFocus()
+        catch {
+        }
+    }
+    ; Last chance: ribbon still focused after preview/click paths.
+    if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Escape}"
+        Sleep 40
         try dataGrid.Click()
         catch {
         }
@@ -620,6 +699,26 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
         }
         if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
+        ; Prefer UIA click on Window (user's normal mouse path) over ^{Home}/Home.
+        if ClipAngel_UiaClickWindowMenu(hwnd, root) {
+            Sleep 60
+            ; Dismiss Window dropdown if it opened; then re-select Row 0 via UIA.
+            if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
+                ClipAngel_ReleaseChordModifiersForSend()
+                Send "{Escape}"
+                Sleep 40
+            }
+            try {
+                if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
+                    row0.SelectionItemPattern.Select()
+            } catch {
+            }
+            if ClipAngel_UiaTryLegacySelectRow(row0) && ClipAngel_UiaWaitRow0Selected(row0, dataGrid,
+                CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                return true
+            if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
+                return true
+        }
         ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
         ClipAngel_ReleaseChordModifiersForSend()
         Send "^{Home}"
@@ -776,11 +875,13 @@ ClipAngel_IsListReady(&outHwnd := 0, root := 0) {
 
 ; Poll until dataGridView + Row 0 exist (e.g. after native Alt+P open). Retries row-0 selection at end.
 ; activateOnRetry: false when paste target must keep foreground (#!+1 / ^!b).
-ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activateOnRetry := true) {
+; keepTransparent: favorite suppress — re-layout must not clear WinSetTransparent(0).
+ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activateOnRetry := true,
+    keepTransparent := false) {
     deadline := A_TickCount + timeoutMs
     hwnd := ClipAngel_MainHwnd()
     if (hwnd) {
-        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+        ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry, keepTransparent)
     }
     root := 0
     if (hwnd) {
@@ -795,7 +896,7 @@ ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activa
         }
         hwnd := ClipAngel_MainHwnd()
         if (hwnd && ClipAngel_NeedsLayoutCorrection(hwnd))
-            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry, keepTransparent)
         if (hwnd && !root) {
             try root := UIA.ElementFromHandle(hwnd)
             catch
@@ -805,7 +906,7 @@ ClipAngel_WaitForListReady(timeoutMs := CLIPANGEL_FAVORITE_OPEN_READY_MS, activa
     }
     if hwnd := ClipAngel_MainHwnd() {
         if ClipAngel_NeedsLayoutCorrection(hwnd)
-            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry)
+            ClipAngel_EnsureVisibleAndLayout(hwnd, 0, activateOnRetry, keepTransparent)
         ClipAngel_UiaEnsureRow0Selected(hwnd, true)
         return ClipAngel_IsListReady()
     }
@@ -1200,7 +1301,7 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     return (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
 }
 
-; ^Home first; full UIA row-0 only if still not selected.
+; UIA click Window when not on Row 0 (user's mouse path); full UIA row-0 only if still not selected.
 ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
@@ -1209,6 +1310,38 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     }
     if ClipAngel_UiaIsRow0Selected(hwnd, root)
         return true
+    if ClipAngel_UiaClickWindowMenu(hwnd, root) {
+        Sleep 60
+        if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
+            ClipAngel_ReleaseChordModifiersForSend()
+            Send "{Escape}"
+            Sleep 40
+        }
+        if ClipAngel_UiaIsRow0Selected(hwnd, root)
+            return true
+        ; After Window click, select Row 0 via UIA (not keyboard).
+        try {
+            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+            if dataGrid {
+                row0 := ClipAngel_UiaResolveRow0(dataGrid)
+                if row0 {
+                    appImg := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "AppImage Row 0" })
+                    if appImg {
+                        try appImg.Click()
+                        catch {
+                        }
+                    } else {
+                        try row0.Click()
+                        catch {
+                        }
+                    }
+                    if ClipAngel_UiaIsRow0Selected(hwnd, root)
+                        return true
+                }
+            }
+        } catch {
+        }
+    }
     try {
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if dataGrid
@@ -1287,6 +1420,227 @@ ClipAngel_UiaIsRow0Selected(hwnd, root := 0) {
     }
 }
 
+; Force Row 0 selected and grid keyboard focus (not Window ribbon) before Alt+Q.
+ClipAngel_PrepareFavoriteAltQ(hwnd) {
+    if !hwnd
+        return false
+    ClipAngel_EnsureWindowActive(hwnd)
+    ClipAngel_UiaEnsureRow0Selected(hwnd, true)
+    root := 0
+    try root := UIA.ElementFromHandle(hwnd)
+    catch {
+        root := 0
+    }
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+    if dataGrid {
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        ; AppImage/Title cells hold focus while dataGrid.HasKeyboardFocus stays false — focus the row.
+        if row0 {
+            try row0.SetFocus()
+            catch {
+            }
+        }
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+    }
+    return true
+}
+
+; True when Row 0 favorite checkbox is on (empty/missing cell => false).
+ClipAngel_Row0FavoriteIsOn(hwnd) {
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if !dataGrid
+            return false
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        if !row0
+            return false
+        favCell := ClipAngel_FindFavoriteCell(row0)
+        return favCell && ClipAngel_FavoriteCellIsOn(favCell)
+    } catch {
+        return false
+    }
+}
+
+; Favorite mark often appears only as a star in Title RTF (no Favorite UIA column).
+ClipAngel_Row0TitleLooksFavorited(hwnd) {
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if !dataGrid
+            return false
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        if !row0
+            return false
+        titleCell := ClipAngel_UiaFindFirst(row0, { Type: 50006, Name: "Title Row 0" })
+        if !titleCell
+            return false
+        val := ""
+        try val := titleCell.Value
+        catch {
+            return false
+        }
+        if (val = "" || val = "(null)")
+            return false
+        ; RTF may encode ⭐ as \u11088? or literal; also accept filled star glyphs.
+        return RegExMatch(val, "i)(\\u11088|\\u2[Bb]50|⭐|★)")
+    } catch {
+        return false
+    }
+}
+
+; Toggle Row 0 favorite via checkbox UIA when the Favorite column is exposed (often absent — see clip-angel.txt).
+ClipAngel_FavoriteToggleRow0ViaUia(hwnd) {
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if !dataGrid
+            return false
+        row0 := ClipAngel_UiaResolveRow0(dataGrid)
+        if !row0
+            return false
+        favCell := ClipAngel_FindFavoriteCell(row0)
+        if !favCell
+            return false
+        if ClipAngel_FavoriteCellIsOn(favCell)
+            return true
+        toggled := false
+        try {
+            if favCell.GetPropertyValue(UIA.Property.IsTogglePatternAvailable) {
+                favCell.TogglePattern.Toggle()
+                toggled := true
+            }
+        } catch {
+        }
+        if !toggled {
+            try {
+                favCell.Click()
+                toggled := true
+            } catch {
+            }
+        }
+        Sleep 80
+        ok := ClipAngel_FavoriteCellIsOn(favCell)
+        return ok
+    } catch {
+        return false
+    }
+}
+
+; Open Clip menu via Alt+C (same pattern as Import/Paste keyboard fallbacks).
+ClipAngel_OpenClipMenuViaKeyboard() {
+    ClipAngel_ReleaseChordModifiersForSend()
+    Send "{Alt}"
+    Sleep 80
+    Send "c"
+    Sleep 120
+    return true
+}
+
+; Clip > Mark favorite via menu (no Alt+Q — Alt+Q focuses Window ribbon; Favorite column not in UIA tree).
+ClipAngel_InvokeMarkFavoriteViaMenu(hwnd) {
+    if !hwnd
+        return false
+    try {
+        root := UIA.ElementFromHandle(hwnd)
+        if !root
+            return false
+        openedViaKb := false
+        clipMenu := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Clip" })
+        if clipMenu {
+            if !ClipAngel_UiaInvokeElement(clipMenu) {
+                return false
+            }
+        } else {
+            ClipAngel_OpenClipMenuViaKeyboard()
+            openedViaKb := true
+        }
+        Sleep 120
+        desktop := 0
+        try desktop := UIA.GetRootElement()
+        catch {
+        }
+        searchRoots := [root]
+        if desktop
+            searchRoots.Push(desktop)
+        for name in ["Mark favorite", "Mark as favorite", "Marcar como favorito", "Marcar favorito"] {
+            item := ClipAngel_UiaFindMenuItem(searchRoots, { Type: 50011, Name: name })
+            if item {
+                ok := ClipAngel_UiaInvokeElement(item)
+                Sleep 100
+                titleStar := ClipAngel_Row0TitleLooksFavorited(hwnd)
+                return ok
+            }
+        }
+        try {
+            for r in searchRoots {
+                if !r
+                    continue
+                for el in r.FindAll({ Type: 50011 }) {
+                    try n := el.Name
+                    catch
+                        continue
+                    if RegExMatch(n, "i)mark.*favor|marcar.*favor") {
+                        ok := ClipAngel_UiaInvokeElement(el)
+                        Sleep 100
+                        titleStar := ClipAngel_Row0TitleLooksFavorited(hwnd)
+                        return ok
+                    }
+                }
+            }
+        } catch {
+        }
+        ClipAngel_ReleaseChordModifiersForSend()
+        Send "{Escape}"
+        return false
+    } catch {
+        return false
+    }
+}
+
+; Menu invoke primary; checkbox UIA if column exists; ControlSend Alt+Q last (SendInput Alt steals to ribbon).
+ClipAngel_FavoriteAltQSendAndVerify(hwnd) {
+    if !hwnd
+        return false
+    ClipAngel_PrepareFavoriteAltQ(hwnd)
+    if ClipAngel_Row0FavoriteIsOn(hwnd) || ClipAngel_Row0TitleLooksFavorited(hwnd)
+        return true
+    if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
+        return true
+    if ClipAngel_FavoriteToggleRow0ViaUia(hwnd)
+        return true
+    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+    ClipAngel_WaitChordModifiersReleased()
+    ClipAngel_ReleaseChordModifiersForSend()
+    ; ControlSend avoids SendInput Alt focusing the Window menu bar.
+    try ControlSend("!q", , "ahk_id " hwnd)
+    catch {
+        SendInput "!q"
+    }
+    Sleep 100
+    titleStar := ClipAngel_Row0TitleLooksFavorited(hwnd)
+    favOn := ClipAngel_Row0FavoriteIsOn(hwnd)
+    if favOn || titleStar
+        return true
+    ; Menu path may have worked even when Favorite column is not in UIA — treat second menu try as success.
+    ClipAngel_PrepareFavoriteAltQ(hwnd)
+    if ClipAngel_InvokeMarkFavoriteViaMenu(hwnd)
+        return true
+    return ClipAngel_Row0FavoriteIsOn(hwnd) || ClipAngel_Row0TitleLooksFavorited(hwnd)
+}
+
 MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
     if waitForIngest
         Sleep(CLIPANGEL_PRE_FAVORITE_INGEST_DELAY_MS)
@@ -1308,18 +1662,25 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
             } else {
                 ClipAngel_ActivateNativeFirstClip(0, true)
                 ; Safety net if early suppress missed hwnd; clear after minimize in finally.
-                ClipAngel_ApplyFavoriteSessionOpacity(ClipAngel_MainHwnd())
-                if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true) {
+                hwnd := ClipAngel_MainHwnd()
+                ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+                ; Newest clipboard clip is Row 0 only in "all marks" (not favorites filter).
+                if (hwnd)
+                    ClipAngel_LeaveFavoritesFilter(hwnd)
+                if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true, true) {
                     resultKind := "error"
                     resultMsg := "❌ Clip Angel did not open."
                 } else {
-                    Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
-                    ClipAngel_WaitChordModifiersReleased()
-                    ClipAngel_ReleaseChordModifiersForSend()
-                    SendInput "!q"
-                    ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-                    resultKind := "success"
-                    resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
+                    hwnd := ClipAngel_MainHwnd()
+                    ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd)
+                    if ok {
+                        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+                        resultKind := "success"
+                        resultMsg := "✅ Marked focused clip as favorite."
+                    } else {
+                        resultKind := "error"
+                        resultMsg := "❌ Could not mark favorite (menu/list focus)."
+                    }
                 }
             }
         } finally {
@@ -1444,14 +1805,34 @@ MarkLastClipAsFavorite_UiaLastRow(&resultKind := unset, &resultMsg := unset) {
             return
         }
     }
+    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
     Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
     SendInput "!q"
-    ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
-    if deferBanner {
-        resultKind := "success"
-        resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
-    } else
-        ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+    Sleep 100
+    favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    if !(favCell && ClipAngel_FavoriteCellIsOn(favCell)) {
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, el)
+        Sleep(CLIPANGEL_FAVORITE_UI_SETTLE_MS)
+        ClipAngel_ReleaseChordModifiersForSend()
+        SendInput "!q"
+        Sleep 100
+        favCell := ClipAngel_FindFavoriteCell(rowTarget)
+    }
+    if favCell && ClipAngel_FavoriteCellIsOn(favCell) {
+        ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
+        if deferBanner {
+            resultKind := "success"
+            resultMsg := "✅ Sent Alt+Q - marked focused clip as favorite."
+        } else
+            ShowCenteredOverlay_Utils("✅ Sent Alt+Q - marked focused clip as favorite.", 1500, BANNER_ACCENT_SUCCESS)
+    } else {
+        if deferBanner {
+            resultKind := "error"
+            resultMsg := "❌ Could not confirm favorite (list may not have focus)."
+        } else
+            ShowCenteredOverlay_Utils("❌ Could not confirm favorite (list may not have focus).", 2500,
+                BANNER_ACCENT_ERROR)
+    }
 }
