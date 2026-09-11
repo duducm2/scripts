@@ -1126,13 +1126,6 @@ class D2C_FlowManager {
 
     ; [D] Copy reply, restore OriginHwnd, show full text banner (same UX as #!+8 / #!+p [D]).
     OnActionD(*) {
-        ; #region agent log
-        try FileAppend(
-            '{"sessionId":"46d1cc","hypothesisId":"B","location":"d2c_flow_manager.ahk:OnActionD","message":"enter","data":{"phase":"'
-            . this.CurrentPhase . '"},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
-        catch {
-        }
-        ; #endregion
         if (this.CurrentPhase != "PromptingAction")
             return
         this.CleanupActionPrompt()
@@ -1140,13 +1133,6 @@ class D2C_FlowManager {
         showBanner := false
         try {
             if (!this.DoCopyCore(false, false)) {
-                ; #region agent log
-                try FileAppend(
-                    '{"sessionId":"46d1cc","hypothesisId":"C","location":"d2c_flow_manager.ahk:OnActionD","message":"DoCopyCore failed","data":{},"timestamp":'
-                    . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
-                catch {
-                }
-                ; #endregion
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
                 return
@@ -1154,13 +1140,6 @@ class D2C_FlowManager {
             bannerText := A_Clipboard
             clip := Trim(bannerText)
             if (clip = "" || StrLen(clip) < 10) {
-                ; #region agent log
-                try FileAppend(
-                    '{"sessionId":"46d1cc","hypothesisId":"C","location":"d2c_flow_manager.ahk:OnActionD","message":"clip too short","data":{"len":'
-                    . StrLen(clip) . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
-                catch {
-                }
-                ; #endregion
                 ShowCenteredOverlay_Utils("❌ Copy failed or empty - try again", 2000, BANNER_ACCENT_ERROR)
                 if (this.OriginHwnd && WinExist("ahk_id " this.OriginHwnd))
                     WinActivate("ahk_id " this.OriginHwnd)
@@ -1170,14 +1149,6 @@ class D2C_FlowManager {
         } finally {
             this.Reset()
         }
-        ; #region agent log
-        try FileAppend(
-            '{"sessionId":"46d1cc","hypothesisId":"A","location":"d2c_flow_manager.ahk:OnActionD","message":"before ShowCopiedResponseBanner","data":{"showBanner":'
-            . (showBanner ? "true" : "false") . ',"len":' . StrLen(bannerText) . '},"timestamp":' . A_TickCount .
-            ',"runId":"post-fix"}`n', A_ScriptDir "\debug-46d1cc.log")
-        catch {
-        }
-        ; #endregion
         ; Defer past KeyWrapper's post-callback CloseKeysOverlay (same pattern as #!+8 SetTimer).
         if (showBanner) {
             bt := bannerText

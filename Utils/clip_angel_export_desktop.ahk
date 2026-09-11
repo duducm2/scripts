@@ -1392,13 +1392,6 @@ HotkeyCopy_OnDisplay(*) {
 
 HotkeyCopy_DoDisplay() {
     global g_HotkeyCopy_PostCopyContext
-    ; #region agent log
-    try FileAppend(
-        '{"sessionId":"46d1cc","hypothesisId":"B","location":"clip_angel_export_desktop.ahk:HotkeyCopy_DoDisplay","message":"enter","data":{"clipLen":'
-        . StrLen(A_Clipboard) . '},"timestamp":' . A_TickCount . '}`n', A_ScriptDir "\debug-46d1cc.log")
-    catch {
-    }
-    ; #endregion
     try ScriptSoundPlay(A_ScriptDir . "\assets\sounds\copy.wav")
     originHwnd := g_HotkeyCopy_PostCopyContext.originHwnd
     if (originHwnd && WinExist("ahk_id " originHwnd)) {
