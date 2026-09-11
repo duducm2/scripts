@@ -26,7 +26,18 @@ CLIPANGEL_ALT_P_SETTLE_MS := 200
 CLIPANGEL_ALT_P_HWND_WAIT_MS := 800
 ; Fully transparent during MarkLastClipAsFavorite (WinSetTransparent 0).
 CLIPANGEL_FAVORITE_SESSION_OPACITY := 0
+; Off-screen parking while suppress is active (UIA still works; no monitor flash).
+CLIPANGEL_FAVORITE_OFFSCREEN_X := -32000
+CLIPANGEL_FAVORITE_OFFSCREEN_Y := -32000
+CLIPANGEL_FAVORITE_OFFSCREEN_W := 900
+CLIPANGEL_FAVORITE_OFFSCREEN_H := 700
 global g_ClipAngelAutomationBusy := false
+global g_ClipAngelFavoriteSuppressActive := false
+global g_ClipAngelFavoriteSavedX := 0
+global g_ClipAngelFavoriteSavedY := 0
+global g_ClipAngelFavoriteSavedW := 0
+global g_ClipAngelFavoriteSavedH := 0
+global g_ClipAngelFavoriteHadSavedPos := false
 
 ; Shortcut flow (matches app): open Clip Angel, ensure list focus (not Window tab),
 ; select first or last grid row, Send Alt+Q. Optional: target "last" for bottom row.
@@ -139,10 +150,14 @@ ClipAngel_NeedsLayoutCorrection(hwnd) {
 }
 
 ; AHK fallback after native Alt+P: restore, show, move/maximize when needed, optionally activate.
-; keepTransparent: favorite suppress — re-apply session opacity after WinShow/layout (may clear layered alpha).
+; keepTransparent: favorite suppress — opacity + off-screen; never maximize onto a visible monitor.
 ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true, keepTransparent := false) {
     if !hwnd
         return false
+    if (keepTransparent) {
+        ClipAngel_BeginFavoriteSuppress(hwnd)
+        return true
+    }
     try {
         mm := WinGetMinMax("ahk_id " hwnd)
         if (mm = -1 || mm = 1)
@@ -152,12 +167,8 @@ ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon := 0, activate := true, keepTra
     try WinShow("ahk_id " hwnd)
     catch {
     }
-    if (keepTransparent)
-        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     if ClipAngel_NeedsLayoutCorrection(hwnd)
         ClipAngel_ApplyLayoutOnMonitor(hwnd, targetMon)
-    if (keepTransparent)
-        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     return activate ? ClipAngel_EnsureWindowActive(hwnd) : true
 }
 
@@ -277,6 +288,7 @@ ClipAngel_EnsureListView(hwnd, root := 0) {
 }
 
 ; Click MainMenu "Window" via UIA (mouse path the user uses when not on the first clip — not keyboard).
+; Prefer Invoke over Click — Click moves the real cursor and can force a visible paint.
 ClipAngel_UiaClickWindowMenu(hwnd, root := 0) {
     if !hwnd
         return false
@@ -290,12 +302,14 @@ ClipAngel_UiaClickWindowMenu(hwnd, root := 0) {
     winItem := ClipAngel_UiaFindFirst(root, { Type: 50011, Name: "Window" })
     if !winItem
         return false
+    if ClipAngel_UiaInvokeElement(winItem)
+        return true
     try {
         winItem.Click()
         return true
     } catch {
     }
-    return ClipAngel_UiaInvokeElement(winItem)
+    return false
 }
 
 ClipAngel_UiaInvokeElement(el) {
@@ -572,6 +586,19 @@ ClipAngel_UiaFocusLooksLikeRibbonMenu() {
     return false
 }
 
+; During favorite suppress, keys must target Clip Angel hwnd (foreground stays on prior app).
+ClipAngel_SendToHwnd(hwnd, keys) {
+    global g_ClipAngelFavoriteSuppressActive
+    if (g_ClipAngelFavoriteSuppressActive && hwnd) {
+        try {
+            ControlSend(keys, , "ahk_id " hwnd)
+            return
+        } catch {
+        }
+    }
+    Send keys
+}
+
 ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     if !dataGrid
         return false
@@ -602,7 +629,7 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     ribbonNow := ClipAngel_UiaFocusLooksLikeRibbonMenu()
     if previewFocused {
         ClipAngel_ReleaseChordModifiersForSend()
-        Send "{F10}"
+        ClipAngel_SendToHwnd(hwnd, "{F10}")
         deadline := A_TickCount + 150
         while (A_TickCount < deadline) {
             try {
@@ -615,10 +642,13 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     } else if ribbonNow {
         ; Window ribbon steals focus while Row 0 can still look selected — Escape then refocus grid.
         ClipAngel_ReleaseChordModifiersForSend()
-        Send "{Escape}"
+        ClipAngel_SendToHwnd(hwnd, "{Escape}")
         Sleep 40
-        try dataGrid.Click()
-        catch {
+        global g_ClipAngelFavoriteSuppressActive
+        if !g_ClipAngelFavoriteSuppressActive {
+            try dataGrid.Click()
+            catch {
+            }
         }
         try dataGrid.SetFocus()
         catch {
@@ -633,8 +663,11 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
             Sleep CLIPANGEL_UIA_POLL_MS
         }
     } else {
-        try dataGrid.Click()
-        catch {
+        global g_ClipAngelFavoriteSuppressActive
+        if !g_ClipAngelFavoriteSuppressActive {
+            try dataGrid.Click()
+            catch {
+            }
         }
         try dataGrid.SetFocus()
         catch {
@@ -643,10 +676,13 @@ ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root := 0) {
     ; Last chance: ribbon still focused after preview/click paths.
     if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
         ClipAngel_ReleaseChordModifiersForSend()
-        Send "{Escape}"
+        ClipAngel_SendToHwnd(hwnd, "{Escape}")
         Sleep 40
-        try dataGrid.Click()
-        catch {
+        global g_ClipAngelFavoriteSuppressActive
+        if !g_ClipAngelFavoriteSuppressActive {
+            try dataGrid.Click()
+            catch {
+            }
         }
         try dataGrid.SetFocus()
         catch {
@@ -709,7 +745,7 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
             }
             if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
                 ClipAngel_ReleaseChordModifiersForSend()
-                Send "{Escape}"
+                ClipAngel_SendToHwnd(hwnd, "{Escape}")
                 deadline := A_TickCount + 80
                 while (A_TickCount < deadline) {
                     if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
@@ -734,11 +770,11 @@ ClipAngel_UiaEnsureRow0Selected(hwnd, force := false) {
         }
         ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
         ClipAngel_ReleaseChordModifiersForSend()
-        Send "^{Home}"
+        ClipAngel_SendToHwnd(hwnd, "^{Home}")
         if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
         ClipAngel_ReleaseChordModifiersForSend()
-        Send "{Home}"
+        ClipAngel_SendToHwnd(hwnd, "{Home}")
         if ClipAngel_UiaWaitRow0Selected(row0, dataGrid, CLIPANGEL_ROW0_SELECT_WAIT_MS)
             return true
         rn := ""
@@ -1001,6 +1037,101 @@ ClipAngel_ClearFavoriteSessionOpacity(hwnd := 0) {
     }
 }
 
+; Park Clip Angel off-screen at opacity 0 for MarkLastClipAsFavorite (no visible flash).
+; Does not activate the window — caller keeps prior focus; UIA / ControlSend still work.
+ClipAngel_BeginFavoriteSuppress(hwnd) {
+    global g_ClipAngelFavoriteSuppressActive, g_ClipAngelFavoriteHadSavedPos
+    global g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY
+    global g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH
+    if !hwnd
+        return false
+    g_ClipAngelFavoriteSuppressActive := true
+    ; Opacity first while still minimized when possible (avoids opaque paint).
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    if !g_ClipAngelFavoriteHadSavedPos {
+        try {
+            WinGetPos(&sx, &sy, &sw, &sh, "ahk_id " hwnd)
+            if (sw > 0 && sh > 0
+                && (sx > CLIPANGEL_FAVORITE_OFFSCREEN_X + 1000 || sy > CLIPANGEL_FAVORITE_OFFSCREEN_Y + 1000)) {
+                g_ClipAngelFavoriteSavedX := sx
+                g_ClipAngelFavoriteSavedY := sy
+                g_ClipAngelFavoriteSavedW := sw
+                g_ClipAngelFavoriteSavedH := sh
+                g_ClipAngelFavoriteHadSavedPos := true
+            }
+        } catch {
+        }
+    }
+    w := g_ClipAngelFavoriteHadSavedPos ? Max(CLIPANGEL_MIN_LAYOUT_WIDTH, g_ClipAngelFavoriteSavedW)
+        : CLIPANGEL_FAVORITE_OFFSCREEN_W
+    h := g_ClipAngelFavoriteHadSavedPos ? Max(CLIPANGEL_MIN_LAYOUT_HEIGHT, g_ClipAngelFavoriteSavedH)
+        : CLIPANGEL_FAVORITE_OFFSCREEN_H
+    if (w < CLIPANGEL_FAVORITE_OFFSCREEN_W)
+        w := CLIPANGEL_FAVORITE_OFFSCREEN_W
+    if (h < CLIPANGEL_FAVORITE_OFFSCREEN_H)
+        h := CLIPANGEL_FAVORITE_OFFSCREEN_H
+    ; Park while still iconic when possible so restore never paints on a visible monitor.
+    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    try {
+        mm := WinGetMinMax("ahk_id " hwnd)
+        if (mm = -1 || mm = 1)
+            WinRestore("ahk_id " hwnd)
+    } catch {
+    }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    try WinShow("ahk_id " hwnd)
+    catch {
+    }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    ; Re-assert off-screen — maximize/AutoSlot races can pull the window back.
+    try WinMove(CLIPANGEL_FAVORITE_OFFSCREEN_X, CLIPANGEL_FAVORITE_OFFSCREEN_Y, w, h, "ahk_id " hwnd)
+    catch {
+    }
+    ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+    return true
+}
+
+; Minimize first; clear opacity only once hidden; restore saved geometry while iconic.
+ClipAngel_EndFavoriteSuppress(hwnd := 0) {
+    global g_ClipAngelFavoriteSuppressActive, g_ClipAngelFavoriteHadSavedPos
+    global g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY
+    global g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH
+    if !hwnd
+        hwnd := ClipAngel_MainHwnd()
+    if (hwnd) {
+        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+        ClipAngel_HideWindow(hwnd)
+        ClipAngel_WaitUntilHidden(hwnd, 250)
+        if g_ClipAngelFavoriteHadSavedPos {
+            try {
+                ; Restore size/pos while minimized so next normal open is not off-screen.
+                WinMove(g_ClipAngelFavoriteSavedX, g_ClipAngelFavoriteSavedY,
+                    g_ClipAngelFavoriteSavedW, g_ClipAngelFavoriteSavedH, "ahk_id " hwnd)
+            } catch {
+            }
+        }
+        if !ClipAngel_IsWindowShown(hwnd)
+            ClipAngel_ClearFavoriteSessionOpacity(hwnd)
+        else {
+            ; Still visible — keep transparent rather than flashing opaque.
+            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+            ClipAngel_HideWindow(hwnd)
+            ClipAngel_WaitUntilHidden(hwnd, 200)
+            if !ClipAngel_IsWindowShown(hwnd)
+                ClipAngel_ClearFavoriteSessionOpacity(hwnd)
+        }
+    }
+    g_ClipAngelFavoriteSuppressActive := false
+    g_ClipAngelFavoriteHadSavedPos := false
+}
+
 ; True when Enter on the clip list pastes into the prior app (not filter combo / preview edit).
 ClipAngel_IsListPasteEnterContext(hwnd := 0) {
     if !hwnd
@@ -1131,7 +1262,7 @@ ClipAngel_SelectClipCopyThenMinimize(downCount := 0) {
 
 ; Native open + row 0: release chord modifiers, Alt+P, then AHK ShowWindow/layout fallback + ^Home.
 ; Alt+P alone is unreliable; EnsureVisibleAndLayout restores a usable window when toggle leaves it tiny.
-; suppressVisual (favorite-only): skip Alt+P — native restore clears WinSetTransparent; use AHK show+layout.
+; suppressVisual (favorite-only): skip Alt+P; park off-screen at opacity 0 (no foreground activation).
 ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
     ClipAngel_WaitChordModifiersReleased()
     ClipAngel_ReleaseChordModifiersForSend()
@@ -1149,13 +1280,8 @@ ClipAngel_ActivateNativeFirstClip(priorHwnd := 0, suppressVisual := false) {
         hwnd := ClipAngel_MainHwnd()
         if !hwnd
             hwnd := ClipAngel_WaitForMainHwnd()
-        if (hwnd) {
-            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-            ClipAngel_EnsureVisibleAndLayout(hwnd, targetMon, true, true)
-            ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
-        }
-        SendInput "^{Home}"
-        Sleep CLIPANGEL_ALT_P_SETTLE_MS
+        if (hwnd)
+            ClipAngel_BeginFavoriteSuppress(hwnd)
         ClipAngel_ReleaseChordModifiersForSend()
         if (priorHwnd)
             ClipAngel_EnsureWindowActive(priorHwnd)
@@ -1283,6 +1409,7 @@ ClipAngel_UiaSetMarkFilterAllMarks(hwnd, root := 0) {
 
 ; One native Shift+P at SendLevel 0 (OnSubmitO runs under #InputLevel 10; default Send is ignored by ClipAngel).
 ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
         catch
@@ -1290,8 +1417,10 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     }
     if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks")
         return true
-    if !WinActive("ahk_id " hwnd)
-        ClipAngel_EnsureWindowActive(hwnd, 200)
+    if !g_ClipAngelFavoriteSuppressActive {
+        if !WinActive("ahk_id " hwnd)
+            ClipAngel_EnsureWindowActive(hwnd, 200)
+    }
     ClipAngel_ReleaseChordModifiersForSend()
     try {
         dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
@@ -1301,7 +1430,10 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
     }
     priorSendLevel := A_SendLevel
     SendLevel 0
-    SendInput "+p"
+    if g_ClipAngelFavoriteSuppressActive
+        ClipAngel_SendToHwnd(hwnd, "+p")
+    else
+        SendInput "+p"
     deadline := A_TickCount + timeoutMs
     while (A_TickCount < deadline) {
         if (StrLower(Trim(ClipAngel_UiaGetMarkFilterValue(hwnd, root))) = "all marks") {
@@ -1317,6 +1449,7 @@ ClipAngel_NativeSendShiftP(hwnd, timeoutMs := 220, root := 0) {
 ; UIA click Window when not on Row 0 (user's mouse path); ^Home only if still not selected.
 ; One ElementFromHandle + one grid walk; condition wait after Window click (no fixed Sleep 60/40).
 ClipAngel_FastEnsureRow0(hwnd, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
         catch
@@ -1340,7 +1473,7 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
         }
         if ClipAngel_UiaFocusLooksLikeRibbonMenu() {
             ClipAngel_ReleaseChordModifiersForSend()
-            Send "{Escape}"
+            ClipAngel_SendToHwnd(hwnd, "{Escape}")
             deadline := A_TickCount + 80
             while (A_TickCount < deadline) {
                 if !ClipAngel_UiaFocusLooksLikeRibbonMenu()
@@ -1355,10 +1488,12 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
             try {
                 if row0.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
                     row0.SelectionItemPattern.Select()
-                else
+                else if !g_ClipAngelFavoriteSuppressActive
                     row0.Click()
+                else
+                    row0.SetFocus()
             } catch {
-                try row0.Click()
+                try row0.SetFocus()
                 catch {
                 }
             }
@@ -1374,7 +1509,10 @@ ClipAngel_FastEnsureRow0(hwnd, root := 0) {
     priorSendLevel := A_SendLevel
     SendLevel 0
     ClipAngel_ReleaseChordModifiersForSend()
-    SendInput "^{Home}"
+    if g_ClipAngelFavoriteSuppressActive
+        ClipAngel_SendToHwnd(hwnd, "^{Home}")
+    else
+        SendInput "^{Home}"
     deadline := A_TickCount + 180
     while (A_TickCount < deadline) {
         if row0 && ClipAngel_UiaRow0IsSelected(row0, dataGrid, gridHasSel) {
@@ -1448,11 +1586,15 @@ ClipAngel_UiaIsRow0Selected(hwnd, root := 0) {
 
 ; Force Row 0 selected and grid keyboard focus (not Window ribbon) before mark-favorite.
 ; force=false (default): skip select work when Row 0 already selected (LeaveFavorites / WaitForListReady).
-; Pass root when already attached.
+; Pass root when already attached. During favorite suppress, do not steal foreground.
 ClipAngel_PrepareFavoriteAltQ(hwnd, root := 0) {
+    global g_ClipAngelFavoriteSuppressActive
     if !hwnd
         return false
-    ClipAngel_EnsureWindowActive(hwnd)
+    if !g_ClipAngelFavoriteSuppressActive
+        ClipAngel_EnsureWindowActive(hwnd)
+    else
+        ClipAngel_BeginFavoriteSuppress(hwnd)
     if !root {
         try root := UIA.ElementFromHandle(hwnd)
         catch {
@@ -1470,6 +1612,8 @@ ClipAngel_PrepareFavoriteAltQ(hwnd, root := 0) {
         }
         ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
     }
+    if g_ClipAngelFavoriteSuppressActive
+        ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
     return true
 }
 
@@ -1546,11 +1690,12 @@ ClipAngel_UiaWaitMarkFavoriteMenuItem(searchRoots, timeoutMs := 200) {
 }
 
 ; Open Clip menu via Alt+C (same pattern as Import/Paste keyboard fallbacks).
-ClipAngel_OpenClipMenuViaKeyboard() {
+; Pass hwnd so favorite suppress can ControlSend without activating Clip Angel.
+ClipAngel_OpenClipMenuViaKeyboard(hwnd := 0) {
     ClipAngel_ReleaseChordModifiersForSend()
-    Send "{Alt}"
+    ClipAngel_SendToHwnd(hwnd, "{Alt}")
     Sleep 80
-    Send "c"
+    ClipAngel_SendToHwnd(hwnd, "c")
     Sleep 40
     return true
 }
@@ -1571,7 +1716,7 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
             if !ClipAngel_UiaInvokeElement(clipMenu)
                 return false
         } else {
-            ClipAngel_OpenClipMenuViaKeyboard()
+            ClipAngel_OpenClipMenuViaKeyboard(hwnd)
         }
         ; Prefer window-scoped search first; desktop root only if needed (popup menus).
         item := ClipAngel_UiaWaitMarkFavoriteMenuItem([root], 120)
@@ -1585,7 +1730,7 @@ ClipAngel_InvokeMarkFavoriteViaMenu(hwnd, root := 0) {
         }
         if !item {
             ClipAngel_ReleaseChordModifiersForSend()
-            Send "{Escape}"
+            ClipAngel_SendToHwnd(hwnd, "{Escape}")
             return false
         }
         return ClipAngel_UiaInvokeElement(item)
@@ -1644,18 +1789,21 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
             if (target = "last") {
                 MarkLastClipAsFavorite_UiaLastRow(&resultKind, &resultMsg)
             } else {
-                ClipAngel_ActivateNativeFirstClip(0, true)
-                ; Safety net if early suppress missed hwnd; clear after minimize in finally.
+                ClipAngel_ActivateNativeFirstClip(priorHwnd, true)
                 hwnd := ClipAngel_MainHwnd()
-                ClipAngel_ApplyFavoriteSessionOpacity(hwnd)
+                if (hwnd)
+                    ClipAngel_BeginFavoriteSuppress(hwnd)
                 ; Newest clipboard clip is Row 0 only in "all marks" (not favorites filter).
                 if (hwnd)
                     ClipAngel_LeaveFavoritesFilter(hwnd)
-                if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, true, true) {
+                ; activateOnRetry=false — do not foreground Clip Angel during suppress.
+                if !ClipAngel_WaitForListReady(CLIPANGEL_FAVORITE_OPEN_READY_MS, false, true) {
                     resultKind := "error"
                     resultMsg := "❌ Clip Angel did not open."
                 } else {
                     hwnd := ClipAngel_MainHwnd()
+                    if (hwnd)
+                        ClipAngel_BeginFavoriteSuppress(hwnd)
                     ok := ClipAngel_FavoriteAltQSendAndVerify(hwnd)
                     if ok {
                         ScriptSoundPlay(A_ScriptDir "\assets\sounds\favorite-set.wav")
@@ -1679,9 +1827,10 @@ MarkLastClipAsFavorite(target := "first", waitForIngest := false) {
         resultKind := "error"
         resultMsg := "❌ Mark favorite failed: " . e.Message
     } finally {
-        ; Minimize while still transparent so Clear does not flash opaque maximized window.
-        ClipAngel_CloseAndRestoreFocus(priorHwnd)
-        ClipAngel_ClearFavoriteSessionOpacity()
+        ; Minimize while still transparent/off-screen; clear opacity only after hidden.
+        hwndEnd := ClipAngel_MainHwnd()
+        ClipAngel_EndFavoriteSuppress(hwndEnd)
+        ClipAngel_RestorePriorFocus(priorHwnd)
         ClipAngel_ReleaseAutomationLock()
     }
     if (resultKind = "success")
