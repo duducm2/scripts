@@ -424,16 +424,36 @@ PromptContext_ResolveAttachPaths(entries, asTxt := false) {
 
 ; After CF_HDROP paste: wait until Gemini/Enterprise upload UI settles before prompt body paste.
 ; Scoped to companion main pane (Gemini_GetSearchRoot) — avoid Shift-keys helpers for Utils #Warn.
-; Prompt Manager [Y] auto-send: stable Send-enabled + upload-idle (efficiency canon §13 / stable polls).
+; Prompt Manager [Y] auto-send: single-pass readiness probe (efficiency canon §13 / stable polls).
 PROMPT_PASTE_USE_STABLE_SEND_READY := true
 PROMPT_PASTE_USE_CHIP_READY := true
+PROMPT_PASTE_USE_FAST_READY_PROBE := true
+PROMPT_PASTE_ATTACH_IDLE_FAST_PATH := true
 PROMPT_PASTE_SEND_READY_STABLE_POLLS := 2
 PROMPT_PASTE_SEND_READY_POLL_MS := 200
 PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS := 600
+PROMPT_PASTE_SUBMIT_MIN_SETTLE_MS := 0
+PROMPT_PASTE_SUBMIT_FOCUS_SLEEP_MS := 0
+; Enter-first submit for gemini / enterprise / copilot (UIA Invoke fallback when false).
+PROMPT_PASTE_SUBMIT_VIA_ENTER := true
+PROMPT_PASTE_GEMINI_SUBMIT_VIA_ENTER := true ; alias — prefer PROMPT_PASTE_SUBMIT_VIA_ENTER
+PROMPT_PASTE_READY_TIMING := false
 ; Total cap for Prompt Manager [Y] auto-send (wait + submit + confirm). Efficiency canon: bounded waits.
 PROMPT_PASTE_AUTO_SEND_CAP_MS := 10000
 PROMPT_PASTE_SEND_MIN_SUBMIT_MS := 4000
 
+PromptPaste_ReadyTimingLog(phase, ms) {
+    if (!PROMPT_PASTE_READY_TIMING)
+        return
+    try FileAppend('{"phase":"' phase '","ms":' ms '}' "`n", A_ScriptDir "\.cursor\prompt-paste-ready-timing.log",
+        "UTF-8")
+    catch {
+    }
+}
+
+; UIA subtree for upload/chips/progress. Enterprise/Copilot roots from
+; PromptPaste_UiaForCompanion are already page-scoped; consumer Gemini needs Document/chat-app
+; (MainPane wrongly matches Chrome chrome buttons).
 PromptContext_UploadSearchRoot(uia, companionId := "") {
     if (!IsObject(uia))
         return 0
@@ -441,6 +461,19 @@ PromptContext_UploadSearchRoot(uia, companionId := "") {
     try {
         if (companionId = "enterprise" || companionId = "copilot")
             return uia
+        ; Prefer document / chat-app over MainPane (MainPane includes Chrome chrome buttons).
+        try {
+            doc := uia.FindFirst({ Type: 50030 }) ; Document / RootWebArea
+            if (doc)
+                return doc
+        } catch {
+        }
+        try {
+            chat := uia.FindFirst({ ClassName: "chat-app", matchmode: "Substring" })
+            if (chat)
+                return chat
+        } catch {
+        }
         root := Gemini_GetSearchRoot(uia)
         if (root)
             return root
@@ -491,6 +524,38 @@ PromptContext_SendButtonIsEnabled(sendBtn) {
     return true ; control found; treat as ready if IsEnabled unavailable
 }
 
+PromptContext_IsFileChipButtonName(name) {
+    if (!name)
+        return false
+    low := StrLower(name)
+    if (InStr(low, "open upload file menu") || InStr(low, "upload & tools"))
+        return false
+    ; Gemini consumer chips are named after the file (e.g. categories.txt), not "Remove".
+    if (RegExMatch(low, "\.(txt|csv|ini|md|json|pdf|png|jpe?g|webp|gif)$"))
+        return true
+    return InStr(low, "remove") || InStr(low, "remover") || InStr(low, "excluir")
+    || InStr(low, "delete file") || InStr(low, "close file") || InStr(low, "fechar arquivo")
+}
+
+PromptContext_IsFileChipButton(btn) {
+    if (!btn)
+        return false
+    try {
+        cls := ""
+        try cls := btn.ClassName
+        catch {
+        }
+        if (cls != "" && InStr(StrLower(cls), "new-file-preview-file"))
+            return true
+    } catch {
+    }
+    name := ""
+    try name := btn.Name
+    catch {
+    }
+    return PromptContext_IsFileChipButtonName(name)
+}
+
 PromptContext_ProbeSendReady(hwnd, uia, companionId) {
     companionId := StrLower(Trim(companionId))
     uploadIdle := !PromptContext_IsUploading(uia, companionId)
@@ -518,33 +583,55 @@ PromptContext_ProbeSendReady(hwnd, uia, companionId) {
 }
 
 ; Secondary signal (orthogonal to Send-enabled + upload text): composer chips and no ProgressBar.
-; Scoped FindAll under search root; stop once chipNeed is met. Trade-off: other "remove" buttons in pane can inflate count.
+; ClassName needles tuned for consumer Gemini; enterprise/copilot rely more on name/.ext heuristics
+; under the companion upload root. Trade-off: other pane buttons can inflate count.
 PromptContext_CountFileChips(uia, companionId := "", chipNeed := 0) {
     n := 0
     root := PromptContext_UploadSearchRoot(uia, companionId)
     if (!IsObject(root))
         return 0
+    static buttonCacheRequest := 0
+    if (!buttonCacheRequest)
+        buttonCacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+    ; Fast path: Gemini file preview chips by ClassName (avoids full Button enumeration).
+    for clsNeedle in ["new-file-preview-file", "file-preview"] {
+        try {
+            chips := root.FindAllBuildCache(buttonCacheRequest, { Type: 50000, ClassName: clsNeedle,
+                matchmode: "Substring" }, 4)
+            n := IsObject(chips) ? chips.Length : 0
+            if (n > 0)
+                return (chipNeed > 0 && n >= chipNeed) ? Min(n, chipNeed) : n
+        } catch {
+        }
+        try {
+            chips := root.FindAllBuildCache(buttonCacheRequest, { ClassName: clsNeedle, matchmode: "Substring" }, 4)
+            n := IsObject(chips) ? chips.Length : 0
+            if (n > 0)
+                return (chipNeed > 0 && n >= chipNeed) ? Min(n, chipNeed) : n
+        } catch {
+        }
+    }
     try {
-        buttons := root.FindAll({ Type: 50000 }) ; Button
+        buttons := root.FindAllBuildCache(buttonCacheRequest, { Type: 50000 }, 4)
         for btn in buttons {
-            name := ""
-            try name := btn.Name
-            catch {
+            if (!PromptContext_IsFileChipButton(btn))
                 continue
-            }
-            if (!name)
-                continue
-            low := StrLower(name)
-            if (InStr(low, "open upload file menu"))
-                continue
-            if (InStr(low, "remove") || InStr(low, "remover") || InStr(low, "excluir")
-            || InStr(low, "delete file") || InStr(low, "close file") || InStr(low, "fechar arquivo")) {
-                n += 1
-                if (chipNeed > 0 && n >= chipNeed)
-                    return n
-            }
+            n += 1
+            if (chipNeed > 0 && n >= chipNeed)
+                break
         }
     } catch {
+        try {
+            buttons := root.FindAll({ Type: 50000 })
+            for btn in buttons {
+                if (!PromptContext_IsFileChipButton(btn))
+                    continue
+                n += 1
+                if (chipNeed > 0 && n >= chipNeed)
+                    break
+            }
+        } catch {
+        }
     }
     return n
 }
@@ -584,6 +671,87 @@ PromptContext_ProbeChipReady(hwnd, uia, companionId, attachCount := 0) {
     return true
 }
 
+; Single-pass readiness probe (canon §13): one Button FindAllBuildCache for chips+send (Gemini),
+; one ProgressBar check, one composer read; upload-label text scan only when scanUploadText.
+PromptContext_ProbeReadiness(hwnd, uia, companionId, attachCount := 0, scanUploadText := true) {
+    companionId := StrLower(Trim(companionId))
+    chips := 0
+    sendEnabled := false
+    hasText := false
+    noProgress := true
+    uploadText := false
+    if (!IsObject(uia))
+        return { chips: 0, sendEnabled: false, hasText: false, noProgress: true, uploadText: false,
+            scannedUpload: false }
+
+    root := PromptContext_UploadSearchRoot(uia, companionId)
+    if (!IsObject(root))
+        root := uia
+
+    static buttonCacheRequest := 0
+    if (!buttonCacheRequest)
+        buttonCacheRequest := UIA.CreateCacheRequest(["Name", "ClassName"], , 5)
+
+    sendBtn := 0
+    chipNeed := Max(0, attachCount)
+    needGeminiSend := (companionId != "enterprise" && companionId != "copilot")
+    ; Reuse CountFileChips (ClassName new-file-preview-file + filename heuristics).
+    chips := PromptContext_CountFileChips(uia, companionId, chipNeed)
+    chipsDone := (chipNeed <= 0) || (chips >= chipNeed)
+    ; Walk Buttons only when chip query missed; recount from scratch to avoid double-count.
+    if (!chipsDone) {
+        chips := 0
+        try {
+            buttons := root.FindAllBuildCache(buttonCacheRequest, { Type: 50000 }, 4)
+            for btn in buttons {
+                if (PromptContext_IsFileChipButton(btn)) {
+                    chips += 1
+                    chipsDone := (chipNeed <= 0) || (chips >= chipNeed)
+                }
+                if (needGeminiSend && !sendBtn) {
+                    try {
+                        if (Gemini_IsSendButtonCandidate(btn))
+                            sendBtn := btn
+                    } catch {
+                    }
+                }
+                if (chipsDone && (!needGeminiSend || sendBtn))
+                    break
+            }
+        } catch {
+        }
+    }
+
+    try {
+        if (companionId = "enterprise") {
+            sendBtn := GeminiEnterprise_FindSubmitButton(uia)
+            hasText := (GeminiEnterprise_ComposerGetTextViaUia(hwnd) != "")
+        } else if (companionId = "copilot") {
+            sendBtn := CopilotWeb_FindSendButton(uia)
+            hasText := (CopilotWeb_ComposerGetText(hwnd) != "")
+        } else {
+            if (!sendBtn)
+                sendBtn := Gemini_FindSendButton(uia)
+            hasText := (GeminiPromptFieldGetTextFromUia(uia) != "")
+        }
+    } catch {
+        hasText := false
+    }
+    sendEnabled := PromptContext_SendButtonIsEnabled(sendBtn)
+    noProgress := !PromptContext_HasProgressBar(uia, companionId)
+    ; Skip expensive Text FindAll when chips + no ProgressBar already prove attach settled.
+    if (scanUploadText && !((chipNeed > 0 && chips >= chipNeed && noProgress)))
+        uploadText := PromptContext_IsUploading(uia, companionId)
+    return {
+        chips: chips,
+        sendEnabled: sendEnabled,
+        hasText: hasText,
+        noProgress: noProgress,
+        uploadText: uploadText,
+        scannedUpload: !!scanUploadText
+    }
+}
+
 PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     if !InsertFiles_IsAiChatForeground()
         return
@@ -595,6 +763,7 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     try companionId := ResolveGlobalAICompanion()
     catch {
     }
+    hwnd := 0
     uia := ""
     try {
         hwnd := WinGetID("A")
@@ -609,19 +778,87 @@ PromptContext_WaitForAttachUploadIdle(fileCount := 1) {
     }
     tStart := A_TickCount
     sawUploading := false
+    sawProgress := false
+    stableFast := 0
+    stableNoProg := 0
+    needStable := Max(1, PROMPT_PASTE_SEND_READY_STABLE_POLLS)
+    uploadLatched := false
+    pollIndex := 0
     while ((A_TickCount - tStart) < timeoutMs) {
-        up := PromptContext_IsUploading(uia, companionId)
-        if (up)
-            sawUploading := true
-        if (!up && (sawUploading || (A_TickCount - tStart) >= minMs))
-            return
+        pollIndex += 1
+        if (!IsObject(uia) || Mod(pollIndex, 5) = 1) {
+            try {
+                if (hwnd)
+                    uia := PromptPaste_UiaForCompanion(hwnd, companionId)
+            } catch {
+                uia := ""
+            }
+        }
+        if (!IsObject(uia)) {
+            Sleep 150
+            continue
+        }
+
+        if (PROMPT_PASTE_ATTACH_IDLE_FAST_PATH) {
+            scanText := (pollIndex = 1 || Mod(pollIndex, 3) = 0)
+            chips := PromptContext_CountFileChips(uia, companionId, fileCount)
+            noProgress := !PromptContext_HasProgressBar(uia, companionId)
+            chipsOk := (fileCount <= 0) || (chips >= fileCount)
+            if (!noProgress)
+                sawProgress := true
+            ; ProgressBar is authoritative. Sticky upload-label Text must not block when progress is gone.
+            if (noProgress) {
+                uploadLatched := false
+                if (scanText && PromptContext_IsUploading(uia, companionId))
+                    sawUploading := true
+            } else if (scanText) {
+                uploadLatched := PromptContext_IsUploading(uia, companionId)
+                if (uploadLatched)
+                    sawUploading := true
+            }
+            if (chipsOk && noProgress) {
+                stableFast += 1
+                if (stableFast >= needStable) {
+                    PromptPaste_ReadyTimingLog("attach_idle_fast", A_TickCount - tStart)
+                    return
+                }
+            } else {
+                stableFast := 0
+            }
+            ; When chips are not in the UIA tree, ProgressBar-gone is enough (upload Text is sticky).
+            if (!chipsOk && noProgress) {
+                stableNoProg += 1
+                if (stableNoProg >= needStable && (sawProgress || sawUploading || (A_TickCount - tStart) >= 400)) {
+                    PromptPaste_ReadyTimingLog("attach_idle_progress", A_TickCount - tStart)
+                    return
+                }
+            } else if (!noProgress) {
+                stableNoProg := 0
+            }
+            ; Last-resort floor if progress never appeared and chips never showed.
+            if (!chipsOk && !sawProgress && !uploadLatched && (A_TickCount - tStart) >= minMs) {
+                PromptPaste_ReadyTimingLog("attach_idle", A_TickCount - tStart)
+                return
+            }
+        } else {
+            up := PromptContext_IsUploading(uia, companionId)
+            if (up)
+                sawUploading := true
+            if (!up && (sawUploading || (A_TickCount - tStart) >= minMs)) {
+                PromptPaste_ReadyTimingLog("attach_idle", A_TickCount - tStart)
+                return
+            }
+        }
         Sleep 150
     }
+    PromptPaste_ReadyTimingLog("attach_idle_timeout", A_TickCount - tStart)
 }
 
 ; After multi-file attach + body paste: wait until companion Send/Submit is enabled.
 ; Returns true if ready, false on timeout (caller may still attempt submit).
-; Two independent streaks in one poll loop (AHK has no worker threads); first to N wins:
+; Fast path (PROMPT_PASTE_USE_FAST_READY_PROBE): single-pass probe; chips + no ProgressBar + Send + text;
+;   skip no-indicator floor when chips >= attachCount; upload-label text scan every 3rd poll.
+; Legacy (flag false): two independent streaks; first to N wins:
 ;   A — upload-idle + Send enabled + text (PROMPT_PASTE_USE_STABLE_SEND_READY)
 ;   B — chips + no ProgressBar + text (PROMPT_PASTE_USE_CHIP_READY)
 PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, attachCount := 0, updateBanner := false) {
@@ -633,15 +870,23 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
         return PromptContext_WaitForSendReadyLegacy(hwnd, companionId, timeoutMs)
 
     pollMs := Max(50, PROMPT_PASTE_SEND_READY_POLL_MS)
+    ; After attach idle already stabilized chips, one ready poll is enough (logs: 2nd poll only repeated proof).
     needStable := Max(1, PROMPT_PASTE_SEND_READY_STABLE_POLLS)
+    if (attachCount > 0 && PROMPT_PASTE_USE_FAST_READY_PROBE)
+        needStable := 1
     minNoInd := (attachCount > 0) ? Max(0, PROMPT_PASTE_SEND_MIN_NO_INDICATOR_MS) : 0
     tStart := A_TickCount
     sawUploading := false
     stableA := 0
     stableB := 0
+    stableFast := 0
     bannerPhase := ""
     uia := 0
     pollIndex := 0
+    uploadLatched := false
+    ; Body was just pasted by ApplyChoice — skip ~500ms composer UIA on first poll after attach.
+    cachedHasText := (attachCount > 0)
+    cachedSendEnabled := false
 
     while ((A_TickCount - tStart) < timeoutMs) {
         if (!WinExist("ahk_id " hwnd))
@@ -657,6 +902,90 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
         if (!IsObject(uia)) {
             stableA := 0
             stableB := 0
+            stableFast := 0
+            Sleep pollMs
+            continue
+        }
+
+        if (PROMPT_PASTE_USE_FAST_READY_PROBE) {
+            scanText := (pollIndex = 1 || Mod(pollIndex, 3) = 0)
+            ; Light path after paste/attach: chips + ProgressBar + Send (skip ~500ms composer read).
+            if (cachedHasText && (cachedSendEnabled || attachCount > 0)) {
+                chips := PromptContext_CountFileChips(uia, companionId, attachCount)
+                noProgress := !PromptContext_HasProgressBar(uia, companionId)
+                sendEnabled := cachedSendEnabled
+                if (!sendEnabled) {
+                    try {
+                        if (companionId = "enterprise")
+                            sendEnabled := PromptContext_SendButtonIsEnabled(GeminiEnterprise_FindSubmitButton(uia))
+                        else if (companionId = "copilot")
+                            sendEnabled := PromptContext_SendButtonIsEnabled(CopilotWeb_FindSendButton(uia))
+                        else
+                            sendEnabled := PromptContext_SendButtonIsEnabled(Gemini_FindSendButton(uia))
+                    } catch {
+                        sendEnabled := false
+                    }
+                }
+                if (scanText && !((attachCount > 0 && chips >= attachCount && noProgress)))
+                    uploadLatched := PromptContext_IsUploading(uia, companionId)
+                else if (attachCount > 0 && chips >= attachCount && noProgress)
+                    uploadLatched := false
+                probe := {
+                    chips: chips,
+                    sendEnabled: sendEnabled,
+                    hasText: true,
+                    noProgress: noProgress,
+                    uploadText: uploadLatched,
+                    scannedUpload: false
+                }
+            } else {
+                probe := PromptContext_ProbeReadiness(hwnd, uia, companionId, attachCount, scanText)
+            }
+            if (probe.scannedUpload)
+                uploadLatched := probe.uploadText
+            if (uploadLatched)
+                sawUploading := true
+            if (probe.hasText)
+                cachedHasText := true
+            if (probe.sendEnabled)
+                cachedSendEnabled := true
+            hasText := cachedHasText || probe.hasText
+            sendEnabled := cachedSendEnabled || probe.sendEnabled
+
+            if (updateBanner) {
+                phase := uploadLatched ? "uploads" : "send"
+                if (phase != bannerPhase) {
+                    bannerPhase := phase
+                    msg := (phase = "uploads") ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…"
+                    if (g_PromptPasteBusyActive)
+                        PromptPaste_BusyUpdate(msg)
+                    else {
+                        try StandardLoadingBar_Update(msg, BANNER_ACCENT_INTERMEDIATE)
+                        catch {
+                        }
+                    }
+                }
+            }
+
+            chipGate := (attachCount <= 0) || (probe.chips >= attachCount)
+            ; Chips + no ProgressBar prove upload settled — do not wait on upload-label text.
+            if (chipGate && probe.noProgress)
+                idleOk := true
+            else if (chipGate)
+                idleOk := !uploadLatched
+            else
+                idleOk := !uploadLatched && (sawUploading || (A_TickCount - tStart) >= minNoInd)
+            ready := idleOk && probe.noProgress && sendEnabled && hasText
+                && (chipGate || (attachCount > 0 && (A_TickCount - tStart) >= minNoInd))
+            if (ready) {
+                stableFast += 1
+                if (stableFast >= needStable) {
+                    PromptPaste_ReadyTimingLog("send_ready_fast", A_TickCount - tStart)
+                    return true
+                }
+            } else {
+                stableFast := 0
+            }
             Sleep pollMs
             continue
         }
@@ -684,8 +1013,10 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             idleOk := probe.uploadIdle && (sawUploading || (A_TickCount - tStart) >= minNoInd)
             if (idleOk && probe.sendEnabled && probe.hasText) {
                 stableA += 1
-                if (stableA >= needStable)
+                if (stableA >= needStable) {
+                    PromptPaste_ReadyTimingLog("send_ready_a", A_TickCount - tStart)
                     return true
+                }
             } else {
                 stableA := 0
             }
@@ -699,8 +1030,10 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
             }
             if (chipOk) {
                 stableB += 1
-                if (stableB >= needStable)
+                if (stableB >= needStable) {
+                    PromptPaste_ReadyTimingLog("send_ready_b", A_TickCount - tStart)
                     return true
+                }
             } else {
                 stableB := 0
             }
@@ -708,6 +1041,7 @@ PromptContext_WaitForSendReady(hwnd, companionId := "", timeoutMs := 45000, atta
 
         Sleep pollMs
     }
+    PromptPaste_ReadyTimingLog("send_ready_timeout", A_TickCount - tStart)
     return false
 }
 
@@ -790,13 +1124,15 @@ PromptPaste_UiaForCompanion(hwnd, companionId) {
     }
 }
 
-PromptPaste_CompanionIsGenerating(hwnd, companionId) {
+PromptPaste_CompanionIsGenerating(hwnd, companionId, uia := 0) {
     companionId := StrLower(Trim(companionId))
     if (!hwnd || !WinExist("ahk_id " hwnd) || companionId = "")
         return false
-    uia := PromptPaste_UiaForCompanion(hwnd, companionId)
-    if (!IsObject(uia))
-        return false
+    if (!IsObject(uia)) {
+        uia := PromptPaste_UiaForCompanion(hwnd, companionId)
+        if (!IsObject(uia))
+            return false
+    }
     try {
         if (companionId = "enterprise")
             return !!GeminiEnterprise_FindStopButton(uia)
@@ -811,68 +1147,83 @@ PromptPaste_CompanionIsGenerating(hwnd, companionId) {
 
 PromptPaste_WaitForGenerationStarted(hwnd, companionId, timeoutMs := 5000) {
     tStart := A_TickCount
+    uia := 0
+    poll := 0
     while ((A_TickCount - tStart) < timeoutMs) {
-        if (PromptPaste_CompanionIsGenerating(hwnd, companionId))
+        poll += 1
+        if (!IsObject(uia) || Mod(poll, 4) = 1) {
+            try uia := PromptPaste_UiaForCompanion(hwnd, companionId)
+            catch {
+                uia := 0
+            }
+        }
+        if (IsObject(uia) && PromptPaste_CompanionIsGenerating(hwnd, companionId, uia))
             return true
-        Sleep 200
+        Sleep 100
     }
     return false
 }
 
+PromptPaste_SubmitViaEnterEnabled() {
+    ; Both default true; set either false to force UIA adapter TrySubmit (rollback).
+    return !!(PROMPT_PASTE_SUBMIT_VIA_ENTER && PROMPT_PASTE_GEMINI_SUBMIT_VIA_ENTER)
+}
+
+; Shared submit leaf for gemini / enterprise / copilot: focus → Enter (preferred) or adapter TrySubmit.
+; Do not restore prior focus here — PromptPaste_SubmitWhenReady confirms Stop on the companion window.
 PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline := 0) {
     global g_GeminiDelayedSubmit_WaitContentMaxMs
     companionId := StrLower(Trim(companionId))
     if (!hwnd || !WinExist("ahk_id " hwnd))
         return false
-    if (PromptPaste_CompanionIsGenerating(hwnd, companionId))
-        return true
     if (PromptPaste_SendRemainingMs(tDeadline) <= 0)
         return false
-    prevHwnd := WinExist("A")
-    result := false
-    try {
-        if (companionId != "") {
-            if (!PromptPaste_FocusCompanionComposer(hwnd, companionId))
-                return false
-            Sleep 200
-        } else if (!WinActive("ahk_id " hwnd)) {
+    if (companionId = "") {
+        if (!WinActive("ahk_id " hwnd)) {
             WinActivate("ahk_id " hwnd)
             WinWaitActive("ahk_id " hwnd, , 1)
         }
-        if (companionId = "enterprise") {
-            try {
-                uia := UIA_Browser("ahk_id " hwnd)
-                result := GeminiEnterprise_TrySubmit(uia)
-            } catch {
-                result := false
-            }
-        } else if (companionId = "copilot") {
-            try {
-                uia := UIA_Browser("ahk_id " hwnd)
-                result := CopilotWeb_TrySubmit(uia)
-            } catch {
-                result := false
-            }
-        } else if (companionId = "gemini") {
-            uia := 0
-            try uia := UIA_Browser("ahk_id " hwnd)
-            catch {
-                uia := 0
-            }
-            if (IsObject(uia)) {
-                contentMs := Min(g_GeminiDelayedSubmit_WaitContentMaxMs, PromptPaste_SendRemainingMs(tDeadline))
-                if (contentMs > 0 && Gemini_WaitForPromptContent(uia, contentMs))
-                    result := Gemini_TrySubmit(hwnd, uia)
-            }
-        } else {
-            Send "{Enter}"
-            result := true
-        }
-    } finally {
-        if (prevHwnd && prevHwnd != hwnd && WinExist("ahk_id " prevHwnd))
-            WinActivate("ahk_id " prevHwnd)
+        Send "{Enter}"
+        return true
     }
-    return result
+    if (PromptPaste_CompanionIsGenerating(hwnd, companionId))
+        return true
+    ; Consumer Gemini: window activate is enough for Enter. Enterprise/Copilot need composer focus.
+    if (companionId = "gemini") {
+        if (!WinActive("ahk_id " hwnd)) {
+            WinActivate("ahk_id " hwnd)
+            if (!WinWaitActive("ahk_id " hwnd, , 1))
+                return false
+        }
+    } else if (!PromptPaste_FocusCompanionComposer(hwnd, companionId)) {
+        return false
+    }
+    Sleep Max(0, PROMPT_PASTE_SUBMIT_FOCUS_SLEEP_MS)
+    if (PromptPaste_SubmitViaEnterEnabled()) {
+        SendInput "{Enter}"
+        return true
+    }
+    uia := 0
+    try uia := PromptPaste_UiaForCompanion(hwnd, companionId)
+    catch {
+        uia := 0
+    }
+    if (!IsObject(uia))
+        return false
+    try {
+        if (companionId = "enterprise")
+            return !!GeminiEnterprise_TrySubmit(uia)
+        if (companionId = "copilot")
+            return !!CopilotWeb_TrySubmit(uia)
+        if (PROMPT_PASTE_SUBMIT_MIN_SETTLE_MS > 0) {
+            contentMs := Min(g_GeminiDelayedSubmit_WaitContentMaxMs, PromptPaste_SendRemainingMs(tDeadline))
+            if (contentMs <= 0 || !Gemini_WaitForPromptContent(uia, contentMs, PROMPT_PASTE_SUBMIT_MIN_SETTLE_MS))
+                return false
+        }
+        return !!Gemini_TrySubmitOnce(uia, "enter")
+    } catch {
+        return false
+    }
 }
 
 ; [Y] send: non-blocking loading bar, wait for upload idle, UIA submit, confirm generation started.
@@ -912,15 +1263,17 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             PromptPaste_BusyUpdate((attachCount > 0) ? "⏳ Waiting for uploads…" : "⏳ Waiting for Send…")
             ready := false
             waitMs := PromptPaste_SendWaitBudget(tDeadline)
+            ; Attach idle already stabilized chips; only a short enablement check after paste.
+            if (attachCount > 0)
+                waitMs := Min(waitMs, 500)
             if (waitMs > 0) {
                 try ready := PromptContext_WaitForSendReady(hwnd, companionId, waitMs, attachCount, true)
                 catch {
                 }
             }
-            if (!ready && attachCount > 0 && PromptPaste_SendRemainingMs(tDeadline) > PROMPT_PASTE_SEND_MIN_SUBMIT_MS) {
-                try ShowCenteredOverlay_Utils("⚠ Send not ready — submitting anyway", 2200, BANNER_ACCENT_ERROR)
-                catch {
-                }
+            if (!ready && attachCount > 0) {
+                ; Paste + attach already done — submit anyway rather than stall.
+                ready := true
             }
         }
 
@@ -933,10 +1286,11 @@ PromptPaste_SubmitWhenReady(hwnd := 0, companionId := "", attachCount := 0) {
             submitted := PromptPaste_SubmitCompanion(hwnd, companionId, tDeadline)
             if (companionId != "") {
                 PromptPaste_BusyUpdate("⏳ Confirming…")
-                confirmMs := PromptPaste_SendRemainingMs(tDeadline)
+                ; Cap confirm — Stop button often lags; don't hold the busy bar multi-seconds.
+                confirmMs := Min(PromptPaste_SendRemainingMs(tDeadline), 1500)
                 ok := (confirmMs > 0 && PromptPaste_WaitForGenerationStarted(hwnd, companionId, confirmMs))
                 if (!ok && submitted)
-                    ok := PromptPaste_CompanionIsGenerating(hwnd, companionId)
+                    ok := true ; Enter/submit already fired; treat as sent if Stop not seen yet
             } else {
                 ok := submitted
             }

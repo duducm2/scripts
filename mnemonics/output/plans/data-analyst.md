@@ -8,6 +8,8 @@
 
 - [✅] ETL (Extract, Transform, Load)
 
+- [ ] schema
+
 ## Phase 1: Advanced Tabular Modeling and Automation (Main Corporate Atrium)
 
 ### 1. Interface and Navigation

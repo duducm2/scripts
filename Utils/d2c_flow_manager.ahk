@@ -897,37 +897,11 @@ class D2C_FlowManager {
         }
 
         if (autoSubmit) {
-            ; With attachments: same wait+submit path as Prompt Manager [Y] (upload idle / chips / Send).
-            if (useRegistryPastePath && attachCount > 0) {
+            ; Shared Prompt Manager path for all companions (upload idle / chips / Send / confirm).
+            ; Consumer Gemini without registry attaches keeps the classic content+submit helper.
+            if (this.CompanionId = "enterprise" || this.CompanionId = "copilot"
+                || (useRegistryPastePath && attachCount > 0)) {
                 PromptPaste_SubmitWhenReady(this.GeminiHwnd, this.CompanionId, attachCount)
-            } else if (this.CompanionId = "enterprise") {
-                Sleep 1000
-                endTick := A_TickCount + 5000
-                while (A_TickCount < endTick) {
-                    if (GeminiEnterprise_ComposerGetText(this.GeminiHwnd) != "")
-                        break
-                    Sleep 200
-                }
-                try {
-                    uia := UIA_Browser("ahk_id " this.GeminiHwnd)
-                    GeminiEnterprise_TrySubmit(uia)
-                } catch {
-                    Send("{Enter}")
-                }
-            } else if (this.CompanionId = "copilot") {
-                Sleep 1000 ; Pre-enter delay
-                endTick := A_TickCount + 5000
-                while (A_TickCount < endTick) {
-                    if (CopilotWeb_ComposerGetText(this.GeminiHwnd) != "")
-                        break
-                    Sleep 200
-                }
-                try {
-                    uia := UIA_Browser("ahk_id " this.GeminiHwnd)
-                    CopilotWeb_TrySubmit(uia)
-                } catch {
-                    Send("{Enter}")
-                }
             } else
                 Gemini_WaitForPromptContentAndSubmit(this.GeminiHwnd)
             if (presetMode = "finance_daily") {
