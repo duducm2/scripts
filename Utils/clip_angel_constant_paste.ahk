@@ -4,12 +4,15 @@
 ; (All or Favorites; no Row-0 jump), Enter only for text, 1.5s interruptible gap.
 ; Directions: "down" (Shift+P) / "up" (Shift+B). After paste, Clip Angel moves the
 ; used clip to Row 0 — bottom-up next target is former N-1 at new index N.
+; Efficiency: one UIA refresh per phase; SelectionPattern-first; bounded polls.
 ; Loaded via #include into Utils.ahk after clip_angel_favorite / activate.
 ; =============================================================================
 
 CONSTANT_PASTE_GAP_MS := 1500
 CONSTANT_PASTE_POLL_MS := 50
-CONSTANT_PASTE_CLIPBOARD_WAIT_MS := 400
+CONSTANT_PASTE_CLIPBOARD_WAIT_MS := 200
+CONSTANT_PASTE_SELECT_WAIT_MS := 150
+CONSTANT_PASTE_SELECT_POLL_MS := 25
 
 global g_ClipAngelConstantPasteActive := false
 global g_ClipAngelConstantPasteStopRequested := false
@@ -98,14 +101,12 @@ ClipAngel_ConstantPaste_IsTextOnlyClip() {
     return false
 }
 
+; Single bounded poll (early exit). No ClipWait-then-poll double wait.
 ClipAngel_ConstantPaste_WaitClipboardSettle(timeoutMs := 0) {
     if (!timeoutMs)
         timeoutMs := CONSTANT_PASTE_CLIPBOARD_WAIT_MS
-    try ClipWait(timeoutMs / 1000.0, 1)
-    catch {
-    }
     deadline := A_TickCount + timeoutMs
-    while (A_TickCount < deadline) {
+    loop {
         if (ClipAngel_ConstantPaste_ClipboardHasImage())
             return
         try {
@@ -119,12 +120,14 @@ ClipAngel_ConstantPaste_WaitClipboardSettle(timeoutMs := 0) {
                 return
         } catch {
         }
-        Sleep CONSTANT_PASTE_POLL_MS
+        if (A_TickCount >= deadline)
+            return
+        Sleep CONSTANT_PASTE_SELECT_POLL_MS
     }
 }
 
-; Selected DataGrid row name ("Row N") or "" if none.
-ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root := 0) {
+; SelectionPattern first; focused element name; no FindAll row walk.
+ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root := 0, dataGrid := 0) {
     if !hwnd
         return ""
     try {
@@ -133,40 +136,32 @@ ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root := 0) {
             if !root
                 return ""
         }
-        dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
         if !dataGrid
-            return ""
-        try {
-            if dataGrid.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable) {
-                sel := dataGrid.SelectionPattern.GetSelection()
-                if (sel && sel.Length >= 1) {
-                    try {
-                        n := sel[1].Name
-                        if RegExMatch(n, "i)^(?:Row|Linha)\s*\d+")
-                            return n
-                    } catch {
+            dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
+        if dataGrid {
+            try {
+                if dataGrid.GetPropertyValue(UIA.Property.IsSelectionPatternAvailable) {
+                    sel := dataGrid.SelectionPattern.GetSelection()
+                    if (sel && sel.Length >= 1) {
+                        try {
+                            n := sel[1].Name
+                            if RegExMatch(n, "i)^(?:Row|Linha)\s*\d+")
+                                return n
+                        } catch {
+                        }
                     }
                 }
-            }
-        } catch {
-        }
-        rows := 0
-        try rows := dataGrid.FindAll({ Type: 50025 })
-        catch
-            rows := 0
-        if !rows
-            return ""
-        for row in rows {
-            try {
-                if row.GetPropertyValue(UIA.Property.SelectionItemIsSelected)
-                    return row.Name
             } catch {
             }
-            if ClipAngel_UiaRowLegacySelected(row) {
-                try return row.Name
-                catch
-                    return ""
+        }
+        try {
+            focused := UIA.GetFocusedElement()
+            if focused {
+                n := focused.Name
+                if RegExMatch(n, "i)(?:Row|Linha)\s*(\d+)", &m)
+                    return "Row " m[1]
             }
+        } catch {
         }
     } catch {
     }
@@ -177,6 +172,23 @@ ClipAngel_ConstantPaste_ParseRowIndex(rowName) {
     if (rowName = "" || !RegExMatch(rowName, "i)(?:Row|Linha)\s*(\d+)", &m))
         return -1
     return Integer(m[1])
+}
+
+; Poll until selected row index matches (or timeout).
+ClipAngel_ConstantPaste_WaitSelectedIndex(hwnd, root, dataGrid, targetIdx, timeoutMs := 0) {
+    if (!timeoutMs)
+        timeoutMs := CONSTANT_PASTE_SELECT_WAIT_MS
+    deadline := A_TickCount + timeoutMs
+    while (A_TickCount < deadline) {
+        name := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root, dataGrid)
+        if (ClipAngel_ConstantPaste_ParseRowIndex(name) = targetIdx)
+            return name
+        Sleep CONSTANT_PASTE_SELECT_POLL_MS
+    }
+    name := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root, dataGrid)
+    if (ClipAngel_ConstantPaste_ParseRowIndex(name) = targetIdx)
+        return name
+    return ""
 }
 
 ; Select DataGrid row by index after list reorder. Returns selected row name or "".
@@ -207,9 +219,7 @@ ClipAngel_ConstantPaste_SelectRowByIndex(hwnd, root, idx) {
             row.ScrollItemPattern.ScrollIntoView()
     } catch {
     }
-    Sleep 50
-    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
-    return ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+    return ClipAngel_ConstantPaste_WaitSelectedIndex(hwnd, root, dataGrid, idx)
 }
 
 ; Next row after paste. Clip Angel "move to top after use" remaps indices:
@@ -238,9 +248,9 @@ ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction := "do
         return rowAfter
 
     ; Fallback: arrow from current selection (may be Row 0 after paste).
+    dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
     Send(goUp ? "{Up}" : "{Down}")
-    Sleep 50
-    rowAfter := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+    rowAfter := ClipAngel_ConstantPaste_WaitSelectedIndex(hwnd, root, dataGrid, targetIdx)
     if (ClipAngel_ConstantPaste_ParseRowIndex(rowAfter) = targetIdx)
         return rowAfter
     return ""
@@ -260,7 +270,8 @@ ClipAngel_ConstantPaste_WaitGap(timeoutMs := 0) {
     return g_ClipAngelConstantPasteActive && !g_ClipAngelConstantPasteStopRequested
 }
 
-ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
+; UIA root + dataGrid only (no focus). Use after move-to-top invalidates the tree.
+ClipAngel_ConstantPaste_RefreshUia(hwnd, &root, &dataGrid) {
     root := 0
     dataGrid := 0
     if !hwnd
@@ -268,11 +279,37 @@ ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
     try root := UIA.ElementFromHandle(hwnd)
     catch
         root := 0
+    if !root
+        return false
     dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
-    if !dataGrid
+    return !!dataGrid
+}
+
+ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
+    if !ClipAngel_ConstantPaste_RefreshUia(hwnd, &root, &dataGrid)
         return false
     ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
     return true
+}
+
+; Before Enter: skip full UIA rebuild when CA is foreground and grid already focused.
+ClipAngel_ConstantPaste_EnsureGridReadyForPaste(hwnd, &root, &dataGrid) {
+    if !hwnd
+        return false
+    if WinActive("ahk_id " hwnd) && dataGrid {
+        try {
+            if dataGrid.HasKeyboardFocus
+                return true
+        } catch {
+        }
+        ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
+        try {
+            if dataGrid.HasKeyboardFocus
+                return true
+        } catch {
+        }
+    }
+    return ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid)
 }
 
 ClipAngel_ConstantPaste_ToggleDown(*) {
@@ -356,12 +393,13 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
                 stopReason := "Clip Angel closed"
                 break
             }
+            ; One full prepare at iteration start.
             if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
                 break
             }
 
-            rowBefore := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+            rowBefore := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root, dataGrid)
             if (rowBefore = "") {
                 stopReason := "no clip selected"
                 break
@@ -370,13 +408,12 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
             ClipAngel_WaitChordModifiersReleased()
             ClipAngel_ReleaseChordModifiersForSend()
             ; Prime Clip Angel's "previous window", then Send Enter (same as Alt+1).
-            ; ControlSend Enter rearranges the list but does not paste into the target.
             ClipAngel_RestorePriorFocus(priorHwnd)
             if !ClipAngel_EnsureWindowActive(hwnd, 400) {
                 stopReason := "could not focus Clip Angel for paste"
                 break
             }
-            if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
+            if !ClipAngel_ConstantPaste_EnsureGridReadyForPaste(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
                 break
             }
@@ -404,7 +441,6 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
                 stopReason := "Clip Angel closed"
                 break
             }
-            ; Keep CA visible; re-focus grid then advance one row.
             try WinShow("ahk_id " hwnd)
             catch {
             }
@@ -412,10 +448,12 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
                 stopReason := "could not focus Clip Angel"
                 break
             }
-            if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
+            ; Move-to-top invalidates UIA — one refresh, then advance (no third full PrepareGrid).
+            if !ClipAngel_ConstantPaste_RefreshUia(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
                 break
             }
+            ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
 
             rowAfter := ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction)
             ; "" = end / failed advance. Do not compare names: bottom-up target can still be "Row N".
