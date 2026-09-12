@@ -660,7 +660,17 @@ def build_html(data: dict) -> str:
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
     .chart-invest .chart-treemap {{ height:320px; }}
-    .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
+    .recurring-cell {{
+      overflow:hidden; padding-bottom:12px;
+    }}
+    .recurring-cell .chart-treemap {{
+      flex:1 1 0; min-height:0; height:auto; max-height:100%;
+      overflow:hidden; width:100%;
+    }}
+    .recurring-cell h2,
+    .recurring-cell #recurringSummary {{
+      flex:0 0 auto;
+    }}
     .chart-pie {{
       height:auto; min-height:0; overflow:hidden; width:100%;
       display:grid; grid-template-rows:minmax(0,1fr) auto;
@@ -1760,17 +1770,25 @@ function drawRecurringTreemap() {{
   const L = baseLayout();
   const panel = el.closest('.panel') || el.parentElement;
   const head = panel ? panel.querySelector('h2, .panel-head-row') : null;
-  const summary = panel ? panel.querySelector('#recurringSummary, .bar-meta') : null;
-  const headH = head ? (head.getBoundingClientRect().height + 10) : 28;
-  const summaryH = summary ? (summary.getBoundingClientRect().height + 6) : 0;
-  const panelH = panel ? panel.getBoundingClientRect().height : 0;
-  const chrome = headH + summaryH + 14;
-  const availH = panelH > chrome + 100 ? Math.floor(panelH - chrome) : 0;
-  const h = availH > 0 ? availH : Math.max(el.clientHeight || 0, 220);
+  const summary = panel ? panel.querySelector('#recurringSummary') : null;
+  const headH = head ? Math.ceil(head.getBoundingClientRect().height + 8) : 28;
+  const summaryH = summary ? Math.ceil(summary.getBoundingClientRect().height + 8) : 0;
+  let padY = 0;
+  if (panel) {{
+    const cs = getComputedStyle(panel);
+    padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  }}
+  const panelH = panel ? Math.floor(panel.getBoundingClientRect().height) : 0;
+  const slack = 12;
+  const chrome = headH + summaryH + padY + slack;
+  const availH = panelH > chrome + 80 ? Math.floor(panelH - chrome) : 0;
+  const h = Math.max(120, availH > 0 ? availH : Math.min(el.clientHeight || 220, 220));
   el.style.height = h + 'px';
+  el.style.maxHeight = h + 'px';
   el.style.minHeight = '0';
   el.style.overflow = 'hidden';
-  el.style.maxWidth = '100%';
+  el.style.width = '100%';
+  const plotW = Math.max(160, Math.floor(el.clientWidth || (panel && panel.clientWidth) || 280));
   Plotly.newPlot('recurringVsIncome', [{{
     type: 'treemap',
     labels: labels,
@@ -1784,9 +1802,18 @@ function drawRecurringTreemap() {{
     pathbar: {{ visible: false }}
   }}], Object.assign({{}}, L, {{
     showlegend: false,
+    autosize: false,
     height: h,
-    margin: {{ t: 8, b: 8, l: 8, r: 8 }}
-  }}), {{ responsive: true, displayModeBar: false }});
+    width: plotW,
+    margin: {{ t: 4, b: 4, l: 4, r: 4 }}
+  }}), {{ responsive: false, displayModeBar: false }}).then(() => {{
+    el.style.height = h + 'px';
+    el.style.maxHeight = h + 'px';
+    const used = Math.ceil(el.getBoundingClientRect().height);
+    if (used > h + 1) {{
+      return Plotly.relayout(el, {{ height: h, width: plotW }});
+    }}
+  }});
 }}
 function applyPeriod() {{
   const fromEl = document.getElementById('periodFrom');
