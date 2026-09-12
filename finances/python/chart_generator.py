@@ -215,7 +215,7 @@ def build_html(data: dict) -> str:
     perf_col = ""
     if show_perf and perf_body:
         perf_col = f"""
-          <div class="panel perf-panel perf-panel-slim perf-col">
+          <div class="panel perf-panel perf-col">
             <h2>Performance</h2>
             {perf_body}
           </div>"""
@@ -581,12 +581,15 @@ def build_html(data: dict) -> str:
       display:flex; flex-direction:column; gap:10px; margin-bottom:10px;
     }}
     .charts-top {{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
+      display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; align-items:stretch;
     }}
-    .charts-no-budget .charts-top {{ grid-template-columns:1fr; }}
+    .charts-no-budget .charts-top {{ grid-template-columns:minmax(0,1fr); }}
+    .charts-top > * {{
+      min-width:0; min-height:0; overflow:hidden;
+    }}
     .charts-main {{
       display:flex; flex-direction:column; gap:10px; min-width:0;
-      height:100%; min-height:0; align-self:stretch;
+      height:100%; min-height:0; align-self:stretch; overflow:hidden;
     }}
     .perf-panel-slim {{
       flex:0 0 auto; min-height:0;
@@ -598,12 +601,13 @@ def build_html(data: dict) -> str:
       display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0;
       height:100%; overflow:hidden;
     }}
-    .perf-notif-stack > .perf-col {{
-      flex:0 0 auto;
-    }}
+    .perf-notif-stack > .perf-col,
     .perf-notif-stack > .notif-col {{
-      flex:1 1 auto; min-height:0; overflow:hidden;
+      flex:1 1 0; min-height:0; overflow:hidden;
       display:flex; flex-direction:column;
+    }}
+    .perf-notif-stack > .perf-col .perf-line {{
+      flex:1 1 auto; min-height:0; overflow:auto; margin:0;
     }}
     .perf-notif-stack > .notif-col #notificationsBody {{
       flex:1 1 auto; min-height:0; overflow:auto;
@@ -617,12 +621,12 @@ def build_html(data: dict) -> str:
       flex:1 1 auto; height:100%; overflow:hidden;
     }}
     .inc-rec-row {{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; min-width:0;
+      display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; min-width:0;
       flex:1 1 0; min-height:0; align-items:stretch;
-      height:auto;
+      height:auto; overflow:hidden;
     }}
     .inc-rec-row > .panel {{
-      min-height:0; height:100%; overflow:hidden;
+      min-width:0; min-height:0; height:100%; overflow:hidden;
       display:flex; flex-direction:column;
     }}
     .charts-reports {{
@@ -647,7 +651,14 @@ def build_html(data: dict) -> str:
     .chart-treemap {{ height:280px; }}
     .chart-invest .chart-treemap {{ height:320px; }}
     .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
-    .chart-pie {{ height:auto; min-height:220px; overflow:hidden; }}
+    .chart-pie {{
+      height:auto; min-height:220px; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }}
+    .chart-pie .js-plotly-plot,
+    .chart-pie .plot-container {{
+      margin:0 auto;
+    }}
     .chart-cell {{ min-width:0; }}
     .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell {{
       display:flex; flex-direction:column; min-height:0; min-width:0;
@@ -1725,11 +1736,17 @@ function drawRecurringTreemap() {{
   const L = baseLayout();
   const panel = el.closest('.panel') || el.parentElement;
   const head = panel ? panel.querySelector('h2, .panel-head-row') : null;
+  const summary = panel ? panel.querySelector('#recurringSummary, .bar-meta') : null;
   const headH = head ? (head.getBoundingClientRect().height + 10) : 28;
+  const summaryH = summary ? (summary.getBoundingClientRect().height + 6) : 0;
   const panelH = panel ? panel.getBoundingClientRect().height : 0;
-  const availH = panelH > headH + 120 ? Math.floor(panelH - headH - 14) : 0;
+  const chrome = headH + summaryH + 14;
+  const availH = panelH > chrome + 100 ? Math.floor(panelH - chrome) : 0;
   const h = availH > 0 ? availH : Math.max(el.clientHeight || 0, 220);
   el.style.height = h + 'px';
+  el.style.minHeight = '0';
+  el.style.overflow = 'hidden';
+  el.style.maxWidth = '100%';
   Plotly.newPlot('recurringVsIncome', [{{
     type: 'treemap',
     labels: labels,
@@ -1828,39 +1845,21 @@ function pie(id, spec, kind) {{
   el.style.minHeight = '0';
   el.style.overflow = 'hidden';
   el.classList.add('chart-clickable');
-  const wide = (el.clientWidth || (panel && panel.clientWidth) || 400) >= 400;
-  const pieLayout = wide
-    ? {{
-        domain: {{ x: [0, 0.44], y: [0.06, 0.94] }},
-        margin: {{ t: 6, b: 14, l: 4, r: 6 }},
-        legend: {{
-          orientation: 'v',
-          x: 0.5,
-          y: 1,
-          xanchor: 'left',
-          yanchor: 'top',
-          font: {{ size: 10 }},
-          tracegroupgap: 1,
-          itemsizing: 'constant',
-          itemwidth: 28,
-          bgcolor: 'rgba(0,0,0,0)',
-          borderwidth: 0
-        }}
-      }}
-    : {{
-        domain: {{ x: [0.12, 0.88], y: [0.4, 1] }},
-        margin: {{ t: 4, b: 10, l: 8, r: 8 }},
-        legend: {{
-          orientation: 'h',
-          x: 0.5,
-          y: 0,
-          xanchor: 'center',
-          yanchor: 'bottom',
-          font: {{ size: 10 }},
-          bgcolor: 'rgba(0,0,0,0)',
-          borderwidth: 0
-        }}
-      }};
+  // Center pie in the panel; legend sits below so the chart reads as middle-aligned.
+  const pieLayout = {{
+    domain: {{ x: [0.18, 0.82], y: [0.28, 0.98] }},
+    margin: {{ t: 8, b: 10, l: 8, r: 8 }},
+    legend: {{
+      orientation: 'h',
+      x: 0.5,
+      y: 0,
+      xanchor: 'center',
+      yanchor: 'bottom',
+      font: {{ size: 10 }},
+      bgcolor: 'rgba(0,0,0,0)',
+      borderwidth: 0
+    }}
+  }};
   Plotly.newPlot(id, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
     customdata: custom, textfont:{{size:10}},
