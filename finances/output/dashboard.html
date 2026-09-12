@@ -2018,57 +2018,38 @@ function drawCardInstallmentChart() {
       cliponaxis: false
     });
   }
-  // Next closing (▲) and next pay (▼) markers per card.
-  const markDates = [];
-  for (const r of rows) {
-    if (r.next_closing) {
-      markDates.push(r.next_closing);
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        name: (r.name || 'Card') + ' close',
-        x: [r.next_closing],
-        y: [0],
-        marker: {
-          symbol: 'triangle-up',
-          size: 12,
-          color: r.color || '#888',
-          line: { width: 1, color: '#ffffff' }
-        },
-        hovertemplate: (r.name || 'Card') + ' next close %{x}<extra></extra>',
-        cliponaxis: false,
-        legendgroup: r.card_id || r.name,
-        showlegend: true
-      });
+  function payDateForClosing(closingDate, dueDay) {
+    let d = String(closingDate || '').slice(0, 10);
+    if (d.length < 10) return '';
+    let [y, m, closeDom] = d.split('-').map(Number);
+    let dd = parseInt(dueDay, 10);
+    if (!Number.isFinite(dd) || dd < 1) dd = 1;
+    if (dd > 31) dd = 31;
+    const dim = (yy, mm) => {
+      if (mm === 2) {
+        const leap = (yy % 4 === 0 && (yy % 100 !== 0 || yy % 400 === 0));
+        return leap ? 29 : 28;
+      }
+      return [4, 6, 9, 11].includes(mm) ? 30 : 31;
+    };
+    const clamp = (yy, mm, day) => Math.min(Math.max(1, day), dim(yy, mm));
+    if (dd > closeDom) {
+      return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-'
+        + String(clamp(y, m, dd)).padStart(2, '0');
     }
-    if (r.next_pay) {
-      markDates.push(r.next_pay);
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        name: (r.name || 'Card') + ' pay',
-        x: [r.next_pay],
-        y: [0],
-        marker: {
-          symbol: 'triangle-down',
-          size: 12,
-          color: r.color || '#888',
-          line: { width: 1, color: '#ffffff' }
-        },
-        hovertemplate: (r.name || 'Card') + ' next pay %{x}<extra></extra>',
-        cliponaxis: false,
-        legendgroup: r.card_id || r.name,
-        showlegend: true
-      });
-    }
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+    return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-'
+      + String(clamp(y, m, dd)).padStart(2, '0');
   }
-  for (const d of markDates) {
-    if (d && !closings.includes(d)) closings.push(d);
+  const dueDayByCard = {};
+  for (const r of (spec.from_today || [])) {
+    if (r.card_id) dueDayByCard[r.card_id] = r.due_day;
   }
-  // Vertical dotted lines at every closing day for each card (same style as Today).
+  // Vertical dotted lines + amounts on pay days (not closing days).
   const shapes = [];
   const annotations = [];
-  const seenCloseLines = {};
+  const seenPayLines = {};
   if (today) {
     shapes.push({
       type: 'line',
@@ -2089,60 +2070,70 @@ function drawCardInstallmentChart() {
       font: { size: 10, color: '#f1c40f' },
       xanchor: 'center'
     });
+    if (!closings.includes(today)) closings.push(today);
   }
   for (const s of spec.series || []) {
     const color = s.color || '#888';
     const dates = s.dates || [];
     const values = s.values || [];
+    const dueDay = dueDayByCard[s.card_id] || 1;
     for (let i = 0; i < dates.length; i++) {
-      const d = dates[i];
-      if (!d) continue;
-      if (!closings.includes(d)) closings.push(d);
+      const closeD = dates[i];
+      if (!closeD) continue;
       const amt = values[i] || 0;
-      const key = d + '|' + (s.card_id || s.name || color);
-      if (seenCloseLines[key]) continue;
-      seenCloseLines[key] = true;
-      shapes.push({
-        type: 'line',
-        x0: d,
-        x1: d,
-        y0: 0,
-        y1: 1,
-        yref: 'paper',
-        line: { color: color, width: 1.5, dash: 'dot' }
-      });
-      // Axis dots (triangles) on each closing day for that card.
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        name: (s.name || 'Card') + ' closing',
-        x: [d],
-        y: [0],
-        marker: {
-          symbol: 'triangle-up',
-          size: 10,
-          color: color,
-          line: { width: 1, color: '#ffffff' }
-        },
-        hovertemplate: (s.name || 'Card') + ' closing %{x}<br>' + formatBrl(amt) + '<extra></extra>',
-        cliponaxis: false,
-        legendgroup: s.card_id || s.name,
-        showlegend: false
-      });
-      // Amount label on top of the dotted closing line.
-      annotations.push({
-        x: d,
-        y: 1,
-        yref: 'paper',
-        text: formatBrl(amt),
-        showarrow: false,
-        yanchor: 'bottom',
-        xanchor: 'center',
-        font: { size: 10, color: color },
-        bgcolor: 'rgba(0,0,0,0)',
-        borderpad: 1
-      });
+      if (amt <= 0.00001) continue;
+      const payD = payDateForClosing(closeD, dueDay);
+      if (!payD) continue;
+      if (!closings.includes(payD)) closings.push(payD);
+      const key = payD + '|' + (s.card_id || s.name || color);
+      if (seenPayLines[key]) {
+        // Same pay day for this card: sum amounts into the existing label later.
+        seenPayLines[key].amt += amt;
+        continue;
+      }
+      seenPayLines[key] = { payD, color, amt, name: s.name || 'Card', cardId: s.card_id || s.name };
     }
+  }
+  for (const key of Object.keys(seenPayLines)) {
+    const p = seenPayLines[key];
+    shapes.push({
+      type: 'line',
+      x0: p.payD,
+      x1: p.payD,
+      y0: 0,
+      y1: 1,
+      yref: 'paper',
+      line: { color: p.color, width: 1.5, dash: 'dot' }
+    });
+    traces.push({
+      type: 'scatter',
+      mode: 'markers',
+      name: p.name + ' pay',
+      x: [p.payD],
+      y: [0],
+      marker: {
+        symbol: 'triangle-down',
+        size: 12,
+        color: p.color,
+        line: { width: 1, color: '#ffffff' }
+      },
+      hovertemplate: p.name + ' pay %{x}<br>' + formatBrl(p.amt) + '<extra></extra>',
+      cliponaxis: false,
+      legendgroup: p.cardId,
+      showlegend: false
+    });
+    annotations.push({
+      x: p.payD,
+      y: 1,
+      yref: 'paper',
+      text: formatBrl(p.amt),
+      showarrow: false,
+      yanchor: 'bottom',
+      xanchor: 'center',
+      font: { size: 10, color: p.color },
+      bgcolor: 'rgba(0,0,0,0)',
+      borderpad: 1
+    });
   }
   closings.sort();
   Plotly.newPlot('lineCardPlan', traces, Object.assign({}, L, {
