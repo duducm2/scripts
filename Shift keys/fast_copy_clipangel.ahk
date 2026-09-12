@@ -15,15 +15,6 @@
 }
 
 ; =============================================================================
-; Clip Angel: Constant Pasting (toggle)
-; Hotkey: Win+Alt+Shift+; — start from current selection; press again to stop.
-; (#!+M is Maximize in WindowManagement.) MaxThreads 2 so stop works during the 1.5s gap.
-; =============================================================================
-#MaxThreadsPerHotkey 2
-#!+;:: ClipAngel_ConstantPaste_Toggle()
-#MaxThreadsPerHotkey 1
-
-; =============================================================================
 ; Clip Angel: Fast Copy Mode + sequential paste (multiple clips in order)
 ; Hotkey: Win+Alt+Shift+J — while mode off: tap starts mode; hold 700ms+ repeats last paste count.
 ;         While mode on: press finishes and pastes N clips (Ctrl+C / PrtSc / Alt+PrtSc counted).
