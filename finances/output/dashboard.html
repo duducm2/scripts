@@ -1942,7 +1942,11 @@ function drawCardInstallmentChart() {
   const tickvals = [];
   for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
   if (!tickvals.length) tickvals.push(0);
-  const closings = spec.closings || spec.months || [];
+  const today = (spec.today || RAW.today || '').slice(0, 10);
+  let closings = (spec.closings || spec.months || []).slice();
+  if (today && !closings.includes(today)) {
+    closings = closings.concat([today]).sort();
+  }
   const traces = spec.series.map(s => ({
     type: 'scatter',
     mode: 'lines+markers',
@@ -1954,10 +1958,48 @@ function drawCardInstallmentChart() {
     marker: { color: s.color, size: 7 },
     hovertemplate: '%{x} (closing)<br>%{fullData.name}: %{customdata}<extra></extra>'
   }));
+  if (today) {
+    traces.push({
+      type: 'scatter',
+      mode: 'markers',
+      name: 'Today',
+      x: [today],
+      y: [0],
+      marker: {
+        symbol: 'triangle-up',
+        size: 14,
+        color: '#f1c40f',
+        line: { width: 1, color: '#ffffff' }
+      },
+      hovertemplate: 'Today %{x}<extra></extra>',
+      cliponaxis: false
+    });
+  }
+  const shapes = today ? [{
+    type: 'line',
+    x0: today,
+    x1: today,
+    y0: 0,
+    y1: 1,
+    yref: 'paper',
+    line: { color: '#f1c40f', width: 1.5, dash: 'dot' }
+  }] : [];
+  const annotations = today ? [{
+    x: today,
+    y: 1,
+    yref: 'paper',
+    text: 'Today',
+    showarrow: false,
+    yanchor: 'bottom',
+    font: { size: 10, color: '#f1c40f' },
+    xanchor: 'center'
+  }] : [];
   Plotly.newPlot('lineCardPlan', traces, Object.assign({}, L, {
     showlegend: true,
     legend: { orientation: 'h', y: 1.14, x: 0, font: { size: 10 } },
     margin: { t: 52, b: 56, l: 88, r: 20 },
+    shapes: shapes,
+    annotations: annotations,
     yaxis: {
       title: { text: '' },
       automargin: true,
