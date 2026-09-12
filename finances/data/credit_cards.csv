@@ -1,3 +1,3 @@
 ﻿id,name,limit,initial_spent,current_spent,linked_account_id,closing_day
 CARD_MP,Mercado Pago,"23100,00","-6420,89","1062,22",ACC_MERCADOP,9
-CARD_NUBANK,NuBank,"9950,00","0,00","1306,90",ACC_NUBANKMA,7
+CARD_NUBANK,NuBank,"9950,00","0,00","1346,90",ACC_NUBANKMA,7
