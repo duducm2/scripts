@@ -47,7 +47,7 @@ def build_html(data: dict) -> str:
         else:
             items = '<div class="note ok">No alerts</div>'
         notif_col = f"""
-          <div class="notif-col" id="notificationsPanel">
+          <div class="panel notif-col" id="notificationsPanel">
             <h2>Notifications</h2>
             <div id="notificationsBody">{items}</div>
           </div>"""
@@ -164,7 +164,7 @@ def build_html(data: dict) -> str:
                 f"</div>"
             )
         goals_col = f"""
-          <div class="goals-col">
+          <div class="panel goals-col">
             <h2>Goals</h2>
             {''.join(items) or '<p class="empty">No goals</p>'}
           </div>"""
@@ -173,7 +173,7 @@ def build_html(data: dict) -> str:
     if goals_col or notif_col:
         solo = " solo" if not (goals_col and notif_col) else ""
         goals_notif_html = f"""
-        <div class="panel goals-notif-panel">
+        <div class="goals-notif-panel">
           <div class="goals-notif-grid{solo}">
             {goals_col}
             {notif_col}
@@ -446,14 +446,13 @@ def build_html(data: dict) -> str:
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
+    .goals-notif-panel {{ min-width:0; }}
     .goals-notif-grid {{
-      display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
+      height:100%;
     }}
     .goals-notif-grid.solo {{ grid-template-columns:1fr; }}
-    .goals-notif-grid > div {{ min-width:0; }}
-    .goals-col + .notif-col {{
-      border-left:1px solid var(--border); padding-left:12px;
-    }}
+    .goals-notif-grid > .panel {{ min-width:0; }}
     .goals-notif-grid .note {{ margin-bottom:6px; }}
     .goals-notif-grid .note:last-child {{ margin-bottom:0; }}
     .chart {{ height:320px; }}
@@ -631,10 +630,6 @@ def build_html(data: dict) -> str:
     @media (max-width:900px) {{
       .kpis, .charts, .split {{ grid-template-columns:1fr; }}
       .goals-notif-grid {{ grid-template-columns:1fr; }}
-      .goals-col + .notif-col {{
-        border-left:none; padding-left:0;
-        border-top:1px solid var(--border); padding-top:10px;
-      }}
       .budget-panel, .pie-exp-cell, .pie-inc-cell,
       .chart-bal, .chart-invest {{ grid-column:auto; grid-row:auto; }}
     }}

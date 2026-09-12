@@ -96,14 +96,13 @@
     .panel { background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }
     .panel-slim { margin-bottom:10px; }
     .panel h2 { margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }
+    .goals-notif-panel { min-width:0; }
     .goals-notif-grid {
-      display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
+      height:100%;
     }
     .goals-notif-grid.solo { grid-template-columns:1fr; }
-    .goals-notif-grid > div { min-width:0; }
-    .goals-col + .notif-col {
-      border-left:1px solid var(--border); padding-left:12px;
-    }
+    .goals-notif-grid > .panel { min-width:0; }
     .goals-notif-grid .note { margin-bottom:6px; }
     .goals-notif-grid .note:last-child { margin-bottom:0; }
     .chart { height:320px; }
@@ -281,10 +280,6 @@
     @media (max-width:900px) {
       .kpis, .charts, .split { grid-template-columns:1fr; }
       .goals-notif-grid { grid-template-columns:1fr; }
-      .goals-col + .notif-col {
-        border-left:none; padding-left:0;
-        border-top:1px solid var(--border); padding-top:10px;
-      }
       .budget-panel, .pie-exp-cell, .pie-inc-cell,
       .chart-bal, .chart-invest { grid-column:auto; grid-row:auto; }
     }
@@ -382,15 +377,15 @@
   </div>
   <div class="split">
     
-        <div class="panel goals-notif-panel">
+        <div class="goals-notif-panel">
           <div class="goals-notif-grid">
             
-          <div class="goals-col">
+          <div class="panel goals-col">
             <h2>Goals</h2>
             <div class="bar-row"><div class="bar-head"><span>Private pension</span><span>R$ 17.083,13 / R$ 926.400,00 · 2%</span></div><div class="bar-track"><div class="bar-fill" style="width:1.8%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 909.316,87</div></div><div class="bar-row"><div class="bar-head"><span>Emergency fund</span><span>R$ 2.241,14 / R$ 18.000,00 · 12%</span></div><div class="bar-track"><div class="bar-fill" style="width:12.5%;background:#3498db"></div></div><div class="bar-meta">Rem R$ 15.758,86</div></div>
           </div>
             
-          <div class="notif-col" id="notificationsPanel">
+          <div class="panel notif-col" id="notificationsPanel">
             <h2>Notifications</h2>
             <div id="notificationsBody"><div class="note">Budget exceeded: 🚗 Car (R$ 468,00 / R$ 270,00)</div><div class="note">Budget exceeded: 📚 Education (R$ 320,33 / R$ 1,00)</div><div class="note">Budget exceeded: 💻 Electronics (R$ 120,20 / R$ 50,00)</div><div class="note">Budget exceeded: 🎉 Leisure (R$ 1.327,63 / R$ 1.200,00)</div><div class="note">Budget exceeded: ❤️ Health (R$ 251,87 / R$ 250,00)</div></div>
           </div>
