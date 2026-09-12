@@ -1,4 +1,4 @@
-"""Local finance cockpit server: static output/ + PATCH budgets.csv."""
+"""Local finance cockpit server: static output/ + PATCH budgets.csv + notes."""
 
 from __future__ import annotations
 
@@ -18,6 +18,8 @@ import data_aggregator as _agg  # noqa: E402
 PORT = 8765
 BUDGET_HEADERS = ["year_month", "category_id", "planned_amount", "spent_amount"]
 YEAR_MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
+NOTES_FILENAME = "general_notes.txt"
+NOTES_MAX_BYTES = 200_000
 
 
 def format_csv_decimal(num: float) -> str:
@@ -103,6 +105,34 @@ def load_cards() -> list[dict]:
     return out
 
 
+def notes_path() -> Path:
+    return _agg.DATA / NOTES_FILENAME
+
+
+def load_notes() -> str:
+    path = notes_path()
+    if not path.exists():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def save_notes(text) -> dict:
+    if text is None:
+        text = ""
+    if not isinstance(text, str):
+        text = str(text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    if len(text.encode("utf-8")) > NOTES_MAX_BYTES:
+        return {"ok": False, "error": "Notes too large", "status": 400}
+    path = notes_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", newline="\n")
+    return {"ok": True, "status": 200}
+
+
 class DashboardHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, directory: str | None = None, **kwargs):
         super().__init__(*args, directory=directory, **kwargs)
@@ -119,14 +149,33 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/cards":
             self._json(200, {"ok": True, "cards": load_cards()})
             return
+        if parsed.path == "/api/notes":
+            self._json(200, {"ok": True, "text": load_notes()})
+            return
         super().do_GET()
 
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, PATCH, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, PUT, PATCH, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
+
+    def do_PUT(self):
+        parsed = urlparse(self.path)
+        if parsed.path != "/api/notes":
+            self._json(404, {"ok": False, "error": "Not found"})
+            return
+        length = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(length) if length else b"{}"
+        try:
+            body = json.loads(raw.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            self._json(400, {"ok": False, "error": "Invalid JSON"})
+            return
+        result = save_notes(body.get("text", ""))
+        status = int(result.pop("status", 200))
+        self._json(status, result)
 
     def do_PATCH(self):
         parsed = urlparse(self.path)

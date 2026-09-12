@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html as html_lib
 import json
 import sys
 from pathlib import Path
@@ -20,6 +21,16 @@ from data_aggregator import (  # noqa: E402
 )
 from seed_from_ini import seed  # noqa: E402
 import data_aggregator as _agg  # noqa: E402
+
+
+def load_general_notes() -> str:
+    path = _agg.DATA / "general_notes.txt"
+    if not path.exists():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
 
 def pie_spec(rows):
@@ -398,6 +409,17 @@ def build_html(data: dict) -> str:
   <div class="split split-{split_n}">
     {''.join(split_parts)}
   </div>"""
+
+    general_notes_text = load_general_notes()
+    notes_html = f"""
+        <div class="panel general-notes-panel" id="generalNotesPanel">
+          <div class="general-notes-head">
+            <h2>Notes</h2>
+            <span id="generalNotesStatus" class="budget-save-status" aria-live="polite"></span>
+          </div>
+          <textarea id="generalNotes" class="general-notes-area" rows="12"
+            placeholder="Write anything here…">{html_lib.escape(general_notes_text)}</textarea>
+        </div>"""
 
     rec_html = ""
     if widget_on(s, "ShowRecurring"):
@@ -934,6 +956,19 @@ def build_html(data: dict) -> str:
     .bar-meta {{ color:var(--muted2); font-size:11px; margin-top:2px; }}
     .empty {{ color:var(--empty); margin:0; }}
     .chart-clickable {{ cursor:pointer; }}
+    .general-notes-panel {{ margin-top:10px; }}
+    .general-notes-head {{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      margin-bottom:8px;
+    }}
+    .general-notes-head h2 {{ margin:0; }}
+    .general-notes-area {{
+      display:block; width:100%; min-height:220px; box-sizing:border-box;
+      resize:vertical; background:var(--ctrl-bg); color:var(--ctrl-fg);
+      border:1px solid var(--border); border-radius:6px; padding:10px 12px;
+      font-family:Segoe UI, sans-serif; font-size:13px; line-height:1.45;
+    }}
+    .general-notes-area:focus {{ outline:none; border-color:var(--heading); }}
     #categoryView {{ display:none; }}
     #categoryView.active {{ display:block; }}
     #cockpitView.hidden {{ display:none; }}
@@ -985,6 +1020,7 @@ def build_html(data: dict) -> str:
     {charts_body}
   </div>
   {split_html}
+  {notes_html}
   </div>
   <div id="categoryView">
     <div class="panel">
@@ -1029,8 +1065,13 @@ def build_html(data: dict) -> str:
 const DATA = {payload_json};
 const RAW = {raw_json};
 const THEME_KEY = 'finance-cockpit-theme';
+const NOTES_LS_KEY = 'finance-cockpit-notes-fallback';
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 let activeCategory = null; // {{ id, kind }} when detail view is open
+let notesSaveTimer = null;
+let notesClearTimer = null;
+let notesLastSaved = null;
+let notesApiOk = null;
 
 function parseDecimal(value) {{
   if (value == null) return 0;
@@ -2624,6 +2665,80 @@ function drawCardInstallmentChart() {{
     }}
   }}), {{ responsive: true, displayModeBar: false }});
 }}
+function setNotesStatus(msg, cls) {{
+  const el = document.getElementById('generalNotesStatus');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'budget-save-status' + (cls ? ' ' + cls : '');
+  if (notesClearTimer) clearTimeout(notesClearTimer);
+  if (cls === 'saved') {{
+    notesClearTimer = setTimeout(() => {{
+      if (el.textContent === msg) {{
+        el.textContent = '';
+        el.className = 'budget-save-status';
+      }}
+    }}, 2000);
+  }}
+}}
+async function loadGeneralNotes() {{
+  const ta = document.getElementById('generalNotes');
+  if (!ta) return;
+  try {{
+    const r = await fetch('/api/notes', {{ cache: 'no-store' }});
+    const data = await r.json().catch(() => ({{}}));
+    if (r.ok && data.ok && typeof data.text === 'string') {{
+      notesApiOk = true;
+      if (document.activeElement !== ta) ta.value = data.text;
+      notesLastSaved = data.text;
+      return;
+    }}
+    notesApiOk = false;
+  }} catch (e) {{
+    notesApiOk = false;
+  }}
+  try {{
+    const fb = localStorage.getItem(NOTES_LS_KEY);
+    if (fb != null && !String(ta.value || '').trim()) ta.value = fb;
+  }} catch (e) {{}}
+  notesLastSaved = ta.value;
+  setNotesStatus('Local only (open via Finance dashboard to sync)', 'error');
+}}
+function scheduleNotesSave() {{
+  if (notesSaveTimer) clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(() => saveGeneralNotes(), 500);
+}}
+async function saveGeneralNotes() {{
+  const ta = document.getElementById('generalNotes');
+  if (!ta) return;
+  const text = ta.value;
+  try {{ localStorage.setItem(NOTES_LS_KEY, text); }} catch (e) {{}}
+  if (notesLastSaved === text) return;
+  if (notesApiOk === false) {{
+    notesLastSaved = text;
+    setNotesStatus('Saved locally only', 'saved');
+    return;
+  }}
+  setNotesStatus('Saving…', 'saving');
+  try {{
+    const r = await fetch('/api/notes', {{
+      method: 'PUT',
+      headers: {{ 'Content-Type': 'application/json' }},
+      body: JSON.stringify({{ text }})
+    }});
+    const data = await r.json().catch(() => ({{}}));
+    if (!r.ok || !data.ok) {{
+      notesApiOk = false;
+      setNotesStatus(data.error || ('Save failed (' + r.status + ')'), 'error');
+      return;
+    }}
+    notesApiOk = true;
+    notesLastSaved = text;
+    setNotesStatus('Saved', 'saved');
+  }} catch (e) {{
+    notesApiOk = false;
+    setNotesStatus('Save failed', 'error');
+  }}
+}}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
@@ -2642,6 +2757,11 @@ function applyTheme(theme) {{
       const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       applyTheme(next);
     }});
+  }}
+  const notesTa = document.getElementById('generalNotes');
+  if (notesTa) {{
+    notesTa.addEventListener('input', scheduleNotesSave);
+    notesTa.addEventListener('blur', () => saveGeneralNotes());
   }}
   const applyBtn = document.getElementById('periodApply');
   if (applyBtn) applyBtn.addEventListener('click', applyPeriod);
@@ -2709,7 +2829,7 @@ function applyTheme(theme) {{
     if (budgetApiOk === false) {{
       setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');
     }}
-  }});
+  }}).then(() => loadGeneralNotes());
 }})();
 </script>
 </body></html>"""

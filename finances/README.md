@@ -36,13 +36,14 @@ IDs are preserved on rename. Do not hand-edit IDs unless you know the matching r
 
 ## Data layout
 
-| Path                             | Role                                                                                    |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `finances/data/*.csv`            | Source of truth (accounts, cards, transactions, budgets, goals, categories, recurring). |
-| `finances/data/settings.ini`     | Defaults + dashboard widget toggles.                                                    |
-| `finances/data/imported/`        | Archived daily import CSVs.                                                             |
-| `finances/output/dashboard.html` | Generated cockpit (safe to regenerate anytime).                                         |
-| `finances/python/`               | Chart build (`chart_generator.py`, `data_aggregator.py`).                               |
+| Path                              | Role                                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| `finances/data/*.csv`             | Source of truth (accounts, cards, transactions, budgets, goals, categories, recurring). |
+| `finances/data/general_notes.txt` | Free-form dashboard notes (autosaved via the local server).                             |
+| `finances/data/settings.ini`      | Defaults + dashboard widget toggles.                                                    |
+| `finances/data/imported/`         | Archived daily import CSVs.                                                             |
+| `finances/output/dashboard.html`  | Generated cockpit (safe to regenerate anytime).                                         |
+| `finances/python/`                | Chart build (`chart_generator.py`, `data_aggregator.py`).                               |
 
 Account balance edits set `initial_balance` so a later rebuild does not wipe the manual total. Card spent edits set `initial_spent` the same way.
 
