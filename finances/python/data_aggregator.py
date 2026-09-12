@@ -106,31 +106,75 @@ def setting_get(section: dict, key: str, default: str = "") -> str:
 
 
 def liquid_after_card(settings: dict, accs: list[dict], cards: list[dict]) -> dict:
-    """Main account balance minus primary card spent (None liquid if unresolved)."""
+    """Checking balances minus all cards' current spent (None if unresolved).
+
+    Checking accounts = DefaultAccountId plus every card's linked_account_id.
+    Available money uses every card's limit/spent, not only the primary card.
+    """
     gen = settings.get("general") or {}
-    acc_id = (setting_get(gen, "DefaultAccountId") or "").strip()
-    card_id = (setting_get(gen, "PrimaryCardId") or "").strip()
+    default_acc_id = (setting_get(gen, "DefaultAccountId") or "").strip()
     empty = {
         "liquid_after_card": None,
         "liquid_account_bal": None,
         "liquid_card_spent": None,
+        "liquid_card_limit": None,
         "liquid_account_name": "",
         "liquid_card_name": "",
+        "liquid_accounts": [],
+        "liquid_cards": [],
     }
-    if not acc_id or not card_id:
+    by_id = {a.get("id"): a for a in accs if a.get("id")}
+    checking_ids: set[str] = set()
+    if default_acc_id:
+        checking_ids.add(default_acc_id)
+    for c in cards:
+        linked = (c.get("linked_account_id") or "").strip()
+        if linked:
+            checking_ids.add(linked)
+    if not checking_ids:
+        for a in accs:
+            name = (a.get("name") or "").lower()
+            aid = a.get("id") or ""
+            if aid and "checking" in name:
+                checking_ids.add(aid)
+    account_rows: list[dict] = []
+    total_bal = 0.0
+    for aid in sorted(checking_ids):
+        acc = by_id.get(aid)
+        if not acc:
+            continue
+        bal = parse_decimal(acc.get("current_balance"))
+        total_bal += bal
+        account_rows.append({"id": aid, "name": acc.get("name") or aid, "balance": bal})
+    card_rows: list[dict] = []
+    total_spent = 0.0
+    total_limit = 0.0
+    for c in cards:
+        spent = parse_decimal(c.get("current_spent"))
+        limit = parse_decimal(c.get("limit"))
+        total_spent += spent
+        total_limit += limit
+        cid = c.get("id") or ""
+        card_rows.append(
+            {
+                "id": cid,
+                "name": c.get("name") or cid or "Card",
+                "spent": spent,
+                "limit": limit,
+            }
+        )
+    if not account_rows or not card_rows:
         return empty
-    acc = next((a for a in accs if a.get("id") == acc_id), None)
-    card = next((c for c in cards if c.get("id") == card_id), None)
-    if not acc or not card:
-        return empty
-    bal = parse_decimal(acc.get("current_balance"))
-    spent = parse_decimal(card.get("current_spent"))
+    names = [r["name"] for r in account_rows]
     return {
-        "liquid_after_card": bal - spent,
-        "liquid_account_bal": bal,
-        "liquid_card_spent": spent,
-        "liquid_account_name": acc.get("name") or acc_id,
-        "liquid_card_name": card.get("name") or card_id,
+        "liquid_after_card": total_bal - total_spent,
+        "liquid_account_bal": total_bal,
+        "liquid_card_spent": total_spent,
+        "liquid_card_limit": total_limit,
+        "liquid_account_name": " + ".join(names),
+        "liquid_card_name": "all cards",
+        "liquid_accounts": account_rows,
+        "liquid_cards": card_rows,
     }
 
 
@@ -505,8 +549,11 @@ def cockpit_raw(data: dict | None = None) -> dict:
         "liquidAfterCard": data.get("liquid_after_card"),
         "liquidAccountBal": data.get("liquid_account_bal"),
         "liquidCardSpent": data.get("liquid_card_spent"),
+        "liquidCardLimit": data.get("liquid_card_limit"),
         "liquidAccountName": data.get("liquid_account_name") or "",
         "liquidCardName": data.get("liquid_card_name") or "",
+        "liquidAccounts": data.get("liquid_accounts") or [],
+        "liquidCards": data.get("liquid_cards") or [],
         "cards": [
             {
                 "id": c.get("id", ""),

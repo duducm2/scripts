@@ -27,10 +27,10 @@ Manual balance/spent edits are preserved: accounts use `initial_balance`, cards 
 
 ## Important settings (`finances/data/settings.ini`)
 
-| Key                        | Meaning                                                                                                            |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `General.DefaultAccountId` | Main checking / liquid account. Used for the “Main account after card” liquid bar. Set via Accounts → set primary. |
-| `General.PrimaryCardId`    | Card whose spent is subtracted from that account. Set via Credit cards → set primary.                              |
+| Key                        | Meaning                                                                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `General.DefaultAccountId` | Main checking / liquid account (included in Budgets “available” with other card-linked checkings). Set via Accounts → set primary.     |
+| `General.PrimaryCardId`    | Primary card for notifications / defaults. Budgets available money subtracts **all** cards’ spent. Set via Credit cards → set primary. |
 
 IDs are preserved on rename. Do not hand-edit IDs unless you know the matching rows in `accounts.csv` / `credit_cards.csv`.
 

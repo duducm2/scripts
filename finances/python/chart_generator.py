@@ -267,12 +267,16 @@ def build_html(data: dict) -> str:
               <span class="funds-marker funds-marker-planned" id="fundsMarkPlanned" style="left:0%"></span>
             </div>
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
-            <div class="funds-compare-detail" id="fundsCompareDetail"></div>
           </div>
           <div class="budget-categories">
             <div class="budget-categories-title">Categories · spent / planned</div>
             <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
             <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this month</p>'}</div>
+          </div>
+          <div class="budget-calc-wrap">
+            <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
+              aria-describedby="budgetCalcTip">Calculations</button>
+            <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
           </div>
         </div>"""
 
@@ -562,8 +566,33 @@ def build_html(data: dict) -> str:
     }}
     .funds-compare.deficit .funds-compare-meta {{ color:#e74c3c; font-weight:600; }}
     .funds-compare.ok .funds-compare-meta {{ color:#2ecc71; }}
-    .funds-compare-detail {{
-      color:var(--muted2); font-size:10px; margin-top:3px; line-height:1.35;
+    .budget-calc-wrap {{
+      position:relative; margin-top:10px; align-self:flex-start;
+    }}
+    .budget-calc-btn {{
+      font:inherit; font-size:11px; font-weight:600; cursor:pointer;
+      padding:4px 10px; border-radius:4px;
+      border:1px solid var(--border); background:var(--bg); color:var(--heading);
+    }}
+    .budget-calc-btn:hover, .budget-calc-btn:focus-visible {{
+      border-color:var(--heading); outline:none;
+    }}
+    .budget-calc-tip {{
+      display:none; position:absolute; left:0; bottom:calc(100% + 6px); z-index:30;
+      min-width:280px; max-width:380px; padding:8px 10px;
+      border:1px solid var(--border); border-radius:6px;
+      background:var(--panel); color:var(--text);
+      box-shadow:0 6px 18px rgba(0,0,0,.28);
+      font-size:11px; line-height:1.4; white-space:normal;
+    }}
+    .budget-calc-wrap:hover .budget-calc-tip,
+    .budget-calc-wrap:focus-within .budget-calc-tip {{ display:block; }}
+    .budget-calc-tip .calc-line {{ margin:0 0 4px; }}
+    .budget-calc-tip .calc-line:last-child {{ margin-bottom:0; }}
+    .budget-calc-tip .calc-muted {{ color:var(--muted2); }}
+    .budget-calc-tip .calc-total {{
+      margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
+      font-weight:600;
     }}
     .budget-categories {{
       flex:1; display:flex; flex-direction:column;
@@ -1146,7 +1175,7 @@ function refreshFundsCompare() {{
   const markAvail = document.getElementById('fundsMarkAvailable');
   const markPlan = document.getElementById('fundsMarkPlanned');
   const meta = document.getElementById('fundsCompareMeta');
-  const detail = document.getElementById('fundsCompareDetail');
+  const tip = document.getElementById('budgetCalcTip');
   if (availEl) availEl.textContent = formatBrl(avail);
   if (planEl) planEl.textContent = formatBrl(planned);
   if (barAvail) barAvail.style.width = availPct.toFixed(1) + '%';
@@ -1158,18 +1187,45 @@ function refreshFundsCompare() {{
       ? ('Over by ' + formatBrl(-headroom) + ' · reduce planned spending')
       : ('Headroom ' + formatBrl(headroom));
   }}
-  if (detail) {{
+  if (tip) {{
+    const accRows = Array.isArray(RAW.liquidAccounts) ? RAW.liquidAccounts : [];
+    const cardRows = Array.isArray(RAW.liquidCards) ? RAW.liquidCards : [];
     const accBal = Number(RAW.liquidAccountBal);
     const cardSpent = Number(RAW.liquidCardSpent);
-    const accName = RAW.liquidAccountName || 'Main account';
-    const cardName = RAW.liquidCardName || 'Primary card';
+    const cardLimit = Number(RAW.liquidCardLimit);
     const bal = Number.isFinite(accBal) ? accBal : 0;
     const spent = Number.isFinite(cardSpent) ? cardSpent : 0;
-    const ofAcct = bal > 0 ? (spent / bal * 100) : (spent > 0 ? 100 : 0);
-    detail.textContent = accName + ' − ' + cardName
-      + ' · Account ' + formatBrl(bal)
-      + ' · Card spent ' + formatBrl(spent)
-      + ' · ' + ofAcct.toFixed(0) + '% of account';
+    const limit = Number.isFinite(cardLimit) ? cardLimit : 0;
+    const parts = [];
+    if (accRows.length) {{
+      parts.push('<div class="calc-line calc-muted">Checking</div>');
+      for (const a of accRows) {{
+        parts.push('<div class="calc-line">' + (a.name || 'Account')
+          + ' · ' + formatBrl(Number(a.balance) || 0) + '</div>');
+      }}
+    }} else {{
+      const accName = RAW.liquidAccountName || 'Checking';
+      parts.push('<div class="calc-line">' + accName + ' · ' + formatBrl(bal) + '</div>');
+    }}
+    if (cardRows.length) {{
+      parts.push('<div class="calc-line calc-muted">Credit cards</div>');
+      for (const c of cardRows) {{
+        const cSpent = Number(c.spent) || 0;
+        const cLimit = Number(c.limit) || 0;
+        const cAvail = cLimit - cSpent;
+        parts.push('<div class="calc-line">' + (c.name || 'Card')
+          + ' · spent ' + formatBrl(cSpent)
+          + ' · limit ' + formatBrl(cLimit)
+          + ' · avail ' + formatBrl(cAvail) + '</div>');
+      }}
+    }} else {{
+      parts.push('<div class="calc-line">Cards · spent ' + formatBrl(spent)
+        + ' · limit ' + formatBrl(limit) + '</div>');
+    }}
+    parts.push('<div class="calc-line calc-total">Available = checking '
+      + formatBrl(bal) + ' − card spent ' + formatBrl(spent)
+      + ' = ' + formatBrl(avail) + '</div>');
+    tip.innerHTML = parts.join('');
   }}
 }}
 function refreshBudgetVisuals(ym) {{
