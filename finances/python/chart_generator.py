@@ -2086,8 +2086,44 @@ function rebuildCardInstallmentRemaining() {{
     if (m > 12) {{ m = 1; y += 1; }}
     return closingDateOn(y, m, closingDay);
   }}
+  function previousClosingOnOrBefore(dayStr, closingDay) {{
+    let d = String(dayStr || '').slice(0, 10);
+    if (d.length < 10) d = today;
+    let [y, m, day] = d.split('-').map(Number);
+    const cd = clampClosingDay(y, m, closingDay);
+    if (day >= cd) return closingDateOn(y, m, closingDay);
+    m -= 1;
+    if (m < 1) {{ m = 12; y -= 1; }}
+    return closingDateOn(y, m, closingDay);
+  }}
+  function dueDateForClosing(closingDate, dueDay) {{
+    let d = String(closingDate || '').slice(0, 10);
+    if (d.length < 10) d = today;
+    let [y, m, closeDom] = d.split('-').map(Number);
+    let dd = parseInt(dueDay, 10);
+    if (!Number.isFinite(dd) || dd < 1) dd = 1;
+    if (dd > 31) dd = 31;
+    if (dd > closeDom) return closingDateOn(y, m, dd);
+    m += 1;
+    if (m > 12) {{ m = 1; y += 1; }}
+    return closingDateOn(y, m, dd);
+  }}
+  function cardDueDay(c, closingDay) {{
+    let dd = parseInt(c && c.due_day, 10);
+    if (Number.isFinite(dd) && dd >= 1 && dd <= 31) return dd;
+    dd = (parseInt(closingDay, 10) || 1) + 7;
+    if (dd > 31) dd -= 31;
+    return Math.max(1, Math.min(31, dd));
+  }}
+  function nextPayDate(dayStr, closingDay, dueDay) {{
+    const prev = previousClosingOnOrBefore(dayStr, closingDay);
+    const due = dueDateForClosing(prev, dueDay);
+    if (due >= String(dayStr || today).slice(0, 10)) return due;
+    return dueDateForClosing(nextClosingOnOrAfter(dayStr, closingDay), dueDay);
+  }}
 
   const closingByCard = {{}};
+  const dueByCard = {{}};
   const spentByCard = {{}};
   const cardMeta = {{}};
   for (const c of RAW.cards || []) {{
@@ -2095,6 +2131,7 @@ function rebuildCardInstallmentRemaining() {{
     cardMeta[c.id] = c.name || c.id;
     spentByCard[c.id] = parseDecimal(c.current_spent);
     closingByCard[c.id] = parseInt(c.closing_day, 10) || 1;
+    dueByCard[c.id] = cardDueDay(c, closingByCard[c.id]);
   }}
   for (const c of RAW.liquidCards || []) {{
     if (c.id && typeof c.spent === 'number') spentByCard[c.id] = c.spent;
@@ -2173,6 +2210,8 @@ function rebuildCardInstallmentRemaining() {{
     const cardLast = closings.filter(c => (dueVals[c] || 0) > 0.00001).sort().slice(-1)[0] || '';
     if (cardLast && (!lastDate || cardLast > lastDate)) lastDate = cardLast;
     const color = palette[i % palette.length];
+    const dd = dueByCard[cid] || cardDueDay(null, cd);
+    const nextPay = nextPayDate(today, cd, dd);
     fromToday.push({{
       card_id: cid,
       name: cardMeta[cid] || cid,
@@ -2182,7 +2221,9 @@ function rebuildCardInstallmentRemaining() {{
       later: laterAmt,
       last_date: cardLast,
       next_closing: openClose,
-      closing_day: cd
+      next_pay: nextPay,
+      closing_day: cd,
+      due_day: dd
     }});
     series.push({{
       card_id: cid,
@@ -2229,8 +2270,10 @@ function drawCardInstallmentChart() {{
         + '<div class="box-split">Open ' + formatBrl(r.open || 0)
         + ' · Later ' + formatBrl(r.later || 0)
         + (r.next_closing ? '<br>Next close ' + r.next_closing : '')
-        + (r.last_date ? ' · Until ' + r.last_date : '')
-        + (r.closing_day ? '<br>Closes day ' + r.closing_day : '')
+        + (r.next_pay ? ' · Next pay ' + r.next_pay : '')
+        + (r.last_date ? '<br>Until ' + r.last_date : '')
+        + (r.closing_day ? ' · Closes day ' + r.closing_day : '')
+        + (r.due_day ? ' · Pays day ' + r.due_day : '')
         + '</div></div>'
       ).join('');
       html += '<div class="card-plan-box total">'
@@ -2291,15 +2334,105 @@ function drawCardInstallmentChart() {{
       cliponaxis: false
     }});
   }}
-  const shapes = today ? [{{
-    type: 'line',
-    x0: today,
-    x1: today,
-    y0: 0,
-    y1: 1,
-    yref: 'paper',
-    line: {{ color: '#f1c40f', width: 1.5, dash: 'dot' }}
-  }}] : [];
+  // Next closing (▲) and next pay (▼) markers per card.
+  const markDates = [];
+  for (const r of rows) {{
+    if (r.next_closing) {{
+      markDates.push(r.next_closing);
+      traces.push({{
+        type: 'scatter',
+        mode: 'markers',
+        name: (r.name || 'Card') + ' close',
+        x: [r.next_closing],
+        y: [0],
+        marker: {{
+          symbol: 'triangle-up',
+          size: 12,
+          color: r.color || '#888',
+          line: {{ width: 1, color: '#ffffff' }}
+        }},
+        hovertemplate: (r.name || 'Card') + ' next close %{{x}}<extra></extra>',
+        cliponaxis: false,
+        legendgroup: r.card_id || r.name,
+        showlegend: true
+      }});
+    }}
+    if (r.next_pay) {{
+      markDates.push(r.next_pay);
+      traces.push({{
+        type: 'scatter',
+        mode: 'markers',
+        name: (r.name || 'Card') + ' pay',
+        x: [r.next_pay],
+        y: [0],
+        marker: {{
+          symbol: 'triangle-down',
+          size: 12,
+          color: r.color || '#888',
+          line: {{ width: 1, color: '#ffffff' }}
+        }},
+        hovertemplate: (r.name || 'Card') + ' next pay %{{x}}<extra></extra>',
+        cliponaxis: false,
+        legendgroup: r.card_id || r.name,
+        showlegend: true
+      }});
+    }}
+  }}
+  for (const d of markDates) {{
+    if (d && !closings.includes(d)) closings.push(d);
+  }}
+  // Vertical dotted lines at every closing day for each card (same style as Today).
+  const shapes = [];
+  const seenCloseLines = {{}};
+  if (today) {{
+    shapes.push({{
+      type: 'line',
+      x0: today,
+      x1: today,
+      y0: 0,
+      y1: 1,
+      yref: 'paper',
+      line: {{ color: '#f1c40f', width: 1.5, dash: 'dot' }}
+    }});
+  }}
+  for (const s of spec.series || []) {{
+    const color = s.color || '#888';
+    for (const d of (s.dates || [])) {{
+      if (!d) continue;
+      if (!closings.includes(d)) closings.push(d);
+      const key = d + '|' + color;
+      if (seenCloseLines[key]) continue;
+      seenCloseLines[key] = true;
+      shapes.push({{
+        type: 'line',
+        x0: d,
+        x1: d,
+        y0: 0,
+        y1: 1,
+        yref: 'paper',
+        line: {{ color: color, width: 1.5, dash: 'dot' }}
+      }});
+      // Axis dots (triangles) on each closing day for that card.
+      traces.push({{
+        type: 'scatter',
+        mode: 'markers',
+        name: (s.name || 'Card') + ' closing',
+        x: [d],
+        y: [0],
+        marker: {{
+          symbol: 'triangle-up',
+          size: 10,
+          color: color,
+          line: {{ width: 1, color: '#ffffff' }}
+        }},
+        hovertemplate: (s.name || 'Card') + ' closing %{{x}}<extra></extra>',
+        cliponaxis: false,
+        legendgroup: s.card_id || s.name,
+        showlegend: false
+      }});
+    }}
+  }}
+  closings.sort();
   const annotations = today ? [{{
     x: today,
     y: 1,

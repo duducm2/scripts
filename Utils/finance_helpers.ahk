@@ -82,6 +82,7 @@ Finance_EnsureData() {
         Finance_SeedRecurringBills()
     Finance_MigrateCardInitialSpent()
     Finance_MigrateTransactionInstallments()
+    Finance_MigrateCardDueDay()
     Finance_FixDefaultIds()
     Finance_FixOrphanCardExpenses()
     Finance_EnsureMonthBudgets(Finance_CurrentYearMonth())
@@ -125,6 +126,44 @@ Finance_MigrateCardInitialSpent() {
         return
     for c in cards
         Finance_EnsureCardInitialSpent(c)
+    Finance_Save("credit_cards", cards)
+}
+
+; Backfill due_day (payment day). Default = closing_day + 7 (wrapped 1-31).
+Finance_MigrateCardDueDay() {
+    path := Finance_DataDir() . "\credit_cards.csv"
+    if (!FileExist(path))
+        return
+    cards := Finance_Load("credit_cards")
+    if (!cards.Length)
+        return
+    need := false
+    for c in cards {
+        if (!c.Has("due_day") || Trim(c["due_day"]) = "") {
+            need := true
+            break
+        }
+    }
+    if (!need)
+        return
+    for c in cards {
+        if (c.Has("due_day") && Trim(c["due_day"]) != "")
+            continue
+        try cd := Integer(c.Has("closing_day") ? c["closing_day"] : 1)
+        catch {
+            cd := 1
+        }
+        if (cd < 1)
+            cd := 1
+        if (cd > 31)
+            cd := 31
+        dd := cd + 7
+        if (dd > 31)
+            dd -= 31
+        if (dd < 1)
+            dd := 1
+        c["due_day"] := dd
+    }
     Finance_Save("credit_cards", cards)
 }
 
@@ -405,7 +444,7 @@ Finance_Headers(kind) {
         case "categories":
             return ["id", "name", "type", "parent_id", "color", "icon"]
         case "credit_cards":
-            return ["id", "name", "limit", "initial_spent", "current_spent", "linked_account_id", "closing_day"]
+            return ["id", "name", "limit", "initial_spent", "current_spent", "linked_account_id", "closing_day", "due_day"]
         case "goals":
             return ["id", "name", "current_amount", "target_amount", "target_date"]
         case "budgets":
@@ -1701,7 +1740,7 @@ Finance_SeedCreditCards() {
     }
     rows := []
     rows.Push(Map("id", "CARD_MP", "name", "Mercado Pago", "limit", "12000,00",
-        "initial_spent", "0,00", "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9"))
+        "initial_spent", "0,00", "current_spent", "2010,22", "linked_account_id", linked, "closing_day", "9", "due_day", "16"))
     Finance_Save("credit_cards", rows)
 }
 

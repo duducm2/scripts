@@ -21,7 +21,7 @@ Finance_ShowCreditCard() {
     g_FinanceCardChartLabel := g_FinanceGui.Add("Text", "x12 y64 w860 h36")
     g_FinanceCardChartBar := g_FinanceGui.Add("Progress", "x12 y104 w860 h18 c2ECC71 Background333333 Range0-100", 0)
     g_FinanceCardLv := g_FinanceGui.Add("ListView", "x12 y132 w860 h390 Grid",
-        ["Primary", "Name", "Limit", "Spent", "Available", "%", "Linked", "Close day"])
+        ["Primary", "Name", "Limit", "Spent", "Available", "%", "Linked", "Close", "Due"])
     g_FinanceCardLv.OnEvent("DoubleClick", (*) => Finance_CardEdit())
     g_FinanceCardLv.OnEvent("ItemSelect", (*) => Finance_CardUpdateChart())
     g_FinanceGui.OnEvent("Close", (*) => Finance_CloseGui())
@@ -62,7 +62,8 @@ Finance_CardRefresh() {
         totSpent += spent
         star := (c["id"] = primaryId) ? "*" : ""
         g_FinanceCardLv.Add("", star, c["name"], Finance_FormatBrl(lim), Finance_FormatBrl(spent),
-        Finance_FormatBrl(avail), pct . "%", Finance_AccName(accs, c["linked_account_id"]), c["closing_day"])
+        Finance_FormatBrl(avail), pct . "%", Finance_AccName(accs, c["linked_account_id"]),
+        c["closing_day"], c.Has("due_day") ? c["due_day"] : "")
         if (primaryId != "" && c["id"] = primaryId)
             selectRow := g_FinanceCardRows.Length
     }
@@ -72,7 +73,7 @@ Finance_CardRefresh() {
     g_FinanceCardHeader.Value := "Limit " . Finance_FormatBrl(totLim)
     . "  ·  Spent " . Finance_FormatBrl(totSpent)
     . "  ·  Available " . Finance_FormatBrl(totAvail)
-    loop 8
+    loop 9
         g_FinanceCardLv.ModifyCol(A_Index, "AutoHdr")
     if (selectRow) {
         g_FinanceCardLv.Modify(selectRow, "Select Focus Vis")
@@ -324,6 +325,11 @@ Finance_CardForm(existing) {
     eSpent := g.Add("Edit", "w160", isEdit ? existing["current_spent"] : "0,00")
     g.Add("Text", "y+8", "Closing day (1-31)")
     eClose := g.Add("Edit", "w80", isEdit ? existing["closing_day"] : "9")
+    g.Add("Text", "y+8", "Due / pay day (1-31)")
+    dueDefault := "16"
+    if (isEdit && existing.Has("due_day") && Trim(existing["due_day"]) != "")
+        dueDefault := existing["due_day"]
+    eDue := g.Add("Edit", "w80", dueDefault)
     accCombo := Finance_ComboFromRows(accs)
     accIdx := Finance_ComboIndex(accCombo.ids, isEdit ? existing["linked_account_id"] : "")
     g.Add("Text", "y+8", "Linked account")
@@ -363,7 +369,8 @@ Finance_CardForm(existing) {
                 "initial_spent", initSpent,
                 "current_spent", spentStr,
                 "linked_account_id", accCombo.ids[ddAcc.Value],
-                "closing_day", Integer(eClose.Value || 1))
+                "closing_day", Integer(eClose.Value || 1),
+                "due_day", Integer(eDue.Value || 1))
             out := []
             for r in cards {
                 if (r["id"] = existing["id"])
@@ -380,7 +387,8 @@ Finance_CardForm(existing) {
                 "initial_spent", spentStr,
                 "current_spent", spentStr,
                 "linked_account_id", accCombo.ids[ddAcc.Value],
-                "closing_day", Integer(eClose.Value || 1))
+                "closing_day", Integer(eClose.Value || 1),
+                "due_day", Integer(eDue.Value || 1))
             cards.Push(row)
         }
         Finance_Save("credit_cards", cards)

@@ -233,6 +233,7 @@ def seed():
             "current_spent",
             "linked_account_id",
             "closing_day",
+            "due_day",
         ],
         [
             {
@@ -243,6 +244,7 @@ def seed():
                 "current_spent": "2010,22",
                 "linked_account_id": mp["id"] if mp else "",
                 "closing_day": "9",
+                "due_day": "16",
             }
         ],
     )

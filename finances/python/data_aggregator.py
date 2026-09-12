@@ -155,6 +155,66 @@ def next_closing_on_or_after(today: str, closing_day: int) -> str:
     return closing_date_on(y, m, closing_day)
 
 
+def previous_closing_on_or_before(today: str, closing_day: int) -> str:
+    d = str(today or "")[:10]
+    if len(d) < 10:
+        d = datetime.now().strftime("%Y-%m-%d")
+    y, m, day = [int(x) for x in d.split("-")]
+    cd = clamp_closing_day(y, m, closing_day)
+    if day >= cd:
+        return closing_date_on(y, m, closing_day)
+    m -= 1
+    if m < 1:
+        m = 12
+        y -= 1
+    return closing_date_on(y, m, closing_day)
+
+
+def due_date_for_closing(closing_date: str, due_day: int) -> str:
+    """Payment due date for the statement that closed on closing_date."""
+    d = str(closing_date or "")[:10]
+    if len(d) < 10:
+        d = datetime.now().strftime("%Y-%m-%d")
+    y, m, close_dom = [int(x) for x in d.split("-")]
+    dd = int(due_day or 1)
+    if dd < 1:
+        dd = 1
+    if dd > 31:
+        dd = 31
+    if dd > close_dom:
+        return closing_date_on(y, m, dd)
+    m += 1
+    if m > 12:
+        m = 1
+        y += 1
+    return closing_date_on(y, m, dd)
+
+
+def next_pay_date(today: str, closing_day: int, due_day: int) -> str:
+    """Next payment date on or after today for this card."""
+    prev_close = previous_closing_on_or_before(today, closing_day)
+    due = due_date_for_closing(prev_close, due_day)
+    if due >= today[:10]:
+        return due
+    nxt_close = next_closing_on_or_after(today, closing_day)
+    return due_date_for_closing(nxt_close, due_day)
+
+
+def card_due_day(card: dict, closing_day: int) -> int:
+    raw = str(card.get("due_day") or "").strip()
+    if raw:
+        try:
+            dd = int(raw)
+            if 1 <= dd <= 31:
+                return dd
+        except ValueError:
+            pass
+    dd = int(closing_day or 1) + 7
+    if dd > 31:
+        dd -= 31
+    return max(1, min(31, dd))
+
+
 def card_installment_remaining(
     txs: list[dict], cards: list[dict], today: str | None = None
 ) -> dict:
@@ -168,6 +228,8 @@ def card_installment_remaining(
     if not today:
         today = datetime.now().strftime("%Y-%m-%d")
     closing_by_card = {}
+    due_by_card = {}
+    card_by_id = {c.get("id"): c for c in cards if c.get("id")}
     for c in cards:
         cid = c.get("id")
         if not cid:
@@ -176,6 +238,7 @@ def card_installment_remaining(
             closing_by_card[cid] = int(str(c.get("closing_day") or "1").strip() or "1")
         except ValueError:
             closing_by_card[cid] = 1
+        due_by_card[cid] = card_due_day(c, closing_by_card[cid])
     unpaid: list[dict] = []
     for t in txs:
         if t.get("type") != "card_expense":
@@ -198,9 +261,7 @@ def card_installment_remaining(
             }
         )
     spent_by_card = {
-        c.get("id"): parse_decimal(c.get("current_spent"))
-        for c in cards
-        if c.get("id")
+        c.get("id"): parse_decimal(c.get("current_spent")) for c in cards if c.get("id")
     }
     card_meta = {
         c.get("id"): (c.get("name") or c.get("id") or "Card")
@@ -257,9 +318,7 @@ def card_installment_remaining(
             scale = total_amt / raw_sum
             open_amt = round(raw_open * scale, 2)
             later_amt = round(max(0.0, total_amt - open_amt), 2)
-            due_vals = {
-                c: round(due_by_close[c] * scale, 2) for c in closings
-            }
+            due_vals = {c: round(due_by_close[c] * scale, 2) for c in closings}
         else:
             open_amt = min(raw_open, total_amt) if total_amt else raw_open
             later_amt = round(max(0.0, total_amt - open_amt), 2)
@@ -271,10 +330,14 @@ def card_installment_remaining(
                 open_amt = total_amt
                 later_amt = 0.0
 
-        card_last = max((c for c in closings if due_vals.get(c, 0) > 0.00001), default="")
+        card_last = max(
+            (c for c in closings if due_vals.get(c, 0) > 0.00001), default=""
+        )
         if card_last and (not last_date or card_last > last_date):
             last_date = card_last
         color = palette[i % len(palette)]
+        dd = due_by_card.get(cid, card_due_day(card_by_id.get(cid, {}), cd))
+        next_pay = next_pay_date(today, cd, dd)
         from_today_rows.append(
             {
                 "card_id": cid,
@@ -285,7 +348,9 @@ def card_installment_remaining(
                 "later": later_amt,
                 "last_date": card_last,
                 "next_closing": open_close,
+                "next_pay": next_pay,
                 "closing_day": cd,
+                "due_day": dd,
             }
         )
         series.append(
@@ -299,9 +364,7 @@ def card_installment_remaining(
         )
 
     # Unified closing axis (all cards) for optional shared-x charts.
-    all_closings = sorted(
-        {d for s in series for d in (s.get("dates") or [])}
-    )
+    all_closings = sorted({d for s in series for d in (s.get("dates") or [])})
 
     return {
         "months": all_closings,
@@ -786,6 +849,7 @@ def cockpit_raw(data: dict | None = None) -> dict:
                 "limit": c.get("limit", ""),
                 "current_spent": c.get("current_spent", ""),
                 "closing_day": c.get("closing_day", "1"),
+                "due_day": c.get("due_day", ""),
             }
             for c in data.get("cards") or []
         ],
