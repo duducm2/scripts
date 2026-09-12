@@ -68,11 +68,21 @@
     .period-controls button:hover, #catViewBack:hover { filter:brightness(1.08); }
     #catViewBack { margin-top:8px; }
     main { padding:12px 16px 20px; }
-    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }
+    .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+    .kpis-4 { grid-template-columns:repeat(4,1fr); }
     .kpi { background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }
     .kpi .lbl { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
     .kpi .val { font-size:16px; margin-top:2px; font-weight:600; }
-    .kpi-card-avail { display:flex; flex-direction:column; gap:2px; }
+    .kpi-card-avail, .funds-card-avail { display:flex; flex-direction:column; gap:2px; }
+    .funds-card-avail {
+      margin-top:10px; padding-top:10px; border-top:1px solid var(--border);
+    }
+    .funds-card-avail .lbl {
+      color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em;
+    }
+    .funds-card-avail .val {
+      font-size:14px; margin-top:2px; font-weight:600; font-variant-numeric:tabular-nums;
+    }
     .kpi-util-row {
       display:flex; align-items:center; gap:8px; margin-top:4px;
     }
@@ -346,19 +356,11 @@
 <main>
   <div id="cockpitView">
   
-        <div class="kpis" id="kpiRow">
+        <div class="kpis kpis-3" id="kpiRow">
           <div class="kpi"><div class="lbl">Balance</div><div class="val" id="kpiBalance">R$ 158.881,58</div></div>
           <div class="kpi"><div class="lbl">Incomes</div><div class="val pos" id="kpiIncome">R$ 5.508,96</div></div>
           <div class="kpi"><div class="lbl">Expenses</div><div class="val neg" id="kpiExpense">R$ 5.433,86</div></div>
-          <div class="kpi kpi-card-avail">
-            <div class="lbl">Card avail.</div>
-            <div class="val" id="kpiCard">R$ 30.640,88 <span class="dim">/ R$ 33.050,00</span></div>
-            <div class="kpi-util-row" title="Credit limit utilization">
-              <div class="bar-track kpi-util-track"><div class="bar-fill" id="kpiCardUtilFill" style="width:7.3%;background:#3498db"></div></div>
-              <span class="kpi-util-pct" id="kpiCardUtilPct">7%</span>
-            </div>
-            <div class="kpi-card-minis" id="kpiCardMinis"><div class="kpi-card-mini"><div class="bar-head"><span>Mercado Pago</span><span><span class="kpi-card-avail-amt">R$ 22.037,78</span> <span class="dim">5%</span></span></div><div class="bar-track"><div class="bar-fill" style="width:4.6%;background:#3498db"></div></div></div><div class="kpi-card-mini"><div class="bar-head"><span>NuBank</span><span><span class="kpi-card-avail-amt">R$ 8.603,10</span> <span class="dim">14%</span></span></div><div class="bar-track"><div class="bar-fill" style="width:13.5%;background:#3498db"></div></div></div></div>
-          </div>
+          
         </div>
   
         <div class="panel panel-slim">
@@ -404,6 +406,17 @@
               <span class="funds-marker funds-marker-planned" id="fundsMarkPlanned" style="left:0%"></span>
             </div>
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
+            
+            <div class="funds-card-avail" id="fundsCardAvail">
+              
+            <div class="lbl">Card avail.</div>
+            <div class="val" id="kpiCard">R$ 30.640,88 <span class="dim">/ R$ 33.050,00</span></div>
+            <div class="kpi-util-row" title="Credit limit utilization">
+              <div class="bar-track kpi-util-track"><div class="bar-fill" id="kpiCardUtilFill" style="width:7.3%;background:#3498db"></div></div>
+              <span class="kpi-util-pct" id="kpiCardUtilPct">7%</span>
+            </div>
+            <div class="kpi-card-minis" id="kpiCardMinis"><div class="kpi-card-mini"><div class="bar-head"><span>Mercado Pago</span><span><span class="kpi-card-avail-amt">R$ 22.037,78</span> <span class="dim">5%</span></span></div><div class="bar-track"><div class="bar-fill" style="width:4.6%;background:#3498db"></div></div></div><div class="kpi-card-mini"><div class="bar-head"><span>NuBank</span><span><span class="kpi-card-avail-amt">R$ 8.603,10</span> <span class="dim">14%</span></span></div><div class="bar-track"><div class="bar-fill" style="width:13.5%;background:#3498db"></div></div></div></div>
+            </div>
           </div>
           <div class="budget-categories">
             <div class="budget-categories-title">Categories · spent / planned</div>

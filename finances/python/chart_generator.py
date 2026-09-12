@@ -53,53 +53,65 @@ def build_html(data: dict) -> str:
           </div>"""
 
     cards_html = ""
-    if widget_on(s, "ShowBalance"):
-        card_lim = float(data.get("card_limit") or 0)
-        card_sp = float(data.get("card_spent") or 0)
-        util_pct = (
-            (card_sp / card_lim * 100.0)
-            if card_lim > 0
-            else (100.0 if card_sp > 0 else 0.0)
+    card_avail_block = ""
+    card_lim = float(data.get("card_limit") or 0)
+    card_sp = float(data.get("card_spent") or 0)
+    util_pct = (
+        (card_sp / card_lim * 100.0)
+        if card_lim > 0
+        else (100.0 if card_sp > 0 else 0.0)
+    )
+    util_width = min(util_pct, 100.0)
+    util_over = card_lim > 0 and card_sp > card_lim
+    util_fill = "#e74c3c" if util_over else ("#f39c12" if util_pct >= 80 else "#3498db")
+    mini_rows = []
+    for c in data.get("cards") or []:
+        name = c.get("name") or c.get("id") or "Card"
+        lim = parse_decimal(c.get("limit"))
+        spent = parse_decimal(c.get("current_spent"))
+        avail = lim - spent
+        pct = (spent / lim * 100) if lim > 0 else (100.0 if spent > 0 else 0.0)
+        width = min(pct, 100.0)
+        over = lim > 0 and spent > lim
+        fill = "#e74c3c" if over else ("#f39c12" if pct >= 80 else "#3498db")
+        mini_rows.append(
+            f'<div class="kpi-card-mini">'
+            f'<div class="bar-head"><span>{name}</span>'
+            f'<span><span class="kpi-card-avail-amt">{format_brl(avail)}</span>'
+            f' <span class="dim">{pct:.0f}%</span></span></div>'
+            f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;'
+            f'background:{fill}"></div></div></div>'
         )
-        util_width = min(util_pct, 100.0)
-        util_over = card_lim > 0 and card_sp > card_lim
-        util_fill = (
-            "#e74c3c" if util_over else ("#f39c12" if util_pct >= 80 else "#3498db")
-        )
-        mini_rows = []
-        for c in data.get("cards") or []:
-            name = c.get("name") or c.get("id") or "Card"
-            lim = parse_decimal(c.get("limit"))
-            spent = parse_decimal(c.get("current_spent"))
-            avail = lim - spent
-            pct = (spent / lim * 100) if lim > 0 else (100.0 if spent > 0 else 0.0)
-            width = min(pct, 100.0)
-            over = lim > 0 and spent > lim
-            fill = "#e74c3c" if over else ("#f39c12" if pct >= 80 else "#3498db")
-            mini_rows.append(
-                f'<div class="kpi-card-mini">'
-                f'<div class="bar-head"><span>{name}</span>'
-                f'<span><span class="kpi-card-avail-amt">{format_brl(avail)}</span>'
-                f' <span class="dim">{pct:.0f}%</span></span></div>'
-                f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;'
-                f'background:{fill}"></div></div></div>'
-            )
-        mini_html = "".join(mini_rows)
-        cards_html = f"""
-        <div class="kpis" id="kpiRow">
-          <div class="kpi"><div class="lbl">Balance</div><div class="val" id="kpiBalance">{format_brl(data['balance'])}</div></div>
-          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos" id="kpiIncome">{format_brl(data['totals']['income'])}</div></div>
-          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg" id="kpiExpense">{format_brl(data['totals']['expense'])}</div></div>
-          <div class="kpi kpi-card-avail">
+    mini_html = "".join(mini_rows)
+    card_avail_inner = f"""
             <div class="lbl">Card avail.</div>
             <div class="val" id="kpiCard">{format_brl(data['card_available'])} <span class="dim">/ {format_brl(data['card_limit'])}</span></div>
             <div class="kpi-util-row" title="Credit limit utilization">
               <div class="bar-track kpi-util-track"><div class="bar-fill" id="kpiCardUtilFill" style="width:{util_width:.1f}%;background:{util_fill}"></div></div>
               <span class="kpi-util-pct" id="kpiCardUtilPct">{util_pct:.0f}%</span>
             </div>
-            <div class="kpi-card-minis" id="kpiCardMinis">{mini_html}</div>
-          </div>
+            <div class="kpi-card-minis" id="kpiCardMinis">{mini_html}</div>"""
+    show_budgets = widget_on(s, "ShowBudgets")
+    if widget_on(s, "ShowBalance"):
+        card_kpi = ""
+        kpi_cols = "3"
+        if not show_budgets:
+            card_kpi = f"""
+          <div class="kpi kpi-card-avail">{card_avail_inner}
+          </div>"""
+            kpi_cols = "4"
+        cards_html = f"""
+        <div class="kpis kpis-{kpi_cols}" id="kpiRow">
+          <div class="kpi"><div class="lbl">Balance</div><div class="val" id="kpiBalance">{format_brl(data['balance'])}</div></div>
+          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos" id="kpiIncome">{format_brl(data['totals']['income'])}</div></div>
+          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg" id="kpiExpense">{format_brl(data['totals']['expense'])}</div></div>
+          {card_kpi}
         </div>"""
+    if show_budgets:
+        card_avail_block = f"""
+            <div class="funds-card-avail" id="fundsCardAvail">
+              {card_avail_inner}
+            </div>"""
 
     perf_html = ""
     if widget_on(s, "ShowPerformance"):
@@ -274,6 +286,7 @@ def build_html(data: dict) -> str:
               <span class="funds-marker funds-marker-planned" id="fundsMarkPlanned" style="left:0%"></span>
             </div>
             <div class="funds-compare-meta" id="fundsCompareMeta"></div>
+            {card_avail_block}
           </div>
           <div class="budget-categories">
             <div class="budget-categories-title">Categories · spent / planned</div>
@@ -413,11 +426,21 @@ def build_html(data: dict) -> str:
     .period-controls button:hover, #catViewBack:hover {{ filter:brightness(1.08); }}
     #catViewBack {{ margin-top:8px; }}
     main {{ padding:12px 16px 20px; }}
-    .kpis {{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; }}
+    .kpis {{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }}
+    .kpis-4 {{ grid-template-columns:repeat(4,1fr); }}
     .kpi {{ background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }}
     .kpi .lbl {{ color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
     .kpi .val {{ font-size:16px; margin-top:2px; font-weight:600; }}
-    .kpi-card-avail {{ display:flex; flex-direction:column; gap:2px; }}
+    .kpi-card-avail, .funds-card-avail {{ display:flex; flex-direction:column; gap:2px; }}
+    .funds-card-avail {{
+      margin-top:10px; padding-top:10px; border-top:1px solid var(--border);
+    }}
+    .funds-card-avail .lbl {{
+      color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em;
+    }}
+    .funds-card-avail .val {{
+      font-size:14px; margin-top:2px; font-weight:600; font-variant-numeric:tabular-nums;
+    }}
     .kpi-util-row {{
       display:flex; align-items:center; gap:8px; margin-top:4px;
     }}
