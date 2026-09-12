@@ -113,6 +113,7 @@ def build_html(data: dict) -> str:
 
     perf_html = ""
     show_perf = widget_on(s, "ShowPerformance")
+    perf_body = ""
     if show_perf:
         prev_b = data["prev_totals"]["balance"]
         cur_b = data["totals"]["balance"]
@@ -136,27 +137,15 @@ def build_html(data: dict) -> str:
     pie_inc_html = ""
     show_pies = widget_on(s, "ShowPies")
     if show_pies:
-        pie_exp_inner = f"""
+        pie_exp_html = f"""
+          <div class="chart-cell pie-exp-cell">
           <div class="panel pie-exp-panel">
             <div class="panel-head-row">
               <h2>Expenses by category</h2>
               {exp_chip}
             </div>
             <div id="pieExp" class="chart chart-pie"></div>
-          </div>"""
-        if show_perf:
-            pie_exp_html = f"""
-          <div class="panel perf-panel perf-panel-slim">
-            <h2>Performance</h2>
-            {perf_body}
           </div>
-          <div class="chart-cell pie-exp-cell">
-            {pie_exp_inner}
-          </div>"""
-        else:
-            pie_exp_html = f"""
-          <div class="chart-cell pie-exp-cell">
-            {pie_exp_inner}
           </div>"""
         pie_inc_html = f"""
           <div class="panel chart-cell pie-inc-cell">
@@ -166,12 +155,6 @@ def build_html(data: dict) -> str:
             </div>
             <div id="pieInc" class="chart chart-pie"></div>
           </div>"""
-    elif show_perf:
-        perf_html = f"""
-        <div class="panel panel-slim perf-with-chips">
-          {perf_body}
-          <div class="perf-chips">{inc_chip}{exp_chip}</div>
-        </div>"""
     else:
         cards_html = f"""
         <div class="panel panel-slim period-stat-strip">
@@ -229,14 +212,30 @@ def build_html(data: dict) -> str:
             {''.join(items) or '<p class="empty">No goals</p>'}
           </div>"""
 
+    perf_col = ""
+    if show_perf and perf_body:
+        perf_col = f"""
+          <div class="panel perf-panel perf-panel-slim perf-col">
+            <h2>Performance</h2>
+            {perf_body}
+          </div>"""
+
+    perf_notif_stack = ""
+    if perf_col or notif_col:
+        perf_notif_stack = f"""
+          <div class="perf-notif-stack">
+            {perf_col}
+            {notif_col}
+          </div>"""
+
     goals_notif_html = ""
-    if goals_col or notif_col:
-        solo = " solo" if not (goals_col and notif_col) else ""
+    if goals_col or perf_notif_stack:
+        solo = " solo" if not (goals_col and perf_notif_stack) else ""
         goals_notif_html = f"""
         <div class="goals-notif-panel">
           <div class="goals-notif-grid{solo}">
             {goals_col}
-            {notif_col}
+            {perf_notif_stack}
           </div>
         </div>"""
 
@@ -595,6 +594,20 @@ def build_html(data: dict) -> str:
     .perf-panel-slim .perf-line {{
       margin:0; white-space:normal; line-height:1.45;
     }}
+    .perf-notif-stack {{
+      display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0;
+      height:100%; overflow:hidden;
+    }}
+    .perf-notif-stack > .perf-col {{
+      flex:0 0 auto;
+    }}
+    .perf-notif-stack > .notif-col {{
+      flex:1 1 auto; min-height:0; overflow:hidden;
+      display:flex; flex-direction:column;
+    }}
+    .perf-notif-stack > .notif-col #notificationsBody {{
+      flex:1 1 auto; min-height:0; overflow:auto;
+    }}
     .pie-exp-cell {{
       display:flex; flex-direction:column; min-height:0; min-width:0;
       flex:1.6 1 0; height:auto;
@@ -619,13 +632,14 @@ def build_html(data: dict) -> str:
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
-    .goals-notif-panel {{ min-width:0; }}
+    .goals-notif-panel {{ min-width:0; height:100%; }}
     .goals-notif-grid {{
       display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
       height:100%;
     }}
     .goals-notif-grid.solo {{ grid-template-columns:1fr; }}
-    .goals-notif-grid > .panel {{ min-width:0; }}
+    .goals-notif-grid > .panel,
+    .goals-notif-grid > .perf-notif-stack {{ min-width:0; min-height:0; height:100%; }}
     .goals-notif-grid .note {{ margin-bottom:6px; }}
     .goals-notif-grid .note:last-child {{ margin-bottom:0; }}
     .chart {{ height:320px; }}
@@ -1919,33 +1933,16 @@ function rebuildCardInstallmentRemaining() {{
     if (!cid || d.length < 7) continue;
     unpaid.push({{ card_id: cid, date: d, amount: parseDecimal(t.amount) }});
   }}
+  const spentByCard = {{}};
   const cardMeta = {{}};
   for (const c of RAW.cards || []) {{
-    if (c.id) cardMeta[c.id] = c.name || c.id;
+    if (!c.id) continue;
+    cardMeta[c.id] = c.name || c.id;
+    spentByCard[c.id] = parseDecimal(c.current_spent);
   }}
-  const empty = {{
-    months: [], series: [], today, from_today: [], from_today_total: 0,
-    open_total: 0, later_total: 0, last_date: ''
-  }};
-  if (!unpaid.length) {{
-    DATA.cardInstallmentRemaining = empty;
-    return;
-  }}
-  const monthSet = {{}};
-  for (const u of unpaid) monthSet[u.date.slice(0, 7)] = true;
-  let months = Object.keys(monthSet).sort();
-  if (!months.length) {{
-    DATA.cardInstallmentRemaining = empty;
-    return;
-  }}
-  const last = months[months.length - 1];
-  const [yy, mm] = last.split('-').map(Number);
-  let ny = yy, nm = mm + 1;
-  if (nm > 12) {{ nm = 1; ny += 1; }}
-  months = months.concat([String(ny).padStart(4, '0') + '-' + String(nm).padStart(2, '0')]);
-  const byCard = {{}};
-  for (const u of unpaid) {{
-    if (!byCard[u.card_id]) byCard[u.card_id] = true;
+  // Prefer liquidCards spent when present (already numeric).
+  for (const c of RAW.liquidCards || []) {{
+    if (c.id && typeof c.spent === 'number') spentByCard[c.id] = c.spent;
   }}
   function shiftMonth(ym, delta) {{
     let [y, m] = ym.split('-').map(Number);
@@ -1954,50 +1951,47 @@ function rebuildCardInstallmentRemaining() {{
     while (m < 1) {{ m += 12; y -= 1; }}
     return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0');
   }}
+  const empty = {{
+    months: [], series: [], today, from_today: [], from_today_total: 0,
+    open_total: 0, later_total: 0, last_date: ''
+  }};
   const nextYm = shiftMonth(today.slice(0, 7), 1);
   const openEnd = shiftMonth(nextYm, 1) + '-01';
+  const activeIds = Object.keys(spentByCard).filter(cid =>
+    (spentByCard[cid] || 0) > 0.00001 || unpaid.some(u => u.card_id === cid)
+  );
+  if (!activeIds.length) {{
+    DATA.cardInstallmentRemaining = empty;
+    return;
+  }}
+  const monthSet = {{}};
+  monthSet[today.slice(0, 7)] = true;
+  for (const u of unpaid) {{
+    if (u.date >= today) monthSet[u.date.slice(0, 7)] = true;
+  }}
+  let months = Object.keys(monthSet).sort();
+  if (months.length) {{
+    const last = months[months.length - 1];
+    months = months.concat([shiftMonth(last, 1)]);
+  }}
   const palette = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e67e22'];
   const series = [];
   const fromToday = [];
-  let fromTodayTotal = 0;
-  let openTotal = 0;
-  let laterTotal = 0;
   let lastDate = '';
-  for (const u of unpaid) {{
-    if (!lastDate || u.date > lastDate) lastDate = u.date;
-  }}
-  let i = 0;
-  for (const cid of Object.keys(byCard)) {{
-    const values = months.map(ym => {{
-      const start = ym + '-01';
-      let tot = 0;
-      for (const u of unpaid) {{
-        if (u.card_id === cid && u.date >= start) tot += u.amount;
-      }}
-      return Math.round(tot * 100) / 100;
-    }});
-    const color = palette[i % palette.length];
-    series.push({{
-      card_id: cid,
-      name: cardMeta[cid] || cid,
-      color,
-      values
-    }});
-    let openAmt = 0, laterAmt = 0, cardLast = '';
+  activeIds.forEach((cid, i) => {{
+    const totalAmt = Math.round((spentByCard[cid] || 0) * 100) / 100;
+    let laterAmt = 0;
+    let cardLast = '';
     for (const u of unpaid) {{
       if (u.card_id !== cid) continue;
-      if (u.date < today) continue;
-      if (u.date < openEnd) openAmt += u.amount;
-      else laterAmt += u.amount;
-      if (!cardLast || u.date > cardLast) cardLast = u.date;
+      if (u.date >= openEnd) laterAmt += u.amount;
+      if (u.date >= today && (!cardLast || u.date > cardLast)) cardLast = u.date;
     }}
-    openAmt = Math.round(openAmt * 100) / 100;
     laterAmt = Math.round(laterAmt * 100) / 100;
-    const totalAmt = Math.round((openAmt + laterAmt) * 100) / 100;
-    if (totalAmt <= 0) {{ i += 1; continue; }}
-    fromTodayTotal += totalAmt;
-    openTotal += openAmt;
-    laterTotal += laterAmt;
+    if (laterAmt > totalAmt) laterAmt = totalAmt;
+    const openAmt = Math.round(Math.max(0, totalAmt - laterAmt) * 100) / 100;
+    if (cardLast && (!lastDate || cardLast > lastDate)) lastDate = cardLast;
+    const color = palette[i % palette.length];
     fromToday.push({{
       card_id: cid,
       name: cardMeta[cid] || cid,
@@ -2007,16 +2001,32 @@ function rebuildCardInstallmentRemaining() {{
       later: laterAmt,
       last_date: cardLast
     }});
-    i += 1;
-  }}
+    const values = months.map(ym => {{
+      const start = ym + '-01';
+      let laterLeft = 0;
+      for (const u of unpaid) {{
+        if (u.card_id !== cid) continue;
+        if (u.date >= start && u.date >= openEnd) laterLeft += u.amount;
+      }}
+      laterLeft = Math.min(laterLeft, laterAmt);
+      const rem = (start < openEnd) ? (openAmt + laterLeft) : laterLeft;
+      return Math.round(Math.max(0, rem) * 100) / 100;
+    }});
+    series.push({{
+      card_id: cid,
+      name: cardMeta[cid] || cid,
+      color,
+      values
+    }});
+  }});
   DATA.cardInstallmentRemaining = {{
     months,
     series,
     today,
     from_today: fromToday,
-    from_today_total: Math.round(fromTodayTotal * 100) / 100,
-    open_total: Math.round(openTotal * 100) / 100,
-    later_total: Math.round(laterTotal * 100) / 100,
+    from_today_total: Math.round(fromToday.reduce((s, r) => s + r.amount, 0) * 100) / 100,
+    open_total: Math.round(fromToday.reduce((s, r) => s + r.open, 0) * 100) / 100,
+    later_total: Math.round(fromToday.reduce((s, r) => s + r.later, 0) * 100) / 100,
     last_date: lastDate
   }};
 }}
@@ -2033,7 +2043,7 @@ function drawCardInstallmentChart() {{
     if (!rows.length) {{
       summaryEl.innerHTML = '<div class="card-plan-box"><div class="box-name">All cards</div>'
         + '<div class="box-total">—</div>'
-        + '<div class="box-split">No unpaid installments</div></div>';
+        + '<div class="box-split">Nothing to pay on cards</div></div>';
     }} else {{
       let html = rows.map(r =>
         '<div class="card-plan-box">'
@@ -2054,7 +2064,7 @@ function drawCardInstallmentChart() {{
     }}
   }}
   if (!spec.months.length || !spec.series.length) {{
-    el.innerHTML = '<p class="empty">No unpaid card installments</p>';
+    el.innerHTML = '<p class="empty">No card balances to plot</p>';
     return;
   }}
   const L = baseLayout();

@@ -100,10 +100,12 @@ def tx_is_paid(t: dict) -> bool:
 def card_installment_remaining(
     txs: list[dict], cards: list[dict], today: str | None = None
 ) -> dict:
-    """Remaining unpaid card obligation as of each month (one series per card).
+    """Card debt summary + runoff chart aligned to each card's current_spent.
 
-    Y(card, month) = sum of unpaid card_expense amounts with date >= month_start.
-    Also returns from_today totals: unpaid parcels with date >= today through last installment.
+    Summary total = credit_cards.current_spent (what is still owed on the card).
+    Later = unpaid parcels with date >= first day after next calendar month.
+    Open = total - later (open bill through next month).
+    Chart Y(month) = open (until open period ends) + later parcels with date >= month.
     """
     if not today:
         today = datetime.now().strftime("%Y-%m-%d")
@@ -124,6 +126,11 @@ def card_installment_remaining(
                 "amount": parse_decimal(t.get("amount")),
             }
         )
+    spent_by_card = {
+        c.get("id"): parse_decimal(c.get("current_spent"))
+        for c in cards
+        if c.get("id")
+    }
     card_meta = {
         c.get("id"): (c.get("name") or c.get("id") or "Card")
         for c in cards
@@ -135,55 +142,35 @@ def card_installment_remaining(
         "today": today,
         "from_today": [],
         "from_today_total": 0.0,
+        "open_total": 0.0,
+        "later_total": 0.0,
         "last_date": "",
     }
-    if not unpaid:
-        return empty
-    months_set: set[str] = set()
-    for u in unpaid:
-        months_set.add(u["date"][:7])
-    months = sorted(months_set)
-    if not months:
-        return empty
-    months.append(month_shift(months[-1], 1))
-    by_card: dict[str, list[float]] = {cid: [] for cid in card_meta}
-    for cid in list(by_card.keys()):
-        if not any(u["card_id"] == cid for u in unpaid):
-            del by_card[cid]
-    for ym in months:
-        start = ym + "-01"
-        for cid in by_card:
-            tot = sum(
-                u["amount"]
-                for u in unpaid
-                if u["card_id"] == cid and u["date"] >= start
-            )
-            by_card[cid].append(round(tot, 2))
+    next_ym = month_shift(today[:7], 1)
+    open_end = month_shift(next_ym, 1) + "-01"
     palette = ["#e74c3c", "#3498db", "#9b59b6", "#f39c12", "#1abc9c", "#e67e22"]
-    series = []
+
+    active_ids = [
+        cid
+        for cid, spent in spent_by_card.items()
+        if spent > 0.00001 or any(u["card_id"] == cid for u in unpaid)
+    ]
+    if not active_ids:
+        return empty
+
+    months_set: set[str] = {today[:7]}
+    for u in unpaid:
+        if u["date"] >= today:
+            months_set.add(u["date"][:7])
+    months = sorted(months_set)
+    if months:
+        months.append(month_shift(months[-1], 1))
+
     from_today_rows = []
-    from_today_total = 0.0
-    last_date = max((u["date"] for u in unpaid), default="")
-    for i, (cid, values) in enumerate(by_card.items()):
-        series.append(
-            {
-                "card_id": cid,
-                "name": card_meta.get(cid, cid),
-                "color": palette[i % len(palette)],
-                "values": values,
-            }
-        )
-        next_ym = month_shift(today[:7], 1)
-        open_end = month_shift(next_ym, 1) + "-01"
-        # Forward schedule only (from today): open = this/next month, later = after that.
-        open_amt = round(
-            sum(
-                u["amount"]
-                for u in unpaid
-                if u["card_id"] == cid and today <= u["date"] < open_end
-            ),
-            2,
-        )
+    series = []
+    last_date = ""
+    for i, cid in enumerate(active_ids):
+        total_amt = round(spent_by_card.get(cid, 0.0), 2)
         later_amt = round(
             sum(
                 u["amount"]
@@ -192,35 +179,56 @@ def card_installment_remaining(
             ),
             2,
         )
-        total_amt = round(open_amt + later_amt, 2)
-        from_today_total += total_amt
+        if later_amt > total_amt:
+            later_amt = total_amt
+        open_amt = round(max(0.0, total_amt - later_amt), 2)
         card_last = max(
-            (
-                u["date"]
-                for u in unpaid
-                if u["card_id"] == cid and u["date"] >= today
-            ),
+            (u["date"] for u in unpaid if u["card_id"] == cid and u["date"] >= today),
             default="",
         )
-        if total_amt <= 0:
-            continue
+        if card_last and (not last_date or card_last > last_date):
+            last_date = card_last
+        color = palette[i % len(palette)]
         from_today_rows.append(
             {
                 "card_id": cid,
                 "name": card_meta.get(cid, cid),
-                "color": palette[i % len(palette)],
+                "color": color,
                 "amount": total_amt,
                 "open": open_amt,
                 "later": later_amt,
                 "last_date": card_last,
             }
         )
+        values = []
+        for ym in months:
+            start = ym + "-01"
+            later_left = sum(
+                u["amount"]
+                for u in unpaid
+                if u["card_id"] == cid and u["date"] >= max(start, open_end)
+            )
+            later_left = min(later_left, later_amt)
+            if start < open_end:
+                rem = open_amt + later_left
+            else:
+                rem = later_left
+            values.append(round(max(0.0, rem), 2))
+        series.append(
+            {
+                "card_id": cid,
+                "name": card_meta.get(cid, cid),
+                "color": color,
+                "values": values,
+            }
+        )
+
     return {
         "months": months,
         "series": series,
         "today": today,
         "from_today": from_today_rows,
-        "from_today_total": round(from_today_total, 2),
+        "from_today_total": round(sum(r["amount"] for r in from_today_rows), 2),
         "open_total": round(sum(r["open"] for r in from_today_rows), 2),
         "later_total": round(sum(r["later"] for r in from_today_rows), 2),
         "last_date": last_date,
