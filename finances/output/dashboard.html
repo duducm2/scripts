@@ -125,7 +125,43 @@
     .kpi-card-mini .bar-track { height:4px; }
     .dim { color:var(--muted2); font-size:12px; font-weight:400; }
     .pos { color:#2ecc71; } .neg { color:#e74c3c; }
-    .charts { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:10px; }
+    .charts {
+      display:flex; flex-direction:column; gap:10px; margin-bottom:10px;
+    }
+    .charts-top {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
+    }
+    .charts-no-budget .charts-top { grid-template-columns:1fr; }
+    .charts-main {
+      display:flex; flex-direction:column; gap:10px; min-width:0;
+      height:100%; min-height:0; align-self:stretch;
+    }
+    .perf-panel-slim {
+      flex:0 0 auto; min-height:0;
+    }
+    .perf-panel-slim .perf-line {
+      margin:0; white-space:normal; line-height:1.45;
+    }
+    .pie-exp-cell {
+      display:flex; flex-direction:column; min-height:0; min-width:0;
+      flex:1.6 1 0; height:auto;
+    }
+    .pie-exp-cell .pie-exp-panel {
+      display:flex; flex-direction:column; min-width:0; min-height:0;
+      flex:1 1 auto; height:100%; overflow:hidden;
+    }
+    .inc-rec-row {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; min-width:0;
+      flex:1 1 0; min-height:0; align-items:stretch;
+      height:auto;
+    }
+    .inc-rec-row > .panel {
+      min-height:0; height:100%; overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+    .charts-reports {
+      display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
+    }
     .split { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .panel { background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }
     .panel-slim { margin-bottom:10px; }
@@ -144,26 +180,37 @@
     .chart-treemap { height:280px; }
     .chart-invest .chart-treemap { height:320px; }
     .recurring-cell .chart-treemap { height:auto; min-height:220px; flex:1 1 auto; }
-    .chart-pie { height:auto; min-height:300px; }
+    .chart-pie { height:auto; min-height:220px; overflow:hidden; }
     .chart-cell { min-width:0; }
     .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell {
-      display:flex; flex-direction:column; min-height:0;
+      display:flex; flex-direction:column; min-height:0; min-width:0;
     }
     .exp-perf-cell {
-      display:grid; grid-template-columns:1.35fr 1fr; gap:10px; align-items:stretch;
+      display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,1fr); gap:10px; align-items:stretch;
+      flex:1.45 1 0; min-height:0; height:100%;
+    }
+    .exp-perf-cell > .panel {
+      min-height:0; height:100%; overflow:hidden;
     }
     .exp-perf-cell .pie-exp-panel,
     .exp-perf-cell .perf-panel {
       display:flex; flex-direction:column; min-width:0; min-height:0; height:100%;
+      overflow:hidden;
+    }
+    .pie-exp-panel, .pie-inc-cell { overflow:hidden; }
+    .pie-inc-cell, .recurring-cell {
+      height:100%; min-height:0;
     }
     .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie,
-    .exp-perf-cell .chart-pie { flex:1 1 auto; }
+    .exp-perf-cell .chart-pie {
+      flex:1 1 auto; min-height:0; overflow:hidden; margin-bottom:2px;
+    }
     .perf-panel .perf-line {
       flex:1; margin:0; white-space:normal; line-height:1.45;
     }
     .budget-panel {
-      grid-column:1 / span 2; grid-row:1 / span 2;
-      display:flex; flex-direction:column;
+      display:flex; flex-direction:column; min-width:0; min-height:0;
+      overflow:auto;
     }
     .budget-panel .budget-body { flex:1; overflow:visible; }
     .budget-head {
@@ -308,16 +355,6 @@
       margin:0 0 8px; padding:0 0 8px; border-bottom:1px solid var(--border);
     }
     .budget-categories .budget-body { flex:1; overflow:visible; }
-    .pie-exp-cell, .exp-perf-cell { grid-column:3 / span 2; grid-row:1; }
-    .pie-inc-cell { grid-column:3 / span 2; grid-row:2; }
-    .charts:has(.recurring-cell) .pie-inc-cell { grid-column:3; grid-row:2; }
-    .recurring-cell { grid-column:4; grid-row:2; }
-    .charts-no-budget .pie-exp-cell,
-    .charts-no-budget .exp-perf-cell { grid-column:1 / span 2; grid-row:1; }
-    .charts-no-budget .pie-inc-cell { grid-column:3 / span 2; grid-row:1; }
-    .charts-no-budget:has(.recurring-cell) .pie-inc-cell { grid-column:3; grid-row:1; }
-    .charts-no-budget .recurring-cell { grid-column:4; grid-row:1; }
-    .charts-no-budget:not(:has(.pie-inc-cell)) .recurring-cell { grid-column:3 / span 2; grid-row:1; }
     .chart-span { grid-column:1 / -1; }
     .chart-bal { grid-column:span 3; }
     .chart-invest { grid-column:span 1; }
@@ -364,26 +401,15 @@
     table.tx-table td.amt { text-align:right; font-variant-numeric:tabular-nums; }
     table.tx-table tr:last-child td { border-bottom:none; }
     @media (max-width:900px) {
-      .charts, .split { grid-template-columns:1fr; }
+      .charts-top, .inc-rec-row, .charts-reports, .split { grid-template-columns:1fr; }
       .goals-notif-grid { grid-template-columns:1fr; }
-      .budget-panel, .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell,
-      .chart-bal, .chart-invest { grid-column:auto; grid-row:auto; }
       .exp-perf-cell { grid-template-columns:1fr; }
+      .chart-bal, .chart-invest, .chart-span { grid-column:auto; }
     }
     @media (min-width:901px) and (max-width:1099px) {
-      .charts { grid-template-columns:1fr 1fr; }
-      .budget-panel { grid-column:1; grid-row:1 / span 2; }
-      .pie-exp-cell, .exp-perf-cell { grid-column:2; grid-row:1; }
       .exp-perf-cell { grid-template-columns:1fr; }
-      .pie-inc-cell { grid-column:2; grid-row:2; }
-      .charts:has(.recurring-cell) .pie-inc-cell { grid-column:2; grid-row:2; }
-      .recurring-cell { grid-column:2; grid-row:3; }
-      .charts-no-budget .pie-exp-cell,
-      .charts-no-budget .exp-perf-cell { grid-column:1; grid-row:1; }
-      .charts-no-budget .pie-inc-cell { grid-column:2; grid-row:1; }
-      .charts-no-budget:has(.recurring-cell) .pie-inc-cell { grid-column:2; grid-row:1; }
-      .charts-no-budget .recurring-cell { grid-column:1 / -1; grid-row:2; }
-      .chart-bal, .chart-invest { grid-column:1 / -1; }
+      .charts-reports { grid-template-columns:1fr 1fr; }
+      .chart-bal, .chart-invest, .chart-span { grid-column:1 / -1; }
     }
   </style>
 </head>
@@ -393,6 +419,8 @@
   
   
   <div class="charts">
+    
+  <div class="charts-top">
     
         <div class="panel chart-cell budget-panel">
           <div class="budget-head">
@@ -454,7 +482,13 @@
           </div>
         </div>
     
-          <div class="chart-cell exp-perf-cell">
+    <div class="charts-main">
+      
+          <div class="panel perf-panel perf-panel-slim">
+            <h2>Performance</h2>
+            <div class="perf-line" id="perfLine">Prior period -R$ 11.697,12 · This period R$ 75,10 (+101%) · Kept 1% · Top: 🎉 Leisure R$ 1.327,63 · 🏷️ New House 🏠 R$ 1.306,90 · 🛒 Groceries R$ 597,79 · ⚖️ Adjustment R$ 495,59</div>
+          </div>
+          <div class="chart-cell pie-exp-cell">
             
           <div class="panel pie-exp-panel">
             <div class="panel-head-row">
@@ -463,12 +497,10 @@
             </div>
             <div id="pieExp" class="chart chart-pie"></div>
           </div>
-            <div class="panel perf-panel">
-              <h2>Performance</h2>
-              <div class="perf-line" id="perfLine">Prior period -R$ 11.697,12 · This period R$ 75,10 (+101%) · Kept 1% · Top: 🎉 Leisure R$ 1.327,63 · 🏷️ New House 🏠 R$ 1.306,90 · 🛒 Groceries R$ 597,79 · ⚖️ Adjustment R$ 495,59</div>
-            </div>
           </div>
-    
+      
+      <div class="inc-rec-row">
+        
           <div class="panel chart-cell pie-inc-cell">
             <div class="panel-head-row">
               <h2>Incomes by category</h2>
@@ -476,7 +508,7 @@
             </div>
             <div id="pieInc" class="chart chart-pie"></div>
           </div>
-    
+        
           <div class="panel chart-cell recurring-cell" id="recurringPanel">
             <h2>Recurring bills</h2>
             <div class="bar-meta" id="recurringSummary" style="margin-bottom:6px">
@@ -485,10 +517,15 @@
               · 1 month</div>
             <div id="recurringVsIncome" class="chart chart-treemap"></div>
           </div>
+      </div>
+    </div>
+  </div>
+  <div class="charts-reports">
     
           <div class="panel chart-cell chart-bal"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-invest"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
           <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow (2026)</h2><div id="lineYear" class="chart"></div></div>
+  </div>
   </div>
   <div class="split">
     
@@ -1316,7 +1353,13 @@ function drawRecurringTreemap() {
     return;
   }
   const L = baseLayout();
-  const h = Math.max(el.clientHeight || 0, 220);
+  const panel = el.closest('.panel') || el.parentElement;
+  const head = panel ? panel.querySelector('h2, .panel-head-row') : null;
+  const headH = head ? (head.getBoundingClientRect().height + 10) : 28;
+  const panelH = panel ? panel.getBoundingClientRect().height : 0;
+  const availH = panelH > headH + 120 ? Math.floor(panelH - headH - 14) : 0;
+  const h = availH > 0 ? availH : Math.max(el.clientHeight || 0, 220);
+  el.style.height = h + 'px';
   Plotly.newPlot('recurringVsIncome', [{
     type: 'treemap',
     labels: labels,
@@ -1403,38 +1446,131 @@ function pie(id, spec, kind) {
   const L = baseLayout();
   const custom = (spec.categoryIds || []).map((cid, i) => [spec.custom[i], cid]);
   const n = spec.labels.length;
-  // Size height to legend rows so Plotly does not clip into a scrollbox when space exists.
-  const height = Math.max(300, Math.min(520, 36 + n * 22));
+  const panel = el.closest('.pie-exp-panel, .pie-inc-cell, .panel') || el.parentElement;
+  const head = panel ? panel.querySelector('.panel-head-row') : null;
+  const headH = head ? (head.getBoundingClientRect().height + 10) : 36;
+  const panelH = panel ? panel.getBoundingClientRect().height : 0;
+  const availH = panelH > headH + 120 ? Math.floor(panelH - headH - 14) : 0;
+  const legendDriven = Math.max(240, Math.min(460, 24 + n * 17));
+  // Prefer panel height so stretched columns fill; legendDriven only as fallback before layout settles.
+  const height = availH > 0 ? availH : legendDriven;
   el.style.height = height + 'px';
+  el.style.minHeight = '0';
+  el.style.overflow = 'hidden';
   el.classList.add('chart-clickable');
+  const wide = (el.clientWidth || (panel && panel.clientWidth) || 400) >= 400;
+  const pieLayout = wide
+    ? {
+        domain: { x: [0, 0.44], y: [0.06, 0.94] },
+        margin: { t: 6, b: 14, l: 4, r: 6 },
+        legend: {
+          orientation: 'v',
+          x: 0.5,
+          y: 1,
+          xanchor: 'left',
+          yanchor: 'top',
+          font: { size: 10 },
+          tracegroupgap: 1,
+          itemsizing: 'constant',
+          itemwidth: 28,
+          bgcolor: 'rgba(0,0,0,0)',
+          borderwidth: 0
+        }
+      }
+    : {
+        domain: { x: [0.12, 0.88], y: [0.4, 1] },
+        margin: { t: 4, b: 10, l: 8, r: 8 },
+        legend: {
+          orientation: 'h',
+          x: 0.5,
+          y: 0,
+          xanchor: 'center',
+          yanchor: 'bottom',
+          font: { size: 10 },
+          bgcolor: 'rgba(0,0,0,0)',
+          borderwidth: 0
+        }
+      };
   Plotly.newPlot(id, [{
     type:'pie', labels:spec.labels, values:spec.values, marker:{colors:spec.colors},
     customdata: custom, textfont:{size:10},
-    domain:{x:[0, 0.48], y:[0.02, 0.98]},
+    domain: pieLayout.domain,
     hovertemplate: '%{label}<br>%{percent}<br>%{customdata[0]}<extra></extra>'
   }], Object.assign({}, L, {
     showlegend:true,
     height: height,
-    margin:{t:8, b:8, l:4, r:8},
-    legend:{
-      orientation:'v',
-      x:0.5,
-      y:1,
-      xanchor:'left',
-      yanchor:'top',
-      font:{size:11},
-      tracegroupgap:0,
-      itemsizing:'constant',
-      itemwidth:36,
-      bgcolor:'rgba(0,0,0,0)',
-      borderwidth:0
-    }
+    margin: pieLayout.margin,
+    legend: pieLayout.legend
   }), {responsive:true, displayModeBar:false}).then(() => bindChartClick(id, kind));
+}
+function drawPies() {
+  pie('pieExp', DATA.expensePie, 'expense');
+  pie('pieInc', DATA.incomePie, 'income');
+}
+function dbgRect(el) {
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  const cs = getComputedStyle(el);
+  return {
+    tag: el.id || el.className,
+    h: Math.round(r.height),
+    w: Math.round(r.width),
+    top: Math.round(r.top),
+    bottom: Math.round(r.bottom),
+    display: cs.display,
+    flex: cs.flex,
+    alignSelf: cs.alignSelf,
+    minH: cs.minHeight,
+    maxH: cs.maxHeight,
+    overflow: cs.overflow,
+    overflowY: cs.overflowY
+  };
+}
+function dbgLayout(runId, hypothesisId, note) {
+  // #region agent log
+  const top = document.querySelector('.charts-top');
+  const main = document.querySelector('.charts-main');
+  const budget = document.querySelector('.budget-panel');
+  const expPerf = document.querySelector('.exp-perf-cell');
+  const pieExpCell = document.querySelector('.pie-exp-cell');
+  const incRec = document.querySelector('.inc-rec-row');
+  const pieInc = document.getElementById('pieInc');
+  const pieExp = document.getElementById('pieExp');
+  const pieIncPanel = pieInc && pieInc.closest('.panel');
+  const pieExpPanel = pieExp && pieExp.closest('.panel');
+  const tree = document.getElementById('recurringVsIncome');
+  const treePanel = tree && tree.closest('.panel');
+  const topBlock = expPerf || pieExpCell;
+  const gapMain = main && topBlock && incRec
+    ? Math.round(main.getBoundingClientRect().height
+      - topBlock.getBoundingClientRect().height
+      - incRec.getBoundingClientRect().height
+      - 10
+      - (document.querySelector('.perf-panel-slim')
+        ? document.querySelector('.perf-panel-slim').getBoundingClientRect().height + 10
+        : 0))
+    : null;
+  const gapTop = top && budget && main
+    ? Math.round(budget.getBoundingClientRect().height - main.getBoundingClientRect().height)
+    : null;
+  const pieIncEmpty = pieIncPanel && pieInc
+    ? Math.round(pieIncPanel.getBoundingClientRect().height - pieInc.getBoundingClientRect().height)
+    : null;
+  const panelFillGap = topBlock && pieExpPanel
+    ? Math.round(topBlock.getBoundingClientRect().height - pieExpPanel.getBoundingClientRect().height)
+    : null;
+  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'},body:JSON.stringify({sessionId:'1835f9',runId:runId||'pre',hypothesisId:hypothesisId||'H6-H10',location:'dashboard.html:dbgLayout',message:note||'layout probe',data:{gapMain,gapTop,pieIncEmpty,panelFillGap,vh:window.innerHeight,budget:dbgRect(budget),chartsTop:dbgRect(top),chartsMain:dbgRect(main),expPerf:dbgRect(expPerf),pieExpCell:dbgRect(pieExpCell),incRec:dbgRect(incRec),pieExpPanel:dbgRect(pieExpPanel),pieIncPanel:dbgRect(pieIncPanel),pieExp:dbgRect(pieExp),pieInc:dbgRect(pieInc),treePanel:dbgRect(treePanel),tree:dbgRect(tree)},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
 }
 function drawAll() {
   const L = baseLayout();
-  pie('pieExp', DATA.expensePie, 'expense');
-  pie('pieInc', DATA.incomePie, 'income');
+  drawPies();
+  // Second pass after flex/grid settle so pie height fits the panel (avoids bottom overflow).
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    drawPies();
+    drawRecurringTreemap();
+    dbgLayout('post-fix-2', 'H6-H10', 'after perf-slim + panel fill');
+  }));
   const barBal = document.getElementById('barBal');
   if (barBal) {
     const days = DATA.series.map(x => x.day);
@@ -1517,6 +1653,17 @@ function applyTheme(theme) {
       renderBudgets(budgetsForMonth(budgetMonthSel.value));
     });
   }
+  let pieResizeTimer = 0;
+  window.addEventListener('resize', () => {
+    if (pieResizeTimer) clearTimeout(pieResizeTimer);
+    pieResizeTimer = setTimeout(() => {
+      if (!activeCategory) {
+        drawPies();
+        drawRecurringTreemap();
+        dbgLayout('post-fix', 'H1', 'after resize redraw');
+      }
+    }, 120);
+  });
   checkBudgetApi().then(() => {
     applyPeriod();
     if (budgetApiOk === false) {
