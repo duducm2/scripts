@@ -167,7 +167,7 @@ def build_html(data: dict) -> str:
         card_plan_html = """
           <div class="panel chart-cell chart-span card-plan-panel">
             <div class="panel-head-row">
-              <h2>Card installments remaining</h2>
+              <h2>Card expenses by closing day</h2>
             </div>
             <div class="card-plan-summary" id="cardPlanSummary"></div>
             <div id="lineCardPlan" class="chart chart-card-plan"></div>
@@ -228,16 +228,9 @@ def build_html(data: dict) -> str:
             {notif_col}
           </div>"""
 
-    goals_notif_html = ""
-    if goals_col or perf_notif_stack:
-        solo = " solo" if not (goals_col and perf_notif_stack) else ""
-        goals_notif_html = f"""
-        <div class="goals-notif-panel">
-          <div class="goals-notif-grid{solo}">
-            {goals_col}
-            {perf_notif_stack}
-          </div>
-        </div>"""
+    # Split row (Goals | Perf/Notifications | Accounts) is assembled after accounts HTML.
+    goals_for_split = goals_col
+    perf_for_split = perf_notif_stack
 
     bud_html = ""
     if widget_on(s, "ShowBudgets"):
@@ -382,7 +375,7 @@ def build_html(data: dict) -> str:
             {card_avail_inner}
           </div>"""
         acc_html = f"""
-        <div class="panel">
+        <div class="panel accounts-col">
           <div class="panel-head-row">
             <h2>Accounts</h2>
             {bal_chip}
@@ -390,6 +383,15 @@ def build_html(data: dict) -> str:
           {''.join(acc_items) or '<p class="empty">No accounts</p>'}
           {acc_card_fallback}
         </div>"""
+
+    split_parts = [p for p in (goals_for_split, perf_for_split, acc_html) if p]
+    split_n = len(split_parts)
+    split_html = ""
+    if split_parts:
+        split_html = f"""
+  <div class="split split-{split_n}">
+    {''.join(split_parts)}
+  </div>"""
 
     rec_html = ""
     if widget_on(s, "ShowRecurring"):
@@ -632,35 +634,48 @@ def build_html(data: dict) -> str:
     .charts-reports {{
       display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
     }}
-    .split {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
+    .split {{
+      display:grid; gap:10px; align-items:stretch;
+    }}
+    .split-1 {{ grid-template-columns:1fr; }}
+    .split-2 {{ grid-template-columns:1fr 1fr; }}
+    .split-3 {{ grid-template-columns:1fr 1fr 1fr; }}
+    .split > .panel,
+    .split > .perf-notif-stack {{
+      min-width:0; min-height:0; height:100%; align-self:stretch;
+    }}
+    .split > .goals-col,
+    .split > .accounts-col {{
+      display:flex; flex-direction:column; overflow:auto;
+    }}
+    .split > .perf-notif-stack {{
+      overflow:hidden;
+    }}
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
-    .goals-notif-panel {{ min-width:0; height:100%; }}
-    .goals-notif-grid {{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;
-      height:100%;
-    }}
-    .goals-notif-grid.solo {{ grid-template-columns:1fr; }}
-    .goals-notif-grid > .panel,
-    .goals-notif-grid > .perf-notif-stack {{ min-width:0; min-height:0; height:100%; }}
     .goals-notif-grid .note {{ margin-bottom:6px; }}
     .goals-notif-grid .note:last-child {{ margin-bottom:0; }}
+    .split .note {{ margin-bottom:6px; }}
+    .split .note:last-child {{ margin-bottom:0; }}
     .chart {{ height:320px; }}
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
     .chart-invest .chart-treemap {{ height:320px; }}
     .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
     .chart-pie {{
-      height:auto; min-height:220px; overflow:hidden; width:100%;
-      display:flex; flex-direction:column; align-items:stretch;
+      height:auto; min-height:0; overflow:hidden; width:100%;
+      display:grid; grid-template-rows:minmax(0,1fr) auto;
+      align-content:stretch;
     }}
     .chart-pie .pie-plot {{
-      flex:1 1 auto; min-height:0; width:100%; overflow:hidden;
+      grid-row:1; min-height:0; width:100%; overflow:hidden; align-self:stretch;
     }}
     .chart-pie .pie-legend {{
-      flex:0 0 auto; display:flex; flex-wrap:wrap; justify-content:center;
-      gap:6px 12px; padding:4px 2px 0; font-size:11px; color:var(--plot-font);
+      grid-row:2; display:flex; flex-wrap:wrap; justify-content:center;
+      gap:6px 12px; padding:8px 4px 10px; font-size:11px; color:var(--plot-font);
+      line-height:1.35; min-height:2em; box-sizing:border-box;
+      overflow:visible; flex-shrink:0;
     }}
     .chart-pie .pie-legend-item {{
       display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
@@ -684,13 +699,16 @@ def build_html(data: dict) -> str:
       display:flex; flex-direction:column; min-width:0; min-height:0; height:100%;
       overflow:hidden;
     }}
-    .pie-exp-panel, .pie-inc-cell {{ overflow:hidden; }}
+    .pie-exp-panel, .pie-inc-cell {{
+      overflow:hidden;
+      padding-bottom:12px;
+    }}
     .pie-inc-cell, .recurring-cell {{
       height:100%; min-height:0;
     }}
     .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie,
     .exp-perf-cell .chart-pie {{
-      flex:1 1 auto; min-height:0; overflow:hidden; margin-bottom:2px;
+      flex:1 1 auto; min-height:0; overflow:hidden; margin-bottom:0;
     }}
     .perf-panel .perf-line {{
       flex:1; margin:0; white-space:normal; line-height:1.45;
@@ -919,8 +937,8 @@ def build_html(data: dict) -> str:
     table.tx-table td.amt {{ text-align:right; font-variant-numeric:tabular-nums; }}
     table.tx-table tr:last-child td {{ border-bottom:none; }}
     @media (max-width:900px) {{
-      .charts-top, .inc-rec-row, .charts-reports, .split {{ grid-template-columns:1fr; }}
-      .goals-notif-grid {{ grid-template-columns:1fr; }}
+      .charts-top, .inc-rec-row, .charts-reports, .split,
+      .split-2, .split-3 {{ grid-template-columns:1fr; }}
       .exp-perf-cell {{ grid-template-columns:1fr; }}
       .chart-bal, .chart-invest, .chart-span {{ grid-column:auto; }}
     }}
@@ -939,10 +957,7 @@ def build_html(data: dict) -> str:
   <div class="{charts_class}">
     {charts_body}
   </div>
-  <div class="split">
-    {goals_notif_html}
-    {acc_html}
-  </div>
+  {split_html}
   </div>
   <div id="categoryView">
     <div class="panel">
@@ -1844,10 +1859,19 @@ function pie(id, spec, kind) {{
   const n = spec.labels.length;
   const panel = host.closest('.pie-exp-panel, .pie-inc-cell, .panel') || host.parentElement;
   const head = panel ? panel.querySelector('.panel-head-row') : null;
-  const headH = head ? (head.getBoundingClientRect().height + 10) : 36;
-  const panelH = panel ? panel.getBoundingClientRect().height : 0;
-  const availH = panelH > headH + 120 ? Math.floor(panelH - headH - 14) : 0;
-  const legendDriven = Math.max(240, Math.min(460, 24 + n * 17));
+  const headH = head ? Math.ceil(head.getBoundingClientRect().height + 8) : 36;
+  const panelH = panel ? Math.floor(panel.getBoundingClientRect().height) : 0;
+  let padY = 0;
+  if (panel) {{
+    const cs = getComputedStyle(panel);
+    padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  }}
+  // Slack keeps the legend fully inside the panel (overflow:hidden).
+  const slack = 16;
+  const availH = panelH > headH + padY + 120
+    ? Math.floor(panelH - headH - padY - slack)
+    : 0;
+  const legendDriven = Math.max(240, Math.min(460, 48 + n * 18));
   const height = availH > 0 ? availH : legendDriven;
 
   let plotEl = host.querySelector('.pie-plot');
@@ -1863,35 +1887,59 @@ function pie(id, spec, kind) {{
     host.appendChild(legendEl);
   }}
 
-  const legendRows = Math.max(1, Math.ceil(n / 3));
-  const legendH = Math.min(88, 10 + legendRows * 18);
-  const plotH = Math.max(140, height - legendH);
   host.style.height = height + 'px';
+  host.style.maxHeight = height + 'px';
   host.style.minHeight = '0';
   host.style.width = '100%';
   host.style.overflow = 'hidden';
+  host.style.display = '';
   host.classList.add('chart-clickable');
-  plotEl.style.height = plotH + 'px';
-  plotEl.style.width = '100%';
 
   legendEl.innerHTML = spec.labels.map((lab, i) =>
     '<span class="pie-legend-item"><i style="background:' + (spec.colors[i] || '#888') + '"></i>' +
     escapeHtml(lab) + '</span>'
   ).join('');
 
-  // Full domain + no Plotly legend so the circle stays truly centered.
+  // Collapse plot while measuring legend so height is not underestimated.
+  plotEl.style.height = '0px';
+  plotEl.style.maxHeight = '0px';
+  plotEl.style.minHeight = '0';
+  plotEl.style.overflow = 'hidden';
+  const legendH = Math.max(
+    36,
+    Math.ceil(legendEl.getBoundingClientRect().height) || (16 + Math.ceil(n / 3) * 18)
+  );
+  const plotH = Math.max(100, height - legendH);
+  plotEl.style.height = plotH + 'px';
+  plotEl.style.maxHeight = plotH + 'px';
+  plotEl.style.width = '100%';
+
+  const plotW = Math.max(160, Math.floor(host.clientWidth || plotEl.clientWidth || 280));
   Plotly.newPlot(plotEl, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
     customdata: custom, textfont:{{size:10}},
-    domain: {{ x: [0.08, 0.92], y: [0.04, 0.96] }},
+    domain: {{ x: [0.12, 0.88], y: [0.08, 0.92] }},
     hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata[0]}}<extra></extra>'
   }}], Object.assign({{}}, L, {{
     showlegend:false,
-    autosize:true,
+    autosize:false,
     height: plotH,
+    width: plotW,
     margin: {{ t: 4, b: 4, l: 4, r: 4 }},
     legend: {{}}
-  }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick(plotEl.id, kind));
+  }}), {{responsive:false, displayModeBar:false}}).then(() => {{
+    plotEl.style.height = plotH + 'px';
+    plotEl.style.maxHeight = plotH + 'px';
+    const used = Math.ceil(
+      plotEl.getBoundingClientRect().height + legendEl.getBoundingClientRect().height
+    );
+    if (used > height) {{
+      const fixH = Math.max(100, height - Math.ceil(legendEl.getBoundingClientRect().height));
+      plotEl.style.height = fixH + 'px';
+      plotEl.style.maxHeight = fixH + 'px';
+      return Plotly.relayout(plotEl, {{ height: fixH, width: plotW }});
+    }}
+  }}).then(() => bindChartClick(plotEl.id, kind));
 }}
 function drawPies() {{
   pie('pieExp', DATA.expensePie, 'expense');
@@ -1943,6 +1991,57 @@ function drawAll() {{
 }}
 function rebuildCardInstallmentRemaining() {{
   const today = (RAW.today || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
+  function daysInMonth(y, m) {{
+    if (m === 2) {{
+      const leap = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0));
+      return leap ? 29 : 28;
+    }}
+    return [4, 6, 9, 11].includes(m) ? 30 : 31;
+  }}
+  function clampClosingDay(y, m, closingDay) {{
+    let cd = parseInt(closingDay, 10);
+    if (!Number.isFinite(cd) || cd < 1) cd = 1;
+    if (cd > 31) cd = 31;
+    return Math.min(cd, daysInMonth(y, m));
+  }}
+  function closingDateOn(y, m, closingDay) {{
+    const cd = clampClosingDay(y, m, closingDay);
+    return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-' + String(cd).padStart(2, '0');
+  }}
+  function billClosingDate(txDate, closingDay) {{
+    let d = String(txDate || '').slice(0, 10);
+    if (d.length < 10) d = today;
+    let [y, m, day] = d.split('-').map(Number);
+    const cd = clampClosingDay(y, m, closingDay);
+    if (day <= cd) return closingDateOn(y, m, closingDay);
+    m += 1;
+    if (m > 12) {{ m = 1; y += 1; }}
+    return closingDateOn(y, m, closingDay);
+  }}
+  function nextClosingOnOrAfter(dayStr, closingDay) {{
+    let d = String(dayStr || '').slice(0, 10);
+    if (d.length < 10) d = today;
+    let [y, m, day] = d.split('-').map(Number);
+    const cd = clampClosingDay(y, m, closingDay);
+    if (day <= cd) return closingDateOn(y, m, closingDay);
+    m += 1;
+    if (m > 12) {{ m = 1; y += 1; }}
+    return closingDateOn(y, m, closingDay);
+  }}
+
+  const closingByCard = {{}};
+  const spentByCard = {{}};
+  const cardMeta = {{}};
+  for (const c of RAW.cards || []) {{
+    if (!c.id) continue;
+    cardMeta[c.id] = c.name || c.id;
+    spentByCard[c.id] = parseDecimal(c.current_spent);
+    closingByCard[c.id] = parseInt(c.closing_day, 10) || 1;
+  }}
+  for (const c of RAW.liquidCards || []) {{
+    if (c.id && typeof c.spent === 'number') spentByCard[c.id] = c.spent;
+  }}
+
   const unpaid = [];
   for (const t of RAW.transactions || []) {{
     if (t.type !== 'card_expense') continue;
@@ -1950,33 +2049,20 @@ function rebuildCardInstallmentRemaining() {{
     if (p === '1' || p === 'true' || p === 'yes') continue;
     const cid = (t.card_id || '').trim();
     const d = String(t.date || '').slice(0, 10);
-    if (!cid || d.length < 7) continue;
-    unpaid.push({{ card_id: cid, date: d, amount: parseDecimal(t.amount) }});
+    if (!cid || d.length < 10) continue;
+    const cd = closingByCard[cid] || 1;
+    unpaid.push({{
+      card_id: cid,
+      date: d,
+      closing: billClosingDate(d, cd),
+      amount: parseDecimal(t.amount)
+    }});
   }}
-  const spentByCard = {{}};
-  const cardMeta = {{}};
-  for (const c of RAW.cards || []) {{
-    if (!c.id) continue;
-    cardMeta[c.id] = c.name || c.id;
-    spentByCard[c.id] = parseDecimal(c.current_spent);
-  }}
-  // Prefer liquidCards spent when present (already numeric).
-  for (const c of RAW.liquidCards || []) {{
-    if (c.id && typeof c.spent === 'number') spentByCard[c.id] = c.spent;
-  }}
-  function shiftMonth(ym, delta) {{
-    let [y, m] = ym.split('-').map(Number);
-    m += delta;
-    while (m > 12) {{ m -= 12; y += 1; }}
-    while (m < 1) {{ m += 12; y -= 1; }}
-    return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0');
-  }}
+
   const empty = {{
-    months: [], series: [], today, from_today: [], from_today_total: 0,
+    months: [], closings: [], series: [], today, from_today: [], from_today_total: 0,
     open_total: 0, later_total: 0, last_date: ''
   }};
-  const nextYm = shiftMonth(today.slice(0, 7), 1);
-  const openEnd = shiftMonth(nextYm, 1) + '-01';
   const activeIds = Object.keys(spentByCard).filter(cid =>
     (spentByCard[cid] || 0) > 0.00001 || unpaid.some(u => u.card_id === cid)
   );
@@ -1984,32 +2070,49 @@ function rebuildCardInstallmentRemaining() {{
     DATA.cardInstallmentRemaining = empty;
     return;
   }}
-  const monthSet = {{}};
-  monthSet[today.slice(0, 7)] = true;
-  for (const u of unpaid) {{
-    if (u.date >= today) monthSet[u.date.slice(0, 7)] = true;
-  }}
-  let months = Object.keys(monthSet).sort();
-  if (months.length) {{
-    const last = months[months.length - 1];
-    months = months.concat([shiftMonth(last, 1)]);
-  }}
+
   const palette = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e67e22'];
   const series = [];
   const fromToday = [];
   let lastDate = '';
   activeIds.forEach((cid, i) => {{
     const totalAmt = Math.round((spentByCard[cid] || 0) * 100) / 100;
-    let laterAmt = 0;
-    let cardLast = '';
+    const cd = closingByCard[cid] || 1;
+    const openClose = nextClosingOnOrAfter(today, cd);
+    const dueByClose = {{}};
     for (const u of unpaid) {{
       if (u.card_id !== cid) continue;
-      if (u.date >= openEnd) laterAmt += u.amount;
-      if (u.date >= today && (!cardLast || u.date > cardLast)) cardLast = u.date;
+      dueByClose[u.closing] = (dueByClose[u.closing] || 0) + u.amount;
     }}
-    laterAmt = Math.round(laterAmt * 100) / 100;
-    if (laterAmt > totalAmt) laterAmt = totalAmt;
-    const openAmt = Math.round(Math.max(0, totalAmt - laterAmt) * 100) / 100;
+    if (dueByClose[openClose] == null) dueByClose[openClose] = 0;
+    let closings = Object.keys(dueByClose).sort();
+    let rawOpen = 0, rawLater = 0;
+    for (const c of closings) {{
+      if (c <= openClose) rawOpen += dueByClose[c];
+      else rawLater += dueByClose[c];
+    }}
+    rawOpen = Math.round(rawOpen * 100) / 100;
+    rawLater = Math.round(rawLater * 100) / 100;
+    const rawSum = rawOpen + rawLater;
+    let openAmt, laterAmt, dueVals = {{}};
+    if (rawSum > 0.00001 && Math.abs(rawSum - totalAmt) > 0.02) {{
+      const scale = totalAmt / rawSum;
+      openAmt = Math.round(rawOpen * scale * 100) / 100;
+      laterAmt = Math.round(Math.max(0, totalAmt - openAmt) * 100) / 100;
+      for (const c of closings) dueVals[c] = Math.round(dueByClose[c] * scale * 100) / 100;
+    }} else {{
+      openAmt = totalAmt ? Math.min(rawOpen, totalAmt) : rawOpen;
+      laterAmt = Math.round(Math.max(0, totalAmt - openAmt) * 100) / 100;
+      for (const c of closings) dueVals[c] = Math.round(dueByClose[c] * 100) / 100;
+      if (totalAmt > 0 && rawSum <= 0.00001) {{
+        dueVals = {{}};
+        dueVals[openClose] = totalAmt;
+        closings = [openClose];
+        openAmt = totalAmt;
+        laterAmt = 0;
+      }}
+    }}
+    const cardLast = closings.filter(c => (dueVals[c] || 0) > 0.00001).sort().slice(-1)[0] || '';
     if (cardLast && (!lastDate || cardLast > lastDate)) lastDate = cardLast;
     const color = palette[i % palette.length];
     fromToday.push({{
@@ -2019,28 +2122,23 @@ function rebuildCardInstallmentRemaining() {{
       amount: totalAmt,
       open: openAmt,
       later: laterAmt,
-      last_date: cardLast
-    }});
-    const values = months.map(ym => {{
-      const start = ym + '-01';
-      let laterLeft = 0;
-      for (const u of unpaid) {{
-        if (u.card_id !== cid) continue;
-        if (u.date >= start && u.date >= openEnd) laterLeft += u.amount;
-      }}
-      laterLeft = Math.min(laterLeft, laterAmt);
-      const rem = (start < openEnd) ? (openAmt + laterLeft) : laterLeft;
-      return Math.round(Math.max(0, rem) * 100) / 100;
+      last_date: cardLast,
+      next_closing: openClose,
+      closing_day: cd
     }});
     series.push({{
       card_id: cid,
       name: cardMeta[cid] || cid,
       color,
-      values
+      dates: closings,
+      values: closings.map(c => dueVals[c] || 0)
     }});
   }});
+
+  const allClosings = Array.from(new Set(series.flatMap(s => s.dates || []))).sort();
   DATA.cardInstallmentRemaining = {{
-    months,
+    months: allClosings,
+    closings: allClosings,
     series,
     today,
     from_today: fromToday,
@@ -2056,7 +2154,7 @@ function drawCardInstallmentChart() {{
   if (!el) return;
   rebuildCardInstallmentRemaining();
   const spec = DATA.cardInstallmentRemaining || {{
-    months: [], series: [], from_today: [], from_today_total: 0, open_total: 0, later_total: 0
+    months: [], closings: [], series: [], from_today: [], from_today_total: 0, open_total: 0, later_total: 0
   }};
   const rows = (spec.from_today || []).filter(r => r.amount > 0);
   if (summaryEl) {{
@@ -2072,7 +2170,9 @@ function drawCardInstallmentChart() {{
         + '<div class="box-total">' + formatBrl(r.amount) + '</div>'
         + '<div class="box-split">Open ' + formatBrl(r.open || 0)
         + ' · Later ' + formatBrl(r.later || 0)
-        + (r.last_date ? '<br>Until ' + r.last_date : '')
+        + (r.next_closing ? '<br>Next close ' + r.next_closing : '')
+        + (r.last_date ? ' · Until ' + r.last_date : '')
+        + (r.closing_day ? '<br>Closes day ' + r.closing_day : '')
         + '</div></div>'
       ).join('');
       html += '<div class="card-plan-box total">'
@@ -2083,7 +2183,8 @@ function drawCardInstallmentChart() {{
       summaryEl.innerHTML = html;
     }}
   }}
-  if (!spec.months.length || !spec.series.length) {{
+  const hasBars = (spec.series || []).some(s => (s.dates || []).length && (s.values || []).some(v => v > 0));
+  if (!hasBars) {{
     el.innerHTML = '<p class="empty">No card balances to plot</p>';
     return;
   }}
@@ -2100,19 +2201,19 @@ function drawCardInstallmentChart() {{
   for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
   if (!tickvals.length) tickvals.push(0);
   const traces = spec.series.map(s => ({{
-    type: 'scatter',
-    mode: 'lines+markers',
+    type: 'bar',
     name: s.name,
-    x: spec.months,
-    y: s.values,
+    x: s.dates || [],
+    y: s.values || [],
     customdata: (s.values || []).map(v => formatBrl(v)),
-    line: {{ color: s.color }},
-    hovertemplate: '%{{x}}<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
+    marker: {{ color: s.color }},
+    hovertemplate: '%{{x}} (closing)<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
   }}));
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
+    barmode: 'group',
     showlegend: true,
     legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
-    margin: {{ t: 52, b: 48, l: 88, r: 20 }},
+    margin: {{ t: 52, b: 56, l: 88, r: 20 }},
     yaxis: {{
       title: {{ text: '' }},
       automargin: true,
@@ -2122,7 +2223,13 @@ function drawCardInstallmentChart() {{
       tickfont: {{ size: 10 }},
       rangemode: 'tozero'
     }},
-    xaxis: {{ automargin: true, tickfont: {{ size: 10 }} }}
+    xaxis: {{
+      type: 'category',
+      title: {{ text: 'Closing day', font: {{ size: 11 }} }},
+      automargin: true,
+      tickfont: {{ size: 10 }},
+      tickangle: -30
+    }}
   }}), {{ responsive: true, displayModeBar: false }});
 }}
 function applyTheme(theme) {{
