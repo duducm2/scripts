@@ -18,6 +18,9 @@
 Utils_EnsureGlobalEscapeHotkey() {
 }
 
+; Thin Clip Angel stack (not full Utils.ahk) so Act can guarantee Clip Angel is up.
+#Include %A_ScriptDir%\Utils\clip_angel_act_bootstrap.ahk
+
 ; Preflight: catch env.ahk drift before launching hosts that load lib/CopilotWeb.ahk
 verifyPs1 := A_ScriptDir "\infra\ipc\Verify-EnvAhk.ps1"
 if FileExist(verifyPs1) {
@@ -125,9 +128,14 @@ if (IS_WORK_ENVIRONMENT) {
     Run "C:\Users\eduev\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps\Gmail.lnk"
 }
 
+; Guarantee Clip Angel is open and usable (soft activate, else Macros [R] hard restart).
+StandardLoadingBar_Update("⏳ Ensuring Clip Angel...")
+clipAngelOk := ClipAngel_EnsureRunning()
+
 habitsFolder := notesFolder . "\habits"
-StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
-StandardLoadingBar_Hide(500)
+if (clipAngelOk)
+    StandardLoadingBar_Update("✅ Done", BANNER_ACCENT_SUCCESS)
+StandardLoadingBar_Hide(clipAngelOk ? 500 : 0)
 Sleep 1000
 ; Exit so Act never remains as a lingering Utils/hotkey host after bootstrap.
 ExitApp

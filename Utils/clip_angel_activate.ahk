@@ -807,6 +807,7 @@ ClipAngel_RestartAttempt(exePath, oldPid, attempt, &failReason) {
 
 ; Macros [R] — hard restart when Clip Angel is stuck.
 ; Loading Indication stays up for the whole path; up to 2 attempts with multi-gate verify.
+; Returns true on success (also used by Act.ahk / ClipAngel_EnsureRunning).
 ClipAngel_RestartHard(*) {
     global g_ClipAngelAutomationBusy
     StandardLoadingBar_Show("⏳ Restarting Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
@@ -827,14 +828,14 @@ ClipAngel_RestartHard(*) {
         if (exePath = "" || !FileExist(exePath)) {
             StandardLoadingBar_Hide(0)
             ShowCenteredOverlay_Utils("❌ ClipAngel.exe not found", 2500, BANNER_ACCENT_ERROR)
-            return
+            return false
         }
 
         loop CLIPANGEL_RESTART_MAX_ATTEMPTS {
             if ClipAngel_RestartAttempt(exePath, oldPid, A_Index, &failReason) {
                 StandardLoadingBar_Hide(0)
                 ShowCenteredOverlay_Utils("✅ Clip Angel restarted", 1500, BANNER_ACCENT_SUCCESS)
-                return
+                return true
             }
             if (A_Index < CLIPANGEL_RESTART_MAX_ATTEMPTS) {
                 StandardLoadingBar_Update("⏳ Restart incomplete — retrying…")
@@ -848,14 +849,50 @@ ClipAngel_RestartHard(*) {
         if (failReason != "")
             msg .= ": " failReason
         ShowCenteredOverlay_Utils(msg, 3200, BANNER_ACCENT_ERROR)
+        return false
     } catch as e {
         try StandardLoadingBar_Hide(0)
         catch {
         }
         ShowCenteredOverlay_Utils("❌ Clip Angel restart failed: " . e.Message, 2800, BANNER_ACCENT_ERROR)
+        return false
     } finally {
         g_ClipAngelAutomationBusy := false
     }
+}
+
+; Soft open when already healthy; otherwise same kill→launch→verify as Macros [R].
+; Used by Act.ahk after launching hosts so Clip Angel is guaranteed up.
+ClipAngel_EnsureRunning(*) {
+    global g_ClipAngelAutomationBusy
+    hwnd := ClipAngel_MainHwnd()
+    if (hwnd && ClipAngel_IsMainWindowIdentity(hwnd) && ClipAngel_IsWindowResponsive(hwnd)) {
+        StandardLoadingBar_Show("⏳ Ensuring Clip Angel…", BANNER_ACCENT_INTERMEDIATE, { passive: false })
+        g_ClipAngelAutomationBusy := true
+        try {
+            if ActivateClipAngelWithFocusCorrection(true, 0, true, true) {
+                hwnd := ClipAngel_MainHwnd()
+                if (hwnd && ClipAngel_WaitUntilResponsive(hwnd, CLIPANGEL_RESTART_POST_ACTIVATE_RESPONSIVE_MS)
+                && ClipAngel_WaitForRestartUiReady(hwnd, CLIPANGEL_RESTART_LIST_WAIT_MS)) {
+                    failReason := ""
+                    exePath := ClipAngel_ResolveExePath()
+                    if ClipAngel_RestartQualityOk(hwnd, exePath, 0, &failReason) {
+                        StandardLoadingBar_Hide(0)
+                        ShowCenteredOverlay_Utils("✅ Clip Angel ready", 1200, BANNER_ACCENT_SUCCESS)
+                        return true
+                    }
+                }
+            }
+        } catch {
+        } finally {
+            g_ClipAngelAutomationBusy := false
+        }
+        try StandardLoadingBar_Hide(0)
+        catch {
+        }
+        ; Process present but not usable — fall through to hard restart.
+    }
+    return ClipAngel_RestartHard()
 }
 
 RegisterMacro(ClipAngel_RestartHard, "🔄 Restart Clip Angel (kill process)", "r")
