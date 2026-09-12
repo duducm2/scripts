@@ -84,6 +84,18 @@ global g_ClipAngelFilterCharSequence := ["1", "2", "3", "4", "5"]
 
 ; Enter : paste focused list clip into prior text field, then minimize (skip when editing filters/preview).
 $Enter:: {
+    ; #region agent log
+    try {
+        if ClipAngel_ConstantPaste_IsActive() {
+            ctx := ClipAngel_IsListPasteEnterContext()
+            ClipAngel_ConstantPaste_DebugLog("H3", "hotif:$Enter", "Enter hotkey fired during constant paste", Map(
+                "pasteCtx", ctx ? "1" : "0",
+                "fgExe", WinGetProcessName("A")
+            ))
+        }
+    } catch {
+    }
+    ; #endregion
     if ClipAngel_IsListPasteEnterContext()
         ClipAngel_SelectClipPasteThenMinimize(0)
     else

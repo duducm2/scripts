@@ -2,7 +2,8 @@
 ; Utils module: clip_angel_constant_paste.ahk
 ; Constant Pasting: toggle loop pastes from current Clip Angel selection
 ; (All or Favorites; no Row-0 jump), Enter only for text, 1.5s interruptible gap.
-; Directions: "down" (Shift+P top→bottom) / "up" (Shift+B bottom→top).
+; Directions: "down" (Shift+P) / "up" (Shift+B). After paste, Clip Angel moves the
+; used clip to Row 0 — bottom-up next target is former N-1 at new index N.
 ; Loaded via #include into Utils.ahk after clip_angel_favorite / activate.
 ; =============================================================================
 
@@ -15,30 +16,78 @@ global g_ClipAngelConstantPasteStopRequested := false
 global g_ClipAngelConstantPasteDirection := "down"
 global g_ClipAngelConstantPasteStopHint := "Shift+P"
 
+; #region agent log
+ClipAngel_ConstantPaste_DebugLog(hypothesisId, location, message, data := "") {
+    try {
+        dataJson := "{}"
+        if (IsObject(data)) {
+            parts := []
+            for k, v in data {
+                try {
+                    vv := "" v
+                    vv := StrReplace(vv, "\", "\\")
+                    vv := StrReplace(vv, '"', '\"')
+                    vv := StrReplace(vv, "`r", "")
+                    vv := StrReplace(vv, "`n", " ")
+                    parts.Push('"' k '":"' vv '"')
+                } catch {
+                }
+            }
+            joined := ""
+            for i, p in parts
+                joined .= (i = 1 ? "" : ",") p
+            dataJson := "{" joined "}"
+        }
+        line := '{"sessionId":"688ad7","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataJson ',"timestamp":' A_TickCount ',"runId":"post-fix"}`n'
+        FileAppend(line, A_ScriptDir "\debug-688ad7.log", "UTF-8")
+    } catch {
+    }
+}
+; #endregion
+
 ClipAngel_ConstantPaste_IsActive() {
     global g_ClipAngelConstantPasteActive
     return !!g_ClipAngelConstantPasteActive
 }
 
 ; When started from Clip Angel, pick the top z-order non-CA window.
+; Skip other AHK hosts (AppLaunchers/Shift keys/Utils GUIs) — they often sit
+; above the real paste target in z-order and steal Clip Angel's "previous window".
+ClipAngel_ConstantPaste_IsExcludedPasteTarget(hwnd) {
+    if !hwnd
+        return true
+    try {
+        exe := StrLower(WinGetProcessName("ahk_id " hwnd))
+        if (exe = "clipangel.exe")
+            return true
+        if (exe = "autohotkey64.exe" || exe = "autohotkey32.exe" || exe = "autohotkey.exe"
+            || exe = "autohotkey64_u32.exe")
+            return true
+        cls := WinGetClass("ahk_id " hwnd)
+        if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost"
+            || cls = "Progman" || cls = "WorkerW")
+            return true
+        title := WinGetTitle("ahk_id " hwnd)
+        if (title = "")
+            return true
+    } catch {
+        return true
+    }
+    return false
+}
+
 ClipAngel_ConstantPaste_ResolveTargetHwnd() {
     prior := ClipAngel_ResolvePriorHwnd(0)
-    if (prior)
+    if (prior && !ClipAngel_ConstantPaste_IsExcludedPasteTarget(prior))
         return prior
     try {
         for hwnd in WinGetList() {
             if !hwnd || !WinExist("ahk_id " hwnd)
                 continue
             try {
-                if (StrLower(WinGetProcessName("ahk_id " hwnd)) = "clipangel.exe")
+                if ClipAngel_ConstantPaste_IsExcludedPasteTarget(hwnd)
                     continue
                 if !DllCall("IsWindowVisible", "ptr", hwnd)
-                    continue
-                title := WinGetTitle("ahk_id " hwnd)
-                if (title = "")
-                    continue
-                cls := WinGetClass("ahk_id " hwnd)
-                if (cls = "tooltips_class32" || cls = "Shell_TrayWnd" || cls = "DV2ControlHost")
                     continue
                 return hwnd
             } catch {
@@ -153,45 +202,27 @@ ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root := 0) {
     return ""
 }
 
-ClipAngel_ConstantPaste_ControlSend(hwnd, keys) {
-    if !hwnd
-        return false
-    try {
-        ControlSend(keys, , "ahk_id " hwnd)
-        return true
-    } catch {
-        return false
-    }
+ClipAngel_ConstantPaste_ParseRowIndex(rowName) {
+    if (rowName = "" || !RegExMatch(rowName, "i)(?:Row|Linha)\s*(\d+)", &m))
+        return -1
+    return Integer(m[1])
 }
 
-; Advance one row after paste. direction "down" | "up".
-; ControlSend arrow to main hwnd does not move DataGridView — Send + UIA fallback.
-ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction := "down") {
-    goUp := (direction = "up")
-    ClipAngel_ReleaseChordModifiersForSend()
-    Send(goUp ? "{Up}" : "{Down}")
-    Sleep 50
-    rowAfter := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
-    if (rowAfter != "" && rowAfter != rowBefore)
-        return rowAfter
-
-    if !RegExMatch(rowBefore, "i)(?:Row|Linha)\s*(\d+)", &m)
-        return rowAfter
-    nextIdx := Integer(m[1]) + (goUp ? -1 : 1)
-    if (nextIdx < 0)
-        return rowAfter
-    nextName := "Row " nextIdx
+; Select DataGrid row by index after list reorder. Returns selected row name or "".
+ClipAngel_ConstantPaste_SelectRowByIndex(hwnd, root, idx) {
+    if !(idx is Integer) || idx < 0 || !hwnd
+        return ""
     dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
     if !dataGrid
-        return ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
-    row := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: nextName })
+        return ""
+    row := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Row " idx })
     if !row {
-        try row := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Linha " nextIdx })
+        try row := ClipAngel_UiaFindFirst(dataGrid, { Type: 50025, Name: "Linha " idx })
         catch
             row := 0
     }
     if !row
-        return ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+        return ""
     try {
         if row.GetPropertyValue(UIA.Property.IsSelectionItemPatternAvailable)
             row.SelectionItemPattern.Select()
@@ -206,7 +237,42 @@ ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction := "do
     } catch {
     }
     Sleep 50
+    ClipAngel_UiaEnsureGridListFocus(dataGrid, hwnd, root)
     return ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+}
+
+; Next row after paste. Clip Angel "move to top after use" remaps indices:
+;   pasted at old N → new 0; old 0..N-1 → new 1..N; old N+1.. stay at N+1..
+; Bottom-up (toward Row 0): want former N-1, now at index N → target = N.
+; Top-down: want former N+1, still at N+1 → target = N+1.
+; Returns new selected row name, or "" when traversal should stop.
+ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction := "down") {
+    idx := ClipAngel_ConstantPaste_ParseRowIndex(rowBefore)
+    if (idx < 0)
+        return ""
+
+    goUp := (direction = "up")
+    if goUp {
+        ; Already at top before paste → nothing above after move-to-top.
+        if (idx <= 0)
+            return ""
+        targetIdx := idx  ; former (idx-1) shifted down into this slot
+    } else {
+        targetIdx := idx + 1
+    }
+
+    ClipAngel_ReleaseChordModifiersForSend()
+    rowAfter := ClipAngel_ConstantPaste_SelectRowByIndex(hwnd, root, targetIdx)
+    if (ClipAngel_ConstantPaste_ParseRowIndex(rowAfter) = targetIdx)
+        return rowAfter
+
+    ; Fallback: arrow from current selection (may be Row 0 after paste).
+    Send(goUp ? "{Up}" : "{Down}")
+    Sleep 50
+    rowAfter := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
+    if (ClipAngel_ConstantPaste_ParseRowIndex(rowAfter) = targetIdx)
+        return rowAfter
+    return ""
 }
 
 ; Interruptible gap: returns false if stop requested.
@@ -268,6 +334,17 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
     dirLabel := (direction = "up") ? "↑" : "↓"
 
     priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
+    ; #region agent log
+    try {
+        ClipAngel_ConstantPaste_DebugLog("H1", "Run:prior", "resolved priorHwnd", Map(
+            "prior", priorHwnd,
+            "priorExe", priorHwnd ? WinGetProcessName("ahk_id " priorHwnd) : "",
+            "priorTitle", priorHwnd ? SubStr(WinGetTitle("ahk_id " priorHwnd), 1, 60) : "",
+            "fgExe", WinGetProcessName("A")
+        ))
+    } catch {
+    }
+    ; #endregion
     if (!priorHwnd) {
         ShowCenteredOverlay_Utils(
             "❌ Constant Pasting: no paste target window found.",
@@ -332,14 +409,80 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
 
             ClipAngel_WaitChordModifiersReleased()
             ClipAngel_ReleaseChordModifiersForSend()
-            ; ControlSend avoids Shift keys $Enter → SelectClipPasteThenMinimize.
-            if !ClipAngel_ConstantPaste_ControlSend(hwnd, "{Enter}") {
-                stopReason := "paste send failed"
+            ; Prime Clip Angel's "previous window", then Send Enter (same as Alt+1).
+            ; ControlSend Enter rearranges the list but does not paste into the target.
+            ClipAngel_RestorePriorFocus(priorHwnd)
+            ; #region agent log
+            try {
+                ClipAngel_ConstantPaste_DebugLog("H1", "paste:afterPrime", "after RestorePriorFocus", Map(
+                    "fgExe", WinGetProcessName("A"), "fgHwnd", WinGetID("A"), "prior", priorHwnd
+                ))
+            } catch {
+            }
+            ; #endregion
+            if !ClipAngel_EnsureWindowActive(hwnd, 400) {
+                stopReason := "could not focus Clip Angel for paste"
                 break
             }
+            if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
+                stopReason := "clip list not ready"
+                break
+            }
+            pasteCtx := false
+            try pasteCtx := ClipAngel_IsListPasteEnterContext(hwnd)
+            catch
+                pasteCtx := false
+            ; #region agent log
+            try {
+                focusedName := ""
+                focusedType := ""
+                focusedAid := ""
+                try {
+                    fe := UIA.GetFocusedElement()
+                    if fe {
+                        try focusedName := fe.Name
+                        try focusedType := fe.Type
+                        try focusedAid := fe.AutomationId
+                    }
+                } catch {
+                }
+                ClipAngel_ConstantPaste_DebugLog("H2", "paste:beforeEnter", "about to Send Enter", Map(
+                    "fgExe", WinGetProcessName("A"),
+                    "pasteCtx", pasteCtx ? "1" : "0",
+                    "rowBefore", rowBefore,
+                    "focusedName", SubStr(focusedName, 1, 40),
+                    "focusedType", focusedType,
+                    "focusedAid", focusedAid
+                ))
+            } catch {
+            }
+            ; #endregion
+            ClipAngel_ReleaseChordModifiersForSend()
+            Send "{Enter}"
+            Sleep 80
 
             ClipAngel_ConstantPaste_WaitClipboardSettle()
-            if ClipAngel_ConstantPaste_IsTextOnlyClip() {
+            isText := ClipAngel_ConstantPaste_IsTextOnlyClip()
+            hasImg := ClipAngel_ConstantPaste_ClipboardHasImage()
+            hasTextFmt := false
+            try hasTextFmt := !!(DllCall("IsClipboardFormatAvailable", "UInt", 13, "Int")
+            || DllCall("IsClipboardFormatAvailable", "UInt", 1, "Int"))
+            catch
+                hasTextFmt := false
+            ; #region agent log
+            try {
+                ClipAngel_ConstantPaste_DebugLog("H4", "paste:afterEnter", "after Send Enter + settle", Map(
+                    "fgExe", WinGetProcessName("A"),
+                    "isText", isText ? "1" : "0",
+                    "hasImg", hasImg ? "1" : "0",
+                    "hasTextFmt", hasTextFmt ? "1" : "0",
+                    "rowNow", ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root),
+                    "pastedNext", pastedCount + 1
+                ))
+            } catch {
+            }
+            ; #endregion
+            if isText {
                 ClipAngel_RestorePriorFocus(priorHwnd)
                 ClipAngel_ReleaseChordModifiersForSend()
                 Send "{Enter}"
@@ -373,7 +516,8 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
             }
 
             rowAfter := ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction)
-            if (rowAfter = "" || rowAfter = rowBefore) {
+            ; "" = end / failed advance. Do not compare names: bottom-up target can still be "Row N".
+            if (rowAfter = "") {
                 stopReason := "end of list"
                 break
             }
