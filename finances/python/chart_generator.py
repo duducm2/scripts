@@ -166,8 +166,14 @@ def build_html(data: dict) -> str:
     if widget_on(s, "ShowCardPlan"):
         card_plan_html = """
           <div class="panel chart-cell chart-span card-plan-panel">
-            <div class="panel-head-row">
+            <div class="panel-head-row card-plan-head">
               <h2>Card expenses by closing day</h2>
+              <div class="card-plan-range period-controls">
+                <label>From <input type="date" id="cardPlanFrom"/></label>
+                <label>To <input type="date" id="cardPlanTo"/></label>
+                <button type="button" id="cardPlanApply">Apply</button>
+                <button type="button" id="cardPlanReset" title="Next 2 months from today">2 months</button>
+              </div>
             </div>
             <div class="card-plan-summary" id="cardPlanSummary"></div>
             <div id="lineCardPlan" class="chart chart-card-plan"></div>
@@ -856,6 +862,17 @@ def build_html(data: dict) -> str:
       font-weight:600;
     }}
     .card-plan-panel {{ overflow:visible; min-width:0; }}
+    .card-plan-head {{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }}
+    .card-plan-head h2 {{ margin:0; }}
+    .card-plan-range {{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    }}
+    .card-plan-range button {{
+      background:var(--toggle-bg); color:var(--toggle-fg); border:1px solid var(--border);
+      border-radius:4px; padding:3px 10px; font-size:12px; cursor:pointer;
+    }}
     .card-plan-summary {{
       display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px;
     }}
@@ -2269,6 +2286,51 @@ function rebuildCardInstallmentRemaining() {{
     last_date: lastDate
   }};
 }}
+function cardPlanDefaultRange() {{
+  const today = (RAW.today || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
+  let [y, m, day] = today.split('-').map(Number);
+  m += 2;
+  while (m > 12) {{ m -= 12; y += 1; }}
+  const dim = (yy, mm) => {{
+    if (mm === 2) {{
+      const leap = (yy % 4 === 0 && (yy % 100 !== 0 || yy % 400 === 0));
+      return leap ? 29 : 28;
+    }}
+    return [4, 6, 9, 11].includes(mm) ? 30 : 31;
+  }};
+  const dd = Math.min(day, dim(y, m));
+  const to = String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-'
+    + String(dd).padStart(2, '0');
+  return {{ from: today, to }};
+}}
+function enumerateDays(from, to) {{
+  const out = [];
+  if (!from || !to || from > to) return out;
+  let d = from;
+  // Cap at ~400 days to avoid huge plots.
+  for (let i = 0; i < 400 && d <= to; i++) {{
+    out.push(d);
+    d = shiftDate(d, 1);
+  }}
+  return out;
+}}
+function ensureCardPlanRangeInputs() {{
+  const fromEl = document.getElementById('cardPlanFrom');
+  const toEl = document.getElementById('cardPlanTo');
+  if (!fromEl || !toEl) return cardPlanDefaultRange();
+  if (!fromEl.value || !toEl.value) {{
+    const def = cardPlanDefaultRange();
+    fromEl.value = def.from;
+    toEl.value = def.to;
+  }}
+  let from = fromEl.value;
+  let to = toEl.value;
+  if (from > to) {{
+    const t = from; from = to; to = t;
+    fromEl.value = from; toEl.value = to;
+  }}
+  return {{ from, to }};
+}}
 function drawCardInstallmentChart() {{
   const el = document.getElementById('lineCardPlan');
   const summaryEl = document.getElementById('cardPlanSummary');
@@ -2306,56 +2368,14 @@ function drawCardInstallmentChart() {{
       summaryEl.innerHTML = html;
     }}
   }}
-  const hasSeries = (spec.series || []).some(s => (s.dates || []).length && (s.values || []).some(v => v > 0));
-  if (!hasSeries) {{
-    el.innerHTML = '<p class="empty">No card balances to plot</p>';
+  const range = ensureCardPlanRangeInputs();
+  const dayAxisRequested = enumerateDays(range.from, range.to);
+  if (!dayAxisRequested.length) {{
+    el.innerHTML = '<p class="empty">Invalid card plan range</p>';
     return;
   }}
-  const L = baseLayout();
-  let yMax = 0;
-  for (const s of spec.series) {{
-    for (const v of (s.values || [])) if (v > yMax) yMax = v;
-  }}
-  const tickCount = 5;
-  const rough = yMax > 0 ? yMax / (tickCount - 1) : 1;
-  const mag = Math.pow(10, Math.floor(Math.log10(rough || 1)));
-  const step = Math.max(mag, Math.ceil(rough / mag) * mag);
-  const tickvals = [];
-  for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
-  if (!tickvals.length) tickvals.push(0);
-  const today = (spec.today || RAW.today || '').slice(0, 10);
-  let closings = (spec.closings || spec.months || []).slice();
-  if (today && !closings.includes(today)) {{
-    closings = closings.concat([today]).sort();
-  }}
-  const traces = spec.series.map(s => ({{
-    type: 'scatter',
-    mode: 'lines+markers',
-    name: s.name,
-    x: s.dates || [],
-    y: s.values || [],
-    customdata: (s.values || []).map(v => formatBrl(v)),
-    line: {{ color: s.color, width: 2 }},
-    marker: {{ color: s.color, size: 7 }},
-    hovertemplate: '%{{x}} (closing)<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
-  }}));
-  if (today) {{
-    traces.push({{
-      type: 'scatter',
-      mode: 'markers',
-      name: 'Today',
-      x: [today],
-      y: [0],
-      marker: {{
-        symbol: 'triangle-up',
-        size: 14,
-        color: '#f1c40f',
-        line: {{ width: 1, color: '#ffffff' }}
-      }},
-      hovertemplate: 'Today %{{x}}<extra></extra>',
-      cliponaxis: false
-    }});
-  }}
+  // Include closings just before the range when their pay day still falls inside it,
+  // so line segments are not dropped (Plotly needs 2+ points to draw a line).
   function payDateForClosing(closingDate, dueDay) {{
     let d = String(closingDate || '').slice(0, 10);
     if (d.length < 10) return '';
@@ -2380,15 +2400,103 @@ function drawCardInstallmentChart() {{
     return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-'
       + String(clamp(y, m, dd)).padStart(2, '0');
   }}
-  const dueDayByCard = {{}};
+  const dueDayByCardEarly = {{}};
   for (const r of (spec.from_today || [])) {{
-    if (r.card_id) dueDayByCard[r.card_id] = r.due_day;
+    if (r.card_id) dueDayByCardEarly[r.card_id] = r.due_day;
   }}
-  // Vertical dotted lines + amounts on pay days (not closing days).
+  let axisFrom = range.from;
+  let axisTo = range.to;
+  for (const s of (spec.series || [])) {{
+    const dueDay = dueDayByCardEarly[s.card_id] || 1;
+    const dates = s.dates || [];
+    const values = s.values || [];
+    for (let i = 0; i < dates.length; i++) {{
+      const closeD = dates[i];
+      if (!closeD) continue;
+      const amt = values[i] || 0;
+      if (amt <= 0.00001) continue;
+      const payD = payDateForClosing(closeD, dueDay);
+      const inWindow = (closeD >= range.from && closeD <= range.to)
+        || (payD && payD >= range.from && payD <= range.to);
+      if (!inWindow) continue;
+      if (closeD < axisFrom) axisFrom = closeD;
+      if (closeD > axisTo) axisTo = closeD;
+    }}
+  }}
+  const dayAxis = enumerateDays(axisFrom, axisTo);
+  if (!dayAxis.length) {{
+    el.innerHTML = '<p class="empty">Invalid card plan range</p>';
+    return;
+  }}
+  const L = baseLayout();
+  let yMax = 0;
+  for (const s of (spec.series || [])) {{
+    for (const v of (s.values || [])) if (v > yMax) yMax = v;
+  }}
+  const tickCount = 5;
+  const rough = yMax > 0 ? yMax / (tickCount - 1) : 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+  const step = Math.max(mag, Math.ceil(rough / mag) * mag);
+  const tickvals = [];
+  for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
+  if (!tickvals.length) tickvals.push(0);
+  const today = (spec.today || RAW.today || '').slice(0, 10);
+  // #region agent log
+  const _dbgSeriesMeta = (spec.series || []).map(s => ({{
+    name: s.name,
+    nDates: (s.dates || []).length,
+    dates: (s.dates || []).slice(0, 12),
+    values: (s.values || []).slice(0, 12),
+    inRange: (s.dates || []).filter(d => d >= range.from && d <= range.to),
+    sampleDateTypes: (s.dates || []).slice(0, 3).map(d => typeof d + ':' + JSON.stringify(d))
+  }}));
+  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'A',location:'chart_generator.py:drawCardInstallmentChart:range',message:'card plan range + series dates',data:{{range,axisFrom,axisTo,dayAxisLen:dayAxis.length,dayAxisHead:dayAxis.slice(0,3),dayAxisTail:dayAxis.slice(-3),today,series:_dbgSeriesMeta}},timestamp:Date.now()}})}}).catch(()=>{{}});
+  // #endregion
+  const traces = (spec.series || []).map(s => {{
+    const byClose = {{}};
+    (s.dates || []).forEach((d, i) => {{ byClose[d] = s.values[i]; }});
+    const ys = dayAxis.map(d => (Object.prototype.hasOwnProperty.call(byClose, d) ? byClose[d] : null));
+    const custom = ys.map(v => (v == null ? '' : formatBrl(v)));
+    const nonNullIdx = [];
+    for (let i = 0; i < ys.length; i++) if (ys[i] != null) nonNullIdx.push(i);
+    // #region agent log
+    fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'B',location:'chart_generator.py:drawCardInstallmentChart:trace',message:'per-series mapped points',data:{{name:s.name,color:s.color,nonNullCount:nonNullIdx.length,nonNullDates:nonNullIdx.map(i=>dayAxis[i]),nonNullVals:nonNullIdx.map(i=>ys[i]),byCloseKeys:(s.dates||[]),missOutsideRange:(s.dates||[]).filter(d=>!(d>=axisFrom&&d<=axisTo)),keyMatchSample:(s.dates||[]).slice(0,5).map(d=>({{d,inAxis:dayAxis.indexOf(d)>=0,hasOwn:Object.prototype.hasOwnProperty.call(byClose,d)}}))}},timestamp:Date.now()}})}}).catch(()=>{{}});
+    // #endregion
+    return {{
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: s.name,
+      x: dayAxis,
+      y: ys,
+      customdata: custom,
+      connectgaps: true,
+      line: {{ color: s.color, width: 2 }},
+      marker: {{ color: s.color, size: 7 }},
+      hovertemplate: '%{{x}}<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
+    }};
+  }});
+  if (today && today >= axisFrom && today <= axisTo) {{
+    traces.push({{
+      type: 'scatter',
+      mode: 'markers',
+      name: 'Today',
+      x: [today],
+      y: [0],
+      marker: {{
+        symbol: 'triangle-up',
+        size: 14,
+        color: '#f1c40f',
+        line: {{ width: 1, color: '#ffffff' }}
+      }},
+      hovertemplate: 'Today %{{x}}<extra></extra>',
+      cliponaxis: false
+    }});
+  }}
+  const dueDayByCard = dueDayByCardEarly;
   const shapes = [];
   const annotations = [];
   const seenPayLines = {{}};
-  if (today) {{
+  if (today && today >= axisFrom && today <= axisTo) {{
     shapes.push({{
       type: 'line',
       x0: today,
@@ -2408,7 +2516,6 @@ function drawCardInstallmentChart() {{
       font: {{ size: 10, color: '#f1c40f' }},
       xanchor: 'center'
     }});
-    if (!closings.includes(today)) closings.push(today);
   }}
   for (const s of spec.series || []) {{
     const color = s.color || '#888';
@@ -2421,11 +2528,9 @@ function drawCardInstallmentChart() {{
       const amt = values[i] || 0;
       if (amt <= 0.00001) continue;
       const payD = payDateForClosing(closeD, dueDay);
-      if (!payD) continue;
-      if (!closings.includes(payD)) closings.push(payD);
+      if (!payD || payD < range.from || payD > range.to) continue;
       const key = payD + '|' + (s.card_id || s.name || color);
       if (seenPayLines[key]) {{
-        // Same pay day for this card: sum amounts into the existing label later.
         seenPayLines[key].amt += amt;
         continue;
       }}
@@ -2473,11 +2578,22 @@ function drawCardInstallmentChart() {{
       borderpad: 1
     }});
   }}
-  closings.sort();
+  // Tick every ~7 days (plus endpoints) so labels stay readable on a full daily axis.
+  const tickEvery = dayAxis.length > 45 ? 7 : (dayAxis.length > 20 ? 3 : 1);
+  const tickvalsX = dayAxis.filter((d, i) =>
+    i === 0 || i === dayAxis.length - 1 || i % tickEvery === 0 || d === today
+  );
+  // #region agent log
+  const _dbgLineTraces = traces.filter(t => t.mode && String(t.mode).indexOf('lines') >= 0).map(t => {{
+    const nn = (t.y || []).filter(v => v != null && v !== '').length;
+    return {{ name: t.name, mode: t.mode, xLen: (t.x || []).length, yLen: (t.y || []).length, nonNullY: nn, connectgaps: t.connectgaps, line: t.line }};
+  }});
+  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'C',location:'chart_generator.py:drawCardInstallmentChart:beforePlot',message:'plotly input for line traces',data:{{axisType:'category',connectgapsExpected:true,lineTraceCount:_dbgLineTraces.length,lineTraces:_dbgLineTraces,totalTraces:traces.length}},timestamp:Date.now()}})}}).catch(()=>{{}});
+  // #endregion
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
     legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
-    margin: {{ t: 64, b: 56, l: 88, r: 20 }},
+    margin: {{ t: 64, b: 64, l: 88, r: 20 }},
     shapes: shapes,
     annotations: annotations,
     yaxis: {{
@@ -2492,13 +2608,35 @@ function drawCardInstallmentChart() {{
     xaxis: {{
       type: 'category',
       categoryorder: 'array',
-      categoryarray: closings,
-      title: {{ text: 'Closing day', font: {{ size: 11 }} }},
+      categoryarray: dayAxis,
+      title: {{ text: 'Day', font: {{ size: 11 }} }},
       automargin: true,
-      tickfont: {{ size: 10 }},
-      tickangle: -30
+      tickmode: 'array',
+      tickvals: tickvalsX,
+      ticktext: tickvalsX.map(d => d.slice(5)),
+      tickfont: {{ size: 9 }},
+      tickangle: -45
     }}
-  }}), {{ responsive: true, displayModeBar: false }});
+  }}), {{ responsive: true, displayModeBar: false }}).then(gd => {{
+    // #region agent log
+    try {{
+      const calc = (gd && gd._fullData) ? gd._fullData.filter(t => t.mode && String(t.mode).indexOf('lines') >= 0).map(t => ({{
+        name: t.name,
+        mode: t.mode,
+        visible: t.visible,
+        connectgaps: t.connectgaps,
+        xLen: (t.x || []).length,
+        yLen: (t.y || []).length,
+        hasLine: !!(t.line && t.line.width),
+        lineWidth: t.line && t.line.width,
+        lineColor: t.line && t.line.color
+      }})) : [];
+      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'D',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly fullData line traces',data:{{calc,axisType:gd&&gd._fullLayout&&gd._fullLayout.xaxis&&gd._fullLayout.xaxis.type}},timestamp:Date.now()}})}}).catch(()=>{{}});
+    }} catch (e) {{
+      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'D',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly afterPlot error',data:{{err:String(e)}},timestamp:Date.now()}})}}).catch(()=>{{}});
+    }}
+    // #endregion
+  }});
 }}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);
@@ -2541,6 +2679,28 @@ function applyTheme(theme) {{
   const toEl = document.getElementById('periodTo');
   if (fromEl) fromEl.value = RAW.monthStart || RAW.dateFrom;
   if (toEl) toEl.value = RAW.today || RAW.dateTo;
+  const cardPlanFrom = document.getElementById('cardPlanFrom');
+  const cardPlanTo = document.getElementById('cardPlanTo');
+  const cardPlanApply = document.getElementById('cardPlanApply');
+  const cardPlanReset = document.getElementById('cardPlanReset');
+  if (cardPlanFrom && cardPlanTo) {{
+    const def = cardPlanDefaultRange();
+    if (!cardPlanFrom.value) cardPlanFrom.value = def.from;
+    if (!cardPlanTo.value) cardPlanTo.value = def.to;
+  }}
+  if (cardPlanApply) {{
+    cardPlanApply.addEventListener('click', () => {{
+      refreshCardsFromApi().then(() => drawCardInstallmentChart());
+    }});
+  }}
+  if (cardPlanReset) {{
+    cardPlanReset.addEventListener('click', () => {{
+      const def = cardPlanDefaultRange();
+      if (cardPlanFrom) cardPlanFrom.value = def.from;
+      if (cardPlanTo) cardPlanTo.value = def.to;
+      refreshCardsFromApi().then(() => drawCardInstallmentChart());
+    }});
+  }}
   const budgetMonthSel = document.getElementById('budgetMonth');
   if (budgetMonthSel) {{
     budgetMonthSel.addEventListener('change', () => {{
