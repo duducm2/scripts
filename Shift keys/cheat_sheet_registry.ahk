@@ -648,7 +648,8 @@ cheatSheets["ClipAngel.exe"] := "
     🔗 [M][M]erge clips
     📥 [I][I]mport clips
     🔍 [Y]File t[Y]pe filter (Quick Wizard)
-    🔁 [P]Constant [P]asting (toggle; current selection; Enter on text only)
+    🔁 [P]Constant [P]asting ↓ (toggle; top→bottom; Enter on text only)
+    🔁 [B]Constant pasting ↑ ([B]ottom-up; toggle; Enter on text only)
     ⌨️ [Esc] Minimize window
     ⌨️ [Alt+1] Paste current item, then minimize
     ⌨️ [Alt+2] Down 1, paste, then minimize

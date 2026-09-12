@@ -2,6 +2,7 @@
 ; Utils module: clip_angel_constant_paste.ahk
 ; Constant Pasting: toggle loop pastes from current Clip Angel selection
 ; (All or Favorites; no Row-0 jump), Enter only for text, 1.5s interruptible gap.
+; Directions: "down" (Shift+P top→bottom) / "up" (Shift+B bottom→top).
 ; Loaded via #include into Utils.ahk after clip_angel_favorite / activate.
 ; =============================================================================
 
@@ -11,42 +12,15 @@ CONSTANT_PASTE_CLIPBOARD_WAIT_MS := 400
 
 global g_ClipAngelConstantPasteActive := false
 global g_ClipAngelConstantPasteStopRequested := false
-
-; #region agent log
-ClipAngel_ConstantPaste_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        dataJson := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data {
-                try {
-                    vv := "" v
-                    vv := StrReplace(vv, "\", "\\")
-                    vv := StrReplace(vv, '"', '\"')
-                    vv := StrReplace(vv, "`r", "")
-                    vv := StrReplace(vv, "`n", " ")
-                    parts.Push('"' k '":"' vv '"')
-                } catch {
-                }
-            }
-            joined := ""
-            for i, p in parts
-                joined .= (i = 1 ? "" : ",") p
-            dataJson := "{" joined "}"
-        }
-        line := '{"sessionId":"688ad7","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataJson ',"timestamp":' A_TickCount ',"runId":"post-fix"}`n'
-        FileAppend(line, A_ScriptDir "\debug-688ad7.log", "UTF-8")
-    } catch {
-    }
-}
-; #endregion
+global g_ClipAngelConstantPasteDirection := "down"
+global g_ClipAngelConstantPasteStopHint := "Shift+P"
 
 ClipAngel_ConstantPaste_IsActive() {
     global g_ClipAngelConstantPasteActive
     return !!g_ClipAngelConstantPasteActive
 }
 
-; When started from Clip Angel (always for Shift+P), pick the top z-order non-CA window.
+; When started from Clip Angel, pick the top z-order non-CA window.
 ClipAngel_ConstantPaste_ResolveTargetHwnd() {
     prior := ClipAngel_ResolvePriorHwnd(0)
     if (prior)
@@ -190,12 +164,12 @@ ClipAngel_ConstantPaste_ControlSend(hwnd, keys) {
     }
 }
 
-; Advance one row after paste. ControlSend Down to the main hwnd does not move
-; WinForms DataGridView selection (runtime: rowAfter stayed Row 0). Prefer Send
-; while CA is focused; UIA-select next Row N+1 if selection unchanged.
-ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore) {
+; Advance one row after paste. direction "down" | "up".
+; ControlSend arrow to main hwnd does not move DataGridView — Send + UIA fallback.
+ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction := "down") {
+    goUp := (direction = "up")
     ClipAngel_ReleaseChordModifiersForSend()
-    Send "{Down}"
+    Send(goUp ? "{Up}" : "{Down}")
     Sleep 50
     rowAfter := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
     if (rowAfter != "" && rowAfter != rowBefore)
@@ -203,7 +177,9 @@ ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore) {
 
     if !RegExMatch(rowBefore, "i)(?:Row|Linha)\s*(\d+)", &m)
         return rowAfter
-    nextIdx := Integer(m[1]) + 1
+    nextIdx := Integer(m[1]) + (goUp ? -1 : 1)
+    if (nextIdx < 0)
+        return rowAfter
     nextName := "Row " nextIdx
     dataGrid := ClipAngel_UiaGetDataGrid(hwnd, root)
     if !dataGrid
@@ -262,30 +238,34 @@ ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
     return true
 }
 
-ClipAngel_ConstantPaste_Toggle(*) {
+ClipAngel_ConstantPaste_ToggleDown(*) {
+    ClipAngel_ConstantPaste_Toggle("down")
+}
+
+ClipAngel_ConstantPaste_ToggleUp(*) {
+    ClipAngel_ConstantPaste_Toggle("up")
+}
+
+; Either Shift+P or Shift+B stops an active run; direction applies only when starting.
+ClipAngel_ConstantPaste_Toggle(direction := "down") {
     global g_ClipAngelConstantPasteActive, g_ClipAngelConstantPasteStopRequested
-    ; #region agent log
-    ClipAngel_ConstantPaste_DebugLog("H2", "Toggle:entry", "toggle invoked", Map(
-        "active", g_ClipAngelConstantPasteActive ? "1" : "0",
-        "stopReq", g_ClipAngelConstantPasteStopRequested ? "1" : "0",
-        "fg", WinGetProcessName("A")
-    ))
-    ; #endregion
     if (g_ClipAngelConstantPasteActive) {
         g_ClipAngelConstantPasteStopRequested := true
         g_ClipAngelConstantPasteActive := false
-        ; #region agent log
-        ClipAngel_ConstantPaste_DebugLog("H2", "Toggle:stop", "stop requested", Map())
-        ; #endregion
         return
     }
-    ClipAngel_ConstantPaste_Run()
+    ClipAngel_ConstantPaste_Run(direction)
 }
 
-ClipAngel_ConstantPaste_Run() {
+ClipAngel_ConstantPaste_Run(direction := "down") {
     global g_ClipAngelConstantPasteActive, g_ClipAngelConstantPasteStopRequested
+    global g_ClipAngelConstantPasteDirection, g_ClipAngelConstantPasteStopHint
     if (g_ClipAngelConstantPasteActive)
         return false
+
+    direction := (direction = "up") ? "up" : "down"
+    stopHint := (direction = "up") ? "Shift+B" : "Shift+P"
+    dirLabel := (direction = "up") ? "↑" : "↓"
 
     priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
     if (!priorHwnd) {
@@ -299,10 +279,12 @@ ClipAngel_ConstantPaste_Run() {
 
     g_ClipAngelConstantPasteActive := true
     g_ClipAngelConstantPasteStopRequested := false
+    g_ClipAngelConstantPasteDirection := direction
+    g_ClipAngelConstantPasteStopHint := stopHint
     pastedCount := 0
     stopReason := "stopped"
 
-    StandardLoadingBar_Show("⏳ Constant Pasting…  [Shift+P] stop", BANNER_ACCENT_INFO, {
+    StandardLoadingBar_Show("⏳ Constant Pasting " dirLabel "…  [" stopHint "] stop", BANNER_ACCENT_INFO, {
         passive: true,
         fontSize: 17,
         textWidth: 480
@@ -335,31 +317,16 @@ ClipAngel_ConstantPaste_Run() {
             hwnd := ClipAngel_MainHwnd()
             if !hwnd {
                 stopReason := "Clip Angel closed"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H3", "loop:break", "ca closed", Map("pasted", pastedCount))
-                ; #endregion
                 break
             }
             if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H3", "loop:break", "prepare failed", Map("pasted", pastedCount,
-                    "phase", "pre-paste"))
-                ; #endregion
                 break
             }
 
             rowBefore := ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root)
-            ; #region agent log
-            ClipAngel_ConstantPaste_DebugLog("H1", "loop:iter", "iteration start", Map(
-                "pasted", pastedCount, "rowBefore", rowBefore
-            ))
-            ; #endregion
             if (rowBefore = "") {
                 stopReason := "no clip selected"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H1", "loop:break", "no selection", Map("pasted", pastedCount))
-                ; #endregion
                 break
             }
 
@@ -368,38 +335,21 @@ ClipAngel_ConstantPaste_Run() {
             ; ControlSend avoids Shift keys $Enter → SelectClipPasteThenMinimize.
             if !ClipAngel_ConstantPaste_ControlSend(hwnd, "{Enter}") {
                 stopReason := "paste send failed"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H3", "loop:break", "paste send failed", Map("pasted", pastedCount))
-                ; #endregion
                 break
             }
 
             ClipAngel_ConstantPaste_WaitClipboardSettle()
-            isText := ClipAngel_ConstantPaste_IsTextOnlyClip()
-            ; #region agent log
-            ClipAngel_ConstantPaste_DebugLog("H5", "loop:afterPaste", "paste done", Map(
-                "isText", isText ? "1" : "0", "pastedNext", pastedCount + 1
-            ))
-            ; #endregion
-            if isText {
+            if ClipAngel_ConstantPaste_IsTextOnlyClip() {
                 ClipAngel_RestorePriorFocus(priorHwnd)
                 ClipAngel_ReleaseChordModifiersForSend()
                 Send "{Enter}"
             }
 
             pastedCount += 1
-            StandardLoadingBar_Update("⏳ Constant Pasting… " pastedCount "  [Shift+P] stop", BANNER_ACCENT_INFO)
+            StandardLoadingBar_Update("⏳ Constant Pasting " dirLabel "… " pastedCount "  [" stopHint "] stop",
+                BANNER_ACCENT_INFO)
 
-            gapOk := ClipAngel_ConstantPaste_WaitGap(CONSTANT_PASTE_GAP_MS)
-            ; #region agent log
-            ClipAngel_ConstantPaste_DebugLog("H2", "loop:gap", "gap finished", Map(
-                "gapOk", gapOk ? "1" : "0",
-                "active", g_ClipAngelConstantPasteActive ? "1" : "0",
-                "stopReq", g_ClipAngelConstantPasteStopRequested ? "1" : "0",
-                "pasted", pastedCount
-            ))
-            ; #endregion
-            if !gapOk {
+            if !ClipAngel_ConstantPaste_WaitGap(CONSTANT_PASTE_GAP_MS) {
                 stopReason := "stopped"
                 break
             }
@@ -407,9 +357,6 @@ ClipAngel_ConstantPaste_Run() {
             hwnd := ClipAngel_MainHwnd()
             if !hwnd {
                 stopReason := "Clip Angel closed"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H3", "loop:break", "ca closed after gap", Map("pasted", pastedCount))
-                ; #endregion
                 break
             }
             ; Keep CA visible; re-focus grid then advance one row.
@@ -418,48 +365,22 @@ ClipAngel_ConstantPaste_Run() {
             }
             if !ClipAngel_EnsureWindowActive(hwnd, 400) {
                 stopReason := "could not focus Clip Angel"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H4", "loop:break", "ensure active failed", Map("pasted", pastedCount))
-                ; #endregion
                 break
             }
             if !ClipAngel_ConstantPaste_PrepareGrid(hwnd, &root, &dataGrid) {
                 stopReason := "clip list not ready"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H3", "loop:break", "prepare failed", Map("pasted", pastedCount,
-                    "phase", "pre-down"))
-                ; #endregion
                 break
             }
 
-            ClipAngel_ReleaseChordModifiersForSend()
-            rowAfter := ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore)
-            ; #region agent log
-            ClipAngel_ConstantPaste_DebugLog("H1", "loop:afterDown", "selection after advance", Map(
-                "rowBefore", rowBefore, "rowAfter", rowAfter, "pasted", pastedCount
-            ))
-            ; #endregion
+            rowAfter := ClipAngel_ConstantPaste_AdvanceSelection(hwnd, root, rowBefore, direction)
             if (rowAfter = "" || rowAfter = rowBefore) {
                 stopReason := "end of list"
-                ; #region agent log
-                ClipAngel_ConstantPaste_DebugLog("H1", "loop:break", "end of list gate", Map(
-                    "rowBefore", rowBefore, "rowAfter", rowAfter, "pasted", pastedCount
-                ))
-                ; #endregion
                 break
             }
         }
     } catch as e {
         stopReason := e.Message
-        ; #region agent log
-        ClipAngel_ConstantPaste_DebugLog("H5", "loop:catch", "exception", Map("err", e.Message, "pasted", pastedCount))
-        ; #endregion
     } finally {
-        ; #region agent log
-        ClipAngel_ConstantPaste_DebugLog("H1", "Run:finally", "loop ended", Map(
-            "stopReason", stopReason, "pastedCount", pastedCount
-        ))
-        ; #endregion
         g_ClipAngelConstantPasteActive := false
         g_ClipAngelConstantPasteStopRequested := false
         try StandardLoadingBar_Hide(0)

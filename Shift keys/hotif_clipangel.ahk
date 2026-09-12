@@ -533,11 +533,12 @@ ShowClipAngelFilterSelector() {
 
 #HotIf
 
-; Constant Pasting (Shift+P): start while Clip Angel focused; stop also works while the
-; loop is active (focus may be on the paste target during the 1.5s gap).
+; Constant Pasting: Shift+P top→bottom, Shift+B bottom→top. Either key stops while active
+; (focus may be on the paste target during the 1.5s gap).
 #HotIf WinActive("ahk_exe ClipAngel.exe") || ClipAngel_ConstantPaste_IsActive()
 #MaxThreadsPerHotkey 2
-+p:: ClipAngel_ConstantPaste_Toggle()
++p:: ClipAngel_ConstantPaste_ToggleDown()
++b:: ClipAngel_ConstantPaste_ToggleUp()
 #MaxThreadsPerHotkey 1
 #HotIf
 
