@@ -40,17 +40,17 @@ def build_html(data: dict) -> str:
     date_from = raw.get("dateFrom") or raw.get("monthStart") or (cur + "-01")
     date_to = raw.get("dateTo") or raw.get("today") or date_from
     notes = data["notifications"] if widget_on(s, "ShowNotifications") else []
-    notif_html = ""
+    notif_col = ""
     if widget_on(s, "ShowNotifications"):
         if notes:
             items = "".join(f'<div class="note">{n}</div>' for n in notes)
         else:
             items = '<div class="note ok">No alerts</div>'
-        notif_html = f"""
-        <div class="panel" id="notificationsPanel" style="margin-top:10px">
-          <h2>Notifications</h2>
-          <div id="notificationsBody">{items}</div>
-        </div>"""
+        notif_col = f"""
+          <div class="notif-col" id="notificationsPanel">
+            <h2>Notifications</h2>
+            <div id="notificationsBody">{items}</div>
+          </div>"""
 
     cards_html = ""
     if widget_on(s, "ShowBalance"):
@@ -71,6 +71,7 @@ def build_html(data: dict) -> str:
             name = c.get("name") or c.get("id") or "Card"
             lim = parse_decimal(c.get("limit"))
             spent = parse_decimal(c.get("current_spent"))
+            avail = lim - spent
             pct = (spent / lim * 100) if lim > 0 else (100.0 if spent > 0 else 0.0)
             width = min(pct, 100.0)
             over = lim > 0 and spent > lim
@@ -78,7 +79,8 @@ def build_html(data: dict) -> str:
             mini_rows.append(
                 f'<div class="kpi-card-mini">'
                 f'<div class="bar-head"><span>{name}</span>'
-                f"<span>{pct:.0f}%</span></div>"
+                f'<span><span class="kpi-card-avail-amt">{format_brl(avail)}</span>'
+                f' <span class="dim">{pct:.0f}%</span></span></div>'
                 f'<div class="bar-track"><div class="bar-fill" style="width:{width:.1f}%;'
                 f'background:{fill}"></div></div></div>'
             )
@@ -128,11 +130,11 @@ def build_html(data: dict) -> str:
 
     year_lbl = data.get("period_year") or cur[:4]
     reports_html = f"""
-          <div class="panel chart-cell chart-span"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
-          <div class="panel chart-cell chart-span"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
+          <div class="panel chart-cell chart-bal"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
+          <div class="panel chart-cell chart-invest"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
           <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
 
-    goals_html = ""
+    goals_col = ""
     if widget_on(s, "ShowGoals"):
         items = []
         for g in data["goals"]:
@@ -161,9 +163,22 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-meta">{cap}</div>'
                 f"</div>"
             )
-        goals_html = f"""
-        <div class="panel"><h2>Goals</h2>
-          {''.join(items) or '<p class="empty">No goals</p>'}</div>"""
+        goals_col = f"""
+          <div class="goals-col">
+            <h2>Goals</h2>
+            {''.join(items) or '<p class="empty">No goals</p>'}
+          </div>"""
+
+    goals_notif_html = ""
+    if goals_col or notif_col:
+        solo = " solo" if not (goals_col and notif_col) else ""
+        goals_notif_html = f"""
+        <div class="panel goals-notif-panel">
+          <div class="goals-notif-grid{solo}">
+            {goals_col}
+            {notif_col}
+          </div>
+        </div>"""
 
     bud_html = ""
     if widget_on(s, "ShowBudgets"):
@@ -420,23 +435,37 @@ def build_html(data: dict) -> str:
     .kpi-card-mini .bar-head {{
       font-size:10px; color:var(--muted); margin-bottom:1px;
     }}
+    .kpi-card-mini .kpi-card-avail-amt {{
+      color:var(--text); font-weight:600; font-variant-numeric:tabular-nums;
+    }}
     .kpi-card-mini .bar-track {{ height:4px; }}
     .dim {{ color:var(--muted2); font-size:12px; font-weight:400; }}
     .pos {{ color:#2ecc71; }} .neg {{ color:#e74c3c; }}
-    .charts {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }}
+    .charts {{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:10px; }}
     .split {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }}
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
+    .goals-notif-grid {{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;
+    }}
+    .goals-notif-grid.solo {{ grid-template-columns:1fr; }}
+    .goals-notif-grid > div {{ min-width:0; }}
+    .goals-col + .notif-col {{
+      border-left:1px solid var(--border); padding-left:12px;
+    }}
+    .goals-notif-grid .note {{ margin-bottom:6px; }}
+    .goals-notif-grid .note:last-child {{ margin-bottom:0; }}
     .chart {{ height:320px; }}
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
+    .chart-invest .chart-treemap {{ height:320px; }}
     .chart-pie {{ height:auto; min-height:300px; }}
     .chart-cell {{ min-width:0; }}
     .pie-exp-cell, .pie-inc-cell {{ display:flex; flex-direction:column; min-height:0; }}
     .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie {{ flex:1 1 auto; }}
     .budget-panel {{
-      grid-column:1; grid-row:1 / span 2;
+      grid-column:1 / span 2; grid-row:1 / span 2;
       display:flex; flex-direction:column;
     }}
     .budget-panel .budget-body {{ flex:1; overflow:visible; }}
@@ -550,11 +579,13 @@ def build_html(data: dict) -> str:
       margin:0 0 8px; padding:0 0 8px; border-bottom:1px solid var(--border);
     }}
     .budget-categories .budget-body {{ flex:1; overflow:visible; }}
-    .pie-exp-cell {{ grid-column:2; grid-row:1; }}
-    .pie-inc-cell {{ grid-column:2; grid-row:2; }}
-    .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
-    .charts-no-budget .pie-inc-cell {{ grid-column:2; grid-row:1; }}
+    .pie-exp-cell {{ grid-column:3 / span 2; grid-row:1; }}
+    .pie-inc-cell {{ grid-column:3 / span 2; grid-row:2; }}
+    .charts-no-budget .pie-exp-cell {{ grid-column:1 / span 2; grid-row:1; }}
+    .charts-no-budget .pie-inc-cell {{ grid-column:3 / span 2; grid-row:1; }}
     .chart-span {{ grid-column:1 / -1; }}
+    .chart-bal {{ grid-column:span 3; }}
+    .chart-invest {{ grid-column:span 1; }}
     .note {{ background:var(--note-bg); color:var(--note-fg); padding:6px 10px; border-radius:4px; margin-bottom:10px; font-size:12px; }}
     .note.ok {{ background:var(--note-ok-bg); color:var(--note-ok-fg); }}
     .perf-line {{ color:var(--perf); font-size:12px; line-height:1.4; }}
@@ -599,7 +630,22 @@ def build_html(data: dict) -> str:
     table.tx-table tr:last-child td {{ border-bottom:none; }}
     @media (max-width:900px) {{
       .kpis, .charts, .split {{ grid-template-columns:1fr; }}
-      .budget-panel, .pie-exp-cell, .pie-inc-cell {{ grid-column:auto; grid-row:auto; }}
+      .goals-notif-grid {{ grid-template-columns:1fr; }}
+      .goals-col + .notif-col {{
+        border-left:none; padding-left:0;
+        border-top:1px solid var(--border); padding-top:10px;
+      }}
+      .budget-panel, .pie-exp-cell, .pie-inc-cell,
+      .chart-bal, .chart-invest {{ grid-column:auto; grid-row:auto; }}
+    }}
+    @media (min-width:901px) and (max-width:1099px) {{
+      .charts {{ grid-template-columns:1fr 1fr; }}
+      .budget-panel {{ grid-column:1; grid-row:1 / span 2; }}
+      .pie-exp-cell {{ grid-column:2; grid-row:1; }}
+      .pie-inc-cell {{ grid-column:2; grid-row:2; }}
+      .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
+      .charts-no-budget .pie-inc-cell {{ grid-column:2; grid-row:1; }}
+      .chart-bal, .chart-invest {{ grid-column:1 / -1; }}
     }}
   </style>
 </head>
@@ -624,11 +670,10 @@ def build_html(data: dict) -> str:
     {reports_html}
   </div>
   <div class="split">
-    {goals_html}
+    {goals_notif_html}
     {acc_html}
   </div>
   {rec_html}
-  {notif_html}
   </div>
   <div id="categoryView">
     <div class="panel">
