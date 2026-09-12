@@ -1817,61 +1817,6 @@ function drawPies() {{
   pie('pieExp', DATA.expensePie, 'expense');
   pie('pieInc', DATA.incomePie, 'income');
 }}
-function dbgRect(el) {{
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
-  const cs = getComputedStyle(el);
-  return {{
-    tag: el.id || el.className,
-    h: Math.round(r.height),
-    w: Math.round(r.width),
-    top: Math.round(r.top),
-    bottom: Math.round(r.bottom),
-    display: cs.display,
-    flex: cs.flex,
-    alignSelf: cs.alignSelf,
-    minH: cs.minHeight,
-    maxH: cs.maxHeight,
-    overflow: cs.overflow,
-    overflowY: cs.overflowY
-  }};
-}}
-function dbgLayout(runId, hypothesisId, note) {{
-  // #region agent log
-  const top = document.querySelector('.charts-top');
-  const main = document.querySelector('.charts-main');
-  const budget = document.querySelector('.budget-panel');
-  const expPerf = document.querySelector('.exp-perf-cell');
-  const pieExpCell = document.querySelector('.pie-exp-cell');
-  const incRec = document.querySelector('.inc-rec-row');
-  const pieInc = document.getElementById('pieInc');
-  const pieExp = document.getElementById('pieExp');
-  const pieIncPanel = pieInc && pieInc.closest('.panel');
-  const pieExpPanel = pieExp && pieExp.closest('.panel');
-  const tree = document.getElementById('recurringVsIncome');
-  const treePanel = tree && tree.closest('.panel');
-  const topBlock = expPerf || pieExpCell;
-  const gapMain = main && topBlock && incRec
-    ? Math.round(main.getBoundingClientRect().height
-      - topBlock.getBoundingClientRect().height
-      - incRec.getBoundingClientRect().height
-      - 10
-      - (document.querySelector('.perf-panel-slim')
-        ? document.querySelector('.perf-panel-slim').getBoundingClientRect().height + 10
-        : 0))
-    : null;
-  const gapTop = top && budget && main
-    ? Math.round(budget.getBoundingClientRect().height - main.getBoundingClientRect().height)
-    : null;
-  const pieIncEmpty = pieIncPanel && pieInc
-    ? Math.round(pieIncPanel.getBoundingClientRect().height - pieInc.getBoundingClientRect().height)
-    : null;
-  const panelFillGap = topBlock && pieExpPanel
-    ? Math.round(topBlock.getBoundingClientRect().height - pieExpPanel.getBoundingClientRect().height)
-    : null;
-  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:runId||'pre',hypothesisId:hypothesisId||'H6-H10',location:'dashboard.html:dbgLayout',message:note||'layout probe',data:{{gapMain,gapTop,pieIncEmpty,panelFillGap,vh:window.innerHeight,budget:dbgRect(budget),chartsTop:dbgRect(top),chartsMain:dbgRect(main),expPerf:dbgRect(expPerf),pieExpCell:dbgRect(pieExpCell),incRec:dbgRect(incRec),pieExpPanel:dbgRect(pieExpPanel),pieIncPanel:dbgRect(pieIncPanel),pieExp:dbgRect(pieExp),pieInc:dbgRect(pieInc),treePanel:dbgRect(treePanel),tree:dbgRect(tree)}},timestamp:Date.now()}})}}).catch(()=>{{}});
-  // #endregion
-}}
 function drawAll() {{
   const L = baseLayout();
   drawPies();
@@ -1879,7 +1824,6 @@ function drawAll() {{
   requestAnimationFrame(() => requestAnimationFrame(() => {{
     drawPies();
     drawRecurringTreemap();
-    dbgLayout('post-fix-2', 'H6-H10', 'after perf-slim + panel fill');
   }}));
   const barBal = document.getElementById('barBal');
   if (barBal) {{
@@ -1970,7 +1914,6 @@ function applyTheme(theme) {{
       if (!activeCategory) {{
         drawPies();
         drawRecurringTreemap();
-        dbgLayout('post-fix', 'H1', 'after resize redraw');
       }}
     }}, 120);
   }});
