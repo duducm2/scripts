@@ -300,6 +300,9 @@ PronunciationHotkey_DisarmDoubleTap() {
 
     if (isHold) {
         PronunciationHotkey_DisarmDoubleTap()
+        try ShowCenteredOverlay_Utils("🗣 Pronunciation language", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
         ; Run after hotkey returns — GUI/hotkey bind from inside #!+8 can deadlock.
         SetTimer((*) => PronunciationHotkey_CopyAndShowPicker(), -1)
         ; Stay in this thread until physical release so repeat cannot toggle picker off.

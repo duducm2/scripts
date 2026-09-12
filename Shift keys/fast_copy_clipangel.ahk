@@ -834,9 +834,12 @@ FastCopyMode_RepeatLastPaste() {
     pressTime := A_TickCount
     KeyWait "j", "T1"
     holdTime := A_TickCount - pressTime
-    if (holdTime >= FAST_COPY_HOLD_REPEAT_MS)
+    if (holdTime >= FAST_COPY_HOLD_REPEAT_MS) {
+        try ShowCenteredOverlay_Utils("📋 Repeat Fast Copy", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
         FastCopyMode_RepeatLastPaste()
-    else
+    } else
         FastCopyMode_Start()
 }
 

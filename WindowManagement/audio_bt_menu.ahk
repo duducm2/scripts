@@ -1716,6 +1716,9 @@ AudioBt_DisarmDoubleTap() {
 
     if (isHold) {
         AudioBt_DisarmDoubleTap()
+        try ShowCenteredOverlay_Utils("⬆ Push scripts + notes", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
         Utility_GitSyncPush()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.

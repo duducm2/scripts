@@ -87,5 +87,8 @@ CLIPANGEL_WAS7_HOLD_MS := 200
     }
 
     ; Hold: paste top clip as file onto Desktop (shared export helper).
+    try ShowCenteredOverlay_Utils("📎 Paste clip to Desktop", 1500, BANNER_ACCENT_INFO)
+    catch {
+    }
     ClipAngelExport_PasteFirstClipToDesktop()
 }

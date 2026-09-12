@@ -1035,6 +1035,9 @@ DesktopCutNewest_OnHotkey() {
 
     if (isHold) {
         DesktopCutNewest_DisarmTapDance()
+        try ShowCenteredOverlay_Utils("📋 Copy Desktop path", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
         DesktopCutNewest_CopyPath()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.
