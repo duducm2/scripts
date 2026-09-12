@@ -652,12 +652,21 @@ def build_html(data: dict) -> str:
     .chart-invest .chart-treemap {{ height:320px; }}
     .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
     .chart-pie {{
-      height:auto; min-height:220px; overflow:hidden;
-      display:flex; align-items:center; justify-content:center;
+      height:auto; min-height:220px; overflow:hidden; width:100%;
+      display:flex; flex-direction:column; align-items:stretch;
     }}
-    .chart-pie .js-plotly-plot,
-    .chart-pie .plot-container {{
-      margin:0 auto;
+    .chart-pie .pie-plot {{
+      flex:1 1 auto; min-height:0; width:100%; overflow:hidden;
+    }}
+    .chart-pie .pie-legend {{
+      flex:0 0 auto; display:flex; flex-wrap:wrap; justify-content:center;
+      gap:6px 12px; padding:4px 2px 0; font-size:11px; color:var(--plot-font);
+    }}
+    .chart-pie .pie-legend-item {{
+      display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+    }}
+    .chart-pie .pie-legend-item i {{
+      width:10px; height:10px; border-radius:2px; flex:0 0 auto;
     }}
     .chart-cell {{ min-width:0; }}
     .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell {{
@@ -1827,50 +1836,62 @@ function baseLayout() {{
     margin:{{t:28,b:48,l:42,r:16}}, height:320, legend:{{orientation:'h', y:1.12, font:{{size:10}}}}}};
 }}
 function pie(id, spec, kind) {{
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (!spec.values.length) {{ el.innerHTML = '<p class="empty">No data</p>'; return; }}
+  const host = document.getElementById(id);
+  if (!host) return;
+  if (!spec.values.length) {{ host.innerHTML = '<p class="empty">No data</p>'; return; }}
   const L = baseLayout();
   const custom = (spec.categoryIds || []).map((cid, i) => [spec.custom[i], cid]);
   const n = spec.labels.length;
-  const panel = el.closest('.pie-exp-panel, .pie-inc-cell, .panel') || el.parentElement;
+  const panel = host.closest('.pie-exp-panel, .pie-inc-cell, .panel') || host.parentElement;
   const head = panel ? panel.querySelector('.panel-head-row') : null;
   const headH = head ? (head.getBoundingClientRect().height + 10) : 36;
   const panelH = panel ? panel.getBoundingClientRect().height : 0;
   const availH = panelH > headH + 120 ? Math.floor(panelH - headH - 14) : 0;
   const legendDriven = Math.max(240, Math.min(460, 24 + n * 17));
-  // Prefer panel height so stretched columns fill; legendDriven only as fallback before layout settles.
   const height = availH > 0 ? availH : legendDriven;
-  el.style.height = height + 'px';
-  el.style.minHeight = '0';
-  el.style.overflow = 'hidden';
-  el.classList.add('chart-clickable');
-  // Center pie in the panel; legend sits below so the chart reads as middle-aligned.
-  const pieLayout = {{
-    domain: {{ x: [0.18, 0.82], y: [0.28, 0.98] }},
-    margin: {{ t: 8, b: 10, l: 8, r: 8 }},
-    legend: {{
-      orientation: 'h',
-      x: 0.5,
-      y: 0,
-      xanchor: 'center',
-      yanchor: 'bottom',
-      font: {{ size: 10 }},
-      bgcolor: 'rgba(0,0,0,0)',
-      borderwidth: 0
-    }}
-  }};
-  Plotly.newPlot(id, [{{
+
+  let plotEl = host.querySelector('.pie-plot');
+  let legendEl = host.querySelector('.pie-legend');
+  if (!plotEl) {{
+    host.innerHTML = '';
+    plotEl = document.createElement('div');
+    plotEl.className = 'pie-plot';
+    plotEl.id = id + 'Plot';
+    legendEl = document.createElement('div');
+    legendEl.className = 'pie-legend';
+    host.appendChild(plotEl);
+    host.appendChild(legendEl);
+  }}
+
+  const legendRows = Math.max(1, Math.ceil(n / 3));
+  const legendH = Math.min(88, 10 + legendRows * 18);
+  const plotH = Math.max(140, height - legendH);
+  host.style.height = height + 'px';
+  host.style.minHeight = '0';
+  host.style.width = '100%';
+  host.style.overflow = 'hidden';
+  host.classList.add('chart-clickable');
+  plotEl.style.height = plotH + 'px';
+  plotEl.style.width = '100%';
+
+  legendEl.innerHTML = spec.labels.map((lab, i) =>
+    '<span class="pie-legend-item"><i style="background:' + (spec.colors[i] || '#888') + '"></i>' +
+    escapeHtml(lab) + '</span>'
+  ).join('');
+
+  // Full domain + no Plotly legend so the circle stays truly centered.
+  Plotly.newPlot(plotEl, [{{
     type:'pie', labels:spec.labels, values:spec.values, marker:{{colors:spec.colors}},
     customdata: custom, textfont:{{size:10}},
-    domain: pieLayout.domain,
+    domain: {{ x: [0.08, 0.92], y: [0.04, 0.96] }},
     hovertemplate: '%{{label}}<br>%{{percent}}<br>%{{customdata[0]}}<extra></extra>'
   }}], Object.assign({{}}, L, {{
-    showlegend:true,
-    height: height,
-    margin: pieLayout.margin,
-    legend: pieLayout.legend
-  }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick(id, kind));
+    showlegend:false,
+    autosize:true,
+    height: plotH,
+    margin: {{ t: 4, b: 4, l: 4, r: 4 }},
+    legend: {{}}
+  }}), {{responsive:true, displayModeBar:false}}).then(() => bindChartClick(plotEl.id, kind));
 }}
 function drawPies() {{
   pie('pieExp', DATA.expensePie, 'expense');
