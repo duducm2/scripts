@@ -182,13 +182,19 @@ def build_html(data: dict) -> str:
     card_plan_html = ""
     if widget_on(s, "ShowCardPlan"):
         card_plan_html = """
-          <div class="panel chart-cell chart-span">
+          <div class="panel chart-cell chart-span card-plan-panel">
             <div class="panel-head-row">
               <h2>Card installments remaining</h2>
-              <div class="stat-chip"><span class="lbl">From today</span><span class="val" id="cardPlanFromTodayTotal">—</span></div>
+              <div class="panel-head-actions">
+                <div class="stat-chip"><span class="lbl">From today</span><span class="val" id="cardPlanFromTodayTotal">—</span></div>
+                <div class="budget-calc-wrap">
+                  <button type="button" class="budget-calc-btn" id="cardPlanDetailBtn"
+                    aria-describedby="cardPlanDetailTip">By card</button>
+                  <div class="budget-calc-tip" id="cardPlanDetailTip" role="tooltip"></div>
+                </div>
+              </div>
             </div>
-            <div class="bar-meta" id="cardPlanFromTodayMeta" style="margin-bottom:6px"></div>
-            <div id="lineCardPlan" class="chart"></div>
+            <div id="lineCardPlan" class="chart chart-card-plan"></div>
           </div>"""
     reports_html = f"""
           <div class="panel chart-cell chart-bal"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
@@ -533,6 +539,9 @@ def build_html(data: dict) -> str:
       flex-wrap:wrap; margin-bottom:6px;
     }}
     .panel-head-row h2 {{ margin:0; }}
+    .panel-head-actions {{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    }}
     .stat-chip {{
       display:flex; flex-direction:column; align-items:flex-end; gap:1px;
       padding:4px 8px; border-radius:6px; border:1px solid var(--border);
@@ -793,6 +802,23 @@ def build_html(data: dict) -> str:
       margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
       font-weight:600;
     }}
+    .budget-calc-tip .card-plan-row {{
+      display:grid; grid-template-columns:10px 1fr auto; gap:8px; align-items:start;
+      margin:0 0 8px;
+    }}
+    .budget-calc-tip .card-plan-row:last-of-type {{ margin-bottom:0; }}
+    .budget-calc-tip .card-plan-row .dot {{
+      width:8px; height:8px; border-radius:50%; margin-top:4px;
+    }}
+    .budget-calc-tip .card-plan-row .card-plan-name {{ font-weight:600; color:var(--heading); }}
+    .budget-calc-tip .card-plan-row .card-plan-until {{
+      display:block; color:var(--muted2); font-size:10px; margin-top:1px;
+    }}
+    .budget-calc-tip .card-plan-row .card-plan-amt {{
+      font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;
+    }}
+    .card-plan-panel {{ overflow:visible; min-width:0; }}
+    .chart-card-plan {{ height:300px; min-width:0; overflow:hidden; }}
     .budget-categories {{
       flex:1; display:flex; flex-direction:column;
       border:1px solid var(--border); border-radius:6px;
@@ -1966,24 +1992,36 @@ function rebuildCardInstallmentRemaining() {{
 function drawCardInstallmentChart() {{
   const el = document.getElementById('lineCardPlan');
   const totEl = document.getElementById('cardPlanFromTodayTotal');
-  const metaEl = document.getElementById('cardPlanFromTodayMeta');
+  const tip = document.getElementById('cardPlanDetailTip');
   if (!el) return;
   rebuildCardInstallmentRemaining();
   const spec = DATA.cardInstallmentRemaining || {{ months: [], series: [], from_today: [], from_today_total: 0 }};
-  const parts = (spec.from_today || [])
-    .filter(r => r.amount > 0)
-    .map(r => r.name + ' ' + formatBrl(r.amount)
-      + (r.last_date ? ' → ' + r.last_date : ''));
+  const rows = (spec.from_today || []).filter(r => r.amount > 0);
   if (totEl) {{
     totEl.textContent = (spec.from_today_total > 0) ? formatBrl(spec.from_today_total) : '—';
   }}
-  if (metaEl) {{
-    if (!parts.length) {{
-      metaEl.textContent = 'No unpaid installments from today onward';
+  if (tip) {{
+    if (!rows.length) {{
+      tip.innerHTML = '<div class="calc-line calc-muted">No unpaid installments from today onward</div>';
     }} else {{
-      metaEl.textContent = 'Unpaid from today through last installment · '
-        + parts.join(' · ')
-        + (spec.last_date ? ' · Ends ' + spec.last_date : '');
+      const parts = [];
+      parts.push('<div class="calc-line calc-muted">Still to pay from today</div>');
+      for (const r of rows) {{
+        parts.push(
+          '<div class="card-plan-row">'
+          + '<span class="dot" style="background:' + (r.color || '#888') + '"></span>'
+          + '<span><span class="card-plan-name">' + r.name + '</span>'
+          + (r.last_date
+            ? '<span class="card-plan-until">Last installment ' + r.last_date + '</span>'
+            : '')
+          + '</span>'
+          + '<span class="card-plan-amt">' + formatBrl(r.amount) + '</span>'
+          + '</div>'
+        );
+      }}
+      parts.push('<div class="calc-line calc-total">Total '
+        + formatBrl(spec.from_today_total || 0) + '</div>');
+      tip.innerHTML = parts.join('');
     }}
   }}
   if (!spec.months.length || !spec.series.length) {{
@@ -1991,19 +2029,41 @@ function drawCardInstallmentChart() {{
     return;
   }}
   const L = baseLayout();
+  let yMax = 0;
+  for (const s of spec.series) {{
+    for (const v of (s.values || [])) if (v > yMax) yMax = v;
+  }}
+  const tickCount = 5;
+  const rough = yMax > 0 ? yMax / (tickCount - 1) : 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+  const step = Math.max(mag, Math.ceil(rough / mag) * mag);
+  const tickvals = [];
+  for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
+  if (!tickvals.length) tickvals.push(0);
   const traces = spec.series.map(s => ({{
     type: 'scatter',
     mode: 'lines+markers',
     name: s.name,
     x: spec.months,
     y: s.values,
+    customdata: (s.values || []).map(v => formatBrl(v)),
     line: {{ color: s.color }},
-    hovertemplate: '%{{x}}<br>' + s.name + ' ' + '%{{y}}<extra></extra>'
+    hovertemplate: '%{{x}}<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
   }}));
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
-    margin: Object.assign({{}}, L.margin, {{ t: 36, b: 48 }}),
-    yaxis: {{ title: 'Remaining unpaid', tickprefix: 'R$ ', separatethousands: true }}
+    legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
+    margin: {{ t: 52, b: 48, l: 88, r: 20 }},
+    yaxis: {{
+      title: {{ text: '' }},
+      automargin: true,
+      tickmode: 'array',
+      tickvals: tickvals,
+      ticktext: tickvals.map(v => formatBrl(v)),
+      tickfont: {{ size: 10 }},
+      rangemode: 'tozero'
+    }},
+    xaxis: {{ automargin: true, tickfont: {{ size: 10 }} }}
   }}), {{ responsive: true, displayModeBar: false }});
 }}
 function applyTheme(theme) {{
