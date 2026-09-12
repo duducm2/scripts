@@ -92,29 +92,28 @@ def build_html(data: dict) -> str:
             </div>
             <div class="kpi-card-minis" id="kpiCardMinis">{mini_html}</div>"""
     show_budgets = widget_on(s, "ShowBudgets")
-    if widget_on(s, "ShowBalance"):
-        card_kpi = ""
-        kpi_cols = "3"
-        if not show_budgets:
-            card_kpi = f"""
-          <div class="kpi kpi-card-avail">{card_avail_inner}
-          </div>"""
-            kpi_cols = "4"
-        cards_html = f"""
-        <div class="kpis kpis-{kpi_cols}" id="kpiRow">
-          <div class="kpi"><div class="lbl">Balance</div><div class="val" id="kpiBalance">{format_brl(data['balance'])}</div></div>
-          <div class="kpi"><div class="lbl">Incomes</div><div class="val pos" id="kpiIncome">{format_brl(data['totals']['income'])}</div></div>
-          <div class="kpi"><div class="lbl">Expenses</div><div class="val neg" id="kpiExpense">{format_brl(data['totals']['expense'])}</div></div>
-          {card_kpi}
-        </div>"""
     if show_budgets:
         card_avail_block = f"""
             <div class="funds-card-avail" id="fundsCardAvail">
               {card_avail_inner}
             </div>"""
 
+    bal_chip = (
+        f'<div class="stat-chip"><span class="lbl">Balance</span>'
+        f'<span class="val" id="kpiBalance">{format_brl(data["balance"])}</span></div>'
+    )
+    inc_chip = (
+        f'<div class="stat-chip"><span class="lbl">Incomes</span>'
+        f'<span class="val pos" id="kpiIncome">{format_brl(data["totals"]["income"])}</span></div>'
+    )
+    exp_chip = (
+        f'<div class="stat-chip"><span class="lbl">Expenses</span>'
+        f'<span class="val neg" id="kpiExpense">{format_brl(data["totals"]["expense"])}</span></div>'
+    )
+
     perf_html = ""
-    if widget_on(s, "ShowPerformance"):
+    show_perf = widget_on(s, "ShowPerformance")
+    if show_perf:
         prev_b = data["prev_totals"]["balance"]
         cur_b = data["totals"]["balance"]
         vs = ((cur_b - prev_b) / abs(prev_b) * 100) if prev_b else 0
@@ -127,18 +126,57 @@ def build_html(data: dict) -> str:
         multi = data.get("period_multi")
         prev_lbl = "Prior period" if multi else "Saved last month"
         cur_lbl = "This period" if multi else "This month"
-        perf_html = f"""
-        <div class="panel panel-slim">
-          <div class="perf-line" id="perfLine">{prev_lbl} {format_brl(prev_b)} · {cur_lbl} {format_brl(cur_b)} ({vs:+.0f}%) · Kept {data['saved_pct']:.0f}% · Top: {top}</div>
-        </div>"""
+        perf_body = (
+            f'<div class="perf-line" id="perfLine">{prev_lbl} {format_brl(prev_b)}'
+            f" · {cur_lbl} {format_brl(cur_b)} ({vs:+.0f}%)"
+            f" · Kept {data['saved_pct']:.0f}% · Top: {top}</div>"
+        )
 
     pie_exp_html = ""
     pie_inc_html = ""
-    if widget_on(s, "ShowPies"):
-        pie_exp_html = """
-          <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart chart-pie"></div></div>"""
-        pie_inc_html = """
-          <div class="panel chart-cell pie-inc-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart chart-pie"></div></div>"""
+    show_pies = widget_on(s, "ShowPies")
+    if show_pies:
+        pie_exp_inner = f"""
+          <div class="panel pie-exp-panel">
+            <div class="panel-head-row">
+              <h2>Expenses by category</h2>
+              {exp_chip}
+            </div>
+            <div id="pieExp" class="chart chart-pie"></div>
+          </div>"""
+        if show_perf:
+            pie_exp_html = f"""
+          <div class="chart-cell exp-perf-cell">
+            {pie_exp_inner}
+            <div class="panel perf-panel">
+              <h2>Performance</h2>
+              {perf_body}
+            </div>
+          </div>"""
+        else:
+            pie_exp_html = f"""
+          <div class="chart-cell pie-exp-cell">
+            {pie_exp_inner}
+          </div>"""
+        pie_inc_html = f"""
+          <div class="panel chart-cell pie-inc-cell">
+            <div class="panel-head-row">
+              <h2>Incomes by category</h2>
+              {inc_chip}
+            </div>
+            <div id="pieInc" class="chart chart-pie"></div>
+          </div>"""
+    elif show_perf:
+        perf_html = f"""
+        <div class="panel panel-slim perf-with-chips">
+          {perf_body}
+          <div class="perf-chips">{inc_chip}{exp_chip}</div>
+        </div>"""
+    else:
+        cards_html = f"""
+        <div class="panel panel-slim period-stat-strip">
+          <div class="perf-chips">{inc_chip}{exp_chip}</div>
+        </div>"""
 
     year_lbl = data.get("period_year") or cur[:4]
     reports_html = f"""
@@ -247,6 +285,9 @@ def build_html(data: dict) -> str:
         else:
             bud_summary = ""
         sum_style = "" if items else ' style="display:none"'
+        bal_in_funds = ""
+        if not widget_on(s, "ShowAccounts"):
+            bal_in_funds = bal_chip
         bud_html = f"""
         <div class="panel chart-cell budget-panel">
           <div class="budget-head">
@@ -261,10 +302,13 @@ def build_html(data: dict) -> str:
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
             <div class="funds-compare-title-row">
               <div class="funds-compare-title">Available vs planned</div>
-              <div class="budget-calc-wrap">
-                <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
-                  aria-describedby="budgetCalcTip">Calculations</button>
-                <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
+              <div class="funds-compare-actions">
+                {bal_in_funds}
+                <div class="budget-calc-wrap">
+                  <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
+                    aria-describedby="budgetCalcTip">Calculations</button>
+                  <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
+                </div>
               </div>
             </div>
             <div class="funds-compare-head">
@@ -322,10 +366,21 @@ def build_html(data: dict) -> str:
                 f'<div class="bar-meta">{share:.0f}% of total</div>'
                 f"</div>"
             )
+        acc_card_fallback = ""
+        if not show_budgets:
+            acc_card_fallback = f"""
+          <div class="funds-card-avail" id="fundsCardAvail">
+            {card_avail_inner}
+          </div>"""
         acc_html = f"""
-        <div class="panel"><h2>Accounts</h2>
-          <div class="bar-meta" style="margin-bottom:8px">Total {format_brl(acc_total)}</div>
-          {''.join(acc_items) or '<p class="empty">No accounts</p>'}</div>"""
+        <div class="panel">
+          <div class="panel-head-row">
+            <h2>Accounts</h2>
+            {bal_chip}
+          </div>
+          {''.join(acc_items) or '<p class="empty">No accounts</p>'}
+          {acc_card_fallback}
+        </div>"""
 
     rec_html = ""
     if widget_on(s, "ShowRecurring"):
@@ -409,10 +464,10 @@ def build_html(data: dict) -> str:
       --ctrl-bg: #fff;
       --ctrl-fg: #1a1a1a;
     }}
-    body {{ font-family: Segoe UI, sans-serif; background:var(--bg); color:var(--text); margin:0; font-size:13px; }}
-    header {{ padding:8px 14px; background:var(--header); border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }}
-    header h1 {{ margin:0; font-size:15px; font-weight:600; }}
+    body {{
+      font-family: Segoe UI, sans-serif; background:var(--bg); color:var(--text);
+      margin:0; font-size:13px; min-height:100vh;
+    }}
     .period-controls {{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }}
     .period-controls label {{ display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }}
     .period-controls input[type="date"] {{
@@ -425,12 +480,36 @@ def build_html(data: dict) -> str:
     }}
     .period-controls button:hover, #catViewBack:hover {{ filter:brightness(1.08); }}
     #catViewBack {{ margin-top:8px; }}
-    main {{ padding:12px 16px 20px; }}
-    .kpis {{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }}
-    .kpis-4 {{ grid-template-columns:repeat(4,1fr); }}
-    .kpi {{ background:var(--panel); padding:8px 10px; border-radius:6px; border:1px solid var(--border); }}
-    .kpi .lbl {{ color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }}
-    .kpi .val {{ font-size:16px; margin-top:2px; font-weight:600; }}
+    main {{ padding:12px 16px 72px; }}
+    .cockpit-footer {{
+      position:fixed; left:0; right:0; bottom:0; z-index:40;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding:8px 16px; background:var(--header); border-top:1px solid var(--border);
+      box-shadow:0 -4px 16px rgba(0,0,0,.18);
+    }}
+    .cockpit-footer .period-label {{
+      font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;
+    }}
+    .panel-head-row {{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      flex-wrap:wrap; margin-bottom:6px;
+    }}
+    .panel-head-row h2 {{ margin:0; }}
+    .stat-chip {{
+      display:flex; flex-direction:column; align-items:flex-end; gap:1px;
+      padding:4px 8px; border-radius:6px; border:1px solid var(--border);
+      background:var(--bg); min-width:5.5rem;
+    }}
+    .stat-chip .lbl {{
+      color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.03em;
+    }}
+    .stat-chip .val {{
+      font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.2;
+    }}
+    .perf-with-chips, .period-stat-strip {{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    }}
+    .perf-chips {{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }}
     .kpi-card-avail, .funds-card-avail {{ display:flex; flex-direction:column; gap:2px; }}
     .funds-card-avail {{
       margin-top:10px; padding-top:10px; border-top:1px solid var(--border);
@@ -480,8 +559,21 @@ def build_html(data: dict) -> str:
     .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
     .chart-pie {{ height:auto; min-height:300px; }}
     .chart-cell {{ min-width:0; }}
-    .pie-exp-cell, .pie-inc-cell, .recurring-cell {{ display:flex; flex-direction:column; min-height:0; }}
-    .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie {{ flex:1 1 auto; }}
+    .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell {{
+      display:flex; flex-direction:column; min-height:0;
+    }}
+    .exp-perf-cell {{
+      display:grid; grid-template-columns:1.35fr 1fr; gap:10px; align-items:stretch;
+    }}
+    .exp-perf-cell .pie-exp-panel,
+    .exp-perf-cell .perf-panel {{
+      display:flex; flex-direction:column; min-width:0; min-height:0; height:100%;
+    }}
+    .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie,
+    .exp-perf-cell .chart-pie {{ flex:1 1 auto; }}
+    .perf-panel .perf-line {{
+      flex:1; margin:0; white-space:normal; line-height:1.45;
+    }}
     .budget-panel {{
       grid-column:1 / span 2; grid-row:1 / span 2;
       display:flex; flex-direction:column;
@@ -527,6 +619,9 @@ def build_html(data: dict) -> str:
     .funds-compare-title-row {{
       display:flex; align-items:center; justify-content:space-between;
       gap:8px; margin-bottom:6px;
+    }}
+    .funds-compare-actions {{
+      display:flex; align-items:center; gap:8px; flex-shrink:0;
     }}
     .funds-compare-title {{
       font-size:11px; font-weight:600; color:var(--heading);
@@ -626,11 +721,12 @@ def build_html(data: dict) -> str:
       margin:0 0 8px; padding:0 0 8px; border-bottom:1px solid var(--border);
     }}
     .budget-categories .budget-body {{ flex:1; overflow:visible; }}
-    .pie-exp-cell {{ grid-column:3 / span 2; grid-row:1; }}
+    .pie-exp-cell, .exp-perf-cell {{ grid-column:3 / span 2; grid-row:1; }}
     .pie-inc-cell {{ grid-column:3 / span 2; grid-row:2; }}
     .charts:has(.recurring-cell) .pie-inc-cell {{ grid-column:3; grid-row:2; }}
     .recurring-cell {{ grid-column:4; grid-row:2; }}
-    .charts-no-budget .pie-exp-cell {{ grid-column:1 / span 2; grid-row:1; }}
+    .charts-no-budget .pie-exp-cell,
+    .charts-no-budget .exp-perf-cell {{ grid-column:1 / span 2; grid-row:1; }}
     .charts-no-budget .pie-inc-cell {{ grid-column:3 / span 2; grid-row:1; }}
     .charts-no-budget:has(.recurring-cell) .pie-inc-cell {{ grid-column:3; grid-row:1; }}
     .charts-no-budget .recurring-cell {{ grid-column:4; grid-row:1; }}
@@ -681,19 +777,22 @@ def build_html(data: dict) -> str:
     table.tx-table td.amt {{ text-align:right; font-variant-numeric:tabular-nums; }}
     table.tx-table tr:last-child td {{ border-bottom:none; }}
     @media (max-width:900px) {{
-      .kpis, .charts, .split {{ grid-template-columns:1fr; }}
+      .charts, .split {{ grid-template-columns:1fr; }}
       .goals-notif-grid {{ grid-template-columns:1fr; }}
-      .budget-panel, .pie-exp-cell, .pie-inc-cell, .recurring-cell,
+      .budget-panel, .pie-exp-cell, .pie-inc-cell, .recurring-cell, .exp-perf-cell,
       .chart-bal, .chart-invest {{ grid-column:auto; grid-row:auto; }}
+      .exp-perf-cell {{ grid-template-columns:1fr; }}
     }}
     @media (min-width:901px) and (max-width:1099px) {{
       .charts {{ grid-template-columns:1fr 1fr; }}
       .budget-panel {{ grid-column:1; grid-row:1 / span 2; }}
-      .pie-exp-cell {{ grid-column:2; grid-row:1; }}
+      .pie-exp-cell, .exp-perf-cell {{ grid-column:2; grid-row:1; }}
+      .exp-perf-cell {{ grid-template-columns:1fr; }}
       .pie-inc-cell {{ grid-column:2; grid-row:2; }}
       .charts:has(.recurring-cell) .pie-inc-cell {{ grid-column:2; grid-row:2; }}
       .recurring-cell {{ grid-column:2; grid-row:3; }}
-      .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
+      .charts-no-budget .pie-exp-cell,
+      .charts-no-budget .exp-perf-cell {{ grid-column:1; grid-row:1; }}
       .charts-no-budget .pie-inc-cell {{ grid-column:2; grid-row:1; }}
       .charts-no-budget:has(.recurring-cell) .pie-inc-cell {{ grid-column:2; grid-row:1; }}
       .charts-no-budget .recurring-cell {{ grid-column:1 / -1; grid-row:2; }}
@@ -702,15 +801,6 @@ def build_html(data: dict) -> str:
   </style>
 </head>
 <body>
-<header>
-  <h1>Finance cockpit · <span id="periodTitle">{data['year_month']}</span></h1>
-  <div class="period-controls">
-    <label>From <input type="date" id="periodFrom" value="{date_from}"/></label>
-    <label>To <input type="date" id="periodTo" value="{date_to}"/></label>
-    <button type="button" id="periodApply">Apply</button>
-    <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
-  </div>
-</header>
 <main>
   <div id="cockpitView">
   {cards_html}
@@ -757,6 +847,15 @@ def build_html(data: dict) -> str:
     </div>
   </div>
 </main>
+<footer class="cockpit-footer">
+  <span class="period-label" id="periodTitle">{data['year_month']}</span>
+  <div class="period-controls">
+    <label>From <input type="date" id="periodFrom" value="{date_from}"/></label>
+    <label>To <input type="date" id="periodTo" value="{date_to}"/></label>
+    <button type="button" id="periodApply">Apply</button>
+    <button type="button" id="themeToggle" aria-label="Toggle theme">Light</button>
+  </div>
+</footer>
 <script>
 const DATA = {payload_json};
 const RAW = {raw_json};
