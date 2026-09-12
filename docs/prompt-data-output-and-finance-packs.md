@@ -252,6 +252,15 @@ Flow:
 
 Post-import daily opens Transactions; card expenses show **card name**; transfers show `source → dest`.
 
+### Daily CSV columns + card installments
+
+Pack header (inside `===FILE: FINANCE_DAILY.csv===`):
+
+`description,amount,type,category_id,account_id,card_id,transfer_account_id,installments`
+
+- `installments` defaults to `1`. For “Nx” / “em N vezes”, AI sets `installments=N` and `amount` = **full** purchase; importer expands into N `card_expense` rows (`installment_n`, `installment_group`, parcel dates via card `closing_day`).
+- Stored ledger also has `paid` (`0`/`1`). Credit-card **Shift+P** supports pay **entire** or **partial**; FIFO marks parcels paid (splits a parcel if needed). `current_spent` = sum of unpaid parcels.
+
 ---
 
 ## Import Management hub

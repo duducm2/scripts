@@ -102,7 +102,7 @@ Finance_TxRefresh() {
         cat := Finance_CatName(cats, tx["category_id"])
         acc := Finance_ImportAccountLabel(tx, accs, cards)
         g_FinanceTxLv.Add("", Finance_FormatBrl(Finance_ParseDecimal(tx["amount"])), acc, cat,
-        tx["description"], tx["date"], Finance_TypeLabel(tx["type"], tx.Has("card_id") ? tx["card_id"] : ""))
+        tx["description"], tx["date"], Finance_TxTypeDisplay(tx))
     }
     g_FinanceTxLv.ModifyCol(1, 110)
     g_FinanceTxLv.ModifyCol(2, 200)
@@ -223,6 +223,14 @@ Finance_TxForm(existing) {
     lblCard := g.Add("Text", "x10 y" . y2, "Credit card")
     ddCard := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . cardIdx, cardCombo.names)
 
+    initInst := "1"
+    if (isEdit && existing.Has("installments") && Trim(existing["installments"]) != "")
+        initInst := existing["installments"]
+    lblInst := g.Add("Text", "x242 y" . y2, "Installments (N)")
+    eInst := g.Add("Edit", "x242 y" . y2c . " w80", initInst)
+    if (isEdit)
+        eInst.Enabled := false
+
     g.Add("Text", "x10 y230 w420", "Date is always the system entry date (today) for new rows.")
     saved := false
     g.Add("Button", "x10 y256 w100 Default", "Save").OnEvent("Click", SaveTx)
@@ -278,6 +286,7 @@ Finance_TxForm(existing) {
         showAcc := (t != "card_expense")
         showDest := (t = "transfer")
         showCard := (t = "card_expense")
+        showInst := (t = "card_expense")
         lblCat.Visible := showCat
         ddCat.Visible := showCat
         lblAcc.Visible := showAcc
@@ -286,6 +295,8 @@ Finance_TxForm(existing) {
         ddDest.Visible := showDest
         lblCard.Visible := showCard
         ddCard.Visible := showCard
+        lblInst.Visible := showInst
+        eInst.Visible := showInst
         lblAcc.Text := (t = "transfer") ? "From account" : "Account"
         if (t = "transfer") {
             lblAcc.Move(10, y1)
@@ -340,8 +351,25 @@ Finance_TxForm(existing) {
             cardId := cardCombo.ids[ddCard.Value]
             if (cardId = "")
                 cardId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
+            card := Finance_FindById(cards, cardId)
+            if (card && card.Has("linked_account_id"))
+                accId := card["linked_account_id"]
         }
         date := isEdit ? existing["date"] : Finance_Today()
+        nInst := 1
+        if (t = "card_expense" && !isEdit) {
+            try nInst := Integer(Trim(eInst.Value))
+            catch {
+                nInst := 1
+            }
+            if (nInst < 1)
+                nInst := 1
+        } else if (isEdit && existing.Has("installments")) {
+            try nInst := Integer(existing["installments"])
+            catch {
+                nInst := 1
+            }
+        }
         txs := Finance_Load("transactions")
         newTx := Map(
             "id", isEdit ? existing["id"] : Finance_NextId("TX", txs),
@@ -352,8 +380,13 @@ Finance_TxForm(existing) {
             "category_id", catId,
             "account_id", accId,
             "card_id", cardId,
-            "transfer_account_id", destId)
+            "transfer_account_id", destId,
+            "installments", isEdit && existing.Has("installments") ? existing["installments"] : "1",
+            "installment_n", isEdit && existing.Has("installment_n") ? existing["installment_n"] : "1",
+            "installment_group", isEdit && existing.Has("installment_group") ? existing["installment_group"] : "",
+            "paid", isEdit && existing.Has("paid") ? existing["paid"] : "0")
         if (isEdit) {
+            Finance_NormalizeTxInstallmentFields(newTx)
             out := []
             for r in txs {
                 if (r["id"] = existing["id"])
@@ -363,7 +396,18 @@ Finance_TxForm(existing) {
             }
             txs := out
             Finance_ReplaceTransaction(existing, newTx)
+        } else if (t = "card_expense" && nInst > 1) {
+            base := Map()
+            for k, v in newTx
+                base[k] := v
+            base["installments"] := String(nInst)
+            rows := Finance_BuildCardInstallmentRows(base, nInst, txs, cards)
+            for row in rows {
+                txs.Push(row)
+                Finance_ApplyTransactionToBalances(row, false)
+            }
         } else {
+            Finance_NormalizeTxInstallmentFields(newTx)
             txs.Push(newTx)
             Finance_ApplyTransactionToBalances(newTx, false)
         }
@@ -374,6 +418,14 @@ Finance_TxForm(existing) {
             ymOld := SubStr(existing["date"], 1, 7)
             if (ymOld != "" && ymOld != ymNew)
                 Finance_RecomputeBudgetSpent(ymOld)
+        } else if (t = "card_expense" && nInst > 1) {
+            loop nInst {
+                ym := SubStr(Finance_InstallmentDate(date, A_Index,
+                    (Finance_FindById(cards, cardId)
+                    ? Finance_FindById(cards, cardId)["closing_day"] : 1)), 1, 7)
+                if (ym != ymNew)
+                    Finance_RecomputeBudgetSpent(ym)
+            }
         }
         saved := true
         g.Destroy()

@@ -57,7 +57,7 @@ CSV body format (inside the FILE section):
 - Do not invent amounts. Skip items you cannot parse (omit those rows from the CSV; do not invent placeholders).
 
 COLUMNS (header required)
-description,amount,type,category_id,account_id,card_id,transfer_account_id
+description,amount,type,category_id,account_id,card_id,transfer_account_id,installments
 
 RULES
 - Do not include a date column. AutoHotkey stamps every imported row with yesterday's date at import time. Do not guess or output dates.
@@ -65,6 +65,7 @@ RULES
 - type: expense | income | transfer | card_expense
 - Transfers: type=transfer, account_id = source, transfer_account_id = destination. Leave category_id empty for transfers.
 - Credit-card purchases: type=card_expense. Set card_id to the card's id (e.g. CARD_MP). Set account_id to the card's linked_account_id from credit_cards.csv (or ACC_MERCADOP if unknown). Leave transfer_account_id empty. Never put an account id in card_id or a card id in transfer_account_id.
+- installments: integer N of payments. Default 1. When the speaker says Nx / "em N vezes" / "parcelado em N", set installments=N and amount=FULL purchase total (not one parcel). Output ONE row; the importer expands into N dated parcels. Do not emit N separate CSV rows for one purchase.
 - Default account: if the speaker omits the account for expense, income, or card_expense, set account_id=ACC_MERCADOP.
 - Match account_id and card_id to primary keys in the attached context files (exact name preferred, ignore accents/case).
 

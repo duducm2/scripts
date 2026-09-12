@@ -92,6 +92,116 @@ def widget_on(settings: dict, key: str) -> bool:
     return settings.get("dashboard", {}).get(key, "1") != "0"
 
 
+def tx_is_paid(t: dict) -> bool:
+    p = str(t.get("paid") or "0").strip().lower()
+    return p in ("1", "true", "yes")
+
+
+def card_installment_remaining(
+    txs: list[dict], cards: list[dict], today: str | None = None
+) -> dict:
+    """Remaining unpaid card obligation as of each month (one series per card).
+
+    Y(card, month) = sum of unpaid card_expense amounts with date >= month_start.
+    Also returns from_today totals: unpaid parcels with date >= today through last installment.
+    """
+    if not today:
+        today = datetime.now().strftime("%Y-%m-%d")
+    unpaid: list[dict] = []
+    for t in txs:
+        if t.get("type") != "card_expense":
+            continue
+        if tx_is_paid(t):
+            continue
+        cid = (t.get("card_id") or "").strip()
+        d = str(t.get("date") or "")[:10]
+        if not cid or len(d) < 7:
+            continue
+        unpaid.append(
+            {
+                "card_id": cid,
+                "date": d,
+                "amount": parse_decimal(t.get("amount")),
+            }
+        )
+    card_meta = {
+        c.get("id"): (c.get("name") or c.get("id") or "Card")
+        for c in cards
+        if c.get("id")
+    }
+    empty = {
+        "months": [],
+        "series": [],
+        "today": today,
+        "from_today": [],
+        "from_today_total": 0.0,
+        "last_date": "",
+    }
+    if not unpaid:
+        return empty
+    months_set: set[str] = set()
+    for u in unpaid:
+        months_set.add(u["date"][:7])
+    months = sorted(months_set)
+    if not months:
+        return empty
+    months.append(month_shift(months[-1], 1))
+    by_card: dict[str, list[float]] = {cid: [] for cid in card_meta}
+    for cid in list(by_card.keys()):
+        if not any(u["card_id"] == cid for u in unpaid):
+            del by_card[cid]
+    for ym in months:
+        start = ym + "-01"
+        for cid in by_card:
+            tot = sum(
+                u["amount"]
+                for u in unpaid
+                if u["card_id"] == cid and u["date"] >= start
+            )
+            by_card[cid].append(round(tot, 2))
+    palette = ["#e74c3c", "#3498db", "#9b59b6", "#f39c12", "#1abc9c", "#e67e22"]
+    series = []
+    from_today_rows = []
+    from_today_total = 0.0
+    last_date = max((u["date"] for u in unpaid), default="")
+    for i, (cid, values) in enumerate(by_card.items()):
+        series.append(
+            {
+                "card_id": cid,
+                "name": card_meta.get(cid, cid),
+                "color": palette[i % len(palette)],
+                "values": values,
+            }
+        )
+        ft = round(
+            sum(
+                u["amount"]
+                for u in unpaid
+                if u["card_id"] == cid and u["date"] >= today
+            ),
+            2,
+        )
+        from_today_total += ft
+        card_last = max((u["date"] for u in unpaid if u["card_id"] == cid), default="")
+        from_today_rows.append(
+            {
+                "card_id": cid,
+                "name": card_meta.get(cid, cid),
+                "color": palette[i % len(palette)],
+                "amount": ft,
+                "last_date": card_last,
+            }
+        )
+    return {
+        "months": months,
+        "series": series,
+        "today": today,
+        "from_today": from_today_rows,
+        "from_today_total": round(from_today_total, 2),
+        "last_date": last_date,
+    }
+
+
 def setting_get(section: dict, key: str, default: str = "") -> str:
     """ConfigParser lowercases option names; accept either casing."""
     if not section:
@@ -479,6 +589,7 @@ def snapshot(
         "notifications": collect_notifications(
             settings, budgets, cats, cards, goals, months
         ),
+        "cardInstallmentRemaining": card_installment_remaining(txs, cards),
         "accounts": accs,
         "cards": cards,
         **liquid,
@@ -581,7 +692,10 @@ def cockpit_raw(data: dict | None = None) -> dict:
             "ShowBudgets": widget_on(data["settings"], "ShowBudgets"),
             "ShowRecurring": widget_on(data["settings"], "ShowRecurring"),
             "ShowNotifications": widget_on(data["settings"], "ShowNotifications"),
+            "ShowCardPlan": widget_on(data["settings"], "ShowCardPlan"),
         },
+        "cardInstallmentRemaining": data.get("cardInstallmentRemaining")
+        or {"months": [], "series": []},
         "transactions": [
             {
                 "date": t.get("date", ""),
@@ -591,6 +705,9 @@ def cockpit_raw(data: dict | None = None) -> dict:
                 "category_id": t.get("category_id", ""),
                 "account_id": t.get("account_id", ""),
                 "card_id": t.get("card_id", ""),
+                "paid": t.get("paid", "0"),
+                "installments": t.get("installments", "1"),
+                "installment_n": t.get("installment_n", "1"),
             }
             for t in txs
         ],

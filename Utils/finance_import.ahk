@@ -77,8 +77,9 @@ Finance_AiCompanionFixGuidance(errorMsg, kind := "daily") {
         }
         return "- The pack had no usable transaction rows.`r`n"
         .
-        "- Re-emit with header: description,amount,type,category_id,account_id,card_id,transfer_account_id`r`n"
+        "- Re-emit with header: description,amount,type,category_id,account_id,card_id,transfer_account_id,installments`r`n"
         . "- type = expense | income | transfer | card_expense; amount always positive with comma decimals.`r`n"
+        . "- installments = N for card_expense when purchase is Nx (default 1); amount is the full purchase; importer expands.`r`n"
         . "- category_id / account_id / card_id must match attached context CSVs (never invent ids)."
     }
     return "- Read the IMPORT ERROR above and reframe as one complete, valid "
@@ -343,7 +344,7 @@ Finance_ImportConfirmEditable(title, parsed) {
     g.SetFont("s10", "Segoe UI")
     hdr := g.Add("Text", "x12 y8 w880", "Import preview — " . parsed.Length .
         " row(s).  [Shift+E] edit  [Shift+A] add  [Delete] remove")
-    lv := g.Add("ListView", "x12 y32 w896 r14 Grid", ["Date", "Type", "Description", "Amount", "Category",
+    lv := g.Add("ListView", "x12 y32 w896 r14 Grid", ["Date", "Type", "Description", "Amount", "N", "Category",
         "Account"])
     ok := false
 
@@ -352,15 +353,17 @@ Finance_ImportConfirmEditable(title, parsed) {
         for p in parsed {
             cat := Finance_CatName(cats, p["category_id"])
             acc := Finance_ImportAccountLabel(p, accs, cards)
+            nShow := p.Has("installments") && Trim(p["installments"]) != "" ? p["installments"] : "1"
             lv.Add("", p["date"], Finance_TypeLabel(p["type"], p.Has("card_id") ? p["card_id"] : ""), p["description"],
-            Finance_FormatBrl(Finance_ParseDecimal(p["amount"])), cat, acc)
+            Finance_FormatBrl(Finance_ParseDecimal(p["amount"])), nShow, cat, acc)
         }
         lv.ModifyCol(1, 90)
         lv.ModifyCol(2, 90)
-        lv.ModifyCol(3, 250)
+        lv.ModifyCol(3, 220)
         lv.ModifyCol(4, 100)
-        lv.ModifyCol(5, 180)
-        lv.ModifyCol(6, 200)
+        lv.ModifyCol(5, 40)
+        lv.ModifyCol(6, 160)
+        lv.ModifyCol(7, 180)
         hdr.Value := "Import preview — " . parsed.Length . " row(s).  [Shift+E] edit  [Shift+A] add  [Delete] remove"
     }
 
@@ -391,7 +394,8 @@ Finance_ImportConfirmEditable(title, parsed) {
             "category_id", "",
             "account_id", "",
             "card_id", "",
-            "transfer_account_id", ""
+            "transfer_account_id", "",
+            "installments", "1"
         )
         if (Finance_ImportRowForm(g, newRow, Finance_Load("categories"), accs)) {
             cats := Finance_Load("categories")
@@ -549,6 +553,10 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
     lblCard := g.Add("Text", "x10 y" . y2, "Credit card")
     ddCard := g.Add("DropDownList", "x10 y" . y2c . " w220 Choose" . cardIdx, cardCombo.names)
 
+    initInst := row.Has("installments") && Trim(row["installments"]) != "" ? row["installments"] : "1"
+    lblInst := g.Add("Text", "x242 y" . y2, "Installments (N)")
+    eInst := g.Add("Edit", "x242 y" . y2c . " w80", initInst)
+
     saved := false
     g.Add("Button", "x10 y230 w100 Default", "Save").OnEvent("Click", SaveRow)
     g.Add("Button", "x118 y230 w100", "Cancel").OnEvent("Click", (*) => g.Destroy())
@@ -602,6 +610,7 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
         showAcc := (t != "card_expense")
         showDest := (t = "transfer")
         showCard := (t = "card_expense")
+        showInst := (t = "card_expense")
         lblCat.Visible := showCat
         ddCat.Visible := showCat
         lblAcc.Visible := showAcc
@@ -610,6 +619,8 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
         ddDest.Visible := showDest
         lblCard.Visible := showCard
         ddCard.Visible := showCard
+        lblInst.Visible := showInst
+        eInst.Visible := showInst
         lblAcc.Text := (t = "transfer") ? "From account" : "Account"
         if (t = "transfer") {
             lblAcc.Move(10, y1)
@@ -665,6 +676,15 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
             if (cardId = "")
                 cardId := Finance_Setting("General", "PrimaryCardId", "CARD_MP")
         }
+        nInst := 1
+        if (t = "card_expense") {
+            try nInst := Integer(Trim(eInst.Value))
+            catch {
+                nInst := 1
+            }
+            if (nInst < 1)
+                nInst := 1
+        }
         row["description"] := desc
         row["amount"] := Finance_FormatCsvDecimal(amt)
         row["type"] := t
@@ -672,6 +692,7 @@ Finance_ImportRowForm(ownerGui, row, cats, accs) {
         row["account_id"] := accId
         row["card_id"] := cardId
         row["transfer_account_id"] := destId
+        row["installments"] := String(nInst)
         if (row.Has("subcategory"))
             row.Delete("subcategory")
         saved := true
@@ -737,6 +758,17 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
                     accId := card.Has("linked_account_id") ? card["linked_account_id"] : ""
             }
         }
+        nInst := 1
+        if (r.Has("installments") && Trim(r["installments"]) != "") {
+            try nInst := Integer(Trim(r["installments"]))
+            catch {
+                nInst := 1
+            }
+        }
+        if (nInst < 1)
+            nInst := 1
+        if (t != "card_expense")
+            nInst := 1
         parsed.Push(Map(
             "date", date,
             "description", desc,
@@ -745,7 +777,8 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
             "category_id", resolved["category_id"],
             "account_id", accId,
             "card_id", cardId,
-            "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : ""
+            "transfer_account_id", r.Has("transfer_account_id") ? r["transfer_account_id"] : "",
+            "installments", String(nInst)
         ))
     }
     if (!autoConfirm && !Finance_ImportConfirmEditable("Import daily transactions", parsed))
@@ -755,15 +788,36 @@ Finance_ImportDailyFromPath(path := "", autoConfirm := false) {
         return false
     }
     txs := Finance_Load("transactions")
+    cards := Finance_Load("credit_cards")
+    imported := []
     for p in parsed {
-        p["id"] := Finance_NextId("TX", txs)
-        txs.Push(p)
-        Finance_ApplyTransactionToBalances(p, false)
+        nInst := 1
+        try nInst := Integer(p.Has("installments") ? p["installments"] : 1)
+        catch {
+            nInst := 1
+        }
+        if (p["type"] = "card_expense" && nInst > 1) {
+            base := Map()
+            for k, v in p
+                base[k] := v
+            rows := Finance_BuildCardInstallmentRows(base, nInst, txs, cards)
+            for row in rows {
+                txs.Push(row)
+                Finance_ApplyTransactionToBalances(row, false)
+                imported.Push(row)
+            }
+        } else {
+            p["id"] := Finance_NextId("TX", txs)
+            Finance_NormalizeTxInstallmentFields(p)
+            txs.Push(p)
+            Finance_ApplyTransactionToBalances(p, false)
+            imported.Push(p)
+        }
     }
     Finance_Save("transactions", txs)
-    Finance_AfterDailyImport(parsed, autoConfirm)
+    Finance_AfterDailyImport(imported, autoConfirm)
     Finance_ArchiveImported(sourcePath)
-    Finance_Notify("Imported " . parsed.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
+    Finance_Notify("Imported " . imported.Length . " transactions", 1800, BANNER_ACCENT_SUCCESS)
     ImportMgmt_OnImportSuccess()
     return true
 }
@@ -887,7 +941,11 @@ Finance_ImportMonthly(*) {
                 "Adjustment"),
             "account_id", eid,
             "card_id", "",
-            "transfer_account_id", ""
+            "transfer_account_id", "",
+            "installments", "1",
+            "installment_n", "1",
+            "installment_group", "",
+            "paid", "0"
             )
             txs.Push(tx)
             n += 1

@@ -179,10 +179,21 @@ def build_html(data: dict) -> str:
         </div>"""
 
     year_lbl = data.get("period_year") or cur[:4]
+    card_plan_html = ""
+    if widget_on(s, "ShowCardPlan"):
+        card_plan_html = """
+          <div class="panel chart-cell chart-span">
+            <div class="panel-head-row">
+              <h2>Card installments remaining</h2>
+              <div class="stat-chip"><span class="lbl">From today</span><span class="val" id="cardPlanFromTodayTotal">—</span></div>
+            </div>
+            <div class="bar-meta" id="cardPlanFromTodayMeta" style="margin-bottom:6px"></div>
+            <div id="lineCardPlan" class="chart"></div>
+          </div>"""
     reports_html = f"""
           <div class="panel chart-cell chart-bal"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-invest"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
-          <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>"""
+          <div class="panel chart-cell chart-span"><h2 id="annualTitle">Annual cash flow ({year_lbl})</h2><div id="lineYear" class="chart"></div></div>{card_plan_html}"""
 
     goals_col = ""
     if widget_on(s, "ShowGoals"):
@@ -406,6 +417,8 @@ def build_html(data: dict) -> str:
         "incomePie": pie_spec(data["income_pie"]),
         "series": data["series"],
         "annual": data["annual"],
+        "cardInstallmentRemaining": data.get("cardInstallmentRemaining")
+        or {"months": [], "series": []},
     }
     payload_json = json.dumps(payload, ensure_ascii=False)
     raw_json = json.dumps(raw, ensure_ascii=False)
@@ -1859,6 +1872,139 @@ function drawAll() {{
   }}
   drawIncomeInvestTreemap();
   drawRecurringTreemap();
+  drawCardInstallmentChart();
+}}
+function rebuildCardInstallmentRemaining() {{
+  const today = (RAW.today || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
+  const unpaid = [];
+  for (const t of RAW.transactions || []) {{
+    if (t.type !== 'card_expense') continue;
+    const p = String(t.paid || '0').trim().toLowerCase();
+    if (p === '1' || p === 'true' || p === 'yes') continue;
+    const cid = (t.card_id || '').trim();
+    const d = String(t.date || '').slice(0, 10);
+    if (!cid || d.length < 7) continue;
+    unpaid.push({{ card_id: cid, date: d, amount: parseDecimal(t.amount) }});
+  }}
+  const cardMeta = {{}};
+  for (const c of RAW.cards || []) {{
+    if (c.id) cardMeta[c.id] = c.name || c.id;
+  }}
+  const empty = {{ months: [], series: [], today, from_today: [], from_today_total: 0, last_date: '' }};
+  if (!unpaid.length) {{
+    DATA.cardInstallmentRemaining = empty;
+    return;
+  }}
+  const monthSet = {{}};
+  for (const u of unpaid) monthSet[u.date.slice(0, 7)] = true;
+  let months = Object.keys(monthSet).sort();
+  if (!months.length) {{
+    DATA.cardInstallmentRemaining = empty;
+    return;
+  }}
+  const last = months[months.length - 1];
+  const [yy, mm] = last.split('-').map(Number);
+  let ny = yy, nm = mm + 1;
+  if (nm > 12) {{ nm = 1; ny += 1; }}
+  months = months.concat([String(ny).padStart(4, '0') + '-' + String(nm).padStart(2, '0')]);
+  const byCard = {{}};
+  for (const u of unpaid) {{
+    if (!byCard[u.card_id]) byCard[u.card_id] = true;
+  }}
+  const palette = ['#e74c3c', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e67e22'];
+  const series = [];
+  const fromToday = [];
+  let fromTodayTotal = 0;
+  let lastDate = '';
+  for (const u of unpaid) {{
+    if (!lastDate || u.date > lastDate) lastDate = u.date;
+  }}
+  let i = 0;
+  for (const cid of Object.keys(byCard)) {{
+    const values = months.map(ym => {{
+      const start = ym + '-01';
+      let tot = 0;
+      for (const u of unpaid) {{
+        if (u.card_id === cid && u.date >= start) tot += u.amount;
+      }}
+      return Math.round(tot * 100) / 100;
+    }});
+    const color = palette[i % palette.length];
+    series.push({{
+      card_id: cid,
+      name: cardMeta[cid] || cid,
+      color,
+      values
+    }});
+    let ft = 0;
+    let cardLast = '';
+    for (const u of unpaid) {{
+      if (u.card_id !== cid) continue;
+      if (u.date >= today) ft += u.amount;
+      if (!cardLast || u.date > cardLast) cardLast = u.date;
+    }}
+    ft = Math.round(ft * 100) / 100;
+    fromTodayTotal += ft;
+    fromToday.push({{
+      card_id: cid,
+      name: cardMeta[cid] || cid,
+      color,
+      amount: ft,
+      last_date: cardLast
+    }});
+    i += 1;
+  }}
+  DATA.cardInstallmentRemaining = {{
+    months,
+    series,
+    today,
+    from_today: fromToday,
+    from_today_total: Math.round(fromTodayTotal * 100) / 100,
+    last_date: lastDate
+  }};
+}}
+function drawCardInstallmentChart() {{
+  const el = document.getElementById('lineCardPlan');
+  const totEl = document.getElementById('cardPlanFromTodayTotal');
+  const metaEl = document.getElementById('cardPlanFromTodayMeta');
+  if (!el) return;
+  rebuildCardInstallmentRemaining();
+  const spec = DATA.cardInstallmentRemaining || {{ months: [], series: [], from_today: [], from_today_total: 0 }};
+  const parts = (spec.from_today || [])
+    .filter(r => r.amount > 0)
+    .map(r => r.name + ' ' + formatBrl(r.amount)
+      + (r.last_date ? ' → ' + r.last_date : ''));
+  if (totEl) {{
+    totEl.textContent = (spec.from_today_total > 0) ? formatBrl(spec.from_today_total) : '—';
+  }}
+  if (metaEl) {{
+    if (!parts.length) {{
+      metaEl.textContent = 'No unpaid installments from today onward';
+    }} else {{
+      metaEl.textContent = 'Unpaid from today through last installment · '
+        + parts.join(' · ')
+        + (spec.last_date ? ' · Ends ' + spec.last_date : '');
+    }}
+  }}
+  if (!spec.months.length || !spec.series.length) {{
+    el.innerHTML = '<p class="empty">No unpaid card installments</p>';
+    return;
+  }}
+  const L = baseLayout();
+  const traces = spec.series.map(s => ({{
+    type: 'scatter',
+    mode: 'lines+markers',
+    name: s.name,
+    x: spec.months,
+    y: s.values,
+    line: {{ color: s.color }},
+    hovertemplate: '%{{x}}<br>' + s.name + ' ' + '%{{y}}<extra></extra>'
+  }}));
+  Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
+    showlegend: true,
+    margin: Object.assign({{}}, L.margin, {{ t: 36, b: 48 }}),
+    yaxis: {{ title: 'Remaining unpaid', tickprefix: 'R$ ', separatethousands: true }}
+  }}), {{ responsive: true, displayModeBar: false }});
 }}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);

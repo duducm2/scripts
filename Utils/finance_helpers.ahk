@@ -81,9 +81,32 @@ Finance_EnsureData() {
     if (!FileExist(Finance_DataDir() . "\recurring_bills.csv"))
         Finance_SeedRecurringBills()
     Finance_MigrateCardInitialSpent()
+    Finance_MigrateTransactionInstallments()
     Finance_FixDefaultIds()
     Finance_FixOrphanCardExpenses()
     Finance_EnsureMonthBudgets(Finance_CurrentYearMonth())
+}
+
+; Backfill installment columns on transactions.csv (defaults: 1/1 unpaid).
+Finance_MigrateTransactionInstallments() {
+    path := Finance_DataDir() . "\transactions.csv"
+    if (!FileExist(path))
+        return
+    txs := Finance_Load("transactions")
+    if (!txs.Length)
+        return
+    need := false
+    for tx in txs {
+        if (!tx.Has("installments") || !tx.Has("installment_n") || !tx.Has("installment_group") || !tx.Has("paid")) {
+            need := true
+            break
+        }
+    }
+    if (!need)
+        return
+    for tx in txs
+        Finance_NormalizeTxInstallmentFields(tx)
+    Finance_Save("transactions", txs)
 }
 
 ; One-time: backfill initial_spent so Rebuild/schema match displayed current_spent.
@@ -376,7 +399,7 @@ Finance_Headers(kind) {
     switch kind {
         case "transactions":
             return ["id", "date", "description", "amount", "type", "category_id", "account_id",
-                "card_id", "transfer_account_id"]
+                "card_id", "transfer_account_id", "installments", "installment_n", "installment_group", "paid"]
         case "accounts":
             return ["id", "name", "icon", "initial_balance", "current_balance"]
         case "categories":
@@ -557,6 +580,28 @@ Finance_TypeLabel(type, cardId := "") {
         default:
             return type
     }
+}
+
+Finance_TxTypeDisplay(tx) {
+    if (!IsObject(tx))
+        return ""
+    label := Finance_TypeLabel(tx["type"], tx.Has("card_id") ? tx["card_id"] : "")
+    Finance_NormalizeTxInstallmentFields(tx)
+    n := 1
+    k := 1
+    try n := Integer(tx["installments"])
+    catch {
+        n := 1
+    }
+    try k := Integer(tx["installment_n"])
+    catch {
+        k := 1
+    }
+    if (tx["type"] = "card_expense" && n > 1)
+        label .= " " . k . "/" . n
+    if (tx["type"] = "card_expense" && Finance_TxIsPaid(tx))
+        label .= " · paid"
+    return label
 }
 
 Finance_CatLabel(row) {
@@ -785,7 +830,8 @@ Finance_ApplyTransactionToBalances(tx, reverse := false, accs := 0, cards := 0, 
     } else if (type = "expense") {
         Finance_AdjustAccount(accs, accId, -amt)
     } else if (type = "card_expense") {
-        Finance_AdjustCard(cards, tx["card_id"], amt)
+        if (!Finance_TxIsPaid(tx))
+            Finance_AdjustCard(cards, tx["card_id"], amt)
     } else if (type = "transfer") {
         Finance_AdjustAccount(accs, accId, -amt)
         dest := tx.Has("transfer_account_id") ? tx["transfer_account_id"] : ""
@@ -849,13 +895,276 @@ Finance_AccountNetFromTransactions(accountId) {
     return net
 }
 
-; Sum of card_expense amounts for one card (same rules as ApplyTransactionToBalances).
+; Sum of unpaid card_expense amounts for one card (same rules as ApplyTransactionToBalances).
 Finance_CardNetFromTransactions(cardId) {
     if (cardId = "")
         return 0.0
     net := 0.0
     for tx in Finance_Load("transactions") {
-        if (tx["type"] = "card_expense" && tx["card_id"] = cardId)
+        if (tx["type"] = "card_expense" && tx["card_id"] = cardId && !Finance_TxIsPaid(tx))
+            net += Finance_ParseDecimal(tx["amount"])
+    }
+    return net
+}
+
+Finance_TxIsPaid(tx) {
+    if (!IsObject(tx))
+        return false
+    p := tx.Has("paid") ? Trim(tx["paid"]) : "0"
+    return (p = "1" || StrLower(p) = "true" || StrLower(p) = "yes")
+}
+
+Finance_NormalizeTxInstallmentFields(tx) {
+    if (!IsObject(tx))
+        return
+    n := 1
+    if (tx.Has("installments") && Trim(tx["installments"]) != "") {
+        try n := Integer(tx["installments"])
+        catch {
+            n := 1
+        }
+    }
+    if (n < 1)
+        n := 1
+    k := 1
+    if (tx.Has("installment_n") && Trim(tx["installment_n"]) != "") {
+        try k := Integer(tx["installment_n"])
+        catch {
+            k := 1
+        }
+    }
+    if (k < 1)
+        k := 1
+    if (k > n)
+        k := n
+    tx["installments"] := String(n)
+    tx["installment_n"] := String(k)
+    if (!tx.Has("installment_group") || Trim(tx["installment_group"]) = "")
+        tx["installment_group"] := (n > 1 && tx.Has("id")) ? tx["id"] : ""
+    if (!tx.Has("paid") || Trim(tx["paid"]) = "")
+        tx["paid"] := "0"
+}
+
+Finance_DaysInMonth(y, m) {
+    days := [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    d := days[m]
+    if (m = 2 && (Mod(y, 4) = 0 && (Mod(y, 100) != 0 || Mod(y, 400) = 0)))
+        d := 29
+    return d
+}
+
+; Parcel 1 = purchaseDate; parcel k uses closing_day in month +(k-1).
+Finance_InstallmentDate(purchaseDate, parcelIndex, closingDay) {
+    d := SubStr(purchaseDate, 1, 10)
+    if (StrLen(d) < 10)
+        d := Finance_Today()
+    if (parcelIndex <= 1)
+        return d
+    parts := StrSplit(d, "-")
+    y := Integer(parts[1])
+    m := Integer(parts[2])
+    cd := Integer(closingDay)
+    if (cd < 1)
+        cd := Integer(parts[3])
+    if (cd < 1)
+        cd := 1
+    if (cd > 31)
+        cd := 31
+    m += (parcelIndex - 1)
+    while (m > 12) {
+        m -= 12
+        y += 1
+    }
+    dim := Finance_DaysInMonth(y, m)
+    day := cd > dim ? dim : cd
+    return Format("{:04}-{:02}-{:02}", y, m, day)
+}
+
+Finance_SplitInstallmentAmounts(total, n) {
+    out := []
+    if (n < 1)
+        n := 1
+    cents := Round(total * 100)
+    base := cents // n
+    rem := cents - base * n
+    loop n {
+        c := base + (A_Index = n ? rem : 0)
+        out.Push(c / 100.0)
+    }
+    return out
+}
+
+Finance_NextInstallmentGroupId(txs) {
+    return Finance_NextId("IG", txs, 3)
+}
+
+; Build N card_expense rows from a purchase (amount = full total). Does not mutate txs except for id generation via a scratch copy.
+Finance_BuildCardInstallmentRows(baseMap, n, txs, cards := 0) {
+    Finance_NormalizeTxInstallmentFields(baseMap)
+    try n := Integer(n)
+    catch {
+        n := 1
+    }
+    if (n < 1)
+        n := 1
+    total := Finance_ParseDecimal(baseMap["amount"])
+    amounts := Finance_SplitInstallmentAmounts(total, n)
+    purchaseDate := baseMap.Has("date") ? baseMap["date"] : Finance_Today()
+    cardId := baseMap.Has("card_id") ? baseMap["card_id"] : ""
+    closingDay := 1
+    if (cardId != "") {
+        if (!IsObject(cards))
+            cards := Finance_Load("credit_cards")
+        card := Finance_FindById(cards, cardId)
+        if (card && card.Has("closing_day") && Trim(card["closing_day"]) != "") {
+            try closingDay := Integer(card["closing_day"])
+            catch {
+                closingDay := 1
+            }
+        }
+    }
+    scratch := []
+    for t in txs
+        scratch.Push(t)
+    groupId := ""
+    if (n > 1) {
+        groupId := baseMap.Has("installment_group") && Trim(baseMap["installment_group"]) != ""
+            ? baseMap["installment_group"] : Finance_NextInstallmentGroupId(scratch)
+    }
+    rows := []
+    loop n {
+        row := Map()
+        for k, v in baseMap
+            row[k] := v
+        row["id"] := Finance_NextId("TX", scratch)
+        scratch.Push(row)
+        row["amount"] := Finance_FormatCsvDecimal(amounts[A_Index])
+        row["date"] := Finance_InstallmentDate(purchaseDate, A_Index, closingDay)
+        row["installments"] := String(n)
+        row["installment_n"] := String(A_Index)
+        row["installment_group"] := groupId
+        row["paid"] := baseMap.Has("paid") && Trim(baseMap["paid"]) != "" ? baseMap["paid"] : "0"
+        if (n > 1) {
+            desc := baseMap["description"]
+            if (!RegExMatch(desc, " \(\d+/" . n . "\)$"))
+                row["description"] := desc . " (" . A_Index . "/" . n . ")"
+        }
+        rows.Push(row)
+    }
+    return rows
+}
+
+Finance_CardUnpaidTotal(cardId, txs := 0) {
+    if (cardId = "")
+        return 0.0
+    if (!IsObject(txs))
+        txs := Finance_Load("transactions")
+    tot := 0.0
+    for tx in txs {
+        if (tx["type"] = "card_expense" && tx["card_id"] = cardId && !Finance_TxIsPaid(tx))
+            tot += Finance_ParseDecimal(tx["amount"])
+    }
+    return tot
+}
+
+Finance_SortUnpaidParcelsFifo(txs, cardId) {
+    list := []
+    for tx in txs {
+        if (tx["type"] = "card_expense" && tx["card_id"] = cardId && !Finance_TxIsPaid(tx))
+            list.Push(tx)
+    }
+    ; Insertion sort by date then installment_n
+    i := 2
+    while (i <= list.Length) {
+        j := i
+        while (j > 1) {
+            a := list[j - 1]
+            b := list[j]
+            da := a["date"]
+            db := b["date"]
+            swap := false
+            if (StrCompare(da, db) > 0)
+                swap := true
+            else if (da = db) {
+                na := 1
+                nb := 1
+                try na := Integer(a.Has("installment_n") ? a["installment_n"] : 1)
+                catch {
+                }
+                try nb := Integer(b.Has("installment_n") ? b["installment_n"] : 1)
+                catch {
+                }
+                if (na > nb)
+                    swap := true
+            }
+            if (!swap)
+                break
+            list[j - 1] := b
+            list[j] := a
+            j -= 1
+        }
+        i += 1
+    }
+    return list
+}
+
+; FIFO-settle unpaid parcels for amount. Mutates txs list (may insert split leftover).
+; Returns settled amount (may be less if not enough unpaid).
+Finance_FifoSettleCardPayment(cardId, payAmt, txs) {
+    remain := payAmt
+    if (remain <= 0)
+        return 0.0
+    parcels := Finance_SortUnpaidParcelsFifo(txs, cardId)
+    settled := 0.0
+    for tx in parcels {
+        if (remain <= 0.00001)
+            break
+        amt := Finance_ParseDecimal(tx["amount"])
+        if (amt <= remain + 0.00001) {
+            tx["paid"] := "1"
+            remain -= amt
+            settled += amt
+        } else {
+            ; Split: paid portion + unpaid leftover
+            paidAmt := remain
+            leftAmt := amt - remain
+            tx["amount"] := Finance_FormatCsvDecimal(paidAmt)
+            tx["paid"] := "1"
+            leftover := Map()
+            for k, v in tx
+                leftover[k] := v
+            leftover["id"] := Finance_NextId("TX", txs)
+            leftover["amount"] := Finance_FormatCsvDecimal(leftAmt)
+            leftover["paid"] := "0"
+            ; Keep same installment_n/group; description stays
+            txs.Push(leftover)
+            settled += paidAmt
+            remain := 0
+        }
+    }
+    return settled
+}
+
+Finance_SyncCardSpentFromUnpaid(cardId, cards := 0, txs := 0) {
+    if (!IsObject(cards))
+        cards := Finance_Load("credit_cards")
+    if (!IsObject(txs))
+        txs := Finance_Load("transactions")
+    card := Finance_FindById(cards, cardId)
+    if (!card)
+        return cards
+    unpaid := Finance_CardUnpaidTotal(cardId, txs)
+    init := Finance_ParseDecimal(card.Has("initial_spent") ? card["initial_spent"] : "0,00")
+    card["current_spent"] := Finance_FormatCsvDecimal(init + unpaid)
+    return cards
+}
+
+Finance_CardNetFromTransactionsList(cardId, txs) {
+    if (cardId = "")
+        return 0.0
+    net := 0.0
+    for tx in txs {
+        if (tx["type"] = "card_expense" && tx["card_id"] = cardId && !Finance_TxIsPaid(tx))
             net += Finance_ParseDecimal(tx["amount"])
     }
     return net
