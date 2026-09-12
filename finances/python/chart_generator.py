@@ -601,12 +601,12 @@ def build_html(data: dict) -> str:
     }}
     .perf-notif-stack {{
       display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0;
-      height:100%; overflow:hidden;
+      overflow:hidden; box-sizing:border-box;
     }}
     .perf-notif-stack > .perf-col,
     .perf-notif-stack > .notif-col {{
       flex:1 1 0; min-height:0; overflow:hidden;
-      display:flex; flex-direction:column;
+      display:flex; flex-direction:column; box-sizing:border-box;
     }}
     .perf-notif-stack > .perf-col .perf-line {{
       flex:1 1 auto; min-height:0; overflow:auto; margin:0;
@@ -634,15 +634,15 @@ def build_html(data: dict) -> str:
     .charts-reports {{
       display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
     }}
+    /* Bottom row: Goals | Performance+Notifications | Accounts — equal height */
     .split {{
-      display:grid; gap:10px; align-items:stretch;
+      display:flex; flex-direction:row; align-items:stretch; gap:10px;
+      width:100%;
     }}
-    .split-1 {{ grid-template-columns:1fr; }}
-    .split-2 {{ grid-template-columns:1fr 1fr; }}
-    .split-3 {{ grid-template-columns:1fr 1fr 1fr; }}
     .split > .panel,
     .split > .perf-notif-stack {{
-      min-width:0; min-height:0; height:100%; align-self:stretch;
+      flex:1 1 0; min-width:0; min-height:0; align-self:stretch;
+      box-sizing:border-box;
     }}
     .split > .goals-col,
     .split > .accounts-col {{
@@ -654,8 +654,6 @@ def build_html(data: dict) -> str:
     .panel {{ background:var(--panel); padding:10px 12px; border-radius:6px; margin-bottom:0; border:1px solid var(--border); }}
     .panel-slim {{ margin-bottom:10px; }}
     .panel h2 {{ margin:0 0 4px; font-size:12px; color:var(--heading); font-weight:600; }}
-    .goals-notif-grid .note {{ margin-bottom:6px; }}
-    .goals-notif-grid .note:last-child {{ margin-bottom:0; }}
     .split .note {{ margin-bottom:6px; }}
     .split .note:last-child {{ margin-bottom:0; }}
     .chart {{ height:320px; }}
@@ -937,8 +935,10 @@ def build_html(data: dict) -> str:
     table.tx-table td.amt {{ text-align:right; font-variant-numeric:tabular-nums; }}
     table.tx-table tr:last-child td {{ border-bottom:none; }}
     @media (max-width:900px) {{
-      .charts-top, .inc-rec-row, .charts-reports, .split,
-      .split-2, .split-3 {{ grid-template-columns:1fr; }}
+      .charts-top, .inc-rec-row, .charts-reports {{ grid-template-columns:1fr; }}
+      .split {{ flex-direction:column; }}
+      .split > .panel,
+      .split > .perf-notif-stack {{ flex:1 1 auto; }}
       .exp-perf-cell {{ grid-template-columns:1fr; }}
       .chart-bal, .chart-invest, .chart-span {{ grid-column:auto; }}
     }}
@@ -1945,6 +1945,35 @@ function drawPies() {{
   pie('pieExp', DATA.expensePie, 'expense');
   pie('pieInc', DATA.incomePie, 'income');
 }}
+function equalizeSplitRowHeights() {{
+  const row = document.querySelector('#cockpitView > .split');
+  if (!row) return;
+  // Stacked layout on narrow screens: let natural height win.
+  if (window.matchMedia('(max-width: 900px)').matches) {{
+    for (const child of row.children) {{
+      child.style.minHeight = '';
+      child.style.height = '';
+    }}
+    return;
+  }}
+  const kids = Array.from(row.children);
+  if (kids.length < 2) return;
+  for (const child of kids) {{
+    child.style.minHeight = '';
+    child.style.height = '';
+  }}
+  // Force reflow, then lock all columns to the tallest natural height.
+  void row.offsetHeight;
+  let maxH = 0;
+  for (const child of kids) {{
+    maxH = Math.max(maxH, Math.ceil(child.getBoundingClientRect().height));
+  }}
+  if (maxH < 40) return;
+  for (const child of kids) {{
+    child.style.minHeight = maxH + 'px';
+    child.style.height = maxH + 'px';
+  }}
+}}
 function drawAll() {{
   const L = baseLayout();
   drawPies();
@@ -1952,6 +1981,7 @@ function drawAll() {{
   requestAnimationFrame(() => requestAnimationFrame(() => {{
     drawPies();
     drawRecurringTreemap();
+    equalizeSplitRowHeights();
   }}));
   const barBal = document.getElementById('barBal');
   if (barBal) {{
@@ -1988,6 +2018,7 @@ function drawAll() {{
   drawIncomeInvestTreemap();
   drawRecurringTreemap();
   drawCardInstallmentChart();
+  equalizeSplitRowHeights();
 }}
 function rebuildCardInstallmentRemaining() {{
   const today = (RAW.today || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
@@ -2183,8 +2214,8 @@ function drawCardInstallmentChart() {{
       summaryEl.innerHTML = html;
     }}
   }}
-  const hasBars = (spec.series || []).some(s => (s.dates || []).length && (s.values || []).some(v => v > 0));
-  if (!hasBars) {{
+  const hasSeries = (spec.series || []).some(s => (s.dates || []).length && (s.values || []).some(v => v > 0));
+  if (!hasSeries) {{
     el.innerHTML = '<p class="empty">No card balances to plot</p>';
     return;
   }}
@@ -2200,17 +2231,19 @@ function drawCardInstallmentChart() {{
   const tickvals = [];
   for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
   if (!tickvals.length) tickvals.push(0);
+  const closings = spec.closings || spec.months || [];
   const traces = spec.series.map(s => ({{
-    type: 'bar',
+    type: 'scatter',
+    mode: 'lines+markers',
     name: s.name,
     x: s.dates || [],
     y: s.values || [],
     customdata: (s.values || []).map(v => formatBrl(v)),
-    marker: {{ color: s.color }},
+    line: {{ color: s.color, width: 2 }},
+    marker: {{ color: s.color, size: 7 }},
     hovertemplate: '%{{x}} (closing)<br>%{{fullData.name}}: %{{customdata}}<extra></extra>'
   }}));
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
-    barmode: 'group',
     showlegend: true,
     legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
     margin: {{ t: 52, b: 56, l: 88, r: 20 }},
@@ -2225,6 +2258,8 @@ function drawCardInstallmentChart() {{
     }},
     xaxis: {{
       type: 'category',
+      categoryorder: 'array',
+      categoryarray: closings,
       title: {{ text: 'Closing day', font: {{ size: 11 }} }},
       automargin: true,
       tickfont: {{ size: 10 }},
@@ -2286,6 +2321,7 @@ function applyTheme(theme) {{
       if (!activeCategory) {{
         drawPies();
         drawRecurringTreemap();
+        equalizeSplitRowHeights();
       }}
     }}, 120);
   }});
