@@ -167,7 +167,7 @@ def build_html(data: dict) -> str:
         card_plan_html = """
           <div class="panel chart-cell chart-span card-plan-panel">
             <div class="panel-head-row card-plan-head">
-              <h2>Card expenses by closing day</h2>
+              <h2>Card expenses by pay day</h2>
               <div class="card-plan-range period-controls">
                 <label>From <input type="date" id="cardPlanFrom"/></label>
                 <label>To <input type="date" id="cardPlanTo"/></label>
@@ -2374,8 +2374,8 @@ function drawCardInstallmentChart() {{
     el.innerHTML = '<p class="empty">Invalid card plan range</p>';
     return;
   }}
-  // Include closings just before the range when their pay day still falls inside it,
-  // so line segments are not dropped (Plotly needs 2+ points to draw a line).
+  // Extend the daily axis so every pay day with an amount in/near the selected
+  // window is present (Plotly needs 2+ points to draw a line).
   function payDateForClosing(closingDate, dueDay) {{
     let d = String(closingDate || '').slice(0, 10);
     if (d.length < 10) return '';
@@ -2416,11 +2416,12 @@ function drawCardInstallmentChart() {{
       const amt = values[i] || 0;
       if (amt <= 0.00001) continue;
       const payD = payDateForClosing(closeD, dueDay);
-      const inWindow = (closeD >= range.from && closeD <= range.to)
-        || (payD && payD >= range.from && payD <= range.to);
+      if (!payD) continue;
+      const inWindow = (payD >= range.from && payD <= range.to)
+        || (closeD >= range.from && closeD <= range.to);
       if (!inWindow) continue;
-      if (closeD < axisFrom) axisFrom = closeD;
-      if (closeD > axisTo) axisTo = closeD;
+      if (payD < axisFrom) axisFrom = payD;
+      if (payD > axisTo) axisTo = payD;
     }}
   }}
   const dayAxis = enumerateDays(axisFrom, axisTo);
@@ -2442,25 +2443,38 @@ function drawCardInstallmentChart() {{
   if (!tickvals.length) tickvals.push(0);
   const today = (spec.today || RAW.today || '').slice(0, 10);
   // #region agent log
-  const _dbgSeriesMeta = (spec.series || []).map(s => ({{
-    name: s.name,
-    nDates: (s.dates || []).length,
-    dates: (s.dates || []).slice(0, 12),
-    values: (s.values || []).slice(0, 12),
-    inRange: (s.dates || []).filter(d => d >= range.from && d <= range.to),
-    sampleDateTypes: (s.dates || []).slice(0, 3).map(d => typeof d + ':' + JSON.stringify(d))
-  }}));
-  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'A',location:'chart_generator.py:drawCardInstallmentChart:range',message:'card plan range + series dates',data:{{range,axisFrom,axisTo,dayAxisLen:dayAxis.length,dayAxisHead:dayAxis.slice(0,3),dayAxisTail:dayAxis.slice(-3),today,series:_dbgSeriesMeta}},timestamp:Date.now()}})}}).catch(()=>{{}});
+  const _dbgSeriesMeta = (spec.series || []).map(s => {{
+    const dueDay = dueDayByCardEarly[s.card_id] || 1;
+    const mapped = (s.dates || []).map((closeD, i) => ({{
+      closeD, payD: payDateForClosing(closeD, dueDay), amt: s.values[i]
+    }}));
+    return {{ name: s.name, dueDay, mapped, inRangePays: mapped.filter(m => m.payD && m.payD >= range.from && m.payD <= range.to) }};
+  }});
+  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:range',message:'pay-day axis + close→pay map',data:{{range,axisFrom,axisTo,dayAxisLen:dayAxis.length,dayAxisHead:dayAxis.slice(0,3),dayAxisTail:dayAxis.slice(-3),today,series:_dbgSeriesMeta}},timestamp:Date.now()}})}}).catch(()=>{{}});
   // #endregion
   const traces = (spec.series || []).map(s => {{
-    const byClose = {{}};
-    (s.dates || []).forEach((d, i) => {{ byClose[d] = s.values[i]; }});
-    const ys = dayAxis.map(d => (Object.prototype.hasOwnProperty.call(byClose, d) ? byClose[d] : null));
-    const custom = ys.map(v => (v == null ? '' : formatBrl(v)));
+    const dueDay = dueDayByCardEarly[s.card_id] || 1;
+    const byPay = {{}};
+    const closeByPay = {{}};
+    (s.dates || []).forEach((closeD, i) => {{
+      const amt = s.values[i] || 0;
+      if (amt <= 0.00001) return;
+      const payD = payDateForClosing(closeD, dueDay);
+      if (!payD) return;
+      byPay[payD] = (byPay[payD] || 0) + amt;
+      closeByPay[payD] = closeD;
+    }});
+    const ys = dayAxis.map(d => (Object.prototype.hasOwnProperty.call(byPay, d) ? byPay[d] : null));
+    const custom = ys.map((v, i) => {{
+      if (v == null) return '';
+      const payD = dayAxis[i];
+      const closeD = closeByPay[payD] || '';
+      return formatBrl(v) + (closeD ? ' (close ' + closeD + ')' : '');
+    }});
     const nonNullIdx = [];
     for (let i = 0; i < ys.length; i++) if (ys[i] != null) nonNullIdx.push(i);
     // #region agent log
-    fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'B',location:'chart_generator.py:drawCardInstallmentChart:trace',message:'per-series mapped points',data:{{name:s.name,color:s.color,nonNullCount:nonNullIdx.length,nonNullDates:nonNullIdx.map(i=>dayAxis[i]),nonNullVals:nonNullIdx.map(i=>ys[i]),byCloseKeys:(s.dates||[]),missOutsideRange:(s.dates||[]).filter(d=>!(d>=axisFrom&&d<=axisTo)),keyMatchSample:(s.dates||[]).slice(0,5).map(d=>({{d,inAxis:dayAxis.indexOf(d)>=0,hasOwn:Object.prototype.hasOwnProperty.call(byClose,d)}}))}},timestamp:Date.now()}})}}).catch(()=>{{}});
+    fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:trace',message:'per-series pay-day points',data:{{name:s.name,color:s.color,nonNullCount:nonNullIdx.length,nonNullDates:nonNullIdx.map(i=>dayAxis[i]),nonNullVals:nonNullIdx.map(i=>ys[i]),byPayKeys:Object.keys(byPay),closeByPay}},timestamp:Date.now()}})}}).catch(()=>{{}});
     // #endregion
     return {{
       type: 'scatter',
@@ -2588,7 +2602,7 @@ function drawCardInstallmentChart() {{
     const nn = (t.y || []).filter(v => v != null && v !== '').length;
     return {{ name: t.name, mode: t.mode, xLen: (t.x || []).length, yLen: (t.y || []).length, nonNullY: nn, connectgaps: t.connectgaps, line: t.line }};
   }});
-  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'C',location:'chart_generator.py:drawCardInstallmentChart:beforePlot',message:'plotly input for line traces',data:{{axisType:'category',connectgapsExpected:true,lineTraceCount:_dbgLineTraces.length,lineTraces:_dbgLineTraces,totalTraces:traces.length}},timestamp:Date.now()}})}}).catch(()=>{{}});
+  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:beforePlot',message:'plotly input for line traces',data:{{axisType:'category',connectgapsExpected:true,lineTraceCount:_dbgLineTraces.length,lineTraces:_dbgLineTraces,totalTraces:traces.length}},timestamp:Date.now()}})}}).catch(()=>{{}});
   // #endregion
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
@@ -2631,9 +2645,9 @@ function drawCardInstallmentChart() {{
         lineWidth: t.line && t.line.width,
         lineColor: t.line && t.line.color
       }})) : [];
-      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'D',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly fullData line traces',data:{{calc,axisType:gd&&gd._fullLayout&&gd._fullLayout.xaxis&&gd._fullLayout.xaxis.type}},timestamp:Date.now()}})}}).catch(()=>{{}});
+      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly fullData line traces',data:{{calc,axisType:gd&&gd._fullLayout&&gd._fullLayout.xaxis&&gd._fullLayout.xaxis.type}},timestamp:Date.now()}})}}).catch(()=>{{}});
     }} catch (e) {{
-      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix',hypothesisId:'D',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly afterPlot error',data:{{err:String(e)}},timestamp:Date.now()}})}}).catch(()=>{{}});
+      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly afterPlot error',data:{{err:String(e)}},timestamp:Date.now()}})}}).catch(()=>{{}});
     }}
     // #endregion
   }});
