@@ -2442,16 +2442,6 @@ function drawCardInstallmentChart() {{
   for (let v = 0; v <= yMax + step * 0.01; v += step) tickvals.push(v);
   if (!tickvals.length) tickvals.push(0);
   const today = (spec.today || RAW.today || '').slice(0, 10);
-  // #region agent log
-  const _dbgSeriesMeta = (spec.series || []).map(s => {{
-    const dueDay = dueDayByCardEarly[s.card_id] || 1;
-    const mapped = (s.dates || []).map((closeD, i) => ({{
-      closeD, payD: payDateForClosing(closeD, dueDay), amt: s.values[i]
-    }}));
-    return {{ name: s.name, dueDay, mapped, inRangePays: mapped.filter(m => m.payD && m.payD >= range.from && m.payD <= range.to) }};
-  }});
-  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:range',message:'pay-day axis + close→pay map',data:{{range,axisFrom,axisTo,dayAxisLen:dayAxis.length,dayAxisHead:dayAxis.slice(0,3),dayAxisTail:dayAxis.slice(-3),today,series:_dbgSeriesMeta}},timestamp:Date.now()}})}}).catch(()=>{{}});
-  // #endregion
   const traces = (spec.series || []).map(s => {{
     const dueDay = dueDayByCardEarly[s.card_id] || 1;
     const byPay = {{}};
@@ -2471,11 +2461,6 @@ function drawCardInstallmentChart() {{
       const closeD = closeByPay[payD] || '';
       return formatBrl(v) + (closeD ? ' (close ' + closeD + ')' : '');
     }});
-    const nonNullIdx = [];
-    for (let i = 0; i < ys.length; i++) if (ys[i] != null) nonNullIdx.push(i);
-    // #region agent log
-    fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:trace',message:'per-series pay-day points',data:{{name:s.name,color:s.color,nonNullCount:nonNullIdx.length,nonNullDates:nonNullIdx.map(i=>dayAxis[i]),nonNullVals:nonNullIdx.map(i=>ys[i]),byPayKeys:Object.keys(byPay),closeByPay}},timestamp:Date.now()}})}}).catch(()=>{{}});
-    // #endregion
     return {{
       type: 'scatter',
       mode: 'lines+markers',
@@ -2597,13 +2582,6 @@ function drawCardInstallmentChart() {{
   const tickvalsX = dayAxis.filter((d, i) =>
     i === 0 || i === dayAxis.length - 1 || i % tickEvery === 0 || d === today
   );
-  // #region agent log
-  const _dbgLineTraces = traces.filter(t => t.mode && String(t.mode).indexOf('lines') >= 0).map(t => {{
-    const nn = (t.y || []).filter(v => v != null && v !== '').length;
-    return {{ name: t.name, mode: t.mode, xLen: (t.x || []).length, yLen: (t.y || []).length, nonNullY: nn, connectgaps: t.connectgaps, line: t.line }};
-  }});
-  fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:beforePlot',message:'plotly input for line traces',data:{{axisType:'category',connectgapsExpected:true,lineTraceCount:_dbgLineTraces.length,lineTraces:_dbgLineTraces,totalTraces:traces.length}},timestamp:Date.now()}})}}).catch(()=>{{}});
-  // #endregion
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
     legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
@@ -2631,26 +2609,7 @@ function drawCardInstallmentChart() {{
       tickfont: {{ size: 9 }},
       tickangle: -45
     }}
-  }}), {{ responsive: true, displayModeBar: false }}).then(gd => {{
-    // #region agent log
-    try {{
-      const calc = (gd && gd._fullData) ? gd._fullData.filter(t => t.mode && String(t.mode).indexOf('lines') >= 0).map(t => ({{
-        name: t.name,
-        mode: t.mode,
-        visible: t.visible,
-        connectgaps: t.connectgaps,
-        xLen: (t.x || []).length,
-        yLen: (t.y || []).length,
-        hasLine: !!(t.line && t.line.width),
-        lineWidth: t.line && t.line.width,
-        lineColor: t.line && t.line.color
-      }})) : [];
-      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly fullData line traces',data:{{calc,axisType:gd&&gd._fullLayout&&gd._fullLayout.xaxis&&gd._fullLayout.xaxis.type}},timestamp:Date.now()}})}}).catch(()=>{{}});
-    }} catch (e) {{
-      fetch('http://127.0.0.1:7663/ingest/0cf1595e-ec3a-4922-ae5e-c052e3d88868',{{method:'POST',headers:{{'Content-Type':'application/json','X-Debug-Session-Id':'1835f9'}},body:JSON.stringify({{sessionId:'1835f9',runId:'post-fix-payday',hypothesisId:'E',location:'chart_generator.py:drawCardInstallmentChart:afterPlot',message:'plotly afterPlot error',data:{{err:String(e)}},timestamp:Date.now()}})}}).catch(()=>{{}});
-    }}
-    // #endregion
-  }});
+  }}), {{ responsive: true, displayModeBar: false }});
 }}
 function applyTheme(theme) {{
   document.documentElement.setAttribute('data-theme', theme);
