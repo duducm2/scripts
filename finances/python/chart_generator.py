@@ -902,7 +902,7 @@ def build_html(data: dict) -> str:
     .card-plan-box .box-split {{
       font-size:10px; color:var(--muted2); line-height:1.35;
     }}
-    .chart-card-plan {{ height:300px; min-width:0; overflow:hidden; }}
+    .chart-card-plan {{ height:340px; min-width:0; overflow:hidden; }}
     .budget-categories {{
       flex:1; display:flex; flex-direction:column;
       border:1px solid var(--border); border-radius:6px;
@@ -2481,6 +2481,7 @@ function drawCardInstallmentChart() {{
       name: 'Today',
       x: [today],
       y: [0],
+      showlegend: false,
       marker: {{
         symbol: 'triangle-up',
         size: 14,
@@ -2584,8 +2585,20 @@ function drawCardInstallmentChart() {{
   );
   Plotly.newPlot('lineCardPlan', traces, Object.assign({{}}, L, {{
     showlegend: true,
-    legend: {{ orientation: 'h', y: 1.14, x: 0, font: {{ size: 10 }} }},
-    margin: {{ t: 64, b: 64, l: 88, r: 20 }},
+    legend: {{
+      orientation: 'h',
+      x: 0,
+      y: -0.22,
+      xanchor: 'left',
+      yanchor: 'top',
+      font: {{ size: 10 }},
+      bgcolor: 'rgba(0,0,0,0)',
+      borderwidth: 0,
+      traceorder: 'normal',
+      itemsizing: 'constant',
+      itemwidth: 36
+    }},
+    margin: {{ t: 36, b: 100, l: 88, r: 20 }},
     shapes: shapes,
     annotations: annotations,
     yaxis: {{
