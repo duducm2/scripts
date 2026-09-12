@@ -16,35 +16,6 @@ global g_ClipAngelConstantPasteStopRequested := false
 global g_ClipAngelConstantPasteDirection := "down"
 global g_ClipAngelConstantPasteStopHint := "Shift+P"
 
-; #region agent log
-ClipAngel_ConstantPaste_DebugLog(hypothesisId, location, message, data := "") {
-    try {
-        dataJson := "{}"
-        if (IsObject(data)) {
-            parts := []
-            for k, v in data {
-                try {
-                    vv := "" v
-                    vv := StrReplace(vv, "\", "\\")
-                    vv := StrReplace(vv, '"', '\"')
-                    vv := StrReplace(vv, "`r", "")
-                    vv := StrReplace(vv, "`n", " ")
-                    parts.Push('"' k '":"' vv '"')
-                } catch {
-                }
-            }
-            joined := ""
-            for i, p in parts
-                joined .= (i = 1 ? "" : ",") p
-            dataJson := "{" joined "}"
-        }
-        line := '{"sessionId":"688ad7","hypothesisId":"' hypothesisId '","location":"' location '","message":"' message '","data":' dataJson ',"timestamp":' A_TickCount ',"runId":"post-fix"}`n'
-        FileAppend(line, A_ScriptDir "\debug-688ad7.log", "UTF-8")
-    } catch {
-    }
-}
-; #endregion
-
 ClipAngel_ConstantPaste_IsActive() {
     global g_ClipAngelConstantPasteActive
     return !!g_ClipAngelConstantPasteActive
@@ -334,17 +305,6 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
     dirLabel := (direction = "up") ? "↑" : "↓"
 
     priorHwnd := ClipAngel_ConstantPaste_ResolveTargetHwnd()
-    ; #region agent log
-    try {
-        ClipAngel_ConstantPaste_DebugLog("H1", "Run:prior", "resolved priorHwnd", Map(
-            "prior", priorHwnd,
-            "priorExe", priorHwnd ? WinGetProcessName("ahk_id " priorHwnd) : "",
-            "priorTitle", priorHwnd ? SubStr(WinGetTitle("ahk_id " priorHwnd), 1, 60) : "",
-            "fgExe", WinGetProcessName("A")
-        ))
-    } catch {
-    }
-    ; #endregion
     if (!priorHwnd) {
         ShowCenteredOverlay_Utils(
             "❌ Constant Pasting: no paste target window found.",
@@ -412,14 +372,6 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
             ; Prime Clip Angel's "previous window", then Send Enter (same as Alt+1).
             ; ControlSend Enter rearranges the list but does not paste into the target.
             ClipAngel_RestorePriorFocus(priorHwnd)
-            ; #region agent log
-            try {
-                ClipAngel_ConstantPaste_DebugLog("H1", "paste:afterPrime", "after RestorePriorFocus", Map(
-                    "fgExe", WinGetProcessName("A"), "fgHwnd", WinGetID("A"), "prior", priorHwnd
-                ))
-            } catch {
-            }
-            ; #endregion
             if !ClipAngel_EnsureWindowActive(hwnd, 400) {
                 stopReason := "could not focus Clip Angel for paste"
                 break
@@ -428,61 +380,11 @@ ClipAngel_ConstantPaste_Run(direction := "down") {
                 stopReason := "clip list not ready"
                 break
             }
-            pasteCtx := false
-            try pasteCtx := ClipAngel_IsListPasteEnterContext(hwnd)
-            catch
-                pasteCtx := false
-            ; #region agent log
-            try {
-                focusedName := ""
-                focusedType := ""
-                focusedAid := ""
-                try {
-                    fe := UIA.GetFocusedElement()
-                    if fe {
-                        try focusedName := fe.Name
-                        try focusedType := fe.Type
-                        try focusedAid := fe.AutomationId
-                    }
-                } catch {
-                }
-                ClipAngel_ConstantPaste_DebugLog("H2", "paste:beforeEnter", "about to Send Enter", Map(
-                    "fgExe", WinGetProcessName("A"),
-                    "pasteCtx", pasteCtx ? "1" : "0",
-                    "rowBefore", rowBefore,
-                    "focusedName", SubStr(focusedName, 1, 40),
-                    "focusedType", focusedType,
-                    "focusedAid", focusedAid
-                ))
-            } catch {
-            }
-            ; #endregion
             ClipAngel_ReleaseChordModifiersForSend()
             Send "{Enter}"
-            Sleep 80
 
             ClipAngel_ConstantPaste_WaitClipboardSettle()
-            isText := ClipAngel_ConstantPaste_IsTextOnlyClip()
-            hasImg := ClipAngel_ConstantPaste_ClipboardHasImage()
-            hasTextFmt := false
-            try hasTextFmt := !!(DllCall("IsClipboardFormatAvailable", "UInt", 13, "Int")
-            || DllCall("IsClipboardFormatAvailable", "UInt", 1, "Int"))
-            catch
-                hasTextFmt := false
-            ; #region agent log
-            try {
-                ClipAngel_ConstantPaste_DebugLog("H4", "paste:afterEnter", "after Send Enter + settle", Map(
-                    "fgExe", WinGetProcessName("A"),
-                    "isText", isText ? "1" : "0",
-                    "hasImg", hasImg ? "1" : "0",
-                    "hasTextFmt", hasTextFmt ? "1" : "0",
-                    "rowNow", ClipAngel_ConstantPaste_GetSelectedRowName(hwnd, root),
-                    "pastedNext", pastedCount + 1
-                ))
-            } catch {
-            }
-            ; #endregion
-            if isText {
+            if ClipAngel_ConstantPaste_IsTextOnlyClip() {
                 ClipAngel_RestorePriorFocus(priorHwnd)
                 ClipAngel_ReleaseChordModifiersForSend()
                 Send "{Enter}"
