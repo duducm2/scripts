@@ -58,6 +58,9 @@ FinanceD_DisarmDoubleTap() {
 
     if (isHold) {
         FinanceD_DisarmDoubleTap()
+        try ShowCenteredOverlay_Utils("🏰 Memory Palace", 1500, BANNER_ACCENT_INFO)
+        catch {
+        }
         Palace_LaunchApp()
         ; Stay in this thread until physical release so a repeat cannot start mid-hold
         ; and arm single-tap after we return.
