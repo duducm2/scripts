@@ -1060,6 +1060,28 @@ async function checkBudgetApi() {
   }
   return budgetApiOk;
 }
+async function refreshCardsFromApi() {
+  try {
+    const r = await fetch('/api/cards', { cache: 'no-store' });
+    if (!r.ok) return false;
+    const data = await r.json();
+    if (!data || !Array.isArray(data.cards)) return false;
+    RAW.cards = data.cards;
+    const byId = {};
+    for (const c of data.cards) byId[c.id] = c;
+    for (const lc of (RAW.liquidCards || [])) {
+      const src = byId[lc.id];
+      if (!src) continue;
+      const spent = parseDecimal(src.current_spent);
+      if (Number.isFinite(spent)) lc.spent = spent;
+      const lim = parseDecimal(src.limit);
+      if (Number.isFinite(lim)) lc.limit = lim;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function syncBudgetMonthSelect(months) {
   const sel = document.getElementById('budgetMonth');
   if (!sel) return '';
@@ -1728,7 +1750,7 @@ function drawAll() {
   }
   drawIncomeInvestTreemap();
   drawRecurringTreemap();
-  drawCardInstallmentChart();
+  refreshCardsFromApi().then(() => drawCardInstallmentChart());
   equalizeSplitRowHeights();
 }
 function rebuildCardInstallmentRemaining() {
@@ -2220,7 +2242,7 @@ function applyTheme(theme) {
       }
     }, 120);
   });
-  checkBudgetApi().then(() => {
+  checkBudgetApi().then(() => refreshCardsFromApi()).then(() => {
     applyPeriod();
     if (budgetApiOk === false) {
       setBudgetSaveStatus('Save unavailable (open via Finance dashboard)', 'error');

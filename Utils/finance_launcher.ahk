@@ -172,14 +172,15 @@ Finance_OpenDashboard() {
         Finance_Notify("dashboard_server.py not found", 2000, BANNER_ACCENT_ERROR)
         return
     }
-    ; Start (or reuse) localhost server so the cockpit can PATCH budgets.csv
+    ; Restart localhost server so Close/Due edits and API routes are fresh.
+    Finance_StopDashboardServer()
     srvCmd := pyCmd . ' "' . serverPy . '" --data-dir "' . dataDir . '" --output-dir "' . outDir . '"'
     try Run(A_ComSpec . ' /c ' . srvCmd, A_ScriptDir, "Hide")
     catch as e {
         Finance_Notify("Dashboard server failed: " . e.Message, 2500, BANNER_ACCENT_ERROR)
         return
     }
-    Sleep(500)
+    Sleep(600)
     dashUrl := "http://127.0.0.1:8765/dashboard.html?t=" . A_TickCount
     try Run('chrome.exe --new-window "' . dashUrl . '"')
     catch as e {
@@ -187,6 +188,15 @@ Finance_OpenDashboard() {
         return
     }
     Finance_CloseGui()
+}
+
+Finance_StopDashboardServer() {
+    ; Kill whatever is listening on the cockpit port (stale python server).
+    try RunWait(A_ComSpec
+        . ' /c for /f "tokens=5" %a in (' 'netstat -ano ^| findstr :8765 ^| findstr LISTENING' ')'
+        . ' do @taskkill /F /PID %a >nul 2>&1', A_ScriptDir, "Hide")
+    catch {
+    }
 }
 
 Finance_ShowSettings() {
