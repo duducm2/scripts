@@ -247,7 +247,14 @@ def build_html(data: dict) -> str:
             </div>
           </div>
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
-            <div class="funds-compare-title">Available vs planned</div>
+            <div class="funds-compare-title-row">
+              <div class="funds-compare-title">Available vs planned</div>
+              <div class="budget-calc-wrap">
+                <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
+                  aria-describedby="budgetCalcTip">Calculations</button>
+                <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
+              </div>
+            </div>
             <div class="funds-compare-head">
               <div class="funds-compare-legend">
                 <span class="funds-legend-item">
@@ -272,11 +279,6 @@ def build_html(data: dict) -> str:
             <div class="budget-categories-title">Categories · spent / planned</div>
             <div class="bar-row bar-row-total" id="budgetsSummary"{sum_style}>{bud_summary}</div>
             <div id="budgetsBody" class="budget-body">{''.join(items) or '<p class="empty">No budgets this month</p>'}</div>
-          </div>
-          <div class="budget-calc-wrap">
-            <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
-              aria-describedby="budgetCalcTip">Calculations</button>
-            <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
           </div>
         </div>"""
 
@@ -314,33 +316,22 @@ def build_html(data: dict) -> str:
 
     rec_html = ""
     if widget_on(s, "ShowRecurring"):
-        rec_items = []
         rec_monthly = 0.0
         for r in data.get("recurring") or []:
-            name = r.get("name") or r.get("id") or "Bill"
-            icon = r.get("icon") or "🔁"
-            amt = parse_decimal(r.get("monthly_amount"))
-            rec_monthly += amt
-            rec_items.append(
-                f'<div class="bar-row">'
-                f'<div class="bar-head"><span>{icon} {name}</span>'
-                f"<span>{format_brl(amt)} / mo</span></div></div>"
-            )
+            rec_monthly += parse_decimal(r.get("monthly_amount"))
         n_months = max(len(data.get("period_months") or []), 1)
         rec_period = rec_monthly * n_months
         rec_income = data["totals"]["income"]
         rec_pct = (rec_period / rec_income * 100.0) if rec_income else 0.0
-        rec_list = "".join(rec_items) or '<p class="empty">No recurring bills</p>'
         rec_html = f"""
-        <div class="panel" id="recurringPanel" style="margin-top:10px">
-          <h2>Recurring bills</h2>
-          <div class="bar-meta" id="recurringSummary" style="margin-bottom:8px">
-            Period {format_brl(rec_period)} · Income {format_brl(rec_income)}
-            · Recurring is {rec_pct:.0f}% of income
-            · {n_months} month{"s" if n_months != 1 else ""}</div>
-          <div id="recurringList">{rec_list}</div>
-          <div id="recurringVsIncome" class="chart chart-treemap"></div>
-        </div>"""
+          <div class="panel chart-cell recurring-cell" id="recurringPanel">
+            <h2>Recurring bills</h2>
+            <div class="bar-meta" id="recurringSummary" style="margin-bottom:6px">
+              Period {format_brl(rec_period)} · Income {format_brl(rec_income)}
+              · Recurring is {rec_pct:.0f}% of income
+              · {n_months} month{"s" if n_months != 1 else ""}</div>
+            <div id="recurringVsIncome" class="chart chart-treemap"></div>
+          </div>"""
 
     payload = {
         "expensePie": pie_spec(data["expense_pie"]),
@@ -463,9 +454,10 @@ def build_html(data: dict) -> str:
     .chart-short {{ height:220px; }}
     .chart-treemap {{ height:280px; }}
     .chart-invest .chart-treemap {{ height:320px; }}
+    .recurring-cell .chart-treemap {{ height:auto; min-height:220px; flex:1 1 auto; }}
     .chart-pie {{ height:auto; min-height:300px; }}
     .chart-cell {{ min-width:0; }}
-    .pie-exp-cell, .pie-inc-cell {{ display:flex; flex-direction:column; min-height:0; }}
+    .pie-exp-cell, .pie-inc-cell, .recurring-cell {{ display:flex; flex-direction:column; min-height:0; }}
     .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie {{ flex:1 1 auto; }}
     .budget-panel {{
       grid-column:1 / span 2; grid-row:1 / span 2;
@@ -509,9 +501,13 @@ def build_html(data: dict) -> str:
       border:1px solid var(--border); border-radius:6px;
       background:var(--bg);
     }}
+    .funds-compare-title-row {{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; margin-bottom:6px;
+    }}
     .funds-compare-title {{
       font-size:11px; font-weight:600; color:var(--heading);
-      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
+      text-transform:uppercase; letter-spacing:.03em; margin:0;
     }}
     .funds-compare-head {{
       display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -567,18 +563,18 @@ def build_html(data: dict) -> str:
     .funds-compare.deficit .funds-compare-meta {{ color:#e74c3c; font-weight:600; }}
     .funds-compare.ok .funds-compare-meta {{ color:#2ecc71; }}
     .budget-calc-wrap {{
-      position:relative; margin-top:10px; align-self:flex-start;
+      position:relative; flex-shrink:0;
     }}
     .budget-calc-btn {{
       font:inherit; font-size:11px; font-weight:600; cursor:pointer;
-      padding:4px 10px; border-radius:4px;
-      border:1px solid var(--border); background:var(--bg); color:var(--heading);
+      padding:3px 8px; border-radius:4px;
+      border:1px solid var(--border); background:var(--panel); color:var(--heading);
     }}
     .budget-calc-btn:hover, .budget-calc-btn:focus-visible {{
       border-color:var(--heading); outline:none;
     }}
     .budget-calc-tip {{
-      display:none; position:absolute; left:0; bottom:calc(100% + 6px); z-index:30;
+      display:none; position:absolute; right:0; top:calc(100% + 6px); z-index:30;
       min-width:280px; max-width:380px; padding:8px 10px;
       border:1px solid var(--border); border-radius:6px;
       background:var(--panel); color:var(--text);
@@ -609,8 +605,13 @@ def build_html(data: dict) -> str:
     .budget-categories .budget-body {{ flex:1; overflow:visible; }}
     .pie-exp-cell {{ grid-column:3 / span 2; grid-row:1; }}
     .pie-inc-cell {{ grid-column:3 / span 2; grid-row:2; }}
+    .charts:has(.recurring-cell) .pie-inc-cell {{ grid-column:3; grid-row:2; }}
+    .recurring-cell {{ grid-column:4; grid-row:2; }}
     .charts-no-budget .pie-exp-cell {{ grid-column:1 / span 2; grid-row:1; }}
     .charts-no-budget .pie-inc-cell {{ grid-column:3 / span 2; grid-row:1; }}
+    .charts-no-budget:has(.recurring-cell) .pie-inc-cell {{ grid-column:3; grid-row:1; }}
+    .charts-no-budget .recurring-cell {{ grid-column:4; grid-row:1; }}
+    .charts-no-budget:not(:has(.pie-inc-cell)) .recurring-cell {{ grid-column:3 / span 2; grid-row:1; }}
     .chart-span {{ grid-column:1 / -1; }}
     .chart-bal {{ grid-column:span 3; }}
     .chart-invest {{ grid-column:span 1; }}
@@ -659,7 +660,7 @@ def build_html(data: dict) -> str:
     @media (max-width:900px) {{
       .kpis, .charts, .split {{ grid-template-columns:1fr; }}
       .goals-notif-grid {{ grid-template-columns:1fr; }}
-      .budget-panel, .pie-exp-cell, .pie-inc-cell,
+      .budget-panel, .pie-exp-cell, .pie-inc-cell, .recurring-cell,
       .chart-bal, .chart-invest {{ grid-column:auto; grid-row:auto; }}
     }}
     @media (min-width:901px) and (max-width:1099px) {{
@@ -667,8 +668,12 @@ def build_html(data: dict) -> str:
       .budget-panel {{ grid-column:1; grid-row:1 / span 2; }}
       .pie-exp-cell {{ grid-column:2; grid-row:1; }}
       .pie-inc-cell {{ grid-column:2; grid-row:2; }}
+      .charts:has(.recurring-cell) .pie-inc-cell {{ grid-column:2; grid-row:2; }}
+      .recurring-cell {{ grid-column:2; grid-row:3; }}
       .charts-no-budget .pie-exp-cell {{ grid-column:1; grid-row:1; }}
       .charts-no-budget .pie-inc-cell {{ grid-column:2; grid-row:1; }}
+      .charts-no-budget:has(.recurring-cell) .pie-inc-cell {{ grid-column:2; grid-row:1; }}
+      .charts-no-budget .recurring-cell {{ grid-column:1 / -1; grid-row:2; }}
       .chart-bal, .chart-invest {{ grid-column:1 / -1; }}
     }}
   </style>
@@ -691,13 +696,13 @@ def build_html(data: dict) -> str:
     {bud_html}
     {pie_exp_html}
     {pie_inc_html}
+    {rec_html}
     {reports_html}
   </div>
   <div class="split">
     {goals_notif_html}
     {acc_html}
   </div>
-  {rec_html}
   </div>
   <div id="categoryView">
     <div class="panel">
@@ -1398,7 +1403,6 @@ function recurringMonthlyTotal() {{
   return s;
 }}
 function renderRecurring(months, income) {{
-  const list = document.getElementById('recurringList');
   const sumEl = document.getElementById('recurringSummary');
   const rows = RAW.recurring || [];
   const n = (months && months.length) ? months.length : 1;
@@ -1411,22 +1415,9 @@ function renderRecurring(months, income) {{
   }}
   const mapped = rows.map(r => ({{
     name: r.name || r.id || 'Bill',
-    icon: r.icon || '',
+    icon: r.icon || '🔁',
     periodAmt: parseDecimal(r.monthly_amount) * n
   }}));
-  if (list) {{
-    if (!rows.length) {{
-      list.innerHTML = '<p class="empty">No recurring bills</p>';
-    }} else {{
-      list.innerHTML = rows.map(r => {{
-        const name = r.name || r.id || 'Bill';
-        const icon = r.icon || '🔁';
-        const amt = parseDecimal(r.monthly_amount);
-        return '<div class="bar-row"><div class="bar-head"><span>' + icon + ' ' + name
-          + '</span><span>' + formatBrl(amt) + ' / mo</span></div></div>';
-      }}).join('');
-    }}
-  }}
   DATA.recurringVs = {{ bills: periodBills, income: income, rows: mapped }};
 }}
 function drawIncomeInvestTreemap() {{
@@ -1482,7 +1473,9 @@ function drawRecurringTreemap() {{
   const custom = [];
   for (const r of vs.rows || []) {{
     if (r.periodAmt <= 0) continue;
-    labels.push(r.name);
+    const icon = (r.icon || '').trim();
+    const title = r.name || 'Bill';
+    labels.push(icon ? (icon + ' ' + title) : title);
     values.push(r.periodAmt);
     colors.push('#9b59b6');
     const pInc = vs.income > 0 ? (r.periodAmt / vs.income * 100) : 0;
@@ -1501,6 +1494,7 @@ function drawRecurringTreemap() {{
     return;
   }}
   const L = baseLayout();
+  const h = Math.max(el.clientHeight || 0, 220);
   Plotly.newPlot('recurringVsIncome', [{{
     type: 'treemap',
     labels: labels,
@@ -1514,7 +1508,7 @@ function drawRecurringTreemap() {{
     pathbar: {{ visible: false }}
   }}], Object.assign({{}}, L, {{
     showlegend: false,
-    height: 280,
+    height: h,
     margin: {{ t: 8, b: 8, l: 8, r: 8 }}
   }}), {{ responsive: true, displayModeBar: false }});
 }}

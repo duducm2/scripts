@@ -109,9 +109,10 @@
     .chart-short { height:220px; }
     .chart-treemap { height:280px; }
     .chart-invest .chart-treemap { height:320px; }
+    .recurring-cell .chart-treemap { height:auto; min-height:220px; flex:1 1 auto; }
     .chart-pie { height:auto; min-height:300px; }
     .chart-cell { min-width:0; }
-    .pie-exp-cell, .pie-inc-cell { display:flex; flex-direction:column; min-height:0; }
+    .pie-exp-cell, .pie-inc-cell, .recurring-cell { display:flex; flex-direction:column; min-height:0; }
     .pie-exp-cell .chart-pie, .pie-inc-cell .chart-pie { flex:1 1 auto; }
     .budget-panel {
       grid-column:1 / span 2; grid-row:1 / span 2;
@@ -155,9 +156,13 @@
       border:1px solid var(--border); border-radius:6px;
       background:var(--bg);
     }
+    .funds-compare-title-row {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; margin-bottom:6px;
+    }
     .funds-compare-title {
       font-size:11px; font-weight:600; color:var(--heading);
-      text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;
+      text-transform:uppercase; letter-spacing:.03em; margin:0;
     }
     .funds-compare-head {
       display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -213,18 +218,18 @@
     .funds-compare.deficit .funds-compare-meta { color:#e74c3c; font-weight:600; }
     .funds-compare.ok .funds-compare-meta { color:#2ecc71; }
     .budget-calc-wrap {
-      position:relative; margin-top:10px; align-self:flex-start;
+      position:relative; flex-shrink:0;
     }
     .budget-calc-btn {
       font:inherit; font-size:11px; font-weight:600; cursor:pointer;
-      padding:4px 10px; border-radius:4px;
-      border:1px solid var(--border); background:var(--bg); color:var(--heading);
+      padding:3px 8px; border-radius:4px;
+      border:1px solid var(--border); background:var(--panel); color:var(--heading);
     }
     .budget-calc-btn:hover, .budget-calc-btn:focus-visible {
       border-color:var(--heading); outline:none;
     }
     .budget-calc-tip {
-      display:none; position:absolute; left:0; bottom:calc(100% + 6px); z-index:30;
+      display:none; position:absolute; right:0; top:calc(100% + 6px); z-index:30;
       min-width:280px; max-width:380px; padding:8px 10px;
       border:1px solid var(--border); border-radius:6px;
       background:var(--panel); color:var(--text);
@@ -255,8 +260,13 @@
     .budget-categories .budget-body { flex:1; overflow:visible; }
     .pie-exp-cell { grid-column:3 / span 2; grid-row:1; }
     .pie-inc-cell { grid-column:3 / span 2; grid-row:2; }
+    .charts:has(.recurring-cell) .pie-inc-cell { grid-column:3; grid-row:2; }
+    .recurring-cell { grid-column:4; grid-row:2; }
     .charts-no-budget .pie-exp-cell { grid-column:1 / span 2; grid-row:1; }
     .charts-no-budget .pie-inc-cell { grid-column:3 / span 2; grid-row:1; }
+    .charts-no-budget:has(.recurring-cell) .pie-inc-cell { grid-column:3; grid-row:1; }
+    .charts-no-budget .recurring-cell { grid-column:4; grid-row:1; }
+    .charts-no-budget:not(:has(.pie-inc-cell)) .recurring-cell { grid-column:3 / span 2; grid-row:1; }
     .chart-span { grid-column:1 / -1; }
     .chart-bal { grid-column:span 3; }
     .chart-invest { grid-column:span 1; }
@@ -305,7 +315,7 @@
     @media (max-width:900px) {
       .kpis, .charts, .split { grid-template-columns:1fr; }
       .goals-notif-grid { grid-template-columns:1fr; }
-      .budget-panel, .pie-exp-cell, .pie-inc-cell,
+      .budget-panel, .pie-exp-cell, .pie-inc-cell, .recurring-cell,
       .chart-bal, .chart-invest { grid-column:auto; grid-row:auto; }
     }
     @media (min-width:901px) and (max-width:1099px) {
@@ -313,8 +323,12 @@
       .budget-panel { grid-column:1; grid-row:1 / span 2; }
       .pie-exp-cell { grid-column:2; grid-row:1; }
       .pie-inc-cell { grid-column:2; grid-row:2; }
+      .charts:has(.recurring-cell) .pie-inc-cell { grid-column:2; grid-row:2; }
+      .recurring-cell { grid-column:2; grid-row:3; }
       .charts-no-budget .pie-exp-cell { grid-column:1; grid-row:1; }
       .charts-no-budget .pie-inc-cell { grid-column:2; grid-row:1; }
+      .charts-no-budget:has(.recurring-cell) .pie-inc-cell { grid-column:2; grid-row:1; }
+      .charts-no-budget .recurring-cell { grid-column:1 / -1; grid-row:2; }
       .chart-bal, .chart-invest { grid-column:1 / -1; }
     }
   </style>
@@ -363,7 +377,14 @@
             </div>
           </div>
           <div class="funds-compare" id="fundsCompare" aria-live="polite">
-            <div class="funds-compare-title">Available vs planned</div>
+            <div class="funds-compare-title-row">
+              <div class="funds-compare-title">Available vs planned</div>
+              <div class="budget-calc-wrap">
+                <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
+                  aria-describedby="budgetCalcTip">Calculations</button>
+                <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
+              </div>
+            </div>
             <div class="funds-compare-head">
               <div class="funds-compare-legend">
                 <span class="funds-legend-item">
@@ -389,16 +410,20 @@
             <div class="bar-row bar-row-total" id="budgetsSummary"><div class="bar-head"><span>Total</span><span>R$ 3.291,79 / R$ 3.485,00 · 94%</span></div><div class="bar-track"><div class="bar-fill" style="width:94.5%;background:#f1c40f"></div></div><div class="bar-meta">Remain R$ 193,21</div></div>
             <div id="budgetsBody" class="budget-body"><div class="bar-row"><div class="bar-head"><span>🍽️ Food</span><span>R$ 87,15 / R$ 104,00 · 84%</span></div><div class="bar-track"><div class="bar-fill" style="width:83.8%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 16,85</div></div><div class="bar-row"><div class="bar-head"><span>💄 Beauty</span><span>R$ 60,00 / R$ 150,00 · 40%</span></div><div class="bar-track"><div class="bar-fill" style="width:40.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 90,00</div></div><div class="bar-row"><div class="bar-head"><span>🚗 Car</span><span>R$ 468,00 / R$ 270,00 · 173%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 198,00</div></div><div class="bar-row"><div class="bar-head"><span>🏠 Household bills</span><span>R$ 0,00 / R$ 700,00 · 0%</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 700,00</div></div><div class="bar-row"><div class="bar-head"><span>📚 Education</span><span>R$ 320,33 / R$ 1,00 · 32033%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 319,33</div></div><div class="bar-row"><div class="bar-head"><span>💻 Electronics</span><span>R$ 120,20 / R$ 50,00 · 240%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 70,20</div></div><div class="bar-row"><div class="bar-head"><span>🤝 Humanitarian</span><span>R$ 58,82 / R$ 60,00 · 98%</span></div><div class="bar-track"><div class="bar-fill" style="width:98.0%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 1,18</div></div><div class="bar-row"><div class="bar-head"><span>🎉 Leisure</span><span>R$ 1.327,63 / R$ 1.200,00 · 111%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 127,63</div></div><div class="bar-row"><div class="bar-head"><span>🛒 Groceries</span><span>R$ 597,79 / R$ 700,00 · 85%</span></div><div class="bar-track"><div class="bar-fill" style="width:85.4%;background:#2ecc71"></div></div><div class="bar-meta">Remain R$ 102,21</div></div><div class="bar-row"><div class="bar-head"><span>❤️ Health</span><span>R$ 251,87 / R$ 250,00 · 101%</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#e74c3c"></div></div><div class="bar-meta">Exceeded R$ 1,87</div></div></div>
           </div>
-          <div class="budget-calc-wrap">
-            <button type="button" class="budget-calc-btn" id="budgetCalcBtn"
-              aria-describedby="budgetCalcTip">Calculations</button>
-            <div class="budget-calc-tip" id="budgetCalcTip" role="tooltip"></div>
-          </div>
         </div>
     
           <div class="panel chart-cell pie-exp-cell"><h2>Expenses by category</h2><div id="pieExp" class="chart chart-pie"></div></div>
     
           <div class="panel chart-cell pie-inc-cell"><h2>Incomes by category</h2><div id="pieInc" class="chart chart-pie"></div></div>
+    
+          <div class="panel chart-cell recurring-cell" id="recurringPanel">
+            <h2>Recurring bills</h2>
+            <div class="bar-meta" id="recurringSummary" style="margin-bottom:6px">
+              Period R$ 1.603,77 · Income R$ 5.508,96
+              · Recurring is 29% of income
+              · 1 month</div>
+            <div id="recurringVsIncome" class="chart chart-treemap"></div>
+          </div>
     
           <div class="panel chart-cell chart-bal"><h2>Daily balance</h2><div id="barBal" class="chart"></div></div>
           <div class="panel chart-cell chart-invest"><h2>Income vs investments</h2><div id="incomeVsInvest" class="chart chart-treemap"></div></div>
@@ -425,16 +450,6 @@
           <div class="bar-meta" style="margin-bottom:8px">Total R$ 158.881,58</div>
           <div class="bar-row"><div class="bar-head"><span>📈 Mercado Pago (long-term)</span><span>R$ 63.339,74</span></div><div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#3498db"></div></div><div class="bar-meta">40% of total</div></div><div class="bar-row"><div class="bar-head"><span>🏛️ FGTS</span><span>R$ 55.040,40</span></div><div class="bar-track"><div class="bar-fill" style="width:86.9%;background:#3498db"></div></div><div class="bar-meta">35% of total</div></div><div class="bar-row"><div class="bar-head"><span>🏦 BoschLife</span><span>R$ 13.827,22</span></div><div class="bar-track"><div class="bar-fill" style="width:21.8%;background:#3498db"></div></div><div class="bar-meta">9% of total</div></div><div class="bar-row"><div class="bar-head"><span>💰 Mercado Pago (short-term)</span><span>R$ 12.031,20</span></div><div class="bar-track"><div class="bar-fill" style="width:19.0%;background:#3498db"></div></div><div class="bar-meta">8% of total</div></div><div class="bar-row"><div class="bar-head"><span>🍴 99 Pay (short-term)</span><span>R$ 5.000,78</span></div><div class="bar-track"><div class="bar-fill" style="width:7.9%;background:#3498db"></div></div><div class="bar-meta">3% of total</div></div><div class="bar-row"><div class="bar-head"><span>🔄 Nubank (short-term)</span><span>R$ 5.000,00</span></div><div class="bar-track"><div class="bar-fill" style="width:7.9%;background:#3498db"></div></div><div class="bar-meta">3% of total</div></div><div class="bar-row"><div class="bar-head"><span>💳 Mercado Pago (checking account)</span><span>R$ 4.557,33</span></div><div class="bar-track"><div class="bar-fill" style="width:7.2%;background:#3498db"></div></div><div class="bar-meta">3% of total</div></div><div class="bar-row"><div class="bar-head"><span>🟣 Nubank (checking account)</span><span>R$ 44,23</span></div><div class="bar-track"><div class="bar-fill" style="width:0.1%;background:#3498db"></div></div><div class="bar-meta">0% of total</div></div><div class="bar-row"><div class="bar-head"><span>💵 Meli dólares</span><span>R$ 40,68</span></div><div class="bar-track"><div class="bar-fill" style="width:0.1%;background:#3498db"></div></div><div class="bar-meta">0% of total</div></div><div class="bar-row"><div class="bar-head"><span>🍽️ Meal voucher</span><span>R$ 0,00</span></div><div class="bar-track"><div class="bar-fill" style="width:0.0%;background:#3498db"></div></div><div class="bar-meta">0% of total</div></div></div>
   </div>
-  
-        <div class="panel" id="recurringPanel" style="margin-top:10px">
-          <h2>Recurring bills</h2>
-          <div class="bar-meta" id="recurringSummary" style="margin-bottom:8px">
-            Period R$ 1.603,77 · Income R$ 5.508,96
-            · Recurring is 29% of income
-            · 1 month</div>
-          <div id="recurringList"><div class="bar-row"><div class="bar-head"><span>🌿 Overleaf</span><span>R$ 25,88 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🫙 Meli+</span><span>R$ 19,90 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🎨 Google Services</span><span>R$ 96,99 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🤯 Terapia</span><span>R$ 360,00 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>💦 Water</span><span>R$ 250,00 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🏠 Rent</span><span>R$ 750,00 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🌍 Internet</span><span>R$ 85,00 / mo</span></div></div><div class="bar-row"><div class="bar-head"><span>🎥 Debrian</span><span>R$ 16,00 / mo</span></div></div></div>
-          <div id="recurringVsIncome" class="chart chart-treemap"></div>
-        </div>
   </div>
   <div id="categoryView">
     <div class="panel">
@@ -1135,7 +1150,6 @@ function recurringMonthlyTotal() {
   return s;
 }
 function renderRecurring(months, income) {
-  const list = document.getElementById('recurringList');
   const sumEl = document.getElementById('recurringSummary');
   const rows = RAW.recurring || [];
   const n = (months && months.length) ? months.length : 1;
@@ -1148,22 +1162,9 @@ function renderRecurring(months, income) {
   }
   const mapped = rows.map(r => ({
     name: r.name || r.id || 'Bill',
-    icon: r.icon || '',
+    icon: r.icon || '🔁',
     periodAmt: parseDecimal(r.monthly_amount) * n
   }));
-  if (list) {
-    if (!rows.length) {
-      list.innerHTML = '<p class="empty">No recurring bills</p>';
-    } else {
-      list.innerHTML = rows.map(r => {
-        const name = r.name || r.id || 'Bill';
-        const icon = r.icon || '🔁';
-        const amt = parseDecimal(r.monthly_amount);
-        return '<div class="bar-row"><div class="bar-head"><span>' + icon + ' ' + name
-          + '</span><span>' + formatBrl(amt) + ' / mo</span></div></div>';
-      }).join('');
-    }
-  }
   DATA.recurringVs = { bills: periodBills, income: income, rows: mapped };
 }
 function drawIncomeInvestTreemap() {
@@ -1219,7 +1220,9 @@ function drawRecurringTreemap() {
   const custom = [];
   for (const r of vs.rows || []) {
     if (r.periodAmt <= 0) continue;
-    labels.push(r.name);
+    const icon = (r.icon || '').trim();
+    const title = r.name || 'Bill';
+    labels.push(icon ? (icon + ' ' + title) : title);
     values.push(r.periodAmt);
     colors.push('#9b59b6');
     const pInc = vs.income > 0 ? (r.periodAmt / vs.income * 100) : 0;
@@ -1238,6 +1241,7 @@ function drawRecurringTreemap() {
     return;
   }
   const L = baseLayout();
+  const h = Math.max(el.clientHeight || 0, 220);
   Plotly.newPlot('recurringVsIncome', [{
     type: 'treemap',
     labels: labels,
@@ -1251,7 +1255,7 @@ function drawRecurringTreemap() {
     pathbar: { visible: false }
   }], Object.assign({}, L, {
     showlegend: false,
-    height: 280,
+    height: h,
     margin: { t: 8, b: 8, l: 8, r: 8 }
   }), { responsive: true, displayModeBar: false });
 }
